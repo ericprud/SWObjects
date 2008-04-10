@@ -6,7 +6,7 @@ SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfe
 
 #/bin/sh ../scripts/ylwrap parser.yy y.tab.c parser.cc y.tab.h parser.h y.output parser.output -- bison -y  
 
-SPARQLfedScanner.cc SPARQLfedScanner.hh: SPARQLfedScanner.ll
+SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
 	flex -o SPARQLfedScanner.cc SPARQLfedScanner.ll
 
 #/bin/sh ../scripts/ylwrap scanner.ll lex.yy.c scanner.cc -- flex  -olex.yy.c
@@ -14,7 +14,7 @@ SPARQLfedScanner.cc SPARQLfedScanner.hh: SPARQLfedScanner.ll
 SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedParser.o SPARQLfedParser.cc
 
-SPARQLfedScanner.o: SPARQLfedScanner.cc
+SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
 
 SPARQLfedDriver.o: SPARQLfedDriver.cc
