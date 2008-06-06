@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2008-04-11 15:35:42 eric Exp $
+# $Id: Makefile,v 1.5 2008-06-06 19:06:47 eric Exp $
 
 # recipies:
 #   normal build:
@@ -56,7 +56,7 @@ test: SPARQLfedTest
 	./SPARQLfedTest SPARQLfed.txt 
 
 valgrind: SPARQLfedTest
-	valgrind --leak-check=yes ./SPARQLfedTest SPARQLfed.txt 
+	valgrind --leak-check=yes --xml=no ./SPARQLfedTest SPARQLfed.txt 
 
 clean:
 	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
