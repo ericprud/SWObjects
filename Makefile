@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2008-06-06 19:06:47 eric Exp $
+# $Id: Makefile,v 1.6 2008-06-19 14:49:15 eric Exp $
 
 # recipies:
 #   normal build:
@@ -43,7 +43,7 @@ libSPARQLfed.a: SPARQLfedParser.o SPARQLfedScanner.o
 	ar cru libSPARQLfed.a SPARQLfedParser.o SPARQLfedScanner.o
 	ranlib libSPARQLfed.a
 
-SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh
+SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLSerializer.hh
 	$(GPP)  -o SPARQLfedTest.o SPARQLfedTest.cc
 
 SPARQLfedTest: SPARQLfedTest.o libSPARQLfed.a
