@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2008-06-21 16:11:26 eric Exp $
+# $Id: Makefile,v 1.8 2008-06-23 11:08:45 eric Exp $
 
 # recipies:
 #   normal build:
@@ -23,7 +23,7 @@ endif
 GPP=g++ -DYYTEXT_POINTER=1 $(DEFS) -W -Wall -Wextra -ansi -g -c
 LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
 
-SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy
+SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SPARQL.hh
 	bison -o SPARQLfedParser.cc SPARQLfedParser.yy
 
 #/bin/sh ../scripts/ylwrap parser.yy y.tab.c parser.cc y.tab.h parser.h y.output parser.output -- bison -y  
@@ -33,14 +33,17 @@ SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
 
 #/bin/sh ../scripts/ylwrap scanner.ll lex.yy.c scanner.cc -- flex  -olex.yy.c
 
+SPARQL.o: SPARQL.cc SPARQL.hh
+	$(GPP)  -o SPARQL.o SPARQL.cc
+
 SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedParser.o SPARQLfedParser.cc
 
 SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
 
-libSPARQLfed.a: SPARQLfedParser.o SPARQLfedScanner.o
-	ar cru libSPARQLfed.a SPARQLfedParser.o SPARQLfedScanner.o
+libSPARQLfed.a: SPARQL.o SPARQLfedParser.o SPARQLfedScanner.o
+	ar cru libSPARQLfed.a SPARQL.o SPARQLfedParser.o SPARQLfedScanner.o
 	ranlib libSPARQLfed.a
 
 SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLSerializer.hh SPARQLSerializer.hh
@@ -59,5 +62,5 @@ valgrind: SPARQLfedTest
 	valgrind --leak-check=yes --xml=no ./SPARQLfedTest SPARQLfed.txt 
 
 clean:
-	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
+	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
 
