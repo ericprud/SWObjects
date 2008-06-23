@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2008-06-23 12:05:50 eric Exp $
+# $Id: Makefile,v 1.10 2008-06-23 13:40:22 eric Exp $
 
 # recipies:
 #   normal build:
@@ -42,14 +42,17 @@ ResultSet.o: ResultSet.cc ResultSet.hh
 RdfDB.o: RdfDB.cc RdfDB.hh
 	$(GPP)  -o RdfDB.o RdfDB.cc
 
+RdfQueryDB.o: RdfQueryDB.cc RdfQueryDB.hh RdfDB.hh
+	$(GPP)  -o RdfQueryDB.o RdfQueryDB.cc
+
 SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedParser.o SPARQLfedParser.cc
 
 SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
 
-libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o SPARQLfedParser.o SPARQLfedScanner.o
-	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o SPARQLfedParser.o SPARQLfedScanner.o
+libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o
+	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o
 	ranlib libSPARQLfed.a
 
 SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLSerializer.hh SPARQLSerializer.hh
