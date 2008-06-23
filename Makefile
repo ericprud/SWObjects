@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2008-06-23 16:35:15 eric Exp $
+# $Id: Makefile,v 1.12 2008-06-23 20:26:03 eric Exp $
 
 # recipies:
 #   normal build:
@@ -36,10 +36,10 @@ SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
 SPARQL.o: SPARQL.cc SPARQL.hh
 	$(GPP)  -o SPARQL.o SPARQL.cc
 
-ResultSet.o: ResultSet.cc ResultSet.hh
+ResultSet.o: ResultSet.cc ResultSet.hh XMLSerializer.hh
 	$(GPP)  -o ResultSet.o ResultSet.cc
 
-RdfDB.o: RdfDB.cc RdfDB.hh
+RdfDB.o: RdfDB.cc RdfDB.hh XMLSerializer.hh
 	$(GPP)  -o RdfDB.o RdfDB.cc
 
 RdfQueryDB.o: RdfQueryDB.cc RdfQueryDB.hh RdfDB.hh
@@ -57,7 +57,7 @@ libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPAR
 
 XMLQueryExpressor.hh: XMLSerializer.hh
 
-SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLQueryExpressor.hh SPARQLSerializer.hh
+SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLQueryExpressor.hh SPARQLSerializer.hh ResultSet.hh
 	$(GPP)  -o SPARQLfedTest.o SPARQLfedTest.cc
 
 SPARQLfedTest: SPARQLfedTest.o libSPARQLfed.a
