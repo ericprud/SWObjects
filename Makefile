@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2008-06-23 20:26:03 eric Exp $
+# $Id: Makefile,v 1.13 2008-06-27 19:55:01 eric Exp $
 
 # recipies:
 #   normal build:
@@ -55,7 +55,7 @@ libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPAR
 	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o
 	ranlib libSPARQLfed.a
 
-XMLQueryExpressor.hh: XMLSerializer.hh
+XMLQueryExpressor.hh: XMLSerializer.hh # !!! doesn't seem to trigger XQE's dependencies
 
 SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLQueryExpressor.hh SPARQLSerializer.hh ResultSet.hh
 	$(GPP)  -o SPARQLfedTest.o SPARQLfedTest.cc
@@ -73,5 +73,5 @@ valgrind: SPARQLfedTest
 	valgrind --leak-check=yes --xml=no ./SPARQLfedTest SPARQLfed.txt 
 
 clean:
-	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
+	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o RdfDB.o RdfQueryDB.o ResultSet.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
 
