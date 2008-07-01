@@ -1,24 +1,19 @@
-# $Id: Makefile,v 1.13 2008-06-27 19:55:01 eric Exp $
+# $Id: Makefile,v 1.14 2008-07-01 14:14:29 eric Exp $
 
 # recipies:
 #   normal build:
 #     make SPARQLfed
 #   force the use of the tracing facilities (and redirect to stdout):
-#     HAVE_BOOST=1 TRACE_FD=1 make -W SPARQLfedTest.cc test
+#     make -W SPARQLfedTest.cc test
 #   have valgrind start a debugger (works as M-x gdb invocation command):
 #     valgrind --db-attach=yes --leak-check=yes SPARQLfedTest SPARQLfed.txt
 #   same, if you aren't working in gdb:
-#     HAVE_BOOST=1 TRACE_FD=1 make valgrind
+#     make valgrind
 #   debugging in emacs:
 #     gdb --annotate=3 SPARQLfedTest    (set args SPARQLfed.txt)
 
-ifdef HAVE_BOOST
-LIBS=-lboost_iostreams
-DEFS=-DHAVE_BOOST
-else
 LIBS=
 DEFS=
-endif
 
 GPP=g++ -DYYTEXT_POINTER=1 $(DEFS) -W -Wall -Wextra -ansi -g -c
 LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
