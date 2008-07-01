@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2008-07-01 14:14:29 eric Exp $
+# $Id: Makefile,v 1.15 2008-07-01 14:16:48 eric Exp $
 
 # recipies:
 #   normal build:
@@ -21,12 +21,8 @@ LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
 SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SPARQL.hh
 	bison -o SPARQLfedParser.cc SPARQLfedParser.yy
 
-#/bin/sh ../scripts/ylwrap parser.yy y.tab.c parser.cc y.tab.h parser.h y.output parser.output -- bison -y  
-
 SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
 	flex -o SPARQLfedScanner.cc SPARQLfedScanner.ll
-
-#/bin/sh ../scripts/ylwrap scanner.ll lex.yy.c scanner.cc -- flex  -olex.yy.c
 
 SPARQL.o: SPARQL.cc SPARQL.hh
 	$(GPP)  -o SPARQL.o SPARQL.cc
@@ -57,9 +53,6 @@ SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh XMLQueryExpressor.hh SPARQL
 
 SPARQLfedTest: SPARQLfedTest.o libSPARQLfed.a
 	$(LINK) SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a
-
-#SPARQLfed: SPARQLfedParser.o SPARQLfedScanner.o
-#	$(LINK) SPARQLfed SPARQLfedParser.o SPARQLfedScanner.o
 
 test: SPARQLfedTest
 	./SPARQLfedTest SPARQLfed.txt 
