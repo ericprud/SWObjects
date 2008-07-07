@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2008-07-01 14:16:48 eric Exp $
+# $Id: Makefile,v 1.16 2008-07-07 14:31:01 eric Exp $
 
 # recipies:
 #   normal build:
@@ -24,6 +24,24 @@ SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfe
 SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
 	flex -o SPARQLfedScanner.cc SPARQLfedScanner.ll
 
+SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
+	$(GPP)  -o SPARQLfedParser.o SPARQLfedParser.cc
+
+SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
+	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
+
+TurtleSParser.cc TurtleSParser.hh location.hh position.hh stack.hh: TurtleSParser.yy SPARQL.hh
+	bison -o TurtleSParser.cc TurtleSParser.yy
+
+TurtleSScanner.cc: TurtleSScanner.ll TurtleSParser.hh
+	flex -o TurtleSScanner.cc TurtleSScanner.ll
+
+TurtleSParser.o: TurtleSParser.cc TurtleSParser.hh TurtleSScanner.hh
+	$(GPP)  -o TurtleSParser.o TurtleSParser.cc
+
+TurtleSScanner.o: TurtleSScanner.cc TurtleSScanner.hh
+	$(GPP)  -o TurtleSScanner.o TurtleSScanner.cc
+
 SPARQL.o: SPARQL.cc SPARQL.hh
 	$(GPP)  -o SPARQL.o SPARQL.cc
 
@@ -36,14 +54,8 @@ RdfDB.o: RdfDB.cc RdfDB.hh XMLSerializer.hh
 RdfQueryDB.o: RdfQueryDB.cc RdfQueryDB.hh RdfDB.hh
 	$(GPP)  -o RdfQueryDB.o RdfQueryDB.cc
 
-SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
-	$(GPP)  -o SPARQLfedParser.o SPARQLfedParser.cc
-
-SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
-	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
-
-libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o
-	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o
+libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
+	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
 	ranlib libSPARQLfed.a
 
 XMLQueryExpressor.hh: XMLSerializer.hh # !!! doesn't seem to trigger XQE's dependencies
