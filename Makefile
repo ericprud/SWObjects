@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.17 2008-07-07 15:00:15 eric Exp $
+# $Id: Makefile,v 1.18 2008-07-07 17:54:56 eric Exp $
 
 # recipies:
 #   normal build:
@@ -18,7 +18,7 @@ DEFS=
 GPP=g++ -DYYTEXT_POINTER=1 $(DEFS) -W -Wall -Wextra -ansi -g -c
 LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
 
-SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SPARQL.hh
+SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SPARQL.hh ParserCommon.hh
 	bison -o SPARQLfedParser.cc SPARQLfedParser.yy
 
 SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
@@ -54,8 +54,11 @@ RdfDB.o: RdfDB.cc RdfDB.hh XMLSerializer.hh
 RdfQueryDB.o: RdfQueryDB.cc RdfQueryDB.hh RdfDB.hh
 	$(GPP)  -o RdfQueryDB.o RdfQueryDB.cc
 
-libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
-	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
+ParserCommon.o: ParserCommon.cc ParserCommon.hh
+	$(GPP)  -o ParserCommon.o ParserCommon.cc
+
+libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
+	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
 	ranlib libSPARQLfed.a
 
 XMLQueryExpressor.hh: XMLSerializer.hh # !!! doesn't seem to trigger XQE's dependencies
@@ -73,5 +76,5 @@ valgrind: SPARQLfedTest
 	valgrind --leak-check=yes --xml=no ./SPARQLfedTest SPARQLfed.txt 
 
 clean:
-	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o RdfDB.o RdfQueryDB.o ResultSet.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
+	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o RdfDB.o RdfQueryDB.o ResultSet.o  ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc location.hh position.hh stack.hh
 
