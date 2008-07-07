@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2008-07-07 14:31:01 eric Exp $
+# $Id: Makefile,v 1.17 2008-07-07 15:00:15 eric Exp $
 
 # recipies:
 #   normal build:
@@ -30,7 +30,7 @@ SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
 SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
 
-TurtleSParser.cc TurtleSParser.hh location.hh position.hh stack.hh: TurtleSParser.yy SPARQL.hh
+TurtleSParser.cc TurtleSParser.hh: TurtleSParser.yy SPARQL.hh
 	bison -o TurtleSParser.cc TurtleSParser.yy
 
 TurtleSScanner.cc: TurtleSScanner.ll TurtleSParser.hh
