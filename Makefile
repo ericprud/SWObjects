@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.20 2008-07-19 15:33:08 eric Exp $
+# $Id: Makefile,v 1.21 2008-07-19 16:07:09 eric Exp $
 
 # recipies:
 #   normal build:
@@ -63,7 +63,7 @@ libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLf
 
 XMLQueryExpressor.hh: XMLSerializer.hh # !!! doesn't seem to trigger XQE's dependencies
 
-SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh TurtleSParser.hh XMLQueryExpressor.hh SPARQLSerializer.hh ResultSet.hh SPARQLDuplicator.hh
+SPARQLfedTest.o: SPARQLfedTest.cc SPARQLfedParser.hh TurtleSParser.hh XMLQueryExpressor.hh SPARQLSerializer.hh ResultSet.hh SPARQLDuplicator.hh SPARQLTransformer.hh
 	$(GPP)  -o SPARQLfedTest.o SPARQLfedTest.cc
 
 SPARQLfedTest: SPARQLfedTest.o libSPARQLfed.a
