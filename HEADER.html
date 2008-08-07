@@ -1,0 +1,43 @@
+<!--
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>Index of /2005/03/css-dep</title>
+ </head>
+ <body>
+-->
+   <h1 id="title">SPARQLfed Source Code Directory</h1>
+
+    <p style="text-align: center; ">① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
+
+   <p>This is the source for a SPARQL parser and modules to implement a SPASQL engine in MySQL, as well as <a href="../07/MappingRules/">Rule Mapping</a> functionality.</p>
+
+   <ul>
+      <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSPARQLfed.a</code> and <code>SPARQLfedTest</code>.</li>
+      <li><em><a href="SPARQLfedTest.cc">SPARQLfedTest..</a></em> — simple main to link to <code>libSPARQLfed.a</code>.</li>
+
+      <li><em><a href="ParserCommon.cc">ParserCommon.cc</a></em> and <em><a href="ParserCommon.hh">ParserCommon.hh</a></em> — common Driver source for all RDF-related parsers.</li>
+      <li><em><a href="SPARQLfedParser.yy">SPARQLfedParser.yy</a></em>, <em><a href="SPARQLfedScanner.hh">SPARQLfedScanner.hh</a></em> and <em><a href="SPARQLfedScanner.ll">SPARQLfedScanner.ll</a></em> — parser for the SPARQLfed language.</li>
+      <li><em><a href="TurtleParser.yy">TurtleParser.yy</a></em>, <em><a href="TurtleScanner.hh">TurtleScanner.hh</a></em> and <em><a href="TurtleScanner.ll">TurtleScanner.ll</a></em> — parser for the Turtle language.</li>
+
+      <li><em><a href="RdfDB.cc">RdfDB.cc</a></em> and <em><a href="RdfDB.hh">RdfDB.hh</a></em> — implementation of a simple RDF database with multiple named graphs.</li>
+      <li><em><a href="RdfQueryDB.cc">RdfQueryDB.cc</a></em> and <em><a href="RdfQueryDB.hh">RdfQueryDB.hh</a></em> — overload of <a href="RdfDB.hh">RdfDB</a> which performs queries on graph patterns.</li>
+
+      <li><em><a href="ResultSet.cc">ResultSet.cc</a></em> and <em><a href="ResultSet.hh">ResultSet.hh</a></em> — simple SPARQL result set data structure.</li>
+
+      <li><em><a href="SPARQL.cc">SPARQL.cc</a></em> and <em><a href="SPARQL.hh">SPARQL.hh</a></em> — data structures to represent graph patterns for SPARQL and N3.</li>
+
+      <li><em><a href="SPARQLDuplicator.hh">SPARQLDuplicator.hh</a></em> — deep-copy of a SPARQL compile tree (RDF Atoms allocated from a <code>POSFactory</code>.</li>
+      <li><em><a href="SPARQLTransformer.hh">SPARQLTransformer.hh</a></em> — overload of <a href="SPARQLDuplicator.hh">SPARQLDuplicator</a> which to mutate the compile tree in interesting ways.</li>
+      <li><em><a href="XMLSerializer.hh">XMLSerializer.hh</a></em> — simple XML representation of a SPARQL query.</li>
+
+<!--
+      <li><em><a href="X">X</a></em> — .</li>
+      <li><em><a href="X.cc">X.cc</a></em> and <em><a href="X.hh">X.hh</a></em> — .</li>
+-->
+   </ul>
+
+<!--
+</body></html>
+-->
