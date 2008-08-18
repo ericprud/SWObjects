@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteBase /2008/04/SPARQLfed
+RewriteRule ^SPARQL\.hh$	SWObjects.hh [R=permanent,L]
+RewriteRule ^SPARQL\.cc$	SWObjects.cc [R=permanent,L]
