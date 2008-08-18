@@ -13,7 +13,27 @@
 
     <p style="text-align: center; ">① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
 
-   <h2 id="build">Building and Testing</h2>
+
+    <h2 id="TOC">Table of Contents</h2>
+
+    <ul>
+      <li><a href="#files">Files</a>
+      <ul>
+	<li><a href="#build">Building and Testing</a></li>
+	<li><a href="#core">Core</a></li>
+	<li><a href="#parsers">Parsers</a></li>
+      </ul></li>
+      <li><a href="#arch">Architecture</a></li>
+      <li><a href="#issues">Issues</a></li>
+      <li><a href="#dir">Apache Directory Listing</a></li>
+    </ul>
+
+    <h2 id="files">Files</h2>
+
+    <p>The directory structure of the <em>SWObjects Library</em> is intentionally flat, as it is expected to be linked to other libraries to support web access, persistent storage, and other functionalities.</p>
+
+
+   <h3 id="build">Building and Testing</h3>
 
    <ul>
       <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSWObjects.a</code> and sample executables.</li>
@@ -23,7 +43,7 @@
       </ul></li>
    </ul>
 
-   <h2 id="core">Core</h2>
+   <h3 id="core">Core</h3>
 
    <ul>
       <li><em><a href="SWObjects.cc">SWObjects.cc</a></em> and <em><a href="SWObjects.hh">SWObjects.hh</a></em> — data structures to represent graph patterns for SPARQL and N3.</li>
@@ -41,7 +61,7 @@
       <li><em><a href="XMLQueryExpressor.hh">XMLQueryExpressor.hh</a></em> — simple XML representation of a SPARQL query.</li>
    </ul>
 
-   <h2 id="parsers">Parsers</h2>
+   <h3 id="parsers">Parsers</h3>
 
    <ul>
       <li><em><a href="ParserCommon.cc">ParserCommon.cc</a></em> and <em><a href="ParserCommon.hh">ParserCommon.hh</a></em> — common Driver source for all RDF-related parsers.</li>
@@ -55,6 +75,32 @@
 -->
    </ul>
 
-<!--
-</body></html>
--->
+
+   <h2 id="arch">Architecture</h2>
+
+    <p>To minimize expensive string comparison, and less expensive std::string::operator== use, the primitive parts of speach (class: <em id="POS">POS</em>) are created only once-each by a <em id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
+
+    <pre style="margin: 2em; border: thin solid #ccffcc; background-color: #eeffee;">int main(int argc,char** argv) {
+    SPARQLfedNS::POSFactory posFactory;
+    SPARQLfedNS::SPARQLfedDriver sparqlParser("", &amp;posFactory);
+    ...
+}</pre>
+
+    <h3 id="storage">Storage</h3>
+    <p>An <em id="RdfDB">RdfDB</em> contains a <em id="DefaultGraphPattern">DefaultGraphPattern</em> and a set of <em id="NamedGraphPattern">NamedGraphPattern</em>s, each of which contains <em id="TriplePattern">TriplePattern</em>s. This is more general than a strict RDF store in that the TriplePattern data structure allows for triples with variables in either the subject, predicate or object position.</p>
+
+    <h3 id="queries">Queries</h3>
+
+    <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em id="Select">Select</em> comprised of a <em id="WhereClause">WhereClause</em>, which in turn holds a <em id="TableOperation">TableOperation</em> and a <em id="BindingClause">BindingClause</em>. TableOperations contain <em id="Filter">Filter</em>s and some, like <em id="TableConjunction">TableConjunction</em> and <em id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href="#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href="#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href="#TriplePattern">TriplePattern</a>s described in <a href="#storage">Storage</a>.</p>
+
+
+   <h2 id="issues">Issues</h2>
+
+    <ul>
+      <li id="smart_ptrs"><em>smart_ptrs</em> — is the overhead of keeping a <a href="#POSFactory">POSFactory</a> worth the performance windfall? It makes memory management more challenging. In general, should SWObjects use more copying? Should they instead use <a href="http://en.wikipedia.org/wiki/Smart_pointer">smart pointers</a>?</li>
+      <li id="ser_union"><em>ser_union</em> — SPARQLSerializer current fails to bound UNIONs in {}.</li>
+    </ul>
+
+
+   <h2 id="dir">Apache Directory Listing</h2>
+
