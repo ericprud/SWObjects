@@ -9,15 +9,15 @@
 -->
    <h1 id="title">SWObjects Source Code Directory</h1>
 
-    <p style="text-align: center; ">① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
+   <p>This is a set of utilities implemented in C++ for working with SemWeb objects (triples, graphs, query patterns, SPARQL and N3 operations, etc). This implements query mapping based on <a href="../07/MappingRules/">Mapping Rules</a> and provides the base for a SPASQL engine in MySQL.</p>
 
-   <p>This is the source for a SPARQL parser and modules to implement a SPASQL engine in MySQL, as well as <a href="../07/MappingRules/">Rule Mapping</a> functionality.</p>
+    <p style="text-align: center; ">① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
 
    <h2 id="build">Building and Testing</h2>
 
    <ul>
-      <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSPARQLfed.a</code> and sample executables.</li>
-      <li><em><a href="sample_RuleMap1.cc">sample_RuleMap1.cc</a></em> — query-mapping test to link to <code>libSPARQLfed.a</code>. Works with:<ul>
+      <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSWObjects.a</code> and sample executables.</li>
+      <li><em><a href="sample_RuleMap1.cc">sample_RuleMap1.cc</a></em> — query-mapping test to link to <code>libSWObjects.a</code>. Works with:<ul>
         <li><em><a href="query_HealthCare1.rq">query_HealthCare1.rq</a></em> — simple example HCLS COI query.</li>
         <li><em><a href="ruleMap_HealthCare1.rq">ruleMap_HealthCare1.rq</a></em> — simple example HCLS COI rule-map.</li>
       </ul></li>
