@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.22 2008-08-09 18:41:20 eric Exp $
+# $Id: Makefile,v 1.23 2008-08-18 13:15:20 eric Exp $
 
 # recipies:
 #   normal build:
@@ -18,7 +18,7 @@ DEFS=
 GPP=g++ -DYYTEXT_POINTER=1 $(DEFS) -W -Wall -Wextra -ansi -g -c
 LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
 
-SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SPARQL.hh ParserCommon.hh
+SPARQLfedParser.cc SPARQLfedParser.hh location.hh position.hh stack.hh: SPARQLfedParser.yy SWObjects.hh ParserCommon.hh
 	bison -o SPARQLfedParser.cc SPARQLfedParser.yy
 
 SPARQLfedScanner.cc: SPARQLfedScanner.ll SPARQLfedParser.hh
@@ -30,7 +30,7 @@ SPARQLfedParser.o: SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.hh
 SPARQLfedScanner.o: SPARQLfedScanner.cc SPARQLfedScanner.hh
 	$(GPP)  -o SPARQLfedScanner.o SPARQLfedScanner.cc
 
-TurtleSParser.cc TurtleSParser.hh: TurtleSParser.yy SPARQL.hh
+TurtleSParser.cc TurtleSParser.hh: TurtleSParser.yy SWObjects.hh
 	bison -o TurtleSParser.cc TurtleSParser.yy
 
 TurtleSScanner.cc: TurtleSScanner.ll TurtleSParser.hh
@@ -42,8 +42,8 @@ TurtleSParser.o: TurtleSParser.cc TurtleSParser.hh TurtleSScanner.hh
 TurtleSScanner.o: TurtleSScanner.cc TurtleSScanner.hh
 	$(GPP)  -o TurtleSScanner.o TurtleSScanner.cc
 
-SPARQL.o: SPARQL.cc SPARQL.hh
-	$(GPP)  -o SPARQL.o SPARQL.cc
+SWObjects.o: SWObjects.cc SWObjects.hh
+	$(GPP)  -o SWObjects.o SWObjects.cc
 
 ResultSet.o: ResultSet.cc ResultSet.hh XMLSerializer.hh
 	$(GPP)  -o ResultSet.o ResultSet.cc
@@ -57,8 +57,8 @@ RdfQueryDB.o: RdfQueryDB.cc RdfQueryDB.hh RdfDB.hh
 ParserCommon.o: ParserCommon.cc ParserCommon.hh
 	$(GPP)  -o ParserCommon.o ParserCommon.cc
 
-libSPARQLfed.a: SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
-	ar cru libSPARQLfed.a SPARQL.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
+libSPARQLfed.a: SWObjects.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
+	ar cru libSPARQLfed.a SWObjects.o ResultSet.o RdfDB.o RdfQueryDB.o ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o TurtleSParser.o TurtleSScanner.o
 	ranlib libSPARQLfed.a
 
 XMLQueryExpressor.hh: XMLSerializer.hh # !!! doesn't seem to trigger XQE's dependencies
@@ -76,5 +76,5 @@ valgrind: SPARQLfedTest
 	valgrind --leak-check=yes --xml=no ./SPARQLfedTest SPARQLfed.txt 
 
 clean:
-	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SPARQL.o RdfDB.o RdfQueryDB.o ResultSet.o  ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc TurtleSParser.o TurtleSScanner.o TurtleSParser.cc TurtleSParser.hh TurtleSScanner.cc location.hh position.hh stack.hh
+	rm -f SPARQLfedTest SPARQLfedTest.o libSPARQLfed.a SWObjects.o RdfDB.o RdfQueryDB.o ResultSet.o  ParserCommon.o SPARQLfedParser.o SPARQLfedScanner.o SPARQLfedParser.cc SPARQLfedParser.hh SPARQLfedScanner.cc TurtleSParser.o TurtleSScanner.o TurtleSParser.cc TurtleSParser.hh TurtleSScanner.cc location.hh position.hh stack.hh
 
