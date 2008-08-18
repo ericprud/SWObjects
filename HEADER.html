@@ -1,5 +1,4 @@
 <!--
--->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -7,7 +6,6 @@
   <title>Index of /2005/03/css-dep</title>
  </head>
  <body>
-<!--
 -->
    <h1 id="title">SWObjects Source Code Directory</h1>
 
@@ -15,20 +13,25 @@
 
    <p>This is the source for a SPARQL parser and modules to implement a SPASQL engine in MySQL, as well as <a href="../07/MappingRules/">Rule Mapping</a> functionality.</p>
 
+   <h2 id="build">Building and Testing</h2>
+
    <ul>
       <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSPARQLfed.a</code> and sample executables.</li>
-      <li><em><a href="sample_RuleMap1.cc">sample_RuleMap1.cc</a></em> — simple main to link to <code>libSPARQLfed.a</code>.</li>
+      <li><em><a href="sample_RuleMap1.cc">sample_RuleMap1.cc</a></em> — query-mapping test to link to <code>libSPARQLfed.a</code>. Works with:<ul>
+        <li><em><a href="query_HealthCare1.rq">query_HealthCare1.rq</a></em> — simple example HCLS COI query.</li>
+        <li><em><a href="ruleMap_HealthCare1.rq">ruleMap_HealthCare1.rq</a></em> — simple example HCLS COI rule-map.</li>
+      </ul></li>
+   </ul>
 
-      <li><em><a href="ParserCommon.cc">ParserCommon.cc</a></em> and <em><a href="ParserCommon.hh">ParserCommon.hh</a></em> — common Driver source for all RDF-related parsers.</li>
-      <li><em><a href="SPARQLfedParser.yy">SPARQLfedParser.yy</a></em>, <em><a href="SPARQLfedScanner.hh">SPARQLfedScanner.hh</a></em> and <em><a href="SPARQLfedScanner.ll">SPARQLfedScanner.ll</a></em> — parser for the SPARQLfed language.</li>
-      <li><em><a href="TurtleParser.yy">TurtleParser.yy</a></em>, <em><a href="TurtleScanner.hh">TurtleScanner.hh</a></em> and <em><a href="TurtleScanner.ll">TurtleScanner.ll</a></em> — parser for the Turtle language.</li>
+   <h2 id="core">Core</h2>
+
+   <ul>
+      <li><em><a href="SWObjects.cc">SWObjects.cc</a></em> and <em><a href="SWObjects.hh">SWObjects.hh</a></em> — data structures to represent graph patterns for SPARQL and N3.</li>
 
       <li><em><a href="RdfDB.cc">RdfDB.cc</a></em> and <em><a href="RdfDB.hh">RdfDB.hh</a></em> — implementation of a simple RDF database with multiple named graphs.</li>
       <li><em><a href="RdfQueryDB.cc">RdfQueryDB.cc</a></em> and <em><a href="RdfQueryDB.hh">RdfQueryDB.hh</a></em> — overload of <a href="RdfDB.hh">RdfDB</a> which performs queries on graph patterns.</li>
 
       <li><em><a href="ResultSet.cc">ResultSet.cc</a></em> and <em><a href="ResultSet.hh">ResultSet.hh</a></em> — simple SPARQL result set data structure.</li>
-
-      <li><em><a href="SWObjects.cc">SWObjects.cc</a></em> and <em><a href="SWObjects.hh">SWObjects.hh</a></em> — data structures to represent graph patterns for SPARQL and N3.</li>
 
       <li><em><a href="SWObjectDuplicator.hh">SWObjectDuplicator.hh</a></em> — deep-copy of a SPARQL compile tree (RDF Atoms allocated from a <code>POSFactory</code>.</li>
       <li><em><a href="QueryMapper.hh">QueryMapper.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which to mutate the compile tree in interesting ways.</li>
@@ -36,6 +39,15 @@
 
       <li><em><a href="XMLSerializer.hh">XMLSerializer.hh</a></em> — simple XML serializer interface.</li>
       <li><em><a href="XMLQueryExpressor.hh">XMLQueryExpressor.hh</a></em> — simple XML representation of a SPARQL query.</li>
+   </ul>
+
+   <h2 id="parsers">Parsers</h2>
+
+   <ul>
+      <li><em><a href="ParserCommon.cc">ParserCommon.cc</a></em> and <em><a href="ParserCommon.hh">ParserCommon.hh</a></em> — common Driver source for all RDF-related parsers.</li>
+      <li><em><a href="SPARQLfedParser.yy">SPARQLfedParser.yy</a></em>, <em><a href="SPARQLfedScanner.hh">SPARQLfedScanner.hh</a></em> and <em><a href="SPARQLfedScanner.ll">SPARQLfedScanner.ll</a></em> — parser for the SPARQLfed language.</li>
+      <li><em><a href="TurtleParser.yy">TurtleParser.yy</a></em>, <em><a href="TurtleScanner.hh">TurtleScanner.hh</a></em> and <em><a href="TurtleScanner.ll">TurtleScanner.ll</a></em> — parser for the Turtle language.</li>
+
 
 <!--
       <li><em><a href="X">X</a></em> — .</li>
@@ -46,4 +58,3 @@
 <!--
 </body></html>
 -->
- </body></html>

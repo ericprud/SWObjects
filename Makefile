@@ -1,4 +1,5 @@
-# $Id: Makefile,v 1.25 2008-08-18 14:20:34 eric Exp $
+# $Id: Makefile,v 1.26 2008-08-18 15:08:39 eric Exp $
+# SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
 #   normal build:
@@ -6,11 +7,14 @@
 #   force the use of the tracing facilities (and redirect to stdout):
 #     make -W sample_RuleMap1.cc test
 #   have valgrind start a debugger (works as M-x gdb invocation command):
-#     valgrind --db-attach=yes --leak-check=yes sample_RuleMap1 SPARQLfed.txt
+#     valgrind --db-attach=yes --leak-check=yes sample_RuleMap1 query_HealthCare1.rq ruleMap_HealthCare1.rq
 #   same, if you aren't working in gdb:
 #     make valgrind
 #   debugging in emacs:
-#     gdb --annotate=3 sample_RuleMap1    (set args SPARQLfed.txt)
+#     gdb --annotate=3 sample_RuleMap1    (set args query_HealthCare1.rq ruleMap_HealthCare1.rq)
+
+# BUGS:
+#   .hh dependency probs -- use .deps?
 
 LIBS=
 DEFS=
@@ -87,7 +91,7 @@ sample_RuleMap1: sample_RuleMap1.o libSWObjects.a
 	$(LINK) sample_RuleMap1 sample_RuleMap1.o libSWObjects.a
 
 Vsample_RuleMap1: sample_RuleMap1
-	valgrind --leak-check=yes --xml=no ./sample_RuleMap1 SPARQLfed.txt 
+	valgrind --leak-check=yes --xml=no ./sample_RuleMap1 query_HealthCare1.rq ruleMap_HealthCare1.rq
 
 
 # Tests
@@ -95,7 +99,7 @@ Vsample_RuleMap1: sample_RuleMap1
 #   valgrind: valgrinds all samples
 
 test: sample_RuleMap1
-	./sample_RuleMap1 SPARQLfed.txt 
+	./sample_RuleMap1 query_HealthCare1.rq ruleMap_HealthCare1.rq
 
 valgrind: Vsample_RuleMap1
 
