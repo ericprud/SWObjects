@@ -29,8 +29,8 @@
       <li><em><a href="SWObjects.cc">SWObjects.cc</a></em> and <em><a href="SWObjects.hh">SWObjects.hh</a></em> — data structures to represent graph patterns for SPARQL and N3.</li>
 
       <li><em><a href="SWObjectDuplicator.hh">SWObjectDuplicator.hh</a></em> — deep-copy of a SPARQL compile tree (RDF Atoms allocated from a <code>POSFactory</code>.</li>
-      <li><em><a href="SPARQLTransformer.hh">SPARQLTransformer.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which to mutate the compile tree in interesting ways.</li>
-      <li><em><a href="RuleInverter.hh">RuleInverter.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which reverses SPARQL CONSTRUCT queries to transform queries acting on unmaterialized views; used by <a href="SPARQLTransformer.hh">SPARQLTransformer</a>.</li>
+      <li><em><a href="QueryMapper.hh">QueryMapper.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which to mutate the compile tree in interesting ways.</li>
+      <li><em><a href="RuleInverter.hh">RuleInverter.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which reverses SPARQL CONSTRUCT queries to transform queries acting on unmaterialized views; used by <a href="QueryMapper.hh">QueryMapper</a>.</li>
 
       <li><em><a href="XMLSerializer.hh">XMLSerializer.hh</a></em> — simple XML serializer interface.</li>
       <li><em><a href="XMLQueryExpressor.hh">XMLQueryExpressor.hh</a></em> — simple XML representation of a SPARQL query.</li>
