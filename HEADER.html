@@ -11,7 +11,9 @@
 
    <p>This is a set of utilities implemented in C++ for working with SemWeb objects (triples, graphs, query patterns, SPARQL and N3 operations, etc). This implements query mapping based on <a href="../../07/MappingRules/">Mapping Rules</a> and provides the base for a SPASQL engine in MySQL.</p>
 
-    <p style="text-align: center; ">① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
+   <p><em style="font-weight: bold">tarball</em>: <a href= "SWObjects_0.1.tar.gz">SWObjects_0.1.tar.gz</a><!-- keep space after href= to avoid packing the tarball in the tarball. --></p>
+
+    <p>For more information on SPASQL: ① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
 
 
     <h2 id="TOC">Table of Contents</h2>
@@ -57,6 +59,7 @@
       <li><em><a href="QueryMapper.hh">QueryMapper.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which to mutate the compile tree in interesting ways.</li>
       <li><em><a href="RuleInverter.hh">RuleInverter.hh</a></em> — overload of <a href="SWObjectDuplicator.hh">SWObjectDuplicator</a> which reverses SPARQL CONSTRUCT queries to transform queries acting on unmaterialized views; used by <a href="QueryMapper.hh">QueryMapper</a>.</li>
 
+      <li><em><a href="SPARQLSerializer.hh">SPARQLSerializer.hh</a></em> — serialize SWObject tree as a SPARQL query.</li>
       <li><em><a href="XMLSerializer.hh">XMLSerializer.hh</a></em> — simple XML serializer interface.</li>
       <li><em><a href="XMLQueryExpressor.hh">XMLQueryExpressor.hh</a></em> — simple XML representation of a SPARQL query.</li>
    </ul>
@@ -66,7 +69,7 @@
    <ul>
       <li><em><a href="ParserCommon.cc">ParserCommon.cc</a></em> and <em><a href="ParserCommon.hh">ParserCommon.hh</a></em> — common Driver source for all RDF-related parsers.</li>
       <li><em><a href="SPARQLfedParser.yy">SPARQLfedParser.yy</a></em>, <em><a href="SPARQLfedScanner.hh">SPARQLfedScanner.hh</a></em> and <em><a href="SPARQLfedScanner.ll">SPARQLfedScanner.ll</a></em> — parser for the SPARQLfed language.</li>
-      <li><em><a href="TurtleParser.yy">TurtleParser.yy</a></em>, <em><a href="TurtleScanner.hh">TurtleScanner.hh</a></em> and <em><a href="TurtleScanner.ll">TurtleScanner.ll</a></em> — parser for the Turtle language.</li>
+      <li><em><a href="TurtleSParser.yy">TurtleSParser.yy</a></em>, <em><a href="TurtleSScanner.hh">TurtleSScanner.hh</a></em> and <em><a href="TurtleSScanner.ll">TurtleSScanner.ll</a></em> — parser for the Turtle language.</li>
 
 
 <!--
@@ -78,7 +81,7 @@
 
    <h2 id="arch">Architecture</h2>
 
-    <p>To minimize expensive string comparison, and less expensive std::string::operator== use, the primitive parts of speach (class: <em id="POS">POS</em>) are created only once-each by a <em id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
+    <p>To minimize expensive string comparison, and less expensive std::string::operator== use, the primitive parts of speach (class: <em style="font-weight: bold" id="POS">POS</em>) are created only once-each by a <em style="font-weight: bold" id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
 
     <pre style="margin: 2em; border: thin solid #ccffcc; background-color: #eeffee;">int main(int argc,char** argv) {
     SPARQLfedNS::POSFactory posFactory;
@@ -87,18 +90,18 @@
 }</pre>
 
     <h3 id="storage">Storage</h3>
-    <p>An <em id="RdfDB">RdfDB</em> contains a <em id="DefaultGraphPattern">DefaultGraphPattern</em> and a set of <em id="NamedGraphPattern">NamedGraphPattern</em>s, each of which contains <em id="TriplePattern">TriplePattern</em>s. This is more general than a strict RDF store in that the TriplePattern data structure allows for triples with variables in either the subject, predicate or object position.</p>
+    <p>An <em style="font-weight: bold" id="RdfDB">RdfDB</em> contains a <em style="font-weight: bold" id="DefaultGraphPattern">DefaultGraphPattern</em> and a set of <em style="font-weight: bold" id="NamedGraphPattern">NamedGraphPattern</em>s, each of which contains <em style="font-weight: bold" id="TriplePattern">TriplePattern</em>s. This is more general than a strict RDF store in that the TriplePattern data structure allows for triples with variables in either the subject, predicate or object position.</p>
 
     <h3 id="queries">Queries</h3>
 
-    <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em id="Select">Select</em> comprised of a <em id="WhereClause">WhereClause</em>, which in turn holds a <em id="TableOperation">TableOperation</em> and a <em id="BindingClause">BindingClause</em>. TableOperations contain <em id="Filter">Filter</em>s and some, like <em id="TableConjunction">TableConjunction</em> and <em id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href="#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href="#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href="#TriplePattern">TriplePattern</a>s described in <a href="#storage">Storage</a>.</p>
+    <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em style="font-weight: bold" id="Select">Select</em> comprised of a <em style="font-weight: bold" id="WhereClause">WhereClause</em>, which in turn holds a <em style="font-weight: bold" id="TableOperation">TableOperation</em> and a <em style="font-weight: bold" id="BindingClause">BindingClause</em>. TableOperations contain <em style="font-weight: bold" id="Filter">Filter</em>s and some, like <em style="font-weight: bold" id="TableConjunction">TableConjunction</em> and <em style="font-weight: bold" id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href="#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href="#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href="#TriplePattern">TriplePattern</a>s described in <a href="#storage">Storage</a>.</p>
 
 
    <h2 id="issues">Issues</h2>
 
     <ul>
-      <li id="smart_ptrs"><em>smart_ptrs</em> — is the overhead of keeping a <a href="#POSFactory">POSFactory</a> worth the performance windfall? It makes memory management more challenging. In general, should SWObjects use more copying? Should they instead use <a href="http://en.wikipedia.org/wiki/Smart_pointer">smart pointers</a>?</li>
-      <li id="ser_union"><em>ser_union</em> — SPARQLSerializer current fails to bound UNIONs in {}.</li>
+      <li id="smart_ptrs"><em style="font-weight: bold">smart_ptrs</em> — is the overhead of keeping a <a href="#POSFactory">POSFactory</a> worth the performance windfall? It makes memory management more challenging. In general, should SWObjects use more copying? Should they instead use <a href="http://en.wikipedia.org/wiki/Smart_pointer">smart pointers</a>?</li>
+      <li id="ser_union"><em style="font-weight: bold">ser_union</em> — SPARQLSerializer current fails to bound UNIONs in {}.</li>
     </ul>
 
 

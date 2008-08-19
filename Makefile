@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2008-08-18 15:08:39 eric Exp $
+# $Id: Makefile,v 1.27 2008-08-19 02:27:29 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -21,6 +21,7 @@ DEFS=
 
 GPP=g++ -DYYTEXT_POINTER=1 $(DEFS) -W -Wall -Wextra -ansi -g -c
 LINK=g++ -W -Wall -Wextra -ansi -g $(LIBS) -o
+VER=0.1
 
 # Core objects
 
@@ -103,6 +104,15 @@ test: sample_RuleMap1
 
 valgrind: Vsample_RuleMap1
 
+
+# Distributions
+
+dist:
+	rm -f SWObjects_$(VER).tar.gz README.html
+	lynx -dump -source http://www.w3.org/2008/04/SPARQLfed/ | perl -pe 's{href="\.\./\.\./\.\.}{href="http://www.w3.org}g;s{href="\.\./\.\.}{href="http://www.w3.org/2008}g'> README.html
+	@echo "Generating the inclusion from the manifest (HEADER.html)"
+	perl -ne 'print join("\n", "README.html", m/href="([a-zA-Z]{2}[a-zA-Z0-9._]+)"/g, undef)' HEADER.html | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
+	rm README.html
 
 # Clean - rm everything we remember to rm.
 clean:
