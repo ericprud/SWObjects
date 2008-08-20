@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.28 2008-08-20 06:55:29 eric Exp $
+# $Id: Makefile,v 1.29 2008-08-20 07:16:04 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -81,15 +81,16 @@ CFLAGS += $(LLVMCFLAGS)
 INCLUDES+=-I${PWD} -I/opt/include
 LIBINC+= -L${PWD} -L/opt/local/lib -lm
 
-    
-### dirt simple generic static module ### 
-    
+
+### dirt simple generic static module ###
 BISONOBJ =$(subst .yy,.o,$(wildcard *.yy))
+BISONHH=location.hh stack.hh position.hh
 FLEXOBJ=  $(subst .ll,.o,$(wildcard *.ll))
 OBJLIST = $(subst .cc,.o,$(wildcard *.cc))
 LIBNAME=SWObjects
 LIB=lib$(LIBNAME).a
 LIBINC+=-l$(LIBNAME)
+
 $(LIB):$(BISONOBJ) $(FLEXOBJ) $(OBJLIST) 
 	$(AR) rcvs $@ $^
 ##############
@@ -97,7 +98,6 @@ $(LIB):$(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 ##### packaged tests ####
 
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
-                        
 
 tests/execute_%  : tests/test_%.o  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
@@ -128,10 +128,6 @@ dist: $(LIB)
 	$(PERL) -ne 'print join("\n", "README.html", m/href="([a-zA-Z]{2}[a-zA-Z0-9._]+)"/g, undef)' HEADER.html | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
 	$(RM) README.html
 # Clean - rm everything we remember to rm.
-
-BISONHH=location.hh stack.hh position.hh
-$(BISONHH): $(BISONOBJ)
-
 
 clean:
 	$(RM) *.o *.a *.dylib *.so *.la *.d.bak \
