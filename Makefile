@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.30 2008-08-21 06:44:03 eric Exp $
+# $Id: Makefile,v 1.31 2008-08-21 09:04:50 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -107,11 +107,11 @@ valgrind: $(VALGRIND)
 
 # Distributions
 
-dist: $(LIB)
+release:
 	$(RM) -f SWObjects_$(VER).tar.gz README.html
 	lynx -dump -source http://www.w3.org/2008/04/SPARQLfed/ | perl -pe 's{href="\.\./\.\./\.\.}{href="http://www.w3.org}g;s{href="\.\./\.\.}{href="http://www.w3.org/2008}g'> README.html
-	$(ECHO) "Generating the inclusion from the manifest (HEADER.html)"
-	$(PERL) -ne 'print join("\n", "README.html", m/href="([a-zA-Z]{2}[a-zA-Z0-9._]+)"/g, undef)' HEADER.html | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
+	@echo "Generating the inclusion from the manifest (HEADER.html)"
+	@perl -ne 'print join("\n", "README.html", m/href="([a-zA-Z]{2}[a-zA-Z0-9._\/]+)"/g, undef)' HEADER.html | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
 	$(RM) README.html
 
 BISONHH=location.hh stack.hh position.hh
