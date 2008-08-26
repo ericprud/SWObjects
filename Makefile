@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.31 2008-08-21 09:04:50 eric Exp $
+# $Id: Makefile,v 1.32 2008-08-26 05:30:46 jnorthru Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
 #   normal build:
 #     make SPARQLfed
 #   force the use of the tracing facilities (and redirect to stdout):
-#     make -W sample_RuleMap1.cc test
+#     make -W sample_RuleMap1.cpp test
 #   have valgrind start a debugger (works as M-x gdb invocation command):
 #     valgrind --db-attach=yes --leak-check=yes sample_RuleMap1 query_HealthCare1.rq ruleMap_HealthCare1.rq
 #   same, if you aren't working in gdb:
@@ -18,19 +18,17 @@
 all: dep lib test
 
 
-%.d : %.cc
+.SECONDARY:
+
+%.d : %.cpp
 	touch $@
 	makedepend -f $@ $^ $(DEFS) $(INC) 2>/dev/null
 
-%.cc %.hh : %.yy
-	$(YACC) -o $(@:.hh=.cc) -b $(<:.yy=)  $<
-	$(SED) -i.d.bak 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cc=.hh)
-
-
-#%.cc : %.yy
-#	$(YACC) -o $@ -o $(subst .hh,.cc,$@)   $<
-
-%.cc : %.ll
+%.cpp %.hpp : %.ypp
+	$(YACC) -o $(@:.hpp=.cpp) -b $(<:.ypp=)  $<
+	$(SED) -i.d.bak 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
+ 
+%.cpp : %.lpp
 	$(FLEX) -o $@  $<
 
 FLEX=flex
@@ -69,9 +67,9 @@ LIBINC+= -L${PWD}
 
 
 ### dirt simple generic static module ###
-BISONOBJ =$(subst .yy,.o,$(wildcard *.yy))
-FLEXOBJ=  $(subst .ll,.o,$(wildcard *.ll))
-OBJLIST = $(subst .cc,.o,$(wildcard *.cc))
+BISONOBJ =$(subst .ypp,.o,$(wildcard *.ypp))
+FLEXOBJ=  $(subst .lpp,.o,$(wildcard *.lpp))
+OBJLIST = $(subst .cpp,.o,$(wildcard *.cpp))
 LIBNAME=SWObjects
 LIB=lib$(LIBNAME).a
 LIBINC+=-l$(LIBNAME)
@@ -85,7 +83,7 @@ lib: $(LIB)
 
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
 
-tests/execute_%  : tests/test_%.cc  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
+tests/execute_%  : tests/test_%.cpp  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
@@ -117,17 +115,18 @@ release:
 BISONHH=location.hh stack.hh position.hh
 #$(BISONHH): $(BISONOBJ)
 
-deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJ:.o=.d)
+deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d)
 dep: $(deps)
-include $(deps)
+
+-include $(deps)
 
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
 clean:
 	$(RM) *.o *.a *.dylib *.so *.la *.d.bak \
-        $(subst .ll,.cc,$(wildcard *.ll)) \
-        $(subst .yy,.cc,$(wildcard *.yy)) \
-        $(subst .yy,.hh,$(wildcard *.yy)) \
+        $(subst .lpp,.cpp,$(wildcard *.lpp)) \
+        $(subst .ypp,.cpp,$(wildcard *.ypp)) \
+        $(subst .ypp,.hpp,$(wildcard *.ypp)) \
         $(TEST_RESULTS) $(VALGRIND)
 	rm -fr tests/execute_*
 

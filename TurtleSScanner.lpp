@@ -1,0 +1,289 @@
+/* $Id: TurtleSScanner.lpp,v 1.1 2008-08-26 05:30:49 jnorthru Exp $ -*- mode: c++ -*- */
+/** \file TurtleSScanner.ll Define the Flex lexical scanner */
+
+%{ /*** C/C++ Declarations ***/
+
+#include "TurtleSParser.hpp"
+#include "TurtleSScanner.hpp"
+
+/* import the parser's token type into a local typedef */
+typedef SPARQLfedNS::TurtleSParser::token token;
+typedef SPARQLfedNS::TurtleSParser::token_type token_type;
+
+/* Work around an incompatibility in flex (at least versions 2.5.31 through
+ * 2.5.33): it generates code that does not conform to C89.  See Debian bug
+ * 333231 <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.  */
+#undef yywrap
+#define yywrap()	1
+
+/* By default yylex returns int, we use token_type. Unfortunately yyterminate
+ * by default returns 0, which is not of token_type. */
+#define yyterminate() return token::__EOF__
+
+/* This disables inclusion of unistd.h, which is not available under Visual C++
+ * on Win32. The C++ scanner uses STL streams instead. */
+#define YY_NO_UNISTD_H
+
+%}
+
+/*** Flex Declarations and Options ***/
+
+/* enable c++ scanner class generation */
+%option c++
+
+/* change the name of the scanner class. results in "TurtleSFlexLexer" */
+%option prefix="TurtleS"
+
+/* the manual says "somewhat more optimized" */
+%option batch
+
+/* enable scanner to generate debug output. disable this for release
+ * versions. */
+%option debug
+
+/* no support for include files is planned */
+%option noyywrap nounput
+
+/* enables the use of start condition stacks */
+%option stack
+
+/* The following paragraph suffices to track locations accurately. Each time
+ * yylex is invoked, the begin position is moved onto the end position. */
+%{
+#define YY_USER_ACTION  yylloc->columns(yyleng);
+%}
+
+/* START patterns for SPARQLfed terminals */
+IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
+GT_LPAREN		"("
+GT_RPAREN		")"
+GT_DOT		"."
+IT_a		"a"
+GT_LBRACKET		"\["
+GT_RBRACKET		"\]"
+GT_PLUS		"+"
+GT_MINUS		"-"
+GT_DIVIDE		"/"
+GT_DTYPE		"^^"
+IT_true		[Tt][Rr][Uu][Ee]
+IT_false		[Ff][Aa][Ll][Ss][Ee]
+IRI_REF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
+LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
+INTEGER		([0-9])+
+DECIMAL		(([0-9])+"."([0-9])*)|("."([0-9])+)
+INTEGER_POSITIVE		"+"({INTEGER})
+DECIMAL_POSITIVE		"+"({DECIMAL})
+INTEGER_NEGATIVE		"-"({INTEGER})
+DECIMAL_NEGATIVE		"-"({DECIMAL})
+EXPONENT		[Ee]([+-])?([0-9])+
+DOUBLE		(([0-9])+"."([0-9])*({EXPONENT}))|(("."(([0-9]))+({EXPONENT}))|((([0-9]))+({EXPONENT})))
+DOUBLE_NEGATIVE		"-"({DOUBLE})
+DOUBLE_POSITIVE		"+"({DOUBLE})
+ECHAR		"\\"[\"\'\\bfnrt]
+STRING_LITERAL_LONG2		"\"\"\""((((("\"")|("\"\"")))?(([\x00-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({ECHAR})))))*"\"\"\""
+STRING_LITERAL_LONG1		"\'\'\'"((((("\'")|("\'\'")))?(([\x00-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({ECHAR})))))*"\'\'\'"
+STRING_LITERAL2		"\""(((([\x00-\t\x0B-\x0C\x0E-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"\""
+STRING_LITERAL1		"\'"(((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"\'"
+WS		(" ")|(("\t")|(("\r")|("\n")))
+NIL		"("(({WS}))*")"
+ANON		"\["(({WS}))*"\]"
+PN_CHARS_BASE		([A-Z])|(([a-z])|(((\xC3[\x80-\x96]))|(((\xC3[\x98-\xB6]))|(((\xC3[\xB8-\xBF])|([\xC4-\xCB][\x80-\xBF]))|(((\xCD[\xB0-\xBD]))|(((\xCD\xBF)|([\xCE-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|(\xE1([\x80-\xBF][\x80-\xBF])))|(((\xE2(\x80[\x8C-\x8D])))|(((\xE2(\x81[\xB0-\xBF])|([\x82-\x85][\x80-\xBF])|(\x86[\x80-\x8F])))|(((\xE2([\xB0-\xBE][\x80-\xBF])|(\xBF[\x80-\xAF])))|(((\xE3(\x80[\x81-\xBF])|([\x81-\xBF][\x80-\xBF]))|([\xE4-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF])))|(((\xEF([\xA4-\xB6][\x80-\xBF])|(\xB7[\x80-\x8F])))|(((\xEF(\xB7[\xB0-\xBF])|([\xB8-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))|((\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]))))))))))))))
+PN_CHARS_U		(({PN_CHARS_BASE}))|("_")
+PN_CHARS		(({PN_CHARS_U}))|(("-")|(([0-9])|((\xC2\xB7)|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))
+PN_PREFIX		({PN_CHARS_BASE})(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
+PNAME_NS		(({PN_PREFIX}))?":"
+PN_LOCAL		((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
+BLANK_NODE_LABEL		"_:"({PN_LOCAL})
+PNAME_LN		({PNAME_NS})({PN_LOCAL})
+PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
+
+/* END patterns for SPARQLfed terminals */
+
+/* START semantic actions for SPARQLfed terminals */
+%%
+{PASSED_TOKENS}		{ /* yylloc->step(); @@ needed? useful? */ }
+{IT_PREFIX}		{return token::IT_PREFIX;}
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
+{GT_DOT}		{return token::GT_DOT;}
+{IT_a}		{return token::IT_a;}
+{GT_LBRACKET}		{return token::GT_LBRACKET;}
+{GT_RBRACKET}		{return token::GT_RBRACKET;}
+{GT_PLUS}		{return token::GT_PLUS;}
+{GT_MINUS}		{return token::GT_MINUS;}
+{GT_DTYPE}		{return token::GT_DTYPE;}
+{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("TRUE", yytext); return token::IT_true;}
+{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("FALSE", yytext); return token::IT_false;}
+{IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+{LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
+{INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
+{DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
+{INTEGER_POSITIVE}		{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
+{DECIMAL_POSITIVE}		{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
+{INTEGER_NEGATIVE}		{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
+{DECIMAL_NEGATIVE}		{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
+{DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
+{DOUBLE_NEGATIVE}		{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
+{DOUBLE_POSITIVE}		{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
+{STRING_LITERAL_LONG1}		{return unescape(yylval, yyleng, 3, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}		{return unescape(yylval, yyleng, 3, token::STRING_LITERAL_LONG2);}
+{STRING_LITERAL1}		{return unescape(yylval, yyleng, 1, token::STRING_LITERAL1);}
+{STRING_LITERAL2}		{return unescape(yylval, yyleng, 1, token::STRING_LITERAL2);}
+{NIL}		{return token::NIL;}
+{ANON}		{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
+{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext); return token::BLANK_NODE_LABEL;}
+
+<<EOF>>			{ yyterminate();}
+%%
+/* END semantic actions for SPARQLfed terminals */
+
+/* START TurtleSScanner */
+namespace SPARQLfedNS {
+
+TurtleSScanner::TurtleSScanner (TurtleSDriver* driver, std::istream* in, std::ostream* out) : TurtleSFlexLexer(in, out), driver(driver) {  }
+TurtleSScanner::~TurtleSScanner () {  }
+
+TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_type*& yylval, TurtleSParser::token_type tok) {
+    std::istringstream is(yytext);
+    std::ostringstream normalized;
+
+    switch (tok) {
+    case token::INTEGER:
+    case token::INTEGER_POSITIVE:
+    case token::INTEGER_NEGATIVE:
+	int i;
+	is >> i;
+	normalized << i;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), i);
+	return tok;
+    case token::DECIMAL:
+    case token::DECIMAL_POSITIVE:
+    case token::DECIMAL_NEGATIVE:
+	float f;
+	is >> f;
+	normalized << f;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), f);
+	return tok;
+    case token::DOUBLE:
+    case token::DOUBLE_POSITIVE:
+    case token::DOUBLE_NEGATIVE:
+	double d;
+	is >> d;
+	normalized << d;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), d);
+	return tok;
+    default: throw(new std::exception());
+    }
+}
+
+TurtleSParser::token_type TurtleSScanner::unescape (TurtleSParser::semantic_type*& yylval, size_t yylen, size_t skip, TurtleSParser::token_type tok){
+    char space[yylen-2*skip+1];
+    size_t iSpace = 0;
+    for (size_t i = skip; i < yyleng-skip; i++) {
+	if (yytext[i] == '\\') {
+	    switch (yytext[++i]) {
+	    case 't': space[iSpace++] = '\t'; break;
+	    case 'n': space[iSpace++] = '\n'; break;
+	    case 'r': space[iSpace++] = '\r'; break;
+	    case 'b': space[iSpace++] = '\b'; break;
+	    case 'f': space[iSpace++] = '\f'; break;
+	    case '"': space[iSpace++] = '\"'; break;
+	    case '\'': space[iSpace++] = '\''; break;
+	    case '\\': space[iSpace++] = '\\'; break;
+	    default: throw(new std::exception());
+	    }
+	} else {
+	    space[iSpace++] = yytext[i];
+	}
+    }
+    space[iSpace] = '\0';
+    yylval->p_string = new std::string(space);
+    return tok;
+}
+
+
+URI* TurtleSScanner::resolvePrefix (const char* yytext){
+    std::string ret(yytext);
+    size_t index = ret.find(':');
+    if (index == std::string::npos)
+	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+    URI* nspace = driver->getNamespace(ret.substr(0, index));
+    if (nspace == NULL) {
+	std::stringstream err;
+	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
+	throw(std::runtime_error(err.str()));
+    }
+    ret.replace(0, index+1, nspace->getTerminal());
+    return resolveBase(ret.c_str(), false);
+}
+
+void TurtleSScanner::set_debug(bool b)
+{
+    yy_flex_debug = b;
+}
+
+} // END namespace SPARQLfedNS
+/* END TurtleSScanner */
+
+SPARQLfedNS::URI* SPARQLfedNS::TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
+    std::string stripped(p_rel);
+    if (stripDelims) {
+	stripped.replace(0, 1, "");
+	stripped.replace(stripped.size()-1, 1, "");
+    }
+    return driver->getAbsoluteURI(stripped.c_str());
+
+#if 0
+    // was a transliteration of _generic.pm
+    static const boost::regex re_scheme("^([a-zA-Z][a-zA-Z0-9.+-]*):");
+    static const boost::regex re_authority("^((?:[a-zA-Z][a-zA-Z0-9.+-]*)?)(?://([^/?\\#]*))?(.*)$");
+    static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
+
+    boost::smatch what;
+    SPARQLfedNS::URI* baseURI = driver->getBase();
+    std::string base;
+    if (baseURI != NULL)
+	std::string base = baseURI->getTerminal();
+    std::string base_scheme;
+    if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
+	base_scheme = what[1];
+    if (boost::regex_search(self, what, re_scheme) &&
+	what[1] != base_schema)
+	return driver->getURI(self.c_str());
+    if (base.size() == 0)
+	throw(std::runtime_error(((std::string)"no base declared while resolving relative URI ").append(abs)));
+
+    std::string abs(self);
+    if (!boost::regex_search(base, what, re_scheme))
+	throw(std::runtime_error(((std::string)"resolving against base URI with no scheme ").append(base)));
+    // !!! abs->scheme = base_scheme
+    if (false) ; // ...
+
+    if (!boost::regex_search(base, what, re_authority))
+	throw(std::runtime_error(((std::string)"resolving against base URI with no authority ").append(base)));
+    std::string base_authority(what[2]);
+
+    if (!boost::regex_search(rel, what, re_path))
+	throw(std::runtime_error(((std::string)"oddly failed to match re_path on ").append(rel)));
+    std::string rel_path(what[2]);
+    if (rel_path.find("/") == 0) return driver->getURI(abs.c_str());
+
+#endif
+}
+
+/* This implementation of TurtleSFlexLexer::yylex() is required to fill the
+ * vtable of the class TurtleSFlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the TurtleSScanner class instead. */
+
+#ifdef yylex
+#undef yylex
+#endif
+
+int TurtleSFlexLexer::yylex()
+{
+    std::cerr << "in TurtleSFlexLexer::yylex() !" << std::endl;
+    return 0;
+}
+

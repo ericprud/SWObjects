@@ -1,0 +1,1269 @@
+/* SWObjects: components for capturing and manipulating compile trees of RDF
+   languages. This should capture all of SPARQL and most of N3 (no graphs as
+   parts of an RDF triple).
+
+ * $Id: SWObjects.hpp,v 1.1 2008-08-26 05:30:49 jnorthru Exp $
+ */
+
+#ifndef SWOBJECTS_HH
+# define SWOBJECTS_HH
+
+#include <map>
+#include <list>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <stdexcept>
+#include <exception>
+
+#include <cstdarg>
+#include <cassert>
+#include <typeinfo>
+
+#define TAB "  "
+#define ns "\n xmlns=\"http://www.w3.org/2005/01/yacker/uploads/SPARQLfed/\"\n xmlns:yacker=\"http://www.w3.org/2005/01/yacker/\""
+
+namespace yacker {
+
+class Expressor;
+
+class Base {
+public:
+    Base () { }
+    virtual ~Base() { }
+    virtual Base* express(yacker::Expressor* p_expressor);
+};
+
+template <typename T> class ProductionVector : public Base {
+    std::vector<T> data;
+public:
+    ProductionVector () {  }
+    ProductionVector (T v) { data.push_back(v); }
+    ~ProductionVector () {
+	for (size_t i = 0; i < data.size(); i++)
+	    delete data[i];
+    }
+
+    void push_back(T v) {
+	assert(v != NULL); // @DEBUG
+	data.push_back(v);
+    }
+    size_t size () { return data.size(); }
+    virtual T operator [] (size_t i) { return data[i]; }
+    virtual T at (size_t i) { return data.at(i); }
+    void clear () { data.clear(); }
+    void pop_back () { data.pop_back(); }
+    virtual Base* express(yacker::Expressor* p_expressor) {
+	for (size_t i = 0; i < data.size(); i++)
+	    data[i]->express(p_expressor);
+	return NULL;
+    }
+    typename std::vector<T>::iterator begin () { return data.begin(); }
+    typename std::vector<T>::iterator end () { return data.end(); }
+    void erase (typename std::vector<T>::iterator it) { data.erase(it); }
+#if 0
+    class iterator;
+    iterator begin() { return iterator(data.begin(), this); }
+    iterator end() { return iterator(data.end(), this); }
+#endif
+};
+#if 0
+template <class T> class ProductionVector<T>::iterator:
+public std::iterator<std::forward_iterator_tag, void, void, void, void> {
+private:
+    ProductionVector<T> * whence;
+protected:
+    typename vector<T>::iterator i;
+public:
+    iterator () {}
+    iterator (typename vector<T>::iterator i_, ProductionVector<T> * w): i(i_), whence(w) {  }
+    bool operator==(const iterator & z) { return i == z.i; }
+    bool operator!=(const iterator & z) { return i != z.i; }
+    void operator++() { ++i; }
+    T operator*() { return *i; }
+};
+#endif
+
+class Terminal : public Base {
+protected:
+    std::string terminal;
+    Terminal (std::string p) : Base(), terminal(p) {  }
+    Terminal (std::string p, bool gensym) : Base() {
+	std::stringstream name;
+	name << p;
+	if (gensym)
+	    name << this;
+	terminal = name.str();
+    }
+    ~Terminal () {  }
+public:
+    std::string getTerminal () const { return terminal; }
+};
+
+} // namespace yacker
+
+namespace SPARQLfedNS {
+
+class ResultSet;
+class Result;
+typedef std::list<Result*>::iterator ResultSetIterator;
+class RdfDB;
+
+class LANGTAG : public yacker::Terminal {
+public:
+    LANGTAG(std::string p_LANGTAG) : yacker::Terminal(p_LANGTAG) {  }
+};
+
+class Operation : public yacker::Base {
+protected:
+    Operation () : yacker::Base() {  }
+public:
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) { throw(std::runtime_error(typeid(*this).name())); }
+    virtual Operation* express(yacker::Expressor* p_expressor) = 0;
+};
+
+/* Eval interface */
+class EvalInterface {
+public:
+    EvalInterface () {  }
+};
+
+/* START Parts Of Speach */
+class POS : public yacker::Terminal, public EvalInterface {
+    friend class POSsorter;
+protected:
+    POS (std::string matched) : yacker::Terminal(matched) { }
+    POS (std::string matched, bool gensym) : yacker::Terminal(matched, gensym) { }
+    //    virtual int compareType (POS* to) = 0;
+public:
+    virtual bool isConstant () { return true; } // Override for variable types.
+    static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual int compare (POS* to, Result*) const {
+	bool same = typeid(*to) == typeid(*this);
+	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
+    }
+    virtual bool bindVariable (const POS* p, ResultSet*, Result*, bool) const {
+	return p == this || (typeid(*p) == typeid(*this) && getTerminal() == p->getTerminal());
+    }
+    virtual POS* eval (Result*) { return this; }
+    virtual POS* express(yacker::Expressor* p_expressor) = 0;
+    virtual std::string getBindingAttributeName() = 0;
+};
+
+class URI : public POS {
+    friend class POSFactory;
+private:
+    URI (std::string str) : POS(str) {  }
+public:
+    ~URI () { }
+    virtual const char * getToken () { return "-POS-"; }
+    virtual URI* express(yacker::Expressor* p_expressor);
+    virtual std::string getBindingAttributeName () { return "uri"; }
+};
+
+class Bindable : public POS {
+protected:
+    Bindable (std::string str) : POS(str) {  }
+    Bindable (std::string str, bool gensym) : POS(str, gensym) {  }
+public:
+    virtual bool isConstant () { return false; }
+    virtual bool bindVariable(const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
+};
+
+class Variable : public Bindable {
+    friend class POSFactory;
+private:
+    Variable (std::string str) : Bindable(str) {  }
+public:
+    virtual const char * getToken () { return "-Variable-"; }
+    virtual Variable* express(yacker::Expressor* p_expressor);
+    virtual POS* eval(Result* r);
+    virtual std::string getBindingAttributeName () { return "name"; }
+};
+
+class BNode : public Bindable {
+    friend class POSFactory;
+private:
+    BNode (std::string str) : Bindable(str) {  }
+    BNode () : Bindable("gensym:", true) {  }
+public:
+    virtual const char * getToken () { return "-BNode-"; }
+    virtual BNode* express(yacker::Expressor* p_expressor);
+    virtual std::string getBindingAttributeName () { return "bnode"; }
+};
+
+class RDFLiteral : public POS {
+    friend class POSFactory;
+private:
+    std::string m_String;
+    URI* datatype;
+    LANGTAG* m_LANGTAG;
+
+protected:
+    RDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG, std::string matched) : POS(matched), m_String(p_String) {
+	datatype = p_URI;
+	m_LANGTAG = p_LANGTAG;
+    }
+
+    ~RDFLiteral () {
+	delete m_LANGTAG;
+    }
+public:
+    virtual RDFLiteral* express(yacker::Expressor* p_expressor);
+    virtual std::string getBindingAttributeName () { return "literal"; }
+};
+class NumericRDFLiteral : public RDFLiteral {
+    friend class POSFactory;
+protected:
+    NumericRDFLiteral (std::string p_String, URI* p_URI, std::string matched) : RDFLiteral(p_String, p_URI, NULL, matched) {  }
+    ~NumericRDFLiteral () {  }
+public:
+    virtual NumericRDFLiteral* express(yacker::Expressor* p_expressor) = 0;
+};
+class IntegerRDFLiteral : public NumericRDFLiteral {
+    friend class POSFactory;
+protected:
+    int m_value;
+    IntegerRDFLiteral (std::string p_String, URI* p_URI, std::string matched, int p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    ~IntegerRDFLiteral () {  }
+public:
+    int getValue () { return m_value; }
+    virtual NumericRDFLiteral* express(yacker::Expressor* p_expressor);
+};
+class DecimalRDFLiteral : public NumericRDFLiteral {
+    friend class POSFactory;
+protected:
+    float m_value;
+    DecimalRDFLiteral (std::string p_String, URI* p_URI, std::string matched, float p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    ~DecimalRDFLiteral () {  }
+    virtual NumericRDFLiteral* express(yacker::Expressor* p_expressor);
+};
+class DoubleRDFLiteral : public NumericRDFLiteral {
+    friend class POSFactory;
+protected:
+    double m_value;
+    DoubleRDFLiteral (std::string p_String, URI* p_URI, std::string matched, double p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    ~DoubleRDFLiteral () {  }
+    virtual NumericRDFLiteral* express(yacker::Expressor* p_expressor);
+};
+class BooleanRDFLiteral : public RDFLiteral {
+    friend class POSFactory;
+protected:
+    bool m_value;
+    BooleanRDFLiteral (std::string p_String, std::string matched, bool p_value) : RDFLiteral(p_String, NULL, NULL, matched), m_value(p_value) {  }
+public:
+    virtual BooleanRDFLiteral* express(yacker::Expressor* p_expressor);
+};
+class NULLpos : public POS {
+    friend class POSFactory;
+private:
+    NULLpos () : POS("NULL", "") {  }
+    ~NULLpos () {  }
+public:
+    virtual const char * getToken () { return "-NULL-"; }
+    virtual NULLpos* express(yacker::Expressor* p_expressor);
+    virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+};
+
+class POSFactory {
+    typedef std::map<std::string, Variable*> VariableMap;
+    typedef std::map<std::string, BNode*> BNodeMap;
+    typedef std::map<std::string, URI*> URIMap;
+    typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
+    class MakeNumericRDFLiteral {
+    public:
+	virtual ~MakeNumericRDFLiteral () {  }
+	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
+    };
+
+
+protected:
+    VariableMap		variables;
+    BNodeMap		bnodes;
+    URIMap		uris;
+    RDFLiteralMap	rdfLiterals;
+    NULLpos		nullPOS;
+    NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+
+public:
+    POSFactory () {  }
+    ~POSFactory();
+    Variable* getVariable(std::string name);
+    BNode* createBNode();
+    BNode* getBNode(std::string name);
+    URI* getURI(std::string name);
+    RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
+
+    IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+
+    BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
+    NULLpos* getNULL () { return &nullPOS; }
+
+};
+
+    /* Sorter for the POSs. */
+class POSsorter;
+extern POSsorter* ThePOSsorter;
+
+class POSsorter {
+public:
+    std::map<const std::string, int> typeOrder;
+    POSsorter () {
+	//typeOrder.insert(make_pair(typeid(BNode).name(), 2));
+	typeOrder[typeid(BNode).name()] = 2;
+	typeOrder[typeid(URI).name()] = 3;
+	typeOrder[typeid(RDFLiteral).name()] = 4;
+	ThePOSsorter = this;
+    }
+    bool sort (const POS* lhs, const POS* rhs) {
+	const std::string lt = typeid(*lhs).name();
+	const std::string rt = typeid(*rhs).name();
+	const int li = typeOrder[lt];
+	const int ri = typeOrder[rt];
+	if (li < ri)
+	    return true;
+	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+    }
+};
+
+class BasicGraphPattern;
+
+class TriplePattern : public yacker::Base {
+private:
+    POS* m_s; POS* m_p; POS* m_o;
+    bool weaklyBound;
+public:
+    TriplePattern (POS* p_s, POS* p_p, POS* p_o) : yacker::Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
+    TriplePattern (TriplePattern const& copy, bool weaklyBound) : yacker::Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
+    ~TriplePattern () {  }
+    virtual TriplePattern* express(yacker::Expressor* p_expressor);
+    bool bindVariables(TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, ResultSetIterator provisional, POS* graphName);
+    bool construct(BasicGraphPattern* target, Result* r);
+};
+/* END Parts Of Speach */
+
+class Expression : public yacker::Base, public EvalInterface {
+private:
+public:
+    Expression () : yacker::Base() { }
+    ~Expression () {  }
+    virtual Expression* express(yacker::Expressor* p_expressor) = 0;
+};
+
+typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
+typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
+#define LIMIT_None -1
+#define OFFSET_None -1
+typedef struct {e_ASCorDESC ascOrDesc; Expression* expression;} s_OrderConditionPair;
+typedef enum { SILENT_Yes, SILENT_No } e_Silence;
+
+class Filter : public yacker::Base {
+private:
+    Expression* m_Constraint;
+public:
+    Filter (Expression* p_Constraint) : yacker::Base(), m_Constraint(p_Constraint) {  }
+    ~Filter () { delete m_Constraint; }
+    virtual Filter* express(yacker::Expressor* p_expressor);
+};
+class TableOperation : public yacker::Base {
+protected:
+    yacker::ProductionVector<Filter*> m_Filters;
+    TableOperation () : yacker::Base(), m_Filters() { }
+public:
+    //size_t filters () { return m_Filters.size(); }
+    void addFilter (Filter* filter) {
+	m_Filters.push_back(filter);
+    }
+    virtual void bindVariables(RdfDB*, ResultSet*) = 0; //{ throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual TableOperation* express(yacker::Expressor*) = 0;
+    virtual TableOperation* getDNF() = 0;
+};
+class TableJunction : public TableOperation {
+protected:
+    yacker::ProductionVector<TableOperation*> m_TableOperations;
+public:
+    TableJunction () : TableOperation(), m_TableOperations() {  }
+
+    virtual void addTableOperation(TableOperation* tableOp);
+    std::vector<TableOperation*>::iterator begin () { return m_TableOperations.begin(); }
+    std::vector<TableOperation*>::iterator end () { return m_TableOperations.end(); }
+    void clear () { m_TableOperations.clear(); }
+    void erase (std::vector<TableOperation*>::iterator it) { m_TableOperations.erase(it); }
+    size_t size () { return m_TableOperations.size(); }
+};
+class TableConjunction : public TableJunction { // ⊍
+public:
+    TableConjunction () : TableJunction() {  }
+    virtual TableConjunction* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables(RdfDB*, ResultSet* rs);
+    virtual TableOperation* getDNF();
+};
+class TableDisjunction : public TableJunction { // ⊎
+public:
+    TableDisjunction () : TableJunction() {  }
+    virtual TableDisjunction* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables(RdfDB*, ResultSet* rs);
+    virtual TableOperation* getDNF();
+};
+class DontDeleteThisBGP;
+class BasicGraphPattern : public TableOperation { // ⊌⊍
+protected:
+    yacker::ProductionVector<TriplePattern*> m_TriplePatterns;
+    bool allOpts;
+    BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
+
+public:
+    void addTriplePattern (POS* s, POS* p, POS* o) { m_TriplePatterns.push_back(new TriplePattern(s, p, o)); }
+    void addTriplePattern (TriplePattern* p) { m_TriplePatterns.push_back(p); }
+    size_t triplePatterns () { return m_TriplePatterns.size(); }
+    void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
+    void construct(BasicGraphPattern* target, ResultSet* rs);
+    std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
+    std::vector<TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
+    void erase (std::vector<TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
+    void clearTriples () { m_TriplePatterns.clear(); }
+    virtual TableOperation* getDNF ();
+    virtual BasicGraphPattern* express(yacker::Expressor* p_expressor) = 0;
+};
+class DontDeleteThisBGP : public TableOperation {
+protected: BasicGraphPattern* bgp;
+public:
+    DontDeleteThisBGP (BasicGraphPattern* bgp) : bgp(bgp) {  }
+    ~DontDeleteThisBGP () { /* Leave bgp alone. */ }
+    virtual void bindVariables(RdfDB*, ResultSet*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual TableOperation* getDNF () { return new DontDeleteThisBGP(bgp); }
+    virtual BasicGraphPattern* express (yacker::Expressor* p_expressor) { return bgp->express(p_expressor); }
+};
+
+class NamedGraphPattern : public BasicGraphPattern {
+private:
+    POS* m_name;
+
+public:
+    NamedGraphPattern (POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
+    virtual NamedGraphPattern* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables(RdfDB* db, ResultSet* rs);
+};
+class DefaultGraphPattern : public BasicGraphPattern {
+public:
+    DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
+    virtual DefaultGraphPattern* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables(RdfDB* db, ResultSet* rs);
+};
+class TableOperationOnOperation : public TableOperation {
+protected:
+    TableOperation* m_TableOperation;
+    TableOperationOnOperation (TableOperation* p_TableOperation) : TableOperation(), m_TableOperation(p_TableOperation) {  }
+    ~TableOperationOnOperation() { delete m_TableOperation; }
+    virtual TableOperationOnOperation* makeANewThis(TableOperation* p_TableOperation) = 0;
+public:
+    virtual TableOperation* getDNF();
+};
+/* GraphGraphPattern: pass-through class that's just used to reproduce verbatim SPARQL queries
+ */
+class GraphGraphPattern : public TableOperationOnOperation {
+private:
+    POS* m_VarOrIRIref;
+public:
+    GraphGraphPattern (POS* p_POS, TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern), m_VarOrIRIref(p_POS) {  }
+    virtual GraphGraphPattern* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables (RdfDB* db, ResultSet* rs) {
+	m_TableOperation->bindVariables(db, rs);
+    }
+    virtual TableOperationOnOperation* makeANewThis (TableOperation* p_TableOperation) { return new GraphGraphPattern(m_VarOrIRIref, p_TableOperation); }
+};
+class OptionalGraphPattern : public TableOperationOnOperation {
+public:
+    OptionalGraphPattern (TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern) {  }
+    virtual OptionalGraphPattern* express(yacker::Expressor* p_expressor);
+    virtual void bindVariables(RdfDB*, ResultSet* rs);
+    virtual TableOperationOnOperation* makeANewThis (TableOperation* p_TableOperation) { return new OptionalGraphPattern(p_TableOperation); }
+};
+
+class VarSet : public yacker::Base {
+protected:
+    VarSet () : yacker::Base() { }
+public:
+    virtual VarSet* express(yacker::Expressor*) = 0;
+};
+
+class POSList : public VarSet {
+private:
+    yacker::ProductionVector<POS*> m_POSs;
+public:
+    POSList () : VarSet(), m_POSs() {  }
+    ~POSList () { m_POSs.clear(); }
+    void push_back(POS* v) { m_POSs.push_back(v); }
+    virtual POSList* express(yacker::Expressor* p_expressor);
+    std::vector<POS*>::iterator begin () { return m_POSs.begin(); }
+    std::vector<POS*>::iterator end () { return m_POSs.end(); }
+};
+class StarVarSet : public VarSet {
+private:
+public:
+    StarVarSet () : VarSet() {  }
+    size_t size() { return 0; }
+    POS* operator [] (size_t) { return NULL; }
+    POS* getElement (size_t) { return NULL; }
+    virtual StarVarSet* express(yacker::Expressor* p_expressor);
+};
+
+class DatasetClause : public yacker::Base {
+protected:
+    POS* m_IRIref;
+    POSFactory* m_posFactory;
+public:
+    DatasetClause (POS* p_IRIref, POSFactory* p_posFactory) : yacker::Base(), m_IRIref(p_IRIref), m_posFactory(p_posFactory) {  }
+    ~DatasetClause () { /* m_IRIref is centrally managed */ }
+    virtual void loadData(RdfDB*) = 0;
+    void _loadData(BasicGraphPattern*);
+    virtual DatasetClause* express(yacker::Expressor* p_expressor) = 0;
+};
+class DefaultGraphClause : public DatasetClause {
+private:
+public:
+    DefaultGraphClause (POS* p_IRIref, POSFactory* p_posFactory) : DatasetClause(p_IRIref, p_posFactory) { }
+    ~DefaultGraphClause () {  }
+    virtual DefaultGraphClause* express(yacker::Expressor* p_expressor);
+    virtual void loadData(RdfDB*);
+};
+class NamedGraphClause : public DatasetClause {
+private:
+public:
+    NamedGraphClause (POS* p_IRIref, POSFactory* p_posFactory) : DatasetClause(p_IRIref, p_posFactory) { }
+    ~NamedGraphClause () {  }
+    virtual NamedGraphClause* express(yacker::Expressor* p_expressor);
+    virtual void loadData(RdfDB*);
+};
+
+    /* SolutionModifiers */
+class SolutionModifier : public yacker::Base {
+private:
+    std::vector<s_OrderConditionPair>* m_OrderConditions;
+    int m_limit;
+    int m_offset;
+public:
+    SolutionModifier (std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) : yacker::Base(), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset) {  }
+    ~SolutionModifier () {
+	if (m_OrderConditions != NULL)
+	    for (size_t i = 0; i < m_OrderConditions->size(); i++)
+		delete m_OrderConditions->at(i).expression;
+	delete m_OrderConditions;
+    }
+    virtual SolutionModifier* express(yacker::Expressor* p_expressor);
+};
+class Binding : public yacker::ProductionVector<POS*> {
+private:
+public:
+    Binding () : yacker::ProductionVector<POS*>() {  }
+    ~Binding () { clear(); /* atoms in vector are centrally managed */ }
+    virtual Binding* express(yacker::Expressor* p_expressor);
+    void bindVariables(RdfDB* db, ResultSet* rs, Result* r, POSList* p_Vars);
+};
+class BindingClause : public yacker::ProductionVector<Binding*> {
+private:
+    POSList* m_Vars;
+public:
+    BindingClause (POSList* p_Vars) : yacker::ProductionVector<Binding*>(), m_Vars(p_Vars) {  }
+    ~BindingClause () { delete m_Vars; }
+    virtual BindingClause* express(yacker::Expressor* p_expressor);
+    void bindVariables(RdfDB* db, ResultSet* rs);
+};
+class WhereClause : public yacker::Base {
+private:
+    TableOperation* m_GroupGraphPattern;
+    BindingClause* m_BindingClause;
+public:
+    WhereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) : yacker::Base(), m_GroupGraphPattern(p_GroupGraphPattern), m_BindingClause(p_BindingClause) {  }
+    ~WhereClause () {
+	delete m_GroupGraphPattern;
+	delete m_BindingClause;
+    }
+    virtual WhereClause* express(yacker::Expressor* p_expressor);
+    void bindVariables(RdfDB* db, ResultSet* rs);
+};
+
+class Select : public Operation {
+private:
+    e_distinctness m_distinctness;
+    VarSet* m_VarSet;
+    yacker::ProductionVector<DatasetClause*>* m_DatasetClauses;
+    WhereClause* m_WhereClause;
+    SolutionModifier* m_SolutionModifier;
+public:
+    Select (e_distinctness p_distinctness, VarSet* p_VarSet, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_distinctness(p_distinctness), m_VarSet(p_VarSet), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    ~Select () {
+	delete m_VarSet;
+	delete m_DatasetClauses;
+	delete m_WhereClause;
+	delete m_SolutionModifier;
+    }
+    virtual Select* express(yacker::Expressor* p_expressor);
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
+};
+class Construct : public Operation {
+protected:
+    DefaultGraphPattern* m_ConstructTemplate;
+    yacker::ProductionVector<DatasetClause*>* m_DatasetClauses;
+    WhereClause* m_WhereClause;
+    SolutionModifier* m_SolutionModifier;
+public:
+    Construct (DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    ~Construct () {
+	delete m_ConstructTemplate;
+	delete m_DatasetClauses;
+	delete m_WhereClause;
+	delete m_SolutionModifier;
+    }
+    virtual Construct* express(yacker::Expressor* p_expressor);
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
+    WhereClause* getWhereClause () { return m_WhereClause; }
+};
+class Describe : public Operation {
+private:
+    VarSet* m_VarSet;
+    yacker::ProductionVector<DatasetClause*>* m_DatasetClauses;
+    WhereClause* m_WhereClause;
+    SolutionModifier* m_SolutionModifier;
+public:
+    Describe (VarSet* p_VarSet, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_VarSet(p_VarSet), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    ~Describe () {
+	delete m_VarSet;
+	delete m_DatasetClauses;
+	delete m_WhereClause;
+	delete m_SolutionModifier;
+    }
+    virtual Describe* express(yacker::Expressor* p_expressor);
+};
+class Ask : public Operation {
+private:
+    yacker::ProductionVector<DatasetClause*>* m_DatasetClauses;
+    WhereClause* m_WhereClause;
+public:
+    Ask (yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) : Operation(), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause) {  }
+    ~Ask () {
+	delete m_DatasetClauses;
+	delete m_WhereClause;
+    }
+    virtual Ask* express(yacker::Expressor* p_expressor);
+};
+class Replace : public Operation {
+private:
+    WhereClause* m_WhereClause;
+    TableOperation* m_GraphTemplate;
+public:
+    Replace (WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) : Operation(), m_WhereClause(p_WhereClause), m_GraphTemplate(p_GraphTemplate) {  }
+    ~Replace () { delete m_WhereClause; delete m_GraphTemplate; }
+    virtual Replace* express(yacker::Expressor* p_expressor);
+};
+class Insert : public Operation {
+private:
+    TableOperation* m_GraphTemplate;
+    WhereClause* m_WhereClause;
+public:
+    Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    ~Insert () { delete m_GraphTemplate; delete m_WhereClause; }
+    virtual Insert* express(yacker::Expressor* p_expressor);
+};
+class Delete : public Operation {
+private:
+    TableOperation* m_GraphTemplate;
+    WhereClause* m_WhereClause;
+public:
+    Delete (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    ~Delete () { delete m_GraphTemplate; delete m_WhereClause; }
+    virtual Delete* express(yacker::Expressor* p_expressor);
+};
+class Load : public Operation {
+private:
+    yacker::ProductionVector<URI*>* m_IRIrefs;
+    URI* m_into;
+public:
+    Load (yacker::ProductionVector<URI*>* p_IRIrefs, URI* p_into) : Operation(), m_IRIrefs(p_IRIrefs), m_into(p_into) {  }
+    ~Load () { delete m_IRIrefs; delete m_into; }
+    virtual Load* express(yacker::Expressor* p_expressor);
+};
+class Clear : public Operation {
+private:
+    URI* m__QGraphIRI_E_Opt;
+public:
+    Clear (URI* p__QGraphIRI_E_Opt) : Operation(), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
+    ~Clear () { delete m__QGraphIRI_E_Opt; }
+    virtual Clear* express(yacker::Expressor* p_expressor);
+};
+class Create : public Operation {
+private:
+    e_Silence m_Silence;
+    URI* m_GraphIRI;
+public:
+    Create (e_Silence p_Silence, URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
+    ~Create () { /* m_GraphIRI is centrally managed */ }
+    virtual Create* express(yacker::Expressor* p_expressor);
+};
+class Drop : public Operation {
+private:
+    e_Silence m_Silence;
+    URI* m_GraphIRI;
+public:
+    Drop (e_Silence p_Silence, URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
+    ~Drop () { /* m_GraphIRI is centrally managed */ }
+    virtual Drop* express(yacker::Expressor* p_expressor);
+};
+
+/* kinds of Expressions */
+class VarExpression : public Expression {
+private:
+    Variable* m_Variable;
+public:
+    VarExpression (Variable* p_Variable) : Expression(), m_Variable(p_Variable) {  }
+    ~VarExpression () { /* m_Variable is centrally managed */ }
+    virtual VarExpression* express(yacker::Expressor* p_expressor);
+};
+class LiteralExpression : public Expression {
+private:
+    RDFLiteral* m_RDFLiteral;
+public:
+    LiteralExpression (RDFLiteral* p_RDFLiteral) : Expression(), m_RDFLiteral(p_RDFLiteral) {  }
+    ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
+    virtual LiteralExpression* express(yacker::Expressor* p_expressor);
+};
+class BooleanExpression : public Expression {
+private:
+    BooleanRDFLiteral* m_BooleanRDFLiteral;
+public:
+    BooleanExpression (BooleanRDFLiteral* p_BooleanRDFLiteral) : Expression(), m_BooleanRDFLiteral(p_BooleanRDFLiteral) {  }
+    ~BooleanExpression () { /* m_BooleanRDFLiteral is centrally managed */ }
+    virtual BooleanExpression* express(yacker::Expressor* p_expressor);
+};
+class URIExpression : public Expression {
+private:
+    URI* m_URI;
+public:
+    URIExpression (URI* p_URI) : Expression(), m_URI(p_URI) {  }
+    ~URIExpression () { /* m_URI is centrally managed */ }
+    virtual URIExpression* express(yacker::Expressor* p_expressor);
+};
+
+class ArgList : public yacker::Base {
+private:
+    yacker::ProductionVector<Expression*>* m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C;
+public:
+    ArgList (yacker::ProductionVector<Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) : yacker::Base(), m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C(p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {  }
+    ~ArgList () { delete m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C; }
+    virtual ArgList* express(yacker::Expressor* p_expressor);
+};
+class FunctionCall : public yacker::Base {
+private:
+    URI* m_IRIref;
+    ArgList* m_ArgList;
+public:
+    FunctionCall (URI* p_IRIref, ArgList* p_ArgList) : yacker::Base(), m_IRIref(p_IRIref), m_ArgList(p_ArgList) {  }
+    FunctionCall (URI* p_IRIref, Expression* arg1, Expression* arg2, Expression* arg3) : yacker::Base() {
+	m_IRIref = p_IRIref;
+	yacker::ProductionVector<Expression*>* args = new yacker::ProductionVector<Expression*>();
+	if (arg1) args->push_back(arg1);
+	if (arg2) args->push_back(arg2);
+	if (arg3) args->push_back(arg3);
+	m_ArgList = new ArgList(args);
+    }
+    ~FunctionCall () { delete m_ArgList; }
+    virtual FunctionCall* express(yacker::Expressor* p_expressor);
+};
+class FunctionCallExpression : public Expression {
+private:
+    FunctionCall* m_FunctionCall;
+public:
+    FunctionCallExpression (FunctionCall* p_FunctionCall) : Expression(), m_FunctionCall(p_FunctionCall) {  }
+    ~FunctionCallExpression () { delete m_FunctionCall; }
+    virtual FunctionCallExpression* express(yacker::Expressor* p_expressor);
+};
+
+/* Expressions */
+/* Logical connectives: or and */
+class UnaryExpression : public Expression {
+protected:
+    Expression* m_Expression;
+public:
+    UnaryExpression (Expression* p_Expression) : Expression(), m_Expression(p_Expression) {  }
+    ~UnaryExpression () { delete m_Expression; }
+    virtual const char* getUnaryOperator() = 0;
+};
+class NaryExpression : public Expression {
+protected:
+    yacker::ProductionVector<Expression*> m_Expressions;
+public:
+    NaryExpression (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : Expression(), m_Expressions() {
+	m_Expressions.push_back(p_Expression);
+	for (size_t i = 0; i < p_Expressions->size(); i++)
+	    m_Expressions.push_back(p_Expressions->at(i));
+    }
+
+    virtual const char* getInfixNotation() = 0;
+};
+class BooleanJunction : public NaryExpression {
+public:
+    BooleanJunction (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) { }
+};
+class BooleanConjunction : public BooleanJunction { // ⋀
+public:
+    BooleanConjunction (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
+    virtual const char* getInfixNotation () { return "&&"; };
+    virtual BooleanConjunction* express(yacker::Expressor* p_expressor);
+};
+class BooleanDisjunction : public BooleanJunction { // ⋁
+public:
+    BooleanDisjunction (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
+    virtual const char* getInfixNotation () { return "||"; };
+    virtual BooleanDisjunction* express(yacker::Expressor* p_expressor);
+};
+
+class BooleanComparator : public Expression {
+protected:
+    Expression* left;
+    Expression* right;
+public:
+    BooleanComparator (Expression* p_Expression) : Expression(), right(p_Expression) {  }
+    ~BooleanComparator () { delete left; delete right; }
+    virtual void setLeftParm (Expression* p_left) { left = p_left; }
+
+    virtual const char* getComparisonNotation() = 0;
+    virtual BooleanComparator* express(yacker::Expressor* p_expressor) = 0;
+};
+class BooleanEQ : public BooleanComparator {
+public:
+    BooleanEQ (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return "="; };
+    virtual BooleanEQ* express(yacker::Expressor* p_expressor);
+};
+class BooleanNE : public BooleanComparator {
+public:
+    BooleanNE (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return "!="; };
+    virtual BooleanNE* express(yacker::Expressor* p_expressor);
+};
+class BooleanLT : public BooleanComparator {
+public:
+    BooleanLT (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return "<"; };
+    virtual BooleanLT* express(yacker::Expressor* p_expressor);
+};
+class BooleanGT : public BooleanComparator {
+public:
+    BooleanGT (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return ">"; };
+    virtual BooleanGT* express(yacker::Expressor* p_expressor);
+};
+class BooleanLE : public BooleanComparator {
+public:
+    BooleanLE (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return "<="; };
+    virtual BooleanLE* express(yacker::Expressor* p_expressor);
+};
+class BooleanGE : public BooleanComparator {
+public:
+    BooleanGE (Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    virtual const char* getComparisonNotation () { return ">="; };
+    virtual BooleanGE* express(yacker::Expressor* p_expressor);
+};
+class ComparatorExpression : public Expression {
+private:
+    BooleanComparator* m_BooleanComparator;
+public:
+    ComparatorExpression (BooleanComparator* p_BooleanComparator) : Expression(), m_BooleanComparator(p_BooleanComparator) {  }
+    ~ComparatorExpression () { delete m_BooleanComparator; }
+    virtual ComparatorExpression* express(yacker::Expressor* p_expressor);
+};
+class BooleanNegation : public UnaryExpression {
+public:
+    BooleanNegation (Expression* p_PrimaryExpression) : UnaryExpression(p_PrimaryExpression) {  }
+    ~BooleanNegation () {  }
+    virtual const char* getUnaryOperator () { return "!"; };
+    virtual BooleanNegation* express(yacker::Expressor* p_expressor);
+};
+class ArithmeticSum : public NaryExpression {
+public:
+    ArithmeticSum (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
+    virtual const char* getInfixNotation () { return "+"; };    
+    virtual ArithmeticSum* express(yacker::Expressor* p_expressor);
+};
+class ArithmeticNegation : public UnaryExpression {
+public:
+    ArithmeticNegation (Expression* p_MultiplicativeExpression) : UnaryExpression(p_MultiplicativeExpression) {  }
+    ~ArithmeticNegation () {  }
+    virtual const char* getUnaryOperator () { return "-"; };
+    virtual ArithmeticNegation* express(yacker::Expressor* p_expressor);
+};
+class NumberExpression : public Expression {
+private:
+    NumericRDFLiteral* m_NumericRDFLiteral;
+public:
+    NumberExpression (NumericRDFLiteral* p_NumericRDFLiteral) : Expression(), m_NumericRDFLiteral(p_NumericRDFLiteral) {  }
+    ~NumberExpression () { /* m_NumericRDFLiteral is centrally managed */ }
+    virtual NumberExpression* express(yacker::Expressor* p_expressor);
+};
+class ArithmeticProduct : public NaryExpression {
+public:
+    ArithmeticProduct (Expression* p_Expression, yacker::ProductionVector<Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
+    virtual const char* getInfixNotation () { return "+"; };    
+    virtual ArithmeticProduct* express(yacker::Expressor* p_expressor);
+};
+class ArithmeticInverse : public UnaryExpression {
+public:
+    ArithmeticInverse (Expression* p_UnaryExpression) : UnaryExpression(p_UnaryExpression) {  }
+    ~ArithmeticInverse () {  }
+    virtual const char* getUnaryOperator () { return "1/"; };
+    virtual ArithmeticInverse* express(yacker::Expressor* p_expressor);
+};
+
+} // namespace SPARQLfedNS
+/* END ClassBlock */
+#include <iostream>
+namespace libwww {
+
+/* URI parsing stuff stolen from libwww
+ *
+ */
+class DummyHTURI {
+private:
+public:
+    DummyHTURI () {  }
+    virtual ~DummyHTURI () {  }
+    virtual bool hasScheme () { return false; }
+    virtual std::string getScheme () { throw(std::runtime_error("illegal call to DummyHTURI::getScheme")); }
+    virtual void clearScheme () { throw(std::runtime_error("illegal call to DummyHTURI::clearScheme")); }
+    virtual bool hasHost () { return false; }
+    virtual std::string getHost () { throw(std::runtime_error("illegal call to DummyHTURI::getHost")); }
+    virtual void clearHost () { throw(std::runtime_error("illegal call to DummyHTURI::clearHost")); }
+    virtual bool hasAbsolute () { return false; }
+    virtual std::string getAbsolute () { throw(std::runtime_error("illegal call to DummyHTURI::getAbsolute")); }
+    virtual void clearAbsolute () { throw(std::runtime_error("illegal call to DummyHTURI::clearAbsolute")); }
+    virtual bool hasRelative () { return false; }
+    virtual std::string getRelative () { throw(std::runtime_error("illegal call to DummyHTURI::getRelative")); }
+    virtual void clearRelative () { throw(std::runtime_error("illegal call to DummyHTURI::clearRelative")); }
+    virtual bool hasFragment () { return false; }
+    virtual std::string getFragment () { throw(std::runtime_error("illegal call to DummyHTURI::getFragment")); }
+    virtual void clearFragment () { throw(std::runtime_error("illegal call to DummyHTURI::clearFragment")); }
+};
+class HTURI : public DummyHTURI {
+private:
+    std::string scheme;   bool schemeP;
+    std::string host;	  bool hostP;
+    std::string absolute; bool absoluteP;
+    std::string relative; bool relativeP;
+    std::string fragment; bool fragmentP;
+public:
+    HTURI(std::string);
+    virtual bool hasScheme () { return schemeP; }
+    virtual std::string getScheme () { return scheme; }
+    virtual void clearScheme () { scheme.clear(); schemeP = false; }
+    virtual bool hasHost () { return hostP; }
+    virtual std::string getHost () { return host; }
+    virtual void clearHost () { host.clear(); hostP = false; }
+    virtual bool hasAbsolute () { return absoluteP; }
+    virtual std::string getAbsolute () { return absolute; }
+    virtual void clearAbsolute () { absolute.clear(); absoluteP = false; }
+    virtual bool hasRelative () { return relativeP; }
+    virtual std::string getRelative () { return relative; }
+    virtual void clearRelative () { relative.clear(); relativeP = false; }
+    virtual bool hasFragment () { return fragmentP; }
+    virtual std::string getFragment () { return fragment; }
+    virtual void clearFragment () { fragment.clear(); fragmentP = false; }
+};
+typedef enum {
+    PARSE_scheme =		16,	/* Access scheme, e.g. "HTTP" */
+    PARSE_host =		 8,	/* Host name, e.g. "www.w3.org" */
+    PARSE_path =		 4,	/* URL Path, e.g. "pub/WWW/TheProject.html" */
+
+    PARSE_view =                 2,      /* Fragment identifier, e.g. "news" */
+    PARSE_fragment =             PARSE_view,
+    PARSE_anchor =		 PARSE_view,
+
+    PARSE_punctuation =	         1,	/* Include delimiters, e.g, "/" and ":" */
+    PARSE_all =		        31
+} e_PARSE_opts;
+
+std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wanted);
+
+} // namespace libwww
+
+namespace yacker {
+    using namespace SPARQLfedNS;
+class Expressor {
+public:
+    virtual ~Expressor () {  }
+
+    virtual yacker::Base* base(std::string productionName) = 0;
+
+    virtual URI* uri(std::string terminal) = 0;
+    virtual Variable* variable(std::string terminal) = 0;
+    virtual BNode* bnode(std::string terminal) = 0;
+    virtual RDFLiteral* rdfLiteral(std::string terminal, SPARQLfedNS::URI* datatype, SPARQLfedNS::LANGTAG* p_LANGTAG) = 0;
+    virtual NumericRDFLiteral* rdfLiteral(int p_value) = 0;
+    virtual NumericRDFLiteral* rdfLiteral(float p_value) = 0;
+    virtual NumericRDFLiteral* rdfLiteral(double p_value) = 0;
+    virtual BooleanRDFLiteral* rdfLiteral(bool p_value) = 0;
+    virtual NULLpos* nullpos() = 0;
+    virtual TriplePattern* triplePattern(SPARQLfedNS::POS* p_s, SPARQLfedNS::POS* p_p, SPARQLfedNS::POS* p_o) = 0;
+    virtual Filter* filter(SPARQLfedNS::Expression* p_Constraint) = 0;
+    virtual NamedGraphPattern* namedGraphPattern(SPARQLfedNS::POS* p_name, bool p_allOpts, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) = 0;
+    virtual DefaultGraphPattern* defaultGraphPattern(bool p_allOpts, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) = 0;
+    virtual TableConjunction* tableConjunction(yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) = 0;
+    virtual TableDisjunction* tableDisjunction(yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) = 0;
+    virtual OptionalGraphPattern* optionalGraphPattern(SPARQLfedNS::TableOperation* p_GroupGraphPattern) = 0;
+    virtual GraphGraphPattern* graphGraphPattern(SPARQLfedNS::POS* p_POS, SPARQLfedNS::TableOperation* p_GroupGraphPattern) = 0;
+    virtual POSList* posList(yacker::ProductionVector<SPARQLfedNS::POS*>* p_POSs) = 0;
+    virtual StarVarSet* starVarSet() = 0;
+    virtual DefaultGraphClause* defaultGraphClause(SPARQLfedNS::POS* p_IRIref) = 0;
+    virtual NamedGraphClause* namedGraphClause(SPARQLfedNS::POS* p_IRIref) = 0;
+    virtual SolutionModifier* solutionModifier(std::vector<SPARQLfedNS::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
+    virtual Binding* binding(yacker::ProductionVector<SPARQLfedNS::POS*>* values) = 0;//!!!
+    virtual BindingClause* bindingClause(SPARQLfedNS::POSList* p_Vars, yacker::ProductionVector<SPARQLfedNS::Binding*>* p_Bindings) = 0;
+    virtual WhereClause* whereClause(SPARQLfedNS::TableOperation* p_GroupGraphPattern, SPARQLfedNS::BindingClause* p_BindingClause) = 0;
+    virtual Select* select(SPARQLfedNS::e_distinctness p_distinctness, SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) = 0;
+    virtual Construct* construct(SPARQLfedNS::DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) = 0;
+    virtual Describe* describe(SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) = 0;
+    virtual Ask* ask(yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause) = 0;
+    virtual Replace* replace(SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::TableOperation* p_GraphTemplate) = 0;
+    virtual Insert* insert(SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) = 0;
+    virtual Delete* del(SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) = 0;
+    virtual Load* load(yacker::ProductionVector<SPARQLfedNS::URI*>* p_IRIrefs, SPARQLfedNS::URI* p_into) = 0;
+    virtual Clear* clear(SPARQLfedNS::URI* p__QGraphIRI_E_Opt) = 0;
+    virtual Create* create(SPARQLfedNS::e_Silence p_Silence, SPARQLfedNS::URI* p_GraphIRI) = 0;
+    virtual Drop* drop(SPARQLfedNS::e_Silence p_Silence, SPARQLfedNS::URI* p_GraphIRI) = 0;
+    virtual VarExpression* varExpression(SPARQLfedNS::Variable* p_Variable) = 0;
+    virtual LiteralExpression* literalExpression(SPARQLfedNS::RDFLiteral* p_RDFLiteral) = 0;
+    virtual BooleanExpression* booleanExpression(SPARQLfedNS::BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
+    virtual URIExpression* uriExpression(SPARQLfedNS::URI* p_URI) = 0;
+    virtual ArgList* argList(yacker::ProductionVector<SPARQLfedNS::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) = 0;
+    virtual FunctionCall* functionCall(SPARQLfedNS::URI* p_IRIref, SPARQLfedNS::ArgList* p_ArgList) = 0;
+    virtual FunctionCallExpression* functionCallExpression(SPARQLfedNS::FunctionCall* p_FunctionCall) = 0;
+/* Expressions */
+    virtual BooleanNegation* booleanNegation(SPARQLfedNS::Expression* p_Expression) = 0;
+    virtual ArithmeticNegation* arithmeticNegation(SPARQLfedNS::Expression* p_Expression) = 0;
+    virtual ArithmeticInverse* arithmeticInverse(SPARQLfedNS::Expression* p_Expression) = 0;
+    virtual BooleanConjunction* booleanConjunction(yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) = 0;
+    virtual BooleanDisjunction* booleanDisjunction(yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) = 0;
+    virtual ArithmeticSum* arithmeticSum(yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) = 0;
+    virtual ArithmeticProduct* arithmeticProduct(yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) = 0;
+    virtual BooleanEQ* booleanEQ(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual BooleanNE* booleanNE(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual BooleanLT* booleanLT(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual BooleanGT* booleanGT(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual BooleanLE* booleanLE(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual BooleanGE* booleanGE(SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) = 0;
+    virtual ComparatorExpression* comparatorExpression(SPARQLfedNS::BooleanComparator* p_BooleanComparator) = 0;
+    virtual NumberExpression* numberExpression(SPARQLfedNS::NumericRDFLiteral* p_NumericRDFLiteral) = 0;
+};
+/* RecursiveExpressor - default actions for expressor.
+ * Use this Expressor when you don't feel like supplying all of the methods.
+ */
+class RecursiveExpressor : public Expressor {
+public:
+    virtual URI* uri (std::string) { return NULL; }
+    virtual Variable* variable (std::string) { return NULL; }
+    virtual BNode* bnode (std::string) { return NULL; }
+    virtual RDFLiteral* rdfLiteral (std::string, SPARQLfedNS::URI* datatype, SPARQLfedNS::LANGTAG* p_LANGTAG) {
+	datatype->express(this);
+	p_LANGTAG->express(this);
+    return NULL; }
+    virtual NumericRDFLiteral* rdfLiteral (int) { return NULL; }
+    virtual NumericRDFLiteral* rdfLiteral (float) { return NULL; }
+    virtual NumericRDFLiteral* rdfLiteral (double) { return NULL; }
+    virtual BooleanRDFLiteral* rdfLiteral (bool) { return NULL; }
+    virtual NULLpos* nullpos () { return NULL; }
+    virtual TriplePattern* triplePattern (SPARQLfedNS::POS* p_s, SPARQLfedNS::POS* p_p, SPARQLfedNS::POS* p_o) {
+	p_s->express(this);
+	p_p->express(this);
+	p_o->express(this);
+    return NULL; }
+    virtual Filter* filter (SPARQLfedNS::Expression* p_Constraint) {
+	p_Constraint->express(this);
+    return NULL; }
+    virtual NamedGraphPattern* namedGraphPattern (SPARQLfedNS::POS* p_name, bool /*p_allOpts*/, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+	p_name->express(this);
+	p_TriplePatterns->express(this);
+	p_Filters->express(this);
+    return NULL; }
+    virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+	p_TriplePatterns->express(this);
+	p_Filters->express(this);
+    return NULL; }
+    virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+	p_TableOperations->express(this);
+	p_Filters->express(this);
+    return NULL; }
+    virtual TableConjunction* tableConjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+	p_TableOperations->express(this);
+	p_Filters->express(this);
+    return NULL; }
+    virtual OptionalGraphPattern* optionalGraphPattern (SPARQLfedNS::TableOperation* p_GroupGraphPattern) {
+	p_GroupGraphPattern->express(this);
+    return NULL; }
+    virtual GraphGraphPattern* graphGraphPattern (SPARQLfedNS::POS* p_POS, SPARQLfedNS::TableOperation* p_GroupGraphPattern) {
+	p_POS->express(this);
+	p_GroupGraphPattern->express(this);
+    return NULL; }
+    virtual POSList* posList (yacker::ProductionVector<SPARQLfedNS::POS*>* p_POSs) {
+	p_POSs->express(this);
+    return NULL; }
+    virtual StarVarSet* starVarSet () { return NULL; }
+    virtual DefaultGraphClause* defaultGraphClause (SPARQLfedNS::POS* p_IRIref) {
+	p_IRIref->express(this);
+    return NULL; }
+    virtual NamedGraphClause* namedGraphClause (SPARQLfedNS::POS* p_IRIref) {
+	p_IRIref->express(this);
+    return NULL; }
+    virtual SolutionModifier* solutionModifier (std::vector<SPARQLfedNS::s_OrderConditionPair>* p_OrderConditions, int, int) {
+	if (p_OrderConditions)
+	    for (size_t i = 0; i < p_OrderConditions->size(); i++) {
+		p_OrderConditions->at(i).expression->express(this);
+	    return NULL; }
+    return NULL; }
+    virtual Binding* binding (yacker::ProductionVector<SPARQLfedNS::POS*>* values) {//!!!
+	for (size_t i = 0; i < values->size(); i++)
+	    values->at(i)->express(this);
+    return NULL; }
+    virtual BindingClause* bindingClause (SPARQLfedNS::POSList* p_Vars, yacker::ProductionVector<SPARQLfedNS::Binding*>* p_Bindings) {
+	p_Vars->express(this);
+	p_Bindings->yacker::ProductionVector<SPARQLfedNS::Binding*>::express(this);
+    return NULL; }
+    virtual WhereClause* whereClause (SPARQLfedNS::TableOperation* p_GroupGraphPattern, SPARQLfedNS::BindingClause* p_BindingClause) {
+	p_GroupGraphPattern->express(this);
+	if (p_BindingClause) p_BindingClause->express(this);
+    return NULL; }
+    virtual Select* select (SPARQLfedNS::e_distinctness, SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+	p_VarSet->express(this);
+	p_DatasetClauses->express(this);
+	p_WhereClause->express(this);
+	p_SolutionModifier->express(this);
+    return NULL; }
+    virtual Construct* construct (SPARQLfedNS::DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+	p_ConstructTemplate->express(this);
+	p_DatasetClauses->express(this);
+	p_WhereClause->express(this);
+	p_SolutionModifier->express(this);
+    return NULL; }
+    virtual Describe* describe (SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+	p_VarSet->express(this);
+	p_DatasetClauses->express(this);
+	p_WhereClause->express(this);
+	p_SolutionModifier->express(this);
+    return NULL; }
+    virtual Ask* ask (yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause) {
+	p_DatasetClauses->express(this);
+	p_WhereClause->express(this);
+    return NULL; }
+    virtual Replace* replace (SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::TableOperation* p_GraphTemplate) {
+	p_WhereClause->express(this);
+	p_GraphTemplate->express(this);
+    return NULL; }
+    virtual Insert* insert (SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) {
+	p_GraphTemplate->express(this);
+	if (p_WhereClause) p_WhereClause->express(this);
+    return NULL; }
+    virtual Delete* del (SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) {
+	p_GraphTemplate->express(this);
+	p_WhereClause->express(this);
+    return NULL; }
+    virtual Load* load (yacker::ProductionVector<SPARQLfedNS::URI*>* p_IRIrefs, SPARQLfedNS::URI* p_into) {
+	p_IRIrefs->express(this);
+	p_into->express(this);
+    return NULL; }
+    virtual Clear* clear (SPARQLfedNS::URI* p__QGraphIRI_E_Opt) {
+	p__QGraphIRI_E_Opt->express(this);
+    return NULL; }
+    virtual Create* create (SPARQLfedNS::e_Silence, SPARQLfedNS::URI* p_GraphIRI) {
+	p_GraphIRI->express(this);
+    return NULL; }
+    virtual Drop* drop (SPARQLfedNS::e_Silence, SPARQLfedNS::URI* p_GraphIRI) {
+	p_GraphIRI->express(this);
+    return NULL; }
+    virtual VarExpression* varExpression (SPARQLfedNS::Variable* p_Variable) {
+	p_Variable->express(this);
+    return NULL; }
+    virtual LiteralExpression* literalExpression (SPARQLfedNS::RDFLiteral* p_RDFLiteral) {
+	p_RDFLiteral->express(this);
+    return NULL; }
+    virtual BooleanExpression* booleanExpression (SPARQLfedNS::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+	p_BooleanRDFLiteral->express(this);
+    return NULL; }
+    virtual URIExpression* uriExpression (SPARQLfedNS::URI* p_URI) {
+	p_URI->express(this);
+    return NULL; }
+    virtual ArgList* argList (yacker::ProductionVector<SPARQLfedNS::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
+	p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
+    return NULL; }
+    virtual FunctionCall* functionCall (SPARQLfedNS::URI* p_IRIref, SPARQLfedNS::ArgList* p_ArgList) {
+	p_IRIref->express(this);
+	p_ArgList->express(this);
+    return NULL; }
+    virtual FunctionCallExpression* functionCallExpression (SPARQLfedNS::FunctionCall* p_FunctionCall) {
+	p_FunctionCall->express(this);
+    return NULL; }
+/* Expressions */
+    virtual BooleanNegation* booleanNegation (SPARQLfedNS::Expression* p_Expression) {
+	p_Expression->express(this);
+    return NULL; }
+    virtual ArithmeticNegation* arithmeticNegation (SPARQLfedNS::Expression* p_Expression) {
+	p_Expression->express(this);
+    return NULL; }
+    virtual ArithmeticInverse* arithmeticInverse (SPARQLfedNS::Expression* p_Expression) {
+	p_Expression->express(this);
+    return NULL; }
+    virtual BooleanConjunction* booleanConjunction (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual BooleanDisjunction* booleanDisjunction (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual BooleanNegation* booleanNegation (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual ArithmeticSum* arithmeticSum (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual ArithmeticProduct* arithmeticProduct (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual ArithmeticInverse* arithmeticInverse (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+	p_Expressions->express(this);
+    return NULL; }
+    virtual BooleanEQ* booleanEQ (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual BooleanNE* booleanNE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual BooleanLT* booleanLT (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual BooleanGT* booleanGT (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual BooleanLE* booleanLE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual BooleanGE* booleanGE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    return NULL; }
+    virtual ComparatorExpression* comparatorExpression (SPARQLfedNS::BooleanComparator* p_BooleanComparator) {
+	p_BooleanComparator->express(this);
+    return NULL; }
+    virtual NumberExpression* numberExpression (SPARQLfedNS::NumericRDFLiteral* p_NumericRDFLiteral) {
+	p_NumericRDFLiteral->express(this);
+    return NULL; }
+};
+
+} //namespace yacker
+
+
+
+#endif /* ! defined SWOBJECTS_HH */
