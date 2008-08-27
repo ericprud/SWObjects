@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.33 2008-08-27 02:15:09 eric Exp $
+# $Id: Makefile,v 1.34 2008-08-27 12:09:56 jnorthru Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -13,33 +13,40 @@
 #   debugging in emacs:
 #     gdb --annotate=3 sample_RuleMap1    (set args query_HealthCare1.rq ruleMap_HealthCare1.rq)
 
+FLEX:=flex
+YACC:=bison
+TEE:=tee
+SED:=sed
+#LIBS
+DEBUG:=-g
+#OPT=-O4
+DEFS:=-DYYTEXT_POINTER=1
+WARN:=-W -Wall -Wextra
+ 
+INCLUDES += -I${PWD}  
+I2=$(subst /, ,$(BISONOBJ:.o=))
+I3=$(sort $(I2))
 
+INCLUDES += $(I3:%=-I${PWD}/%)
 .PHONY: all dep lib test
-all: dep lib test
+all:   lib test
 
+
+PWD ?= $(shell pwd -P)
 
 .SECONDARY:
 
 %.d : %.cpp
-	touch $@
-	makedepend -f $@ $^ $(DEFS) $(INC) 2>/dev/null
+	-touch $@
+	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-%.cpp %.hpp : %.ypp
-	$(YACC) -o $(@:.hpp=.cpp) -b $(<:.ypp=)  $<
-	$(SED) -i.d.bak 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
+%.cpp  %.hpp : %.ypp
+	$(YACC) -o $(@:.hpp=.cpp) $<
+	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
  
 %.cpp : %.lpp
 	$(FLEX) -o $@  $<
 
-FLEX=flex
-YACC=bison
-TEE=tee
-SED=sed
-#LIBS
-DEBUG=-g
-#OPT=-O4
-DEFS=-DYYTEXT_POINTER=1
-WARN=-W -Wall -Wextra
 
 #the gcc commands to make deps used in .d rules
 #if -M[M]D is also in the build-clause without -E it update .d's as needed
@@ -61,23 +68,22 @@ VER=0.1
 #LLVMLDFLAGS = ` llvm-config --ldflags --libs `
 #LLVMLIBS= ` llvm-config --libs`
 # ... you get the idea...
-CFLAGS += $(LLVMCFLAGS)
-INCLUDES+=-I${PWD}
-LIBINC+= -L${PWD}
-
+CFLAGS	+= $(LLVMCFLAGS)
+LIBINC	+= -L$(PWD)
 
 ### dirt simple generic static module ###
-BISONOBJ =$(subst .ypp,.o,$(wildcard *.ypp))
-FLEXOBJ=  $(subst .lpp,.o,$(wildcard *.lpp))
-OBJLIST = $(subst .cpp,.o,$(wildcard *.cpp))
-LIBNAME=SWObjects
-LIB=lib$(LIBNAME).a
-LIBINC+=-l$(LIBNAME)
+BISONOBJ :=  $(subst .ypp,.o,$(wildcard */*.ypp)) 
+FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard *.lpp))
+OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
+LIBNAME  :=  SWObjects
+LIB	 :=	 lib$(LIBNAME).a
+LIBINC	+=	 -l$(LIBNAME)
+
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
 
 .PHONY: lib
-lib: $(LIB)
+lib: dep $(LIB)
 
 ##### packaged tests ####
 
@@ -85,8 +91,6 @@ lib: $(LIB)
 
 tests/execute_%  : tests/test_%.cpp  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
-
-.SECONDARY:
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
 	$^ > $@  && cat $@
@@ -114,24 +118,26 @@ release:
 	@perl -ne 'print join("\n", "README.html", m/href="([a-zA-Z]{2}[a-zA-Z0-9._\/]+)"/g, undef)' HEADER.html | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
 	$(RM) README.html
 
-BISONHH=location.hh stack.hh position.hh
-#$(BISONHH): $(BISONOBJ)
-
-deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d)
-dep: $(deps)
-
--include $(deps)
 
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
 clean:
-	$(RM) *.o *.a *.dylib *.so *.la *.d.bak \
+	$(RM) *.o */*.o *.a *.dylib *.so *.la */*.bak *.bak \
         $(subst .lpp,.cpp,$(wildcard *.lpp)) \
-        $(subst .ypp,.cpp,$(wildcard *.ypp)) \
-        $(subst .ypp,.hpp,$(wildcard *.ypp)) \
+        $(subst .ypp,.cpp,$(wildcard */*.ypp)) \
+        $(subst .ypp,.hpp,$(wildcard */*.ypp)) \
         $(TEST_RESULTS) $(VALGRIND)
 	rm -fr tests/execute_*
 
 cleaner: clean
-	 $(RM) *~ *.d $(BISONHH)
+	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
+
+deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d)
+
+dep: $(deps)
+
+BISONHH=location.hh stack.hh position.hh
+#$(BISONHH): $(BISONOBJ)
+-include $(deps)
+
 

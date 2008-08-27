@@ -1,0 +1,592 @@
+/* $Id: TurtleSParser.ypp,v 1.1 2008-08-27 12:09:57 jnorthru Exp $ -*- mode: c++ -*- */
+/** \file TurtleSParser.yy Contains the Bison parser source */
+
+/*** yacc/bison Declarations ***/
+
+/* Require bison 2.3 or later */
+%require "2.3"
+
+/* add debug output code to generated parser. disable this for release
+ * versions. */
+%debug
+
+/* start symbol is named "start" */
+%start Query
+
+/* write out a header file containing the token defines */
+%defines
+
+/* use newer C++ skeleton file */
+%skeleton "lalr1.cc"
+
+/* namespace to enclose parser in */
+%name-prefix="w3c_sw"
+
+/* set the parser's class identifier */
+%define "parser_class_name" "TurtleSParser"
+
+/* keep track of the current position within the input */
+%locations
+%initial-action
+{
+    // initialize the initial location object
+    @$.begin.filename = @$.end.filename = &driver.streamname;
+};
+
+/* The driver is passed by reference to the parser and to the scanner. This
+ * provides a simple but effective pure interface, not relying on global
+ * variables. */
+%parse-param { class TurtleSDriver& driver }
+
+/* verbose error messages */
+%error-verbose
+
+%{ /*** C/C++ Declarations ***/
+
+#include "SWObjects.hpp"
+#include "ParserCommon.hpp"
+
+#include <stack>
+
+namespace w3c_sw {
+
+/** The Driver class brings together all components. It creates an instance of
+ * the TurtleSParser and TurtleSScanner classes and connects them. Then the input stream is
+ * fed into the scanner object and the parser gets it's token
+ * sequence. Furthermore the driver object is available in the grammar rules as
+ * a parameter. Therefore the driver class contains a reference to the
+ * structure into which the parsed data is saved. */
+
+class TurtleSDriver : public Driver {
+    friend class TurtleSParser;
+protected:
+    POS* curSubject;
+    POS* curPredicate;
+    DefaultGraphPattern* curBGP;
+    DefaultGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
+public:
+    TurtleSDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory) {
+	curSubject = curPredicate = NULL;
+	neededBGP = curBGP = NULL;
+    }
+
+    virtual bool parse_stream(std::istream& in,
+		      const std::string& sname = "stream input");
+
+    /** Pointer to the current lexer instance, this is used to connect the
+     * parser to the scanner. It is used in the yylex macro. */
+    class TurtleSScanner* lexer;
+    DefaultGraphPattern* root;
+};
+
+} // namespace w3c_sw
+
+%}
+
+ /*** BEGIN SPARQLfed - Change the grammar's tokens below ***/
+
+%union {
+    void* p_void;
+    struct {POS* subject; POS* predicate;} p_SubjectPredicatePair;
+    struct {URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
+
+    /* Terminals */
+    LANGTAG* p_LANGTAG;
+
+    std::string* p_string;
+
+    NumericRDFLiteral* p_NumericRDFLiteral;
+    BooleanRDFLiteral* p_BooleanRDFLiteral;
+
+    /* Productions */
+    DefaultGraphPattern* p_DefaultGraphPattern;
+    POS* p_POS;
+    ProductionVector<POS*>* p_POSs;
+    URI* p_URI;
+    ProductionVector<URI*>* p_URIs;
+    RDFLiteral* p_RDFLiteral;
+    BNode* p_BNode;
+
+}
+
+%{
+#include "TurtleSScanner.hpp"
+%}
+%token			__EOF__	     0	"end of file"
+/* START TokenBlock */
+/* Terminals */
+
+%token <p_void> IT_BASE
+%token <p_void> IT_PREFIX
+%token <p_void> GT_LPAREN
+%token <p_void> GT_RPAREN
+%token <p_void> GT_DOT
+%token <p_void> GT_COMMA
+%token <p_void> GT_SEMI
+%token <p_void> IT_a
+%token <p_void> GT_LBRACKET
+%token <p_void> GT_RBRACKET
+%token <p_void> GT_PLUS
+%token <p_void> GT_MINUS
+%token <p_void> GT_DTYPE
+%token <p_BooleanRDFLiteral> IT_true IT_false
+%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE DECIMAL_NEGATIVE DOUBLE_NEGATIVE
+%token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
+%token <p_URI> IRI_REF PNAME_NS PNAME_LN
+%token <p_BNode> BLANK_NODE_LABEL ANON
+%token <p_LANGTAG> LANGTAG
+%token <p_NIL> NIL
+
+/* Productions */
+%type <p_Query> Query
+
+%type <p_POSs> _QGraphNode_E_Plus
+
+%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt
+
+%type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
+%type <p_RDFLiteral> RDFLiteral
+%type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
+%type <p_BooleanRDFLiteral> BooleanLiteral
+%type <p_string> String
+%type <p_BNode> TriplesNode BlankNodePropertyList Collection
+
+%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
+%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
+
+/* END TokenBlock */
+
+//%destructor { delete $$; } BlankNode
+
+ /*** END SPARQLfed - Change the grammar's tokens above ***/
+
+%{
+#include "TurtleSScanner.hpp"
+
+/* this "connects" the bison parser in the driver to the flex scanner class
+ * object. it defines the yylex() function call to pull the next token from the
+ * current lexer object of the driver context. */
+#undef yylex
+#define yylex driver.lexer->lex
+%}
+
+%% /*** Grammar Rules ***/
+
+ /*** BEGIN SPARQLfed - Change the grammar rules below ***/
+Query:
+    // Prologue Construct
+    Prologue _QConstructTriples_E_Opt	{
+	driver.root = $2;
+    }
+;
+
+Prologue:
+    // BaseDecl? PrefixDecl*
+    _QBaseDecl_E_Opt _QPrefixDecl_E_Star
+;
+
+// BaseDecl?
+_QBaseDecl_E_Opt:
+
+    | BaseDecl
+;
+
+// PrefixDecl*
+_QPrefixDecl_E_Star:
+
+    | _QPrefixDecl_E_Star PrefixDecl
+;
+
+BaseDecl:
+    IT_BASE IRI_REF	{
+	driver.setBase($2);
+    }
+;
+
+PrefixDecl:
+    IT_PREFIX {
+	driver.ignorePrefix(true);
+      } PNAME_NS {
+	  driver.ignorePrefix(false);
+      } IRI_REF	{
+	  std::string prefix($3->getTerminal());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
+      } GT_DOT
+;
+
+// ConstructTriples?
+_QConstructTriples_E_Opt:
+    { $$ = NULL; }
+  | ConstructTriples	{
+	$$ = $1;
+    }
+;
+
+ConstructTriples:
+    // TriplesSameSubject ( '.' ConstructTriples? )?
+    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	{
+	$$ = driver.neededBGP ? driver.neededBGP : $2;
+	driver.neededBGP = NULL;
+    }
+;
+
+// '.' ConstructTriples?
+_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
+    GT_DOT _QConstructTriples_E_Opt	{
+	$$ = $2;
+    }
+;
+
+// ( '.' ConstructTriples? )?
+_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
+    { $$ = NULL; }
+  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
+;
+
+TriplesSameSubject:
+    VarOrTerm {
+	driver.curSubject = $1;
+    } PropertyListNotEmpty
+  | TriplesNode {
+	driver.curSubject = $1;
+    } PropertyList
+;
+
+PropertyListNotEmpty:
+    // Verb ObjectList ( ';' ( Verb ObjectList )? )*
+    Verb ObjectList _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star
+;
+
+// Verb ObjectList
+_O_QVerb_E_S_QObjectList_E_C:
+    Verb ObjectList
+;
+
+// ( Verb ObjectList )?
+_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt:
+
+    | _O_QVerb_E_S_QObjectList_E_C
+;
+
+// ';' ( Verb ObjectList )?
+_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C:
+    GT_SEMI _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt
+;
+
+// ( ';' ( Verb ObjectList )? )*
+_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
+
+    | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
+;
+
+PropertyList:
+    // PropertyListNotEmpty?
+    _QPropertyListNotEmpty_E_Opt
+;
+
+// PropertyListNotEmpty?
+_QPropertyListNotEmpty_E_Opt:
+
+    | PropertyListNotEmpty
+;
+
+ObjectList:
+    // Object ( ',' Object )*
+    Object _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star
+;
+
+// ',' Object
+_O_QGT_COMMA_E_S_QObject_E_C:
+    GT_COMMA Object
+;
+
+// ( ',' Object )*
+_Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
+
+    | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
+;
+
+Object:
+    GraphNode	{
+	if (!driver.curBGP)
+	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
+	driver.curBGP->addTriplePattern(driver.curSubject, driver.curPredicate, $1);
+	$$ = $1;
+    }
+;
+
+Verb:
+    VarOrIRIref	{
+	$$ = $1;
+	driver.curPredicate = $$;
+    }
+  | IT_a	{
+	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	driver.curPredicate = $$;
+    }
+;
+
+TriplesNode:
+    Collection	{
+	$$ = $1;
+    }
+  | BlankNodePropertyList	{
+	$$ = $1;
+    }
+;
+
+BlankNodePropertyList:
+    GT_LBRACKET {
+	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
+	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
+	driver.curSubject = driver.createBNode();
+      } PropertyListNotEmpty GT_RBRACKET	{
+	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
+	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
+	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
+      }
+;
+
+Collection:
+    // '(' GraphNode+ ')'
+    GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
+	$$ = driver.createBNode();
+	POS* tail = $$;
+	ProductionVector<POS*>* members = $2;
+	URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	if (!driver.curBGP)
+	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
+	for (unsigned i = 0; i < members->size(); i++) {
+	    driver.curBGP->addTriplePattern(tail, first, members->at(i));
+	    POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+	    driver.curBGP->addTriplePattern(tail, rest, nextTail);
+	    tail = nextTail;
+	}
+	members->clear();
+	delete members;
+    }
+;
+
+// GraphNode+
+_QGraphNode_E_Plus:
+    GraphNode	{
+	$$ = new ProductionVector<POS*>($1);
+    }
+  | _QGraphNode_E_Plus GraphNode	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
+GraphNode:
+    VarOrTerm	{
+	$$ = $1;
+    }
+  | TriplesNode	{
+	$$ = $1;
+    }
+;
+
+VarOrTerm:
+    GraphTerm	{
+	$$ = $1;
+    }
+;
+
+VarOrIRIref:
+    IRIref	{
+	$$ = $1;
+    }
+;
+
+GraphTerm:
+    IRIref	{
+	$$ = $1;
+    }
+  | RDFLiteral	{
+	$$ = $1;
+    }
+  | NumericLiteral	{
+	$$ = $1;
+    }
+  | BooleanLiteral	{
+	$$ = $1;
+    }
+  | BlankNode	{
+	$$ = $1;
+    }
+  | NIL	{
+	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+    }
+;
+
+RDFLiteral:
+    // String ( LANGTAG | ( '^^' IRIref ) )?
+    String _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt	{
+	$$ = driver.getRDFLiteral(*$1, $2.uri, $2.langtag);
+	delete $1;
+    }
+;
+
+// '^^' IRIref
+_O_QGT_DTYPE_E_S_QIRIref_E_C:
+    GT_DTYPE IRIref	{
+	$$ = $2;
+    }
+;
+
+// LANGTAG | ( '^^' IRIref )
+_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C:
+    LANGTAG	{
+	$$.uri = NULL;
+	$$.langtag = $1;
+    }
+  | _O_QGT_DTYPE_E_S_QIRIref_E_C	{
+	$$.uri = $1;
+	$$.langtag = NULL;
+    }
+;
+
+// ( LANGTAG | ( '^^' IRIref ) )?
+_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt:
+    {
+	$$.uri = NULL;
+	$$.langtag = NULL;
+    }
+  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C	{
+	$$ = $1;
+    }
+;
+
+NumericLiteral:
+    NumericLiteralUnsigned	{
+	$$ = $1;
+    }
+  | NumericLiteralPositive	{
+	$$ = $1;
+    }
+  | NumericLiteralNegative	{
+	$$ = $1;
+    }
+;
+
+NumericLiteralUnsigned:
+    INTEGER	{
+	$$ = $1;
+    }
+  | DECIMAL	{
+	$$ = $1;
+    }
+  | DOUBLE	{
+	$$ = $1;
+    }
+;
+
+NumericLiteralPositive:
+    INTEGER_POSITIVE	{
+	$$ = $1;
+    }
+  | DECIMAL_POSITIVE	{
+	$$ = $1;
+    }
+  | DOUBLE_POSITIVE	{
+	$$ = $1;
+    }
+;
+
+NumericLiteralNegative:
+    INTEGER_NEGATIVE	{
+	$$ = $1;
+    }
+  | DECIMAL_NEGATIVE	{
+	$$ = $1;
+    }
+  | DOUBLE_NEGATIVE	{
+	$$ = $1;
+    }
+;
+
+BooleanLiteral:
+    IT_true	{
+	$$ = $1;
+    }
+  | IT_false	{
+	$$ = $1;
+    }
+;
+
+String:
+    STRING_LITERAL1	{
+	$$ = $1;
+    }
+  | STRING_LITERAL2	{
+	$$ = $1;
+    }
+  | STRING_LITERAL_LONG1	{
+	$$ = $1;
+    }
+  | STRING_LITERAL_LONG2	{
+	$$ = $1;
+    }
+;
+
+IRIref:
+    IRI_REF	{
+	$$ = $1;
+    }
+  | PrefixedName	{
+	$$ = $1;
+    }
+;
+
+PrefixedName:
+    PNAME_LN	{
+	$$ = $1;
+    }
+  | PNAME_NS	{
+	$$ = $1;
+    }
+;
+
+BlankNode:
+    BLANK_NODE_LABEL	{
+	$$ = $1;
+    }
+  | ANON	{
+	$$ = $1;
+    }
+;
+
+/*** END SPARQLfed - Change the grammar rules above ***/
+
+%% /*** Additional Code ***/
+
+void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
+			    const std::string& m)
+{
+    driver.error(l, m);
+}
+
+/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+
+namespace w3c_sw {
+
+bool TurtleSDriver::parse_stream(std::istream& in, const std::string& sname)
+{
+    streamname = sname;
+
+    TurtleSScanner scanner(this, &in);
+    scanner.set_debug(trace_scanning);
+    this->lexer = &scanner;
+
+    TurtleSParser parser(*this);
+    parser.set_debug_level(trace_parsing);
+    return (parser.parse());
+}
+
+} // namespace w3c_sw
+
+/* END Driver */
+
