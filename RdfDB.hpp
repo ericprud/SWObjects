@@ -1,5 +1,5 @@
 /* RdfDB - sets of variable bindings and their proofs.
- * $Id: RdfDB.hpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: RdfDB.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #ifndef RDF_DB_H
@@ -8,7 +8,7 @@
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 #if 0
     class Triple {
     protected:
@@ -32,7 +32,7 @@ namespace SPARQLfedNS {
     public:
 	DefaultGraphClass () : POS("::DefaultGraphClass::") {  }
 	virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
-	virtual POS* express (yacker::Expressor*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); };
+	virtual POS* express (Expressor*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); };
     };
     extern POS* DefaultGraph;
 
@@ -52,10 +52,10 @@ namespace SPARQLfedNS {
 	void clearTriples();
 	BasicGraphPattern* assureGraph(POS* name);
 	void bindVariables(ResultSet* rs, POS* graph, BasicGraphPattern* toMatch);
-	void express(yacker::Expressor* expressor);
+	void express(Expressor* expressor);
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // !RDF_DB_H
 

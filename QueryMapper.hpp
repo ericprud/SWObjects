@@ -1,6 +1,6 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
  *
- * $Id: QueryMapper.hpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: QueryMapper.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -9,7 +9,7 @@
 #include "SWObjectDuplicator.hpp"
 #include "RuleInverter.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
     class QueryMapper : public SWObjectDuplicator {
     protected:
@@ -31,13 +31,13 @@ namespace SPARQLfedNS {
 	virtual TriplePattern* triplePattern999 (POS* p_s, POS* p_p, POS* p_o) {
 	    return new TriplePattern(p_s->express(this), p_p->express(this), p_o->express(this));
 	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this));
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
@@ -103,7 +103,7 @@ namespace SPARQLfedNS {
 	}
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // QueryMapper_H
 

@@ -1,10 +1,10 @@
 /* RdfQueryDB - sets of variable bindings and their proofs.
- * $Id: RdfQueryDB.cpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: RdfQueryDB.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #include "RdfQueryDB.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
     RdfQueryDB::RdfQueryDB (Operation* p_op) : RdfDB(), op(p_op) {
 	DBExpressor ex(this);
@@ -16,5 +16,5 @@ namespace SPARQLfedNS {
 	p_op->express(&ex);
     }
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 

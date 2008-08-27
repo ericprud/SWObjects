@@ -37,7 +37,7 @@
 
 #include <deque>
 
-namespace SPARQLfedNS
+namespace w3c_sw
 {
   template <class T, class S = std::deque<T> >
   class stack

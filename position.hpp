@@ -34,7 +34,7 @@
 
 /**
  ** \file position.hpp
- ** Define the SPARQLfedNS::position class.
+ ** Define the w3c_sw::position class.
  */
 
 #ifndef BISON_POSITION_HH
@@ -43,7 +43,7 @@
 # include <iostream>
 # include <string>
 
-namespace SPARQLfedNS
+namespace w3c_sw
 {
   /// Abstract a position.
   class position

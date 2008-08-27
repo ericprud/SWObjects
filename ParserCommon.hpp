@@ -1,5 +1,5 @@
 /* ParserCommon.hpp - commonalities between SPARQL/RDF-related parsers
- * $Id: ParserCommon.hpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: ParserCommon.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #ifndef PARSER_COMMON_HH
@@ -9,22 +9,22 @@
 
 void stop(size_t line);
 
-namespace yacker {
+namespace w3c_sw {
 
 class Driver
 {
     /// type of the namespace storage
-    typedef std::map<std::string, SPARQLfedNS::URI*> namespacemap_type;
+    typedef std::map<std::string, w3c_sw::URI*> namespacemap_type;
 protected:
-    SPARQLfedNS::POSFactory * const posFactory;
+    w3c_sw::POSFactory * const posFactory;
     namespacemap_type	namespaces;
-    SPARQLfedNS::URI*		base;
+    w3c_sw::URI*		base;
     bool ignorePrefixFlag;
 
 public:
     /// construct a new parser driver context
-    Driver(SPARQLfedNS::POSFactory* posFactory);
-    Driver(std::string baseURI, SPARQLfedNS::POSFactory* posFactory);
+    Driver(w3c_sw::POSFactory* posFactory);
+    Driver(std::string baseURI, w3c_sw::POSFactory* posFactory);
     virtual ~Driver () {  }
 
     /// enable debug output in the flex scanner
@@ -65,7 +65,7 @@ public:
 
     /** Error handling with associated line number. This can be modified to
      * output the error e.g. to a dialog box. */
-    void error(const class SPARQLfedNS::location& l, const std::string& m);
+    void error(const class w3c_sw::location& l, const std::string& m);
 
     /** General error handling. This can be modified to output the error
      * e.g. to a dialog box. */
@@ -75,40 +75,40 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    void setBase (SPARQLfedNS::URI* b) { /* base is centrally managed -- don't delete */ base = b; }
-    void addPrefix (std::string prefix, SPARQLfedNS::URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
+    void setBase (w3c_sw::URI* b) { /* base is centrally managed -- don't delete */ base = b; }
+    void addPrefix (std::string prefix, w3c_sw::URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
-    SPARQLfedNS::URI* getNamespace (std::string prefix) {
+    w3c_sw::URI* getNamespace (std::string prefix) {
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end())
 	    throw(std::runtime_error("Unknown prefix."));
 	else
 	    return vi->second;
     }
-    SPARQLfedNS::URI* getBase () { return base; }
+    w3c_sw::URI* getBase () { return base; }
 
 
     /* POSFactory relay. */
-    SPARQLfedNS::Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
-    SPARQLfedNS::URI* getURI (std::string name) { return posFactory->getURI(name); }
-    SPARQLfedNS::URI* getAbsoluteURI(std::string name);
-    SPARQLfedNS::BNode* createBNode () { return posFactory->createBNode(); }
-    SPARQLfedNS::BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
-    SPARQLfedNS::RDFLiteral* getRDFLiteral (std::string p_String, SPARQLfedNS::URI* p_URI, SPARQLfedNS::LANGTAG* p_LANGTAG) { return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG); }
+    w3c_sw::Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
+    w3c_sw::URI* getURI (std::string name) { return posFactory->getURI(name); }
+    w3c_sw::URI* getAbsoluteURI(std::string name);
+    w3c_sw::BNode* createBNode () { return posFactory->createBNode(); }
+    w3c_sw::BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
+    w3c_sw::RDFLiteral* getRDFLiteral (std::string p_String, w3c_sw::URI* p_URI, w3c_sw::LANGTAG* p_LANGTAG) { return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG); }
 
-    SPARQLfedNS::IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    SPARQLfedNS::DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    SPARQLfedNS::DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    w3c_sw::IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    w3c_sw::DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    w3c_sw::DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
 
-    SPARQLfedNS::BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
-    SPARQLfedNS::NULLpos* getNULL  () { return posFactory->getNULL(); }
+    w3c_sw::BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
+    w3c_sw::NULLpos* getNULL  () { return posFactory->getNULL(); }
 
 };
 
-} //namespace yacker
+} //namespace w3c_sw
 
 #endif /* ! defined PARSER_COMMON_HH */
 

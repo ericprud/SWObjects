@@ -1,4 +1,4 @@
-/* $Id: SPARQLfedScanner.lpp,v 1.1 2008-08-26 05:30:48 jnorthru Exp $ -*- mode: c++ -*- */
+/* $Id: SPARQLfedScanner.lpp,v 1.2 2008-08-27 02:21:42 eric Exp $ -*- mode: c++ -*- */
 /** \file SPARQLfedScanner.ll Define the Flex lexical scanner */
 
 %{ /*** C/C++ Declarations ***/
@@ -7,8 +7,8 @@
 #include "SPARQLfedScanner.hpp"
 
 /* import the parser's token type into a local typedef */
-typedef SPARQLfedNS::SPARQLfedParser::token token;
-typedef SPARQLfedNS::SPARQLfedParser::token_type token_type;
+typedef w3c_sw::SPARQLfedParser::token token;
+typedef w3c_sw::SPARQLfedParser::token_type token_type;
 
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
@@ -260,7 +260,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 /* END semantic actions for SPARQLfed terminals */
 
 /* START SPARQLfedScanner */
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
 SPARQLfedScanner::SPARQLfedScanner (SPARQLfedDriver* driver, std::istream* in, std::ostream* out) : SPARQLfedFlexLexer(in, out), driver(driver) {  }
 SPARQLfedScanner::~SPARQLfedScanner () {  }
@@ -344,10 +344,10 @@ void SPARQLfedScanner::set_debug(bool b)
     yy_flex_debug = b;
 }
 
-} // END namespace SPARQLfedNS
+} // END namespace w3c_sw
 /* END SPARQLfedScanner */
 
-SPARQLfedNS::URI* SPARQLfedNS::SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
+w3c_sw::URI* w3c_sw::SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
     std::string stripped(p_rel);
     if (stripDelims) {
 	stripped.replace(0, 1, "");
@@ -362,7 +362,7 @@ SPARQLfedNS::URI* SPARQLfedNS::SPARQLfedScanner::resolveBase (const char* p_rel,
     static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
 
     boost::smatch what;
-    SPARQLfedNS::URI* baseURI = driver->getBase();
+    w3c_sw::URI* baseURI = driver->getBase();
     std::string base;
     if (baseURI != NULL)
 	std::string base = baseURI->getTerminal();

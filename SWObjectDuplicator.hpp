@@ -1,6 +1,6 @@
 /* SWObjectDuplicator.hpp - simple SPARQL duplicator for SPARQL compile trees.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.1 2008-08-26 05:30:48 jnorthru Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -8,9 +8,9 @@
 
 #include "SWObjects.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
-    class SWObjectDuplicator : public yacker::Expressor {
+    class SWObjectDuplicator : public Expressor {
     protected:
 	POSFactory* posFactory;
 	Operation* p_Operation;
@@ -18,7 +18,7 @@ namespace SPARQLfedNS {
 	SWObjectDuplicator (POSFactory* posFactory) : posFactory(posFactory) {  }
 	Operation* getCopy () { return p_Operation; }
 	//!!!
-	virtual yacker::Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual URI* uri (std::string terminal) {
 	    return posFactory->getURI(terminal.c_str());
@@ -60,41 +60,41 @@ namespace SPARQLfedNS {
 	    return new Filter(p_Constraint->express(this));
 	}
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
-	virtual void _TriplePatterns (yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
+	virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)		
 		p->addTriplePattern((*it)->express(this));
 	}
-	void _Filters (yacker::ProductionVector<Filter*>* p_Filters, TableOperation* op) {
+	void _Filters (ProductionVector<Filter*>* p_Filters, TableOperation* op) {
 	    for (std::vector<Filter*>::iterator it = p_Filters->begin();
 		 it != p_Filters->end(); it++)
 		op->addFilter((*it)->express(this));
 	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this));
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
 	}
 	/* _TableOperations factored out supporter function; virtual for MappedDuplicator. */
-	virtual void _TableOperations (yacker::ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
+	virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
 	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); it++)
 		j->addTableOperation((*it)->express(this));
 	}
-	virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<TableOperation*>* p_TableOperations, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	    TableDisjunction* ret = new TableDisjunction();
 	    _TableOperations(p_TableOperations, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
 	}
-	virtual TableConjunction* tableConjunction (yacker::ProductionVector<TableOperation*>* p_TableOperations, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	    TableConjunction* ret = new TableConjunction();
 	    _TableOperations(p_TableOperations, ret);
 	    _Filters(p_Filters, ret);
@@ -106,12 +106,12 @@ namespace SPARQLfedNS {
 	virtual GraphGraphPattern* graphGraphPattern (POS* p_POS, TableOperation* p_GroupGraphPattern) {
 	    return new GraphGraphPattern(p_POS->express(this), p_GroupGraphPattern->express(this));
 	}
-	void _POSs (yacker::ProductionVector<POS*>* p_POSs, POSList* p) { // !!! single use
+	void _POSs (ProductionVector<POS*>* p_POSs, POSList* p) { // !!! single use
 	    for (std::vector<POS*>::iterator it = p_POSs->begin();
 		 it != p_POSs->end(); it++)
 		p->push_back((*it)->express(this));
 	}
-	virtual POSList* posList (yacker::ProductionVector<POS*>* p_POSs) {
+	virtual POSList* posList (ProductionVector<POS*>* p_POSs) {
 	    POSList* ret = new POSList();
 	    _POSs(p_POSs, ret);
 	    return ret;
@@ -140,14 +140,14 @@ namespace SPARQLfedNS {
 		return new SolutionModifier(NULL, p_limit, p_offset);
 	    }
 	}
-	virtual Binding* binding (yacker::ProductionVector<POS*>* values) {//!!!
+	virtual Binding* binding (ProductionVector<POS*>* values) {//!!!
 	    Binding* ret = new Binding();
 	    for (std::vector<POS*>::iterator it = values->begin();
 		 it != values->end(); it++)
 		ret->push_back((*it)->express(this));
 	    return ret;
 	}
-	virtual BindingClause* bindingClause (POSList* p_Vars, yacker::ProductionVector<Binding*>* p_Bindings) {
+	virtual BindingClause* bindingClause (POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) {
 	    BindingClause* ret = new BindingClause(p_Vars->express(this));
 	    for (std::vector<Binding*>::iterator it = p_Bindings->begin();
 		 it != p_Bindings->end(); it++)
@@ -157,24 +157,24 @@ namespace SPARQLfedNS {
 	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	    return new WhereClause(p_GroupGraphPattern->express(this), p_BindingClause ? p_BindingClause->express(this) : NULL);
 	}
-	yacker::ProductionVector<DatasetClause*>* _DatasetClauses (yacker::ProductionVector<DatasetClause*>* p_DatasetClauses) {
-	    yacker::ProductionVector<DatasetClause*>* l_DatasetClauses = new yacker::ProductionVector<DatasetClause*>();
+	ProductionVector<DatasetClause*>* _DatasetClauses (ProductionVector<DatasetClause*>* p_DatasetClauses) {
+	    ProductionVector<DatasetClause*>* l_DatasetClauses = new ProductionVector<DatasetClause*>();
 	    for (std::vector<DatasetClause*>::iterator it = p_DatasetClauses->begin();
 		 it != p_DatasetClauses->end(); it++)
 		l_DatasetClauses->push_back((*it)->express(this));
 	    return l_DatasetClauses;
 	}
 	/* Operations */
-	virtual Select* select (e_distinctness p_distinctness, VarSet* p_VarSet, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual Select* select (e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    return new Select(p_distinctness, p_VarSet->express(this), _DatasetClauses(p_DatasetClauses), p_WhereClause->express(this), p_SolutionModifier->express(this));
 	}
-	virtual Construct* construct (DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual Construct* construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    return new Construct(p_ConstructTemplate->express(this), _DatasetClauses(p_DatasetClauses), p_WhereClause->express(this), p_SolutionModifier->express(this));
 	}
-	virtual Describe* describe (VarSet* p_VarSet, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual Describe* describe (VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    return new Describe(p_VarSet->express(this), _DatasetClauses(p_DatasetClauses), p_WhereClause->express(this), p_SolutionModifier->express(this));
 	}
-	virtual Ask* ask (yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	virtual Ask* ask (ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	    return new Ask(_DatasetClauses(p_DatasetClauses), p_WhereClause->express(this));
 	}
 	virtual Replace* replace (WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
@@ -186,8 +186,8 @@ namespace SPARQLfedNS {
 	virtual Delete* del (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    return new Delete(p_GraphTemplate->express(this), p_WhereClause->express(this));
 	}
-	virtual Load* load (yacker::ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
-	    yacker::ProductionVector<URI*>* l_URIs = new yacker::ProductionVector<URI*>();
+	virtual Load* load (ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
+	    ProductionVector<URI*>* l_URIs = new ProductionVector<URI*>();
 	    for (std::vector<URI*>::iterator it = p_IRIrefs->begin();
 		 it != p_IRIrefs->end(); it++)
 		l_URIs->push_back((*it)->express(this));
@@ -216,14 +216,14 @@ namespace SPARQLfedNS {
 	virtual URIExpression* uriExpression (URI* p_URI) {
 	    return new URIExpression(p_URI->express(this));
 	}
-	yacker::ProductionVector<Expression*>* _Expressions (yacker::ProductionVector<Expression*>* p_Expressions) {
-	    yacker::ProductionVector<Expression*>* l_Expressions = new yacker::ProductionVector<Expression*>();
+	ProductionVector<Expression*>* _Expressions (ProductionVector<Expression*>* p_Expressions) {
+	    ProductionVector<Expression*>* l_Expressions = new ProductionVector<Expression*>();
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); it++)
 		l_Expressions->push_back((*it)->express(this));
 	    return l_Expressions;
 	}
-	virtual ArgList* argList (yacker::ProductionVector<Expression*>* p_expressions) {
+	virtual ArgList* argList (ProductionVector<Expression*>* p_expressions) {
 	    return new ArgList(_Expressions(p_expressions));
 	}
 	virtual FunctionCall* functionCall (URI* p_IRIref, ArgList* p_ArgList) {
@@ -238,30 +238,30 @@ namespace SPARQLfedNS {
 	}
 	/*	typedef struct {
 	    Expression* first
-	    yacker::ProductionVector<Expression*>* rest;
+	    ProductionVector<Expression*>* rest;
 	    } _Car; */
-	Expression* _car(yacker::ProductionVector<Expression*>* p_Expressions) {
+	Expression* _car(ProductionVector<Expression*>* p_Expressions) {
 	    Expression* ret = p_Expressions->at(0);
 	    p_Expressions->erase(p_Expressions->begin());
 	    return ret;
 	}
-	virtual BooleanConjunction* booleanConjunction (yacker::ProductionVector<Expression*>* p_Expressions) {
-	    yacker::ProductionVector<Expression*>* v = _Expressions(p_Expressions);
+	virtual BooleanConjunction* booleanConjunction (ProductionVector<Expression*>* p_Expressions) {
+	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    return new BooleanConjunction(_car(v), v);
 	}
-	virtual BooleanDisjunction* booleanDisjunction (yacker::ProductionVector<Expression*>* p_Expressions) {
-	    yacker::ProductionVector<Expression*>* v = _Expressions(p_Expressions);
+	virtual BooleanDisjunction* booleanDisjunction (ProductionVector<Expression*>* p_Expressions) {
+	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    return new BooleanDisjunction(_car(v), v);
 	}
-	virtual ArithmeticSum* arithmeticSum (yacker::ProductionVector<Expression*>* p_Expressions) {
-	    yacker::ProductionVector<Expression*>* v = _Expressions(p_Expressions);
+	virtual ArithmeticSum* arithmeticSum (ProductionVector<Expression*>* p_Expressions) {
+	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    return new ArithmeticSum(_car(v), v);
 	}
 	virtual ArithmeticNegation* arithmeticNegation (Expression* p_Expression) {
 	    return new ArithmeticNegation(p_Expression->express(this));
 	}
-	virtual ArithmeticProduct* arithmeticProduct (yacker::ProductionVector<Expression*>* p_Expressions) {
-	    yacker::ProductionVector<Expression*>* v = _Expressions(p_Expressions);
+	virtual ArithmeticProduct* arithmeticProduct (ProductionVector<Expression*>* p_Expressions) {
+	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    return new ArithmeticProduct(_car(v), v);
 	}
 	virtual ArithmeticInverse* arithmeticInverse (Expression* p_Expression) {
@@ -305,7 +305,7 @@ namespace SPARQLfedNS {
 	}
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // SWObjectDuplicator_H
 

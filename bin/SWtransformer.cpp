@@ -24,13 +24,13 @@ int main(int argc,char** argv) {
     }
 
     /* Tools we'll need for this demo: */
-    SPARQLfedNS::POSFactory posFactory;
-    SPARQLfedNS::SPARQLfedDriver sparqlParser("", &posFactory);
-    SPARQLfedNS::TurtleSDriver turtleParser(baseURI, &posFactory);
-    SPARQLfedNS::QueryMapper d(&posFactory);
+    w3c_sw::POSFactory posFactory;
+    w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
+    w3c_sw::TurtleSDriver turtleParser(baseURI, &posFactory);
+    w3c_sw::QueryMapper d(&posFactory);
 
     int result;
-    SPARQLfedNS::Operation* query = NULL;
+    w3c_sw::Operation* query = NULL;
     try {
 	char* inputId;
 	try {

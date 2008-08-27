@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.1 2008-08-26 05:30:49 jnorthru Exp $
+ * $Id: SWObjects.cpp,v 1.2 2008-08-27 02:21:42 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -10,15 +10,15 @@
 #include "TurtleSParser.hpp"
 #include <string.h>
 
-namespace yacker {
+namespace w3c_sw {
 
-Base* Base::express (yacker::Expressor* p_expressor) {
+Base* Base::express (Expressor* p_expressor) {
     return p_expressor->base(typeid(*this).name());
 }
 
 char const * yit = "yacker:implicit-terminal";
 
-} // namespace yacker
+} // namespace w3c_sw
 
 /* END yacker-specific test harness */
 
@@ -196,181 +196,181 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 } // namespace libwww
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
-URI* URI::express (yacker::Expressor* p_expressor) {
+URI* URI::express (Expressor* p_expressor) {
     return p_expressor->uri(terminal);
 }
-Variable* Variable::express (yacker::Expressor* p_expressor) {
+Variable* Variable::express (Expressor* p_expressor) {
     return p_expressor->variable(terminal);
 }
-BNode* BNode::express (yacker::Expressor* p_expressor) {
+BNode* BNode::express (Expressor* p_expressor) {
     return p_expressor->bnode(terminal);
 }
-RDFLiteral* RDFLiteral::express (yacker::Expressor* p_expressor) {
+RDFLiteral* RDFLiteral::express (Expressor* p_expressor) {
     return p_expressor->rdfLiteral(m_String, datatype, m_LANGTAG);
 }
-NumericRDFLiteral* IntegerRDFLiteral::express (yacker::Expressor* p_expressor) {
+NumericRDFLiteral* IntegerRDFLiteral::express (Expressor* p_expressor) {
     return p_expressor->rdfLiteral(m_value);
 }
-NumericRDFLiteral* DecimalRDFLiteral::express (yacker::Expressor* p_expressor) {
+NumericRDFLiteral* DecimalRDFLiteral::express (Expressor* p_expressor) {
     return p_expressor->rdfLiteral(m_value);
 }
-NumericRDFLiteral* DoubleRDFLiteral::express (yacker::Expressor* p_expressor) {
+NumericRDFLiteral* DoubleRDFLiteral::express (Expressor* p_expressor) {
     return p_expressor->rdfLiteral(m_value);
 }
-BooleanRDFLiteral* BooleanRDFLiteral::express (yacker::Expressor* p_expressor) {
+BooleanRDFLiteral* BooleanRDFLiteral::express (Expressor* p_expressor) {
     return p_expressor->rdfLiteral(m_value);
 }
-NULLpos* NULLpos::express (yacker::Expressor* p_expressor) {
+NULLpos* NULLpos::express (Expressor* p_expressor) {
     return p_expressor->nullpos();
 }
-TriplePattern* TriplePattern::express (yacker::Expressor* p_expressor) {
+TriplePattern* TriplePattern::express (Expressor* p_expressor) {
     return p_expressor->triplePattern(m_s,m_p,m_o);
 }
-Filter* Filter::express (yacker::Expressor* p_expressor) {
+Filter* Filter::express (Expressor* p_expressor) {
     return p_expressor->filter(m_Constraint);
 }
-NamedGraphPattern* NamedGraphPattern::express (yacker::Expressor* p_expressor) {
+NamedGraphPattern* NamedGraphPattern::express (Expressor* p_expressor) {
     return p_expressor->namedGraphPattern(m_name, allOpts, &m_TriplePatterns, &m_Filters);
 }
-DefaultGraphPattern* DefaultGraphPattern::express (yacker::Expressor* p_expressor) {
+DefaultGraphPattern* DefaultGraphPattern::express (Expressor* p_expressor) {
     return p_expressor->defaultGraphPattern(allOpts, &m_TriplePatterns, &m_Filters);
 }
-TableDisjunction* TableDisjunction::express (yacker::Expressor* p_expressor) {
+TableDisjunction* TableDisjunction::express (Expressor* p_expressor) {
     return p_expressor->tableDisjunction(&m_TableOperations, &m_Filters);
 }
-TableConjunction* TableConjunction::express (yacker::Expressor* p_expressor) {
+TableConjunction* TableConjunction::express (Expressor* p_expressor) {
     return p_expressor->tableConjunction(&m_TableOperations, &m_Filters);
 }
-OptionalGraphPattern* OptionalGraphPattern::express (yacker::Expressor* p_expressor) {
+OptionalGraphPattern* OptionalGraphPattern::express (Expressor* p_expressor) {
     return p_expressor->optionalGraphPattern(m_TableOperation);
 }
-GraphGraphPattern* GraphGraphPattern::express (yacker::Expressor* p_expressor) {
+GraphGraphPattern* GraphGraphPattern::express (Expressor* p_expressor) {
     return p_expressor->graphGraphPattern(m_VarOrIRIref, m_TableOperation);
 }
-POSList* POSList::express (yacker::Expressor* p_expressor) {
+POSList* POSList::express (Expressor* p_expressor) {
     return p_expressor->posList(&m_POSs);
 }
-StarVarSet* StarVarSet::express (yacker::Expressor* p_expressor) {
+StarVarSet* StarVarSet::express (Expressor* p_expressor) {
     return p_expressor->starVarSet();
 }
-DefaultGraphClause* DefaultGraphClause::express (yacker::Expressor* p_expressor) {
+DefaultGraphClause* DefaultGraphClause::express (Expressor* p_expressor) {
     return p_expressor->defaultGraphClause(m_IRIref);
 }
-NamedGraphClause* NamedGraphClause::express (yacker::Expressor* p_expressor) {
+NamedGraphClause* NamedGraphClause::express (Expressor* p_expressor) {
     return p_expressor->namedGraphClause(m_IRIref);
 }
-SolutionModifier* SolutionModifier::express (yacker::Expressor* p_expressor) {
+SolutionModifier* SolutionModifier::express (Expressor* p_expressor) {
     return p_expressor->solutionModifier(m_OrderConditions, m_limit,m_offset);
 }
-Binding* Binding::express (yacker::Expressor* p_expressor) {
+Binding* Binding::express (Expressor* p_expressor) {
     return p_expressor->binding(this);
 }
-BindingClause* BindingClause::express (yacker::Expressor* p_expressor) {
+BindingClause* BindingClause::express (Expressor* p_expressor) {
     return p_expressor->bindingClause(m_Vars, this);
 }
-WhereClause* WhereClause::express (yacker::Expressor* p_expressor) {
+WhereClause* WhereClause::express (Expressor* p_expressor) {
     return p_expressor->whereClause(m_GroupGraphPattern,m_BindingClause);
 }
-Select* Select::express (yacker::Expressor* p_expressor) {
+Select* Select::express (Expressor* p_expressor) {
     return p_expressor->select(m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-Construct* Construct::express (yacker::Expressor* p_expressor) {
+Construct* Construct::express (Expressor* p_expressor) {
     return p_expressor->construct(m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-Describe* Describe::express (yacker::Expressor* p_expressor) {
+Describe* Describe::express (Expressor* p_expressor) {
     return p_expressor->describe(m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-Ask* Ask::express (yacker::Expressor* p_expressor) {
+Ask* Ask::express (Expressor* p_expressor) {
     return p_expressor->ask(m_DatasetClauses,m_WhereClause);
 }
-Replace* Replace::express (yacker::Expressor* p_expressor) {
+Replace* Replace::express (Expressor* p_expressor) {
     return p_expressor->replace(m_WhereClause,m_GraphTemplate);
 }
-Insert* Insert::express (yacker::Expressor* p_expressor) {
+Insert* Insert::express (Expressor* p_expressor) {
     return p_expressor->insert(m_GraphTemplate,m_WhereClause);
 }
-Delete* Delete::express (yacker::Expressor* p_expressor) {
+Delete* Delete::express (Expressor* p_expressor) {
     return p_expressor->del(m_GraphTemplate,m_WhereClause);
 }
-Load* Load::express (yacker::Expressor* p_expressor) {
+Load* Load::express (Expressor* p_expressor) {
     return p_expressor->load(m_IRIrefs,m_into);
 }
-Clear* Clear::express (yacker::Expressor* p_expressor) {
+Clear* Clear::express (Expressor* p_expressor) {
     return p_expressor->clear(m__QGraphIRI_E_Opt);
 }
-Create* Create::express (yacker::Expressor* p_expressor) {
+Create* Create::express (Expressor* p_expressor) {
     return p_expressor->create(m_Silence,m_GraphIRI);
 }
-Drop* Drop::express (yacker::Expressor* p_expressor) {
+Drop* Drop::express (Expressor* p_expressor) {
     return p_expressor->drop(m_Silence,m_GraphIRI);
 }
-VarExpression* VarExpression::express (yacker::Expressor* p_expressor) {
+VarExpression* VarExpression::express (Expressor* p_expressor) {
     return p_expressor->varExpression(m_Variable);
 }
-LiteralExpression* LiteralExpression::express (yacker::Expressor* p_expressor) {
+LiteralExpression* LiteralExpression::express (Expressor* p_expressor) {
     return p_expressor->literalExpression(m_RDFLiteral);
 }
-BooleanExpression* BooleanExpression::express (yacker::Expressor* p_expressor) {
+BooleanExpression* BooleanExpression::express (Expressor* p_expressor) {
     return p_expressor->booleanExpression(m_BooleanRDFLiteral);
 }
-URIExpression* URIExpression::express (yacker::Expressor* p_expressor) {
+URIExpression* URIExpression::express (Expressor* p_expressor) {
     return p_expressor->uriExpression(m_URI);
 }
-ArgList* ArgList::express (yacker::Expressor* p_expressor) {
+ArgList* ArgList::express (Expressor* p_expressor) {
     return p_expressor->argList(m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C);
 }
-FunctionCall* FunctionCall::express (yacker::Expressor* p_expressor) {
+FunctionCall* FunctionCall::express (Expressor* p_expressor) {
     return p_expressor->functionCall(m_IRIref,m_ArgList);
 }
-FunctionCallExpression* FunctionCallExpression::express (yacker::Expressor* p_expressor) {
+FunctionCallExpression* FunctionCallExpression::express (Expressor* p_expressor) {
     return p_expressor->functionCallExpression(m_FunctionCall);
 }
 /* Expressions */
-BooleanNegation* BooleanNegation::express (yacker::Expressor* p_expressor) {
+BooleanNegation* BooleanNegation::express (Expressor* p_expressor) {
     return p_expressor->booleanNegation(m_Expression);
 }
-ArithmeticNegation* ArithmeticNegation::express (yacker::Expressor* p_expressor) {
+ArithmeticNegation* ArithmeticNegation::express (Expressor* p_expressor) {
     return p_expressor->arithmeticNegation(m_Expression);
 }
-ArithmeticInverse* ArithmeticInverse::express (yacker::Expressor* p_expressor) {
+ArithmeticInverse* ArithmeticInverse::express (Expressor* p_expressor) {
     return p_expressor->arithmeticInverse(m_Expression);
 }
-BooleanConjunction* BooleanConjunction::express (yacker::Expressor* p_expressor) {
+BooleanConjunction* BooleanConjunction::express (Expressor* p_expressor) {
     return p_expressor->booleanConjunction(&m_Expressions);
 }
-BooleanDisjunction* BooleanDisjunction::express (yacker::Expressor* p_expressor) {
+BooleanDisjunction* BooleanDisjunction::express (Expressor* p_expressor) {
     return p_expressor->booleanDisjunction(&m_Expressions);
 }
-ArithmeticSum* ArithmeticSum::express (yacker::Expressor* p_expressor) {
+ArithmeticSum* ArithmeticSum::express (Expressor* p_expressor) {
     return p_expressor->arithmeticSum(&m_Expressions);
 }
-ArithmeticProduct* ArithmeticProduct::express (yacker::Expressor* p_expressor) {
+ArithmeticProduct* ArithmeticProduct::express (Expressor* p_expressor) {
     return p_expressor->arithmeticProduct(&m_Expressions);
 }
-BooleanEQ* BooleanEQ::express (yacker::Expressor* p_expressor) {
+BooleanEQ* BooleanEQ::express (Expressor* p_expressor) {
     return p_expressor->booleanEQ(left,right);
 }
-BooleanNE* BooleanNE::express (yacker::Expressor* p_expressor) {
+BooleanNE* BooleanNE::express (Expressor* p_expressor) {
     return p_expressor->booleanNE(left,right);
 }
-BooleanLT* BooleanLT::express (yacker::Expressor* p_expressor) {
+BooleanLT* BooleanLT::express (Expressor* p_expressor) {
     return p_expressor->booleanLT(left,right);
 }
-BooleanGT* BooleanGT::express (yacker::Expressor* p_expressor) {
+BooleanGT* BooleanGT::express (Expressor* p_expressor) {
     return p_expressor->booleanGT(left,right);
 }
-BooleanLE* BooleanLE::express (yacker::Expressor* p_expressor) {
+BooleanLE* BooleanLE::express (Expressor* p_expressor) {
     return p_expressor->booleanLE(left,right);
 }
-BooleanGE* BooleanGE::express (yacker::Expressor* p_expressor) {
+BooleanGE* BooleanGE::express (Expressor* p_expressor) {
     return p_expressor->booleanGE(left,right);
 }
-ComparatorExpression* ComparatorExpression::express (yacker::Expressor* p_expressor) {
+ComparatorExpression* ComparatorExpression::express (Expressor* p_expressor) {
     return p_expressor->comparatorExpression(m_BooleanComparator);
 }
-NumberExpression* NumberExpression::express (yacker::Expressor* p_expressor) {
+NumberExpression* NumberExpression::express (Expressor* p_expressor) {
     return p_expressor->numberExpression(m_NumericRDFLiteral);
 }
 
@@ -827,5 +827,5 @@ NumberExpression* NumberExpression::express (yacker::Expressor* p_expressor) {
 	return ret;
     }
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 

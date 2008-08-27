@@ -34,7 +34,7 @@
 
 /**
  ** \file location.hpp
- ** Define the SPARQLfedNS::location class.
+ ** Define the w3c_sw::location class.
  */
 
 #ifndef BISON_LOCATION_HH
@@ -44,7 +44,7 @@
 # include <string>
 # include "position.hpp"
 
-namespace SPARQLfedNS
+namespace w3c_sw
 {
 
   /// Abstract a location.

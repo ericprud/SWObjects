@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: ResultSet.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -17,7 +17,7 @@
 #include <set>
 #include <list>
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
     typedef struct { bool weaklyBound; POS* pos; } BindingInfo;
     typedef std::map<POS*, BindingInfo> BindingSet;
@@ -74,7 +74,7 @@ namespace SPARQLfedNS {
     class TransformerResultSet : public ResultSet {
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // !RESULT_SET_H
 

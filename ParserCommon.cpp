@@ -1,5 +1,5 @@
 /* ParserCommon.cc - commonalities between SPARQL/RDF-related parsers
- * $Id: ParserCommon.cpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: ParserCommon.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -8,12 +8,12 @@
 #include <fstream>
 #include <iostream> // for cerr
 
-namespace yacker {
+namespace w3c_sw {
 
-    Driver::Driver (SPARQLfedNS::POSFactory* posFactory)
+    Driver::Driver (w3c_sw::POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(NULL), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
-    Driver::Driver (std::string baseURI, SPARQLfedNS::POSFactory* posFactory)
+    Driver::Driver (std::string baseURI, w3c_sw::POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(getURI(baseURI)), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     bool Driver::parse_file (const std::string &filename) {
@@ -26,7 +26,7 @@ namespace yacker {
 	return parse_stream(iss, sname);
     }
 
-    void Driver::error (const class SPARQLfedNS::location& l,
+    void Driver::error (const class w3c_sw::location& l,
 			const std::string& m) {
 	std::cerr << l << ": " << m << std::endl;
     }
@@ -35,13 +35,13 @@ namespace yacker {
 	std::cerr << m << std::endl;
     }
 
-    SPARQLfedNS::URI* Driver::getAbsoluteURI (std::string name) {
+    w3c_sw::URI* Driver::getAbsoluteURI (std::string name) {
 	std::string str = base ? base->getTerminal() : "";
 	std::string abs(libwww::HTParse(name, base ? &str : NULL, libwww::PARSE_all));
 	return posFactory->getURI(abs.c_str());
     }
 
-} //namespace yacker
+} //namespace w3c_sw
 
 void stop (size_t line) {
     std::cerr << "should have stopped with a " << line << std::endl;

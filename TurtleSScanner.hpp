@@ -1,4 +1,4 @@
-// $Id: TurtleSScanner.hpp,v 1.1 2008-08-26 05:30:49 jnorthru Exp $
+// $Id: TurtleSScanner.hpp,v 1.2 2008-08-27 02:21:43 eric Exp $
 
 #ifndef TurtleSScanner_H
 #define TurtleSScanner_H
@@ -9,10 +9,10 @@
 #ifndef YY_DECL
 
 #define	YY_DECL						\
-    SPARQLfedNS::TurtleSParser::token_type				\
-    SPARQLfedNS::TurtleSScanner::lex(				\
-	SPARQLfedNS::TurtleSParser::semantic_type* yylval,		\
-	SPARQLfedNS::TurtleSParser::location_type* yylloc		\
+    w3c_sw::TurtleSParser::token_type				\
+    w3c_sw::TurtleSScanner::lex(				\
+	w3c_sw::TurtleSParser::semantic_type* yylval,		\
+	w3c_sw::TurtleSParser::location_type* yylloc		\
     )
 #endif
 
@@ -24,7 +24,7 @@
 
 #include "TurtleSParser.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
 /** TurtleSScanner is a derived class to add some extra function to the scanner
  * class. Flex itself creates a class named yyFlexLexer, which is renamed using
@@ -62,6 +62,6 @@ public:
     URI* resolveBase(const char*, bool stripDelims);
 };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // TurtleSScanner_H

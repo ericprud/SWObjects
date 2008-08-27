@@ -1,5 +1,5 @@
 /* RdfQueryDB - sets of variable bindings and their proofs.
- * $Id: RdfQueryDB.hpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: RdfQueryDB.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #ifndef RDF_QUERY_DB_H
@@ -7,7 +7,7 @@
 
 #include "RdfDB.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
     class DBExpressor;
     class RdfQueryDB : public RdfDB {
 	friend class DBExpressor;
@@ -18,34 +18,34 @@ namespace SPARQLfedNS {
 	RdfQueryDB (Operation* p_op); // deprecate
 	RdfQueryDB (TableOperation* p_op);
     };
-    class DBExpressor : public yacker::RecursiveExpressor {
+    class DBExpressor : public RecursiveExpressor {
     protected:
 	RdfQueryDB* db;
 	bool optState;
     public:
 	DBExpressor (RdfQueryDB* p_db) : db(p_db), optState(false) {  }
-	virtual yacker::Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual Filter* filter (Expression*) { // p_Constraint
 	    return NULL;
 	}
-	void _absorbGraphPattern (BasicGraphPattern* g, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>*) {  // p_Filters
+	void _absorbGraphPattern (BasicGraphPattern* g, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>*) {  // p_Filters
 	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
 		g->addTriplePattern(new TriplePattern(**it, optState));
 	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_IRIref, bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual NamedGraphPattern* namedGraphPattern (POS* p_IRIref, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(p_IRIref), p_TriplePatterns, p_Filters);
 	    return NULL;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns, p_Filters);
 	    return NULL;
 	}
-	virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<TableOperation*>*, yacker::ProductionVector<Filter*>*) { // p_TableOperations p_Filters
+	virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(__PRETTY_FUNCTION__)); // query should already be DNF'd, ergo no disjunctions.
 	}
-	virtual TableConjunction* tableConjunction (yacker::ProductionVector<TableOperation*>* p_TableOperations, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	    p_TableOperations->express(this);
 	    p_Filters->express(this);
 	    return NULL;
@@ -58,7 +58,7 @@ namespace SPARQLfedNS {
 	    return NULL;
 	}
 #if 0
-	virtual POSList* posList (yacker::ProductionVector<POS*>*) { // p_POSs
+	virtual POSList* posList (ProductionVector<POS*>*) { // p_POSs
 	    return NULL;
 	}
 	virtual StarVarSet* starVarSet () { 
@@ -70,10 +70,10 @@ namespace SPARQLfedNS {
 	virtual SolutionModifier* solutionModifier (std::vector<s_OrderConditionPair>*, int, int) {
 	    return NULL;
 	}
-	virtual Binding* binding (yacker::ProductionVector<POS*>*) {
+	virtual Binding* binding (ProductionVector<POS*>*) {
 	    return NULL;
 	}
-	virtual BindingClause* bindingClause (POSList*, yacker::ProductionVector<Binding*>*) {
+	virtual BindingClause* bindingClause (POSList*, ProductionVector<Binding*>*) {
 	    return NULL;
 	}
 	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
@@ -81,19 +81,19 @@ namespace SPARQLfedNS {
 	    p_GroupGraphPattern->express(this);
 	    return NULL;
 	}
-	virtual Select* select (e_distinctness, VarSet*, yacker::ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) { // p_POS p_GroupGraphPattern p_WhereClause p_SolutionModifier
+	virtual Select* select (e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) { // p_POS p_GroupGraphPattern p_WhereClause p_SolutionModifier
 	    p_WhereClause->express(this);
 	    return NULL;
 	}
-	virtual Construct* construct (DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) { // p_ConstructTemplate p_DatasetClauses p_WhereClause p_SolutionModifier
+	virtual Construct* construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) { // p_ConstructTemplate p_DatasetClauses p_WhereClause p_SolutionModifier
 	    p_WhereClause->express(this);
 	    p_ConstructTemplate->express(this);
 	    return NULL;
 	}
-	virtual Describe* describe (VarSet*, yacker::ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual Describe* describe (VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    return NULL;
 	}
-	virtual Ask* ask (yacker::ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause) { // p_DatasetClauses
+	virtual Ask* ask (ProductionVector<DatasetClause*>*, WhereClause* p_WhereClause) { // p_DatasetClauses
 	    p_WhereClause->express(this);
 	    return NULL;
 	}
@@ -112,7 +112,7 @@ namespace SPARQLfedNS {
 	    p_GraphTemplate->express(this);
 	    return NULL;
 	}
-	virtual Load* load (yacker::ProductionVector<URI*>*, URI*) {
+	virtual Load* load (ProductionVector<URI*>*, URI*) {
 	    return NULL;
 	} // p_IRIrefs p_into
 	virtual Clear* clear (URI* p__QGraphIRI_E_Opt) {
@@ -139,7 +139,7 @@ namespace SPARQLfedNS {
 	virtual URIExpression* uriExpression (URI*) {
 	    return NULL;
 	}
-	virtual ArgList* argList (yacker::ProductionVector<Expression*>*) {
+	virtual ArgList* argList (ProductionVector<Expression*>*) {
 	    return NULL;
 	}
 	virtual FunctionCall* functionCall (URI*, ArgList*) {
@@ -158,16 +158,16 @@ namespace SPARQLfedNS {
 	virtual ArithmeticInverse* arithmeticInverse (Expression*) {
 	    return NULL;
 	}
-	virtual BooleanConjunction* booleanConjunction (yacker::ProductionVector<Expression*>*) {
+	virtual BooleanConjunction* booleanConjunction (ProductionVector<Expression*>*) {
 	    return NULL;
 	}
-	virtual BooleanDisjunction* booleanDisjunction (yacker::ProductionVector<Expression*>*) {
+	virtual BooleanDisjunction* booleanDisjunction (ProductionVector<Expression*>*) {
 	    return NULL;
 	}
-	virtual ArithmeticSum* arithmeticSum (yacker::ProductionVector<Expression*>*) {
+	virtual ArithmeticSum* arithmeticSum (ProductionVector<Expression*>*) {
 	    return NULL;
 	}
-	virtual ArithmeticProduct* arithmeticProduct (yacker::ProductionVector<Expression*>*) {
+	virtual ArithmeticProduct* arithmeticProduct (ProductionVector<Expression*>*) {
 	    return NULL;
 	}
 	virtual BooleanEQ* booleanEQ (Expression*, Expression*) {
@@ -197,7 +197,7 @@ namespace SPARQLfedNS {
 #endif
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // !RDF_QUERY_DB_H
 

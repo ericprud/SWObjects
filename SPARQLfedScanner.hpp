@@ -1,4 +1,4 @@
-// $Id: SPARQLfedScanner.hpp,v 1.1 2008-08-26 05:30:48 jnorthru Exp $
+// $Id: SPARQLfedScanner.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
 
 #ifndef SPARQLfedScanner_H
 #define SPARQLfedScanner_H
@@ -9,10 +9,10 @@
 #ifndef YY_DECL
 
 #define	YY_DECL						\
-    SPARQLfedNS::SPARQLfedParser::token_type				\
-    SPARQLfedNS::SPARQLfedScanner::lex(				\
-	SPARQLfedNS::SPARQLfedParser::semantic_type* yylval,		\
-	SPARQLfedNS::SPARQLfedParser::location_type* yylloc		\
+    w3c_sw::SPARQLfedParser::token_type				\
+    w3c_sw::SPARQLfedScanner::lex(				\
+	w3c_sw::SPARQLfedParser::semantic_type* yylval,		\
+	w3c_sw::SPARQLfedParser::location_type* yylloc		\
     )
 #endif
 
@@ -24,7 +24,7 @@
 
 #include "SPARQLfedParser.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
 /** SPARQLfedScanner is a derived class to add some extra function to the scanner
  * class. Flex itself creates a class named yyFlexLexer, which is renamed using
@@ -62,6 +62,6 @@ public:
     URI* resolveBase(const char*, bool stripDelims);
 };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // SPARQLfedScanner_H

@@ -1,12 +1,12 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: ResultSet.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #include "ResultSet.hpp"
 #include "XMLQueryExpressor.hpp"
 #include <iostream>
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
     #include "SPARQLSerializer.hpp"
     void Result::set (const POS* variable, const POS* value, bool weaklyBound) {
 	BindingSet::const_iterator vi = bindings.find((POS*)variable);

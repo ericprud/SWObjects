@@ -1,10 +1,10 @@
 /* RdfDB - sets of variable bindings and their proofs.
- * $Id: RdfDB.cpp,v 1.1 2008-08-26 05:30:47 jnorthru Exp $
+ * $Id: RdfDB.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
  */
 
 #include "RdfDB.hpp"
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
     RdfDB::~RdfDB () {
 	for (graphmap_type::const_iterator it = graphs.begin();
@@ -51,11 +51,11 @@ namespace SPARQLfedNS {
 	}
     }
 
-    void RdfDB::express (yacker::Expressor* expressor) {
+    void RdfDB::express (Expressor* expressor) {
 	for (graphmap_type::const_iterator it = graphs.begin();
 	     it != graphs.end(); it++)
 	    it->second->express(expressor);
     }
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 

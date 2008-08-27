@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.1 2008-08-26 05:30:48 jnorthru Exp $
+ * $Id: RuleInverter.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -10,7 +10,7 @@
 #include "SWObjectDuplicator.hpp"
 #include <set>
 
-namespace SPARQLfedNS {
+namespace w3c_sw {
 
     class OperationResultSet : public ResultSet {
     protected:
@@ -29,7 +29,7 @@ namespace SPARQLfedNS {
 
 	class Consequents {
 
-	    class ConsequentsConstructor : public yacker::RecursiveExpressor {
+	    class ConsequentsConstructor : public RecursiveExpressor {
 	    protected:
 		ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
 		BasicGraphPattern* bgp;
@@ -74,29 +74,29 @@ namespace SPARQLfedNS {
 
 	    public:
 		ConsequentsConstructor (ConsequentMapList* consequents, TableOperation* op) : consequents(*consequents), bgp(dynamic_cast<BasicGraphPattern*>(op)), optState(false), graphName(NULL) {  }
-		virtual yacker::Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+		virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
-		virtual TriplePattern* triplePattern (SPARQLfedNS::POS* p_s, SPARQLfedNS::POS* p_p, SPARQLfedNS::POS* p_o) {
+		virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
 		    _depends(p_s, bgp, optState);
 		    _depends(p_p, bgp, optState);
 		    _depends(p_o, bgp, optState);
 		    return NULL;
 		}
 
-		virtual NamedGraphPattern* namedGraphPattern (SPARQLfedNS::POS* p_name, bool /*p_allOpts*/, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>*) {
+		virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
 		    _depends(p_name, bgp, optState);
 		    p_TriplePatterns->express(this);
 		    // p_Filters->express(this); @@ what to do with these?
 		    return NULL;
 		}
 
-		virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>*) {
+		virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
 		    p_TriplePatterns->express(this);
 		    // p_Filters->express(this); @@ what to do with these?
 		    return NULL;
 		}
 
-		void _each (yacker::ProductionVector<TableOperation*>* p_TableOperations) {
+		void _each (ProductionVector<TableOperation*>* p_TableOperations) {
 		    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
 			 it != p_TableOperations->end(); it++) {
 			bgp = dynamic_cast<BasicGraphPattern*>(*it);
@@ -105,12 +105,12 @@ namespace SPARQLfedNS {
 		    bgp = NULL;
 		}
 
-		virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>*) {
+		virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
 		    _each(p_TableOperations);
 		    //p_Filters->express(this);
 		    return NULL;
 		}
-		virtual TableConjunction* tableConjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>*) {
+		virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
 		    _each(p_TableOperations);
 		    //p_Filters->express(this);
 		    return NULL;
@@ -125,7 +125,7 @@ namespace SPARQLfedNS {
 		    return NULL;
 		}
 
-		virtual GraphGraphPattern* graphGraphPattern (SPARQLfedNS::POS* p_POS, SPARQLfedNS::TableOperation* p_GroupGraphPattern) {
+		virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
 		    POS* oldGraphName = graphName;
 		    graphName = p_POS;
 		    bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
@@ -168,24 +168,24 @@ namespace SPARQLfedNS {
 	    TableOperation* getTableOperation () { return m_TableOperation; }
 
 
-	    virtual void _TriplePatterns (yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
+	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 		for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
 		    (*triple)->construct(p, row);
 	    }
 
-	    virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool p_allOpts, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	    virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		NamedGraphPattern* ret = SWObjectDuplicator::namedGraphPattern(p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		m_TableOperation = ret;
 		return ret;
 	    }
-	    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		DefaultGraphPattern* ret = SWObjectDuplicator::defaultGraphPattern(p_allOpts, p_TriplePatterns, p_Filters);
 		m_TableOperation = ret;
 		return ret;
 	    }
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
-	    virtual void _TableOperations (yacker::ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
+	    virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
 		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
 		    m_TableOperation = NULL;
@@ -196,12 +196,12 @@ namespace SPARQLfedNS {
 			j->addTableOperation(m_TableOperation);
 		}
 	    }
-	    virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<TableOperation*>* p_TableOperations, yacker::ProductionVector<Filter*>* p_Filters) {
+	    virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		TableDisjunction* ret = SWObjectDuplicator::tableDisjunction(p_TableOperations, p_Filters);
 		m_TableOperation = ret;
 		return ret;
 	    }
-	    virtual TableConjunction* tableConjunction (yacker::ProductionVector<TableOperation*>* p_TableOperations, yacker::ProductionVector<Filter*>* p_Filters) {
+	    virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		TableConjunction* ret = SWObjectDuplicator::tableConjunction(p_TableOperations, p_Filters);
 		m_TableOperation = ret;
 		return ret;
@@ -236,7 +236,7 @@ namespace SPARQLfedNS {
 	POSFactory* posFactory;
 
     public:
-	MappingConstruct (TableOperation* p_MappedAntecedent, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory) : Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent), posFactory(posFactory) {  }
+	MappingConstruct (TableOperation* p_MappedAntecedent, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory) : Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent), posFactory(posFactory) {  }
 	~MappingConstruct () {
 	    delete m_MappedAntecedent;
 	}
@@ -343,13 +343,13 @@ namespace SPARQLfedNS {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this), true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, yacker::ProductionVector<TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<Filter*>* p_Filters) {
+	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern(true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
@@ -368,7 +368,7 @@ namespace SPARQLfedNS {
 	    return new WhereClause(m_ConstructTemplate->express(this), p_BindingClause ? p_BindingClause->express(this) : NULL);
 	}
 
-	virtual MappingConstruct* construct (DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual MappingConstruct* construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 	    m_ConstructTemplate = p_ConstructTemplate;
@@ -388,14 +388,14 @@ namespace SPARQLfedNS {
 	 * get a run-time error. (A compile-time error would be nice, but the
 	 * expressor interface prevents that.
 	 */
-	virtual Select* select (e_distinctness, VarSet*, yacker::ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual Select* select (e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    throw(std::runtime_error("RuleInverter only works on CONSTRUCTs."));
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.
 
     };
 
-} // namespace SPARQLfedNS
+} // namespace w3c_sw
 
 #endif // RuleInverter_H
 

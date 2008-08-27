@@ -84,8 +84,8 @@
     <p>To minimize expensive string comparison, and less expensive std::string::operator== use, the primitive parts of speach (class: <em style="font-weight: bold" id="POS">POS</em>) are created only once-each by a <em style="font-weight: bold" id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
 
     <pre style="margin: 2em; border: thin solid #ccffcc; background-color: #eeffee;">int main(int argc,char** argv) {
-    SPARQLfedNS::POSFactory posFactory;
-    SPARQLfedNS::SPARQLfedDriver sparqlParser("", &amp;posFactory);
+    w3c_sw::POSFactory posFactory;
+    w3c_sw::SPARQLfedDriver sparqlParser("", &amp;posFactory);
     ...
 }</pre>
 

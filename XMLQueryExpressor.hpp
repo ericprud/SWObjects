@@ -1,6 +1,6 @@
 /* XMLQueryExpressor.hpp - simple XML serializer for SPARQL compile trees.
  *
- * $Id: XMLQueryExpressor.hpp,v 1.1 2008-08-26 05:30:49 jnorthru Exp $
+ * $Id: XMLQueryExpressor.hpp,v 1.2 2008-08-27 02:21:43 eric Exp $
  */
 
 #ifndef XMLQueryExpressor_H
@@ -8,20 +8,20 @@
 
 #include "XMLSerializer.hpp"
 
-using namespace SPARQLfedNS;
+using namespace w3c_sw;
 
-class XMLQueryExpressor : public yacker::Expressor {
+class XMLQueryExpressor : public Expressor {
 protected:
     bool createdXMLSerializer;
     bool sparqlx;
     XMLSerializer* xml;
 public:
-    XMLQueryExpressor (const char* p_tab = "  ", bool p_sparqlx = true) : yacker::Expressor(), createdXMLSerializer(true), sparqlx(p_sparqlx) { xml = new XMLSerializer(p_tab); }
-    XMLQueryExpressor (XMLSerializer* p_xml, bool p_sparqlx = true) : yacker::Expressor(), createdXMLSerializer(false), sparqlx(p_sparqlx), xml(p_xml) {  }
+    XMLQueryExpressor (const char* p_tab = "  ", bool p_sparqlx = true) : Expressor(), createdXMLSerializer(true), sparqlx(p_sparqlx) { xml = new XMLSerializer(p_tab); }
+    XMLQueryExpressor (XMLSerializer* p_xml, bool p_sparqlx = true) : Expressor(), createdXMLSerializer(false), sparqlx(p_sparqlx), xml(p_xml) {  }
     ~XMLQueryExpressor () { if (createdXMLSerializer) delete xml; }
     std::string getXMLstring () { return xml->getXMLstring(); }
     //!!!
-    virtual yacker::Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+    virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
     virtual URI* uri (std::string terminal) {
 	xml->leaf("uri", terminal);
@@ -36,7 +36,7 @@ public:
 	xml->leaf("bnode", terminal);
 	return NULL;
     }
-    virtual RDFLiteral* rdfLiteral (std::string terminal, SPARQLfedNS::URI* datatype, SPARQLfedNS::LANGTAG* p_LANGTAG) {
+    virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
 	xml->leaf("literal", terminal);
 	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getTerminal()); //!!!
 	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getTerminal());
@@ -66,7 +66,7 @@ public:
 	xml->empty("NULL");
 	return NULL;
     }
-    virtual TriplePattern* triplePattern (SPARQLfedNS::POS* p_s, SPARQLfedNS::POS* p_p, SPARQLfedNS::POS* p_o) {
+    virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
 	xml->open("TriplePattern");
 	p_s->express(this);
 	p_p->express(this);
@@ -74,13 +74,13 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual Filter* filter (SPARQLfedNS::Expression* p_Constraint) {
+    virtual Filter* filter (w3c_sw::Expression* p_Constraint) {
 	xml->open("Filter");
 	p_Constraint->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual NamedGraphPattern* namedGraphPattern (SPARQLfedNS::POS* p_name, bool p_allOpts, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+    virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else {
@@ -93,7 +93,7 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, yacker::ProductionVector<SPARQLfedNS::TriplePattern*>* p_TriplePatterns, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else
@@ -104,27 +104,27 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual TableDisjunction* tableDisjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+    virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	xml->open("TableDisjunction");
 	p_TableOperations->express(this);
 	p_Filters->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual TableConjunction* tableConjunction (yacker::ProductionVector<SPARQLfedNS::TableOperation*>* p_TableOperations, yacker::ProductionVector<SPARQLfedNS::Filter*>* p_Filters) {
+    virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	xml->open("TableConjunction");
 	p_TableOperations->express(this);
 	p_Filters->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual OptionalGraphPattern* optionalGraphPattern (SPARQLfedNS::TableOperation* p_GroupGraphPattern) {
+    virtual OptionalGraphPattern* optionalGraphPattern (w3c_sw::TableOperation* p_GroupGraphPattern) {
 	xml->open("OptionalGraphPattern");
 	p_GroupGraphPattern->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual GraphGraphPattern* graphGraphPattern (SPARQLfedNS::POS* p_POS, SPARQLfedNS::TableOperation* p_GroupGraphPattern) {
+    virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
 	if (sparqlx) {
 	    xml->open("GraphGraphPattern");
 	    p_POS->express(this);
@@ -134,7 +134,7 @@ public:
 	    p_GroupGraphPattern->express(this);
 	return NULL;
     }
-    virtual POSList* posList (yacker::ProductionVector<SPARQLfedNS::POS*>* p_POSs) {
+    virtual POSList* posList (ProductionVector<w3c_sw::POS*>* p_POSs) {
 	xml->open("POSList");
 	p_POSs->express(this);
 	xml->close();
@@ -144,58 +144,58 @@ public:
 	xml->empty("StarVarSet");
 	return NULL;
     }
-    virtual DefaultGraphClause* defaultGraphClause (SPARQLfedNS::POS* p_IRIref) {
+    virtual DefaultGraphClause* defaultGraphClause (w3c_sw::POS* p_IRIref) {
 	xml->open("DefaultGraphClause");
 	p_IRIref->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual NamedGraphClause* namedGraphClause (SPARQLfedNS::POS* p_IRIref) {
+    virtual NamedGraphClause* namedGraphClause (w3c_sw::POS* p_IRIref) {
 	xml->open("NamedGraphClause");
 	p_IRIref->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual SolutionModifier* solutionModifier (std::vector<SPARQLfedNS::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+    virtual SolutionModifier* solutionModifier (std::vector<w3c_sw::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	xml->open("SolutionModifier");
 	if (p_limit != LIMIT_None) xml->attribute("limit", p_limit);
 	if (p_offset != OFFSET_None) xml->attribute("offset", p_offset);
 	if (p_OrderConditions)
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++) {
 		xml->open("Order");
-		xml->attribute("", p_OrderConditions->at(i).ascOrDesc == SPARQLfedNS::ORDER_Asc ? "ASK" :  "DESC");
+		xml->attribute("", p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Asc ? "ASK" :  "DESC");
 		p_OrderConditions->at(i).expression->express(this);
 		xml->close();
 	    }
 	xml->close();
 	return NULL;
     }
-    virtual Binding* binding (yacker::ProductionVector<SPARQLfedNS::POS*>* values) {//!!!
+    virtual Binding* binding (ProductionVector<w3c_sw::POS*>* values) {//!!!
 	xml->open("BindingClause");
 	for (size_t i = 0; i < values->size(); i++)
 	    values->at(i)->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BindingClause* bindingClause (SPARQLfedNS::POSList* p_Vars, yacker::ProductionVector<SPARQLfedNS::Binding*>* p_Bindings) {
+    virtual BindingClause* bindingClause (w3c_sw::POSList* p_Vars, ProductionVector<w3c_sw::Binding*>* p_Bindings) {
 	xml->open("BindingClause");
 	p_Vars->express(this);
-	p_Bindings->yacker::ProductionVector<SPARQLfedNS::Binding*>::express(this);
+	p_Bindings->ProductionVector<w3c_sw::Binding*>::express(this);
 	xml->close();
 	return NULL;
     }
-    virtual WhereClause* whereClause (SPARQLfedNS::TableOperation* p_GroupGraphPattern, SPARQLfedNS::BindingClause* p_BindingClause) {
+    virtual WhereClause* whereClause (w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) {
 	xml->open("WhereClause");
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Select* select (SPARQLfedNS::e_distinctness p_distinctness, SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+    virtual Select* select (w3c_sw::e_distinctness p_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
 	xml->open("Select");
 	xml->attribute("cardinality", 
-		  p_distinctness == SPARQLfedNS::DIST_distinct ? "DISTINCT" :
-		  p_distinctness == SPARQLfedNS::DIST_reduced ? "REDUCED" :
+		  p_distinctness == w3c_sw::DIST_distinct ? "DISTINCT" :
+		  p_distinctness == w3c_sw::DIST_reduced ? "REDUCED" :
 		  "ALL");
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
@@ -204,7 +204,7 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual Construct* construct (SPARQLfedNS::DefaultGraphPattern* p_ConstructTemplate, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+    virtual Construct* construct (w3c_sw::DefaultGraphPattern* p_ConstructTemplate, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
 	xml->open("Construct");
 	p_ConstructTemplate->express(this);
 	p_DatasetClauses->express(this);
@@ -213,7 +213,7 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual Describe* describe (SPARQLfedNS::VarSet* p_VarSet, yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::SolutionModifier* p_SolutionModifier) {
+    virtual Describe* describe (w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
 	xml->open("Describe");
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
@@ -222,208 +222,208 @@ public:
 	xml->close();
 	return NULL;
     }
-    virtual Ask* ask (yacker::ProductionVector<SPARQLfedNS::DatasetClause*>* p_DatasetClauses, SPARQLfedNS::WhereClause* p_WhereClause) {
+    virtual Ask* ask (ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause) {
 	xml->open("Ask");
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Replace* replace (SPARQLfedNS::WhereClause* p_WhereClause, SPARQLfedNS::TableOperation* p_GraphTemplate) {
+    virtual Replace* replace (w3c_sw::WhereClause* p_WhereClause, w3c_sw::TableOperation* p_GraphTemplate) {
 	xml->open("Replace");
 	p_WhereClause->express(this);
 	p_GraphTemplate->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Insert* insert (SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) {
+    virtual Insert* insert (w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
 	xml->open("Insert");
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Delete* del (SPARQLfedNS::TableOperation* p_GraphTemplate, SPARQLfedNS::WhereClause* p_WhereClause) {
+    virtual Delete* del (w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
 	xml->open("Delete");
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Load* load (yacker::ProductionVector<SPARQLfedNS::URI*>* p_IRIrefs, SPARQLfedNS::URI* p_into) {
+    virtual Load* load (ProductionVector<w3c_sw::URI*>* p_IRIrefs, w3c_sw::URI* p_into) {
 	xml->open("Load");
 	p_IRIrefs->express(this);
 	p_into->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Clear* clear (SPARQLfedNS::URI* p__QGraphIRI_E_Opt) {
+    virtual Clear* clear (w3c_sw::URI* p__QGraphIRI_E_Opt) {
 	xml->open("Clear");
 	p__QGraphIRI_E_Opt->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Create* create (SPARQLfedNS::e_Silence p_Silence, SPARQLfedNS::URI* p_GraphIRI) {
+    virtual Create* create (w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) {
 	xml->open("Create");
-	if (p_Silence != SPARQLfedNS::SILENT_Yes) xml->attribute("silent", "YES");
+	if (p_Silence != w3c_sw::SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual Drop* drop (SPARQLfedNS::e_Silence p_Silence, SPARQLfedNS::URI* p_GraphIRI) {
+    virtual Drop* drop (w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) {
 	xml->open("Drop");
-	if (p_Silence != SPARQLfedNS::SILENT_Yes) xml->attribute("silent", "YES");
+	if (p_Silence != w3c_sw::SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual VarExpression* varExpression (SPARQLfedNS::Variable* p_Variable) {
+    virtual VarExpression* varExpression (w3c_sw::Variable* p_Variable) {
 	xml->open("VarExpression");
 	p_Variable->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual LiteralExpression* literalExpression (SPARQLfedNS::RDFLiteral* p_RDFLiteral) {
+    virtual LiteralExpression* literalExpression (w3c_sw::RDFLiteral* p_RDFLiteral) {
 	xml->open("LiteralExpression");
 	p_RDFLiteral->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanExpression* booleanExpression (SPARQLfedNS::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+    virtual BooleanExpression* booleanExpression (w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) {
 	xml->open("BooleanExpression");
 	p_BooleanRDFLiteral->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual URIExpression* uriExpression (SPARQLfedNS::URI* p_URI) {
+    virtual URIExpression* uriExpression (w3c_sw::URI* p_URI) {
 	xml->open("URIExpression");
 	p_URI->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArgList* argList (yacker::ProductionVector<SPARQLfedNS::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
+    virtual ArgList* argList (ProductionVector<w3c_sw::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
 	xml->open("ArgList");
 	p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual FunctionCall* functionCall (SPARQLfedNS::URI* p_IRIref, SPARQLfedNS::ArgList* p_ArgList) {
+    virtual FunctionCall* functionCall (w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) {
 	xml->open("FunctionCall");
 	p_IRIref->express(this);
 	p_ArgList->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual FunctionCallExpression* functionCallExpression (SPARQLfedNS::FunctionCall* p_FunctionCall) {
+    virtual FunctionCallExpression* functionCallExpression (w3c_sw::FunctionCall* p_FunctionCall) {
 	xml->open("FunctionCallExpression");
 	p_FunctionCall->express(this);
 	xml->close();
 	return NULL;
     }
 /* Expressions */
-    virtual BooleanNegation* booleanNegation (SPARQLfedNS::Expression* p_Expression) {
+    virtual BooleanNegation* booleanNegation (w3c_sw::Expression* p_Expression) {
 	xml->open("BooleanNegation");
 	p_Expression->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArithmeticNegation* arithmeticNegation (SPARQLfedNS::Expression* p_Expression) {
+    virtual ArithmeticNegation* arithmeticNegation (w3c_sw::Expression* p_Expression) {
 	xml->open("ArithmeticNegation");
 	p_Expression->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArithmeticInverse* arithmeticInverse (SPARQLfedNS::Expression* p_Expression) {
+    virtual ArithmeticInverse* arithmeticInverse (w3c_sw::Expression* p_Expression) {
 	xml->open("ArithmeticInverse");
 	p_Expression->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanConjunction* booleanConjunction (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual BooleanConjunction* booleanConjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("BooleanConjunction");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanDisjunction* booleanDisjunction (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual BooleanDisjunction* booleanDisjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("BooleanDisjunction");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanNegation* booleanNegation (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual BooleanNegation* booleanNegation (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("BooleanNegation");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArithmeticSum* arithmeticSum (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual ArithmeticSum* arithmeticSum (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("ArithmeticSum");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArithmeticProduct* arithmeticProduct (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual ArithmeticProduct* arithmeticProduct (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("ArithmeticProduct");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ArithmeticInverse* arithmeticInverse (yacker::ProductionVector<SPARQLfedNS::Expression*>* p_Expressions) {
+    virtual ArithmeticInverse* arithmeticInverse (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	xml->open("ArithmeticInverse");
 	p_Expressions->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanEQ* booleanEQ (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanEQ* booleanEQ (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanEQ");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanNE* booleanNE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanNE* booleanNE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanNE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanLT* booleanLT (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanLT* booleanLT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanLT");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanGT* booleanGT (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanGT* booleanGT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanGT");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanLE* booleanLE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanLE* booleanLE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanLE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual BooleanGE* booleanGE (SPARQLfedNS::Expression* p_left, SPARQLfedNS::Expression* p_right) {
+    virtual BooleanGE* booleanGE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	xml->open("BooleanGE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual ComparatorExpression* comparatorExpression (SPARQLfedNS::BooleanComparator* p_BooleanComparator) {
+    virtual ComparatorExpression* comparatorExpression (w3c_sw::BooleanComparator* p_BooleanComparator) {
 	xml->open("ComparatorExpression");
 	p_BooleanComparator->express(this);
 	xml->close();
 	return NULL;
     }
-    virtual NumberExpression* numberExpression (SPARQLfedNS::NumericRDFLiteral* p_NumericRDFLiteral) {
+    virtual NumberExpression* numberExpression (w3c_sw::NumericRDFLiteral* p_NumericRDFLiteral) {
 	xml->open("NumberExpression");
 	p_NumericRDFLiteral->express(this);
 	xml->close();
