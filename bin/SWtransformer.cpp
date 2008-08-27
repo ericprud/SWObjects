@@ -2,13 +2,12 @@
 
 #include <stdio.h>
 #include "SPARQLfedParser.hpp"
-//#undef PARSER_HEADER_H
 #include "TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
 #include "RdfQueryDB.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
-//#include "SQLSerializer.hh"
+//#include "SQLizer.hh"
 
 #include <stdlib.h>
 #include <ostream>
@@ -73,11 +72,20 @@ int main(int argc,char** argv) {
 		    query->express(&sparqlizer);
 		    cout << "input query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 
+#if 1
 		    Operation* o = query->express(&d);
 		    SPARQLSerializer s2;
 		    o->express(&s2);
 		    delete o;
 		    cout << "Transformed query: " << s2.getSPARQLstring() << endl;
+#endif
+#if 0
+		    Operation* o = query->express(&d);
+		    SQLizer s2("http://myCo.exampe/DB/");
+		    o->express(&s2);
+		    delete o;
+		    cout << "Transformed query: " << s2.getSPARQLstring() << endl;
+#endif
 		    delete query;
 		}
 

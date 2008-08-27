@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.1 2008-08-26 05:30:48 jnorthru Exp $
+ * $Id: SQLizer.hpp,v 1.2 2008-08-27 02:15:09 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -58,6 +58,9 @@ class SQLizer : public yacker::Expressor {
     std::string stem;
     AliasContext* curAliases;
     enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_overrun} mode;
+    std::string relation, attribute;
+    int value;
+    void clearCoords () { relation.clear(); attribute.clear(); value = std::numeric_limits<int>::min(); }
 
     std::stringstream ret;
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
@@ -95,19 +98,26 @@ public:
     virtual yacker::Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
     virtual URI* uri (std::string terminal) {
-	std::string relation, attribute;
-	int value(std::numeric_limits<int>::min());
-
 	switch (mode) {
-	case MODE_outside:
-	    throw(std::runtime_error(__PRETTY_FUNCTION__));
-	case MODE_predicate:
-	    if (resolve(terminal, &relation, &attribute, &value) != 2)
-		throw(std::runtime_error(__PRETTY_FUNCTION__));
-	    break;
-	default:
+	case MODE_subject:
 	    if (resolve(terminal, &relation, &attribute, &value) != 3)
 		throw(std::runtime_error(__PRETTY_FUNCTION__));
+
+	case MODE_predicate:
+	    std::string subjectRelation = relation;
+	    std::string subjectAttribute = attribute;
+	    int subjectValue = value;
+	    if (resolve(terminal, &relation, &attribute, &value) != 2)
+		throw(std::runtime_error(__PRETTY_FUNCTION__));
+	    if (!subjectRelation.empty() && subjectRelation != relation)
+		std::cerr << "!Subject relation is " << subjectRelation << " while predicate relation is " << relation << std::endl;
+	    break;
+
+	case MODE_object:
+	    if (resolve(terminal, &relation, &attribute, &value) != 3)
+		throw(std::runtime_error(__PRETTY_FUNCTION__));
+	default:
+	    throw(std::runtime_error(__PRETTY_FUNCTION__));
 	}
 	std::cout << terminal << " decomposes into relation: " << relation << " attribute: " << attribute << " value: " << value << std::endl;
 	ret << '<' << terminal << '>';
@@ -150,6 +160,7 @@ public:
     }
     virtual TriplePattern* triplePattern (SPARQLfedNS::POS* p_s, SPARQLfedNS::POS* p_p, SPARQLfedNS::POS* p_o) {
 	lead();
+	clearCoords();
 	mode = MODE_subject;
 	p_s->express(this);
 	ret << ' ';

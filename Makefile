@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.32 2008-08-26 05:30:46 jnorthru Exp $
+# $Id: Makefile,v 1.33 2008-08-27 02:15:09 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -85,6 +85,8 @@ lib: $(LIB)
 
 tests/execute_%  : tests/test_%.cpp  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
+.SECONDARY:
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
 	$^ > $@  && cat $@
