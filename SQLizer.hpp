@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.5 2008-08-30 09:57:35 eric Exp $
+ * $Id: SQLizer.hpp,v 1.6 2008-08-30 14:52:05 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -24,6 +24,7 @@ namespace w3c_sw {
 		std::string myAttr;
 	    public:
 		Constraint (std::string myAttr) : myAttr(myAttr) {  }
+		virtual ~Constraint () {  }
 		virtual std::string toString () = 0;
 	    };
 	    class ForeignKeyConstraint : public Constraint {
@@ -57,27 +58,33 @@ namespace w3c_sw {
 		    return s.str();
 		}
 	    };
-	    std::string relation, alias;
+	    std::string alias;
 	    bool optional;
 	    std::vector<Constraint*> constraints;
 	public:
-	    Join (std::string relation, std::string alias, bool optional) : relation(relation), alias(alias), optional(optional) {  }
-	    ~Join () {
+	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
+	    virtual ~Join () {
 		for (std::vector<Constraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    delete *it;
 	    }
+	    std::string debug_getAlias () { return alias; }
+	    virtual std::string getRelationText () = 0;
 	    std::string toString (std::string* captureConstraints = NULL) {
 		std::stringstream s;
-		s << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ") << relation << " AS " << alias << " ";
+		if (captureConstraints == NULL) s << endl << "       " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+		s << getRelationText() << " AS " << alias;
 		std::stringstream on;
 		for (std::vector<Constraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
-		    on << (*it)->toString();
-		if (captureConstraints == NULL)
-		    s << on;
-		else
-		    *captureConstraints = on.str();
+		    on << alias << (*it)->toString();
+		std::string onStr = on.str();
+		if (!onStr.empty()) {
+		    if (captureConstraints == NULL)
+			s << " ON " << onStr;
+		    else
+			*captureConstraints = onStr;
+		}
 		return s.str();
 	    }
 	    void addForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
@@ -91,11 +98,34 @@ namespace w3c_sw {
 	    }
 	};
 
+	class TableJoin : public Join {
+	    std::string relation;
+	protected:
+	    virtual std::string getRelationText () { return relation; }
+	public:
+	    TableJoin (std::string relation, std::string alias, bool optional) : Join(alias, optional), relation(relation) {  }
+	};
+
+	class SQLQuery;
+	class SubqueryJoin : public Join {
+	    SQLQuery* subquery;
+	protected:
+	    virtual std::string getRelationText () {
+		std::stringstream s;
+		s << "(" << std::endl << subquery->toString() << std::endl << "             )";
+		return s.str();
+	    }
+	public:
+	    SubqueryJoin (SQLQuery* subquery, std::string alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
+	    virtual ~SubqueryJoin () { delete subquery; }
+	};
+
 	class Attachment {
 	    AliasAttr aattr;
 	    std::string name;
 	public:
 	    Attachment () {  }
+	    Attachment (AliasAttr aattr, std::string name) : aattr(aattr), name(name) {  }
 	    void setName(std::string name) { this->name = name; }
 	    std::string getName () { return name; }
 	    void setAliasAttr(AliasAttr aattr) { this->aattr = aattr; }
@@ -105,6 +135,7 @@ namespace w3c_sw {
 	class TightAttachment : public Attachment {
 	public:
 	    TightAttachment () : Attachment() {  }
+	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(aattr, name) {  }
 	};
 
 	class SQLUnion;
@@ -113,13 +144,20 @@ namespace w3c_sw {
 
 	    std::map<POS*, map<std::string, std::string> > aliasMap;
 	    std::set<string> usedAliases;
-	    std::vector<Join> joins;
+	    std::vector<Join*> joins;
 	    std::map<std::string, Attachment> attachments;
 	    std::vector<Attachment> selects;
 	    bool distinct;
+	    int nextUnionAlias;
+	    int nextOptAlias;
 	public:
-	    SQLQuery (SQLQuery* parent) : parent(parent) {  }
-	    std::string toString () {
+	    SQLQuery (SQLQuery* parent) : parent(parent), distinct(false), nextUnionAlias(0), nextOptAlias(0) {  }
+	    virtual ~SQLQuery () {
+		for (std::vector<Join*>::iterator it = joins.begin();
+		     it != joins.end(); ++it)
+		    delete *it;
+	    }
+	    virtual std::string toString () {
 		std::stringstream s;
 		s << "SELECT ";
 		if (distinct) s << "DISTINCT ";
@@ -127,25 +165,22 @@ namespace w3c_sw {
 		     it != selects.end(); ++it)
 		    s << it->getAliasAttr().alias << "." << it->getAliasAttr().attr << " AS " << it->getName() << " ";
 		std::string where;
-		for (std::vector<Join>::iterator it = joins.begin();
+		for (std::vector<Join*>::iterator it = joins.begin();
 		     it != joins.end(); ++it)
 		    if (it == joins.begin())
-			s << "FROM " << it->toString(&where);
+			s << endl << "       FROM " << (*it)->toString(&where);
 		    else
-			s << "INNER JOIN " << it->toString(&where);
-		s << "WHERE " << where;
+			s << (*it)->toString();
+		if (!where.empty()) s << std::endl << " WHERE " << where;
 		return s.str();
 	    }
 	    void setDistinct (bool state = true) { distinct = state; }
-	    void constrain (AliasAttr x, AliasAttr y) {
-		std::cout << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
-	    }
-	    std::string attachTuple (POS* subject, std::string relation, std::string attribute) {
+	    std::string attachTuple (POS* subject, std::string toRelation, std::string attribute) {
 		std::map<POS*, map<std::string, std::string> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
-		    map<std::string, std::string>::iterator byRelation = aliasMap[subject].find(relation);
+		    map<std::string, std::string>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end())
-			return aliasMap[subject][relation];
+			return aliasMap[subject][toRelation];
 		}
 		string aliasName = subject->getTerminal();
 		unsigned ordinal = 0;
@@ -154,23 +189,24 @@ namespace w3c_sw {
 		    s << subject->getTerminal() << "_" << ++ordinal;
 		    aliasName = s.str();
 		}
-		Join join(relation, aliasName, false);
-		joins.push_back(join);
+		joins.push_back(new TableJoin(toRelation, aliasName, false));
 		usedAliases.insert(aliasName);
-		std::cout << "SQLQuery " << this << ": attachTuple: " << subject << ", " << relation << "." << attribute << " bound to " << aliasName << std::endl;
+		std::cout << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
 		return aliasName;
 	    }
 	    SQLUnion* makeUnion () {
 		SQLUnion* ret = new SQLUnion(this);
+		std::stringstream s;
+		s << "union" << ++nextUnionAlias;
+		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
 		std::cout << "SQLQuery " << this << ": attach " << terminal << " to " << aattr.alias << "." << aattr.attr << std::endl;
 		std::map<string, Attachment>::iterator it = attachments.find(terminal);
-		if (it == attachments.end()) {
-		    attachments[terminal].setName(terminal);
-		    attachments[terminal].setAliasAttr(aattr);
-		} else
+		if (it == attachments.end())
+		    attachments[terminal] = TightAttachment(aattr, terminal);
+		else
 		    constrain(aattr, attachments[terminal].getAliasAttr());
 		// !!!
 	    }
@@ -178,23 +214,49 @@ namespace w3c_sw {
 		selects.push_back(attachments[terminal]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
+	    void constrain (AliasAttr x, AliasAttr y) {
+		std::cout << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
+		if (joins.back()->debug_getAlias() != x.alias) FAIL("constraint is not for last join");
+		joins.back()->addForeignKeyConstraint(x.attr, y.alias, y.attr);
+	    }
 	    void constrain (AliasAttr aattr, std::string otherAlias, std::string otherAttribute) {
-		joins.back().addForeignKeyConstraint(aattr.attr, otherAlias, otherAttribute);
+		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		joins.back()->addForeignKeyConstraint(aattr.attr, otherAlias, otherAttribute);
 	    }
 	    void constrain (AliasAttr aattr, std::string value) {
-		joins.back().addConstantConstraint(aattr.attr, value);
+		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		joins.back()->addConstantConstraint(aattr.attr, value);
 	    }
 	    void constrain (AliasAttr aattr, int value) {
-		joins.back().addConstantConstraint(aattr.attr, value);
+		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		joins.back()->addConstantConstraint(aattr.attr, value);
 	    }
 	};
 
 	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
+	    std::vector<SQLDisjoint*> disjoints;
 	public:
 	    SQLUnion (SQLQuery* parent) : SQLQuery(parent) {  }
+	    virtual ~SQLUnion () {
+		for (std::vector<SQLDisjoint*>::iterator it = disjoints.begin();
+		     it != disjoints.end(); ++it)
+		    delete *it;
+	    }
+	    virtual std::string toString () {
+		std::stringstream s;
+		for (std::vector<SQLDisjoint*>::iterator it = disjoints.begin();
+		     it != disjoints.end(); ++it) {
+		    if (it != disjoints.begin())
+			s << std::endl << "UNION" << std::endl;
+		    s << (*it)->toString();
+		}
+		return s.str();
+	    }
 	    SQLDisjoint* makeDisjoint () {
-		return new SQLDisjoint(this);
+		SQLDisjoint* ret = new SQLDisjoint(this);
+		disjoints.push_back(ret);
+		return ret;
 	    }
 	};
 
@@ -285,7 +347,7 @@ namespace w3c_sw {
 	    case MODE_predicate:
 		NOW("URI as predicate");
 		if (parms != 2) FAIL("malformed predicate");
-		curAliasAttr.alias = curQuery->attachTuple(curSubject, attribute, relation);
+		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation, attribute);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
 		break;
@@ -307,9 +369,6 @@ namespace w3c_sw {
 	    default:
 		FAIL("wierd state");
 	    }
-	    std::cout << terminal << " decomposes into relation: " << relation << " attribute: " << attribute;
-	    if (parms == 3) std::cout << " value: " << value;
-	    std::cout << std::endl;
 	    ret << '<' << terminal << '>';
 	    return NULL;
 	}
