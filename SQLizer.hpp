@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.6 2008-08-30 14:52:05 eric Exp $
+ * $Id: SQLizer.hpp,v 1.7 2008-08-30 23:48:17 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -25,16 +25,16 @@ namespace w3c_sw {
 	    public:
 		Constraint (std::string myAttr) : myAttr(myAttr) {  }
 		virtual ~Constraint () {  }
-		virtual std::string toString () = 0;
+		virtual std::string toString (std::string alias) = 0;
 	    };
 	    class ForeignKeyConstraint : public Constraint {
 		std::string otherAlias;
 		std::string otherAttr;
 	    public:
 		ForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : Constraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
-		virtual std::string toString () {
+		virtual std::string toString (std::string alias) {
 		    std::stringstream s;
-		    s << myAttr << "=" << otherAlias << "." << otherAttr;
+		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
 		    return s.str();
 		}
 	    };
@@ -42,9 +42,9 @@ namespace w3c_sw {
 		int value;
 	    public:
 		IntegerConstraint (std::string myAttr, int value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString () {
+		virtual std::string toString (std::string alias) {
 		    std::stringstream s;
-		    s << myAttr << "=" << value;
+		    s << alias << "." << myAttr << "=" << value;
 		    return s.str();
 		}
 	    };
@@ -52,9 +52,9 @@ namespace w3c_sw {
 		std::string value;
 	    public:
 		StringConstraint (std::string myAttr, std::string value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString () {
+		virtual std::string toString (std::string alias) {
 		    std::stringstream s;
-		    s << myAttr << "=\"" << value << "\"";
+		    s << alias << "." << myAttr << "=\"" << value << "\"";
 		    return s.str();
 		}
 	    };
@@ -72,12 +72,15 @@ namespace w3c_sw {
 	    virtual std::string getRelationText () = 0;
 	    std::string toString (std::string* captureConstraints = NULL) {
 		std::stringstream s;
-		if (captureConstraints == NULL) s << endl << "       " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+		if (captureConstraints == NULL) s << endl << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		s << getRelationText() << " AS " << alias;
 		std::stringstream on;
 		for (std::vector<Constraint*>::iterator it = constraints.begin();
-		     it != constraints.end(); ++it)
-		    on << alias << (*it)->toString();
+		     it != constraints.end(); ++it) {
+		    if (it != constraints.begin())
+			on << " AND ";
+		    on << (*it)->toString(alias);
+		}
 		std::string onStr = on.str();
 		if (!onStr.empty()) {
 		    if (captureConstraints == NULL)
@@ -130,6 +133,11 @@ namespace w3c_sw {
 	    std::string getName () { return name; }
 	    void setAliasAttr(AliasAttr aattr) { this->aattr = aattr; }
 	    AliasAttr getAliasAttr () { return aattr; }
+	    std::string toString () {
+		std::stringstream s;
+		s << name << " attached to " << aattr.alias << "." << aattr.attr;
+		return s.str();
+	    }
 	};
 
 	class TightAttachment : public Attachment {
@@ -191,7 +199,7 @@ namespace w3c_sw {
 		}
 		joins.push_back(new TableJoin(toRelation, aliasName, false));
 		usedAliases.insert(aliasName);
-		std::cout << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
+		std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
 		return aliasName;
 	    }
 	    SQLUnion* makeUnion () {
@@ -202,20 +210,21 @@ namespace w3c_sw {
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
-		std::cout << "SQLQuery " << this << ": attach " << terminal << " to " << aattr.alias << "." << aattr.attr << std::endl;
 		std::map<string, Attachment>::iterator it = attachments.find(terminal);
 		if (it == attachments.end())
 		    attachments[terminal] = TightAttachment(aattr, terminal);
 		else
 		    constrain(aattr, attachments[terminal].getAliasAttr());
+		std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal].toString() << std::endl;
 		// !!!
 	    }
 	    void selectVariable (std::string terminal) {
+		std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal].toString() << std::endl;
 		selects.push_back(attachments[terminal]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
-		std::cout << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
+		std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (joins.back()->debug_getAlias() != x.alias) FAIL("constraint is not for last join");
 		joins.back()->addForeignKeyConstraint(x.attr, y.alias, y.attr);
 	    }
@@ -403,6 +412,32 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual BNode* bnode (std::string terminal) {
+
+	    // enforce coreferences
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("Variable as subject");
+		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), terminal);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No variable predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("Variable as object");
+		curQuery->attachVariable(curAliasAttr, terminal);
+		break;
+
+	    case MODE_selectVar:
+		NOW("URI as selectVar");
+		curQuery->selectVariable(terminal);
+		break;
+
+	    default:
+		FAIL("wierd state");
+	    }
 	    ret << "_:" << terminal; // rewrite when combining named BNodes from multiple docs?
 	    return NULL;
 	}
@@ -517,7 +552,6 @@ namespace w3c_sw {
 		curTableOperation = p_TableOperations->at(i);
 		curTableOperation->express(this);
 	    }
-	    p_TableOperations->express(this);
 	    p_Filters->express(this);
 	    depth--;
 	    lead();
