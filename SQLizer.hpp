@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.4 2008-08-30 08:13:50 eric Exp $
+ * $Id: SQLizer.hpp,v 1.5 2008-08-30 09:57:35 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -107,6 +107,7 @@ namespace w3c_sw {
 	    TightAttachment () : Attachment() {  }
 	};
 
+	class SQLUnion;
 	class SQLQuery {
 	    SQLQuery* parent;
 
@@ -159,6 +160,10 @@ namespace w3c_sw {
 		std::cout << "SQLQuery " << this << ": attachTuple: " << subject << ", " << relation << "." << attribute << " bound to " << aliasName << std::endl;
 		return aliasName;
 	    }
+	    SQLUnion* makeUnion () {
+		SQLUnion* ret = new SQLUnion(this);
+		return ret;
+	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
 		std::cout << "SQLQuery " << this << ": attach " << terminal << " to " << aattr.alias << "." << aattr.attr << std::endl;
 		std::map<string, Attachment>::iterator it = attachments.find(terminal);
@@ -184,9 +189,13 @@ namespace w3c_sw {
 	    }
 	};
 
+	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
 	public:
 	    SQLUnion (SQLQuery* parent) : SQLQuery(parent) {  }
+	    SQLDisjoint* makeDisjoint () {
+		return new SQLDisjoint(this);
+	    }
 	};
 
 	class SQLDisjoint : public SQLQuery {
@@ -223,7 +232,7 @@ namespace w3c_sw {
 	std::string stem;
 	/*	AliasContext* curAliases; */
 	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_overrun} mode;
-	std::stack<SQLQuery> sqlQueries;
+	SQLQuery* curQuery;
 	POS* curSubject;
 	AliasAttr curAliasAttr;
 	TableOperation* curTableOperation;
@@ -276,7 +285,7 @@ namespace w3c_sw {
 	    case MODE_predicate:
 		NOW("URI as predicate");
 		if (parms != 2) FAIL("malformed predicate");
-		curAliasAttr.alias = sqlQueries.top().attachTuple(curSubject, attribute, relation);
+		curAliasAttr.alias = curQuery->attachTuple(curSubject, attribute, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
 		break;
@@ -286,13 +295,13 @@ namespace w3c_sw {
 		if (parms != 3) FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
-		sqlQueries.top().constrain(getPKAttr(curAliasAttr.alias), value);
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), value);
 		break;
 
 	    case MODE_object:
 		NOW("URI as object");
 		if (parms != 3) FAIL("incomplete key");
-		sqlQueries.top().constrain(curAliasAttr, value);
+		curQuery->constrain(curAliasAttr, value);
 		break;
 
 	    default:
@@ -311,7 +320,7 @@ namespace w3c_sw {
 
 	    case MODE_subject:
 		NOW("Variable as subject");
-		sqlQueries.top().attachVariable(getPKAttr(curAliasAttr.alias), terminal);
+		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), terminal);
 		break;
 
 	    case MODE_predicate:
@@ -320,12 +329,12 @@ namespace w3c_sw {
 
 	    case MODE_object:
 		NOW("Variable as object");
-		sqlQueries.top().attachVariable(curAliasAttr, terminal);
+		curQuery->attachVariable(curAliasAttr, terminal);
 		break;
 
 	    case MODE_selectVar:
 		NOW("URI as selectVar");
-		sqlQueries.top().selectVariable(terminal);
+		curQuery->selectVariable(terminal);
 		break;
 
 	    default:
@@ -420,22 +429,20 @@ namespace w3c_sw {
 	    lead();
 	    ret << '{' << std::endl;
 	    depth++;
-	    SQLUnion disjunction(&sqlQueries.top());
-	    sqlQueries.push(disjunction);
+	    SQLQuery* parent = curQuery;
+	    SQLUnion* disjunction = parent->makeUnion();
 	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
 		MARK;
-		SQLDisjoint disjoint((SQLUnion*)&sqlQueries.top());
-		sqlQueries.push(disjoint);
+		curQuery = disjunction->makeDisjoint();
 		curTableOperation = p_TableOperations->at(i);
 		curTableOperation->express(this);
-		sqlQueries.pop();
 		if (i < p_TableOperations->size() - 1) {
 		    lead(depth - 1);
 		    ret << "UNION" << std::endl;
 		}
 	    }
 	    p_Filters->express(this);
-	    sqlQueries.pop();
+	    curQuery = parent;
 	    depth--;
 	    lead();
 	    ret << '}' << std::endl;
@@ -541,9 +548,9 @@ namespace w3c_sw {
 	virtual Select* select (w3c_sw::e_distinctness p_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
 	    ret << "SELECT ";
 	    START("cracking select clause");
-	    SQLQuery root(NULL);
-	    sqlQueries.push(root);
-	    if (p_distinctness == w3c_sw::DIST_distinct) sqlQueries.top().setDistinct(true);
+	    SQLQuery root(NULL); // @@@ save for future use
+	    curQuery = &root;
+	    if (p_distinctness == w3c_sw::DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == w3c_sw::DIST_reduced) ...
 	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");
 	    ret << std::endl;
@@ -553,8 +560,7 @@ namespace w3c_sw {
 	    //p_SolutionModifier->express(this);
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
-	    ret << sqlQueries.top().toString();
-	    sqlQueries.pop();
+	    ret << curQuery->toString();
 	    return NULL;
 	}
 	virtual Construct* construct (w3c_sw::DefaultGraphPattern* p_ConstructTemplate, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
