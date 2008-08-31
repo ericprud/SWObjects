@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.8 2008-08-31 07:16:30 eric Exp $
+ * $Id: SQLizer.hpp,v 1.9 2008-08-31 07:48:33 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -180,9 +180,10 @@ namespace w3c_sw {
 	    bool distinct;
 	    int nextUnionAlias;
 	    int nextOptAlias;
+	    int limit, offset;
 
 	public:
-	    SQLQuery (SQLQuery* parent) : parent(parent), distinct(false), nextUnionAlias(0), nextOptAlias(0) {  }
+	    SQLQuery (SQLQuery* parent) : parent(parent), distinct(false), nextUnionAlias(0), nextOptAlias(0), limit(-1), offset(-1) {  }
 	    virtual ~SQLQuery () {
 
 		for (std::vector<Join*>::iterator iJoins = joins.begin();
@@ -215,10 +216,14 @@ namespace w3c_sw {
 
 		/* WHERE */
 		if (!where.empty()) s << std::endl << " WHERE " << where;
+		if (limit != -1) s << " LIMIT " << limit;
+		if (offset != -1) s << " OFFSET " << offset;
 
 		return s.str();
 	    }
 	    void setDistinct (bool state = true) { distinct = state; }
+	    void setLimit (int limit) { this->limit = limit; }
+	    void setOffset (int offset) { this->offset = offset; }
 	    std::string attachTuple (POS* subject, std::string toRelation, std::string attribute) {
 		std::map<POS*, map<std::string, std::string> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
@@ -235,7 +240,7 @@ namespace w3c_sw {
 		}
 		joins.push_back(new TableJoin(toRelation, aliasName, false));
 		usedAliases.insert(aliasName);
-		std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
+		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
 		return aliasName;
 	    }
 	    SQLUnion* makeUnion () {
@@ -251,18 +256,18 @@ namespace w3c_sw {
 		    attachments[terminal] = new TightAttachment(aattr, terminal);
 		else
 		    attachments[terminal]->constrain(aattr, this);
-		std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal]->toString() << std::endl;
+		//std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal]->toString() << std::endl;
 		// !!!
 	    }
 	    void selectVariable (std::string terminal) {
 		if (attachments.find(terminal) == attachments.end())
 		    attachments[terminal] = new NullAttachment(terminal);
-		std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
 		selects.push_back(attachments[terminal]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
-		std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
+		//std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (joins.back()->debug_getAlias() != x.alias) FAIL("constraint is not for last join");
 		joins.back()->addForeignKeyConstraint(x.attr, y.alias, y.attr);
 	    }
@@ -348,39 +353,13 @@ namespace w3c_sw {
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
 
-	std::stringstream ret;
-	typedef enum {PREC_Low, PREC_Or = PREC_Low, 
-		      PREC_And, 
-		      PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
-		      PREC_Plus, PREC_Minus, 
-		      PREC_Times, PREC_Divide, 
-		      PREC_Not, PREC_Pos, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
-	const char* tab;
-	size_t depth;
-	std::stack<e_PREC> precStack;
-	void start (e_PREC prec) {
-	    if (prec < precStack.top())
-		ret << "( ";
-	    precStack.push(prec);
-	}
-	void end () {
-	    e_PREC prec = precStack.top();
-	    precStack.pop();
-	    if (prec < precStack.top())
-		ret << ")";
-	}
-	void lead () {
-	    for (size_t i = 0; i < depth; i++)
-		ret << tab;
-	}
-	void lead (size_t p_depth) {
-	    for (size_t i = 0; i < p_depth; i++)
-		ret << tab;
-	}
     public:
-	SQLizer (std::string stem, const char* p_tab = "  ") : stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), tab(p_tab), depth(0), precStack() { precStack.push(PREC_High); }
-	std::string getSPARQLstring () { return ret.str(); }
-	//!!!
+	SQLizer (std::string stem) : 
+	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr") {  }
+	~SQLizer () { delete curQuery; }
+
+	std::string getSPARQLstring () { return curQuery->toString(); }
+
 	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual URI* uri (std::string terminal) {
@@ -416,7 +395,6 @@ namespace w3c_sw {
 	    default:
 		FAIL("wierd state");
 	    }
-	    ret << '<' << terminal << '>';
 	    return NULL;
 	}
 	virtual Variable* variable (std::string terminal) {
@@ -446,7 +424,6 @@ namespace w3c_sw {
 	    default:
 		FAIL("wierd state");
 	    }
-	    ret << '?' << terminal;
 	    return NULL;
 	}
 	virtual BNode* bnode (std::string terminal) {
@@ -475,76 +452,57 @@ namespace w3c_sw {
 	    default:
 		FAIL("wierd state");
 	    }
-	    ret << "_:" << terminal; // rewrite when combining named BNodes from multiple docs?
 	    return NULL;
 	}
+	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
 	virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
-	    ret << '"' << terminal << '"';
-	    if (datatype != NULL) { ret << "^^<" << datatype->getTerminal() << '>'; }
-	    if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getTerminal(); }
-	    ret << ' ';
+	    if (datatype != NULL) {
+	    }
+	    if (p_LANGTAG != NULL) {
+	    }
 	    return NULL;
 	}
 	virtual NumericRDFLiteral* rdfLiteral (int p_value) {
-	    ret << p_value << ' ';
 	    return NULL;
 	}
 	virtual NumericRDFLiteral* rdfLiteral (float p_value) {
-	    ret << p_value << ' ';
 	    return NULL;
 	}
 	virtual NumericRDFLiteral* rdfLiteral (double p_value) {
-	    ret << p_value << ' ';
 	    return NULL;
 	}
 	virtual BooleanRDFLiteral* rdfLiteral (bool p_value) {
-	    ret << (p_value ? "true" : "false") << ' ';
 	    return NULL;
 	}
 	virtual NULLpos* nullpos () {
-	    ret << "NULL ";
 	    return NULL;
 	}
 	virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
-	    lead();
-
 	    curSubject = p_s;
 	    START("checking predicate");
 	    mode = MODE_predicate;
 	    p_p->express(this);
-	    ret << ' ';
 
 	    NOW("checking subject");
 	    mode = MODE_subject;
 	    p_s->express(this);
-	    ret << ' ';
 
 
 	    NOW("checking object");
 	    mode = MODE_object;
 	    p_o->express(this);
-	    ret << " ." << std::endl;
 
 	    mode = MODE_outside;
 	    return NULL;
 	}
 	virtual Filter* filter (w3c_sw::Expression* p_Constraint) {
-	    lead();
-	    ret << "FILTER ";
 	    p_Constraint->express(this);
-	    ret << std::endl;
 	    return NULL;
 	}
 	void _BasicGraphPattern (ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
-	    lead();
-	    ret << '{' << std::endl;
-	    depth++;
 	    MARK;
 	    p_TriplePatterns->express(this);
 	    p_Filters->express(this);
-	    depth--;
-	    lead();
-	    ret << '}' << std::endl;
 	}
 	virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    MARK;
@@ -557,9 +515,6 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
-	    lead();
-	    ret << '{' << std::endl;
-	    depth++;
 	    SQLQuery* parent = curQuery;
 	    SQLUnion* disjunction = parent->makeUnion();
 	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
@@ -567,22 +522,12 @@ namespace w3c_sw {
 		curQuery = disjunction->makeDisjoint();
 		curTableOperation = p_TableOperations->at(i);
 		curTableOperation->express(this);
-		if (i < p_TableOperations->size() - 1) {
-		    lead(depth - 1);
-		    ret << "UNION" << std::endl;
-		}
 	    }
 	    p_Filters->express(this);
 	    curQuery = parent;
-	    depth--;
-	    lead();
-	    ret << '}' << std::endl;
 	    return NULL;
 	}
 	virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
-	    lead();
-	    ret << '{' << std::endl;
-	    depth++;
 	    MARK;
 	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
 		MARK;
@@ -590,83 +535,62 @@ namespace w3c_sw {
 		curTableOperation->express(this);
 	    }
 	    p_Filters->express(this);
-	    depth--;
-	    lead();
-	    ret << '}' << std::endl;
 	    return NULL;
 	}
 	virtual OptionalGraphPattern* optionalGraphPattern (w3c_sw::TableOperation* p_GroupGraphPattern) {
-	    lead();
-	    ret << "OPTIONAL ";
-	    depth++;
 	    MARK;
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
-	    depth--;
 	    return NULL;
 	}
 	virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
-	    lead();
-	    ret << "GRAPH ";
-	    FAIL("don't know how to deal with GraphGraphPatterns yet");
+	    FAIL("don't do federation with GraphGraphPatterns yet");
 	    p_POS->express(this);
-	    ret << std::endl;
-	    depth++;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
-	    depth--;
 	    return NULL;
 	}
 	virtual POSList* posList (ProductionVector<w3c_sw::POS*>* p_POSs) {
-	    for (size_t i = 0; i < p_POSs->size(); i++) {
+	    for (size_t i = 0; i < p_POSs->size(); i++)
 		p_POSs->at(i)->express(this);
-		ret << ' ';
-	    }
 	    return NULL;
 	}
 	virtual StarVarSet* starVarSet () {
-	    ret << "* ";
+	    FAIL("need to select all pertinent vars");
 	    return NULL;
 	}
 	virtual DefaultGraphClause* defaultGraphClause (w3c_sw::POS* p_IRIref) {
-	    ret << "FROM ";
 	    p_IRIref->express(this);
 	    return NULL;
 	}
 	virtual NamedGraphClause* namedGraphClause (w3c_sw::POS* p_IRIref) {
-	    ret << "FROM NAMED ";
 	    p_IRIref->express(this);
 	    return NULL;
 	}
 	virtual SolutionModifier* solutionModifier (std::vector<w3c_sw::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
-	    if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit;
-	    if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset;
+	    if (p_limit != LIMIT_None) curQuery->setLimit(p_limit);
+	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions) {
-		ret << "ORDER BY ";
 		for (size_t i = 0; i < p_OrderConditions->size(); i++) {
-		    if (p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Desc) ret << "DESC ";
+		    bool desc = p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Desc;
+		    // !!!
 		    p_OrderConditions->at(i).expression->express(this);
 		}
 	    }
 	    return NULL;
 	}
 	virtual Binding* binding (ProductionVector<w3c_sw::POS*>* values) {//!!!
-	    ret << "  { ";
+	    // !!!
 	    for (size_t i = 0; i < values->size(); i++)
 		values->at(i)->express(this);
-	    ret << ')' << std::endl;
 	    return NULL;
 	}
 	virtual BindingClause* bindingClause (w3c_sw::POSList* p_Vars, ProductionVector<w3c_sw::Binding*>* p_Bindings) {
-	    ret << "BINDINGS ";
 	    p_Vars->express(this);
-	    ret << '{' << std::endl; //!!!
 	    p_Bindings->ProductionVector<w3c_sw::Binding*>::express(this);
-	    ret << '}' << std::endl;
 	    return NULL;
 	}
 	virtual WhereClause* whereClause (w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) {
-	    ret << "WHERE" << std::endl;
 	    START("p_GroupGraphPattern");
 	    Consequents consequents(p_GroupGraphPattern);
 	    consequentsP = &consequents;
@@ -676,25 +600,20 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual Select* select (w3c_sw::e_distinctness p_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
-	    ret << "SELECT ";
 	    START("cracking select clause");
-	    SQLQuery root(NULL); // @@@ save for future use
-	    curQuery = &root;
+	    curQuery = new SQLQuery(NULL);
 	    if (p_distinctness == w3c_sw::DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == w3c_sw::DIST_reduced) ...
 	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");
-	    ret << std::endl;
-	    lead();
 	    NOW("p_WhereClause");
 	    p_WhereClause->express(this);
 	    //p_SolutionModifier->express(this);
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
-	    ret << curQuery->toString();
 	    return NULL;
 	}
 	virtual Construct* construct (w3c_sw::DefaultGraphPattern* p_ConstructTemplate, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
-	    ret << "CONSTRUCT ";
+	    FAIL("CONSTRUCT");
 	    p_ConstructTemplate->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
@@ -702,7 +621,7 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual Describe* describe (w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
-	    ret << "DESCRIBE ";
+	    FAIL("DESCRIBE");
 	    p_VarSet->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
@@ -710,50 +629,48 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual Ask* ask (ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause) {
-	    ret << "ASK ";
+	    FAIL("ASK");
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	    return NULL;
 	}
 	virtual Replace* replace (w3c_sw::WhereClause* p_WhereClause, w3c_sw::TableOperation* p_GraphTemplate) {
-	    ret << "REPLACE ";
+	    FAIL("REPLACE");
 	    p_WhereClause->express(this);
 	    p_GraphTemplate->express(this);
 	    return NULL;
 	}
 	virtual Insert* insert (w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
-	    ret << "INSERT { ";
+	    FAIL("INSERT {");
 	    p_GraphTemplate->express(this);
 	    if (p_WhereClause) p_WhereClause->express(this);
-	    ret << "}" << std::endl;
 	    return NULL;
 	}
 	virtual Delete* del (w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
-	    ret << "DELETE";
+	    FAIL("DELET");
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	    return NULL;
 	}
 	virtual Load* load (ProductionVector<w3c_sw::URI*>* p_IRIrefs, w3c_sw::URI* p_into) {
-	    ret << "LOAD ";
+	    FAIL("LOAD");
 	    p_IRIrefs->express(this);
 	    p_into->express(this);
 	    return NULL;
 	}
 	virtual Clear* clear (w3c_sw::URI* p__QGraphIRI_E_Opt) {
-	    ret << "CLEAR ";
+	    FAIL("CLEAR");
 	    p__QGraphIRI_E_Opt->express(this);
 	    return NULL;
 	}
 	virtual Create* create (w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) {
-	    ret << "CREATE ";
-	    if (p_Silence != w3c_sw::SILENT_Yes) ret << "SILENT";
+	    FAIL("CREATE");
+	    if (p_Silence != w3c_sw::SILENT_Yes) ;// !!!
 	    p_GraphIRI->express(this);
 	    return NULL;
 	}
 	virtual Drop* drop (w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) {
-	    ret << "DROP ";
-	    if (p_Silence != w3c_sw::SILENT_Yes) ret << "SILENT";
+	    if (p_Silence != w3c_sw::SILENT_Yes) ;//!!!
 	    p_GraphIRI->express(this);
 	    return NULL;
 	}
@@ -777,11 +694,10 @@ namespace w3c_sw {
 	    p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
 	    return NULL;
 	}
+	// !!!
 	virtual FunctionCall* functionCall (w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) {
 	    p_IRIref->express(this);
-	    ret << "(";
 	    p_ArgList->express(this);
-	    ret << ")";
 	    return NULL;
 	}
 	virtual FunctionCallExpression* functionCallExpression (w3c_sw::FunctionCall* p_FunctionCall) {
@@ -790,112 +706,65 @@ namespace w3c_sw {
 	}
 	/* Expressions */
 	virtual BooleanNegation* booleanNegation (w3c_sw::Expression* p_Expression) {
-	    start(PREC_Not);
-	    ret << '!';
 	    p_Expression->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual ArithmeticNegation* arithmeticNegation (w3c_sw::Expression* p_Expression) {
-	    start(PREC_Neg);
-	    ret << "- ";
 	    p_Expression->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual ArithmeticInverse* arithmeticInverse (w3c_sw::Expression* p_Expression) {
-	    start(PREC_Divide);
-	    ret << "1/";
 	    p_Expression->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanConjunction* booleanConjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    start(PREC_And);
-	    for (size_t i = 0; i < p_Expressions->size(); i++) {
+	    for (size_t i = 0; i < p_Expressions->size(); i++)
 		p_Expressions->at(i)->express(this);
-		if (i < p_Expressions->size() - 1)
-		    ret << " && ";
-	    }
-	    end();
 	    return NULL;
 	}
 	virtual BooleanDisjunction* booleanDisjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    start(PREC_Or);
-	    for (size_t i = 0; i < p_Expressions->size(); i++) {
+	    for (size_t i = 0; i < p_Expressions->size(); i++)
 		p_Expressions->at(i)->express(this);
-		if (i < p_Expressions->size() - 1)
-		    ret << " || ";
-	    }
-	    end();
 	    return NULL;
 	}
 	virtual ArithmeticSum* arithmeticSum (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    start(PREC_Plus);
-	    for (size_t i = 0; i < p_Expressions->size(); i++) {
+	    for (size_t i = 0; i < p_Expressions->size(); i++)
 		p_Expressions->at(i)->express(this);
-		if (i < p_Expressions->size() - 1)
-		    ret << " + ";
-	    }
-	    end();
 	    return NULL;
 	}
 	virtual ArithmeticProduct* arithmeticProduct (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    start(PREC_Times);
-	    for (size_t i = 0; i < p_Expressions->size(); i++) {
+	    for (size_t i = 0; i < p_Expressions->size(); i++)
 		p_Expressions->at(i)->express(this);
-		if (i < p_Expressions->size() - 1)
-		    ret << " * ";
-	    }
-	    end();
 	    return NULL;
 	}
 	virtual BooleanEQ* booleanEQ (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_EQ);
 	    p_left->express(this);
-	    ret << " = ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanNE* booleanNE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_NE);
 	    p_left->express(this);
-	    ret << " != ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanLT* booleanLT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_LT);
 	    p_left->express(this);
-	    ret << " < ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanGT* booleanGT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_GT);
 	    p_left->express(this);
-	    ret << " > ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanLE* booleanLE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_LE);
 	    p_left->express(this);
-	    ret << " <= ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual BooleanGE* booleanGE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    start(PREC_GE);
 	    p_left->express(this);
-	    ret << " >= ";
 	    p_right->express(this);
-	    end();
 	    return NULL;
 	}
 	virtual ComparatorExpression* comparatorExpression (w3c_sw::BooleanComparator* p_BooleanComparator) {
