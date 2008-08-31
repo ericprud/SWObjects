@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.7 2008-08-30 23:48:17 eric Exp $
+ * $Id: SQLizer.hpp,v 1.8 2008-08-31 07:16:30 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -16,7 +16,13 @@ namespace w3c_sw {
 
     class SQLizer : public Expressor {
 
-	typedef struct {std::string alias; std::string attr; } AliasAttr;
+	class AliasAttr {
+	public:
+	    std::string alias;
+	    std::string attr;
+	    //	    AliasAttr () {  }
+	    AliasAttr (std::string alias, std::string attr) : alias(alias), attr(attr) {  }
+	};
 
 	class Join {
 	    class Constraint {
@@ -124,26 +130,42 @@ namespace w3c_sw {
 	};
 
 	class Attachment {
+	protected:
 	    AliasAttr aattr;
 	    std::string name;
 	public:
-	    Attachment () {  }
 	    Attachment (AliasAttr aattr, std::string name) : aattr(aattr), name(name) {  }
-	    void setName(std::string name) { this->name = name; }
-	    std::string getName () { return name; }
-	    void setAliasAttr(AliasAttr aattr) { this->aattr = aattr; }
-	    AliasAttr getAliasAttr () { return aattr; }
-	    std::string toString () {
-		std::stringstream s;
-		s << name << " attached to " << aattr.alias << "." << aattr.attr;
-		return s.str();
-	    }
+	    virtual ~Attachment () {  }
+	    //std::string getName () { return name; }
+	    //AliasAttr getAliasAttr () { return aattr; }
+	    virtual std::string toString() = 0;
+	    virtual void constrain(AliasAttr aattr, SQLQuery* query) = 0;
 	};
 
 	class TightAttachment : public Attachment {
 	public:
-	    TightAttachment () : Attachment() {  }
 	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(aattr, name) {  }
+	    virtual std::string toString () {
+		std::string ret;
+		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr); ret.append(" AS "); ret.append(name);
+		return ret;
+	    }
+	    virtual void constrain (AliasAttr aattr, SQLQuery* query) {
+		query->constrain(aattr, this->aattr);
+	    }
+	};
+
+	class NullAttachment : public Attachment {
+	public:
+	    NullAttachment (std::string name) : Attachment(AliasAttr("NOALIAS", "NULL"), name) {  }
+	    virtual std::string toString () {
+		std::string ret;
+		ret.append("NULL AS "); ret.append(name);
+		return ret;
+	    }
+	    virtual void constrain (AliasAttr, SQLQuery*) {
+		FAIL("trying to constrain against a NullAttachment");
+	    }
 	};
 
 	class SQLUnion;
@@ -153,25 +175,36 @@ namespace w3c_sw {
 	    std::map<POS*, map<std::string, std::string> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
-	    std::map<std::string, Attachment> attachments;
-	    std::vector<Attachment> selects;
+	    std::map<std::string, Attachment*> attachments;
+	    std::vector<Attachment*> selects;
 	    bool distinct;
 	    int nextUnionAlias;
 	    int nextOptAlias;
+
 	public:
 	    SQLQuery (SQLQuery* parent) : parent(parent), distinct(false), nextUnionAlias(0), nextOptAlias(0) {  }
 	    virtual ~SQLQuery () {
-		for (std::vector<Join*>::iterator it = joins.begin();
-		     it != joins.end(); ++it)
-		    delete *it;
+
+		for (std::vector<Join*>::iterator iJoins = joins.begin();
+		     iJoins != joins.end(); ++iJoins)
+		    delete *iJoins;
+
+		for (std::map<string, Attachment*>::iterator iAttachments = attachments.begin();
+		     iAttachments != attachments.end(); ++iAttachments)
+		    delete iAttachments->second;
 	    }
 	    virtual std::string toString () {
 		std::stringstream s;
 		s << "SELECT ";
 		if (distinct) s << "DISTINCT ";
-		for (std::vector<Attachment>::iterator it = selects.begin();
+
+		/* SELECT attributes */
+		for (std::vector<Attachment*>::iterator it = selects.begin();
 		     it != selects.end(); ++it)
-		    s << it->getAliasAttr().alias << "." << it->getAliasAttr().attr << " AS " << it->getName() << " ";
+		    s << (*it)->toString() << " ";
+		if (selects.begin() == selects.end()) s << "NULL";
+
+		/* JOINs */
 		std::string where;
 		for (std::vector<Join*>::iterator it = joins.begin();
 		     it != joins.end(); ++it)
@@ -179,7 +212,10 @@ namespace w3c_sw {
 			s << endl << "       FROM " << (*it)->toString(&where);
 		    else
 			s << (*it)->toString();
+
+		/* WHERE */
 		if (!where.empty()) s << std::endl << " WHERE " << where;
+
 		return s.str();
 	    }
 	    void setDistinct (bool state = true) { distinct = state; }
@@ -210,16 +246,18 @@ namespace w3c_sw {
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
-		std::map<string, Attachment>::iterator it = attachments.find(terminal);
+		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
 		if (it == attachments.end())
-		    attachments[terminal] = TightAttachment(aattr, terminal);
+		    attachments[terminal] = new TightAttachment(aattr, terminal);
 		else
-		    constrain(aattr, attachments[terminal].getAliasAttr());
-		std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal].toString() << std::endl;
+		    attachments[terminal]->constrain(aattr, this);
+		std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal]->toString() << std::endl;
 		// !!!
 	    }
 	    void selectVariable (std::string terminal) {
-		std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal].toString() << std::endl;
+		if (attachments.find(terminal) == attachments.end())
+		    attachments[terminal] = new NullAttachment(terminal);
+		std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
 		selects.push_back(attachments[terminal]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
@@ -298,7 +336,7 @@ namespace w3c_sw {
 
 	    return pos+1;
 	}
-	AliasAttr getPKAttr (std::string alias) { AliasAttr ret = {alias, "id"}; return ret; }
+	AliasAttr getPKAttr (std::string alias) { return AliasAttr(alias, "id"); }
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
@@ -340,7 +378,7 @@ namespace w3c_sw {
 		ret << tab;
 	}
     public:
-	SQLizer (std::string stem, const char* p_tab = "  ") : stem(stem), /*curAliases(NULL),*/ mode(MODE_outside), tab(p_tab), depth(0), precStack() { precStack.push(PREC_High); }
+	SQLizer (std::string stem, const char* p_tab = "  ") : stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), tab(p_tab), depth(0), precStack() { precStack.push(PREC_High); }
 	std::string getSPARQLstring () { return ret.str(); }
 	//!!!
 	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
@@ -431,8 +469,7 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_selectVar:
-		NOW("URI as selectVar");
-		curQuery->selectVariable(terminal);
+		FAIL("no told bnodes");
 		break;
 
 	    default:
