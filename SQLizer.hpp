@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.9 2008-08-31 07:48:33 eric Exp $
+ * $Id: SQLizer.hpp,v 1.10 2008-08-31 08:12:09 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -31,14 +31,14 @@ namespace w3c_sw {
 	    public:
 		Constraint (std::string myAttr) : myAttr(myAttr) {  }
 		virtual ~Constraint () {  }
-		virtual std::string toString (std::string alias) = 0;
+		virtual std::string toString (std::string alias, std::string pad = "") = 0;
 	    };
 	    class ForeignKeyConstraint : public Constraint {
 		std::string otherAlias;
 		std::string otherAttr;
 	    public:
 		ForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : Constraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
-		virtual std::string toString (std::string alias) {
+		virtual std::string toString (std::string alias, std::string pad = "") {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
 		    return s.str();
@@ -48,7 +48,7 @@ namespace w3c_sw {
 		int value;
 	    public:
 		IntegerConstraint (std::string myAttr, int value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString (std::string alias) {
+		virtual std::string toString (std::string alias, std::string pad = "") {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << value;
 		    return s.str();
@@ -58,7 +58,7 @@ namespace w3c_sw {
 		std::string value;
 	    public:
 		StringConstraint (std::string myAttr, std::string value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString (std::string alias) {
+		virtual std::string toString (std::string alias, std::string pad = "") {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=\"" << value << "\"";
 		    return s.str();
@@ -75,17 +75,17 @@ namespace w3c_sw {
 		    delete *it;
 	    }
 	    std::string debug_getAlias () { return alias; }
-	    virtual std::string getRelationText () = 0;
-	    std::string toString (std::string* captureConstraints = NULL) {
+	    virtual std::string getRelationText (std::string pad = "") = 0;
+	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") {
 		std::stringstream s;
-		if (captureConstraints == NULL) s << endl << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
-		s << getRelationText() << " AS " << alias;
+		if (captureConstraints == NULL) s << endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+		s << getRelationText(pad) << " AS " << alias;
 		std::stringstream on;
 		for (std::vector<Constraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			on << " AND ";
-		    on << (*it)->toString(alias);
+		    on << (*it)->toString(alias, pad);
 		}
 		std::string onStr = on.str();
 		if (!onStr.empty()) {
@@ -110,7 +110,7 @@ namespace w3c_sw {
 	class TableJoin : public Join {
 	    std::string relation;
 	protected:
-	    virtual std::string getRelationText () { return relation; }
+	    virtual std::string getRelationText (std::string pad = "") { return relation; }
 	public:
 	    TableJoin (std::string relation, std::string alias, bool optional) : Join(alias, optional), relation(relation) {  }
 	};
@@ -119,9 +119,9 @@ namespace w3c_sw {
 	class SubqueryJoin : public Join {
 	    SQLQuery* subquery;
 	protected:
-	    virtual std::string getRelationText () {
+	    virtual std::string getRelationText (std::string pad = "") {
 		std::stringstream s;
-		s << "(" << std::endl << subquery->toString() << std::endl << "             )";
+		s << "(" << std::endl << subquery->toString(pad) << std::endl << pad << "             )";
 		return s.str();
 	    }
 	public:
@@ -138,14 +138,14 @@ namespace w3c_sw {
 	    virtual ~Attachment () {  }
 	    //std::string getName () { return name; }
 	    //AliasAttr getAliasAttr () { return aattr; }
-	    virtual std::string toString() = 0;
+	    virtual std::string toString(std::string pad = "") = 0;
 	    virtual void constrain(AliasAttr aattr, SQLQuery* query) = 0;
 	};
 
 	class TightAttachment : public Attachment {
 	public:
 	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(aattr, name) {  }
-	    virtual std::string toString () {
+	    virtual std::string toString (std::string pad = "") {
 		std::string ret;
 		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr); ret.append(" AS "); ret.append(name);
 		return ret;
@@ -158,7 +158,7 @@ namespace w3c_sw {
 	class NullAttachment : public Attachment {
 	public:
 	    NullAttachment (std::string name) : Attachment(AliasAttr("NOALIAS", "NULL"), name) {  }
-	    virtual std::string toString () {
+	    virtual std::string toString (std::string pad = "") {
 		std::string ret;
 		ret.append("NULL AS "); ret.append(name);
 		return ret;
@@ -194,15 +194,15 @@ namespace w3c_sw {
 		     iAttachments != attachments.end(); ++iAttachments)
 		    delete iAttachments->second;
 	    }
-	    virtual std::string toString () {
+	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
-		s << "SELECT ";
+		s << pad << "SELECT ";
 		if (distinct) s << "DISTINCT ";
 
 		/* SELECT attributes */
 		for (std::vector<Attachment*>::iterator it = selects.begin();
 		     it != selects.end(); ++it)
-		    s << (*it)->toString() << " ";
+		    s << (*it)->toString(pad) << " ";
 		if (selects.begin() == selects.end()) s << "NULL";
 
 		/* JOINs */
@@ -210,12 +210,12 @@ namespace w3c_sw {
 		for (std::vector<Join*>::iterator it = joins.begin();
 		     it != joins.end(); ++it)
 		    if (it == joins.begin())
-			s << endl << "       FROM " << (*it)->toString(&where);
+			s << endl << pad << "       FROM " << (*it)->toString(&where, pad);
 		    else
-			s << (*it)->toString();
+			s << (*it)->toString(NULL, pad);
 
 		/* WHERE */
-		if (!where.empty()) s << std::endl << " WHERE " << where;
+		if (!where.empty()) s << std::endl << pad << " WHERE " << where;
 		if (limit != -1) s << " LIMIT " << limit;
 		if (offset != -1) s << " OFFSET " << offset;
 
@@ -256,8 +256,6 @@ namespace w3c_sw {
 		    attachments[terminal] = new TightAttachment(aattr, terminal);
 		else
 		    attachments[terminal]->constrain(aattr, this);
-		//std::cerr << "SQLQuery " << this << ": attach " << terminal << " to " << attachments[terminal]->toString() << std::endl;
-		// !!!
 	    }
 	    void selectVariable (std::string terminal) {
 		if (attachments.find(terminal) == attachments.end())
@@ -295,13 +293,14 @@ namespace w3c_sw {
 		     it != disjoints.end(); ++it)
 		    delete *it;
 	    }
-	    virtual std::string toString () {
+	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
+		std::string newPad = pad + "    ";
 		for (std::vector<SQLDisjoint*>::iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it) {
 		    if (it != disjoints.begin())
-			s << std::endl << "UNION" << std::endl;
-		    s << (*it)->toString();
+			s << std::endl << pad << "  UNION" << std::endl;
+		    s << (*it)->toString(newPad);
 		}
 		return s.str();
 	    }
@@ -358,7 +357,7 @@ namespace w3c_sw {
 	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr") {  }
 	~SQLizer () { delete curQuery; }
 
-	std::string getSPARQLstring () { return curQuery->toString(); }
+	std::string getSPARQLstring () { return curQuery->toString(">>>>"); }
 
 	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
