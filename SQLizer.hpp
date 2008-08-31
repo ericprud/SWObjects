@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.10 2008-08-31 08:12:09 eric Exp $
+ * $Id: SQLizer.hpp,v 1.11 2008-08-31 08:20:33 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -38,7 +38,7 @@ namespace w3c_sw {
 		std::string otherAttr;
 	    public:
 		ForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : Constraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
-		virtual std::string toString (std::string alias, std::string pad = "") {
+		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
 		    return s.str();
@@ -48,7 +48,7 @@ namespace w3c_sw {
 		int value;
 	    public:
 		IntegerConstraint (std::string myAttr, int value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString (std::string alias, std::string pad = "") {
+		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << value;
 		    return s.str();
@@ -58,7 +58,7 @@ namespace w3c_sw {
 		std::string value;
 	    public:
 		StringConstraint (std::string myAttr, std::string value) : Constraint(myAttr), value(value) {  }
-		virtual std::string toString (std::string alias, std::string pad = "") {
+		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=\"" << value << "\"";
 		    return s.str();
@@ -110,7 +110,7 @@ namespace w3c_sw {
 	class TableJoin : public Join {
 	    std::string relation;
 	protected:
-	    virtual std::string getRelationText (std::string pad = "") { return relation; }
+	    virtual std::string getRelationText (std::string) { return relation; }
 	public:
 	    TableJoin (std::string relation, std::string alias, bool optional) : Join(alias, optional), relation(relation) {  }
 	};
@@ -145,7 +145,7 @@ namespace w3c_sw {
 	class TightAttachment : public Attachment {
 	public:
 	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(aattr, name) {  }
-	    virtual std::string toString (std::string pad = "") {
+	    virtual std::string toString (std::string) {
 		std::string ret;
 		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr); ret.append(" AS "); ret.append(name);
 		return ret;
@@ -158,7 +158,7 @@ namespace w3c_sw {
 	class NullAttachment : public Attachment {
 	public:
 	    NullAttachment (std::string name) : Attachment(AliasAttr("NOALIAS", "NULL"), name) {  }
-	    virtual std::string toString (std::string pad = "") {
+	    virtual std::string toString (std::string) {
 		std::string ret;
 		ret.append("NULL AS "); ret.append(name);
 		return ret;
@@ -224,7 +224,7 @@ namespace w3c_sw {
 	    void setDistinct (bool state = true) { distinct = state; }
 	    void setLimit (int limit) { this->limit = limit; }
 	    void setOffset (int offset) { this->offset = offset; }
-	    std::string attachTuple (POS* subject, std::string toRelation, std::string attribute) {
+	    std::string attachTuple (POS* subject, std::string toRelation) {
 		std::map<POS*, map<std::string, std::string> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
 		    map<std::string, std::string>::iterator byRelation = aliasMap[subject].find(toRelation);
@@ -372,7 +372,7 @@ namespace w3c_sw {
 	    case MODE_predicate:
 		NOW("URI as predicate");
 		if (parms != 2) FAIL("malformed predicate");
-		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation, attribute);
+		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
 		break;
@@ -454,23 +454,23 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
-	virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
+	virtual RDFLiteral* rdfLiteral (std::string /*terminal*/, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
 	    if (datatype != NULL) {
 	    }
 	    if (p_LANGTAG != NULL) {
 	    }
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (int p_value) {
+	virtual NumericRDFLiteral* rdfLiteral (int /*p_value*/) {
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (float p_value) {
+	virtual NumericRDFLiteral* rdfLiteral (float /*p_value*/) {
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (double p_value) {
+	virtual NumericRDFLiteral* rdfLiteral (double /*p_value*/) {
 	    return NULL;
 	}
-	virtual BooleanRDFLiteral* rdfLiteral (bool p_value) {
+	virtual BooleanRDFLiteral* rdfLiteral (bool /*p_value*/) {
 	    return NULL;
 	}
 	virtual NULLpos* nullpos () {
@@ -571,7 +571,7 @@ namespace w3c_sw {
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions) {
 		for (size_t i = 0; i < p_OrderConditions->size(); i++) {
-		    bool desc = p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Desc;
+		    /*bool desc = p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Desc;*/
 		    // !!!
 		    p_OrderConditions->at(i).expression->express(this);
 		}
@@ -669,7 +669,7 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual Drop* drop (w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) {
-	    if (p_Silence != w3c_sw::SILENT_Yes) ;//!!!
+	    if (p_Silence != w3c_sw::SILENT_Yes) ;// !!!
 	    p_GraphIRI->express(this);
 	    return NULL;
 	}
