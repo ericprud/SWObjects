@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.11 2008-08-31 08:20:33 eric Exp $
+ * $Id: SQLizer.hpp,v 1.12 2008-08-31 22:37:11 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -131,20 +131,18 @@ namespace w3c_sw {
 
 	class Attachment {
 	protected:
-	    AliasAttr aattr;
 	    std::string name;
 	public:
-	    Attachment (AliasAttr aattr, std::string name) : aattr(aattr), name(name) {  }
+	    Attachment (std::string name) : name(name) {  }
 	    virtual ~Attachment () {  }
-	    //std::string getName () { return name; }
-	    //AliasAttr getAliasAttr () { return aattr; }
 	    virtual std::string toString(std::string pad = "") = 0;
 	    virtual void constrain(AliasAttr aattr, SQLQuery* query) = 0;
 	};
 
 	class TightAttachment : public Attachment {
+	    AliasAttr aattr;
 	public:
-	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(aattr, name) {  }
+	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(name), aattr(aattr) {  }
 	    virtual std::string toString (std::string) {
 		std::string ret;
 		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr); ret.append(" AS "); ret.append(name);
@@ -157,7 +155,7 @@ namespace w3c_sw {
 
 	class NullAttachment : public Attachment {
 	public:
-	    NullAttachment (std::string name) : Attachment(AliasAttr("NOALIAS", "NULL"), name) {  }
+	    NullAttachment (std::string name) : Attachment(name) {  }
 	    virtual std::string toString (std::string) {
 		std::string ret;
 		ret.append("NULL AS "); ret.append(name);

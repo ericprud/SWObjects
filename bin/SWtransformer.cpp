@@ -7,7 +7,7 @@
 #include "RdfQueryDB.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
-//#include "SQLizer.hh"
+#include "SQLizer.hpp"
 
 #include <stdlib.h>
 #include <ostream>
@@ -27,7 +27,7 @@ int main(int argc,char** argv) {
     w3c_sw::POSFactory posFactory;
     w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
     w3c_sw::TurtleSDriver turtleParser(baseURI, &posFactory);
-    w3c_sw::QueryMapper d(&posFactory);
+    w3c_sw::QueryMapper queryMapper(&posFactory);
 
     int result;
     w3c_sw::Operation* query = NULL;
@@ -42,7 +42,7 @@ int main(int argc,char** argv) {
 		Operation* rule = sparqlParser.root;
 		Construct* c;
 		if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
-		    d.addRule(c);
+		    queryMapper.addRule(c);
 		    delete rule;
 		} else {
 		    cerr << "Rule file " << i - 2 << ": " << inputId << " was not a SPARQL CONSTRUCT.";
@@ -64,28 +64,20 @@ int main(int argc,char** argv) {
 	else {
 	    try {
 		if (query) {
+		    Operation* o = query->express(&queryMapper);
+
 		    XMLQueryExpressor xmlizer("  ", false);
-		    query->express(&xmlizer);
-		    cout << "input query (XML):" << endl << xmlizer.getXMLstring() << endl;
+		    o->express(&xmlizer);
+		    cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
 
 		    SPARQLSerializer sparqlizer("  ");
-		    query->express(&sparqlizer);
-		    cout << "input query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+		    o->express(&sparqlizer);
+		    cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 
-#if 1
-		    Operation* o = query->express(&d);
-		    SPARQLSerializer s2;
-		    o->express(&s2);
-		    delete o;
-		    cout << "Transformed query: " << s2.getSPARQLstring() << endl;
-#endif
-#if 0
-		    Operation* o = query->express(&d);
 		    SQLizer s2("http://myCo.exampe/DB/");
 		    o->express(&s2);
 		    delete o;
-		    cout << "Transformed query: " << s2.getSPARQLstring() << endl;
-#endif
+		    cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
 		    delete query;
 		}
 

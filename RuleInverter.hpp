@@ -1,13 +1,14 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.3 2008-08-31 22:37:11 eric Exp $
  */
 
 #ifndef RuleInverter_H
 #define RuleInverter_H
 
 #include "SWObjectDuplicator.hpp"
+#include "POS2BGPMap.hpp"
 #include <set>
 
 namespace w3c_sw {
@@ -21,142 +22,6 @@ namespace w3c_sw {
     };
 
     class MappingConstruct : public Construct {
-
-	typedef std::map<BasicGraphPattern*, bool> ConsequentMap;
-	typedef std::map<BasicGraphPattern*, bool>::iterator ConsequentMapIterator;
-	typedef std::map<POS*, ConsequentMap> ConsequentMapList;
-	typedef std::map<POS*, ConsequentMap>::iterator ConsequentMapListIterator;
-
-	class Consequents {
-
-	    class ConsequentsConstructor : public RecursiveExpressor {
-	    protected:
-		ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
-		BasicGraphPattern* bgp;
-		bool optState;
-		POS* graphName;
-		void _depends (POS* pos, BasicGraphPattern* bgp, bool weaklyBound) {
-		    ConsequentMapListIterator maps = consequents.find(pos);
-		    if (maps == consequents.end()) {
-			/* No BGP has introduced this variable. */
-			consequents[pos][bgp] = weaklyBound;
-		    } else {
-			ConsequentMapIterator consequent = consequents[pos].find(bgp);
-			if (consequent == consequents[pos].end()) {
-			    /* This BGP has not introduced this variable. */
-
-			    /* Omit { variables => BGP } mappings where the BGP is optional and the variable is mandatory elsewhere.
-			     * 06b — If the variable is weak in S and GA is optional and the variable is not in any mandatory antecedent graph, tag GA as an included optional.
-			     *                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-			     */
-			    if (weaklyBound == true) {
-				/* Only assert if no existing mandatory BGPs introduce this variable. */
-				for (ConsequentMapIterator bgps = consequents[pos].begin();
-				     bgps != consequents[pos].end(); ++bgps)
-				    if (bgps->second == false)
-					/* Already introduced elsewhere, so just return. */
-					return;
-			    } else {
-				/* No existing optional BGPs introduce this variable. */
-				for (ConsequentMapIterator bgps = consequents[pos].begin();
-				     bgps != consequents[pos].end();)
-				    if (bgps->second == true) // I don't know a safer way to erase cur element.
-					consequents[pos].erase(bgps++);
-				    else
-					bgps++;
-			    }
-
-			    consequents[pos][bgp] = weaklyBound;
-			} else if (consequents[pos][bgp] == true && weaklyBound == false)
-			    throw(std::runtime_error("reassignment of weakly bound variable to strongly bound in the same BGP.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
-		    }
-		}
-
-	    public:
-		ConsequentsConstructor (ConsequentMapList* consequents, TableOperation* op) : consequents(*consequents), bgp(dynamic_cast<BasicGraphPattern*>(op)), optState(false), graphName(NULL) {  }
-		virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
-
-		virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
-		    _depends(p_s, bgp, optState);
-		    _depends(p_p, bgp, optState);
-		    _depends(p_o, bgp, optState);
-		    return NULL;
-		}
-
-		virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
-		    _depends(p_name, bgp, optState);
-		    p_TriplePatterns->express(this);
-		    // p_Filters->express(this); @@ what to do with these?
-		    return NULL;
-		}
-
-		virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
-		    p_TriplePatterns->express(this);
-		    // p_Filters->express(this); @@ what to do with these?
-		    return NULL;
-		}
-
-		void _each (ProductionVector<TableOperation*>* p_TableOperations) {
-		    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
-			 it != p_TableOperations->end(); it++) {
-			bgp = dynamic_cast<BasicGraphPattern*>(*it);
-			(*it)->express(this);
-		    }
-		    bgp = NULL;
-		}
-
-		virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
-		    _each(p_TableOperations);
-		    //p_Filters->express(this);
-		    return NULL;
-		}
-		virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
-		    _each(p_TableOperations);
-		    //p_Filters->express(this);
-		    return NULL;
-		}
-		virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
-		    bool oldOptState = optState;
-		    optState = true;
-		    bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
-		    p_GroupGraphPattern->express(this);
-		    bgp = NULL;
-		    optState = oldOptState;
-		    return NULL;
-		}
-
-		virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
-		    POS* oldGraphName = graphName;
-		    graphName = p_POS;
-		    bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
-		    p_GroupGraphPattern->express(this);
-		    bgp = NULL;
-		    graphName = oldGraphName;
-		    return NULL;
-		}
-
-	    };
-
-	protected:
-	    ConsequentMapList consequents;
-
-	public:
-	    Consequents (TableOperation* op) {
-		ConsequentsConstructor ctor(&consequents, op);
-		op->express(&ctor);
-	    }
-	    ~Consequents () {
-		for (ConsequentMapListIterator maps = consequents.begin();
-		     maps != consequents.end(); ++maps) {
-		    maps->second.clear();
-		}
-		consequents.clear();
-	    }
-
-	    ConsequentMapListIterator begin () { return consequents.begin(); }
-	    ConsequentMapListIterator end () { return consequents.end(); }
-	};
-
 
 	class MappedDuplicator : public SWObjectDuplicator {
 	protected:
@@ -210,7 +75,7 @@ namespace w3c_sw {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
 		ConsequentMapIterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
-		    if (it->second == false) {
+		    if (it->second == Binding_STRONG) {
 			m_TableOperation = p_GroupGraphPattern->express(this);
 			return NULL;
 		    } else {
@@ -291,7 +156,7 @@ namespace w3c_sw {
 			if ((*row)->find(v) == (*row)->end()) {
 			    /* The BGP introduces v, which has no correspondence in our query. */
 			    neededVars.insert(v);
-			    if (bgpBindings->second == true) {
+			    if (bgpBindings->second == Binding_WEAK) {
 				/* It's optional, so omit it. !!
 				   This is acutally unsound as we may
 				   want to include any OPT which
@@ -302,7 +167,7 @@ namespace w3c_sw {
 				continue;
 			    }
 			}
-			includeRequiredness[bgpBindings->first] = (bgpBindings->second == false || (*row)->get(v) == false);
+			includeRequiredness[bgpBindings->first] = (bgpBindings->second == Binding_STRONG || (*row)->get(v) == false) ? Binding_WEAK : Binding_STRONG; //true : false
 		    }
 		    
 		}
