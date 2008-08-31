@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.34 2008-08-27 12:09:56 jnorthru Exp $
+# $Id: Makefile,v 1.35 2008-08-31 22:28:26 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -21,8 +21,8 @@ SED:=sed
 DEBUG:=-g
 #OPT=-O4
 DEFS:=-DYYTEXT_POINTER=1
-WARN:=-W -Wall -Wextra
- 
+WARN:=-W -Wall -Wextra -Wnon-virtual-dtor
+
 INCLUDES += -I${PWD}  
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
@@ -89,7 +89,7 @@ lib: dep $(LIB)
 
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
 
-tests/execute_%  : tests/test_%.cpp  tests/query_%.rq tests/ruleMap_%.rq $(LIB)
+tests/execute_%  : tests/test_%.cpp  tests/query_%.rq tests/ruleMap_%.rq $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInverter.hpp
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
