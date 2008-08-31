@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.35 2008-08-31 22:28:26 eric Exp $
+# $Id: Makefile,v 1.36 2008-08-31 22:28:45 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -43,7 +43,7 @@ PWD ?= $(shell pwd -P)
 %.cpp  %.hpp : %.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
 	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
- 
+
 %.cpp : %.lpp
 	$(FLEX) -o $@  $<
 
