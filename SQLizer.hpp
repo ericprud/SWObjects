@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.13 2008-09-02 10:23:05 eric Exp $
+ * $Id: SQLizer.hpp,v 1.14 2008-09-02 13:45:25 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -199,8 +199,10 @@ namespace w3c_sw {
 
 		/* SELECT attributes */
 		for (std::vector<Attachment*>::iterator it = selects.begin();
-		     it != selects.end(); ++it)
-		    s << (*it)->toString(pad) << " ";
+		     it != selects.end(); ++it) {
+		    if (it != selects.begin()) s << ", ";
+		    s << (*it)->toString(pad);
+		}
 		if (selects.begin() == selects.end()) s << "NULL";
 
 		/* JOINs */
@@ -514,12 +516,19 @@ namespace w3c_sw {
 	}
 	virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    SQLQuery* parent = curQuery;
+	    TableOperation* parentTableOperation = curTableOperation;
 	    SQLUnion* disjunction = parent->makeUnion();
 	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
 		MARK;
 		curQuery = disjunction->makeDisjoint();
 		curTableOperation = p_TableOperations->at(i);
 		curTableOperation->express(this);
+		std::vector<POS*> corefs = consequentsP->entriesFor(parentTableOperation);
+		for (std::vector<POS*>::iterator it = corefs.begin();
+		     it != corefs.end(); ++it) {
+		    curQuery->selectVariable((*it)->getTerminal());
+		    parent->attachVariable(AliasAttr("union1", (*it)->getTerminal()), (*it)->getTerminal());
+		}
 	    }
 	    p_Filters->express(this);
 	    curQuery = parent;
