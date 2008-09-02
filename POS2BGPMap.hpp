@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.2 2008-09-01 16:53:11 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.3 2008-09-02 07:34:41 eric Exp $
  */
 
 #pragma once
@@ -12,7 +12,7 @@
 
 namespace w3c_sw {
 
-    typedef enum {Binding_STRONG = 1, Binding_WEAK = 0, Binding_COREF = 5} BindingStrength;
+    typedef enum {Binding_STRONG = 1, Binding_WEAK = 0, Binding_FILTER = 0, Binding_COREF = 5} BindingStrength;
     typedef std::map<TableOperation*, BindingStrength> ConsequentMap;
     typedef std::map<TableOperation*, BindingStrength>::iterator ConsequentMapIterator;
     typedef std::map<POS*, ConsequentMap> ConsequentMapList;
@@ -100,53 +100,82 @@ namespace w3c_sw {
 		return NULL;
 	    }
 
-	    /* {:1 {:2 ?x ?z }
-                   {:3 OPT {:4 ?x ?y } FILTER ?y }
-                   {:5 {:6 {:7 ?z } }
-                       {:8 {:9 {:10 ?z } } }
-                    }
-                }
-	       consequents[x][1] = COREF
-	                     [2] = STRONG
-	                     [3] = COREF
-	                     [4] = WEAK
-	       consequents[y][3] = FILTER
-	                     [4] = WEAK
-	       consequents[z][5] = STRONG
-	                     [6] = FILTER
-	                     [7] = STRONG
-	                     [8] = COREF
-	                     [9] = COREF
-	                    [10] = STRONG
-	    */
-	    /* 1st pass: {:1 {:2 ?x }
-                             {:3 OPT {:4 ?x ?y } FILTER ?y }
-                             {:5 {:6 {:7 ?z } FILTER ?z }
-                                 {:8 {:9 {:10 ?z } } }
-                              }
-                          }
-	       consequents[x][2] = STRONG
-	       consequents[x][4] = WEAK
-	       consequents[y][3] = FILTER
-	       consequents[y][4] = WEAK
-	       consequents[z][6] = FILTER
-	       consequents[z][5] = STRONG
-	       consequents[z][10] = STRONG
-
-	       outerGraphs[2][1]
-	       outerGraphs[3][1]
-	       outerGraphs[4][3,1]
-	       outerGraphs[5][1]
-	       outerGraphs[6][5,1]
-	       outerGraphs[7][6,5,1]
-	       outerGraphs[8][5,1]
-	       outerGraphs[9][8,5,1]
-	       outerGraphs[10][9,8,5,1]
-	    */
-	    void _copyCorefs (TableOperation* child, TableOperation* parent) {
-		outerGraphs[child].insert(parent);
+	    static string bindingStr (BindingStrength s) {
+		return s == Binding_STRONG ? "STRONG" : 
+		    s == Binding_WEAK   ? "WEAK"   :
+		    s == Binding_FILTER ? "FILTER" :
+		    s == Binding_COREF  ? "COREF"  : 
+		    "???";
 	    }
 
+	    string dumpConsequents () {
+		stringstream s;
+		for (ConsequentMapList::iterator varIt = consequents.begin();
+		     varIt != consequents.end(); ++varIt)
+		    for (ConsequentMap::iterator graphIt = varIt->second.begin();
+			 graphIt != varIt->second.end(); ++graphIt)
+			s << "consequents[" << varIt->first->getTerminal() << "][" << graphIt->first << "] = " << bindingStr(consequents[varIt->first][graphIt->first]) << endl;
+		return s.str();
+	    }
+
+	    string dumpOuterGraphs () {
+		stringstream s;
+		for (OuterGraphs::iterator innerGraphIt = outerGraphs.begin();
+		     innerGraphIt != outerGraphs.end(); ++innerGraphIt) {
+		    s << "outerGraphs[" << innerGraphIt->first << "][";
+		    for (OuterGraphList::iterator outerGraphIt = innerGraphIt->second.begin();
+			 outerGraphIt != innerGraphIt->second.end(); ++outerGraphIt) {
+			if (outerGraphIt != innerGraphIt->second.begin())
+			    s << ",";
+			s << *outerGraphIt;
+		    }
+		    s << "]" << endl;
+		}
+		return s.str();
+	    }
+
+	    /* findCorefs: Add COREF BindingStrengths to consequents whereever a
+	     * variable referenced in multiple subgraphs. For example, given the
+	     * query graph
+	         {:1 {:2 ?x }
+                     {:3 OPT {:4 ?x ?y } FILTER ?y }
+                     {:5 {:6 {:7 ?z } FILTER ?z }
+                         {:8 {:9 {:10 ?z } } }
+                      }
+                  }
+	     * the complete consequents tree, including corefs is
+	         consequents[x][1] = COREF
+	                       [2] = STRONG
+	                       [3] = COREF
+	                       [4] = WEAK
+	         consequents[y][3] = FILTER
+	                       [4] = WEAK
+	         consequents[z][5] = STRONG
+	                       [6] = FILTER
+	                       [7] = STRONG
+	                       [8] = COREF
+	                       [9] = COREF
+	                      [10] = STRONG
+
+	     * We start with a tree without the corefs
+	         consequents[x][2] = STRONG
+	                       [4] = WEAK
+	         consequents[y][3] = FILTER
+	                       [4] = WEAK
+	         consequents[z][5] = STRONG
+	                       [6] = FILTER
+	                       [10] = STRONG
+	     * and a list for each graph of the graphs that contain it
+	         outerGraphs[2][1]
+	         outerGraphs[3][1]
+	         outerGraphs[4][3,1]
+	         outerGraphs[5][1]
+	         outerGraphs[6][5,1]
+	         outerGraphs[7][6,5,1]
+	         outerGraphs[8][5,1]
+	         outerGraphs[9][8,5,1]
+	         outerGraphs[10][9,8,5,1]
+	    */
 	    void findCorefs (TableOperation* parent) {
 		/* For each known variable: */
 		for (ConsequentMapList::iterator varIt = consequents.begin();
@@ -155,9 +184,14 @@ namespace w3c_sw {
 		    /* Create an insert queue so we don't muck with the iterator. */
 		    InsertQueue iq;
 
-		    /* For each pair of graphs that reference var: */
+		    /* For each pair of graphs that reference var
+		       e.g. for z: graph1It graph2It
+					5	6
+					5	10
+					6	10 */
+		    TableOperation* lastTableOp = consequents[varIt->first].rbegin()->first;
 		    for (ConsequentMap::iterator graph1It = consequents[varIt->first].begin();
-			 graph1It->first != consequents[varIt->first].rbegin()->first; ++graph1It) {
+			 graph1It->first != lastTableOp; ++graph1It) {
 			ConsequentMap::iterator graph2It = graph1It;
 			for (++graph2It; graph2It != consequents[varIt->first].end(); ++graph2It) {
 
@@ -166,10 +200,17 @@ namespace w3c_sw {
 			    OuterGraphList::iterator graph1parents = outerGraphs[graph1It->first].begin();
 			    OuterGraphList::iterator graph2parents = outerGraphs[graph2It->first].begin();
 			    TableOperation* commonAncestor = parent; // assignment not strictly necessary, but useful for templating.
-			    while (*graph1parents == *graph2parents) {
+			    while (*graph1parents == *graph2parents &&
+				   graph1parents != outerGraphs[graph1It->first].end()) {
 				commonAncestor = *graph1parents;
 				++graph1parents;
 				++graph2parents;
+				if (*graph1parents == *graph2parents &&
+				    graph1parents == outerGraphs[graph1It->first].end()) {
+				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << "but at end of graph1. last was " << commonAncestor << endl;
+				    std::cout << dumpConsequents();
+				    std::cout << dumpOuterGraphs();
+				}
 			    }
 
 			    /* If neither lineage is not subsumed by the other, and
@@ -191,8 +232,8 @@ namespace w3c_sw {
 				    iq.push_back(IQEnt(varIt->first, *graph2parents));
 			}
 		    }
-		    /* Insert queued items (so they don't muck with the iterators).
-		     */
+
+		    /* Insert queued items. */
 		    for (InsertQueue::iterator p = iq.begin(); p != iq.end(); ++p)
 			consequents[p->first][p->second] = Binding_COREF;
 		}
@@ -204,7 +245,7 @@ namespace w3c_sw {
 		    bgpStack.push_back(*it);
 		    (*it)->express(this);
 		    bgpStack.pop_back();
-		    _copyCorefs(*it, bgpStack.back());
+		    outerGraphs[*it].insert(bgpStack.back());
 		}
 	    }
 
@@ -224,7 +265,7 @@ namespace w3c_sw {
 		bgpStack.push_back(p_GroupGraphPattern);
 		p_GroupGraphPattern->express(this);
 		bgpStack.pop_back();
-		_copyCorefs(p_GroupGraphPattern, bgpStack.back());
+		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
 		optState = oldOptState;
 		return NULL;
 	    }
@@ -235,7 +276,7 @@ namespace w3c_sw {
 		bgpStack.push_back(p_GroupGraphPattern);
 		p_GroupGraphPattern->express(this);
 		bgpStack.pop_back();
-		_copyCorefs(p_GroupGraphPattern, bgpStack.back());
+		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
 		graphName = oldGraphName;
 		return NULL;
 	    }
@@ -250,7 +291,7 @@ namespace w3c_sw {
 	    ConsequentsConstructor ctor(&consequents, op);
 	    op->express(&ctor);
 	    /* eliminate unnecessary corefs from tree */
-	    //ctor.findCorefs(op);
+	    ctor.findCorefs(op);
 	}
 	~Consequents () {
 	    for (ConsequentMapListIterator maps = consequents.begin();
