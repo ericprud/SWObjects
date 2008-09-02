@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.6 2008-09-02 10:23:05 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.7 2008-09-02 12:02:46 eric Exp $
  */
 
 #pragma once
@@ -325,6 +325,16 @@ namespace w3c_sw {
 
 	ConsequentMapList::iterator begin () { return consequents.begin(); }
 	ConsequentMapList::iterator end () { return consequents.end(); }
+
+	/* Collect all the POS entries referenced in a particular TableOperation. */
+	std::vector<POS*> entriesFor (TableOperation* op) {
+	    std::vector<POS*> ret;
+	    for (ConsequentMapList::iterator varIt = consequents.begin();
+		 varIt != consequents.end(); ++varIt)
+		if (varIt->second.find(op) != varIt->second.end())
+		    ret.push_back(varIt->first);
+	    return ret;
+	}
     };
 }
 
