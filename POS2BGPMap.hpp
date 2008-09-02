@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.3 2008-09-02 07:34:41 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.4 2008-09-02 07:40:31 eric Exp $
  */
 
 #pragma once
@@ -14,17 +14,15 @@ namespace w3c_sw {
 
     typedef enum {Binding_STRONG = 1, Binding_WEAK = 0, Binding_FILTER = 0, Binding_COREF = 5} BindingStrength;
     typedef std::map<TableOperation*, BindingStrength> ConsequentMap;
-    typedef std::map<TableOperation*, BindingStrength>::iterator ConsequentMapIterator;
     typedef std::map<POS*, ConsequentMap> ConsequentMapList;
-    typedef std::map<POS*, ConsequentMap>::iterator ConsequentMapListIterator;
-
-    typedef std::set< TableOperation* >			OuterGraphList;
-    typedef std::map< TableOperation*, OuterGraphList >	OuterGraphs;
-
-    typedef std::pair< POS*, TableOperation* >		IQEnt;
-    typedef std::vector< IQEnt >			InsertQueue;
 
     class Consequents {
+
+	typedef std::set< TableOperation* >			OuterGraphList;
+	typedef std::map< TableOperation*, OuterGraphList >	OuterGraphs;
+
+	typedef std::pair< POS*, TableOperation* >		IQEnt;
+	typedef std::vector< IQEnt >			InsertQueue;
 
 	class ConsequentsConstructor : public RecursiveExpressor {
 	protected:
@@ -37,12 +35,12 @@ namespace w3c_sw {
 	    void _depends (POS* pos, BindingStrength strength) {
 		TableOperation* bgp = bgpStack.back();
 		assert(dynamic_cast<BasicGraphPattern*>(bgp) != NULL);
-		ConsequentMapListIterator maps = consequents.find(pos);
+		ConsequentMapList::iterator maps = consequents.find(pos);
 		if (maps == consequents.end()) {
 		    /* No BGP has introduced this variable. */
 		    consequents[pos][bgp] = strength;
 		} else {
-		    ConsequentMapIterator consequent = consequents[pos].find(bgp);
+		    ConsequentMap::iterator consequent = consequents[pos].find(bgp);
 		    if (consequent == consequents[pos].end()) {
 			/* This BGP has not introduced this variable. */
 
@@ -52,14 +50,14 @@ namespace w3c_sw {
 			 */
 			if (strength == Binding_WEAK) {
 			    /* Only assert if no existing mandatory BGPs introduce this variable. */
-			    for (ConsequentMapIterator bgps = consequents[pos].begin();
+			    for (ConsequentMap::iterator bgps = consequents[pos].begin();
 				 bgps != consequents[pos].end(); ++bgps)
 				if (bgps->second == Binding_STRONG)
 				    /* Already introduced elsewhere, so just return. */
 				    return;
 			} else {
 			    /* No existing optional BGPs introduce this variable. */
-			    for (ConsequentMapIterator bgps = consequents[pos].begin();
+			    for (ConsequentMap::iterator bgps = consequents[pos].begin();
 				 bgps != consequents[pos].end();)
 				if (bgps->second == Binding_WEAK) // !!! OPT { ?x } .?x  -- keep the first one? guess not.
 				    consequents[pos].erase(bgps++);
@@ -294,15 +292,15 @@ namespace w3c_sw {
 	    ctor.findCorefs(op);
 	}
 	~Consequents () {
-	    for (ConsequentMapListIterator maps = consequents.begin();
+	    for (ConsequentMapList::iterator maps = consequents.begin();
 		 maps != consequents.end(); ++maps) {
 		maps->second.clear();
 	    }
 	    consequents.clear();
 	}
 
-	ConsequentMapListIterator begin () { return consequents.begin(); }
-	ConsequentMapListIterator end () { return consequents.end(); }
+	ConsequentMapList::iterator begin () { return consequents.begin(); }
+	ConsequentMapList::iterator end () { return consequents.end(); }
     };
 }
 

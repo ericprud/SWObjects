@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.3 2008-08-31 22:37:11 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.4 2008-09-02 07:40:31 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -73,7 +73,7 @@ namespace w3c_sw {
 	    }
 	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
-		ConsequentMapIterator it;
+		ConsequentMap::iterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
 		    if (it->second == Binding_STRONG) {
 			m_TableOperation = p_GroupGraphPattern->express(this);
@@ -139,13 +139,13 @@ namespace w3c_sw {
 		/* 06 — Scan each basic graph pattern GA in the antecedent graph pattern A for variables in triple patterns:
 		 * http://www.w3.org/2008/07/MappingRules/#_06
 		 */
-		for (ConsequentMapListIterator maps = consequents.begin();
+		for (ConsequentMapList::iterator maps = consequents.begin();
 		     maps != consequents.end(); ++maps) {
 		    Variable* v = dynamic_cast<Variable*>(maps->first);
 		    if (v == NULL)
 			break;
 
-		    for (ConsequentMapIterator bgpBindings = maps->second.begin();
+		    for (ConsequentMap::iterator bgpBindings = maps->second.begin();
 			 bgpBindings != maps->second.end(); ++bgpBindings) {
 			/* 06a — If the variable is not weak in S or GA is not optional, tag GA as an included mandatory.
 			 * 06b — If the variable is weak in S and GA is optional and the variable is not in any mandatory antecedent graph, tag GA as an included optional.
