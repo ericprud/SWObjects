@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.4 2008-09-02 07:40:31 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.5 2008-09-02 08:00:13 eric Exp $
  */
 
 #pragma once
@@ -12,9 +12,9 @@
 
 namespace w3c_sw {
 
-    typedef enum {Binding_STRONG = 1, Binding_WEAK = 0, Binding_FILTER = 0, Binding_COREF = 5} BindingStrength;
-    typedef std::map<TableOperation*, BindingStrength> ConsequentMap;
-    typedef std::map<POS*, ConsequentMap> ConsequentMapList;
+    typedef enum {Binding_STRONG = 3, Binding_WEAK = 1, Binding_FILTER = 4, Binding_COREF = 2} BindingStrength;
+    typedef std::map<TableOperation*, BindingStrength>	ConsequentMap;
+    typedef std::map<POS*, ConsequentMap>		ConsequentMapList;
 
     class Consequents {
 
@@ -22,7 +22,7 @@ namespace w3c_sw {
 	typedef std::map< TableOperation*, OuterGraphList >	OuterGraphs;
 
 	typedef std::pair< POS*, TableOperation* >		IQEnt;
-	typedef std::vector< IQEnt >			InsertQueue;
+	typedef std::vector< IQEnt >				InsertQueue;
 
 	class ConsequentsConstructor : public RecursiveExpressor {
 	protected:
@@ -33,6 +33,12 @@ namespace w3c_sw {
 	    OuterGraphs outerGraphs;
 
 	    void _depends (POS* pos, BindingStrength strength) {
+		/* The dependencies algorithm works fine with literals and URIs,
+		   but we don't need them (yet?). */
+		if (!dynamic_cast<Variable*>(pos) &&
+		    !dynamic_cast<BNode*>(pos))
+		    return;
+
 		TableOperation* bgp = bgpStack.back();
 		assert(dynamic_cast<BasicGraphPattern*>(bgp) != NULL);
 		ConsequentMapList::iterator maps = consequents.find(pos);
@@ -120,14 +126,14 @@ namespace w3c_sw {
 		stringstream s;
 		for (OuterGraphs::iterator innerGraphIt = outerGraphs.begin();
 		     innerGraphIt != outerGraphs.end(); ++innerGraphIt) {
-		    s << "outerGraphs[" << innerGraphIt->first << "][";
+		    s << "outerGraphs[" << innerGraphIt->first << "]={";
 		    for (OuterGraphList::iterator outerGraphIt = innerGraphIt->second.begin();
 			 outerGraphIt != innerGraphIt->second.end(); ++outerGraphIt) {
 			if (outerGraphIt != innerGraphIt->second.begin())
 			    s << ",";
 			s << *outerGraphIt;
 		    }
-		    s << "]" << endl;
+		    s << "}" << endl;
 		}
 		return s.str();
 	    }
@@ -205,7 +211,7 @@ namespace w3c_sw {
 				++graph2parents;
 				if (*graph1parents == *graph2parents &&
 				    graph1parents == outerGraphs[graph1It->first].end()) {
-				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << "but at end of graph1. last was " << commonAncestor << endl;
+				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
 				    std::cout << dumpConsequents();
 				    std::cout << dumpOuterGraphs();
 				}
@@ -290,6 +296,7 @@ namespace w3c_sw {
 	    op->express(&ctor);
 	    /* eliminate unnecessary corefs from tree */
 	    ctor.findCorefs(op);
+	    std::cout << "Consequents:" << std::endl << ctor.dumpConsequents();
 	}
 	~Consequents () {
 	    for (ConsequentMapList::iterator maps = consequents.begin();
