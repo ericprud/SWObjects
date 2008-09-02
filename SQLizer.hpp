@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.14 2008-09-02 13:45:25 eric Exp $
+ * $Id: SQLizer.hpp,v 1.15 2008-09-02 15:33:59 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -165,9 +165,23 @@ namespace w3c_sw {
 		FAIL("trying to constrain against a NullAttachment");
 	    }
 	};
+	class ConstantAttachment : public Attachment {
+	    int value;
+	public:
+	    ConstantAttachment (int value, std::string name) : Attachment(name), value(value) {  }
+	    virtual std::string toString (std::string) {
+		std::stringstream ret;
+		ret << value << " AS " << name;
+		return ret.str();
+	    }
+	    virtual void constrain (AliasAttr, SQLQuery*) {
+		FAIL("trying to constrain against a ConstantAttachment");
+	    }
+	};
 
 	class SQLUnion;
 	class SQLQuery {
+	protected:
 	    SQLQuery* parent;
 
 	    std::map<POS*, map<std::string, std::string> > aliasMap;
@@ -243,10 +257,10 @@ namespace w3c_sw {
 		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
 		return aliasName;
 	    }
-	    SQLUnion* makeUnion () {
-		SQLUnion* ret = new SQLUnion(this);
+	    SQLUnion* makeUnion (std::vector<POS*> corefs) {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
+		SQLUnion* ret = new SQLUnion(this, corefs, s.str());
 		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
 		return ret;
 	    }
@@ -262,6 +276,12 @@ namespace w3c_sw {
 		    attachments[terminal] = new NullAttachment(terminal);
 		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
 		selects.push_back(attachments[terminal]);
+	    }
+	    void selectConstant (int value, std::string alias) {
+		if (attachments.find(alias) == attachments.end())
+		    attachments[alias] = new ConstantAttachment(value, alias);
+		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		selects.push_back(attachments[alias]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
@@ -286,12 +306,34 @@ namespace w3c_sw {
 	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
 	    std::vector<SQLDisjoint*> disjoints;
+	    std::vector<POS*> corefs;
+	    std::string name;
 	public:
-	    SQLUnion (SQLQuery* parent) : SQLQuery(parent) {  }
+	    SQLUnion (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+		SQLQuery(parent), corefs(corefs), name(name)
+	    {  }
 	    virtual ~SQLUnion () {
 		for (std::vector<SQLDisjoint*>::iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it)
 		    delete *it;
+	    }
+	    SQLDisjoint* makeDisjoint () {
+		SQLDisjoint* ret = new SQLDisjoint(this);
+		disjoints.push_back(ret);
+		return ret;
+	    }
+	    void attach () {
+		unsigned nextDisjointCardinal = 1;
+		for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
+		     dis != disjoints.end(); ++dis)
+		    (*dis)->selectConstant(nextDisjointCardinal++, "_DISJOINT_");
+		for (std::vector<POS*>::iterator it = corefs.begin();
+		     it != corefs.end(); ++it) {
+		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
+			 dis != disjoints.end(); ++dis)
+			(*dis)->selectVariable((*it)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*it)->getTerminal()), (*it)->getTerminal());
+		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
@@ -303,11 +345,6 @@ namespace w3c_sw {
 		    s << (*it)->toString(newPad);
 		}
 		return s.str();
-	    }
-	    SQLDisjoint* makeDisjoint () {
-		SQLDisjoint* ret = new SQLDisjoint(this);
-		disjoints.push_back(ret);
-		return ret;
 	    }
 	};
 
@@ -516,20 +553,14 @@ namespace w3c_sw {
 	}
 	virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    SQLQuery* parent = curQuery;
-	    TableOperation* parentTableOperation = curTableOperation;
-	    SQLUnion* disjunction = parent->makeUnion();
+	    SQLUnion* disjunction = parent->makeUnion(consequentsP->entriesFor(curTableOperation));
 	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
 		MARK;
 		curQuery = disjunction->makeDisjoint();
 		curTableOperation = p_TableOperations->at(i);
 		curTableOperation->express(this);
-		std::vector<POS*> corefs = consequentsP->entriesFor(parentTableOperation);
-		for (std::vector<POS*>::iterator it = corefs.begin();
-		     it != corefs.end(); ++it) {
-		    curQuery->selectVariable((*it)->getTerminal());
-		    parent->attachVariable(AliasAttr("union1", (*it)->getTerminal()), (*it)->getTerminal());
-		}
 	    }
+	    disjunction->attach();
 	    p_Filters->express(this);
 	    curQuery = parent;
 	    return NULL;
