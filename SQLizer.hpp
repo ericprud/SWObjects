@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.12 2008-08-31 22:37:11 eric Exp $
+ * $Id: SQLizer.hpp,v 1.13 2008-09-02 10:23:05 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -349,10 +349,11 @@ namespace w3c_sw {
 	TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
+	VarSet* m_VarSet;
 
     public:
 	SQLizer (std::string stem) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr") {  }
+	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), m_VarSet(NULL) {  }
 	~SQLizer () { delete curQuery; }
 
 	std::string getSPARQLstring () { return curQuery->toString(">>>>"); }
@@ -589,7 +590,7 @@ namespace w3c_sw {
 	}
 	virtual WhereClause* whereClause (w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) {
 	    START("p_GroupGraphPattern");
-	    Consequents consequents(p_GroupGraphPattern);
+	    Consequents consequents(p_GroupGraphPattern, m_VarSet);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
@@ -599,6 +600,7 @@ namespace w3c_sw {
 	virtual Select* select (w3c_sw::e_distinctness p_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
 	    START("cracking select clause");
 	    curQuery = new SQLQuery(NULL);
+	    m_VarSet = p_VarSet;
 	    if (p_distinctness == w3c_sw::DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == w3c_sw::DIST_reduced) ...
 	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");

@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.5 2008-09-02 08:00:13 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.6 2008-09-02 10:23:05 eric Exp $
  */
 
 #pragma once
@@ -12,7 +12,7 @@
 
 namespace w3c_sw {
 
-    typedef enum {Binding_STRONG = 3, Binding_WEAK = 1, Binding_FILTER = 4, Binding_COREF = 2} BindingStrength;
+    typedef enum {Binding_STRONG = 2, Binding_WEAK = 7, Binding_FILTER = 1, Binding_SELECT = 8, Binding_COREF = 2} BindingStrength;
     typedef std::map<TableOperation*, BindingStrength>	ConsequentMap;
     typedef std::map<POS*, ConsequentMap>		ConsequentMapList;
 
@@ -40,7 +40,6 @@ namespace w3c_sw {
 		    return;
 
 		TableOperation* bgp = bgpStack.back();
-		assert(dynamic_cast<BasicGraphPattern*>(bgp) != NULL);
 		ConsequentMapList::iterator maps = consequents.find(pos);
 		if (maps == consequents.end()) {
 		    /* No BGP has introduced this variable. */
@@ -82,6 +81,9 @@ namespace w3c_sw {
 		consequents(*consequents), optState(Binding_STRONG), graphName(NULL), bgpStack(), outerGraphs() {
 		bgpStack.push_back(op);
 	    }
+
+	    /* RecursiveExpressor overloads:
+	     */
 	    virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	    virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
@@ -104,10 +106,67 @@ namespace w3c_sw {
 		return NULL;
 	    }
 
+	    void _each (ProductionVector<TableOperation*>* p_TableOperations) {
+		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+		     it != p_TableOperations->end(); it++) {
+		    bgpStack.push_back(*it);
+		    (*it)->express(this);
+		    bgpStack.pop_back();
+		    outerGraphs[*it].insert(bgpStack.back());
+		}
+	    }
+
+	    virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+		_each(p_TableOperations);
+		//p_Filters->express(this);
+		return NULL;
+	    }
+	    virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+		_each(p_TableOperations);
+		//p_Filters->express(this);
+		return NULL;
+	    }
+	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
+		BindingStrength oldOptState = optState;
+		optState = Binding_WEAK;
+		bgpStack.push_back(p_GroupGraphPattern);
+		p_GroupGraphPattern->express(this);
+		bgpStack.pop_back();
+		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
+		optState = oldOptState;
+		return NULL;
+	    }
+
+	    virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+		POS* oldGraphName = graphName;
+		graphName = p_POS;
+		bgpStack.push_back(p_GroupGraphPattern);
+		p_GroupGraphPattern->express(this);
+		bgpStack.pop_back();
+		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
+		graphName = oldGraphName;
+		return NULL;
+	    }
+
+	    /* Add Binding_SELECT where necessary. */
+	    virtual POSList* posList (ProductionVector<w3c_sw::POS*>* p_POSs) {
+		for (std::vector<POS*>::iterator it = p_POSs->begin();
+		     it != p_POSs->end(); it++)
+		    _depends(*it, Binding_SELECT);
+		return NULL;
+	    }
+	    virtual StarVarSet* starVarSet () {
+		FAIL("um, I'm not really up to handling SELECT *.");
+		return NULL;
+	    }
+
+	    /* Stuff for building a consequents list.
+	     */
 	    static string bindingStr (BindingStrength s) {
 		return s == Binding_STRONG ? "STRONG" : 
 		    s == Binding_WEAK   ? "WEAK"   :
 		    s == Binding_FILTER ? "FILTER" :
+		    s == Binding_SELECT ? "SELECT" :
 		    s == Binding_COREF  ? "COREF"  : 
 		    "???";
 	    }
@@ -243,58 +302,16 @@ namespace w3c_sw {
 		}
 	    }
 
-	    void _each (ProductionVector<TableOperation*>* p_TableOperations) {
-		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
-		     it != p_TableOperations->end(); it++) {
-		    bgpStack.push_back(*it);
-		    (*it)->express(this);
-		    bgpStack.pop_back();
-		    outerGraphs[*it].insert(bgpStack.back());
-		}
-	    }
-
-	    virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
-		_each(p_TableOperations);
-		//p_Filters->express(this);
-		return NULL;
-	    }
-	    virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
-		_each(p_TableOperations);
-		//p_Filters->express(this);
-		return NULL;
-	    }
-	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
-		BindingStrength oldOptState = optState;
-		optState = Binding_WEAK;
-		bgpStack.push_back(p_GroupGraphPattern);
-		p_GroupGraphPattern->express(this);
-		bgpStack.pop_back();
-		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
-		optState = oldOptState;
-		return NULL;
-	    }
-
-	    virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
-		POS* oldGraphName = graphName;
-		graphName = p_POS;
-		bgpStack.push_back(p_GroupGraphPattern);
-		p_GroupGraphPattern->express(this);
-		bgpStack.pop_back();
-		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
-		graphName = oldGraphName;
-		return NULL;
-	    }
-
 	};
 
     protected:
 	ConsequentMapList consequents;
 
     public:
-	Consequents (TableOperation* op) {
+	Consequents (TableOperation* op, VarSet* p_VarSet = NULL) {
 	    ConsequentsConstructor ctor(&consequents, op);
 	    op->express(&ctor);
-	    /* eliminate unnecessary corefs from tree */
+	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    ctor.findCorefs(op);
 	    std::cout << "Consequents:" << std::endl << ctor.dumpConsequents();
 	}

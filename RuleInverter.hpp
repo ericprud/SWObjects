@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.4 2008-09-02 07:40:31 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.5 2008-09-02 10:23:05 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -101,7 +101,11 @@ namespace w3c_sw {
 	POSFactory* posFactory;
 
     public:
-	MappingConstruct (TableOperation* p_MappedAntecedent, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory) : Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent), posFactory(posFactory) {  }
+	MappingConstruct (TableOperation* p_MappedAntecedent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
+			  WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory) : 
+	    Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), 
+	    m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent), posFactory(posFactory)
+	{  }
 	~MappingConstruct () {
 	    delete m_MappedAntecedent;
 	}
@@ -167,7 +171,8 @@ namespace w3c_sw {
 				continue;
 			    }
 			}
-			includeRequiredness[bgpBindings->first] = (bgpBindings->second == Binding_STRONG || (*row)->get(v) == false) ? Binding_WEAK : Binding_STRONG; //true : false
+			includeRequiredness[bgpBindings->first] = (bgpBindings->second == Binding_STRONG || 
+								   (*row)->get(v) == false) ? Binding_WEAK : Binding_STRONG;
 		    }
 		    
 		}
