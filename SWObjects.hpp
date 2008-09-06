@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
+ * $Id: SWObjects.hpp,v 1.3 2008-09-06 23:10:17 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -26,6 +26,7 @@
 namespace w3c_sw {
 
 class Expressor;
+class RecursiveExpressor;
 
 class Base {
 public:
@@ -148,6 +149,31 @@ public:
     virtual POS* eval (Result*) { return this; }
     virtual POS* express(Expressor* p_expressor) = 0;
     virtual std::string getBindingAttributeName() = 0;
+    virtual std::string toString() = 0;
+//     virtual std::string toString () {
+// 	class Stringer : public RecursiveExpressor {
+// 	    std::string std::stringstream;
+// 	    virtual URI* uri (std::string terminal) { ret << "<" << terminal << ">"; }
+// 	    virtual Variable* variable (std::string terminal) { ret << "?" << terminal; }
+// 	    virtual BNode* bnode (std::string terminal) { ret << "_:" << terminal; }
+// 	    virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
+// 		ret << "\"" << terminal << "\"";
+// 		if (datatype) ret << datatype->toString();
+// 		if (p_LANGTAG) ret << p_LANGTAG->toString();
+// 	    }
+// 	    virtual NumericRDFLiteral* rdfLiteral (int p_value) { ret << p_value; }
+// 	    virtual NumericRDFLiteral* rdfLiteral (float p_value) { ret << p_value; }
+// 	    virtual NumericRDFLiteral* rdfLiteral (double p_value) { ret << p_value; }
+// 	    virtual BooleanRDFLiteral* rdfLiteral (bool p_value) { ret << p_value ? "true" : "false"; }
+// 	    virtual NULLpos* nullpos () { ret << "NULL"; }
+// 	public:
+// 	    Stringer () : ret("") {  }
+// 	    std::string getString () { return ret.str(); }
+// 	};
+// 	Stringer s;
+// 	express(s);
+// 	return s.getString();
+//     }
 };
 
 class URI : public POS {
@@ -158,6 +184,7 @@ public:
     ~URI () { }
     virtual const char * getToken () { return "-POS-"; }
     virtual URI* express(Expressor* p_expressor);
+    virtual std::string toString () { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
     virtual std::string getBindingAttributeName () { return "uri"; }
 };
 
@@ -175,6 +202,7 @@ class Variable : public Bindable {
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
+    virtual std::string toString () { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual Variable* express(Expressor* p_expressor);
     virtual POS* eval(Result* r);
@@ -187,6 +215,7 @@ private:
     BNode (std::string str) : Bindable(str) {  }
     BNode () : Bindable("gensym:", true) {  }
 public:
+    virtual std::string toString () { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual BNode* express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { return "bnode"; }
@@ -209,6 +238,13 @@ protected:
 	delete m_LANGTAG;
     }
 public:
+    virtual std::string toString () {
+	std::stringstream s;
+	s << "\"" << terminal << "\"";
+	if (datatype) s << datatype->toString();
+	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
+	return s.str();
+    }
     virtual RDFLiteral* express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { return "literal"; }
 };
@@ -228,6 +264,7 @@ protected:
     ~IntegerRDFLiteral () {  }
 public:
     int getValue () { return m_value; }
+    virtual std::string toString () { std::stringstream s; s << m_value; return s.str(); }
     virtual NumericRDFLiteral* express(Expressor* p_expressor);
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
@@ -237,6 +274,8 @@ protected:
     DecimalRDFLiteral (std::string p_String, URI* p_URI, std::string matched, float p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
     ~DecimalRDFLiteral () {  }
     virtual NumericRDFLiteral* express(Expressor* p_expressor);
+public:
+    virtual std::string toString () { std::stringstream s; s << m_value; return s.str(); }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -252,6 +291,7 @@ protected:
     bool m_value;
     BooleanRDFLiteral (std::string p_String, std::string matched, bool p_value) : RDFLiteral(p_String, NULL, NULL, matched), m_value(p_value) {  }
 public:
+    virtual std::string toString () { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
     virtual BooleanRDFLiteral* express(Expressor* p_expressor);
 };
 class NULLpos : public POS {
@@ -261,6 +301,7 @@ private:
     ~NULLpos () {  }
 public:
     virtual const char * getToken () { return "-NULL-"; }
+    virtual std::string toString () { std::stringstream s; s << "NULL"; return s.str(); }
     virtual NULLpos* express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
 };
@@ -338,6 +379,11 @@ public:
     TriplePattern (POS* p_s, POS* p_p, POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
     ~TriplePattern () {  }
+    std::string toString () {
+	std::stringstream s;
+	s << m_p->toString() << m_p->toString() << m_p->toString();
+	return s.str();
+    }
     virtual TriplePattern* express(Expressor* p_expressor);
     bool bindVariables(TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, ResultSetIterator provisional, POS* graphName);
     bool construct(BasicGraphPattern* target, Result* r);
