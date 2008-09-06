@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.15 2008-09-02 15:33:59 eric Exp $
+ * $Id: SQLizer.hpp,v 1.16 2008-09-06 23:11:14 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -354,13 +354,30 @@ namespace w3c_sw {
 	    SQLDisjoint (SQLUnion* partOf) : SQLQuery(NULL), partOf(partOf) {  }
 	};
 
+	struct nonLocalIdentifierException : std::exception {
+ 	    /*std::string stem, crack;*/
+	    char const* str;
+	    static std::vector<std::string> strs;
+	    char const* what() const throw() { return str; }
+	    nonLocalIdentifierException (std::string stem, std::string crack) : 
+		std::exception(), /*stem(stem), crack(crack),*/ str(make(stem, crack)) {  }
+	protected:
+	    char const* make (std::string stem, std::string crack) {
+		std::stringstream s;
+		s << "crack <" << crack << "> is not in the domain of "
+		  << "stem <" << stem << ">";
+		strs.push_back(s.str());
+		return strs.back().c_str();
+	    }
+	};
+
 	int resolve (std::string crack, std::string* relation, std::string* attribute, int* value) {
 	    std::string valueS;
 
 	    char delim[]={'.','=',' '};
 	    std::string *strings[] = {relation, attribute, &valueS};
 	    if (crack.compare(0, stem.size(), stem) != 0)
-		throw(std::runtime_error(__PRETTY_FUNCTION__));
+		throw(nonLocalIdentifierException(stem, crack));
 
 	    size_t pos = 0;
 	    for(std::string::iterator iter=crack.begin() + stem.size();
@@ -395,7 +412,7 @@ namespace w3c_sw {
 	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), m_VarSet(NULL) {  }
 	~SQLizer () { delete curQuery; }
 
-	std::string getSPARQLstring () { return curQuery->toString(">>>>"); }
+	std::string getSPARQLstring () { return curQuery->toString(); }
 
 	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
 
@@ -538,7 +555,14 @@ namespace w3c_sw {
 	}
 	void _BasicGraphPattern (ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    MARK;
-	    p_TriplePatterns->express(this);
+	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
+		 it != p_TriplePatterns->end(); ++it)
+		try {
+		    (*it)->express(this);
+		} catch (nonLocalIdentifierException& e) {
+		    std::cerr << "constraint {" << (*it)->toString() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    throw e;
+		}
 	    p_Filters->express(this);
 	}
 	virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
