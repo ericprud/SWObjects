@@ -15,11 +15,30 @@
 
 using namespace std;
 
+std::vector<std::string> SQLizer::nonLocalIdentifierException::strs;
+
+bool option (int argc, char** argv, int* iArg, const char** stemURI) {
+    if (argv[*iArg][0] == '-' && argv[*iArg][1] == 's') {
+	if (argv[*iArg][2] == '\0') {
+	    if (*iArg > argc - 2) {
+		cerr << "USAGE: " << argv[0] << " [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+		return false;
+	    }
+	    *stemURI = argv[++(*iArg)];
+	} else {
+	    *stemURI = argv[*iArg]+2;
+	}
+	return true;
+    }
+    return false;
+}
+
 int main(int argc,char** argv) {
     const char* baseURI = "http://example.org/";
+    const char* stemURI = "http://myCo.exampe/DB/";
 
     if (argc < 1) {
-	cerr << "USAGE: " << argv[0] << " <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+	cerr << "USAGE: " << argv[0] << " [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
 	return 1;
     }
 
@@ -34,18 +53,23 @@ int main(int argc,char** argv) {
     try {
 	char* inputId;
 	try {
-	    result = sparqlParser.parse_file(inputId = argv[1]);
+	    int iArg = 1;
+	    while (iArg < argc && option(argc, argv, &iArg, &stemURI))
+		++iArg;
+	    result = sparqlParser.parse_file(inputId = argv[iArg++]);
 	    query = sparqlParser.root;
 
-	    for (int i = 2; i < argc && !result; i++) {
-		result = sparqlParser.parse_file(inputId = argv[i]);
+	    for (; iArg < argc && !result; ++iArg) {
+		if (option(argc, argv, &iArg, &stemURI))
+		    continue;
+		result = sparqlParser.parse_file(inputId = argv[iArg]);
 		Operation* rule = sparqlParser.root;
 		Construct* c;
 		if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
 		    queryMapper.addRule(c);
 		    delete rule;
 		} else {
-		    cerr << "Rule file " << i - 2 << ": " << inputId << " was not a SPARQL CONSTRUCT.";
+		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT.";
 		    cerr << "USAGE: " << argv[0] << " <query file> <SPARQL CONSTRUCT rule file>*" << endl;
 		    return 1;
 		}
@@ -63,23 +87,25 @@ int main(int argc,char** argv) {
 	    cerr << "Error: " << inputId << " did not contain a valid SPARQLfed string." << endl;
 	else {
 	    try {
-		if (query) {
-		    Operation* o = query->express(&queryMapper);
-
-		    XMLQueryExpressor xmlizer("  ", false);
-		    o->express(&xmlizer);
-		    cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
-
-		    SPARQLSerializer sparqlizer("  ");
-		    o->express(&sparqlizer);
-		    cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
-
-		    SQLizer s2("http://myCo.exampe/DB/");
-		    o->express(&s2);
-		    delete o;
-		    cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
+		Operation* o;
+		if (queryMapper.getRuleCount() > 0) {
+		    o = query->express(&queryMapper);
 		    delete query;
-		}
+		} else
+		    o = query;
+
+// 		XMLQueryExpressor xmlizer("  ", false);
+// 		o->express(&xmlizer);
+// 		cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
+
+		SPARQLSerializer sparqlizer("  ");
+		o->express(&sparqlizer);
+		cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+
+		SQLizer s2(stemURI);
+		o->express(&s2);
+		delete o;
+		cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
 
 	    } catch (runtime_error& e) {
 		cout << "Serialization problem:" << endl;
