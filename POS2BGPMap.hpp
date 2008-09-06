@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.7 2008-09-02 12:02:46 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.8 2008-09-06 23:07:44 eric Exp $
  */
 
 #pragma once
@@ -263,17 +263,17 @@ namespace w3c_sw {
 			    OuterGraphList::iterator graph1parents = outerGraphs[graph1It->first].begin();
 			    OuterGraphList::iterator graph2parents = outerGraphs[graph2It->first].begin();
 			    TableOperation* commonAncestor = parent; // assignment not strictly necessary, but useful for templating.
-			    while (*graph1parents == *graph2parents &&
-				   graph1parents != outerGraphs[graph1It->first].end()) {
+			    while (graph1parents != outerGraphs[graph1It->first].end() && 
+				   *graph1parents == *graph2parents) {
 				commonAncestor = *graph1parents;
 				++graph1parents;
 				++graph2parents;
-				if (*graph1parents == *graph2parents &&
-				    graph1parents == outerGraphs[graph1It->first].end()) {
-				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
-				    std::cout << dumpConsequents();
-				    std::cout << dumpOuterGraphs();
-				}
+// 				if (*graph1parents == *graph2parents &&
+// 				    graph1parents == outerGraphs[graph1It->first].end()) {
+// 				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
+// 				    std::cout << dumpConsequents();
+// 				    std::cout << dumpOuterGraphs();
+// 				}
 			    }
 
 			    /* If neither lineage is not subsumed by the other, and
@@ -313,7 +313,7 @@ namespace w3c_sw {
 	    op->express(&ctor);
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    ctor.findCorefs(op);
-	    std::cout << "Consequents:" << std::endl << ctor.dumpConsequents();
+// 	    std::cout << "Consequents:" << std::endl << ctor.dumpConsequents();
 	}
 	~Consequents () {
 	    for (ConsequentMapList::iterator maps = consequents.begin();
