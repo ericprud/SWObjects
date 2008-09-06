@@ -1,6 +1,6 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
  *
- * $Id: QueryMapper.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.3 2008-09-06 23:08:13 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -14,18 +14,21 @@ namespace w3c_sw {
     class QueryMapper : public SWObjectDuplicator {
     protected:
 	std::vector<MappingConstruct*> invertedRules;
+	int ruleCount;
     public:
-	QueryMapper (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
+	QueryMapper (POSFactory* posFactory) : SWObjectDuplicator(posFactory), ruleCount(0) {  }
 	~QueryMapper() {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
 		 it != invertedRules.end(); ++it)
 		delete *it;
 	}
+	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (Construct* rule) {
 	    RuleInverter inv(posFactory);
 	    rule->express(&inv);
 	    MappingConstruct* c = inv.getConstruct();
 	    invertedRules.push_back(c);
+	    ++ruleCount;
 	    return c;
 	}
 	virtual TriplePattern* triplePattern999 (POS* p_s, POS* p_p, POS* p_o) {
