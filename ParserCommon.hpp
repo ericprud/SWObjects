@@ -1,5 +1,5 @@
 /* ParserCommon.hpp - commonalities between SPARQL/RDF-related parsers
- * $Id: ParserCommon.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: ParserCommon.hpp,v 1.3 2008-09-07 18:13:12 eric Exp $
  */
 
 #ifndef PARSER_COMMON_HH
@@ -10,6 +10,20 @@
 void stop(size_t line);
 
 namespace w3c_sw {
+
+struct UnknownPrefixException : StringException {
+    std::string prefix;
+    UnknownPrefixException (std::string prefix) : 
+	StringException(make(prefix)), prefix(prefix) {  }
+    virtual ~UnknownPrefixException () throw() {  }
+protected:
+    std::string make (std::string prefix) {
+	std::stringstream s;
+	s << "unknown prefix \"" << prefix << "\"";
+	return s.str();
+    }
+};
+
 
 class Driver
 {
@@ -84,7 +98,7 @@ public:
     w3c_sw::URI* getNamespace (std::string prefix) {
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end())
-	    throw(std::runtime_error("Unknown prefix."));
+	    throw(UnknownPrefixException(prefix));
 	else
 	    return vi->second;
     }
