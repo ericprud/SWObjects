@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.17 2008-09-07 08:19:26 eric Exp $
+ * $Id: SQLizer.hpp,v 1.18 2008-09-07 18:15:03 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -97,7 +97,8 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	    void addForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
-		constraints.push_back(new ForeignKeyConstraint(myAttr, otherAlias, otherAttr));
+		if (alias != otherAlias || myAttr != otherAttr)
+		    constraints.push_back(new ForeignKeyConstraint(myAttr, otherAlias, otherAttr));
 	    }
 	    void addConstantConstraint (std::string myAttr, int value) {
 		constraints.push_back(new IntegerConstraint(myAttr, value));
@@ -255,6 +256,7 @@ namespace w3c_sw {
 		joins.push_back(new TableJoin(toRelation, aliasName, false));
 		usedAliases.insert(aliasName);
 		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
+		aliasMap[subject][toRelation] = aliasName;
 		return aliasName;
 	    }
 	    SQLUnion* makeUnion (std::vector<POS*> corefs) {
@@ -368,10 +370,10 @@ namespace w3c_sw {
 	    }
 	};
 
-	int resolve (std::string crack, std::string* relation, std::string* attribute, int* value) {
+	int resolve (std::string crack, std::string* relation, std::string* attribute, int* value = NULL) {
 	    std::string valueS;
 
-	    char delim[]={'.','=',' '};
+	    char* delim = value ? nodeDelims : predicateDelims;
 	    std::string *strings[] = {relation, attribute, &valueS};
 	    if (crack.compare(0, stem.size(), stem) != 0)
 		throw(nonLocalIdentifierException(stem, crack));
@@ -403,10 +405,14 @@ namespace w3c_sw {
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
 	VarSet* m_VarSet;
+	char* predicateDelims;
+	char* nodeDelims;
 
     public:
-	SQLizer (std::string stem) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), m_VarSet(NULL) {  }
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[]) : 
+	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), 
+	    m_VarSet(NULL), predicateDelims(predicateDelims), nodeDelims(nodeDelims)
+	{  }
 	~SQLizer () { delete curQuery; }
 
 	std::string getSPARQLstring () { return curQuery->toString(); }
@@ -417,13 +423,12 @@ namespace w3c_sw {
 	    MARK;
 	    std::string relation, attribute;
 	    int value;
-	    int parms = resolve(terminal, &relation, &attribute, &value);
 
 	    switch (mode) {
 
 	    case MODE_predicate:
 		NOW("URI as predicate");
-		if (parms != 2) FAIL("malformed predicate");
+		if (resolve(terminal, &relation, &attribute) != 2) FAIL("malformed predicate");
 		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
@@ -431,7 +436,7 @@ namespace w3c_sw {
 
 	    case MODE_subject:
 		NOW("URI as subject");
-		if (parms != 3) FAIL("incomplete key");
+		if (resolve(terminal, &relation, &attribute, &value) != 3) FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), value);
@@ -439,7 +444,7 @@ namespace w3c_sw {
 
 	    case MODE_object:
 		NOW("URI as object");
-		if (parms != 3) FAIL("incomplete key");
+		if (resolve(terminal, &relation, &attribute, &value) != 3) FAIL("incomplete key");
 		curQuery->constrain(curAliasAttr, value);
 		break;
 

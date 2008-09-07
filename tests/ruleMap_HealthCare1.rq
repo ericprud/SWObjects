@@ -33,7 +33,13 @@ prefix qo: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOn
 prefix activityHeader: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#activityHeader_>
 prefix current: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#current_>
 prefix itemTestReults: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#itemTestReults_>
+
 prefix DB: <http://myCo.exampe/DB/>
+prefix patient: <http://myCo.exampe/DB/Patient#>
+prefix names: <http://myCo.exampe/DB/Names#>
+prefix bar: <http://myCo.exampe/DB/bar#>
+prefix baz: <http://myCo.exampe/DB/baz#>
+
 
 #@forAll .
 #CONSTRUCT { ?x hl7:routeCode "oral" } WHERE { ?x :pRouteOfAdmin routeOfAdmin:15 }
@@ -50,8 +56,8 @@ CONSTRUCT {
 } WHERE {
 #Item_Medication.ttl:18:
     # add OPTIONALs to show a smaller stem query
-  _:ADMINISTRATION DB:Patient.name _:PATIENT_name .
-OPTIONAL{ _:HAS_attr1 DB:baz.attr1 ?FOOP.}
-  OPTIONAL {_:PATIENT_name DB:Names.patient ?PATIENT .
-  ?PATIENT DB:bar.attr2 ?FOOP .}OPTIONAL{ _:HAS_attr1 DB:bar.attr3 ?FOOP.}
+  _:ADMINISTRATION patient:name _:PATIENT_name .
+OPTIONAL{ _:HAS_attr1 baz:attr1 ?FOOP.}
+  OPTIONAL {_:PATIENT_name names:patient ?PATIENT .
+  ?PATIENT bar:attr2 ?FOOP .}OPTIONAL{ _:HAS_attr1 bar:attr3 ?FOOP.}
 }

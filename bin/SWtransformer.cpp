@@ -100,7 +100,9 @@ int main(int argc,char** argv) {
 		o->express(&sparqlizer);
 		cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 
-		SQLizer s2(stemURI);
+		char predicateDelims[]={'#',' ',' '};
+		char nodeDelims[]={'/','.',' '};
+		SQLizer s2(stemURI, predicateDelims, nodeDelims);
 		o->express(&s2);
 		delete o;
 		cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
