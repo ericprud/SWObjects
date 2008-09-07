@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.2 2008-08-27 02:21:42 eric Exp $
+ * $Id: SWObjects.cpp,v 1.3 2008-09-07 21:59:43 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -17,6 +17,7 @@ Base* Base::express (Expressor* p_expressor) {
 }
 
 char const * yit = "yacker:implicit-terminal";
+std::map<StringException*, std::string> StringException::strs;
 
 } // namespace w3c_sw
 
