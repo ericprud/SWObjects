@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.37 2008-09-06 23:07:03 eric Exp $
+# $Id: Makefile,v 1.38 2008-09-07 18:11:09 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -127,7 +127,7 @@ clean:
         $(subst .ypp,.cpp,$(wildcard */*.ypp)) \
         $(subst .ypp,.hpp,$(wildcard */*.ypp)) \
         $(TEST_RESULTS) $(VALGRIND)
-	rm -fr tests/execute_*
+	$(RM) -fr tests/execute_*
 
 cleaner: clean
 	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
