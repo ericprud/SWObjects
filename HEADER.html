@@ -101,6 +101,175 @@
 
     <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em style="font-weight: bold" id="Select">Select</em> comprised of a <em style="font-weight: bold" id="WhereClause">WhereClause</em>, which in turn holds a <em style="font-weight: bold" id="TableOperation">TableOperation</em> and a <em style="font-weight: bold" id="BindingClause">BindingClause</em>. TableOperations contain <em style="font-weight: bold" id="Filter">Filter</em>s and some, like <em style="font-weight: bold" id="TableConjunction">TableConjunction</em> and <em style="font-weight: bold" id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href="#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href="#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href="#TriplePattern">TriplePattern</a>s described in <a href="#storage">Storage</a>.</p>
 
+   <h2 id="sampComp">Sample Compilation</h2>
+
+   <p>Following is an annotated sample build. The command you have to type are <span style="background-color: #ee0">highlighted</span>:</p>
+
+   <p>Get the tarball, either by web browser or a command-line tool like wget.</p>
+
+<pre style="background-color: #eef">
+eric@mouni:/tmp/t$ <span style="background-color: #ee0">wget http://www.w3.org/2008/04/SPARQLfed/SWObjects_0.1.tar.gz</span>
+--2008-09-07 18:00:30--  http://www.w3.org/2008/04/SPARQLfed/SWObjects_0.1.tar.gz
+Resolving www.w3.org... 128.30.52.54, 128.30.52.51, 128.30.52.52, ...
+Connecting to www.w3.org|128.30.52.54|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 163072 (159K) [application/gzip]
+Saving to: `SWObjects_0.1.tar.gz'
+
+100%[======================================&gt;] 163,072     92.3K/s   in 1.7s    
+
+2008-09-07 18:00:32 (92.3 KB/s) - `SWObjects_0.1.tar.gz' saved [163072/163072]
+</pre>
+
+   <p>Expand the tarball (for instance, with winzip).</p>
+
+<pre style="background-color: #eef">
+eric@mouni:/tmp/t$ <span style="background-color: #ee0">tar xzf SWObjects_0.1.tar.gz</span>
+eric@mouni:/tmp/t$ <span style="background-color: #ee0">cd SWObjects_0.1/</span>
+</pre>
+
+   <p>build the source tree and test it.</p>
+
+<pre style="background-color: #eef">
+eric@mouni:/tmp/t/SWObjects_0.1$ <span style="background-color: #ee0">make test</span>
+</pre>
+
+   <p>builds dependencies...</p>
+
+<pre style="background-color: #eef">
+touch SWObjects.d
+makedepend -y -f SWObjects.d SWObjects.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+touch ResultSet.d
+makedepend -y -f ResultSet.d ResultSet.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+touch RdfQueryDB.d
+makedepend -y -f RdfQueryDB.d RdfQueryDB.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+touch RdfDB.d
+makedepend -y -f RdfDB.d RdfDB.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+touch ParserCommon.d
+makedepend -y -f ParserCommon.d ParserCommon.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+</pre>
+
+   <p>builds parsers...</p>
+
+<pre style="background-color: #eef">
+flex -o TurtleSScanner.cpp  TurtleSScanner.lpp
+touch TurtleSScanner.d
+makedepend -y -f TurtleSScanner.d TurtleSScanner.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+flex -o SPARQLfedScanner.cpp  SPARQLfedScanner.lpp
+touch SPARQLfedScanner.d
+makedepend -y -f SPARQLfedScanner.d SPARQLfedScanner.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+bison -o TurtleSParser/TurtleSParser.cpp TurtleSParser/TurtleSParser.ypp
+sed -i~ 's,# define PARSER_HEADER_H,#pragma once,' TurtleSParser/TurtleSParser.hpp
+touch TurtleSParser/TurtleSParser.d
+makedepend -y -f TurtleSParser/TurtleSParser.d TurtleSParser/TurtleSParser.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+bison -o SPARQLfedParser/SPARQLfedParser.cpp SPARQLfedParser/SPARQLfedParser.ypp
+sed -i~ 's,# define PARSER_HEADER_H,#pragma once,' SPARQLfedParser/SPARQLfedParser.hpp
+touch SPARQLfedParser/SPARQLfedParser.d
+makedepend -y -f SPARQLfedParser/SPARQLfedParser.d SPARQLfedParser/SPARQLfedParser.cpp -DYYTEXT_POINTER=1 -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser 2&gt;/dev/null
+</pre>
+
+   <p>builds core modules...</p>
+
+<pre style="background-color: #eef">
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o SPARQLfedParser/SPARQLfedParser.o SPARQLfedParser/SPARQLfedParser.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o TurtleSParser/TurtleSParser.o TurtleSParser/TurtleSParser.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o SPARQLfedScanner.o SPARQLfedScanner.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o TurtleSScanner.o TurtleSScanner.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o ParserCommon.o ParserCommon.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o RdfDB.o RdfDB.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o RdfQueryDB.o RdfQueryDB.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o ResultSet.o ResultSet.cpp
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe    -c -o SWObjects.o SWObjects.cpp
+</pre>
+
+   <p>builds library...</p>
+
+<pre style="background-color: #eef">
+ar rcvs libSWObjects.a SPARQLfedParser/SPARQLfedParser.o TurtleSParser/TurtleSParser.o SPARQLfedScanner.o TurtleSScanner.o ParserCommon.o RdfDB.o RdfQueryDB.o ResultSet.o SWObjects.o
+a - SPARQLfedParser/SPARQLfedParser.o
+a - TurtleSParser/TurtleSParser.o
+a - SPARQLfedScanner.o
+a - TurtleSScanner.o
+a - ParserCommon.o
+a - RdfDB.o
+a - RdfQueryDB.o
+a - ResultSet.o
+a - SWObjects.o
+</pre>
+
+   <p>builds test...</p>
+
+<pre style="background-color: #eef">
+g++ -DYYTEXT_POINTER=1  -g -W -Wall -Wextra -Wnon-virtual-dtor -I/tmp/t/SWObjects_0.1   -I/tmp/t/SWObjects_0.1/SPARQLfedParser -I/tmp/t/SWObjects_0.1/TurtleSParser -pipe  -o tests/execute_HealthCare1 tests/test_HealthCare1.cpp -L/tmp/t/SWObjects_0.1 -lSWObjects
+</pre>
+
+   <p>(these warnings indicate parts of the code that aren't done.)</p>
+
+<pre style="background-color: #eef">
+In file included from /tmp/t/SWObjects_0.1/QueryMapper.hpp:10,
+                 from tests/test_HealthCare1.cpp:8:
+/tmp/t/SWObjects_0.1/RuleInverter.hpp:170:2: warning: #warning not including dependent optionals yet
+In file included from tests/test_HealthCare1.cpp:10:
+/tmp/t/SWObjects_0.1/SQLizer.hpp:665: warning: unused parameter ‘p_SolutionModifier’
+/tmp/t/SWObjects_0.1/SQLizer.hpp: In member function ‘virtual w3c_sw::Create* w3c_sw::SQLizer::create(w3c_sw::e_Silence, w3c_sw::URI*)’:
+/tmp/t/SWObjects_0.1/SQLizer.hpp:732: warning: suggest braces around empty body in an ‘if’ statement
+/tmp/t/SWObjects_0.1/SQLizer.hpp: In member function ‘virtual w3c_sw::Drop* w3c_sw::SQLizer::drop(w3c_sw::e_Silence, w3c_sw::URI*)’:
+/tmp/t/SWObjects_0.1/SQLizer.hpp:737: warning: suggest braces around empty body in an ‘if’ statement
+</pre>
+
+   <p>execute test with a sample query and a rule map...</p>
+
+<pre style="background-color: #eef">
+tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq &gt; HealthCare1_test.results  &amp;&amp; cat HealthCare1_test.results
+</pre>
+
+   <p>output is the query transformed for the antecedent of the rule...</p>
+
+<pre style="background-color: #eef">
+post-rule query (SPARQL):
+SELECT ?somePerson 
+WHERE
+{
+  {
+    {
+      _:ADMINISTRATION &lt;http://myCo.exampe/DB/Patient#name&gt; _:PATIENT_name .
+    }
+    {
+      _:PATIENT_name &lt;http://myCo.exampe/DB/Names#patient&gt; ?someTest .
+      ?someTest &lt;http://myCo.exampe/DB/bar#attr2&gt; ?FOOP_gen0 .
+    }
+  }
+UNION
+  {
+    {
+      _:ADMINISTRATION &lt;http://myCo.exampe/DB/Patient#name&gt; _:PATIENT_name .
+    }
+    {
+      _:PATIENT_name &lt;http://myCo.exampe/DB/Names#patient&gt; ?somePerson .
+      ?somePerson &lt;http://myCo.exampe/DB/bar#attr2&gt; ?FOOP_gen0 .
+    }
+  }
+}
+
+</pre>
+
+   <p>and transformed again into SQL...</p>
+
+<pre style="background-color: #eef">
+Transformed query: 
+SELECT union1.somePerson AS somePerson
+       FROM (
+    SELECT 1 AS _DISJOINT_, NULL AS somePerson, ADMINISTRATION.id AS ADMINISTRATION, ADMINISTRATION.name AS PATIENT_name, someTest.attr2 AS FOOP_gen0
+           FROM Patient AS ADMINISTRATION
+                INNER JOIN Names AS PATIENT_name ON PATIENT_name.id=ADMINISTRATION.name
+                INNER JOIN bar AS someTest ON someTest.id=PATIENT_name.patient
+  UNION
+    SELECT 2 AS _DISJOINT_, PATIENT_name.patient AS somePerson, ADMINISTRATION.id AS ADMINISTRATION, ADMINISTRATION.name AS PATIENT_name, somePerson.attr2 AS FOOP_gen0
+           FROM Patient AS ADMINISTRATION
+                INNER JOIN Names AS PATIENT_name ON PATIENT_name.id=ADMINISTRATION.name
+                INNER JOIN bar AS somePerson ON somePerson.id=PATIENT_name.patient
+             ) AS union1
+</pre>
 
    <h2 id="issues">Issues</h2>
 
