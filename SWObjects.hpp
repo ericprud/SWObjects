@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.3 2008-09-06 23:10:17 eric Exp $
+ * $Id: SWObjects.hpp,v 1.4 2008-09-07 08:19:26 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -24,6 +24,15 @@
 #define ns "\n xmlns=\"http://www.w3.org/2005/01/yacker/uploads/SPARQLfed/\"\n xmlns:yacker=\"http://www.w3.org/2005/01/yacker/\""
 
 namespace w3c_sw {
+
+class StringException : public std::exception {
+public:
+    char const* str;
+    char const* what() const throw() { return str; }
+    static std::map<StringException*, std::string> strs;
+    StringException (std::string m) : str(m.c_str()) { strs[this] = m; }
+    virtual ~StringException () throw() { strs.erase(this); }
+};
 
 class Expressor;
 class RecursiveExpressor;

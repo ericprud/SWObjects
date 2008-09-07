@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.16 2008-09-06 23:11:14 eric Exp $
+ * $Id: SQLizer.hpp,v 1.17 2008-09-07 08:19:26 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -354,20 +354,17 @@ namespace w3c_sw {
 	    SQLDisjoint (SQLUnion* partOf) : SQLQuery(NULL), partOf(partOf) {  }
 	};
 
-	struct nonLocalIdentifierException : std::exception {
- 	    /*std::string stem, crack;*/
-	    char const* str;
-	    static std::vector<std::string> strs;
-	    char const* what() const throw() { return str; }
+	struct nonLocalIdentifierException : StringException {
+ 	    std::string stem, crack;
 	    nonLocalIdentifierException (std::string stem, std::string crack) : 
-		std::exception(), /*stem(stem), crack(crack),*/ str(make(stem, crack)) {  }
+		StringException(make(stem, crack)), stem(stem), crack(crack) {  }
+	    virtual ~nonLocalIdentifierException () throw() {  }
 	protected:
-	    char const* make (std::string stem, std::string crack) {
+	    std::string make (std::string stem, std::string crack) {
 		std::stringstream s;
 		s << "crack <" << crack << "> is not in the domain of "
 		  << "stem <" << stem << ">";
-		strs.push_back(s.str());
-		return strs.back().c_str();
+		return s.str();
 	    }
 	};
 
@@ -561,7 +558,6 @@ namespace w3c_sw {
 		    (*it)->express(this);
 		} catch (nonLocalIdentifierException& e) {
 		    std::cerr << "constraint {" << (*it)->toString() << "} is not handled by stem " << stem << " because " << e.what() << endl;
-		    throw e;
 		}
 	    p_Filters->express(this);
 	}

@@ -4,25 +4,23 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include "SWObjects.hpp"
 
 using namespace std;
 
 vector<string> journal;
 
-struct barf : exception {
-    char const* str;
-    char const* what() const throw() { return str; }
+struct barf : w3c_sw::StringException {
     barf (char const* type, char const* file, size_t line, const char* str) : 
-	exception() , str(make(type, file, line, str)) {  }
+	w3c_sw::StringException(make(type, file, line, str)) {  }
 protected:
-    char const* make (char const* type, string file, size_t line, char const* str) {
+    std::string make (char const* type, string file, size_t line, char const* str) {
 	stringstream s;
 	s << type << ": " << file << ":" << line << ": " << str << endl;
 	for (vector<string>::reverse_iterator it = journal.rbegin();
 	     it != journal.rend(); ++it)
 	    s << *it << endl;
-	cerr << s.str().c_str();
-	return str;
+	return s.str();
     }
 };
 

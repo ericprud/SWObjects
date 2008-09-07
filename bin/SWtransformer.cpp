@@ -15,8 +15,6 @@
 
 using namespace std;
 
-std::vector<std::string> SQLizer::nonLocalIdentifierException::strs;
-
 bool option (int argc, char** argv, int* iArg, const char** stemURI) {
     if (argv[*iArg][0] == '-' && argv[*iArg][1] == 's') {
 	if (argv[*iArg][2] == '\0') {
@@ -75,10 +73,10 @@ int main(int argc,char** argv) {
 		}
 	    }
 	} catch (runtime_error& e) {
-	    cout << "Parsing problem runtime_error:" << endl;
+	    cout << "Parsing problem runtime_error:" << e.what() << endl;
 	    throw(e);
 	} catch (exception& e) {
-	    cout << "Parsing problem exception:" << endl;
+	    cout << "Parsing problem exception:" << e.what() << endl;
 	    throw(e);
 	}
 
@@ -108,10 +106,10 @@ int main(int argc,char** argv) {
 		cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
 
 	    } catch (runtime_error& e) {
-		cout << "Serialization problem:" << endl;
+		cout << "Serialization problem:" << e.what() << endl;
 		throw(e);
 	    } catch (exception& e) {
-		cout << "Serialization problem:" << endl;
+		cout << "Serialization problem:" << e.what() << endl;
 		throw(e);
 	    }
 	}
