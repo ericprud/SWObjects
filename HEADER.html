@@ -19,9 +19,10 @@
     <h2 id="TOC">Table of Contents</h2>
 
     <ul>
+      <li><a href="#build">Building SWObjects</a>
       <li><a href="#files">Files</a>
       <ul>
-	<li><a href="#build">Building and Testing</a></li>
+	<li><a href="#make">Building and Testing</a></li>
 	<li><a href="#core">Core</a></li>
 	<li><a href="#parsers">Parsers</a></li>
       </ul></li>
@@ -31,12 +32,30 @@
       <li><a href="#dir">Apache Directory Listing</a></li>
     </ul>
 
+    <h2 id="build">Building SWObjects</h2>
+
+    <p>The SWObjects library and executables can be built from the source in the <a href= "SWObjects_0.1.tar.gz">tarball</a>. This package includes one directory, <code>SWObjects_0.1</code>; running <code>make test</code> from this directory will build and test the executables. Below is a <a href="#sampComp">sample compilation</a>.</p>
+
+  <p>The executable <code>tests/execute_HealthCare1</code> (which will be renamed soon and place in a bin/ directory) serves as a general interface to SWObjects query mapping functionality. It takes as an argument the name of a file containing a SPARQL SELECT query. With no other input, they query is validated and printed out in a normalized form.</p>
+
+  <pre style="background-color: #ee8; border: 2px #cc6 solid; float: left; margin-top: -1em; ">./test/execute_HealthCare1 tests/query_HealthCare1.rq</pre>
+
+  <p style="clear:both;"><code>execute_HealthCare1</code> accepts any number of files containing SPARQL CONSTRUCTs which are used to tranform the SELECT query according to a <a href="../../07/MappingRules/#QMA">Query Mapping Algorithm</a>.</p>
+
+  <pre style="background-color: #ee8; border: 2px #cc6 solid; float: left; margin-top: -1em; ">./test/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq</pre>
+
+  <p style="clear:both;"><code>execute_HealthCare1</code> also accepts -s and -b flags to set the stem or base URI. The base URI is used to resolve relative URIs in parsing input. It defauts to <code>&lt;http://example.org/&gt;</code>. The stem URI, if provided, allowes <code>execute_HealthCare1</code> to generate an SQL query based on the input SELECT query, transformed by any supplied CONSTRUCT rules.</p>
+
+  <pre style="background-color: #ee8; border: 2px #cc6 solid; float: left; margin-top: -1em; ">./test/execute_HealthCare1 -s http://someClinic.exampe/DB/ tests/query_HealthCare1.rq</pre>
+
+  <p style="clear:both;">The mapping from a SPARQL query to an SQL query is described in <a href="../../07/MappingRules/#stemMap">Stem Query Mapping</a>.</p>
+
     <h2 id="files">Files</h2>
 
     <p>The directory structure of the <em>SWObjects Library</em> is intentionally flat, as it is expected to be linked to other libraries to support web access, persistent storage, and other functionalities.</p>
 
 
-   <h3 id="build">Building and Testing</h3>
+   <h3 id="make">Building and Testing</h3>
 
    <ul>
       <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSWObjects.a</code> and sample executables.</li>
@@ -104,12 +123,12 @@
 
    <h2 id="sampComp">Sample Compilation</h2>
 
-   <p>Following is an annotated sample build. The command you have to type are <span style="background-color: #ee0">highlighted</span>:</p>
+   <p>Following is an annotated sample build. The command you have to type are <span style="background-color: #ee8">highlighted</span>:</p>
 
    <p>Get the tarball, either by web browser or a command-line tool like wget.</p>
 
 <pre style="background-color: #eef">
-eric@mouni:/tmp/t$ <span style="background-color: #ee0">wget http://www.w3.org/2008/04/SPARQLfed/SWObjects_0.1.tar.gz</span>
+eric@mouni:/tmp/t$ <span style="background-color: #ee8">wget http://www.w3.org/2008/04/SPARQLfed/SWObjects_0.1.tar.gz</span>
 --2008-09-07 18:07:56--  http://www.w3.org/2008/04/SPARQLfed/SWObjects_0.1.tar.gz
 Resolving www.w3.org... 127.0.0.1
 Connecting to www.w3.org|127.0.0.1|:80... connected.
@@ -125,14 +144,14 @@ Saving to: `SWObjects_0.1.tar.gz'
    <p>Expand the tarball (for instance, with winzip).</p>
 
 <pre style="background-color: #eef">
-eric@mouni:/tmp/t$ <span style="background-color: #ee0">tar xzf SWObjects_0.1.tar.gz</span>
-eric@mouni:/tmp/t$ <span style="background-color: #ee0">cd SWObjects_0.1/</span>
+eric@mouni:/tmp/t$ <span style="background-color: #ee8">tar xzf SWObjects_0.1.tar.gz</span>
+eric@mouni:/tmp/t$ <span style="background-color: #ee8">cd SWObjects_0.1/</span>
 </pre>
 
    <p>build the source tree and test it.</p>
 
 <pre style="background-color: #eef">
-eric@mouni:/tmp/t/SWObjects_0.1$ <span style="background-color: #ee0">make test</span>
+eric@mouni:/tmp/t/SWObjects_0.1$ <span style="background-color: #ee8">make test</span>
 </pre>
 
    <p>builds dependencies...</p>
