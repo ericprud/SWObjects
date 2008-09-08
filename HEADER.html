@@ -240,7 +240,7 @@ In file included from tests/test_HealthCare1.cpp:10:
    <p>execute test with a sample query and a rule map...</p>
 
 <pre style="background-color: #eef">
-tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq &gt; HealthCare1_test.results  &amp;&amp; cat HealthCare1_test.results
+tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/ &gt; HealthCare1_test.results  &amp;&amp; cat HealthCare1_test.results
 </pre>
 
    <p>output is the query transformed for the antecedent of the rule...</p>
