@@ -1,0 +1,10 @@
+# tup1
+# from http://www.w3.org/2008/07/MappingRules/#tup1 Revision: 1.38 
+# $Id: query_spec-tup1.rq,v 1.1 2008-09-08 13:12:40 eric Exp $
+
+PREFIX emplP: <http://hr.example/DB/Employee#>
+PREFIX emplN: <http://hr.example/DB/Employee/>
+
+SELECT ?empName
+ WHERE { ?emp      emplP:lastName   ?empName .
+         ?emp      emplP:manager    emplN:id.18 }
