@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.38 2008-09-07 18:11:09 eric Exp $
+# $Id: Makefile,v 1.39 2008-09-08 08:11:43 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -93,10 +93,10 @@ tests/execute_%  : tests/test_%.cpp $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInvert
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
-	$^ > $@  && cat $@
+	$^ -s http://myCo.exampe/DB/ > $@  && cat $@
 
 %_test.valgrind  : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
-	valgrind --leak-check=yes --xml=no $^
+	valgrind --leak-check=yes --xml=no $^ -s http://myCo.exampe/DB/
 
 ### named unit tests
 

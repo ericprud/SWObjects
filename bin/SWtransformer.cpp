@@ -15,35 +15,38 @@
 
 using namespace std;
 
-bool option (int argc, char** argv, int* iArg, const char** stemURI) {
-    if (argv[*iArg][0] == '-' && argv[*iArg][1] == 's') {
-	if (argv[*iArg][2] == '\0') {
-	    if (*iArg > argc - 2) {
-		cerr << "USAGE: " << argv[0] << " [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
-		return false;
-	    }
-	    *stemURI = argv[++(*iArg)];
-	} else {
-	    *stemURI = argv[*iArg]+2;
-	}
+const char* BaseURI = "http://example.org/";
+const char* StemURI = NULL;
+
+void usage (const char* exe) {
+    cerr << "USAGE: " << exe << " [-sstem|-s stem] [-bbase|-s base] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+}
+
+bool option (int argc, char** argv, int* iArg) {
+    if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
+	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
+	if (argv[*iArg][2] == '\0')
+	    if (*iArg > argc - 2)
+		usage(argv[0]);
+	    else
+		*target = argv[++(*iArg)];
+	else
+	    *target = argv[*iArg]+2;
 	return true;
     }
     return false;
 }
 
 int main(int argc,char** argv) {
-    const char* baseURI = "http://example.org/";
-    const char* stemURI = "http://myCo.exampe/DB/";
-
     if (argc < 1) {
-	cerr << "USAGE: " << argv[0] << " [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+	usage(argv[0]);
 	return 1;
     }
 
     /* Tools we'll need for this demo: */
     w3c_sw::POSFactory posFactory;
     w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
-    w3c_sw::TurtleSDriver turtleParser(baseURI, &posFactory);
+    w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
     w3c_sw::QueryMapper queryMapper(&posFactory);
 
     int result;
@@ -52,13 +55,13 @@ int main(int argc,char** argv) {
 	char* inputId;
 	try {
 	    int iArg = 1;
-	    while (iArg < argc && option(argc, argv, &iArg, &stemURI))
+	    while (iArg < argc && option(argc, argv, &iArg))
 		++iArg;
 	    result = sparqlParser.parse_file(inputId = argv[iArg++]);
 	    query = sparqlParser.root;
 
 	    for (; iArg < argc && !result; ++iArg) {
-		if (option(argc, argv, &iArg, &stemURI))
+		if (option(argc, argv, &iArg))
 		    continue;
 		result = sparqlParser.parse_file(inputId = argv[iArg]);
 		Operation* rule = sparqlParser.root;
@@ -68,7 +71,7 @@ int main(int argc,char** argv) {
 		    delete rule;
 		} else {
 		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT.";
-		    cerr << "USAGE: " << argv[0] << " <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+		    usage(argv[0]);
 		    return 1;
 		}
 	    }
@@ -100,13 +103,14 @@ int main(int argc,char** argv) {
 		o->express(&sparqlizer);
 		cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 
-		char predicateDelims[]={'#',' ',' '};
-		char nodeDelims[]={'/','.',' '};
-		SQLizer s2(stemURI, predicateDelims, nodeDelims);
-		o->express(&s2);
+		if (StemURI) {
+		    char predicateDelims[]={'#',' ',' '};
+		    char nodeDelims[]={'/','.',' '};
+		    SQLizer s2(StemURI, predicateDelims, nodeDelims);
+		    o->express(&s2);
+		    cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
+		}
 		delete o;
-		cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
-
 	    } catch (runtime_error& e) {
 		cout << "Serialization problem:" << e.what() << endl;
 		throw(e);

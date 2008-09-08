@@ -34,11 +34,10 @@ prefix activityHeader: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/Clinic
 prefix current: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#current_>
 prefix itemTestReults: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#itemTestReults_>
 
-prefix DB: <http://myCo.exampe/DB/>
-prefix patient: <http://myCo.exampe/DB/Patient#>
-prefix names: <http://myCo.exampe/DB/Names#>
-prefix bar: <http://myCo.exampe/DB/bar#>
-prefix baz: <http://myCo.exampe/DB/baz#>
+prefix patient: <http://someClinic.exampe/DB/Patient#>
+prefix names: <http://someClinic.exampe/DB/Names#>
+prefix bar: <http://someClinic.exampe/DB/bar#>
+prefix baz: <http://someClinic.exampe/DB/baz#>
 
 
 #@forAll .
