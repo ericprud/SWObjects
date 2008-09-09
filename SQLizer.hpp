@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.18 2008-09-07 18:15:03 eric Exp $
+ * $Id: SQLizer.hpp,v 1.19 2008-09-09 08:23:29 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -511,23 +511,157 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
-	virtual RDFLiteral* rdfLiteral (std::string /*terminal*/, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
+	virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
+	    MARK;
+	    std::string value = terminal;
 	    if (datatype != NULL) {
+		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime") {
+		    value.replace(value.find("T"), 1, " ");
+		} else {
+		    std::cerr << "unknown datatype: " << datatype->getTerminal() << std::endl;
+		    FAIL("unknown datatype");
+		}
 	    }
 	    if (p_LANGTAG != NULL) {
+		FAIL("how do we literalMap langtags?");
+	    }
+
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("Literal as subject -- odd, but why not?");
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), value);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No literal predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("Literal as object");
+		curQuery->constrain(curAliasAttr, value);
+		break;
+
+	    case MODE_selectVar:
+		NOW("Literal as selectVar");
+		curQuery->selectVariable(value);
+		break;
+
+	    default:
+		FAIL("wierd state");
 	    }
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (int /*p_value*/) {
+	virtual NumericRDFLiteral* rdfLiteral (int p_value) {
+	    MARK;
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("int as subject -- odd, but why not?");
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No literal predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("int as object");
+		curQuery->constrain(curAliasAttr, p_value);
+		break;
+
+	    case MODE_selectVar:
+		NOW("int as selectVar");
+		curQuery->selectConstant(p_value, "__CONSTANT_INT__");
+		break;
+
+	    default:
+		FAIL("wierd state");
+	    }
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (float /*p_value*/) {
+	virtual NumericRDFLiteral* rdfLiteral (float p_value) {
+	    MARK;
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("float as subject -- odd, but why not?");
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No literal predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("float as object");
+		curQuery->constrain(curAliasAttr, p_value);
+		break;
+
+	    case MODE_selectVar:
+		NOW("float as selectVar");
+		curQuery->selectConstant(p_value, "__CONSTANT_FLOAT__");
+		break;
+
+	    default:
+		FAIL("wierd state");
+	    }
 	    return NULL;
 	}
-	virtual NumericRDFLiteral* rdfLiteral (double /*p_value*/) {
+	virtual NumericRDFLiteral* rdfLiteral (double p_value) {
+	    MARK;
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("double as subject -- odd, but why not?");
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No literal predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("double as object");
+		curQuery->constrain(curAliasAttr, p_value);
+		break;
+
+	    case MODE_selectVar:
+		NOW("double as selectVar");
+		curQuery->selectConstant(p_value, "__CONSTANT_DOUBLE__");
+		break;
+
+	    default:
+		FAIL("wierd state");
+	    }
 	    return NULL;
 	}
-	virtual BooleanRDFLiteral* rdfLiteral (bool /*p_value*/) {
+	virtual BooleanRDFLiteral* rdfLiteral (bool p_value) {
+	    MARK;
+	    switch (mode) {
+
+	    case MODE_subject:
+		NOW("bool as subject -- odd, but why not?");
+		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
+		break;
+
+	    case MODE_predicate:
+		FAIL("No literal predicates, please.");
+		break;
+
+	    case MODE_object:
+		NOW("bool as object");
+		curQuery->constrain(curAliasAttr, p_value);
+		break;
+
+	    case MODE_selectVar:
+		NOW("bool as selectVar");
+		curQuery->selectConstant(p_value, "__CONSTANT_BOOL__");
+		break;
+
+	    default:
+		FAIL("wierd state");
+	    }
 	    return NULL;
 	}
 	virtual NULLpos* nullpos () {
