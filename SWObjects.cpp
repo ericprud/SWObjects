@@ -2,13 +2,14 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.3 2008-09-07 21:59:43 eric Exp $
+ * $Id: SWObjects.cpp,v 1.4 2008-09-09 09:36:27 eric Exp $
  */
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include "TurtleSParser.hpp"
 #include <string.h>
+#include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {
 
@@ -545,7 +546,6 @@ NumberExpression* NumberExpression::express (Expressor* p_expressor) {
 	    m_TableOperations.push_back(tableOp);
     }
 
-    #include "SPARQLSerializer.hpp"
     bool Bindable::bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	POS* curVal = provisional->get(this);
 	if (curVal == NULL) {
