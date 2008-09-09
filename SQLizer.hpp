@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.19 2008-09-09 08:23:29 eric Exp $
+ * $Id: SQLizer.hpp,v 1.20 2008-09-09 17:33:35 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -11,6 +11,7 @@
 #include <map>
 #include "exs.hpp"
 #include "POS2BGPMap.hpp"
+#include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {
 
@@ -24,40 +25,105 @@ namespace w3c_sw {
 	    AliasAttr (std::string alias, std::string attr) : alias(alias), attr(attr) {  }
 	};
 
+	class Constraint {
+	protected:
+	public:
+	    Constraint () {  }
+	    virtual ~Constraint () {  }
+	};
+	class WhereConstraint : public Constraint {
+	protected:
+	public:
+	    WhereConstraint () {  }
+	    virtual ~WhereConstraint () {  }
+	    virtual std::string toString(std::string pad = "") = 0;
+	};
+	class ConjunctionConstraint : public WhereConstraint {
+	    std::vector<WhereConstraint*> constraints;
+	public:
+	    ConjunctionConstraint () : WhereConstraint(), constraints() {  }
+	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
+	    virtual std::string toString (std::string pad) {
+		std::stringstream s;
+		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
+		     it != constraints.end(); it++) {
+		    if (it != constraints.begin()) s << " AND ";
+		    s << (*it)->toString(pad);
+		}
+		return s.str();
+	    }
+	};
+	class EqConstraint : public WhereConstraint {
+	    WhereConstraint *left, *right;
+	public:
+	    EqConstraint () : WhereConstraint(), left(), right() {  }
+	    void setLeft (WhereConstraint* constraint) { left = constraint; }
+	    void setRight (WhereConstraint* constraint) { right = constraint; }
+	    virtual std::string toString (std::string pad) {
+		std::stringstream s;
+		s << left->toString(pad);
+		s << " = ";
+		s << right->toString(pad);
+		return s.str();
+	    }
+	};
+	class LiteralConstraint : public WhereConstraint {
+	    std::string value;
+	public:
+	    LiteralConstraint (std::string value) : WhereConstraint(), value(value) {  }
+	    virtual std::string toString (std::string pad) {
+		std::stringstream s;
+		s << "\"" << value << "\"";
+		return s.str();
+	    }
+	};
+	class AliasAttrConstraint : public WhereConstraint {
+	    AliasAttr aattr;
+	public:
+	    AliasAttrConstraint (AliasAttr aattr) : WhereConstraint(), aattr(aattr) {  }
+	    virtual std::string toString (std::string pad) {
+		std::stringstream s;
+		s << aattr.alias;
+		s << ".";
+		s << aattr.attr;
+		return s.str();
+	    }
+	};
+
 	class Join {
-	    class Constraint {
+	    class JoinConstraint : public Constraint {
 	    protected:
 		std::string myAttr;
 	    public:
-		Constraint (std::string myAttr) : myAttr(myAttr) {  }
-		virtual ~Constraint () {  }
-		virtual std::string toString (std::string alias, std::string pad = "") = 0;
+		JoinConstraint (std::string myAttr) : Constraint(), myAttr(myAttr) {  }
+		virtual ~JoinConstraint () {  }
+		virtual std::string toString(std::string alias, std::string pad = "") = 0;
 	    };
-	    class ForeignKeyConstraint : public Constraint {
+	    class ForeignKeyJoinConstraint : public JoinConstraint {
 		std::string otherAlias;
 		std::string otherAttr;
 	    public:
-		ForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : Constraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
+		ForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : JoinConstraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
 		    return s.str();
 		}
 	    };
-	    class IntegerConstraint : public Constraint {
+	    class IntegerJoinConstraint : public JoinConstraint {
 		int value;
 	    public:
-		IntegerConstraint (std::string myAttr, int value) : Constraint(myAttr), value(value) {  }
+		IntegerJoinConstraint (std::string myAttr, int value) : JoinConstraint(myAttr), value(value) {  }
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << value;
 		    return s.str();
 		}
 	    };
-	    class StringConstraint : public Constraint {
+	    class StringJoinConstraint : public JoinConstraint {
 		std::string value;
 	    public:
-		StringConstraint (std::string myAttr, std::string value) : Constraint(myAttr), value(value) {  }
+		StringJoinConstraint (std::string myAttr, std::string value) : JoinConstraint(myAttr), value(value) {  }
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=\"" << value << "\"";
@@ -66,11 +132,11 @@ namespace w3c_sw {
 	    };
 	    std::string alias;
 	    bool optional;
-	    std::vector<Constraint*> constraints;
+	    std::vector<JoinConstraint*> constraints;
 	public:
 	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
 	    virtual ~Join () {
-		for (std::vector<Constraint*>::iterator it = constraints.begin();
+		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    delete *it;
 	    }
@@ -81,7 +147,7 @@ namespace w3c_sw {
 		if (captureConstraints == NULL) s << endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		s << getRelationText(pad) << " AS " << alias;
 		std::stringstream on;
-		for (std::vector<Constraint*>::iterator it = constraints.begin();
+		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			on << " AND ";
@@ -96,15 +162,15 @@ namespace w3c_sw {
 		}
 		return s.str();
 	    }
-	    void addForeignKeyConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
+	    void addForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
 		if (alias != otherAlias || myAttr != otherAttr)
-		    constraints.push_back(new ForeignKeyConstraint(myAttr, otherAlias, otherAttr));
+		    constraints.push_back(new ForeignKeyJoinConstraint(myAttr, otherAlias, otherAttr));
 	    }
-	    void addConstantConstraint (std::string myAttr, int value) {
-		constraints.push_back(new IntegerConstraint(myAttr, value));
+	    void addConstantJoinConstraint (std::string myAttr, int value) {
+		constraints.push_back(new IntegerJoinConstraint(myAttr, value));
 	    }
-	    void addConstantConstraint (std::string myAttr, std::string value) {
-		constraints.push_back(new StringConstraint(myAttr, value));
+	    void addConstantJoinConstraint (std::string myAttr, std::string value) {
+		constraints.push_back(new StringJoinConstraint(myAttr, value));
 	    }
 	};
 
@@ -138,6 +204,7 @@ namespace w3c_sw {
 	    virtual ~Attachment () {  }
 	    virtual std::string toString(std::string pad = "") = 0;
 	    virtual void constrain(AliasAttr aattr, SQLQuery* query) = 0;
+	    virtual AliasAttr getAliasAttr () { FAIL("unbound variable"); }
 	};
 
 	class TightAttachment : public Attachment {
@@ -152,6 +219,7 @@ namespace w3c_sw {
 	    virtual void constrain (AliasAttr aattr, SQLQuery* query) {
 		query->constrain(aattr, this->aattr);
 	    }
+	    virtual AliasAttr getAliasAttr () { return aattr; }
 	};
 
 	class NullAttachment : public Attachment {
@@ -188,6 +256,7 @@ namespace w3c_sw {
 	    std::map<POS*, map<std::string, std::string> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
+	    std::vector<WhereConstraint*> constraints;
 	    std::map<std::string, Attachment*> attachments;
 	    std::vector<Attachment*> selects;
 	    bool distinct;
@@ -203,10 +272,15 @@ namespace w3c_sw {
 		     iJoins != joins.end(); ++iJoins)
 		    delete *iJoins;
 
+		for (std::vector<WhereConstraint*>::iterator iConstraints = constraints.begin();
+		     iConstraints != constraints.end(); ++iConstraints)
+		    delete *iConstraints;
+
 		for (std::map<string, Attachment*>::iterator iAttachments = attachments.begin();
 		     iAttachments != attachments.end(); ++iAttachments)
 		    delete iAttachments->second;
 	    }
+	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
 	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
 		s << pad << "SELECT ";
@@ -230,7 +304,16 @@ namespace w3c_sw {
 			s << (*it)->toString(NULL, pad);
 
 		/* WHERE */
-		if (!where.empty()) s << std::endl << pad << " WHERE " << where;
+		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
+		     it != constraints.end(); ++it)
+		    if (it == constraints.begin()) {
+			s << std::endl << pad << " WHERE ";
+			if (where.length() != 0)
+			    s << where << " AND ";
+			s << (*it)->toString(pad);
+		    } else
+			s << "AND" << (*it)->toString(pad);
+
 		if (limit != -1) s << " LIMIT " << limit;
 		if (offset != -1) s << " OFFSET " << offset;
 
@@ -273,6 +356,13 @@ namespace w3c_sw {
 		else
 		    attachments[terminal]->constrain(aattr, this);
 	    }
+	    AliasAttrConstraint* getVariableConstraint (std::string terminal) {
+		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
+		if (it == attachments.end())
+		    FAIL("can't find variable");
+		else
+		    return new AliasAttrConstraint(it->second->getAliasAttr());
+	    }
 	    void selectVariable (std::string terminal) {
 		if (attachments.find(terminal) == attachments.end())
 		    attachments[terminal] = new NullAttachment(terminal);
@@ -289,19 +379,19 @@ namespace w3c_sw {
 	    void constrain (AliasAttr x, AliasAttr y) {
 		//std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (joins.back()->debug_getAlias() != x.alias) FAIL("constraint is not for last join");
-		joins.back()->addForeignKeyConstraint(x.attr, y.alias, y.attr);
+		joins.back()->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
 	    }
 	    void constrain (AliasAttr aattr, std::string otherAlias, std::string otherAttribute) {
 		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addForeignKeyConstraint(aattr.attr, otherAlias, otherAttribute);
+		joins.back()->addForeignKeyJoinConstraint(aattr.attr, otherAlias, otherAttribute);
 	    }
 	    void constrain (AliasAttr aattr, std::string value) {
 		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addConstantConstraint(aattr.attr, value);
+		joins.back()->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	    void constrain (AliasAttr aattr, int value) {
 		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addConstantConstraint(aattr.attr, value);
+		joins.back()->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	};
 
@@ -397,7 +487,7 @@ namespace w3c_sw {
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
-	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_overrun} mode;
+	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
 	SQLQuery* curQuery;
 	POS* curSubject;
 	AliasAttr curAliasAttr;
@@ -407,6 +497,7 @@ namespace w3c_sw {
 	VarSet* m_VarSet;
 	char* predicateDelims;
 	char* nodeDelims;
+	WhereConstraint* curConstraint;
 
     public:
 	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[]) : 
@@ -477,6 +568,11 @@ namespace w3c_sw {
 		curQuery->selectVariable(terminal);
 		break;
 
+	    case MODE_constraint:
+		NOW("URI as constraint");
+		curConstraint = curQuery->getVariableConstraint(terminal);
+		break;
+
 	    default:
 		FAIL("wierd state");
 	    }
@@ -545,6 +641,11 @@ namespace w3c_sw {
 	    case MODE_selectVar:
 		NOW("Literal as selectVar");
 		curQuery->selectVariable(value);
+		break;
+
+	    case MODE_constraint:
+		NOW("Literal as constraint");
+		curConstraint = new LiteralConstraint(terminal);
 		break;
 
 	    default:
@@ -691,14 +792,26 @@ namespace w3c_sw {
 	}
 	void _BasicGraphPattern (ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    MARK;
-	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
-		 it != p_TriplePatterns->end(); ++it)
+	    for (std::vector<TriplePattern*>::iterator tripleIt = p_TriplePatterns->begin();
+		 tripleIt != p_TriplePatterns->end(); ++tripleIt)
 		try {
-		    (*it)->express(this);
+		    (*tripleIt)->express(this);
 		} catch (nonLocalIdentifierException& e) {
-		    std::cerr << "constraint {" << (*it)->toString() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    SPARQLSerializer sparqlizer("  ");
+		    (*tripleIt)->express(&sparqlizer);
+		    std::cerr << "pattern {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
 		}
-	    p_Filters->express(this);
+	    NOW("bgp filters");
+	    for (std::vector<Filter*>::iterator filterIt = p_Filters->begin();
+		 filterIt != p_Filters->end(); ++filterIt)
+		try {
+		    (*filterIt)->express(this);
+		    curQuery->addConstraint(curConstraint);
+		} catch (nonLocalIdentifierException& e) {
+		    SPARQLSerializer sparqlizer("  ");
+		    (*filterIt)->express(&sparqlizer);
+		    std::cerr << "filter {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		}
 	}
 	virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    MARK;
@@ -713,10 +826,11 @@ namespace w3c_sw {
 	virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    SQLQuery* parent = curQuery;
 	    SQLUnion* disjunction = parent->makeUnion(consequentsP->entriesFor(curTableOperation));
-	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
+	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); ++it) {
 		MARK;
 		curQuery = disjunction->makeDisjoint();
-		curTableOperation = p_TableOperations->at(i);
+		curTableOperation = *it;
 		curTableOperation->express(this);
 	    }
 	    disjunction->attach();
@@ -726,9 +840,10 @@ namespace w3c_sw {
 	}
 	virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	    MARK;
-	    for (size_t i = 0; i < p_TableOperations->size(); i++) {
+	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); ++it) {
 		MARK;
-		curTableOperation = p_TableOperations->at(i);
+		curTableOperation = *it;
 		curTableOperation->express(this);
 	    }
 	    p_Filters->express(this);
@@ -748,8 +863,9 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual POSList* posList (ProductionVector<w3c_sw::POS*>* p_POSs) {
-	    for (size_t i = 0; i < p_POSs->size(); i++)
-		p_POSs->at(i)->express(this);
+	    for (std::vector<POS*>::iterator it = p_POSs->begin();
+		 it != p_POSs->end(); ++it)
+		(*it)->express(this);
 	    return NULL;
 	}
 	virtual StarVarSet* starVarSet () {
@@ -764,22 +880,22 @@ namespace w3c_sw {
 	    p_IRIref->express(this);
 	    return NULL;
 	}
-	virtual SolutionModifier* solutionModifier (std::vector<w3c_sw::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+	virtual SolutionModifier* solutionModifier (std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	    if (p_limit != LIMIT_None) curQuery->setLimit(p_limit);
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
-	    if (p_OrderConditions) {
-		for (size_t i = 0; i < p_OrderConditions->size(); i++) {
+	    if (p_OrderConditions)
+		for (std::vector<s_OrderConditionPair>::iterator it = p_OrderConditions->begin();
+		     it != p_OrderConditions->end(); ++it)
 		    /*bool desc = p_OrderConditions->at(i).ascOrDesc == w3c_sw::ORDER_Desc;*/
 		    // !!!
-		    p_OrderConditions->at(i).expression->express(this);
-		}
-	    }
+		    it->expression->express(this);
 	    return NULL;
 	}
 	virtual Binding* binding (ProductionVector<w3c_sw::POS*>* values) {//!!!
 	    // !!!
-	    for (size_t i = 0; i < values->size(); i++)
-		values->at(i)->express(this);
+	    for (std::vector<POS*>::iterator it = values->begin();
+		 it != values->end(); ++it)
+		(*it)->express(this);
 	    return NULL;
 	}
 	virtual BindingClause* bindingClause (w3c_sw::POSList* p_Vars, ProductionVector<w3c_sw::Binding*>* p_Bindings) {
@@ -873,103 +989,139 @@ namespace w3c_sw {
 	    return NULL;
 	}
 	virtual VarExpression* varExpression (w3c_sw::Variable* p_Variable) {
+	    MARK;
+	    mode = MODE_constraint;
 	    p_Variable->express(this);
 	    return NULL;
 	}
 	virtual LiteralExpression* literalExpression (w3c_sw::RDFLiteral* p_RDFLiteral) {
+	    MARK;
 	    p_RDFLiteral->express(this);
 	    return NULL;
 	}
 	virtual BooleanExpression* booleanExpression (w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+	    MARK;
 	    p_BooleanRDFLiteral->express(this);
 	    return NULL;
 	}
 	virtual URIExpression* uriExpression (w3c_sw::URI* p_URI) {
+	    MARK;
 	    p_URI->express(this);
 	    return NULL;
 	}
 	virtual ArgList* argList (ProductionVector<w3c_sw::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
+	    MARK;
 	    p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
 	    return NULL;
 	}
 	// !!!
 	virtual FunctionCall* functionCall (w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) {
+	    MARK;
 	    p_IRIref->express(this);
 	    p_ArgList->express(this);
 	    return NULL;
 	}
 	virtual FunctionCallExpression* functionCallExpression (w3c_sw::FunctionCall* p_FunctionCall) {
+	    MARK;
 	    p_FunctionCall->express(this);
 	    return NULL;
 	}
 	/* Expressions */
 	virtual BooleanNegation* booleanNegation (w3c_sw::Expression* p_Expression) {
+	    MARK;
 	    p_Expression->express(this);
 	    return NULL;
 	}
 	virtual ArithmeticNegation* arithmeticNegation (w3c_sw::Expression* p_Expression) {
+	    MARK;
 	    p_Expression->express(this);
 	    return NULL;
 	}
 	virtual ArithmeticInverse* arithmeticInverse (w3c_sw::Expression* p_Expression) {
+	    MARK;
 	    p_Expression->express(this);
 	    return NULL;
 	}
 	virtual BooleanConjunction* booleanConjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    for (size_t i = 0; i < p_Expressions->size(); i++)
-		p_Expressions->at(i)->express(this);
+	    MARK;
+	    ConjunctionConstraint* conj = new ConjunctionConstraint();
+	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it) {
+		(*it)->express(this);
+		conj->addConstraint(curConstraint);
+	    }
+	    curConstraint = conj;
 	    return NULL;
 	}
 	virtual BooleanDisjunction* booleanDisjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    for (size_t i = 0; i < p_Expressions->size(); i++)
-		p_Expressions->at(i)->express(this);
+	    MARK;
+	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it)
+		(*it)->express(this);
 	    return NULL;
 	}
 	virtual ArithmeticSum* arithmeticSum (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    for (size_t i = 0; i < p_Expressions->size(); i++)
-		p_Expressions->at(i)->express(this);
+	    MARK;
+	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it)
+		(*it)->express(this);
 	    return NULL;
 	}
 	virtual ArithmeticProduct* arithmeticProduct (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
-	    for (size_t i = 0; i < p_Expressions->size(); i++)
-		p_Expressions->at(i)->express(this);
+	    MARK;
+	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+
+		 it != p_Expressions->end(); ++it)
+		(*it)->express(this);
 	    return NULL;
 	}
 	virtual BooleanEQ* booleanEQ (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
+	    EqConstraint* c = new EqConstraint();
 	    p_left->express(this);
+	    c->setLeft(curConstraint);
 	    p_right->express(this);
+	    c->setRight(curConstraint);
+	    curConstraint = c;
 	    return NULL;
 	}
 	virtual BooleanNE* booleanNE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
 	    p_left->express(this);
 	    p_right->express(this);
 	    return NULL;
 	}
 	virtual BooleanLT* booleanLT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
 	    p_left->express(this);
 	    p_right->express(this);
 	    return NULL;
 	}
 	virtual BooleanGT* booleanGT (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
 	    p_left->express(this);
 	    p_right->express(this);
 	    return NULL;
 	}
 	virtual BooleanLE* booleanLE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
 	    p_left->express(this);
 	    p_right->express(this);
 	    return NULL;
 	}
 	virtual BooleanGE* booleanGE (w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
 	    p_left->express(this);
 	    p_right->express(this);
 	    return NULL;
 	}
 	virtual ComparatorExpression* comparatorExpression (w3c_sw::BooleanComparator* p_BooleanComparator) {
+	    MARK;
 	    p_BooleanComparator->express(this);
 	    return NULL;
 	}
 	virtual NumberExpression* numberExpression (w3c_sw::NumericRDFLiteral* p_NumericRDFLiteral) {
+	    MARK;
 	    p_NumericRDFLiteral->express(this);
 	    return NULL;
 	}
