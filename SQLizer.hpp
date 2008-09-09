@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.20 2008-09-09 17:33:35 eric Exp $
+ * $Id: SQLizer.hpp,v 1.21 2008-09-09 17:38:19 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -645,7 +645,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		NOW("Literal as constraint");
-		curConstraint = new LiteralConstraint(terminal);
+		curConstraint = new LiteralConstraint(value);
 		break;
 
 	    default:
