@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.4 2008-09-07 08:19:26 eric Exp $
+ * $Id: SWObjects.hpp,v 1.5 2008-09-09 09:37:00 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -159,30 +159,6 @@ public:
     virtual POS* express(Expressor* p_expressor) = 0;
     virtual std::string getBindingAttributeName() = 0;
     virtual std::string toString() = 0;
-//     virtual std::string toString () {
-// 	class Stringer : public RecursiveExpressor {
-// 	    std::string std::stringstream;
-// 	    virtual URI* uri (std::string terminal) { ret << "<" << terminal << ">"; }
-// 	    virtual Variable* variable (std::string terminal) { ret << "?" << terminal; }
-// 	    virtual BNode* bnode (std::string terminal) { ret << "_:" << terminal; }
-// 	    virtual RDFLiteral* rdfLiteral (std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
-// 		ret << "\"" << terminal << "\"";
-// 		if (datatype) ret << datatype->toString();
-// 		if (p_LANGTAG) ret << p_LANGTAG->toString();
-// 	    }
-// 	    virtual NumericRDFLiteral* rdfLiteral (int p_value) { ret << p_value; }
-// 	    virtual NumericRDFLiteral* rdfLiteral (float p_value) { ret << p_value; }
-// 	    virtual NumericRDFLiteral* rdfLiteral (double p_value) { ret << p_value; }
-// 	    virtual BooleanRDFLiteral* rdfLiteral (bool p_value) { ret << p_value ? "true" : "false"; }
-// 	    virtual NULLpos* nullpos () { ret << "NULL"; }
-// 	public:
-// 	    Stringer () : ret("") {  }
-// 	    std::string getString () { return ret.str(); }
-// 	};
-// 	Stringer s;
-// 	express(s);
-// 	return s.getString();
-//     }
 };
 
 class URI : public POS {
@@ -325,7 +301,6 @@ class POSFactory {
 	virtual ~MakeNumericRDFLiteral () {  }
 	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
     };
-
 
 protected:
     VariableMap		variables;
