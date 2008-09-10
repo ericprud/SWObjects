@@ -70,7 +70,7 @@ int main(int argc,char** argv) {
 		    queryMapper.addRule(c);
 		    delete rule;
 		} else {
-		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT.";
+		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT." << endl;
 		    usage(argv[0]);
 		    return 1;
 		}
