@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.21 2008-09-09 17:38:19 eric Exp $
+ * $Id: SQLizer.hpp,v 1.22 2008-09-10 07:44:35 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -16,6 +16,13 @@
 namespace w3c_sw {
 
     class SQLizer : public Expressor {
+
+	typedef enum {PREC_Low, PREC_Or = PREC_Low, 
+		      PREC_And, 
+		      PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
+		      PREC_Plus, PREC_Minus, 
+		      PREC_Times, PREC_Divide, 
+		      PREC_Not, PREC_Pos, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
 
 	class AliasAttr {
 	public:
@@ -36,22 +43,34 @@ namespace w3c_sw {
 	public:
 	    WhereConstraint () {  }
 	    virtual ~WhereConstraint () {  }
-	    virtual std::string toString(std::string pad = "") = 0;
+	    virtual std::string toString(std::string pad = "", e_PREC prec = PREC_High) = 0;
 	};
-	class ConjunctionConstraint : public WhereConstraint {
+	class JunctionConstraint : public WhereConstraint {
 	    std::vector<WhereConstraint*> constraints;
 	public:
-	    ConjunctionConstraint () : WhereConstraint(), constraints() {  }
+	    JunctionConstraint () : WhereConstraint(), constraints() {  }
 	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad) {
+	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
 		std::stringstream s;
+		if (getPrecedence() < prec) s << "(";
 		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
-		    if (it != constraints.begin()) s << " AND ";
-		    s << (*it)->toString(pad);
+		    if (it != constraints.begin()) s << getJunctionString();
+		    s << (*it)->toString(pad, getPrecedence());
 		}
+		if (getPrecedence() < prec) s << ")";
 		return s.str();
 	    }
+	    virtual std::string getJunctionString() = 0;
+	    virtual e_PREC getPrecedence() = 0;
+	};
+	class ConjunctionConstraint : public JunctionConstraint {
+	    virtual std::string getJunctionString () { return " AND "; }
+	    virtual e_PREC getPrecedence () { return PREC_And; }
+	};
+	class DisjunctionConstraint : public JunctionConstraint {
+	    virtual std::string getJunctionString () { return " OR "; }
+	    virtual e_PREC getPrecedence () { return PREC_Or; }
 	};
 	class EqConstraint : public WhereConstraint {
 	    WhereConstraint *left, *right;
@@ -59,11 +78,13 @@ namespace w3c_sw {
 	    EqConstraint () : WhereConstraint(), left(), right() {  }
 	    void setLeft (WhereConstraint* constraint) { left = constraint; }
 	    void setRight (WhereConstraint* constraint) { right = constraint; }
-	    virtual std::string toString (std::string pad) {
+	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
 		std::stringstream s;
-		s << left->toString(pad);
+		if (PREC_EQ < prec) s << "(";
+		s << left->toString(pad, PREC_EQ);
 		s << " = ";
-		s << right->toString(pad);
+		s << right->toString(pad, PREC_EQ);
+		if (PREC_EQ < prec) s << ")";
 		return s.str();
 	    }
 	};
@@ -71,17 +92,55 @@ namespace w3c_sw {
 	    std::string value;
 	public:
 	    LiteralConstraint (std::string value) : WhereConstraint(), value(value) {  }
-	    virtual std::string toString (std::string pad) {
+	    virtual std::string toString (std::string, e_PREC) {
 		std::stringstream s;
 		s << "\"" << value << "\"";
 		return s.str();
+	    }
+	};
+	class IntConstraint : public WhereConstraint {
+	    int value;
+	public:
+	    IntConstraint (int value) : WhereConstraint(), value(value) {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		std::stringstream s;
+		s << value;
+		return s.str();
+	    }
+	};
+	class FloatConstraint : public WhereConstraint {
+	    float value;
+	public:
+	    FloatConstraint (float value) : WhereConstraint(), value(value) {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		std::stringstream s;
+		s << value;
+		return s.str();
+	    }
+	};
+	class DoubleConstraint : public WhereConstraint {
+	    double value;
+	public:
+	    DoubleConstraint (double value) : WhereConstraint(), value(value) {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		std::stringstream s;
+		s << value;
+		return s.str();
+	    }
+	};
+	class BoolConstraint : public WhereConstraint {
+	    bool value;
+	public:
+	    BoolConstraint (bool value) : WhereConstraint(), value(value) {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		return value ? "true" : "false";
 	    }
 	};
 	class AliasAttrConstraint : public WhereConstraint {
 	    AliasAttr aattr;
 	public:
 	    AliasAttrConstraint (AliasAttr aattr) : WhereConstraint(), aattr(aattr) {  }
-	    virtual std::string toString (std::string pad) {
+	    virtual std::string toString (std::string, e_PREC) {
 		std::stringstream s;
 		s << aattr.alias;
 		s << ".";
@@ -539,6 +598,11 @@ namespace w3c_sw {
 		curQuery->constrain(curAliasAttr, value);
 		break;
 
+	    case MODE_constraint:
+		FAIL("URI as constraint is unimplemented");
+		curConstraint = curQuery->getVariableConstraint(terminal);
+		break;
+
 	    default:
 		FAIL("wierd state");
 	    }
@@ -569,7 +633,7 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		NOW("URI as constraint");
+		NOW("Variable as constraint");
 		curConstraint = curQuery->getVariableConstraint(terminal);
 		break;
 
@@ -676,6 +740,11 @@ namespace w3c_sw {
 		curQuery->selectConstant(p_value, "__CONSTANT_INT__");
 		break;
 
+	    case MODE_constraint:
+		NOW("int as constraint");
+		curConstraint = new IntConstraint(p_value);
+		break;
+
 	    default:
 		FAIL("wierd state");
 	    }
@@ -702,6 +771,11 @@ namespace w3c_sw {
 	    case MODE_selectVar:
 		NOW("float as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_FLOAT__");
+		break;
+
+	    case MODE_constraint:
+		NOW("float as constraint");
+		curConstraint = new FloatConstraint(p_value);
 		break;
 
 	    default:
@@ -732,6 +806,11 @@ namespace w3c_sw {
 		curQuery->selectConstant(p_value, "__CONSTANT_DOUBLE__");
 		break;
 
+	    case MODE_constraint:
+		NOW("double as constraint");
+		curConstraint = new DoubleConstraint(p_value);
+		break;
+
 	    default:
 		FAIL("wierd state");
 	    }
@@ -758,6 +837,11 @@ namespace w3c_sw {
 	    case MODE_selectVar:
 		NOW("bool as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_BOOL__");
+		break;
+
+	    case MODE_constraint:
+		NOW("bool as constraint");
+		curConstraint = new BoolConstraint(p_value);
 		break;
 
 	    default:
@@ -1055,9 +1139,13 @@ namespace w3c_sw {
 	}
 	virtual BooleanDisjunction* booleanDisjunction (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
+	    DisjunctionConstraint* disj = new DisjunctionConstraint();
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
-		 it != p_Expressions->end(); ++it)
+		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
+		disj->addConstraint(curConstraint);
+	    }
+	    curConstraint = disj;
 	    return NULL;
 	}
 	virtual ArithmeticSum* arithmeticSum (ProductionVector<w3c_sw::Expression*>* p_Expressions) {
