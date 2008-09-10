@@ -16,7 +16,7 @@ struct barf : w3c_sw::StringException {
 protected:
     std::string make (char const* type, string file, size_t line, char const* str) {
 	stringstream s;
-	s << type << ": " << file << ":" << line << ": " << str << endl;
+	s << type << ": " << endl << file << ":" << line << ": " << str << endl;
 	for (vector<string>::reverse_iterator it = journal.rbegin();
 	     it != journal.rend(); ++it)
 	    s << *it << endl;
