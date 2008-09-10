@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.22 2008-09-10 07:44:35 eric Exp $
+ * $Id: SQLizer.hpp,v 1.23 2008-09-10 14:31:47 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -308,6 +308,7 @@ namespace w3c_sw {
 	};
 
 	class SQLUnion;
+	class SQLOptional;
 	class SQLQuery {
 	protected:
 	    SQLQuery* parent;
@@ -408,6 +409,13 @@ namespace w3c_sw {
 		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
 		return ret;
 	    }
+	    SQLOptional* makeOptional (std::vector<POS*> corefs) {
+		std::stringstream s;
+		s << "opt" << ++nextOptAlias;
+		SQLOptional* ret = new SQLOptional(this, corefs, s.str());
+		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
+		return ret;
+	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
 		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
 		if (it == attachments.end())
@@ -478,12 +486,12 @@ namespace w3c_sw {
 		for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 		     dis != disjoints.end(); ++dis)
 		    (*dis)->selectConstant(nextDisjointCardinal++, "_DISJOINT_");
-		for (std::vector<POS*>::iterator it = corefs.begin();
-		     it != corefs.end(); ++it) {
+		for (std::vector<POS*>::iterator coref = corefs.begin();
+		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
-			(*dis)->selectVariable((*it)->getTerminal());
-		    parent->attachVariable(AliasAttr(name, (*it)->getTerminal()), (*it)->getTerminal());
+			(*dis)->selectVariable((*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
 		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
@@ -496,6 +504,23 @@ namespace w3c_sw {
 		    s << (*it)->toString(newPad);
 		}
 		return s.str();
+	    }
+	};
+	class SQLOptional : public SQLQuery {
+	    std::vector<SQLDisjoint*> disjoints;
+	    std::vector<POS*> corefs;
+	    std::string name;
+	public:
+	    SQLOptional (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+		SQLQuery(parent), corefs(corefs), name(name)
+	    {  }
+	    virtual ~SQLOptional () {  }
+	    void attach () {
+		for (std::vector<POS*>::iterator coref = corefs.begin();
+		     coref != corefs.end(); ++coref) {
+		    selectVariable((*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
+		}
 	    }
 	};
 
@@ -935,8 +960,14 @@ namespace w3c_sw {
 	}
 	virtual OptionalGraphPattern* optionalGraphPattern (w3c_sw::TableOperation* p_GroupGraphPattern) {
 	    MARK;
+	    SQLQuery* parent = curQuery;
+	    std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
+	    SQLOptional* optional = parent->makeOptional(consequentsP->entriesFor(curTableOperation));
+	    curQuery = optional;
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
+	    optional->attach();
+	    curQuery = parent;
 	    return NULL;
 	}
 	virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
