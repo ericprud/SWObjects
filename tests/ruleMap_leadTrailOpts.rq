@@ -1,0 +1,21 @@
+# ruleMap_leadTrailOpts — rule map to explore optional inclusions
+# $Id: ruleMap_leadTrailOpts.rq,v 1.1 2008-09-10 14:33:17 eric Exp $
+
+PREFIX iface: <http://iface.example/>
+PREFIX stem: <http://stem.example/>
+
+CONSTRUCT {
+  ?s iface:leadOptIncl2  ?leadOptIncl2  .
+  ?s iface:mand          ?mand1         .
+  ?s iface:trailOptIncl2 ?trailOptIncl2 }
+WHERE {
+  OPTIONAL { ?s             stem:leadOptExcl1  ?leadOptExcl1  .
+             ?leadOptExcl1  stem:leadOptExcl2  ?leadOptExcl2  }
+  OPTIONAL { ?s             stem:leadOptIncl1  ?leadOptIncl1  .
+             ?leadOptIncl1  stem:leadOptIncl2  ?leadOptIncl2  }
+  ?s                        stem:mand          ?mand1
+  OPTIONAL { ?s             stem:trailOptExcl1 ?trailOptExcl1  .
+             ?trailOptExcl1 stem:trailOptExcl2 ?trailOptExcl2  }
+  OPTIONAL { ?s             stem:trailOptIncl1 ?trailOptIncl1  .
+             ?trailOptIncl1 stem:trailOptIncl2 ?trailOptIncl2  }
+}

@@ -1,0 +1,11 @@
+# query_leadTrailOpts — query to explore optional inclusions
+# $Id: query_leadTrailOpts.rq,v 1.1 2008-09-10 14:33:17 eric Exp $
+
+PREFIX iface: <http://iface.example/>
+PREFIX stem: <http://stem.example/>
+
+SELECT ?leadOptIncl2 ?mand1 ?trailOptIncl2 WHERE {
+  ?s iface:leadOptIncl2  ?leadOptIncl2  .
+  ?s iface:mand          ?mand1         .
+  ?s iface:trailOptIncl2 ?trailOptIncl2 .
+ }
