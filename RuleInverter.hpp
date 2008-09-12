@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.5.2.2 2008-09-12 04:38:53 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.5.2.3 2008-09-12 09:59:37 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -38,7 +38,7 @@ namespace w3c_sw {
 		    (*triple)->construct(p, row);
 	    }
 
-#ifndef NOT_NEEDED
+#ifdef NOT_NEEDED
 	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 	    }
@@ -56,7 +56,7 @@ namespace w3c_sw {
 			j->addTableOperation(tableOperation);
 		}
 	    }
-#ifndef NOT_NEEDED
+#ifdef NOT_NEEDED
 	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 	    }
@@ -66,6 +66,7 @@ namespace w3c_sw {
 #endif
 	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
+		tableOperation = NULL;
 		ConsequentMap::iterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
 		    if (it->second == Binding_STRONG) {
@@ -76,9 +77,8 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		    }
 		}
-		tableOperation = NULL;
 	    }
-#ifndef NOT_NEEDED
+#ifdef NOT_NEEDED
 	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		SWObjectDuplicator::graphGraphPattern(self, p_POS, p_GroupGraphPattern);
 	    }
@@ -204,23 +204,21 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
 	    NamedGraphPattern* ret = new NamedGraphPattern(pos, true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    tableOperation = ret;
-	    return NULL;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern(true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    tableOperation = ret;
-	    return NULL;
 	}
 
-	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
@@ -234,10 +232,9 @@ namespace w3c_sw {
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);
 	    m_whereClause = new WhereClause(tableOperation, m_bindingClause);
-	    return NULL;
 	}
 
-	virtual MappingConstruct* construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 	    m_ConstructTemplate = p_ConstructTemplate;
@@ -252,15 +249,13 @@ namespace w3c_sw {
 	    m_GroupGraphPattern->express(this); // sets tableOperation
 	    p_SolutionModifier->express(this);
 	    m_Construct = new MappingConstruct(tableOperation, _DatasetClauses(p_DatasetClauses), m_whereClause, m_solutionModifier, posFactory);
-	    operation = m_Construct;
-	    return NULL;
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
 	 * get a run-time error. (A compile-time error would be nice, but the
 	 * expressor interface prevents that.
 	 */
-	virtual Select* select (e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual void select (Select*, e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    throw(std::runtime_error("RuleInverter only works on CONSTRUCTs."));
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.

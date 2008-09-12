@@ -1,6 +1,6 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
  *
- * $Id: QueryMapper.hpp,v 1.3.2.2 2008-09-12 04:38:53 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.3.2.3 2008-09-12 09:59:36 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -40,18 +40,18 @@ namespace w3c_sw {
 	    POS* o = pos;
 	    return new TriplePattern(s, p, o);
 	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
 	    NamedGraphPattern* ret = new NamedGraphPattern(pos);
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    return ret;
+	    tableOperation = ret;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    return ret;
+	    tableOperation = ret;
 	}
 	void _map (TableOperation* op, TableDisjunction* constructed) {
 	    RdfQueryDB db(op);
@@ -70,7 +70,7 @@ namespace w3c_sw {
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
-	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 
 	    /* # 01 — Produce a disjunctive normal form DQI. For each disjunct D:
 	     * http://www.w3.org/2008/07/MappingRules/#_01
@@ -113,7 +113,6 @@ namespace w3c_sw {
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);
 	    m_whereClause = new WhereClause(pattern, m_bindingClause);
-	    return NULL;
 	}
     };
 
