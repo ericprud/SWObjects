@@ -1,6 +1,6 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
  *
- * $Id: QueryMapper.hpp,v 1.3 2008-09-06 23:08:13 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.3.2.1 2008-09-12 03:17:48 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -102,7 +102,8 @@ namespace w3c_sw {
 	    } else
 		pattern = constructed;
 
-	    return new WhereClause(pattern, p_BindingClause ? p_BindingClause->express(this) : NULL);
+	    m_whereClause = new WhereClause(pattern, p_BindingClause ? p_BindingClause->express(this) : NULL);
+	    return NULL;
 	}
     };
 

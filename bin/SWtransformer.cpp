@@ -90,7 +90,8 @@ int main(int argc,char** argv) {
 	    try {
 		Operation* o;
 		if (queryMapper.getRuleCount() > 0) {
-		    o = query->express(&queryMapper);
+		    query->express(&queryMapper);
+		    o = queryMapper.getCopy();
 		    delete query;
 		} else
 		    o = query;

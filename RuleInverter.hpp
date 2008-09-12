@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.5 2008-09-02 10:23:05 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.5.2.1 2008-09-12 03:17:48 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -25,12 +25,11 @@ namespace w3c_sw {
 
 	class MappedDuplicator : public SWObjectDuplicator {
 	protected:
-	    TableOperation* m_TableOperation;
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
 	public:
 	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness) : SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row) {  }
-	    TableOperation* getTableOperation () { return m_TableOperation; }
+	    TableOperation* getTableOperation () { return tableOperation; }
 
 
 	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
@@ -40,57 +39,53 @@ namespace w3c_sw {
 	    }
 
 	    virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-		NamedGraphPattern* ret = SWObjectDuplicator::namedGraphPattern(p_name, p_allOpts, p_TriplePatterns, p_Filters);
-		m_TableOperation = ret;
-		return ret;
+		SWObjectDuplicator::namedGraphPattern(p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		return NULL;
 	    }
 	    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-		DefaultGraphPattern* ret = SWObjectDuplicator::defaultGraphPattern(p_allOpts, p_TriplePatterns, p_Filters);
-		m_TableOperation = ret;
-		return ret;
+		SWObjectDuplicator::defaultGraphPattern(p_allOpts, p_TriplePatterns, p_Filters);
+		return NULL;
 	    }
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
 	    virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
 		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
-		    m_TableOperation = NULL;
-		    TableOperation* r = (*it)->express(this);
-		    if (r != NULL)
-			j->addTableOperation(r);
-		    else if (m_TableOperation != NULL)
-			j->addTableOperation(m_TableOperation);
+		    tableOperation = NULL;
+		    (*it)->express(this);
+		    if (tableOperation != NULL)
+			j->addTableOperation(tableOperation);
 		}
 	    }
 	    virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
-		TableDisjunction* ret = SWObjectDuplicator::tableDisjunction(p_TableOperations, p_Filters);
-		m_TableOperation = ret;
-		return ret;
+		SWObjectDuplicator::tableDisjunction(p_TableOperations, p_Filters);
+		return NULL;
 	    }
 	    virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
-		TableConjunction* ret = SWObjectDuplicator::tableConjunction(p_TableOperations, p_Filters);
-		m_TableOperation = ret;
-		return ret;
+		SWObjectDuplicator::tableConjunction(p_TableOperations, p_Filters);
+		return NULL;
 	    }
 	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
 		ConsequentMap::iterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
 		    if (it->second == Binding_STRONG) {
-			m_TableOperation = p_GroupGraphPattern->express(this);
+			// let p_GroupGraphPattern set tableOperation
+			p_GroupGraphPattern->express(this);
 			return NULL;
 		    } else {
 			std::cerr << "OPTIONAL: " << includeRequiredness->find(bgp)->second << std::endl;
 			OptionalGraphPattern* ret = SWObjectDuplicator::optionalGraphPattern(p_GroupGraphPattern);
-			m_TableOperation = ret;
-			return ret;
+			tableOperation = ret;
+			return NULL;
 		    }
 		}
+		tableOperation = NULL;
 		return NULL;
 	    }
 	    virtual GraphGraphPattern* graphGraphPattern (POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		GraphGraphPattern* ret = SWObjectDuplicator::graphGraphPattern(p_POS, p_GroupGraphPattern);
-		m_TableOperation = ret;
-		return ret;
+		tableOperation = ret;
+		return NULL;
 	    }
 	};
 
@@ -214,16 +209,19 @@ namespace w3c_sw {
 	 * optional (03).
 	 */
 	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this), true); // allOpts = true
+	    p_name->express(this);
+	    NamedGraphPattern* ret = new NamedGraphPattern(pos, true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    return ret;
+	    tableOperation = ret;
+	    return NULL;
 	}
 	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern(true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    return ret;
+	    tableOperation = ret;
+	    return NULL;
 	}
 
 	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
@@ -235,14 +233,19 @@ namespace w3c_sw {
 	     * (m_ConstructTemplate).
 	     */
 	    m_GroupGraphPattern = p_GroupGraphPattern;
-	    return new WhereClause(m_ConstructTemplate->express(this), p_BindingClause ? p_BindingClause->express(this) : NULL);
+	    m_ConstructTemplate->express(this);
+	    m_bindingClause = NULL;
+	    if (p_BindingClause != NULL)
+		p_BindingClause->express(this);
+	    m_whereClause = new WhereClause(tableOperation, m_bindingClause);
+	    return NULL;
 	}
 
 	virtual MappingConstruct* construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 	    m_ConstructTemplate = p_ConstructTemplate;
-	    WhereClause* whereClause = p_WhereClause->express(this);
+	    p_WhereClause->express(this);
 
 	    /* create a new CONSTRUCT with the consequent of the old
 	     * query (m_ConstructTemplate) treated as where clause.
@@ -250,8 +253,11 @@ namespace w3c_sw {
 	     * # 03 — Treat C as a query, each triple being optional.
 	     * http://www.w3.org/2008/07/MappingRules/#_03
 	     */
-	    m_Construct = new MappingConstruct(m_GroupGraphPattern->express(this), _DatasetClauses(p_DatasetClauses), whereClause, p_SolutionModifier->express(this), posFactory);
-	    return m_Construct;
+	    m_GroupGraphPattern->express(this); // sets tableOperation
+	    p_SolutionModifier->express(this);
+	    m_Construct = new MappingConstruct(tableOperation, _DatasetClauses(p_DatasetClauses), m_whereClause, m_solutionModifier, posFactory);
+	    operation = m_Construct;
+	    return NULL;
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
