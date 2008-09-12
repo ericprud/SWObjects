@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.5.2.3 2008-09-12 09:59:37 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.5.2.4 2008-09-12 14:50:17 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -29,7 +29,7 @@ namespace w3c_sw {
 	    Result* row;
 	public:
 	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness) : SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row) {  }
-	    TableOperation* getTableOperation () { return tableOperation; }
+	    TableOperation* getTableOperation () { return last.tableOperation; }
 
 
 	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
@@ -50,10 +50,10 @@ namespace w3c_sw {
 	    virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
 		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
-		    tableOperation = NULL;
+		    last.tableOperation = NULL;
 		    (*it)->express(this);
-		    if (tableOperation != NULL)
-			j->addTableOperation(tableOperation);
+		    if (last.tableOperation != NULL)
+			j->addTableOperation(last.tableOperation);
 		}
 	    }
 #ifdef NOT_NEEDED
@@ -66,11 +66,11 @@ namespace w3c_sw {
 #endif
 	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
-		tableOperation = NULL;
+		last.tableOperation = NULL;
 		ConsequentMap::iterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
 		    if (it->second == Binding_STRONG) {
-			// let p_GroupGraphPattern set tableOperation
+			// let p_GroupGraphPattern set last.tableOperation
 			p_GroupGraphPattern->express(this);
 		    } else {
 			std::cerr << "OPTIONAL: " << includeRequiredness->find(bgp)->second << std::endl;
@@ -191,8 +191,8 @@ namespace w3c_sw {
 
     class RuleInverter : public SWObjectDuplicator {
     protected:
-	DefaultGraphPattern* m_ConstructTemplate;
-	TableOperation* m_GroupGraphPattern;
+	DefaultGraphPattern* constructRuleHead;
+	TableOperation* constructRuleBody;
 	MappingConstruct* m_Construct;
     public:
 	RuleInverter (POSFactory* posFactory) : 
@@ -206,16 +206,16 @@ namespace w3c_sw {
 	 */
 	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
-	    NamedGraphPattern* ret = new NamedGraphPattern(pos, true); // allOpts = true
+	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos, true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    tableOperation = ret;
+	    last.tableOperation = ret;
 	}
 	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern(true); // allOpts = true
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
-	    tableOperation = ret;
+	    last.tableOperation = ret;
 	}
 
 	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
@@ -224,31 +224,34 @@ namespace w3c_sw {
 
 	    /* store the original antecedent (p_GroupGraphPattern) and create
 	     * a new graph pattern with the original consequent
-	     * (m_ConstructTemplate).
+	     * (constructRuleHead).
 	     */
-	    m_GroupGraphPattern = p_GroupGraphPattern;
-	    m_ConstructTemplate->express(this);
-	    m_bindingClause = NULL;
+	    constructRuleBody = p_GroupGraphPattern; // @@@
+	    constructRuleHead->express(this);
+	    TableOperation* op = last.tableOperation;
+	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);
-	    m_whereClause = new WhereClause(tableOperation, m_bindingClause);
+	    last.whereClause = new WhereClause(op, last.bindingClause);
 	}
 
 	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
-	    m_ConstructTemplate = p_ConstructTemplate;
+	    constructRuleHead = p_ConstructTemplate;
 	    p_WhereClause->express(this);
+	    WhereClause* where = last.whereClause;
 
 	    /* create a new CONSTRUCT with the consequent of the old
-	     * query (m_ConstructTemplate) treated as where clause.
+	     * query (constructRuleHead) treated as where clause.
 	     *
 	     * # 03 — Treat C as a query, each triple being optional.
 	     * http://www.w3.org/2008/07/MappingRules/#_03
 	     */
-	    m_GroupGraphPattern->express(this); // sets tableOperation
+	    constructRuleBody->express(this); // sets last.tableOperation
+	    TableOperation* op = last.tableOperation;
 	    p_SolutionModifier->express(this);
-	    m_Construct = new MappingConstruct(tableOperation, _DatasetClauses(p_DatasetClauses), m_whereClause, m_solutionModifier, posFactory);
+	    m_Construct = new MappingConstruct(op, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier, posFactory);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
