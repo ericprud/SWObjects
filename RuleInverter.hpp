@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.5.2.1 2008-09-12 03:17:48 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.5.2.2 2008-09-12 04:38:53 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -38,14 +38,14 @@ namespace w3c_sw {
 		    (*triple)->construct(p, row);
 	    }
 
-	    virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-		SWObjectDuplicator::namedGraphPattern(p_name, p_allOpts, p_TriplePatterns, p_Filters);
-		return NULL;
+#ifndef NOT_NEEDED
+	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+		SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 	    }
-	    virtual DefaultGraphPattern* defaultGraphPattern (bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-		SWObjectDuplicator::defaultGraphPattern(p_allOpts, p_TriplePatterns, p_Filters);
-		return NULL;
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+		SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
 	    }
+#endif
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
 	    virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
 		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
@@ -56,37 +56,33 @@ namespace w3c_sw {
 			j->addTableOperation(tableOperation);
 		}
 	    }
-	    virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
-		SWObjectDuplicator::tableDisjunction(p_TableOperations, p_Filters);
-		return NULL;
+#ifndef NOT_NEEDED
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+		SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 	    }
-	    virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
-		SWObjectDuplicator::tableConjunction(p_TableOperations, p_Filters);
-		return NULL;
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+		SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
 	    }
-	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
+#endif
+	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		BasicGraphPattern* bgp = dynamic_cast<BasicGraphPattern*>(p_GroupGraphPattern);
 		ConsequentMap::iterator it;
 		if (bgp != NULL && (it = includeRequiredness->find(bgp)) != includeRequiredness->end()) {
 		    if (it->second == Binding_STRONG) {
 			// let p_GroupGraphPattern set tableOperation
 			p_GroupGraphPattern->express(this);
-			return NULL;
 		    } else {
 			std::cerr << "OPTIONAL: " << includeRequiredness->find(bgp)->second << std::endl;
-			OptionalGraphPattern* ret = SWObjectDuplicator::optionalGraphPattern(p_GroupGraphPattern);
-			tableOperation = ret;
-			return NULL;
+			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		    }
 		}
 		tableOperation = NULL;
-		return NULL;
 	    }
-	    virtual GraphGraphPattern* graphGraphPattern (POS* p_POS, TableOperation* p_GroupGraphPattern) {
-		GraphGraphPattern* ret = SWObjectDuplicator::graphGraphPattern(p_POS, p_GroupGraphPattern);
-		tableOperation = ret;
-		return NULL;
+#ifndef NOT_NEEDED
+	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+		SWObjectDuplicator::graphGraphPattern(self, p_POS, p_GroupGraphPattern);
 	    }
+#endif
 	};
 
 

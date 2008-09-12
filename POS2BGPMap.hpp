@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.8 2008-09-06 23:07:44 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.8.2.1 2008-09-12 04:38:53 eric Exp $
  */
 
 #pragma once
@@ -84,26 +84,23 @@ namespace w3c_sw {
 
 	    /* RecursiveExpressor overloads:
 	     */
-	    virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual TriplePattern* triplePattern (w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
+	    virtual void triplePattern (TriplePattern*, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
 		_depends(p_s, optState);
 		_depends(p_p, optState);
 		_depends(p_o, optState);
-		return NULL;
 	    }
 
-	    virtual NamedGraphPattern* namedGraphPattern (w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
 		_depends(p_name, optState);
 		p_TriplePatterns->express(this);
 		// p_Filters->express(this); @@ what to do with these?
-		return NULL;
 	    }
 
-	    virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
 		p_TriplePatterns->express(this);
 		// p_Filters->express(this); @@ what to do with these?
-		return NULL;
 	    }
 
 	    void _each (ProductionVector<TableOperation*>* p_TableOperations) {
@@ -116,17 +113,15 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual TableDisjunction* tableDisjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void tableDisjunction (TableDisjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
 		_each(p_TableOperations);
 		//p_Filters->express(this);
-		return NULL;
 	    }
-	    virtual TableConjunction* tableConjunction (ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void tableConjunction (TableConjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
 		_each(p_TableOperations);
 		//p_Filters->express(this);
-		return NULL;
 	    }
-	    virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
 		BindingStrength oldOptState = optState;
 		optState = Binding_WEAK;
 		bgpStack.push_back(p_GroupGraphPattern);
@@ -134,10 +129,9 @@ namespace w3c_sw {
 		bgpStack.pop_back();
 		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
 		optState = oldOptState;
-		return NULL;
 	    }
 
-	    virtual GraphGraphPattern* graphGraphPattern (w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (GraphGraphPattern*, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
 		POS* oldGraphName = graphName;
 		graphName = p_POS;
 		bgpStack.push_back(p_GroupGraphPattern);
@@ -145,19 +139,16 @@ namespace w3c_sw {
 		bgpStack.pop_back();
 		outerGraphs[p_GroupGraphPattern].insert(bgpStack.back());
 		graphName = oldGraphName;
-		return NULL;
 	    }
 
 	    /* Add Binding_SELECT where necessary. */
-	    virtual POSList* posList (ProductionVector<w3c_sw::POS*>* p_POSs) {
+	    virtual void posList (POSList*, ProductionVector<w3c_sw::POS*>* p_POSs) {
 		for (std::vector<POS*>::iterator it = p_POSs->begin();
 		     it != p_POSs->end(); it++)
 		    _depends(*it, Binding_SELECT);
-		return NULL;
 	    }
-	    virtual StarVarSet* starVarSet () {
+	    virtual void starVarSet (StarVarSet*) {
 		FAIL("um, I'm not really up to handling SELECT *.");
-		return NULL;
 	    }
 
 	    /* Stuff for building a consequents list.

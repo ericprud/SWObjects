@@ -1,6 +1,6 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
  *
- * $Id: QueryMapper.hpp,v 1.3.2.1 2008-09-12 03:17:48 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.3.2.2 2008-09-12 04:38:53 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -32,10 +32,17 @@ namespace w3c_sw {
 	    return c;
 	}
 	virtual TriplePattern* triplePattern999 (POS* p_s, POS* p_p, POS* p_o) {
-	    return new TriplePattern(p_s->express(this), p_p->express(this), p_o->express(this));
+	    p_s->express(this);
+	    POS* s = pos;
+	    p_p->express(this);
+	    POS* p = pos;
+	    p_o->express(this);
+	    POS* o = pos;
+	    return new TriplePattern(s, p, o);
 	}
 	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this));
+	    p_name->express(this);
+	    NamedGraphPattern* ret = new NamedGraphPattern(pos);
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    return ret;
@@ -102,7 +109,10 @@ namespace w3c_sw {
 	    } else
 		pattern = constructed;
 
-	    m_whereClause = new WhereClause(pattern, p_BindingClause ? p_BindingClause->express(this) : NULL);
+	    m_bindingClause = NULL;
+	    if (p_BindingClause != NULL)
+		p_BindingClause->express(this);
+	    m_whereClause = new WhereClause(pattern, m_bindingClause);
 	    return NULL;
 	}
     };
