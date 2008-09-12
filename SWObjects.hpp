@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.5 2008-09-09 09:37:00 eric Exp $
+ * $Id: SWObjects.hpp,v 1.6 2008-09-12 03:01:18 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -1290,6 +1290,9 @@ public:
     virtual NumberExpression* numberExpression (w3c_sw::NumericRDFLiteral* p_NumericRDFLiteral) {
 	p_NumericRDFLiteral->express(this);
     return NULL; }
+};
+class TestExpressor : public RecursiveExpressor {
+    virtual Base* base (std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
 } //namespace w3c_sw
