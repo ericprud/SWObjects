@@ -1,5 +1,5 @@
 /* RdfQueryDB - sets of variable bindings and their proofs.
- * $Id: RdfQueryDB.hpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: RdfQueryDB.hpp,v 1.3 2008-09-13 05:17:31 eric Exp $
  */
 
 #ifndef RDF_QUERY_DB_H
@@ -24,38 +24,33 @@ namespace w3c_sw {
 	bool optState;
     public:
 	DBExpressor (RdfQueryDB* p_db) : db(p_db), optState(false) {  }
-	virtual Base* base (std::string productionName) { throw(std::runtime_error(productionName)); };
+	virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual Filter* filter (Expression*) { // p_Constraint
-	    return NULL;
+	virtual void filter (Filter*, Expression*) { // p_Constraint
 	}
 	void _absorbGraphPattern (BasicGraphPattern* g, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>*) {  // p_Filters
 	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
 		g->addTriplePattern(new TriplePattern(**it, optState));
 	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_IRIref, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_IRIref, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(p_IRIref), p_TriplePatterns, p_Filters);
-	    return NULL;
 	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns, p_Filters);
-	    return NULL;
 	}
-	virtual TableDisjunction* tableDisjunction (ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
+	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(__PRETTY_FUNCTION__)); // query should already be DNF'd, ergo no disjunctions.
 	}
-	virtual TableConjunction* tableConjunction (ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	virtual void tableConjunction (TableConjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	    p_TableOperations->express(this);
 	    p_Filters->express(this);
-	    return NULL;
 	}
-	virtual OptionalGraphPattern* optionalGraphPattern (TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
 	    bool oldOptState = optState;
 	    optState = true;
 	    p_GroupGraphPattern->express(this);
 	    optState = oldOptState;
-	    return NULL;
 	}
 #if 0
 	virtual POSList* posList (ProductionVector<POS*>*) { // p_POSs

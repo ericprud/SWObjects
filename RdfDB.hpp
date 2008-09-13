@@ -1,5 +1,5 @@
 /* RdfDB - sets of variable bindings and their proofs.
- * $Id: RdfDB.hpp,v 1.3 2008-09-06 23:12:11 eric Exp $
+ * $Id: RdfDB.hpp,v 1.4 2008-09-13 05:17:30 eric Exp $
  */
 
 #ifndef RDF_DB_H
@@ -33,7 +33,7 @@ namespace w3c_sw {
 	DefaultGraphClass () : POS("::DefaultGraphClass::") {  }
 	virtual std::string toString () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
 	virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
-	virtual POS* express (Expressor*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); };
+	virtual void express (Expressor*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); };
     };
     extern POS* DefaultGraph;
 

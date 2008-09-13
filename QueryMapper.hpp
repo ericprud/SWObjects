@@ -1,6 +1,8 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
+ * This is a simple SWObjectDuplicator with an overloaded whereClause method
+ * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.3 2008-09-06 23:08:13 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.4 2008-09-13 05:17:30 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -31,21 +33,6 @@ namespace w3c_sw {
 	    ++ruleCount;
 	    return c;
 	}
-	virtual TriplePattern* triplePattern999 (POS* p_s, POS* p_p, POS* p_o) {
-	    return new TriplePattern(p_s->express(this), p_p->express(this), p_o->express(this));
-	}
-	virtual NamedGraphPattern* namedGraphPattern (POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    NamedGraphPattern* ret = new NamedGraphPattern(p_name->express(this));
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    return ret;
-	}
-	virtual DefaultGraphPattern* defaultGraphPattern (bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    DefaultGraphPattern* ret = new DefaultGraphPattern();
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    return ret;
-	}
 	void _map (TableOperation* op, TableDisjunction* constructed) {
 	    RdfQueryDB db(op);
 
@@ -63,7 +50,7 @@ namespace w3c_sw {
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
-	virtual WhereClause* whereClause (TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 
 	    /* # 01 — Produce a disjunctive normal form DQI. For each disjunct D:
 	     * http://www.w3.org/2008/07/MappingRules/#_01
@@ -102,7 +89,10 @@ namespace w3c_sw {
 	    } else
 		pattern = constructed;
 
-	    return new WhereClause(pattern, p_BindingClause ? p_BindingClause->express(this) : NULL);
+	    last.bindingClause = NULL;
+	    if (p_BindingClause != NULL)
+		p_BindingClause->express(this);
+	    last.whereClause = new WhereClause(pattern, last.bindingClause);
 	}
     };
 
