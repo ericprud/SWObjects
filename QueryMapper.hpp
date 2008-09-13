@@ -1,6 +1,8 @@
 /* QueryMapper.hpp - simple SPARQL transformer for SPARQL compile trees.
+ * This is a simple SWObjectDuplicator with an overloaded whereClause method
+ * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.3.2.4 2008-09-12 14:50:17 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.3.2.5 2008-09-13 04:51:05 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -30,28 +32,6 @@ namespace w3c_sw {
 	    invertedRules.push_back(c);
 	    ++ruleCount;
 	    return c;
-	}
-	virtual TriplePattern* triplePattern999 (POS* p_s, POS* p_p, POS* p_o) {
-	    p_s->express(this);
-	    POS* s = last.posz.pos;
-	    p_p->express(this);
-	    POS* p = last.posz.pos;
-	    p_o->express(this);
-	    POS* o = last.posz.pos;
-	    return new TriplePattern(s, p, o);
-	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    p_name->express(this);
-	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos);
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    last.tableOperation = ret;
-	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    DefaultGraphPattern* ret = new DefaultGraphPattern();
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    last.tableOperation = ret;
 	}
 	void _map (TableOperation* op, TableDisjunction* constructed) {
 	    RdfQueryDB db(op);
