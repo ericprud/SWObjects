@@ -1,6 +1,12 @@
 /* SWObjectDuplicator.hpp - simple SPARQL duplicator for SPARQL compile trees.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.3 2008-09-13 05:17:31 eric Exp $
+ * This duplicates an SWObject tree (e.g. a Select or a Construct). For each
+ * object, it expresses each of the subobjects in turn and records the pointer
+ * that was stored in last. It then builds a new object with of those pointers.
+ * Classes derived from SWObjectDuplicator are likely to get and set the values
+ * in last.
+ *
+ * $Id: SWObjectDuplicator.hpp,v 1.4 2008-09-13 05:28:00 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
