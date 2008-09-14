@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.4 2008-09-13 05:17:31 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.5 2008-09-14 10:50:18 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -9,6 +9,9 @@
 namespace w3c_sw {
 
 class SPARQLSerializer : public Expressor {
+public:
+    typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
+protected:
     std::stringstream ret;
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		  PREC_And, 
@@ -17,6 +20,7 @@ class SPARQLSerializer : public Expressor {
 		  PREC_Times, PREC_Divide, 
 		  PREC_Not, PREC_Pos, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
     const char* tab;
+    e_DEBUG debug;
     size_t depth;
     std::stack<e_PREC> precStack;
     void start (e_PREC prec) {
@@ -39,7 +43,7 @@ class SPARQLSerializer : public Expressor {
 	    ret << tab;
     }
 public:
-    SPARQLSerializer (const char* p_tab = "  ") : tab(p_tab), depth(0), precStack() { precStack.push(PREC_High); }
+    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none) : tab(p_tab), debug(debug), depth(0), precStack() { precStack.push(PREC_High); }
     std::string getSPARQLstring () { return ret.str(); }
     //!!!
     virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
@@ -89,9 +93,11 @@ public:
 	p_Constraint->express(this);
 	ret << std::endl;
     }
-    void _BasicGraphPattern (ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+    void _BasicGraphPattern (BasicGraphPattern* self, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	lead();
-	ret << '{' << std::endl;
+	ret << '{';
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	ret << std::endl;
 	depth++;
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
@@ -99,15 +105,17 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (NamedGraphPattern*, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	_BasicGraphPattern(p_TriplePatterns, p_Filters);
+    virtual void namedGraphPattern (NamedGraphPattern* self, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	_BasicGraphPattern(self, p_TriplePatterns, p_Filters);
     }
-    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	_BasicGraphPattern(p_TriplePatterns, p_Filters);
+    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	_BasicGraphPattern(self, p_TriplePatterns, p_Filters);
     }
-    virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	lead();
-	ret << '{' << std::endl;
+	ret << '{';
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	ret << std::endl;
 	depth++;
 	for (size_t i = 0; i < p_TableOperations->size(); i++) {
 	    p_TableOperations->at(i)->express(this);
@@ -121,9 +129,11 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void tableConjunction (TableConjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	lead();
-	ret << '{' << std::endl;
+	ret << '{';
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	ret << std::endl;
 	depth++;
 	p_TableOperations->express(this);
 	p_Filters->express(this);
@@ -228,8 +238,9 @@ public:
 	p_WhereClause->express(this);
 	p_GraphTemplate->express(this);
     }
-    virtual void insert (Insert*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (Insert* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	ret << "INSERT { ";
+	if (debug & DEBUG_graphs) ret << self << ' ';
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;

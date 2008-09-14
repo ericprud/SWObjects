@@ -1,6 +1,6 @@
 /* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.9 2008-09-13 05:17:30 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.10 2008-09-14 10:50:17 eric Exp $
  */
 
 #pragma once
@@ -299,12 +299,15 @@ namespace w3c_sw {
 	ConsequentMapList consequents;
 
     public:
-	Consequents (TableOperation* op, VarSet* p_VarSet = NULL) {
+	Consequents (TableOperation* op, VarSet* p_VarSet = NULL, std::ostream* debugStream = NULL) {
 	    ConsequentsConstructor ctor(&consequents, op);
 	    op->express(&ctor);
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    ctor.findCorefs(op);
-// 	    std::cout << "Consequents:" << std::endl << ctor.dumpConsequents();
+	    if (debugStream != NULL) {
+		*debugStream << "Consequents:" << std::endl << ctor.dumpConsequents();
+		*debugStream<< "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
+	    }
 	}
 	~Consequents () {
 	    for (ConsequentMapList::iterator maps = consequents.begin();

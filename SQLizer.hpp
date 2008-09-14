@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.24 2008-09-13 05:17:31 eric Exp $
+ * $Id: SQLizer.hpp,v 1.25 2008-09-14 10:50:18 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -583,10 +583,12 @@ namespace w3c_sw {
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
 
+	std::ostream* debugStream;
+
     public:
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[]) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), 
-	    m_VarSet(NULL), predicateDelims(predicateDelims), nodeDelims(nodeDelims)
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::ostream* debugStream = NULL) : 
+	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), m_VarSet(NULL), 
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), debugStream(debugStream)
 	{  }
 	~SQLizer () { delete curQuery; }
 
@@ -995,7 +997,7 @@ namespace w3c_sw {
 	}
 	virtual void whereClause (WhereClause*, w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) {
 	    START("p_GroupGraphPattern");
-	    Consequents consequents(p_GroupGraphPattern, m_VarSet);
+	    Consequents consequents(p_GroupGraphPattern, m_VarSet, debugStream);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);

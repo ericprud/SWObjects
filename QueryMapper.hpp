@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.4 2008-09-13 05:17:30 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.5 2008-09-14 10:50:18 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -17,8 +17,10 @@ namespace w3c_sw {
     protected:
 	std::vector<MappingConstruct*> invertedRules;
 	int ruleCount;
+	std::ostream* debugStream;
+
     public:
-	QueryMapper (POSFactory* posFactory) : SWObjectDuplicator(posFactory), ruleCount(0) {  }
+	QueryMapper (POSFactory* posFactory, std::ostream* debugStream) : SWObjectDuplicator(posFactory), ruleCount(0), debugStream(debugStream) {  }
 	~QueryMapper() {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
 		 it != invertedRules.end(); ++it)
@@ -26,7 +28,7 @@ namespace w3c_sw {
 	}
 	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (Construct* rule) {
-	    RuleInverter inv(posFactory);
+	    RuleInverter inv(posFactory, debugStream);
 	    rule->express(&inv);
 	    MappingConstruct* c = inv.getConstruct();
 	    invertedRules.push_back(c);

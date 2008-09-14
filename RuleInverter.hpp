@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.6 2008-09-13 05:17:31 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.7 2008-09-14 10:50:18 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -9,6 +9,7 @@
 
 #include "SWObjectDuplicator.hpp"
 #include "POS2BGPMap.hpp"
+#include "SPARQLSerializer.hpp" // for debugging output
 #include <set>
 
 namespace w3c_sw {
@@ -93,9 +94,9 @@ namespace w3c_sw {
 
     public:
 	MappingConstruct (TableOperation* p_MappedAntecedent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory) : 
+			  WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream* debugStream) : 
 	    Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), 
-	    m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent), posFactory(posFactory)
+	    m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent, NULL, debugStream), posFactory(posFactory)
 	{  }
 	~MappingConstruct () {
 	    delete m_MappedAntecedent;
@@ -194,9 +195,10 @@ namespace w3c_sw {
 	DefaultGraphPattern* constructRuleHead;
 	TableOperation* constructRuleBody;
 	MappingConstruct* m_Construct;
+	std::ostream* debugStream;
     public:
-	RuleInverter (POSFactory* posFactory) : 
-	    SWObjectDuplicator(posFactory) {  }
+	RuleInverter (POSFactory* posFactory, std::ostream* debugStream = NULL) : 
+	    SWObjectDuplicator(posFactory), debugStream(debugStream) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
 
@@ -238,6 +240,12 @@ namespace w3c_sw {
 	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
+
+	    /* Record the current CONSTRUCT rule head.
+	     * Expressing the WhereClause builds a new WhereClause based on
+	     * constructRuleHead and sets constructRuleBody to the graph pattern
+	     * of the CONSTRUCT WhereClause.
+	     */
 	    constructRuleHead = p_ConstructTemplate;
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
@@ -250,8 +258,15 @@ namespace w3c_sw {
 	     */
 	    constructRuleBody->express(this); // sets last.tableOperation
 	    TableOperation* op = last.tableOperation;
+	    if (debugStream != NULL) {
+		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
+		op->express(&sparqlizer);
+		*debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+	    }
 	    p_SolutionModifier->express(this);
-	    m_Construct = new MappingConstruct(op, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier, posFactory);
+
+	    //                              consequent                             antecedent
+	    m_Construct = new MappingConstruct(op, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier, posFactory, debugStream);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs

@@ -1,3 +1,9 @@
+/* SWtransformer — transform interface SPARQL queries to proprietary
+ * queries or SQL queries.
+ *
+ * $Id: SWtransformer.cpp,v 1.11 2008-09-14 10:50:18 eric Exp $
+ */
+
 /* START main */
 
 #include <stdio.h>
@@ -12,6 +18,14 @@
 #include <stdlib.h>
 #include <ostream>
 #include <fstream>
+
+#if 1
+#define DEBUG_STREAM &std::cerr
+#define DEBUG_GRAPHS SPARQLSerializer::DEBUG_graphs
+#else
+#define DEBUG_STREAM NULL
+#define DEBUG_GRAPHS SPARQLSerializer::DEBUG_none
+#endif
 
 using namespace std;
 
@@ -47,7 +61,7 @@ int main(int argc,char** argv) {
     w3c_sw::POSFactory posFactory;
     w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
     w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
-    w3c_sw::QueryMapper queryMapper(&posFactory);
+    w3c_sw::QueryMapper queryMapper(&posFactory, DEBUG_STREAM);
 
     int result;
     w3c_sw::Operation* query = NULL;
@@ -90,6 +104,7 @@ int main(int argc,char** argv) {
 	    try {
 		Operation* o;
 		if (queryMapper.getRuleCount() > 0) {
+
 		    query->express(&queryMapper);
 		    o = queryMapper.getCopy();
 		    delete query;
@@ -100,14 +115,14 @@ int main(int argc,char** argv) {
 // 		o->express(&xmlizer);
 // 		cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
 
-		SPARQLSerializer sparqlizer("  ");
+		SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : DEBUG_GRAPHS);
 		o->express(&sparqlizer);
 		cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 
-		if (StemURI) {
+		if (StemURI != NULL) {
 		    char predicateDelims[]={'#',' ',' '};
 		    char nodeDelims[]={'/','.',' '};
-		    SQLizer s2(StemURI, predicateDelims, nodeDelims);
+		    SQLizer s2(StemURI, predicateDelims, nodeDelims, DEBUG_STREAM);
 		    o->express(&s2);
 		    cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
 		}
