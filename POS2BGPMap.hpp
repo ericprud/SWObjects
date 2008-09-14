@@ -1,6 +1,17 @@
-/* POS2BGPMap.hpp - association variables with the BGPs in which they appear.
+/* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
  *
- * $Id: POS2BGPMap.hpp,v 1.10 2008-09-14 10:50:17 eric Exp $
+ * POS2BGP does double duty:
+ * • For query translation, it determines which variables are coref'd
+ *   in which table operations.
+ *
+ * • For RuleMap query translation, it keeps track of which optionals
+ *   in the rule antecedent are needed to produce the data for a given
+ *   query, and which correspond to mandatory parts of the query.
+ *
+ *   For this, WEAK_COREFs record a variable that is weak in all graph
+ *   patterns.
+ *
+ * $Id: POS2BGPMap.hpp,v 1.11 2008-09-14 12:13:23 eric Exp $
  */
 
 #pragma once
@@ -12,7 +23,8 @@
 
 namespace w3c_sw {
 
-    typedef enum {Binding_STRONG = 2, Binding_WEAK = 7, Binding_FILTER = 1, Binding_SELECT = 8, Binding_COREF = 2} BindingStrength;
+    typedef enum {Binding_STRONG = 1, Binding_FILTER = 2, Binding_SELECT = 4, 
+		  Binding_WEAK = 8, Binding_COREF = 0x10} BindingStrength;
     typedef std::map<TableOperation*, BindingStrength>	ConsequentMap;
     typedef std::map<POS*, ConsequentMap>		ConsequentMapList;
 
