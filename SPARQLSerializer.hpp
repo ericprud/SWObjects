@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.5 2008-09-14 10:50:18 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.6 2008-09-14 11:11:02 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -141,16 +141,18 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "OPTIONAL ";
+	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
-    virtual void graphGraphPattern (GraphGraphPattern*, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "GRAPH ";
+	if (debug & DEBUG_graphs) ret << ' ' << self;
 	p_POS->express(this);
 	ret << std::endl;
 	depth++;
