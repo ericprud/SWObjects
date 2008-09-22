@@ -1,0 +1,9 @@
+# query_deepNesting — test OuterGraphs
+# $Id: query_deepNesting.rq,v 1.1 2008-09-22 08:30:54 eric Exp $
+
+PREFIX iface: <http://iface.example/>
+PREFIX stem: <http://stem.example/>
+
+SELECT ?inner3 WHERE {
+  ?s iface:depth3l  ?inner3  .
+ }

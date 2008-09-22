@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.42 2008-09-13 05:17:30 eric Exp $
+# $Id: Makefile,v 1.43 2008-09-22 08:30:54 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -97,6 +97,13 @@ tests/execute_%  : tests/test_%.cpp $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInvert
 
 %_test.valgrind  : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
 	valgrind --leak-check=yes --xml=no $^ -s http://someClinic.exampe/DB/
+
+opts: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq -s http://stem.example/
+
+deep: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_deepNesting.rq tests/ruleMap_deepNesting.rq
+
 
 ### named unit tests
 
