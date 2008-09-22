@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.7 2008-09-13 05:17:31 eric Exp $
+ * $Id: SWObjects.hpp,v 1.8 2008-09-22 08:34:43 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -364,7 +364,7 @@ public:
     ~TriplePattern () {  }
     std::string toString () {
 	std::stringstream s;
-	s << m_p->toString() << m_p->toString() << m_p->toString();
+	s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
 	return s.str();
     }
     virtual void express(Expressor* p_expressor);
