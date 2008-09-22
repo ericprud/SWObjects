@@ -1,5 +1,5 @@
 # ruleMap_leadTrailOpts — rule map to explore optional inclusions
-# $Id: ruleMap_leadTrailOpts.rq,v 1.1 2008-09-10 14:33:17 eric Exp $
+# $Id: ruleMap_leadTrailOpts.rq,v 1.2 2008-09-22 08:31:38 eric Exp $
 
 PREFIX iface: <http://iface.example/>
 PREFIX stem: <http://stem.example/>
@@ -9,13 +9,17 @@ CONSTRUCT {
   ?s iface:mand          ?mand1         .
   ?s iface:trailOptIncl2 ?trailOptIncl2 }
 WHERE {
-  OPTIONAL { ?s             stem:leadOptExcl1  ?leadOptExcl1  .
+  OPTIONAL { ?s1            stem:leadOptExcl1  ?leadOptExcl1  .
              ?leadOptExcl1  stem:leadOptExcl2  ?leadOptExcl2  }
-  OPTIONAL { ?s             stem:leadOptIncl1  ?leadOptIncl1  .
-             ?leadOptIncl1  stem:leadOptIncl2  ?leadOptIncl2  }
-  ?s                        stem:mand          ?mand1
-  OPTIONAL { ?s             stem:trailOptExcl1 ?trailOptExcl1  .
-             ?trailOptExcl1 stem:trailOptExcl2 ?trailOptExcl2  }
-  OPTIONAL { ?s             stem:trailOptIncl1 ?trailOptIncl1  .
-             ?trailOptIncl1 stem:trailOptIncl2 ?trailOptIncl2  }
+  OPTIONAL { ?s2            stem:leadOptNeed1  ?leadOptNeed1  .
+             ?leadOptNeed1  stem:leadOptNeed2  ?leadOptNeed2  }
+  OPTIONAL { ?s3            stem:leadOptIncl1  ?leadOptNeed1  .
+             ?leadOptNeed1  stem:leadOptIncl2  ?leadOptIncl2  }
+  ?s                       stem:mand          ?mand1
+  OPTIONAL { ?s4            stem:trailOptExcl1 ?trailOptExcl1 .
+             ?trailOptExcl1 stem:trailOptExcl2 ?trailOptExcl2 }
+  OPTIONAL { ?s5            stem:trailOptNeed1 ?trailOptNeed1 .
+             ?trailOptNeed1 stem:trailOptNeed2 ?trailOptNeed2 }
+  OPTIONAL { ?s6            stem:trailOptIncl1 ?trailOptNeed1 .
+             ?trailOptNeed1 stem:trailOptIncl2 ?trailOptIncl2 }
 }
