@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: ResultSet.cpp,v 1.3 2008-09-22 08:35:40 eric Exp $
  */
 
 #include "ResultSet.hpp"
@@ -41,12 +41,11 @@ namespace w3c_sw {
 	return xml;
     }
 
-    ResultSetIterator Result::duplicate (ResultSet* rs, ResultSetIterator row) {
+    Result* Result::duplicate (ResultSet* rs, ResultSetIterator row) {
 	Result* ret = new Result(rs);
-	ResultSetIterator it = rs->insert(row, ret);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++)
 	    ret->set(it->first, it->second.pos, it->second.weaklyBound);
-	return it;
+	return ret;
     }
 
     ResultSet::ResultSet () : knownVars(), results() {

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.5 2008-09-13 05:17:31 eric Exp $
+ * $Id: SWObjects.cpp,v 1.6 2008-09-22 08:35:39 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -645,7 +645,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    ResultSet* clone = orig->clone();
 	    (*it)->bindVariables(db, clone);
 	    for (ResultSetIterator row = clone->begin() ; row != clone->end(); ) {
-		(*row)->duplicate(rs, rs->end());
+		rs->insert(row, (*row)->duplicate(rs, rs->end()));
 		delete *row;
 		clone->erase(row++);
 	    }
@@ -665,28 +665,35 @@ void NumberExpression::express (Expressor* p_expressor) {
 	bool matched = true;
 	for (std::vector<TriplePattern*>::iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
-	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
+	    for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+		 triple != m_TriplePatterns.end(); triple++) {
 		matched = false;
-		for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
-		     triple != m_TriplePatterns.end(); triple++)
+		for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		    matched |= (*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, row, graphName);
-		delete *row;
-		rs->erase(row++);
+		    delete *row;
+		    rs->erase(row++);
+		}
 	    }
 	}
     }
     bool TriplePattern::bindVariables (TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, ResultSetIterator row, POS* graphName) {
 	bool ret = false;
 	Result* r = *row; // convenience variable.
-	ResultSetIterator newIt = r->duplicate(rs, row);
-	Result* newRow = *newIt;
+	Result* newRow = r->duplicate(rs, row);
+	//{ XMLSerializer xs; rs->toXml(&xs); std::cerr << "before: " << xs.getXMLstring(); }
+	//std::cerr << "matching " << tp->toString() << std::endl << " against " << toString() << std::endl << "      on " << r << std::endl;
 	if (graphVar->bindVariable(graphName, rs, newRow, weaklyBound) && 
 	    tp->m_s->bindVariable(m_s, rs, newRow, weaklyBound) && 
 	    tp->m_p->bindVariable(m_p, rs, newRow, weaklyBound) && 
-	    tp->m_o->bindVariable(m_o, rs, newRow, weaklyBound))
+	    tp->m_o->bindVariable(m_o, rs, newRow, weaklyBound)) {
+	    rs->insert(row, newRow);
 	    ret = true;
-	else if (!optional)
-	    rs->remove(newIt, *newIt);
+	} else if (optional) {
+	    delete newRow;
+	    newRow = r->duplicate(rs, row);
+	    rs->insert(row, newRow); // !!!
+	}
+	//{ XMLSerializer xs; rs->toXml(&xs); std::cerr << "after(" << ret << "): " << xs.getXMLstring(); }
 	return ret;
     }
 
@@ -697,8 +704,9 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    bool empty = true;
 	    for (ResultSetIterator optRow = rowRS->begin() ; optRow != rowRS->end(); ) {
 		empty = false;
-		ResultSetIterator newIt = (*row)->duplicate(rs, row);
-		(*newIt)->assumeNewBindings(*optRow);
+		Result* r = (*row)->duplicate(rs, row);
+		rs->insert(row, r);
+		r->assumeNewBindings(*optRow);
 		delete *optRow;
 		rowRS->erase(optRow++);
 	    }
