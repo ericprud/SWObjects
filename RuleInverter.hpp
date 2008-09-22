@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.8 2008-09-16 18:57:13 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.9 2008-09-22 08:41:03 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -52,9 +52,9 @@ namespace w3c_sw {
 
 	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		last.tableOperation = NULL;
-		BindingStrength s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
-		if (s != Binding_NONE) {
-		    if (s == Binding_STRONG)
+		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
+		if (s != GraphInclusion_NONE) {
+		    if (s == GraphInclusion_STRONG)
 			// let p_GroupGraphPattern set last.tableOperation
 			p_GroupGraphPattern->express(this);
 		    else
@@ -86,7 +86,11 @@ namespace w3c_sw {
 	    /* 04 — Execute the query C on the query disjoint D, producing a result set RScd.
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
+	    //SPARQLSerializer sQ; m_WhereClause->express(&sQ); std::cerr << "Query: " << std::endl << sQ.getSPARQLstring() << std::endl;
+	    //SPARQLSerializer sD; db->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
 	    m_WhereClause->bindVariables(db, opRS);
+	    //XMLSerializer xs; opRS->toXml(&xs);
+	    //std::cerr << "Results:" << std::endl << xs.getXMLstring() << std::endl;
 
 	    /* 05 — For each rule solution S in RScd:
 	     * http://www.w3.org/2008/07/MappingRules/#_05
@@ -107,11 +111,8 @@ namespace w3c_sw {
 		MappedDuplicator e(posFactory, *row, &includeRequiredness);
 		m_MappedAntecedent->express(&e);
 		opRS->addTableOperation(e.getTableOperation());
+		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
-	    DefaultGraphPattern g;
-	    //m_MappedAntecedent->construct(&g, opRS);
-	    //	    SPARQLSerializer s2; r->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
-	    //	    delete r;
 	    return opRS;
 	}
     };
@@ -122,9 +123,10 @@ namespace w3c_sw {
 	TableOperation* constructRuleBody;
 	MappingConstruct* m_Construct;
 	std::ostream* debugStream;
+	bool inRuleBody;
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream* debugStream = NULL) : 
-	    SWObjectDuplicator(posFactory), debugStream(debugStream) {  }
+	    SWObjectDuplicator(posFactory), debugStream(debugStream), inRuleBody(false) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
 
@@ -134,13 +136,13 @@ namespace w3c_sw {
 	 */
 	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
-	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos, true); // allOpts = true
+	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos, inRuleBody); // allOpts = true when in rule body
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
 	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    DefaultGraphPattern* ret = new DefaultGraphPattern(true); // allOpts = true
+	    DefaultGraphPattern* ret = new DefaultGraphPattern(inRuleBody); // allOpts = true when in rule body
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
@@ -173,7 +175,9 @@ namespace w3c_sw {
 	     * of the CONSTRUCT WhereClause.
 	     */
 	    constructRuleHead = p_ConstructTemplate;
+	    inRuleBody = true;
 	    p_WhereClause->express(this);
+	    inRuleBody = false;
 	    WhereClause* where = last.whereClause;
 
 	    /* create a new CONSTRUCT with the consequent of the old
