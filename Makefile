@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.43 2008-09-22 08:30:54 eric Exp $
+# $Id: Makefile,v 1.44 2008-09-23 22:21:51 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -98,11 +98,23 @@ tests/execute_%  : tests/test_%.cpp $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInvert
 %_test.valgrind  : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
 	valgrind --leak-check=yes --xml=no $^ -s http://someClinic.exampe/DB/
 
+HealthCare1: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+
 opts: tests/execute_HealthCare1
 	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq -s http://stem.example/
 
 deep: tests/execute_HealthCare1
 	valgrind tests/execute_HealthCare1 tests/query_deepNesting.rq tests/ruleMap_deepNesting.rq
+
+opt1: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_spec-opt1.rq -s http://hr.example/DB/
+
+equivOpt1: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_spec-equivOpt1.rq -s http://hr.example/DB/
+
+optJoin1: tests/execute_HealthCare1
+	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
 
 ### named unit tests
