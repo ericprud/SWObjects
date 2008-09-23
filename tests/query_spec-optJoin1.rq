@@ -1,11 +1,14 @@
 # optJoin1
 # from http://www.w3.org/2008/07/MappingRules/#optJoin1 Revision: 1.38 
-# $Id: query_spec-optJoin1.rq,v 1.1 2008-09-08 13:12:40 eric Exp $
+# $Id: query_spec-optJoin1.rq,v 1.2 2008-09-23 22:29:52 eric Exp $
 
 PREFIX emplP: <http://hr.example/DB/Employee#>
+PREFIX mangP: <http://hr.example/DB/Manage#>
 
 SELECT ?empName ?grandManagName
  WHERE {          ?emp            emplP:lastName   ?empName .
-         OPTIONAL { ?manager      emplP:manager    ?emp .
-                    ?manager      emplP:manager    ?grandManager .
+         OPTIONAL { ?mang         mangP:manages    ?emp .
+                    ?mang         mangP:manager    ?manager .
+                    ?grandMang    mangP:manages    ?manager .
+                    ?grandMang    mangP:manager    ?grandManager .
                     ?grandManager emplP:lastName   ?grandManagName } }
