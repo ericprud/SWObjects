@@ -18,7 +18,7 @@
  * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, POSFactory*)
  * GraphInclusion getOperationStrength(TableOperation*)
  *
- * $Id: POS2BGPMap.hpp,v 1.13 2008-09-22 08:41:03 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.14 2008-09-23 22:26:12 eric Exp $
  */
 
 #pragma once
@@ -35,7 +35,7 @@ namespace w3c_sw {
 
     /* internal representation. */
     typedef enum {_Binding_GRAPH = 1, _Binding_SELECT = 2, _Binding_FILTER = 4, _Binding_COREF = 8, 
-		  _Binding_WEAK = 0x10, _Binding_REUSED = 0x20} _BindingStrength;
+		  _Binding_WEAK = 0x10, _Binding_INTRODUCED = 0x20} _BindingStrength;
 
     class ConsequentMap : public std::map<TableOperation*, _BindingStrength> {
 	friend class Consequents;
@@ -46,7 +46,7 @@ namespace w3c_sw {
 	GraphInclusion getOperationStrength (TableOperation* bgp) {
 	    std::map<TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
-		(it->second & _Binding_WEAK && it->second & _Binding_REUSED))
+		(it->second & _Binding_WEAK && !(it->second & _Binding_INTRODUCED)))
 		return GraphInclusion_NONE;
 	    return it->second & _Binding_GRAPH ? GraphInclusion_STRONG : GraphInclusion_WEAK;
 	}
@@ -73,8 +73,8 @@ namespace w3c_sw {
 		_hex(s);
 	    if (s & _Binding_WEAK)
 		ret.append(" WEAK");
-	    if (s & _Binding_REUSED)
-		ret.append(" REUSED");
+	    if (s & _Binding_INTRODUCED)
+		ret.append(" INTRODUCED");
 	    return ret;
 	}
 
@@ -100,6 +100,8 @@ namespace w3c_sw {
 	typedef std::pair< POS*, TableOperation* >		IQEnt;
 	typedef std::vector< IQEnt >				InsertQueue;
 
+	/* ConsequentsConstructor — helper class to compile ConsequentMapLists.
+	 */
 	class ConsequentsConstructor : public RecursiveExpressor {
 	protected:
 	    ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
@@ -135,7 +137,7 @@ namespace w3c_sw {
 				 bgps != consequents[pos].end(); ++bgps)
 				if (bgps->second & _Binding_GRAPH) {
 				    /* Already introduced elsewhere, so just return. */
-				    strength = (_BindingStrength)(strength | _Binding_REUSED);
+				    strength = (_BindingStrength)(strength & ~_Binding_INTRODUCED);
 				    break;
 				}
 			} else {
@@ -143,11 +145,11 @@ namespace w3c_sw {
 			    for (std::map<TableOperation*, _BindingStrength>::iterator bgps = consequents[pos].begin();
 				 bgps != consequents[pos].end(); ++bgps)
 				if (bgps->second & _Binding_WEAK) // !!! OPT { ?x } .?x  -- keep the first one? guess not.
-				    consequents[pos][bgps->first] = (_BindingStrength)(consequents[pos][bgps->first] | _Binding_REUSED);
+				    consequents[pos][bgps->first] = (_BindingStrength)(consequents[pos][bgps->first] &~ _Binding_INTRODUCED);
 			}
 
 			consequents[pos][bgp] = strength;
-		    } else if ((consequents[pos][bgp] & ~_Binding_REUSED) != strength) {
+		    } else if ((consequents[pos][bgp] & ~_Binding_INTRODUCED) != strength) { // !!!!
 			cout << ConsequentMapList::bindingStr(consequents[pos][bgp]) << " = " << ConsequentMapList::bindingStr(strength) << endl;
 			FAIL("reassignment of weakly bound variable to strongly bound in the same BGP."); // @@ shouldn't happen? consequents[pos][bgp] = false;
 		    }
@@ -155,8 +157,14 @@ namespace w3c_sw {
 	    }
 
 	public:
+	    /* ConsequentsConstructor — helper class to compile ConsequentMapLists.
+	     *   consequents: list to build
+	     *   op: TableOperation to use as root (needed for marking variabe
+	     *       references like those in a SELECT posList.
+	     */
 	    ConsequentsConstructor (ConsequentMapList* consequents, TableOperation* op) : 
-		consequents(*consequents), optState(_Binding_GRAPH), graphName(NULL), currentBGP(NULL), outerGraphs() {  }
+		consequents(*consequents), optState(_Binding_GRAPH), graphName(NULL), currentBGP(op), outerGraphs()
+	    {  }
 
 	    /* RecursiveExpressor overloads:
 	     */
@@ -408,7 +416,7 @@ namespace w3c_sw {
 	    ctor.findCorefs(op);
 	    if (debugStream != NULL) {
 		*debugStream << "Consequents:" << std::endl << consequents.dump();
-		*debugStream<< "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
+		*debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	    }
 	}
 	~Consequents () {
