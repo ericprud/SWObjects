@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.25 2008-09-14 10:50:18 eric Exp $
+ * $Id: SQLizer.hpp,v 1.26 2008-09-23 22:23:25 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -72,17 +72,18 @@ namespace w3c_sw {
 	    virtual std::string getJunctionString () { return " OR "; }
 	    virtual e_PREC getPrecedence () { return PREC_Or; }
 	};
-	class EqConstraint : public WhereConstraint {
+	class BooleanConstraint : public WhereConstraint {
 	    WhereConstraint *left, *right;
+	    std::string sqlOperator;
 	public:
-	    EqConstraint () : WhereConstraint(), left(), right() {  }
+	    BooleanConstraint (std::string sqlOperator) : WhereConstraint(), left(), right(), sqlOperator(sqlOperator) {  }
 	    void setLeft (WhereConstraint* constraint) { left = constraint; }
 	    void setRight (WhereConstraint* constraint) { right = constraint; }
 	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
 		std::stringstream s;
 		if (PREC_EQ < prec) s << "(";
 		s << left->toString(pad, PREC_EQ);
-		s << " = ";
+		s << " " <<  sqlOperator << " ";
 		s << right->toString(pad, PREC_EQ);
 		if (PREC_EQ < prec) s << ")";
 		return s.str();
@@ -413,7 +414,7 @@ namespace w3c_sw {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptional* ret = new SQLOptional(this, corefs, s.str());
-		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
+		joins.push_back(new SubqueryJoin(ret, s.str(), true));		
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
@@ -507,7 +508,6 @@ namespace w3c_sw {
 	    }
 	};
 	class SQLOptional : public SQLQuery {
-	    std::vector<SQLDisjoint*> disjoints;
 	    std::vector<POS*> corefs;
 	    std::string name;
 	public:
@@ -521,6 +521,10 @@ namespace w3c_sw {
 		    selectVariable((*coref)->getTerminal());
 		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
 		}
+	    }
+	    virtual std::string toString (std::string pad = "") {
+		std::string newPad = pad + "    ";
+		return SQLQuery::toString(newPad);
 	    }
 	};
 
@@ -1145,39 +1149,37 @@ namespace w3c_sw {
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void booleanEQ (BooleanEQ*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
-	    MARK;
-	    EqConstraint* c = new EqConstraint();
+	void _boolConstraint (Expression* p_left, std::string sqlOperator, Expression* p_right) {
+	    BooleanConstraint* c = new BooleanConstraint(sqlOperator);
 	    p_left->express(this);
 	    c->setLeft(curConstraint);
 	    p_right->express(this);
 	    c->setRight(curConstraint);
 	    curConstraint = c;
 	}
+	virtual void booleanEQ (BooleanEQ*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+	    MARK;
+	    _boolConstraint(p_left, "=", p_right);
+	}
 	virtual void booleanNE (BooleanNE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	    MARK;
-	    p_left->express(this);
-	    p_right->express(this);
+	    _boolConstraint(p_left, "!=", p_right);
 	}
 	virtual void booleanLT (BooleanLT*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	    MARK;
-	    p_left->express(this);
-	    p_right->express(this);
+	    _boolConstraint(p_left, "<", p_right);
 	}
 	virtual void booleanGT (BooleanGT*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	    MARK;
-	    p_left->express(this);
-	    p_right->express(this);
+	    _boolConstraint(p_left, ">", p_right);
 	}
 	virtual void booleanLE (BooleanLE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	    MARK;
-	    p_left->express(this);
-	    p_right->express(this);
+	    _boolConstraint(p_left, "<=", p_right);
 	}
 	virtual void booleanGE (BooleanGE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
 	    MARK;
-	    p_left->express(this);
-	    p_right->express(this);
+	    _boolConstraint(p_left, ">=", p_right);
 	}
 	virtual void comparatorExpression (ComparatorExpression*, w3c_sw::BooleanComparator* p_BooleanComparator) {
 	    MARK;
