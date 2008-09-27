@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.27 2008-09-23 22:25:12 eric Exp $
+ * $Id: SQLizer.hpp,v 1.28 2008-09-27 15:16:46 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -314,9 +314,10 @@ namespace w3c_sw {
 	protected:
 	    SQLQuery* parent;
 
-	    std::map<POS*, map<std::string, std::string> > aliasMap;
+	    std::map<POS*, map<std::string, Join*> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
+	    Join* curJoin;
 	    std::vector<WhereConstraint*> constraints;
 	    std::map<std::string, Attachment*> attachments;
 	    std::vector<Attachment*> selects;
@@ -384,11 +385,13 @@ namespace w3c_sw {
 	    void setLimit (int limit) { this->limit = limit; }
 	    void setOffset (int offset) { this->offset = offset; }
 	    std::string attachTuple (POS* subject, std::string toRelation) {
-		std::map<POS*, map<std::string, std::string> >::iterator byPOS = aliasMap.find(subject);
+		std::map<POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
-		    map<std::string, std::string>::iterator byRelation = aliasMap[subject].find(toRelation);
-		    if (byRelation != aliasMap[subject].end())
-			return aliasMap[subject][toRelation];
+		    map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
+		    if (byRelation != aliasMap[subject].end()) {
+			curJoin = aliasMap[subject][toRelation];
+			return curJoin->debug_getAlias();
+		    }
 		}
 		string aliasName = subject->getTerminal();
 		unsigned ordinal = 0;
@@ -397,10 +400,11 @@ namespace w3c_sw {
 		    s << subject->getTerminal() << "_" << ++ordinal;
 		    aliasName = s.str();
 		}
-		joins.push_back(new TableJoin(toRelation, aliasName, false));
+		curJoin = new TableJoin(toRelation, aliasName, false);
+		joins.push_back(curJoin);
 		usedAliases.insert(aliasName);
-		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject << ", " << toRelation << "." << attribute << " bound to " << aliasName << std::endl;
-		aliasMap[subject][toRelation] = aliasName;
+		std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getTerminal() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
+		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
 	    SQLUnion* makeUnion (std::vector<POS*> corefs) {
@@ -445,21 +449,18 @@ namespace w3c_sw {
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
-		//std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
-		if (joins.back()->debug_getAlias() != x.alias) FAIL("constraint is not for last join");
-		joins.back()->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
-	    }
-	    void constrain (AliasAttr aattr, std::string otherAlias, std::string otherAttribute) {
-		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addForeignKeyJoinConstraint(aattr.attr, otherAlias, otherAttribute);
+		std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
+		if (curJoin->debug_getAlias() != x.alias)
+		    FAIL2("constraint on %s is not for last join %s", x.alias.c_str(), curJoin->debug_getAlias().c_str());
+		curJoin->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
 	    }
 	    void constrain (AliasAttr aattr, std::string value) {
-		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addConstantJoinConstraint(aattr.attr, value);
+		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	    void constrain (AliasAttr aattr, int value) {
-		if (joins.back()->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		joins.back()->addConstantJoinConstraint(aattr.attr, value);
+		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	};
 
@@ -578,11 +579,11 @@ namespace w3c_sw {
 	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
 	SQLQuery* curQuery;
 	POS* curSubject;
-	AliasAttr curAliasAttr;
+	AliasAttr curAliasAttr; // established by predicate
 	TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
-	VarSet* m_VarSet;
+	VarSet* selectVars;
 	char* predicateDelims;
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
@@ -591,7 +592,7 @@ namespace w3c_sw {
 
     public:
 	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::ostream* debugStream = NULL) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), m_VarSet(NULL), 
+	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), debugStream(debugStream)
 	{  }
 	~SQLizer () { delete curQuery; }
@@ -609,7 +610,7 @@ namespace w3c_sw {
 
 	    case MODE_predicate:
 		NOW("URI as predicate");
-		if (resolve(terminal, &relation, &attribute) != 2) FAIL("malformed predicate");
+		if (resolve(terminal, &relation, &attribute) != 2) FAIL2("malformed predicate \"%s\" didn't match \"%s\"", terminal.c_str(), stem.c_str());
 		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
@@ -873,7 +874,8 @@ namespace w3c_sw {
 	    }
 	}
 	virtual void nullpos (NULLpos*) {  }
-	virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void triplePattern (TriplePattern* self, POS* p_s, POS* p_p, POS* p_o) {
+	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
 	    START("checking predicate");
 	    mode = MODE_predicate;
@@ -889,6 +891,7 @@ namespace w3c_sw {
 	    p_o->express(this);
 
 	    mode = MODE_outside;
+	    //curQuery->curJoin = NULL;
 	}
 	virtual void filter (Filter*, Expression* p_Constraint) {
 	    p_Constraint->express(this);
@@ -1001,7 +1004,7 @@ namespace w3c_sw {
 	}
 	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	    START("p_GroupGraphPattern");
-	    Consequents consequents(p_GroupGraphPattern, m_VarSet, debugStream);
+	    Consequents consequents(p_GroupGraphPattern, selectVars, debugStream);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
@@ -1010,7 +1013,7 @@ namespace w3c_sw {
 	virtual void select (Select*, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    START("cracking select clause");
 	    curQuery = new SQLQuery(NULL);
-	    m_VarSet = p_VarSet;
+	    selectVars = p_VarSet;
 	    if (p_distinctness == DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == DIST_reduced) ...
 	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");
