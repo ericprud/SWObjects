@@ -18,7 +18,7 @@
  * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, POSFactory*)
  * GraphInclusion getOperationStrength(TableOperation*)
  *
- * $Id: POS2BGPMap.hpp,v 1.14 2008-09-23 22:26:12 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.15 2008-09-27 15:12:44 eric Exp $
  */
 
 #pragma once
@@ -66,11 +66,10 @@ namespace w3c_sw {
 	}
 	static string bindingStr (_BindingStrength s) {
 	    string ret;
-	    ret = s & _Binding_GRAPH ? "GRAPH" : 
-		s & _Binding_FILTER ? "FILTER" :
-		s & _Binding_SELECT ? "SELECT" :
-		s & _Binding_COREF  ? "COREF"  : 
-		_hex(s);
+	    if (s & _Binding_GRAPH)  ret.append("GRAPH " );
+	    if (s & _Binding_FILTER) ret.append("FILTER ");
+	    if (s & _Binding_SELECT) ret.append("SELECT ");
+	    if (s & _Binding_COREF)  ret.append("COREF " );
 	    if (s & _Binding_WEAK)
 		ret.append(" WEAK");
 	    if (s & _Binding_INTRODUCED)
@@ -147,11 +146,15 @@ namespace w3c_sw {
 				if (bgps->second & _Binding_WEAK) // !!! OPT { ?x } .?x  -- keep the first one? guess not.
 				    consequents[pos][bgps->first] = (_BindingStrength)(consequents[pos][bgps->first] &~ _Binding_INTRODUCED);
 			}
-
 			consequents[pos][bgp] = strength;
+		    } else if ((strength == _Binding_GRAPH  && consequents[pos][bgp] == _Binding_SELECT) || 
+			       (strength == _Binding_SELECT && consequents[pos][bgp] == _Binding_GRAPH )) {
+			consequents[pos][bgp] = (_BindingStrength)(consequents[pos][bgp] | strength);
 		    } else if ((consequents[pos][bgp] & ~_Binding_INTRODUCED) != strength) { // !!!!
-			cout << ConsequentMapList::bindingStr(consequents[pos][bgp]) << " = " << ConsequentMapList::bindingStr(strength) << endl;
-			FAIL("reassignment of weakly bound variable to strongly bound in the same BGP."); // @@ shouldn't happen? consequents[pos][bgp] = false;
+			std::string sp(pos->toString());
+			std::string ss(ConsequentMapList::bindingStr(strength));
+			std::string sc(ConsequentMapList::bindingStr(consequents[pos][bgp]));
+			FAIL4("consequents[%s][%p] = %s; was %s.", sp.c_str(), bgp, ss.c_str(), sc.c_str()); // @@ shouldn't happen? consequents[pos][bgp] = false;
 		    }
 		}
 	    }
@@ -171,6 +174,7 @@ namespace w3c_sw {
 	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	    virtual void triplePattern (TriplePattern*, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
+		START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
 		_depends(p_o, optState);
@@ -186,6 +190,7 @@ namespace w3c_sw {
 	    }
 
 	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+		START("POS2BGPMap::namedGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -196,6 +201,7 @@ namespace w3c_sw {
 	    }
 
 	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+		START("POS2BGPMap::defaultGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -410,9 +416,13 @@ namespace w3c_sw {
 
     public:
 	Consequents (TableOperation* op, VarSet* p_VarSet = NULL, std::ostream* debugStream = NULL) {
+	    START("POS2BGPMap Consequents constructor");
 	    ConsequentsConstructor ctor(&consequents, op);
+	    NOW("traversing TableOperation");
 	    op->express(&ctor);
+	    NOW("storing select vars");
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
+	    NOW("finding corefs");
 	    ctor.findCorefs(op);
 	    if (debugStream != NULL) {
 		*debugStream << "Consequents:" << std::endl << consequents.dump();
