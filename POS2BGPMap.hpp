@@ -1,4 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
+ * $Id: POS2BGPMap.hpp,v 1.16 2008-09-29 12:35:46 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -15,10 +16,25 @@
  *   of the query. Any OPTIONALs which introduce variables referenced in a later
  *   graph pattern must also be included. <antecedents> maps graph patterns to
  *   the graph patterns that may affect them.
- * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, POSFactory*)
- * GraphInclusion getOperationStrength(TableOperation*)
  *
- * $Id: POS2BGPMap.hpp,v 1.15 2008-09-27 15:12:44 eric Exp $
+ * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, POSFactory*)
+ *   called by: MappingConstruct::execute
+ *   returns: a ConsequentMap of the constructRuleBodyAsConsequent (see below).
+ *
+ * std::vector<POS*> entriesFor (TableOperation* op)
+ *   called by: SQLizer::tableDisjunction
+ *              SQLizer::optionalGraphPattern
+ *   returns: all the POS entries referenced in a particular TableOperation.
+ *   Used to determine which fields in an SQL subquery are referenced outside
+ *   that query.
+ *
+ * GraphInclusion ConsequentMap::getOperationStrength(TableOperation*)
+ *   called by: MappingConstruct::MappedDuplicator table operation expressors.
+ *   returns: whether a TableOperation in constructRuleBodyAsConsequent was
+ *            implicated in the user's query.
+ *
+ * 
+ *
  */
 
 #pragma once

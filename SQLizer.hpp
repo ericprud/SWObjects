@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.28 2008-09-27 15:16:46 eric Exp $
+ * $Id: SQLizer.hpp,v 1.29 2008-09-29 12:35:48 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -194,7 +194,9 @@ namespace w3c_sw {
 	    bool optional;
 	    std::vector<JoinConstraint*> constraints;
 	public:
-	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
+	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {
+		//std::cerr << "new Join(" << alias << ", " << (optional ? "true" : "false") << ") = " << this << std::endl;
+  }
 	    virtual ~Join () {
 		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
@@ -317,7 +319,7 @@ namespace w3c_sw {
 	    std::map<POS*, map<std::string, Join*> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
-	    Join* curJoin;
+	public: Join* curJoin; protected:
 	    std::vector<WhereConstraint*> constraints;
 	    std::map<std::string, Attachment*> attachments;
 	    std::vector<Attachment*> selects;
@@ -411,14 +413,16 @@ namespace w3c_sw {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnion* ret = new SQLUnion(this, corefs, s.str());
-		joins.push_back(new SubqueryJoin(ret, s.str(), false));		
+		curJoin = new SubqueryJoin(ret, s.str(), false);
+		joins.push_back(curJoin);
 		return ret;
 	    }
 	    SQLOptional* makeOptional (std::vector<POS*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptional* ret = new SQLOptional(this, corefs, s.str());
-		joins.push_back(new SubqueryJoin(ret, s.str(), true));		
+		curJoin = new SubqueryJoin(ret, s.str(), true);
+		joins.push_back(curJoin);
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string terminal) {
@@ -492,7 +496,9 @@ namespace w3c_sw {
 		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
+			// SELECT <field for coref> AS <coref name>
 			(*dis)->selectVariable((*coref)->getTerminal());
+		    // ON <name>.<coref name> = <parent's field for coref>
 		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
 		}
 	    }
@@ -519,7 +525,9 @@ namespace w3c_sw {
 	    void attach () {
 		for (std::vector<POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
+		    // SELECT <field for coref> AS <coref name>
 		    selectVariable((*coref)->getTerminal());
+		    // ON <name>.<coref name> = <parent's field for coref>
 		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
 		}
 	    }
@@ -874,7 +882,7 @@ namespace w3c_sw {
 	    }
 	}
 	virtual void nullpos (NULLpos*) {  }
-	virtual void triplePattern (TriplePattern* self, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
 	    START("checking predicate");

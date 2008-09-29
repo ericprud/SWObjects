@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.9 2008-09-22 08:41:03 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.10 2008-09-29 12:35:47 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -22,9 +22,20 @@ namespace w3c_sw {
 	void addTableOperation (TableOperation* op) { constructed->addTableOperation(op); }
     };
 
+    /* MappingConstruct — extends Construct::execute to peform steps 4 through 8
+     *                    in http://www.w3.org/2008/07/MappingRules/#_04 .
+     */
     class MappingConstruct : public Construct {
 
+	/* MappedDuplicator — 
+	 * • reproduce all portions of the constructRuleBodyAsConsequent which
+	 *   are implicated in constructed patterns which might be matched by
+	 *   the user's query.
+	 * • substituted variables and constants from the user query by calling
+         *   construct on each triple pattern.
+	 */
 	class MappedDuplicator : public SWObjectDuplicator {
+
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
@@ -65,20 +76,20 @@ namespace w3c_sw {
 
 
     private:
-	TableOperation* m_MappedAntecedent;
+	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
 
     public:
-	MappingConstruct (TableOperation* p_MappedAntecedent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream* debugStream) : 
-	    Construct(NULL, p_DatasetClauses, p_WhereClause, p_SolutionModifier), 
-	    m_MappedAntecedent(p_MappedAntecedent), consequents(p_MappedAntecedent, NULL, debugStream), posFactory(posFactory)
+	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
+			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream* debugStream) : 
+	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
+	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), consequents(constructRuleBodyAsConsequent, NULL, debugStream), posFactory(posFactory)
 	{  }
 	~MappingConstruct () {
-	    delete m_MappedAntecedent;
+	    delete constructRuleBodyAsConsequent;
 	}
-	virtual OperationResultSet* execute (RdfDB* db, ResultSet* rs = NULL) {
+	virtual OperationResultSet* execute (RdfDB* userQueryAsAssertions, ResultSet* rs = NULL) {
 	    OperationResultSet* opRS = dynamic_cast<OperationResultSet*>(rs);
 	    if (opRS == NULL)
 		throw(std::runtime_error("MappingConstrucs need a result set.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
@@ -87,8 +98,8 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
 	    //SPARQLSerializer sQ; m_WhereClause->express(&sQ); std::cerr << "Query: " << std::endl << sQ.getSPARQLstring() << std::endl;
-	    //SPARQLSerializer sD; db->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
-	    m_WhereClause->bindVariables(db, opRS);
+	    //SPARQLSerializer sD; userQueryAsAssertions->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
+	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
 	    //XMLSerializer xs; opRS->toXml(&xs);
 	    //std::cerr << "Results:" << std::endl << xs.getXMLstring() << std::endl;
 
@@ -109,7 +120,7 @@ namespace w3c_sw {
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
 		MappedDuplicator e(posFactory, *row, &includeRequiredness);
-		m_MappedAntecedent->express(&e);
+		constructRuleBodyAsConsequent->express(&e);
 		opRS->addTableOperation(e.getTableOperation());
 		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
@@ -178,7 +189,7 @@ namespace w3c_sw {
 	    inRuleBody = true;
 	    p_WhereClause->express(this);
 	    inRuleBody = false;
-	    WhereClause* where = last.whereClause;
+	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
 	    /* create a new CONSTRUCT with the consequent of the old
 	     * query (constructRuleHead) treated as where clause.
@@ -187,16 +198,19 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_03
 	     */
 	    constructRuleBody->express(this); // sets last.tableOperation
-	    TableOperation* op = last.tableOperation;
+	    TableOperation* constructRuleBodyAsConsequent = last.tableOperation;
 	    if (debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
-		op->express(&sparqlizer);
+		constructRuleBodyAsConsequent->express(&sparqlizer);
 		*debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 	    }
 	    p_SolutionModifier->express(this);
 
-	    //                              consequent                             antecedent
-	    m_Construct = new MappingConstruct(op, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier, posFactory, debugStream);
+	    m_Construct = new MappingConstruct(constructRuleBodyAsConsequent,	 // consequent of new mapping rule
+					       _DatasetClauses(p_DatasetClauses),//
+					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
+					       last.solutionModifier, 		 //
+					       posFactory, debugStream);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs

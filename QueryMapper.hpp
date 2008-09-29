@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.5 2008-09-14 10:50:18 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.6 2008-09-29 12:35:47 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -35,8 +35,8 @@ namespace w3c_sw {
 	    ++ruleCount;
 	    return c;
 	}
-	void _map (TableOperation* op, TableDisjunction* constructed) {
-	    RdfQueryDB db(op);
+	void _map (TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
+	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint);
 
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
@@ -48,7 +48,7 @@ namespace w3c_sw {
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
 		OperationResultSet opRS(constructed);
-		(*invertedRule)->execute(&db, &opRS);
+		(*invertedRule)->execute(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
@@ -63,20 +63,20 @@ namespace w3c_sw {
 	       triples and filter expressions. It's safe to delete before
 	       the original graph pattern.
 	     */
-	    TableOperation* op = p_GroupGraphPattern->getDNF();
+	    TableOperation* userQueryAsDNF = p_GroupGraphPattern->getDNF();
 
 	    /* constructed accumulates a deep copy of the new query.
 	       The old graph pattern is deleted.
 	     */
 	    TableDisjunction* constructed = new TableDisjunction();
 	    TableDisjunction* disjoints;
-	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL)
+	    if ((disjoints = dynamic_cast<TableDisjunction*>(userQueryAsDNF)) != NULL)
 		for (std::vector<TableOperation*>::iterator d = disjoints->begin();
 		     d != disjoints->end(); d++)
 		    _map(*d, constructed);
 	    else
-		_map(op, constructed);
-	    delete op;
+		_map(userQueryAsDNF, constructed);
+	    delete userQueryAsDNF;
 
 	    /* # 08 — The final query is the union of each disjoint produce in step 07.
 	     * http://www.w3.org/2008/07/MappingRules/#_08
