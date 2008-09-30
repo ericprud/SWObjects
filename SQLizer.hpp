@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.29 2008-09-29 12:35:48 eric Exp $
+ * $Id: SQLizer.hpp,v 1.30 2008-09-30 11:18:25 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -378,8 +378,8 @@ namespace w3c_sw {
 		    } else
 			s << "AND" << (*it)->toString(pad);
 
-		if (limit != -1) s << " LIMIT " << limit;
-		if (offset != -1) s << " OFFSET " << offset;
+		if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
+		if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
 
 		return s.str();
 	    }
@@ -1027,7 +1027,7 @@ namespace w3c_sw {
 	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");
 	    NOW("p_WhereClause");
 	    p_WhereClause->express(this);
-	    //p_SolutionModifier->express(this);
+	    p_SolutionModifier->express(this);
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
 	}
