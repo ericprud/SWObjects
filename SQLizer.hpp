@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.30 2008-09-30 11:18:25 eric Exp $
+ * $Id: SQLizer.hpp,v 1.31 2008-09-30 19:31:32 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -135,6 +135,27 @@ namespace w3c_sw {
 	    BoolConstraint (bool value) : WhereConstraint(), value(value) {  }
 	    virtual std::string toString (std::string, e_PREC) {
 		return value ? "true" : "false";
+	    }
+	};
+	class NullConstraint : public WhereConstraint {
+	    WhereConstraint* pos;
+	public:
+	    NullConstraint (WhereConstraint* pos) : WhereConstraint(), pos(pos) {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		std::stringstream s;
+		s << pos->toString();
+		s << " IS NULL";
+		return s.str();
+	    }
+	};
+	class NegationConstraint : public WhereConstraint {
+	    WhereConstraint* negated;
+	public:
+	    NegationConstraint (WhereConstraint* negated) : WhereConstraint(), negated(negated) {  }
+	    virtual std::string toString (std::string pad, e_PREC prec) {
+		std::stringstream s;
+		s << "!(" << negated->toString(pad, prec) << ")";
+		return s.str();
 	    }
 	};
 	class AliasAttrConstraint : public WhereConstraint {
@@ -435,7 +456,7 @@ namespace w3c_sw {
 	    AliasAttrConstraint* getVariableConstraint (std::string terminal) {
 		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
 		if (it == attachments.end())
-		    FAIL("can't find variable");
+		    FAIL1("can't find variable \"%s\"", terminal.c_str());
 		else
 		    return new AliasAttrConstraint(it->second->getAliasAttr());
 	    }
@@ -639,8 +660,7 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		FAIL("URI as constraint is unimplemented");
-		curConstraint = curQuery->getVariableConstraint(terminal);
+		FAIL1("URI <%s> as constraint is unimplemented", terminal.c_str());
 		break;
 
 	    default:
@@ -1105,10 +1125,13 @@ namespace w3c_sw {
 	    p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
 	}
 	// !!!
-	virtual void functionCall (FunctionCall*, URI* p_IRIref, ArgList* p_ArgList) {
+	virtual void functionCall (FunctionCall*, URI* iri, ArgList* args) {
 	    MARK;
-	    p_IRIref->express(this);
-	    p_ArgList->express(this);
+	    args->express(this);
+	    if (iri->getTerminal() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
+		curConstraint = new NullConstraint(curConstraint);
+	    else
+		iri->express(this);
 	}
 	virtual void functionCallExpression (FunctionCallExpression*, FunctionCall* p_FunctionCall) {
 	    MARK;
@@ -1118,6 +1141,7 @@ namespace w3c_sw {
 	virtual void booleanNegation (BooleanNegation*, Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
+	    curConstraint = new NegationConstraint(curConstraint);
 	}
 	virtual void arithmeticNegation (ArithmeticNegation*, Expression* p_Expression) {
 	    MARK;
