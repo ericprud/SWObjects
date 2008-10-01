@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.32 2008-10-01 06:52:18 eric Exp $
+ * $Id: SQLizer.hpp,v 1.33 2008-10-01 16:52:32 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -426,7 +426,7 @@ namespace w3c_sw {
 		curJoin = new TableJoin(toRelation, aliasName, false);
 		joins.push_back(curJoin);
 		usedAliases.insert(aliasName);
-		std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getTerminal() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
+		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getTerminal() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
@@ -474,7 +474,7 @@ namespace w3c_sw {
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
-		std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
+		//std::cerr << "SQLQuery " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (curJoin->debug_getAlias() != x.alias)
 		    FAIL2("constraint on %s is not for last join %s", x.alias.c_str(), curJoin->debug_getAlias().c_str());
 		curJoin->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
@@ -732,12 +732,10 @@ namespace w3c_sw {
 	    MARK;
 	    std::string value = terminal;
 	    if (datatype != NULL) {
-		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime") {
+		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime")
 		    value.replace(value.find("T"), 1, " ");
-		} else {
-		    std::cerr << "unknown datatype: " << datatype->getTerminal() << std::endl;
-		    FAIL("unknown datatype");
-		}
+		else
+		    FAIL1("unknown datatype: <%s>", datatype->getTerminal());
 	    }
 	    if (p_LANGTAG != NULL) {
 		FAIL("how do we literalMap langtags?");
@@ -982,7 +980,7 @@ namespace w3c_sw {
 	virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
 	    MARK;
 	    SQLQuery* parent = curQuery;
-	    std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
+	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
 	    SQLOptional* optional = parent->makeOptional(consequentsP->entriesFor(curTableOperation));
 	    curQuery = optional;
 	    curTableOperation = p_GroupGraphPattern; 
