@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.7 2008-09-22 08:36:08 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.8 2008-10-01 17:26:50 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -23,6 +23,7 @@ protected:
     e_DEBUG debug;
     size_t depth;
     std::stack<e_PREC> precStack;
+    const char* leadStr;
     void start (e_PREC prec) {
 	if (prec < precStack.top())
 	    ret << "( ";
@@ -35,15 +36,19 @@ protected:
 	    ret << ")";
     }
     void lead () {
+	ret << leadStr;
 	for (size_t i = 0; i < depth; i++)
 	    ret << tab;
     }
     void lead (size_t p_depth) {
+	ret << leadStr;
 	for (size_t i = 0; i < p_depth; i++)
 	    ret << tab;
     }
 public:
-    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none) : tab(p_tab), debug(debug), depth(0), precStack() { precStack.push(PREC_High); }
+    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
+	tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+    { precStack.push(PREC_High); }
     std::string getSPARQLstring () { return ret.str(); }
     //!!!
     virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
@@ -187,6 +192,7 @@ public:
 	p_IRIref->express(this);
     }
     virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+	lead();
 	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit;
 	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset;
 	if (p_OrderConditions) {
@@ -216,6 +222,7 @@ public:
 	if (p_BindingClause) p_BindingClause->express(this);
     }
     virtual void select (Select*, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	lead();
 	ret << "SELECT ";
 	if (p_distinctness == DIST_distinct) ret << "DISTINCT ";
 	if (p_distinctness == DIST_reduced) ret << "REDUCED ";
@@ -227,6 +234,7 @@ public:
 	p_SolutionModifier->express(this);
     }
     virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	lead();
 	ret << "CONSTRUCT ";
 	p_ConstructTemplate->express(this);
 	p_DatasetClauses->express(this);
@@ -234,6 +242,7 @@ public:
 	p_SolutionModifier->express(this);
     }
     virtual void describe (Describe*, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	lead();
 	ret << "DESCRIBE ";
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
@@ -241,16 +250,19 @@ public:
 	p_SolutionModifier->express(this);
     }
     virtual void ask (Ask*, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	lead();
 	ret << "ASK ";
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
     }
     virtual void replace (Replace*, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+	lead();
 	ret << "REPLACE ";
 	p_WhereClause->express(this);
 	p_GraphTemplate->express(this);
     }
     virtual void insert (Insert* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	lead();
 	ret << "INSERT { ";
 	if (debug & DEBUG_graphs) ret << self << ' ';
 	p_GraphTemplate->express(this);
@@ -258,25 +270,30 @@ public:
 	ret << "}" << std::endl;
     }
     virtual void del (Delete*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	lead();
 	ret << "DELETE";
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
     virtual void load (Load*, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
+	lead();
 	ret << "LOAD ";
 	p_IRIrefs->express(this);
 	p_into->express(this);
     }
     virtual void clear (Clear*, URI* p__QGraphIRI_E_Opt) {
+	lead();
 	ret << "CLEAR ";
 	p__QGraphIRI_E_Opt->express(this);
     }
     virtual void create (Create*, e_Silence p_Silence, URI* p_GraphIRI) {
+	lead();
 	ret << "CREATE ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
     virtual void drop (Drop*, e_Silence p_Silence, URI* p_GraphIRI) {
+	lead();
 	ret << "DROP ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
