@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.31 2008-09-30 19:31:32 eric Exp $
+ * $Id: SQLizer.hpp,v 1.32 2008-10-01 06:52:18 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -144,7 +144,7 @@ namespace w3c_sw {
 	    virtual std::string toString (std::string, e_PREC) {
 		std::stringstream s;
 		s << pos->toString();
-		s << " IS NULL";
+		s << " IS NOT NULL";
 		return s.str();
 	    }
 	};
@@ -390,14 +390,14 @@ namespace w3c_sw {
 
 		/* WHERE */
 		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
-		     it != constraints.end(); ++it)
-		    if (it == constraints.begin()) {
-			s << std::endl << pad << " WHERE ";
-			if (where.length() != 0)
-			    s << where << " AND ";
-			s << (*it)->toString(pad);
-		    } else
-			s << "AND" << (*it)->toString(pad);
+		     it != constraints.end(); ++it) {
+		    if (where.length() != 0)
+			where += " AND ";
+		    where += (*it)->toString(pad);
+		}
+
+		if (where.length() != 0)
+		    s << std::endl << pad << " WHERE " << where;
 
 		if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
 		if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
