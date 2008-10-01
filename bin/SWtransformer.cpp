@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.11 2008-09-14 10:50:18 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.12 2008-10-01 16:53:02 eric Exp $
  */
 
 /* START main */
@@ -19,25 +19,27 @@
 #include <ostream>
 #include <fstream>
 
-#if 1
-#define DEBUG_STREAM &std::cerr
-#define DEBUG_GRAPHS SPARQLSerializer::DEBUG_graphs
-#else
-#define DEBUG_STREAM NULL
-#define DEBUG_GRAPHS SPARQLSerializer::DEBUG_none
-#endif
-
 using namespace std;
 
 const char* BaseURI = "http://example.org/";
 const char* StemURI = NULL;
+std::ostream* DebugStream = NULL;
+SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
+bool Quiet = false;
 
 void usage (const char* exe) {
     cerr << "USAGE: " << exe << " [-sstem|-s stem] [-bbase|-s base] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
 }
 
 bool option (int argc, char** argv, int* iArg) {
-    if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
+    if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'd')) {
+	DebugStream = &std::cerr;
+	SerializereDebugFlags = SPARQLSerializer::DEBUG_graphs;
+	return true;
+    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'q')) {
+	Quiet = true;
+	return true;
+    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
 	if (argv[*iArg][2] == '\0')
 	    if (*iArg > argc - 2)
@@ -61,7 +63,7 @@ int main(int argc,char** argv) {
     w3c_sw::POSFactory posFactory;
     w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
     w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
-    w3c_sw::QueryMapper queryMapper(&posFactory, DEBUG_STREAM);
+    w3c_sw::QueryMapper queryMapper(&posFactory, DebugStream);
 
     int result;
     w3c_sw::Operation* query = NULL;
@@ -115,16 +117,21 @@ int main(int argc,char** argv) {
 // 		o->express(&xmlizer);
 // 		cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
 
-		SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : DEBUG_GRAPHS);
+		SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
 		o->express(&sparqlizer);
-		cout << "post-rule query (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+		if (!Quiet)
+		    cout << "post-rule query (SPARQL):" << endl;
+		if (!Quiet || StemURI == NULL)
+		    cout << sparqlizer.getSPARQLstring() << endl;
 
 		if (StemURI != NULL) {
 		    char predicateDelims[]={'#',' ',' '};
 		    char nodeDelims[]={'/','.',' '};
-		    SQLizer s2(StemURI, predicateDelims, nodeDelims, DEBUG_STREAM);
+		    SQLizer s2(StemURI, predicateDelims, nodeDelims, DebugStream);
 		    o->express(&s2);
-		    cout << "Transformed query: " << endl << s2.getSPARQLstring() << endl;
+		    if (!Quiet)
+			cout << "Transformed query: " << endl;
+		    cout << s2.getSPARQLstring() << endl;
 		}
 		delete o;
 	    } catch (runtime_error& e) {
