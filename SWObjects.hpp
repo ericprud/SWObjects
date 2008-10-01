@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.8 2008-09-22 08:34:43 eric Exp $
+ * $Id: SWObjects.hpp,v 1.9 2008-10-01 18:27:15 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -1094,8 +1094,8 @@ public:
     virtual void variable (Variable*, std::string) {  }
     virtual void bnode (BNode*, std::string) {  }
     virtual void rdfLiteral (RDFLiteral*, std::string, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
-	datatype->express(this);
-	p_LANGTAG->express(this);
+	if (datatype) datatype->express(this);
+	if (p_LANGTAG) p_LANGTAG->express(this);
     }
     virtual void rdfLiteral (NumericRDFLiteral*, int) {  }
     virtual void rdfLiteral (NumericRDFLiteral*, float) {  }
