@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.16 2008-09-29 12:35:46 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.17 2008-10-01 18:26:24 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -205,24 +205,24 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		START("POS2BGPMap::namedGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		_depends(p_name, optState);
 		p_TriplePatterns->express(this);
-		// p_Filters->express(this); @@ what to do with these?
+		p_Filters->express(this);
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		START("POS2BGPMap::defaultGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		p_TriplePatterns->express(this);
-		// p_Filters->express(this); @@ what to do with these?
+		p_Filters->express(this);
 		currentBGP = parent;
 	    }
 
@@ -238,13 +238,13 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
-		//p_Filters->express(this);
+		p_Filters->express(this);
 	    }
-	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>*) {
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
-		//p_Filters->express(this);
+		p_Filters->express(this);
 	    }
 	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		_BindingStrength oldOptState = optState;
@@ -280,6 +280,19 @@ namespace w3c_sw {
 	    }
 	    virtual void starVarSet (StarVarSet*) {
 		FAIL("umm, I'm not really up to handling SELECT *.");
+	    }
+
+	    virtual void varExpression (VarExpression*, w3c_sw::Variable* p_Variable) {
+		_depends(p_Variable, _Binding_FILTER);
+	    }
+	    virtual void literalExpression (LiteralExpression*, w3c_sw::RDFLiteral* p_RDFLiteral) {
+		_depends(p_RDFLiteral, _Binding_FILTER);
+	    }
+	    virtual void booleanExpression (BooleanExpression*, w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+		_depends(p_BooleanRDFLiteral, _Binding_FILTER);
+	    }
+	    virtual void uriExpression (URIExpression*, w3c_sw::URI* p_URI) {
+		_depends(p_URI, _Binding_FILTER);
 	    }
 
 	    string dumpConsequents () {
@@ -362,7 +375,7 @@ namespace w3c_sw {
 		    ConsequentMap::reverse_iterator last = cons.rbegin();
 		    //		    ConsequentMap::iterator last = consequents[varIt->first].rbegin();
 		    if (last == cons.rend()) {
-			cout << "no entry for " << varIt->first->toString() << endl;
+			cerr << "no entry for " << varIt->first->toString() << endl; // !!! check with a FAIL
 			continue; // no entries for this whatever.
 		    }
 		    TableOperation* lastTableOp = last->first;
