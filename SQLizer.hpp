@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.34 2008-10-02 17:38:26 eric Exp $
+ * $Id: SQLizer.hpp,v 1.35 2008-10-02 18:01:21 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -523,15 +523,15 @@ namespace w3c_sw {
 	    }
 	    void constrain (AliasAttr aattr, int value) {
 		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		curJoin->addConstantJoinConstraint(aattr.attr, value);
+		curJoin->addConstantJoinConstraint(aattr.attr, (int)value);
 	    }
 	    void constrain (AliasAttr aattr, float value) {
 		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		curJoin->addConstantJoinConstraint(aattr.attr, value);
+		curJoin->addConstantJoinConstraint(aattr.attr, (float)value);
 	    }
 	    void constrain (AliasAttr aattr, double value) {
 		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
-		curJoin->addConstantJoinConstraint(aattr.attr, value);
+		curJoin->addConstantJoinConstraint(aattr.attr, (double)value);
 	    }
 	};
 
