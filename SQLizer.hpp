@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.33 2008-10-01 16:52:32 eric Exp $
+ * $Id: SQLizer.hpp,v 1.34 2008-10-02 17:38:26 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -317,17 +317,43 @@ namespace w3c_sw {
 		FAIL("trying to constrain against a NullAttachment");
 	    }
 	};
-	class ConstantAttachment : public Attachment {
+	class IntAttachment : public Attachment {
 	    int value;
 	public:
-	    ConstantAttachment (int value, std::string name) : Attachment(name), value(value) {  }
+	    IntAttachment (int value, std::string name) : Attachment(name), value(value) {  }
 	    virtual std::string toString (std::string) {
 		std::stringstream ret;
 		ret << value << " AS " << name;
 		return ret.str();
 	    }
 	    virtual void constrain (AliasAttr, SQLQuery*) {
-		FAIL("trying to constrain against a ConstantAttachment");
+		FAIL1("trying to constrain against a IntAttachment %d", value);
+	    }
+	};
+	class FloatAttachment : public Attachment {
+	    float value;
+	public:
+	    FloatAttachment (float value, std::string name) : Attachment(name), value(value) {  }
+	    virtual std::string toString (std::string) {
+		std::stringstream ret;
+		ret << value << " AS " << name;
+		return ret.str();
+	    }
+	    virtual void constrain (AliasAttr, SQLQuery*) {
+		FAIL1("trying to constrain against a FloatAttachment %f", value);
+	    }
+	};
+	class DoubleAttachment : public Attachment {
+	    double value;
+	public:
+	    DoubleAttachment (double value, std::string name) : Attachment(name), value(value) {  }
+	    virtual std::string toString (std::string) {
+		std::stringstream ret;
+		ret << value << " AS " << name;
+		return ret.str();
+	    }
+	    virtual void constrain (AliasAttr, SQLQuery*) {
+		FAIL1("trying to constrain against a DoubleAttachment %f", value);
 	    }
 	};
 
@@ -468,7 +494,19 @@ namespace w3c_sw {
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new ConstantAttachment(value, alias);
+		    attachments[alias] = new IntAttachment(value, alias);
+		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		selects.push_back(attachments[alias]);
+	    }
+	    void selectConstant (float value, std::string alias) {
+		if (attachments.find(alias) == attachments.end())
+		    attachments[alias] = new FloatAttachment(value, alias);
+		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		selects.push_back(attachments[alias]);
+	    }
+	    void selectConstant (double value, std::string alias) {
+		if (attachments.find(alias) == attachments.end())
+		    attachments[alias] = new DoubleAttachment(value, alias);
 		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
 		selects.push_back(attachments[alias]);
 	    }
@@ -484,6 +522,14 @@ namespace w3c_sw {
 		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	    void constrain (AliasAttr aattr, int value) {
+		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		curJoin->addConstantJoinConstraint(aattr.attr, value);
+	    }
+	    void constrain (AliasAttr aattr, float value) {
+		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		curJoin->addConstantJoinConstraint(aattr.attr, value);
+	    }
+	    void constrain (AliasAttr aattr, double value) {
 		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
@@ -512,7 +558,7 @@ namespace w3c_sw {
 		unsigned nextDisjointCardinal = 1;
 		for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 		     dis != disjoints.end(); ++dis)
-		    (*dis)->selectConstant(nextDisjointCardinal++, "_DISJOINT_");
+		    (*dis)->selectConstant((int)nextDisjointCardinal++, "_DISJOINT_"); // cast to int to select selectConstant(int...)
 		for (std::vector<POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
@@ -735,7 +781,7 @@ namespace w3c_sw {
 		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime")
 		    value.replace(value.find("T"), 1, " ");
 		else
-		    FAIL1("unknown datatype: <%s>", datatype->getTerminal());
+		    FAIL1("unknown datatype: <%s>", datatype->getTerminal().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
 		FAIL("how do we literalMap langtags?");
