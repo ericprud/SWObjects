@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.17 2008-10-01 18:26:24 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.18 2008-10-02 17:29:01 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -80,6 +80,8 @@ namespace w3c_sw {
 	    ret << (void*)s;
 	    return ret.str();
 	}
+
+    public:
 	static string bindingStr (_BindingStrength s) {
 	    string ret;
 	    if (s & _Binding_GRAPH)  ret.append("GRAPH " );
