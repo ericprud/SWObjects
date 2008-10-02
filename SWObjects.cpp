@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.6 2008-09-22 08:35:39 eric Exp $
+ * $Id: SWObjects.cpp,v 1.7 2008-10-02 17:45:34 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -63,7 +63,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 		scheme = name.substr(after_scheme, p); /* Scheme has been specified */
 		schemeP = true;
 		name.erase(0, p+1);
-		p = -1;
+		p = 0-1;
 
 /* The combination of gcc, the "-O" flag and the HP platform is
    unhealthy. The following three lines is a quick & dirty fix, but is
