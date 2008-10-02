@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.12 2008-10-01 16:53:02 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.13 2008-10-02 16:12:02 eric Exp $
  */
 
 /* START main */
@@ -28,7 +28,7 @@ SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
 
 void usage (const char* exe) {
-    cerr << "USAGE: " << exe << " [-sstem|-s stem] [-bbase|-s base] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+    cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
 }
 
 bool option (int argc, char** argv, int* iArg) {
