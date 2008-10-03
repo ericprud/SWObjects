@@ -1,4 +1,4 @@
-// $Id: SPARQLfedScanner.hpp,v 1.2 2008-08-27 02:21:42 eric Exp $
+// $Id: SPARQLfedScanner.hpp,v 1.3 2008-10-03 07:06:02 eric Exp $
 
 #ifndef SPARQLfedScanner_H
 #define SPARQLfedScanner_H
@@ -57,7 +57,7 @@ public:
     void set_debug(bool b);
 
     SPARQLfedParser::token_type typedLiteral(SPARQLfedParser::semantic_type*&, SPARQLfedParser::token_type tok);
-    SPARQLfedParser::token_type unescape(SPARQLfedParser::semantic_type*&, size_t yylen, size_t skip, SPARQLfedParser::token_type tok);
+    SPARQLfedParser::token_type unescape(SPARQLfedParser::semantic_type*&, size_t skip, SPARQLfedParser::token_type tok);
     URI* resolvePrefix(const char*);
     URI* resolveBase(const char*, bool stripDelims);
 };

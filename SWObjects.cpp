@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.7 2008-10-02 17:45:34 eric Exp $
+ * $Id: SWObjects.cpp,v 1.8 2008-10-03 07:06:03 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -516,10 +516,10 @@ void NumberExpression::express (Expressor* p_expressor) {
 
     NumericRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
 
-	char space[LEN_XSD+strlen(type)+1];
-	strcpy(space, XSD);
-	strcpy(space+LEN_XSD-1, type);
-	URI* uri = getURI(space);
+	std::string str;
+	str += XSD;
+	str += type;
+	URI* uri = getURI(str);
 
 	std::stringstream buf;
 	buf << '"' << p_String << '"';

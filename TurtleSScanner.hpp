@@ -1,4 +1,4 @@
-// $Id: TurtleSScanner.hpp,v 1.2 2008-08-27 02:21:43 eric Exp $
+// $Id: TurtleSScanner.hpp,v 1.3 2008-10-03 07:06:03 eric Exp $
 
 #ifndef TurtleSScanner_H
 #define TurtleSScanner_H
@@ -57,7 +57,7 @@ public:
     void set_debug(bool b);
 
     TurtleSParser::token_type typedLiteral(TurtleSParser::semantic_type*&, TurtleSParser::token_type tok);
-    TurtleSParser::token_type unescape(TurtleSParser::semantic_type*&, size_t yylen, size_t skip, TurtleSParser::token_type tok);
+    TurtleSParser::token_type unescape(TurtleSParser::semantic_type*&, size_t skip, TurtleSParser::token_type tok);
     URI* resolvePrefix(const char*);
     URI* resolveBase(const char*, bool stripDelims);
 };

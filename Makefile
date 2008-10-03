@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.44 2008-09-23 22:21:51 eric Exp $
+# $Id: Makefile,v 1.45 2008-10-03 07:06:02 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -21,7 +21,7 @@ SED:=sed
 DEBUG:=-g
 #OPT=-O4
 DEFS:=-DYYTEXT_POINTER=1
-WARN:=-W -Wall -Wextra -Wnon-virtual-dtor
+WARN:=-W -Wall -Wextra -Wnon-virtual-dtor --pedantic
 
 INCLUDES += -I${PWD}  
 I2=$(subst /, ,$(BISONOBJ:.o=))
@@ -46,6 +46,7 @@ PWD ?= $(shell pwd -P)
 
 %.cpp : %.lpp
 	$(FLEX) -o $@  $<
+	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
 
 
 #the gcc commands to make deps used in .d rules

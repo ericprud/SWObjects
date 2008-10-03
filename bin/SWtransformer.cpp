@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.13 2008-10-02 16:12:02 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.14 2008-10-03 07:06:04 eric Exp $
  */
 
 /* START main */
@@ -151,7 +151,7 @@ int main(int argc,char** argv) {
 	cout << "Exception: " << e.what() << endl;
     }
     return -1;
-};
+}
 
 /* END main */
 
