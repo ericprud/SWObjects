@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.18 2008-10-02 17:29:01 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.19 2008-10-07 16:31:05 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -100,11 +100,11 @@ namespace w3c_sw {
 	    for (ConsequentMapList::iterator varIt = begin();
 		 varIt != end(); ++varIt)
 		for (ConsequentMap::iterator graphIt = varIt->second.begin();
-		     graphIt != varIt->second.end(); ++graphIt) {
-		    TableOperation* op = graphIt->first;
-		    s << "consequents[" << varIt->first->getTerminal() << "][" << graphIt->first << "] = " << bindingStr(at(varIt->first)[op]) << endl;
-		    // s << "consequents[" << varIt->first->getTerminal() << "][" << graphIt->first << "] = " << bindingStr(at(varIt->first).at(op)) << endl;
-		}
+		     graphIt != varIt->second.end(); ++graphIt)
+		    s << "consequents[" << varIt->first->getTerminal() << "]["
+		      << graphIt->first << "] = "
+		      << bindingStr(operator[](varIt->first)[graphIt->first])
+		      << endl;
 	    return s.str();
 	}
     };
