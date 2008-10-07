@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.45 2008-10-03 07:06:02 eric Exp $
+# $Id: Makefile,v 1.46 2008-10-07 16:40:40 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -46,7 +46,8 @@ PWD ?= $(shell pwd -P)
 
 %.cpp : %.lpp
 	$(FLEX) -o $@  $<
-	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+
+#	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
 
 
 #the gcc commands to make deps used in .d rules
