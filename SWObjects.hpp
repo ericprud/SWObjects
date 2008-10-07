@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.9 2008-10-01 18:27:15 eric Exp $
+ * $Id: SWObjects.hpp,v 1.10 2008-10-07 16:30:03 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -396,6 +396,27 @@ public:
     ~Filter () { delete m_Constraint; }
     virtual void express(Expressor* p_expressor);
 };
+
+/*
+TableOperation class hierarchy:               Base
+                                               |
+                             ___________TableOperation_____________
+            ________________/                  |                   \__________________
+     TableJunction                    BasicGraphPattern                     TableOperationOnOperation
+        /        \                       /          \                           /               \
+T*Conjunction T*Disjunction   NamedGraphPattern  DefaultGraphPattern  GraphGraphPattern  OptionalGraphPattern
+
+
+related Expressor operations:   base(Base* self, std::string productionName)
+                                               |
+                             __________[TableOperation]____________
+            ________________/                  |                   \__________________
+    [TableJunction]                  [BasicGraphPattern]                   [TableOperationOnOperation]
+        /        \                       /          \                           /               \
+t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraphPattern  optionalGraphPattern
+
+*/
+
 class TableOperation : public Base {
 protected:
     ProductionVector<Filter*> m_Filters;
@@ -1119,11 +1140,11 @@ public:
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
     }
-    virtual void tableDisjunction (TableDisjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void tableConjunction (TableConjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	p_TableOperations->express(this);
 	p_Filters->express(this);
     }
-    virtual void tableConjunction (TableConjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void tableDisjunction (TableDisjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	p_TableOperations->express(this);
 	p_Filters->express(this);
     }
