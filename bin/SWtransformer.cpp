@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.14 2008-10-03 07:06:04 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.15 2008-10-10 11:53:22 eric Exp $
  */
 
 /* START main */
@@ -92,10 +92,10 @@ int main(int argc,char** argv) {
 		}
 	    }
 	} catch (runtime_error& e) {
-	    cout << "Parsing problem runtime_error:" << e.what() << endl;
+	    cerr << "Parsing problem runtime_error:" << e.what() << endl;
 	    throw(e);
 	} catch (exception& e) {
-	    cout << "Parsing problem exception:" << e.what() << endl;
+	    cerr << "Parsing problem exception:" << e.what() << endl;
 	    throw(e);
 	}
 
@@ -135,10 +135,10 @@ int main(int argc,char** argv) {
 		}
 		delete o;
 	    } catch (runtime_error& e) {
-		cout << "Serialization problem:" << e.what() << endl;
+		cerr << "Serialization problem:" << e.what() << endl;
 		throw(e);
 	    } catch (exception& e) {
-		cout << "Serialization problem:" << e.what() << endl;
+		cerr << "Serialization problem:" << e.what() << endl;
 		throw(e);
 	    }
 	}
@@ -146,9 +146,9 @@ int main(int argc,char** argv) {
 	return result;
 
     } catch (runtime_error& e) {
-	cout << "Runtime error: " << e.what() << endl;
+	cerr << "Runtime error: " << e.what() << endl;
     } catch (exception& e) {
-	cout << "Exception: " << e.what() << endl;
+	cerr << "Exception: " << e.what() << endl;
     }
     return -1;
 }
