@@ -63,7 +63,7 @@
 
    <ul>
       <li><em><a href="Makefile">Makefile</a></em> — targets for <code>libSWObjects.a</code> and sample executables.</li>
-      <li><em><a href="SWObjects.vcproj">SWObjects.vcproj</a></em> — MSVC++ build script.</li>
+      <li><em><a href="SWObjects.vcproj">SWObjects.vcproj</a> and <a href="SWObjects.sln">SWObjects.sln</a></em> — MSVC++ build script.</li>
       <li><em><a href="tests/test_HealthCare1.cpp">tests/test_HealthCare1.cpp</a></em> — query-mapping test to link to <code>libSWObjects.a</code>. Works with:<ul>
         <li><em><a href="tests/query_HealthCare1.rq">tests/query_HealthCare1.rq</a></em> — simple example HCLS COI query.</li>
         <li><em><a href="tests/ruleMap_HealthCare1.rq">tests/ruleMap_HealthCare1.rq</a></em> — simple example HCLS COI rule-map.</li>
@@ -99,15 +99,17 @@
    <ul>
       <li><em><a href="ParserCommon.cpp">ParserCommon.cpp</a></em> and <em><a href="ParserCommon.hpp">ParserCommon.hpp</a></em> — common Driver source for all RDF-related parsers.</li>
       <li><em><a href="SPARQLfedParser/SPARQLfedParser.ypp">SPARQLfedParser/SPARQLfedParser.ypp</a></em>, <em><a href="SPARQLfedScanner.hpp">SPARQLfedScanner.hpp</a></em> and <em><a href="SPARQLfedScanner.lpp">SPARQLfedScanner.lpp</a></em> — parser for the SPARQLfed language; generates:<ul>
-      <li><a href="SPARQLfedParser/SPARQLfedParser.cpp">SPARQLfedParser/SPARQLfedParser.cpp</a></li>
-      <li><a href="SPARQLfedParser/SPARQLfedParser.hpp">SPARQLfedParser/SPARQLfedParser.hpp</a></li>
-      <li><a href="SPARQLfedScanner.cpp">SPARQLfedScanner.cpp</a></li>
+      <li><a href="SPARQLfedParser/SPARQLfedParser.hpp">SPARQLfedParser/SPARQLfedParser.hpp</a> - tokens passed from scanner to parser.</li>
+      <li><a href="SPARQLfedScanner.cpp">SPARQLfedScanner.cpp</a> - lexical lex-style scannar.</li>
+      <li><a href="SPARQLfedParser/SPARQLfedParser.cpp">SPARQLfedParser/SPARQLfedParser.cpp</a> - LALR(1) parser tables and semantic actions.</li>
+      <li><em><a href="SPARQLfedParser/location.hh">SPARQLfedParser/location.hh</a></em>, <em><a href="SPARQLfedParser/position.hh">SPARQLfedParser/position.hh</a></em> and <em><a href="SPARQLfedParser/stack.hh">SPARQLfedParser/stack.hh</a></em> — auxilliary parser files created by bison.</li>
       </ul></li>
       <li><em><a href="TurtleSParser/TurtleSParser.ypp">TurtleSParser/TurtleSParser.ypp</a></em>, <em><a href="TurtleSScanner.hpp">TurtleSScanner.hpp</a></em> and <em><a href="TurtleSScanner.lpp">TurtleSScanner.lpp</a></em> — parser for the Turtle language; generates:<ul>
-      <li><a href="TurtleSParser/TurtleSParser.cpp">TurtleSParser/TurtleSParser.cpp</a></li>
-      <li><a href="TurtleSParser/TurtleSParser.hpp">TurtleSParser/TurtleSParser.hpp</a></li>
-      <li><a href="TurtleSScanner.cpp">TurtleSScanner.cpp</a></li></ul></li>
-      <li><em><a href="location.hpp">location.hpp</a></em>, <em><a href="position.hpp">position.hpp</a></em> and <em><a href="stack.hpp">stack.hpp</a></em> — auxilliary parser files created by bison.</li>
+      <li><a href="TurtleSParser/TurtleSParser.hpp">TurtleSParser/TurtleSParser.hpp</a> - tokens passed from scanner to parser.</li>
+      <li><a href="TurtleSScanner.cpp">TurtleSScanner.cpp</a> - lexical lex-style scannar.</li>
+      <li><a href="TurtleSParser/TurtleSParser.cpp">TurtleSParser/TurtleSParser.cpp</a> - LALR(1) parser tables and semantic actions.</li>
+      <li><em><a href="TurtleSParser/location.hh">TurtleSParser/location.hh</a></em>, <em><a href="TurtleSParser/position.hh">TurtleSParser/position.hh</a></em> and <em><a href="TurtleSParser/stack.hh">TurtleSParser/stack.hh</a></em> — auxilliary parser files created by bison.</li>
+      </ul></li>
       <li><em><a href="win/FlexLexer.h">win/FlexLexer.h</a></em> — supplementary flex file for systems without bison and flex.</li>
 
 
