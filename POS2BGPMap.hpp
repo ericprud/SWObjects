@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.19 2008-10-07 16:31:05 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.20 2008-10-10 11:52:02 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -407,8 +407,8 @@ namespace w3c_sw {
 			    /* If neither lineage is not subsumed by the other, and
 			     * there's no existing entry for that pair, the last
 			     * ancestor is the top COREF. */
-			    if (*graph1parents != graph2It->first &&
-				*graph2parents != graph1It->first &&
+			    if (graph1parents != outerGraphs[graph1It->first].end() && *graph1parents != graph2It->first &&
+				graph2parents != outerGraphs[graph2It->first].end() && *graph2parents != graph1It->first &&
 				consequents[varIt->first].find(commonAncestor) == consequents[varIt->first].end())
 				iq.push_back(IQEnt(varIt->first, commonAncestor));
 
@@ -500,7 +500,9 @@ namespace w3c_sw {
 			       introduces constraints used by
 			       an OPT included later.
 			    */
+#ifndef WIN32
 #warning not including dependent optionals yet
+#endif
 			    continue;
 			}
 		    }
