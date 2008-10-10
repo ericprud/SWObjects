@@ -1,9 +1,9 @@
 /* ParserCommon.cc - commonalities between SPARQL/RDF-related parsers
- * $Id: ParserCommon.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: ParserCommon.cpp,v 1.3 2008-10-10 11:52:37 eric Exp $
  */
 
 #include "SWObjects.hpp"
-#include "location.hpp"
+#include "location.hh"
 #include "ParserCommon.hpp"
 #include <fstream>
 #include <iostream> // for cerr
