@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.15 2008-10-10 11:53:22 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.16 2008-10-10 21:22:14 eric Exp $
  */
 
 /* START main */
@@ -28,7 +28,7 @@ SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
 
 void usage (const char* exe) {
-    cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file> <SPARQL CONSTRUCT rule file>*" << endl;
+    cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file or '-' for stdin> <SPARQL CONSTRUCT rule file>*" << endl;
 }
 
 bool option (int argc, char** argv, int* iArg) {
@@ -73,9 +73,22 @@ int main(int argc,char** argv) {
 	    int iArg = 1;
 	    while (iArg < argc && option(argc, argv, &iArg))
 		++iArg;
-	    result = sparqlParser.parse_file(inputId = argv[iArg++]);
+	    if (iArg == argc) {
+		cerr << "No query specified." << endl;
+		usage(argv[0]);
+		return 1;
+	    }
+
+	    /* Parse input query. */
+	    inputId = argv[iArg++];
+	    if (inputId[0] == '-' && inputId[1] == '\0') {
+		inputId = "- standard input -";
+		result = sparqlParser.parse_stream(cin);
+	    } else
+		result = sparqlParser.parse_file(inputId);
 	    query = sparqlParser.root;
 
+	    /* Parse deduction rules. */
 	    for (; iArg < argc && !result; ++iArg) {
 		if (option(argc, argv, &iArg))
 		    continue;
