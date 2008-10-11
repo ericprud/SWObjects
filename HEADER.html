@@ -9,36 +9,36 @@
 -->
    <h1 id="title">SWObjects Source Code Directory</h1>
 
-   <p>This is a set of utilities implemented in C++ for working with SemWeb objects (triples, graphs, query patterns, SPARQL and N3 operations, etc). This implements query mapping based on <a href=EXCLUDED"../../07/MappingRules/">Mapping Rules</a> and provides the base for a SPASQL engine in MySQL.</p>
+   <p>This is a set of utilities implemented in C++ for working with SemWeb objects (triples, graphs, query patterns, SPARQL and N3 operations, etc). This implements query mapping based on <a href="../../07/MappingRules/">Mapping Rules</a> and provides the base for a SPASQL engine in MySQL.</p>
 
    <ul>
-   <li><em style="font-weight: bold">source tarball</em>: <a href=EXCLUDED"SWObjects_0.1.tar.gz">SWObjects_0.1.tar.gz</a><!-- keep space after href= to avoid packing the tarball in the tarball. --></li>
-   <li><em style="font-weight: bold">linux libstdc++6 executable</em>: <a href=EXCLUDED"linux-libstdc++6/SWtransformer">linux-libstdc++6/SWtransformer</a><!-- keep space after href= to avoid packing executables in the tarball. --></li>
-   <li><em style="font-weight: bold">windows executable</em>: <a href=EXCLUDED"win/SWtransformer.exe">win/SWtransformer.exe</a><!-- keep space after href= to avoid packing executables in the tarball. --></li>
+   <li><em style="font-weight: bold">source tarball</em>: <a href="SWObjects_0.1.tar.gz">SWObjects_0.1.tar.gz</a><!-- keep space after href= to avoid packing the tarball in the tarball. --></li>
+   <li><em style="font-weight: bold">linux libstdc++6 executable</em>: <a href="linux-libstdc++6/SWtransformer">linux-libstdc++6/SWtransformer</a><!-- keep space after href= to avoid packing executables in the tarball. --></li>
+   <li><em style="font-weight: bold">windows executable</em>: <a href="win/SWtransformer.exe">win/SWtransformer.exe</a><!-- keep space after href= to avoid packing executables in the tarball. --></li>
    </ul>
 
-    <p>For more information on SPASQL: ① <a href=EXCLUDED"../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=EXCLUDED".">SPASQL-MySQL</a> · ③ <a href=EXCLUDED"../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href=EXCLUDED"../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href=EXCLUDED"http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
+    <p>For more information on SPASQL: ① <a href="../../../2004/10/04-pharmaFederate/">SPASQL Example</a> · ② <a href=".">SPASQL-MySQL</a> · ③ <a href="../../../2005/05/22-SPARQL-MySQL/XTech">SPASQL XTech Paper</a> · ④ <a href="../../../2006/Talks/0518-SPASQL/">XTech Slides</a> · ⑤ <a href="http://dev.w3.org/cvsweb/2006/spasql/">SPASQL CVS Tree</a></p>
 
 
     <h2 id="TOC">Table of Contents</h2>
 
     <ul>
-      <li><a href=EXCLUDED"#build">Building SWObjects</a>
-      <li><a href=EXCLUDED"#files">Files</a>
+      <li><a href="#build">Building SWObjects</a>
+      <li><a href="#files">Files</a>
       <ul>
-	<li><a href=EXCLUDED"#make">Building and Testing</a></li>
-	<li><a href=EXCLUDED"#core">Core</a></li>
-	<li><a href=EXCLUDED"#parsers">Parsers</a></li>
+	<li><a href="#make">Building and Testing</a></li>
+	<li><a href="#core">Core</a></li>
+	<li><a href="#parsers">Parsers</a></li>
       </ul></li>
-      <li><a href=EXCLUDED"#arch">Architecture</a></li>
-      <li><a href=EXCLUDED"#sampComp">Sample Compilation</a></li>
-      <li><a href=EXCLUDED"#issues">Issues</a></li>
-      <li><a href=EXCLUDED"#dir">Apache Directory Listing</a></li>
+      <li><a href="#arch">Architecture</a></li>
+      <li><a href="#sampComp">Sample Compilation</a></li>
+      <li><a href="#issues">Issues</a></li>
+      <li><a href="#dir">Apache Directory Listing</a></li>
     </ul>
 
     <h2 id="build">Building SWObjects</h2>
 
-    <p>The SWObjects library and executables can be built from the source in the <a href=EXCLUDED"SWObjects_0.1.tar.gz">tarball</a>. This package includes one directory, <code>SWObjects_0.1</code>; running <code>make test</code> from this directory will build and test the executables. Below is a <a href=EXCLUDED"#sampComp">sample compilation</a>.</p>
+    <p>The SWObjects library and executables can be built from the source in the <a href="SWObjects_0.1.tar.gz">tarball</a>. This package includes one directory, <code>SWObjects_0.1</code>; running <span style="background-color: #ee8">make test</span> from this directory will build and test the executables. Building the parsers requires bison 2.3 or flex 2.5 but you may use the pre-build parsers by adding an include directory to the compilation: <span style="background-color: #ee8">INCLUDES=-Iwin make test</span>. Cygwin's version of make requires an extra environment variable as well: <span style="background-color: #ee8">PWD=. make test</span> (note, these can be combined). The Makefile compilation has been tested on linux, OSX and Windows/Cygwin (windows users may also use the <a href="SWObjects.sln">MSVC project</a>). Below is a <a href="#sampComp">sample compilation</a>.</p>
 
   <p>The executable <code>tests/execute_HealthCare1</code> (which will be renamed soon and place in a bin/ directory) serves as a general interface to SWObjects query mapping functionality. It takes as an argument the name of a file containing a SPARQL SELECT query. With no other input, they query is validated and printed out in a normalized form.</p>
 
@@ -135,7 +135,7 @@
 
     <h3 id="queries">Queries</h3>
 
-    <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em style="font-weight: bold" id="Select">Select</em> comprised of a <em style="font-weight: bold" id="WhereClause">WhereClause</em>, which in turn holds a <em style="font-weight: bold" id="TableOperation">TableOperation</em> and a <em style="font-weight: bold" id="BindingClause">BindingClause</em>. TableOperations contain <em style="font-weight: bold" id="Filter">Filter</em>s and some, like <em style="font-weight: bold" id="TableConjunction">TableConjunction</em> and <em style="font-weight: bold" id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href=EXCLUDED"#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href=EXCLUDED"#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href=EXCLUDED"#TriplePattern">TriplePattern</a>s described in <a href=EXCLUDED"#storage">Storage</a>.</p>
+    <p>The structure of queries is informed largely by the compile tree produced by a <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#rQuery">SPARQL parser</a>, after it has <a href="http://www.w3.org/TR/2008/REC-rdf-sparql-query-20080115/#convertGraphPattern">simpified the tree</a>. A typical query will construct a <em style="font-weight: bold" id="Select">Select</em> comprised of a <em style="font-weight: bold" id="WhereClause">WhereClause</em>, which in turn holds a <em style="font-weight: bold" id="TableOperation">TableOperation</em> and a <em style="font-weight: bold" id="BindingClause">BindingClause</em>. TableOperations contain <em style="font-weight: bold" id="Filter">Filter</em>s and some, like <em style="font-weight: bold" id="TableConjunction">TableConjunction</em> and <em style="font-weight: bold" id="OptionalGraphPattern">OptionalGraphPattern</em>, contain other graph patterns. This TableOperation tree terminates in <a href="#DefaultGraphPattern">DefaultGraphPattern</a>s and <a href="#NamedGraphPattern">NamedGraphPattern</a>, which contain the <a href="#TriplePattern">TriplePattern</a>s described in <a href="#storage">Storage</a>.</p>
 
    <h2 id="sampComp">Sample Compilation</h2>
 
@@ -310,7 +310,7 @@ SELECT union1.somePerson AS somePerson
    <h2 id="issues">Issues</h2>
 
     <ul>
-      <li id="smart_ptrs"><em style="font-weight: bold">smart_ptrs</em> — is the overhead of keeping a <a href=EXCLUDED"#POSFactory">POSFactory</a> worth the performance windfall? It makes memory management more challenging. In general, should SWObjects use more copying? Should they instead use <a href="http://en.wikipedia.org/wiki/Smart_pointer">smart pointers</a>?</li>
+      <li id="smart_ptrs"><em style="font-weight: bold">smart_ptrs</em> — is the overhead of keeping a <a href="#POSFactory">POSFactory</a> worth the performance windfall? It makes memory management more challenging. In general, should SWObjects use more copying? Should they instead use <a href="http://en.wikipedia.org/wiki/Smart_pointer">smart pointers</a>?</li>
       <li id="ser_union"><em style="font-weight: bold">ser_union</em> — SPARQLSerializer current fails to bound UNIONs in {}.</li>
     </ul>
 
