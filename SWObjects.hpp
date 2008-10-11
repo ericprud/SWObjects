@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.10 2008-10-07 16:30:03 eric Exp $
+ * $Id: SWObjects.hpp,v 1.11 2008-10-11 13:08:02 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -197,7 +197,7 @@ class BNode : public Bindable {
     friend class POSFactory;
 private:
     BNode (std::string str) : Bindable(str) {  }
-    BNode () : Bindable("gensym:", true) {  }
+    BNode () : Bindable("b", true) {  }
 public:
     virtual std::string toString () { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
