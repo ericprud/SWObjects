@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.3 2008-09-22 08:35:40 eric Exp $
+ * $Id: ResultSet.cpp,v 1.4 2008-10-14 12:03:53 eric Exp $
  */
 
 #include "ResultSet.hpp"
@@ -86,6 +86,115 @@ namespace w3c_sw {
 	r->set(variable, value, weaklyBound);
     }
 
+    std::string ResultSet::toString () {
+	const char* NULL_REP = "--";
+#if ASCII_BOX_CHARS
+	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
+	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
+#if (INTRA_ROW_SEPARATORS)
+	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
+#endif
+	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
+	const char UNLISTED_VAR = '!';
+#define STRING std::string
+#else /* !ASCII_BOX_CHARS */
+	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
+	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
+#if (INTRA_ROW_SEPARATORS)
+	const char* SL = "├"; const char* SB = "─"; const char* SS = "┼"; const char* SR = "┤";
+#endif
+	const char* LL = "└"; const char* LB = "─"; const char* LS = "┴"; const char* LR = "┘";
+	const char* UNLISTED_VAR = "!";
+	class STRING : public std::string {
+	public:
+	    STRING (size_t repts, const char* str) : std::string() {
+		for (size_t i = 0; i < repts; ++i)
+		    append(str);
+	    }
+	};
+#endif /* !ASCII_BOX_CHARS */
+
+	/* Get column widths. */
+	std::vector< const POS* > vars;
+	std::vector< size_t > widths;
+	unsigned count = 0;
+	unsigned lastInKnownVars = 0;
+	{
+	    std::map< const POS*, unsigned > pos2col;
+	    for (VariableListIterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
+		const POS* var = *varIt;
+		pos2col[var] = count++;
+		widths.push_back(var->toString().size());
+		vars.push_back(var);
+	    }
+
+	    VariableList intruders;
+	    lastInKnownVars = count;
+	    for (ResultSetIterator row = begin() ; row != end(); row++)
+		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
+		    POS* var = b->first;
+		    if (pos2col.find(var) == pos2col.end()) {
+			/* Error: a variable not listed in knownVars. */
+			pos2col[var] = count++;
+			widths.push_back(var->toString().size());
+			vars.push_back(var);
+			intruders.insert(var);
+		    }
+		    size_t width = b->second.pos->toString().length();
+		    if (width > widths[pos2col[var]])
+			widths[pos2col[var]] = width;
+		}
+	}
+
+	/* Generate ResultSet string. */
+	std::stringstream s;
+	/*   Top Border */
+	unsigned i;
+	for (i = 0; i < count; i++) {
+	    s << (i == 0 ? UL : US);
+	    s << STRING(widths[i]+2, UB);
+	}
+	s << UR << std::endl;
+
+	/*   Column Headings */
+	for (i = 0; i < count; i++) {
+	    const POS* var = vars[i];
+	    s << (i == 0 ? RL : i < lastInKnownVars ? RS : UNLISTED_VAR) << ' ';
+	    size_t width = var->toString().length();
+	    s << var->toString() << STRING(widths[i] - width, RB) << ' '; // left justified.
+	}
+	s << RR << std::endl;
+
+	/*  Rows */
+	for (ResultSetIterator row = begin() ; row != end(); row++) {
+#if (INTRA_ROW_SEPARATORS)
+	    /*  Intra-row Border */
+	    for (i = 0; i < count; i++) {
+		s << (i == 0 ? SL : SS);
+		s << std::string(widths[i]+2, SB);
+	    }
+	    s << SR << std::endl;
+#endif
+	    /*  Values */
+	    for (i = 0; i < count; ++i) {
+		const POS* var = vars[i];
+		const POS* val = (*row)->get(var);
+		const std::string str = val ? val->toString().c_str() : NULL_REP;
+		s << (i == 0 ? RL : RS) << ' ';
+		size_t width = str.length();
+		s << STRING(widths[i] - width, RB) << str << ' '; // right justified.
+	    }
+	    s << RR << std::endl;
+	}
+
+	/*   Bottom Border */
+	for (i = 0; i < count; i++) {
+	    s << (i == 0 ? LL : LS);
+	    s << STRING(widths[i]+2, LB);
+	}
+	s << LR << std::endl;
+	return s.str();
+    }
     XMLSerializer* ResultSet::toXml (XMLSerializer* xml) {
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("sparql");

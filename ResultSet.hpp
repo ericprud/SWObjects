@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.3 2008-09-22 08:35:40 eric Exp $
+ * $Id: ResultSet.hpp,v 1.4 2008-10-14 12:03:53 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -57,6 +57,7 @@ namespace w3c_sw {
     public:
 	ResultSet();
 	virtual ~ResultSet();
+	std::string toString();
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
