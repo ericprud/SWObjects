@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.16 2008-10-10 21:22:14 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.17 2008-10-14 12:05:45 eric Exp $
  */
 
 /* START main */
@@ -82,7 +82,7 @@ int main(int argc,char** argv) {
 	    /* Parse input query. */
 	    inputId = argv[iArg++];
 	    if (inputId[0] == '-' && inputId[1] == '\0') {
-		inputId = "- standard input -";
+		inputId = (char*)"- standard input -";
 		result = sparqlParser.parse_stream(cin);
 	    } else
 		result = sparqlParser.parse_file(inputId);
