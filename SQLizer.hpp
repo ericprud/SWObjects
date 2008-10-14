@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.35 2008-10-02 18:01:21 eric Exp $
+ * $Id: SQLizer.hpp,v 1.36 2008-10-14 12:04:26 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -632,7 +632,7 @@ namespace w3c_sw {
 	    if (crack.compare(0, stem.size(), stem) != 0)
 		throw(nonLocalIdentifierException(stem, crack));
 
-	    size_t pos = 0;
+	    int pos = 0;
 	    for(std::string::iterator iter=crack.begin() + stem.size();
 		iter != crack.end() && pos < (value == NULL ? 2 : 3); ++iter)
 		if (*iter==delim[pos])
