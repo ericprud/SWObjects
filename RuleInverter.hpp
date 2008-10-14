@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.10 2008-09-29 12:35:47 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.11 2008-10-14 12:05:14 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -61,6 +61,34 @@ namespace w3c_sw {
 		}
 	    }
 
+	    virtual void namedGraphPattern999 (NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		last.tableOperation = NULL;
+		GraphInclusion s = includeRequiredness->getOperationStrength(self);
+		if (s != GraphInclusion_NONE) {
+		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		}
+	    }
+	    virtual void defaultGraphPattern999 (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		last.tableOperation = NULL;
+		GraphInclusion s = includeRequiredness->getOperationStrength(self);
+		if (s != GraphInclusion_NONE) {
+		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
+		}
+	    }
+	    virtual void tableConjunction999 (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		last.tableOperation = NULL;
+		GraphInclusion s = includeRequiredness->getOperationStrength(self);
+		if (s != GraphInclusion_NONE) {
+		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
+		}
+	    }
+	    virtual void tableDisjunction999 (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		last.tableOperation = NULL;
+		GraphInclusion s = includeRequiredness->getOperationStrength(self);
+		if (s != GraphInclusion_NONE) {
+		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
+		}
+	    }
 	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
@@ -71,6 +99,9 @@ namespace w3c_sw {
 		    else
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
+	    }
+	    virtual void graphGraphPattern999 (GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
 
@@ -100,6 +131,7 @@ namespace w3c_sw {
 	    //SPARQLSerializer sQ; m_WhereClause->express(&sQ); std::cerr << "Query: " << std::endl << sQ.getSPARQLstring() << std::endl;
 	    //SPARQLSerializer sD; userQueryAsAssertions->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
+	    std::cerr << "Results:" << std::endl << opRS->toString() << std::endl;
 	    //XMLSerializer xs; opRS->toXml(&xs);
 	    //std::cerr << "Results:" << std::endl << xs.getXMLstring() << std::endl;
 
@@ -107,6 +139,7 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_05
 	     */
 
+	    TableConjunction* patternSpanningRows = new TableConjunction();
 	    for (ResultSetIterator row = opRS->begin() ; row != opRS->end(); ++row) {
 
 		/* 06 — Scan each basic graph pattern GA in the antecedent graph pattern A for variables in triple patterns:
@@ -121,9 +154,12 @@ namespace w3c_sw {
 		 */
 		MappedDuplicator e(posFactory, *row, &includeRequiredness);
 		constructRuleBodyAsConsequent->express(&e);
-		opRS->addTableOperation(e.getTableOperation());
+		TableOperation* t = e.getTableOperation();
+		if (t != NULL)
+		    patternSpanningRows->addTableOperation(t);
 		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
+	    opRS->addTableOperation(patternSpanningRows->simplify());
 	    return opRS;
 	}
     };
