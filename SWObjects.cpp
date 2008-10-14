@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.8 2008-10-03 07:06:03 eric Exp $
+ * $Id: SWObjects.cpp,v 1.9 2008-10-14 12:02:35 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -662,39 +662,35 @@ void NumberExpression::express (Expressor* p_expressor) {
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {
-	bool matched = true;
+	bool matched = true; // Pretend it's matched so we can try the first constraint.
 	for (std::vector<TriplePattern*>::iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
-	    for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
-		 triple != m_TriplePatterns.end(); triple++) {
+	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		matched = false;
-		for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
-		    matched |= (*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, row, graphName);
+		for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+		     triple != m_TriplePatterns.end(); triple++) {
+		    Result* newRow = (*row)->duplicate(rs, row);
+		    if ((*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+			matched = true;
+			rs->insert(row, newRow);
+		    } else {
+			delete newRow;
+		    }
+		}
+		if (matched || !toMatch->allOpts) {
 		    delete *row;
 		    rs->erase(row++);
+		} else {
+		    row++;
 		}
 	    }
 	}
     }
-    bool TriplePattern::bindVariables (TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, ResultSetIterator row, POS* graphName) {
-	bool ret = false;
-	Result* r = *row; // convenience variable.
-	Result* newRow = r->duplicate(rs, row);
-	//{ XMLSerializer xs; rs->toXml(&xs); std::cerr << "before: " << xs.getXMLstring(); }
-	//std::cerr << "matching " << tp->toString() << std::endl << " against " << toString() << std::endl << "      on " << r << std::endl;
-	if (graphVar->bindVariable(graphName, rs, newRow, weaklyBound) && 
+    bool TriplePattern::bindVariables (TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, Result* newRow, POS* graphName) {
+	return graphVar->bindVariable(graphName, rs, newRow, weaklyBound) &&
 	    tp->m_s->bindVariable(m_s, rs, newRow, weaklyBound) && 
 	    tp->m_p->bindVariable(m_p, rs, newRow, weaklyBound) && 
-	    tp->m_o->bindVariable(m_o, rs, newRow, weaklyBound)) {
-	    rs->insert(row, newRow);
-	    ret = true;
-	} else if (optional) {
-	    delete newRow;
-	    newRow = r->duplicate(rs, row);
-	    rs->insert(row, newRow); // !!!
-	}
-	//{ XMLSerializer xs; rs->toXml(&xs); std::cerr << "after(" << ret << "): " << xs.getXMLstring(); }
-	return ret;
+	    tp->m_o->bindVariable(m_o, rs, newRow, weaklyBound);
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {

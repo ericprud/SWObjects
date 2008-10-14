@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.6 2008-09-29 12:35:47 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.7 2008-10-14 12:02:35 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -83,14 +83,7 @@ namespace w3c_sw {
 	     */
 
 	    /* Don't return a disjoint with only one object in it. */
-	    TableOperation* pattern;
-	    if (constructed->size() == 1) {
-		pattern = *constructed->begin();
-		constructed->clear();
-		delete constructed;
-	    } else
-		pattern = constructed;
-
+	    TableOperation* pattern = constructed->simplify();
 	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);

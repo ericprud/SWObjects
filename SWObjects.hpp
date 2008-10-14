@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.11 2008-10-11 13:08:02 eric Exp $
+ * $Id: SWObjects.hpp,v 1.12 2008-10-14 12:02:35 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -157,7 +157,7 @@ public:
     virtual POS* eval (Result*) { return this; }
     virtual void express(Expressor* p_expressor) = 0;
     virtual std::string getBindingAttributeName() = 0;
-    virtual std::string toString() = 0;
+    virtual std::string toString() const = 0;
 };
 
 class URI : public POS {
@@ -168,7 +168,7 @@ public:
     ~URI () { }
     virtual const char * getToken () { return "-POS-"; }
     virtual void express(Expressor* p_expressor);
-    virtual std::string toString () { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
     virtual std::string getBindingAttributeName () { return "uri"; }
 };
 
@@ -186,7 +186,7 @@ class Variable : public Bindable {
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
-    virtual std::string toString () { std::stringstream s; s << "?" << terminal; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor);
     virtual POS* eval(Result* r);
@@ -199,7 +199,7 @@ private:
     BNode (std::string str) : Bindable(str) {  }
     BNode () : Bindable("b", true) {  }
 public:
-    virtual std::string toString () { std::stringstream s; s << "_:" << terminal; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { return "bnode"; }
@@ -222,7 +222,7 @@ protected:
 	delete m_LANGTAG;
     }
 public:
-    virtual std::string toString () {
+    virtual std::string toString () const {
 	std::stringstream s;
 	s << "\"" << terminal << "\"";
 	if (datatype) s << datatype->toString();
@@ -248,7 +248,7 @@ protected:
     ~IntegerRDFLiteral () {  }
 public:
     int getValue () { return m_value; }
-    virtual std::string toString () { std::stringstream s; s << m_value; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
     virtual void express(Expressor* p_expressor);
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
@@ -259,7 +259,7 @@ protected:
     ~DecimalRDFLiteral () {  }
     virtual void express(Expressor* p_expressor);
 public:
-    virtual std::string toString () { std::stringstream s; s << m_value; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -275,7 +275,7 @@ protected:
     bool m_value;
     BooleanRDFLiteral (std::string p_String, std::string matched, bool p_value) : RDFLiteral(p_String, NULL, NULL, matched), m_value(p_value) {  }
 public:
-    virtual std::string toString () { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
     virtual void express(Expressor* p_expressor);
 };
 class NULLpos : public POS {
@@ -285,7 +285,7 @@ private:
     ~NULLpos () {  }
 public:
     virtual const char * getToken () { return "-NULL-"; }
-    virtual std::string toString () { std::stringstream s; s << "NULL"; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
     virtual void express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
 };
@@ -362,13 +362,13 @@ public:
     TriplePattern (POS* p_s, POS* p_p, POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
     ~TriplePattern () {  }
-    std::string toString () {
+    std::string toString () const {
 	std::stringstream s;
 	s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
 	return s.str();
     }
     virtual void express(Expressor* p_expressor);
-    bool bindVariables(TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, ResultSetIterator provisional, POS* graphName);
+    bool bindVariables(TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, Result* provisional, POS* graphName);
     bool construct(BasicGraphPattern* target, Result* r);
 };
 /* END Parts Of Speach */
@@ -442,6 +442,16 @@ public:
     void clear () { m_TableOperations.clear(); }
     void erase (std::vector<TableOperation*>::iterator it) { m_TableOperations.erase(it); }
     size_t size () { return m_TableOperations.size(); }
+    TableOperation* simplify () {
+	TableOperation* ret;
+	if (size() == 0 || size() == 1) {
+	    ret = size() == 0 ? NULL : *begin();
+	    clear();
+	    delete this;
+	} else
+	    ret = this;
+	return ret;
+    }
 };
 class TableConjunction : public TableJunction { // ⊍
 public:
