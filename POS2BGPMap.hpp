@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.20 2008-10-10 11:52:02 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.21 2008-10-14 11:57:06 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -392,6 +392,7 @@ namespace w3c_sw {
 			    OuterGraphList::iterator graph2parents = outerGraphs[graph2It->first].begin();
 			    TableOperation* commonAncestor = parent; // assignment not strictly necessary, but useful for templating.
 			    while (graph1parents != outerGraphs[graph1It->first].end() && 
+				   graph2parents != outerGraphs[graph2It->first].end() && 
 				   *graph1parents == *graph2parents) {
 				commonAncestor = *graph1parents;
 				++graph1parents;
@@ -434,6 +435,7 @@ namespace w3c_sw {
 
     protected:
 	ConsequentMapList consequents;
+	std::set<POS*> gendVars; // @@@ could be a re-use map outside
 	Variable* _genVar (Variable* base, int index, Result* row, POSFactory* posFactory) {
 	    Variable* ret = NULL;
 	    do {
@@ -441,7 +443,8 @@ namespace w3c_sw {
 		name << base->getTerminal() << "_gen" << index;
 		ret = posFactory->getVariable(name.str().c_str());
 		++index;
-	    } while (row->get(ret) != NULL);
+	    } while (row->get(ret) != NULL || gendVars.find(ret) != gendVars.end());
+	    gendVars.insert(ret);
 	    return ret;
 	}
 
