@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.12 2008-10-14 12:02:35 eric Exp $
+ * $Id: SWObjects.hpp,v 1.13 2008-10-15 17:56:28 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -151,13 +151,18 @@ public:
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
-    virtual bool bindVariable (const POS* p, ResultSet*, Result*, bool) const {
-	return p == this || (typeid(*p) == typeid(*this) && getTerminal() == p->getTerminal());
-    }
-    virtual POS* eval (Result*) { return this; }
+    virtual POS* eval (Result*, bool) { return this; }
     virtual void express(Expressor* p_expressor) = 0;
     virtual std::string getBindingAttributeName() = 0;
     virtual std::string toString() const = 0;
+    std::string substitutedString (Result* row, bool bNodesGenSymbols) {
+	POS* subd = eval(row, bNodesGenSymbols);
+	if (subd != NULL)
+	    return subd->toString();
+	std::stringstream s;
+	s << '[' << toString() << ']';
+	return s.str();
+    }
 };
 
 class URI : public POS {
@@ -178,7 +183,6 @@ protected:
     Bindable (std::string str, bool gensym) : POS(str, gensym) {  }
 public:
     virtual bool isConstant () { return false; }
-    virtual bool bindVariable(const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
 };
 
 class Variable : public Bindable {
@@ -189,7 +193,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval(Result* r);
+    virtual POS* eval(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "name"; }
 };
 
@@ -202,6 +206,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor);
+    virtual POS* eval(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "bnode"; }
 };
 
@@ -358,6 +363,7 @@ class TriplePattern : public Base {
 private:
     POS* m_s; POS* m_p; POS* m_o;
     bool weaklyBound;
+    static bool _bindVariable(POS* it, const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound);
 public:
     TriplePattern (POS* p_s, POS* p_p, POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
@@ -367,8 +373,22 @@ public:
 	s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
 	return s.str();
     }
+    std::string toString (Result* row) const {
+	std::stringstream s;
+	s << 
+	    "{" << m_s->substitutedString(row, false) << 
+	    " " << m_p->substitutedString(row, false) << 
+	    " " << m_o->substitutedString(row, false) << "}";
+	return s.str();
+    }
     virtual void express(Expressor* p_expressor);
-    bool bindVariables(TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, Result* provisional, POS* graphName);
+    bool bindVariables (TriplePattern* tp, bool, ResultSet* rs, POS* graphVar, Result* provisional, POS* graphName) {
+	return
+	    _bindVariable(graphVar, graphName, rs, provisional, weaklyBound) &&
+	    _bindVariable(tp->m_s, m_s, rs, provisional, weaklyBound) && 
+	    _bindVariable(tp->m_p, m_p, rs, provisional, weaklyBound) && 
+	    _bindVariable(tp->m_o, m_o, rs, provisional, weaklyBound);
+    }
     bool construct(BasicGraphPattern* target, Result* r);
 };
 /* END Parts Of Speach */

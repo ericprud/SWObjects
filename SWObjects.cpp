@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.9 2008-10-14 12:02:35 eric Exp $
+ * $Id: SWObjects.cpp,v 1.10 2008-10-15 17:56:28 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -535,6 +535,13 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    return (NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
+    POS* BNode::eval (Result* r, bool bNodesGenSymbols) {
+	return bNodesGenSymbols ? this : r->get(this);
+    }
+    POS* Variable::eval (Result* r, bool) {
+	return r->get(this);
+    }
+
     void TableJunction::addTableOperation (TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
 	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast.
@@ -544,20 +551,6 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    delete j;
 	} else
 	    m_TableOperations.push_back(tableOp);
-    }
-
-    bool Bindable::bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const {
-	POS* curVal = provisional->get(this);
-	if (curVal == NULL) {
-	    rs->set(provisional, this, p, weaklyBound);
-	    return true;
-	}
-	bool ret = typeid(*p) == typeid(*curVal) && p->getTerminal() == curVal->getTerminal();
-	//SPARQLSerializer s, s2; ((POS*)curVal)->express(&s); std::cerr << "   " << s.getSPARQLstring() << " == "; ((POS*)p)->express(&s2); std::cerr << s2.getSPARQLstring() << " : " << ret << std::endl;
-	return ret;
-    }
-    POS* Variable::eval (Result* r) {
-	return r->get(this);
     }
 
     ResultSet* Select::execute (RdfDB* db, ResultSet* rs) {
@@ -686,11 +679,13 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    }
 	}
     }
-    bool TriplePattern::bindVariables (TriplePattern* tp, bool optional, ResultSet* rs, POS* graphVar, Result* newRow, POS* graphName) {
-	return graphVar->bindVariable(graphName, rs, newRow, weaklyBound) &&
-	    tp->m_s->bindVariable(m_s, rs, newRow, weaklyBound) && 
-	    tp->m_p->bindVariable(m_p, rs, newRow, weaklyBound) && 
-	    tp->m_o->bindVariable(m_o, rs, newRow, weaklyBound);
+    bool TriplePattern::_bindVariable (POS* it, const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) {
+	POS* curVal = it->eval(provisional, false);
+	if (curVal == NULL) {
+	    rs->set(provisional, it, p, weaklyBound);
+	    return true;
+	}
+	return p == curVal;
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
@@ -724,9 +719,9 @@ void NumberExpression::express (Expressor* p_expressor) {
     bool TriplePattern::construct (BasicGraphPattern* target, Result* r) {
 	bool ret = false;
 	POS *s, *p, *o;
-	if ((s = m_s->eval(r)) != NULL && 
-	    (p = m_p->eval(r)) != NULL && 
-	    (o = m_o->eval(r)) != NULL)
+	if ((s = m_s->eval(r, true)) != NULL && 
+	    (p = m_p->eval(r, true)) != NULL && 
+	    (o = m_o->eval(r, true)) != NULL)
 	    target->addTriplePattern(s, p, o);
 	return ret;
     }
