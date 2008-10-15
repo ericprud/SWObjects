@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.4 2008-10-14 12:03:53 eric Exp $
+ * $Id: ResultSet.cpp,v 1.5 2008-10-15 16:23:03 eric Exp $
  */
 
 #include "ResultSet.hpp"
@@ -86,7 +86,7 @@ namespace w3c_sw {
 	r->set(variable, value, weaklyBound);
     }
 
-    std::string ResultSet::toString () {
+    std::string ResultSet::toString () const {
 	const char* NULL_REP = "--";
 #if ASCII_BOX_CHARS
 	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
@@ -121,7 +121,7 @@ namespace w3c_sw {
 	unsigned lastInKnownVars = 0;
 	{
 	    std::map< const POS*, unsigned > pos2col;
-	    for (VariableListIterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
+	    for (std::set<const POS*>::const_iterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
 		const POS* var = *varIt;
 		pos2col[var] = count++;
 		widths.push_back(var->toString().size());
@@ -130,7 +130,7 @@ namespace w3c_sw {
 
 	    VariableList intruders;
 	    lastInKnownVars = count;
-	    for (ResultSetIterator row = begin() ; row != end(); row++)
+	    for (std::list<Result*>::const_iterator row = results.begin() ; row != results.end(); row++)
 		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
 		    POS* var = b->first;
 		    if (pos2col.find(var) == pos2col.end()) {
@@ -166,7 +166,7 @@ namespace w3c_sw {
 	s << RR << std::endl;
 
 	/*  Rows */
-	for (ResultSetIterator row = begin() ; row != end(); row++) {
+	for (std::list<Result*>::const_iterator row = results.begin() ; row != results.end(); row++) {
 #if (INTRA_ROW_SEPARATORS)
 	    /*  Intra-row Border */
 	    for (i = 0; i < count; i++) {

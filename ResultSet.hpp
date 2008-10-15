@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.4 2008-10-14 12:03:53 eric Exp $
+ * $Id: ResultSet.hpp,v 1.5 2008-10-15 16:23:03 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -31,6 +31,17 @@ namespace w3c_sw {
 	BindingSet bindings;
     public:
 	Result (ResultSet*) : bindings() {  }
+	~Result () {  }
+	std::string toString () const {
+	    std::stringstream s;
+	    s << "{";
+	    for (std::map<POS*, BindingInfo>::const_iterator it = bindings.begin(); it != bindings.end(); ++it)
+		s << (it == bindings.begin() ? "" : ", ")
+		  << it->first->toString() << "="
+		  << it->second.pos->toString();
+	    s << "}";
+	    return s.str();
+	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	BindingSetIterator begin () { return bindings.begin(); }
 	BindingSetIterator end () { return bindings.end(); }
@@ -57,7 +68,7 @@ namespace w3c_sw {
     public:
 	ResultSet();
 	virtual ~ResultSet();
-	std::string toString();
+	std::string toString() const;
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
