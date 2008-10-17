@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.13 2008-10-15 17:56:28 eric Exp $
+ * $Id: SWObjects.hpp,v 1.14 2008-10-17 14:30:14 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -70,6 +70,15 @@ public:
     typename std::vector<T>::iterator begin () { return data.begin(); }
     typename std::vector<T>::iterator end () { return data.end(); }
     void erase (typename std::vector<T>::iterator it) { data.erase(it); }
+    void sort (bool (*comp)(T, T)) {
+	std::list<T> l;
+	for (typename std::vector<T>::iterator it = begin(); it != end(); ++it)
+	    l.push_back(*it);
+	l.sort(comp);
+	data.clear();
+	for (typename std::list<T>::iterator it = l.begin(); it != l.end(); ++it)
+	    data.push_back(*it);
+    }
 #if 0
     class iterator;
     iterator begin() { return iterator(data.begin(), this); }
@@ -367,7 +376,22 @@ private:
 public:
     TriplePattern (POS* p_s, POS* p_p, POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
+    POS* getS () { return m_s; }
+    POS* getP () { return m_p; }
+    POS* getO () { return m_o; }
     ~TriplePattern () {  }
+    static bool lt (TriplePattern* l, TriplePattern* r) {
+	if (l->m_s != r->m_s) return l->m_s < r->m_s;
+	if (l->m_p != r->m_p) return l->m_p < r->m_p;
+	if (l->m_o != r->m_o) return l->m_o < r->m_o;
+	return 0;
+    }    
+    static bool gt (TriplePattern* l, TriplePattern* r) {
+	if (l->m_s != r->m_s) return l->m_s > r->m_s;
+	if (l->m_p != r->m_p) return l->m_p > r->m_p;
+	if (l->m_o != r->m_o) return l->m_o > r->m_o;
+	return 0;
+    }    
     std::string toString () const {
 	std::stringstream s;
 	s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
@@ -497,12 +521,12 @@ protected:
 public:
     void addTriplePattern (POS* s, POS* p, POS* o) { m_TriplePatterns.push_back(new TriplePattern(s, p, o)); }
     void addTriplePattern (TriplePattern* p) { m_TriplePatterns.push_back(p); }
-    size_t triplePatterns () { return m_TriplePatterns.size(); }
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
     void construct(BasicGraphPattern* target, ResultSet* rs);
     std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
     std::vector<TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
     void erase (std::vector<TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
+    void sort (bool (*comp)(TriplePattern*, TriplePattern*)) { m_TriplePatterns.sort(comp); }
     void clearTriples () { m_TriplePatterns.clear(); }
     virtual TableOperation* getDNF ();
     virtual void express(Expressor* p_expressor) = 0;
