@@ -1,13 +1,13 @@
-# $Id: Makefile,v 1.48 2008-10-10 11:50:51 eric Exp $
+# $Id: Makefile,v 1.49 2008-10-17 14:31:36 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
 #   normal build:
 #     make SPARQLfed
 #   force the use of the tracing facilities (and redirect to stdout):
-#     make -W sample_RuleMap1.cpp test
+#     make -W tests/test_HealthCare1.cpp test
 #   have valgrind start a debugger (works as M-x gdb invocation command):
-#     valgrind --db-attach=yes --leak-check=yes sample_RuleMap1 query_HealthCare1.rq ruleMap_HealthCare1.rq
+#     valgrind --db-attach=yes --leak-check=yes tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 #   same, if you aren't working in gdb:
 #     make valgrind
 #   debugging in emacs:
