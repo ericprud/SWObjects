@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.12 2008-10-17 14:27:57 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.13 2008-10-17 16:06:19 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -111,12 +111,15 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
+	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream* debugStream) : 
+			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
-	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), consequents(constructRuleBodyAsConsequent, NULL, debugStream), posFactory(posFactory)
+	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
+	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
+	    posFactory(posFactory), debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
@@ -132,9 +135,8 @@ namespace w3c_sw {
 	    //SPARQLSerializer sQ; m_WhereClause->express(&sQ); std::cerr << "Query: " << std::endl << sQ.getSPARQLstring() << std::endl;
 	    //SPARQLSerializer sD; userQueryAsAssertions->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
-	    std::cerr << "Results:" << std::endl << opRS->toString() << std::endl;
-	    //XMLSerializer xs; opRS->toXml(&xs);
-	    //std::cerr << "Results:" << std::endl << xs.getXMLstring() << std::endl;
+	    if (*debugStream != NULL)
+		**debugStream << "produced query solution" << std::endl << opRS->toString() << std::endl;
 
 	    /* 05 — For each rule solution S in RScd:
 	     * http://www.w3.org/2008/07/MappingRules/#_05
@@ -170,12 +172,12 @@ namespace w3c_sw {
 	DefaultGraphPattern* constructRuleHead;
 	TableOperation* constructRuleBody;
 	MappingConstruct* m_Construct;
-	std::ostream* debugStream;
+	std::ostream** debugStream;
 	bool inUserRuleBody;
 	std::map<POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
     public:
-	RuleInverter (POSFactory* posFactory, std::ostream* debugStream = NULL) : 
+	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
 	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleBody(false), nextVariableIndex(0) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
@@ -264,10 +266,10 @@ namespace w3c_sw {
 	     */
 	    constructRuleBody->express(this); // sets last.tableOperation
 	    TableOperation* constructRuleBodyAsConsequent = last.tableOperation;
-	    if (debugStream != NULL) {
+	    if (*debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		*debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
 	    }
 	    p_SolutionModifier->express(this);
 

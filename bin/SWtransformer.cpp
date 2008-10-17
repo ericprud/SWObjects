@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.17 2008-10-14 12:05:45 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.18 2008-10-17 16:06:20 eric Exp $
  */
 
 /* START main */
@@ -62,8 +62,8 @@ int main(int argc,char** argv) {
     /* Tools we'll need for this demo: */
     w3c_sw::POSFactory posFactory;
     w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
-    w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
-    w3c_sw::QueryMapper queryMapper(&posFactory, DebugStream);
+    //w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
+    w3c_sw::QueryMapper queryMapper(&posFactory, &DebugStream);
 
     int result;
     w3c_sw::Operation* query = NULL;
@@ -140,7 +140,7 @@ int main(int argc,char** argv) {
 		if (StemURI != NULL) {
 		    char predicateDelims[]={'#',' ',' '};
 		    char nodeDelims[]={'/','.',' '};
-		    SQLizer s2(StemURI, predicateDelims, nodeDelims, DebugStream);
+		    SQLizer s2(StemURI, predicateDelims, nodeDelims, &DebugStream);
 		    o->express(&s2);
 		    if (!Quiet)
 			cout << "Transformed query: " << endl;

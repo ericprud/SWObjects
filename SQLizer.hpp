@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.36 2008-10-14 12:04:26 eric Exp $
+ * $Id: SQLizer.hpp,v 1.37 2008-10-17 16:06:19 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -663,10 +663,10 @@ namespace w3c_sw {
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
 
-	std::ostream* debugStream;
+	std::ostream** debugStream;
 
     public:
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::ostream* debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), debugStream(debugStream)
 	{  }

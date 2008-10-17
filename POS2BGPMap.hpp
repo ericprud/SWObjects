@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.21 2008-10-14 11:57:06 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.22 2008-10-17 16:06:19 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -449,7 +449,7 @@ namespace w3c_sw {
 	}
 
     public:
-	Consequents (TableOperation* op, VarSet* p_VarSet = NULL, std::ostream* debugStream = NULL) {
+	Consequents (TableOperation* op, VarSet* p_VarSet = NULL, std::ostream** debugStream = NULL) {
 	    START("POS2BGPMap Consequents constructor");
 	    ConsequentsConstructor ctor(&consequents, op);
 	    NOW("traversing TableOperation");
@@ -458,9 +458,9 @@ namespace w3c_sw {
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    NOW("finding corefs");
 	    ctor.findCorefs(op);
-	    if (debugStream != NULL) {
-		*debugStream << "Consequents:" << std::endl << consequents.dump();
-		*debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
+	    if (*debugStream != NULL) {
+		**debugStream << "Consequents:" << std::endl << consequents.dump();
+		**debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	    }
 	}
 	~Consequents () {
