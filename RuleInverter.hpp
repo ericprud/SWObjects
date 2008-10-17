@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.16 2008-10-17 20:56:38 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.17 2008-10-17 22:24:42 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -87,7 +87,7 @@ namespace w3c_sw {
 	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 		for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
-		    (*triple)->construct(p, row);
+		    (*triple)->construct(p, row, false);
 	    }
 
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */

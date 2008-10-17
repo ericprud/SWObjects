@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.15 2008-10-17 20:58:05 eric Exp $
+ * $Id: SWObjects.hpp,v 1.16 2008-10-17 22:24:42 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -414,7 +414,7 @@ public:
 	    _bindVariable(tp->m_p, m_p, rs, provisional, weaklyBound) && 
 	    _bindVariable(tp->m_o, m_o, rs, provisional, weaklyBound);
     }
-    bool construct(BasicGraphPattern* target, Result* r);
+    bool construct(BasicGraphPattern* target, Result* r, bool bNodesGenSymbols = true);
 };
 /* END Parts Of Speach */
 

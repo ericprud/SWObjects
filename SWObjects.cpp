@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.10 2008-10-15 17:56:28 eric Exp $
+ * $Id: SWObjects.cpp,v 1.11 2008-10-17 22:24:42 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -716,12 +716,12 @@ void NumberExpression::express (Expressor* p_expressor) {
 		(*triple)->construct(target, *result);
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r) {
+    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, bool bNodesGenSymbols) {
 	bool ret = false;
 	POS *s, *p, *o;
-	if ((s = m_s->eval(r, true)) != NULL && 
-	    (p = m_p->eval(r, true)) != NULL && 
-	    (o = m_o->eval(r, true)) != NULL)
+	if ((s = m_s->eval(r, bNodesGenSymbols)) != NULL && 
+	    (p = m_p->eval(r, bNodesGenSymbols)) != NULL && 
+	    (o = m_o->eval(r, bNodesGenSymbols)) != NULL)
 	    target->addTriplePattern(s, p, o);
 	return ret;
     }

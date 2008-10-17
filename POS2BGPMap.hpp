@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.23 2008-10-17 16:41:19 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.24 2008-10-17 22:24:42 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -436,8 +436,8 @@ namespace w3c_sw {
     protected:
 	ConsequentMapList consequents;
 	std::set<POS*> gendVars; // @@@ could be a re-use map outside
-	Variable* _genVar (Variable* base, int index, Result* row, POSFactory* posFactory) {
-	    Variable* ret = NULL;
+	Bindable* _genVar (Bindable* base, int index, Result* row, POSFactory* posFactory) {
+	    Bindable* ret = NULL;
 	    do {
 		std::stringstream name;
 		name << base->getTerminal() << "_gen" << index;
@@ -473,7 +473,7 @@ namespace w3c_sw {
 
 	ConsequentMap getIncludeRequiredness (ResultSet* rs, ResultSetIterator row, POSFactory* posFactory) {
 	    ConsequentMap ret;
-	    std::set<Variable*> neededVars;
+	    std::set<Bindable*> neededVars;
 
 	    int genNo = 0;
 	    /* 06 — Scan each basic graph pattern GA in the antecedent graph pattern A for variables in triple patterns:
@@ -481,7 +481,7 @@ namespace w3c_sw {
 	     */
 	    for (ConsequentMapList::iterator maps = consequents.begin();
 		 maps != consequents.end(); ++maps) {
-		Variable* v = dynamic_cast<Variable*>(maps->first);
+		Bindable* v = dynamic_cast<Bindable*>(maps->first);
 		if (v == NULL)
 		    break;
 		//cerr << "considering includedness of " << v->toString() << endl;
@@ -521,7 +521,7 @@ namespace w3c_sw {
 		    
 	    }
 
-	    for (std::set<Variable*>::iterator v = neededVars.begin();
+	    for (std::set<Bindable*>::iterator v = neededVars.begin();
 		 v != neededVars.end(); ++v)
 		rs->set(*row, *v, _genVar(*v, genNo++, *row, posFactory), true);
 	    neededVars.clear();
