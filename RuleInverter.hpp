@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.11 2008-10-14 12:05:14 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.12 2008-10-17 14:27:57 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -11,6 +11,7 @@
 #include "POS2BGPMap.hpp"
 #include "SPARQLSerializer.hpp" // for debugging output
 #include <set>
+#include <algorithm>
 
 namespace w3c_sw {
 
@@ -170,29 +171,57 @@ namespace w3c_sw {
 	TableOperation* constructRuleBody;
 	MappingConstruct* m_Construct;
 	std::ostream* debugStream;
-	bool inRuleBody;
+	bool inUserRuleBody;
+	std::map<POS*, size_t> variablesInLexicalOrder;
+	size_t nextVariableIndex;
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream* debugStream = NULL) : 
-	    SWObjectDuplicator(posFactory), debugStream(debugStream), inRuleBody(false) {  }
+	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleBody(false), nextVariableIndex(0) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
+
+	/* duplicate triples and note the order of POSs.
+	 * This is called from _TriplePatters call in _graphPatterns.
+	 */
+	virtual void triplePattern (TriplePattern* self, w3c_sw::POS* s, w3c_sw::POS* p, w3c_sw::POS* o) {
+	    this->SWObjectDuplicator::triplePattern(self, s, p, o);
+	    if (!inUserRuleBody) { // so we're in the UserRuleHead
+		variablesInLexicalOrder[s] = nextVariableIndex++;
+		variablesInLexicalOrder[p] = nextVariableIndex++;
+		variablesInLexicalOrder[o] = nextVariableIndex++;
+	    }
+	}
+	struct MapOrder {
+	    std::map<POS*, size_t>& v;
+	    MapOrder (std::map<POS*, unsigned>& v) : v(v) {  }
+	    bool operator() (TriplePattern* l, TriplePattern* r) {
+		return
+		    v[l->getS()] < v[r->getS()] || 
+		    v[l->getP()] < v[r->getP()] || 
+		    v[l->getO()] < v[r->getO()];
+		//return TriplePattern::gt(l, r);
+	    }
+	};
+	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    _TriplePatterns(p_TriplePatterns, bgp);
+	    _Filters(p_Filters, bgp);
+	    last.tableOperation = bgp;
+
+	    if (inUserRuleBody)
+		std::sort(bgp->begin(), bgp->end(), MapOrder(variablesInLexicalOrder));
+		//bgp->sort(TriplePattern::gt);
+	}
 
 	/* Create BasicGraphPatterns (named and default) with a flag
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
-	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos, inRuleBody); // allOpts = true when in rule body
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    last.tableOperation = ret;
+	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleBody), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    DefaultGraphPattern* ret = new DefaultGraphPattern(inRuleBody); // allOpts = true when in rule body
-	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
-	    last.tableOperation = ret;
+	virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    _graphPattern(new DefaultGraphPattern(inUserRuleBody), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 
 	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
@@ -222,9 +251,9 @@ namespace w3c_sw {
 	     * of the CONSTRUCT WhereClause.
 	     */
 	    constructRuleHead = p_ConstructTemplate;
-	    inRuleBody = true;
+	    inUserRuleBody = true;
 	    p_WhereClause->express(this);
-	    inRuleBody = false;
+	    inUserRuleBody = false;
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
 	    /* create a new CONSTRUCT with the consequent of the old
