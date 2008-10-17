@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.15 2008-10-17 20:23:25 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.16 2008-10-17 20:56:38 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -34,10 +34,8 @@ namespace w3c_sw {
 
 	    virtual void filter (Filter* self, w3c_sw::Expression* p_Constraint) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
-		p_Constraint->express(&fd);
-		{ SPARQLSerializer s; dest->express(&s); std::cerr << s.getSPARQLstring() << std::endl; }
+		self->express(&fd);
 		dest->addFilter(fd.getFilter());
-		{ SPARQLSerializer s; dest->express(&s); std::cerr << s.getSPARQLstring() << std::endl; }
 	    }
 	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		p_Filters->express(this);
@@ -174,8 +172,6 @@ namespace w3c_sw {
 	    /* 04 — Execute the query C on the query disjoint D, producing a result set RScd.
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
-	    //SPARQLSerializer sQ; m_WhereClause->express(&sQ); std::cerr << "Query: " << std::endl << sQ.getSPARQLstring() << std::endl;
-	    //SPARQLSerializer sD; userQueryAsAssertions->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
 	    if (*debugStream != NULL)
 		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
@@ -202,10 +198,9 @@ namespace w3c_sw {
 		TableOperation* t = e.getTableOperation();
 		if (t != NULL)
 		    patternSpanningRows->addTableOperation(t);
-		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
-	    TableOperation* res = patternSpanningRows->simplify();
 
+	    TableOperation* res = patternSpanningRows->simplify();
 	    opRS->copyFiltersTo(res);
 
 	    if (*debugStream != NULL) {
