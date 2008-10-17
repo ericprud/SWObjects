@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.8 2008-10-01 17:26:50 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.9 2008-10-17 20:57:09 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -314,7 +314,29 @@ public:
 	p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
     }
     virtual void functionCall (FunctionCall*, URI* p_IRIref, ArgList* p_ArgList) {
-	p_IRIref->express(this);
+
+	if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-str"))
+	    ret << "str";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-lang"))
+	    ret << "lang";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches"))
+	    ret << "langMatches";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-datatype"))
+	    ret << "datatype";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-bound"))
+	    ret << "bound";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm"))
+	    ret << "sameTerm";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"))
+	    ret << "isIRI";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"))
+	    ret << "isIRI";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank"))
+	    ret << "isBlank";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral"))
+	    ret << "isLiteral";
+	else
+	    p_IRIref->express(this);
 	ret << "(";
 	p_ArgList->express(this);
 	ret << ")";
