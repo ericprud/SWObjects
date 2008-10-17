@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.22 2008-10-17 16:06:19 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.23 2008-10-17 16:41:19 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -458,7 +458,7 @@ namespace w3c_sw {
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    NOW("finding corefs");
 	    ctor.findCorefs(op);
-	    if (*debugStream != NULL) {
+	    if (0 && *debugStream != NULL) {
 		**debugStream << "Consequents:" << std::endl << consequents.dump();
 		**debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	    }

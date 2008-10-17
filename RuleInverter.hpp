@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.13 2008-10-17 16:06:19 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.14 2008-10-17 16:41:20 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -124,6 +124,7 @@ namespace w3c_sw {
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
 	}
+	WhereClause* getRuleBody () { return m_WhereClause; }
 	virtual OperationResultSet* execute (RdfDB* userQueryAsAssertions, ResultSet* rs = NULL) {
 	    OperationResultSet* opRS = dynamic_cast<OperationResultSet*>(rs);
 	    if (opRS == NULL)
@@ -162,7 +163,13 @@ namespace w3c_sw {
 		    patternSpanningRows->addTableOperation(t);
 		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
-	    opRS->addTableOperation(patternSpanningRows->simplify());
+	    TableOperation* res = patternSpanningRows->simplify();
+	    if (*debugStream != NULL) {
+		SPARQLSerializer s;
+		res->express(&s);
+		**debugStream << "yielding transformed query disjoint:" << endl << s.getSPARQLstring() << endl;
+	    }
+	    opRS->addTableOperation(res);
 	    return opRS;
 	}
     };
@@ -266,7 +273,7 @@ namespace w3c_sw {
 	     */
 	    constructRuleBody->express(this); // sets last.tableOperation
 	    TableOperation* constructRuleBodyAsConsequent = last.tableOperation;
-	    if (*debugStream != NULL) {
+	    if (0 && *debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
 		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;

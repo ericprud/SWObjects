@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.8 2008-10-17 16:06:19 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.9 2008-10-17 16:41:20 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -41,9 +41,19 @@ namespace w3c_sw {
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
+	    if (*debugStream != NULL) {
+		SPARQLSerializer s;
+		userQueryDisjoint->express(&s);
+		**debugStream << "User query disjoint " << endl << s.getSPARQLstring() << endl;
+	    }
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
+		if (*debugStream != NULL) {
+		    SPARQLSerializer s;
+		    (*invertedRule)->getRuleBody()->express(&s);
+		    **debugStream << "matched against rule head" << endl << s.getSPARQLstring() << endl;
+		}
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */

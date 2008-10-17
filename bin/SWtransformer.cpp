@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.18 2008-10-17 16:06:20 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.19 2008-10-17 16:41:20 eric Exp $
  */
 
 /* START main */
@@ -119,7 +119,8 @@ int main(int argc,char** argv) {
 	    try {
 		Operation* o;
 		if (queryMapper.getRuleCount() > 0) {
-
+		    if (DebugStream != NULL)
+			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
 		    query->express(&queryMapper);
 		    o = queryMapper.getCopy();
 		    delete query;
