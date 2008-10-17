@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.14 2008-10-17 16:41:20 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.15 2008-10-17 20:23:25 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -16,11 +16,52 @@
 namespace w3c_sw {
 
     class OperationResultSet : public ResultSet {
+	class FilterCopier : public RecursiveExpressor {
+	    class FilterDuplicator : public SWObjectDuplicator {
+
+	    public:
+		FilterDuplicator (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
+		Filter* getFilter () { return last.filter; }
+	    };
+	    
+	protected:
+	    TableOperation* dest;
+
+	public:
+	    FilterCopier (TableOperation* dest) : dest(dest) {  }
+
+	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+
+	    virtual void filter (Filter* self, w3c_sw::Expression* p_Constraint) {
+		FilterDuplicator fd(NULL); // requires the same POSFactory.
+		p_Constraint->express(&fd);
+		{ SPARQLSerializer s; dest->express(&s); std::cerr << s.getSPARQLstring() << std::endl; }
+		dest->addFilter(fd.getFilter());
+		{ SPARQLSerializer s; dest->express(&s); std::cerr << s.getSPARQLstring() << std::endl; }
+	    }
+	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		p_Filters->express(this);
+	    }
+	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		p_Filters->express(this);
+	    }
+
+	};
     protected:
 	TableDisjunction* constructed;
+	TableOperation* userQueryDisjoint;
+
     public:
-	OperationResultSet (TableDisjunction* constructed) : ResultSet(), constructed(constructed) {  }
+	OperationResultSet (TableDisjunction* constructed, TableOperation* userQueryDisjoint) : 
+	    ResultSet(), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
 	void addTableOperation (TableOperation* op) { constructed->addTableOperation(op); }
+	void copyFiltersTo (TableOperation* dest) {
+	    /* Copy the FILTER patterns across.
+	       !!! This isn't sound -- requires more exploration.
+	    */
+	    FilterCopier c(dest);
+	    userQueryDisjoint->express(&c);
+	}
     };
 
     /* MappingConstruct — extends Construct::execute to peform steps 4 through 8
@@ -137,7 +178,7 @@ namespace w3c_sw {
 	    //SPARQLSerializer sD; userQueryAsAssertions->express(&sD); std::cerr << "Data: " << std::endl << sD.getSPARQLstring() << std::endl;
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
 	    if (*debugStream != NULL)
-		**debugStream << "produced query solution" << std::endl << opRS->toString() << std::endl;
+		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
 
 	    /* 05 — For each rule solution S in RScd:
 	     * http://www.w3.org/2008/07/MappingRules/#_05
@@ -164,6 +205,9 @@ namespace w3c_sw {
 		//SPARQLSerializer s2; e.getTableOperation()->express(&s2); std::cerr << "CONSTRUCTED: " << s2.getSPARQLstring() << std::endl;
 	    }
 	    TableOperation* res = patternSpanningRows->simplify();
+
+	    opRS->copyFiltersTo(res);
+
 	    if (*debugStream != NULL) {
 		SPARQLSerializer s;
 		res->express(&s);

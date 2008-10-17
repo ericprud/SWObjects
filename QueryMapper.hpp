@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.9 2008-10-17 16:41:20 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.10 2008-10-17 20:23:25 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -52,12 +52,12 @@ namespace w3c_sw {
 		if (*debugStream != NULL) {
 		    SPARQLSerializer s;
 		    (*invertedRule)->getRuleBody()->express(&s);
-		    **debugStream << "matched against rule head" << endl << s.getSPARQLstring() << endl;
+		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << s.getSPARQLstring() << endl;
 		}
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
-		OperationResultSet opRS(constructed);
+		OperationResultSet opRS(constructed, userQueryDisjoint);
 		(*invertedRule)->execute(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
@@ -91,12 +91,12 @@ namespace w3c_sw {
 	    /* # 08 — The final query is the union of each disjoint produce in step 07.
 	     * http://www.w3.org/2008/07/MappingRules/#_08
 	     */
-
-	    /* Don't return a disjoint with only one object in it. */
 	    TableOperation* pattern = constructed->simplify();
+
 	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);
+
 	    last.whereClause = new WhereClause(pattern, last.bindingClause);
 	}
     };
