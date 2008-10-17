@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.4 2008-09-13 05:28:00 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.5 2008-10-17 20:21:53 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -18,7 +18,7 @@ namespace w3c_sw {
 
     class SWObjectDuplicator : public Expressor {
     protected:
-	POSFactory* posFactory;
+	POSFactory* posFactory; /* Can be used to create SWObjects in a different atom space. */
 
 	union {
 	    struct { POS* pos; URI* uri; Variable* variable; RDFLiteral* rdfLiteral; BooleanRDFLiteral* booleanRDFLiteral; NumericRDFLiteral* numericRDFLiteral; } posz;
@@ -44,38 +44,38 @@ namespace w3c_sw {
 	//!!!
 	virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void uri (URI*, std::string terminal) {
-	    last.posz.pos = last.posz.uri = posFactory->getURI(terminal.c_str());
+	virtual void uri (URI* self, std::string terminal) {
+	    last.posz.pos = last.posz.uri = posFactory ? posFactory->getURI(terminal.c_str()) : self;
 	}
-	virtual void variable (Variable*, std::string terminal) {
-	    last.posz.pos = last.posz.variable = posFactory->getVariable(terminal.c_str());
+	virtual void variable (Variable* self, std::string terminal) {
+	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(terminal.c_str()) : self;
 	}
-	virtual void bnode (BNode*, std::string terminal) {
-	    last.posz.pos = posFactory->getBNode(terminal.c_str());
+	virtual void bnode (BNode* self, std::string terminal) {
+	    last.posz.pos = posFactory ? posFactory->getBNode(terminal.c_str()) : self;
 	}
-	virtual void rdfLiteral (RDFLiteral*, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
-	    last.posz.pos = last.posz.rdfLiteral = posFactory->getRDFLiteral(terminal.c_str(), datatype, p_LANGTAG);
+	virtual void rdfLiteral (RDFLiteral* self, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
+	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(terminal.c_str(), datatype, p_LANGTAG) : self;
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, int p_value) {
+	virtual void rdfLiteral (NumericRDFLiteral* self, int p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory->getNumericRDFLiteral(s.str().c_str(), p_value);
+	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, float p_value) {
+	virtual void rdfLiteral (NumericRDFLiteral* self, float p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory->getNumericRDFLiteral(s.str().c_str(), p_value);
+	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, double p_value) {
+	virtual void rdfLiteral (NumericRDFLiteral* self, double p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory->getNumericRDFLiteral(s.str().c_str(), p_value);
+	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
-	virtual void rdfLiteral (BooleanRDFLiteral*, bool p_value) {
-	    last.posz.pos = last.posz.booleanRDFLiteral = posFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value);
+	virtual void rdfLiteral (BooleanRDFLiteral* self, bool p_value) {
+	    last.posz.pos = last.posz.booleanRDFLiteral = posFactory ? posFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;
 	}
-	virtual void nullpos (NULLpos*) {
-	    last.posz.pos = posFactory->getNULL();
+	virtual void nullpos (NULLpos* self) {
+	    last.posz.pos = posFactory ? posFactory->getNULL() : self;
 	}
 	virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 	    p_s->express(this);
