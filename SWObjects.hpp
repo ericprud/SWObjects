@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.14 2008-10-17 14:30:14 eric Exp $
+ * $Id: SWObjects.hpp,v 1.15 2008-10-17 20:58:05 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -184,6 +184,7 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual std::string toString () const { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
     virtual std::string getBindingAttributeName () { return "uri"; }
+    bool matches (std::string toMatch) { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
 };
 
 class Bindable : public POS {
