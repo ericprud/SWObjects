@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.17 2008-10-17 22:24:42 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.18 2008-10-19 20:48:32 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -216,15 +216,15 @@ namespace w3c_sw {
     class RuleInverter : public SWObjectDuplicator {
     protected:
 	DefaultGraphPattern* constructRuleHead;
-	TableOperation* constructRuleBody;
+	TableOperation* constructRuleBodyAsConsequent;
 	MappingConstruct* m_Construct;
 	std::ostream** debugStream;
-	bool inUserRuleBody;
+	bool inUserRuleHead;
 	std::map<POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
-	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleBody(false), nextVariableIndex(0) {  }
+	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleHead(false), nextVariableIndex(0) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
 
@@ -233,16 +233,43 @@ namespace w3c_sw {
 	 */
 	virtual void triplePattern (TriplePattern* self, w3c_sw::POS* s, w3c_sw::POS* p, w3c_sw::POS* o) {
 	    this->SWObjectDuplicator::triplePattern(self, s, p, o);
-	    if (!inUserRuleBody) { // so we're in the UserRuleHead
+	    if (!inUserRuleHead) {
+		/* We're in the UserRuleBody so note the order of introduced
+		   variables. */
 		variablesInLexicalOrder[s] = nextVariableIndex++;
 		variablesInLexicalOrder[p] = nextVariableIndex++;
 		variablesInLexicalOrder[o] = nextVariableIndex++;
 	    }
 	}
+	/* MapOrder - adequate tool to make sure that the order of the optionals
+	 * coming from matching the userRuleHead as a where clause are ordered
+	 * to introduce variables in the same order as those introduced in the
+	 * userRuleBody.
+	 */
 	struct MapOrder {
 	    std::map<POS*, size_t>& v;
 	    MapOrder (std::map<POS*, unsigned>& v) : v(v) {  }
+	    int _orderAtoms (POS* l, POS* r) {
+		if (v.find(l) == v.end())
+		    v[l] = v.size();
+		if (v.find(r) == v.end())
+		    v[r] = v.size();
+		return l == r ? 0 : v[l] < v[r] ? 1 : -1;
+	    }
 	    bool operator() (TriplePattern* l, TriplePattern* r) {
+		int s = _orderAtoms(l->getS(), r->getS());
+		if (s == 1) return true;
+		if (s == -1) return false;
+
+		int o = _orderAtoms(l->getO(), r->getO());
+		if (o == 1) return true;
+		if (o == -1) return false;
+
+		int p = _orderAtoms(l->getP(), r->getP());
+		if (p == 1) return true;
+		if (p == -1) return false;
+
+		/* older, more terse form was too random for MSVC debugging version of ::sort */
 		return
 		    v[l->getS()] < v[r->getS()] || 
 		    v[l->getP()] < v[r->getP()] || 
@@ -255,9 +282,8 @@ namespace w3c_sw {
 	    _Filters(p_Filters, bgp);
 	    last.tableOperation = bgp;
 
-	    if (inUserRuleBody)
+	    if (inUserRuleHead)
 		std::sort(bgp->begin(), bgp->end(), MapOrder(variablesInLexicalOrder));
-		//bgp->sort(TriplePattern::gt);
 	}
 
 	/* Create BasicGraphPatterns (named and default) with a flag
@@ -266,23 +292,34 @@ namespace w3c_sw {
 	 */
 	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
-	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleBody), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 	virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    _graphPattern(new DefaultGraphPattern(inUserRuleBody), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 
 	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
-	    /* store the original antecedent (p_GroupGraphPattern) and create
-	     * a new graph pattern with the original consequent
-	     * (constructRuleHead).
+	    /* create a new CONSTRUCT with the consequent of the old
+	     * query (constructRuleHead) treated as where clause.
+	     *
+	     * # 03 — Treat C as a query, each triple being optional.
+	     * http://www.w3.org/2008/07/MappingRules/#_03
 	     */
-	    constructRuleBody = p_GroupGraphPattern; // @@@
+	    inUserRuleHead = true;
 	    constructRuleHead->express(this);
+	    inUserRuleHead = false;
 	    TableOperation* op = last.tableOperation;
+
+	    /* Create a rule had from the userRuleBody and record to use later
+	     * to build a MappingConstruct. The constructRuleHead must already
+	     * be expressed in order to get the order of introduced variables.
+	     */
+	    p_GroupGraphPattern->express(this); // sets last.tableOperation
+	    constructRuleBodyAsConsequent = last.tableOperation;
+
 	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
 		p_BindingClause->express(this);
@@ -295,23 +332,13 @@ namespace w3c_sw {
 
 	    /* Record the current CONSTRUCT rule head.
 	     * Expressing the WhereClause builds a new WhereClause based on
-	     * constructRuleHead and sets constructRuleBody to the graph pattern
-	     * of the CONSTRUCT WhereClause.
+	     * constructRuleHead and sets constructRuleBodyAsConsequent to a
+	     * copy of the graph pattern of the CONSTRUCT WhereClause.
 	     */
 	    constructRuleHead = p_ConstructTemplate;
-	    inUserRuleBody = true;
 	    p_WhereClause->express(this);
-	    inUserRuleBody = false;
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
-	    /* create a new CONSTRUCT with the consequent of the old
-	     * query (constructRuleHead) treated as where clause.
-	     *
-	     * # 03 — Treat C as a query, each triple being optional.
-	     * http://www.w3.org/2008/07/MappingRules/#_03
-	     */
-	    constructRuleBody->express(this); // sets last.tableOperation
-	    TableOperation* constructRuleBodyAsConsequent = last.tableOperation;
 	    if (0 && *debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
