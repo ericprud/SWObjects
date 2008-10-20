@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.16 2008-10-17 22:24:42 eric Exp $
+ * $Id: SWObjects.hpp,v 1.17 2008-10-20 16:37:35 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -521,7 +521,18 @@ protected:
 
 public:
     void addTriplePattern (POS* s, POS* p, POS* o) { m_TriplePatterns.push_back(new TriplePattern(s, p, o)); }
-    void addTriplePattern (TriplePattern* p) { m_TriplePatterns.push_back(p); }
+    void addTriplePattern (TriplePattern* p) {
+	for (std::vector<TriplePattern*>::iterator it = m_TriplePatterns.begin();
+	     it != m_TriplePatterns.end(); ++it) {
+	    if ((*it)->getS() == p->getS() && 
+		(*it)->getP() == p->getP() && 
+		(*it)->getO() == p->getO()) {
+		delete p;
+		return;
+	    }
+	}
+	m_TriplePatterns.push_back(p);
+    }
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
     void construct(BasicGraphPattern* target, ResultSet* rs);
     std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
