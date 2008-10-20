@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.18 2008-10-19 20:48:32 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.19 2008-10-20 16:35:28 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -302,6 +302,13 @@ namespace w3c_sw {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
+	    /* Create a rule had from the userRuleBody and record to use later
+	     * to build a MappingConstruct. The constructRuleHead must already
+	     * be expressed in order to get the order of introduced variables.
+	     */
+	    p_GroupGraphPattern->express(this); // sets last.tableOperation
+	    constructRuleBodyAsConsequent = last.tableOperation;
+
 	    /* create a new CONSTRUCT with the consequent of the old
 	     * query (constructRuleHead) treated as where clause.
 	     *
@@ -312,13 +319,6 @@ namespace w3c_sw {
 	    constructRuleHead->express(this);
 	    inUserRuleHead = false;
 	    TableOperation* op = last.tableOperation;
-
-	    /* Create a rule had from the userRuleBody and record to use later
-	     * to build a MappingConstruct. The constructRuleHead must already
-	     * be expressed in order to get the order of introduced variables.
-	     */
-	    p_GroupGraphPattern->express(this); // sets last.tableOperation
-	    constructRuleBodyAsConsequent = last.tableOperation;
 
 	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
