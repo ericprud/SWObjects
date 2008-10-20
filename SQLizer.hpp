@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.37 2008-10-17 16:06:19 eric Exp $
+ * $Id: SQLizer.hpp,v 1.38 2008-10-20 16:36:35 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -966,7 +966,14 @@ namespace w3c_sw {
 	    //curQuery->curJoin = NULL;
 	}
 	virtual void filter (Filter*, Expression* p_Constraint) {
-	    p_Constraint->express(this);
+	    try {
+		p_Constraint->express(this);
+		curQuery->addConstraint(curConstraint);
+	    } catch (nonLocalIdentifierException& e) {
+		SPARQLSerializer sparqlizer("  ");
+		p_Constraint->express(&sparqlizer);
+		std::cerr << "filter {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+	    }
 	}
 	void _BasicGraphPattern (ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    MARK;
@@ -982,14 +989,7 @@ namespace w3c_sw {
 	    NOW("bgp filters");
 	    for (std::vector<Filter*>::iterator filterIt = p_Filters->begin();
 		 filterIt != p_Filters->end(); ++filterIt)
-		try {
-		    (*filterIt)->express(this);
-		    curQuery->addConstraint(curConstraint);
-		} catch (nonLocalIdentifierException& e) {
-		    SPARQLSerializer sparqlizer("  ");
-		    (*filterIt)->express(&sparqlizer);
-		    std::cerr << "filter {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
-		}
+		(*filterIt)->express(this);
 	}
 	virtual void namedGraphPattern (NamedGraphPattern*, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    MARK;
