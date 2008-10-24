@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.5 2008-10-15 16:23:03 eric Exp $
+ * $Id: ResultSet.hpp,v 1.6 2008-10-24 10:57:31 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -63,11 +63,18 @@ namespace w3c_sw {
 
     class ResultSet {
     protected:
+	POSFactory* posFactory;
 	VariableList knownVars;
 	ResultList results;
+
     public:
-	ResultSet();
+	ResultSet(POSFactory* posFactory = NULL);
 	virtual ~ResultSet();
+	POSFactory* getPOSFactory () {
+	    if (posFactory == NULL)
+		throw(std::runtime_error("ConstructResultSet has no POSFactory."));
+	    return posFactory;
+	}
 	std::string toString() const;
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }
@@ -79,6 +86,10 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast(ResultSet*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    };
+
+    class ConstructResultSet : ResultSet {
+	ConstructResultSet(POSFactory* posFactory) : ResultSet(posFactory) {  }
     };
 
     /* TransformerResultSet: extra bits needed for query on query.

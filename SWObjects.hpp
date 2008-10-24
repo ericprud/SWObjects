@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.17 2008-10-20 16:37:35 eric Exp $
+ * $Id: SWObjects.hpp,v 1.18 2008-10-24 10:57:31 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -45,13 +45,15 @@ public:
 };
 
 template <typename T> class ProductionVector : public Base {
+protected:
     std::vector<T> data;
 public:
     ProductionVector () {  }
-    ProductionVector (T v) { data.push_back(v); }
-    ~ProductionVector () {
-	for (size_t i = 0; i < data.size(); i++)
-	    delete data[i];
+    ProductionVector (T v) { push_back(v); }
+    virtual ~ProductionVector () {
+	for (typename std::vector<T>::iterator it = ProductionVector<T>::begin(); 
+	     it != ProductionVector<T>::end(); ++it)
+	    delete *it;
     }
 
     void push_back(T v) {
@@ -84,6 +86,12 @@ public:
     iterator begin() { return iterator(data.begin(), this); }
     iterator end() { return iterator(data.end(), this); }
 #endif
+};
+template <typename T> class NoDelProductionVector : public ProductionVector<T> {
+public:
+    NoDelProductionVector () {  }
+    NoDelProductionVector (T v) : ProductionVector<T>(v) {  }
+    virtual ~NoDelProductionVector () { ProductionVector<T>::clear(); }
 };
 #if 0
 template <class T> class ProductionVector<T>::iterator:
@@ -150,7 +158,7 @@ public:
 class POS : public Terminal, public EvalInterface {
     friend class POSsorter;
 protected:
-    POS (std::string matched) : Terminal(matched) { }
+    POS (std::string matched) : Terminal(matched) {  }
     POS (std::string matched, bool gensym) : Terminal(matched, gensym) { }
     //    virtual int compareType (POS* to) = 0;
 public:
@@ -305,82 +313,22 @@ public:
     virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
 };
 
-class POSFactory {
-    typedef std::map<std::string, Variable*> VariableMap;
-    typedef std::map<std::string, BNode*> BNodeMap;
-    typedef std::map<std::string, URI*> URIMap;
-    typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
-    class MakeNumericRDFLiteral {
-    public:
-	virtual ~MakeNumericRDFLiteral () {  }
-	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
-    };
-
-protected:
-    VariableMap		variables;
-    BNodeMap		bnodes;
-    URIMap		uris;
-    RDFLiteralMap	rdfLiterals;
-    NULLpos		nullPOS;
-    NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
-
-public:
-    POSFactory () {  }
-    ~POSFactory();
-    Variable* getVariable(std::string name);
-    BNode* createBNode();
-    BNode* getBNode(std::string name);
-    URI* getURI(std::string name);
-    RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
-
-    IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
-    DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
-    DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
-
-    BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
-    NULLpos* getNULL () { return &nullPOS; }
-
-};
-
-    /* Sorter for the POSs. */
-class POSsorter;
-extern POSsorter* ThePOSsorter;
-
-class POSsorter {
-public:
-    std::map<const std::string, int> typeOrder;
-    POSsorter () {
-	//typeOrder.insert(make_pair(typeid(BNode).name(), 2));
-	typeOrder[typeid(BNode).name()] = 2;
-	typeOrder[typeid(URI).name()] = 3;
-	typeOrder[typeid(RDFLiteral).name()] = 4;
-	ThePOSsorter = this;
-    }
-    bool sort (const POS* lhs, const POS* rhs) {
-	const std::string lt = typeid(*lhs).name();
-	const std::string rt = typeid(*rhs).name();
-	const int li = typeOrder[lt];
-	const int ri = typeOrder[rt];
-	if (li < ri)
-	    return true;
-	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
-    }
-};
-
 class BasicGraphPattern;
+class POSFactory;
 
 class TriplePattern : public Base {
+    friend class POSFactory;
 private:
     POS* m_s; POS* m_p; POS* m_o;
     bool weaklyBound;
     static bool _bindVariable(POS* it, const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound);
-public:
     TriplePattern (POS* p_s, POS* p_p, POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
+public:
+    ~TriplePattern () {  }
     POS* getS () { return m_s; }
     POS* getP () { return m_p; }
     POS* getO () { return m_o; }
-    ~TriplePattern () {  }
     static bool lt (TriplePattern* l, TriplePattern* r) {
 	if (l->m_s != r->m_s) return l->m_s < r->m_s;
 	if (l->m_p != r->m_p) return l->m_p < r->m_p;
@@ -414,8 +362,78 @@ public:
 	    _bindVariable(tp->m_p, m_p, rs, provisional, weaklyBound) && 
 	    _bindVariable(tp->m_o, m_o, rs, provisional, weaklyBound);
     }
-    bool construct(BasicGraphPattern* target, Result* r, bool bNodesGenSymbols = true);
+    bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true);
 };
+
+class POSFactory {
+    typedef std::map<std::string, Variable*> VariableMap;
+    typedef std::map<std::string, BNode*> BNodeMap;
+    typedef std::map<std::string, URI*> URIMap;
+    typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
+    typedef std::map<std::string, TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
+    class MakeNumericRDFLiteral {
+    public:
+	virtual ~MakeNumericRDFLiteral () {  }
+	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
+    };
+
+protected:
+    VariableMap		variables;
+    BNodeMap		bnodes;
+    URIMap		uris;
+    RDFLiteralMap	rdfLiterals;
+    TriplePatternMap	triples;
+    NULLpos		nullPOS;
+    NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+
+public:
+    POSFactory () {  }
+    ~POSFactory();
+    Variable* getVariable(std::string name);
+    BNode* createBNode();
+    BNode* getBNode(std::string name);
+    URI* getURI(std::string name);
+    RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
+
+    IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+
+    BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
+    NULLpos* getNULL () { return &nullPOS; }
+
+    TriplePattern* getTriple(POS* s, POS* p, POS* o, bool weaklyBound = false);
+    TriplePattern* getTriple (TriplePattern* p, bool weaklyBound) {
+	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
+    }
+
+};
+
+    /* Sorter for the POSs. */
+class POSsorter;
+extern POSsorter* ThePOSsorter;
+
+class POSsorter {
+public:
+    std::map<const std::string, int> typeOrder;
+    POSsorter () {
+	//typeOrder.insert(make_pair(typeid(BNode).name(), 2));
+	typeOrder[typeid(BNode).name()] = 2;
+	typeOrder[typeid(URI).name()] = 3;
+	typeOrder[typeid(RDFLiteral).name()] = 4;
+	ThePOSsorter = this;
+    }
+    bool sort (const POS* lhs, const POS* rhs) {
+	const std::string lt = typeid(*lhs).name();
+	const std::string rt = typeid(*rhs).name();
+	const int li = typeOrder[lt];
+	const int ri = typeOrder[rt];
+	if (li < ri)
+	    return true;
+	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+    }
+};
+
 /* END Parts Of Speach */
 
 class Expression : public Base, public EvalInterface {
@@ -515,22 +533,17 @@ public:
 class DontDeleteThisBGP;
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 protected:
-    ProductionVector<TriplePattern*> m_TriplePatterns;
+    // make sure we don't delete the TriplePatterns
+    NoDelProductionVector<TriplePattern*> m_TriplePatterns;
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
 
 public:
-    void addTriplePattern (POS* s, POS* p, POS* o) { m_TriplePatterns.push_back(new TriplePattern(s, p, o)); }
     void addTriplePattern (TriplePattern* p) {
 	for (std::vector<TriplePattern*>::iterator it = m_TriplePatterns.begin();
-	     it != m_TriplePatterns.end(); ++it) {
-	    if ((*it)->getS() == p->getS() && 
-		(*it)->getP() == p->getP() && 
-		(*it)->getO() == p->getO()) {
-		delete p;
+	     it != m_TriplePatterns.end(); ++it)
+	    if (*it == p)
 		return;
-	    }
-	}
 	m_TriplePatterns.push_back(p);
     }
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);

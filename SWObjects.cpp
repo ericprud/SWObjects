@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.11 2008-10-17 22:24:42 eric Exp $
+ * $Id: SWObjects.cpp,v 1.12 2008-10-24 10:57:31 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -379,7 +379,13 @@ void NumberExpression::express (Expressor* p_expressor) {
 
     POSsorter* ThePOSsorter;
 
+    /* <POSFactory> */
     POSFactory::~POSFactory () {
+
+	std::map<std::string, TriplePattern*>::iterator iTriples;
+	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
+	    delete iTriples->second;
+	triples.clear();
 
 	std::map<std::string, Variable*>::iterator iVariables;
 	for (iVariables = variables.begin(); iVariables != variables.end(); iVariables++)
@@ -535,6 +541,22 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    return (NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
+    TriplePattern* POSFactory::getTriple (POS* s, POS* p, POS* o, bool weaklyBound) {
+	std::stringstream key;
+	key << s << p << o << weaklyBound;
+	TriplePatternMap::const_iterator vi = triples.find(key.str());
+	if (vi == triples.end()) {
+	    TriplePattern* ret = new TriplePattern(s, p, o);
+	    triples[key.str()] = ret;
+	    return ret;
+	} else {
+	    TriplePattern* ret = vi->second;
+	    return ret;
+	}
+    }
+
+    /* </POSFactory> */
+
     POS* BNode::eval (Result* r, bool bNodesGenSymbols) {
 	return bNodesGenSymbols ? this : r->get(this);
     }
@@ -679,13 +701,13 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    }
 	}
     }
-    bool TriplePattern::_bindVariable (POS* it, const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) {
-	POS* curVal = it->eval(provisional, false);
+    bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
+	POS* curVal = pattern->eval(provisional, false);
 	if (curVal == NULL) {
-	    rs->set(provisional, it, p, weaklyBound);
+	    rs->set(provisional, pattern, constant, weaklyBound);
 	    return true;
 	}
-	return p == curVal;
+	return constant == curVal;
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
@@ -713,16 +735,23 @@ void NumberExpression::express (Expressor* p_expressor) {
 	for (ResultSetIterator result = rs->begin() ; result != rs->end(); result++)
 	    for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
-		(*triple)->construct(target, *result);
+		(*triple)->construct(target, *result, rs->getPOSFactory());
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, bool bNodesGenSymbols) {
+    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
 	bool ret = false;
 	POS *s, *p, *o;
 	if ((s = m_s->eval(r, bNodesGenSymbols)) != NULL && 
 	    (p = m_p->eval(r, bNodesGenSymbols)) != NULL && 
-	    (o = m_o->eval(r, bNodesGenSymbols)) != NULL)
-	    target->addTriplePattern(s, p, o);
+	    (o = m_o->eval(r, bNodesGenSymbols)) != NULL) {
+	    if (posFactory == NULL) {
+		if (s == m_s && p == m_p && o == m_o && !weaklyBound)
+		    target->addTriplePattern(this);
+		else
+		    throw(std::runtime_error("TriplePattern::construct requires POSFactory when constructing new triples."));
+	    } else
+		  target->addTriplePattern(posFactory->getTriple(s, p, o));
+	}
 	return ret;
     }
 

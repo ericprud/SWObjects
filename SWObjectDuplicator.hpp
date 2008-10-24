@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.5 2008-10-17 20:21:53 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.6 2008-10-24 10:57:31 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -77,14 +77,14 @@ namespace w3c_sw {
 	virtual void nullpos (NULLpos* self) {
 	    last.posz.pos = posFactory ? posFactory->getNULL() : self;
 	}
-	virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void triplePattern (TriplePattern* self, POS* p_s, POS* p_p, POS* p_o) {
 	    p_s->express(this);
 	    POS* s = last.posz.pos;
 	    p_p->express(this);
 	    POS* p = last.posz.pos;
 	    p_o->express(this);
 	    POS* o = last.posz.pos;
-	    last.triplePattern = new TriplePattern(s, p, o);
+	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
 	virtual void filter (Filter*, Expression* p_Constraint) {
 	    p_Constraint->express(this);

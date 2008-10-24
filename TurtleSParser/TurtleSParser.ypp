@@ -1,4 +1,4 @@
-/* $Id: TurtleSParser.ypp,v 1.1 2008-08-27 12:09:57 jnorthru Exp $ -*- mode: c++ -*- */
+/* $Id: TurtleSParser.ypp,v 1.2 2008-10-24 10:57:32 eric Exp $ -*- mode: c++ -*- */
 /** \file TurtleSParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
@@ -310,7 +310,7 @@ Object:
     GraphNode	{
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
-	driver.curBGP->addTriplePattern(driver.curSubject, driver.curPredicate, $1);
+	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
 	$$ = $1;
     }
 ;
@@ -359,9 +359,9 @@ Collection:
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	for (unsigned i = 0; i < members->size(); i++) {
-	    driver.curBGP->addTriplePattern(tail, first, members->at(i));
+	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
 	    POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-	    driver.curBGP->addTriplePattern(tail, rest, nextTail);
+	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
 	    tail = nextTail;
 	}
 	members->clear();

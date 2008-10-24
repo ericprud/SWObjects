@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.5 2008-10-15 16:23:03 eric Exp $
+ * $Id: ResultSet.cpp,v 1.6 2008-10-24 10:57:31 eric Exp $
  */
 
 #include "ResultSet.hpp"
@@ -48,7 +48,7 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet () : knownVars(), results() {
+    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results() {
 	results.insert(results.begin(), new Result(this));
     }
 

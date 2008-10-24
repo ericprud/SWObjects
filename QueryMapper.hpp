@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.10 2008-10-17 20:23:25 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.11 2008-10-24 10:57:30 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -36,7 +36,7 @@ namespace w3c_sw {
 	    return c;
 	}
 	void _map (TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
-	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint);
+	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint, posFactory);
 
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
