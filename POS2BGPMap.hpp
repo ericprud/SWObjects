@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.24 2008-10-17 22:24:42 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.25 2008-10-25 23:36:02 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -528,7 +528,10 @@ namespace w3c_sw {
 	    return ret;
 	}
 
-	/* Collect all the POS entries referenced in a particular TableOperation. */
+	/* Collect all the POS entries referenced in a particular TableOperation
+	 * so that SQL subqueries know which variables to propagate up in the
+	 * select.
+	 */
 	std::vector<POS*> entriesFor (TableOperation* op) {
 	    std::vector<POS*> ret;
 	    for (ConsequentMapList::iterator varIt = consequents.begin();

@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.20 2008-10-24 10:57:31 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.21 2008-10-25 23:36:03 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -169,6 +169,13 @@ namespace w3c_sw {
 	    if (opRS == NULL)
 		throw(std::runtime_error("MappingConstrucs need a result set.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
 
+	    /* Build a disjoint in a where clause for the transformed user
+	     * query. Currently, the approach is to express the rule head as a
+	     * pattern with OPTIONALs; express the query as a graph, and create
+	     * conjunctions for each match.  May be better to tweak the graph
+	     * match to build the new query directly.
+	     */
+
 	    /* 04 — Execute the query C on the query disjoint D, producing a result set RScd.
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
@@ -302,9 +309,9 @@ namespace w3c_sw {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
-	    /* Create a rule had from the userRuleBody and record to use later
-	     * to build a MappingConstruct. The constructRuleHead must already
-	     * be expressed in order to get the order of introduced variables.
+	    /* Create a rule head from the userRuleBody and record to use later
+	     * to build a MappingConstruct. Traverse the userRuleBody before the
+	     * constructRuleHead to establish the order of introduced variables.
 	     */
 	    p_GroupGraphPattern->express(this); // sets last.tableOperation
 	    constructRuleBodyAsConsequent = last.tableOperation;
