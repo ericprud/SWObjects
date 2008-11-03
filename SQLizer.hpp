@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.38 2008-10-20 16:36:35 eric Exp $
+ * $Id: SQLizer.hpp,v 1.39 2008-11-03 19:29:35 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -672,7 +672,7 @@ namespace w3c_sw {
 	{  }
 	~SQLizer () { delete curQuery; }
 
-	std::string getSPARQLstring () { return curQuery->toString(); }
+	std::string getSQLstring () { return curQuery->toString(); }
 
 	virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 

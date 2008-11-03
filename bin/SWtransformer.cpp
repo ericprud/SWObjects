@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.19 2008-10-17 16:41:20 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.20 2008-11-03 19:29:34 eric Exp $
  */
 
 /* START main */
@@ -145,7 +145,7 @@ int main(int argc,char** argv) {
 		    o->express(&s2);
 		    if (!Quiet)
 			cout << "Transformed query: " << endl;
-		    cout << s2.getSPARQLstring() << endl;
+		    cout << s2.getSQLstring() << endl;
 		}
 		delete o;
 	    } catch (runtime_error& e) {
