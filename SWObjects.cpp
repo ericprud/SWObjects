@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.12 2008-10-24 10:57:31 eric Exp $
+ * $Id: SWObjects.cpp,v 1.13 2008-11-03 19:25:17 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -273,7 +273,7 @@ void BindingClause::express (Expressor* p_expressor) {
     p_expressor->bindingClause(this, m_Vars, this);
 }
 void WhereClause::express (Expressor* p_expressor) {
-    p_expressor->whereClause(this, m_GroupGraphPattern,m_BindingClause);
+    p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
 }
 void Select::express (Expressor* p_expressor) {
     p_expressor->select(this, m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
