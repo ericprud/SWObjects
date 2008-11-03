@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.18 2008-10-24 10:57:31 eric Exp $
+ * $Id: SWObjects.hpp,v 1.19 2008-11-03 19:27:11 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -28,10 +28,17 @@ namespace w3c_sw {
 class StringException : public std::exception {
 public:
     char const* str;
-    char const* what() const throw() { return str; }
     static std::map<StringException*, std::string> strs;
-    StringException (std::string m) : str(m.c_str()) { strs[this] = m; }
+
+    StringException (std::string m) : str(m.c_str()) {
+	strs[this] = m;
+    }
+    StringException (StringException& orig) {
+	strs[this] = strs[&orig];
+	str = strs[this].c_str();
+    }
     virtual ~StringException () throw() { strs.erase(this); }
+    char const* what() const throw() { 	return str; }
 };
 
 class Expressor;
