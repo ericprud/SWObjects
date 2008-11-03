@@ -2,7 +2,7 @@
  * This is a simple SWObjectDuplicator with an overloaded whereClause method
  * to match against each of the patterns in the rule heads.
  *
- * $Id: QueryMapper.hpp,v 1.11 2008-10-24 10:57:30 eric Exp $
+ * $Id: QueryMapper.hpp,v 1.12 2008-11-03 19:24:26 eric Exp $
  */
 
 #ifndef QueryMapper_H
@@ -10,6 +10,7 @@
 
 #include "SWObjectDuplicator.hpp"
 #include "RuleInverter.hpp"
+#include "RdfQueryDB.hpp"
 
 namespace w3c_sw {
 
@@ -92,6 +93,8 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_08
 	     */
 	    TableOperation* pattern = constructed->simplify();
+	    if (pattern == NULL)
+		pattern = new DefaultGraphPattern();
 
 	    last.bindingClause = NULL;
 	    if (p_BindingClause != NULL)
