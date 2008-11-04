@@ -1,5 +1,5 @@
 /* ParserCommon.hpp - commonalities between SPARQL/RDF-related parsers
- * $Id: ParserCommon.hpp,v 1.3 2008-09-07 18:13:12 eric Exp $
+ * $Id: ParserCommon.hpp,v 1.4 2008-11-04 15:11:52 eric Exp $
  */
 
 #ifndef PARSER_COMMON_HH
@@ -97,9 +97,10 @@ public:
 
     w3c_sw::URI* getNamespace (std::string prefix) {
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
-	if (vi == namespaces.end())
-	    throw(UnknownPrefixException(prefix));
-	else
+	if (vi == namespaces.end()) {
+	    UnknownPrefixException e(prefix);
+	    throw(e);
+	} else
 	    return vi->second;
     }
     w3c_sw::URI* getBase () { return base; }

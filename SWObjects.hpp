@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.19 2008-11-03 19:27:11 eric Exp $
+ * $Id: SWObjects.hpp,v 1.20 2008-11-04 15:10:33 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -33,10 +33,14 @@ public:
     StringException (std::string m) : str(m.c_str()) {
 	strs[this] = m;
     }
+    // !!! needs copy constructor in MS compilations, but
+    //     haven't got UnknownPrefixException working in g++
+#ifdef WIN32
     StringException (StringException& orig) {
 	strs[this] = strs[&orig];
 	str = strs[this].c_str();
     }
+#endif
     virtual ~StringException () throw() { strs.erase(this); }
     char const* what() const throw() { 	return str; }
 };
