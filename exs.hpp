@@ -11,8 +11,8 @@ using namespace std;
 
 vector<string> journal;
 
-struct barf : w3c_sw::StringException {
-    barf (char const* type, char const* file, size_t line, const char* fmt, va_list args) : 
+struct StackException : w3c_sw::StringException {
+    StackException (char const* type, char const* file, size_t line, const char* fmt, va_list args) : 
 	w3c_sw::StringException(make(type, file, line, fmt, args)) {  }
 protected:
     std::string make (char const* type, string file, size_t line, char const* fmt, va_list args) {
@@ -44,10 +44,10 @@ public:
     }
 };
 
-barf varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...) {
+StackException varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    barf ret = barf(type, file,  line, fmt, args);
+    StackException ret = StackException(type, file,  line, fmt, args);
     va_end(args);
     return ret;
 }

@@ -1,4 +1,4 @@
-<!--
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -6,7 +6,7 @@
   <title>Index of /2005/03/css-dep</title>
  </head>
  <body>
--->
+
    <h1 id="title">SWObjects Source Code Directory</h1>
 
    <p>This is a set of utilities implemented in C++ for working with SemWeb objects (triples, graphs, query patterns, SPARQL and N3 operations, etc). This implements query mapping based on <a href="../../07/MappingRules/">Mapping Rules</a> and provides the base for a SPASQL engine in MySQL.</p>
@@ -23,7 +23,7 @@
     <h2 id="TOC">Table of Contents</h2>
 
     <ul>
-      <li><a href="#build">Building SWObjects</a>
+      <li><a href="#build">Building SWObjects</a></li>
       <li><a href="#files">Files</a>
       <ul>
 	<li><a href="#make">Building and Testing</a></li>
@@ -122,7 +122,15 @@
 
    <h2 id="arch">Architecture</h2>
 
-    <p>To minimize expensive string comparison, and less expensive std::string::operator== use, the primitive parts of speach (class: <em style="font-weight: bold" id="POS">POS</em>) are created only once-each by a <em style="font-weight: bold" id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
+   <h3>Matching <code>BasicGraphPattern</code>s</h3>
+
+   <p>Given a set of TriplePatterns to match against a set of triples (which are also implemented as TriplePatterns), each atom (</p>
+
+   <h3>Matching <code>GraphPattern</code>s</h3>
+
+    <h3>URI, BNode, Literal and TriplePattern Atoms</h3>
+
+    <p>The primitive parts of speach (class: <em style="font-weight: bold" id="POS">POS</em>) and (class: <em style="font-weight: bold" id="TriplePattern">TriplePattern</em>) are created only once-each by a <em style="font-weight: bold" id="POSFactory">POSFactory</em>. Applications typically create such a factory at the beginning of execution and destroy it at the end:</p>
 
     <pre style="margin: 2em; border: thin solid #ccffcc; background-color: #eeffee;">int main(int argc,char** argv) {
     w3c_sw::POSFactory posFactory;
@@ -317,3 +325,4 @@ SELECT union1.somePerson AS somePerson
 
    <h2 id="dir">Apache Directory Listing</h2>
 
+ </body></html>

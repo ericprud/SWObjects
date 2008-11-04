@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.25 2008-10-25 23:36:02 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.26 2008-11-04 15:12:53 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -40,6 +40,7 @@
 #pragma once
 
 #include "SWObjects.hpp"
+#include "ResultSet.hpp"
 #include "exs.hpp"
 #include <set>
 #include <vector>
@@ -62,7 +63,7 @@ namespace w3c_sw {
 	GraphInclusion getOperationStrength (TableOperation* bgp) {
 	    std::map<TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
-		(it->second & _Binding_WEAK && !(it->second & _Binding_INTRODUCED)))
+		(it->second & _Binding_WEAK && 0)) // !(it->second & _Binding_INTRODUCED)))
 		return GraphInclusion_NONE;
 	    return it->second & _Binding_GRAPH ? GraphInclusion_STRONG : GraphInclusion_WEAK;
 	}
@@ -134,47 +135,7 @@ namespace w3c_sw {
 		    !dynamic_cast<BNode*>(pos))
 		    return;
 
-		TableOperation* bgp = currentBGP;
-		ConsequentMapList::iterator maps = consequents.find(pos);
-		if (maps == consequents.end()) {
-		    /* No BGP has introduced this variable. */
-		    consequents[pos][bgp] = strength;
-		} else {
-		    std::map<TableOperation*, _BindingStrength>::iterator consequent = consequents[pos].find(bgp);
-		    if (consequent == consequents[pos].end()) {
-			/* This BGP has not introduced this variable. */
-
-			/* Omit { variables => BGP } mappings where the BGP is optional and the variable is mandatory elsewhere.
-			 * 06b — If the variable is weak in S and GA is optional and the variable is not in any mandatory antecedent graph, tag GA as an included optional.
-			 *                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-			 */
-			if (strength & _Binding_WEAK) {
-			    /* Only assert if no existing mandatory BGPs introduce this variable. */
-			    for (std::map<TableOperation*, _BindingStrength>::iterator bgps = consequents[pos].begin();
-				 bgps != consequents[pos].end(); ++bgps)
-				if (bgps->second & _Binding_GRAPH) {
-				    /* Already introduced elsewhere, so just return. */
-				    strength = (_BindingStrength)(strength & ~_Binding_INTRODUCED);
-				    break;
-				}
-			} else {
-			    /* No existing optional BGPs introduce this variable. */
-			    for (std::map<TableOperation*, _BindingStrength>::iterator bgps = consequents[pos].begin();
-				 bgps != consequents[pos].end(); ++bgps)
-				if (bgps->second & _Binding_WEAK) // !!! OPT { ?x } .?x  -- keep the first one? guess not.
-				    consequents[pos][bgps->first] = (_BindingStrength)(consequents[pos][bgps->first] &~ _Binding_INTRODUCED);
-			}
-			consequents[pos][bgp] = strength;
-		    } else if ((strength == _Binding_GRAPH  && consequents[pos][bgp] == _Binding_SELECT) || 
-			       (strength == _Binding_SELECT && consequents[pos][bgp] == _Binding_GRAPH )) {
-			consequents[pos][bgp] = (_BindingStrength)(consequents[pos][bgp] | strength);
-		    } else if ((consequents[pos][bgp] & ~_Binding_INTRODUCED) != strength) { // !!!!
-			std::string sp(pos->toString());
-			std::string ss(ConsequentMapList::bindingStr(strength));
-			std::string sc(ConsequentMapList::bindingStr(consequents[pos][bgp]));
-			FAIL4("consequents[%s][%p] = %s; was %s.", sp.c_str(), bgp, ss.c_str(), sc.c_str()); // @@ shouldn't happen? consequents[pos][bgp] = false;
-		    }
-		}
+		consequents[pos][currentBGP] = strength;
 	    }
 
 	public:
@@ -458,7 +419,7 @@ namespace w3c_sw {
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    NOW("finding corefs");
 	    ctor.findCorefs(op);
-	    if (0 && *debugStream != NULL) {
+	    if (*debugStream != NULL) {
 		**debugStream << "Consequents:" << std::endl << consequents.dump();
 		**debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	    }

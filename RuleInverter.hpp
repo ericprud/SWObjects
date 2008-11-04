@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.21 2008-10-25 23:36:03 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.22 2008-11-04 15:12:53 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -75,6 +75,7 @@ namespace w3c_sw {
          *   construct on each triple pattern.
 	 */
 	class MappedDuplicator : public SWObjectDuplicator {
+#define WatchOptsOnly false
 
 	protected:
 	    ConsequentMap* includeRequiredness;
@@ -101,28 +102,44 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern999 (NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		if (WatchOptsOnly) {
+		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    return;
+		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
 		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern999 (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		if (WatchOptsOnly) {
+		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
+		    return;
+		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
 		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void tableConjunction999 (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		if (WatchOptsOnly) {
+		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
+		    return;
+		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
 		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void tableDisjunction999 (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+		if (WatchOptsOnly) {
+		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
+		    return;
+		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
@@ -140,7 +157,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern999 (GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -208,14 +225,20 @@ namespace w3c_sw {
 	    }
 
 	    TableOperation* res = patternSpanningRows->simplify();
-	    opRS->copyFiltersTo(res);
+	    if (res != NULL) {
+		opRS->copyFiltersTo(res);
+		opRS->addTableOperation(res);
 
-	    if (*debugStream != NULL) {
-		SPARQLSerializer s;
-		res->express(&s);
-		**debugStream << "yielding transformed query disjoint:" << endl << s.getSPARQLstring() << endl;
 	    }
-	    opRS->addTableOperation(res);
+	    if (*debugStream != NULL) {
+		if (res == NULL) {
+		    **debugStream << "yielding no transformed query disjoint." << endl << endl;
+		} else {
+		    SPARQLSerializer s;
+		    res->express(&s);
+		    **debugStream << "yielding transformed query disjoint:" << endl << s.getSPARQLstring() << endl;
+		}
+	    }
 	    return opRS;
 	}
     };
@@ -346,7 +369,7 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
-	    if (0 && *debugStream != NULL) {
+	    if (*debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
 		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
