@@ -13,6 +13,7 @@
 #include <string>
 #include "boost/regex.hpp"
 #include "dlib/server.h"
+#include <mysql/mysql.h>
 
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
@@ -66,6 +67,27 @@ class WebServer : public server::http_1a_c
 	    "<pre>" << queryStr << "</pre>\n"
 	    "<h1>SQL Query</h1>\n"
 	    "<pre>" << sqlizer.getSQLstring() << "</pre>\n";
+
+	MYSQL mysql,*sock;
+	MYSQL_RES *res;
+	if (!(sock = mysql_real_connect(&mysql,NULL,"root",0,"DiabeticPatientsDataSet",0,NULL,0)))
+	    perror("connect");
+	else {
+	    if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
+		sout << "<p>query</p>" << endl;
+	    else {
+		char space[1024];
+		if (!(res=mysql_store_result(sock))) {
+		    sprintf(space,"Couldn't get result from %s\n",
+			    mysql_error(sock));
+		    sout << space;
+		} else {
+		    sprintf(space, "<p>number of fields: %d</p>\n",mysql_num_fields(res));
+		    sout << space;
+		}
+	    }
+	}
+	
 
 	foot(sout);
     }
