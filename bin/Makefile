@@ -65,10 +65,10 @@ DLIBINC ?= ../../dlib
 DLIB= -D NO_MAKEFILE -I$(DLIBDIR)
 
 SPARQL_server.o : SPARQL_server.cpp
-	$(CXX) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
+	$(CXX) -DSTUPID_TIGHT_LOOP=1 -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 SPARQL_server : SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -lboost_regex -L/usr/local/lib/mysql -lmysqlclient -o $@ $< $(LDFLAGS)
+	$(CXX) -lnsl -lpthread -lboost_regex -lmysqlclient -o $@ $< $(LDFLAGS)
 
 # list of tests
 

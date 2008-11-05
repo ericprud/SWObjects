@@ -22,35 +22,54 @@
 
 #include "SPARQLSerializer.hpp"
 
+const char* SELECT_QUERY = "SELECT * FROM test";
+
 using namespace dlib;
 using namespace std;
 using namespace w3c_sw;
 
 ostream* DebugStream = NULL;
-string SPARQL_path;
+string ServerPath = "/SPARQL";
+int ServerPort = 8888;
+string ServerTerminate;
 string StemURI;
 POSFactory posFactory;
 SPARQLfedDriver sparqlParser("", &posFactory);
 QueryMapper queryMapper(&posFactory, &DebugStream);
+bool Done = false;
+int Served = 0;
+
+void head (ostringstream& sout, string title) {
+    sout << 
+	"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+	"          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+	"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+	"  <head>\n"
+	"    <title>" << title << "</title>\n"
+	"  </head>\n"
+	"  <body>\n"
+	"    <h1>" << title << "</h1>\n";
+}
+void foot (ostringstream& sout) {
+    sout << "  </body>\n</html>\n";
+}
+
+struct SimpleMessageException : public StringException {
+    SimpleMessageException (string msg) : StringException(make(msg)) {  }
+    string make (string msg) {
+	ostringstream sout;
+
+	head(sout, "Q&D SPARQL Server Error");
+	sout << 
+	    "    <pre>" << msg << "</pre>\n";
+	foot(sout);
+	return sout.str();
+    }
+};
 
 class WebServer : public server::http_1a_c
 {
-    void head (ostringstream& sout, string title) {
-	sout << 
-	    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
-	    "          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
-	    "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-	    "  <head>\n"
-	    "    <title>" << title << "</title>\n"
-	    "  </head>\n"
-	    "  <body>\n";
-    }
-    void foot (ostringstream& sout) {
-	sout << "  </body>\n</html>\n";
-    }
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
-	head(sout, "Query Results");
-
 	SPARQLSerializer s;
 	query->express(&s);
 	cerr << s.getSPARQLstring() << endl;
@@ -62,34 +81,89 @@ class WebServer : public server::http_1a_c
 	char nodeDelims[]={'/','.',' '};
 	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, &DebugStream);
 	mapped->express(&sqlizer);
+
+	MYSQL mysql,*sock;
+	MYSQL_RES *result;
+	mysql_init(&mysql);
+	if (!(sock = mysql_real_connect(&mysql,NULL,"root",0,"benchmark",0,NULL,0)))
+	    throw(SimpleMessageException("couldn't connect"));
+	if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
+	    throw(SimpleMessageException("couldn't execute"));
+	if (!(result=mysql_store_result(sock)))
+	    throw(SimpleMessageException("couldn't get result"));
+
+#if HTML_RESULTS
+	head(sout, "Query Results");
+
 	sout <<
 	    "<h1>SPARQL Query</h1>\n"
 	    "<pre>" << queryStr << "</pre>\n"
 	    "<h1>SQL Query</h1>\n"
 	    "<pre>" << sqlizer.getSQLstring() << "</pre>\n";
+	char space[1024];
+	sprintf(space, "<p>number of fields: %d</p>\n", mysql_num_fields(result));
+	sout << space;
 
-	MYSQL mysql,*sock;
-	MYSQL_RES *res;
-	if (!(sock = mysql_real_connect(&mysql,NULL,"root",0,"DiabeticPatientsDataSet",0,NULL,0)))
-	    perror("connect");
-	else {
-	    if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
-		sout << "<p>query</p>" << endl;
-	    else {
-		char space[1024];
-		if (!(res=mysql_store_result(sock))) {
-		    sprintf(space,"Couldn't get result from %s\n",
-			    mysql_error(sock));
-		    sout << space;
-		} else {
-		    sprintf(space, "<p>number of fields: %d</p>\n",mysql_num_fields(res));
-		    sout << space;
-		}
+	int num_fields = mysql_num_fields(result);
+	sout << 
+	    "    <table>\n"
+	    "      <tr>";
+
+	/* dump headers in <th/>s */
+	MYSQL_FIELD *field;
+       	while((field = mysql_fetch_field(result)))
+	    sout << "<th>" << field->name << "[" << field->type << "]</th>";
+	sout << "</tr>\n";
+
+	/* dump data in <td/>s */
+	MYSQL_ROW row;
+	while ((row = mysql_fetch_row(result))) {
+	    unsigned long *lengths;
+	    lengths = mysql_fetch_lengths(result);
+	    sout << "      <tr>";
+	    for(int i = 0; i < num_fields; i++) {
+		sprintf(space, "[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
+		sout << "<td>" << space << "</td>";
 	    }
+	    sout("</tr>");
 	}
-	
-
+	sout << "    </table>";
 	foot(sout);
+
+#else /* !HTML_RESULTS */
+	int num_fields = mysql_num_fields(result);
+	sout << 
+	    "<?xml version='1.0'?>\n"
+	    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
+	    "  <head>\n";
+
+	/* dump headers in <th/>s */
+	MYSQL_FIELD *field;
+	MYSQL_FIELD *fields = mysql_fetch_fields(result);
+	for(int i = 0; i < num_fields; i++)
+	    sout << "    <variable name='" << fields[i].name << "'/>\n";
+	sout << "  </head>\n";
+	sout << "  <results>\n";
+
+	/* dump data in <td/>s */
+	MYSQL_ROW row;
+	while ((row = mysql_fetch_row(result))) {
+	    unsigned long *lengths;
+	    lengths = mysql_fetch_lengths(result);
+	    sout << "    <result>\n";
+	    for(int i = 0; i < num_fields; i++)
+		if (row[i])
+		    sout << "      <binding name='" << fields[i].name << "'>\n"
+			"        <literal>" << row[i] << "</literal>\n"
+			"      </binding>\n";
+	    sout << "    </result>\n";
+	}
+	sout << 
+	    "  </results>\n"
+	    "</sparql>";
+#endif /* !HTML_RESULTS */
+
+	++Served;
     }
 
     void on_request (
@@ -106,16 +180,25 @@ class WebServer : public server::http_1a_c
         unsigned short local_port
     )
     {
-        try
-        {
+        try {
             ostringstream sout;
 
-	    if (path == SPARQL_path) {
-		if (sparqlParser.parse_string(queries["query"])) {
+	    if (path == ServerPath) {
+		/* dlib doesn't use STL.  I don't know how to test
+		   queries["action"] without throwing an exception
+		   when it's not set.  So, I make all uses of this
+		   function use exactly the same query parameters.
+		 */
+		if (queries["query"] == "stop") {
+		    head(sout, "Done!");
+		    sout << "    <p>Served " << Served << " queries.</p>\n";
+		    foot(sout);
+
+		    Done = true;
+		} else if (sparqlParser.parse_string(queries["query"])) {
 		    head(sout, "Query Error");
 
-		    sout << "    <h1>Query Error</h1>\n"
-			"    <p>Query</p>\n"
+		    sout << "    <p>Query</p>\n"
 			"    <pre>" << queries["query"] << "</pre>\n"
 			"    <p>is screwed up.</p>\n"
 			 << endl;
@@ -129,7 +212,7 @@ class WebServer : public server::http_1a_c
 	    } else if (path != "/") {
 		head(sout, "Not Found");
 
-		sout << "    <h1>Not Found</h1>\n"
+		sout << 
 		    "    <p>path: " << path << "</p>\n"
 		    "    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
 		     << endl;
@@ -137,24 +220,31 @@ class WebServer : public server::http_1a_c
 
 		sout << "    <h2>Client Headers</h2>\n"
 		    "    <ul>";
-		// Echo out all the HTTP headers we received from the client web browser
+		// Why not dump the HTTP headers? Sure...
 		incoming_headers.reset();
 		while (incoming_headers.move_next())
-		    sout << "      <li>" << incoming_headers.element().key() << ": " << incoming_headers.element().value() << "</li>\n" << endl;
+		    sout << "      <li>" << incoming_headers.element().key() 
+			 << ": " << incoming_headers.element().value() 
+			 << "</li>\n" << endl;
 		sout << "    </ul>\n" << endl;
 
 		foot(sout);
 	    } else {
 		head(sout, "Q&D SPARQL Server");
-
-		sout << "    <h1>SPARQL Query Interface</h1>\n"
-		    "    <form action='" << SPARQL_path << "' method='get'>\n"
+		sout << 
+		    "    <form action='" << ServerPath << "' method='get'>\n"
 		    "      Query: <textarea name='query' rows='25' cols='50'></textarea> <input type='submit' />\n"
+		    "    </form>\n"
+		    "    <form action='" << ServerPath << "' method='post'>\n"
+		    "      server status: running, " << Served << " served. <input name='query' type='submit' value='stop'/>\n"
 		    "    </form>\n"; 
-
 		foot(sout);
 	    }
             result = sout.str();
+        }
+        catch (SimpleMessageException& e)
+        {
+	    result = e.what();
         }
         catch (exception& e)
         {
@@ -164,7 +254,7 @@ class WebServer : public server::http_1a_c
 
             cerr << what << endl;
 	    head(sout, "Q&D SPARQL Server Error");
-	    sout << "    <h1>Q&D SPARQL Server Error</h1>\n"
+	    sout << 
 		"    <pre>" << query << "</pre>\n"
 		"    <p>yeilded</p>\n"
 		"    <pre>" << what << "</pre>\n"; 
@@ -180,17 +270,19 @@ WebServer TheServer;
 
 void thread ()
 {
+#if STUPID_TIGHT_LOOP
+    cout << "a POST to <" << ServerTerminate << "> with query=stop will terminate the server." << endl;
+    while (!Done) dlib::sleep(1000);
+    cout << "Done: served " << Served << " queries." << endl;
+#else
     cout << "Press enter to end this program" << endl;
     cin.get();
-    // this will cause the server to shut down which will in turn cause 
-    // TheServer.start() to unblock and thus the main() function will terminate.
+#endif
     TheServer.clear();
 }
 
 void startServer (const char* url) {
 #ifdef WIN32
-    int port = 8888;
-    SPARQL_path = "/SPARQL";
 #else /* !WIN32 */
     boost::regex re;
     boost::cmatch matches;
@@ -207,13 +299,15 @@ void startServer (const char* url) {
 #define PATH 4
     string ports(matches[PORT].first, matches[PORT].second);
     istringstream portss(ports);
-    int port;
-    portss >> port;
-    SPARQL_path = string(matches[PATH].first, matches[PATH].second);
+    portss >> ServerPort;
+    ServerPath = string(matches[PATH].first, matches[PATH].second);
 #endif /* !WIN32 */
 
-    // make it listen on port port
-    TheServer.set_listening_port(port);
+    ostringstream s;
+    s << "http://localhost:" << ServerPort << ServerPath;
+    ServerTerminate = s.str();
+
+    TheServer.set_listening_port(ServerPort);
     TheServer.start();
 }
 
