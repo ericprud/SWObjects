@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.40 2008-11-05 22:12:52 eric Exp $
+ * $Id: SQLizer.hpp,v 1.41 2008-11-05 23:18:53 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -368,6 +368,7 @@ namespace w3c_sw {
 	    std::vector<Join*> joins;
 	public: Join* curJoin; protected:
 	    std::vector<WhereConstraint*> constraints;
+	    std::vector<WhereConstraint*> orderBy;
 	    std::map<std::string, Attachment*> attachments;
 	    std::vector<Attachment*> selects;
 	    bool distinct;
@@ -387,11 +388,16 @@ namespace w3c_sw {
 		     iConstraints != constraints.end(); ++iConstraints)
 		    delete *iConstraints;
 
+		for (std::vector<WhereConstraint*>::iterator iOrderBy = orderBy.begin();
+		     iOrderBy != orderBy.end(); ++iOrderBy)
+		    delete *iOrderBy;
+
 		for (std::map<string, Attachment*>::iterator iAttachments = attachments.begin();
 		     iAttachments != attachments.end(); ++iAttachments)
 		    delete iAttachments->second;
 	    }
 	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
+	    void addOrderClause (WhereConstraint* constraint) { orderBy.push_back(constraint); }
 	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
 		s << pad << "SELECT ";
@@ -424,6 +430,17 @@ namespace w3c_sw {
 
 		if (where.length() != 0)
 		    s << std::endl << pad << " WHERE " << where;
+
+		/* ORDER BY */
+		if (orderBy.begin() != orderBy.end()) {
+		    s << std::endl << pad << " ORDER BY ";
+		    for (std::vector<WhereConstraint*>::iterator it = orderBy.begin();
+			 it != orderBy.end(); ++it) {
+			if (it != orderBy.begin())
+			    s << ", ";
+			s << (*it)->toString(pad);
+		    }
+		}
 
 		if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
 		if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
@@ -1060,10 +1077,12 @@ namespace w3c_sw {
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions)
 		for (std::vector<s_OrderConditionPair>::iterator it = p_OrderConditions->begin();
-		     it != p_OrderConditions->end(); ++it)
+		     it != p_OrderConditions->end(); ++it) {
 		    /*bool desc = p_OrderConditions->at(i).ascOrDesc == ORDER_Desc;*/
 		    // !!!
 		    it->expression->express(this);
+		    curQuery->addOrderClause(curConstraint);
+		}
 	}
 	virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
 	    // !!!
