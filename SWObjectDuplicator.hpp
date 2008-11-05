@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.6 2008-10-24 10:57:31 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.7 2008-11-05 22:13:13 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -400,6 +400,7 @@ namespace w3c_sw {
 	    BooleanGT* ret = new BooleanGT(last.expression);
 	    p_left->express(this);
 	    ret->setLeftParm(last.expression);
+	    last.expression = ret;
 	}
 	virtual void booleanLE (BooleanLE*, Expression* p_left, Expression* p_right) {
 	    p_right->express(this);
