@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.39 2008-11-03 19:29:35 eric Exp $
+ * $Id: SQLizer.hpp,v 1.40 2008-11-05 22:12:52 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -647,7 +647,7 @@ namespace w3c_sw {
 
 	    return pos+1;
 	}
-	AliasAttr getPKAttr (std::string alias) { return AliasAttr(alias, "id"); }
+	AliasAttr getPKAttr (std::string alias) { return AliasAttr(alias, defaultPKAttr); }
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
@@ -662,13 +662,14 @@ namespace w3c_sw {
 	char* predicateDelims;
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
+	string defaultPKAttr;
 
 	std::ostream** debugStream;
 
     public:
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::ostream** debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], string defaultPKAttr, std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
-	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), debugStream(debugStream)
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
 	{  }
 	~SQLizer () { delete curQuery; }
 

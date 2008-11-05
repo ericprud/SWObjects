@@ -1,7 +1,7 @@
 /* SWtransformer — transform interface SPARQL queries to proprietary
  * queries or SQL queries.
  *
- * $Id: SWtransformer.cpp,v 1.20 2008-11-03 19:29:34 eric Exp $
+ * $Id: SWtransformer.cpp,v 1.21 2008-11-05 22:12:52 eric Exp $
  */
 
 /* START main */
@@ -23,6 +23,7 @@ using namespace std;
 
 const char* BaseURI = "http://example.org/";
 const char* StemURI = NULL;
+const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
@@ -48,6 +49,15 @@ bool option (int argc, char** argv, int* iArg) {
 		*target = argv[++(*iArg)];
 	else
 	    *target = argv[*iArg]+2;
+	return true;
+    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'p')) {
+	if (argv[*iArg][2] == '\0')
+	    if (*iArg > argc - 2)
+		usage(argv[0]);
+	    else
+		PkAttr = argv[++(*iArg)];
+	else
+	    PkAttr = argv[*iArg]+2;
 	return true;
     }
     return false;
@@ -141,7 +151,7 @@ int main(int argc,char** argv) {
 		if (StemURI != NULL) {
 		    char predicateDelims[]={'#',' ',' '};
 		    char nodeDelims[]={'/','.',' '};
-		    SQLizer s2(StemURI, predicateDelims, nodeDelims, &DebugStream);
+		    SQLizer s2(StemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
 		    o->express(&s2);
 		    if (!Quiet)
 			cout << "Transformed query: " << endl;
