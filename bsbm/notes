@@ -1,0 +1,3 @@
+select publisher, nr from review where publisher!=1 limit 30;
+Empty set (0.10 sec)
+

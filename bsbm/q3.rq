@@ -1,0 +1,31 @@
+# q3.rq — http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ3
+# $Id: q3.rq,v 1.1 2008-11-10 05:13:41 eric Exp $
+# 
+# substitutions:
+#   %ProductType%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59
+#   %ProductFeature1%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5
+#   %ProductFeature2%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7
+#   %x%=578
+#   %y%=1637
+
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?product ?label
+WHERE {
+ ?product rdfs:label ?label .
+ ?product a http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59 .
+	?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5 .
+	?product bsbm:productPropertyNumeric1 ?p1 .
+	FILTER ( ?p1 > 578 ) 
+	?product bsbm:productPropertyNumeric3 ?p3 .
+	FILTER (?p3 < 1637 )
+ OPTIONAL { 
+ ?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7 .
+ ?product rdfs:label ?testVar }
+ FILTER (!bound(?testVar)) 
+}
+ORDER BY ?label
+LIMIT 10
