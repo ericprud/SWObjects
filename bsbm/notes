@@ -1,3 +1,5 @@
 select publisher, nr from review where publisher!=1 limit 30;
 Empty set (0.10 sec)
 
+'–' (<http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ5>) != '-'
+

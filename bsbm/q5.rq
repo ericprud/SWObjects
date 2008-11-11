@@ -1,5 +1,5 @@
 # q5.rq — http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ5
-# $Id: q5.rq,v 1.1 2008-11-10 05:13:42 eric Exp $
+# $Id: q5.rq,v 1.2 2008-11-11 18:33:32 eric Exp $
 # 
 # substitutions:
 #   %ProductXYZ%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product62>
@@ -16,10 +16,10 @@ WHERE {
 	?product bsbm:productFeature ?prodFeature .
 	<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product62> bsbm:productPropertyNumeric1 ?origProperty1 .
 	?product bsbm:productPropertyNumeric1 ?simProperty1 .
-	FILTER (?simProperty1 < (?origProperty1 + 120) && ?simProperty1 > (?origProperty1 – 120))
+	FILTER (?simProperty1 < (?origProperty1 + 120) && ?simProperty1 > (?origProperty1 - 120))
 	<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product62> bsbm:productPropertyNumeric2 ?origProperty2 .
 	?product bsbm:productPropertyNumeric2 ?simProperty2 .
-	FILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 – 170))
+	FILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 - 170))
 }
 ORDER BY ?productLabel
 LIMIT 5

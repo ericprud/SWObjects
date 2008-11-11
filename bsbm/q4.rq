@@ -1,11 +1,11 @@
 # q4.rq — http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ4
-# $Id: q4.rq,v 1.1 2008-11-10 05:13:42 eric Exp $
+# $Id: q4.rq,v 1.2 2008-11-11 18:33:32 eric Exp $
 # 
 # substitutions:
-#   %ProductType%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59
-#   %ProductFeature1%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5
-#   %ProductFeature2%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7
-#   %ProductFeature3%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature9
+#   %ProductType%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59>
+#   %ProductFeature1%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5>
+#   %ProductFeature2%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7>
+#   %ProductFeature3%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature9>
 #   %x%=578
 #   %y%=1637
 
@@ -18,17 +18,17 @@ SELECT DISTINCT ?product ?label ?propertyTextual
 WHERE {
  { 
  ?product rdfs:label ?label .
- ?product rdf:type http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59 .
- ?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5 .
-	?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7 .
+ ?product rdf:type <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59> .
+ ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5> .
+	?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7> .
  ?product bsbm:productPropertyTextual1 ?propertyTextual .
 	?product bsbm:productPropertyNumeric1 ?p1 .
 	FILTER ( ?p1 > 578 )
  } UNION {
  ?product rdfs:label ?label .
- ?product rdf:type http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59 .
- ?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5 .
-	?product bsbm:productFeature http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature9 .
+ ?product rdf:type <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59> .
+ ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5> .
+	?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature9> .
  ?product bsbm:productPropertyTextual1 ?propertyTextual .
 	?product bsbm:productPropertyNumeric2 ?p2 .
 	FILTER ( ?p2> 1637 ) 
