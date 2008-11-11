@@ -1,8 +1,8 @@
 # q12.rq — http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ12
-# $Id: q12.rq,v 1.1 2008-11-10 05:13:41 eric Exp $
+# $Id: q12.rq,v 1.2 2008-11-11 19:03:36 eric Exp $
 # 
 # substitutions:
-#   %OfferXYZ%=http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920
+#   %OfferXYZ%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920>
 
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rev: <http://purl.org/stuff/rev#>
@@ -11,21 +11,21 @@ PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX bsbm-export: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/export/>
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 
-CONSTRUCT { http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:product ?productURI .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:productlabel ?productlabel .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:vendor ?vendorname .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:vendorhomepage ?vendorhomepage . 
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:offerURL ?offerURL .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:price ?price .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:deliveryDays ?deliveryDays .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm-export:validuntil ?validTo } 
-WHERE { http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:product ?productURI .
+CONSTRUCT { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:product ?productURI .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:productlabel ?productlabel .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:vendor ?vendorname .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:vendorhomepage ?vendorhomepage . 
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:offerURL ?offerURL .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:price ?price .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:deliveryDays ?deliveryDays .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm-export:validuntil ?validTo } 
+WHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:product ?productURI .
  ?productURI rdfs:label ?productlabel .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:vendor ?vendorURI .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:vendor ?vendorURI .
  ?vendorURI rdfs:label ?vendorname .
  ?vendorURI foaf:homepage ?vendorhomepage .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:offerWebpage ?offerURL .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:price ?price .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:deliveryDays ?deliveryDays .
- http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920 bsbm:validTo ?validTo }
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:offerWebpage ?offerURL .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:price ?price .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:deliveryDays ?deliveryDays .
+ <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor3/Offer2920> bsbm:validTo ?validTo }
 
