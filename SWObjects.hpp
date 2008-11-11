@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.20 2008-11-04 15:10:33 eric Exp $
+ * $Id: SWObjects.hpp,v 1.21 2008-11-11 18:58:01 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -557,6 +557,7 @@ public:
 		return;
 	m_TriplePatterns.push_back(p);
     }
+    virtual void bindVariables(RdfDB* db, ResultSet* rs) = 0;
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
     void construct(BasicGraphPattern* target, ResultSet* rs);
     std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
@@ -572,7 +573,7 @@ protected: BasicGraphPattern* bgp;
 public:
     DontDeleteThisBGP (BasicGraphPattern* bgp) : bgp(bgp) {  }
     ~DontDeleteThisBGP () { /* Leave bgp alone. */ }
-    virtual void bindVariables(RdfDB*, ResultSet*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual void bindVariables(RdfDB* db, ResultSet* rs) { bgp->bindVariables(db, rs); }
     virtual TableOperation* getDNF () { return new DontDeleteThisBGP(bgp); }
     virtual void express (Expressor* p_expressor) { bgp->express(p_expressor); }
 };
