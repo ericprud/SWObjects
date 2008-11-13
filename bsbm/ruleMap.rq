@@ -1,3 +1,9 @@
+# ruleMap.rq — SPARQL CONSTRUCT version of
+#   http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/results/store_config_files/d2r-mapping.n3
+# $Id: ruleMap.rq,v 1.2 2008-11-13 19:14:42 eric Exp $
+# 
+# antecedents are SQLizable using the stem http://bsbm.example/db .
+
 PREFIX map: <file:/E:/code/d2r-server-0.4/d2r-mapping.n3#>
 PREFIX db: <>
 PREFIX vocab: <vocab/>
@@ -11,16 +17,16 @@ PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX rev: <http://purl.org/stuff/rev#>
 
-PREFIX offer: <http://bsbm.example/db#offer>
-PREFIX person: <http://bsbm.example/db#person>
-PREFIX producer: <http://bsbm.example/db#producer>
-PREFIX product: <http://bsbm.example/db#product>
-PREFIX productfeatureproduct: <http://bsbm.example/db#productfeatureproduct>
-PREFIX producttypeproduct: <http://bsbm.example/db#producttypeproduct>
-PREFIX productfeature: <http://bsbm.example/db#productfeature>
-PREFIX producttype: <http://bsbm.example/db#producttype>
-PREFIX review: <http://bsbm.example/db#review>
-PREFIX vendor: <http://bsbm.example/db#vendor>
+PREFIX offer: <http://bsbm.example/db/offer#>
+PREFIX person: <http://bsbm.example/db/person#>
+PREFIX producer: <http://bsbm.example/db/producer#>
+PREFIX product: <http://bsbm.example/db/product#>
+PREFIX productfeatureproduct: <http://bsbm.example/db/productfeatureproduct#>
+PREFIX producttypeproduct: <http://bsbm.example/db/producttypeproduct#>
+PREFIX productfeature: <http://bsbm.example/db/productfeature#>
+PREFIX producttype: <http://bsbm.example/db/producttype#>
+PREFIX review: <http://bsbm.example/db/review#>
+PREFIX vendor: <http://bsbm.example/db/vendor#>
 
 CONSTRUCT {
 ?offer 
