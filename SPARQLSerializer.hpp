@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.9 2008-10-17 20:57:09 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.10 2008-11-13 20:53:54 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -193,14 +193,15 @@ public:
     }
     virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	lead();
-	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit;
-	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset;
+	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit << std::endl;
+	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset << std::endl;
 	if (p_OrderConditions) {
 	    ret << "ORDER BY ";
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++) {
 		if (p_OrderConditions->at(i).ascOrDesc == ORDER_Desc) ret << "DESC ";
 		p_OrderConditions->at(i).expression->express(this);
 	    }
+	    ret << std::endl;
 	}
     }
     virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
