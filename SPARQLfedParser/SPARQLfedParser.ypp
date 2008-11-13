@@ -1,4 +1,4 @@
-/* $Id: SPARQLfedParser.ypp,v 1.2 2008-10-24 10:57:32 eric Exp $ -*- mode: c++ -*- */
+/* $Id: SPARQLfedParser.ypp,v 1.3 2008-11-13 19:18:01 eric Exp $ -*- mode: c++ -*- */
 /** \file SPARQLfedParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
@@ -263,10 +263,10 @@ public:
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_Construct> Construct
 %type <p_Describe> Describe
-%type <p_POSs> _QGraphNode_E_Plus
+%type <p_POSs> _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C _Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt
 %type <p_Ask> Ask
 %type <p_DatasetClause> DatasetClause _O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C DefaultGraphClause NamedGraphClause
-%type <p_POS> SourceSelector
+%type <p_POS> SourceSelector _O_QGT_COMMA_E_S_QGraphNode_E_C
 %type <p_WhereClause> _QWhereClause_E_Opt WhereClause
 %type <p_SolutionModifier> SolutionModifier
 %type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt LimitClause _QLimitClause_E_Opt OffsetClause _QOffsetClause_E_Opt
@@ -290,12 +290,12 @@ public:
 %type <p_Filter> Filter
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
-%type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
+%type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode TriplesNode Generator
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
-%type <p_BNode> TriplesNode BlankNodePropertyList Collection
+%type <p_BNode> BlankNodePropertyList
 %type <p_Variable> Var
 
 /* Expressions */
@@ -1275,7 +1275,7 @@ Verb:
 ;
 
 TriplesNode:
-    Collection	{
+    Generator	{
 	$$ = $1;
     }
   | BlankNodePropertyList	{
@@ -1295,37 +1295,78 @@ BlankNodePropertyList:
       }
 ;
 
-Collection:
+Generator:
     // '(' GraphNode+ ')'
-    GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
-	$$ = driver.createBNode();
-	POS* tail = $$;
-	ProductionVector<POS*>* members = $2;
-	URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
-	URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
-	if (!driver.curBGP)
-	    driver.neededBGP = driver.curBGP = driver.makeBasicGraphPattern();
-	for (unsigned i = 0; i < members->size(); i++) {
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-	    POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
-	    tail = nextTail;
+    IRIref GT_LPAREN _Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
+	if ($1 == driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#exactly")) {
+	    $$ = driver.createBNode();
+	    POS* tail = $$;
+	    ProductionVector<POS*>* members = $3;
+	    URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	    URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	    POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	    if (!driver.curBGP)
+		driver.neededBGP = driver.curBGP = driver.makeBasicGraphPattern();
+	    for (unsigned i = 0; i < members->size(); i++) {
+		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
+		POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+		tail = nextTail;
+	    }
+	    members->clear();
+	    delete members;
+	} else if ($1 == driver.getURI("http://www.w3.org/2008/04/SPARQLfed/#bind")) {
+	    ProductionVector<POS*>* members = $3;
+	    $$ = *(members->begin());
+	    members->clear();
+	    delete members;
+	} else {
+	    error(*(yylocation_stack_.end()), "unsupported function");
 	}
-	members->clear();
-	delete members;
     }
 ;
 
-// GraphNode+
-_QGraphNode_E_Plus:
-    GraphNode	{
-	$$ = new ProductionVector<POS*>($1);
+// ',' GraphNode
+_O_QGT_COMMA_E_S_QGraphNode_E_C:
+    GT_COMMA GraphNode	{
+	$$ = $2;
     }
-  | _QGraphNode_E_Plus GraphNode	{
+;
+
+// ( ',' GraphNode )*
+_Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star:
+    {
+	$$ = new ProductionVector<POS*>();
+    }
+  | _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star _O_QGT_COMMA_E_S_QGraphNode_E_C	{
 	$1->push_back($2);
 	$$ = $1;
     }
+;
+
+// GraphNode ( ',' GraphNode )*
+_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C:
+    GraphNode _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star	{
+	/* no push_front
+	   $2->push_front($1);
+	   $$ = $2;
+	   so copy the vector. */
+	$$ = new ProductionVector<POS*>();
+	$$->push_back($1);
+	for (std::vector<POS*>::iterator it = $2->begin();
+	     it != $2->end(); ++it)
+	    $$->push_back(*it);
+	$2->clear();
+	delete $2;
+    }
+;
+
+// ( GraphNode ( ',' GraphNode )* )?
+_Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt:
+    {
+	$$ = new ProductionVector<POS*>();
+    }
+    | _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C	
 ;
 
 GraphNode:
