@@ -1,12 +1,12 @@
 # q3.rq — http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ3
-# $Id: q3.rq,v 1.2 2008-11-11 18:33:32 eric Exp $
+# $Id: q3.rq,v 1.3 2008-11-16 14:06:36 eric Exp $
 # 
 # substitutions:
 #   %ProductType%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59>
 #   %ProductFeature1%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5>
 #   %ProductFeature2%=<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7>
-#   %x%=578
-#   %y%=1637
+#   %x%=66
+#   %y%=84
 
 PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
@@ -19,9 +19,9 @@ WHERE {
  ?product a <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59> .
 	?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5> .
 	?product bsbm:productPropertyNumeric1 ?p1 .
-	FILTER ( ?p1 > 578 ) 
+	FILTER ( ?p1 > 66 ) 
 	?product bsbm:productPropertyNumeric3 ?p3 .
-	FILTER (?p3 < 1637 )
+	FILTER (?p3 < 84 )
  OPTIONAL { 
  ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7> .
  ?product rdfs:label ?testVar }
