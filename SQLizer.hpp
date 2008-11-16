@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.41 2008-11-05 23:18:53 eric Exp $
+ * $Id: SQLizer.hpp,v 1.42 2008-11-16 13:50:59 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -459,7 +459,28 @@ namespace w3c_sw {
 			return curJoin->debug_getAlias();
 		    }
 		}
+
 		string aliasName = subject->getTerminal();
+		/* Try to get a good name for URIs.
+		 * e.g. http://bsbm.example/db/producttypeproduct/producttype.59
+		 *   => producttype_59
+		 */
+		size_t slash = aliasName.rfind('/');
+		if (slash != string::npos) {
+		    if (slash == aliasName.size()) {
+			size_t secondSlash = aliasName.rfind('/', slash);
+			if (secondSlash != string::npos)
+			    slash = secondSlash;
+		    }
+		    aliasName = aliasName.substr(slash+1);
+		    const std::string allowedChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
+		    size_t badChar = aliasName.find_first_not_of(allowedChars);
+		    while (badChar != string::npos) {
+			aliasName.replace(badChar, 1, 1, '_');
+			badChar = aliasName.find_first_not_of(allowedChars, badChar+1);
+		    }
+		}
+
 		unsigned ordinal = 0;
 		while (usedAliases.find(aliasName) != usedAliases.end()) {
 		    std::stringstream s;
@@ -714,7 +735,7 @@ namespace w3c_sw {
 		if (resolve(terminal, &relation, &attribute, &value) != 3) FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
-		curQuery->constrain(getPKAttr(curAliasAttr.alias), value);
+		curQuery->constrain(AliasAttr(curAliasAttr.alias, attribute), value);
 		break;
 
 	    case MODE_object:
