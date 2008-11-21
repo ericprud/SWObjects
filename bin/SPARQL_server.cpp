@@ -79,7 +79,7 @@ class WebServer : public server::http_1a_c
 
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, &DebugStream);
+	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, "pk", &DebugStream);
 	mapped->express(&sqlizer);
 
 	MYSQL mysql,*sock;
