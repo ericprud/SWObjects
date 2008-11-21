@@ -62,7 +62,7 @@ lib: dep $(LIB)
 	$(CXX) -o $@ $< $(LDFLAGS)
 
 DLIBINC ?= ../../dlib
-DLIB= -D NO_MAKEFILE -I$(DLIBDIR)
+DLIB= -D NO_MAKEFILE -I$(DLIBINC)
 
 SPARQL_server.o : SPARQL_server.cpp
 	$(CXX) -DSTUPID_TIGHT_LOOP=1 -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
