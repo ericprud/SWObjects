@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.7 2008-11-05 22:13:13 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.8 2008-11-21 17:13:29 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -88,7 +88,7 @@ namespace w3c_sw {
 	}
 	virtual void filter (Filter*, Expression* p_Constraint) {
 	    p_Constraint->express(this);
-	    last.filter = new Filter(last.expression);
+	    last.filter = last.expression ? new Filter(last.expression) : NULL;
 	}
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
@@ -102,7 +102,8 @@ namespace w3c_sw {
 	    for (std::vector<Filter*>::iterator it = p_Filters->begin();
 		 it != p_Filters->end(); it++) {
 		(*it)->express(this);
-		op->addFilter(last.filter);
+		if (last.filter != NULL)
+		    op->addFilter(last.filter);
 	    }
 	}
 	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
@@ -334,7 +335,7 @@ namespace w3c_sw {
 	}
 	virtual void functionCallExpression (FunctionCallExpression*, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
-	    last.expression = new FunctionCallExpression(last.functionCall);
+	    last.expression = last.functionCall ? new FunctionCallExpression(last.functionCall) : NULL;
 	}
 	/* Expressions */
 	virtual void booleanNegation (BooleanNegation*, Expression* p_Expression) {
