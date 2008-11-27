@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.22 2008-11-04 15:12:53 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.22.2.1 2008-11-27 19:37:32 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -12,6 +12,7 @@
 #include "SPARQLSerializer.hpp" // for debugging output
 #include <set>
 #include <algorithm>
+#include <boost/regex.hpp>
 
 namespace w3c_sw {
 
@@ -80,10 +81,11 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
+	    std::vector<URImap> uriMaps;
 	public:
-	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness) : SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row) {  }
+	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness, std::vector<URImap> uriMaps) :
+		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row), uriMaps(uriMaps) {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
-
 
 	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 		for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
@@ -167,15 +169,17 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
+	std::vector<URImap> uriMaps;
 	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, std::ostream** debugStream) : 
+			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
+			  std::vector<URImap> uriMaps, std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
-	    posFactory(posFactory), debugStream(debugStream)
+	    posFactory(posFactory), uriMaps(uriMaps), debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
@@ -217,7 +221,7 @@ namespace w3c_sw {
 		 * 08 — Create a stem query disjoint DQS which is a reproduction of the mapping rule antecedent A
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
-		MappedDuplicator e(posFactory, *row, &includeRequiredness);
+		MappedDuplicator e(posFactory, *row, &includeRequiredness, uriMaps);
 		constructRuleBodyAsConsequent->express(&e);
 		TableOperation* t = e.getTableOperation();
 		if (t != NULL)
@@ -243,6 +247,8 @@ namespace w3c_sw {
 	}
     };
 
+    struct VarDetails { int i; std::string pattern; }; // can't embed where it's needed -- template errors
+
     class RuleInverter : public SWObjectDuplicator {
     protected:
 	DefaultGraphPattern* constructRuleHead;
@@ -252,6 +258,9 @@ namespace w3c_sw {
 	bool inUserRuleHead;
 	std::map<POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
+
+	std::vector<URImap> uriMaps;
+
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
 	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleHead(false), nextVariableIndex(0) {  }
@@ -307,6 +316,11 @@ namespace w3c_sw {
 		//return TriplePattern::gt(l, r);
 	    }
 	};
+	virtual void variable (Variable* self, std::string terminal) {
+	    last.posz.pos = last.posz.variable = self;
+	    self->setMaps(uriMaps, posFactory);
+	}
+
 	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
 	    _Filters(p_Filters, bgp);
@@ -380,7 +394,7 @@ namespace w3c_sw {
 					       _DatasetClauses(p_DatasetClauses),//
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
-					       posFactory, debugStream);
+					       posFactory, uriMaps, debugStream);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
@@ -392,6 +406,106 @@ namespace w3c_sw {
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.
 
+	virtual void functionCall (FunctionCall* me, URI* p_IRIref, ArgList* p_ArgList) {
+	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
+		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
+	    if (p_ArgList->size() != 3)
+		FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
+	    std::vector<Expression*>::iterator it = p_ArgList->begin();
+	    VarExpression* varExp = dynamic_cast<VarExpression*>(*it);
+	    if (varExp == NULL)
+		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
+	    Variable* toModify = varExp->getVariable();
+	    ++it;
+	    LiteralExpression* litExp = dynamic_cast<LiteralExpression*>(*it);
+	    if (litExp == NULL)
+		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
+	    /* localName
+	     * http://bsbm.example/db/productfeatureproduct/offer.nr=(?@offer=[0-9]+)&publisher=(?@pub=[0-9]+)
+	     */
+	    RDFLiteral* localName = litExp->getLiteral();
+
+	    ++it;
+	    litExp = dynamic_cast<LiteralExpression*>(*it);
+	    if (litExp == NULL)
+		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
+	    /* ifaceName
+	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
+	     */
+	    RDFLiteral* ifaceName = litExp->getLiteral();
+	    last.functionCall = NULL;
+
+	    /* create a substitution regexp:
+	       from: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor([0-9]+)/Offer([0-9]+)
+	       to: http://bsbm.example/db/productfeatureproduct/offer.nr=\2&publisher=\1
+	     */
+
+	    const boost::regex re("\\(\\$([a-z]+)(?:=([^)]+))?\\)");
+	    const int desiredMatches[] = {-1, 1, 2};
+	    const boost::sregex_token_iterator nullIt;
+
+	    std::map<std::string, VarDetails> patternVars;
+	    std::vector<std::string> ifaceComponents;
+
+	    {
+		string iriStr(ifaceName->getString());
+		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
+		for (unsigned index = 1; it != nullIt; ++index) {
+		    ifaceComponents.push_back(*it++);
+		    if (it != nullIt) {
+			std::string var = *it++;
+			patternVars[var].i = index;
+			patternVars[var].pattern = *it++;
+			ifaceComponents.push_back(var);
+		    }
+		}
+	    }
+
+	    URImap newMap;
+
+	    {
+		string iriStr(localName->getString());
+		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
+		std::stringstream subPattern;
+		while (it != nullIt) {
+		    subPattern << *it++;
+		    if (it != nullIt) {
+			std::string var = *it++;
+			if (patternVars[var].i == 0)
+			    FAIL1("unknown var: %s", var.c_str());
+
+			subPattern << '\\' << patternVars[var].i;
+			std::string pattern = *it++;
+			if (pattern.size() != 0)
+			    if (patternVars[var].pattern.size() == 0)
+				patternVars[var].pattern = pattern;
+			    else if (patternVars[var].pattern != pattern)
+				FAIL3("local pattern for var %s: %s doesn't match iface pattern %s", 
+				      var.c_str(), pattern.c_str(), patternVars[var].pattern.c_str());
+		    }
+		}
+		newMap.localPattern = subPattern.str();
+	    }
+
+	    for (std::map<std::string, VarDetails>::const_iterator it = patternVars.begin();
+		 it != patternVars.end(); ++it) {
+		if (it->second.pattern.size() == 0)
+		    patternVars[it->first].pattern = ".*?";
+		cout << '\\' << it->second.i << ": " << it->first << "=" << it->second.pattern << endl;
+	    }
+
+	    {
+		std::stringstream iface;
+		for (std::vector<std::string>::iterator component = ifaceComponents.begin();
+		     component != ifaceComponents.end();) {
+		    iface << *component++;
+		    if (component != ifaceComponents.end())
+			iface << "(" << patternVars[*component++].pattern << ")";
+		}
+		newMap.ifacePattern.assign(iface.str());
+	    }
+	    uriMaps.push_back(newMap);
+	}
     };
 
 } // namespace w3c_sw

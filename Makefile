@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.51 2008-11-03 19:23:17 eric Exp $
+# $Id: Makefile,v 1.51.2.1 2008-11-27 19:37:32 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -94,7 +94,7 @@ lib: dep $(LIB)
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
 
 tests/execute_%  : tests/test_%.cpp $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInverter.hpp SWObjectDuplicator.hpp QueryMapper.hpp
-	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -lboost_regex -o $@ $< $(LDFLAGS)
 
 %_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
 	$^ -q -d -s http://someClinic.exampe/DB/ > $@  && cat $@

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.21 2008-11-11 18:58:01 eric Exp $
+ * $Id: SWObjects.hpp,v 1.21.2.1 2008-11-27 19:37:32 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cassert>
 #include <typeinfo>
+#include <boost/regex.hpp>
 
 #define TAB "  "
 #define ns "\n xmlns=\"http://www.w3.org/2005/01/yacker/uploads/SPARQLfed/\"\n xmlns:yacker=\"http://www.w3.org/2005/01/yacker/\""
@@ -214,8 +215,17 @@ public:
     virtual bool isConstant () { return false; }
 };
 
+struct URImap {
+    boost::regex ifacePattern;
+    std::string localPattern;
+};
+
+class POSFactory;
 class Variable : public Bindable {
     friend class POSFactory;
+protected:
+    std::vector<URImap> uriMaps;
+    POSFactory* posFactory;
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
@@ -224,6 +234,7 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual POS* eval(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "name"; }
+    void setMaps (std::vector<URImap> maps, POSFactory* factory) { uriMaps = maps; posFactory = factory; }
 };
 
 class BNode : public Bindable {
@@ -265,6 +276,7 @@ public:
     }
     virtual void express(Expressor* p_expressor);
     virtual std::string getBindingAttributeName () { return "literal"; }
+    std::string getString () { return m_String; }
 };
 class NumericRDFLiteral : public RDFLiteral {
     friend class POSFactory;
@@ -325,7 +337,6 @@ public:
 };
 
 class BasicGraphPattern;
-class POSFactory;
 
 class TriplePattern : public Base {
     friend class POSFactory;
@@ -860,6 +871,7 @@ private:
 public:
     VarExpression (Variable* p_Variable) : Expression(), m_Variable(p_Variable) {  }
     ~VarExpression () { /* m_Variable is centrally managed */ }
+    Variable* getVariable () { return m_Variable; }
     virtual void express(Expressor* p_expressor);
 };
 class LiteralExpression : public Expression {
@@ -868,6 +880,7 @@ private:
 public:
     LiteralExpression (RDFLiteral* p_RDFLiteral) : Expression(), m_RDFLiteral(p_RDFLiteral) {  }
     ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
+    RDFLiteral* getLiteral () { return m_RDFLiteral; }
     virtual void express(Expressor* p_expressor);
 };
 class BooleanExpression : public Expression {
@@ -889,10 +902,13 @@ public:
 
 class ArgList : public Base {
 private:
-    ProductionVector<Expression*>* m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C;
+    ProductionVector<Expression*>* expressions;
 public:
-    ArgList (ProductionVector<Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) : Base(), m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C(p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {  }
-    ~ArgList () { delete m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C; }
+    ArgList (ProductionVector<Expression*>* expressions) : Base(), expressions(expressions) {  }
+    ~ArgList () { delete expressions; }
+    std::vector<Expression*>::iterator begin () { return expressions->begin(); }
+    std::vector<Expression*>::iterator end () { return expressions->end(); }
+    size_t size () { return expressions->size(); }
     virtual void express(Expressor* p_expressor);
 };
 class FunctionCall : public Base {
@@ -1177,7 +1193,7 @@ public:
     virtual void literalExpression(LiteralExpression* self, w3c_sw::RDFLiteral* p_RDFLiteral) = 0;
     virtual void booleanExpression(BooleanExpression* self, w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
     virtual void uriExpression(URIExpression* self, w3c_sw::URI* p_URI) = 0;
-    virtual void argList(ArgList* self, ProductionVector<w3c_sw::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) = 0;
+    virtual void argList(ArgList* self, ProductionVector<w3c_sw::Expression*>* expressions) = 0;
     virtual void functionCall(FunctionCall* self, w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) = 0;
     virtual void functionCallExpression(FunctionCallExpression* self, w3c_sw::FunctionCall* p_FunctionCall) = 0;
 /* Expressions */
@@ -1332,8 +1348,8 @@ public:
     virtual void uriExpression (URIExpression*, w3c_sw::URI* p_URI) {
 	p_URI->express(this);
     }
-    virtual void argList (ArgList*, ProductionVector<w3c_sw::Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
-	p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
+    virtual void argList (ArgList*, ProductionVector<w3c_sw::Expression*>* expressions) {
+	expressions->express(this);
     }
     virtual void functionCall (FunctionCall*, w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) {
 	p_IRIref->express(this);

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.13 2008-11-03 19:25:17 eric Exp $
+ * $Id: SWObjects.cpp,v 1.13.2.1 2008-11-27 19:37:32 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -321,7 +321,7 @@ void URIExpression::express (Expressor* p_expressor) {
     p_expressor->uriExpression(this, m_URI);
 }
 void ArgList::express (Expressor* p_expressor) {
-    p_expressor->argList(this, m__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C);
+    p_expressor->argList(this, expressions);
 }
 void FunctionCall::express (Expressor* p_expressor) {
     p_expressor->functionCall(this, m_IRIref,m_ArgList);
@@ -561,7 +561,24 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return bNodesGenSymbols ? this : r->get(this);
     }
     POS* Variable::eval (Result* r, bool) {
-	return r->get(this);
+	POS* ret = r->get(this);
+
+	URI* u;
+	if ((u = dynamic_cast<URI*>(ret)) != NULL) {
+	    for (std::vector<URImap>::iterator it = uriMaps.begin();
+		 it != uriMaps.end(); ++it) {
+		std::ostringstream t(std::ios::out | std::ios::binary);
+		std::ostream_iterator<char, char> oi(t);
+		std::string tweak = u->getTerminal();
+		//std::cerr << "s{" << it->ifacePattern << "}\n {" << it->localPattern << "}\n (" << tweak << ")\n=>";
+		boost::regex_replace(oi, tweak.begin(), tweak.end(),
+				     it->ifacePattern, it->localPattern, 
+				 boost::match_default | boost::format_all);
+		//std::cerr << t.str() << std::endl;
+		ret = u = posFactory->getURI(t.str());
+	    }
+	}
+	return ret;
     }
 
     void TableJunction::addTableOperation (TableOperation* tableOp) {
