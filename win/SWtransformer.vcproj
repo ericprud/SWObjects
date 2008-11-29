@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:/cygwin/home/jules/src/SWObjects;c:/cygwin/home/jules/src/SWObjects/SPARQLfedParser;c:/cygwin/home/jules/src/SWObjects/TurtleSParser;c:/cygwin/home/jules/src/SWObjects/win;c:/cygwin/home/jules/src/boost_1_36_0;&quot;c:/cygwin/home/jules/src/dlib-17.11&quot;"
+				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win;&quot;c:/cygwin/home/jules/src/dlib-17.11&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__PRETTY_FUNCTION__=\&quot;func\&quot;;_CRT_SECURE_NO_DEPRECATE;ASCII_BOX_CHARS=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="c:/cygwin/home/jules/src/SWObjects;c:/cygwin/home/jules/src/SWObjects/SPARQLfedParser;c:/cygwin/home/jules/src/SWObjects/TurtleSParser;c:/cygwin/home/jules/src/SWObjects/win;c:/cygwin/home/jules/src/boost_1_36_0;&quot;c:/cygwin/home/jules/src/dlib-17.11&quot;"
+				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win;&quot;c:/cygwin/home/jules/src/dlib-17.11&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__PRETTY_FUNCTION__=\&quot;func\&quot;;_CRT_SECURE_NO_DEPRECATE;ASCII_BOX_CHARS=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
