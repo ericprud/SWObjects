@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.6 2008-10-24 10:57:31 eric Exp $
+ * $Id: ResultSet.hpp,v 1.7 2008-12-01 06:03:20 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -45,6 +45,7 @@ namespace w3c_sw {
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	BindingSetIterator begin () { return bindings.begin(); }
 	BindingSetIterator end () { return bindings.end(); }
+	size_t size () const { return bindings.size(); }
 	BindingSetIterator find (POS* pos) { return bindings.find(pos); }
 
 	POS* get(const POS* variable) const;
@@ -70,6 +71,26 @@ namespace w3c_sw {
     public:
 	ResultSet(POSFactory* posFactory = NULL);
 	virtual ~ResultSet();
+	bool operator==(const ResultSet & ref) const {
+	    if (ref.size() != size())
+		return false;
+	    ResultSetIterator myRow = ((ResultSet*)this)->begin();
+	    ResultSetIterator yourRow = ((ResultSet)ref).begin();
+	    while (myRow != ((ResultSet*)this)->end()) {
+		if ((*yourRow)->size() != (*myRow)->size())
+		    return false;
+		
+		for (BindingSetIterator myBinding = (*myRow)->begin();
+		     myBinding != (*myRow)->end(); ++myBinding) {
+		    POS* yours = (*yourRow)->find(myBinding->first)->second.pos;
+		    if (yours == NULL || yours != myBinding->second.pos)
+			return false;
+		}
+		++myRow;
+		++yourRow;
+	    }
+	    return true;
+	}
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)
 		throw(std::runtime_error("ConstructResultSet has no POSFactory."));
@@ -79,7 +100,7 @@ namespace w3c_sw {
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
-	size_t size () { return results.size(); }
+	size_t size () const { return results.size(); }
 	void erase (ResultSetIterator it) { results.erase(it); }
 	void set(Result* r, const POS* variable, const POS* value, bool weaklyBound);
 	ResultSetIterator insert (ResultSetIterator at, Result* elem) { return results.insert(at, elem); }
