@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.52 2008-11-27 19:40:11 eric Exp $
+# $Id: Makefile,v 1.53 2008-12-01 21:17:59 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -120,6 +120,11 @@ equivOpt1: tests/execute_HealthCare1
 optJoin1: tests/execute_HealthCare1
 	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
+tests/test_GraphMatch: tests/test_GraphMatch.cpp $(LIB) SWObjects.hpp
+	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
+
+T_GraphMatch: tests/test_GraphMatch
+	$<
 
 ### named unit tests
 
