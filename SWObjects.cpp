@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.14 2008-11-27 19:40:11 eric Exp $
+ * $Id: SWObjects.cpp,v 1.15 2008-12-01 06:04:17 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -449,6 +449,18 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    return vi->second;
     }
 
+    POS* POSFactory::getPOS (std::string posStr) {
+	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
+	    return getURI(posStr.substr(1, posStr.size()-2));
+	if (posStr[0] == '_' && posStr[1] == ':')
+	    return getBNode(posStr.substr(2, posStr.size()-2));
+	if (posStr[0] == '"' && posStr[posStr.size()-1] == '"')
+	    return getRDFLiteral(posStr.substr(1, posStr.size()-2), NULL, NULL);
+	if (posStr[0] == '?')
+	    return getVariable(posStr.substr(1, posStr.size()-1));
+	throw(std::runtime_error("unable to getPOS("+posStr+")"));
+    }
+
     RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
@@ -555,6 +567,9 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
+    TriplePattern* POSFactory::getTriple (std::string s, std::string p, std::string o) {
+	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
+    }
     /* </POSFactory> */
 
     POS* BNode::eval (Result* r, bool bNodesGenSymbols) {
@@ -719,6 +734,8 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
     bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
+	if (pattern == NULL || constant == NULL)
+	    return true;
 	POS* curVal = pattern->eval(provisional, false);
 	if (curVal == NULL) {
 	    rs->set(provisional, pattern, constant, weaklyBound);

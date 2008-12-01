@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.22 2008-11-27 19:40:11 eric Exp $
+ * $Id: SWObjects.hpp,v 1.23 2008-12-01 06:04:16 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -415,6 +415,7 @@ public:
     BNode* createBNode();
     BNode* getBNode(std::string name);
     URI* getURI(std::string name);
+    POS* getPOS(std::string posStr);
     RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
@@ -425,6 +426,7 @@ public:
     NULLpos* getNULL () { return &nullPOS; }
 
     TriplePattern* getTriple(POS* s, POS* p, POS* o, bool weaklyBound = false);
+    TriplePattern* getTriple(std::string s, std::string p, std::string o);
     TriplePattern* getTriple (TriplePattern* p, bool weaklyBound) {
 	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
     }
