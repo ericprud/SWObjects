@@ -1,6 +1,6 @@
 /* test graph-matching.
  *
- * $Id: test_GraphMatch.cpp,v 1.3 2008-12-02 05:31:32 eric Exp $
+ * $Id: test_GraphMatch.cpp,v 1.4 2008-12-02 16:28:27 eric Exp $
  */
 
 #define BOOST_TEST_DYN_LINK 1
@@ -12,7 +12,6 @@
 #include <vector>
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "SPARQLSerializer.hpp"
 
 using namespace w3c_sw;
 
@@ -58,6 +57,7 @@ BOOST_AUTO_TEST_CASE( bgp )
 {
     DefaultGraphPattern data, pattern;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
+
     /* Verify NTriples input, which will be used in remaining tests. */ {
 	DefaultGraphPattern d2;
 	d2.addTriplePattern(f.getTriple("<n1>", "<p1>", "<n2>"));
@@ -102,7 +102,6 @@ BOOST_AUTO_TEST_CASE( bgp )
 				       "<n1> \"l1\"\n"
 				       "<n2> <n3>"
 				       ));
-	//SPARQLSerializer s; data.express(&s); std::cout << s.getSPARQLstring();
     }
 
     pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 ."));
@@ -113,6 +112,18 @@ BOOST_AUTO_TEST_CASE( bgp )
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>"
+				       ));
+    }
+
+    data.addTriplePattern(f.getTriple("<n2> <p1> <n4> ."));
+
+    /* <n1> <p1> <n2> . <n2> <p1> <n3>,<n4> . */ {
+	ResultSet r;
+	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
+	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
+				       "?n1  _:n2 ?n3 \n"
+				       "<n1> <n2> <n3>\n"
+				       "<n1> <n2> <n4>"
 				       ));
     }
 }
