@@ -1,6 +1,6 @@
 /* test graph-matching.
  *
- * $Id: test_GraphMatch.cpp,v 1.2 2008-12-02 04:57:33 eric Exp $
+ * $Id: test_GraphMatch.cpp,v 1.3 2008-12-02 05:31:32 eric Exp $
  */
 
 #define BOOST_TEST_DYN_LINK 1
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( bgp )
 	//SPARQLSerializer s; data.express(&s); std::cout << s.getSPARQLstring();
     }
 
-    pattern.addTriplePattern(f.getTriple("_:n2 <p2> ?n3"));
+    pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 ."));
 
     {
 	ResultSet r;
