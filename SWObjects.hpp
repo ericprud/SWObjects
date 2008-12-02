@@ -2,13 +2,14 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.23 2008-12-01 06:04:16 eric Exp $
+ * $Id: SWObjects.hpp,v 1.24 2008-12-02 03:34:44 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
 # define SWOBJECTS_HH
 
 #include <map>
+#include <set>
 #include <list>
 #include <vector>
 #include <string>
@@ -72,7 +73,7 @@ public:
 	assert(v != NULL); // @DEBUG
 	data.push_back(v);
     }
-    size_t size () { return data.size(); }
+    size_t size () const { return data.size(); }
     virtual T operator [] (size_t i) { return data[i]; }
     virtual T at (size_t i) { return data.at(i); }
     void clear () { data.clear(); }
@@ -82,7 +83,9 @@ public:
 	    data[i]->express(p_expressor);
     }
     typename std::vector<T>::iterator begin () { return data.begin(); }
+    typename std::vector<T>::const_iterator begin () const { return data.begin(); }
     typename std::vector<T>::iterator end () { return data.end(); }
+    typename std::vector<T>::const_iterator end () const { return data.end(); }
     void erase (typename std::vector<T>::iterator it) { data.erase(it); }
     void sort (bool (*comp)(T, T)) {
 	std::list<T> l;
@@ -387,6 +390,7 @@ public:
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true);
 };
 
+class DefaultGraphPattern;
 class POSFactory {
     typedef std::map<std::string, Variable*> VariableMap;
     typedef std::map<std::string, BNode*> BNodeMap;
@@ -425,11 +429,28 @@ public:
     BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
     NULLpos* getNULL () { return &nullPOS; }
 
-    TriplePattern* getTriple(POS* s, POS* p, POS* o, bool weaklyBound = false);
-    TriplePattern* getTriple(std::string s, std::string p, std::string o);
+    /* getTriple(s) interface: */
     TriplePattern* getTriple (TriplePattern* p, bool weaklyBound) {
 	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
     }
+    TriplePattern* getTriple(POS* s, POS* p, POS* o, bool weaklyBound = false);
+    TriplePattern* getTriple (std::string s, std::string p, std::string o) {
+	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
+    }
+    TriplePattern* getTriple (std::string spo) {
+	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
+	boost::match_results<std::string::const_iterator> what;
+	boost::match_flag_type flags = boost::match_default;
+	if (!regex_search(spo, what, expression, flags))
+	    return NULL;
+	std::string s(what[1].first, what[1].second);
+	return getTriple(getPOS(std::string(what[1].first, what[1].second)), 
+			 getPOS(std::string(what[2].first, what[2].second)), 
+			 getPOS(std::string(what[3].first, what[3].second)), false);
+    }
+    TriplePattern* getTriples (BasicGraphPattern* g, std::string spo);
 
 };
 
@@ -574,7 +595,9 @@ public:
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
     void construct(BasicGraphPattern* target, ResultSet* rs);
     std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
+    std::vector<TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
     std::vector<TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
+    std::vector<TriplePattern*>::const_iterator end () const { return m_TriplePatterns.end(); }
     void erase (std::vector<TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
     void sort (bool (*comp)(TriplePattern*, TriplePattern*)) { m_TriplePatterns.sort(comp); }
     void clearTriples () { m_TriplePatterns.clear(); }
@@ -605,7 +628,23 @@ public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
     virtual void express(Expressor* p_expressor);
     virtual void bindVariables(RdfDB* db, ResultSet* rs);
+    bool operator== (const DefaultGraphPattern & ref) const {
+	if (m_TriplePatterns.size() != ref.m_TriplePatterns.size())
+	    return false;
+
+	std::set<TriplePattern*> refs;
+	for (std::vector<TriplePattern*>::const_iterator it = ref.m_TriplePatterns.begin();
+	     it != ref.m_TriplePatterns.end(); ++it)
+	    refs.insert(*it);
+
+	for (std::vector<TriplePattern*>::const_iterator it = m_TriplePatterns.begin();
+	     it != m_TriplePatterns.end(); ++it)
+	    if (refs.erase(*it) == 0)
+		return false;
+	return true;
+    }
 };
+std::ostream& operator<<(std::ostream& os, DefaultGraphPattern const& my);
 class TableOperationOnOperation : public TableOperation {
 protected:
     TableOperation* m_TableOperation;

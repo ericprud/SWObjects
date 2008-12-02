@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.15 2008-12-01 06:04:17 eric Exp $
+ * $Id: SWObjects.cpp,v 1.16 2008-12-02 03:34:44 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -567,8 +567,25 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
-    TriplePattern* POSFactory::getTriple (std::string s, std::string p, std::string o) {
-	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
+    TriplePattern* POSFactory::getTriples (BasicGraphPattern* g, std::string spo) {
+	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
+	std::string::const_iterator start, end; 
+	start = spo.begin(); 
+	end = spo.end(); 
+	boost::match_results<std::string::const_iterator> what;
+	boost::match_flag_type flags = boost::match_default;
+	while (regex_search(start, end, what, expression, flags)) {
+	    std::string s(what[1].first, what[1].second);
+	    g->addTriplePattern(getTriple(getPOS(std::string(what[1].first, what[1].second)), 
+				  getPOS(std::string(what[2].first, what[2].second)), 
+				  getPOS(std::string(what[3].first, what[3].second)), false));
+	    start = what[0].second; 
+	    // update flags: 
+	    flags |= boost::match_prev_avail; 
+	    flags |= boost::match_not_bob; 
+	}
     }
     /* </POSFactory> */
 
@@ -706,6 +723,11 @@ void NumberExpression::express (Expressor* p_expressor) {
     }
     void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
 	db->bindVariables(rs, NULL, this);
+    }
+    std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
+	SPARQLSerializer s;
+	((DefaultGraphPattern&)my).express(&s);
+	return os << s.getSPARQLstring();
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {
