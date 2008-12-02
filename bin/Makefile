@@ -44,7 +44,7 @@ OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
 EXELIST  :=  $(subst .cpp,,$(wildcard *.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 ../lib$(LIBNAME).a
-LIBINC	+=	 -l$(LIBNAME)
+LIBINC	+=	 -l$(LIBNAME) -lboost_regex
 
 all:   $(EXELIST)
 
