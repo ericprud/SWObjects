@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.9 2008-12-02 03:36:12 eric Exp $
+ * $Id: ResultSet.hpp,v 1.10 2008-12-02 04:55:46 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -70,6 +70,45 @@ namespace w3c_sw {
 
     public:
 	ResultSet(POSFactory* posFactory = NULL);
+	/* Parsed constructor, a la
+		ResultSet(&f, 
+			  "?n1  _:n2\n"
+			  "<n1> <n2>\n"
+			  "<n4> \"l1\"" )
+	 * A \n on the last line creates a row with no bindings.
+	 */
+	ResultSet (POSFactory* posFactory, std::string str) : posFactory(posFactory), knownVars(), results() {
+	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
+	    std::string::const_iterator start, end; 
+	    start = str.begin(); 
+	    end = str.end(); 
+	    boost::match_results<std::string::const_iterator> what;
+	    boost::match_flag_type flags = boost::match_default;
+	    bool firstRow = true;
+	    std::vector<POS*> headers;
+	    int col = 0;
+	    Result* curRow;
+	    while (regex_search(start, end, what, expression, flags)) {
+		std::string matched(what[1].first, what[1].second);
+		if (matched == "\n") {
+		    firstRow = false;
+		    col = 0;
+		    curRow = new Result(this);
+		    insert(this->end(), curRow);
+		} else {
+		    POS* pos = posFactory->getPOS(matched);
+		    if (firstRow)
+			headers.push_back(pos);
+		    else
+			set(curRow, headers[col++], pos, false);
+		}
+
+		start = what[0].second; 
+		// update flags: 
+		flags |= boost::match_prev_avail; 
+		flags |= boost::match_not_bob; 
+	    }
+	}
 	virtual ~ResultSet();
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.size() != size())
