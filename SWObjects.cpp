@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.16 2008-12-02 03:34:44 eric Exp $
+ * $Id: SWObjects.cpp,v 1.17 2008-12-02 04:57:12 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -567,7 +567,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
-    TriplePattern* POSFactory::getTriples (BasicGraphPattern* g, std::string spo) {
+    void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
@@ -577,10 +577,9 @@ void NumberExpression::express (Expressor* p_expressor) {
 	boost::match_results<std::string::const_iterator> what;
 	boost::match_flag_type flags = boost::match_default;
 	while (regex_search(start, end, what, expression, flags)) {
-	    std::string s(what[1].first, what[1].second);
 	    g->addTriplePattern(getTriple(getPOS(std::string(what[1].first, what[1].second)), 
-				  getPOS(std::string(what[2].first, what[2].second)), 
-				  getPOS(std::string(what[3].first, what[3].second)), false));
+					  getPOS(std::string(what[2].first, what[2].second)), 
+					  getPOS(std::string(what[3].first, what[3].second)), false));
 	    start = what[0].second; 
 	    // update flags: 
 	    flags |= boost::match_prev_avail; 

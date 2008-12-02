@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.24 2008-12-02 03:34:44 eric Exp $
+ * $Id: SWObjects.hpp,v 1.25 2008-12-02 04:57:11 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -450,7 +450,7 @@ public:
 			 getPOS(std::string(what[2].first, what[2].second)), 
 			 getPOS(std::string(what[3].first, what[3].second)), false);
     }
-    TriplePattern* getTriples (BasicGraphPattern* g, std::string spo);
+    void parseTriples (BasicGraphPattern* g, std::string spo);
 
 };
 
@@ -549,7 +549,7 @@ public:
     std::vector<TableOperation*>::iterator end () { return m_TableOperations.end(); }
     void clear () { m_TableOperations.clear(); }
     void erase (std::vector<TableOperation*>::iterator it) { m_TableOperations.erase(it); }
-    size_t size () { return m_TableOperations.size(); }
+    size_t size () const { return m_TableOperations.size(); }
     TableOperation* simplify () {
 	TableOperation* ret;
 	if (size() == 0 || size() == 1) {
@@ -594,6 +594,7 @@ public:
     virtual void bindVariables(RdfDB* db, ResultSet* rs) = 0;
     void bindVariables(ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName);
     void construct(BasicGraphPattern* target, ResultSet* rs);
+    size_t size () const { return m_TriplePatterns.size(); }
     std::vector<TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
     std::vector<TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
     std::vector<TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
