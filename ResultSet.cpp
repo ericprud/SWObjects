@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.cpp,v 1.6 2008-10-24 10:57:31 eric Exp $
+ * $Id: ResultSet.cpp,v 1.7 2008-12-02 03:36:12 eric Exp $
  */
 
 #include "ResultSet.hpp"
@@ -213,5 +213,8 @@ namespace w3c_sw {
 	return xml;
     }
 
+    std::ostream& operator<< (std::ostream& os, ResultSet const& my) {
+	return os << my.toString() ;
+    }
 }
 

@@ -1,5 +1,5 @@
 /* ResultSet - sets of variable bindings and their proofs.
- * $Id: ResultSet.hpp,v 1.8 2008-12-01 21:30:29 eric Exp $
+ * $Id: ResultSet.hpp,v 1.9 2008-12-02 03:36:12 eric Exp $
 
  Consider reverting to a version before BindingInfo:
    ResultSet.hpp,v 1.10 2008/08/13 22:47:37
@@ -71,7 +71,7 @@ namespace w3c_sw {
     public:
 	ResultSet(POSFactory* posFactory = NULL);
 	virtual ~ResultSet();
-	bool operator==(const ResultSet & ref) const {
+	bool operator== (const ResultSet & ref) const {
 	    if (ref.size() != size())
 		return false;
 	    std::list<Result*>::const_iterator myRow = results.begin();
@@ -79,13 +79,21 @@ namespace w3c_sw {
 	    while (myRow != results.end()) {
 		if ((*yourRow)->size() != (*myRow)->size())
 		    return false;
-		
+		std::set<POS*> yourVars;
+		for (BindingSetIterator yourBinding = (*yourRow)->begin();
+		     yourBinding != (*yourRow)->end(); ++yourBinding)
+		    yourVars.insert(yourBinding->first);
 		for (BindingSetIterator myBinding = (*myRow)->begin();
 		     myBinding != (*myRow)->end(); ++myBinding) {
-		    POS* yours = (*yourRow)->find(myBinding->first)->second.pos;
-		    if (yours == NULL || yours != myBinding->second.pos)
+		    POS* var = myBinding->first;
+		    if (yourVars.erase(var) == 0)
+			return false;
+		    POS* yours = (*yourRow)->find(var)->second.pos;
+		    if (yours != myBinding->second.pos)
 			return false;
 		}
+		if (yourVars.size() != 0)
+		    return false;
 		++myRow;
 		++yourRow;
 	    }
@@ -117,6 +125,8 @@ namespace w3c_sw {
      */
     class TransformerResultSet : public ResultSet {
     };
+
+    std::ostream& operator<<(std::ostream& os, ResultSet const& my);
 
 } // namespace w3c_sw
 
