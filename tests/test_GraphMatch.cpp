@@ -1,6 +1,6 @@
 /* test graph-matching.
  *
- * $Id: test_GraphMatch.cpp,v 1.4 2008-12-02 16:28:27 eric Exp $
+ * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
 #define BOOST_TEST_DYN_LINK 1
@@ -53,8 +53,7 @@ ResultSet makeResultSet (R rows[], int count) {
     return rs;
 }
 
-BOOST_AUTO_TEST_CASE( bgp )
-{
+BOOST_AUTO_TEST_CASE( bgp ) {
     DefaultGraphPattern data, pattern;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
 
@@ -126,5 +125,25 @@ BOOST_AUTO_TEST_CASE( bgp )
 				       "<n1> <n2> <n4>"
 				       ));
     }
+
+    /* Test a subset of BSBM q1. */ {
+	DefaultGraphPattern d;
+	f.parseTriples(&d, 
+		       "?product     <label>   ?label ."
+ 		       "?product     <feature> <feature1> ."
+ 		       "?product     <feature> \"feature2\" .");
+	DefaultGraphPattern p;
+	f.parseTriples(&p, 
+		       "?ruleProduct <label>   ?ruleLabel ."
+		       "?ruleProduct <feature> ?ruleFeature .");
+	ResultSet tested;
+	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
+	ResultSet expected(&f, 
+			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
+			   "?product     ?label     <feature1> \n"
+			   "?product     ?label     \"feature2\"");
+	BOOST_CHECK_EQUAL(tested, expected);
+    }
+
 }
 
