@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.25 2008-12-02 04:57:11 eric Exp $
+ * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -272,7 +272,7 @@ protected:
 public:
     virtual std::string toString () const {
 	std::stringstream s;
-	s << "\"" << terminal << "\"";
+	s << terminal;
 	if (datatype) s << datatype->toString();
 	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
 	return s.str();
