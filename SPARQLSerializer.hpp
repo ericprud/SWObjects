@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.10 2008-11-13 20:53:54 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.10.4.1 2008-12-05 00:39:23 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -98,13 +98,13 @@ public:
 	p_Constraint->express(this);
 	ret << std::endl;
     }
-    void _BasicGraphPattern (BasicGraphPattern* self, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters, bool p_allOpts) {
+    void _BasicGraphPattern (BasicGraphPattern* self, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters, BasicGraphPattern::MatchSemantics p_MatchSemantics) {
 	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
-	if (p_allOpts)
+	if (p_MatchSemantics.opts)
 	    for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
 		 triple != p_TriplePatterns->end(); triple++) {
 		lead(); ret << "optional {" << std::endl << "  ";
@@ -120,11 +120,11 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (NamedGraphPattern* self, POS*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
+    virtual void namedGraphPattern (NamedGraphPattern* self, POS*, BasicGraphPattern::MatchSemantics p_MatchSemantics, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_MatchSemantics);
     }
-    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
+    virtual void defaultGraphPattern (DefaultGraphPattern* self, BasicGraphPattern::MatchSemantics p_MatchSemantics, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_MatchSemantics);
     }
     virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	lead();

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.17 2008-12-02 04:57:12 eric Exp $
+ * $Id: SWObjects.cpp,v 1.17.2.1 2008-12-05 00:39:24 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -234,10 +234,10 @@ void Filter::express (Expressor* p_expressor) {
     p_expressor->filter(this, m_Constraint);
 }
 void NamedGraphPattern::express (Expressor* p_expressor) {
-    p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns, &m_Filters);
+    p_expressor->namedGraphPattern(this, m_name, matchSemantics, &m_TriplePatterns, &m_Filters);
 }
 void DefaultGraphPattern::express (Expressor* p_expressor) {
-    p_expressor->defaultGraphPattern(this, allOpts, &m_TriplePatterns, &m_Filters);
+    p_expressor->defaultGraphPattern(this, matchSemantics, &m_TriplePatterns, &m_Filters);
 }
 void TableDisjunction::express (Expressor* p_expressor) {
     p_expressor->tableDisjunction(this, &m_TableOperations, &m_Filters);
@@ -729,23 +729,52 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return os << s.getSPARQLstring();
     }
 
-    void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {
+    void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* templatePatterns, POS* graphName) {
 	bool matched = true; // Pretend it's matched so we can try the first constraint.
-	for (std::vector<TriplePattern*>::iterator constraint = toMatch->m_TriplePatterns.begin();
-	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
+	if (matchSemantics.invert) {
+		    for (std::vector<TriplePattern*>::iterator dataTriple = m_TriplePatterns.begin();
+			 dataTriple != m_TriplePatterns.end() && (matched || templatePatterns->matchSemantics.opts); dataTriple++) {
+		for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
+		    matched = false;
+	    for (std::vector<TriplePattern*>::iterator templatePattern = templatePatterns->m_TriplePatterns.begin();
+		 templatePattern != templatePatterns->m_TriplePatterns.end(); templatePattern++) {
+			Result* newRow = (*row)->duplicate(rs, row);
+			TriplePattern* match = matchSemantics.invert ? *templatePattern : *dataTriple ;
+			TriplePattern* against = matchSemantics.invert ? *dataTriple : *templatePattern;
+			if (match->bindVariables(against, templatePatterns->matchSemantics.opts, rs, graphVar, newRow, graphName)) {
+			    matched = true;
+			    rs->insert(row, newRow);
+			} else {
+			    delete newRow;
+			}
+		    }
+		    if (matched || !templatePatterns->matchSemantics.opts) {
+			delete *row;
+			rs->erase(row++);
+		    } else {
+			row++;
+		    }
+		}
+	    }
+	    return;
+	}
+	for (std::vector<TriplePattern*>::iterator templatePattern = templatePatterns->m_TriplePatterns.begin();
+	     templatePattern != templatePatterns->m_TriplePatterns.end() && (matched || templatePatterns->matchSemantics.opts); templatePattern++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		matched = false;
-		for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
-		     triple != m_TriplePatterns.end(); triple++) {
+		for (std::vector<TriplePattern*>::iterator dataTriple = m_TriplePatterns.begin();
+		     dataTriple != m_TriplePatterns.end(); dataTriple++) {
 		    Result* newRow = (*row)->duplicate(rs, row);
-		    if ((*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+		    TriplePattern* match = matchSemantics.invert ? *templatePattern : *dataTriple ;
+		    TriplePattern* against = matchSemantics.invert ? *dataTriple : *templatePattern;
+		    if (match->bindVariables(against, templatePatterns->matchSemantics.opts, rs, graphVar, newRow, graphName)) {
 			matched = true;
 			rs->insert(row, newRow);
 		    } else {
 			delete newRow;
 		    }
 		}
-		if (matched || !toMatch->allOpts) {
+		if (matched || !templatePatterns->matchSemantics.opts) {
 		    delete *row;
 		    rs->erase(row++);
 		} else {

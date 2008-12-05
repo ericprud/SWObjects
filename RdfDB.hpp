@@ -1,5 +1,5 @@
 /* RdfDB - sets of variable bindings and their proofs.
- * $Id: RdfDB.hpp,v 1.5 2008-10-14 12:02:57 eric Exp $
+ * $Id: RdfDB.hpp,v 1.5.4.1 2008-12-05 00:39:23 eric Exp $
  */
 
 #ifndef RDF_DB_H
@@ -51,7 +51,7 @@ namespace w3c_sw {
 	}
 	~RdfDB();
 	void clearTriples();
-	BasicGraphPattern* assureGraph(POS* name);
+	BasicGraphPattern* assureGraph(POS* name, BasicGraphPattern::MatchSemantics matchSemantics = BasicGraphPattern::MatchSemantics(0, 0));
 	void bindVariables(ResultSet* rs, POS* graph, BasicGraphPattern* toMatch);
 	void express(Expressor* expressor);
     };

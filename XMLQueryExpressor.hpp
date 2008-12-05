@@ -1,6 +1,6 @@
 /* XMLQueryExpressor.hpp - simple XML serializer for SPARQL compile trees.
  *
- * $Id: XMLQueryExpressor.hpp,v 1.3 2008-09-13 05:17:31 eric Exp $
+ * $Id: XMLQueryExpressor.hpp,v 1.3.4.1 2008-12-05 00:39:24 eric Exp $
  */
 
 #ifndef XMLQueryExpressor_H
@@ -69,24 +69,26 @@ public:
 	p_Constraint->express(this);
 	xml->close();
     }
-    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, BasicGraphPattern::MatchSemantics p_MatchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else {
 	    xml->open("NamedGraphPattern");
 	    p_name->express(this);
 	}
-	if (p_allOpts == true) xml->attribute("allOpts", "allOpts");
+	if (p_MatchSemantics.opts == true) xml->attribute("allOpts", "allOpts");
+	if (p_MatchSemantics.invert == true) xml->attribute("invert", "invert");
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics p_MatchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else
 	    xml->open("DefaultGraphPattern");
-	if (p_allOpts == true) xml->attribute("allOpts", "allOpts");
+	if (p_MatchSemantics.opts == true) xml->attribute("allOpts", "allOpts");
+	if (p_MatchSemantics.invert == true) xml->attribute("invert", "invert");
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
 	xml->close();

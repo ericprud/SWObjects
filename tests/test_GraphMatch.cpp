@@ -1,6 +1,6 @@
 /* test graph-matching.
  *
- * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ * $Id: test_GraphMatch.cpp,v 1.5.2.1 2008-12-05 00:39:24 eric Exp $
  */
 
 #define BOOST_TEST_DYN_LINK 1
@@ -53,7 +53,7 @@ ResultSet makeResultSet (R rows[], int count) {
     return rs;
 }
 
-BOOST_AUTO_TEST_CASE( bgp ) {
+BOOST_AUTO_TEST_CASE( BGP_Basics ) {
     DefaultGraphPattern data, pattern;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
 
@@ -125,25 +125,52 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 				       "<n1> <n2> <n4>"
 				       ));
     }
+}
 
-    /* Test a subset of BSBM q1. */ {
-	DefaultGraphPattern d;
-	f.parseTriples(&d, 
-		       "?product     <label>   ?label ."
- 		       "?product     <feature> <feature1> ."
- 		       "?product     <feature> \"feature2\" .");
-	DefaultGraphPattern p;
-	f.parseTriples(&p, 
-		       "?ruleProduct <label>   ?ruleLabel ."
-		       "?ruleProduct <feature> ?ruleFeature .");
-	ResultSet tested;
-	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
-	ResultSet expected(&f, 
-			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
-			   "?product     ?label     <feature1> \n"
-			   "?product     ?label     \"feature2\"");
-	BOOST_CHECK_EQUAL(tested, expected);
-    }
 
+/* Test a subset of BSBM q1. */
+BOOST_AUTO_TEST_CASE( Subset_BSBM ) {
+
+    DefaultGraphPattern d;
+    f.parseTriples(&d, 
+		   "?product     <label>   ?label ."
+		   "?product     <feature> <feature1> ."
+		   "?product     <feature> \"feature2\" .");
+    DefaultGraphPattern p;
+    f.parseTriples(&p, 
+		   "?ruleProduct <label>   ?ruleLabel ."
+		   "?ruleProduct <feature> ?ruleFeature .");
+    ResultSet tested;
+    d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
+    ResultSet expected(&f, 
+		       "?ruleProduct ?ruleLabel ?ruleFeature \n"
+		       "?product     ?label     <feature1> \n"
+		       "?product     ?label     \"feature2\"");
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+
+/* Inverted (mapping) semantics, see how a query matches rule heads.
+ * Note that inverted matches bind the variables in the data to variables 
+ * in the pattern. */
+BOOST_AUTO_TEST_CASE( Inverted_BSBM ) {
+
+    DefaultGraphPattern d(BasicGraphPattern::MatchSemantics(true, false));
+    f.parseTriples(&d, 
+		   "?product     <label>   ?label ."
+		   "?product     <feature> <feature1> ."
+		   "?product     <feature> \"feature2\" .");
+    DefaultGraphPattern p(BasicGraphPattern::MatchSemantics(false, true));
+    f.parseTriples(&p, 
+		   "?ruleProduct <label>   ?ruleLabel ."
+		   "?ruleProduct <feature> ?ruleFeature ."
+		   "?ruleProduct <extra>   ?extra .");
+    ResultSet tested;
+    p.BasicGraphPattern::bindVariables(&tested, NULL, &d, NULL);
+    ResultSet expected(&f, 
+		       "?ruleProduct ?ruleLabel ?ruleFeature \n"
+		       "?product     ?label     <feature1> \n"
+		       "?product     ?label     \"feature2\"");
+    BOOST_CHECK_EQUAL(tested, expected);
 }
 

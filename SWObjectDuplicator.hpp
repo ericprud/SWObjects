@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.8 2008-11-21 17:13:29 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.8.4.1 2008-12-05 00:39:24 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -106,14 +106,14 @@ namespace w3c_sw {
 		    op->addFilter(last.filter);
 	    }
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, BasicGraphPattern::MatchSemantics /* p_MatchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
 	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos);
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics /* p_MatchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);

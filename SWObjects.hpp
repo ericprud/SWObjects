@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
+ * $Id: SWObjects.hpp,v 1.26.2.1 2008-12-05 00:39:24 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -577,13 +577,21 @@ public:
 };
 class DontDeleteThisBGP;
 class BasicGraphPattern : public TableOperation { // ⊌⊍
+public:
+    struct MatchSemantics {bool opts : 1; bool invert : 1;
+	MatchSemantics (bool opts, bool invert) : opts(opts), invert(invert) {  }
+	bool operator==(const MatchSemantics& ref) { return opts == ref.opts && invert == ref.invert; }
+	bool operator!=(const MatchSemantics& ref) { return opts != ref.opts || invert != ref.invert; }
+	
+    };
 protected:
     // make sure we don't delete the TriplePatterns
     NoDelProductionVector<TriplePattern*> m_TriplePatterns;
-    bool allOpts;
-    BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
+    MatchSemantics matchSemantics;
+    BasicGraphPattern (MatchSemantics matchSemantics) : TableOperation(), m_TriplePatterns(), matchSemantics(matchSemantics) {  }
 
 public:
+    MatchSemantics getMatchSemantics () { return matchSemantics; }
     void addTriplePattern (TriplePattern* p) {
 	for (std::vector<TriplePattern*>::iterator it = m_TriplePatterns.begin();
 	     it != m_TriplePatterns.end(); ++it)
@@ -620,13 +628,13 @@ private:
     POS* m_name;
 
 public:
-    NamedGraphPattern (POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
+    NamedGraphPattern (POS* p_name, MatchSemantics matchSemantics = MatchSemantics(0, 0)) : BasicGraphPattern(matchSemantics), m_name(p_name) {  }
     virtual void express(Expressor* p_expressor);
     virtual void bindVariables(RdfDB* db, ResultSet* rs);
 };
 class DefaultGraphPattern : public BasicGraphPattern {
 public:
-    DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
+    DefaultGraphPattern (MatchSemantics matchSemantics = MatchSemantics(0, 0)) : BasicGraphPattern(matchSemantics) {  }
     virtual void express(Expressor* p_expressor);
     virtual void bindVariables(RdfDB* db, ResultSet* rs);
     bool operator== (const DefaultGraphPattern & ref) const {
@@ -775,6 +783,7 @@ public:
 	delete m_GroupGraphPattern;
 	delete m_BindingClause;
     }
+    TableOperation* getPattern () { return m_GroupGraphPattern; }
     virtual void express(Expressor* p_expressor);
     void bindVariables(RdfDB* db, ResultSet* rs);
 };
@@ -1206,8 +1215,8 @@ public:
     virtual void nullpos(NULLpos* self) = 0;
     virtual void triplePattern(TriplePattern* self, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) = 0;
     virtual void filter(Filter* self, w3c_sw::Expression* p_Constraint) = 0;
-    virtual void namedGraphPattern(NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
-    virtual void defaultGraphPattern(DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
+    virtual void namedGraphPattern(NamedGraphPattern* self, w3c_sw::POS* p_name, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
+    virtual void defaultGraphPattern(DefaultGraphPattern* self, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
     virtual void tableConjunction(TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
     virtual void tableDisjunction(TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
     virtual void optionalGraphPattern(OptionalGraphPattern* self, w3c_sw::TableOperation* p_GroupGraphPattern) = 0;
@@ -1280,12 +1289,12 @@ public:
     virtual void filter (Filter*, w3c_sw::Expression* p_Constraint) {
 	p_Constraint->express(this);
     }
-    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	p_name->express(this);
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
     }
-    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
     }

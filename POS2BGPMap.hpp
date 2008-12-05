@@ -1,5 +1,5 @@
 /* POS2BGPMap.hpp — association variables with the BGPs in which they appear.
- * $Id: POS2BGPMap.hpp,v 1.26 2008-11-04 15:12:53 eric Exp $
+ * $Id: POS2BGPMap.hpp,v 1.26.4.1 2008-12-05 00:39:22 eric Exp $
  *
  * POS2BGP does double duty:
  *
@@ -60,7 +60,7 @@ namespace w3c_sw {
     public:
 	//_BindingStrength& operator[] (const TableOperation*& subscript) { return std::map<TableOperation*, _BindingStrength>::operator[](subscript); }
 
-	GraphInclusion getOperationStrength (TableOperation* bgp) {
+	GraphInclusion getOperationStrength (TableOperation* bgp) { return GraphInclusion_STRONG; // !!!
 	    std::map<TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
 		(it->second & _Binding_WEAK && 0)) // !(it->second & _Binding_INTRODUCED)))
@@ -168,7 +168,7 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		START("POS2BGPMap::namedGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -179,7 +179,7 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		START("POS2BGPMap::defaultGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;

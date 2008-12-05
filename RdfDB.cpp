@@ -1,5 +1,5 @@
 /* RdfDB - sets of variable bindings and their proofs.
- * $Id: RdfDB.cpp,v 1.2 2008-08-27 02:21:41 eric Exp $
+ * $Id: RdfDB.cpp,v 1.2.6.1 2008-12-05 00:39:22 eric Exp $
  */
 
 #include "RdfDB.hpp"
@@ -18,16 +18,18 @@ namespace w3c_sw {
 	    it->second->clearTriples();
     }
 
-    BasicGraphPattern* RdfDB::assureGraph (POS* name) {
+    BasicGraphPattern* RdfDB::assureGraph (POS* name, BasicGraphPattern::MatchSemantics matchSemantics) {
 	graphmap_type::const_iterator vi = graphs.find(name);
 	if (vi == graphs.end()) {
 	    BasicGraphPattern* ret;
 	    if (name == NULL || name == DefaultGraph)
-		ret = new DefaultGraphPattern();
+		ret = new DefaultGraphPattern(matchSemantics);
 	    else
-		ret = new NamedGraphPattern(name);
+		ret = new NamedGraphPattern(name, matchSemantics);
 	    graphs[name] = ret;
 	    return ret;
+	} else if (vi->second->getMatchSemantics() != matchSemantics) {
+	    throw(std::runtime_error("RdfDB::assureGraph returning graph with different match semantics than requested."));
 	} else {
 	    return vi->second;
 	}

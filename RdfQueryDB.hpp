@@ -1,5 +1,5 @@
 /* RdfQueryDB - sets of variable bindings and their proofs.
- * $Id: RdfQueryDB.hpp,v 1.4 2008-10-24 10:57:31 eric Exp $
+ * $Id: RdfQueryDB.hpp,v 1.4.4.1 2008-12-05 00:39:23 eric Exp $
  */
 
 #ifndef RDF_QUERY_DB_H
@@ -34,11 +34,12 @@ namespace w3c_sw {
 		 it != p_TriplePatterns->end(); it++)
 		g->addTriplePattern(posFactory->getTriple(*it, optState));
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_IRIref, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_IRIref, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(p_IRIref), p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns, p_Filters);
+	virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    _absorbGraphPattern(db->assureGraph(DefaultGraph, p_matchSemantics), p_TriplePatterns, p_Filters);
+	    // or maybe always always BasicGraphPattern::MatchSemantics(false, true) for QueryDBs?
 	}
 	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(__PRETTY_FUNCTION__)); // query should already be DNF'd, ergo no disjunctions.

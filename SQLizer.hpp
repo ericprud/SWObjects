@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.42 2008-11-16 13:50:59 eric Exp $
+ * $Id: SQLizer.hpp,v 1.42.4.1 2008-12-05 00:39:23 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -1030,11 +1030,11 @@ namespace w3c_sw {
 		 filterIt != p_Filters->end(); ++filterIt)
 		(*filterIt)->express(this);
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS*, BasicGraphPattern::MatchSemantics /* p_MatchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics /* p_MatchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}

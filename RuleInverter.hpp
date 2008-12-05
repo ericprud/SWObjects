@@ -1,7 +1,7 @@
 /* RuleInverter.hpp - create a SPARQL CONSTRUCT rule that follows 
  * http://www.w3.org/2008/07/MappingRules/#_02
  *
- * $Id: RuleInverter.hpp,v 1.23 2008-11-27 19:40:11 eric Exp $
+ * $Id: RuleInverter.hpp,v 1.23.2.1 2008-12-05 00:39:23 eric Exp $
  */
 
 #ifndef RuleInverter_H
@@ -38,10 +38,10 @@ namespace w3c_sw {
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
 	    }
-	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* /*p_name*/, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
 
@@ -104,26 +104,26 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_matchSemantics, p_TriplePatterns, p_Filters);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_matchSemantics, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::defaultGraphPattern(self, p_matchSemantics, p_TriplePatterns, p_Filters);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::defaultGraphPattern (self, p_matchSemantics, p_TriplePatterns, p_Filters);
 		}
 	    }
 	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
@@ -167,6 +167,7 @@ namespace w3c_sw {
 
     private:
 	TableOperation* constructRuleBodyAsConsequent;
+	RdfQueryDB constructRuleHeadAsAssertions;
 	Consequents consequents;
 	POSFactory* posFactory;
 	std::vector<URImap> uriMaps;
@@ -178,6 +179,7 @@ namespace w3c_sw {
 			  std::vector<URImap> uriMaps, std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
+	    constructRuleHeadAsAssertions(constructRuleHeadAsPattern->getPattern(), posFactory), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
 	    posFactory(posFactory), uriMaps(uriMaps), debugStream(debugStream)
 	{  }
@@ -185,7 +187,7 @@ namespace w3c_sw {
 	    delete constructRuleBodyAsConsequent;
 	}
 	WhereClause* getRuleBody () { return m_WhereClause; }
-	virtual OperationResultSet* execute (RdfDB* userQueryAsAssertions, ResultSet* rs = NULL) {
+	virtual OperationResultSet* execute (TableOperation* userQueryDisjoint, ResultSet* rs = NULL) {
 	    OperationResultSet* opRS = dynamic_cast<OperationResultSet*>(rs);
 	    if (opRS == NULL)
 		throw(std::runtime_error("MappingConstrucs need a result set.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
@@ -200,7 +202,7 @@ namespace w3c_sw {
 	    /* 04 — Execute the query C on the query disjoint D, producing a result set RScd.
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
-	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
+	    userQueryDisjoint->bindVariables(&constructRuleHeadAsAssertions, opRS);
 	    if (*debugStream != NULL)
 		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
 
@@ -316,12 +318,13 @@ namespace w3c_sw {
 		//return TriplePattern::gt(l, r);
 	    }
 	};
+
 	virtual void variable (Variable* self, std::string terminal) {
 	    last.posz.pos = last.posz.variable = self;
 	    self->setMaps(uriMaps, posFactory);
 	}
 
-	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	void _graphPattern (BasicGraphPattern* bgp, BasicGraphPattern::MatchSemantics /* p_matchSemantics */, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
 	    _Filters(p_Filters, bgp);
 	    last.tableOperation = bgp;
@@ -334,12 +337,14 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
-	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	    _graphPattern(new NamedGraphPattern(last.posz.pos, BasicGraphPattern::MatchSemantics(false, inUserRuleHead)), // invert = true when in rule body
+			  p_matchSemantics, p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
-	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	virtual void defaultGraphPattern (DefaultGraphPattern*, BasicGraphPattern::MatchSemantics p_matchSemantics, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    _graphPattern(new DefaultGraphPattern(BasicGraphPattern::MatchSemantics(false, inUserRuleHead)), // invert = true when in rule body
+			  p_matchSemantics, p_TriplePatterns, p_Filters);
 	}
 
 	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
