@@ -1,6 +1,6 @@
 /* test graph-matching.
  *
- * $Id: test_GraphMatch.cpp,v 1.5.2.1 2008-12-05 00:39:24 eric Exp $
+ * $Id: test_GraphMatch.cpp,v 1.5.2.2 2008-12-06 14:54:02 eric Exp $
  */
 
 #define BOOST_TEST_DYN_LINK 1
@@ -155,18 +155,18 @@ BOOST_AUTO_TEST_CASE( Subset_BSBM ) {
  * in the pattern. */
 BOOST_AUTO_TEST_CASE( Inverted_BSBM ) {
 
-    DefaultGraphPattern d(BasicGraphPattern::MatchSemantics(true, false));
-    f.parseTriples(&d, 
+    DefaultGraphPattern userQuery(BasicGraphPattern::MatchSemantics(true, false));
+    f.parseTriples(&userQuery, 
 		   "?product     <label>   ?label ."
 		   "?product     <feature> <feature1> ."
 		   "?product     <feature> \"feature2\" .");
-    DefaultGraphPattern p(BasicGraphPattern::MatchSemantics(false, true));
-    f.parseTriples(&p, 
+    DefaultGraphPattern ruleHead(BasicGraphPattern::MatchSemantics(false, true));
+    f.parseTriples(&ruleHead, 
 		   "?ruleProduct <label>   ?ruleLabel ."
 		   "?ruleProduct <feature> ?ruleFeature ."
 		   "?ruleProduct <extra>   ?extra .");
     ResultSet tested;
-    p.BasicGraphPattern::bindVariables(&tested, NULL, &d, NULL);
+    ruleHead.BasicGraphPattern::bindVariables(&tested, NULL, &userQuery, NULL);
     ResultSet expected(&f, 
 		       "?ruleProduct ?ruleLabel ?ruleFeature \n"
 		       "?product     ?label     <feature1> \n"
