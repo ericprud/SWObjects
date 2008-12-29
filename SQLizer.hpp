@@ -1,6 +1,6 @@
 /* SQLizer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SQLizer.hpp,v 1.42 2008-11-16 13:50:59 eric Exp $
+ * $Id: SQLizer.hpp,v 1.42.6.1 2008-12-29 23:17:19 eric Exp $
  */
 
 #ifndef SQLizer_H
@@ -751,6 +751,9 @@ namespace w3c_sw {
 	    default:
 		FAIL("wierd state");
 	    }
+	}
+	virtual void assignedVariable (AssignedVariable*, ProductionVector<w3c_sw::POS*>* members) {
+	    FAIL("what to do with assignedVariable");
 	}
 	virtual void variable (Variable*, std::string terminal) {
 

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
+ * $Id: SWObjects.hpp,v 1.26.4.1 2008-12-29 23:17:19 eric Exp $
  */
 
 #ifndef SWOBJECTS_HH
@@ -226,6 +226,7 @@ struct URImap {
 class POSFactory;
 class Variable : public Bindable {
     friend class POSFactory;
+    friend class AssignedVariable;
 protected:
     std::vector<URImap> uriMaps;
     POSFactory* posFactory;
@@ -238,6 +239,28 @@ public:
     virtual POS* eval(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "name"; }
     void setMaps (std::vector<URImap> maps, POSFactory* factory) { uriMaps = maps; posFactory = factory; }
+};
+
+class AssignedVariable : public Variable {
+    friend class POSFactory;
+protected:
+    ProductionVector<POS*>* members;
+private:
+    AssignedVariable (ProductionVector<POS*>* members) : Variable((*(members->begin()))->getTerminal()), members(members) {  }
+public:
+    ~AssignedVariable () {  }
+    virtual void express(Expressor* p_expressor);
+    virtual std::string toString () const {
+	std::stringstream s;
+	std::vector<POS*>::iterator it = members->begin();
+	POS* uri = *it;
+	s << "sp:bind(" << uri->toString(); 
+	for (++it; it != members->end(); ++it)
+	    s << ", " << (*it)->toString();
+	s << ")";
+	return s.str();
+    }
+    // bool matches (std::string toMatch) { return terminal == toMatch; } // !!! woah, what's this gonna do?
 };
 
 class BNode : public Bindable {
@@ -395,6 +418,7 @@ class POSFactory {
     typedef std::map<std::string, Variable*> VariableMap;
     typedef std::map<std::string, BNode*> BNodeMap;
     typedef std::map<std::string, URI*> URIMap;
+    typedef std::vector<AssignedVariable*> AssignedVariables;
     typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
     typedef std::map<std::string, TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
     class MakeNumericRDFLiteral {
@@ -407,6 +431,7 @@ protected:
     VariableMap		variables;
     BNodeMap		bnodes;
     URIMap		uris;
+    AssignedVariables   assignedVariables;
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
     NULLpos		nullPOS;
@@ -419,6 +444,7 @@ public:
     BNode* createBNode();
     BNode* getBNode(std::string name);
     URI* getURI(std::string name);
+    AssignedVariable* getAssignedVariable(ProductionVector<POS*>*);
     POS* getPOS(std::string posStr);
     RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
 
@@ -1196,6 +1222,7 @@ public:
     virtual void base(Base* self, std::string productionName) = 0;
 
     virtual void uri(URI* self, std::string terminal) = 0;
+    virtual void assignedVariable(AssignedVariable* self, ProductionVector<POS*>* members) = 0;
     virtual void variable(Variable* self, std::string terminal) = 0;
     virtual void bnode(BNode* self, std::string terminal) = 0;
     virtual void rdfLiteral(RDFLiteral* self, std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) = 0;
@@ -1261,6 +1288,7 @@ public:
 class RecursiveExpressor : public Expressor {
 public:
     virtual void uri (URI*, std::string) {  }
+    virtual void assignedVariable (AssignedVariable*, ProductionVector<POS*>*) {  }
     virtual void variable (Variable*, std::string) {  }
     virtual void bnode (BNode*, std::string) {  }
     virtual void rdfLiteral (RDFLiteral*, std::string, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {

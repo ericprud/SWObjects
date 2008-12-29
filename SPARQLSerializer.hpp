@@ -1,6 +1,6 @@
 /* SPARQLSerializer.hpp - simple SPARQL serializer for SPARQL compile trees.
  *
- * $Id: SPARQLSerializer.hpp,v 1.10 2008-11-13 20:53:54 eric Exp $
+ * $Id: SPARQLSerializer.hpp,v 1.10.6.1 2008-12-29 23:17:18 eric Exp $
  */
 
 #ifndef SPARQLSerializer_H
@@ -55,6 +55,15 @@ public:
 
     virtual void uri (URI*, std::string terminal) {
 	ret << '<' << terminal << '>';
+    }
+    virtual void assignedVariable (AssignedVariable*, ProductionVector<POS*>* members) {
+	ret << "sp:bind(";
+	for (std::vector<POS*>::iterator it = members->begin(); it != members->end(); ++it) {
+	    if (it != members->begin())
+		ret << ", ";
+	    (*it)->express(this);
+	}
+	ret << ")";
     }
     virtual void variable (Variable*, std::string terminal) {
 	ret << '?' << terminal;

@@ -2,7 +2,7 @@
    languages. This should capture all of SPARQL and most of N3 (no graphs as
    parts of an RDF triple).
 
- * $Id: SWObjects.cpp,v 1.17 2008-12-02 04:57:12 eric Exp $
+ * $Id: SWObjects.cpp,v 1.17.4.1 2008-12-29 23:17:19 eric Exp $
  */
 
 #include "SWObjects.hpp"
@@ -206,6 +206,9 @@ void URI::express (Expressor* p_expressor) {
 void Variable::express (Expressor* p_expressor) {
     p_expressor->variable(this, terminal);
 }
+void AssignedVariable::express (Expressor* p_expressor) {
+    p_expressor->assignedVariable(this, members);
+}
 void BNode::express (Expressor* p_expressor) {
     p_expressor->bnode(this, terminal);
 }
@@ -397,6 +400,11 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    delete iURIs->second;
 	uris.clear();
 
+	std::vector<AssignedVariable*>::iterator iAssignedVariables;
+	for (iAssignedVariables = assignedVariables.begin(); iAssignedVariables != assignedVariables.end(); iAssignedVariables++)
+	    delete *iAssignedVariables;
+	assignedVariables.clear();
+
 	std::map<std::string, BNode*>::iterator iBNodes;
 	for (iBNodes = bnodes.begin(); iBNodes != bnodes.end(); iBNodes++)
 	    delete iBNodes->second;
@@ -447,6 +455,12 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    return ret;
 	} else
 	    return vi->second;
+    }
+
+    AssignedVariable* POSFactory::getAssignedVariable (ProductionVector<POS*>* members) {
+	AssignedVariable* ret = new AssignedVariable(members);
+	assignedVariables.push_back(ret);
+	return ret;
     }
 
     POS* POSFactory::getPOS (std::string posStr) {

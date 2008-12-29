@@ -6,7 +6,7 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
- * $Id: SWObjectDuplicator.hpp,v 1.8 2008-11-21 17:13:29 eric Exp $
+ * $Id: SWObjectDuplicator.hpp,v 1.8.6.1 2008-12-29 23:17:19 eric Exp $
  */
 
 #ifndef SWObjectDuplicator_H
@@ -46,6 +46,14 @@ namespace w3c_sw {
 
 	virtual void uri (URI* self, std::string terminal) {
 	    last.posz.pos = last.posz.uri = posFactory ? posFactory->getURI(terminal.c_str()) : self;
+	}
+	virtual void assignedVariable (AssignedVariable* self, ProductionVector<POS*>* members) {
+	    if (posFactory == NULL)
+		last.posz.pos = self;
+	    ProductionVector<POS*>* newMembers = new ProductionVector<POS*>();
+	    for (std::vector<POS*>::iterator it = members->begin(); it != members->end(); ++it)
+		newMembers->push_back(*it);
+	    last.posz.pos = posFactory->getAssignedVariable(newMembers);
 	}
 	virtual void variable (Variable* self, std::string terminal) {
 	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(terminal.c_str()) : self;

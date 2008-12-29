@@ -1,6 +1,6 @@
 /* XMLQueryExpressor.hpp - simple XML serializer for SPARQL compile trees.
  *
- * $Id: XMLQueryExpressor.hpp,v 1.3 2008-09-13 05:17:31 eric Exp $
+ * $Id: XMLQueryExpressor.hpp,v 1.3.6.1 2008-12-29 23:17:20 eric Exp $
  */
 
 #ifndef XMLQueryExpressor_H
@@ -25,6 +25,12 @@ public:
 
     virtual void uri (URI*, std::string terminal) {
 	xml->leaf("uri", terminal);
+    }
+    virtual void assignedVariable (AssignedVariable*, ProductionVector<POS*>* members) {
+	xml->open("AssignedVariable");
+	for (std::vector<POS*>::iterator it = members->begin(); it != members->end(); ++it)
+	    (*it)->express(this);
+	xml->close();
     }
     virtual void variable (Variable*, std::string terminal) {
 	xml->empty("variable");
