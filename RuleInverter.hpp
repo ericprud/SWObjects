@@ -287,7 +287,7 @@ namespace w3c_sw {
 	 */
 	struct MapOrder {
 	    std::map<POS*, size_t>& v;
-	    MapOrder (std::map<POS*, unsigned>& v) : v(v) {  }
+	    MapOrder (std::map<POS*, size_t>& v) : v(v) {  }
 	    int _orderAtoms (POS* l, POS* r) {
 		if (v.find(l) == v.end())
 		    v[l] = v.size();
