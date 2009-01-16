@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.55 2009-01-16 11:17:32 eric Exp $
+# $Id: Makefile,v 1.56 2009-01-16 11:29:21 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -123,7 +123,7 @@ bin/% : bin/%.o $(LIB) #lib
 # tests/
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
-	$<
+	$@
 
 unitTESTS=tests/test_GraphMatch
 
