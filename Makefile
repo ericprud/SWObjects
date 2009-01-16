@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.53 2008-12-01 21:17:59 eric Exp $
+# $Id: Makefile,v 1.54 2009-01-16 11:07:03 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -81,7 +81,7 @@ FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard *.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib$(LIBNAME).a
-LIBINC	+=	 -l$(LIBNAME)
+LIBINC	+=	 -l$(LIBNAME) -lboost_regex
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
@@ -93,32 +93,32 @@ lib: dep $(LIB)
 
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
 
-tests/execute_%  : tests/test_%.cpp $(LIB) SQLizer.hpp POS2BGPMap.hpp RuleInverter.hpp SWObjectDuplicator.hpp QueryMapper.hpp
-	$(CXX) $(CXXFLAGS) -lboost_regex -o $@ $< $(LDFLAGS)
+#notes for ericP
+# opts: tests/execute_HealthCare1
+# 	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq -s http://stem.example/
 
-%_test.results : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
-	$^ -q -d -s http://someClinic.exampe/DB/ > $@  && cat $@
+# deep: tests/execute_HealthCare1
+# 	valgrind tests/execute_HealthCare1 tests/query_deepNesting.rq tests/ruleMap_deepNesting.rq
 
-%_test.valgrind  : tests/execute_% tests/query_%.rq tests/ruleMap_%.rq
-	valgrind --leak-check=yes --xml=no $< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+# opt1: tests/execute_HealthCare1
+# 	valgrind tests/execute_HealthCare1 tests/query_spec-opt1.rq -s http://hr.example/DB/
 
-HealthCare1: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+# equivOpt1: tests/execute_HealthCare1
+# 	valgrind tests/execute_HealthCare1 tests/query_spec-equivOpt1.rq -s http://hr.example/DB/
 
-opts: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq -s http://stem.example/
+# optJoin1: tests/execute_HealthCare1
+#	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
-deep: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_deepNesting.rq tests/ruleMap_deepNesting.rq
+# bin/
+bin/%.d : bin/%.cpp
+	-touch $@
+	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-opt1: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_spec-opt1.rq -s http://hr.example/DB/
+bin/%.o. : bin/%.cpp bin/%.d
+	$(CXX) $(CXXFLAGS) -o $@ $<
 
-equivOpt1: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_spec-equivOpt1.rq -s http://hr.example/DB/
-
-optJoin1: tests/execute_HealthCare1
-	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
+bin/% : bin/%.o $(LIB) #lib
+	$(CXX) -o $@ $< $(LDFLAGS)
 
 tests/test_GraphMatch: tests/test_GraphMatch.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
@@ -128,13 +128,19 @@ T_GraphMatch: tests/test_GraphMatch
 
 ### named unit tests
 
-TESTS=HealthCare1
+tests/HealthCare1.results: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+	$< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
 
-TEST_RESULTS=$(TESTS:=_test.results)
+tests/HealthCare1.valgrind: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+	valgrind --leak-check=yes --xml=no $< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+
+TESTS=tests/HealthCare1
+
+TEST_RESULTS=$(TESTS:=.results)
 VALGRIND=$(TEST_RESULTS:.results=.valgrind)
 
 .PHONY: test valgrind
-test: lib $(TEST_RESULTS)
+test: lib T_GraphMatch $(TEST_RESULTS)
 valgrind: $(VALGRIND)
 
 # Distributions
