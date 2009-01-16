@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.54 2009-01-16 11:07:03 eric Exp $
+# $Id: Makefile,v 1.55 2009-01-16 11:17:32 eric Exp $
 # SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
 
 # recipies:
@@ -120,13 +120,14 @@ bin/%.o. : bin/%.cpp bin/%.d
 bin/% : bin/%.o $(LIB) #lib
 	$(CXX) -o $@ $< $(LDFLAGS)
 
-tests/test_GraphMatch: tests/test_GraphMatch.cpp $(LIB) SWObjects.hpp
+# tests/
+tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
-
-T_GraphMatch: tests/test_GraphMatch
 	$<
 
-### named unit tests
+unitTESTS=tests/test_GraphMatch
+
+### SWtransformer tests:
 
 tests/HealthCare1.results: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 	$< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
@@ -134,14 +135,14 @@ tests/HealthCare1.results: bin/SWtransformer tests/query_HealthCare1.rq tests/ru
 tests/HealthCare1.valgrind: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 	valgrind --leak-check=yes --xml=no $< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
 
-TESTS=tests/HealthCare1
+transformTESTS=tests/HealthCare1
 
-TEST_RESULTS=$(TESTS:=.results)
-VALGRIND=$(TEST_RESULTS:.results=.valgrind)
+transformTEST_RESULTS=$(transformTESTS:=.results)
+transformVALGRIND=$(transformTEST_RESULTS:.results=.valgrind)
 
 .PHONY: test valgrind
-test: lib T_GraphMatch $(TEST_RESULTS)
-valgrind: $(VALGRIND)
+test: lib $(unitTESTS) $(transformTEST_RESULTS)
+valgrind: lib $(transformVALGRIND)
 
 # Distributions
 
@@ -160,7 +161,7 @@ clean:
         $(subst .lpp,.cpp,$(wildcard *.lpp)) \
         $(subst .ypp,.cpp,$(wildcard */*.ypp)) \
         $(subst .ypp,.hpp,$(wildcard */*.ypp)) \
-        $(TEST_RESULTS) $(VALGRIND)
+        $(transformTEST_RESULTS) $(transformVALGRIND)
 	$(RM) -fr tests/execute_*
 
 cleaner: clean
