@@ -111,7 +111,7 @@
 					DisplayName="Output File"
 					Description="The output file containing the implementation of the analyser"
 					Switch="-o[value]"
-					DefaultValue="$(InputName).cpp"
+					DefaultValue="$(InputDir)$(InputName).cpp"
 				/>
 				<StringProperty
 					Name="ScannerPrefix"
@@ -220,7 +220,7 @@
 					DisplayName="Output file name"
 					Description="Specify the name outfile for the parser file"
 					Switch="-o [value]"
-					DefaultValue="$(InputName).cpp"
+					DefaultValue="$(InputDir)$(InputName).cpp"
 				/>
 				<StringProperty
 					Name="RenameExternalSymbols"
