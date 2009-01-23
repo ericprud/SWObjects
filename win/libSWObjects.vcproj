@@ -185,6 +185,7 @@
 					<Tool
 						Name="BisonParser"
 						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -193,12 +194,31 @@
 					<Tool
 						Name="BisonParser"
 						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="../SPARQLfedScanner.lpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="../TurtleSParser/TurtleSParser.ypp"
@@ -209,6 +229,7 @@
 					<Tool
 						Name="BisonParser"
 						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -217,12 +238,31 @@
 					<Tool
 						Name="BisonParser"
 						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="../TurtleSScanner.lpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
