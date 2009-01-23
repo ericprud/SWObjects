@@ -13,6 +13,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<ToolFile
+			RelativePath=".\FlexBison.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -26,7 +29,13 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="FlexGenerator"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="BisonParser"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -90,7 +99,13 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="FlexGenerator"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="BisonParser"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -158,6 +173,58 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="grammar"
+			>
+			<File
+				RelativePath="../SPARQLfedParser/SPARQLfedParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="../SPARQLfedScanner.lpp"
+				>
+			</File>
+			<File
+				RelativePath="../TurtleSParser/TurtleSParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="../TurtleSScanner.lpp"
+				>
+			</File>
+		</Filter>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
