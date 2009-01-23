@@ -103,7 +103,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".;SPARQLfedParser;TurtleSParser;win"
+				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;__PRETTY_FUNCTION__=\&quot;func\&quot;;_CRT_SECURE_NO_DEPRECATE;ASCII_BOX_CHARS=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
