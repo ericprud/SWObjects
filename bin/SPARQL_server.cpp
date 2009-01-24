@@ -13,7 +13,11 @@
 #include <string>
 #include "boost/regex.hpp"
 #include "dlib/server.h"
+#ifdef WIN32
+#include <mysql.h>
+#else
 #include <mysql/mysql.h>
+#endif
 
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
