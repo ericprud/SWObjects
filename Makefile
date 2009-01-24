@@ -120,12 +120,19 @@ bin/%.o. : bin/%.cpp bin/%.d
 bin/% : bin/%.o $(LIB) #lib
 	$(CXX) -o $@ $< $(LDFLAGS)
 
-# tests/
+
+# unit tests
+unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
+# You can override unitTESTS while fiddling with them.
+#unitTESTS=t_GraphMatch
+#$(error unitTESTS: $(unitTESTS))
+
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
-	$@
 
-unitTESTS=tests/test_GraphMatch
+t_%: tests/test_%
+	$<
+
 
 ### SWtransformer tests:
 
