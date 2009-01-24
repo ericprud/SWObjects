@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win;c:/cygwin/home/jules/src/boost_1_36_0;c:/cygwin/home/jules/src/dlib-17.11"
+				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__PRETTY_FUNCTION__=\&quot;func\&quot;;_CRT_SECURE_NO_DEPRECATE;ASCII_BOX_CHARS=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win;c:/cygwin/home/jules/src/boost_1_36_0;c:/cygwin/home/jules/src/dlib-17.11"
+				AdditionalIncludeDirectories="..;../SPARQLfedParser;../TurtleSParser;../win"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__PRETTY_FUNCTION__=\&quot;func\&quot;;_CRT_SECURE_NO_DEPRECATE;ASCII_BOX_CHARS=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -177,11 +177,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\dlib-17.11\dlib\all\source.cpp"
+				RelativePath="../../dlib-17.11/dlib/all/source.cpp"
 				>
 			</File>
 			<File
-				RelativePath="bin\SPARQL_server.cpp"
+				RelativePath="../bin/SPARQL_server.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -205,10 +205,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath="..\boost_1_36_0\lib\libboost_regex-vc80-mt-gd-1_36.lib"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
