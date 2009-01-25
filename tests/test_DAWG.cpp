@@ -21,6 +21,9 @@ using namespace w3c_sw;
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
 
+/* Sentinal to mark end of arrays of files: */
+const char* Sentinel = "sentinel";
+
 std::string readFile (const char* filename, const char* type) {
     std::ifstream dataStream(filename);
     if (!dataStream.is_open()) {
@@ -34,8 +37,7 @@ std::string readFile (const char* filename, const char* type) {
     return ret;
 }
 
-void queryTest (size_t iDefGraphs, const char* defGraphs[], 
-		size_t iNamGraphs, const char* namGraphs[], 
+void queryTest (const char* defGraphs[], const char* namGraphs[], 
 		const char* queryFile, const char* resultsFile) {
     /* Parse query. */
     if (sparqlParser.parse_file(queryFile)) {
@@ -46,29 +48,30 @@ void queryTest (size_t iDefGraphs, const char* defGraphs[],
 
     /* Parse data. */
     RdfDB d;
-    for (size_t i = 0; i < iDefGraphs; ++i)
+    for (size_t i = 0; defGraphs[i] != Sentinel; ++i)
 	f.parseTriples(d.assureGraph(NULL), 
-		       readFile(defGraphs[i], "data"));
-    for (size_t i = 0; i < iNamGraphs; ++i)
+		       readFile(defGraphs[i], "default graph"));
+    for (size_t i = 0; namGraphs[i] != Sentinel; ++i)
 	f.parseTriples(d.assureGraph(f.getURI(namGraphs[i])), 
-		       readFile(namGraphs[i], "data"));
+		       readFile(namGraphs[i], "named graph"));
 
     /* Exectute query. */
     ResultSet got;
     sparqlParser.root->execute(&d, &got);
 
     /* Compare to expected results. */
-    ResultSet expected(&f, readFile(resultsFile, "data"));
+    ResultSet expected(&f, readFile(resultsFile, "results"));
     BOOST_CHECK_EQUAL(got, expected);
 }
 
+/* Macros for terse test syntax: */
 #define QTEST(Q, R) \
-    queryTest(sizeof(defaultGraphs)/sizeof(defaultGraphs[0]), defaultGraphs, \
-	      sizeof(namedGraphs)/sizeof(namedGraphs[0]), namedGraphs, Q, R);
+    queryTest(defaultGraphs, namedGraphs, Q, R);
+#define S Sentinel
 
 BOOST_AUTO_TEST_CASE( basic_Basic_Var_1 ) {
-    const char* defaultGraphs[] = { "tests/data-r2/basic/data-5.ttl" };
-    const char* namedGraphs[] = {  };
+    const char* defaultGraphs[] = { "tests/data-r2/basic/data-5.ttl", S };
+    const char* namedGraphs[] = { S };
     QTEST("tests/data-r2/basic/var-1.rq", "tests/data-r2/basic/var-1.srx");
 }
 
