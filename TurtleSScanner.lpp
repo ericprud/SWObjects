@@ -3,7 +3,7 @@
 
 %{ /*** C/C++ Declarations ***/
 
-#include "TurtleSParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
 #include "TurtleSScanner.hpp"
 
 /* import the parser's token type into a local typedef */

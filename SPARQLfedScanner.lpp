@@ -3,7 +3,7 @@
 
 %{ /*** C/C++ Declarations ***/
 
-#include "SPARQLfedParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLfedScanner.hpp"
 
 /* import the parser's token type into a local typedef */
