@@ -8,11 +8,14 @@
 #define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE DAWG_tests
 #include <boost/test/unit_test.hpp>
-#include <boost/test/included/unit_test.hpp>
+//#pragma warning( disable : 4273 )
+//#include <boost/test/included/unit_test.hpp>
 
+#include <fstream>
 #include <iterator>
 #include "SWObjects.hpp"
 #include "SPARQLfedParser.hpp"
+#include "TurtleSParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 
@@ -20,6 +23,7 @@ using namespace w3c_sw;
 
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
+TurtleSDriver turtleParser("", &f);
 
 /* Sentinal to mark end of arrays of files: */
 const char* Sentinel = "sentinel";
@@ -48,9 +52,10 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
 
     /* Parse data. */
     RdfDB d;
-    for (size_t i = 0; defGraphs[i] != Sentinel; ++i)
-	f.parseTriples(d.assureGraph(NULL), 
-		       readFile(defGraphs[i], "default graph"));
+    for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
+	turtleParser.curBGP = d.assureGraph(NULL);
+	turtleParser.parse_file(defGraphs[i]);
+    }
     for (size_t i = 0; namGraphs[i] != Sentinel; ++i)
 	f.parseTriples(d.assureGraph(f.getURI(namGraphs[i])), 
 		       readFile(namGraphs[i], "named graph"));
