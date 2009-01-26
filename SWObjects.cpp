@@ -640,7 +640,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	m_WhereClause->bindVariables(db, rs);
 	DefaultGraphPattern g;
 	m_ConstructTemplate->construct(&g, rs);
-	SPARQLSerializer s; g.express(&s); std::cerr << "CONSTRUCTED: " << s.getSPARQLstring() << std::endl;
+	std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
 
@@ -649,7 +649,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	if (turtleParser.parse_file(m_IRIref->getTerminal())) {
 	    std::cerr << m_IRIref->getTerminal() << ":0: error: unable to parse document" << std::endl;
 	} else {
-	    DefaultGraphPattern* graph = turtleParser.root;
+	    BasicGraphPattern* graph = turtleParser.root;
 	    SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
 	    for (std::vector<TriplePattern*>::iterator from = graph->begin();
 		 from != graph->end(); ) {
@@ -722,11 +722,6 @@ void NumberExpression::express (Expressor* p_expressor) {
     }
     void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
 	db->bindVariables(rs, NULL, this);
-    }
-    std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
-	SPARQLSerializer s;
-	((DefaultGraphPattern&)my).express(&s);
-	return os << s.getSPARQLstring();
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {

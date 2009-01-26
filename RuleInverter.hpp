@@ -235,13 +235,10 @@ namespace w3c_sw {
 
 	    }
 	    if (*debugStream != NULL) {
-		if (res == NULL) {
+		if (res == NULL)
 		    **debugStream << "yielding no transformed query disjoint." << endl << endl;
-		} else {
-		    SPARQLSerializer s;
-		    res->express(&s);
-		    **debugStream << "yielding transformed query disjoint:" << endl << s.getSPARQLstring() << endl;
-		}
+		else
+		    **debugStream << "yielding transformed query disjoint:" << endl << res << endl;
 	    }
 	    return opRS;
 	}

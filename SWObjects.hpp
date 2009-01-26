@@ -645,7 +645,6 @@ public:
 	return true;
     }
 };
-std::ostream& operator<<(std::ostream& os, DefaultGraphPattern const& my);
 class TableOperationOnOperation : public TableOperation {
 protected:
     TableOperation* m_TableOperation;

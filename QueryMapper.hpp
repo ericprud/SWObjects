@@ -42,19 +42,13 @@ namespace w3c_sw {
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
-	    if (*debugStream != NULL) {
-		SPARQLSerializer s;
-		userQueryDisjoint->express(&s);
-		**debugStream << "User query disjoint " << endl << s.getSPARQLstring() << endl;
-	    }
+	    if (*debugStream != NULL)
+		**debugStream << "User query disjoint " << endl << userQueryDisjoint << endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
-		if (*debugStream != NULL) {
-		    SPARQLSerializer s;
-		    (*invertedRule)->getRuleBody()->express(&s);
-		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << s.getSPARQLstring() << endl;
-		}
+		if (*debugStream != NULL)
+		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << (*invertedRule)->getRuleBody() << endl;
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */

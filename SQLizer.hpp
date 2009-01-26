@@ -1009,9 +1009,7 @@ namespace w3c_sw {
 		p_Constraint->express(this);
 		curQuery->addConstraint(curConstraint);
 	    } catch (nonLocalIdentifierException& e) {
-		SPARQLSerializer sparqlizer("  ");
-		p_Constraint->express(&sparqlizer);
-		std::cerr << "filter {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		std::cerr << "filter {" << p_Constraint << "} is not handled by stem " << stem << " because " << e.what() << endl;
 	    }
 	}
 	void _BasicGraphPattern (ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
@@ -1021,9 +1019,7 @@ namespace w3c_sw {
 		try {
 		    (*tripleIt)->express(this);
 		} catch (nonLocalIdentifierException& e) {
-		    SPARQLSerializer sparqlizer("  ");
-		    (*tripleIt)->express(&sparqlizer);
-		    std::cerr << "pattern {" << sparqlizer.getSPARQLstring() << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << endl;
 		}
 	    NOW("bgp filters");
 	    for (std::vector<Filter*>::iterator filterIt = p_Filters->begin();

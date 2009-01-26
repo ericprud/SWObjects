@@ -99,7 +99,6 @@ public:
 	ret << std::endl;
     }
     void _BasicGraphPattern (BasicGraphPattern* self, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters, bool p_allOpts) {
-	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
@@ -120,10 +119,14 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (NamedGraphPattern* self, POS*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+    virtual void namedGraphPattern (NamedGraphPattern* self, POS* name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	lead();
+	name->express(this);
+	ret << ' ';
 	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
     }
     virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	lead();
 	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
     }
     virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
@@ -449,6 +452,24 @@ public:
 	p_NumericRDFLiteral->express(this);
     }
 };
+
+    inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
+	SPARQLSerializer s;
+	((RdfDB)my).express(&s);
+	return os << s.getSPARQLstring();
+    }
+
+    inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
+	SPARQLSerializer s;
+	((DefaultGraphPattern&)my).express(&s);
+	return os << s.getSPARQLstring();
+    }
+
+    inline std::ostream& operator<< (std::ostream& os, Operation const& my) {
+	SPARQLSerializer s;
+	((Operation&)my).express(&s);
+	return os << s.getSPARQLstring();
+    }
 
 }
 
