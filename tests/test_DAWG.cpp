@@ -18,6 +18,7 @@
 #include "TurtleSParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
+#include "SPARQLSerializer.hpp"
 
 using namespace w3c_sw;
 
@@ -53,19 +54,25 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
     /* Parse data. */
     RdfDB d;
     for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
-	turtleParser.curBGP = d.assureGraph(NULL);
+	turtleParser.setGraph(d.assureGraph(NULL));
 	turtleParser.parse_file(defGraphs[i]);
     }
-    for (size_t i = 0; namGraphs[i] != Sentinel; ++i)
-	f.parseTriples(d.assureGraph(f.getURI(namGraphs[i])), 
-		       readFile(namGraphs[i], "named graph"));
+    for (size_t i = 0; namGraphs[i] != Sentinel; ++i) {
+	turtleParser.setGraph(d.assureGraph(f.getURI(namGraphs[i])));
+	turtleParser.parse_file(namGraphs[i]);
+    }
+    std::cout << "Database: " << d;
 
     /* Exectute query. */
     ResultSet got;
     sparqlParser.root->execute(&d, &got);
+    std::cout << "query: " << *sparqlParser.root;
+    std::cout << "got: " << got;
 
     /* Compare to expected results. */
     ResultSet expected(&f, readFile(resultsFile, "results"));
+    std::cout << "expected: " << expected;
+
     BOOST_CHECK_EQUAL(got, expected);
 }
 

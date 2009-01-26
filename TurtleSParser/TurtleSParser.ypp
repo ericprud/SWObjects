@@ -62,13 +62,14 @@ class TurtleSDriver : public Driver {
 protected:
     POS* curSubject;
     POS* curPredicate;
-    DefaultGraphPattern* curBGP;
-    DefaultGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
+    BasicGraphPattern* curBGP;
+    BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
     TurtleSDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
+    void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }
 
     virtual bool parse_stream(std::istream& in,
 		      const std::string& sname = "stream input");
@@ -76,7 +77,7 @@ public:
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     class TurtleSScanner* lexer;
-    DefaultGraphPattern* root;
+    BasicGraphPattern* root;
 };
 
 } // namespace w3c_sw
@@ -99,7 +100,7 @@ public:
     BooleanRDFLiteral* p_BooleanRDFLiteral;
 
     /* Productions */
-    DefaultGraphPattern* p_DefaultGraphPattern;
+    BasicGraphPattern* p_DefaultGraphPattern;
     POS* p_POS;
     ProductionVector<POS*>* p_POSs;
     URI* p_URI;
