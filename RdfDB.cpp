@@ -19,10 +19,12 @@ namespace w3c_sw {
     }
 
     BasicGraphPattern* RdfDB::assureGraph (POS* name) {
+	if (name == NULL)
+	    name = DefaultGraph;
 	graphmap_type::const_iterator vi = graphs.find(name);
 	if (vi == graphs.end()) {
 	    BasicGraphPattern* ret;
-	    if (name == NULL || name == DefaultGraph)
+	    if (name == DefaultGraph)
 		ret = new DefaultGraphPattern();
 	    else
 		ret = new NamedGraphPattern(name);
