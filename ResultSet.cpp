@@ -7,7 +7,6 @@
 #include <iostream>
 
 namespace w3c_sw {
-    #include "SPARQLSerializer.hpp"
     void Result::set (const POS* variable, const POS* value, bool weaklyBound) {
 	BindingSet::const_iterator vi = bindings.find((POS*)variable);
 	if (vi == bindings.end()) {
