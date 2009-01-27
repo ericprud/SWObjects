@@ -41,7 +41,7 @@ namespace w3c_sw {
 	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns, p_Filters);
 	}
 	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
-	    throw(std::runtime_error(__PRETTY_FUNCTION__)); // query should already be DNF'd, ergo no disjunctions.
+	    throw(std::runtime_error(FUNCTION_STRING)); // query should already be DNF'd, ergo no disjunctions.
 	}
 	virtual void tableConjunction (TableConjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	    p_TableOperations->express(this);

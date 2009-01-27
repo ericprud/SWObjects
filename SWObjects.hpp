@@ -8,6 +8,21 @@
 #ifndef SWOBJECTS_HH
 # define SWOBJECTS_HH
 
+
+#ifdef _MSC_VER
+#define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
+
+#else /* !_MSC_VER */
+#ifdef __GNUC__
+#define FUNCTION_STRING __PRETTY_FUNCTION__
+
+#else /* !__GNUC__ */
+#define FUNCTION_STRING "define a function name macro"
+
+#endif /* !__GNUC__ */
+#endif /* !_MSC_VER */
+
+
 #include <map>
 #include <set>
 #include <list>
@@ -178,7 +193,7 @@ protected:
     //    virtual int compareType (POS* to) = 0;
 public:
     virtual bool isConstant () { return true; } // Override for variable types.
-    static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(FUNCTION_STRING)); }
     virtual int compare (POS* to, Result*) const {
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
@@ -336,7 +351,7 @@ public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
     virtual void express(Expressor* p_expressor);
-    virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual std::string getBindingAttributeName () { throw(std::runtime_error(FUNCTION_STRING)); }
 };
 
 class BasicGraphPattern;
@@ -534,7 +549,7 @@ public:
     void addFilter (Filter* filter) {
 	m_Filters.push_back(filter);
     }
-    virtual void bindVariables(RdfDB*, ResultSet*) = 0; //{ throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+    virtual void bindVariables(RdfDB*, ResultSet*) = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void express(Expressor*) = 0;
     virtual TableOperation* getDNF() = 0;
 };

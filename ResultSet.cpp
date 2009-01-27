@@ -13,7 +13,7 @@ namespace w3c_sw {
 	    BindingInfo b = {weaklyBound, (POS*)value};
 	    bindings[(POS*)variable] = b;
 	} else {
-	    throw(std::runtime_error(__PRETTY_FUNCTION__));
+	    throw(std::runtime_error(FUNCTION_STRING));
 	}
     }
 

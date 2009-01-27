@@ -153,7 +153,7 @@ namespace w3c_sw {
 	ResultSetIterator insert (ResultSetIterator at, Result* elem) { return results.insert(at, elem); }
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
-	void containsAtLeast(ResultSet*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
+	void containsAtLeast(ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
     };
 
     class ConstructResultSet : ResultSet {

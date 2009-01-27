@@ -52,7 +52,7 @@ StackException varBarfer (char const* type, char const* file, size_t line, char 
     return ret;
 }
 
-#define MARK JournalState _(__FILE__,  __LINE__, __PRETTY_FUNCTION__)
+#define MARK JournalState _(__FILE__,  __LINE__, FUNCTION_STRING)
 #define START(X) JournalState _(__FILE__,  __LINE__, X)
 #define NOW(X) JournalState::now(__FILE__,  __LINE__, X)
 #define FAIL(X) throw(varBarfer("FAIL", __FILE__,  __LINE__, X))

@@ -80,6 +80,7 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
  	turtleParser.parse_file(defGraphs[i]);
 #endif /* !_MSV_VER */
     }
+    RdfDB d2 = d;
     std::cout << "Database: " << d;
 
     /* Exectute query. */

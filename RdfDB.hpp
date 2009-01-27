@@ -31,9 +31,9 @@ namespace w3c_sw {
     class DefaultGraphClass : public POS {
     public:
 	DefaultGraphClass () : POS("::DefaultGraphClass::") {  }
-	virtual std::string toString () const { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
-	virtual std::string getBindingAttributeName () { throw(std::runtime_error(__PRETTY_FUNCTION__)); }
-	virtual void express (Expressor*) { throw(std::runtime_error(__PRETTY_FUNCTION__)); };
+	virtual std::string toString () const { throw(std::runtime_error(FUNCTION_STRING)); }
+	virtual std::string getBindingAttributeName () { throw(std::runtime_error(FUNCTION_STRING)); }
+	virtual void express (Expressor*) { throw(std::runtime_error(FUNCTION_STRING)); };
     };
     extern POS* DefaultGraph;
 
@@ -43,6 +43,7 @@ namespace w3c_sw {
 	graphmap_type graphs;
     public:
 	RdfDB () : graphs() {  }
+	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
 	RdfDB (DefaultGraphPattern* graph) : graphs() {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
 	    for (std::vector<TriplePattern*>::iterator it = graph->begin();
