@@ -191,7 +191,7 @@
 			Name="BisonParser"
 			DisplayName="Bison Parser"
 			CommandLine="bison.exe [AllOptions] [AdditionalOptions] [Inputs]"
-			Outputs="$(InputName).cpp"
+			Outputs="$(InputDir)$(InputName).cpp;$(InputDir)$(InputName).hpp"
 			FileExtensions="*.ypp"
 			ExecutionDescription="Generating parser based on grammar..."
 			>
