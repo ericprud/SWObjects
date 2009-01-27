@@ -455,7 +455,7 @@ public:
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
 	SPARQLSerializer s;
-	((RdfDB)my).express(&s);
+	((RdfDB*)&my)->express(&s);
 	return os << s.getSPARQLstring();
     }
 
