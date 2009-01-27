@@ -906,5 +906,15 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return ret;
     }
 
+#ifdef _MSV_VER
+    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
+     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
+     */
+    void loadGraph (BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName) {
+	TurtleSDriver turtleParser(baseURI, f);
+ 	turtleParser.setGraph(bgp);
+ 	turtleParser.parse_file(fileName);
+    }
+#endif /* _MSV_VER */
 } // namespace w3c_sw
 
