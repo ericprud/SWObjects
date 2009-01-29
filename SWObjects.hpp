@@ -1476,12 +1476,12 @@ class TestExpressor : public RecursiveExpressor {
     virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
-#ifdef _MSV_VER
+#ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
     void loadGraph(BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName);
-#endif /* _MSV_VER */
+#endif /* _MSC_VER */
 
 } //namespace w3c_sw
 

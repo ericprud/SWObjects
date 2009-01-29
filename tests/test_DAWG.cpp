@@ -24,12 +24,12 @@ using namespace w3c_sw;
 
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
-#ifndef _MSV_VER
+#ifndef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
 TurtleSDriver turtleParser("", &f);
-#endif /* !_MSV_VER */
+#endif /* !_MSC_VER */
 
 /* Sentinal to mark end of arrays of files: */
 const char* Sentinel = "sentinel";
@@ -59,26 +59,26 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
     /* Parse data. */
     RdfDB d;
     for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
-#ifdef _MSV_VER
+#ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
 	loadGraph(d.assureGraph(NULL), &f, "text/turtle", "", defGraphs[i]);
-#else /* !_MSV_VER */
+#else /* !_MSC_VER */
  	turtleParser.setGraph(d.assureGraph(NULL));
  	turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSV_VER */
+#endif /* !_MSC_VER */
     }
     for (size_t i = 0; namGraphs[i] != Sentinel; ++i) {
-#ifdef _MSV_VER
+#ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
 	loadGraph(d.assureGraph(f.getURI(namGraphs[i])), &f, "text/turtle", "", defGraphs[i]);
-#else /* !_MSV_VER */
+#else /* !_MSC_VER */
  	turtleParser.setGraph(d.assureGraph(f.getURI(namGraphs[i])));
  	turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSV_VER */
+#endif /* !_MSC_VER */
     }
     RdfDB d2 = d;
     std::cout << "Database: " << d;
