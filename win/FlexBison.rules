@@ -14,7 +14,7 @@
 			Name="FlexGenerator"
 			DisplayName="Flex Generator"
 			CommandLine="flex.exe [AllOptions] [AdditionalOptions] [Inputs]"
-			Outputs="$(InputName).cpp"
+			Outputs="$(InputDir)$(InputName).cpp;$(InputDir)$(InputName).hpp"
 			FileExtensions="*.lpp"
 			ExecutionDescription="Generating lexical analyser..."
 			>
