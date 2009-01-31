@@ -40,7 +40,7 @@ namespace w3c_sw {
 		initialized = true;
 	    }
 	public:
-	    Attributes_libxml(const xmlChar ** attrs, size_t attrCount) : 
+	    Attributes_libxml (const xmlChar ** attrs, size_t attrCount) : 
 		attrs(attrs), attrCount(attrCount), initialized(false) {  }
 	    virtual size_t getLength () { if (!initialized) init(); return byIndex.size(); }
 	    virtual std::string getURI (size_t i) { if (!initialized) init(); return byIndex[i].namespaceURI; }
@@ -56,8 +56,8 @@ namespace w3c_sw {
 	    handle.startElementNs = &startElementNs;
 	    handle.endElementNs = &endElementNs;
 	    handle.characters = &characters;
-	    handle.warning = &warning;
-	    handle.error = &error;
+	    handle.warning = &mywarning;
+	    handle.error = &myerror;
 	}
 	virtual ~SAXparser_libxml () {
 	    ::xmlCleanupParser();
@@ -73,10 +73,10 @@ namespace w3c_sw {
 				    const xmlChar * localname, 
 				    const xmlChar * prefix, 
 				    const xmlChar * URI, 
-				    int nb_namespaces, 
-				    const xmlChar ** namespaces, 
+				    int ,//nb_namespaces, 
+				    const xmlChar ** ,//namespaces, 
 				    int nb_attributes, 
-				    int nb_defaulted, 
+				    int ,//nb_defaulted, 
 				    const xmlChar ** attributes )
 	{
 	    SWSAXparser &self = *( static_cast<SWSAXparser*>(voidSelf) );
@@ -103,6 +103,22 @@ namespace w3c_sw {
 				int len) {
 	    SWSAXparser &self = *( static_cast<SWSAXparser*>(voidSelf) );
  	    self.characters((const char*)ch, 0, len);
+	}
+
+	static void myerror( void * voidSelf, const char * msg, ... ) {
+	    SWSAXparser &self = *( static_cast<SWSAXparser *>( voidSelf ) );
+	    va_list args;
+	    va_start(args, msg);
+	    self.error(msg, args);
+	    va_end(args);
+	}
+
+	static void mywarning( void * voidSelf, const char * msg, ... ) {
+	    SWSAXparser &self = *( static_cast<SWSAXparser *>( voidSelf ) );
+	    va_list args;
+	    va_start(args, msg);
+	    self.warning(msg, args);
+	    va_end(args);
 	}
     };
 

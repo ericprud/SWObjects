@@ -57,23 +57,30 @@ namespace w3c_sw {
 	    std::cout << std::string(ch, start, length);
 	}
 
-    protected:
-	static void error( void * voidSelf, const char * msg, ... ) {
-	    SWSAXparser &self = *( static_cast<SWSAXparser *>( voidSelf ) ); self;
+	void error(const char * msg, ...) {
 	    va_list args;
 	    va_start(args, msg);
-	    vprintf( msg, args );
+	    error( msg, args );
 	    va_end(args);
 	    throw("SWSAXparser exception");
 	}
 
-	static void warning( void * voidSelf, const char * msg, ... ) {
-	    SWSAXparser &self = *( static_cast<SWSAXparser *>( voidSelf ) ); self;
+	void error(const char* msg, va_list args) {
+	    vprintf(msg, args);
+	    throw("SWSAXparser exception");
+	}
+
+	void warning(const char * msg, ...) {
 	    va_list args;
 	    va_start(args, msg);
-	    vprintf( msg, args );
+	    warning( msg, args );
 	    va_end(args);
 	}
+
+	void warnting(const char* msg, va_list args) {
+	    vprintf(msg, args);
+	}
+
     };
 
 }
