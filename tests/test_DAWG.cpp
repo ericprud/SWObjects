@@ -13,12 +13,29 @@
 
 #include <fstream>
 #include <iterator>
+
+#define XMLPARSER_LIBXML 1
+#define XMLPARSER_EXPAT 2
+#define XMLPARSER XMLPARSER_EXPAT
+
+#if XMLPARSER == XMLPARSER_LIBXML
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#elif XMLPARSER == XMLPARSER_EXPAT
+#include "expat.h"
+#endif
+
 #include "SWObjects.hpp"
 #include "SPARQLfedParser.hpp"
 #include "TurtleSParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
+#if XMLPARSER == XMLPARSER_LIBXML
+#include "SAXparser_libxml.hpp"
+#elif XMLPARSER == XMLPARSER_EXPAT
+#include "SAXparser_expat.hpp"
+#endif
 
 using namespace w3c_sw;
 
@@ -49,6 +66,7 @@ std::string readFile (const char* filename, const char* type) {
 
 void queryTest (const char* defGraphs[], const char* namGraphs[], 
 		const char* queryFile, const char* resultsFile) {
+ 
     /* Parse query. */
     if (sparqlParser.parse_file(queryFile)) {
 	std::string msg = std::string("failed to parse query \"") + 
@@ -80,7 +98,6 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
  	turtleParser.parse_file(defGraphs[i]);
 #endif /* !_MSC_VER */
     }
-    RdfDB d2 = d;
     std::cout << "Database: " << d;
 
     /* Exectute query. */
@@ -90,10 +107,22 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
     std::cout << "got: " << got;
 
     /* Compare to expected results. */
-    ResultSet expected(&f, readFile(resultsFile, "results"));
-    std::cout << "expected: " << expected;
+    if (!::strncmp(resultsFile + ::strlen(resultsFile) - 4, ".srx", 4)) {
+#if XMLPARSER == XMLPARSER_LIBXML
+	SAXparser_libxml p;
+	LIBXML_TEST_VERSION;
+#elif XMLPARSER == XMLPARSER_EXPAT
+	SAXparser_expat p;
+#endif
 
-    BOOST_CHECK_EQUAL(got, expected);
+	ResultSet expected(&f, &p, resultsFile);
+	std::cout << "expected: " << expected;
+	BOOST_CHECK_EQUAL(got, expected);
+    } else {
+	ResultSet expected(&f, readFile(resultsFile, "results"));
+	std::cout << "expected: " << expected;
+	BOOST_CHECK_EQUAL(got, expected);
+    }
 }
 
 /* Macros for terse test syntax: */

@@ -11,11 +11,12 @@
 #ifndef RESULT_SET_H
 #define RESULT_SET_H
 
+#include <set>
+#include <list>
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
-#include <set>
-#include <list>
+#include "SAXparser.hpp"
 
 namespace w3c_sw {
 
@@ -109,6 +110,11 @@ namespace w3c_sw {
 		flags |= boost::match_not_bob; 
 	    }
 	}
+
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results() {
+	    parser->parse(filename);
+	}
+
 	virtual ~ResultSet();
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.size() != size())

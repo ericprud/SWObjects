@@ -18,14 +18,14 @@ YACC:=bison
 TEE:=tee
 SED:=sed
 #LIBS
-DEBUG:=-g
+DEBUG:=-g -O0
 #OPT=-O4
 DEFS:=-DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
-INCLUDES += -I${PWD}  
+INCLUDES += -I${PWD} -I/usr/include/libxml2
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
 
@@ -81,7 +81,7 @@ FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard *.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib$(LIBNAME).a
-LIBINC	+=	 -l$(LIBNAME) -lboost_regex
+LIBINC	+=	 -l$(LIBNAME) -lboost_regex -lxml2 -lexpat
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
@@ -132,6 +132,9 @@ tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 
 t_%: tests/test_%
 	$<
+
+v_%: tests/test_%
+	valgrind --leak-check=yes --xml=no $<
 
 
 ### SWtransformer tests:
