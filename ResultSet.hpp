@@ -111,8 +111,152 @@ namespace w3c_sw {
 	    }
 	}
 
+	class RSsax : public SWSAXhandler {
+	protected:
+	    ResultSet* rs;
+	    POSFactory* posFactory;
+
+	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
+			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, ERROR};
+	    std::vector<std::string> knownVars;
+	    std::stack<enum STATES> stateStack;
+#define SRX "http://www.w3.org/2005/sparql-results#"
+#define XML "http://www.w3.org/XML/1998/namespace"
+	    Result* result;
+	    POS* variable;
+	    URI* datatype;
+	    std::string lang;
+	    std::string chars;
+
+	    const char* stateStr () {
+		static const char* stateStrs[] =
+		    {"document", "sparql", "head", "link", "variable", "boolean",
+		     "results", "result", "binding", "uri", "bnode", "literal", "huh?"};
+		return stateStrs[stateStack.top()];
+	    }
+
+	public:
+	    RSsax (ResultSet* rs, POSFactory* posFactory) : 
+		rs(rs), posFactory(posFactory), result(NULL), variable(NULL), datatype(NULL), chars("") {
+		stateStack.push(DOCUMENT);
+	    }
+
+	    virtual void startElement (std::string uri,
+				       std::string localName,
+				       std::string qName,
+				       Attributes* attrs) {
+		if (uri != SRX)
+		    error("element in unexpected namespace %s within %s", qName.c_str(), stateStr());
+		enum STATES newState = ERROR;
+		switch (stateStack.top()) {
+		case DOCUMENT:
+		    if (localName == "sparql")
+			newState = SPARQL;
+		    break;
+		case SPARQL:
+		    if (localName == "head")
+			newState = HEAD;
+		    else if (localName == "boolean")
+			newState = BOOLEAN;
+		    else if (localName == "results")
+			newState = RESULTS;
+		    break;
+		case HEAD:
+		    if (localName == "link")
+			newState = LINK;
+		    else if (localName == "variable") {
+			newState = VARIABLE;
+			knownVars.push_back(attrs->getValue(SRX, "name"));
+		    }
+		    break;
+		case LINK:
+		    break;
+		case VARIABLE:
+		    break;
+		case BOOLEAN:
+		    break;
+		case RESULTS:
+		    if (localName == "result")
+			newState = RESULT;
+		    break;
+		case RESULT:
+		    if (localName == "binding")
+			newState = BINDING;
+		    result = new Result(rs);
+		    rs->insert(rs->end(), result);
+		    break;
+		case BINDING:
+		    variable = posFactory->getVariable(attrs->getValue(SRX, "name"));
+		    if (localName == "uri")
+			newState = _URI;
+		    else if (localName == "bnode")
+			newState = BNODE;
+		    else if (localName == "literal")
+			newState = LITERAL;
+		    break;
+		case _URI:
+		    break;
+		case BNODE:
+		    break;
+		case LITERAL:
+		    {
+			std::string s = attrs->getValue(SRX, "datatype");
+			std::cout << "s=\"" << s << "\"\n";
+			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
+			std::cout << "datatype=" << datatype->toString() << "\n";
+			lang = attrs->getValue(XML, "lang");
+			std::cout << "lang=\"" << lang << "\"\n";
+		    } break;
+		default:
+		    error("unexpected element %s within %s", qName.c_str(), stateStr());
+		}
+		if (newState == ERROR)
+		    error("unexpected element %s within %s", qName.c_str(), stateStr());
+		stateStack.push(newState);
+	    }
+	    virtual void endElement (std::string,
+				     std::string,
+				     std::string) {
+		switch (stateStack.top()) {
+		case BOOLEAN:
+		    error("boolean ResultSets not implemented");
+		    break;
+		case BINDING: //@@
+		    break;
+		case _URI:
+		    result->set(variable, posFactory->getURI(chars), false);
+		    chars = "";
+		    break;
+		case BNODE:
+		    result->set(variable, posFactory->getBNode(chars), false);
+		    chars = "";
+		    break;
+		case LITERAL:
+		    {
+			LANGTAG* l = NULL;
+			if (lang.size() > 0)
+			    l = new LANGTAG(lang); /* del'd by RDFLiteral. */
+			result->set(variable, posFactory->getRDFLiteral(chars, datatype, l), false);
+			datatype = NULL;
+		    }
+		    chars = "";
+		    break;
+		default: /* avoid enum not handled in switch warnings */
+		    break;
+		}
+		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
+		    error("unexpected characters %s within %s", chars.c_str(), stateStr());
+		stateStack.pop();
+	    }
+	    virtual void characters (const char ch[],
+				     int start,
+				     int length) {
+		chars += std::string(ch + start, length);
+	    }
+	};
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results() {
-	    parser->parse(filename);
+	    RSsax handler(this, posFactory);
+	    parser->parse(filename, &handler);
 	}
 
 	virtual ~ResultSet();

@@ -10,16 +10,10 @@
 
 namespace w3c_sw {
 
-    class SWSAXparser {
-    protected:
-	static std::string qName(const char* prefix, const char* localName) {
+    class SWSAXhandler {
+    public:
+	static std::string qName (const char* prefix, const char* localName) {
 	    return (prefix && prefix[0] ? std::string((const char*)prefix) + '~' : std::string("")) + (const char*)localName;
-	}
-	static std::string prefix(std::string qname) {
-	    size_t f = qname.find(':');
-	    if (f == std::string::npos)
-		return std::string("");
-	    return qname.substr(0, f);
 	}
 	class Attributes {
 	public:
@@ -31,14 +25,12 @@ namespace w3c_sw {
 	    virtual std::string getQName(size_t i) = 0;
 	    virtual std::string getValue(std::string uri, std::string localName) = 0;
 	};
-    public:
-	SWSAXparser () {  }
-	virtual ~SWSAXparser () {  }
-	virtual void parse(const char* file) = 0;
-	void startElement (std::string uri,
-			   std::string localName,
-			   std::string qName,
-			   Attributes* attrs) {
+	SWSAXhandler () {  }
+	virtual ~SWSAXhandler () {  }
+	virtual void startElement (std::string uri,
+				   std::string localName,
+				   std::string qName,
+				   Attributes* attrs) {
 	    std::cout << "<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
@@ -46,14 +38,14 @@ namespace w3c_sw {
 	    }
 	    std::cout << ">" << std::endl;
 	}
-	void endElement (std::string uri,
-			 std::string localName,
-			 std::string qName) {
+	virtual void endElement (std::string uri,
+				 std::string localName,
+				 std::string qName) {
 	    std::cout << "</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
 	}
-	void characters (const char ch[],
-			 int start,
-			 int length) {
+	virtual void characters (const char ch[],
+				 int start,
+				 int length) {
 	    std::cout << std::string(ch, start, length);
 	}
 
@@ -62,12 +54,12 @@ namespace w3c_sw {
 	    va_start(args, msg);
 	    error( msg, args );
 	    va_end(args);
-	    throw("SWSAXparser exception");
+	    throw("SWSAX exception");
 	}
 
-	void error(const char* msg, va_list args) {
+	virtual void error(const char* msg, va_list args) {
 	    vprintf(msg, args);
-	    throw("SWSAXparser exception");
+	    throw("SWSAX exception");
 	}
 
 	void warning(const char * msg, ...) {
@@ -77,10 +69,50 @@ namespace w3c_sw {
 	    va_end(args);
 	}
 
-	void warnting(const char* msg, va_list args) {
+	virtual void warnting(const char* msg, va_list args) {
 	    vprintf(msg, args);
 	}
 
+    };
+
+    class StateMachineSAXhandler : public SWSAXhandler {
+    public:
+	StateMachineSAXhandler () {  }
+	virtual void startElement (std::string uri,
+				   std::string localName,
+				   std::string qName,
+				   Attributes* attrs) {
+	    std::cout << "SM<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
+	    size_t attrCount = attrs->getLength();
+	    for (size_t i = 0; i < attrCount; ++i) {
+		std::cout << std::endl << "    " << attrs->getQName(i) << "=\"" << attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) << "\"";
+	    }
+	    std::cout << ">" << std::endl;
+	}
+	virtual void endElement (std::string uri,
+				 std::string localName,
+				 std::string qName) {
+	    std::cout << "SM</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
+	}
+	virtual void characters (const char ch[],
+				 int start,
+				 int length) {
+	    std::cout << std::string(ch, start, length);
+	}
+    };
+
+    class SWSAXparser {
+    protected:
+	static std::string prefix(std::string qname) {
+	    size_t f = qname.find(':');
+	    if (f == std::string::npos)
+		return std::string("");
+	    return qname.substr(0, f);
+	}
+    public:
+	SWSAXparser () {  }
+	virtual ~SWSAXparser () {  }
+	virtual void parse(const char* file, SWSAXhandler* handler) = 0;
     };
 
 }

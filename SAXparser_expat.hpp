@@ -21,7 +21,7 @@ namespace w3c_sw {
 	    NsSet (const char* localName, const char* prefix, const char* value) :
 		namespaceURI(NULL), localName(localName), prefix(prefix), value(value) {  }
 	};
-	class Attributes_expat : public Attributes {
+	class Attributes_expat : public SWSAXhandler::Attributes {
 	    friend class SAXparser_expat;
 	protected:
 	    std::vector<NsSet> byIndex;
@@ -31,11 +31,12 @@ namespace w3c_sw {
 	    virtual size_t getLength () { return byIndex.size(); }
 	    virtual std::string getURI (size_t i) { return byIndex[i].namespaceURI; }
 	    virtual std::string getLocalName (size_t i) { return byIndex[i].localName; }
-	    virtual std::string getQName (size_t i) { return qName(byIndex[i].prefix, byIndex[i].localName); }
+	    virtual std::string getQName (size_t i) { return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
 
 	XML_Parser parser;
+	SWSAXhandler* handler;
 	std::stack< std::map< const char*, const char* > > nsz;
 
 	std::string readFile (const char* filename, const char* type) {
@@ -63,7 +64,8 @@ namespace w3c_sw {
 	    ::XML_ParserFree(parser);
 	}
 
-	virtual void parse (const char* file) {
+	virtual void parse (const char* file, SWSAXhandler* handler) {
+	    this->handler = handler;
 	    std::string buf = readFile(file, "XML");
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
 		throw( "Failed to parse document.\n" );
@@ -89,7 +91,7 @@ namespace w3c_sw {
 		if (nsz.top().find(elPrefix) != nsz.top().end())
 		    *elNs = nsz.top()[elPrefix];
 		else
-		    error("namespace prefix \"%s\" not found", elPrefix);
+		    handler->error("namespace prefix \"%s\" not found", elPrefix);
 	    }
 	}
 	static void start (void *voidSelf,
@@ -133,10 +135,10 @@ namespace w3c_sw {
 			nss.namespaceURI = self.nsz.top()[nss.prefix];
 			attrs.byNS_localName[nss.namespaceURI][nss.localName] = nss.value;
 		    } else
-			self.error("namespace prefix \"%s\" not found", nss.prefix);
+			self.handler->error("namespace prefix \"%s\" not found", nss.prefix);
 		}
 	    }
- 	    self.startElement(elNs, elLname, name, &attrs);
+ 	    self.handler->startElement(elNs, elLname, name, &attrs);
 	}
 
 	static void end (void *voidSelf,
@@ -145,7 +147,7 @@ namespace w3c_sw {
 	    const char* elLname;
 	    const char* elNs;
 	    self._crackQName(name, &elLname, &elNs);
- 	    self.endElement(elNs, elLname, (const char*)name);
+ 	    self.handler->endElement(elNs, elLname, (const char*)name);
 	    self.nsz.pop();
 	}
 
@@ -153,7 +155,7 @@ namespace w3c_sw {
 			   const XML_Char *s,
 			   int len) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
- 	    self.characters((const char*)s, 0, len);
+ 	    self.handler->characters((const char*)s, 0, len);
 	}
     };
 
