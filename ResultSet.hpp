@@ -176,43 +176,44 @@ namespace w3c_sw {
 		case BOOLEAN:
 		    break;
 		case RESULTS:
-		    if (localName == "result")
+		    if (localName == "result") {
 			newState = RESULT;
-		    break;
+			result = new Result(rs);
+			rs->insert(rs->end(), result);
+		    } break;
 		case RESULT:
-		    if (localName == "binding")
-			newState = BINDING;
-		    result = new Result(rs);
-		    rs->insert(rs->end(), result);
-		    break;
+		    if (localName == "binding") {
+			newState = BINDING; 
+			variable = posFactory->getVariable(attrs->getValue(SRX, "name"));
+		    } break;
 		case BINDING:
-		    variable = posFactory->getVariable(attrs->getValue(SRX, "name"));
 		    if (localName == "uri")
 			newState = _URI;
 		    else if (localName == "bnode")
 			newState = BNODE;
-		    else if (localName == "literal")
+		    else if (localName == "literal") {
 			newState = LITERAL;
-		    break;
-		case _URI:
-		    break;
-		case BNODE:
-		    break;
-		case LITERAL:
-		    {
 			std::string s = attrs->getValue(SRX, "datatype");
 			std::cout << "s=\"" << s << "\"\n";
 			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
 			std::cout << "datatype=" << datatype->toString() << "\n";
 			lang = attrs->getValue(XML, "lang");
 			std::cout << "lang=\"" << lang << "\"\n";
-		    } break;
+		    }
+		    break;
+		case _URI:
+		    break;
+		case BNODE:
+		    break;
+		case LITERAL:
+		    break;
 		default:
 		    error("unexpected element %s within %s", qName.c_str(), stateStr());
 		}
 		if (newState == ERROR)
 		    error("unexpected element %s within %s", qName.c_str(), stateStr());
 		stateStack.push(newState);
+		chars = "";
 	    }
 	    virtual void endElement (std::string,
 				     std::string,
