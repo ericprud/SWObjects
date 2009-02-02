@@ -46,7 +46,7 @@ namespace w3c_sw {
 	    virtual std::string getURI (size_t i) { if (!initialized) init(); return byIndex[i].namespaceURI; }
 	    virtual std::string getLocalName (size_t i) { if (!initialized) init(); return byIndex[i].localName; }
 	    virtual std::string getQName (size_t i) { if (!initialized) init(); return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
-	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
+	    virtual std::string getValue (std::string uri, std::string localName) { if (!initialized) init(); return byNS_localName[uri][localName]; }
 	};
 	::xmlSAXHandler libXMLhandler; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler
 	SWSAXhandler* saxHandler;
