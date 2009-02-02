@@ -48,26 +48,26 @@ namespace w3c_sw {
 	    virtual std::string getQName (size_t i) { if (!initialized) init(); return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
-	::xmlSAXHandler handle; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler
-	SWSAXhandler* handler;
+	::xmlSAXHandler libXMLhandler; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler
+	SWSAXhandler* saxHandler;
     public:
 	SAXparser_libxml () {
-	    //memset(&handle, 0, sizeof(handle));
-	    handle.initialized = XML_SAX2_MAGIC;  // so we do this to force parsing as SAX2.
-	    handle.startElementNs = &startElementNs;
-	    handle.endElementNs = &endElementNs;
-	    handle.characters = &characters;
-	    handle.warning = &mywarning;
-	    handle.error = &myerror;
+	    ::memset(&libXMLhandler, 0, sizeof(libXMLhandler));
+	    libXMLhandler.initialized = XML_SAX2_MAGIC;  // so we do this to force parsing as SAX2.
+	    libXMLhandler.startElementNs = &startElementNs;
+	    libXMLhandler.endElementNs = &endElementNs;
+	    libXMLhandler.characters = &characters;
+	    libXMLhandler.warning = &mywarning;
+	    libXMLhandler.error = &myerror;
 	}
 	virtual ~SAXparser_libxml () {
 	    ::xmlCleanupParser();
 	    ::xmlMemoryDump();
 	}
 
-	virtual void parse (const char* file, SWSAXhandler* handler) {
-	    this->handler = handler;
-	    if (::xmlSAXUserParseFile(&handle, this, file) != 0)
+	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
+	    this->saxHandler = saxHandler;
+	    if (::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0)
 		throw( "Failed to parse document.\n" );
 	}
 
@@ -83,10 +83,10 @@ namespace w3c_sw {
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
  	    Attributes_libxml attrs(attributes, nb_attributes);
- 	    self.handler->startElement((const char*)URI, 
-				       (const char*)localname, 
-				       SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
-				       &attrs);
+ 	    self.saxHandler->startElement((const char*)URI, 
+					  (const char*)localname, 
+					  SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
+					  &attrs);
 	}
 
 	static void endElementNs (void * voidSelf, 
@@ -95,23 +95,23 @@ namespace w3c_sw {
 				  const xmlChar * URI )
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
- 	    self.handler->endElement((const char*)URI, 
-				     (const char*)localname, 
-				     SWSAXhandler::qName((const char*)prefix, (const char*)localname));
+ 	    self.saxHandler->endElement((const char*)URI, 
+					(const char*)localname, 
+					SWSAXhandler::qName((const char*)prefix, (const char*)localname));
 	}
 
 	static void characters (void * voidSelf,
 				const xmlChar * ch,
 				int len) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
- 	    self.handler->characters((const char*)ch, 0, len);
+ 	    self.saxHandler->characters((const char*)ch, 0, len);
 	}
 
 	static void myerror( void * voidSelf, const char * msg, ... ) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
 	    va_list args;
 	    va_start(args, msg);
-	    self.handler->error(msg, args);
+	    self.saxHandler->error(msg, args);
 	    va_end(args);
 	}
 
@@ -119,7 +119,7 @@ namespace w3c_sw {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
 	    va_list args;
 	    va_start(args, msg);
-	    self.handler->warning(msg, args);
+	    self.saxHandler->warning(msg, args);
 	    va_end(args);
 	}
     };
