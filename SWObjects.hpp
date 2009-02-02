@@ -287,7 +287,8 @@ protected:
 public:
     virtual std::string toString () const {
 	std::stringstream s;
-	s << terminal;
+	/* Could just print terminal here. */
+	s << '"' << m_String << '"';
 	if (datatype) s << datatype->toString();
 	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
 	return s.str();
