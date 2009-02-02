@@ -8,12 +8,21 @@
 
 namespace w3c_sw {
     void Result::set (const POS* variable, const POS* value, bool weaklyBound) {
+	if (variable->toString() == "?") {
+	    std::stringstream s;
+	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
+	    throw(std::runtime_error(s.str()));
+	}
 	BindingSet::const_iterator vi = bindings.find((POS*)variable);
 	if (vi == bindings.end()) {
 	    BindingInfo b = {weaklyBound, (POS*)value};
 	    bindings[(POS*)variable] = b;
 	} else {
-	    throw(std::runtime_error(FUNCTION_STRING));
+	    std::stringstream s;
+	    s << "variable " << variable->toString() << " reassigned:"
+		" old value:" << bindings[(POS*)variable].pos->toString() << 
+		" new value:" << value->toString();
+	    throw(std::runtime_error(s.str()));
 	}
     }
 
