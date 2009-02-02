@@ -24,6 +24,19 @@ namespace w3c_sw {
 	    virtual std::string getURI(size_t i) = 0;
 	    virtual std::string getQName(size_t i) = 0;
 	    virtual std::string getValue(std::string uri, std::string localName) = 0;
+	    std::string toString (std::string luri = "", std::string llname = "") {
+		std::stringstream s;
+		for (size_t i = 0; i < getLength(); ++i) {
+		    std::string uri = getURI(i);
+		    std::string lname = getLocalName(i);
+		    std::string qn = getQName(i);
+		    std::string val = getValue(uri, lname);
+		    s << (uri == luri && lname == llname ? '!' : ' ') << 
+			qn << "(" << uri << ")=\"" << val << "\"";
+		}
+		s << ">\ncheck: |name: " << getValue("", "name") << "\n";
+		return s.str();
+	    }
 	};
 	SWSAXhandler () {  }
 	virtual ~SWSAXhandler () {  }
