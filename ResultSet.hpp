@@ -194,11 +194,8 @@ namespace w3c_sw {
 		    else if (localName == "literal") {
 			newState = LITERAL;
 			std::string s = attrs->getValue(SRX, "datatype");
-			std::cout << "s=\"" << s << "\"\n";
 			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
-			std::cout << "datatype=" << datatype->toString() << "\n";
 			lang = attrs->getValue(XML, "lang");
-			std::cout << "lang=\"" << lang << "\"\n";
 		    }
 		    break;
 		case _URI:
