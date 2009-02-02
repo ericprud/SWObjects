@@ -19,11 +19,14 @@
 #define XMLPARSER XMLPARSER_EXPAT
 
 #if XMLPARSER == XMLPARSER_LIBXML
-#include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #elif XMLPARSER == XMLPARSER_EXPAT
+#ifdef _MSC_VER
+#include "xmlparse.h"
+#else /* !_MSC_VER */
 #include "expat.h"
-#endif
+#endif /* !_MSC_VER */
+#endif /* !XMLPARSER == XMLPARSER_EXPAT */
 
 #include "SWObjects.hpp"
 #include "SPARQLfedParser.hpp"
