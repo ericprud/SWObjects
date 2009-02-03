@@ -629,6 +629,8 @@ void NumberExpression::express (Expressor* p_expressor) {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
+	if (m_SolutionModifier != NULL)
+	    m_SolutionModifier->modifyResult(rs);
 	return rs;
     }
 
@@ -669,6 +671,10 @@ void NumberExpression::express (Expressor* p_expressor) {
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) {
 	if (m_BindingClause != NULL) m_BindingClause->bindVariables(db, rs);
 	m_GroupGraphPattern->bindVariables(db, rs);
+    }
+
+    void SolutionModifier::modifyResult (ResultSet* rs) {
+	rs->order(m_OrderConditions, m_offset, m_limit);
     }
 
     void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) {

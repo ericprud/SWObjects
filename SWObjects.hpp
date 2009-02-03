@@ -162,7 +162,6 @@ namespace w3c_sw {
 
 class ResultSet;
 class Result;
-typedef std::list<Result*>::iterator ResultSetIterator;
 class RdfDB;
 
 class LANGTAG : public Terminal {
@@ -761,6 +760,7 @@ public:
 		delete m_OrderConditions->at(i).expression;
 	delete m_OrderConditions;
     }
+    void modifyResult(ResultSet* rs);
     virtual void express(Expressor* p_expressor);
 };
 class Binding : public ProductionVector<POS*> {
