@@ -7,6 +7,7 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+#include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {
 #if 0
@@ -56,6 +57,12 @@ namespace w3c_sw {
 	void bindVariables(ResultSet* rs, POS* graph, BasicGraphPattern* toMatch);
 	void express(Expressor* expressor);
     };
+
+    inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
+	SPARQLSerializer s;
+	((RdfDB*)&my)->express(&s);
+	return os << s.getSPARQLstring();
+    }
 
 } // namespace w3c_sw
 

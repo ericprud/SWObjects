@@ -6,6 +6,8 @@
 #ifndef SPARQLSerializer_H
 #define SPARQLSerializer_H
 
+#include <stack>
+
 namespace w3c_sw {
 
 class SPARQLSerializer : public Expressor {
@@ -452,12 +454,6 @@ public:
 	p_NumericRDFLiteral->express(this);
     }
 };
-
-    inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
-	SPARQLSerializer s;
-	((RdfDB*)&my)->express(&s);
-	return os << s.getSPARQLstring();
-    }
 
     inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
 	SPARQLSerializer s;
