@@ -131,7 +131,10 @@ namespace w3c_sw {
 		for (std::vector<NsSet>::iterator it = attrs.byIndex.begin(); 
 		     it != attrs.byIndex.end(); ++it) {
 		    NsSet& nss = *it;
-		    if (self.nsz.top().find(nss.prefix) != self.nsz.top().end()) {
+		    if (nss.prefix == "") {
+			nss.namespaceURI = "";
+			attrs.byNS_localName[""][nss.localName] = nss.value;
+		    } else if (self.nsz.top().find(nss.prefix) != self.nsz.top().end()) {
 			nss.namespaceURI = self.nsz.top()[nss.prefix];
 			attrs.byNS_localName[nss.namespaceURI][nss.localName] = nss.value;
 		    } else

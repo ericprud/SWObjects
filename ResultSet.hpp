@@ -166,7 +166,7 @@ namespace w3c_sw {
 			newState = LINK;
 		    else if (localName == "variable") {
 			newState = VARIABLE;
-			knownVars.push_back(attrs->getValue(SRX, "name"));
+			knownVars.push_back(attrs->getValue("", "name"));
 		    }
 		    break;
 		case LINK:
@@ -183,8 +183,8 @@ namespace w3c_sw {
 		    } break;
 		case RESULT:
 		    if (localName == "binding") {
-			newState = BINDING; 
-			variable = posFactory->getVariable(attrs->getValue(SRX, "name"));
+			newState = BINDING;
+			variable = posFactory->getVariable(attrs->getValue("", "name"));
 		    } break;
 		case BINDING:
 		    if (localName == "uri")
@@ -193,7 +193,7 @@ namespace w3c_sw {
 			newState = BNODE;
 		    else if (localName == "literal") {
 			newState = LITERAL;
-			std::string s = attrs->getValue(SRX, "datatype");
+			std::string s = attrs->getValue("", "datatype");
 			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
 			lang = attrs->getValue(XML, "lang");
 		    }
