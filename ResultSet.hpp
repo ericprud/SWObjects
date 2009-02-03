@@ -17,6 +17,7 @@
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
 #include "SAXparser.hpp"
+#include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {
 
@@ -26,6 +27,11 @@ namespace w3c_sw {
     //typedef std::pair<std::map<POS*,POS*>::iterator, bool> InsertRet;
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
+
+    typedef std::vector<Result*> ResultList;
+    typedef std::vector<Result*>::iterator ResultSetIterator;
+    typedef std::vector<Result*>::const_iterator ResultSetConstIterator;
+
 
     class Result {
     protected:
@@ -59,9 +65,6 @@ namespace w3c_sw {
 	ResultSet* makeResultSet();
 	void assumeNewBindings(Result* from);
     };
-
-    typedef std::list<Result*> ResultList;
-    typedef std::list<Result*>::iterator ResultSetIterator;
 
     class ResultSet {
     protected:
@@ -261,8 +264,8 @@ namespace w3c_sw {
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.size() != size())
 		return false;
-	    std::list<Result*>::const_iterator myRow = results.begin();
-	    std::list<Result*>::const_iterator yourRow = ref.results.begin();
+	    ResultSetConstIterator myRow = results.begin();
+	    ResultSetConstIterator yourRow = ref.results.begin();
 	    while (myRow != results.end()) {
 		if ((*yourRow)->size() != (*myRow)->size())
 		    return false;
@@ -286,6 +289,9 @@ namespace w3c_sw {
 	    }
 	    return true;
 	}
+
+	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
+
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)
 		throw(std::runtime_error("ConstructResultSet has no POSFactory."));

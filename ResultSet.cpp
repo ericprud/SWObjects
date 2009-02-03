@@ -49,7 +49,7 @@ namespace w3c_sw {
 	return xml;
     }
 
-    Result* Result::duplicate (ResultSet* rs, ResultSetIterator row) {
+    Result* Result::duplicate (ResultSet* rs, ResultSetIterator /* row */) {
 	Result* ret = new Result(rs);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++)
 	    ret->set(it->first, it->second.pos, it->second.weaklyBound);
@@ -92,6 +92,27 @@ namespace w3c_sw {
 	if (vi == knownVars.end())
 	    knownVars.insert(variable);
 	r->set(variable, value, weaklyBound);
+    }
+
+    struct ResultComp {
+	std::vector<s_OrderConditionPair>* orderConditions;
+	ResultComp (std::vector<s_OrderConditionPair>* orderConditions) : 
+	    orderConditions(orderConditions) {  }
+	bool operator() (const Result* lhs, const Result* rhs) {
+	    for (std::vector<s_OrderConditionPair>::iterator it = orderConditions->begin();
+		 it != orderConditions->end(); ++it) {
+		s_OrderConditionPair pair = *it;
+		SPARQLSerializer s;
+		pair.expression->express(&s);
+		std::cout << "evaluating " << (pair.ascOrDesc == ORDER_Asc ? "Asc" : "Desc") << " expr: " << s.getSPARQLstring();
+	    }
+	    return lhs < rhs;
+	}
+    };
+
+    void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
+  	ResultComp resultComp(orderConditions);
+  	std::sort(results.begin(), results.end(), resultComp);
     }
 
     std::string ResultSet::toString () const {
@@ -138,7 +159,7 @@ namespace w3c_sw {
 
 	    VariableList intruders;
 	    lastInKnownVars = count;
-	    for (std::list<Result*>::const_iterator row = results.begin() ; row != results.end(); row++)
+	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++)
 		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
 		    POS* var = b->first;
 		    if (pos2col.find(var) == pos2col.end()) {
@@ -174,7 +195,7 @@ namespace w3c_sw {
 	s << RR << std::endl;
 
 	/*  Rows */
-	for (std::list<Result*>::const_iterator row = results.begin() ; row != results.end(); row++) {
+	for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++) {
 #if (INTRA_ROW_SEPARATORS)
 	    /*  Intra-row Border */
 	    for (i = 0; i < count; i++) {
