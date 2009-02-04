@@ -56,7 +56,7 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results() {
+    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false) {
 	results.insert(results.begin(), new Result(this));
     }
 
@@ -96,23 +96,48 @@ namespace w3c_sw {
 
     struct ResultComp {
 	std::vector<s_OrderConditionPair>* orderConditions;
-	ResultComp (std::vector<s_OrderConditionPair>* orderConditions) : 
-	    orderConditions(orderConditions) {  }
+	POSFactory* posFactory;
+	ResultComp (std::vector<s_OrderConditionPair>* orderConditions, POSFactory* posFactory) : 
+	    orderConditions(orderConditions), posFactory(posFactory) {  }
 	bool operator() (const Result* lhs, const Result* rhs) {
 	    for (std::vector<s_OrderConditionPair>::iterator it = orderConditions->begin();
 		 it != orderConditions->end(); ++it) {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		std::cout << "evaluating " << (pair.ascOrDesc == ORDER_Asc ? "Asc" : "Desc") << " expr: " << s.getSPARQLstring();
+		POS* l = pair.expression->eval((Result*)lhs, posFactory, false);
+		POS* r = pair.expression->eval((Result*)rhs, posFactory, false);
+		if (l != r)
+		    return pair.ascOrDesc == ORDER_Desc ? posFactory->lessThan(r, l) : posFactory->lessThan(l, r);
 	    }
-	    return lhs < rhs;
+	    return false;
 	}
     };
 
     void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
-  	ResultComp resultComp(orderConditions);
-  	std::sort(results.begin(), results.end(), resultComp);
+	if (orderConditions != NULL) {
+	    ResultComp resultComp(orderConditions, posFactory);
+	    results.sort(resultComp);
+	}
+
+	if (offset > 0) {
+	    int at = 0;
+	    for (ResultSetIterator it = begin() ; it != end() && at < offset; ++at) {
+		delete *it;
+		erase(it++);
+	    }
+	}
+
+	if (limit > 0) {
+	    int at = 0;
+	    ResultSetIterator it = begin();
+	    for ( ; it != end() && at < limit; ++at)
+		++it;
+	    for ( ; it != end(); ++at) {
+		delete *it;
+		erase(it++);
+	    }
+	}
     }
 
     std::string ResultSet::toString () const {
@@ -180,7 +205,7 @@ namespace w3c_sw {
 	/*   Top Border */
 	unsigned i;
 	for (i = 0; i < count; i++) {
-	    s << (i == 0 ? UL : US);
+	    s << (i == 0 ? (ordered == true ? "O" : UL) : US);
 	    s << STRING(widths[i]+2, UB);
 	}
 	s << UR << std::endl;

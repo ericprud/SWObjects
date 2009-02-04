@@ -586,12 +586,18 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    flags |= boost::match_not_bob; 
 	}
     }
+
+    /* EBV (Better place for this?) */
+    POS* POSFactory::ebv (POS* pos) {
+	throw std::string("ebv ") + pos->toString() + " not implemented";
+    }
+
     /* </POSFactory> */
 
-    POS* BNode::eval (Result* r, bool bNodesGenSymbols) {
+    POS* BNode::eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return bNodesGenSymbols ? this : r->get(this);
     }
-    POS* Variable::eval (Result* r, bool) {
+    POS* Variable::eval (Result* r, POSFactory* /* posFactory */, bool) {
 	POS* ret = r->get(this);
 
 	URI* u;
@@ -758,7 +764,7 @@ void NumberExpression::express (Expressor* p_expressor) {
     bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
 	if (pattern == NULL || constant == NULL)
 	    return true;
-	POS* curVal = pattern->eval(provisional, false);
+	POS* curVal = pattern->eval(provisional, NULL, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
 	    rs->set(provisional, pattern, constant, weaklyBound);
 	    return true;
@@ -797,9 +803,9 @@ void NumberExpression::express (Expressor* p_expressor) {
     bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
 	bool ret = false;
 	POS *s, *p, *o;
-	if ((s = m_s->eval(r, bNodesGenSymbols)) != NULL && 
-	    (p = m_p->eval(r, bNodesGenSymbols)) != NULL && 
-	    (o = m_o->eval(r, bNodesGenSymbols)) != NULL) {
+	if ((s = m_s->eval(r, NULL, bNodesGenSymbols)) != NULL && 
+	    (p = m_p->eval(r, NULL, bNodesGenSymbols)) != NULL && 
+	    (o = m_o->eval(r, NULL, bNodesGenSymbols)) != NULL) {
 	    if (posFactory == NULL) {
 		if (s == m_s && p == m_p && o == m_o && !weaklyBound)
 		    target->addTriplePattern(this);

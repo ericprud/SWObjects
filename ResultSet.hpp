@@ -28,9 +28,9 @@ namespace w3c_sw {
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
 
-    typedef std::vector<Result*> ResultList;
-    typedef std::vector<Result*>::iterator ResultSetIterator;
-    typedef std::vector<Result*>::const_iterator ResultSetConstIterator;
+    typedef std::list<Result*> ResultList;
+    typedef std::list<Result*>::iterator ResultSetIterator;
+    typedef std::list<Result*>::const_iterator ResultSetConstIterator;
 
 
     class Result {
@@ -71,6 +71,7 @@ namespace w3c_sw {
 	POSFactory* posFactory;
 	VariableList knownVars;
 	ResultList results;
+	bool ordered;
 
     public:
 	ResultSet(POSFactory* posFactory = NULL);
@@ -81,7 +82,7 @@ namespace w3c_sw {
 			  "<n4> \"l1\"" )
 	 * A \n on the last line creates a row with no bindings.
 	 */
-	ResultSet (POSFactory* posFactory, std::string str) : posFactory(posFactory), knownVars(), results() {
+	ResultSet (POSFactory* posFactory, std::string str) : posFactory(posFactory), knownVars(), results(), ordered(false) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -255,7 +256,7 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results() {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
@@ -264,6 +265,24 @@ namespace w3c_sw {
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.size() != size())
 		return false;
+	    if (ref.isOrdered() != isOrdered())
+		return false;
+	    if (!isOrdered()) {
+		std::vector<s_OrderConditionPair> orderConditions;
+		for (VariableListIterator it = knownVars.begin();
+		     it != knownVars.end(); ++it) {
+		    Variable* v = (Variable*)dynamic_cast<const Variable*>(*it);
+		    VarExpression* ve = new VarExpression(v);
+		    s_OrderConditionPair p = {ORDER_Asc, ve}; // @@@ expand for our expanded key types (URI, lit...).
+		    orderConditions.push_back(p);
+		}
+		((ResultSet*)this)->order(&orderConditions, -1, -1);
+		((ResultSet&)ref).order(&orderConditions, -1, -1);
+		for (std::vector<s_OrderConditionPair>::iterator it = orderConditions.begin();
+		     it != orderConditions.end(); ++it) {
+ 		    delete it->expression;
+		}
+	    }
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
 	    while (myRow != results.end()) {
@@ -291,6 +310,7 @@ namespace w3c_sw {
 	}
 
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
+	bool isOrdered () const { return ordered; }
 
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)
