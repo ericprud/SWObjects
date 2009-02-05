@@ -180,15 +180,8 @@ public:
 class POS;
 class POSFactory;
 
-/* Eval interface */
-class EvalInterface {
-public:
-    virtual ~EvalInterface () {  }
-    virtual POS* eval(Result* r, POSFactory* posFactory, bool bNodesGenSymbols) = 0;
-};
-
 /* START Parts Of Speach */
-class POS : public Terminal, public EvalInterface {
+class POS : public Terminal {
     friend class POSsorter;
 protected:
     POS (std::string matched) : Terminal(matched) {  }
@@ -201,12 +194,12 @@ public:
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
-    virtual POS* eval (Result*, POSFactory* /* posFactory */, bool) { return this; }
+    virtual POS* evalPOS (Result*, bool) { return this; }
     virtual void express(Expressor* p_expressor) = 0;
     virtual std::string getBindingAttributeName() = 0;
     virtual std::string toString() const = 0;
     std::string substitutedString (Result* row, bool bNodesGenSymbols) {
-	POS* subd = eval(row, NULL, bNodesGenSymbols); /* re-uses atoms -- doesn't create them */
+	POS* subd = evalPOS(row, bNodesGenSymbols); /* re-uses atoms -- doesn't create them */
 	if (subd != NULL)
 	    return subd->toString();
 	std::stringstream s;
@@ -252,7 +245,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval(Result* r, POSFactory* posFactory, bool bNodesGenSymbols);
+    virtual POS* evalPOS(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "name"; }
     void setMaps (std::vector<URImap> maps, POSFactory* factory) { uriMaps = maps; posFactory = factory; }
 };
@@ -266,7 +259,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval(Result* r, POSFactory* posFactory, bool bNodesGenSymbols);
+    virtual POS* eval(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "bnode"; }
 };
 
@@ -524,12 +517,13 @@ public:
 
 /* END Parts Of Speach */
 
-class Expression : public Base, public EvalInterface {
+class Expression : public Base {
 private:
 public:
     Expression () : Base() { }
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) = 0;
+    virtual POS* eval(Result* r, POSFactory* posFactory, bool bNodesGenSymbols) = 0;
 };
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
@@ -958,8 +952,8 @@ public:
     ~VarExpression () { /* m_Variable is centrally managed */ }
     Variable* getVariable () { return m_Variable; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
-	return m_Variable->eval(r, posFactory, bNodesGenSymbols);
+    virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
+	return m_Variable->evalPOS(r, bNodesGenSymbols);
     }
 };
 class LiteralExpression : public Expression {
@@ -970,8 +964,8 @@ public:
     ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
     RDFLiteral* getLiteral () { return m_RDFLiteral; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
-	return m_RDFLiteral->eval(r, posFactory, bNodesGenSymbols);
+    virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
+	return m_RDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
 };
 class BooleanExpression : public Expression {
@@ -981,8 +975,8 @@ public:
     BooleanExpression (BooleanRDFLiteral* p_BooleanRDFLiteral) : Expression(), m_BooleanRDFLiteral(p_BooleanRDFLiteral) {  }
     ~BooleanExpression () { /* m_BooleanRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
-	return m_BooleanRDFLiteral->eval(r, posFactory, bNodesGenSymbols);
+    virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
+	return m_BooleanRDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
 };
 class URIExpression : public Expression {
@@ -992,8 +986,8 @@ public:
     URIExpression (URI* p_URI) : Expression(), m_URI(p_URI) {  }
     ~URIExpression () { /* m_URI is centrally managed */ }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
-	return m_URI->eval(r, posFactory, bNodesGenSymbols);
+    virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
+	return m_URI->evalPOS(r, bNodesGenSymbols);
     }
 };
 
@@ -1254,8 +1248,8 @@ public:
     NumberExpression (NumericRDFLiteral* p_NumericRDFLiteral) : Expression(), m_NumericRDFLiteral(p_NumericRDFLiteral) {  }
     ~NumberExpression () { /* m_NumericRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval (Result* res, POSFactory* posFactory, bool bNodesGenSymbols) {
-	return m_NumericRDFLiteral->eval(res, posFactory, bNodesGenSymbols);
+    virtual POS* eval (Result* res, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
+	return m_NumericRDFLiteral->evalPOS(res, bNodesGenSymbols);
     }
 };
 class ArithmeticProduct : public NaryExpression {
