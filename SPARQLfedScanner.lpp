@@ -346,10 +346,9 @@ void SPARQLfedScanner::set_debug(bool b)
     yy_flex_debug = b;
 }
 
-} // END namespace w3c_sw
 /* END SPARQLfedScanner */
 
-w3c_sw::URI* w3c_sw::SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
+URI* SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
     std::string stripped(p_rel);
     if (stripDelims) {
 	stripped.replace(0, 1, "");
@@ -364,7 +363,7 @@ w3c_sw::URI* w3c_sw::SPARQLfedScanner::resolveBase (const char* p_rel, bool stri
     static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
 
     boost::smatch what;
-    w3c_sw::URI* baseURI = driver->getBase();
+    URI* baseURI = driver->getBase();
     std::string base;
     if (baseURI != NULL)
 	std::string base = baseURI->getTerminal();
@@ -394,6 +393,7 @@ w3c_sw::URI* w3c_sw::SPARQLfedScanner::resolveBase (const char* p_rel, bool stri
 
 #endif
 }
+} // END namespace w3c_sw
 
 /* This implementation of SPARQLfedFlexLexer::yylex() is required to fill the
  * vtable of the class SPARQLfedFlexLexer. We define the scanner's main yylex

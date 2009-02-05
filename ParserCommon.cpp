@@ -10,10 +10,10 @@
 
 namespace w3c_sw {
 
-    Driver::Driver (w3c_sw::POSFactory* posFactory)
+    Driver::Driver (POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(NULL), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
-    Driver::Driver (std::string baseURI, w3c_sw::POSFactory* posFactory)
+    Driver::Driver (std::string baseURI, POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(getURI(baseURI)), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     bool Driver::parse_file (const std::string &filename) {
@@ -26,7 +26,7 @@ namespace w3c_sw {
 	return parse_stream(iss, sname);
     }
 
-    void Driver::error (const class w3c_sw::location& l,
+    void Driver::error (const class location& l,
 			const std::string& m) {
 	std::cerr << l << ": " << m << std::endl;
     }
@@ -35,7 +35,7 @@ namespace w3c_sw {
 	std::cerr << m << std::endl;
     }
 
-    w3c_sw::URI* Driver::getAbsoluteURI (std::string name) {
+    URI* Driver::getAbsoluteURI (std::string name) {
 	std::string str = base ? base->getTerminal() : "";
 	std::string abs(libwww::HTParse(name, base ? &str : NULL, libwww::PARSE_all));
 	return posFactory->getURI(abs.c_str());

@@ -33,15 +33,15 @@ namespace w3c_sw {
 
 	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void filter (Filter* self, w3c_sw::Expression*) {
+	    virtual void filter (Filter* self, Expression*) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
 	    }
-	    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern*, POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
 
@@ -104,7 +104,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -115,7 +115,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -126,7 +126,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -137,7 +137,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -159,7 +159,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern (GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -267,7 +267,7 @@ namespace w3c_sw {
 	/* duplicate triples and note the order of POSs.
 	 * This is called from _TriplePatters call in _graphPatterns.
 	 */
-	virtual void triplePattern (TriplePattern* self, w3c_sw::POS* s, w3c_sw::POS* p, w3c_sw::POS* o) {
+	virtual void triplePattern (TriplePattern* self, POS* s, POS* p, POS* o) {
 	    this->SWObjectDuplicator::triplePattern(self, s, p, o);
 	    if (!inUserRuleHead) {
 		/* We're in the UserRuleBody so note the order of introduced

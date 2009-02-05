@@ -152,7 +152,7 @@ namespace w3c_sw {
 	     */
 	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void triplePattern (TriplePattern*, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
+	    virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 		START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
@@ -168,7 +168,7 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		START("POS2BGPMap::namedGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -179,7 +179,7 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 		START("POS2BGPMap::defaultGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -201,11 +201,11 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void tableConjunction (TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
@@ -222,7 +222,7 @@ namespace w3c_sw {
 		optState = oldOptState;
 	    }
 
-	    virtual void graphGraphPattern (GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		POS* oldGraphName = graphName;
 		graphName = p_POS;
 		TableOperation* parent = currentBGP;
@@ -236,7 +236,7 @@ namespace w3c_sw {
 	    }
 
 	    /* Add _Binding_SELECT where necessary. */
-	    virtual void posList (POSList*, ProductionVector<w3c_sw::POS*>* p_POSs) {
+	    virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
 		for (std::vector<POS*>::iterator it = p_POSs->begin();
 		     it != p_POSs->end(); it++)
 		    _depends(*it, _Binding_SELECT);
@@ -245,16 +245,16 @@ namespace w3c_sw {
 		FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
-	    virtual void varExpression (VarExpression*, w3c_sw::Variable* p_Variable) {
+	    virtual void varExpression (VarExpression*, Variable* p_Variable) {
 		_depends(p_Variable, _Binding_FILTER);
 	    }
-	    virtual void literalExpression (LiteralExpression*, w3c_sw::RDFLiteral* p_RDFLiteral) {
+	    virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 		_depends(p_RDFLiteral, _Binding_FILTER);
 	    }
-	    virtual void booleanExpression (BooleanExpression*, w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+	    virtual void booleanExpression (BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
 		_depends(p_BooleanRDFLiteral, _Binding_FILTER);
 	    }
-	    virtual void uriExpression (URIExpression*, w3c_sw::URI* p_URI) {
+	    virtual void uriExpression (URIExpression*, URI* p_URI) {
 		_depends(p_URI, _Binding_FILTER);
 	    }
 

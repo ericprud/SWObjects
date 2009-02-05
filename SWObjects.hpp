@@ -1370,62 +1370,62 @@ public:
     virtual void uri(URI* self, std::string terminal) = 0;
     virtual void variable(Variable* self, std::string terminal) = 0;
     virtual void bnode(BNode* self, std::string terminal) = 0;
-    virtual void rdfLiteral(RDFLiteral* self, std::string terminal, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) = 0;
+    virtual void rdfLiteral(RDFLiteral* self, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) = 0;
     virtual void rdfLiteral(NumericRDFLiteral* self, int p_value) = 0;
     virtual void rdfLiteral(NumericRDFLiteral* self, float p_value) = 0;
     virtual void rdfLiteral(NumericRDFLiteral* self, double p_value) = 0;
     virtual void rdfLiteral(BooleanRDFLiteral* self, bool p_value) = 0;
     virtual void nullpos(NULLpos* self) = 0;
-    virtual void triplePattern(TriplePattern* self, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) = 0;
-    virtual void filter(Filter* self, w3c_sw::Expression* p_Constraint) = 0;
-    virtual void namedGraphPattern(NamedGraphPattern* self, w3c_sw::POS* p_name, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
-    virtual void defaultGraphPattern(DefaultGraphPattern* self, bool p_allOpts, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
-    virtual void tableConjunction(TableConjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
-    virtual void tableDisjunction(TableDisjunction* self, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) = 0;
-    virtual void optionalGraphPattern(OptionalGraphPattern* self, w3c_sw::TableOperation* p_GroupGraphPattern) = 0;
-    virtual void graphGraphPattern(GraphGraphPattern* self, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) = 0;
-    virtual void posList(POSList* self, ProductionVector<w3c_sw::POS*>* p_POSs) = 0;
+    virtual void triplePattern(TriplePattern* self, POS* p_s, POS* p_p, POS* p_o) = 0;
+    virtual void filter(Filter* self, Expression* p_Constraint) = 0;
+    virtual void namedGraphPattern(NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) = 0;
+    virtual void defaultGraphPattern(DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) = 0;
+    virtual void tableConjunction(TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) = 0;
+    virtual void tableDisjunction(TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) = 0;
+    virtual void optionalGraphPattern(OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) = 0;
+    virtual void graphGraphPattern(GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) = 0;
+    virtual void posList(POSList* self, ProductionVector<POS*>* p_POSs) = 0;
     virtual void starVarSet(StarVarSet* self) = 0;
-    virtual void defaultGraphClause(DefaultGraphClause* self, w3c_sw::POS* p_IRIref) = 0;
-    virtual void namedGraphClause(NamedGraphClause* self, w3c_sw::POS* p_IRIref) = 0;
-    virtual void solutionModifier(SolutionModifier* self, std::vector<w3c_sw::s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
-    virtual void binding(Binding* self, ProductionVector<w3c_sw::POS*>* values) = 0;//!!!
-    virtual void bindingClause(BindingClause* self, w3c_sw::POSList* p_Vars, ProductionVector<w3c_sw::Binding*>* p_Bindings) = 0;
-    virtual void whereClause(WhereClause* self, w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) = 0;
-    virtual void select(Select* self, w3c_sw::e_distinctness p_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) = 0;
-    virtual void construct(Construct* self, w3c_sw::DefaultGraphPattern* p_ConstructTemplate, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) = 0;
-    virtual void describe(Describe* self, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) = 0;
-    virtual void ask(Ask* self, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause) = 0;
-    virtual void replace(Replace* self, w3c_sw::WhereClause* p_WhereClause, w3c_sw::TableOperation* p_GraphTemplate) = 0;
-    virtual void insert(Insert* self, w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) = 0;
-    virtual void del(Delete* self, w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) = 0;
-    virtual void load(Load* self, ProductionVector<w3c_sw::URI*>* p_IRIrefs, w3c_sw::URI* p_into) = 0;
-    virtual void clear(Clear* self, w3c_sw::URI* p__QGraphIRI_E_Opt) = 0;
-    virtual void create(Create* self, w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) = 0;
-    virtual void drop(Drop* self, w3c_sw::e_Silence p_Silence, w3c_sw::URI* p_GraphIRI) = 0;
-    virtual void varExpression(VarExpression* self, w3c_sw::Variable* p_Variable) = 0;
-    virtual void literalExpression(LiteralExpression* self, w3c_sw::RDFLiteral* p_RDFLiteral) = 0;
-    virtual void booleanExpression(BooleanExpression* self, w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
-    virtual void uriExpression(URIExpression* self, w3c_sw::URI* p_URI) = 0;
-    virtual void argList(ArgList* self, ProductionVector<w3c_sw::Expression*>* expressions) = 0;
-    virtual void functionCall(FunctionCall* self, w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) = 0;
-    virtual void functionCallExpression(FunctionCallExpression* self, w3c_sw::FunctionCall* p_FunctionCall) = 0;
+    virtual void defaultGraphClause(DefaultGraphClause* self, POS* p_IRIref) = 0;
+    virtual void namedGraphClause(NamedGraphClause* self, POS* p_IRIref) = 0;
+    virtual void solutionModifier(SolutionModifier* self, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
+    virtual void binding(Binding* self, ProductionVector<POS*>* values) = 0;//!!!
+    virtual void bindingClause(BindingClause* self, POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) = 0;
+    virtual void whereClause(WhereClause* self, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) = 0;
+    virtual void select(Select* self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
+    virtual void construct(Construct* self, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
+    virtual void describe(Describe* self, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
+    virtual void ask(Ask* self, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
+    virtual void replace(Replace* self, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) = 0;
+    virtual void insert(Insert* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
+    virtual void del(Delete* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
+    virtual void load(Load* self, ProductionVector<URI*>* p_IRIrefs, URI* p_into) = 0;
+    virtual void clear(Clear* self, URI* p__QGraphIRI_E_Opt) = 0;
+    virtual void create(Create* self, e_Silence p_Silence, URI* p_GraphIRI) = 0;
+    virtual void drop(Drop* self, e_Silence p_Silence, URI* p_GraphIRI) = 0;
+    virtual void varExpression(VarExpression* self, Variable* p_Variable) = 0;
+    virtual void literalExpression(LiteralExpression* self, RDFLiteral* p_RDFLiteral) = 0;
+    virtual void booleanExpression(BooleanExpression* self, BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
+    virtual void uriExpression(URIExpression* self, URI* p_URI) = 0;
+    virtual void argList(ArgList* self, ProductionVector<Expression*>* expressions) = 0;
+    virtual void functionCall(FunctionCall* self, URI* p_IRIref, ArgList* p_ArgList) = 0;
+    virtual void functionCallExpression(FunctionCallExpression* self, FunctionCall* p_FunctionCall) = 0;
 /* Expressions */
-    virtual void booleanNegation(BooleanNegation* self, w3c_sw::Expression* p_Expression) = 0;
-    virtual void arithmeticNegation(ArithmeticNegation* self, w3c_sw::Expression* p_Expression) = 0;
-    virtual void arithmeticInverse(ArithmeticInverse* self, w3c_sw::Expression* p_Expression) = 0;
-    virtual void booleanConjunction(BooleanConjunction* self, ProductionVector<w3c_sw::Expression*>* p_Expressions) = 0;
-    virtual void booleanDisjunction(BooleanDisjunction* self, ProductionVector<w3c_sw::Expression*>* p_Expressions) = 0;
-    virtual void arithmeticSum(ArithmeticSum* self, ProductionVector<w3c_sw::Expression*>* p_Expressions) = 0;
-    virtual void arithmeticProduct(ArithmeticProduct* self, ProductionVector<w3c_sw::Expression*>* p_Expressions) = 0;
-    virtual void booleanEQ(BooleanEQ* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void booleanNE(BooleanNE* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void booleanLT(BooleanLT* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void booleanGT(BooleanGT* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void booleanLE(BooleanLE* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void booleanGE(BooleanGE* self, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) = 0;
-    virtual void comparatorExpression(ComparatorExpression* self, w3c_sw::BooleanComparator* p_BooleanComparator) = 0;
-    virtual void numberExpression(NumberExpression* self, w3c_sw::NumericRDFLiteral* p_NumericRDFLiteral) = 0;
+    virtual void booleanNegation(BooleanNegation* self, Expression* p_Expression) = 0;
+    virtual void arithmeticNegation(ArithmeticNegation* self, Expression* p_Expression) = 0;
+    virtual void arithmeticInverse(ArithmeticInverse* self, Expression* p_Expression) = 0;
+    virtual void booleanConjunction(BooleanConjunction* self, ProductionVector<Expression*>* p_Expressions) = 0;
+    virtual void booleanDisjunction(BooleanDisjunction* self, ProductionVector<Expression*>* p_Expressions) = 0;
+    virtual void arithmeticSum(ArithmeticSum* self, ProductionVector<Expression*>* p_Expressions) = 0;
+    virtual void arithmeticProduct(ArithmeticProduct* self, ProductionVector<Expression*>* p_Expressions) = 0;
+    virtual void booleanEQ(BooleanEQ* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void booleanNE(BooleanNE* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void booleanLT(BooleanLT* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void booleanGT(BooleanGT* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void booleanLE(BooleanLE* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void booleanGE(BooleanGE* self, Expression* p_left, Expression* p_right) = 0;
+    virtual void comparatorExpression(ComparatorExpression* self, BooleanComparator* p_BooleanComparator) = 0;
+    virtual void numberExpression(NumberExpression* self, NumericRDFLiteral* p_NumericRDFLiteral) = 0;
 };
 /* RecursiveExpressor - default actions for expressor.
  * Use this Expressor when you don't feel like supplying all of the methods.
@@ -1435,7 +1435,7 @@ public:
     virtual void uri (URI*, std::string) {  }
     virtual void variable (Variable*, std::string) {  }
     virtual void bnode (BNode*, std::string) {  }
-    virtual void rdfLiteral (RDFLiteral*, std::string, w3c_sw::URI* datatype, w3c_sw::LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (RDFLiteral*, std::string, URI* datatype, LANGTAG* p_LANGTAG) {
 	if (datatype) datatype->express(this);
 	if (p_LANGTAG) p_LANGTAG->express(this);
     }
@@ -1444,190 +1444,190 @@ public:
     virtual void rdfLiteral (NumericRDFLiteral*, double) {  }
     virtual void rdfLiteral (BooleanRDFLiteral*, bool) {  }
     virtual void nullpos (NULLpos*) {  }
-    virtual void triplePattern (TriplePattern*, w3c_sw::POS* p_s, w3c_sw::POS* p_p, w3c_sw::POS* p_o) {
+    virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 	p_s->express(this);
 	p_p->express(this);
 	p_o->express(this);
     }
-    virtual void filter (Filter*, w3c_sw::Expression* p_Constraint) {
+    virtual void filter (Filter*, Expression* p_Constraint) {
 	p_Constraint->express(this);
     }
-    virtual void namedGraphPattern (NamedGraphPattern*, w3c_sw::POS* p_name, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	p_name->express(this);
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
     }
-    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<w3c_sw::TriplePattern*>* p_TriplePatterns, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	p_TriplePatterns->express(this);
 	p_Filters->express(this);
     }
-    virtual void tableConjunction (TableConjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void tableConjunction (TableConjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	p_TableOperations->express(this);
 	p_Filters->express(this);
     }
-    virtual void tableDisjunction (TableDisjunction*, ProductionVector<w3c_sw::TableOperation*>* p_TableOperations, ProductionVector<w3c_sw::Filter*>* p_Filters) {
+    virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	p_TableOperations->express(this);
 	p_Filters->express(this);
     }
-    virtual void optionalGraphPattern (OptionalGraphPattern*, w3c_sw::TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
 	p_GroupGraphPattern->express(this);
     }
-    virtual void graphGraphPattern (GraphGraphPattern*, w3c_sw::POS* p_POS, w3c_sw::TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (GraphGraphPattern*, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);
 	p_GroupGraphPattern->express(this);
     }
-    virtual void posList (POSList*, ProductionVector<w3c_sw::POS*>* p_POSs) {
+    virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
 	p_POSs->express(this);
     }
     virtual void starVarSet (StarVarSet*) {  }
-    virtual void defaultGraphClause (DefaultGraphClause*, w3c_sw::POS* p_IRIref) {
+    virtual void defaultGraphClause (DefaultGraphClause*, POS* p_IRIref) {
 	p_IRIref->express(this);
     }
-    virtual void namedGraphClause (NamedGraphClause*, w3c_sw::POS* p_IRIref) {
+    virtual void namedGraphClause (NamedGraphClause*, POS* p_IRIref) {
 	p_IRIref->express(this);
     }
-    virtual void solutionModifier (SolutionModifier*, std::vector<w3c_sw::s_OrderConditionPair>* p_OrderConditions, int, int) {
+    virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
 	if (p_OrderConditions)
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++)
 		p_OrderConditions->at(i).expression->express(this);
     }
-    virtual void binding (Binding*, ProductionVector<w3c_sw::POS*>* values) {//!!!
+    virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
 	for (size_t i = 0; i < values->size(); i++)
 	    values->at(i)->express(this);
     }
-    virtual void bindingClause (BindingClause*, w3c_sw::POSList* p_Vars, ProductionVector<w3c_sw::Binding*>* p_Bindings) {
+    virtual void bindingClause (BindingClause*, POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) {
 	p_Vars->express(this);
-	p_Bindings->ProductionVector<w3c_sw::Binding*>::express(this);
+	p_Bindings->ProductionVector<Binding*>::express(this);
     }
-    virtual void whereClause (WhereClause*, w3c_sw::TableOperation* p_GroupGraphPattern, w3c_sw::BindingClause* p_BindingClause) {
+    virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
     }
-    virtual void select (Select*, w3c_sw::e_distinctness, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
+    virtual void select (Select*, e_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void construct (Construct*, w3c_sw::DefaultGraphPattern* p_ConstructTemplate, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
+    virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_ConstructTemplate->express(this);
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void describe (Describe*, w3c_sw::VarSet* p_VarSet, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause, w3c_sw::SolutionModifier* p_SolutionModifier) {
+    virtual void describe (Describe*, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void ask (Ask*, ProductionVector<w3c_sw::DatasetClause*>* p_DatasetClauses, w3c_sw::WhereClause* p_WhereClause) {
+    virtual void ask (Ask*, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void replace (Replace*, w3c_sw::WhereClause* p_WhereClause, w3c_sw::TableOperation* p_GraphTemplate) {
+    virtual void replace (Replace*, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
 	p_WhereClause->express(this);
 	p_GraphTemplate->express(this);
     }
-    virtual void insert (Insert*, w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
+    virtual void insert (Insert*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
     }
-    virtual void del (Delete*, w3c_sw::TableOperation* p_GraphTemplate, w3c_sw::WhereClause* p_WhereClause) {
+    virtual void del (Delete*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void load (Load*, ProductionVector<w3c_sw::URI*>* p_IRIrefs, w3c_sw::URI* p_into) {
+    virtual void load (Load*, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
 	p_IRIrefs->express(this);
 	p_into->express(this);
     }
-    virtual void clear (Clear*, w3c_sw::URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (Clear*, URI* p__QGraphIRI_E_Opt) {
 	p__QGraphIRI_E_Opt->express(this);
     }
-    virtual void create (Create*, w3c_sw::e_Silence, w3c_sw::URI* p_GraphIRI) {
+    virtual void create (Create*, e_Silence, URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
-    virtual void drop (Drop*, w3c_sw::e_Silence, w3c_sw::URI* p_GraphIRI) {
+    virtual void drop (Drop*, e_Silence, URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (VarExpression*, w3c_sw::Variable* p_Variable) {
+    virtual void varExpression (VarExpression*, Variable* p_Variable) {
 	p_Variable->express(this);
     }
-    virtual void literalExpression (LiteralExpression*, w3c_sw::RDFLiteral* p_RDFLiteral) {
+    virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 	p_RDFLiteral->express(this);
     }
-    virtual void booleanExpression (BooleanExpression*, w3c_sw::BooleanRDFLiteral* p_BooleanRDFLiteral) {
+    virtual void booleanExpression (BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
 	p_BooleanRDFLiteral->express(this);
     }
-    virtual void uriExpression (URIExpression*, w3c_sw::URI* p_URI) {
+    virtual void uriExpression (URIExpression*, URI* p_URI) {
 	p_URI->express(this);
     }
-    virtual void argList (ArgList*, ProductionVector<w3c_sw::Expression*>* expressions) {
+    virtual void argList (ArgList*, ProductionVector<Expression*>* expressions) {
 	expressions->express(this);
     }
-    virtual void functionCall (FunctionCall*, w3c_sw::URI* p_IRIref, w3c_sw::ArgList* p_ArgList) {
+    virtual void functionCall (FunctionCall*, URI* p_IRIref, ArgList* p_ArgList) {
 	p_IRIref->express(this);
 	p_ArgList->express(this);
     }
-    virtual void functionCallExpression (FunctionCallExpression*, w3c_sw::FunctionCall* p_FunctionCall) {
+    virtual void functionCallExpression (FunctionCallExpression*, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
     }
 /* Expressions */
-    virtual void booleanNegation (BooleanNegation*, w3c_sw::Expression* p_Expression) {
+    virtual void booleanNegation (BooleanNegation*, Expression* p_Expression) {
 	p_Expression->express(this);
     }
-    virtual void arithmeticNegation (ArithmeticNegation*, w3c_sw::Expression* p_Expression) {
+    virtual void arithmeticNegation (ArithmeticNegation*, Expression* p_Expression) {
 	p_Expression->express(this);
     }
-    virtual void arithmeticInverse (ArithmeticInverse*, w3c_sw::Expression* p_Expression) {
+    virtual void arithmeticInverse (ArithmeticInverse*, Expression* p_Expression) {
 	p_Expression->express(this);
     }
-    virtual void booleanConjunction (BooleanConjunction*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void booleanConjunction (BooleanConjunction*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void booleanDisjunction (BooleanDisjunction*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void booleanDisjunction (BooleanDisjunction*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void booleanNegation (BooleanNegation*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void booleanNegation (BooleanNegation*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void arithmeticSum (ArithmeticSum*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void arithmeticSum (ArithmeticSum*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void arithmeticProduct (ArithmeticProduct*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void arithmeticProduct (ArithmeticProduct*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void arithmeticInverse (ArithmeticInverse*, ProductionVector<w3c_sw::Expression*>* p_Expressions) {
+    virtual void arithmeticInverse (ArithmeticInverse*, ProductionVector<Expression*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-    virtual void booleanEQ (BooleanEQ*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanEQ (BooleanEQ*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void booleanNE (BooleanNE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanNE (BooleanNE*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void booleanLT (BooleanLT*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanLT (BooleanLT*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void booleanGT (BooleanGT*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanGT (BooleanGT*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void booleanLE (BooleanLE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanLE (BooleanLE*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void booleanGE (BooleanGE*, w3c_sw::Expression* p_left, w3c_sw::Expression* p_right) {
+    virtual void booleanGE (BooleanGE*, Expression* p_left, Expression* p_right) {
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void comparatorExpression (ComparatorExpression*, w3c_sw::BooleanComparator* p_BooleanComparator) {
+    virtual void comparatorExpression (ComparatorExpression*, BooleanComparator* p_BooleanComparator) {
 	p_BooleanComparator->express(this);
     }
-    virtual void numberExpression (NumberExpression*, w3c_sw::NumericRDFLiteral* p_NumericRDFLiteral) {
+    virtual void numberExpression (NumberExpression*, NumericRDFLiteral* p_NumericRDFLiteral) {
 	p_NumericRDFLiteral->express(this);
     }
 };

@@ -28,17 +28,17 @@ protected:
 class Driver
 {
     /// type of the namespace storage
-    typedef std::map<std::string, w3c_sw::URI*> namespacemap_type;
+    typedef std::map<std::string, URI*> namespacemap_type;
 protected:
-    w3c_sw::POSFactory * const posFactory;
+    POSFactory * const posFactory;
     namespacemap_type	namespaces;
-    w3c_sw::URI*		base;
+    URI*		base;
     bool ignorePrefixFlag;
 
 public:
     /// construct a new parser driver context
-    Driver(w3c_sw::POSFactory* posFactory);
-    Driver(std::string baseURI, w3c_sw::POSFactory* posFactory);
+    Driver(POSFactory* posFactory);
+    Driver(std::string baseURI, POSFactory* posFactory);
     virtual ~Driver () {  }
 
     /// enable debug output in the flex scanner
@@ -79,7 +79,7 @@ public:
 
     /** Error handling with associated line number. This can be modified to
      * output the error e.g. to a dialog box. */
-    void error(const class w3c_sw::location& l, const std::string& m);
+    void error(const class location& l, const std::string& m);
 
     /** General error handling. This can be modified to output the error
      * e.g. to a dialog box. */
@@ -89,13 +89,13 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    void setBase (w3c_sw::URI* b) { /* base is centrally managed -- don't delete */ base = b; }
-    void addPrefix (std::string prefix, w3c_sw::URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
+    void setBase (URI* b) { /* base is centrally managed -- don't delete */ base = b; }
+    void addPrefix (std::string prefix, URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
-    w3c_sw::URI* getNamespace (std::string prefix) {
+    URI* getNamespace (std::string prefix) {
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end()) {
 	    UnknownPrefixException e(prefix);
@@ -103,23 +103,23 @@ public:
 	} else
 	    return vi->second;
     }
-    w3c_sw::URI* getBase () { return base; }
+    URI* getBase () { return base; }
 
 
     /* POSFactory relay. */
-    w3c_sw::Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
-    w3c_sw::URI* getURI (std::string name) { return posFactory->getURI(name); }
-    w3c_sw::URI* getAbsoluteURI(std::string name);
-    w3c_sw::BNode* createBNode () { return posFactory->createBNode(); }
-    w3c_sw::BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
-    w3c_sw::RDFLiteral* getRDFLiteral (std::string p_String, w3c_sw::URI* p_URI, w3c_sw::LANGTAG* p_LANGTAG) { return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG); }
+    Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
+    URI* getURI (std::string name) { return posFactory->getURI(name); }
+    URI* getAbsoluteURI(std::string name);
+    BNode* createBNode () { return posFactory->createBNode(); }
+    BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
+    RDFLiteral* getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) { return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG); }
 
-    w3c_sw::IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    w3c_sw::DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    w3c_sw::DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
 
-    w3c_sw::BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
-    w3c_sw::NULLpos* getNULL  () { return posFactory->getNULL(); }
+    BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
+    NULLpos* getNULL  () { return posFactory->getNULL(); }
 
 };
 

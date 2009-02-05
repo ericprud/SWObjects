@@ -222,10 +222,9 @@ void TurtleSScanner::set_debug(bool b)
     yy_flex_debug = b;
 }
 
-} // END namespace w3c_sw
 /* END TurtleSScanner */
 
-w3c_sw::URI* w3c_sw::TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
+URI* TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
     std::string stripped(p_rel);
     if (stripDelims) {
 	stripped.replace(0, 1, "");
@@ -240,7 +239,7 @@ w3c_sw::URI* w3c_sw::TurtleSScanner::resolveBase (const char* p_rel, bool stripD
     static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
 
     boost::smatch what;
-    w3c_sw::URI* baseURI = driver->getBase();
+    URI* baseURI = driver->getBase();
     std::string base;
     if (baseURI != NULL)
 	std::string base = baseURI->getTerminal();
@@ -270,6 +269,8 @@ w3c_sw::URI* w3c_sw::TurtleSScanner::resolveBase (const char* p_rel, bool stripD
 
 #endif
 }
+
+} // END namespace w3c_sw
 
 /* This implementation of TurtleSFlexLexer::yylex() is required to fill the
  * vtable of the class TurtleSFlexLexer. We define the scanner's main yylex
