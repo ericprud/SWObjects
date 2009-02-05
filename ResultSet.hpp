@@ -263,11 +263,11 @@ namespace w3c_sw {
 
 	virtual ~ResultSet();
 	bool operator== (const ResultSet & ref) const {
-	    if (ref.size() != size())
-		return false;
 	    if (ref.isOrdered() != isOrdered())
 		return false;
-	    if (!isOrdered()) {
+	    if (isOrdered()) {
+		return compareOrdered(ref);
+	    } else {
 		std::vector<s_OrderConditionPair> orderConditions;
 		for (VariableListIterator it = knownVars.begin();
 		     it != knownVars.end(); ++it) {
@@ -276,13 +276,21 @@ namespace w3c_sw {
 		    s_OrderConditionPair p = {ORDER_Asc, ve}; // @@@ expand for our expanded key types (URI, lit...).
 		    orderConditions.push_back(p);
 		}
-		((ResultSet*)this)->order(&orderConditions, -1, -1);
-		((ResultSet&)ref).order(&orderConditions, -1, -1);
+		ResultSet self(*this);
+		ResultSet newRef(ref);
+		self.order(&orderConditions, -1, -1);
+		newRef.order(&orderConditions, -1, -1);
+		
 		for (std::vector<s_OrderConditionPair>::iterator it = orderConditions.begin();
 		     it != orderConditions.end(); ++it) {
  		    delete it->expression;
 		}
+		return self.compareOrdered(newRef);
 	    }
+	}
+	bool compareOrdered (const ResultSet & ref) const {
+	    if (ref.size() != size())
+		return false;
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
 	    while (myRow != results.end()) {
@@ -327,7 +335,7 @@ namespace w3c_sw {
 	ResultSetIterator insert (ResultSetIterator at, Result* elem) { return results.insert(at, elem); }
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
-	void containsAtLeast(ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
+	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
     };
 
     class ConstructResultSet : ResultSet {
