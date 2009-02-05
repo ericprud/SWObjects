@@ -594,7 +594,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 
     /* </POSFactory> */
 
-    POS* BNode::eval (Result* r, bool bNodesGenSymbols) {
+    POS* BNode::evalPOS (Result* r, bool bNodesGenSymbols) {
 	return bNodesGenSymbols ? this : r->get(this);
     }
     POS* Variable::evalPOS (Result* r, bool) {

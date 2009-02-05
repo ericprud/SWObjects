@@ -259,7 +259,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor);
-    virtual POS* eval(Result* r, bool bNodesGenSymbols);
+    virtual POS* evalPOS(Result* r, bool bNodesGenSymbols);
     virtual std::string getBindingAttributeName () { return "bnode"; }
 };
 
