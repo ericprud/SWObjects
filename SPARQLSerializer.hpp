@@ -137,12 +137,13 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
-	for (size_t i = 0; i < p_TableOperations->size(); i++) {
-	    p_TableOperations->at(i)->express(this);
-	    if (i < p_TableOperations->size() - 1) {
+	for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	     it != p_TableOperations->end(); ++it) {
+	    if (it != p_TableOperations->begin()) {
 		lead(depth - 1);
 		ret << "UNION" << std::endl;
 	    }
+	    (*it)->express(this);
 	}
 	p_Filters->express(this);
 	depth--;
@@ -180,8 +181,9 @@ public:
 	depth--;
     }
     virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
-	for (size_t i = 0; i < p_POSs->size(); i++) {
-	    p_POSs->at(i)->express(this);
+	for (std::vector<POS*>::iterator it = p_POSs->begin();
+	     it != p_POSs->end(); ++it) {
+	    (*it)->express(this);
 	    ret << ' ';
 	}
     }
@@ -211,8 +213,9 @@ public:
     }
     virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
 	ret << "  { ";
-	for (size_t i = 0; i < values->size(); i++)
-	    values->at(i)->express(this);
+	for (std::vector<POS*>::iterator it = values->begin();
+	     it != values->end(); ++it)
+	    (*it)->express(this);
 	ret << ')' << std::endl;
     }
     virtual void bindingClause (BindingClause*, POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) {
@@ -371,37 +374,41 @@ public:
     }
     virtual void booleanConjunction (BooleanConjunction*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_And);
-	for (size_t i = 0; i < p_Expressions->size(); i++) {
-	    p_Expressions->at(i)->express(this);
-	    if (i < p_Expressions->size() - 1)
+	for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it) {
+	    if (it != p_Expressions->begin())
 		ret << " && ";
+	    (*it)->express(this);
 	}
 	end();
     }
     virtual void booleanDisjunction (BooleanDisjunction*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Or);
-	for (size_t i = 0; i < p_Expressions->size(); i++) {
-	    p_Expressions->at(i)->express(this);
-	    if (i < p_Expressions->size() - 1)
+	for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it) {
+	    if (it != p_Expressions->begin())
 		ret << " || ";
+	    (*it)->express(this);
 	}
 	end();
     }
     virtual void arithmeticSum (ArithmeticSum*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Plus);
-	for (size_t i = 0; i < p_Expressions->size(); i++) {
-	    p_Expressions->at(i)->express(this);
-	    if (i < p_Expressions->size() - 1)
+	for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it) {
+	    if (it != p_Expressions->begin())
 		ret << " + ";
+	    (*it)->express(this);
 	}
 	end();
     }
     virtual void arithmeticProduct (ArithmeticProduct*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Times);
-	for (size_t i = 0; i < p_Expressions->size(); i++) {
-	    p_Expressions->at(i)->express(this);
-	    if (i < p_Expressions->size() - 1)
+	for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it) {
+	    if (it != p_Expressions->begin())
 		ret << " * ";
+	    (*it)->express(this);
 	}
 	end();
     }

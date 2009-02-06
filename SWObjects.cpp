@@ -621,8 +621,9 @@ void NumberExpression::express (Expressor* p_expressor) {
     void TableJunction::addTableOperation (TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
 	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast.
-	    for (size_t i = 0; i < j->m_TableOperations.size(); i++)
-		m_TableOperations.push_back(j->m_TableOperations[i]);
+	    for (std::vector<TableOperation*>::iterator it = j->m_TableOperations.begin();
+		 it != j->m_TableOperations.end(); ++it)
+		m_TableOperations.push_back(*it);
 	    j->m_TableOperations.clear();
 	    delete j;
 	} else
@@ -839,9 +840,9 @@ void NumberExpression::express (Expressor* p_expressor) {
     }
     TableOperation* TableDisjunction::getDNF () {
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator element = m_TableOperations.begin();
-	     element != m_TableOperations.end(); element++) {
-	    TableOperation* op = (*element)->getDNF();
+	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	     it != m_TableOperations.end(); ++it) {
+	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
 		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
@@ -861,9 +862,9 @@ void NumberExpression::express (Expressor* p_expressor) {
 	ret->addTableOperation(new TableConjunction());
 
 	/* for each of our elements... */
-	for (std::vector<TableOperation*>::iterator element = m_TableOperations.begin();
-	     element != m_TableOperations.end(); element++) {
-	    TableOperation* op = (*element)->getDNF();
+	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	     it != m_TableOperations.end(); ++it) {
+	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    TableConjunction* conjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
