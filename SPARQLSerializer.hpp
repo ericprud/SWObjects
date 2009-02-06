@@ -53,39 +53,39 @@ public:
     { precStack.push(PREC_High); }
     std::string getSPARQLstring () { return ret.str(); }
     //!!!
-    virtual void base (const Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void uri (const URI*, std::string terminal) {
+    virtual void uri (URI*, std::string terminal) {
 	ret << '<' << terminal << '>';
     }
-    virtual void variable (const Variable*, std::string terminal) {
+    virtual void variable (Variable*, std::string terminal) {
 	ret << '?' << terminal;
     }
-    virtual void bnode (const BNode*, std::string terminal) {
+    virtual void bnode (BNode*, std::string terminal) {
 	ret << "_:" << terminal; // rewrite when combining named BNodes from multiple docs?
     }
-    virtual void rdfLiteral (const RDFLiteral*, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (RDFLiteral*, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
 	ret << '"' << terminal << '"';
 	if (datatype != NULL) { ret << "^^<" << datatype->getTerminal() << '>'; }
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getTerminal(); }
 	ret << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral*, int p_value) {
+    virtual void rdfLiteral (NumericRDFLiteral*, int p_value) {
 	ret << p_value << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral*, float p_value) {
+    virtual void rdfLiteral (NumericRDFLiteral*, float p_value) {
 	ret << p_value << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral*, double p_value) {
+    virtual void rdfLiteral (NumericRDFLiteral*, double p_value) {
 	ret << p_value << ' ';
     }
-    virtual void rdfLiteral (const BooleanRDFLiteral*, bool p_value) {
+    virtual void rdfLiteral (BooleanRDFLiteral*, bool p_value) {
 	ret << (p_value ? "true" : "false") << ' ';
     }
-    virtual void nullpos (const NULLpos*) {
+    virtual void nullpos (NULLpos*) {
 	ret << "NULL ";
     }
-    virtual void triplePattern (const TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
+    virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 	lead();
 	p_s->express(this);
 	ret << ' ';
@@ -94,19 +94,19 @@ public:
 	p_o->express(this);
 	ret << " ." << std::endl;
     }
-    virtual void filter (const Filter*, Expression* p_Constraint) {
+    virtual void filter (Filter*, Expression* p_Constraint) {
 	lead();
 	ret << "FILTER ";
 	p_Constraint->express(this);
 	ret << std::endl;
     }
-    void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters, bool p_allOpts) {
+    void _BasicGraphPattern (BasicGraphPattern* self, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters, bool p_allOpts) {
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
 	if (p_allOpts)
-	    for (std::vector<TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
+	    for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
 		 triple != p_TriplePatterns->end(); triple++) {
 		lead(); ret << "optional {" << std::endl << "  ";
 		depth++;
@@ -121,17 +121,17 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* self, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+    virtual void namedGraphPattern (NamedGraphPattern* self, POS* name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	lead();
-	p_name->express(this);
+	name->express(this);
 	ret << ' ';
 	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
     }
-    virtual void defaultGraphPattern (const DefaultGraphPattern* self, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
 	lead();
 	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
     }
-    virtual void tableDisjunction (const TableDisjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -149,7 +149,7 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void tableConjunction (const TableConjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -161,7 +161,7 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -169,7 +169,7 @@ public:
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "GRAPH ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -179,24 +179,24 @@ public:
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
-    virtual void posList (const POSList*, const ProductionVector<POS*>* p_POSs) {
+    virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
 	for (size_t i = 0; i < p_POSs->size(); i++) {
 	    p_POSs->at(i)->express(this);
 	    ret << ' ';
 	}
     }
-    virtual void starVarSet (const StarVarSet*) {
+    virtual void starVarSet (StarVarSet*) {
 	ret << "* ";
     }
-    virtual void defaultGraphClause (const DefaultGraphClause*, POS* p_IRIref) {
+    virtual void defaultGraphClause (DefaultGraphClause*, POS* p_IRIref) {
 	ret << "FROM ";
 	p_IRIref->express(this);
     }
-    virtual void namedGraphClause (const NamedGraphClause*, POS* p_IRIref) {
+    virtual void namedGraphClause (NamedGraphClause*, POS* p_IRIref) {
 	ret << "FROM NAMED ";
 	p_IRIref->express(this);
     }
-    virtual void solutionModifier (const SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+    virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	lead();
 	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit << std::endl;
 	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset << std::endl;
@@ -209,25 +209,25 @@ public:
 	    ret << std::endl;
 	}
     }
-    virtual void binding (const Binding*, const ProductionVector<POS*>* values) {//!!!
+    virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
 	ret << "  { ";
 	for (size_t i = 0; i < values->size(); i++)
 	    values->at(i)->express(this);
 	ret << ')' << std::endl;
     }
-    virtual void bindingClause (const BindingClause*, POSList* p_Vars, const ProductionVector<Binding*>* p_Bindings) {
+    virtual void bindingClause (BindingClause*, POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) {
 	ret << "BINDINGS ";
 	p_Vars->express(this);
 	ret << '{' << std::endl; //!!!
 	p_Bindings->ProductionVector<Binding*>::express(this);
 	ret << '}' << std::endl;
     }
-    virtual void whereClause (const WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+    virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	ret << "WHERE" << std::endl;
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
     }
-    virtual void select (const Select*, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void select (Select*, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "SELECT ";
 	if (p_distinctness == DIST_distinct) ret << "DISTINCT ";
@@ -239,7 +239,7 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void construct (const Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "CONSTRUCT ";
 	p_ConstructTemplate->express(this);
@@ -247,7 +247,7 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void describe (const Describe*, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void describe (Describe*, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "DESCRIBE ";
 	p_VarSet->express(this);
@@ -255,19 +255,19 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void ask (const Ask*, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+    virtual void ask (Ask*, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	lead();
 	ret << "ASK ";
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void replace (const Replace*, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+    virtual void replace (Replace*, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
 	lead();
 	ret << "REPLACE ";
 	p_WhereClause->express(this);
 	p_GraphTemplate->express(this);
     }
-    virtual void insert (const Insert* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (Insert* self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
 	ret << "INSERT { ";
 	if (debug & DEBUG_graphs) ret << self << ' ';
@@ -275,51 +275,51 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;
     }
-    virtual void del (const Delete*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (Delete*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
 	ret << "DELETE";
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void load (const Load*, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
+    virtual void load (Load*, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
 	lead();
 	ret << "LOAD ";
 	p_IRIrefs->express(this);
 	p_into->express(this);
     }
-    virtual void clear (const Clear*, URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (Clear*, URI* p__QGraphIRI_E_Opt) {
 	lead();
 	ret << "CLEAR ";
 	p__QGraphIRI_E_Opt->express(this);
     }
-    virtual void create (const Create*, e_Silence p_Silence, URI* p_GraphIRI) {
+    virtual void create (Create*, e_Silence p_Silence, URI* p_GraphIRI) {
 	lead();
 	ret << "CREATE ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
-    virtual void drop (const Drop*, e_Silence p_Silence, URI* p_GraphIRI) {
+    virtual void drop (Drop*, e_Silence p_Silence, URI* p_GraphIRI) {
 	lead();
 	ret << "DROP ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (const VarExpression*, const Variable* p_Variable) {
+    virtual void varExpression (VarExpression*, Variable* p_Variable) {
 	p_Variable->express(this);
     }
-    virtual void literalExpression (const LiteralExpression*, RDFLiteral* p_RDFLiteral) {
+    virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 	p_RDFLiteral->express(this);
     }
-    virtual void booleanExpression (const BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
+    virtual void booleanExpression (BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
 	p_BooleanRDFLiteral->express(this);
     }
-    virtual void uriExpression (const URIExpression*, URI* p_URI) {
+    virtual void uriExpression (URIExpression*, URI* p_URI) {
 	p_URI->express(this);
     }
-    virtual void argList (const ArgList*, ProductionVector<Expression*>* expressions) {
-	expressions->express(this);
+    virtual void argList (ArgList*, ProductionVector<Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
+	p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
     }
-    virtual void functionCall (const FunctionCall*, URI* p_IRIref, ArgList* p_ArgList) {
+    virtual void functionCall (FunctionCall*, URI* p_IRIref, ArgList* p_ArgList) {
 
 	if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-str"))
 	    ret << "str";
@@ -347,29 +347,29 @@ public:
 	p_ArgList->express(this);
 	ret << ")";
     }
-    virtual void functionCallExpression (const FunctionCallExpression*, FunctionCall* p_FunctionCall) {
+    virtual void functionCallExpression (FunctionCallExpression*, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
     }
 /* Expressions */
-    virtual void booleanNegation (const BooleanNegation*, Expression* p_Expression) {
+    virtual void booleanNegation (BooleanNegation*, Expression* p_Expression) {
 	start(PREC_Not);
 	ret << '!';
 	p_Expression->express(this);
 	end();
     }
-    virtual void arithmeticNegation (const ArithmeticNegation*, Expression* p_Expression) {
+    virtual void arithmeticNegation (ArithmeticNegation*, Expression* p_Expression) {
 	start(PREC_Neg);
 	ret << "- ";
 	p_Expression->express(this);
 	end();
     }
-    virtual void arithmeticInverse (const ArithmeticInverse*, Expression* p_Expression) {
+    virtual void arithmeticInverse (ArithmeticInverse*, Expression* p_Expression) {
 	start(PREC_Divide);
 	ret << "1/";
 	p_Expression->express(this);
 	end();
     }
-    virtual void booleanConjunction (const BooleanConjunction*, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanConjunction (BooleanConjunction*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_And);
 	for (size_t i = 0; i < p_Expressions->size(); i++) {
 	    p_Expressions->at(i)->express(this);
@@ -378,7 +378,7 @@ public:
 	}
 	end();
     }
-    virtual void booleanDisjunction (const BooleanDisjunction*, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanDisjunction (BooleanDisjunction*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Or);
 	for (size_t i = 0; i < p_Expressions->size(); i++) {
 	    p_Expressions->at(i)->express(this);
@@ -387,7 +387,7 @@ public:
 	}
 	end();
     }
-    virtual void arithmeticSum (const ArithmeticSum*, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticSum (ArithmeticSum*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Plus);
 	for (size_t i = 0; i < p_Expressions->size(); i++) {
 	    p_Expressions->at(i)->express(this);
@@ -396,7 +396,7 @@ public:
 	}
 	end();
     }
-    virtual void arithmeticProduct (const ArithmeticProduct*, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticProduct (ArithmeticProduct*, ProductionVector<Expression*>* p_Expressions) {
 	start(PREC_Times);
 	for (size_t i = 0; i < p_Expressions->size(); i++) {
 	    p_Expressions->at(i)->express(this);
@@ -405,52 +405,52 @@ public:
 	}
 	end();
     }
-    virtual void booleanEQ (const BooleanEQ*, Expression* p_left, Expression* p_right) {
+    virtual void booleanEQ (BooleanEQ*, Expression* p_left, Expression* p_right) {
 	start(PREC_EQ);
 	p_left->express(this);
 	ret << " = ";
 	p_right->express(this);
 	end();
     }
-    virtual void booleanNE (const BooleanNE*, Expression* p_left, Expression* p_right) {
+    virtual void booleanNE (BooleanNE*, Expression* p_left, Expression* p_right) {
 	start(PREC_NE);
 	p_left->express(this);
 	ret << " != ";
 	p_right->express(this);
 	end();
     }
-    virtual void booleanLT (const BooleanLT*, Expression* p_left, Expression* p_right) {
+    virtual void booleanLT (BooleanLT*, Expression* p_left, Expression* p_right) {
 	start(PREC_LT);
 	p_left->express(this);
 	ret << " < ";
 	p_right->express(this);
 	end();
     }
-    virtual void booleanGT (const BooleanGT*, Expression* p_left, Expression* p_right) {
+    virtual void booleanGT (BooleanGT*, Expression* p_left, Expression* p_right) {
 	start(PREC_GT);
 	p_left->express(this);
 	ret << " > ";
 	p_right->express(this);
 	end();
     }
-    virtual void booleanLE (const BooleanLE*, Expression* p_left, Expression* p_right) {
+    virtual void booleanLE (BooleanLE*, Expression* p_left, Expression* p_right) {
 	start(PREC_LE);
 	p_left->express(this);
 	ret << " <= ";
 	p_right->express(this);
 	end();
     }
-    virtual void booleanGE (const BooleanGE*, Expression* p_left, Expression* p_right) {
+    virtual void booleanGE (BooleanGE*, Expression* p_left, Expression* p_right) {
 	start(PREC_GE);
 	p_left->express(this);
 	ret << " >= ";
 	p_right->express(this);
 	end();
     }
-    virtual void comparatorExpression (const ComparatorExpression*, BooleanComparator* p_BooleanComparator) {
+    virtual void comparatorExpression (ComparatorExpression*, BooleanComparator* p_BooleanComparator) {
 	p_BooleanComparator->express(this);
     }
-    virtual void numberExpression (const NumberExpression*, NumericRDFLiteral* p_NumericRDFLiteral) {
+    virtual void numberExpression (NumberExpression*, NumericRDFLiteral* p_NumericRDFLiteral) {
 	p_NumericRDFLiteral->express(this);
     }
 };

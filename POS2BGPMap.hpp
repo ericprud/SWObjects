@@ -150,9 +150,9 @@ namespace w3c_sw {
 
 	    /* RecursiveExpressor overloads:
 	     */
-	    virtual void base (const Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void triplePattern (const TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
+	    virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
 		START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
@@ -201,15 +201,15 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void tableDisjunction (const TableDisjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void tableConjunction (const TableConjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
 		TableOperation* parent = currentBGP;
@@ -222,7 +222,7 @@ namespace w3c_sw {
 		optState = oldOptState;
 	    }
 
-	    virtual void graphGraphPattern (const GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		POS* oldGraphName = graphName;
 		graphName = p_POS;
 		TableOperation* parent = currentBGP;
@@ -236,25 +236,25 @@ namespace w3c_sw {
 	    }
 
 	    /* Add _Binding_SELECT where necessary. */
-	    virtual void posList (const POSList*, const ProductionVector<POS*>* p_POSs) {
+	    virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
 		for (std::vector<POS*>::iterator it = p_POSs->begin();
 		     it != p_POSs->end(); it++)
 		    _depends(*it, _Binding_SELECT);
 	    }
-	    virtual void starVarSet (const StarVarSet*) {
+	    virtual void starVarSet (StarVarSet*) {
 		FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
-	    virtual void varExpression (const VarExpression*, const Variable* p_Variable) {
+	    virtual void varExpression (VarExpression*, Variable* p_Variable) {
 		_depends(p_Variable, _Binding_FILTER);
 	    }
-	    virtual void literalExpression (const LiteralExpression*, RDFLiteral* p_RDFLiteral) {
+	    virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 		_depends(p_RDFLiteral, _Binding_FILTER);
 	    }
-	    virtual void booleanExpression (const BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
+	    virtual void booleanExpression (BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
 		_depends(p_BooleanRDFLiteral, _Binding_FILTER);
 	    }
-	    virtual void uriExpression (const URIExpression*, URI* p_URI) {
+	    virtual void uriExpression (URIExpression*, URI* p_URI) {
 		_depends(p_URI, _Binding_FILTER);
 	    }
 
