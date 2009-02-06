@@ -271,7 +271,7 @@ namespace w3c_sw {
 		std::vector<s_OrderConditionPair> orderConditions;
 		for (VariableListIterator it = knownVars.begin();
 		     it != knownVars.end(); ++it) {
-		    Variable* v = (Variable*)dynamic_cast<const Variable*>(*it);
+		    const Variable* v = dynamic_cast<const Variable*>(*it);
 		    VarExpression* ve = new VarExpression(v);
 		    s_OrderConditionPair p = {ORDER_Asc, ve}; // @@@ expand for our expanded key types (URI, lit...).
 		    orderConditions.push_back(p);

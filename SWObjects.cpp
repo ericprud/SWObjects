@@ -13,7 +13,7 @@
 
 namespace w3c_sw {
 
-void Base::express (Expressor* p_expressor) {
+void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
 
@@ -200,179 +200,179 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-void URI::express (Expressor* p_expressor) {
+void URI::express (Expressor* p_expressor) const {
     p_expressor->uri(this, terminal);
 }
-void Variable::express (Expressor* p_expressor) {
+void Variable::express (Expressor* p_expressor) const {
     p_expressor->variable(this, terminal);
 }
-void BNode::express (Expressor* p_expressor) {
+void BNode::express (Expressor* p_expressor) const {
     p_expressor->bnode(this, terminal);
 }
-void RDFLiteral::express (Expressor* p_expressor) {
+void RDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_String, datatype, m_LANGTAG);
 }
-void IntegerRDFLiteral::express (Expressor* p_expressor) {
+void IntegerRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void DecimalRDFLiteral::express (Expressor* p_expressor) {
+void DecimalRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void DoubleRDFLiteral::express (Expressor* p_expressor) {
+void DoubleRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void BooleanRDFLiteral::express (Expressor* p_expressor) {
+void BooleanRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void NULLpos::express (Expressor* p_expressor) {
+void NULLpos::express (Expressor* p_expressor) const {
     p_expressor->nullpos(this);
 }
-void TriplePattern::express (Expressor* p_expressor) {
+void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s,m_p,m_o);
 }
-void Filter::express (Expressor* p_expressor) {
+void Filter::express (Expressor* p_expressor) const {
     p_expressor->filter(this, m_Constraint);
 }
-void NamedGraphPattern::express (Expressor* p_expressor) {
+void NamedGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns, &m_Filters);
 }
-void DefaultGraphPattern::express (Expressor* p_expressor) {
+void DefaultGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->defaultGraphPattern(this, allOpts, &m_TriplePatterns, &m_Filters);
 }
-void TableDisjunction::express (Expressor* p_expressor) {
+void TableDisjunction::express (Expressor* p_expressor) const {
     p_expressor->tableDisjunction(this, &m_TableOperations, &m_Filters);
 }
-void TableConjunction::express (Expressor* p_expressor) {
+void TableConjunction::express (Expressor* p_expressor) const {
     p_expressor->tableConjunction(this, &m_TableOperations, &m_Filters);
 }
-void OptionalGraphPattern::express (Expressor* p_expressor) {
+void OptionalGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->optionalGraphPattern(this, m_TableOperation);
 }
-void GraphGraphPattern::express (Expressor* p_expressor) {
+void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
-void POSList::express (Expressor* p_expressor) {
+void POSList::express (Expressor* p_expressor) const {
     p_expressor->posList(this, &m_POSs);
 }
-void StarVarSet::express (Expressor* p_expressor) {
+void StarVarSet::express (Expressor* p_expressor) const {
     p_expressor->starVarSet(this);
 }
-void DefaultGraphClause::express (Expressor* p_expressor) {
+void DefaultGraphClause::express (Expressor* p_expressor) const {
     p_expressor->defaultGraphClause(this, m_IRIref);
 }
-void NamedGraphClause::express (Expressor* p_expressor) {
+void NamedGraphClause::express (Expressor* p_expressor) const {
     p_expressor->namedGraphClause(this, m_IRIref);
 }
-void SolutionModifier::express (Expressor* p_expressor) {
+void SolutionModifier::express (Expressor* p_expressor) const {
     p_expressor->solutionModifier(this, m_OrderConditions, m_limit,m_offset);
 }
-void Binding::express (Expressor* p_expressor) {
+void Binding::express (Expressor* p_expressor) const {
     p_expressor->binding(this, this);
 }
-void BindingClause::express (Expressor* p_expressor) {
+void BindingClause::express (Expressor* p_expressor) const {
     p_expressor->bindingClause(this, m_Vars, this);
 }
-void WhereClause::express (Expressor* p_expressor) {
+void WhereClause::express (Expressor* p_expressor) const {
     p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
 }
-void Select::express (Expressor* p_expressor) {
+void Select::express (Expressor* p_expressor) const {
     p_expressor->select(this, m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Construct::express (Expressor* p_expressor) {
+void Construct::express (Expressor* p_expressor) const {
     p_expressor->construct(this, m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Describe::express (Expressor* p_expressor) {
+void Describe::express (Expressor* p_expressor) const {
     p_expressor->describe(this, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Ask::express (Expressor* p_expressor) {
+void Ask::express (Expressor* p_expressor) const {
     p_expressor->ask(this, m_DatasetClauses,m_WhereClause);
 }
-void Replace::express (Expressor* p_expressor) {
+void Replace::express (Expressor* p_expressor) const {
     p_expressor->replace(this, m_WhereClause,m_GraphTemplate);
 }
-void Insert::express (Expressor* p_expressor) {
+void Insert::express (Expressor* p_expressor) const {
     p_expressor->insert(this, m_GraphTemplate,m_WhereClause);
 }
-void Delete::express (Expressor* p_expressor) {
+void Delete::express (Expressor* p_expressor) const {
     p_expressor->del(this, m_GraphTemplate,m_WhereClause);
 }
-void Load::express (Expressor* p_expressor) {
+void Load::express (Expressor* p_expressor) const {
     p_expressor->load(this, m_IRIrefs,m_into);
 }
-void Clear::express (Expressor* p_expressor) {
+void Clear::express (Expressor* p_expressor) const {
     p_expressor->clear(this, m__QGraphIRI_E_Opt);
 }
-void Create::express (Expressor* p_expressor) {
+void Create::express (Expressor* p_expressor) const {
     p_expressor->create(this, m_Silence,m_GraphIRI);
 }
-void Drop::express (Expressor* p_expressor) {
+void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
 }
-void VarExpression::express (Expressor* p_expressor) {
+void VarExpression::express (Expressor* p_expressor) const {
     p_expressor->varExpression(this, m_Variable);
 }
-void LiteralExpression::express (Expressor* p_expressor) {
+void LiteralExpression::express (Expressor* p_expressor) const {
     p_expressor->literalExpression(this, m_RDFLiteral);
 }
-void BooleanExpression::express (Expressor* p_expressor) {
+void BooleanExpression::express (Expressor* p_expressor) const {
     p_expressor->booleanExpression(this, m_BooleanRDFLiteral);
 }
-void URIExpression::express (Expressor* p_expressor) {
+void URIExpression::express (Expressor* p_expressor) const {
     p_expressor->uriExpression(this, m_URI);
 }
-void ArgList::express (Expressor* p_expressor) {
+void ArgList::express (Expressor* p_expressor) const {
     p_expressor->argList(this, expressions);
 }
-void FunctionCall::express (Expressor* p_expressor) {
+void FunctionCall::express (Expressor* p_expressor) const {
     p_expressor->functionCall(this, m_IRIref,m_ArgList);
 }
-void FunctionCallExpression::express (Expressor* p_expressor) {
+void FunctionCallExpression::express (Expressor* p_expressor) const {
     p_expressor->functionCallExpression(this, m_FunctionCall);
 }
 /* Expressions */
-void BooleanNegation::express (Expressor* p_expressor) {
+void BooleanNegation::express (Expressor* p_expressor) const {
     p_expressor->booleanNegation(this, m_Expression);
 }
-void ArithmeticNegation::express (Expressor* p_expressor) {
+void ArithmeticNegation::express (Expressor* p_expressor) const {
     p_expressor->arithmeticNegation(this, m_Expression);
 }
-void ArithmeticInverse::express (Expressor* p_expressor) {
+void ArithmeticInverse::express (Expressor* p_expressor) const {
     p_expressor->arithmeticInverse(this, m_Expression);
 }
-void BooleanConjunction::express (Expressor* p_expressor) {
+void BooleanConjunction::express (Expressor* p_expressor) const {
     p_expressor->booleanConjunction(this, &m_Expressions);
 }
-void BooleanDisjunction::express (Expressor* p_expressor) {
+void BooleanDisjunction::express (Expressor* p_expressor) const {
     p_expressor->booleanDisjunction(this, &m_Expressions);
 }
-void ArithmeticSum::express (Expressor* p_expressor) {
+void ArithmeticSum::express (Expressor* p_expressor) const {
     p_expressor->arithmeticSum(this, &m_Expressions);
 }
-void ArithmeticProduct::express (Expressor* p_expressor) {
+void ArithmeticProduct::express (Expressor* p_expressor) const {
     p_expressor->arithmeticProduct(this, &m_Expressions);
 }
-void BooleanEQ::express (Expressor* p_expressor) {
+void BooleanEQ::express (Expressor* p_expressor) const {
     p_expressor->booleanEQ(this, left,right);
 }
-void BooleanNE::express (Expressor* p_expressor) {
+void BooleanNE::express (Expressor* p_expressor) const {
     p_expressor->booleanNE(this, left,right);
 }
-void BooleanLT::express (Expressor* p_expressor) {
+void BooleanLT::express (Expressor* p_expressor) const {
     p_expressor->booleanLT(this, left,right);
 }
-void BooleanGT::express (Expressor* p_expressor) {
+void BooleanGT::express (Expressor* p_expressor) const {
     p_expressor->booleanGT(this, left,right);
 }
-void BooleanLE::express (Expressor* p_expressor) {
+void BooleanLE::express (Expressor* p_expressor) const {
     p_expressor->booleanLE(this, left,right);
 }
-void BooleanGE::express (Expressor* p_expressor) {
+void BooleanGE::express (Expressor* p_expressor) const {
     p_expressor->booleanGE(this, left,right);
 }
-void ComparatorExpression::express (Expressor* p_expressor) {
+void ComparatorExpression::express (Expressor* p_expressor) const {
     p_expressor->comparatorExpression(this, m_BooleanComparator);
 }
-void NumberExpression::express (Expressor* p_expressor) {
+void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
@@ -588,16 +588,16 @@ void NumberExpression::express (Expressor* p_expressor) {
     }
 
     /* EBV (Better place for this?) */
-    POS* POSFactory::ebv (POS* pos) {
+    POS* POSFactory::ebv (const POS* Pos) {
 	throw std::string("ebv ") + pos->toString() + " not implemented";
     }
 
     /* </POSFactory> */
 
-    POS* BNode::evalPOS (Result* r, bool bNodesGenSymbols) {
+    POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
-    POS* Variable::evalPOS (Result* r, bool) {
+    POS* Variable::evalPOS (Result* r, bool) const {
 	POS* ret = r->get(this);
 
 	URI* u;

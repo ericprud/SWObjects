@@ -31,7 +31,7 @@ namespace w3c_sw {
 	public:
 	    FilterCopier (TableOperation* dest) : dest(dest) {  }
 
-	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+	    virtual void base (const Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	    virtual void filter (Filter* self, Expression*) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
@@ -104,7 +104,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* self, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -115,7 +115,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* self, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -126,7 +126,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -137,7 +137,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -148,7 +148,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
@@ -159,7 +159,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -313,7 +313,7 @@ namespace w3c_sw {
 		//return TriplePattern::gt(l, r);
 	    }
 	};
-	virtual void variable (Variable* self, std::string terminal) {
+	virtual void variable (const Variable* self, std::string terminal) {
 	    last.posz.pos = last.posz.variable = self;
 	    self->setMaps(uriMaps, posFactory);
 	}
@@ -331,15 +331,15 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern*, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
 	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern*, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 
-	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
@@ -367,7 +367,7 @@ namespace w3c_sw {
 	    last.whereClause = new WhereClause(op, last.bindingClause);
 	}
 
-	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void construct (const Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 
