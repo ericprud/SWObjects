@@ -891,8 +891,9 @@ GroupGraphPattern:
 	      TableConjunction* ret = new TableConjunction();
 	      $$ = ret;
 	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (size_t i = 0; i < $4->size(); i++)
-		  ret->addTableOperation($4->at(i));
+	      for (std::vector<TableOperation*>::iterator it = $4->begin();
+		   it != $4->end(); ++it)
+		  ret->addTableOperation(*it);
 	  } else if ($3 != NULL)
 	      $$ = $3;
 	  else if ($4->size() > 0) // sole item in ProductionVector
@@ -965,8 +966,9 @@ GraphTemplate:
 	      TableConjunction* ret = new TableConjunction();
 	      $$ = ret;
 	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (size_t i = 0; i < $4->size(); i++)
-		  ret->addTableOperation($4->at(i));
+	      for (std::vector<TableOperation*>::iterator it = $4->begin();
+		   it != $4->end(); ++it)
+		  ret->addTableOperation(*it);
 	  } else if ($3 != NULL)
 	      $$ = $3;
 	  else if ($4->size() > 0) // sole item in ProductionVector
@@ -1065,8 +1067,9 @@ GroupOrUnionGraphPattern:
 	    TableDisjunction* ret= new TableDisjunction();
 	    $$ = ret;
 	    ret->addTableOperation($1);
-	    for (size_t i = 0; i < $2->size(); i++)
-		ret->addTableOperation($2->at(i));
+	    for (std::vector<TableOperation*>::iterator it = $2->begin();
+		 it != $2->end(); ++it)
+		ret->addTableOperation(*it);
 	} else
 	    $$ = $1;
 	$2->clear();

@@ -150,8 +150,9 @@ public:
     }
     virtual void binding (const Binding*, const ProductionVector<POS*>* values) {//!!!
 	xml->open("BindingClause");
-	for (size_t i = 0; i < values->size(); i++)
-	    values->at(i)->express(this);
+	for (std::vector<POS*>::iterator it = values->begin();
+	     it != values->end(); ++it)
+	    (*it)->express(this);
 	xml->close();
     }
     virtual void bindingClause (const BindingClause*, POSList* p_Vars, const ProductionVector<Binding*>* p_Bindings) {

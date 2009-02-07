@@ -588,16 +588,16 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     /* EBV (Better place for this?) */
-    POS* POSFactory::ebv (const POS* Pos) {
+    const POS* POSFactory::ebv (const POS* Pos) {
 	throw std::string("ebv ") + pos->toString() + " not implemented";
     }
 
     /* </POSFactory> */
 
-    POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
+    const POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
-    POS* Variable::evalPOS (Result* r, bool) const {
+    const POS* Variable::evalPOS (Result* r, bool) const {
 	POS* ret = r->get(this);
 
 	URI* u;
@@ -621,8 +621,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
     void TableJunction::addTableOperation (TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
 	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast.
-	    for (size_t i = 0; i < j->m_TableOperations.size(); i++)
-		m_TableOperations.push_back(j->m_TableOperations[i]);
+	    for (std::vector<TableOperation*>::iterator it = j->m_TableOperations.begin();
+		 it != j->m_TableOperations.end(); ++it)
+		m_TableOperations.push_back(*it);
 	    j->m_TableOperations.clear();
 	    delete j;
 	} else
@@ -764,7 +765,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
 	if (pattern == NULL || constant == NULL)
 	    return true;
-	POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols
+	const POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
 	    rs->set(provisional, pattern, constant, weaklyBound);
 	    return true;
@@ -802,7 +803,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
 	bool ret = false;
-	POS *s, *p, *o;
+	const POS *s, *p, *o;
 	if ((s = m_s->evalPOS(r, bNodesGenSymbols)) != NULL && 
 	    (p = m_p->evalPOS(r, bNodesGenSymbols)) != NULL && 
 	    (o = m_o->evalPOS(r, bNodesGenSymbols)) != NULL) {
@@ -839,9 +840,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
     TableOperation* TableDisjunction::getDNF () {
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator element = m_TableOperations.begin();
-	     element != m_TableOperations.end(); element++) {
-	    TableOperation* op = (*element)->getDNF();
+	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	     it != m_TableOperations.end(); ++it) {
+	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
 		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
@@ -861,9 +862,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	ret->addTableOperation(new TableConjunction());
 
 	/* for each of our elements... */
-	for (std::vector<TableOperation*>::iterator element = m_TableOperations.begin();
-	     element != m_TableOperations.end(); element++) {
-	    TableOperation* op = (*element)->getDNF();
+	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	     it != m_TableOperations.end(); ++it) {
+	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    TableConjunction* conjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {

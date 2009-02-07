@@ -1064,8 +1064,9 @@ protected:
 public:
     NaryExpression (Expression* p_Expression, ProductionVector<Expression*>* p_Expressions) : Expression(), m_Expressions() {
 	m_Expressions.push_back(p_Expression);
-	for (size_t i = 0; i < p_Expressions->size(); i++)
-	    m_Expressions.push_back(p_Expressions->at(i));
+	for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it)
+	    m_Expressions.push_back(*it);
     }
 
     virtual const char* getInfixNotation() = 0;
@@ -1427,6 +1428,7 @@ public:
     virtual void comparatorExpression(const ComparatorExpression* self, BooleanComparator* p_BooleanComparator) = 0;
     virtual void numberExpression(const NumberExpression* self, NumericRDFLiteral* p_NumericRDFLiteral) = 0;
 };
+
 /* RecursiveExpressor - default actions for expressor.
  * Use this Expressor when you don't feel like supplying all of the methods.
  */
@@ -1492,8 +1494,9 @@ public:
 		p_OrderConditions->at(i).expression->express(this);
     }
     virtual void binding (const Binding*, const ProductionVector<POS*>* values) {//!!!
-	for (size_t i = 0; i < values->size(); i++)
-	    values->at(i)->express(this);
+	for (std::vector<POS*>::const_iterator it = values->begin();
+	     it != values->end(); ++it)
+	    (*it)->express(this);
     }
     virtual void bindingClause (const BindingClause*, POSList* p_Vars, const ProductionVector<Binding*>* p_Bindings) {
 	p_Vars->express(this);
