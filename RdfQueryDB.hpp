@@ -25,7 +25,7 @@ namespace w3c_sw {
 
     public:
 	DBExpressor (RdfQueryDB* p_db, POSFactory* posFactory) : db(p_db), posFactory(posFactory), optState(false) {  }
-	virtual void base (const Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual void filter (Filter*, Expression*) { // p_Constraint
 	}
@@ -43,11 +43,11 @@ namespace w3c_sw {
 	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(FUNCTION_STRING)); // query should already be DNF'd, ergo no disjunctions.
 	}
-	virtual void tableConjunction (const TableConjunction*, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
 	    p_TableOperations->express(this);
 	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, TableOperation* p_GroupGraphPattern) {
 	    bool oldOptState = optState;
 	    optState = true;
 	    p_GroupGraphPattern->express(this);

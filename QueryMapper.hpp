@@ -57,7 +57,7 @@ namespace w3c_sw {
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
-	virtual void whereClause (const WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
 
 	    /* # 01 — Produce a disjunctive normal form DQI. For each disjunct D:
 	     * http://www.w3.org/2008/07/MappingRules/#_01
