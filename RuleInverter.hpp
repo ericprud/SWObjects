@@ -38,10 +38,10 @@ namespace w3c_sw {
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
 	    }
-	    virtual void namedGraphPattern (NamedGraphPattern*, POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const, POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
 
@@ -398,7 +398,7 @@ namespace w3c_sw {
 	 * get a run-time error. (A compile-time error would be nice, but the
 	 * expressor interface prevents that.
 	 */
-	virtual void select (Select*, e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual void select (const Select* const, e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    throw(std::runtime_error("RuleInverter only works on CONSTRUCTs."));
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.

@@ -152,7 +152,7 @@ namespace w3c_sw {
 	     */
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void triplePattern (const TriplePattern* const, POS* p_s, POS* p_p, POS* p_o) {
+	    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 		START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
@@ -168,7 +168,7 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, POS* p_name, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 		START("POS2BGPMap::namedGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -179,7 +179,7 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 		START("POS2BGPMap::defaultGraphPattern");
 		TableOperation* parent = currentBGP;
 		currentBGP = self;

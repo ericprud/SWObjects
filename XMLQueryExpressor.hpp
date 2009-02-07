@@ -57,7 +57,7 @@ public:
     virtual void nullpos (const NULLpos* const) {
 	xml->empty("NULL");
     }
-    virtual void triplePattern (const TriplePattern* const, POS* p_s, POS* p_p, POS* p_o) {
+    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 	xml->open("TriplePattern");
 	p_s->express(this);
 	p_p->express(this);
@@ -150,7 +150,7 @@ public:
     }
     virtual void binding (const Binding* const, const ProductionVector<POS*>* values) {//!!!
 	xml->open("BindingClause");
-	for (std::vector<POS*>::iterator it = values->begin();
+	for (std::vector<POS*>::const_iterator it = values->begin();
 	     it != values->end(); ++it)
 	    (*it)->express(this);
 	xml->close();
@@ -294,32 +294,32 @@ public:
 	p_Expression->express(this);
 	xml->close();
     }
-    virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("BooleanConjunction");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("BooleanDisjunction");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void booleanNegation (BooleanNegation*, ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanNegation (const BooleanNegation* const, ProductionVector<Expression*>* p_Expressions) {
 	xml->open("BooleanNegation");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("ArithmeticSum");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("ArithmeticProduct");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void arithmeticInverse (ArithmeticInverse*, ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<Expression*>* p_Expressions) {
 	xml->open("ArithmeticInverse");
 	p_Expressions->express(this);
 	xml->close();

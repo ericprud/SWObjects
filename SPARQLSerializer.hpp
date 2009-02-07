@@ -85,7 +85,7 @@ public:
     virtual void nullpos (const NULLpos* const) {
 	ret << "NULL ";
     }
-    virtual void triplePattern (const TriplePattern* const, POS* p_s, POS* p_p, POS* p_o) {
+    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 	lead();
 	p_s->express(this);
 	ret << ' ';
@@ -372,9 +372,9 @@ public:
 	p_Expression->express(this);
 	end();
     }
-    virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	start(PREC_And);
-	for (std::vector<Expression*>::const_iterator it = p_Expressions->begin();
+	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 	     it != p_Expressions->end(); ++it) {
 	    if (it != p_Expressions->begin())
 		ret << " && ";
@@ -382,9 +382,9 @@ public:
 	}
 	end();
     }
-    virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	start(PREC_Or);
-	for (std::vector<Expression*>::const_iterator it = p_Expressions->begin();
+	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 	     it != p_Expressions->end(); ++it) {
 	    if (it != p_Expressions->begin())
 		ret << " || ";
@@ -392,9 +392,9 @@ public:
 	}
 	end();
     }
-    virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	start(PREC_Plus);
-	for (std::vector<Expression*>::const_iterator it = p_Expressions->begin();
+	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 	     it != p_Expressions->end(); ++it) {
 	    if (it != p_Expressions->begin())
 		ret << " + ";
@@ -402,9 +402,9 @@ public:
 	}
 	end();
     }
-    virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	start(PREC_Times);
-	for (std::vector<Expression*>::const_iterator it = p_Expressions->begin();
+	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 	     it != p_Expressions->end(); ++it) {
 	    if (it != p_Expressions->begin())
 		ret << " * ";

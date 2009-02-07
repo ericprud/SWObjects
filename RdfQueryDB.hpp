@@ -29,18 +29,18 @@ namespace w3c_sw {
 
 	virtual void filter (Filter*, Expression*) { // p_Constraint
 	}
-	void _absorbGraphPattern (BasicGraphPattern* g, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>*) {  // p_Filters
-	    for (std::vector<TriplePattern*>::iterator it = p_TriplePatterns->begin();
+	void _absorbGraphPattern (BasicGraphPattern* g, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>*) {  // p_Filters
+	    for (std::vector<TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
 		g->addTriplePattern(posFactory->getTriple(*it, optState));
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_IRIref, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, POS* p_IRIref, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(p_IRIref), p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns, p_Filters);
 	}
-	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>*, ProductionVector<Filter*>*) { // p_TableOperations p_Filters
+	virtual void tableDisjunction (TableDisjunction*, const ProductionVector<TableOperation*>*, const ProductionVector<Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(FUNCTION_STRING)); // query should already be DNF'd, ergo no disjunctions.
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {

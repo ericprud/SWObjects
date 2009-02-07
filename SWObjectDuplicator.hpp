@@ -21,26 +21,26 @@ namespace w3c_sw {
 	POSFactory* posFactory; /* Can be used to create SWObjects in a different atom space. */
 
 	union {
-	    struct { POS* pos; URI* uri; Variable* variable; RDFLiteral* rdfLiteral; BooleanRDFLiteral* booleanRDFLiteral; NumericRDFLiteral* numericRDFLiteral; } posz;
-	    TriplePattern* triplePattern;
-	    Expression* expression;
-	    Filter* filter;
-	    TableOperation* tableOperation;
+	    struct { const POS* pos; const URI* uri; const Variable* variable; const RDFLiteral* rdfLiteral; const BooleanRDFLiteral* booleanRDFLiteral; const NumericRDFLiteral* numericRDFLiteral; } posz;
+	    const TriplePattern* triplePattern;
+	    const Expression* expression;
+	    const Filter* filter;
+	    const TableOperation* tableOperation;
 	    struct { VarSet* varSet; POSList* posList; } varSets;
-	    DatasetClause* datasetClause;
+	    const DatasetClause* datasetClause;
 	    //ProductionVector<DatasetClause*> datasetClauses;
-	    SolutionModifier* solutionModifier;
-	    Binding* binding;
-	    BindingClause* bindingClause;
-	    WhereClause* whereClause;
-	    Operation* operation;
-	    ArgList* argList;
-	    FunctionCall* functionCall;
+	    const SolutionModifier* solutionModifier;
+	    const Binding* binding;
+	    const BindingClause* bindingClause;
+	    const WhereClause* whereClause;
+	    const Operation* operation;
+	    const ArgList* argList;
+	    const FunctionCall* functionCall;
 	} last;
 
     public:
 	SWObjectDuplicator (POSFactory* posFactory) : posFactory(posFactory) {  }
-	Operation* getCopy () { return last.operation; }
+	const Operation* getCopy () { return last.operation; }
 	//!!!
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
@@ -77,13 +77,13 @@ namespace w3c_sw {
 	virtual void nullpos (const NULLpos* const self) {
 	    last.posz.pos = posFactory ? posFactory->getNULL() : self;
 	}
-	virtual void triplePattern (const TriplePattern* const self, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void triplePattern (const TriplePattern* const self, const POS* p_s, const POS* p_p, const POS* p_o) {
 	    p_s->express(this);
-	    POS* s = last.posz.pos;
+	    const POS* s = last.posz.pos;
 	    p_p->express(this);
-	    POS* p = last.posz.pos;
+	    const POS* p = last.posz.pos;
 	    p_o->express(this);
-	    POS* o = last.posz.pos;
+	    const POS* o = last.posz.pos;
 	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
 	virtual void filter (const Filter* const, Expression* p_Constraint) {
@@ -106,14 +106,14 @@ namespace w3c_sw {
 		    op->addFilter(last.filter);
 	    }
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, POS* p_name, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    p_name->express(this);
 	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos);
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    _Filters(p_Filters, ret);
@@ -172,7 +172,7 @@ namespace w3c_sw {
 	    p_IRIref->express(this);
 	    last.datasetClause = new NamedGraphClause(last.posz.pos, posFactory);
 	}
-	virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditionPairs, int p_limit, int p_offset) {
+	virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditionPairs, int p_limit, int p_offset) {
 	    if (p_OrderConditionPairs) {
 		std::vector<s_OrderConditionPair>* l_s_OrderConditionPairs = new std::vector<s_OrderConditionPair>();
 		for (std::vector<s_OrderConditionPair>::iterator it = p_OrderConditionPairs->begin();
@@ -351,15 +351,15 @@ namespace w3c_sw {
 	    p_Expressions->erase(p_Expressions->begin());
 	    return ret;
 	}
-	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new BooleanConjunction(_car(v), v);
 	}
-	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new BooleanDisjunction(_car(v), v);
 	}
-	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new ArithmeticSum(_car(v), v);
 	}
@@ -367,7 +367,7 @@ namespace w3c_sw {
 	    p_Expression->express(this);
 	    last.expression = new ArithmeticNegation(last.expression);
 	}
-	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new ArithmeticProduct(_car(v), v);
 	}

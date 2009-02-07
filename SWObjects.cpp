@@ -228,7 +228,7 @@ void NULLpos::express (Expressor* p_expressor) const {
     p_expressor->nullpos(this);
 }
 void TriplePattern::express (Expressor* p_expressor) const {
-    p_expressor->triplePattern(this, m_s,m_p,m_o);
+    p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
 void Filter::express (Expressor* p_expressor) const {
     p_expressor->filter(this, m_Constraint);
@@ -553,7 +553,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return (NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
-    TriplePattern* POSFactory::getTriple (POS* s, POS* p, POS* o, bool weaklyBound) {
+    TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
 	std::stringstream key;
 	key << s << p << o << weaklyBound;
 	TriplePatternMap::const_iterator vi = triples.find(key.str());
@@ -588,7 +588,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     /* EBV (Better place for this?) */
-    const POS* POSFactory::ebv (const POS* Pos) {
+    const POS* POSFactory::ebv (const POS* pos) {
 	throw std::string("ebv ") + pos->toString() + " not implemented";
     }
 
@@ -597,12 +597,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
-    const POS* Variable::evalPOS (Result* r, bool) const {
+    const POS* Variable::evalPOS (const Result* r, bool) const {
 	POS* ret = r->get(this);
 
 	URI* u;
 	if ((u = dynamic_cast<URI*>(ret)) != NULL) {
-	    for (std::vector<URImap>::iterator it = uriMaps.begin();
+	    for (std::vector<URImap>::const_iterator it = uriMaps.begin();
 		 it != uriMaps.end(); ++it) {
 		std::ostringstream t(std::ios::out | std::ios::binary);
 		std::ostream_iterator<char, char> oi(t);
@@ -762,7 +762,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
     }
-    bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
+    bool TriplePattern::_bindVariable (const POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
 	if (pattern == NULL || constant == NULL)
 	    return true;
 	const POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols

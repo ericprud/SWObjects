@@ -105,8 +105,8 @@ namespace w3c_sw {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		POS* l = pair.expression->eval((Result*)lhs, posFactory, false);
-		POS* r = pair.expression->eval((Result*)rhs, posFactory, false);
+		const POS* l = pair.expression->eval((Result*)lhs, posFactory, false);
+		const POS* r = pair.expression->eval((Result*)rhs, posFactory, false);
 		if (l != r)
 		    return pair.ascOrDesc == ORDER_Desc ? posFactory->lessThan(r, l) : posFactory->lessThan(l, r);
 	    }

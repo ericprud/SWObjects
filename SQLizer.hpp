@@ -985,7 +985,7 @@ namespace w3c_sw {
 	    }
 	}
 	virtual void nullpos (const NULLpos* const) {  }
-	virtual void triplePattern (const TriplePattern* const, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
 	    START("checking predicate");
@@ -1026,11 +1026,11 @@ namespace w3c_sw {
 		 filterIt != p_Filters->end(); ++filterIt)
 		(*filterIt)->express(this);
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, POS*, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}
@@ -1232,7 +1232,7 @@ namespace w3c_sw {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
@@ -1242,7 +1242,7 @@ namespace w3c_sw {
 	    }
 	    curConstraint = conj;
 	}
-	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    DisjunctionConstraint* disj = new DisjunctionConstraint();
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
@@ -1252,13 +1252,13 @@ namespace w3c_sw {
 	    }
 	    curConstraint = disj;
 	}
-	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<Expression*>* p_Expressions) {
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
 
