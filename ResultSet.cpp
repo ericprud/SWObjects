@@ -143,6 +143,7 @@ namespace w3c_sw {
     std::string ResultSet::toString () const {
 	const char* NULL_REP = "--";
 #if ASCII_BOX_CHARS
+	const char ORDERED = 'O';
 	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
 	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
 #if (INTRA_ROW_SEPARATORS)
@@ -152,6 +153,7 @@ namespace w3c_sw {
 	const char UNLISTED_VAR = '!';
 #define STRING std::string
 #else /* !ASCII_BOX_CHARS */
+	const char ORDERED = "O";
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
 #if (INTRA_ROW_SEPARATORS)
@@ -205,7 +207,7 @@ namespace w3c_sw {
 	/*   Top Border */
 	unsigned i;
 	for (i = 0; i < count; i++) {
-	    s << (i == 0 ? (ordered == true ? "O" : UL) : US);
+	    s << (i == 0 ? (ordered == true ? ORDERED : UL) : US);
 	    s << STRING(widths[i]+2, UB);
 	}
 	s << UR << std::endl;
