@@ -186,7 +186,7 @@ namespace w3c_sw {
 	    lastInKnownVars = count;
 	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++)
 		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
-		    POS* var = b->first;
+		    const POS* var = b->first;
 		    if (pos2col.find(var) == pos2col.end()) {
 			/* Error: a variable not listed in knownVars. */
 			pos2col[var] = count++;

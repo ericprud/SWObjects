@@ -196,7 +196,7 @@ public:
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual std::string getBindingAttributeName() = 0;
+    virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
     std::string substitutedString (Result* row, bool bNodesGenSymbols) const {
 	const POS* subd = evalPOS(row, bNodesGenSymbols); /* re-uses atoms -- doesn't create them */
@@ -217,7 +217,7 @@ public:
     virtual const char * getToken () { return "-POS-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
-    virtual std::string getBindingAttributeName () { return "uri"; }
+    virtual std::string getBindingAttributeName () const { return "uri"; }
     bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
 };
 
@@ -246,7 +246,7 @@ public:
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
-    virtual std::string getBindingAttributeName () { return "name"; }
+    virtual std::string getBindingAttributeName () const { return "name"; }
     void setMaps (std::vector<URImap> maps, POSFactory* factory) { uriMaps = maps; posFactory = factory; }
 };
 
@@ -260,7 +260,7 @@ public:
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
-    virtual std::string getBindingAttributeName () { return "bnode"; }
+    virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
 
 class RDFLiteral : public POS {
@@ -289,7 +289,7 @@ public:
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string getBindingAttributeName () { return "literal"; }
+    virtual std::string getBindingAttributeName () const { return "literal"; }
     std::string getString () { return m_String; }
 };
 class NumericRDFLiteral : public RDFLiteral {
@@ -347,7 +347,7 @@ public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string getBindingAttributeName () { throw(std::runtime_error(FUNCTION_STRING)); }
+    virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
 
 class BasicGraphPattern;
@@ -1454,7 +1454,7 @@ public:
 	p_p->express(this);
 	p_o->express(this);
     }
-    virtual void filter (const Filter* const, Expression* p_Constraint) {
+    virtual void filter (const Filter* const, const Expression* p_Constraint) {
 	p_Constraint->express(this);
     }
     virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {

@@ -22,7 +22,7 @@ namespace w3c_sw {
 
 	    public:
 		FilterDuplicator (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
-		Filter* getFilter () { return last.filter; }
+		const Filter* getFilter () { return last.filter; }
 	    };
 	    
 	protected:

@@ -86,7 +86,7 @@ namespace w3c_sw {
 	    const POS* o = last.posz.pos;
 	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
-	virtual void filter (const Filter* const, Expression* p_Constraint) {
+	virtual void filter (const Filter* const, const Expression* p_Constraint) {
 	    p_Constraint->express(this);
 	    last.filter = last.expression ? new Filter(last.expression) : NULL;
 	}
@@ -149,8 +149,8 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new GraphGraphPattern(name, last.tableOperation);
 	}
-	void _POSs (const ProductionVector<POS*>* p_POSs, POSList* p) { // !!! single use
-	    for (std::vector<POS*>::const_iterator it = p_POSs->begin();
+	void _POSs (const ProductionVector<const POS*>* p_POSs, POSList* p) { // !!! single use
+	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		 it != p_POSs->end(); it++) {
 		(*it)->express(this);
 		p->push_back(last.posz.pos);
@@ -200,7 +200,7 @@ namespace w3c_sw {
 	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	    p_Vars->express(this);
 	    BindingClause* ret = new BindingClause(last.varSets.posList);
-	    for (std::vector<Binding*>::const_iterator it = p_Bindings->begin();
+	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
 		 it != p_Bindings->end(); it++) {
 		(*it)->express(this);
 		ret->push_back(last.binding);
@@ -324,7 +324,7 @@ namespace w3c_sw {
 	    }
 	    return l_Expressions;
 	}
-	virtual void argList (ArgList*, ProductionVector<const Expression*>* p_expressions) {
+	virtual void argList (const ArgList*, ProductionVector<const Expression*>* p_expressions) {
 	    last.argList = new ArgList(_Expressions(p_expressions));
 	}
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
@@ -346,20 +346,20 @@ namespace w3c_sw {
 	    Expression* first
 	    ProductionVector<Expression*>* rest;
 	    } _Car; */
-	const Expression* _car(ProductionVector<const Expression*>* p_Expressions) {
+	const Expression* _car(const ProductionVector<const Expression*>* p_Expressions) {
 	    const Expression* ret = p_Expressions->at(0);
 	    p_Expressions->erase(p_Expressions->begin());
 	    return ret;
 	}
-	virtual void booleanConjunction (const BooleanConjunction* const, ProductionVector<const Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new BooleanConjunction(_car(v), v);
 	}
-	virtual void booleanDisjunction (const BooleanDisjunction* const, ProductionVector<const Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new BooleanDisjunction(_car(v), v);
 	}
-	virtual void arithmeticSum (const ArithmeticSum* const, ProductionVector<const Expression*>* p_Expressions) {
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new ArithmeticSum(_car(v), v);
 	}
@@ -367,7 +367,7 @@ namespace w3c_sw {
 	    p_Expression->express(this);
 	    last.expression = new ArithmeticNegation(last.expression);
 	}
-	virtual void arithmeticProduct (const ArithmeticProduct* const, ProductionVector<const Expression*>* p_Expressions) {
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
 	    last.expression = new ArithmeticProduct(_car(v), v);
 	}

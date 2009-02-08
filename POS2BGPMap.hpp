@@ -60,7 +60,7 @@ namespace w3c_sw {
     public:
 	//_BindingStrength& operator[] (const TableOperation*& subscript) { return std::map<TableOperation*, _BindingStrength>::operator[](subscript); }
 
-	GraphInclusion getOperationStrength (TableOperation* bgp) {
+	GraphInclusion getOperationStrength (const TableOperation* bgp) {
 	    std::map<const TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
 		(it->second & _Binding_WEAK && 0)) // !(it->second & _Binding_INTRODUCED)))
@@ -115,7 +115,7 @@ namespace w3c_sw {
 	typedef std::set< const TableOperation* >			OuterGraphList;
 	typedef std::map< const TableOperation*, OuterGraphList >	OuterGraphs;
 
-	typedef std::pair< const POS*, TableOperation* >		IQEnt;
+	typedef std::pair< const POS*, const TableOperation* >		IQEnt;
 	typedef std::vector< IQEnt >				InsertQueue;
 
 	/* ConsequentsConstructor — helper class to compile ConsequentMapLists.
@@ -124,7 +124,7 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
 	    _BindingStrength optState;
-	    POS* graphName;
+	    const POS* graphName;
 	    const TableOperation* currentBGP;
 	    OuterGraphs outerGraphs;
 
@@ -223,7 +223,7 @@ namespace w3c_sw {
 	    }
 
 	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-		POS* oldGraphName = graphName;
+		const POS* oldGraphName = graphName;
 		graphName = p_POS;
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -237,7 +237,7 @@ namespace w3c_sw {
 
 	    /* Add _Binding_SELECT where necessary. */
 	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-		for (std::vector<POS*>::const_iterator it = p_POSs->begin();
+		for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		     it != p_POSs->end(); it++)
 		    _depends(*it, _Binding_SELECT);
 	    }
@@ -442,7 +442,7 @@ namespace w3c_sw {
 	     */
 	    for (ConsequentMapList::iterator maps = consequents.begin();
 		 maps != consequents.end(); ++maps) {
-		Bindable* v = dynamic_cast<Bindable*>(maps->first);
+		const Bindable* v = dynamic_cast<const Bindable*>(maps->first);
 		if (v == NULL)
 		    break;
 		//cerr << "considering includedness of " << v->toString() << endl;
@@ -473,7 +473,7 @@ namespace w3c_sw {
 		    /* References to this variable mean we need this graph pattern.
 		     * It is only weak if there were no bindings for this variable.
 		     @@ that's wierd. figure it out. */
-		    TableOperation* op = bgpBindings->first;
+		    const TableOperation* op = bgpBindings->first;
 		    ret[op] = (_BindingStrength)(bgpBindings->second & ~_Binding_WEAK);
 		    if ((*row)->get(v) == false)
 			ret[op] = (_BindingStrength)(ret[op] | _Binding_WEAK);
@@ -493,8 +493,8 @@ namespace w3c_sw {
 	 * so that SQL subqueries know which variables to propagate up in the
 	 * select.
 	 */
-	std::vector<POS*> entriesFor (TableOperation* op) {
-	    std::vector<POS*> ret;
+	std::vector<const POS*> entriesFor (TableOperation* op) {
+	    std::vector<const POS*> ret;
 	    for (ConsequentMapList::iterator varIt = consequents.begin();
 		 varIt != consequents.end(); ++varIt)
 		if (varIt->second.find(op) != varIt->second.end())

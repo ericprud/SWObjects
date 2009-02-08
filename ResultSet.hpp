@@ -22,8 +22,9 @@
 namespace w3c_sw {
 
     typedef struct { bool weaklyBound; POS* pos; } BindingInfo;
-    typedef std::map<POS*, BindingInfo> BindingSet;
-    typedef std::map<POS*, BindingInfo>::iterator BindingSetIterator;
+    typedef std::map<const POS*, BindingInfo> BindingSet;
+    typedef std::map<const POS*, BindingInfo>::iterator BindingSetIterator;
+    typedef std::map<const POS*, BindingInfo>::const_iterator BindingSetConstIterator;
     //typedef std::pair<std::map<POS*,POS*>::iterator, bool> InsertRet;
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
@@ -42,7 +43,7 @@ namespace w3c_sw {
 	std::string toString () const {
 	    std::stringstream s;
 	    s << "{";
-	    for (std::map<POS*, BindingInfo>::const_iterator it = bindings.begin(); it != bindings.end(); ++it)
+	    for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); ++it)
 		s << (it == bindings.begin() ? "" : ", ")
 		  << it->first->toString() << "="
 		  << it->second.pos->toString();
@@ -51,9 +52,11 @@ namespace w3c_sw {
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	BindingSetIterator begin () { return bindings.begin(); }
+	BindingSetConstIterator begin () const { return bindings.begin(); }
 	BindingSetIterator end () { return bindings.end(); }
+	BindingSetConstIterator end () const { return bindings.end(); }
 	size_t size () const { return bindings.size(); }
-	BindingSetIterator find (POS* pos) { return bindings.find(pos); }
+	BindingSetIterator find (const POS* pos) { return bindings.find(pos); }
 
 	POS* get(const POS* variable) const;
 	/* set should only be used by ResultSet::set if you want to keep the
@@ -296,13 +299,13 @@ namespace w3c_sw {
 	    while (myRow != results.end()) {
 		if ((*yourRow)->size() != (*myRow)->size())
 		    return false;
-		std::set<POS*> yourVars;
-		for (BindingSetIterator yourBinding = (*yourRow)->begin();
+		std::set<const POS*> yourVars;
+		for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 		     yourBinding != (*yourRow)->end(); ++yourBinding)
 		    yourVars.insert(yourBinding->first);
-		for (BindingSetIterator myBinding = (*myRow)->begin();
+		for (BindingSetConstIterator myBinding = (*myRow)->begin();
 		     myBinding != (*myRow)->end(); ++myBinding) {
-		    POS* var = myBinding->first;
+		    const POS* var = myBinding->first;
 		    if (yourVars.erase(var) == 0)
 			return false;
 		    POS* yours = (*yourRow)->find(var)->second.pos;
