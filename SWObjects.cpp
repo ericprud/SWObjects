@@ -618,10 +618,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    void TableJunction::addTableOperation (TableOperation* tableOp) {
+    void TableJunction::addTableOperation (const TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
-	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast.
-	    for (std::vector<TableOperation*>::iterator it = j->m_TableOperations.begin();
+	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast. !!! came in as const
+	    for (std::vector<const TableOperation*>::const_iterator it = j->m_TableOperations.begin();
 		 it != j->m_TableOperations.end(); ++it)
 		m_TableOperations.push_back(*it);
 	    j->m_TableOperations.clear();
@@ -632,7 +632,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     ResultSet* Select::execute (RdfDB* db, ResultSet* rs) {
 	if (!rs) rs = new ResultSet();
-	for (std::vector<DatasetClause*>::iterator ds = m_DatasetClauses->begin();
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
@@ -643,7 +643,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) {
 	if (!rs) rs = new ResultSet();
-	for (std::vector<DatasetClause*>::iterator ds = m_DatasetClauses->begin();
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
@@ -653,14 +653,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
-    void DatasetClause::_loadData (BasicGraphPattern* target) {
+    void DatasetClause::_loadData (BasicGraphPattern* target) const {
 	TurtleSDriver turtleParser("http://example.org/", m_posFactory);
 	if (turtleParser.parse_file(m_IRIref->getTerminal())) {
 	    std::cerr << m_IRIref->getTerminal() << ":0: error: unable to parse document" << std::endl;
 	} else {
 	    BasicGraphPattern* graph = turtleParser.root;
 	    SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
-	    for (std::vector<TriplePattern*>::iterator from = graph->begin();
+	    for (std::vector<const TriplePattern*>::iterator from = graph->begin();
 		 from != graph->end(); ) {
 		target->addTriplePattern(*from);
 		graph->erase(from);
@@ -668,14 +668,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete graph;
 	}
     }
-    void DefaultGraphClause::loadData (RdfDB* db) {
+    void DefaultGraphClause::loadData (RdfDB* db) const {
 	DatasetClause::_loadData(db->assureGraph(DefaultGraph));
     }
-    void NamedGraphClause::loadData (RdfDB* db) {
+    void NamedGraphClause::loadData (RdfDB* db) const {
 	DatasetClause::_loadData(db->assureGraph(m_IRIref));
     }
 
-    void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) {
+    void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
 	if (m_BindingClause != NULL) m_BindingClause->bindVariables(db, rs);
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
@@ -684,11 +684,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	rs->order(m_OrderConditions, m_offset, m_limit);
     }
 
-    void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) {
-	std::vector<Binding*>::iterator binding;
-
+    void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (ResultSetIterator it = rs->begin() ; it != rs->end(); ) {
-	    for (binding = begin() ; binding != end(); binding++) {
+	    for (std::vector<const Binding*>::const_iterator binding = begin() ; binding != end(); ++binding) {
 		Result* r = new Result(rs);
 		rs->insert(it, r);
 		(*binding)->bindVariables(db, rs, r, m_Vars);
@@ -698,9 +696,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
-    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, POSList* p_Vars) {
-	std::vector<POS*>::iterator variable = p_Vars->begin();
-	std::vector<POS*>::iterator value = begin();
+    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, POSList* p_Vars) const {
+	std::vector<const POS*>::const_iterator variable = p_Vars->begin();
+	std::vector<const POS*>::const_iterator value = begin();
 	while (value != end()) {
 	    rs->set(r, *variable, *value, false);
 	    variable++;
@@ -708,15 +706,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
-    void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) {
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+    void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++)
 	    (*it)->bindVariables(db, rs);
     }
 
-    void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) {
+    void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet* orig = rs->clone();
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
 	    ResultSet* clone = orig->clone();
 	    (*it)->bindVariables(db, clone);
@@ -730,20 +728,20 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	delete orig;
     }
 
-    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, m_name, this);
     }
-    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, NULL, this);
     }
 
-    void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {
+    void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
 	bool matched = true; // Pretend it's matched so we can try the first constraint.
-	for (std::vector<TriplePattern*>::iterator constraint = toMatch->m_TriplePatterns.begin();
+	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		matched = false;
-		for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
 		    Result* newRow = (*row)->duplicate(rs, row);
 		    if ((*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
@@ -773,7 +771,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return constant == curVal;
     }
 
-    void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet();
 	    m_TableOperation->bindVariables(db, rowRS);
@@ -794,14 +792,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
-    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) {
+    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) const {
 	for (ResultSetIterator result = rs->begin() ; result != rs->end(); result++)
-	    for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
 		(*triple)->construct(target, *result, rs->getPOSFactory());
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
+    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	bool ret = false;
 	const POS *s, *p, *o;
 	if ((s = m_s->evalPOS(r, bNodesGenSymbols)) != NULL && 
@@ -818,7 +816,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    TableOperation* TableOperationOnOperation::getDNF ( ) {
+    TableOperation* TableOperationOnOperation::getDNF ( ) const {
 	TableOperation* op = m_TableOperation->getDNF();
 	TableDisjunction* disjoints;
 	if ((disjoints = dynamic_cast<TableDisjunction*>(op)) == NULL) {
@@ -828,24 +826,24 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	/* GRAPH <X> { A || B } => GRAPH <X> { A } || GRAPH <X> { B } 
 	 * likewise for OPTIONALS.*/
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+	for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 	     disjoint != disjoints->end(); disjoint++)
 	    ret->addTableOperation(makeANewThis(*disjoint));
 	disjoints->clear();
 	delete disjoints;
 	return ret;
     }
-    TableOperation* BasicGraphPattern::getDNF () {
+    TableOperation* BasicGraphPattern::getDNF () const {
 	return new DontDeleteThisBGP(this);
     }
-    TableOperation* TableDisjunction::getDNF () {
+    TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); ++it) {
 	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
-		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+		for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 		     disjoint != disjoints->end(); disjoint++)
 		    ret->addTableOperation(*disjoint);
 		disjoints->clear();
@@ -856,13 +854,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
 	return ret;
     }
-    TableOperation* TableConjunction::getDNF () {
+    TableOperation* TableConjunction::getDNF () const {
 	/* Create a disjunction of conjunctions: (A & B) | (C & D) */
 	TableDisjunction* ret = new TableDisjunction();
 	ret->addTableOperation(new TableConjunction());
 
 	/* for each of our elements... */
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); ++it) {
 	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
@@ -872,15 +870,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 *                 ^^^^^^^^^^^^^
 		 * ret is already ( A & B ) | ( A & C ) so copy each ret and append disjoints.
 		 */
-		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+		for (std::vector<const TableOperation*>::iterator disjoint = disjoints->begin();
 		     disjoint != disjoints->end(); ) {
 		    /* for each ret conjunction */
-		    for (std::vector<TableOperation*>::iterator reti = ret->begin();
+		    for (std::vector<const TableOperation*>::iterator reti = ret->begin();
 			 reti != ret->end(); reti++) {
-			TableConjunction* o = dynamic_cast<TableConjunction*>(*reti);
+			const TableConjunction* o = dynamic_cast<const TableConjunction*>(*reti);
 			TableConjunction* n = new TableConjunction();
 			/* Copy the conjunction. */
-			for (std::vector<TableOperation*>::iterator copyi = o->begin();
+			for (std::vector<const TableOperation*>::const_iterator copyi = o->begin();
 			     copyi != o->end(); copyi++)
 			    n->addTableOperation(*copyi);
 			/* Append the current disjoint. */
@@ -891,27 +889,31 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		
 	    } else if ((conjoints = dynamic_cast<TableConjunction*>(op)) != NULL) {
 		/* A & ( B & C ) i.e. tree was not simplified */
-		for (std::vector<TableOperation*>::iterator conjoint = conjoints->begin();
+		for (std::vector<const TableOperation*>::iterator conjoint = conjoints->begin();
 		     conjoint != conjoints->end(); ) {
 		    /* for each ret */
-		    for (std::vector<TableOperation*>::iterator reti = ret->begin();
-			 reti != ret->end(); reti++)
-			(dynamic_cast<TableConjunction*>(*reti))->addTableOperation(*conjoint);
+		    for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
+			 reti != ret->end(); reti++) {
+			const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
+			((TableConjunction*)c)->addTableOperation(*conjoint); /* !!! LIES !!! */
+		    }
 		    conjoints->erase(conjoint++);
 		}
 		delete conjoints;
 	    } else {
 		/* for each ret */
-		for (std::vector<TableOperation*>::iterator reti = ret->begin();
-		     reti != ret->end(); reti++)
-		    (dynamic_cast<TableConjunction*>(*reti))->addTableOperation(op);
+		for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
+		     reti != ret->end(); reti++) {
+		    const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
+		    ((TableConjunction*)c)->addTableOperation(op); /* !!! LIES !!! */
+		}
 	    }
 	}
 
 	/* If there's only one disjoint, return it. */
 	if (ret->size() == 1) {
-	    std::vector<TableOperation*>::iterator it = ret->begin();
-	    TableOperation* r = *it;
+	    std::vector<const TableOperation*>::iterator it = ret->begin();
+	    TableOperation* r = (TableOperation*)*it; /* !!! LIES !!! */
 	    ret->erase(it);
 	    delete ret;
 	    return r;

@@ -64,12 +64,12 @@ public:
 	p_o->express(this);
 	xml->close();
     }
-    virtual void filter (const Filter* const, Expression* p_Constraint) {
+    virtual void filter (const Filter* const, const Expression* p_Constraint) {
 	xml->open("Filter");
 	p_Constraint->express(this);
 	xml->close();
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else {
@@ -81,7 +81,7 @@ public:
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else
@@ -91,24 +91,24 @@ public:
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	xml->open("TableDisjunction");
 	p_TableOperations->express(this);
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	xml->open("TableConjunction");
 	p_TableOperations->express(this);
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
 	xml->open("OptionalGraphPattern");
 	p_GroupGraphPattern->express(this);
 	xml->close();
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* const, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	if (sparqlx) {
 	    xml->open("GraphGraphPattern");
 	    p_POS->express(this);
@@ -117,7 +117,7 @@ public:
 	} else
 	    p_GroupGraphPattern->express(this);
     }
-    virtual void posList (const POSList* const, const ProductionVector<POS*>* p_POSs) {
+    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
 	xml->open("POSList");
 	p_POSs->express(this);
 	xml->close();
@@ -125,12 +125,12 @@ public:
     virtual void starVarSet (const StarVarSet* const) {
 	xml->empty("StarVarSet");
     }
-    virtual void defaultGraphClause (const DefaultGraphClause* const, POS* p_IRIref) {
+    virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	xml->open("DefaultGraphClause");
 	p_IRIref->express(this);
 	xml->close();
     }
-    virtual void namedGraphClause (const NamedGraphClause* const, POS* p_IRIref) {
+    virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
 	xml->open("NamedGraphClause");
 	p_IRIref->express(this);
 	xml->close();
@@ -148,26 +148,26 @@ public:
 	    }
 	xml->close();
     }
-    virtual void binding (const Binding* const, const ProductionVector<POS*>* values) {//!!!
+    virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
 	xml->open("BindingClause");
-	for (std::vector<POS*>::const_iterator it = values->begin();
+	for (std::vector<const POS*>::const_iterator it = values->begin();
 	     it != values->end(); ++it)
 	    (*it)->express(this);
 	xml->close();
     }
-    virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<Binding*>* p_Bindings) {
+    virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	xml->open("BindingClause");
 	p_Vars->express(this);
-	p_Bindings->ProductionVector<Binding*>::express(this);
+	p_Bindings->ProductionVector<const Binding*>::express(this);
 	xml->close();
     }
-    virtual void whereClause (const WhereClause* const, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	xml->open("WhereClause");
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
 	xml->close();
     }
-    virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	xml->open("Select");
 	xml->attribute("cardinality", 
 		  p_distinctness == DIST_distinct ? "DISTINCT" :
@@ -179,7 +179,7 @@ public:
 	p_SolutionModifier->express(this);
 	xml->close();
     }
-    virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	xml->open("Construct");
 	p_ConstructTemplate->express(this);
 	p_DatasetClauses->express(this);
@@ -187,7 +187,7 @@ public:
 	p_SolutionModifier->express(this);
 	xml->close();
     }
-    virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	xml->open("Describe");
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
@@ -195,7 +195,7 @@ public:
 	p_SolutionModifier->express(this);
 	xml->close();
     }
-    virtual void ask (const Ask* const, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	xml->open("Ask");
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
@@ -219,24 +219,24 @@ public:
 	p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void load (const Load* const, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
+    virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
 	xml->open("Load");
 	p_IRIrefs->express(this);
 	p_into->express(this);
 	xml->close();
     }
-    virtual void clear (const Clear* const, URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
 	xml->open("Clear");
 	p__QGraphIRI_E_Opt->express(this);
 	xml->close();
     }
-    virtual void create (const Create* const, e_Silence p_Silence, URI* p_GraphIRI) {
+    virtual void create (const Create* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	xml->open("Create");
 	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
     }
-    virtual void drop (const Drop* const, e_Silence p_Silence, URI* p_GraphIRI) {
+    virtual void drop (const Drop* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	xml->open("Drop");
 	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
@@ -247,27 +247,27 @@ public:
 	p_Variable->express(this);
 	xml->close();
     }
-    virtual void literalExpression (const LiteralExpression* const, RDFLiteral* p_RDFLiteral) {
+    virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
 	xml->open("LiteralExpression");
 	p_RDFLiteral->express(this);
 	xml->close();
     }
-    virtual void booleanExpression (const BooleanExpression* const, BooleanRDFLiteral* p_BooleanRDFLiteral) {
+    virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
 	xml->open("BooleanExpression");
 	p_BooleanRDFLiteral->express(this);
 	xml->close();
     }
-    virtual void uriExpression (const URIExpression* const, URI* p_URI) {
+    virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
 	xml->open("URIExpression");
 	p_URI->express(this);
 	xml->close();
     }
-    virtual void argList (const ArgList* const, ProductionVector<Expression*>* expressions) {
+    virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
 	xml->open("ArgList");
 	expressions->express(this);
 	xml->close();
     }
-    virtual void functionCall (const FunctionCall* const, URI* p_IRIref, ArgList* p_ArgList) {
+    virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 	xml->open("FunctionCall");
 	p_IRIref->express(this);
 	p_ArgList->express(this);
@@ -279,17 +279,17 @@ public:
 	xml->close();
     }
 /* Expressions */
-    virtual void booleanNegation (const BooleanNegation* const, Expression* p_Expression) {
+    virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	xml->open("BooleanNegation");
 	p_Expression->express(this);
 	xml->close();
     }
-    virtual void arithmeticNegation (const ArithmeticNegation* const, Expression* p_Expression) {
+    virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {
 	xml->open("ArithmeticNegation");
 	p_Expression->express(this);
 	xml->close();
     }
-    virtual void arithmeticInverse (const ArithmeticInverse* const, Expression* p_Expression) {
+    virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {
 	xml->open("ArithmeticInverse");
 	p_Expression->express(this);
 	xml->close();
@@ -304,11 +304,6 @@ public:
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void booleanNegation (const BooleanNegation* const, ProductionVector<Expression*>* p_Expressions) {
-	xml->open("BooleanNegation");
-	p_Expressions->express(this);
-	xml->close();
-    }
     virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("ArithmeticSum");
 	p_Expressions->express(this);
@@ -319,53 +314,53 @@ public:
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<Expression*>* p_Expressions) {
+    virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("ArithmeticInverse");
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void booleanEQ (const BooleanEQ* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanEQ");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void booleanNE (const BooleanNE* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanNE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void booleanLT (const BooleanLT* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanLT");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void booleanGT (const BooleanGT* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanGT");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void booleanLE (const BooleanLE* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanLE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void booleanGE (const BooleanGE* const, Expression* p_left, Expression* p_right) {
+    virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
 	xml->open("BooleanGE");
 	p_left->express(this);
 	p_right->express(this);
 	xml->close();
     }
-    virtual void comparatorExpression (const ComparatorExpression* const, BooleanComparator* p_BooleanComparator) {
+    virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
 	xml->open("ComparatorExpression");
 	p_BooleanComparator->express(this);
 	xml->close();
     }
-    virtual void numberExpression (const NumberExpression* const, NumericRDFLiteral* p_NumericRDFLiteral) {
+    virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	xml->open("NumberExpression");
 	p_NumericRDFLiteral->express(this);
 	xml->close();

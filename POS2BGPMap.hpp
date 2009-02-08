@@ -54,21 +54,21 @@ namespace w3c_sw {
     typedef enum {_Binding_GRAPH = 1, _Binding_SELECT = 2, _Binding_FILTER = 4, _Binding_COREF = 8, 
 		  _Binding_WEAK = 0x10, _Binding_INTRODUCED = 0x20} _BindingStrength;
 
-    class ConsequentMap : public std::map<TableOperation*, _BindingStrength> {
+    class ConsequentMap : public std::map<const TableOperation*, _BindingStrength> {
 	friend class Consequents;
 	friend class ConsequentMapList;
     public:
 	//_BindingStrength& operator[] (const TableOperation*& subscript) { return std::map<TableOperation*, _BindingStrength>::operator[](subscript); }
 
 	GraphInclusion getOperationStrength (TableOperation* bgp) {
-	    std::map<TableOperation*, _BindingStrength>::iterator it = find(bgp);
+	    std::map<const TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
 		(it->second & _Binding_WEAK && 0)) // !(it->second & _Binding_INTRODUCED)))
 		return GraphInclusion_NONE;
 	    return it->second & _Binding_GRAPH ? GraphInclusion_STRONG : GraphInclusion_WEAK;
 	}
     };
-    class ConsequentMapList : public std::map<POS*, ConsequentMap> {
+    class ConsequentMapList : public std::map<const POS*, ConsequentMap> {
 	friend class Consequents;
 	friend class ConsequentMap;
 
@@ -112,10 +112,10 @@ namespace w3c_sw {
 
     class Consequents {
 
-	typedef std::set< TableOperation* >			OuterGraphList;
-	typedef std::map< TableOperation*, OuterGraphList >	OuterGraphs;
+	typedef std::set< const TableOperation* >			OuterGraphList;
+	typedef std::map< const TableOperation*, OuterGraphList >	OuterGraphs;
 
-	typedef std::pair< POS*, TableOperation* >		IQEnt;
+	typedef std::pair< const POS*, TableOperation* >		IQEnt;
 	typedef std::vector< IQEnt >				InsertQueue;
 
 	/* ConsequentsConstructor — helper class to compile ConsequentMapLists.
@@ -125,14 +125,14 @@ namespace w3c_sw {
 	    ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
 	    _BindingStrength optState;
 	    POS* graphName;
-	    TableOperation* currentBGP;
+	    const TableOperation* currentBGP;
 	    OuterGraphs outerGraphs;
 
-	    void _depends (POS* pos, _BindingStrength strength) {
+	    void _depends (const POS* pos, _BindingStrength strength) {
 		/* The dependencies algorithm works fine with literals and URIs,
 		   but we don't need them (yet?). */
-		if (!dynamic_cast<Variable*>(pos) &&
-		    !dynamic_cast<BNode*>(pos))
+		if (!dynamic_cast<const Variable*>(pos) &&
+		    !dynamic_cast<const BNode*>(pos))
 		    return;
 
 		consequents[pos][currentBGP] = strength;
@@ -159,18 +159,18 @@ namespace w3c_sw {
 		_depends(p_o, optState);
 	    }
 
-	    void _nestedIn (TableOperation* inner, TableOperation* outer) {
+	    void _nestedIn (const TableOperation* inner, const TableOperation* outer) {
 		if (outer == NULL)
 		    return;
 		outerGraphs[inner].insert(outer);
-		for (std::set< TableOperation* >::iterator it = outerGraphs[outer].begin();
+		for (std::set< const TableOperation* >::iterator it = outerGraphs[outer].begin();
 		     it != outerGraphs[outer].end(); ++it)
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, POS* p_name, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		START("POS2BGPMap::namedGraphPattern");
-		TableOperation* parent = currentBGP;
+		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		_depends(p_name, optState);
@@ -179,9 +179,9 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		START("POS2BGPMap::defaultGraphPattern");
-		TableOperation* parent = currentBGP;
+		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		p_TriplePatterns->express(this);
@@ -189,30 +189,30 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    void _each (TableOperation* self, ProductionVector<TableOperation*>* p_TableOperations) {
-		TableOperation* parent = currentBGP;
+	    void _each (const TableOperation* self, const ProductionVector<const TableOperation*>* p_TableOperations) {
+		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		currentBGP = self;
-		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+		for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
 		    (*it)->express(this);
 		}
 		currentBGP = parent;
 	    }
 
-	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
-		TableOperation* parent = currentBGP;
+		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 
@@ -222,10 +222,10 @@ namespace w3c_sw {
 		optState = oldOptState;
 	    }
 
-	    virtual void graphGraphPattern (const GraphGraphPattern* const self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 		POS* oldGraphName = graphName;
 		graphName = p_POS;
-		TableOperation* parent = currentBGP;
+		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 
@@ -236,8 +236,8 @@ namespace w3c_sw {
 	    }
 
 	    /* Add _Binding_SELECT where necessary. */
-	    virtual void posList (const POSList* const, const ProductionVector<POS*>* p_POSs) {
-		for (std::vector<POS*>::iterator it = p_POSs->begin();
+	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+		for (std::vector<POS*>::const_iterator it = p_POSs->begin();
 		     it != p_POSs->end(); it++)
 		    _depends(*it, _Binding_SELECT);
 	    }
@@ -333,7 +333,7 @@ namespace w3c_sw {
 					5	6
 					5	10
 					6	10 */
-		    POS* pos = varIt->first;
+		    const POS* pos = varIt->first;
 		    ConsequentMap cons = consequents[pos];
 		    ConsequentMap::reverse_iterator last = cons.rbegin();
 		    //		    ConsequentMap::iterator last = consequents[varIt->first].rbegin();
@@ -341,7 +341,7 @@ namespace w3c_sw {
 			cerr << "no entry for " << varIt->first->toString() << endl; // !!! check with a FAIL
 			continue; // no entries for this whatever.
 		    }
-		    TableOperation* lastTableOp = last->first;
+		    const TableOperation* lastTableOp = last->first;
 		    for (ConsequentMap::iterator graph1It = consequents[varIt->first].begin();
 			 graph1It->first != lastTableOp; ++graph1It) {
 			ConsequentMap::iterator graph2It = graph1It;
@@ -351,7 +351,7 @@ namespace w3c_sw {
 			     * until the lineage diverges, storing the common parents. */
 			    OuterGraphList::iterator graph1parents = outerGraphs[graph1It->first].begin();
 			    OuterGraphList::iterator graph2parents = outerGraphs[graph2It->first].begin();
-			    TableOperation* commonAncestor = parent; // assignment not strictly necessary, but useful for templating.
+			    const TableOperation* commonAncestor = parent; // assignment not strictly necessary, but useful for templating.
 			    while (graph1parents != outerGraphs[graph1It->first].end() && 
 				   graph2parents != outerGraphs[graph2It->first].end() && 
 				   *graph1parents == *graph2parents) {

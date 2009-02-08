@@ -38,10 +38,10 @@ namespace w3c_sw {
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
 	    }
-	    virtual void namedGraphPattern (const NamedGraphPattern* const, POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
 
@@ -104,7 +104,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -115,7 +115,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -126,7 +126,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -137,7 +137,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<TableOperation*>* p_TableOperations, const ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -148,7 +148,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
@@ -159,7 +159,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern (const GraphGraphPattern* const self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -331,15 +331,15 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (const NamedGraphPattern* const, POS* p_name, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    p_name->express(this);
 	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
-	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<TriplePattern*>* p_TriplePatterns, const ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 
-	virtual void whereClause (const WhereClause* const, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
@@ -398,7 +398,7 @@ namespace w3c_sw {
 	 * get a run-time error. (A compile-time error would be nice, but the
 	 * expressor interface prevents that.
 	 */
-	virtual void select (const Select* const, e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual void select (const Select* const, e_distinctness, VarSet*, ProductionVector<const DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    throw(std::runtime_error("RuleInverter only works on CONSTRUCTs."));
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.

@@ -39,7 +39,7 @@ namespace w3c_sw {
     extern POS* DefaultGraph;
 
     class RdfDB {
-	typedef std::map<POS*, BasicGraphPattern*> graphmap_type;
+	typedef std::map<const POS*, BasicGraphPattern*> graphmap_type;
     protected:
 	graphmap_type graphs;
     public:
@@ -47,14 +47,14 @@ namespace w3c_sw {
 	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
 	RdfDB (DefaultGraphPattern* graph) : graphs() {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
-	    for (std::vector<TriplePattern*>::iterator it = graph->begin();
+	    for (std::vector<const TriplePattern*>::iterator it = graph->begin();
 		 it != graph->end(); it++)
 		bgp->addTriplePattern(*it);
 	}
 	~RdfDB();
 	void clearTriples();
-	BasicGraphPattern* assureGraph(POS* name);
-	void bindVariables(ResultSet* rs, POS* graph, BasicGraphPattern* toMatch);
+	BasicGraphPattern* assureGraph(const POS* name);
+	void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor);
     };
 

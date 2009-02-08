@@ -67,7 +67,7 @@ protected:
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
     BindingClause* curBindingClause;
     Binding* curBinding;
-    ProductionVector<Expression*>* curExprList;
+    ProductionVector<const Expression*>* curExprList;
     std::stack<POS*> curGraphNameStack;
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
@@ -127,7 +127,7 @@ public:
     e_Silence p_Silence;
     POSList* p_POSList;
     VarSet* p_VarSet;
-    ProductionVector<DatasetClause*>* p_DatasetClauses;
+    ProductionVector<const DatasetClause*>* p_DatasetClauses;
     Construct* p_Construct;
     Describe* p_Describe;
     Ask* p_Ask;
@@ -138,22 +138,22 @@ public:
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
     BindingClause* p_BindingClause;
-    ProductionVector<Binding*>* p_Bindings;
+    ProductionVector<const Binding*>* p_Bindings;
     Binding* p_Binding;
     TableOperation* p_TableOperation;
-    ProductionVector<TableOperation*>* p_TableOperations;
+    ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
     Filter* p_Filter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     POS* p_POS;
-    ProductionVector<POS*>* p_POSs;
+    ProductionVector<const POS*>* p_POSs;
     Expression* p_Expression;
-    ProductionVector<Expression*>* p_Expressions;
+    ProductionVector<const Expression*>* p_Expressions;
     BooleanComparator* p_BooleanComparator;
     URI* p_URI;
-    ProductionVector<URI*>* p_URIs;
+    ProductionVector<const URI*>* p_URIs;
     RDFLiteral* p_RDFLiteral;
     BNode* p_BNode;
 
@@ -423,7 +423,7 @@ Clear:
 // IRIref+
 _QIRIref_E_Plus:
     IRIref	{
-	$$ = new ProductionVector<URI*>($1);
+	$$ = new ProductionVector<const URI*>($1);
     }
   | _QIRIref_E_Plus IRIref	{
 	$1->push_back($2);
@@ -579,7 +579,7 @@ _O_QVar_E_Plus_Or_QGT_TIMES_E_C:
 // DatasetClause*
 _QDatasetClause_E_Star:
     {
-	$$ = new ProductionVector<DatasetClause*>();
+	$$ = new ProductionVector<const DatasetClause*>();
     }
   | _QDatasetClause_E_Star DatasetClause	{
 	$1->push_back($2);
@@ -891,13 +891,13 @@ GroupGraphPattern:
 	      TableConjunction* ret = new TableConjunction();
 	      $$ = ret;
 	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (std::vector<TableOperation*>::iterator it = $4->begin();
+	      for (std::vector<const TableOperation*>::iterator it = $4->begin();
 		   it != $4->end(); ++it)
 		  ret->addTableOperation(*it);
 	  } else if ($3 != NULL)
 	      $$ = $3;
 	  else if ($4->size() > 0) // sole item in ProductionVector
-	      $$ = $4->at(0);
+	      $$ = (TableOperation*)$4->at(0);
 	  else
 	      $$ = driver.makeBasicGraphPattern(); // or NULL -- are those simplifications OK?
 	  $4->clear();
@@ -946,7 +946,7 @@ _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_
 // ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
 _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
     {
-	$$ = new ProductionVector<TableOperation*>();
+	$$ = new ProductionVector<const TableOperation*>();
     }
   | // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
     _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
@@ -966,13 +966,13 @@ GraphTemplate:
 	      TableConjunction* ret = new TableConjunction();
 	      $$ = ret;
 	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (std::vector<TableOperation*>::iterator it = $4->begin();
+	      for (std::vector<const TableOperation*>::iterator it = $4->begin();
 		   it != $4->end(); ++it)
 		  ret->addTableOperation(*it);
 	  } else if ($3 != NULL)
 	      $$ = $3;
 	  else if ($4->size() > 0) // sole item in ProductionVector
-	      $$ = $4->at(0);
+	      $$ = (TableOperation*)$4->at(0);
 	  else
 	      $$ = driver.makeBasicGraphPattern(); // or NULL -- are those simplifications OK?
 	  $4->clear();
@@ -1008,7 +1008,7 @@ _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlo
 // ( ( 'GRAPH' VarOrIRIref GraphTemplate ) '.'? TriplesBlock? )*
 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
     {
-	$$ = new ProductionVector<TableOperation*>();
+	$$ = new ProductionVector<const TableOperation*>();
     }
   | _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
 	if ($2)
@@ -1067,7 +1067,7 @@ GroupOrUnionGraphPattern:
 	    TableDisjunction* ret= new TableDisjunction();
 	    $$ = ret;
 	    ret->addTableOperation($1);
-	    for (std::vector<TableOperation*>::iterator it = $2->begin();
+	    for (std::vector<const TableOperation*>::iterator it = $2->begin();
 		 it != $2->end(); ++it)
 		ret->addTableOperation(*it);
 	} else
@@ -1087,7 +1087,7 @@ _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
 // ( 'UNION' GroupGraphPattern )*
 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
     {
-	$$ = new ProductionVector<TableOperation*>();
+	$$ = new ProductionVector<const TableOperation*>();
     }
   | _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star _O_QIT_UNION_E_S_QGroupGraphPattern_E_C	{
 	$1->push_back($2);
@@ -1151,7 +1151,7 @@ _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_Q
     }
   | // '(' Expression ( ',' Expression )* ')'
     GT_LPAREN Expression {
-	driver.curExprList = new ProductionVector<Expression*>($2);
+	driver.curExprList = new ProductionVector<const Expression*>($2);
       } _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RPAREN	{
 	  $$ = driver.curExprList;
 	  driver.curExprList = NULL;
@@ -1304,7 +1304,7 @@ Generator:
 	if ($1 == driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#exactly")) {
 	    $$ = driver.createBNode();
 	    POS* tail = $$;
-	    ProductionVector<POS*>* members = $3;
+	    ProductionVector<const POS*>* members = $3;
 	    URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
 	    POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
@@ -1319,8 +1319,8 @@ Generator:
 	    members->clear();
 	    delete members;
 	} else if ($1 == driver.getURI("http://www.w3.org/2008/04/SPARQLfed/#bind")) {
-	    ProductionVector<POS*>* members = $3;
-	    $$ = *(members->begin());
+	    ProductionVector<const POS*>* members = $3;
+	    $$ = (POS*)*(members->begin());
 	    members->clear();
 	    delete members;
 	} else {
@@ -1339,7 +1339,7 @@ _O_QGT_COMMA_E_S_QGraphNode_E_C:
 // ( ',' GraphNode )*
 _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star:
     {
-	$$ = new ProductionVector<POS*>();
+	$$ = new ProductionVector<const POS*>();
     }
   | _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star _O_QGT_COMMA_E_S_QGraphNode_E_C	{
 	$1->push_back($2);
@@ -1354,9 +1354,9 @@ _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C:
 	   $2->push_front($1);
 	   $$ = $2;
 	   so copy the vector. */
-	$$ = new ProductionVector<POS*>();
+	$$ = new ProductionVector<const POS*>();
 	$$->push_back($1);
-	for (std::vector<POS*>::iterator it = $2->begin();
+	for (std::vector<const POS*>::iterator it = $2->begin();
 	     it != $2->end(); ++it)
 	    $$->push_back(*it);
 	$2->clear();
@@ -1367,7 +1367,7 @@ _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C:
 // ( GraphNode ( ',' GraphNode )* )?
 _Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt:
     {
-	$$ = new ProductionVector<POS*>();
+	$$ = new ProductionVector<const POS*>();
     }
     | _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C	
 ;
@@ -1454,7 +1454,7 @@ _O_QGT_OR_E_S_QConditionalAndExpression_E_C:
 // ( '||' ConditionalAndExpression )*
 _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star:
     {
-	$$ = new ProductionVector<Expression*>();
+	$$ = new ProductionVector<const Expression*>();
     }
   | _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star _O_QGT_OR_E_S_QConditionalAndExpression_E_C	{
 	$1->push_back($2);
@@ -1481,7 +1481,7 @@ _O_QGT_AND_E_S_QValueLogical_E_C:
 // ( '&&' ValueLogical )*
 _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star:
     {
-	$$ = new ProductionVector<Expression*>();
+	$$ = new ProductionVector<const Expression*>();
     }
   | _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star _O_QGT_AND_E_S_QValueLogical_E_C	{
 	$1->push_back($2);
@@ -1573,7 +1573,7 @@ _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpr
 // ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | NumericLiteralPositive | NumericLiteralNegative )*
 _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star:
     {
-	$$ = new ProductionVector<Expression*>();
+	$$ = new ProductionVector<const Expression*>();
     }
   | _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C	{
 	$1->push_back($2);
@@ -1603,7 +1603,7 @@ _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C:
 // ( '*' UnaryExpression | '/' UnaryExpression )*
 _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star:
     {
-	$$ = new ProductionVector<Expression*>();
+	$$ = new ProductionVector<const Expression*>();
     }
   | _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C	{
 	$1->push_back($2);

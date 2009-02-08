@@ -18,7 +18,7 @@ namespace w3c_sw {
 	    it->second->clearTriples();
     }
 
-    BasicGraphPattern* RdfDB::assureGraph (POS* name) {
+    BasicGraphPattern* RdfDB::assureGraph (const POS* name) {
 	if (name == NULL)
 	    name = DefaultGraph;
 	graphmap_type::const_iterator vi = graphs.find(name);
@@ -38,7 +38,7 @@ namespace w3c_sw {
     DefaultGraphClass defaultGraphInst;
     POS* DefaultGraph = &defaultGraphInst;
 
-    void RdfDB::bindVariables (ResultSet* rs, POS* graph, BasicGraphPattern* toMatch) {
+    void RdfDB::bindVariables (ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch) {
 	graphmap_type::const_iterator vi;
 	if (graph == NULL) graph = DefaultGraph;
 
