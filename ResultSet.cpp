@@ -153,7 +153,7 @@ namespace w3c_sw {
 	const char UNLISTED_VAR = '!';
 #define STRING std::string
 #else /* !ASCII_BOX_CHARS */
-	const char ORDERED = "O";
+	const char* ORDERED = "O";
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
 #if (INTRA_ROW_SEPARATORS)
