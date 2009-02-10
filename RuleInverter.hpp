@@ -48,12 +48,12 @@ namespace w3c_sw {
 	};
     protected:
 	TableDisjunction* constructed;
-	TableOperation* userQueryDisjoint;
+	const TableOperation* userQueryDisjoint;
 
     public:
-	OperationResultSet (TableDisjunction* constructed, TableOperation* userQueryDisjoint) : 
+	OperationResultSet (TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
 	    ResultSet(), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
-	void addTableOperation (TableOperation* op) { constructed->addTableOperation(op); }
+	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op); }
 	void copyFiltersTo (TableOperation* dest) {
 	    /* Copy the FILTER patterns across.
 	       !!! This isn't sound -- requires more exploration.
@@ -173,7 +173,7 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
-	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
+	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
 			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
 			  std::vector<URImap> uriMaps, std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
@@ -253,7 +253,7 @@ namespace w3c_sw {
 	MappingConstruct* m_Construct;
 	std::ostream** debugStream;
 	bool inUserRuleHead;
-	std::map<POS*, size_t> variablesInLexicalOrder;
+	std::map<const POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
 	std::vector<URImap> uriMaps;
@@ -283,16 +283,16 @@ namespace w3c_sw {
 	 * userRuleBody.
 	 */
 	struct MapOrder {
-	    std::map<POS*, size_t>& v;
-	    MapOrder (std::map<POS*, size_t>& v) : v(v) {  }
-	    int _orderAtoms (POS* l, POS* r) {
+	    std::map<const POS*, size_t>& v;
+	    MapOrder (std::map<const POS*, size_t>& v) : v(v) {  }
+	    int _orderAtoms (const POS* l, const POS* r) {
 		if (v.find(l) == v.end())
 		    v[l] = v.size();
 		if (v.find(r) == v.end())
 		    v[r] = v.size();
 		return l == r ? 0 : v[l] < v[r] ? 1 : -1;
 	    }
-	    bool operator() (TriplePattern* l, TriplePattern* r) {
+	    bool operator() (const TriplePattern* l, const TriplePattern* r) {
 		int s = _orderAtoms(l->getS(), r->getS());
 		if (s == 1) return true;
 		if (s == -1) return false;
@@ -315,10 +315,10 @@ namespace w3c_sw {
 	};
 	virtual void variable (const Variable* const self, std::string terminal) {
 	    last.posz.pos = last.posz.variable = self;
-	    self->setMaps(uriMaps, posFactory);
+	    ((Variable*)self)->setMaps(uriMaps, posFactory);
 	}
 
-	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
 	    _Filters(p_Filters, bgp);
 	    last.tableOperation = bgp;
@@ -367,7 +367,7 @@ namespace w3c_sw {
 	    last.whereClause = new WhereClause(op, last.bindingClause);
 	}
 
-	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 
@@ -408,28 +408,28 @@ namespace w3c_sw {
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
 		FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
-	    std::vector<Expression*>::iterator it = p_ArgList->begin();
-	    VarExpression* varExp = dynamic_cast<VarExpression*>(*it);
+	    std::vector<const Expression*>::iterator it = p_ArgList->begin();
+	    const VarExpression* varExp = dynamic_cast<const VarExpression*>(*it);
 	    if (varExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
-	    Variable* toModify = varExp->getVariable();
+	    const Variable* toModify = varExp->getVariable();
 	    ++it;
-	    LiteralExpression* litExp = dynamic_cast<LiteralExpression*>(*it);
+	    const LiteralExpression* litExp = dynamic_cast<const LiteralExpression*>(*it);
 	    if (litExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
 	    /* localName
 	     * http://bsbm.example/db/productfeatureproduct/offer.nr=(?@offer=[0-9]+)&publisher=(?@pub=[0-9]+)
 	     */
-	    RDFLiteral* localName = litExp->getLiteral();
+	    const RDFLiteral* localName = litExp->getLiteral();
 
 	    ++it;
-	    litExp = dynamic_cast<LiteralExpression*>(*it);
+	    litExp = dynamic_cast<const LiteralExpression*>(*it);
 	    if (litExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
 	    /* ifaceName
 	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
 	     */
-	    RDFLiteral* ifaceName = litExp->getLiteral();
+	    const RDFLiteral* ifaceName = litExp->getLiteral();
 	    last.functionCall = NULL;
 
 	    /* create a substitution regexp:
@@ -473,12 +473,13 @@ namespace w3c_sw {
 
 			subPattern << '\\' << patternVars[var].i;
 			std::string pattern = *it++;
-			if (pattern.size() != 0)
+			if (pattern.size() != 0) {
 			    if (patternVars[var].pattern.size() == 0)
 				patternVars[var].pattern = pattern;
 			    else if (patternVars[var].pattern != pattern)
 				FAIL3("local pattern for var %s: %s doesn't match iface pattern %s", 
 				      var.c_str(), pattern.c_str(), patternVars[var].pattern.c_str());
+			}
 		    }
 		}
 		newMap.localPattern = subPattern.str();

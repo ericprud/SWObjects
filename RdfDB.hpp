@@ -45,9 +45,9 @@ namespace w3c_sw {
     public:
 	RdfDB () : graphs() {  }
 	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
-	RdfDB (DefaultGraphPattern* graph) : graphs() {
+	RdfDB (const DefaultGraphPattern* graph) : graphs() {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
-	    for (std::vector<const TriplePattern*>::iterator it = graph->begin();
+	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
 		 it != graph->end(); it++)
 		bgp->addTriplePattern(*it);
 	}

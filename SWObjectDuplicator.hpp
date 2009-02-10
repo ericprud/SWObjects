@@ -315,9 +315,9 @@ namespace w3c_sw {
 	    p_URI->express(this);
 	    last.expression = new URIExpression(last.posz.uri);
 	}
-	ProductionVector<const Expression*>* _Expressions (ProductionVector<const Expression*>* p_Expressions) {
+	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();
-	    for (std::vector<const Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); it++) {
 		(*it)->express(this);
 		l_Expressions->push_back(last.expression);
@@ -342,26 +342,23 @@ namespace w3c_sw {
 	    p_Expression->express(this);
 	    last.expression = new BooleanNegation(last.expression);
 	}
-	/*	typedef struct {
-	    Expression* first
-	    ProductionVector<Expression*>* rest;
-	    } _Car; */
-	const Expression* _car(const ProductionVector<const Expression*>* p_Expressions) {
-	    const Expression* ret = p_Expressions->at(0);
-	    p_Expressions->erase(p_Expressions->begin());
-	    return ret;
-	}
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
-	    last.expression = new BooleanConjunction(_car(v), v);
+	    last.expression = new BooleanConjunction(v);
+	    v->clear();
+	    delete v;
 	}
 	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
-	    last.expression = new BooleanDisjunction(_car(v), v);
+	    last.expression = new BooleanDisjunction(v);
+	    v->clear();
+	    delete v;
 	}
 	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
-	    last.expression = new ArithmeticSum(_car(v), v);
+	    last.expression = new ArithmeticSum(v);
+	    v->clear();
+	    delete v;
 	}
 	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {
 	    p_Expression->express(this);
@@ -369,7 +366,9 @@ namespace w3c_sw {
 	}
 	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions);
-	    last.expression = new ArithmeticProduct(_car(v), v);
+	    last.expression = new ArithmeticProduct(v);
+	    v->clear();
+	    delete v;
 	}
 	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {
 	    p_Expression->express(this);

@@ -28,6 +28,7 @@ namespace w3c_sw {
     //typedef std::pair<std::map<POS*,POS*>::iterator, bool> InsertRet;
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
+    typedef std::set<const POS*>::const_iterator VariableListConstIterator;
 
     typedef std::list<Result*> ResultList;
     typedef std::list<Result*>::iterator ResultSetIterator;
@@ -272,7 +273,7 @@ namespace w3c_sw {
 		return compareOrdered(ref);
 	    } else {
 		std::vector<s_OrderConditionPair> orderConditions;
-		for (VariableListIterator it = knownVars.begin();
+		for (VariableListConstIterator it = knownVars.begin();
 		     it != knownVars.end(); ++it) {
 		    const Variable* v = dynamic_cast<const Variable*>(*it);
 		    VarExpression* ve = new VarExpression(v);

@@ -76,9 +76,9 @@ namespace w3c_sw {
 	    TableDisjunction* constructed = new TableDisjunction();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(userQueryAsDNF)) != NULL)
-		for (std::vector<TableOperation*>::iterator d = disjoints->begin();
+		for (std::vector<const TableOperation*>::iterator d = disjoints->begin();
 		     d != disjoints->end(); d++)
-		    _map(*d, constructed);
+		    _map((TableOperation*)*d, constructed); /* LIES */
 	    else
 		_map(userQueryAsDNF, constructed);
 	    delete userQueryAsDNF;

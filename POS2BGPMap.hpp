@@ -144,7 +144,7 @@ namespace w3c_sw {
 	     *   op: TableOperation to use as root (needed for marking variabe
 	     *       references like those in a SELECT posList.
 	     */
-	    ConsequentsConstructor (ConsequentMapList* consequents, TableOperation* op) : 
+	    ConsequentsConstructor (ConsequentMapList* consequents, const TableOperation* op) : 
 		consequents(*consequents), optState(_Binding_GRAPH), graphName(NULL), currentBGP(op), outerGraphs()
 	    {  }
 
@@ -320,7 +320,7 @@ namespace w3c_sw {
 	         outerGraphs[9][8,5,1]
 	         outerGraphs[10][9,8,5,1]
 	    */
-	    void findCorefs (TableOperation* parent) {
+	    void findCorefs (const TableOperation* parent) {
 		/* For each known variable: */
 		for (ConsequentMapList::iterator varIt = consequents.begin();
 		     varIt != consequents.end(); ++varIt) {
@@ -397,7 +397,7 @@ namespace w3c_sw {
     protected:
 	ConsequentMapList consequents;
 	std::set<POS*> gendVars; // @@@ could be a re-use map outside
-	Bindable* _genVar (Bindable* base, int index, Result* row, POSFactory* posFactory) {
+	Bindable* _genVar (const Bindable* base, int index, Result* row, POSFactory* posFactory) {
 	    Bindable* ret = NULL;
 	    do {
 		std::stringstream name;
@@ -410,7 +410,7 @@ namespace w3c_sw {
 	}
 
     public:
-	Consequents (TableOperation* op, VarSet* p_VarSet = NULL, std::ostream** debugStream = NULL) {
+	Consequents (const TableOperation* op, VarSet* p_VarSet = NULL, std::ostream** debugStream = NULL) {
 	    START("POS2BGPMap Consequents constructor");
 	    ConsequentsConstructor ctor(&consequents, op);
 	    NOW("traversing TableOperation");
@@ -434,7 +434,7 @@ namespace w3c_sw {
 
 	ConsequentMap getIncludeRequiredness (ResultSet* rs, ResultSetIterator row, POSFactory* posFactory) {
 	    ConsequentMap ret;
-	    std::set<Bindable*> neededVars;
+	    std::set<const Bindable*> neededVars;
 
 	    int genNo = 0;
 	    /* 06 — Scan each basic graph pattern GA in the antecedent graph pattern A for variables in triple patterns:
@@ -482,7 +482,7 @@ namespace w3c_sw {
 		    
 	    }
 
-	    for (std::set<Bindable*>::iterator v = neededVars.begin();
+	    for (std::set<const Bindable*>::iterator v = neededVars.begin();
 		 v != neededVars.end(); ++v)
 		rs->set(*row, *v, _genVar(*v, genNo++, *row, posFactory), true);
 	    neededVars.clear();
@@ -493,7 +493,7 @@ namespace w3c_sw {
 	 * so that SQL subqueries know which variables to propagate up in the
 	 * select.
 	 */
-	std::vector<const POS*> entriesFor (TableOperation* op) {
+	std::vector<const POS*> entriesFor (const TableOperation* op) {
 	    std::vector<const POS*> ret;
 	    for (ConsequentMapList::iterator varIt = consequents.begin();
 		 varIt != consequents.end(); ++varIt)

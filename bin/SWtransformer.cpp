@@ -127,7 +127,7 @@ int main(int argc,char** argv) {
 	    cerr << "Error: " << inputId << " did not contain a valid SPARQLfed string." << endl;
 	else {
 	    try {
-		Operation* o;
+		const Operation* o;
 		if (queryMapper.getRuleCount() > 0) {
 		    if (DebugStream != NULL)
 			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;

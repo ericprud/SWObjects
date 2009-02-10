@@ -89,8 +89,8 @@ public:
 	data.push_back(v);
     }
     size_t size () const { return data.size(); }
-    virtual T operator [] (size_t i) { return data[i]; }
-    virtual T at (size_t i) { return data.at(i); }
+    virtual T operator [] (size_t i) const { return data[i]; }
+    virtual T at (size_t i) const { return data.at(i); }
     void clear () { data.clear(); }
     void pop_back () { data.pop_back(); }
     virtual void express(Expressor* p_expressor) const {
@@ -290,7 +290,7 @@ public:
     }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { return "literal"; }
-    std::string getString () { return m_String; }
+    std::string getString () const { return m_String; }
 };
 class NumericRDFLiteral : public RDFLiteral {
     friend class POSFactory;
@@ -589,10 +589,11 @@ public:
     void clear () { m_TableOperations.clear(); }
     void erase (std::vector<const TableOperation*>::iterator it) { m_TableOperations.erase(it); }
     size_t size () const { return m_TableOperations.size(); }
-    const TableOperation* simplify () {
-	const TableOperation* ret;
+    /* simplify lies -- it modifies otherwise unmodifiable TableOperations. */
+    TableOperation* simplify () {
+	TableOperation* ret;
 	if (size() == 0 || size() == 1) {
-	    ret = size() == 0 ? NULL : *begin();
+	    ret = size() == 0 ? NULL : (TableOperation*)*begin(); /* LIES */
 	    clear();
 	    delete this;
 	} else
@@ -953,7 +954,7 @@ private:
 public:
     VarExpression (const Variable* p_Variable) : Expression(), m_Variable(p_Variable) {  }
     ~VarExpression () { /* m_Variable is centrally managed */ }
-    const Variable* getVariable () { return m_Variable; }
+    const Variable* getVariable () const { return m_Variable; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_Variable->evalPOS(r, bNodesGenSymbols);
@@ -965,7 +966,7 @@ private:
 public:
     LiteralExpression (const RDFLiteral* p_RDFLiteral) : Expression(), m_RDFLiteral(p_RDFLiteral) {  }
     ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
-    const RDFLiteral* getLiteral () { return m_RDFLiteral; }
+    const RDFLiteral* getLiteral () const { return m_RDFLiteral; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_RDFLiteral->evalPOS(r, bNodesGenSymbols);
@@ -1065,6 +1066,7 @@ class NaryExpression : public Expression {
 protected:
     ProductionVector<const Expression*> m_Expressions;
 public:
+    NaryExpression (ProductionVector<const Expression*>* p_Expressions) : Expression(), m_Expressions(*p_Expressions) {  }
     NaryExpression (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : Expression(), m_Expressions() {
 	m_Expressions.push_back(p_Expression);
 	for (std::vector<const Expression*>::iterator it = p_Expressions->begin();
@@ -1076,10 +1078,12 @@ public:
 };
 class BooleanJunction : public NaryExpression {
 public:
+    BooleanJunction (ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expressions) { }
     BooleanJunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) { }
 };
 class BooleanConjunction : public BooleanJunction { // ⋀
 public:
+    BooleanConjunction (ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expressions) {  }
     BooleanConjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "&&"; };
     virtual void express(Expressor* p_expressor) const;
@@ -1094,6 +1098,7 @@ public:
 };
 class BooleanDisjunction : public BooleanJunction { // ⋁
 public:
+    BooleanDisjunction (ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expressions) {  }
     BooleanDisjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "||"; };
     virtual void express(Expressor* p_expressor) const;
@@ -1212,6 +1217,7 @@ public:
 };
 class ArithmeticSum : public NaryExpression {
 public:
+    ArithmeticSum (ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expressions) {  }
     ArithmeticSum (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
@@ -1258,6 +1264,7 @@ public:
 };
 class ArithmeticProduct : public NaryExpression {
 public:
+    ArithmeticProduct (ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expressions) {  }
     ArithmeticProduct (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;

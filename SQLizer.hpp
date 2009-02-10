@@ -363,7 +363,7 @@ namespace w3c_sw {
 	protected:
 	    SQLQuery* parent;
 
-	    std::map<POS*, map<std::string, Join*> > aliasMap;
+	    std::map<const POS*, map<std::string, Join*> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
 	public: Join* curJoin; protected:
@@ -450,8 +450,8 @@ namespace w3c_sw {
 	    void setDistinct (bool state = true) { distinct = state; }
 	    void setLimit (int limit) { this->limit = limit; }
 	    void setOffset (int offset) { this->offset = offset; }
-	    std::string attachTuple (POS* subject, std::string toRelation) {
-		std::map<POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
+	    std::string attachTuple (const POS* subject, std::string toRelation) {
+		std::map<const POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
 		    map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end()) {
@@ -494,7 +494,7 @@ namespace w3c_sw {
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
-	    SQLUnion* makeUnion (std::vector<POS*> corefs) {
+	    SQLUnion* makeUnion (std::vector<const POS*> corefs) {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnion* ret = new SQLUnion(this, corefs, s.str());
@@ -502,7 +502,7 @@ namespace w3c_sw {
 		joins.push_back(curJoin);
 		return ret;
 	    }
-	    SQLOptional* makeOptional (std::vector<POS*> corefs) {
+	    SQLOptional* makeOptional (std::vector<const POS*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptional* ret = new SQLOptional(this, corefs, s.str());
@@ -576,10 +576,10 @@ namespace w3c_sw {
 	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
 	    std::vector<SQLDisjoint*> disjoints;
-	    std::vector<POS*> corefs;
+	    std::vector<const POS*> corefs;
 	    std::string name;
 	public:
-	    SQLUnion (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+	    SQLUnion (SQLQuery* parent, std::vector<const POS*> corefs, std::string name) : 
 		SQLQuery(parent), corefs(corefs), name(name)
 	    {  }
 	    virtual ~SQLUnion () {
@@ -597,7 +597,7 @@ namespace w3c_sw {
 		for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 		     dis != disjoints.end(); ++dis)
 		    (*dis)->selectConstant((int)nextDisjointCardinal++, "_DISJOINT_"); // cast to int to select selectConstant(int...)
-		for (std::vector<POS*>::iterator coref = corefs.begin();
+		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
@@ -620,15 +620,15 @@ namespace w3c_sw {
 	    }
 	};
 	class SQLOptional : public SQLQuery {
-	    std::vector<POS*> corefs;
+	    std::vector<const POS*> corefs;
 	    std::string name;
 	public:
-	    SQLOptional (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+	    SQLOptional (SQLQuery* parent, std::vector<const POS*> corefs, std::string name) : 
 		SQLQuery(parent), corefs(corefs), name(name)
 	    {  }
 	    virtual ~SQLOptional () {  }
 	    void attach () {
-		for (std::vector<POS*>::iterator coref = corefs.begin();
+		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    // SELECT <field for coref> AS <coref name>
 		    selectVariable((*coref)->getTerminal());
@@ -691,9 +691,9 @@ namespace w3c_sw {
 	/*	AliasContext* curAliases; */
 	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
 	SQLQuery* curQuery;
-	POS* curSubject;
+	const POS* curSubject;
 	AliasAttr curAliasAttr; // established by predicate
-	TableOperation* curTableOperation;
+	const TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
 	VarSet* selectVars;
@@ -1004,7 +1004,7 @@ namespace w3c_sw {
 	    mode = MODE_outside;
 	    //curQuery->curJoin = NULL;
 	}
-	virtual void filter (const Filter* const, Expression* p_Constraint) {
+	virtual void filter (const Filter* const, const Expression* p_Constraint) {
 	    try {
 		p_Constraint->express(this);
 		curQuery->addConstraint(curConstraint);
@@ -1012,9 +1012,9 @@ namespace w3c_sw {
 		std::cerr << "filter {" << p_Constraint << "} is not handled by stem " << stem << " because " << e.what() << endl;
 	    }
 	}
-	void _BasicGraphPattern (ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
-	    for (std::vector<TriplePattern*>::iterator tripleIt = p_TriplePatterns->begin();
+	    for (std::vector<const TriplePattern*>::const_iterator tripleIt = p_TriplePatterns->begin();
 		 tripleIt != p_TriplePatterns->end(); ++tripleIt)
 		try {
 		    (*tripleIt)->express(this);
@@ -1022,7 +1022,7 @@ namespace w3c_sw {
 		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << endl;
 		}
 	    NOW("bgp filters");
-	    for (std::vector<Filter*>::iterator filterIt = p_Filters->begin();
+	    for (std::vector<const Filter*>::const_iterator filterIt = p_Filters->begin();
 		 filterIt != p_Filters->end(); ++filterIt)
 		(*filterIt)->express(this);
 	}
@@ -1037,7 +1037,7 @@ namespace w3c_sw {
 	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	    SQLQuery* parent = curQuery;
 	    SQLUnion* disjunction = parent->makeUnion(consequentsP->entriesFor(curTableOperation));
-	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
 		MARK;
 		curQuery = disjunction->makeDisjoint();
@@ -1050,7 +1050,7 @@ namespace w3c_sw {
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
-	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
 		MARK;
 		curTableOperation = *it;
@@ -1076,14 +1076,14 @@ namespace w3c_sw {
 	    curTableOperation->express(this);
 	}
 	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    for (std::vector<POS*>::iterator it = p_POSs->begin();
+	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		 it != p_POSs->end(); ++it)
 		(*it)->express(this);
 	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    FAIL("need to select all pertinent vars");
 	}
-	virtual void defaultGraphClause (const DefaultGraphClause* const, constPOS* p_IRIref) {
+	virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	    p_IRIref->express(this);
 	}
 	virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
@@ -1103,13 +1103,13 @@ namespace w3c_sw {
 	}
 	virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
 	    // !!!
-	    for (std::vector<POS*>::iterator it = values->begin();
+	    for (std::vector<const POS*>::const_iterator it = values->begin();
 		 it != values->end(); ++it)
 		(*it)->express(this);
 	}
 	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	    p_Vars->express(this);
-	    p_Bindings->ProductionVector<Binding*>::express(this);
+	    p_Bindings->ProductionVector<const Binding*>::express(this);
 	}
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	    START("p_GroupGraphPattern");
@@ -1206,7 +1206,7 @@ namespace w3c_sw {
 	    expressions->express(this);
 	}
 	// !!!
-	virtual void functionCall (FunctionCall*, const URI* iri, const ArgList* args) {
+	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    MARK;
 	    args->express(this);
 	    if (iri->getTerminal() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
@@ -1235,7 +1235,7 @@ namespace w3c_sw {
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		conj->addConstraint(curConstraint);
@@ -1245,7 +1245,7 @@ namespace w3c_sw {
 	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    DisjunctionConstraint* disj = new DisjunctionConstraint();
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		disj->addConstraint(curConstraint);
@@ -1254,18 +1254,18 @@ namespace w3c_sw {
 	}
 	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
 	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
-	void _boolConstraint (Expression* p_left, std::string sqlOperator, Expression* p_right) {
+	void _boolConstraint (const Expression* p_left, std::string sqlOperator, const Expression* p_right) {
 	    BooleanConstraint* c = new BooleanConstraint(sqlOperator);
 	    p_left->express(this);
 	    c->setLeft(curConstraint);
