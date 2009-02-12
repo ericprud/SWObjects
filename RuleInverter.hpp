@@ -51,8 +51,8 @@ namespace w3c_sw {
 	const TableOperation* userQueryDisjoint;
 
     public:
-	OperationResultSet (TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
-	    ResultSet(), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
+	OperationResultSet (POSFactory* posFactory, TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
+	    ResultSet(posFactory), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
 	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op); }
 	void copyFiltersTo (TableOperation* dest) {
 	    /* Copy the FILTER patterns across.
@@ -412,7 +412,7 @@ namespace w3c_sw {
 	    const VarExpression* varExp = dynamic_cast<const VarExpression*>(*it);
 	    if (varExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
-	    const Variable* toModify = varExp->getVariable();
+	    const Bindable* toModify = varExp->getBindable();
 	    ++it;
 	    const LiteralExpression* litExp = dynamic_cast<const LiteralExpression*>(*it);
 	    if (litExp == NULL)

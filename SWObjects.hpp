@@ -950,14 +950,14 @@ public:
 /* kinds of Expressions */
 class VarExpression : public Expression {
 private:
-    const Variable* m_Variable;
+    const Bindable* m_Bindable;
 public:
-    VarExpression (const Variable* p_Variable) : Expression(), m_Variable(p_Variable) {  }
-    ~VarExpression () { /* m_Variable is centrally managed */ }
-    const Variable* getVariable () const { return m_Variable; }
+    VarExpression (const Bindable* p_Bindable) : Expression(), m_Bindable(p_Bindable) {  }
+    ~VarExpression () { /* m_Bindable is centrally managed */ }
+    const Bindable* getBindable () const { return m_Bindable; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_Variable->evalPOS(r, bNodesGenSymbols);
+	return m_Bindable->evalPOS(r, bNodesGenSymbols);
     }
 };
 class LiteralExpression : public Expression {
@@ -1414,7 +1414,7 @@ public:
     virtual void clear(const Clear* const self, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void drop(const Drop* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
-    virtual void varExpression(const VarExpression* const self, const Variable* p_Variable) = 0;
+    virtual void varExpression(const VarExpression* const self, const Bindable* p_Bindable) = 0;
     virtual void literalExpression(const LiteralExpression* const self, const RDFLiteral* p_RDFLiteral) = 0;
     virtual void booleanExpression(const BooleanExpression* const self, const BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
     virtual void uriExpression(const URIExpression* const self, const URI* p_URI) = 0;
@@ -1563,8 +1563,8 @@ public:
     virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (const VarExpression* const, const Variable* p_Variable) {
-	p_Variable->express(this);
+    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
+	p_Bindable->express(this);
     }
     virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
 	p_RDFLiteral->express(this);

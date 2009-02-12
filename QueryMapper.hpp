@@ -52,7 +52,7 @@ namespace w3c_sw {
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
-		OperationResultSet opRS(constructed, userQueryDisjoint);
+		OperationResultSet opRS(posFactory, constructed, userQueryDisjoint);
 		(*invertedRule)->execute(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }

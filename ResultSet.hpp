@@ -73,7 +73,7 @@ namespace w3c_sw {
 	void set(const POS* variable, const POS* value, bool weaklyBound);
 	Result* duplicate(ResultSet* rs, ResultSetIterator row);
 
-	ResultSet* makeResultSet();
+	ResultSet* makeResultSet(POSFactory* posFactory);
 	void assumeNewBindings(Result* from);
     };
 
@@ -85,7 +85,7 @@ namespace w3c_sw {
 	bool ordered;
 
     public:
-	ResultSet(POSFactory* posFactory = NULL);
+	ResultSet(POSFactory* posFactory);
 	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
@@ -286,7 +286,7 @@ namespace w3c_sw {
 		std::vector<s_OrderConditionPair> orderConditions;
 		for (VariableListConstIterator it = knownVars.begin();
 		     it != knownVars.end(); ++it) {
-		    const Variable* v = dynamic_cast<const Variable*>(*it);
+		    const Bindable* v = dynamic_cast<const Bindable*>(*it);
 		    VarExpression* ve = new VarExpression(v);
 		    s_OrderConditionPair p = {ORDER_Asc, ve}; // @@@ expand for our expanded key types (URI, lit...).
 		    orderConditions.push_back(p);

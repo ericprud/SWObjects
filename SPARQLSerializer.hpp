@@ -307,8 +307,8 @@ public:
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (const VarExpression* const, const Variable* p_Variable) {
-	p_Variable->express(this);
+    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
+	p_Bindable->express(this);
     }
     virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
 	p_RDFLiteral->express(this);

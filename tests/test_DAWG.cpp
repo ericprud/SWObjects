@@ -104,7 +104,7 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
     std::cout << "Database: " << d;
 
     /* Exectute query. */
-    ResultSet got;
+    ResultSet got(&f);
     sparqlParser.root->execute(&d, &got);
     std::cout << "query: " << *sparqlParser.root;
     std::cout << "got: " << got;

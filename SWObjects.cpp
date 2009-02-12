@@ -309,7 +309,7 @@ void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
 }
 void VarExpression::express (Expressor* p_expressor) const {
-    p_expressor->varExpression(this, m_Variable);
+    p_expressor->varExpression(this, m_Bindable);
 }
 void LiteralExpression::express (Expressor* p_expressor) const {
     p_expressor->literalExpression(this, m_RDFLiteral);
@@ -631,7 +631,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Select::execute (RdfDB* db, ResultSet* rs) {
-	if (!rs) rs = new ResultSet();
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
@@ -642,7 +642,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) {
-	if (!rs) rs = new ResultSet();
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
@@ -773,7 +773,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
-	    ResultSet* rowRS = (*row)->makeResultSet();
+	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
 	    m_TableOperation->bindVariables(db, rowRS);
 	    bool empty = true;
 	    for (ResultSetIterator optRow = rowRS->begin() ; optRow != rowRS->end(); ) {

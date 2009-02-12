@@ -299,8 +299,8 @@ namespace w3c_sw {
 	}
 
 	/* Expressions */
-	virtual void varExpression (const VarExpression* const, const Variable* p_Variable) {
-	    p_Variable->express(this);
+	virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
+	    p_Bindable->express(this);
 	    last.expression = new VarExpression(last.posz.variable);
 	}
 	virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {

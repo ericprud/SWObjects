@@ -242,9 +242,9 @@ public:
 	p_GraphIRI->express(this);
 	xml->close();
     }
-    virtual void varExpression (const VarExpression* const, const Variable* p_Variable) {
+    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
 	xml->open("VarExpression");
-	p_Variable->express(this);
+	p_Bindable->express(this);
 	xml->close();
     }
     virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {

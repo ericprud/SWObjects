@@ -41,7 +41,7 @@ struct R {
 #define RS(X) makeResultSet(X, sizeof(X)/sizeof(X[0]))
 
 ResultSet makeResultSet (R rows[], int count) {
-    ResultSet rs;
+    ResultSet rs(&f);
     rs.erase(rs.begin());
     for (int i = 0; i < count; ++i) {
 	Result* r = new Result(&rs);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
 	BOOST_CHECK_EQUAL(RS(rows), expected);
 
-	ResultSet r;
+	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
 	BOOST_CHECK_EQUAL(r, expected);
     }
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 		       "<n2> <p1> <n3> .");
 	BOOST_CHECK_EQUAL(data.size(), 3);
 
-	ResultSet r;
+	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2\n"
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
     pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 ."));
 
     {
-	ResultSet r;
+	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
     data.addTriplePattern(f.getTriple("<n2> <p1> <n4> ."));
 
     /* <n1> <p1> <n2> . <n2> <p1> <n3>,<n4> . */ {
-	ResultSet r;
+	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	f.parseTriples(&p, 
 		       "?ruleProduct <label>   ?ruleLabel ."
 		       "?ruleProduct <feature> ?ruleFeature .");
-	ResultSet tested;
+	ResultSet tested(&f);
 	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
