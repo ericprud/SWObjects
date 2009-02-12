@@ -324,7 +324,7 @@ namespace w3c_sw {
 	    }
 	    return l_Expressions;
 	}
-	virtual void argList (const ArgList*, ProductionVector<const Expression*>* p_expressions) {
+	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* p_expressions) {
 	    last.argList = new ArgList(_Expressions(p_expressions));
 	}
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
