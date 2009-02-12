@@ -88,14 +88,14 @@ namespace w3c_sw {
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
 	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
-		for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
+		for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
 		    (*triple)->construct(p, row, posFactory, false);
 	    }
 
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
 	    virtual void _TableOperations (const ProductionVector<const TableOperation*>* p_TableOperations, TableJunction* j) {
-		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+		for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
 		    last.tableOperation = NULL;
 		    (*it)->express(this);
