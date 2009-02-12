@@ -40,6 +40,13 @@ namespace w3c_sw {
 	BindingSet bindings;
     public:
 	Result (ResultSet*) : bindings() {  }
+	Result (const Result& ref) : bindings() {
+	    for (BindingSetConstIterator it = ref.begin(); it != ref.end(); ++it) {
+		const POS* var = it->first;
+		BindingInfo bi(it->second);
+		bindings[var] = bi;
+	    }
+	}
 	~Result () {  }
 	std::string toString () const {
 	    std::stringstream s;
@@ -79,6 +86,10 @@ namespace w3c_sw {
 
     public:
 	ResultSet(POSFactory* posFactory = NULL);
+	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered) {
+	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
+		insert(this->end(), new Result(**row));
+	}
 	/* Parsed constructor, a la
 		ResultSet(&f, 
 			  "?n1  _:n2\n"
