@@ -24,6 +24,7 @@ namespace w3c_sw {
     typedef struct { bool weaklyBound; POS* pos; } BindingInfo;
     typedef std::map<POS*, BindingInfo> BindingSet;
     typedef std::map<POS*, BindingInfo>::iterator BindingSetIterator;
+    typedef std::map<POS*, BindingInfo>::const_iterator BindingSetConstIterator;
     //typedef std::pair<std::map<POS*,POS*>::iterator, bool> InsertRet;
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
@@ -39,6 +40,13 @@ namespace w3c_sw {
 	BindingSet bindings;
     public:
 	Result (ResultSet*) : bindings() {  }
+	Result (const Result& ref) : bindings() {
+	    for (BindingSetConstIterator it = ref.begin(); it != ref.end(); ++it) {
+		POS* var = it->first;
+		BindingInfo bi(it->second);
+		bindings[var] = bi;
+	    }
+	}
 	~Result () {  }
 	std::string toString () const {
 	    std::stringstream s;
@@ -52,7 +60,9 @@ namespace w3c_sw {
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	BindingSetIterator begin () { return bindings.begin(); }
+	BindingSetConstIterator begin () const { return bindings.begin(); }
 	BindingSetIterator end () { return bindings.end(); }
+	BindingSetConstIterator end () const { return bindings.end(); }
 	size_t size () const { return bindings.size(); }
 	BindingSetIterator find (POS* pos) { return bindings.find(pos); }
 
@@ -76,6 +86,10 @@ namespace w3c_sw {
 
     public:
 	ResultSet(POSFactory* posFactory = NULL);
+	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered) {
+	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
+		insert(this->end(), new Result(**row));
+	}
 	/* Parsed constructor, a la
 		ResultSet(&f, 
 			  "?n1  _:n2\n"
