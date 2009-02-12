@@ -65,8 +65,8 @@ namespace w3c_sw {
 	    delete *it;
     }
 
-    ResultSet* Result::makeResultSet () {
-	ResultSet* ret = new ResultSet();
+    ResultSet* Result::makeResultSet (POSFactory* posFactory) {
+	ResultSet* ret = new ResultSet(posFactory);
 	ret->erase(ret->begin());
 	duplicate(ret, ret->begin());
 	return ret;
@@ -79,7 +79,7 @@ namespace w3c_sw {
 
 
     ResultSet* ResultSet::clone () {
-	ResultSet* ret = new ResultSet();
+	ResultSet* ret = new ResultSet(posFactory);
 	delete *ret->begin();
 	ret->erase(ret->begin());
 	for (ResultSetIterator it = begin() ; it != end(); it++)

@@ -245,8 +245,8 @@ namespace w3c_sw {
 		FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
-	    virtual void varExpression (VarExpression*, Variable* p_Variable) {
-		_depends(p_Variable, _Binding_FILTER);
+	    virtual void varExpression (VarExpression*, Bindable* p_Bindable) {
+		_depends(p_Bindable, _Binding_FILTER);
 	    }
 	    virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 		_depends(p_RDFLiteral, _Binding_FILTER);

@@ -1184,10 +1184,10 @@ namespace w3c_sw {
 	    if (p_Silence != SILENT_Yes) ;// !!!
 	    p_GraphIRI->express(this);
 	}
-	virtual void varExpression (VarExpression*, Variable* p_Variable) {
+	virtual void varExpression (VarExpression*, Bindable* p_Bindable) {
 	    MARK;
 	    mode = MODE_constraint;
-	    p_Variable->express(this);
+	    p_Bindable->express(this);
 	}
 	virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 	    MARK;

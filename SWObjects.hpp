@@ -946,14 +946,14 @@ public:
 /* kinds of Expressions */
 class VarExpression : public Expression {
 private:
-    Variable* m_Variable;
+    Bindable* m_Bindable;
 public:
-    VarExpression (Variable* p_Variable) : Expression(), m_Variable(p_Variable) {  }
-    ~VarExpression () { /* m_Variable is centrally managed */ }
-    Variable* getVariable () { return m_Variable; }
+    VarExpression (Bindable* p_Bindable) : Expression(), m_Bindable(p_Bindable) {  }
+    ~VarExpression () { /* m_Bindable is centrally managed */ }
+    Bindable* getBindable () { return m_Bindable; }
     virtual void express(Expressor* p_expressor);
     virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
-	return m_Variable->evalPOS(r, bNodesGenSymbols);
+	return m_Bindable->evalPOS(r, bNodesGenSymbols);
     }
 };
 class LiteralExpression : public Expression {
@@ -1404,7 +1404,7 @@ public:
     virtual void clear(Clear* self, URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(Create* self, e_Silence p_Silence, URI* p_GraphIRI) = 0;
     virtual void drop(Drop* self, e_Silence p_Silence, URI* p_GraphIRI) = 0;
-    virtual void varExpression(VarExpression* self, Variable* p_Variable) = 0;
+    virtual void varExpression(VarExpression* self, Bindable* p_Bindable) = 0;
     virtual void literalExpression(LiteralExpression* self, RDFLiteral* p_RDFLiteral) = 0;
     virtual void booleanExpression(BooleanExpression* self, BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
     virtual void uriExpression(URIExpression* self, URI* p_URI) = 0;
@@ -1552,8 +1552,8 @@ public:
     virtual void drop (Drop*, e_Silence, URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (VarExpression*, Variable* p_Variable) {
-	p_Variable->express(this);
+    virtual void varExpression (VarExpression*, Bindable* p_Bindable) {
+	p_Bindable->express(this);
     }
     virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
 	p_RDFLiteral->express(this);

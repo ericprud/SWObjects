@@ -123,7 +123,7 @@ namespace w3c_sw {
 	    p_GraphIRI->express(this);
 	    return NULL;
 	}
-	virtual VarExpression* varExpression (Variable*) {
+	virtual VarExpression* varExpression (Bindable*) {
 	    return NULL;
 	}
 	virtual LiteralExpression* literalExpression (RDFLiteral*) {
