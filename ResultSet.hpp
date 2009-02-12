@@ -21,7 +21,7 @@
 
 namespace w3c_sw {
 
-    typedef struct { bool weaklyBound; POS* pos; } BindingInfo;
+    typedef struct { bool weaklyBound; const POS* pos; } BindingInfo;
     typedef std::map<const POS*, BindingInfo> BindingSet;
     typedef std::map<const POS*, BindingInfo>::iterator BindingSetIterator;
     typedef std::map<const POS*, BindingInfo>::const_iterator BindingSetConstIterator;
@@ -66,7 +66,7 @@ namespace w3c_sw {
 	size_t size () const { return bindings.size(); }
 	BindingSetIterator find (const POS* pos) { return bindings.find(pos); }
 
-	POS* get(const POS* variable) const;
+	const POS* get(const POS* variable) const;
 	/* set should only be used by ResultSet::set if you want to keep the
 	   header consistent.
 	 */
@@ -320,7 +320,7 @@ namespace w3c_sw {
 		    const POS* var = myBinding->first;
 		    if (yourVars.erase(var) == 0)
 			return false;
-		    POS* yours = (*yourRow)->find(var)->second.pos;
+		    const POS* yours = (*yourRow)->find(var)->second.pos;
 		    if (yours != myBinding->second.pos)
 			return false;
 		}

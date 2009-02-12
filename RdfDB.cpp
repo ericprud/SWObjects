@@ -53,7 +53,7 @@ namespace w3c_sw {
 	}
     }
 
-    void RdfDB::express (Expressor* expressor) {
+    void RdfDB::express (Expressor* expressor) const {
 	for (graphmap_type::const_iterator it = graphs.begin();
 	     it != graphs.end(); it++)
 	    it->second->express(expressor);

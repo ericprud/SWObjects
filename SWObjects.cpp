@@ -598,10 +598,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
     const POS* Variable::evalPOS (const Result* r, bool) const {
-	POS* ret = r->get(this);
+	const POS* ret = r->get(this);
 
-	URI* u;
-	if ((u = dynamic_cast<URI*>(ret)) != NULL) {
+	const URI* u;
+	if ((u = dynamic_cast<const URI*>(ret)) != NULL) {
 	    for (std::vector<URImap>::const_iterator it = uriMaps.begin();
 		 it != uriMaps.end(); ++it) {
 		std::ostringstream t(std::ios::out | std::ios::binary);
@@ -620,7 +620,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void TableJunction::addTableOperation (const TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
-	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast. !!! came in as const
+	    TableJunction* j = (TableJunction*)tableOp; /* !!! LIES !!! */
 	    for (std::vector<const TableOperation*>::const_iterator it = j->m_TableOperations.begin();
 		 it != j->m_TableOperations.end(); ++it)
 		m_TableOperations.push_back(*it);

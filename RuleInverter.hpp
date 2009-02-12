@@ -315,7 +315,7 @@ namespace w3c_sw {
 	};
 	virtual void variable (const Variable* const self, std::string terminal) {
 	    last.posz.pos = last.posz.variable = self;
-	    ((Variable*)self)->setMaps(uriMaps, posFactory);
+	    ((Variable*)self)->setMaps(uriMaps, posFactory); /* LIES */
 	}
 
 	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {

@@ -13,21 +13,21 @@ namespace w3c_sw {
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
-	BindingSet::const_iterator vi = bindings.find((POS*)variable);
+	BindingSet::const_iterator vi = bindings.find(variable);
 	if (vi == bindings.end()) {
-	    BindingInfo b = {weaklyBound, (POS*)value};
-	    bindings[(POS*)variable] = b;
+	    BindingInfo b = {weaklyBound, value};
+	    bindings[variable] = b;
 	} else {
 	    std::stringstream s;
 	    s << "variable " << variable->toString() << " reassigned:"
-		" old value:" << bindings[(POS*)variable].pos->toString() << 
+		" old value:" << bindings[variable].pos->toString() << 
 		" new value:" << value->toString();
 	    throw(std::runtime_error(s.str()));
 	}
     }
 
-    POS* Result::get (const POS* variable) const {
-	BindingSet::const_iterator vi = bindings.find((POS*)variable);
+    const POS* Result::get (const POS* variable) const {
+	BindingSet::const_iterator vi = bindings.find(variable);
 	if (vi == bindings.end())
 	    return NULL;
 	else
@@ -105,8 +105,8 @@ namespace w3c_sw {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		const POS* l = pair.expression->eval((Result*)lhs, posFactory, false);
-		const POS* r = pair.expression->eval((Result*)rhs, posFactory, false);
+		const POS* l = pair.expression->eval(lhs, posFactory, false);
+		const POS* r = pair.expression->eval(rhs, posFactory, false);
 		if (l != r)
 		    return pair.ascOrDesc == ORDER_Desc ? posFactory->lessThan(r, l) : posFactory->lessThan(l, r);
 	    }

@@ -55,12 +55,12 @@ namespace w3c_sw {
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
 	void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
-	void express(Expressor* expressor);
+	void express(Expressor* expressor) const;
     };
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
 	SPARQLSerializer s;
-	((RdfDB*)&my)->express(&s);
+	my.express(&s);
 	return os << s.getSPARQLstring();
     }
 
