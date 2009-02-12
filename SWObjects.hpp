@@ -485,6 +485,8 @@ public:
 	    const int ri = typeOrder[rt];
 	    if (li < ri)
 		return true;
+	    if (li > ri)
+		return false;
 	}
 	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
     }
