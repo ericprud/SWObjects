@@ -12,10 +12,10 @@ namespace w3c_sw {
     class RdfQueryDB : public RdfDB {
 	friend class DBExpressor;
 	Operation* op;
-	TableOperation* top;
+	const TableOperation* top;
 
     public:
-	RdfQueryDB (TableOperation* p_op, POSFactory* posFactory);
+	RdfQueryDB (const TableOperation* p_op, POSFactory* posFactory);
     };
     class DBExpressor : public RecursiveExpressor {
     protected:
