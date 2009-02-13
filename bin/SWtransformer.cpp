@@ -141,12 +141,14 @@ int main(int argc,char** argv) {
 // 		o->express(&xmlizer);
 // 		cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
 
-		SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
-		o->express(&sparqlizer);
-		if (!Quiet)
-		    cout << "post-rule query (SPARQL):" << endl;
-		if (!Quiet || StemURI == NULL)
-		    cout << sparqlizer.getSPARQLstring() << endl;
+		{
+		    SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
+		    o->express(&sparqlizer);
+		    if (!Quiet)
+			cout << "post-rule query (SPARQL):" << endl;
+		    if (!Quiet || StemURI == NULL)
+			cout << sparqlizer.getSPARQLstring() << endl;
+		}
 
 		if (StemURI != NULL) {
 		    char predicateDelims[]={'#',' ',' '};
