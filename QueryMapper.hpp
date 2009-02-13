@@ -36,7 +36,7 @@ namespace w3c_sw {
 	    ++ruleCount;
 	    return c;
 	}
-	void _map (TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
+	void _map (const TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
 	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint, posFactory);
 
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
@@ -78,7 +78,7 @@ namespace w3c_sw {
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(userQueryAsDNF)) != NULL)
 		for (std::vector<const TableOperation*>::iterator d = disjoints->begin();
 		     d != disjoints->end(); d++)
-		    _map((TableOperation*)*d, constructed); /* LIES */
+		    _map(*d, constructed); /* LIES */
 	    else
 		_map(userQueryAsDNF, constructed);
 	    delete userQueryAsDNF;
