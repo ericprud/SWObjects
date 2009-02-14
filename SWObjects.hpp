@@ -111,6 +111,20 @@ public:
 	for (typename std::list<T>::iterator it = l.begin(); it != l.end(); ++it)
 	    data.push_back(*it);
     }
+    bool operator== (const ProductionVector<T>& ref) const {
+	if (size() != ref.size())
+	    return false;
+
+	/* Compare unordered; sort of a cheat. */
+	std::set<T> mine(begin(), end());
+	for (typename std::vector<T>::const_iterator it = ref.begin();
+	     it != ref.end(); ++it)
+	    if (!mine.erase(*it))
+		return false;
+	if (mine.size() > 0)
+	    return false;
+	return true;
+    }
 #if 0
     class iterator;
     iterator begin() { return iterator(data.begin(), this); }
@@ -175,6 +189,7 @@ protected:
 public:
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) { throw(std::runtime_error(typeid(*this).name())); }
     virtual void express(Expressor* p_expressor) = 0;
+    virtual bool operator==(const Operation& ref) const = 0;
 };
 
 class POS;
@@ -526,6 +541,7 @@ public:
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) = 0;
     virtual POS* eval(Result* r, POSFactory* posFactory, bool bNodesGenSymbols) = 0;
+    virtual bool operator==(const Expression&) const = 0;
 };
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
@@ -542,6 +558,9 @@ public:
     Filter (Expression* p_Constraint) : Base(), m_Constraint(p_Constraint) {  }
     ~Filter () { delete m_Constraint; }
     virtual void express(Expressor* p_expressor);
+    bool operator== (const Filter& ref) const {
+	return *m_Constraint == *ref.m_Constraint;
+    }
 };
 
 /*
@@ -575,6 +594,7 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet*) = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void express(Expressor*) = 0;
+    virtual bool operator==(const TableOperation& ref) const = 0;
     virtual TableOperation* getDNF() = 0;
 };
 class TableJunction : public TableOperation {
@@ -583,9 +603,21 @@ protected:
 public:
     TableJunction () : TableOperation(), m_TableOperations() {  }
 
+    bool operator== (const TableJunction& ref) const {
+	if (m_TableOperations.size() != ref.m_TableOperations.size())
+	    return false;
+	std::vector<TableOperation*>::const_iterator mit = begin();
+	std::vector<TableOperation*>::const_iterator rit = ref.begin();
+	for ( ; mit != end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
     virtual void addTableOperation(TableOperation* tableOp);
     std::vector<TableOperation*>::iterator begin () { return m_TableOperations.begin(); }
+    std::vector<TableOperation*>::const_iterator begin () const { return m_TableOperations.begin(); }
     std::vector<TableOperation*>::iterator end () { return m_TableOperations.end(); }
+    std::vector<TableOperation*>::const_iterator end () const { return m_TableOperations.end(); }
     void clear () { m_TableOperations.clear(); }
     void erase (std::vector<TableOperation*>::iterator it) { m_TableOperations.erase(it); }
     size_t size () const { return m_TableOperations.size(); }
@@ -604,6 +636,10 @@ class TableConjunction : public TableJunction { // ⊍
 public:
     TableConjunction () : TableJunction() {  }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const TableOperation& ref) const {
+	const TableConjunction* pref = dynamic_cast<const TableConjunction*>(&ref);
+	return pref == NULL ? false : TableJunction::operator==(*pref);
+    }
     virtual void bindVariables(RdfDB*, ResultSet* rs);
     virtual TableOperation* getDNF();
 };
@@ -611,6 +647,10 @@ class TableDisjunction : public TableJunction { // ⊎
 public:
     TableDisjunction () : TableJunction() {  }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const TableOperation& ref) const {
+	const TableDisjunction* pref = dynamic_cast<const TableDisjunction*>(&ref);
+	return pref == NULL ? false : TableJunction::operator==(*pref);
+    }
     virtual void bindVariables(RdfDB*, ResultSet* rs);
     virtual TableOperation* getDNF();
 };
@@ -643,6 +683,7 @@ public:
     void clearTriples () { m_TriplePatterns.clear(); }
     virtual TableOperation* getDNF ();
     virtual void express(Expressor* p_expressor) = 0;
+    virtual bool operator==(const TableOperation& ref) const = 0;
 };
 class DontDeleteThisBGP : public TableOperation {
 protected: BasicGraphPattern* bgp;
@@ -652,6 +693,10 @@ public:
     virtual void bindVariables(RdfDB* db, ResultSet* rs) { bgp->bindVariables(db, rs); }
     virtual TableOperation* getDNF () { return new DontDeleteThisBGP(bgp); }
     virtual void express (Expressor* p_expressor) { bgp->express(p_expressor); }
+    virtual bool operator== (const TableOperation& ref) const {
+	const DontDeleteThisBGP* pref = dynamic_cast<const DontDeleteThisBGP*>(&ref);
+	return pref == NULL ? false : *bgp == *pref->bgp;
+    }
 };
 
 class NamedGraphPattern : public BasicGraphPattern {
@@ -662,24 +707,27 @@ public:
     NamedGraphPattern (POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
     virtual void express(Expressor* p_expressor);
     virtual void bindVariables(RdfDB* db, ResultSet* rs);
+    virtual bool operator== (const TableOperation& ref) const {
+	const NamedGraphPattern* pref = dynamic_cast<const NamedGraphPattern*>(&ref);
+	return pref == NULL ? false : 
+	    m_name == pref->m_name &&
+	    m_TriplePatterns == pref->m_TriplePatterns;
+    }
 };
 class DefaultGraphPattern : public BasicGraphPattern {
 public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
     virtual void express(Expressor* p_expressor);
     virtual void bindVariables(RdfDB* db, ResultSet* rs);
-    bool operator== (const DefaultGraphPattern & ref) const {
-	if (m_TriplePatterns.size() != ref.m_TriplePatterns.size())
+    virtual bool operator== (const TableOperation& ref) const {
+	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
+	if (pref == NULL ||
+	    !(m_TriplePatterns == pref->m_TriplePatterns))
 	    return false;
-
-	std::set<TriplePattern*> refs;
-	for (std::vector<TriplePattern*>::const_iterator it = ref.m_TriplePatterns.begin();
-	     it != ref.m_TriplePatterns.end(); ++it)
-	    refs.insert(*it);
-
-	for (std::vector<TriplePattern*>::const_iterator it = m_TriplePatterns.begin();
-	     it != m_TriplePatterns.end(); ++it)
-	    if (refs.erase(*it) == 0)
+	std::vector<Filter*>::const_iterator mit = m_Filters.begin();
+	std::vector<Filter*>::const_iterator rit = pref->m_Filters.begin();
+	for ( ; mit != m_Filters.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
 		return false;
 	return true;
     }
@@ -701,6 +749,12 @@ private:
 public:
     GraphGraphPattern (POS* p_POS, TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern), m_VarOrIRIref(p_POS) {  }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const TableOperation& ref) const {
+	const GraphGraphPattern* pref = dynamic_cast<const GraphGraphPattern*>(&ref);
+	return pref == NULL ? false : 
+	    m_VarOrIRIref == pref->m_VarOrIRIref &&
+	    *m_TableOperation == *pref->m_TableOperation;
+    }
     virtual void bindVariables (RdfDB* db, ResultSet* rs) {
 	m_TableOperation->bindVariables(db, rs);
     }
@@ -710,6 +764,11 @@ class OptionalGraphPattern : public TableOperationOnOperation {
 public:
     OptionalGraphPattern (TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern) {  }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const TableOperation& ref) const {
+	const OptionalGraphPattern* pref = dynamic_cast<const OptionalGraphPattern*>(&ref);
+	return pref == NULL ? false : 
+	    *m_TableOperation == *pref->m_TableOperation;
+    }
     virtual void bindVariables(RdfDB*, ResultSet* rs);
     virtual TableOperationOnOperation* makeANewThis (TableOperation* p_TableOperation) { return new OptionalGraphPattern(p_TableOperation); }
 };
@@ -719,6 +778,7 @@ protected:
     VarSet () : Base() { }
 public:
     virtual void express(Expressor*) = 0;
+    virtual bool operator==(const VarSet& ref) const = 0;
 };
 
 class POSList : public VarSet {
@@ -730,7 +790,13 @@ public:
     void push_back(POS* v) { m_POSs.push_back(v); }
     virtual void express(Expressor* p_expressor);
     std::vector<POS*>::iterator begin () { return m_POSs.begin(); }
+    std::vector<POS*>::const_iterator begin () const { return m_POSs.begin(); }
     std::vector<POS*>::iterator end () { return m_POSs.end(); }
+    std::vector<POS*>::const_iterator end () const { return m_POSs.end(); }
+    virtual bool operator== (const VarSet& ref) const {
+	const POSList* pref = dynamic_cast<const POSList*>(&ref);
+	return pref == NULL ? false : m_POSs == pref->m_POSs;
+    }
 };
 class StarVarSet : public VarSet {
 private:
@@ -740,6 +806,10 @@ public:
     POS* operator [] (size_t) { return NULL; }
     POS* getElement (size_t) { return NULL; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const VarSet& ref) const {
+	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
+	return pref == NULL ? false : true;
+    }
 };
 
 class DatasetClause : public Base {
@@ -786,6 +856,24 @@ public:
     }
     void modifyResult(ResultSet* rs);
     virtual void express(Expressor* p_expressor);
+    bool operator== (const SolutionModifier& ref) const {
+	if (m_limit != ref.m_limit ||
+	    m_offset != ref.m_offset)
+	    return false;
+	if (m_OrderConditions && ref.m_OrderConditions) {
+	    if (m_OrderConditions->size() != ref.m_OrderConditions->size())
+		return false;
+	    std::vector<s_OrderConditionPair>::const_iterator mit = 
+		m_OrderConditions->begin();
+	    std::vector<s_OrderConditionPair>::const_iterator rit = 
+		ref.m_OrderConditions->begin();
+	    for ( ; mit != m_OrderConditions->end(); ++mit, ++rit)
+		if ( !(mit->ascOrDesc == rit->ascOrDesc) ||
+		     !(*mit->expression == *rit->expression))
+		    return false;
+	}
+	return m_OrderConditions == ref.m_OrderConditions;
+    }
 };
 class Binding : public ProductionVector<POS*> {
 private:
@@ -816,6 +904,13 @@ public:
     }
     virtual void express(Expressor* p_expressor);
     void bindVariables(RdfDB* db, ResultSet* rs);
+    bool operator== (const WhereClause& ref) const {
+	return
+	    *m_GroupGraphPattern == *ref.m_GroupGraphPattern &&
+	    ( m_BindingClause && ref.m_BindingClause ? 
+	      *m_BindingClause == *ref.m_BindingClause : 
+	      m_BindingClause == ref.m_BindingClause );
+    }
 };
 
 class Select : public Operation {
@@ -835,6 +930,16 @@ public:
     }
     virtual void express(Expressor* p_expressor);
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
+    virtual bool operator== (const Operation& ref) const {
+	const Select* pSel = dynamic_cast<const Select*>(&ref);
+	if (pSel == NULL)
+	    return false;
+	return
+	    *m_VarSet == *pSel->m_VarSet && 
+	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
+	    *m_WhereClause == *pSel->m_WhereClause && 
+	    *m_SolutionModifier == *pSel->m_SolutionModifier;
+    }
 };
 class Construct : public Operation {
 protected:
@@ -853,6 +958,9 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
     WhereClause* getWhereClause () { return m_WhereClause; }
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Describe : public Operation {
 private:
@@ -869,6 +977,9 @@ public:
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Ask : public Operation {
 private:
@@ -881,6 +992,9 @@ public:
 	delete m_WhereClause;
     }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Replace : public Operation {
 private:
@@ -890,6 +1004,9 @@ public:
     Replace (WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) : Operation(), m_WhereClause(p_WhereClause), m_GraphTemplate(p_GraphTemplate) {  }
     ~Replace () { delete m_WhereClause; delete m_GraphTemplate; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Insert : public Operation {
 private:
@@ -899,6 +1016,9 @@ public:
     Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Insert () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Delete : public Operation {
 private:
@@ -908,6 +1028,9 @@ public:
     Delete (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Delete () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Load : public Operation {
 private:
@@ -917,6 +1040,9 @@ public:
     Load (ProductionVector<URI*>* p_IRIrefs, URI* p_into) : Operation(), m_IRIrefs(p_IRIrefs), m_into(p_into) {  }
     ~Load () { delete m_IRIrefs; delete m_into; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Clear : public Operation {
 private:
@@ -925,6 +1051,9 @@ public:
     Clear (URI* p__QGraphIRI_E_Opt) : Operation(), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
     ~Clear () { delete m__QGraphIRI_E_Opt; }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Create : public Operation {
 private:
@@ -934,6 +1063,9 @@ public:
     Create (e_Silence p_Silence, URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Create () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 class Drop : public Operation {
 private:
@@ -943,6 +1075,9 @@ public:
     Drop (e_Silence p_Silence, URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Drop () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor);
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
 };
 
 /* kinds of Expressions */
@@ -957,6 +1092,10 @@ public:
     virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return m_Bindable->evalPOS(r, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const VarExpression* pref = dynamic_cast<const VarExpression*>(&ref);
+	return pref == NULL ? false : m_Bindable == pref->m_Bindable;
+    }
 };
 class LiteralExpression : public Expression {
 private:
@@ -969,6 +1108,10 @@ public:
     virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return m_RDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const LiteralExpression* pref = dynamic_cast<const LiteralExpression*>(&ref);
+	return pref == NULL ? false : m_RDFLiteral == pref->m_RDFLiteral;
+    }
 };
 class BooleanExpression : public Expression {
 private:
@@ -980,6 +1123,10 @@ public:
     virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return m_BooleanRDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanExpression* pref = dynamic_cast<const BooleanExpression*>(&ref);
+	return pref == NULL ? false : m_BooleanRDFLiteral == pref->m_BooleanRDFLiteral;
+    }
 };
 class URIExpression : public Expression {
 private:
@@ -990,6 +1137,10 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual POS* eval (Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return m_URI->evalPOS(r, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const URIExpression* pref = dynamic_cast<const URIExpression*>(&ref);
+	return pref == NULL ? false : m_URI == pref->m_URI;
     }
 };
 
@@ -1003,7 +1154,7 @@ public:
     ~ArgList () { delete expressions; }
     ArgIterator begin () { return expressions->begin(); }
     ArgIterator end () { return expressions->end(); }
-    size_t size () { return expressions->size(); }
+    size_t size () const { return expressions->size(); }
     virtual void express(Expressor* p_expressor);
 };
 class FunctionCall : public Base {
@@ -1037,6 +1188,18 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    bool operator== (const FunctionCall& ref) const {
+	if (m_IRIref != ref.m_IRIref)
+	    return false;
+	if (m_ArgList->size() != ref.m_ArgList->size())
+	    return false;
+	ArgList::ArgIterator mit = m_ArgList->begin();
+	ArgList::ArgIterator rit = ref.m_ArgList->begin();
+	for ( ; mit != m_ArgList->end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
 };
 class FunctionCallExpression : public Expression {
 private:
@@ -1047,6 +1210,10 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
 	return m_FunctionCall->eval(r, posFactory, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const FunctionCallExpression* pref = dynamic_cast<const FunctionCallExpression*>(&ref);
+	return pref == NULL ? false : *m_FunctionCall == *pref->m_FunctionCall;
     }
 };
 
@@ -1070,7 +1237,16 @@ public:
 	     it != p_Expressions->end(); ++it)
 	    m_Expressions.push_back(*it);
     }
-
+    bool operator== (const NaryExpression& ref) const {
+	if (m_Expressions.size() != ref.m_Expressions.size())
+	    return false;
+	std::vector<Expression*>::const_iterator mit = m_Expressions.begin();
+	std::vector<Expression*>::const_iterator rit = ref.m_Expressions.begin();
+	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
     virtual const char* getInfixNotation() = 0;
 };
 class BooleanJunction : public NaryExpression {
@@ -1090,6 +1266,10 @@ public:
 	}
 	return posFactory->getTrue();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class BooleanDisjunction : public BooleanJunction { // ⋁
 public:
@@ -1103,6 +1283,10 @@ public:
 		return ret;
 	}
 	return posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
     }
 };
 
@@ -1128,6 +1312,10 @@ public:
 	    right->eval(res, posFactory, bNodesGenSymbols) ? 
 	    posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanNE : public BooleanComparator {
 public:
@@ -1139,6 +1327,10 @@ public:
 	POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l == r ? posFactory->getFalse() : posFactory->getTrue();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanLT : public BooleanComparator {
 public:
@@ -1149,6 +1341,10 @@ public:
 	POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l < r ? posFactory->getFalse() : posFactory->getTrue();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
     }
 };
 class BooleanGT : public BooleanComparator {
@@ -1162,6 +1358,10 @@ public:
 	return l == r ? posFactory->getFalse() : 
 	    r < l ? posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanLE : public BooleanComparator {
 public:
@@ -1173,6 +1373,10 @@ public:
 	POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l == r ? posFactory->getTrue() : 
 	    l < r ? posFactory->getTrue() : posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
     }
 };
 class BooleanGE : public BooleanComparator {
@@ -1186,6 +1390,10 @@ public:
 	return l == r ? posFactory->getTrue() : 
 	    r < l ? posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class ComparatorExpression : public Expression {
 private:
@@ -1197,6 +1405,10 @@ public:
     virtual POS* eval (Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
 	return m_BooleanComparator->eval(r, posFactory, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
+	return pref == NULL ? false : *m_BooleanComparator == *pref->m_BooleanComparator;
+    }
 };
 class BooleanNegation : public UnaryExpression {
 public:
@@ -1207,6 +1419,10 @@ public:
     virtual POS* eval (Result* res, POSFactory* posFactory, bool bNodesGenSymbols) {
 	POS* v = posFactory->ebv(m_Expression->eval(res, posFactory, bNodesGenSymbols));
 	return v == posFactory->getTrue() ? posFactory->getFalse() : posFactory->getTrue();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanNegation* pref = dynamic_cast<const BooleanNegation*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
     }
 };
 class ArithmeticSum : public NaryExpression {
@@ -1230,6 +1446,10 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class ArithmeticNegation : public UnaryExpression {
 public:
@@ -1243,6 +1463,10 @@ public:
 	    ')' << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticNegation* pref = dynamic_cast<const ArithmeticNegation*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
+    }
 };
 class NumberExpression : public Expression {
 private:
@@ -1253,6 +1477,10 @@ public:
     virtual void express(Expressor* p_expressor);
     virtual POS* eval (Result* res, POSFactory* /* posFactory */, bool bNodesGenSymbols) {
 	return m_NumericRDFLiteral->evalPOS(res, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const NumberExpression* pref = dynamic_cast<const NumberExpression*>(&ref);
+	return pref == NULL ? false : m_NumericRDFLiteral == pref->m_NumericRDFLiteral;
     }
 };
 class ArithmeticProduct : public NaryExpression {
@@ -1276,6 +1504,10 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticProduct* pref = dynamic_cast<const ArithmeticProduct*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class ArithmeticInverse : public UnaryExpression {
 public:
@@ -1288,6 +1520,10 @@ public:
 	s << "(/ 1 " << m_Expression->eval(res, posFactory, bNodesGenSymbols) <<
 	    ')' << " not implemented";
 	throw s.str();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticInverse* pref = dynamic_cast<const ArithmeticInverse*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
     }
 };
 
