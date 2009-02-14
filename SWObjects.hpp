@@ -541,7 +541,7 @@ public:
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) const = 0;
     virtual const POS* eval(const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const = 0;
-    bool operator==(const Expression&) const { return true; } // !!! = 0;
+    virtual bool operator==(const Expression&) const = 0;
 };
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
@@ -558,6 +558,9 @@ public:
     Filter (const Expression* p_Constraint) : Base(), m_Constraint(p_Constraint) {  }
     ~Filter () { delete m_Constraint; }
     virtual void express(Expressor* p_expressor) const;
+    bool operator== (const Filter& ref) const {
+	return *m_Constraint == *ref.m_Constraint;
+    }
 };
 
 /*
@@ -606,7 +609,7 @@ public:
 	std::vector<const TableOperation*>::const_iterator mit = begin();
 	std::vector<const TableOperation*>::const_iterator rit = ref.begin();
 	for ( ; mit != end(); ++mit, ++rit)
-	    if ( !(*mit == *rit) )
+	    if ( !(**mit == **rit) )
 		return false;
 	return true;
     }
@@ -720,8 +723,15 @@ public:
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
-	return pref == NULL ? false : 
-	    m_TriplePatterns == pref->m_TriplePatterns;
+	if (pref == NULL ||
+	    !(m_TriplePatterns == pref->m_TriplePatterns))
+	    return false;
+	std::vector<const Filter*>::const_iterator mit = m_Filters.begin();
+	std::vector<const Filter*>::const_iterator rit = pref->m_Filters.begin();
+	for ( ; mit != m_Filters.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
     }
 };
 class TableOperationOnOperation : public TableOperation {
@@ -850,16 +860,21 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const SolutionModifier& ref) const {
 	if (m_limit != ref.m_limit ||
-	    m_offset != ref.m_offset ||
-	    m_OrderConditions->size() != ref.m_OrderConditions->size())
+	    m_offset != ref.m_offset)
 	    return false;
-	std::vector<s_OrderConditionPair>::const_iterator mit = m_OrderConditions->begin();
-	std::vector<s_OrderConditionPair>::const_iterator rit = ref.m_OrderConditions->begin();
-	for ( ; mit != m_OrderConditions->end(); ++mit, ++rit)
-	    if ( !(mit->ascOrDesc == rit->ascOrDesc) ||
-		 !(*mit->expression == *rit->expression))
+	if (m_OrderConditions && ref.m_OrderConditions) {
+	    if (m_OrderConditions->size() != ref.m_OrderConditions->size())
 		return false;
-	return true;
+	    std::vector<s_OrderConditionPair>::const_iterator mit = 
+		m_OrderConditions->begin();
+	    std::vector<s_OrderConditionPair>::const_iterator rit = 
+		ref.m_OrderConditions->begin();
+	    for ( ; mit != m_OrderConditions->end(); ++mit, ++rit)
+		if ( !(mit->ascOrDesc == rit->ascOrDesc) ||
+		     !(*mit->expression == *rit->expression))
+		    return false;
+	}
+	return m_OrderConditions == ref.m_OrderConditions;
     }
 };
 class Binding : public ProductionVector<const POS*> {
@@ -894,7 +909,9 @@ public:
     bool operator== (const WhereClause& ref) const {
 	return
 	    *m_GroupGraphPattern == *ref.m_GroupGraphPattern &&
-	    *m_BindingClause == *ref.m_BindingClause;
+	    ( m_BindingClause && ref.m_BindingClause ? 
+	      *m_BindingClause == *ref.m_BindingClause : 
+	      m_BindingClause == ref.m_BindingClause );
     }
 };
 
@@ -1093,6 +1110,10 @@ public:
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_RDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const LiteralExpression* pref = dynamic_cast<const LiteralExpression*>(&ref);
+	return pref == NULL ? false : m_RDFLiteral == pref->m_RDFLiteral;
+    }
 };
 class BooleanExpression : public Expression {
 private:
@@ -1104,6 +1125,10 @@ public:
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_BooleanRDFLiteral->evalPOS(r, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanExpression* pref = dynamic_cast<const BooleanExpression*>(&ref);
+	return pref == NULL ? false : m_BooleanRDFLiteral == pref->m_BooleanRDFLiteral;
+    }
 };
 class URIExpression : public Expression {
 private:
@@ -1114,6 +1139,10 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_URI->evalPOS(r, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const URIExpression* pref = dynamic_cast<const URIExpression*>(&ref);
+	return pref == NULL ? false : m_URI == pref->m_URI;
     }
 };
 
@@ -1127,7 +1156,7 @@ public:
     ~ArgList () { delete expressions; }
     ArgIterator begin () const { return expressions->begin(); }
     ArgIterator end () const { return expressions->end(); }
-    size_t size () { return expressions->size(); }
+    size_t size () const { return expressions->size(); }
     virtual void express(Expressor* p_expressor) const;
 };
 class FunctionCall : public Base {
@@ -1161,6 +1190,18 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    bool operator== (const FunctionCall& ref) const {
+	if (m_IRIref != ref.m_IRIref)
+	    return false;
+	if (m_ArgList->size() != ref.m_ArgList->size())
+	    return false;
+	ArgList::ArgIterator mit = m_ArgList->begin();
+	ArgList::ArgIterator rit = ref.m_ArgList->begin();
+	for ( ; mit != m_ArgList->end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
 };
 class FunctionCallExpression : public Expression {
 private:
@@ -1171,6 +1212,10 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	return m_FunctionCall->eval(r, posFactory, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const FunctionCallExpression* pref = dynamic_cast<const FunctionCallExpression*>(&ref);
+	return pref == NULL ? false : *m_FunctionCall == *pref->m_FunctionCall;
     }
 };
 
@@ -1195,7 +1240,16 @@ public:
 	     it != p_Expressions->end(); ++it)
 	    m_Expressions.push_back(*it);
     }
-
+    bool operator== (const NaryExpression& ref) const {
+	if (m_Expressions.size() != ref.m_Expressions.size())
+	    return false;
+	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
+	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
+	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
     virtual const char* getInfixNotation() = 0;
 };
 class BooleanJunction : public NaryExpression {
@@ -1217,6 +1271,10 @@ public:
 	}
 	return posFactory->getTrue();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class BooleanDisjunction : public BooleanJunction { // ⋁
 public:
@@ -1231,6 +1289,10 @@ public:
 		return ret;
 	}
 	return posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
     }
 };
 
@@ -1256,6 +1318,10 @@ public:
 	    right->eval(res, posFactory, bNodesGenSymbols) ? 
 	    posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanNE : public BooleanComparator {
 public:
@@ -1267,6 +1333,10 @@ public:
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l == r ? posFactory->getFalse() : posFactory->getTrue();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanLT : public BooleanComparator {
 public:
@@ -1277,6 +1347,10 @@ public:
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l < r ? posFactory->getFalse() : posFactory->getTrue();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
     }
 };
 class BooleanGT : public BooleanComparator {
@@ -1290,6 +1364,10 @@ public:
 	return l == r ? posFactory->getFalse() : 
 	    r < l ? posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class BooleanLE : public BooleanComparator {
 public:
@@ -1301,6 +1379,10 @@ public:
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
 	return l == r ? posFactory->getTrue() : 
 	    l < r ? posFactory->getTrue() : posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
     }
 };
 class BooleanGE : public BooleanComparator {
@@ -1314,6 +1396,10 @@ public:
 	return l == r ? posFactory->getTrue() : 
 	    r < l ? posFactory->getTrue() : posFactory->getFalse();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
+	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
+    }
 };
 class ComparatorExpression : public Expression {
 private:
@@ -1325,6 +1411,10 @@ public:
     virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	return m_BooleanComparator->eval(r, posFactory, bNodesGenSymbols);
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
+	return pref == NULL ? false : *m_BooleanComparator == *pref->m_BooleanComparator;
+    }
 };
 class BooleanNegation : public UnaryExpression {
 public:
@@ -1335,6 +1425,10 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* v = posFactory->ebv(m_Expression->eval(res, posFactory, bNodesGenSymbols));
 	return v == posFactory->getTrue() ? posFactory->getFalse() : posFactory->getTrue();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const BooleanNegation* pref = dynamic_cast<const BooleanNegation*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
     }
 };
 class ArithmeticSum : public NaryExpression {
@@ -1359,6 +1453,10 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class ArithmeticNegation : public UnaryExpression {
 public:
@@ -1372,6 +1470,10 @@ public:
 	    ')' << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticNegation* pref = dynamic_cast<const ArithmeticNegation*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
+    }
 };
 class NumberExpression : public Expression {
 private:
@@ -1382,6 +1484,10 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
 	return m_NumericRDFLiteral->evalPOS(res, bNodesGenSymbols);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const NumberExpression* pref = dynamic_cast<const NumberExpression*>(&ref);
+	return pref == NULL ? false : m_NumericRDFLiteral == pref->m_NumericRDFLiteral;
     }
 };
 class ArithmeticProduct : public NaryExpression {
@@ -1406,6 +1512,10 @@ public:
 	s << " not implemented";
 	throw s.str();
     }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticProduct* pref = dynamic_cast<const ArithmeticProduct*>(&ref);
+	return pref == NULL ? false : NaryExpression::operator==(*pref);
+    }
 };
 class ArithmeticInverse : public UnaryExpression {
 public:
@@ -1418,6 +1528,10 @@ public:
 	s << "(/ 1 " << m_Expression->eval(res, posFactory, bNodesGenSymbols) <<
 	    ')' << " not implemented";
 	throw s.str();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const ArithmeticInverse* pref = dynamic_cast<const ArithmeticInverse*>(&ref);
+	return pref == NULL ? false : *m_Expression == *pref->m_Expression;
     }
 };
 
