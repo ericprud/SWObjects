@@ -75,7 +75,7 @@ void mapTest (const char* queryFile, const char* mapFile,
     delete sparqlParser.root;
 
     query->express(&queryMapper);
-    const Operation* o = queryMapper.getCopy();
+    const Operation* transformed = queryMapper.getCopy();
     delete query;
 
     /* Parse map results. */
@@ -85,17 +85,17 @@ void mapTest (const char* queryFile, const char* mapFile,
 	throw msg;
     }
     Operation* mapResults = sparqlParser.root;
-    BOOST_CHECK_EQUAL(*o, *mapResults);
+    BOOST_CHECK_EQUAL(*transformed, *mapResults);
     delete mapResults;
 
     if (stemURI != NULL) {
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
 	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", NULL);
-	o->express(&s);
+	transformed->express(&s);
 	std::cout << s.getSQLstring() << endl;
     }
-    delete o;
+    delete transformed;
 }
 
 BOOST_AUTO_TEST_CASE( op_equals ) {
