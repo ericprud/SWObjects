@@ -22,7 +22,7 @@ using namespace w3c_sw;
 
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
-std::ostream* DebugStream = NULL;
+std::ostream* DebugStream = NULL; // e.g. &std::cerr
 QueryMapper queryMapper(&f, &DebugStream);
 
 
