@@ -403,7 +403,7 @@ namespace w3c_sw {
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.
 
-	virtual void functionCall (FunctionCall* me, URI* p_IRIref, ArgList* p_ArgList) {
+	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
