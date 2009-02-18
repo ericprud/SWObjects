@@ -443,6 +443,10 @@ namespace w3c_sw {
 		if (last.expression)
 		    l_Expressions->push_back(last.expression);
 	    }
+	    if (l_Expressions->size() == 0) {
+		delete l_Expressions;
+		return NULL;
+	    }
 	    return l_Expressions;
 	}
 
@@ -477,7 +481,7 @@ namespace w3c_sw {
 	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
 	     */
 	    const RDFLiteral* ifaceName = litExp->getLiteral();
-	    last.functionCall = NULL;
+	    last.expression = NULL;
 
 	    /* create a substitution regexp:
 	       from: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor([0-9]+)/Offer([0-9]+)
@@ -555,27 +559,43 @@ namespace w3c_sw {
 
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
-	    last.expression = new BooleanConjunction(v);
-	    v->clear();
-	    delete v;
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new BooleanConjunction(v);
+		v->clear();
+		delete v;
+	    }
 	}
 	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
-	    last.expression = new BooleanDisjunction(v);
-	    v->clear();
-	    delete v;
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new BooleanDisjunction(v);
+		v->clear();
+		delete v;
+	    }
 	}
 	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
-	    last.expression = new ArithmeticSum(v);
-	    v->clear();
-	    delete v;
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new ArithmeticSum(v);
+		v->clear();
+		delete v;
+	    }
 	}
 	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
-	    last.expression = new ArithmeticProduct(v);
-	    v->clear();
-	    delete v;
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new ArithmeticProduct(v);
+		v->clear();
+		delete v;
+	    }
 	}
     };
 
