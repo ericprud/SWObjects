@@ -244,16 +244,8 @@ public:
     virtual bool isConstant () const { return false; }
 };
 
-struct URImap {
-    boost::regex ifacePattern;
-    std::string localPattern;
-};
-
 class Variable : public Bindable {
     friend class POSFactory;
-protected:
-    std::vector<URImap> uriMaps;
-    POSFactory* posFactory;
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
@@ -262,7 +254,6 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
     virtual std::string getBindingAttributeName () const { return "name"; }
-    void setMaps (std::vector<URImap> maps, POSFactory* factory) { uriMaps = maps; posFactory = factory; }
 };
 
 class BNode : public Bindable {

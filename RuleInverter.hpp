@@ -16,6 +16,12 @@
 
 namespace w3c_sw {
 
+    struct URImap {
+	const POS* atom;
+	boost::regex ifacePattern;
+	std::string localPattern;
+    };
+
     class OperationResultSet : public ResultSet {
 	class FilterCopier : public RecursiveExpressor {
 	    class FilterDuplicator : public SWObjectDuplicator {
@@ -46,6 +52,7 @@ namespace w3c_sw {
 	    }
 
 	};
+
     protected:
 	TableDisjunction* constructed;
 	const TableOperation* userQueryDisjoint;
@@ -60,6 +67,34 @@ namespace w3c_sw {
 	    */
 	    FilterCopier c(dest);
 	    userQueryDisjoint->express(&c);
+	}
+	size_t applyMaps (std::vector<URImap> const &maps) {
+	    size_t matches = 0;
+	    for (ResultSetIterator row = begin(); row != end(); ++row) {
+		for (std::vector<URImap>::const_iterator map = maps.begin();
+		     map != maps.end(); ++map) {
+		    BindingSetIterator binding = (*row)->find(map->atom);
+		    if (binding != (*row)->end()) {
+			const URI* u = dynamic_cast<const URI*>(binding->second.pos);
+			if ((u) != NULL) {
+			    std::ostringstream t(std::ios::out | std::ios::binary);
+			    std::ostream_iterator<char, char> oi(t);
+			    std::string tweak = u->getTerminal();
+			    std::cerr << "s{" << map->ifacePattern << "}\n {" << map->localPattern << "}\n (" << tweak << ")\n=>";
+			    boost::regex_replace(oi, tweak.begin(), tweak.end(),
+						 map->ifacePattern, map->localPattern, 
+						 boost::match_default | boost::format_all | boost::format_no_copy);
+			    std::cerr << t.str() << std::endl;
+			    std::string changed = t.str();
+			    if (changed.size() == 0)
+				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + tweak;
+			    (*row)->set(map->atom, posFactory->getURI(changed), false, true);
+			    ++matches;
+			}
+		    }
+		}
+	    }
+	    return matches;
 	}
     };
 
@@ -201,6 +236,7 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
+	    opRS->applyMaps(uriMaps);
 	    if (*debugStream != NULL)
 		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
 
@@ -313,10 +349,6 @@ namespace w3c_sw {
 		//return TriplePattern::gt(l, r);
 	    }
 	};
-	virtual void variable (const Variable* const self, std::string terminal) {
-	    last.posz.pos = last.posz.variable = self;
-	    ((Variable*)self)->setMaps(uriMaps, posFactory); /* LIES */
-	}
 
 	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
@@ -403,6 +435,21 @@ namespace w3c_sw {
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.
 
+	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); it++) {
+		(*it)->express(this);
+		if (last.expression)
+		    l_Expressions->push_back(last.expression);
+	    }
+	    return l_Expressions;
+	}
+
+	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* p_expressions) {
+	    last.argList = new ArgList(_Expressions(p_expressions)); /* links to RuleInverter::_Expressions */
+	}
+
 	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
@@ -459,6 +506,7 @@ namespace w3c_sw {
 	    }
 
 	    URImap newMap;
+	    newMap.atom = toModify;
 
 	    {
 		string iriStr(localName->getString());
@@ -503,6 +551,31 @@ namespace w3c_sw {
 		newMap.ifacePattern.assign(iface.str());
 	    }
 	    uriMaps.push_back(newMap);
+	}
+
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    last.expression = new BooleanConjunction(v);
+	    v->clear();
+	    delete v;
+	}
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    last.expression = new BooleanDisjunction(v);
+	    v->clear();
+	    delete v;
+	}
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    last.expression = new ArithmeticSum(v);
+	    v->clear();
+	    delete v;
+	}
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    last.expression = new ArithmeticProduct(v);
+	    v->clear();
+	    delete v;
 	}
     };
 

@@ -598,24 +598,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
     const POS* Variable::evalPOS (const Result* r, bool) const {
-	const POS* ret = r->get(this);
-
-	const URI* u;
-	if ((u = dynamic_cast<const URI*>(ret)) != NULL) {
-	    for (std::vector<URImap>::const_iterator it = uriMaps.begin();
-		 it != uriMaps.end(); ++it) {
-		std::ostringstream t(std::ios::out | std::ios::binary);
-		std::ostream_iterator<char, char> oi(t);
-		std::string tweak = u->getTerminal();
-		//std::cerr << "s{" << it->ifacePattern << "}\n {" << it->localPattern << "}\n (" << tweak << ")\n=>";
-		boost::regex_replace(oi, tweak.begin(), tweak.end(),
-				     it->ifacePattern, it->localPattern, 
-				 boost::match_default | boost::format_all);
-		//std::cerr << t.str() << std::endl;
-		ret = u = posFactory->getURI(t.str());
-	    }
-	}
-	return ret;
+	return r->get(this);
     }
 
     void TableJunction::addTableOperation (const TableOperation* tableOp) {
