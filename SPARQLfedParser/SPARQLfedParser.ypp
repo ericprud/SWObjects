@@ -678,7 +678,9 @@ SourceSelector:
 
 WhereClause:
     // 'WHERE'? GroupGraphPattern BindingClause?
-    _QIT_WHERE_E_Opt GroupGraphPattern _QBindingClause_E_Opt	{ $$ = new WhereClause($2, $3); }
+    _QIT_WHERE_E_Opt GroupGraphPattern _QBindingClause_E_Opt	{
+	$$ = new WhereClause($2, $3);
+    }
 ;
 
 _QIT_WHERE_E_Opt:
