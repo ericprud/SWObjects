@@ -331,7 +331,7 @@ URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
     size_t index = ret.find(':');
     if (index == std::string::npos)
 	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
-    URI* nspace = driver->getNamespace(ret.substr(0, index));
+    URI* nspace = driver->getNamespace(ret.substr(0, index), true);
     if (nspace == NULL) {
 	std::stringstream err;
 	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
