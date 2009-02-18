@@ -169,6 +169,7 @@ tr:bind(?offer, bsbm-inst:, "dataFromVendor$(offer_publisher)/Offer$(offer_nr)")
 
 ?productfeature # tr:bind(?productfeature, bsbm-inst:, "ProductFeature@@productfeature.nr@@")
                 productfeature:label ?pf_label ;
+                productfeature:nr ?pfk ;
                 productfeature:comment ?pf_comment ;
                 # tr:bind(?prodPub, bsbm-inst:, "StandardizationInstitution@@productfeature.publisher@@")
                 productfeature:publishDate ?pf_publishDate .
@@ -201,5 +202,13 @@ tr:bind(?offer, bsbm-inst:, "dataFromVendor$(offer_publisher)/Offer$(offer_nr)")
         # tr:bind(?vend_country, "http://downlode.org/rdf/iso-3166/countries#@@vendor.country@@")
         # tr:bind(?vend_publisher, bsbm-inst:, "dataFromVendor@@vendor.nr@@/Vendor@@vendor.nr@@")
         vendor:publishDate ?lit_publishDate .
+FILTER (
+tr:rewriteVar(?product, "http://bsbm.example/db/productfeatureproduct/offer.nr=($offer=[0-9]+)&publisher=($pub=[0-9]+)", 
+			"http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor($pub=[0-9]+)/Offer($offer=[0-9]+)") &&
+tr:rewriteVar(?pfp, "http://bsbm.example/db/productfeatureproduct/productfeature.($pfk=[0-9]+)", 
+		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature($pfk=[0-9]+)") &&
+tr:rewriteVar(?ptp, "http://bsbm.example/db/producttypeproduct/producttype.($pfk=[0-9]+)", 
+		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType($pfk=[0-9]+)")
+)
 }
 
