@@ -7,14 +7,14 @@
 #include <iostream>
 
 namespace w3c_sw {
-    void Result::set (const POS* variable, const POS* value, bool weaklyBound) {
+    void Result::set (const POS* variable, const POS* value, bool weaklyBound, bool replace) {
 	if (variable->toString() == "?") {
 	    std::stringstream s;
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
 	BindingSet::const_iterator vi = bindings.find(variable);
-	if (vi == bindings.end()) {
+	if (replace || vi == bindings.end()) {
 	    BindingInfo b = {weaklyBound, value};
 	    bindings[variable] = b;
 	} else {

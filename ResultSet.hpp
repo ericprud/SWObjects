@@ -70,7 +70,7 @@ namespace w3c_sw {
 	/* set should only be used by ResultSet::set if you want to keep the
 	   header consistent.
 	 */
-	void set(const POS* variable, const POS* value, bool weaklyBound);
+	void set(const POS* variable, const POS* value, bool weaklyBound, bool replace = false);
 	Result* duplicate(ResultSet* rs, ResultSetIterator row);
 
 	ResultSet* makeResultSet(POSFactory* posFactory);
