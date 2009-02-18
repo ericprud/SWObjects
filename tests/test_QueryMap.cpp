@@ -75,7 +75,7 @@ void mapTest (const char* queryFile, const char* mapFile,
     delete sparqlParser.root;
 
     query->express(&queryMapper);
-    const Operation* transformed = queryMapper.getCopy();
+    const Operation* transformed = queryMapper.last.operation;
     delete query;
 
     /* Parse map results. */

@@ -78,7 +78,7 @@ class WebServer : public server::http_1a_c
 	query->express(&s);
 	cerr << s.getSPARQLstring() << endl;
 	query->express(&queryMapper);
-	Operation* mapped = queryMapper.getCopy();
+	Operation* mapped = queryMapper.last.operation;
 	delete query;
 
 	char predicateDelims[]={'#',' ',' '};

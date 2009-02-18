@@ -16,8 +16,7 @@
 
 namespace w3c_sw {
 
-    class SWObjectDuplicator : public Expressor {
-    protected:
+    struct SWObjectDuplicator : public Expressor {
 	POSFactory* posFactory; /* Can be used to create SWObjects in a different atom space. */
 
 	union {
@@ -38,10 +37,8 @@ namespace w3c_sw {
 	    FunctionCall* functionCall;
 	} last;
 
-    public:
 	SWObjectDuplicator (POSFactory* posFactory) : posFactory(posFactory) {  }
-	const Operation* getCopy () { return last.operation; }
-	//!!!
+
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual void uri (const URI* const self, std::string terminal) {
