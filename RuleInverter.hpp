@@ -16,10 +16,20 @@
 
 namespace w3c_sw {
 
-    struct URImap {
-	const POS* atom;
+    struct POSmap {
+	const POS* selector;
 	boost::regex ifacePattern;
 	std::string localPattern;
+	std::string mapString (const std::string tweak) const {
+	    std::ostringstream t(std::ios::out | std::ios::binary);
+	    std::ostream_iterator<char, char> oi(t);
+	    std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
+	    boost::regex_replace(oi, tweak.begin(), tweak.end(),
+				 ifacePattern, localPattern, 
+				 boost::match_default | boost::format_all | boost::format_no_copy);
+	    std::cerr << t.str() << std::endl;
+	    return t.str();
+	}
     };
 
     class OperationResultSet : public ResultSet {
@@ -68,27 +78,19 @@ namespace w3c_sw {
 	    FilterCopier c(dest);
 	    userQueryDisjoint->express(&c);
 	}
-	size_t applyMaps (std::vector<URImap> const &maps) {
+	size_t applyMaps (std::vector<POSmap> const &maps) {
 	    size_t matches = 0;
 	    for (ResultSetIterator row = begin(); row != end(); ++row) {
-		for (std::vector<URImap>::const_iterator map = maps.begin();
+		for (std::vector<POSmap>::const_iterator map = maps.begin();
 		     map != maps.end(); ++map) {
-		    BindingSetIterator binding = (*row)->find(map->atom);
+		    BindingSetIterator binding = (*row)->find(map->selector);
 		    if (binding != (*row)->end()) {
 			const URI* u = dynamic_cast<const URI*>(binding->second.pos);
 			if ((u) != NULL) {
-			    std::ostringstream t(std::ios::out | std::ios::binary);
-			    std::ostream_iterator<char, char> oi(t);
-			    std::string tweak = u->getTerminal();
-			    std::cerr << "s{" << map->ifacePattern << "}\n {" << map->localPattern << "}\n (" << tweak << ")\n=>";
-			    boost::regex_replace(oi, tweak.begin(), tweak.end(),
-						 map->ifacePattern, map->localPattern, 
-						 boost::match_default | boost::format_all | boost::format_no_copy);
-			    std::cerr << t.str() << std::endl;
-			    std::string changed = t.str();
+			    std::string changed = map->mapString(u->getTerminal());
 			    if (changed.size() == 0)
-				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + tweak;
-			    (*row)->set(map->atom, posFactory->getURI(changed), false, true);
+				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + u->getTerminal();
+			    (*row)->set(map->selector, posFactory->getURI(changed), false, true);
 			    ++matches;
 			}
 		    }
@@ -116,9 +118,9 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
-	    std::vector<URImap> uriMaps;
+	    std::vector<POSmap> uriMaps;
 	public:
-	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness, std::vector<URImap> uriMaps) :
+	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness, std::vector<POSmap> uriMaps) :
 		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row), uriMaps(uriMaps) {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
@@ -204,13 +206,13 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
-	std::vector<URImap> uriMaps;
+	std::vector<POSmap> uriMaps;
 	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
 			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
-			  std::vector<URImap> uriMaps, std::ostream** debugStream) : 
+			  std::vector<POSmap> uriMaps, std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
@@ -292,7 +294,7 @@ namespace w3c_sw {
 	std::map<const POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
-	std::vector<URImap> uriMaps;
+	std::vector<POSmap> uriMaps;
 
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
@@ -509,8 +511,8 @@ namespace w3c_sw {
 		}
 	    }
 
-	    URImap newMap;
-	    newMap.atom = toModify;
+	    POSmap newMap;
+	    newMap.selector = toModify;
 
 	    {
 		string iriStr(localName->getString());
