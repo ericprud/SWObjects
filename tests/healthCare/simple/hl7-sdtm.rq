@@ -1,0 +1,46 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
+PREFIX sdtm: <http://www.sdtm.org/vocabulary#>
+PREFIX bridg: <>
+PREFIX caBIG: <>
+PREFIX CDASH: <>
+PREFIX MHONG: <>
+PREFIX dam: <>
+
+CONSTRUCT {
+?patient
+    a					  sdtm:Patient ;
+    sdtm:middleName			  ?middleName ;
+    sdtm:dateTimeOfBirth		  ?dob ;
+    sdtm:sex ?sex .
+[	a	       sdtm:ConcomitantMedication ;
+	sdtm:subject   ?patient ;
+	sdtm:standardizedMedicationName	 ?takes ;
+
+	# nothing by ingredient in sdtm/caBIG/...
+	spl:activeIngredient [ spl:classCode ?ingred ] ;
+	sdtm:startDateTimeOfMedication ?start
+	# ; sdtm:endDateTimeOfMedication ?end
+    ] .
+} WHERE {
+?patient
+    a					  hl7:Person ;
+    hl7:entityName			  ?middleName ;
+    hl7:livingSubjectBirthTime		  ?dob ;
+    hl7:administrativeGenderCodePrintName ?sex ;
+    hl7:substanceAdministration		  [
+	a	       hl7:SubstanceAdministration ;
+ 	hl7:consumable [
+	    hl7:displayName	 ?takes ;
+	    spl:activeIngredient [
+		spl:classCode ?ingred
+	    ]
+	] ;
+	hl7:effectiveTime [
+	    hl7:start ?start
+	    # hl7:end   ?end
+	]
+    ] .
+}
