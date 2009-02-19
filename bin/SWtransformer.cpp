@@ -132,7 +132,7 @@ int main(int argc,char** argv) {
 		    if (DebugStream != NULL)
 			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
 		    query->express(&queryMapper);
-		    o = queryMapper.getCopy();
+		    o = queryMapper.last.operation;
 		    delete query;
 		} else
 		    o = query;
