@@ -701,7 +701,7 @@ class DefaultGraphPattern : public BasicGraphPattern {
 public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
     DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
-    virtual TableOperation* getDNF () const { return new DefaultGraphPattern(); }
+    virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation& ref) const {
