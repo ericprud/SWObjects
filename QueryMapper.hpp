@@ -53,7 +53,7 @@ namespace w3c_sw {
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
 		OperationResultSet opRS(posFactory, constructed, userQueryDisjoint);
-		(*invertedRule)->execute(&userQueryAsAssertions, &opRS);
+		(*invertedRule)->executeMapping(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}

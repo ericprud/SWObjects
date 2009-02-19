@@ -14,6 +14,11 @@
 #include <algorithm>
 #include <boost/regex.hpp>
 
+/* APPLY_VARMAPS_INDISCRIMINATELY -- Apply tr:rewrite(?foo,p1,p2) to
+ * any URI in the transformation output, not just bindings for ?foo.
+ */
+#define APPLY_VARMAPS_INDISCRIMINATELY
+
 namespace w3c_sw {
 
     struct POSmap {
@@ -23,11 +28,13 @@ namespace w3c_sw {
 	std::string mapString (const std::string tweak) const {
 	    std::ostringstream t(std::ios::out | std::ios::binary);
 	    std::ostream_iterator<char, char> oi(t);
-	    std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
 	    boost::regex_replace(oi, tweak.begin(), tweak.end(),
 				 ifacePattern, localPattern, 
 				 boost::match_default | boost::format_all | boost::format_no_copy);
-	    std::cerr << t.str() << std::endl;
+	    if (t.str().size() != 0) {
+		std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
+		std::cerr << t.str() << std::endl;
+	    }
 	    return t.str();
 	}
     };
@@ -78,6 +85,7 @@ namespace w3c_sw {
 	    FilterCopier c(dest);
 	    userQueryDisjoint->express(&c);
 	}
+#ifndef APPLY_VARMAPS_INDISCRIMINATELY
 	size_t applyMaps (std::vector<POSmap> const &maps) {
 	    size_t matches = 0;
 	    for (ResultSetIterator row = begin(); row != end(); ++row) {
@@ -98,6 +106,7 @@ namespace w3c_sw {
 	    }
 	    return matches;
 	}
+#endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
     };
 
     /* MappingConstruct — extends Construct::execute to peform steps 4 through 8
@@ -124,10 +133,45 @@ namespace w3c_sw {
 		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row), uriMaps(uriMaps) {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
-	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
+	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* bgp) {
 		for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
-		    (*triple)->construct(p, row, posFactory, false);
+#ifdef APPLY_VARMAPS_INDISCRIMINATELY
+		    {
+			/* Copy TriplePattern::construct functionality and inject transformation. */
+			bool ret = false;
+			const POS *s, *p, *o;
+			if ((s = (*triple)->getS()->evalPOS(row, false)) != NULL && 
+			    (p = (*triple)->getP()->evalPOS(row, false)) != NULL && 
+			    (o = (*triple)->getO()->evalPOS(row, false)) != NULL) {
+			    /* inject transformations */
+			    const POS** uris[3] = {&s, &p, &o};
+			    for (unsigned i = 0; i < 3; ++i) {
+				const POS* pos = *uris[i];
+				const URI* u = dynamic_cast<const URI*>(*uris[i]);
+				if (u != NULL) {
+				    for (std::vector<POSmap>::const_iterator map = uriMaps.begin();
+					 map != uriMaps.end(); ++map) {
+					std::string changed = map->mapString(u->getTerminal());
+					if (changed.size() != 0) {
+					    *uris[i] = posFactory->getURI(changed.c_str());
+					    break;
+					}
+				    }
+				}
+			    }
+			    if (posFactory == NULL) {
+				if (s == (*triple)->getS() && p == (*triple)->getP() && o == (*triple)->getO()) // lost:  && !weaklyBound
+				    bgp->addTriplePattern(*triple);
+				else
+				    throw(std::runtime_error("TriplePattern::construct requires POSFactory when constructing new triples."));
+			    } else
+				bgp->addTriplePattern(posFactory->getTriple(s, p, o));
+			}
+		    }
+#else /* !APPLY_VARMAPS_INDISCRIMINATELY */
+		    (*triple)->construct(bgp, row, posFactory, false);
+#endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
 	    }
 
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
@@ -222,10 +266,7 @@ namespace w3c_sw {
 	    delete constructRuleBodyAsConsequent;
 	}
 	WhereClause* getRuleBody () { return m_WhereClause; }
-	virtual OperationResultSet* execute (RdfDB* userQueryAsAssertions, ResultSet* rs = NULL) {
-	    OperationResultSet* opRS = dynamic_cast<OperationResultSet*>(rs);
-	    if (opRS == NULL)
-		throw(std::runtime_error("MappingConstrucs need a result set.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
+	virtual OperationResultSet* executeMapping (RdfDB* userQueryAsAssertions, OperationResultSet* opRS) {
 
 	    /* Build a disjoint in a where clause for the transformed user
 	     * query. Currently, the approach is to express the rule head as a
@@ -238,7 +279,9 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
-	    opRS->applyMaps(uriMaps);
+#ifndef APPLY_VARMAPS_INDISCRIMINATELY
+ 	    opRS->applyMaps(uriMaps);
+#endif
 	    if (*debugStream != NULL)
 		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
 
@@ -266,7 +309,7 @@ namespace w3c_sw {
 		    patternSpanningRows->addTableOperation(t);
 	    }
 
-	    TableOperation* res = patternSpanningRows->simplify();
+	    TableOperation* res = patternSpanningRows->simplify(); // !!! should be a simplifying expressor
 	    if (res != NULL) {
 		opRS->copyFiltersTo(res);
 		opRS->addTableOperation(res);
