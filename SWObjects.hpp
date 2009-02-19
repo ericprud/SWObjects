@@ -577,7 +577,8 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 class TableOperation : public Base {
 protected:
     ProductionVector<const Filter*> m_Filters;
-    TableOperation () : Base(), m_Filters() { }
+    TableOperation () : Base(), m_Filters() {  }
+    TableOperation(const TableOperation& ref);
 public:
     //size_t filters () { return m_Filters.size(); }
     void addFilter (const Filter* filter) {
@@ -646,13 +647,15 @@ public:
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual TableOperation* getDNF() const;
 };
-class DontDeleteThisBGP;
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 protected:
     // make sure we don't delete the TriplePatterns
     NoDelProductionVector<const TriplePattern*> m_TriplePatterns;
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
+    BasicGraphPattern (const BasicGraphPattern& ref) :
+	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
+	allOpts(ref.allOpts) {  }
 
 public:
     void addTriplePattern (const TriplePattern* p) {
@@ -673,23 +676,8 @@ public:
     void erase (std::vector<const TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
     void sort (bool (*comp)(const TriplePattern*, const TriplePattern*)) { m_TriplePatterns.sort(comp); }
     void clearTriples () { m_TriplePatterns.clear(); }
-    virtual TableOperation* getDNF() const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
-};
-class DontDeleteThisBGP : public TableOperation {
-protected:
-    const BasicGraphPattern* bgp;
-public:
-    DontDeleteThisBGP (const BasicGraphPattern* bgp) : bgp(bgp) {  }
-    ~DontDeleteThisBGP () { /* Leave bgp alone. */ }
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const { bgp->bindVariables(db, rs); }
-    virtual TableOperation* getDNF () const { return new DontDeleteThisBGP(bgp); }
-    virtual void express (Expressor* p_expressor) const { bgp->express(p_expressor); }
-    virtual bool operator== (const TableOperation& ref) const {
-	const DontDeleteThisBGP* pref = dynamic_cast<const DontDeleteThisBGP*>(&ref);
-	return pref == NULL ? false : *bgp == *pref->bgp;
-    }
 };
 
 class NamedGraphPattern : public BasicGraphPattern {
@@ -698,6 +686,8 @@ private:
 
 public:
     NamedGraphPattern (const POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
+    NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
+    virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation& ref) const {
@@ -710,6 +700,8 @@ public:
 class DefaultGraphPattern : public BasicGraphPattern {
 public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
+    DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
+    virtual TableOperation* getDNF () const { return new DefaultGraphPattern(); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation& ref) const {

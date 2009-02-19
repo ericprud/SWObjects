@@ -10,6 +10,7 @@
 #include "TurtleSParser.hpp"
 #include <string.h>
 #include "SPARQLSerializer.hpp"
+#include "SWObjectDuplicator.hpp"
 
 namespace w3c_sw {
 
@@ -816,8 +817,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	delete disjoints;
 	return ret;
     }
-    TableOperation* BasicGraphPattern::getDNF () const {
-	return new DontDeleteThisBGP(this);
+    TableOperation::TableOperation (const TableOperation& ref) :
+	Base(ref), m_Filters() {
+	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); ++it) {
+	    ref.m_Filters.express(&dup);
+	    m_Filters.push_back(dup.last.filter);
+	}
     }
     TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();

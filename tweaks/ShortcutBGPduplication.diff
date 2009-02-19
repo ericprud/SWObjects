@@ -1,0 +1,103 @@
+Index: SWObjects.cpp
+===================================================================
+--- SWObjects.cpp	(working copy)
++++ SWObjects.cpp	(revision 373)
+@@ -10,7 +10,6 @@
+ #include "TurtleSParser.hpp"
+ #include <string.h>
+ #include "SPARQLSerializer.hpp"
+-#include "SWObjectDuplicator.hpp"
+ 
+ namespace w3c_sw {
+ 
+@@ -817,14 +816,8 @@
+ 	delete disjoints;
+ 	return ret;
+     }
+-    TableOperation::TableOperation (const TableOperation& ref) :
+-	Base(ref), m_Filters() {
+-	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+-	     it != m_Filters.end(); ++it) {
+-	    ref.m_Filters.express(&dup);
+-	    m_Filters.push_back(dup.last.filter);
+-	}
++    TableOperation* BasicGraphPattern::getDNF () const {
++	return new DontDeleteThisBGP(this);
+     }
+     TableOperation* TableDisjunction::getDNF () const {
+ 	TableDisjunction* ret = new TableDisjunction();
+Index: SWObjects.hpp
+===================================================================
+--- SWObjects.hpp	(working copy)
++++ SWObjects.hpp	(revision 373)
+@@ -577,8 +577,7 @@
+ class TableOperation : public Base {
+ protected:
+     ProductionVector<const Filter*> m_Filters;
+-    TableOperation () : Base(), m_Filters() {  }
+-    TableOperation(const TableOperation& ref);
++    TableOperation () : Base(), m_Filters() { }
+ public:
+     //size_t filters () { return m_Filters.size(); }
+     void addFilter (const Filter* filter) {
+@@ -647,15 +646,13 @@
+     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+     virtual TableOperation* getDNF() const;
+ };
++class DontDeleteThisBGP;
+ class BasicGraphPattern : public TableOperation { // ⊌⊍
+ protected:
+     // make sure we don't delete the TriplePatterns
+     NoDelProductionVector<const TriplePattern*> m_TriplePatterns;
+     bool allOpts;
+     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
+-    BasicGraphPattern (const BasicGraphPattern& ref) :
+-	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
+-	allOpts(ref.allOpts) {  }
+ 
+ public:
+     void addTriplePattern (const TriplePattern* p) {
+@@ -676,9 +673,24 @@
+     void erase (std::vector<const TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
+     void sort (bool (*comp)(const TriplePattern*, const TriplePattern*)) { m_TriplePatterns.sort(comp); }
+     void clearTriples () { m_TriplePatterns.clear(); }
++    virtual TableOperation* getDNF() const;
+     virtual void express(Expressor* p_expressor) const = 0;
+     virtual bool operator==(const TableOperation& ref) const = 0;
+ };
++class DontDeleteThisBGP : public TableOperation {
++protected:
++    const BasicGraphPattern* bgp;
++public:
++    DontDeleteThisBGP (const BasicGraphPattern* bgp) : bgp(bgp) {  }
++    ~DontDeleteThisBGP () { /* Leave bgp alone. */ }
++    virtual void bindVariables(RdfDB* db, ResultSet* rs) const { bgp->bindVariables(db, rs); }
++    virtual TableOperation* getDNF () const { return new DontDeleteThisBGP(bgp); }
++    virtual void express (Expressor* p_expressor) const { bgp->express(p_expressor); }
++    virtual bool operator== (const TableOperation& ref) const {
++	const DontDeleteThisBGP* pref = dynamic_cast<const DontDeleteThisBGP*>(&ref);
++	return pref == NULL ? false : *bgp == *pref->bgp;
++    }
++};
+ 
+ class NamedGraphPattern : public BasicGraphPattern {
+ private:
+@@ -686,8 +698,6 @@
+ 
+ public:
+     NamedGraphPattern (const POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
+-    NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
+-    virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
+     virtual void express(Expressor* p_expressor) const;
+     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+     virtual bool operator== (const TableOperation& ref) const {
+@@ -700,8 +710,6 @@
+ class DefaultGraphPattern : public BasicGraphPattern {
+ public:
+     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
+-    DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
+-    virtual TableOperation* getDNF () const { return new DefaultGraphPattern(); }
+     virtual void express(Expressor* p_expressor) const;
+     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+     virtual bool operator== (const TableOperation& ref) const {
