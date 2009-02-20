@@ -53,6 +53,7 @@ struct EqualsTest {
 };
 
 BOOST_AUTO_TEST_SUITE( op_equals )
+
 BOOST_AUTO_TEST_SUITE( bgp )
 BOOST_AUTO_TEST_CASE( case_and_space_sensitivity ) {
     BOOST_TEST_CHECKPOINT( "executing BGP tests" );
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( nested )
 BOOST_AUTO_TEST_CASE( nested_case_and_space_sensitivity ) {
     BOOST_TEST_CHECKPOINT( "executing nested tests" );
-    EqualsTest t("SELECT * WHERE {{ ?s ?p ?o }}", 
+    EqualsTest t("SELECT * WHERE { { ?s ?p ?o } }", 
 		 "select*{{?s?p?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
@@ -122,38 +123,85 @@ BOOST_AUTO_TEST_CASE( nested_different_vars_in_filter ) {
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( named )
-BOOST_AUTO_TEST_CASE( nested_case_and_space_sensitivity ) {
+BOOST_AUTO_TEST_CASE( named_case_and_space_sensitivity ) {
     BOOST_TEST_CHECKPOINT( "executing named graph tests" );
-    EqualsTest t("SELECT * WHERE {GRAPH<x>{ ?s ?p ?o }}", 
-		 "select*{GRAPH<x>{?s?p?o}}");
+    EqualsTest t("SELECT * WHERE { GRAPH<x> { ?s ?p ?o } }", 
+		 "select*{graph<x>{?s?p?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( nested_question_dollar_vars ) {
+BOOST_AUTO_TEST_CASE( named_question_dollar_vars ) {
     EqualsTest t("SELECT ?s ?p ?o {GRAPH<x>{ ?s ?p ?o }}", 
 		 "SELECT ?s ?p $o {GRAPH<x>{ ?s ?p ?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( nested_ignore_select_order ) {
+BOOST_AUTO_TEST_CASE( named_ignore_select_order ) {
     EqualsTest t("SELECT ?p ?s ?o {GRAPH<x>{ ?s ?p ?o }}", 
 		 "SELECT ?s ?p ?o {GRAPH<x>{ ?s ?p ?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( nested_observe_triple_order ) {
+BOOST_AUTO_TEST_CASE( named_observe_triple_order ) {
     EqualsTest t("SELECT ?s ?p ?o {GRAPH<x>{ ?s ?p ?o }}", 
 		 "SELECT ?s ?p $o {GRAPH<x>{ ?s ?o ?p}}");
     BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
-BOOST_AUTO_TEST_CASE( nested_equiv_filter ) {
+BOOST_AUTO_TEST_CASE( named_equiv_filter ) {
     EqualsTest t("SELECT * {GRAPH<x>{ FILTER(1*(2+3)=?x) }}", 
 		 "SELECT * {GRAPH<x>{ FILTER(1*(2+3)=$x) }}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( nested_different_vars_in_filter ) {
+BOOST_AUTO_TEST_CASE( named_different_vars_in_filter ) {
     EqualsTest t("SELECT * {GRAPH<x>{ FILTER( ?x ) }}", 
 		 "SELECT * {GRAPH<x>{ FILTER( ?y ) }}");
     BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( conjuncts )
+BOOST_AUTO_TEST_CASE( conjunct_positive ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } { ?s ?p ?o }}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o }}");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( conjunct_negative ) {
+    EqualsTest t("SELECT $p ?s $o {{ ?s ?p ?o } { ?s ?p ?o }}", 
+		 "SELECT $s ?p ?o {{ ?s ?p ?o } { ?s ?o ?p }}");
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
+}
+BOOST_AUTO_TEST_CASE( conjunct_equiv_filter ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER(1*(2+3)=?x)}");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( conjunct_different_vars_in_filter ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER( ?x )}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER( ?y )}");
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
+}
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( unions )
+BOOST_AUTO_TEST_CASE( union_positive ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } UNION { ?s ?p ?o }}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o }}");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( union_negative ) {
+    EqualsTest t("SELECT $p ?s $o {{ ?s ?p ?o } UNION { ?s ?p ?o }}", 
+		 "SELECT $s ?p ?o {{ ?s ?p ?o } UNION { ?s ?o ?p }}");
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
+}
+BOOST_AUTO_TEST_CASE( union_equiv_filter ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( union_different_vars_in_filter ) {
+    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER( ?x )}", 
+		 "SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER( ?y )}");
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
+}
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
