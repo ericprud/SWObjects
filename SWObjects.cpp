@@ -719,7 +719,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	db->bindVariables(rs, NULL, this);
     }
 
-    std::ostream* BasicGraphPattern::DiffStream = &std::cerr; // NULL;
+    std::ostream* BasicGraphPattern::DiffStream = NULL;
     bool BasicGraphPattern::CompareVars = false;
 
     /* constOrNull helper function for cheesy operator== below */
