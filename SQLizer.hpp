@@ -705,6 +705,8 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
+	//static std::ostream** ErrorStream;
+
 	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], string defaultPKAttr, std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
