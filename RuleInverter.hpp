@@ -31,10 +31,10 @@ namespace w3c_sw {
 	    boost::regex_replace(oi, tweak.begin(), tweak.end(),
 				 ifacePattern, localPattern, 
 				 boost::match_default | boost::format_all | boost::format_no_copy);
-	    if (t.str().size() != 0) {
-		std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
-		std::cerr << t.str() << std::endl;
-	    }
+	    //if (t.str().size() != 0) {
+	    //	std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
+	    //	std::cerr << t.str() << std::endl;
+	    //}
 	    return t.str();
 	}
     };
