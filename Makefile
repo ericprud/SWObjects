@@ -126,15 +126,18 @@ unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 # You can override unitTESTS while fiddling with them.
 #unitTESTS=t_GraphMatch
 #$(error unitTESTS: $(unitTESTS))
+# and control which subtests within a unit are run
+#TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
+TEST_ARGS ?= ""
 
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
-	$<
+	$< $(TEST_ARGS)
 
 v_%: tests/test_%
-	valgrind --leak-check=yes --xml=no $<
+	valgrind --leak-check=yes --xml=no $< $(TEST_ARGS)
 
 
 ### SWtransformer tests:
