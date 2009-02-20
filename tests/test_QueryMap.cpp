@@ -10,6 +10,7 @@
 
 #include <map>
 #include <vector>
+#include <fstream>
 #include "SWObjects.hpp"
 #include "SPARQLfedParser.hpp"
 #include "RdfDB.hpp"
@@ -205,13 +206,12 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 
-struct MapTest {
+struct RuleMapTest {
     bool bgpCompareVars;
     const Operation* transformed;
     Operation* mapResults;
-    MapTest (const char* queryFile, const char* mapFile, 
-	     const char* mapResultsFile, 
-	     const char* stemURI, const char* sqlResultsFile) :
+    RuleMapTest (const char* queryFile, const char* mapFile, 
+		 const char* mapResultsFile) :
 	bgpCompareVars(BasicGraphPattern::CompareVars) {
 
 	/* Parse query. */
@@ -243,37 +243,65 @@ struct MapTest {
 	}
 	mapResults = sparqlParser.root;
 
-	if (stemURI != NULL) {
-	    char predicateDelims[]={'#',' ',' '};
-	    char nodeDelims[]={'/','.',' '};
-	    SQLizer s(stemURI, predicateDelims, nodeDelims, "id", &DebugStream);
-	    transformed->express(&s);
-	    std::cout << s.getSQLstring() << endl;
-	}
 	BasicGraphPattern::CompareVars = true;
     }
-    ~MapTest () {
+    ~RuleMapTest () {
 	BasicGraphPattern::CompareVars = bgpCompareVars;
 	delete mapResults;
 	delete transformed;
     }
 };
 
+struct SQLizerTest {
+    //std::iostream* sqlErrorStream;
+    std::string transformed, ref;
+    SQLizerTest (const Operation* sparqlQuery, 
+		 const char* stemURI, const char* sqlResultsFile)
+	//: sqlErrorStream(SQLizer::ErrorStream)
+    {
+	//SQLizer::ErrorStream = &std::cerr;
+
+	/* map SPARQLquery to SQL. */
+	char predicateDelims[]={'#',' ',' '};
+	char nodeDelims[]={'/','.',' '};
+	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", &DebugStream);
+	sparqlQuery->express(&s);
+	transformed = s.getSQLstring();
+	//std::cout << s.getSQLstring() << endl;
+
+	/* Read reference SQL. */
+	std::ifstream dataStream(sqlResultsFile);
+	if (!dataStream.is_open()) {
+	    std::string msg = std::string("failed to read data \"") + 
+		sqlResultsFile + std::string("\".");
+	    throw msg;
+	}
+	std::istreambuf_iterator<char> i(dataStream), e;
+	ref = std::string(i, e);
+	dataStream.close();
+    }
+    ~SQLizerTest () {
+	//SQLizer::ErrorStream = sqlErrorStream;
+    }
+};
+
 BOOST_AUTO_TEST_SUITE( healthCare )
 BOOST_AUTO_TEST_SUITE( simple )
 BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
-    MapTest t("tests/healthCare/simple/sdtm.rq", "tests/healthCare/simple/hl7-sdtm.rq", "tests/healthCare/simple/hl7.rq", NULL, NULL);
+    RuleMapTest t("tests/healthCare/simple/sdtm.rq", "tests/healthCare/simple/hl7-sdtm.rq", "tests/healthCare/simple/hl7.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
 BOOST_AUTO_TEST_CASE( sdtm_db ) {
-    MapTest t("tests/healthCare/simple/hl7.rq", "tests/healthCare/simple/db-hl7.rq", "tests/healthCare/simple/db.rq", "http://hospital.example/DB/", "tests/healthCare/simple/db.sql");
+    RuleMapTest t("tests/healthCare/simple/hl7.rq", "tests/healthCare/simple/db-hl7.rq", "tests/healthCare/simple/db.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "tests/healthCare/simple/db.sql");
+    BOOST_CHECK_EQUAL(s.transformed, s.ref);
 }
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE( bsbm_1 ) {
-    MapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq", NULL, NULL);
+    RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
 
