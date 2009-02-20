@@ -648,7 +648,9 @@ public:
     virtual TableOperation* getDNF() const;
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
+
 protected:
+
     // make sure we don't delete the TriplePatterns
     NoDelProductionVector<const TriplePattern*> m_TriplePatterns;
     bool allOpts;
@@ -656,8 +658,18 @@ protected:
     BasicGraphPattern (const BasicGraphPattern& ref) :
 	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
 	allOpts(ref.allOpts) {  }
+    bool operator==(const BasicGraphPattern& ref) const;
+
+    /* Misc helper functions: */
+    static const POS* _cOrN(const POS* pos, const NULLpos* n);
 
 public:
+
+    /* Controls for operator==(BasicGraphPatter&)
+     */
+    static std::ostream* DiffStream;	// << diff strings to DiffStream .
+    static bool CompareVars;		// Whether ?x == ?y .
+
     void addTriplePattern (const TriplePattern* p) {
 	for (std::vector<const TriplePattern*>::iterator it = m_TriplePatterns.begin();
 	     it != m_TriplePatterns.end(); ++it)
@@ -694,7 +706,7 @@ public:
 	const NamedGraphPattern* pref = dynamic_cast<const NamedGraphPattern*>(&ref);
 	return pref == NULL ? false : 
 	    m_name == pref->m_name &&
-	    m_TriplePatterns == pref->m_TriplePatterns;
+	    BasicGraphPattern::operator==(*pref);
     }
 };
 class DefaultGraphPattern : public BasicGraphPattern {
@@ -706,15 +718,8 @@ public:
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
-	if (pref == NULL ||
-	    !(m_TriplePatterns == pref->m_TriplePatterns))
-	    return false;
-	std::vector<const Filter*>::const_iterator mit = m_Filters.begin();
-	std::vector<const Filter*>::const_iterator rit = pref->m_Filters.begin();
-	for ( ; mit != m_Filters.end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
+	return pref == NULL ? false :
+	    BasicGraphPattern::operator==(*pref);
     }
 };
 class TableOperationOnOperation : public TableOperation {

@@ -719,6 +719,75 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	db->bindVariables(rs, NULL, this);
     }
 
+    std::ostream* BasicGraphPattern::DiffStream = &std::cerr; // NULL;
+    bool BasicGraphPattern::CompareVars = false;
+
+    /* constOrNull helper function for cheesy operator== below */
+    const POS* BasicGraphPattern::_cOrN (const POS* pos, const NULLpos* n) {
+	if (CompareVars)
+	    return dynamic_cast<const Bindable*>(pos) ? n : pos;
+	else
+	    return dynamic_cast<const BNode*>(pos) ? n : pos;
+    }
+
+    bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
+	unsigned errorCount = 0; // Only used if there's a DiffStream.
+	std::map<TriplePattern*, std::vector<const TriplePattern*> >mine;
+	POSFactory f; // temp to hold trimmed triples.
+	const NULLpos* n = f.getNULL();
+	for (std::vector<const TriplePattern*>::const_iterator mit = 
+		 m_TriplePatterns.begin();
+	     mit != m_TriplePatterns.end(); ++mit)
+	    mine[f.getTriple(_cOrN((*mit)->getS(), n), 
+			     _cOrN((*mit)->getP(), n), 
+			     _cOrN((*mit)->getO(), n))].push_back(*mit);
+
+	for (std::vector<const TriplePattern*>::const_iterator rit = 
+		 ref.m_TriplePatterns.begin();
+	     rit != ref.m_TriplePatterns.end(); ++rit) {
+	    TriplePattern* r = f.getTriple(_cOrN((*rit)->getS(), n), 
+					   _cOrN((*rit)->getP(), n), 
+					   _cOrN((*rit)->getO(), n));
+	    if (mine.find(r) == mine.end()) {
+		if (DiffStream != NULL) {
+		    *DiffStream << "- " << (*rit)->toString() << std::endl;
+		    ++errorCount;
+		} else
+		    return false;
+	    } else {
+		// Pick one at random.
+		mine[r].erase(mine[r].begin());
+		if (mine[r].size() == 0)
+		    mine.erase(r);
+	    }
+	}
+	if (mine.size() != 0) {
+	    if (DiffStream != NULL) {
+		for (std::map<TriplePattern*, 
+			 std::vector<const TriplePattern*> >::iterator mit = 
+			 mine.begin(); mit != mine.end(); ++mit)
+		    for (std::vector<const TriplePattern*>::iterator tpit = 
+			     mit->second.begin();
+			 tpit != mit->second.end(); ++ tpit) {
+			*DiffStream << "+ " << (*tpit)->toString() << std::endl;
+			++errorCount;
+		    }
+	    } else
+		return false;
+	}
+	if (errorCount > 0) {
+	    *DiffStream << errorCount << " errors" << std::endl;
+	    return false;
+	}
+
+	std::vector<const Filter*>::const_iterator mit = m_Filters.begin();
+	std::vector<const Filter*>::const_iterator rit = ref.m_Filters.begin();
+	for ( ; mit != m_Filters.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
+
     void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
 	bool matched = true; // Pretend it's matched so we can try the first constraint.
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
