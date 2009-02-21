@@ -889,8 +889,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
     TableOperation::TableOperation (const TableOperation& ref) :
 	Base(ref), m_Filters() {
 	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-	     it != m_Filters.end(); ++it) {
+	for (std::vector<const Filter*>::const_iterator it = ref.m_Filters.begin();
+	     it != ref.m_Filters.end(); ++it) {
 	    ref.m_Filters.express(&dup);
 	    m_Filters.push_back(dup.last.filter);
 	}
