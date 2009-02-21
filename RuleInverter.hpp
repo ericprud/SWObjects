@@ -56,7 +56,7 @@ namespace w3c_sw {
 
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void filter (Filter* self, Expression*) {
+	    virtual void filter (const Filter* const self, const Expression*) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
