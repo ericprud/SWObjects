@@ -583,11 +583,9 @@ namespace w3c_sw {
 	    }
 
 	    for (std::map<std::string, VarDetails>::const_iterator it = patternVars.begin();
-		 it != patternVars.end(); ++it) {
+		 it != patternVars.end(); ++it)
 		if (it->second.pattern.size() == 0)
 		    patternVars[it->first].pattern = ".*?";
-		cout << '\\' << it->second.i << ": " << it->first << "=" << it->second.pattern << endl;
-	    }
 
 	    {
 		std::stringstream iface;
