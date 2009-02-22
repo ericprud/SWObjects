@@ -172,6 +172,50 @@ transformTESTS=tests/HealthCare1
 transformTEST_RESULTS=$(transformTESTS:=.results)
 transformVALGRIND=$(transformTEST_RESULTS:.results=.valgrind)
 
+
+### SPARQL_server tests:
+
+tests/server_mouseToxicity_remote-all.results: \
+	bin/SPARQL_server bin/SWtransformer \
+	tests/mouseToxicity/remote-all/ToxicAssoc0.rq \
+	tests/mouseToxicity/remote-all/MicroArray.map \
+	tests/mouseToxicity/remote-all/Uniprot.map \
+	tests/mouseToxicity/remote-all/ScreeningAssay.map \
+	tests/mouseToxicity/remote-all/ChemStructure.map \
+	tests/mouseToxicity/remote-all/MouseToxicity.map
+	# Start servers.
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../$< --once http://localhost:8881/microArray MicroArray.map |\
+	 tee ../../../$@.ma )&
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../$< --once http://localhost:8882/uniprot Uniprot.map |\
+	 tee ../../../$@.up )&
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../$< --once http://localhost:8883/screeningAssay ScreeningAssay.map |\
+	 tee ../../../$@.sa )&
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../$< --once http://localhost:8884/chemStructure ChemStructure.map |\
+	 tee ../../../$@.cs )&
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../$< --once http://localhost:8885/mouseToxicity MouseToxicity.map |\
+	 tee ../../../$@.mt )&
+	sleep 1 # give the servers time to start up
+	( cd tests/mouseToxicity/remote-all/ &&\
+	 ../../../bin/SWtransformer -q --sparql http://localhost:8888/microArray --sqlmap-pattern .map ToxicAssoc0.rq )
+
+
+tests/server_mouseToxicity_remote-screening-assay.results: bin/SPARQL_server bin/SWtransformer tests/mouseToxicity/remote-screening-assay/ToxicAssoc0.rq tests/mouseToxicity/remote-screening-assay/ScreeningAssay.map
+	( cd tests/mouseToxicity/remote-screening-assay/ && ../../../$< --once http://localhost:8888/screeningAssay ScreeningAssay.map | tee ../../../$@ )&
+	sleep 1
+	( cd tests/mouseToxicity/remote-screening-assay/ && ../../../bin/SWtransformer -q --sparql http://localhost:8888/screeningAssay --sqlmap-pattern .map ToxicAssoc0.rq )
+
+
+SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
+
+SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)
+
+
+
 .PHONY: test valgrind
 test: lib $(unitTESTS) $(transformTEST_RESULTS)
 valgrind: lib $(transformVALGRIND)

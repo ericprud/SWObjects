@@ -27,17 +27,19 @@ const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
+std::vector<const char*>SparqlEndpoints;
+std::vector<const char*>SqlMapPatterns;
 
 void usage (const char* exe) {
     cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file or '-' for stdin> <SPARQL CONSTRUCT rule file>*" << endl;
 }
 
 bool option (int argc, char** argv, int* iArg) {
-    if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'd')) {
+    if (!::strcmp(argv[*iArg], "-d")) {
 	DebugStream = &std::cerr;
 	SerializereDebugFlags = SPARQLSerializer::DEBUG_graphs;
 	return true;
-    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'q')) {
+    } else if (!::strcmp(argv[*iArg], "-q")) {
 	Quiet = true;
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
@@ -50,7 +52,7 @@ bool option (int argc, char** argv, int* iArg) {
 	else
 	    *target = argv[*iArg]+2;
 	return true;
-    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'p')) {
+    } else if (!::strncmp(argv[*iArg], "-p", 2)) {
 	if (argv[*iArg][2] == '\0')
 	    if (*iArg > argc - 2)
 		usage(argv[0]);
@@ -58,6 +60,24 @@ bool option (int argc, char** argv, int* iArg) {
 		PkAttr = argv[++(*iArg)];
 	else
 	    PkAttr = argv[*iArg]+2;
+	return true;
+    } else if (!::strncmp(argv[*iArg], "--sparql", 8)) {
+	if (argv[*iArg][8] == '\0')
+	    if (*iArg > argc - 2)
+		usage(argv[0]);
+	    else
+		SparqlEndpoints.push_back(argv[++(*iArg)]);
+	else
+	    SparqlEndpoints.push_back(argv[*iArg]+2);
+	return true;
+    } else if (!::strncmp(argv[*iArg], "--sqlmap-pattern", 16)) {
+	if (argv[*iArg][16] == '\0')
+	    if (*iArg > argc - 2)
+		usage(argv[0]);
+	    else
+		SqlMapPatterns.push_back(argv[++(*iArg)]);
+	else
+	    SqlMapPatterns.push_back(argv[*iArg]+2);
 	return true;
     }
     return false;

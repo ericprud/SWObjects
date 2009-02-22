@@ -1,0 +1,31 @@
+ server: localhost
+ user: root
+ database: MicroArray
+ stemURI: http://db.example/ma/
+ primaryKey: id
+ construct:
+
+
+PREFIX ma: <http://med.example/ma#>
+PREFIX cs: <http://med.example/cs#>
+PREFIX up: <http://med.example/up#>
+PREFIX sa: <http://med.example/sa#>
+PREFIX mt: <http://med.example/mt#>
+
+PREFIX MicroArray: <http://db.example/ma/MicroArray#>
+PREFIX Kinase: <http://db.example/ma/Kinase#>
+PREFIX Chemicals: <http://db.example/ma/Chemicals#>
+
+CONSTRUCT {
+  ?g	  ma:name		?name .
+  ?g	  ma:expression	?xpress .
+  ?g	  ma:experiment	?kinase .
+  ?kinase ma:against	?agin .
+  ?agin	  cs:chemical	?chemical
+} WHERE {
+  ?g	  MicroArray:name		?name .
+  ?g	  MicroArray:expression	?xpress .
+  ?g	  MicroArray:experiment	?kinase .
+  ?kinase Kinase:against		?agin .
+  ?agin	  Chemicals:chemical	?chemical .
+}

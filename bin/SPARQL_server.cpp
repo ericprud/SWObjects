@@ -36,12 +36,18 @@ ostream* DebugStream = NULL;
 string ServerPath = "/SPARQL";
 int ServerPort = 8888;
 string ServerTerminate;
-string StemURI;
+const char* ServerURI;
+std::string StemURI;
 POSFactory posFactory;
 SPARQLfedDriver sparqlParser("", &posFactory);
 QueryMapper queryMapper(&posFactory, &DebugStream);
+bool RunOnce = false;
 bool Done = false;
 int Served = 0;
+std::string Server;
+std::string User;
+std::string Database;
+std::string PkAttribute;
 
 void head (ostringstream& sout, string title) {
     sout << 
@@ -83,13 +89,13 @@ class WebServer : public server::http_1a_c
 
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, "pk", &DebugStream);
+	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, PkAttribute, &DebugStream);
 	mapped->express(&sqlizer);
 
 	MYSQL mysql,*sock;
 	MYSQL_RES *result;
 	mysql_init(&mysql);
-	if (!(sock = mysql_real_connect(&mysql,NULL,"root",0,"benchmark",0,NULL,0)))
+	if (!(sock = mysql_real_connect(&mysql,Server.c_str(),User.c_str(),0,Database.c_str(),0,NULL,0)))
 	    throw(SimpleMessageException("couldn't connect"));
 	if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
 	    throw(SimpleMessageException("couldn't execute"));
@@ -168,6 +174,8 @@ class WebServer : public server::http_1a_c
 #endif /* !HTML_RESULTS */
 
 	++Served;
+	if (RunOnce)
+	    Done = true;
     }
 
     void on_request (
@@ -312,38 +320,90 @@ void startServer (const char* url) {
     ServerTerminate = s.str();
 
     TheServer.set_listening_port(ServerPort);
+    thread_function t(thread);
     TheServer.start();
 }
 
 int main (int argc, char** argv) {
-    if (argc < 4) {
-	cerr << "Usage: " << argv[0] << "serverURL stemURI ruleMap.rq+" << endl;
+
+    unsigned iArg = 1;
+    if (argc > 1 && !strcmp(argv[iArg], "--once")) {
+	RunOnce = true;
+	++iArg;
+    }
+
+    if (argc - iArg < 2) {
+	cerr << "Usage: " << argv[0] << "[--once] serverURL ruleMap.rq+" << endl;
 	return 1;
     }
 
-     StemURI = argv[2];
+    ServerURI = argv[iArg++];
 
-     try {
-	 /* Parse deduction rules. */
-	 for (int iArg = 3; iArg < argc; ++iArg) {
-	     sparqlParser.parse_file(argv[iArg]);
-	     Operation* rule = sparqlParser.root;
-	     Construct* c;
-	     if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
-		 queryMapper.addRule(c);
-		 delete rule;
-	     } else {
-		 cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << endl;
-		 return 1;
-	     }
-	 }
+    try {
+	/* Parse deduction rules. */
+	for ( ; iArg < argc; ++iArg) {
 
-	 thread_function t(thread);
-	 startServer(argv[1]);
-     }
-     catch (exception& e) {
-         cerr << e.what() << endl;
-     }
-     return 0;
+	    std::ifstream dataStream(argv[iArg]);
+	    if (!dataStream.is_open()) {
+		std::string msg = std::string("failed to open map file \"") + argv[iArg] + "\".";
+		throw msg;
+	    }
+	    std::istreambuf_iterator<char> it(dataStream), end;
+	    while (it != end) {
+		std::string parm;
+		while (it != end && (*it == ' '  || *it == '\r' ||
+				     *it == '\n' || *it == '\t'))
+		    ++it;
+		while (it != end && *it != ':')
+		    parm += *it++;
+
+		if (it == end)
+		    break;
+		++it;
+		if (parm == "construct")
+		    break;
+
+		std::string value;
+		while (it != end && (*it == ' '  || *it == '\r' ||
+				     *it == '\n' || *it == '\t'))
+		    ++it;
+		while (it != end && *it != '\n')
+		    value += *it++;
+		if (parm == "server") {
+		    Server = value;
+		} else if (parm == "user") {
+		    User = value;
+		} else if (parm == "database") {
+		    Database = value;
+		} else if (parm == "stemURI") {
+		    StemURI = value;
+		} else if (parm == "primaryKey") {
+		    PkAttribute = value;
+		} else
+		    std::cout << "unknown parm: " << parm << " -- value: " << value << std::endl;
+	    }
+
+	    /* Remainder of file is a SPARQL query. */
+	    const std::string streamName = std::string(argv[iArg]) + " (post map:)";
+	    sparqlParser.parse_string(std::string(it, end), streamName);
+	    dataStream.close();
+
+	    Operation* rule = sparqlParser.root;
+	    Construct* c;
+	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
+		queryMapper.addRule(c);
+		delete rule;
+	    } else {
+		cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << endl;
+		return 1;
+	    }
+	}
+
+	startServer(ServerURI);
+    }
+    catch (exception& e) {
+	cerr << e.what() << endl;
+    }
+    return 0;
 }
 

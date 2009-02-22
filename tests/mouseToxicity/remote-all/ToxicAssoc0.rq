@@ -1,0 +1,151 @@
+# ToxicAssoc0 - federate a query over several independent clinical databases
+# For further description, see http://spam.w3.org/2004/10/04-pharmaFederate/
+
+# $Id: ToxicAssoc0-remote.rq,v 1.1 2009/02/17 15:15:34 eric Exp $
+
+# Assign convenient prefixes to common for later syntactic shorthand.
+PREFIX sql: <http://www.w3.org/2003/01/21-RDF-RDB-access/ns#SqlDB?properties=..%2Ftest%2F>
+PREFIX fed: <http://www.w3.org/1999/02/26-modules/algae#FedDB?properties=..%2Ftest%2F>
+PREFIX ma: <http://med.example/ma#>
+PREFIX cs: <http://med.example/cs#>
+PREFIX up: <http://med.example/up#>
+PREFIX sa: <http://med.example/sa#>
+PREFIX mt: <http://med.example/mt#>
+
+SELECT ?name ?chemical ?motif ?saProt ?kd50 ?like ?ld
+
+FROM NAMED <MicroArray.map>
+FROM NAMED <Uniprot.rdf>
+FROM NAMED <http://localhost:8888/screeningAssay>
+FROM NAMED <ChemStructure.map>
+FROM NAMED <MouseToxicity.map>
+
+WHERE {
+
+# Get a name and a chemical from the (SQL) MicroArray database.
+GRAPH <MicroArray.map> {
+         ?g	ma:name		?name .
+	 ?g	ma:expression	"up" .
+	 ?g	ma:experiment	?kinase .
+	 ?kinase ma:against	?agin .
+	 ?agin	cs:chemical	?chemical }
+
+# The uniprot data (in RDF) has motif and pathway information.
+GRAPH <Uniprot.rdf> {
+         ?p	ma:name		?name .		# bound to ?ma.ma:name
+	 ?p	up:motif	?motif .
+	 ?p	up:pathway	"apoptosis" }
+
+# Use the (SQL) Kinase databaes to limit to the interesting chemicals.
+GRAPH <http://localhost:8888/screeningAssay> {
+         ?a	sa:name		"KinaseAssay" .
+	 ?a	cs:chemical	?chemical .	# bound to ?ma.cs:chemical
+	 ?a	sa:upname	?saProt .
+	 ?a	ma:kd50		?kd50
+         FILTER (?kd50 >= .7 || ?kd50 < .2) }
+
+## # This (SQL) chemical database indexes like sidechains.
+## GRAPH <ChemStructure.map> {
+##          ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
+## 	 ?c	cs:structure	"asdfasdf" .
+## 	 ?c	cs:sidechain	?side .
+## 	 ?c2	cs:sidechain	?side .
+## 	 ?c2	cs:chemical	?like }
+## 
+## # Limit by toxicity in the (SQL) MouseToxicity experiments.
+## GRAPH sql:MouseToxicity.prop {
+##          ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain
+## 	 ?t	mt:toxicity	?ld 
+##          FILTER (?ld < .35) }
+}
+
+# Table Output:
+# +------+--------------+-----------+----------+-----+-------+-----+
+# |  name|      chemical|      motif|    saProt| kd50|   like|   ld|
+# |------|--------------|-----------|----------|-----|-------|-----|
+# |"rq23"|"lhrh-agonist"|"@@motif@@"|"?saProt2"|"0.8"|"like2"|"0.3"|
+# |"rq23"|"lhrh-agonist"|"@@motif@@"|"?saProt3"|"0.1"|"like2"|"0.3"|
+# +------+--------------+-----------+----------+-----+-------+-----+
+
+# Sql Queries:
+# 040812  4:56:25	    312 Connect     root@localhost on MicroArray
+# 		    313 Connect     root@localhost on Uniprot
+# 		    314 Connect     root@localhost on ScreeningAssay
+# 		    315 Connect     root@localhost on ChemStructure
+# 		    316 Connect     root@localhost on MouseToxicity
+# 		    312 Query       SELECT STRAIGHT_JOIN
+#        MicroArray_0.id AS g_id,
+#        MicroArray_0.name AS name_name,
+# Kinase_0.id AS kinase_id,
+#        Chemicals_0.id AS agin_id,
+#        Chemicals_0.chemical AS chemical_chemical
+# 
+# FROM MicroArray AS MicroArray_0
+#      INNER JOIN Kinase AS Kinase_0 ON MicroArray_0.experiment=Kinase_0.id
+#      INNER JOIN Chemicals AS Chemicals_0 ON Kinase_0.against=Chemicals_0.id
+# WHERE MicroArray_0.expression="up"
+# GROUP BY g_id,name_name,kinase_id,agin_id,chemical_chemical
+# 		    313 Query       SELECT STRAIGHT_JOIN
+#        Uniprot_0.id AS p_id,
+#        Uniprot_0.name AS name_name,
+# Uniprot_0.motif AS motif_motif
+# 
+# FROM Uniprot AS Uniprot_0
+# WHERE Uniprot_0.pathway="apoptosis" 
+#   AND  Uniprot_0.name="rq23"
+# GROUP BY p_id,name_name,motif_motif
+# 		    314 Query       SELECT STRAIGHT_JOIN
+#        ScreeningAssay_0.id AS a_id,
+#        ScreeningAssay_0.chemical AS chemical_chemical,
+# ScreeningAssay_0.name AS saProt_name,
+# ScreeningAssay_0.kd50 AS kd50_kd50
+# 
+# FROM ScreeningAssay AS ScreeningAssay_0
+# WHERE ScreeningAssay_0.name="KinaseAssay" 
+#   AND  ((ScreeningAssay_0.kd50>=".7") OR (ScreeningAssay_0.kd50<".2")) 
+#   AND  ScreeningAssay_0.chemical="lhrh-agonist"
+# GROUP BY a_id,chemical_chemical,saProt_name,kd50_kd50
+# 		    315 Query       SELECT STRAIGHT_JOIN
+#        ChemStructure_0.id AS c_id,
+#        ChemStructure_0.chemical AS chemical_chemical,
+# ChemStructure_0.sidechain AS side_sidechain,
+# ChemStructure_1.id AS c2_id,
+#        ChemStructure_1.chemical AS like_chemical
+# 
+# FROM ChemStructure AS ChemStructure_0
+#      INNER JOIN ChemStructure AS ChemStructure_1 ON ChemStructure_1.sidechain=ChemStructure_0.sidechain
+# WHERE ChemStructure_0.structure="asdfasdf" 
+#   AND  ChemStructure_0.chemical="lhrh-agonist"
+# GROUP BY c_id,chemical_chemical,side_sidechain,c2_id,like_chemical
+# 		    316 Query       SELECT STRAIGHT_JOIN
+#        MouseToxicity_0.id AS t_id,
+#        MouseToxicity_0.chemical AS like_chemical,
+# MouseToxicity_0.toxicity AS ld_toxicity
+# 
+# FROM MouseToxicity AS MouseToxicity_0
+# WHERE MouseToxicity_0.toxicity>".50" 
+#   AND  MouseToxicity_0.chemical="lhrh-agonist"
+# GROUP BY t_id,like_chemical,ld_toxicity
+# 		    316 Query       SELECT STRAIGHT_JOIN
+#        MouseToxicity_0.id AS t_id,
+#        MouseToxicity_0.chemical AS like_chemical,
+# MouseToxicity_0.toxicity AS ld_toxicity
+# 
+# FROM MouseToxicity AS MouseToxicity_0
+# WHERE MouseToxicity_0.toxicity>".50" 
+#   AND  MouseToxicity_0.chemical="like1"
+# GROUP BY t_id,like_chemical,ld_toxicity
+# 		    316 Query       SELECT STRAIGHT_JOIN
+#        MouseToxicity_0.id AS t_id,
+#        MouseToxicity_0.chemical AS like_chemical,
+# MouseToxicity_0.toxicity AS ld_toxicity
+# 
+# FROM MouseToxicity AS MouseToxicity_0
+# WHERE MouseToxicity_0.toxicity>".50" 
+#   AND  MouseToxicity_0.chemical="like2"
+# GROUP BY t_id,like_chemical,ld_toxicity
+# 		    316 Quit       
+# 		    315 Quit       
+# 		    314 Quit       
+# 		    313 Quit       
+# 		    312 Quit       

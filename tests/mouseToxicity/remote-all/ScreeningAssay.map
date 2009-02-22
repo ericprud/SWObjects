@@ -1,0 +1,27 @@
+ server: localhost
+ user: root
+ database: ScreeningAssay
+ stemURI: http://db.example/sa/
+ primaryKey: id
+ construct:
+
+
+PREFIX ma: <http://med.example/ma#>
+PREFIX cs: <http://med.example/cs#>
+PREFIX up: <http://med.example/up#>
+PREFIX sa: <http://med.example/sa#>
+PREFIX mt: <http://med.example/mt#>
+
+PREFIX ScreeningAssay: <http://db.example/sa/ScreeningAssay#>
+
+CONSTRUCT {
+  ?a	sa:name		?name .
+  ?a	cs:chemical	?chemical .
+  ?a	sa:upname	?saProt .
+  ?a	ma:kd50		?kd50
+} WHERE {
+  ?a	ScreeningAssay:name	?name .
+  ?a	ScreeningAssay:chemical	?chemical .
+  ?a	ScreeningAssay:upname	?saProt .
+  ?a	ScreeningAssay:kd50	?kd50
+}
