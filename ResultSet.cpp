@@ -142,17 +142,7 @@ namespace w3c_sw {
 
     std::string ResultSet::toString () const {
 	const char* NULL_REP = "--";
-#if ASCII_BOX_CHARS
-	const char ORDERED = 'O';
-	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
-	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
-#if (INTRA_ROW_SEPARATORS)
-	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
-#endif
-	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
-	const char UNLISTED_VAR = '!';
-#define STRING std::string
-#else /* !ASCII_BOX_CHARS */
+#if HAVE_UTF8_OUTPUT
 	const char* ORDERED = "O";
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
@@ -168,7 +158,17 @@ namespace w3c_sw {
 		    append(str);
 	    }
 	};
-#endif /* !ASCII_BOX_CHARS */
+#else /* !HAVE_UTF8_OUTPUT */
+	const char ORDERED = 'O';
+	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
+	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
+#if (INTRA_ROW_SEPARATORS)
+	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
+#endif
+	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
+	const char UNLISTED_VAR = '!';
+#define STRING std::string
+#endif /* !HAVE_UTF8_OUTPUT */
 
 	/* Get column widths. */
 	std::vector< const POS* > vars;

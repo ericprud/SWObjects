@@ -24,6 +24,7 @@ DEFS:=-DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
+OPT_DEFS ?= HAVE_REGEX HAVE_UTF8_OUTPUT
 
 INCLUDES += -I${PWD} -I/usr/include/libxml2
 I2=$(subst /, ,$(BISONOBJ:.o=))
