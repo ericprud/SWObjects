@@ -210,6 +210,7 @@ struct RuleMapTest {
     bool bgpCompareVars;
     const Operation* transformed;
     Operation* mapResults;
+
     RuleMapTest (const char* queryFile, const char* mapFile, 
 		 const char* mapResultsFile) :
 	bgpCompareVars(BasicGraphPattern::CompareVars) {
@@ -247,6 +248,7 @@ struct RuleMapTest {
     }
     ~RuleMapTest () {
 	BasicGraphPattern::CompareVars = bgpCompareVars;
+	queryMapper.clear();
 	delete mapResults;
 	delete transformed;
     }
@@ -266,7 +268,7 @@ struct SQLizerTest {
 	char nodeDelims[]={'/','.',' '};
 	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", &DebugStream);
 	sparqlQuery->express(&s);
-	transformed = s.getSQLstring();
+	transformed = s.getSQLstring() + "\n";
 	//std::cout << s.getSQLstring() << endl;
 
 	/* Read reference SQL. */
