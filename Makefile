@@ -13,6 +13,9 @@
 #   debugging in emacs:
 #     gdb --annotate=3 sample_RuleMap1    (set args query_HealthCare1.rq ruleMap_HealthCare1.rq)
 
+# linking to dlib requires special maneuvers 'cause of the need to 
+# g++ -DHAVE_UTF8_OUTPUT -DHAVE_REGEX -I/home/eric/src/dlib-17.11 -o bin/SPARQL_server bin/SPARQL_server.o /home/eric/src/dlib-17.11/dlib/all/source.cpp -L/tmp/const-happy -lSWObjects -lboost_regex -lxml2 -lexpat -lmysqlclient
+
 FLEX:=flex
 YACC:=bison
 TEE:=tee
@@ -24,7 +27,7 @@ DEFS:=-DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
-OPT_DEFS ?= HAVE_REGEX HAVE_UTF8_OUTPUT
+CONFIG_DEFS ?= -DHAVE_REGEX -DHAVE_UTF8_OUTPUT
 
 INCLUDES += -I${PWD} -I/usr/include/libxml2
 I2=$(subst /, ,$(BISONOBJ:.o=))
@@ -57,7 +60,7 @@ PWD ?= $(shell pwd -P)
 #if -M[M]D is also in the build-clause without -E it update .d's as needed
 TOONOISEY=-ansi
 #for macports
-CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe
+CFLAGS += $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe
 CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
@@ -90,6 +93,30 @@ $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 .PHONY: lib
 lib: dep $(LIB)
 
+##### bin dirs ####
+DLIBINC ?= ../dlib
+DLIB= -DNO_MAKEFILE -I$(DLIBINC)
+
+# overrides for specific targets in bin
+bin/SPARQL_server.o : bin/SPARQL_server.cpp
+	$(CXX) -DSTUPID_TIGHT_LOOP=1 -DHTML_RESULTS=0 $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
+
+bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
+	$(CXX) -lnsl -lpthread -lboost_regex -lmysqlclient -o $@ $< $(LDFLAGS)
+
+
+# bin/ general rules
+bin/%.d : bin/%.cpp
+	-touch $@
+	-makedepend -bbin/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
+
+bin/%.o. : bin/%.cpp bin/%.d
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+bin/% : bin/%.o $(LIB) #lib
+	$(CXX) -o $@ $< $(LDFLAGS)
+
+
 ##### packaged tests ####
 
 ## test inferenced based on T, test_<T>.o=C/C++ query_<T>.rq ruleMap<T>.rq
@@ -110,19 +137,6 @@ lib: dep $(LIB)
 # optJoin1: tests/execute_HealthCare1
 #	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
-# bin/
-bin/%.d : bin/%.cpp
-	-touch $@
-	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
-
-bin/%.o. : bin/%.cpp bin/%.d
-	$(CXX) $(CXXFLAGS) -o $@ $<
-
-bin/% : bin/%.o $(LIB) #lib
-	$(CXX) -o $@ $< $(LDFLAGS)
-
-
-# unit tests
 unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 # You can override unitTESTS while fiddling with them.
 #unitTESTS=t_GraphMatch
@@ -130,6 +144,10 @@ unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 # and control which subtests within a unit are run
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
+
+test/%.d : test/%.cpp
+	-touch $@
+	-makedepend -btest/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
 
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
@@ -181,7 +199,7 @@ clean:
 cleaner: clean
 	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
 
-deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d)
+deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d) bin/SPARQL_server.d
 
 dep: $(deps)
 

@@ -78,7 +78,7 @@ class WebServer : public server::http_1a_c
 	query->express(&s);
 	cerr << s.getSPARQLstring() << endl;
 	query->express(&queryMapper);
-	Operation* mapped = queryMapper.last.operation;
+	const Operation* mapped = queryMapper.last.operation;
 	delete query;
 
 	char predicateDelims[]={'#',' ',' '};
@@ -286,8 +286,7 @@ void thread ()
 }
 
 void startServer (const char* url) {
-#ifdef WIN32
-#else /* !WIN32 */
+#ifdef HAVE_REGEX
     boost::regex re;
     boost::cmatch matches;
 
@@ -305,7 +304,8 @@ void startServer (const char* url) {
     istringstream portss(ports);
     portss >> ServerPort;
     ServerPath = string(matches[PATH].first, matches[PATH].second);
-#endif /* !WIN32 */
+#else /* !HAVE_REGEX */
+#endif /* !HAVE_REGEX */
 
     ostringstream s;
     s << "http://localhost:" << ServerPort << ServerPath;
