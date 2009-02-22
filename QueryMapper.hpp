@@ -22,10 +22,12 @@ namespace w3c_sw {
 
     public:
 	QueryMapper (POSFactory* posFactory, std::ostream** debugStream) : SWObjectDuplicator(posFactory), ruleCount(0), debugStream(debugStream) {  }
-	~QueryMapper() {
+	~QueryMapper () { clear(); }
+	void clear () {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
 		 it != invertedRules.end(); ++it)
 		delete *it;
+	    invertedRules.clear();
 	}
 	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (Construct* rule) {
