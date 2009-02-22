@@ -343,17 +343,27 @@ int main (int argc, char** argv) {
 	/* Parse deduction rules. */
 	for ( ; iArg < argc; ++iArg) {
 
+	    /* Open stream from map file. */
 	    std::ifstream dataStream(argv[iArg]);
 	    if (!dataStream.is_open()) {
 		std::string msg = std::string("failed to open map file \"") + argv[iArg] + "\".";
 		throw msg;
 	    }
+	    /* Parse conf parameters. */
 	    std::istreambuf_iterator<char> it(dataStream), end;
 	    while (it != end) {
 		std::string parm;
 		while (it != end && (*it == ' '  || *it == '\r' ||
 				     *it == '\n' || *it == '\t'))
 		    ++it;
+		/* Comment markers must be the first non-whitespace char. */
+		if (it == end || *it == '#') {
+		    while (it != end && *it != '\n')
+			++it;
+		    continue;
+		}
+
+		/* The parameter name is anything before the first ':'. */
 		while (it != end && *it != ':')
 		    parm += *it++;
 
@@ -361,14 +371,18 @@ int main (int argc, char** argv) {
 		    break;
 		++it;
 		if (parm == "construct")
+		    /* Pass on to the the SPARQL parser. */
 		    break;
 
+		/* The value is the rest of the line. */
 		std::string value;
 		while (it != end && (*it == ' '  || *it == '\r' ||
 				     *it == '\n' || *it == '\t'))
 		    ++it;
 		while (it != end && *it != '\n')
 		    value += *it++;
+
+		/* Pull out known parameters. */
 		if (parm == "server") {
 		    Server = value;
 		} else if (parm == "user") {
@@ -380,6 +394,7 @@ int main (int argc, char** argv) {
 		} else if (parm == "primaryKey") {
 		    PkAttribute = value;
 		} else
+		    /* Whine about unknown parameters. */
 		    std::cout << "unknown parm: " << parm << " -- value: " << value << std::endl;
 	    }
 
