@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
 	ResultSet expected(&f, 
 			   "?n1  _:n2\n"
-			   "<n1> <n2>");
+			   "<n1> <n2>", false);
 
 	BOOST_CHECK_EQUAL(RS(rows), expected);
 
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 				       "?n1  _:n2\n"
 				       "<n1> <n2>\n"
 				       "<n1> \"l1\"\n"
-				       "<n2> <n3>"
-				       ));
+				       "<n2> <n3>",
+				       false));
     }
 
     pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 ."));
@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
-				       "<n1> <n2> <n3>"
-				       ));
+				       "<n1> <n2> <n3>",
+				       false));
     }
 
     data.addTriplePattern(f.getTriple("<n2> <p1> <n4> ."));
@@ -122,8 +122,8 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>\n"
-				       "<n1> <n2> <n4>"
-				       ));
+				       "<n1> <n2> <n4>",
+				       false));
     }
 
     /* Test a subset of BSBM q1. */ {
@@ -141,7 +141,8 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
 			   "?product     ?label     <feature1> \n"
-			   "?product     ?label     \"feature2\"");
+			   "?product     ?label     \"feature2\"",
+			   false);
 	BOOST_CHECK_EQUAL(tested, expected);
     }
 

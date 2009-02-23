@@ -97,7 +97,7 @@ namespace w3c_sw {
 			  "<n4> \"l1\"" )
 	 * A \n on the last line creates a row with no bindings.
 	 */
-	ResultSet (POSFactory* posFactory, std::string str) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
