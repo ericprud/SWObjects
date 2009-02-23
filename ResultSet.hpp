@@ -351,6 +351,38 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
+	std::string buildFederationString (std::set<const Variable*> vars) {
+	    std::stringstream rsStr;
+	    bool noRowsYet = true;
+	    for (ResultSetConstIterator row = results.begin();
+		 row != results.end(); row++) {
+		std::stringstream rowStr;
+		bool noValuesYet = true;
+		for (std::set<const Variable*>::const_iterator var = vars.begin();
+		     var != vars.end(); ++var) {
+		    const POS* value = (*row)->get(*var);
+		    if (value != NULL) {
+			if (noValuesYet)
+			    noValuesYet = false;
+			else
+			    rowStr << " && ";
+			rowStr << (*var)->toString() << "=" << value->toString();
+		    }
+		    
+		}
+		if (!noValuesYet) {
+		    if (noRowsYet)
+			noRowsYet = false;
+		    else
+			rsStr << " ||\n";
+		    rsStr << '(' << rowStr << ')';
+		}
+	    }
+	    if (noRowsYet)
+		return "";
+	    std::string ret = "FILTER (" + rsStr.str() + ")\n";
+	    return ret;
+	}
     };
 
     class ConstructResultSet : ResultSet {

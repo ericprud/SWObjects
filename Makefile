@@ -102,7 +102,7 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp
 	$(CXX) -DSTUPID_TIGHT_LOOP=1 -DHTML_RESULTS=0 $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -lboost_regex -lmysqlclient -o $@ $< $(LDFLAGS)
+	$(CXX) -lnsl -lpthread -lboost_regex -lboost_system -lmysqlclient -o $@ $< $(LDFLAGS)
 
 
 # bin/ general rules
@@ -114,7 +114,7 @@ bin/%.o. : bin/%.cpp bin/%.d
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
-	$(CXX) -o $@ $< $(LDFLAGS)
+	$(CXX) -o $@ $< -lboost_system $(LDFLAGS)
 
 
 ##### packaged tests ####
@@ -185,23 +185,24 @@ tests/server_mouseToxicity_remote-all.results: \
 	tests/mouseToxicity/remote-all/MouseToxicity.map
 	# Start servers.
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../$< --once http://localhost:8881/microArray MicroArray.map |\
-	 tee ../../../$@.ma )&
+	  ../../../$< --once http://localhost:8881/microArray MicroArray.map |\
+	  tee ../../../$@.ma )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../$< --once http://localhost:8882/uniprot Uniprot.map |\
-	 tee ../../../$@.up )&
+	  ../../../$< --once http://localhost:8882/uniprot Uniprot.map |\
+	  tee ../../../$@.up )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../$< --once http://localhost:8883/screeningAssay ScreeningAssay.map |\
-	 tee ../../../$@.sa )&
+	  ../../../$< --once http://localhost:8883/screeningAssay ScreeningAssay.map |\
+	  tee ../../../$@.sa )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../$< --once http://localhost:8884/chemStructure ChemStructure.map |\
-	 tee ../../../$@.cs )&
+	  ../../../$< --once http://localhost:8884/chemStructure ChemStructure.map |\
+	  tee ../../../$@.cs )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../$< --once http://localhost:8885/mouseToxicity MouseToxicity.map |\
-	 tee ../../../$@.mt )&
+	  ../../../$< --once http://localhost:8885/mouseToxicity MouseToxicity.map |\
+	  tee ../../../$@.mt )&
 	sleep 1 # give the servers time to start up
 	( cd tests/mouseToxicity/remote-all/ &&\
-	 ../../../bin/SWtransformer -q --sparql http://localhost:8888/microArray --sqlmap-pattern .map ToxicAssoc0.rq )
+	  ../../../bin/SWtransformer\
+	      -x -q --sparql-pattern http://localhost:888[1-5]/.\* ToxicAssoc0.rq )
 
 
 tests/server_mouseToxicity_remote-screening-assay.results: bin/SPARQL_server bin/SWtransformer tests/mouseToxicity/remote-screening-assay/ToxicAssoc0.rq tests/mouseToxicity/remote-screening-assay/ScreeningAssay.map

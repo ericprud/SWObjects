@@ -52,10 +52,10 @@ namespace w3c_sw {
 		 it != graph->end(); it++)
 		bgp->addTriplePattern(*it);
 	}
-	~RdfDB();
+	virtual ~RdfDB();
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
-	void loadData (const POS* name, POSFactory* posFactory) {
+	virtual void loadData (const POS* name, POSFactory* posFactory) {
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
 	    if (turtleParser.parse_file(name->getTerminal())) {
 		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
@@ -71,7 +71,7 @@ namespace w3c_sw {
 		delete graph;
 	    }
 	}
-	void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
+	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
     };
 
@@ -80,6 +80,38 @@ namespace w3c_sw {
 	my.express(&s);
 	return os << s.getSPARQLstring();
     }
+
+    class RdfRemoteDB : public RdfDB {
+	class GraphSerializer : public SPARQLSerializer {
+	    ResultSet* rs;
+	    bool expectOuterGraph;
+	    std::set<const Variable*> vars;
+	    std::string selectString;
+	    std::string federationString;
+
+	public:
+	    GraphSerializer (ResultSet* rs) : SPARQLSerializer(), rs(rs), expectOuterGraph(true) {  }
+	    std::string getSelectString () const { return selectString; }
+	    std::string getFederationString () const { return federationString; }
+
+	protected:
+	    virtual void variable (const Variable* const self, std::string terminal) {
+		vars.insert(self);
+		SPARQLSerializer::variable(self, terminal);
+	    }
+
+	    virtual void namedGraphPattern(const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters);
+	};
+    protected:
+	std::vector<const char*> endpointPatterns;
+	std::set<const POS*> loadedEndpoints;
+    public:
+	RdfRemoteDB (std::vector<const char*> endpointPatterns) : 
+	    RdfDB(), endpointPatterns(endpointPatterns) {
+	}
+	virtual void loadData(const POS* name, POSFactory* posFactory);
+	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
+    };
 
 } // namespace w3c_sw
 

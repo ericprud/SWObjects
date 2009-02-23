@@ -27,8 +27,8 @@ const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
-std::vector<const char*>SparqlEndpoints;
-std::vector<const char*>SqlMapPatterns;
+bool ExecuteQuery = false;
+std::vector<const char*>SparqlEndpointPatterns;
 
 void usage (const char* exe) {
     cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file or '-' for stdin> <SPARQL CONSTRUCT rule file>*" << endl;
@@ -41,6 +41,9 @@ bool option (int argc, char** argv, int* iArg) {
 	return true;
     } else if (!::strcmp(argv[*iArg], "-q")) {
 	Quiet = true;
+	return true;
+    } else if (!::strcmp(argv[*iArg], "-x")) {
+	ExecuteQuery = true;
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
@@ -61,23 +64,14 @@ bool option (int argc, char** argv, int* iArg) {
 	else
 	    PkAttr = argv[*iArg]+2;
 	return true;
-    } else if (!::strncmp(argv[*iArg], "--sparql", 8)) {
-	if (argv[*iArg][8] == '\0')
-	    if (*iArg > argc - 2)
-		usage(argv[0]);
-	    else
-		SparqlEndpoints.push_back(argv[++(*iArg)]);
-	else
-	    SparqlEndpoints.push_back(argv[*iArg]+2);
-	return true;
-    } else if (!::strncmp(argv[*iArg], "--sqlmap-pattern", 16)) {
+    } else if (!::strncmp(argv[*iArg], "--sparql-pattern", 16)) {
 	if (argv[*iArg][16] == '\0')
 	    if (*iArg > argc - 2)
 		usage(argv[0]);
 	    else
-		SqlMapPatterns.push_back(argv[++(*iArg)]);
+		SparqlEndpointPatterns.push_back(argv[++(*iArg)]);
 	else
-	    SqlMapPatterns.push_back(argv[*iArg]+2);
+	    SparqlEndpointPatterns.push_back(argv[*iArg]+2);
 	return true;
     }
     return false;
@@ -178,6 +172,11 @@ int main(int argc,char** argv) {
 		    if (!Quiet)
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
+		} else if (ExecuteQuery) {
+		    RdfRemoteDB db(SparqlEndpointPatterns);
+		    ResultSet rs(&posFactory);
+		    o->execute(&db, &rs);
+		    std::cout << rs; // show results
 		}
 		delete o;
 	    } catch (runtime_error& e) {
