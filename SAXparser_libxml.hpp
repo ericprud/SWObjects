@@ -65,6 +65,13 @@ namespace w3c_sw {
 	    ::xmlMemoryDump();
 	}
 
+	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
+	    this->saxHandler = saxHandler;
+	    std::string mem(start, finish);
+	    if (::xmlSAXUserParseMemory(&libXMLhandler, this, mem.c_str(), mem.size()) != 0)
+		throw( "Failed to parse document.\n" );
+	}
+
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
 	    this->saxHandler = saxHandler;
 	    if (::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0)

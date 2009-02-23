@@ -276,6 +276,11 @@ namespace w3c_sw {
 	    parser->parse(filename, &handler);
 	}
 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	    RSsax handler(this, posFactory);
+	    parser->parse(start, finish, &handler);
+	}
+
 	virtual ~ResultSet();
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.isOrdered() != isOrdered())
@@ -301,6 +306,38 @@ namespace w3c_sw {
  		    delete it->expression;
 		}
 		return self.compareOrdered(newRef);
+	    }
+	}
+	void joinIn (ResultSet* ref) { // !!! make const ref
+	    for (ResultSetIterator myRow = results.begin();
+		 myRow != results.end(); ) {		
+		for (ResultSetConstIterator yourRow = ref->results.begin();
+		     yourRow != ref->results.end(); ++yourRow) {
+		    bool matched = true;
+		    std::set<const POS*>copy;
+		    for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
+			 yourBinding != (*yourRow)->end(); ++yourBinding) {
+			const POS* var = yourBinding->first;
+			const POS* yourVal = yourBinding->second.pos;
+			const POS* myVal = (*myRow)->get(var);
+			if (myVal == NULL) {
+			    knownVars.insert(var); // means we can bypass ResultSet::set(...).
+			    if (yourVal != NULL)
+				copy.insert(var);
+			} else if (myVal != yourVal) {
+			    matched = false;
+			    break;
+			}
+		    }
+		    if (matched) {
+			Result* newRow = (*myRow)->duplicate(this, myRow);
+			for (std::set<const POS*>::iterator vars = copy.begin();
+			     vars != copy.end(); ++vars)
+			    newRow->set(*vars, (*yourRow)->get(*vars), false);
+			insert(myRow, newRow);
+		    }
+		}
+		erase(myRow++);
 	    }
 	}
 	bool compareOrdered (const ResultSet & ref) const {
@@ -375,7 +412,7 @@ namespace w3c_sw {
 			noRowsYet = false;
 		    else
 			rsStr << " ||\n";
-		    rsStr << '(' << rowStr << ')';
+		    rsStr << '(' << rowStr.str() << ')';
 		}
 	    }
 	    if (noRowsYet)

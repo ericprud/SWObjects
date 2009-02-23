@@ -122,7 +122,7 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
 	std::cout << "expected: " << expected;
 	BOOST_CHECK_EQUAL(got, expected);
     } else {
-	ResultSet expected(&f, readFile(resultsFile, "results"));
+	ResultSet expected(&f, readFile(resultsFile, "results"), false);
 	std::cout << "expected: " << expected;
 	BOOST_CHECK_EQUAL(got, expected);
     }

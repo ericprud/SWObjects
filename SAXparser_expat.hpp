@@ -64,15 +64,19 @@ namespace w3c_sw {
 	    ::XML_ParserFree(parser);
 	}
 
-	virtual void parse (const char* file, SWSAXhandler* handler) {
+	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) {
 	    this->handler = handler;
-	    std::string buf = readFile(file, "XML");
+	    std::string buf(start, finish);
 #ifdef _MSC_VER
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == 0)
 #else /* !_MSC_VER */
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
 #endif /* !_MSC_VER */
 		throw( "Failed to parse document.\n" );
+	}
+	virtual void parse (const char* file, SWSAXhandler* handler) {
+	    std::string buf = readFile(file, "XML");
+	    parse(buf.begin(), buf.end(), handler);
 	}
 
 	static void _dumpNsFrame (std::map< const char*, const char* > nsframe) {

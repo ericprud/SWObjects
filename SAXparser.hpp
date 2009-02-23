@@ -126,6 +126,7 @@ namespace w3c_sw {
 	SWSAXparser () {  }
 	virtual ~SWSAXparser () {  }
 	virtual void parse(const char* file, SWSAXhandler* handler) = 0;
+	virtual void parse(std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) = 0;
     };
 
 }
