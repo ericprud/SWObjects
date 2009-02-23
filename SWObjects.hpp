@@ -810,7 +810,6 @@ public:
     DatasetClause (const POS* p_IRIref, POSFactory* p_posFactory) : Base(), m_IRIref(p_IRIref), m_posFactory(p_posFactory) {  }
     ~DatasetClause () { /* m_IRIref is centrally managed */ }
     virtual void loadData(RdfDB*) const = 0;
-    void _loadData(BasicGraphPattern*) const;
     virtual void express(Expressor* p_expressor) const = 0;
 };
 class DefaultGraphClause : public DatasetClause {

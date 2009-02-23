@@ -7,6 +7,7 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+#include "TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {
@@ -54,6 +55,22 @@ namespace w3c_sw {
 	~RdfDB();
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
+	void loadData (const POS* name, POSFactory* posFactory) {
+	    TurtleSDriver turtleParser("http://example.org/", posFactory);
+	    if (turtleParser.parse_file(name->getTerminal())) {
+		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
+	    } else {
+		BasicGraphPattern* graph = turtleParser.root;
+		SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
+		BasicGraphPattern* target = assureGraph(name);
+		for (std::vector<const TriplePattern*>::iterator from = graph->begin();
+		     from != graph->end(); ) {
+		    target->addTriplePattern(*from);
+		    graph->erase(from);
+		}
+		delete graph;
+	    }
+	}
 	void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
     };

@@ -7,7 +7,6 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser.hpp"
 #include <string.h>
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
@@ -637,26 +636,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
-    void DatasetClause::_loadData (BasicGraphPattern* target) const {
-	TurtleSDriver turtleParser("http://example.org/", m_posFactory);
-	if (turtleParser.parse_file(m_IRIref->getTerminal())) {
-	    std::cerr << m_IRIref->getTerminal() << ":0: error: unable to parse document" << std::endl;
-	} else {
-	    BasicGraphPattern* graph = turtleParser.root;
-	    SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
-	    for (std::vector<const TriplePattern*>::iterator from = graph->begin();
-		 from != graph->end(); ) {
-		target->addTriplePattern(*from);
-		graph->erase(from);
-	    }
-	    delete graph;
-	}
-    }
     void DefaultGraphClause::loadData (RdfDB* db) const {
-	DatasetClause::_loadData(db->assureGraph(DefaultGraph));
+	db->loadData(DefaultGraph, m_posFactory);
     }
     void NamedGraphClause::loadData (RdfDB* db) const {
-	DatasetClause::_loadData(db->assureGraph(m_IRIref));
+	db->loadData(m_IRIref, m_posFactory);
     }
 
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
