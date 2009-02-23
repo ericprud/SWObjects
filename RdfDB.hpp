@@ -105,6 +105,8 @@ namespace w3c_sw {
     protected:
 	std::vector<const char*> endpointPatterns;
 	std::set<const POS*> loadedEndpoints;
+	POSFactory* posFactory;
+
     public:
 	RdfRemoteDB (std::vector<const char*> endpointPatterns) : 
 	    RdfDB(), endpointPatterns(endpointPatterns) {
