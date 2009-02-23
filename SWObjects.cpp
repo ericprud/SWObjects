@@ -614,7 +614,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    m_TableOperations.push_back(tableOp);
     }
 
-    ResultSet* Select::execute (RdfDB* db, ResultSet* rs) {
+    ResultSet* Select::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getPOSFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
@@ -625,7 +625,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
-    ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) {
+    ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getPOSFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)

@@ -187,7 +187,7 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
-    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) { throw(std::runtime_error(typeid(*this).name())); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); }
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const Operation& ref) const = 0;
 };
@@ -919,7 +919,7 @@ public:
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation& ref) const {
 	const Select* pSel = dynamic_cast<const Select*>(&ref);
 	if (pSel == NULL)
@@ -946,7 +946,7 @@ public:
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL);
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     WhereClause* getWhereClause () { return m_WhereClause; }
     virtual bool operator== (const Operation&) const {
 	return false;
