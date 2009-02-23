@@ -136,7 +136,8 @@ namespace w3c_sw {
 	    POSFactory* posFactory;
 
 	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
-			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, ERROR};
+			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, 
+			 s_ERROR};
 	    std::vector<std::string> knownVars;
 	    std::stack<enum STATES> stateStack;
 #define SRX "http://www.w3.org/2005/sparql-results#"
@@ -166,7 +167,7 @@ namespace w3c_sw {
 				       Attributes* attrs) {
 		if (uri != SRX)
 		    error("element in unexpected namespace %s within %s", qName.c_str(), stateStr());
-		enum STATES newState = ERROR;
+		enum STATES newState = s_ERROR;
 		switch (stateStack.top()) {
 		case DOCUMENT:
 		    if (localName == "sparql")
@@ -226,7 +227,7 @@ namespace w3c_sw {
 		default:
 		    error("unexpected element %s within %s", qName.c_str(), stateStr());
 		}
-		if (newState == ERROR)
+		if (newState == s_ERROR)
 		    error("unexpected element %s within %s", qName.c_str(), stateStr());
 		stateStack.push(newState);
 		chars = "";
