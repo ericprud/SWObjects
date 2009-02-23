@@ -150,7 +150,7 @@ test/%.d : test/%.cpp
 	-makedepend -btest/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
 
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
-	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_system -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
 	$< $(TEST_ARGS)
