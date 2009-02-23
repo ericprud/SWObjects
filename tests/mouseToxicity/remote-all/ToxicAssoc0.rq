@@ -14,16 +14,16 @@ PREFIX mt: <http://med.example/mt#>
 
 SELECT ?name ?chemical ?motif ?saProt ?kd50 ?like ?ld
 
-FROM NAMED <MicroArray.map>
-FROM NAMED <Uniprot.rdf>
-FROM NAMED <http://localhost:8888/screeningAssay>
-FROM NAMED <ChemStructure.map>
-FROM NAMED <MouseToxicity.map>
+FROM NAMED <http://localhost:8881/microArray>
+FROM NAMED <http://localhost:8882/uniprot>
+FROM NAMED <http://localhost:8883/screeningAssay>
+FROM NAMED <http://localhost:8884/chemStructure>
+FROM NAMED <http://localhost:8885/mouseToxicity>
 
 WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
-GRAPH <MicroArray.map> {
+GRAPH <http://localhost:8881/microArray> {
          ?g	ma:name		?name .
 	 ?g	ma:expression	"up" .
 	 ?g	ma:experiment	?kinase .
@@ -31,32 +31,32 @@ GRAPH <MicroArray.map> {
 	 ?agin	cs:chemical	?chemical }
 
 # The uniprot data (in RDF) has motif and pathway information.
-GRAPH <Uniprot.rdf> {
+GRAPH <http://localhost:8882/uniprot> {
          ?p	ma:name		?name .		# bound to ?ma.ma:name
 	 ?p	up:motif	?motif .
 	 ?p	up:pathway	"apoptosis" }
 
 # Use the (SQL) Kinase databaes to limit to the interesting chemicals.
-GRAPH <http://localhost:8888/screeningAssay> {
+GRAPH <http://localhost:8883/screeningAssay> {
          ?a	sa:name		"KinaseAssay" .
 	 ?a	cs:chemical	?chemical .	# bound to ?ma.cs:chemical
 	 ?a	sa:upname	?saProt .
 	 ?a	ma:kd50		?kd50
          FILTER (?kd50 >= .7 || ?kd50 < .2) }
 
-## # This (SQL) chemical database indexes like sidechains.
-## GRAPH <ChemStructure.map> {
-##          ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
-## 	 ?c	cs:structure	"asdfasdf" .
-## 	 ?c	cs:sidechain	?side .
-## 	 ?c2	cs:sidechain	?side .
-## 	 ?c2	cs:chemical	?like }
-## 
-## # Limit by toxicity in the (SQL) MouseToxicity experiments.
-## GRAPH sql:MouseToxicity.prop {
-##          ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain
-## 	 ?t	mt:toxicity	?ld 
-##          FILTER (?ld < .35) }
+# This (SQL) chemical database indexes like sidechains.
+GRAPH <http://localhost:8884/chemStructure> {
+         ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
+	 ?c	cs:structure	"asdfasdf" .
+	 ?c	cs:sidechain	?side .
+	 ?c2	cs:sidechain	?side .
+	 ?c2	cs:chemical	?like }
+
+# Limit by toxicity in the (SQL) MouseToxicity experiments.
+GRAPH <http://localhost:8885/mouseToxicity> {
+         ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain
+	 ?t	mt:toxicity	?ld 
+         FILTER (?ld < .35) }
 }
 
 # Table Output:
