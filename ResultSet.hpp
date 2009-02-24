@@ -166,7 +166,7 @@ namespace w3c_sw {
 				       std::string qName,
 				       Attributes* attrs) {
 		if (uri != SRX)
-		    error("element in unexpected namespace %s within %s", qName.c_str(), stateStr());
+		    error("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
 		enum STATES newState = s_ERROR;
 		switch (stateStack.top()) {
 		case DOCUMENT:
