@@ -3,6 +3,9 @@
  * interface?
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
+
+ * SWSAXparser and SWSAXhandler are prefixed with SW to avoid collisions with
+ * implementation names.
  */
 
 #pragma once
