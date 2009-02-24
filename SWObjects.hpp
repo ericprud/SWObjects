@@ -8,7 +8,10 @@
 #ifndef SWOBJECTS_HH
 # define SWOBJECTS_HH
 
+/* defines for controlling includes from utils */
 
+
+/* non-portable debug messages */
 #ifdef _MSC_VER
 #define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
 
