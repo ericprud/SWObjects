@@ -5,8 +5,8 @@
 
  server: localhost
  user: root
- database: ChemicStructure
- stemURI: http://med.example/cs#
+ database: ChemStructure
+ stemURI: http://db.example/cs/
  primaryKey: id
  construct:
 
@@ -17,14 +17,14 @@ PREFIX up: <http://med.example/up#>
 PREFIX sa: <http://med.example/sa#>
 PREFIX mt: <http://med.example/mt#>
 
-PREFIX ChemicStructure: <http://db.example/cs/ChemicStructure#>
+PREFIX ChemStructure: <http://db.example/cs/ChemStructure#>
 
 CONSTRUCT {
   ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
   ?c	cs:structure	?struct .
   ?c	cs:sidechain	?side .
 } WHERE {
-  ?c	ChemicStructure:chemical	?chemical .
-  ?c	ChemicStructure:structure	?struct .
-  ?c	ChemicStructure:sidechain	?side .
+  ?c	ChemStructure:chemical	?chemical .
+  ?c	ChemStructure:structure	?struct .
+  ?c	ChemStructure:sidechain	?side .
 }

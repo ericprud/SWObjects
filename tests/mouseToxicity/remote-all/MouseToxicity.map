@@ -6,7 +6,7 @@
  server: localhost
  user: root
  database: MouseToxicity
- stemURI: http://med.example/cs#
+ stemURI: http://db.example/mt/
  primaryKey: id
  construct:
 
@@ -17,7 +17,7 @@ PREFIX up: <http://med.example/up#>
 PREFIX sa: <http://med.example/sa#>
 PREFIX mt: <http://med.example/mt#>
 
-PREFIX MouseToxicity: <http://db.example/sa/MouseToxicity#>
+PREFIX MouseToxicity: <http://db.example/mt/MouseToxicity#>
 
 CONSTRUCT {
   ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain
