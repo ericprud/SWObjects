@@ -875,7 +875,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
 	for (std::vector<const Filter*>::const_iterator it = ref.m_Filters.begin();
 	     it != ref.m_Filters.end(); ++it) {
-	    ref.m_Filters.express(&dup);
+	    (*it)->express(&dup);
 	    m_Filters.push_back(dup.last.filter);
 	}
     }
