@@ -334,7 +334,7 @@ URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
     URI* nspace = driver->getNamespace(ret.substr(0, index), true);
     if (nspace == NULL) {
 	std::stringstream err;
-	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
+	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
 	throw(std::runtime_error(err.str()));
     }
     ret.replace(0, index+1, nspace->getTerminal());
