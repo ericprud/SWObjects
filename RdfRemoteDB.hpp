@@ -118,7 +118,6 @@ namespace w3c_sw {
 
 		/* Join those results against our initial results. */
 		rs->joinIn(&red);
-		std::cerr << *rs;
 	    }
 #endif /* HAVE_REGEX */
 	}
