@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include <fstream>
 #include <stack>
 #include <map>
 #include "SAXparser.hpp"
@@ -102,13 +103,19 @@ namespace w3c_sw {
 		    handler->error("namespace prefix \"%s\" not found", elPrefix);
 	    }
 	}
+	void __dumpNsz (const char* sit) {
+	    std::cerr << sit << "\n";
+	    for (std::map< const char*, const char* >::const_iterator it = nsz.top().begin();
+		 it != nsz.top().end(); ++it)
+		std::cerr << "    xmlns:" << it->first << "=\"" << it->second << "\"\n";
+	}
 	static void start (void *voidSelf,
 			   const XML_Char *name,
 			   const XML_Char **atts) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
 	    std::map< const char*, const char* > nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
-
+	    self.__dumpNsz(name);
 	    Attributes_expat attrs;
 	    { /* Walk attrs. */
 		for (const XML_Char** att = atts; *att; ++att) {

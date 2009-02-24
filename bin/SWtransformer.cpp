@@ -6,14 +6,36 @@
 
 /* START main */
 
+#define XMLPARSER_LIBXML 1
+#define XMLPARSER_EXPAT 2
+#define XMLPARSER XMLPARSER_LIBXML
+
+#if XMLPARSER == XMLPARSER_LIBXML
+#include <libxml/parser.h>
+#elif XMLPARSER == XMLPARSER_EXPAT
+#ifdef _MSC_VER
+#include "xmlparse.h"
+#else /* !_MSC_VER */
+#include "expat.h"
+#endif /* !_MSC_VER */
+#endif /* !XMLPARSER == XMLPARSER_EXPAT */
+
 #include <stdio.h>
 #include "SPARQLfedParser.hpp"
 #include "TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
-#include "RdfQueryDB.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
+#include "RdfRemoteDB.hpp"
+
+#if XMLPARSER == XMLPARSER_LIBXML
+#include "SAXparser_libxml.hpp"
+#elif XMLPARSER == XMLPARSER_EXPAT
+#include "SAXparser_expat.hpp"
+#endif
+
+#include "util/WEBagent_boostASIO.hpp"
 
 #include <stdlib.h>
 #include <ostream>
@@ -172,8 +194,17 @@ int main(int argc,char** argv) {
 		    if (!Quiet)
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
-		} else if (ExecuteQuery) {
-		    RdfRemoteDB db(SparqlEndpointPatterns);
+		}
+		else if (ExecuteQuery) {
+#if XMLPARSER == XMLPARSER_LIBXML
+		    SAXparser_libxml p;
+		    LIBXML_TEST_VERSION;
+#elif XMLPARSER == XMLPARSER_EXPAT
+		    SAXparser_expat p;
+#endif
+
+		    WEBagent_boostASIO client;
+		    RdfRemoteDB db(SparqlEndpointPatterns, &p, &client);
 		    ResultSet rs(&posFactory);
 		    o->execute(&db, &rs);
 		    std::cout << rs; // show results

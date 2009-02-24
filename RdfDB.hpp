@@ -81,40 +81,6 @@ namespace w3c_sw {
 	return os << s.getSPARQLstring();
     }
 
-    class RdfRemoteDB : public RdfDB {
-	class GraphSerializer : public SPARQLSerializer {
-	    ResultSet* rs;
-	    bool expectOuterGraph;
-	    std::set<const Variable*> vars;
-	    std::string selectString;
-	    std::string federationString;
-
-	public:
-	    GraphSerializer (ResultSet* rs) : SPARQLSerializer(), rs(rs), expectOuterGraph(true) {  }
-	    std::string getSelectString () const { return selectString; }
-	    std::string getFederationString () const { return federationString; }
-
-	protected:
-	    virtual void variable (const Variable* const self, std::string terminal) {
-		vars.insert(self);
-		SPARQLSerializer::variable(self, terminal);
-	    }
-
-	    virtual void namedGraphPattern(const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters);
-	};
-    protected:
-	std::vector<const char*> endpointPatterns;
-	std::set<const POS*> loadedEndpoints;
-	POSFactory* posFactory;
-
-    public:
-	RdfRemoteDB (std::vector<const char*> endpointPatterns) : 
-	    RdfDB(), endpointPatterns(endpointPatterns) {
-	}
-	virtual void loadData(const POS* name, POSFactory* posFactory);
-	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
-    };
-
 } // namespace w3c_sw
 
 #endif // !RDF_DB_H
