@@ -83,6 +83,8 @@ LIBINC	+= -L$(PWD)
 BISONOBJ :=  $(subst .ypp,.o,$(wildcard */*.ypp)) 
 FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard *.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
+BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
+TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib$(LIBNAME).a
 LIBINC	+=	 -l$(LIBNAME) -lboost_regex -lxml2 -lexpat
@@ -145,11 +147,11 @@ unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
-test/%.d : test/%.cpp
+tests/test_%.d : test/test_%.cpp
 	-touch $@
-	-makedepend -btest/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
+	-makedepend -btests/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
 
-tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp
+tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp tests/test_%.d
 	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_system -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
@@ -244,7 +246,7 @@ clean:
 cleaner: clean
 	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
 
-deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d) bin/SPARQL_server.d
+deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d) $(BINOBJLIST:.o=.d) $(TESTSOBJLIST:.o=.d)
 
 dep: $(deps)
 
