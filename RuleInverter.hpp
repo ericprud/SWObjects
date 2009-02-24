@@ -319,7 +319,7 @@ namespace w3c_sw {
 		if (res == NULL)
 		    **debugStream << "yielding no transformed query disjoint." << endl << endl;
 		else
-		    **debugStream << "yielding transformed query disjoint:" << endl << res << endl;
+		    **debugStream << "yielding transformed query disjoint:" << endl << *res << endl;
 	    }
 	    return opRS;
 	}
