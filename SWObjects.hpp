@@ -1871,6 +1871,9 @@ class TestExpressor : public RecursiveExpressor {
     virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
+    std::ostream& operator<<(std::ostream& os, TableOperation const& my);
+    std::ostream& operator<<(std::ostream& os, WhereClause const& my);
+
 #ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .

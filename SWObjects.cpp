@@ -964,6 +964,18 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
+    std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
+    }
+
+    std::ostream& operator<< (std::ostream& os, WhereClause const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
+    }
+
 #ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
