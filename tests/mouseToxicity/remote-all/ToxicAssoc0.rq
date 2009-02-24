@@ -4,8 +4,6 @@
 # $Id: ToxicAssoc0-remote.rq,v 1.1 2009/02/17 15:15:34 eric Exp $
 
 # Assign convenient prefixes to common for later syntactic shorthand.
-PREFIX sql: <http://www.w3.org/2003/01/21-RDF-RDB-access/ns#SqlDB?properties=..%2Ftest%2F>
-PREFIX fed: <http://www.w3.org/1999/02/26-modules/algae#FedDB?properties=..%2Ftest%2F>
 PREFIX ma: <http://med.example/ma#>
 PREFIX cs: <http://med.example/cs#>
 PREFIX up: <http://med.example/up#>
