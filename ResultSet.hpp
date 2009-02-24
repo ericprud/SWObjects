@@ -65,6 +65,7 @@ namespace w3c_sw {
 	BindingSetConstIterator end () const { return bindings.end(); }
 	size_t size () const { return bindings.size(); }
 	BindingSetIterator find (const POS* pos) { return bindings.find(pos); }
+	void erase (BindingSetIterator it) { bindings.erase(it); }
 
 	const POS* get(const POS* variable) const;
 	/* set should only be used by ResultSet::set if you want to keep the
@@ -370,6 +371,7 @@ namespace w3c_sw {
 	    return true;
 	}
 
+	void project(ProductionVector<const POS*> const * varsV);
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
 	bool isOrdered () const { return ordered; }
 

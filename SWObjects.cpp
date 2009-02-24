@@ -619,6 +619,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
+	m_VarSet->project(rs);
 	if (m_SolutionModifier != NULL)
 	    m_SolutionModifier->modifyResult(rs);
 	return rs;
@@ -646,6 +647,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
 	if (m_BindingClause != NULL) m_BindingClause->bindVariables(db, rs);
 	m_GroupGraphPattern->bindVariables(db, rs);
+    }
+
+    void POSList::project (ResultSet* rs) const {
+	rs->project(&m_POSs);
+    }
+
+    void StarVarSet::project (ResultSet* rs) const {
+	ProductionVector<const POS*> empty;
+	rs->project(&empty);
     }
 
     void SolutionModifier::modifyResult (ResultSet* rs) {

@@ -2,6 +2,7 @@
  * $Id: ResultSet.cpp,v 1.7 2008-12-02 03:36:12 eric Exp $
  */
 
+#include <set>
 #include "ResultSet.hpp"
 #include "XMLQueryExpressor.hpp"
 #include <iostream>
@@ -113,6 +114,32 @@ namespace w3c_sw {
 	    return false;
 	}
     };
+
+    void ResultSet::project (ProductionVector<const POS*> const * varsV) {
+	std::set<const POS*> vars(varsV->begin(), varsV->end());
+
+	/* List of vars to delete.
+	 * This is cheaper than walking all the bindings in a row, but assumes
+	 * that the row has no bindings which fail to appear in knownVars.
+	 */
+	std::set<const POS*> toDel;
+	for (std::set<const POS*>::const_iterator knownVar = knownVars.begin();
+	     knownVar != knownVars.end(); ++knownVar)
+	    if (vars.find(*knownVar) == vars.end())
+		toDel.insert(*knownVar);
+
+	/* Delete those vars from each row, and from knowVars. */
+	for (ResultSetIterator row = results.begin();
+	     row != results.end(); ++row)
+	    for (std::set<const POS*>::const_iterator var = toDel.begin();
+		 var != toDel.end(); ++var)
+		(*row)->erase((*row)->find(*var));
+
+	/* Delete those vars from knowVars. */
+	for (std::set<const POS*>::const_iterator var = toDel.begin();
+	     var != toDel.end(); ++var)
+	    knownVars.erase(*var);
+    }
 
     void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
 	if (orderConditions != NULL) {

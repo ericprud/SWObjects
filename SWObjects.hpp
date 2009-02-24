@@ -772,6 +772,7 @@ protected:
 public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
+    virtual void project(ResultSet* rs) const = 0;
 };
 
 class POSList : public VarSet {
@@ -790,6 +791,7 @@ public:
 	const POSList* pref = dynamic_cast<const POSList*>(&ref);
 	return pref == NULL ? false : m_POSs == pref->m_POSs;
     }
+    virtual void project (ResultSet* rs) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -803,6 +805,7 @@ public:
 	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
 	return pref == NULL ? false : true;
     }
+    virtual void project (ResultSet* rs) const;
 };
 
 class DatasetClause : public Base {
