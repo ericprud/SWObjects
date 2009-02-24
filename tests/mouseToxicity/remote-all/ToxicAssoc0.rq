@@ -12,7 +12,7 @@ PREFIX up: <http://med.example/up#>
 PREFIX sa: <http://med.example/sa#>
 PREFIX mt: <http://med.example/mt#>
 
-SELECT ?name ?chemical ?motif ?saProt ?kd50 ?like ?ld
+SELECT ?name ?chemical ?motif ?saProt ?kd50 ?leik ?ld
 
 FROM NAMED <http://localhost:8881/microArray>
 FROM NAMED <http://localhost:8882/uniprot>
@@ -44,24 +44,25 @@ GRAPH <http://localhost:8883/screeningAssay> {
 	 ?a	ma:kd50		?kd50
          FILTER (?kd50 >= .7 || ?kd50 < .2) }
 
-# This (SQL) chemical database indexes like sidechains.
+# This (SQL) chemical database indexes leik sidechains.
 GRAPH <http://localhost:8884/chemStructure> {
          ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
 	 ?c	cs:structure	"asdfasdf" .
 	 ?c	cs:sidechain	?side .
 	 ?c2	cs:sidechain	?side .
-	 ?c2	cs:chemical	?like }
+	 ?c2	cs:structure	?c2struc .
+	 ?c2	cs:chemical	?leik }
 
 # Limit by toxicity in the (SQL) MouseToxicity experiments.
 GRAPH <http://localhost:8885/mouseToxicity> {
-         ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain
+         ?t	cs:chemical	?leik .		# bound to ?cs.cs:sidechain
 	 ?t	mt:toxicity	?ld 
          FILTER (?ld < .35) }
 }
 
 # Table Output:
 # +------+--------------+-----------+----------+-----+-------+-----+
-# |  name|      chemical|      motif|    saProt| kd50|   like|   ld|
+# |  name|      chemical|      motif|    saProt| kd50|   leik|   ld|
 # |------|--------------|-----------|----------|-----|-------|-----|
 # |"rq23"|"lhrh-agonist"|"@@motif@@"|"?saProt2"|"0.8"|"like2"|"0.3"|
 # |"rq23"|"lhrh-agonist"|"@@motif@@"|"?saProt3"|"0.1"|"like2"|"0.3"|
