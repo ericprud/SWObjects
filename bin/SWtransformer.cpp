@@ -27,7 +27,6 @@
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
-#include "RdfRemoteDB.hpp"
 
 #if XMLPARSER == XMLPARSER_LIBXML
 #include "util/SAXparser_libxml.hpp"
@@ -36,6 +35,7 @@
 #endif
 
 #ifdef HAVE_ASIO
+#include "RdfRemoteDB.hpp"
 #include "util/WEBagent_boostASIO.hpp"
 #endif /* HAVE_ASIO */
 
