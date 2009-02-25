@@ -425,15 +425,6 @@ namespace w3c_sw {
 	}
     };
 
-    class ConstructResultSet : ResultSet {
-	ConstructResultSet(POSFactory* posFactory) : ResultSet(posFactory) {  }
-    };
-
-    /* TransformerResultSet: extra bits needed for query on query.
-     */
-    class TransformerResultSet : public ResultSet {
-    };
-
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);
 
 } // namespace w3c_sw
