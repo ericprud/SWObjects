@@ -35,7 +35,9 @@
 #include "util/SAXparser_expat.hpp"
 #endif
 
+#ifdef HAVE_ASIO
 #include "util/WEBagent_boostASIO.hpp"
+#endif /* HAVE_ASIO */
 
 #include <stdlib.h>
 #include <ostream>
@@ -195,6 +197,7 @@ int main(int argc,char** argv) {
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
 		}
+#ifdef HAVE_ASIO
 		else if (ExecuteQuery) {
 #if XMLPARSER == XMLPARSER_LIBXML
 		    SAXparser_libxml p;
@@ -209,6 +212,7 @@ int main(int argc,char** argv) {
 		    o->execute(&db, &rs);
 		    std::cout << rs; // show results
 		}
+#endif /* HAVE_ASIO */
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;
