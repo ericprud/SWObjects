@@ -203,7 +203,7 @@ tests/server_mouseToxicity_remote-all.results: \
 	  tee ../../../$@.mt )&
 	sleep 1 # give the servers time to start up
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../bin/SWtransformer\
+	  time ../../../bin/SWtransformer\
 	      -x -q --sparql-pattern http://localhost:888[1-5]/.\* ToxicAssoc0.rq )
 
 
