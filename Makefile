@@ -102,7 +102,8 @@ lib: dep $(LIB)
 
 # funny rules for linking to DLIB
 ifdef DLIBINC
-DLIB= -DNO_MAKEFILE -I$(DLIBINC) -DHAVE_DLIB
+DLIB= -DNO_MAKEFILE -I$(DLIBINC)
+CONFIG_DEFS += "-DHAVE_DLIB "
 endif
 
 # overrides for specific targets in bin

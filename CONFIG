@@ -22,11 +22,12 @@ CONFIG_DEFS += "-DHAVE_REGEX "
 # in SWtransformer; this or DLIB is needed for SPARQL_server. This is tested
 # with v1.36.
 # http://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio.html
-CONFIG_DEFS += "-DHAVE_ASIO "
+#CONFIG_DEFS += "-DHAVE_ASIO "
 
 
 ##### DLIB - A web server library #####
 # You need either DLIB or Boost ASIO to compile SPARQL_server.
+# Makefile will assert -DHAVE_DLIB if DLIBINC is set.
 # http://dclib.sourceforge.net/
 DLIBINC = ../../../../dlib-17.11
 
