@@ -30,9 +30,9 @@
 #include "RdfRemoteDB.hpp"
 
 #if XMLPARSER == XMLPARSER_LIBXML
-#include "SAXparser_libxml.hpp"
+#include "util/SAXparser_libxml.hpp"
 #elif XMLPARSER == XMLPARSER_EXPAT
-#include "SAXparser_expat.hpp"
+#include "util/SAXparser_expat.hpp"
 #endif
 
 #include "util/WEBagent_boostASIO.hpp"

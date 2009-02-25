@@ -35,9 +35,9 @@
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
 #if XMLPARSER == XMLPARSER_LIBXML
-#include "SAXparser_libxml.hpp"
+#include "util/SAXparser_libxml.hpp"
 #elif XMLPARSER == XMLPARSER_EXPAT
-#include "SAXparser_expat.hpp"
+#include "util/SAXparser_expat.hpp"
 #endif
 
 using namespace w3c_sw;
