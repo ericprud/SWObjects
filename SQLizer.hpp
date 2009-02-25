@@ -43,22 +43,22 @@ namespace w3c_sw {
 	public:
 	    WhereConstraint () {  }
 	    virtual ~WhereConstraint () {  }
-	    virtual std::string toString(std::string pad = "", e_PREC prec = PREC_High) = 0;
+	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) = 0;
 	};
 	class JunctionConstraint : public WhereConstraint {
 	    std::vector<WhereConstraint*> constraints;
 	public:
 	    JunctionConstraint () : WhereConstraint(), constraints() {  }
 	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) {
 		std::stringstream s;
-		if (getPrecedence() < prec) s << "(";
+		if (getPrecedence() < parentPrec) s << "(";
 		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    if (it != constraints.begin()) s << getJunctionString();
 		    s << (*it)->toString(pad, getPrecedence());
 		}
-		if (getPrecedence() < prec) s << ")";
+		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
 	    }
 	    virtual std::string getJunctionString() = 0;
@@ -72,20 +72,25 @@ namespace w3c_sw {
 	    virtual std::string getJunctionString () { return " OR "; }
 	    virtual e_PREC getPrecedence () { return PREC_Or; }
 	};
-	class BooleanConstraint : public WhereConstraint {
-	    WhereConstraint *left, *right;
+	class ArithOperation : public WhereConstraint {
+	    std::vector<WhereConstraint*> constraints;
 	    std::string sqlOperator;
+	    e_PREC prec;
+
 	public:
-	    BooleanConstraint (std::string sqlOperator) : WhereConstraint(), left(), right(), sqlOperator(sqlOperator) {  }
-	    void setLeft (WhereConstraint* constraint) { left = constraint; }
-	    void setRight (WhereConstraint* constraint) { right = constraint; }
-	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
+	    ArithOperation (std::string sqlOperator, e_PREC prec) : 
+		WhereConstraint(), sqlOperator(sqlOperator), prec(prec) {  }
+	    void push_back (WhereConstraint* constraint) { constraints.push_back(constraint); }
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) {
 		std::stringstream s;
-		if (PREC_EQ < prec) s << "(";
-		s << left->toString(pad, PREC_EQ);
-		s << " " <<  sqlOperator << " ";
-		s << right->toString(pad, PREC_EQ);
-		if (PREC_EQ < prec) s << ")";
+		if (prec < parentPrec) s << "(";
+		for (std::vector<WhereConstraint*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); ++it) {
+		    if (it != constraints.begin())
+			s << " " <<  sqlOperator << " ";
+		    s << (*it)->toString(pad, prec);
+		}
+		if (prec < parentPrec) s << ")";
 		return s.str();
 	    }
 	};
@@ -152,9 +157,9 @@ namespace w3c_sw {
 	    WhereConstraint* negated;
 	public:
 	    NegationConstraint (WhereConstraint* negated) : WhereConstraint(), negated(negated) {  }
-	    virtual std::string toString (std::string pad, e_PREC prec) {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec) {
 		std::stringstream s;
-		s << "!(" << negated->toString(pad, prec) << ")";
+		s << "!(" << negated->toString(pad, parentPrec) << ")";
 		return s.str();
 	    }
 	};
@@ -1254,50 +1259,54 @@ namespace w3c_sw {
 	    }
 	    curConstraint = disj;
 	}
+	void _arithOp (std::string sqlOperator, const ProductionVector<const Expression*>* p_Expressions, e_PREC prec) {
+	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it) {
+		(*it)->express(this);
+		c->push_back(curConstraint);
+	    }
+	    curConstraint = c;
+	}
 	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
-		 it != p_Expressions->end(); ++it)
-		(*it)->express(this);
+	    _arithOp("+", p_Expressions, PREC_Plus);
 	}
 	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
-
-		 it != p_Expressions->end(); ++it)
-		(*it)->express(this);
+	    _arithOp("*", p_Expressions, PREC_Times);
 	}
-	void _boolConstraint (const Expression* p_left, std::string sqlOperator, const Expression* p_right) {
-	    BooleanConstraint* c = new BooleanConstraint(sqlOperator);
+	void _boolConstraint (const Expression* p_left, std::string sqlOperator, const Expression* p_right, e_PREC prec) {
+	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
 	    p_left->express(this);
-	    c->setLeft(curConstraint);
+	    c->push_back(curConstraint);
 	    p_right->express(this);
-	    c->setRight(curConstraint);
+	    c->push_back(curConstraint);
 	    curConstraint = c;
 	}
 	virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "=", p_right);
+	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
 	}
 	virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "!=", p_right);
+	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
 	}
 	virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "<", p_right);
+	    _boolConstraint(p_left, "<", p_right, PREC_LT);
 	}
 	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, ">", p_right);
+	    _boolConstraint(p_left, ">", p_right, PREC_GT);
 	}
 	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "<=", p_right);
+	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
 	}
 	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, ">=", p_right);
+	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
 	}
 	virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
 	    MARK;
