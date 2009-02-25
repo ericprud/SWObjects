@@ -310,6 +310,7 @@ namespace w3c_sw {
 		return self.compareOrdered(newRef);
 	    }
 	}
+	const VariableList* getKnownVars () { return &knownVars; }
 	void joinIn (ResultSet* ref) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {		
