@@ -1,0 +1,33 @@
+# sample config file - You should go through this file to configure your build.
+# You can tell the build system whether you have, e.g. DLIB, boost..., as well
+# as library paths and terminal features.
+
+# $Id$
+
+
+##### CONFIG_DEFS - Control which code gets included. #####
+CONFIG_DEFS =
+
+# HAVE_UTF8_OUTPUT - whether tables should be printed like "┌──┬┐".
+CONFIG_DEFS += "-DHAVE_UTF8_OUTPUT "
+
+# HAVE_REGEX - Use Boost regex library. #####
+# Needed for URI and literal mappings and for parsing command line arguments
+# which are URIs. This is tested with v1.36.
+# http://www.boost.org/doc/libs/1_36_0/libs/regex/doc/html/index.html
+CONFIG_DEFS += "-DHAVE_REGEX "
+
+# HAVE_ASIO - Use Boost asio library. #####
+# Provides both web client and server. Needed for query federation features
+# in SWtransformer; this or DLIB is needed for SPARQL_server. This is tested
+# with v1.36.
+# http://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio.html
+CONFIG_DEFS += "-DHAVE_ASIO "
+
+
+##### DLIB - A web server library #####
+# You need either DLIB or Boost ASIO to compile SPARQL_server.
+# http://dclib.sourceforge.net/
+DLIBINC = ../../../../dlib-17.11
+
+

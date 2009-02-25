@@ -1,5 +1,5 @@
 # $Id: Makefile,v 1.56 2009-01-16 11:29:21 eric Exp $
-# SWObjects build rules -- see http://www.w3.org/2008/04/SPARQLfed/
+# SWObjects build rules -- you should edit the CONFIG file
 
 # recipies:
 #   normal build:
@@ -16,6 +16,9 @@
 # linking to dlib requires special maneuvers 'cause of the need to 
 # g++ -DHAVE_UTF8_OUTPUT -DHAVE_REGEX -I/home/eric/src/dlib-17.11 -o bin/SPARQL_server bin/SPARQL_server.o /home/eric/src/dlib-17.11/dlib/all/source.cpp -L/tmp/const-happy -lSWObjects -lboost_regex -lxml2 -lexpat -lmysqlclient
 
+# Edit CONFIG to set your build preferences.
+-include CONFIG
+
 FLEX:=flex
 YACC:=bison
 TEE:=tee
@@ -27,7 +30,7 @@ DEFS:=-DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
-CONFIG_DEFS ?= -DHAVE_REGEX -DHAVE_UTF8_OUTPUT
+
 
 INCLUDES += -I${PWD} -I/usr/include/libxml2
 I2=$(subst /, ,$(BISONOBJ:.o=))
@@ -96,8 +99,11 @@ $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 lib: dep $(LIB)
 
 ##### bin dirs ####
-DLIBINC ?= ../dlib
-DLIB= -DNO_MAKEFILE -I$(DLIBINC)
+
+# funny rules for linking to DLIB
+ifdef DLIBINC
+DLIB= -DNO_MAKEFILE -I$(DLIBINC) -DHAVE_DLIB
+endif
 
 # overrides for specific targets in bin
 bin/SPARQL_server.o : bin/SPARQL_server.cpp
