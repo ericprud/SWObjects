@@ -1182,13 +1182,13 @@ namespace w3c_sw {
 	    FAIL("CLEAR");
 	    p__QGraphIRI_E_Opt->express(this);
 	}
-	virtual void create (const Create* const, e_Silence p_Silence, const URI* p_GraphIRI) {
+	virtual void create (const Create* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
 	    FAIL("CREATE");
-	    if (p_Silence != SILENT_Yes) ;// !!!
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
-	virtual void drop (const Drop* const, e_Silence p_Silence, const URI* p_GraphIRI) {
-	    if (p_Silence != SILENT_Yes) ;// !!!
+	virtual void drop (const Drop* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
 	virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
