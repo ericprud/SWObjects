@@ -6,6 +6,7 @@
 
 #pragma once
 #include <map>
+#include <libxml/parser.h>
 #include "util/SAXparser.hpp"
 
 namespace w3c_sw {

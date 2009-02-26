@@ -16,16 +16,18 @@
 
 #define XMLPARSER_LIBXML 1
 #define XMLPARSER_EXPAT 2
-#define XMLPARSER XMLPARSER_EXPAT
+#define XMLPARSER XMLPARSER_LIBXML
 
 #if XMLPARSER == XMLPARSER_LIBXML
-#include <libxml/parser.h>
+  #include <libxml/parser.h>
 #elif XMLPARSER == XMLPARSER_EXPAT
-#ifdef _MSC_VER
-#include "xmlparse.h"
-#else /* !_MSC_VER */
-#include "expat.h"
-#endif /* !_MSC_VER */
+  #ifdef _MSC_VER
+    #include "xmlparse.h"
+  #else /* !_MSC_VER */
+    #include "expat.h"
+  #endif /* !_MSC_VER */
+#else
+  #error DAWG tests require an XML parser
 #endif /* !XMLPARSER == XMLPARSER_EXPAT */
 
 #include "SWObjects.hpp"

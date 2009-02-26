@@ -9,14 +9,18 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
-#include "boost/regex.hpp"
-#include "dlib/server.h"
+#include <stdio.h>  //\_for strcmp
+#include <string.h> ///
+#ifdef HAVE_REGEX
+  #include "boost/regex.hpp"
+#endif
 #ifdef WIN32
-#include <mysql.h>
-#else
-#include <mysql/mysql.h>
+  #include <mysql.h>
+ #else
+  #include <mysql/mysql.h>
 #endif
 
 #include "SWObjects.hpp"
@@ -28,7 +32,10 @@
 
 const char* SELECT_QUERY = "SELECT * FROM test";
 
+#if HTTP_SERVER == DLIB
+#include "dlib/server.h"
 using namespace dlib;
+#endif
 using namespace std;
 using namespace w3c_sw;
 
@@ -77,6 +84,7 @@ struct SimpleMessageException : public StringException {
     }
 };
 
+#if HTTP_SERVER == DLIB
 class WebServer : public server::http_1a_c
 {
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
@@ -276,13 +284,27 @@ class WebServer : public server::http_1a_c
     }
 
 };
+ #elif HTTP_SERVER == ASIO
+  #error ASIO HTTP server not implemented
+ #else
+  #warning No HTTP server -- implementing fake server
+struct WebServer {
+    void start () {  }
+    void clear () {  }
+    void set_listening_port (int) {  }
+};
+struct thread_function  {
+    thread_function ( void (*funct)() ) {  }
+};
+#endif /* HTTP_SERVER == DLIB */
+
 
 // create an instance of our web server
 WebServer TheServer;
 
 void thread ()
 {
-#if STUPID_TIGHT_LOOP
+#if DLIB_TIGHT_LOOP
     cout << "a POST to <" << ServerTerminate << "> with query=stop will terminate the server." << endl;
     while (!Done) dlib::sleep(1000);
     cout << "Done: served " << Served << " queries." << endl;
@@ -327,7 +349,7 @@ void startServer (const char* url) {
 int main (int argc, char** argv) {
 
     unsigned iArg = 1;
-    if (argc > 1 && !strcmp(argv[iArg], "--once")) {
+    if (argc > 1 && !::strcmp(argv[iArg], "--once")) {
 	RunOnce = true;
 	++iArg;
     }

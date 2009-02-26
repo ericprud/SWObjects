@@ -567,6 +567,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
+#ifdef HAVE_REGEX
     void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
@@ -586,6 +587,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    flags |= boost::match_not_bob; 
 	}
     }
+#endif /* HAVE_REGEX */
 
     /* EBV (Better place for this?) */
     const POS* POSFactory::ebv (const POS* pos) {

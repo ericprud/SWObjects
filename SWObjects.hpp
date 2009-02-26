@@ -38,7 +38,10 @@
 #include <cstdarg>
 #include <cassert>
 #include <typeinfo>
-#include <boost/regex.hpp>
+
+#ifdef HAVE_REGEX
+  #include <boost/regex.hpp>
+#endif /* HAVE_REGEX */
 
 #define TAB "  "
 #define ns "\n xmlns=\"http://www.w3.org/2005/01/yacker/uploads/SPARQLfed/\"\n xmlns:yacker=\"http://www.w3.org/2005/01/yacker/\""
@@ -469,6 +472,7 @@ public:
     TriplePattern* getTriple (std::string s, std::string p, std::string o) {
 	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
     }
+#ifdef HAVE_REGEX
     TriplePattern* getTriple (std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
@@ -482,6 +486,7 @@ public:
 			 getPOS(std::string(what[2].first, what[2].second)), 
 			 getPOS(std::string(what[3].first, what[3].second)), false);
     }
+#endif /* HAVE_REGEX */
     void parseTriples (BasicGraphPattern* g, std::string spo);
 
     /* EBV (Better place for this?) */

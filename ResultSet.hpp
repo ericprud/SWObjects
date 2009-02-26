@@ -98,6 +98,7 @@ namespace w3c_sw {
 			  "<n4> \"l1\"" )
 	 * A \n on the last line creates a row with no bindings.
 	 */
+#ifdef HAVE_REGEX
 	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
@@ -130,6 +131,7 @@ namespace w3c_sw {
 		flags |= boost::match_not_bob; 
 	    }
 	}
+#endif /* !HAVE_REGEX */
 
 	class RSsax : public SWSAXhandler {
 	protected:

@@ -32,16 +32,100 @@ WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
 
-INCLUDES += -I${PWD} -I/usr/include/libxml2
+INCLUDES += -I${PWD}
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
-
 INCLUDES += $(I3:%=-I${PWD}/%)
+
+PWD ?= $(shell pwd -P)
+
+
+ifeq ($(XML_PARSER), LIBXML2)
+  CONFIG_DEFS+= -DLIBXML2=44 -DXML_PARSER=LIBXML2
+  INCLUDES += -I/usr/include/libxml2
+  XML_PARSER_LIB= -lxml2
+else ifeq ($(XML_PARSER), EXPAT1)
+  CONFIG_DEFS+= -DEXPAT1=48 -DXML_PARSER=EXPAT1
+  XML_PARSER_LIB= -lexpat
+else ifeq ($(XML_PARSER), MSXML)
+  CONFIG_DEFS+= -DMSXML=51 -DXML_PARSER=MSXML
+  XML_PARSER_LIB= -lmsxml
+  $(warning MSXML adapter code not yet written)
+else
+  ifneq ($(XML_PARSER), )
+    $(warning $(XML_PARSER) may not be supported)
+  endif
+  CONFIG_DEFS+= -DXML_PARSER=-1
+endif
+
+
+ifeq ($(CONSOLE_ENCODING), UTF8)
+  CONFIG_DEFS+= -DHAVE_UTF8_OUTPUT
+else
+  ifneq ($(CONSOLE_ENCODING), )
+    $(warning CONSOLE_ENCODING= $(CONSOLE_ENCODING) may not be supported)
+  endif
+  CONFIG_DEFS+= -DCONSOLE_ENCODING=-1
+endif
+
+
+ifeq ($(REGEX_LIB), BOOST)
+  CONFIG_DEFS+= -DHAVE_REGEX
+  REGEX_LIB= -lboost_regex
+else
+  ifneq ($(REGEX_LIB), )
+    $(warning $(REGEX_LIB) may not be supported)
+  endif
+#  CONFIG_DEFS+= -DREGEX_LIB=-1
+endif
+
+
+ifeq ($(HTTP_CLIENT), ASIO)
+  CONFIG_DEFS+= -DASIO=84 -DHTTP_CLIENT=ASIO
+  HTTP_CLIENT_LIB= -lboost_system
+else ifeq ($(HTTP_CLIENT), DLIB)
+  CONFIG_DEFS+= -DDLIB=84 -DHTTP_CLIENT=DLIB
+  $(warning DLIB HTTP client code not yet written)
+else
+  ifneq ($(HTTP_CLIENT), )
+    $(warning $(HTTP_CLIENT) may not be supported)
+  endif
+  CONFIG_DEFS+= -DHTTP_CLIENT=-1
+endif
+
+
+ifeq ($(HTTP_SERVER), ASIO)
+  CONFIG_DEFS+= -DASIO=90 -DHTTP_SERVER=ASIO
+  HTTP_SERVER_LIB= -lboost_system
+  $(warning ASIO HTTP server code not yet written)
+else ifeq ($(HTTP_SERVER), DLIB)
+  DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
+  CONFIG_DEFS+= -DDLIB=103 -DHTTP_SERVER=DLIB
+else
+  ifneq ($(HTTP_SERVER), )
+    $(warning $(HTTP_SERVER) may not be supported)
+  endif
+  CONFIG_DEFS+= -DHTTP_SERVER=-1
+endif
+
+
+ifeq ($(SQL_CLIENT), MYSQL)
+  CONFIG_DEFS+= -DHAVE_SQL
+  SQL_CLIENT_LIB= -lmysqlclient
+else
+  ifneq ($(SQL_CLIENT), )
+    $(warning $(SQL_CLIENT) may not be supported)
+  endif
+  CONFIG_DEFS+= -DSQL_CLIENT=-1
+endif
+
+
+TEST_LIB= -lboost_unit_test_framework
+
+
 .PHONY: all dep lib test
 all:   lib test
 
-
-PWD ?= $(shell pwd -P)
 
 .SECONDARY:
 
@@ -68,7 +152,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(LIBINC)
+LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(HTTP_SERVER_LIB) $(SQL_CLIENT_LIB)
 VER=0.1
 
 #some progressive macports
@@ -90,7 +174,7 @@ BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib$(LIBNAME).a
-LIBINC	+=	 -l$(LIBNAME) -lboost_regex -lxml2 -lexpat
+LIBINC	+=	 -l$(LIBNAME) $(REGEX_LIB) $(XML_PARSER_LIB)
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
@@ -100,18 +184,12 @@ lib: dep $(LIB)
 
 ##### bin dirs ####
 
-# funny rules for linking to DLIB
-ifdef DLIBINC
-DLIB= -DNO_MAKEFILE -I$(DLIBINC)
-CONFIG_DEFS += "-DHAVE_DLIB "
-endif
-
 # overrides for specific targets in bin
 bin/SPARQL_server.o : bin/SPARQL_server.cpp
-	$(CXX) -DSTUPID_TIGHT_LOOP=1 -DHTML_RESULTS=0 $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
+	$(CXX) -DHTML_RESULTS=0 $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -lboost_regex -lboost_system -lmysqlclient -o $@ $< $(LDFLAGS)
+	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS)
 
 
 # bin/ general rules
@@ -123,7 +201,7 @@ bin/%.o. : bin/%.cpp bin/%.d
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
-	$(CXX) -o $@ $< -lboost_system $(LDFLAGS)
+	$(CXX) -o $@ $< $(LDFLAGS)
 
 
 ##### packaged tests ####
@@ -159,7 +237,7 @@ tests/test_%.d : test/test_%.cpp
 	-makedepend -btests/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
 
 tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp tests/test_%.d
-	$(CXX) $(CXXFLAGS) -lboost_regex -lboost_system -lboost_unit_test_framework -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
 	$< $(TEST_ARGS)

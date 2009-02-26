@@ -12,7 +12,11 @@
 #include "SPARQLSerializer.hpp" // for debugging output
 #include <set>
 #include <algorithm>
-#include <boost/regex.hpp>
+
+#ifdef HAVE_REGEX
+  #include <boost/regex.hpp>
+#endif /* HAVE_REGEX */
+
 
 /* APPLY_VARMAPS_INDISCRIMINATELY -- Apply tr:rewrite(?foo,p1,p2) to
  * any URI in the transformation output, not just bindings for ?foo.
@@ -21,6 +25,7 @@
 
 namespace w3c_sw {
 
+#ifdef HAVE_REGEX
     struct POSmap {
 	const POS* selector;
 	boost::regex ifacePattern;
@@ -38,6 +43,7 @@ namespace w3c_sw {
 	    return t.str();
 	}
     };
+#endif /* HAVE_REGEX */
 
     class OperationResultSet : public ResultSet {
 	class FilterCopier : public RecursiveExpressor {
@@ -86,6 +92,7 @@ namespace w3c_sw {
 	    userQueryDisjoint->express(&c);
 	}
 #ifndef APPLY_VARMAPS_INDISCRIMINATELY
+#ifdef HAVE_REGEX
 	size_t applyMaps (std::vector<POSmap> const &maps) {
 	    size_t matches = 0;
 	    for (ResultSetIterator row = begin(); row != end(); ++row) {
@@ -106,6 +113,7 @@ namespace w3c_sw {
 	    }
 	    return matches;
 	}
+#endif /* HAVE_REGEX */
 #endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
     };
 
@@ -127,10 +135,20 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
+#ifdef HAVE_REGEX
 	    std::vector<POSmap> uriMaps;
+#endif /* HAVE_REGEX */
 	public:
-	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness, std::vector<POSmap> uriMaps) :
-		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row), uriMaps(uriMaps) {  }
+	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness
+#ifdef HAVE_REGEX
+			      , std::vector<POSmap> uriMaps
+#endif /* HAVE_REGEX */
+			      ) :
+		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row)
+#ifdef HAVE_REGEX
+		, uriMaps(uriMaps)
+#endif /* HAVE_REGEX */
+		    {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
 	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* bgp) {
@@ -139,7 +157,6 @@ namespace w3c_sw {
 #ifdef APPLY_VARMAPS_INDISCRIMINATELY
 		    {
 			/* Copy TriplePattern::construct functionality and inject transformation. */
-			bool ret = false;
 			const POS *s, *p, *o;
 			if ((s = (*triple)->getS()->evalPOS(row, false)) != NULL && 
 			    (p = (*triple)->getP()->evalPOS(row, false)) != NULL && 
@@ -147,6 +164,7 @@ namespace w3c_sw {
 			    /* inject transformations */
 			    const POS** uris[3] = {&s, &p, &o};
 			    for (unsigned i = 0; i < 3; ++i) {
+#ifdef HAVE_REGEX
 				const POS* pos = *uris[i];
 				const URI* u = dynamic_cast<const URI*>(*uris[i]);
 				if (u != NULL) {
@@ -159,6 +177,7 @@ namespace w3c_sw {
 					}
 				    }
 				}
+#endif /* HAVE_REGEX */
 			    }
 			    if (posFactory == NULL) {
 				if (s == (*triple)->getS() && p == (*triple)->getP() && o == (*triple)->getO()) // lost:  && !weaklyBound
@@ -240,7 +259,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -250,17 +269,26 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
+#ifdef HAVE_REGEX
 	std::vector<POSmap> uriMaps;
+#endif /* HAVE_REGEX */
 	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
 			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
-			  std::vector<POSmap> uriMaps, std::ostream** debugStream) : 
+#ifdef HAVE_REGEX
+			  std::vector<POSmap> uriMaps, 
+#endif /* HAVE_REGEX */
+			  std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
-	    posFactory(posFactory), uriMaps(uriMaps), debugStream(debugStream)
+	    posFactory(posFactory), 
+#ifdef HAVE_REGEX
+	    uriMaps(uriMaps), 
+#endif /* HAVE_REGEX */
+	    debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
@@ -302,7 +330,11 @@ namespace w3c_sw {
 		 * 08 — Create a stem query disjoint DQS which is a reproduction of the mapping rule antecedent A
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
-		MappedDuplicator e(posFactory, *row, &includeRequiredness, uriMaps);
+		MappedDuplicator e(posFactory, *row, &includeRequiredness
+#ifdef HAVE_REGEX
+				   , uriMaps
+#endif /* HAVE_REGEX */
+				   );
 		constructRuleBodyAsConsequent->express(&e);
 		TableOperation* t = e.getTableOperation();
 		if (t != NULL)
@@ -337,7 +369,9 @@ namespace w3c_sw {
 	std::map<const POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
+#ifdef HAVE_REGEX
 	std::vector<POSmap> uriMaps;
+#endif /* HAVE_REGEX */
 
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
@@ -468,7 +502,11 @@ namespace w3c_sw {
 					       _DatasetClauses(p_DatasetClauses),//
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
-					       posFactory, uriMaps, debugStream);
+					       posFactory, 
+#ifdef HAVE_REGEX
+					       uriMaps, 
+#endif /* HAVE_REGEX */
+					       debugStream);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
@@ -500,6 +538,7 @@ namespace w3c_sw {
 	}
 
 	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
+#ifdef HAVE_REGEX
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
@@ -598,6 +637,9 @@ namespace w3c_sw {
 		newMap.ifacePattern.assign(iface.str());
 	    }
 	    uriMaps.push_back(newMap);
+#else /* !HAVE_REGEX */
+	    SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
+#endif /* !HAVE_REGEX */
 	}
 
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {

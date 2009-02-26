@@ -5,30 +5,59 @@
 # $Id$
 
 
-##### CONFIG_DEFS - Control which code gets included. #####
-CONFIG_DEFS =
+# XML_PARSER: LIBMXL2 | EXPAT1 |  - (SAX) XML parser library. #####
+# Needed for query federation (client side) and for running the
+# SPARQL tests.
+# Tested with:
+#   libxml2 2.6.32
+#   http://xmlsoft.org/
+#   expat 1.5.2
+#   http://sourceforge.net/projects/expat/
+# @@TODO= add MSXML shim code.
+XML_PARSER= LIBXML2
 
-# HAVE_UTF8_OUTPUT - whether tables should be printed like "┌──┬┐".
-CONFIG_DEFS += "-DHAVE_UTF8_OUTPUT "
+# CONSOLE_ENCODING: UTF8 |  - what encoding to use for console output
+# controls whether tables should be printed like "┌──┬┐" or "+--++"
+#                                                 │  ││      |  ||
+#                                                 └──┴┘      +--++
+# @@TODO= add CSV.
+CONSOLE_ENCODING= UTF8
 
-# HAVE_REGEX - Use Boost regex library. #####
-# Needed for URI and literal mappings and for parsing command line arguments
-# which are URIs. This is tested with v1.36.
-# http://www.boost.org/doc/libs/1_36_0/libs/regex/doc/html/index.html
-CONFIG_DEFS += "-DHAVE_REGEX "
+# REGEX_LIB: BOOST |  - what library provides regular expressions. #####
+# Needed for URI and literal mappings and for parsing command line
+# arguments which are URIs.
+# Tested with:
+#   Boost v1.36.
+#   http://www.boost.org/doc/libs/1_36_0/libs/regex/doc/html/index.html
+REGEX_LIB= BOOST
 
-# HAVE_ASIO - Use Boost asio library. #####
-# Provides both web client and server. Needed for query federation features
-# in SWtransformer; this or DLIB is needed for SPARQL_server. This is tested
-# with v1.36.
-# http://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio.html
-#CONFIG_DEFS += "-DHAVE_ASIO "
+# HTTP_CLIENT: ASIO |  - what library provies HTTP client support. #####
+# Needed for query federation features in SWtransformer.
+# Tested with:
+#   Boost ASIO v1.36.
+#   http://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio.html
+# @@TODO= add DLIB client code.
+HTTP_CLIENT= ASIO
+
+# HTTP_SERVER: DLIB |  - what library provies HTTP server support. #####
+# Needed for SPARQL_server.
+# Tested with:
+#   DLIB v?.??
+#   http://dclib.sourceforge.net/
+# @@TODO= add ASIO server code.
+HTTP_SERVER= DLIB
+
+# SQL_CLIENT: MYSQL |  - what library provies HTTP server support. #####
+# Needed for any binary exectuting relational queries.
+# Tested with:
+#   MYSQL v?.??
+#   
+# @@TODO= add e.g. postgres, oracl client libraries.
+SQL_CLIENT= MYSQL
 
 
-##### DLIB - A web server library #####
-# You need either DLIB or Boost ASIO to compile SPARQL_server.
-# Makefile will assert -DHAVE_DLIB if DLIBINC is set.
-# http://dclib.sourceforge.net/
-DLIBINC = ../../../../dlib-17.11
+##### INCLUDES: /some/path... - Directories containing additional headers #####
+# You must prefix each directory with "-I" and separate them with spaces.
+INCLUDES = -I../../../../dlib-17.11
 
 

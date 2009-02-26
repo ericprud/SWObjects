@@ -6,21 +6,18 @@
 
 /* START main */
 
-#define XMLPARSER_LIBXML 1
-#define XMLPARSER_EXPAT 2
-#define XMLPARSER XMLPARSER_LIBXML
-
-#if XMLPARSER == XMLPARSER_LIBXML
-#include <libxml/parser.h>
-#elif XMLPARSER == XMLPARSER_EXPAT
-#ifdef _MSC_VER
-#include "xmlparse.h"
-#else /* !_MSC_VER */
-#include "expat.h"
-#endif /* !_MSC_VER */
+#if XML_PARSER == LIBXML2
+  #include <libxml/parser.h>
+#elif XML_PARSER == EXPAT1
+  #ifdef _MSC_VER
+    #include "xmlparse.h"
+  #else /* !_MSC_VER */
+    #include "expat.h"
+  #endif /* !_MSC_VER */
 #endif /* !XMLPARSER == XMLPARSER_EXPAT */
 
-#include <stdio.h>
+#include <stdio.h>  //\_for strcmp
+#include <string.h> ///
 #include "SPARQLfedParser.hpp"
 #include "TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
@@ -28,16 +25,16 @@
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
 
-#if XMLPARSER == XMLPARSER_LIBXML
-#include "util/SAXparser_libxml.hpp"
-#elif XMLPARSER == XMLPARSER_EXPAT
-#include "util/SAXparser_expat.hpp"
+#if XML_PARSER == LIBXML2
+  #include "util/SAXparser_libxml.hpp"
+#elif XML_PARSER == EXPAT1
+  #include "util/SAXparser_expat.hpp"
 #endif
 
-#ifdef HAVE_ASIO
-#include "RdfRemoteDB.hpp"
-#include "util/WEBagent_boostASIO.hpp"
-#endif /* HAVE_ASIO */
+#if HTTP_CLIENT == ASIO
+  #include "RdfRemoteDB.hpp"
+  #include "util/WEBagent_boostASIO.hpp"
+#endif /* HTTP_CLIENT == ASIO */
 
 #include <stdlib.h>
 #include <ostream>
@@ -197,7 +194,7 @@ int main(int argc,char** argv) {
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
 		}
-#ifdef HAVE_ASIO
+#if HTTP_CLIENT == ASIO
 		else if (ExecuteQuery) {
 #if XMLPARSER == XMLPARSER_LIBXML
 		    SAXparser_libxml p;
@@ -212,7 +209,7 @@ int main(int argc,char** argv) {
 		    o->execute(&db, &rs);
 		    std::cout << rs; // show results
 		}
-#endif /* HAVE_ASIO */
+#endif /* HTTP_CLIENT == ASIO */
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;
