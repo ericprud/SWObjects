@@ -6,16 +6,6 @@
 
 /* START main */
 
-#if XML_PARSER == LIBXML2
-  #include <libxml/parser.h>
-#elif XML_PARSER == EXPAT1
-  #ifdef _MSC_VER
-    #include "xmlparse.h"
-  #else /* !_MSC_VER */
-    #include "expat.h"
-  #endif /* !_MSC_VER */
-#endif /* !XMLPARSER == XMLPARSER_EXPAT */
-
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
 #include "SPARQLfedParser.hpp"
@@ -29,6 +19,8 @@
   #include "util/SAXparser_libxml.hpp"
 #elif XML_PARSER == EXPAT1
   #include "util/SAXparser_expat.hpp"
+#else
+  #warning query federation requires an XML parser
 #endif
 
 #if HTTP_CLIENT == ASIO
@@ -48,7 +40,9 @@ const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
-bool ExecuteQuery = false;
+#if XML_PARSER != -1
+  bool ExecuteQuery = false;
+#endif
 std::vector<const char*>SparqlEndpointPatterns;
 
 void usage (const char* exe) {
@@ -64,7 +58,11 @@ bool option (int argc, char** argv, int* iArg) {
 	Quiet = true;
 	return true;
     } else if (!::strcmp(argv[*iArg], "-x")) {
+#if XML_PARSER == -1
+	throw "SWtransformer cannot execute federation queries as it was not compiled with an XML parser.";
+#else /* !XML_PARSER == -1 */
 	ExecuteQuery = true;
+#endif /* !XML_PARSER == -1 */
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
@@ -196,17 +194,12 @@ int main(int argc,char** argv) {
 		}
 #if HTTP_CLIENT == ASIO
 		else if (ExecuteQuery) {
-#if XMLPARSER == XMLPARSER_LIBXML
-		    SAXparser_libxml p;
-		    LIBXML_TEST_VERSION;
-#elif XMLPARSER == XMLPARSER_EXPAT
-		    SAXparser_expat p;
-#endif
-
+		    SWSAXparser* p = SWSAXparser::makeSAXparser();
 		    WEBagent_boostASIO client;
-		    RdfRemoteDB db(SparqlEndpointPatterns, &p, &client);
+		    RdfRemoteDB db(SparqlEndpointPatterns, p, &client);
 		    ResultSet rs(&posFactory);
 		    o->execute(&db, &rs);
+		    delete p;
 		    std::cout << rs; // show results
 		}
 #endif /* HTTP_CLIENT == ASIO */

@@ -1,4 +1,4 @@
-/* SAXparser_libxml.hpp: implementation of SAXparser for libxml.
+/* SAXparser_libxml.hpp: implementation of SWSAXparser for libxml.
  * interface per http://xmlsoft.org/html/libxml-tree.html
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
@@ -131,6 +131,13 @@ namespace w3c_sw {
 	    va_end(args);
 	}
     };
+
+#ifdef NEEDDEF_makeSAXparser
+    inline SWSAXparser* SWSAXparser::makeSAXparser () {
+	return new SAXparser_libxml();
+    }
+  #undef NEEDDEF_makeSAXparser
+#endif /* NEEDDEF_makeSAXparser */
 
 }
 

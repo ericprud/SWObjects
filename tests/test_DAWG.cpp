@@ -13,33 +13,19 @@
 
 #include <fstream>
 #include <iterator>
-
-#define XMLPARSER_LIBXML 1
-#define XMLPARSER_EXPAT 2
-#define XMLPARSER XMLPARSER_LIBXML
-
-#if XMLPARSER == XMLPARSER_LIBXML
-  #include <libxml/parser.h>
-#elif XMLPARSER == XMLPARSER_EXPAT
-  #ifdef _MSC_VER
-    #include "xmlparse.h"
-  #else /* !_MSC_VER */
-    #include "expat.h"
-  #endif /* !_MSC_VER */
-#else
-  #error DAWG tests require an XML parser
-#endif /* !XMLPARSER == XMLPARSER_EXPAT */
-
 #include "SWObjects.hpp"
 #include "SPARQLfedParser.hpp"
 #include "TurtleSParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
-#if XMLPARSER == XMLPARSER_LIBXML
-#include "util/SAXparser_libxml.hpp"
-#elif XMLPARSER == XMLPARSER_EXPAT
-#include "util/SAXparser_expat.hpp"
+
+#if XML_PARSER == LIBXML2
+  #include "util/SAXparser_libxml.hpp"
+#elif XML_PARSER == EXPAT1
+  #include "util/SAXparser_expat.hpp"
+#else
+  #warning DAWG tests require an XML parser
 #endif
 
 using namespace w3c_sw;
@@ -113,16 +99,15 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
 
     /* Compare to expected results. */
     if (!::strncmp(resultsFile + ::strlen(resultsFile) - 4, ".srx", 4)) {
-#if XMLPARSER == XMLPARSER_LIBXML
-	SAXparser_libxml p;
-	LIBXML_TEST_VERSION;
-#elif XMLPARSER == XMLPARSER_EXPAT
-	SAXparser_expat p;
-#endif
-
-	ResultSet expected(&f, &p, resultsFile);
+#if XML_PARSER == -1
+	throw "XML parser needed for parsing srx files";
+#else /* !XML_PARSER == -1 */
+	SWSAXparser* p = SWSAXparser::makeSAXparser();
+	ResultSet expected(&f, p, resultsFile);
+	delete p;
 	std::cout << "expected: " << expected;
 	BOOST_CHECK_EQUAL(got, expected);
+#endif /* !XML_PARSER == -1 */
     } else {
 	ResultSet expected(&f, readFile(resultsFile, "results"), false);
 	std::cout << "expected: " << expected;

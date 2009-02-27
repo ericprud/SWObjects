@@ -1,4 +1,4 @@
-/* SAXparser_expat.hpp: implementation of SAXparser for expat.
+/* SAXparser_expat.hpp: implementation of SWSAXparser for expat.
  * interface per http://xmlsoft.org/html/expat-tree.html
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
@@ -8,6 +8,11 @@
 #include <fstream>
 #include <stack>
 #include <map>
+#ifdef _MSC_VER
+  #include "xmlparse.h"
+#else /* !_MSC_VER */
+  #include "expat.h"
+#endif /* !_MSC_VER */
 #include "util/SAXparser.hpp"
 
 namespace w3c_sw {
@@ -176,6 +181,13 @@ namespace w3c_sw {
  	    self.handler->characters((const char*)s, 0, len);
 	}
     };
+
+#ifdef NEEDDEF_makeSAXparser
+    inline SWSAXparser* SWSAXparser::makeSAXparser () {
+	return new SAXparser_expat();
+    }
+  #undef NEEDDEF_makeSAXparser
+#endif /* NEEDDEF_makeSAXparser */
 
 }
 
