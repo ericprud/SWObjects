@@ -43,9 +43,6 @@
   #include <boost/regex.hpp>
 #endif /* HAVE_REGEX */
 
-#define TAB "  "
-#define ns "\n xmlns=\"http://www.w3.org/2005/01/yacker/uploads/SPARQLfed/\"\n xmlns:yacker=\"http://www.w3.org/2005/01/yacker/\""
-
 namespace w3c_sw {
 
 class StringException : public std::exception {
