@@ -165,7 +165,6 @@ namespace w3c_sw {
 			    const POS** uris[3] = {&s, &p, &o};
 			    for (unsigned i = 0; i < 3; ++i) {
 #ifdef HAVE_REGEX
-				const POS* pos = *uris[i];
 				const URI* u = dynamic_cast<const URI*>(*uris[i]);
 				if (u != NULL) {
 				    for (std::vector<POSmap>::const_iterator map = uriMaps.begin();
