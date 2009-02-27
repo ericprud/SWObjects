@@ -1,4 +1,4 @@
-/* SAXparser_expat.hpp: implementation of SAXparser for expat.
+/* WEBagent_boostASIO.hpp: implementation of WEBagent for expat.
  * interface per http://xmlsoft.org/html/expat-tree.html
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
