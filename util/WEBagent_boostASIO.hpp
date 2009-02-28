@@ -37,10 +37,10 @@ namespace w3c_sw {
 	    std::string port(matches[PORT].first, matches[PORT].second);
 	    std::string path(matches[PATH].first, matches[PATH].second);
 #else /* !HAVE_REGEX */
-#error "Need REGEX to create a WEBagent_boostASIO -- defaulting to http://localhost/"
+#warning "Web agent needs REGEX to parse service URL -- defaulting to http://localhost:8888/sparql"
 	    std::string host("localhost");
-	    std::string port("80");
-	    std::string path("/");
+	    std::string port("8888");
+	    std::string path("/sparql");
 #endif /* !HAVE_REGEX */
 
 	    std::cerr << "http://" << host << ":" << port << path << std::endl;
