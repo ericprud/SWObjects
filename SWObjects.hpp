@@ -1883,7 +1883,7 @@ class TestExpressor : public RecursiveExpressor {
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
-    void loadGraph(BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName);
+    bool loadGraph(BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName);
 #endif /* _MSC_VER */
 
 } //namespace w3c_sw

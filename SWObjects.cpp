@@ -998,10 +998,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
-    void loadGraph (BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName) {
+    bool loadGraph (BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName) {
 	TurtleSDriver turtleParser(baseURI, f);
  	turtleParser.setGraph(bgp);
- 	turtleParser.parse_file(fileName);
+ 	return turtleParser.parse_file(fileName);
     }
 #endif /* _MSC_VER */
 } // namespace w3c_sw
