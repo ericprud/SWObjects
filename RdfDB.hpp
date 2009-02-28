@@ -56,11 +56,21 @@ namespace w3c_sw {
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
 	virtual void loadData (const POS* name, POSFactory* posFactory) {
+#ifdef _MSC_VER
+	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
+	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
+	     */
+	    BasicGraphPattern* graph = assureGraph(NULL);
+	    if (loadGraph(graph, posFactory, "text/turtle", "", name->getTerminal())) {
+		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
+	    } else {
+#else /* !_MSC_VER */
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
 	    if (turtleParser.parse_file(name->getTerminal())) {
 		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
 	    } else {
 		BasicGraphPattern* graph = turtleParser.root;
+#endif /* !_MSC_VER */
 		SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
 		BasicGraphPattern* target = assureGraph(name);
 		for (std::vector<const TriplePattern*>::iterator from = graph->begin();
