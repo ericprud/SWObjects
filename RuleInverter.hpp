@@ -13,9 +13,9 @@
 #include <set>
 #include <algorithm>
 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
   #include <boost/regex.hpp>
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 
 
 /* APPLY_VARMAPS_INDISCRIMINATELY -- Apply tr:rewrite(?foo,p1,p2) to
@@ -25,7 +25,7 @@
 
 namespace w3c_sw {
 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
     struct POSmap {
 	const POS* selector;
 	boost::regex ifacePattern;
@@ -43,7 +43,7 @@ namespace w3c_sw {
 	    return t.str();
 	}
     };
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 
     class OperationResultSet : public ResultSet {
 	class FilterCopier : public RecursiveExpressor {
@@ -92,7 +92,7 @@ namespace w3c_sw {
 	    userQueryDisjoint->express(&c);
 	}
 #ifndef APPLY_VARMAPS_INDISCRIMINATELY
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	size_t applyMaps (std::vector<POSmap> const &maps) {
 	    size_t matches = 0;
 	    for (ResultSetIterator row = begin(); row != end(); ++row) {
@@ -113,7 +113,7 @@ namespace w3c_sw {
 	    }
 	    return matches;
 	}
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 #endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
     };
 
@@ -135,19 +135,19 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	    std::vector<POSmap> uriMaps;
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 	public:
 	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 			      , std::vector<POSmap> uriMaps
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 			      ) :
 		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row)
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 		, uriMaps(uriMaps)
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 		    {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
@@ -162,7 +162,7 @@ namespace w3c_sw {
 			    (p = (*triple)->getP()->evalPOS(row, false)) != NULL && 
 			    (o = (*triple)->getO()->evalPOS(row, false)) != NULL) {
 			    /* inject transformations */
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 			    const POS** uris[3] = {&s, &p, &o};
 			    for (unsigned i = 0; i < 3; ++i) {
 				const URI* u = dynamic_cast<const URI*>(*uris[i]);
@@ -177,7 +177,7 @@ namespace w3c_sw {
 				    }
 				}
 			    }
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 			    if (posFactory == NULL) {
 				if (s == (*triple)->getS() && p == (*triple)->getP() && o == (*triple)->getO()) // lost:  && !weaklyBound
 				    bgp->addTriplePattern(*triple);
@@ -268,25 +268,25 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	std::vector<POSmap> uriMaps;
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
 			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 			  std::vector<POSmap> uriMaps, 
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 			  std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
 	    posFactory(posFactory), 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	    uriMaps(uriMaps), 
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 	    debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
@@ -330,9 +330,9 @@ namespace w3c_sw {
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
 		MappedDuplicator e(posFactory, *row, &includeRequiredness
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 				   , uriMaps
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 				   );
 		constructRuleBodyAsConsequent->express(&e);
 		TableOperation* t = e.getTableOperation();
@@ -368,9 +368,9 @@ namespace w3c_sw {
 	std::map<const POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	std::vector<POSmap> uriMaps;
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
@@ -502,9 +502,9 @@ namespace w3c_sw {
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
 					       posFactory, 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 					       uriMaps, 
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 					       debugStream);
 	}
 
@@ -537,7 +537,7 @@ namespace w3c_sw {
 	}
 
 	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
@@ -636,9 +636,9 @@ namespace w3c_sw {
 		newMap.ifacePattern.assign(iface.str());
 	    }
 	    uriMaps.push_back(newMap);
-#else /* !HAVE_REGEX */
+#else /* !REGEX_LIB == SWOb_BOOST */
 	    SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
-#endif /* !HAVE_REGEX */
+#endif /* !REGEX_LIB == SWOb_BOOST */
 	}
 
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {

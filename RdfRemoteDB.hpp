@@ -65,10 +65,10 @@ namespace w3c_sw {
     public:
 	RdfRemoteDB (std::vector<const char*> endpointPatterns, SWSAXparser* xmlParser, SWWEBagent* webAgent) : 
 	    RdfDB(), endpointPatterns(endpointPatterns), xmlParser(xmlParser), webAgent(webAgent) {  }
+#if REGEX_LIB == SWOb_BOOST
 	virtual void loadData (const POS* name, POSFactory* posFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();
 		 it != endpointPatterns.end(); ++it) {
-#ifdef HAVE_REGEX
 		boost::regex re(*it);
 		boost::cmatch matches;
 		if (boost::regex_match(name->getTerminal().c_str(), matches, re)) {
@@ -76,17 +76,17 @@ namespace w3c_sw {
 		    this->posFactory = posFactory;
 		    return;
 		}
-#endif /* HAVE_REGEX */
 	    }
 	    RdfDB::loadData(name, posFactory);
 	}
+#endif /* REGEX_LIB == SWOb_BOOST */
 
 	virtual void bindVariables (ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch) {
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	    if (loadedEndpoints.find(graph) == loadedEndpoints.end())
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 		RdfDB::bindVariables(rs, graph, toMatch);
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
 	    else {
 		/* Build the request URL in buffer u. */
 		std::stringstream u;
@@ -111,7 +111,14 @@ namespace w3c_sw {
 		}
 
 		/* Do an HTTP GET. */
-		std::string s(webAgent->get(u.str().c_str()));
+		std::string s(webAgent->get(
+#if REGEX_LIB == SWOb_DISABLED
+#warning "Web agent needs REGEX to parse service URL -- defaulting to http://localhost:8888/sparql"
+					    "localhost", "8888", "/sparql"
+#else /* !REGEX_LIB == SWOb_DISABLED */
+					    u.str().c_str()
+#endif /* !REGEX_LIB == SWOb_DISABLED */
+					    ));
 
 		/* Parse results into a ResultSet. */
 		ResultSet red(posFactory, xmlParser, s.begin(), s.end());
@@ -119,7 +126,7 @@ namespace w3c_sw {
 		/* Join those results against our initial results. */
 		rs->joinIn(&red);
 	    }
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 	}
 
     };

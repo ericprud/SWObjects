@@ -20,9 +20,9 @@
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
 
-#if XML_PARSER == LIBXML2
+#if XML_PARSER == SWOb_LIBXML2
   #include "util/SAXparser_libxml.hpp"
-#elif XML_PARSER == EXPAT1
+#elif XML_PARSER == SWOb_EXPAT1
   #include "util/SAXparser_expat.hpp"
 #else
   #warning DAWG tests require an XML parser
@@ -99,15 +99,15 @@ void queryTest (const char* defGraphs[], const char* namGraphs[],
 
     /* Compare to expected results. */
     if (!::strncmp(resultsFile + ::strlen(resultsFile) - 4, ".srx", 4)) {
-#if XML_PARSER == -1
+#if XML_PARSER == SWOb_DISABLED
 	throw "XML parser needed for parsing srx files";
-#else /* !XML_PARSER == -1 */
+#else /* !XML_PARSER == SWOb_DISABLED */
 	SWSAXparser* p = SWSAXparser::makeSAXparser();
 	ResultSet expected(&f, p, resultsFile);
 	delete p;
 	std::cout << "expected: " << expected;
 	BOOST_CHECK_EQUAL(got, expected);
-#endif /* !XML_PARSER == -1 */
+#endif /* !XML_PARSER == SWOb_DISABLED */
     } else {
 	ResultSet expected(&f, readFile(resultsFile, "results"), false);
 	std::cout << "expected: " << expected;

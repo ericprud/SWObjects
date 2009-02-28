@@ -19,8 +19,14 @@ namespace w3c_sw {
     public:
 	WEBagent_boostASIO () : SWWEBagent() {  }
 	~WEBagent_boostASIO () {  }
-	virtual std::string get (const char* url) {
-#ifdef HAVE_REGEX
+	virtual std::string get (
+#if REGEX_LIB == SWOb_DISABLED
+				 std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 const char* url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 ) {
+#if REGEX_LIB == SWOb_BOOST
 	    // !!! duplicate of SPARQL_server.cpp
 	    boost::regex re;
 	    boost::cmatch matches;
@@ -36,12 +42,7 @@ namespace w3c_sw {
 	    std::string host(matches[HOST].first, matches[HOST].second);
 	    std::string port(matches[PORT].first, matches[PORT].second);
 	    std::string path(matches[PATH].first, matches[PATH].second);
-#else /* !HAVE_REGEX */
-#warning "Web agent needs REGEX to parse service URL -- defaulting to http://localhost:8888/sparql"
-	    std::string host("localhost");
-	    std::string port("8888");
-	    std::string path("/sparql");
-#endif /* !HAVE_REGEX */
+#endif /* !REGEX_LIB == SWOb_BOOST */
 
 	    std::cerr << "http://" << host << ":" << port << path << std::endl;
 

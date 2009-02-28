@@ -9,7 +9,7 @@
 # define SWOBJECTS_HH
 
 /* defines for controlling includes from utils */
-
+#include "config.h"
 
 /* non-portable debug messages */
 #ifdef _MSC_VER
@@ -39,9 +39,9 @@
 #include <cassert>
 #include <typeinfo>
 
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
   #include <boost/regex.hpp>
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
 
 namespace w3c_sw {
 
@@ -469,7 +469,7 @@ public:
     TriplePattern* getTriple (std::string s, std::string p, std::string o) {
 	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
     }
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
     TriplePattern* getTriple (std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
@@ -483,7 +483,7 @@ public:
 			 getPOS(std::string(what[2].first, what[2].second)), 
 			 getPOS(std::string(what[3].first, what[3].second)), false);
     }
-#endif /* HAVE_REGEX */
+#endif /* REGEX_LIB == SWOb_BOOST */
     void parseTriples (BasicGraphPattern* g, std::string spo);
 
     /* EBV (Better place for this?) */

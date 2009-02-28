@@ -15,18 +15,18 @@
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
 
-#if XML_PARSER == LIBXML2
+#if XML_PARSER == SWOb_LIBXML2
   #include "util/SAXparser_libxml.hpp"
-#elif XML_PARSER == EXPAT1
+#elif XML_PARSER == SWOb_EXPAT1
   #include "util/SAXparser_expat.hpp"
 #else
   #warning query federation requires an XML parser
 #endif
 
-#if HTTP_CLIENT == ASIO
+#if HTTP_CLIENT == SWOb_ASIO
   #include "RdfRemoteDB.hpp"
   #include "util/WEBagent_boostASIO.hpp"
-#endif /* HTTP_CLIENT == ASIO */
+#endif /* HTTP_CLIENT == SWOb_ASIO */
 
 #include <stdlib.h>
 #include <ostream>
@@ -58,11 +58,11 @@ bool option (int argc, char** argv, int* iArg) {
 	Quiet = true;
 	return true;
     } else if (!::strcmp(argv[*iArg], "-x")) {
-#if XML_PARSER == -1
+#if XML_PARSER == SWOb_DISABLED
 	throw "SWtransformer cannot execute federation queries as it was not compiled with an XML parser.";
-#else /* !XML_PARSER == -1 */
+#else /* !XML_PARSER == SWOb_DISABLED */
 	ExecuteQuery = true;
-#endif /* !XML_PARSER == -1 */
+#endif /* !XML_PARSER == SWOb_DISABLED */
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
@@ -192,7 +192,7 @@ int main(int argc,char** argv) {
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
 		}
-#if HTTP_CLIENT == ASIO
+#if HTTP_CLIENT == SWOb_ASIO
 		else if (ExecuteQuery) {
 		    SWSAXparser* p = SWSAXparser::makeSAXparser();
 		    WEBagent_boostASIO client;
@@ -202,7 +202,7 @@ int main(int argc,char** argv) {
 		    delete p;
 		    std::cout << rs; // show results
 		}
-#endif /* HTTP_CLIENT == ASIO */
+#endif /* HTTP_CLIENT == SWOb_ASIO */
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;

@@ -169,7 +169,7 @@ namespace w3c_sw {
 
     std::string ResultSet::toString () const {
 	const char* NULL_REP = "--";
-#if HAVE_UTF8_OUTPUT
+#if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
@@ -185,7 +185,7 @@ namespace w3c_sw {
 		    append(str);
 	    }
 	};
-#else /* !HAVE_UTF8_OUTPUT */
+#else /* !CONSOLE_ENCODING == SWOb_UTF8 */
 	const char ORDERED = 'O';
 	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
 	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
@@ -195,7 +195,7 @@ namespace w3c_sw {
 	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
 	const char UNLISTED_VAR = '!';
 #define STRING std::string
-#endif /* !HAVE_UTF8_OUTPUT */
+#endif /* !CONSOLE_ENCODING == SWOb_UTF8 */
 
 	/* Get column widths. */
 	std::vector< const POS* > vars;

@@ -14,14 +14,16 @@
 #include <string>
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
   #include "boost/regex.hpp"
 #endif
-#ifdef WIN32
-  #include <mysql.h>
- #else
-  #include <mysql/mysql.h>
-#endif
+#if SQL_CLIENT == SWOb_SWOb_MYSQL
+  #ifdef WIN32
+    #include <mysql.h>
+   #else
+    #include <mysql/mysql.h>
+  #endif
+#endif /* SQL_CLIENT == SWOb_MYSQL */
 
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
@@ -32,7 +34,7 @@
 
 const char* SELECT_QUERY = "SELECT * FROM test";
 
-#if HTTP_SERVER == DLIB
+#if HTTP_SERVER == SWOb_DLIB
 #include "dlib/server.h"
 using namespace dlib;
 #endif
@@ -84,7 +86,7 @@ struct SimpleMessageException : public StringException {
     }
 };
 
-#if HTTP_SERVER == DLIB
+#if HTTP_SERVER == SWOb_DLIB
 class WebServer : public server::http_1a_c
 {
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
@@ -284,7 +286,7 @@ class WebServer : public server::http_1a_c
     }
 
 };
- #elif HTTP_SERVER == ASIO
+ #elif HTTP_SERVER == SWOb_ASIO
   #error ASIO HTTP server not implemented
  #else
   #warning No HTTP server -- implementing fake server
@@ -296,7 +298,7 @@ struct WebServer {
 struct thread_function  {
     thread_function ( void (*funct)() ) {  }
 };
-#endif /* HTTP_SERVER == DLIB */
+#endif /* HTTP_SERVER == SWOb_DLIB */
 
 
 // create an instance of our web server
@@ -316,7 +318,7 @@ void thread ()
 }
 
 void startServer (const char* url) {
-#ifdef HAVE_REGEX
+#if REGEX_LIB == SWOb_BOOST
     boost::regex re;
     boost::cmatch matches;
 
@@ -334,8 +336,8 @@ void startServer (const char* url) {
     istringstream portss(ports);
     portss >> ServerPort;
     ServerPath = string(matches[PATH].first, matches[PATH].second);
-#else /* !HAVE_REGEX */
-#endif /* !HAVE_REGEX */
+#else /* !REGEX_LIB == SWOb_BOOST */
+#endif /* !REGEX_LIB == SWOb_BOOST */
 
     ostringstream s;
     s << "http://localhost:" << ServerPort << ServerPath;

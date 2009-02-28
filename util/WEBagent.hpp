@@ -18,7 +18,13 @@ namespace w3c_sw {
     public:
 	SWWEBagent () {  }
 	virtual ~SWWEBagent () {  }
-	virtual std::string get(const char* url) = 0;
+	virtual std::string get(
+#if REGEX_LIB == SWOb_DISABLED
+				std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_DISABLED */
+				const char* url
+#endif /* !REGEX_LIB == SWOb_DISABLED */
+				) = 0;
     };
 
 } // namespace w3c_sw

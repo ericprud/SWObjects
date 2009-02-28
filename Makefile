@@ -41,82 +41,82 @@ PWD ?= $(shell pwd -P)
 
 
 ifeq ($(XML_PARSER), LIBXML2)
-  CONFIG_DEFS+= -DLIBXML2=44 -DXML_PARSER=LIBXML2
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_LIBXML2 "\\n"
   INCLUDES += -I/usr/include/libxml2
   XML_PARSER_LIB= -lxml2
 else ifeq ($(XML_PARSER), EXPAT1)
-  CONFIG_DEFS+= -DEXPAT1=48 -DXML_PARSER=EXPAT1
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\\n"
   XML_PARSER_LIB= -lexpat
 else ifeq ($(XML_PARSER), MSXML)
-  CONFIG_DEFS+= -DMSXML=51 -DXML_PARSER=MSXML
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML "\\n"
   XML_PARSER_LIB= -lmsxml
   $(warning MSXML adapter code not yet written)
 else
   ifneq ($(XML_PARSER), )
     $(warning $(XML_PARSER) may not be supported)
   endif
-  CONFIG_DEFS+= -DXML_PARSER=-1
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_DISABLED "\\n"
 endif
 
 
 ifeq ($(CONSOLE_ENCODING), UTF8)
-  CONFIG_DEFS+= -DHAVE_UTF8_OUTPUT
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_UTF8 "\\n"
 else
   ifneq ($(CONSOLE_ENCODING), )
     $(warning CONSOLE_ENCODING= $(CONSOLE_ENCODING) may not be supported)
   endif
-  CONFIG_DEFS+= -DCONSOLE_ENCODING=-1
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_DISABLED "\\n"
 endif
 
 
 ifeq ($(REGEX_LIB), BOOST)
-  CONFIG_DEFS+= -DHAVE_REGEX
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\\n"
   REGEX_LIB= -lboost_regex
 else
   ifneq ($(REGEX_LIB), )
     $(warning $(REGEX_LIB) may not be supported)
   endif
-#  CONFIG_DEFS+= -DREGEX_LIB=-1
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_DISABLED "\\n"
 endif
 
 
 ifeq ($(HTTP_CLIENT), ASIO)
-  CONFIG_DEFS+= -DASIO=84 -DHTTP_CLIENT=ASIO
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\\n"
   HTTP_CLIENT_LIB= -lboost_system
 else ifeq ($(HTTP_CLIENT), DLIB)
-  CONFIG_DEFS+= -DDLIB=84 -DHTTP_CLIENT=DLIB
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\\n"
   $(warning DLIB HTTP client code not yet written)
 else
   ifneq ($(HTTP_CLIENT), )
     $(warning $(HTTP_CLIENT) may not be supported)
   endif
-  CONFIG_DEFS+= -DHTTP_CLIENT=-1
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DISABLED "\\n"
 endif
 
 
 ifeq ($(HTTP_SERVER), ASIO)
-  CONFIG_DEFS+= -DASIO=90 -DHTTP_SERVER=ASIO
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
   HTTP_SERVER_LIB= -lboost_system
   $(warning ASIO HTTP server code not yet written)
 else ifeq ($(HTTP_SERVER), DLIB)
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
-  CONFIG_DEFS+= -DDLIB=103 -DHTTP_SERVER=DLIB
 else
   ifneq ($(HTTP_SERVER), )
     $(warning $(HTTP_SERVER) may not be supported)
   endif
-  CONFIG_DEFS+= -DHTTP_SERVER=-1
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DISABLED "\\n"
 endif
 
 
 ifeq ($(SQL_CLIENT), MYSQL)
-  CONFIG_DEFS+= -DHAVE_SQL
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\\n"
   SQL_CLIENT_LIB= -lmysqlclient
 else
   ifneq ($(SQL_CLIENT), )
     $(warning $(SQL_CLIENT) may not be supported)
   endif
-  CONFIG_DEFS+= -DSQL_CLIENT=-1
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_DISABLED "\\n"
 endif
 
 
@@ -127,9 +127,31 @@ TEST_LIB= -lboost_unit_test_framework
 all:   lib test
 
 
+config.h: CONFIG
+	@echo -e "/* Generated from CONFIG.\\n" \
+	"* In order to keep your link directives appropriate for the features enabled\\n" \
+	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\\n" \
+	"*/\\n" \
+	"#define SWOb_DISABLED		135\\n" \
+	"/* XML Parsers: */\\n" \
+	"#define SWOb_LIBXML2		137\\n" \
+	"#define SWOb_EXPAT1		138\\n" \
+	"#define SWOb_MSXML		139\\n" \
+	"/* Character Encodings: */\\n" \
+	"#define SWOb_UTF8		143\\n" \
+	"/* Regexp Libs: */\\n" \
+	"#define SWOb_BOOST		144\\n" \
+	"/* HTTP Libs: */\\n" \
+	"#define SWOb_ASIO		145\\n" \
+	"#define SWOb_DLIB		146\\n" \
+	"/* SQL Libs: */\\n" \
+	"#define SWOb_MYSQL		148\\n" \
+	"\\n" $(CONFIG_DEFS) > config.h
+	@echo config.h updated.
+
 .SECONDARY:
 
-%.d : %.cpp
+%.d : %.cpp config.h
 	-touch $@
 	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
@@ -147,7 +169,7 @@ all:   lib test
 #if -M[M]D is also in the build-clause without -E it update .d's as needed
 TOONOISEY=-ansi
 #for macports
-CFLAGS += $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe
+CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe
 CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
@@ -185,19 +207,19 @@ lib: dep $(LIB)
 ##### bin dirs ####
 
 # overrides for specific targets in bin
-bin/SPARQL_server.o : bin/SPARQL_server.cpp
-	$(CXX) -DHTML_RESULTS=0 $(CONFIG_DEFS) $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
+bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
+	$(CXX) -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS)
 
 
 # bin/ general rules
-bin/%.d : bin/%.cpp
+bin/%.d : bin/%.cpp config.h
 	-touch $@
-	-makedepend -bbin/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
+	-makedepend -bbin/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-bin/%.o. : bin/%.cpp bin/%.d
+bin/%.o. : bin/%.cpp bin/%.d config.h
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
@@ -232,11 +254,11 @@ unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
-tests/test_%.d : test/test_%.cpp
+tests/test_%.d : test/test_%.cpp config.h
 	-touch $@
-	-makedepend -btests/ -y -f $@ $^ $(CONFIG_DEFS) $(DEFS) $(INCLUDES) 2>/dev/null
+	-makedepend -btests/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp tests/test_%.d
+tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp tests/test_%.d config.h
 	$(CXX) $(CXXFLAGS) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
@@ -321,7 +343,7 @@ release:
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
 clean:
-	$(RM) *.o */*.o *.a *.dylib *.so *.la */*.bak *.bak \
+	$(RM) *.o */*.o *.a *.dylib *.so *.la */*.bak *.bak config.h \
         $(subst .lpp,.cpp,$(wildcard *.lpp)) \
         $(subst .ypp,.cpp,$(wildcard */*.ypp)) \
         $(subst .ypp,.hpp,$(wildcard */*.ypp)) \
