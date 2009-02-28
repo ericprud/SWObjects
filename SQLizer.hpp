@@ -713,7 +713,7 @@ namespace w3c_sw {
 	//static std::ostream** ErrorStream;
 
 	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], string defaultPKAttr, std::ostream** debugStream = NULL) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
+	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
 	{  }
 	~SQLizer () { delete curQuery; }
@@ -1012,6 +1012,7 @@ namespace w3c_sw {
 	    //curQuery->curJoin = NULL;
 	}
 	virtual void filter (const Filter* const, const Expression* p_Constraint) {
+	    mode = MODE_constraint;
 	    try {
 		p_Constraint->express(this);
 		curQuery->addConstraint(curConstraint);
@@ -1193,7 +1194,6 @@ namespace w3c_sw {
 	}
 	virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
 	    MARK;
-	    mode = MODE_constraint;
 	    p_Bindable->express(this);
 	}
 	virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
