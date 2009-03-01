@@ -60,26 +60,15 @@ namespace w3c_sw {
 	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
 	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
 	     */
-	    BasicGraphPattern* graph = assureGraph(NULL);
-	    if (loadGraph(graph, posFactory, "text/turtle", "", name->getTerminal())) {
-		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
-	    } else {
+	    if (loadGraph(assureGraph(name), posFactory, "text/turtle", "", name->getTerminal())) {
 #else /* !_MSC_VER */
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
-	    if (turtleParser.parse_file(name->getTerminal())) {
-		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
-	    } else {
-		BasicGraphPattern* graph = turtleParser.root;
+	    turtleParser.setGraph(assureGraph(name));
+	    if (turtleParser.parse_file(name->getTerminal()))
 #endif /* !_MSC_VER */
-		SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
-		BasicGraphPattern* target = assureGraph(name);
-		for (std::vector<const TriplePattern*>::iterator from = graph->begin();
-		     from != graph->end(); ) {
-		    target->addTriplePattern(*from);
-		    graph->erase(from);
-		}
-		delete graph;
-	    }
+		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
+	    else
+		{ SPARQLSerializer s; assureGraph(name)->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl; }
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
