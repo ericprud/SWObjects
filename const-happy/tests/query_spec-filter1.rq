@@ -1,0 +1,17 @@
+# filter1
+# from http://www.w3.org/2008/07/MappingRules/#filter1 Revision: 1.38 
+# $Id: query_spec-filter1.rq,v 1.1 2008-09-08 13:12:41 eric Exp $
+
+PREFIX emplP: <http://hr.example/DB/Employee#>
+
+SELECT ?empName ?grandManagName
+ WHERE { ?emp          emplP:lastName   ?empName .
+         ?emp          emplP:birthday   ?empBday .
+         ?lower        managP:manages   ?emp .
+         ?lower        managP:manager   ?manager .
+         ?manager      emplP:birthday   ?manBday .
+         ?upper        managP:manages   ?manager .
+         ?upper        managP:manager   ?grandManager .
+         ?grandManager emplP:birthday   ?grandManBday .
+         ?grandManager emplP:lastName   ?grandManagName
+         FILTER (?manBday < ?empBday && ?grandManBday < ?manBday) }

@@ -1,0 +1,11 @@
+# leadOpt1
+# from http://www.w3.org/2008/07/MappingRules/#leadOpt1 Revision: 1.38 
+# $Id: query_spec-leadOpt1.rq,v 1.1 2008-09-08 13:12:41 eric Exp $
+
+PREFIX emplP: <http://hr.example/DB/Employee#>
+
+SELECT ?empName ?grandManagName
+ WHERE { OPTIONAL { ?manager      emplP:manager    ?emp .
+                    ?manager      emplP:manager    ?grandManager .
+                    ?grandManager emplP:lastName   ?grandManagName } 
+                  ?emp            emplP:lastName   ?empName }
