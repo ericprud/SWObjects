@@ -17,7 +17,7 @@
  /* SQL Libs: */
  #define SWOb_MYSQL		148
  
- #define XML_PARSER SWOb_LIBXML2 
+ #define XML_PARSER SWOb_EXPAT1 
  #define CONSOLE_ENCODING SWOb_UTF8 
  #define REGEX_LIB SWOb_BOOST 
  #define HTTP_CLIENT SWOb_ASIO 
