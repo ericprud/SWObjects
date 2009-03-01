@@ -20,7 +20,11 @@
 #elif XML_PARSER == SWOb_EXPAT1
   #include "util/SAXparser_expat.hpp"
 #else
-  #warning query federation requires an XML parser
+  #ifdef _MSC_VER
+    #pragma message ("query federation requires an XML parser")
+  #else /* !_MSC_VER */
+    #warning query federation requires an XML parser
+  #endif /* !_MSC_VER */
 #endif
 
 #if HTTP_CLIENT == SWOb_ASIO

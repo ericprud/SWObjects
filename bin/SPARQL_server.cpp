@@ -289,7 +289,11 @@ class WebServer : public server::http_1a_c
  #elif HTTP_SERVER == SWOb_ASIO
   #error ASIO HTTP server not implemented
  #else
-  #warning No HTTP server -- implementing fake server
+  #ifdef _MSC_VER
+    #pragma message ("No HTTP server -- implementing fake server")
+  #else /* !_MSC_VER */
+    #warning No HTTP server -- implementing fake server
+  #endif /* !_MSC_VER */
 struct WebServer {
     void start () {  }
     void clear () {  }
