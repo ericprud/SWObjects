@@ -95,9 +95,11 @@ public:
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
-    URI* getNamespace (std::string prefix) {
+    URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end()) {
+	    if (returnNull)
+		return NULL;
 	    UnknownPrefixException e(prefix);
 	    throw(e);
 	} else

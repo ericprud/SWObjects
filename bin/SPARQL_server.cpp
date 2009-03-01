@@ -9,15 +9,21 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
-#include "boost/regex.hpp"
-#include "dlib/server.h"
-#ifdef WIN32
-#include <mysql.h>
-#else
-#include <mysql/mysql.h>
+#include <stdio.h>  //\_for strcmp
+#include <string.h> ///
+#if REGEX_LIB == SWOb_BOOST
+  #include "boost/regex.hpp"
 #endif
+#if SQL_CLIENT == SWOb_SWOb_MYSQL
+  #ifdef WIN32
+    #include <mysql.h>
+   #else
+    #include <mysql/mysql.h>
+  #endif
+#endif /* SQL_CLIENT == SWOb_MYSQL */
 
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
@@ -28,7 +34,10 @@
 
 const char* SELECT_QUERY = "SELECT * FROM test";
 
+#if HTTP_SERVER == SWOb_DLIB
+#include "dlib/server.h"
 using namespace dlib;
+#endif
 using namespace std;
 using namespace w3c_sw;
 
@@ -36,12 +45,18 @@ ostream* DebugStream = NULL;
 string ServerPath = "/SPARQL";
 int ServerPort = 8888;
 string ServerTerminate;
-string StemURI;
+const char* ServerURI;
+std::string StemURI;
 POSFactory posFactory;
 SPARQLfedDriver sparqlParser("", &posFactory);
 QueryMapper queryMapper(&posFactory, &DebugStream);
+bool RunOnce = false;
 bool Done = false;
 int Served = 0;
+std::string Server;
+std::string User;
+std::string Database;
+std::string PkAttribute;
 
 void head (ostringstream& sout, string title) {
     sout << 
@@ -71,6 +86,7 @@ struct SimpleMessageException : public StringException {
     }
 };
 
+#if HTTP_SERVER == SWOb_DLIB
 class WebServer : public server::http_1a_c
 {
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
@@ -78,18 +94,18 @@ class WebServer : public server::http_1a_c
 	query->express(&s);
 	cerr << s.getSPARQLstring() << endl;
 	query->express(&queryMapper);
-	Operation* mapped = queryMapper.getCopy();
+	const Operation* mapped = queryMapper.last.operation;
 	delete query;
 
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, "pk", &DebugStream);
+	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, PkAttribute, &DebugStream);
 	mapped->express(&sqlizer);
 
 	MYSQL mysql,*sock;
 	MYSQL_RES *result;
 	mysql_init(&mysql);
-	if (!(sock = mysql_real_connect(&mysql,NULL,"root",0,"benchmark",0,NULL,0)))
+	if (!(sock = mysql_real_connect(&mysql,Server.c_str(),User.c_str(),0,Database.c_str(),0,NULL,0)))
 	    throw(SimpleMessageException("couldn't connect"));
 	if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
 	    throw(SimpleMessageException("couldn't execute"));
@@ -168,6 +184,8 @@ class WebServer : public server::http_1a_c
 #endif /* !HTML_RESULTS */
 
 	++Served;
+	if (RunOnce)
+	    Done = true;
     }
 
     void on_request (
@@ -268,13 +286,31 @@ class WebServer : public server::http_1a_c
     }
 
 };
+ #elif HTTP_SERVER == SWOb_ASIO
+  #error ASIO HTTP server not implemented
+ #else
+  #ifdef _MSC_VER
+    #pragma message ("No HTTP server -- implementing fake server")
+  #else /* !_MSC_VER */
+    #warning No HTTP server -- implementing fake server
+  #endif /* !_MSC_VER */
+struct WebServer {
+    void start () {  }
+    void clear () {  }
+    void set_listening_port (int) {  }
+};
+struct thread_function  {
+    thread_function ( void (*funct)() ) {  }
+};
+#endif /* HTTP_SERVER == SWOb_DLIB */
+
 
 // create an instance of our web server
 WebServer TheServer;
 
 void thread ()
 {
-#if STUPID_TIGHT_LOOP
+#if DLIB_TIGHT_LOOP
     cout << "a POST to <" << ServerTerminate << "> with query=stop will terminate the server." << endl;
     while (!Done) dlib::sleep(1000);
     cout << "Done: served " << Served << " queries." << endl;
@@ -286,8 +322,7 @@ void thread ()
 }
 
 void startServer (const char* url) {
-#ifdef WIN32
-#else /* !WIN32 */
+#if REGEX_LIB == SWOb_BOOST
     boost::regex re;
     boost::cmatch matches;
 
@@ -305,45 +340,113 @@ void startServer (const char* url) {
     istringstream portss(ports);
     portss >> ServerPort;
     ServerPath = string(matches[PATH].first, matches[PATH].second);
-#endif /* !WIN32 */
+#else /* !REGEX_LIB == SWOb_BOOST */
+#endif /* !REGEX_LIB == SWOb_BOOST */
 
     ostringstream s;
     s << "http://localhost:" << ServerPort << ServerPath;
     ServerTerminate = s.str();
 
     TheServer.set_listening_port(ServerPort);
+    thread_function t(thread);
     TheServer.start();
 }
 
 int main (int argc, char** argv) {
-    if (argc < 4) {
-	cerr << "Usage: " << argv[0] << "serverURL stemURI ruleMap.rq+" << endl;
+
+    unsigned iArg = 1;
+    if (argc > 1 && !::strcmp(argv[iArg], "--once")) {
+	RunOnce = true;
+	++iArg;
+    }
+
+    if (argc - iArg < 2) {
+	cerr << "Usage: " << argv[0] << "[--once] serverURL ruleMap.rq+" << endl;
 	return 1;
     }
 
-     StemURI = argv[2];
+    ServerURI = argv[iArg++];
 
-     try {
-	 /* Parse deduction rules. */
-	 for (int iArg = 3; iArg < argc; ++iArg) {
-	     sparqlParser.parse_file(argv[iArg]);
-	     Operation* rule = sparqlParser.root;
-	     Construct* c;
-	     if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
-		 queryMapper.addRule(c);
-		 delete rule;
-	     } else {
-		 cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << endl;
-		 return 1;
-	     }
-	 }
+    try {
+	/* Parse deduction rules. */
+	for ( ; iArg < argc; ++iArg) {
 
-	 thread_function t(thread);
-	 startServer(argv[1]);
-     }
-     catch (exception& e) {
-         cerr << e.what() << endl;
-     }
-     return 0;
+	    /* Open stream from map file. */
+	    std::ifstream dataStream(argv[iArg]);
+	    if (!dataStream.is_open()) {
+		std::string msg = std::string("failed to open map file \"") + argv[iArg] + "\".";
+		throw msg;
+	    }
+	    /* Parse conf parameters. */
+	    std::istreambuf_iterator<char> it(dataStream), end;
+	    while (it != end) {
+		std::string parm;
+		while (it != end && (*it == ' '  || *it == '\r' ||
+				     *it == '\n' || *it == '\t'))
+		    ++it;
+		/* Comment markers must be the first non-whitespace char. */
+		if (it == end || *it == '#') {
+		    while (it != end && *it != '\n')
+			++it;
+		    continue;
+		}
+
+		/* The parameter name is anything before the first ':'. */
+		while (it != end && *it != ':')
+		    parm += *it++;
+
+		if (it == end)
+		    break;
+		++it;
+		if (parm == "construct")
+		    /* Pass on to the the SPARQL parser. */
+		    break;
+
+		/* The value is the rest of the line. */
+		std::string value;
+		while (it != end && (*it == ' '  || *it == '\r' ||
+				     *it == '\n' || *it == '\t'))
+		    ++it;
+		while (it != end && *it != '\n')
+		    value += *it++;
+
+		/* Pull out known parameters. */
+		if (parm == "server") {
+		    Server = value;
+		} else if (parm == "user") {
+		    User = value;
+		} else if (parm == "database") {
+		    Database = value;
+		} else if (parm == "stemURI") {
+		    StemURI = value;
+		} else if (parm == "primaryKey") {
+		    PkAttribute = value;
+		} else
+		    /* Whine about unknown parameters. */
+		    std::cout << "unknown parm: " << parm << " -- value: " << value << std::endl;
+	    }
+
+	    /* Remainder of file is a SPARQL query. */
+	    const std::string streamName = std::string(argv[iArg]) + " (post map:)";
+	    sparqlParser.parse_string(std::string(it, end), streamName);
+	    dataStream.close();
+
+	    Operation* rule = sparqlParser.root;
+	    Construct* c;
+	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
+		queryMapper.addRule(c);
+		delete rule;
+	    } else {
+		cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << endl;
+		return 1;
+	    }
+	}
+
+	startServer(ServerURI);
+    }
+    catch (exception& e) {
+	cerr << e.what() << endl;
+    }
+    return 0;
 }
 

@@ -3,6 +3,9 @@
  * interface?
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
+
+ * SWSAXparser and SWSAXhandler are prefixed with SW to avoid collisions with
+ * implementation names.
  */
 
 #pragma once
@@ -88,29 +91,30 @@ namespace w3c_sw {
 
     };
 
-    class StateMachineSAXhandler : public SWSAXhandler {
+    class SAXserializer : public SWSAXhandler {
+	std::ostream& out;
     public:
-	StateMachineSAXhandler () {  }
+	SAXserializer (std::ostream& out = std::cout) : out(out) {  }
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
 				   Attributes* attrs) {
-	    std::cout << "SM<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
+	    out << "SM<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
-		std::cout << std::endl << "    " << attrs->getQName(i) << "=\"" << attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) << "\"";
+		out << std::endl << "    " << attrs->getQName(i) << "=\"" << attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) << "\"";
 	    }
-	    std::cout << ">" << std::endl;
+	    out << ">" << std::endl;
 	}
 	virtual void endElement (std::string uri,
 				 std::string localName,
 				 std::string qName) {
-	    std::cout << "SM</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
+	    out << "SM</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
 	}
 	virtual void characters (const char ch[],
 				 int start,
 				 int length) {
-	    std::cout << std::string(ch, start, length);
+	    out << std::string(ch, start, length);
 	}
     };
 
@@ -126,6 +130,13 @@ namespace w3c_sw {
 	SWSAXparser () {  }
 	virtual ~SWSAXparser () {  }
 	virtual void parse(const char* file, SWSAXhandler* handler) = 0;
+	virtual void parse(std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) = 0;
+	void test (std::string testStr = "<root xmlns=\"http://ns.example/\"><el attr=\"value\"/>text</root>") {
+	    SAXserializer handler(std::cout);
+	    parse(testStr.begin(), testStr.end(), &handler);
+	}
+	static SWSAXparser* makeSAXparser();
+#define NEEDDEF_makeSAXparser 1
     };
 
 }

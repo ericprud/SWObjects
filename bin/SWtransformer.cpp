@@ -6,14 +6,31 @@
 
 /* START main */
 
-#include <stdio.h>
+#include <stdio.h>  //\_for strcmp
+#include <string.h> ///
 #include "SPARQLfedParser.hpp"
 #include "TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
-#include "RdfQueryDB.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
+
+#if XML_PARSER == SWOb_LIBXML2
+  #include "util/SAXparser_libxml.hpp"
+#elif XML_PARSER == SWOb_EXPAT1
+  #include "util/SAXparser_expat.hpp"
+#else
+  #ifdef _MSC_VER
+    #pragma message ("query federation requires an XML parser")
+  #else /* !_MSC_VER */
+    #warning query federation requires an XML parser
+  #endif /* !_MSC_VER */
+#endif
+
+#if HTTP_CLIENT == SWOb_ASIO
+  #include "RdfRemoteDB.hpp"
+  #include "util/WEBagent_boostASIO.hpp"
+#endif /* HTTP_CLIENT == SWOb_ASIO */
 
 #include <stdlib.h>
 #include <ostream>
@@ -27,18 +44,29 @@ const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
+  bool ExecuteQuery = false;
+#endif
+std::vector<const char*>SparqlEndpointPatterns;
 
 void usage (const char* exe) {
     cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file or '-' for stdin> <SPARQL CONSTRUCT rule file>*" << endl;
 }
 
 bool option (int argc, char** argv, int* iArg) {
-    if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'd')) {
+    if (!::strcmp(argv[*iArg], "-d")) {
 	DebugStream = &std::cerr;
 	SerializereDebugFlags = SPARQLSerializer::DEBUG_graphs;
 	return true;
-    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'q')) {
+    } else if (!::strcmp(argv[*iArg], "-q")) {
 	Quiet = true;
+	return true;
+    } else if (!::strcmp(argv[*iArg], "-x")) {
+#if XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED
+	throw "SWtransformer cannot execute federation queries as it was not compiled with an XML parser.";
+#else /* ! XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
+	ExecuteQuery = true;
+#endif /* ! XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
@@ -50,7 +78,7 @@ bool option (int argc, char** argv, int* iArg) {
 	else
 	    *target = argv[*iArg]+2;
 	return true;
-    } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'p')) {
+    } else if (!::strncmp(argv[*iArg], "-p", 2)) {
 	if (argv[*iArg][2] == '\0')
 	    if (*iArg > argc - 2)
 		usage(argv[0]);
@@ -58,6 +86,15 @@ bool option (int argc, char** argv, int* iArg) {
 		PkAttr = argv[++(*iArg)];
 	else
 	    PkAttr = argv[*iArg]+2;
+	return true;
+    } else if (!::strncmp(argv[*iArg], "--sparql-pattern", 16)) {
+	if (argv[*iArg][16] == '\0')
+	    if (*iArg > argc - 2)
+		usage(argv[0]);
+	    else
+		SparqlEndpointPatterns.push_back(argv[++(*iArg)]);
+	else
+	    SparqlEndpointPatterns.push_back(argv[*iArg]+2);
 	return true;
     }
     return false;
@@ -127,12 +164,12 @@ int main(int argc,char** argv) {
 	    cerr << "Error: " << inputId << " did not contain a valid SPARQLfed string." << endl;
 	else {
 	    try {
-		Operation* o;
+		const Operation* o;
 		if (queryMapper.getRuleCount() > 0) {
 		    if (DebugStream != NULL)
 			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
 		    query->express(&queryMapper);
-		    o = queryMapper.getCopy();
+		    o = queryMapper.last.operation;
 		    delete query;
 		} else
 		    o = query;
@@ -159,6 +196,17 @@ int main(int argc,char** argv) {
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
 		}
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
+		else if (ExecuteQuery) {
+		    SWSAXparser* p = SWSAXparser::makeSAXparser();
+		    WEBagent_boostASIO client;
+		    RdfRemoteDB db(SparqlEndpointPatterns, p, &client);
+		    ResultSet rs(&posFactory);
+		    o->execute(&db, &rs);
+		    delete p;
+		    std::cout << rs; // show results
+		}
+#endif /* XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED */
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;

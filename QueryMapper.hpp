@@ -22,10 +22,12 @@ namespace w3c_sw {
 
     public:
 	QueryMapper (POSFactory* posFactory, std::ostream** debugStream) : SWObjectDuplicator(posFactory), ruleCount(0), debugStream(debugStream) {  }
-	~QueryMapper() {
+	~QueryMapper () { clear(); }
+	void clear () {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
 		 it != invertedRules.end(); ++it)
 		delete *it;
+	    invertedRules.clear();
 	}
 	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (Construct* rule) {
@@ -36,28 +38,32 @@ namespace w3c_sw {
 	    ++ruleCount;
 	    return c;
 	}
-	void _map (TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
+	void _map (const TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
 	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint, posFactory);
 
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
 	    if (*debugStream != NULL)
-		**debugStream << "User query disjoint " << endl << userQueryDisjoint << endl;
+		**debugStream << "User query disjoint " << endl << 
+		    *userQueryDisjoint << endl << 
+		    "(as DB):" << endl << 
+		    userQueryAsAssertions << endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
 		if (*debugStream != NULL)
-		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << (*invertedRule)->getRuleBody() << endl;
+		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << 
+			*(*invertedRule)->getRuleBody() << endl;
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
 		OperationResultSet opRS(posFactory, constructed, userQueryDisjoint);
-		(*invertedRule)->execute(&userQueryAsAssertions, &opRS);
+		(*invertedRule)->executeMapping(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
-	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 
 	    /* # 01 — Produce a disjunctive normal form DQI. For each disjunct D:
 	     * http://www.w3.org/2008/07/MappingRules/#_01
@@ -76,9 +82,9 @@ namespace w3c_sw {
 	    TableDisjunction* constructed = new TableDisjunction();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(userQueryAsDNF)) != NULL)
-		for (std::vector<TableOperation*>::iterator d = disjoints->begin();
+		for (std::vector<const TableOperation*>::iterator d = disjoints->begin();
 		     d != disjoints->end(); d++)
-		    _map(*d, constructed);
+		    _map(*d, constructed); /* LIES */
 	    else
 		_map(userQueryAsDNF, constructed);
 	    delete userQueryAsDNF;

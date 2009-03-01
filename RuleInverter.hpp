@@ -12,9 +12,38 @@
 #include "SPARQLSerializer.hpp" // for debugging output
 #include <set>
 #include <algorithm>
-#include <boost/regex.hpp>
+
+#if REGEX_LIB == SWOb_BOOST
+  #include <boost/regex.hpp>
+#endif /* REGEX_LIB == SWOb_BOOST */
+
+
+/* APPLY_VARMAPS_INDISCRIMINATELY -- Apply tr:rewrite(?foo,p1,p2) to
+ * any URI in the transformation output, not just bindings for ?foo.
+ */
+#define APPLY_VARMAPS_INDISCRIMINATELY
 
 namespace w3c_sw {
+
+#if REGEX_LIB == SWOb_BOOST
+    struct POSmap {
+	const POS* selector;
+	boost::regex ifacePattern;
+	std::string localPattern;
+	std::string mapString (const std::string tweak) const {
+	    std::ostringstream t(std::ios::out | std::ios::binary);
+	    std::ostream_iterator<char, char> oi(t);
+	    boost::regex_replace(oi, tweak.begin(), tweak.end(),
+				 ifacePattern, localPattern, 
+				 boost::match_default | boost::format_all | boost::format_no_copy);
+	    //if (t.str().size() != 0) {
+	    //	std::cerr << "s{" << ifacePattern << "}\n {" << localPattern << "}\n (" << tweak << ")\n=>";
+	    //	std::cerr << t.str() << std::endl;
+	    //}
+	    return t.str();
+	}
+    };
+#endif /* REGEX_LIB == SWOb_BOOST */
 
     class OperationResultSet : public ResultSet {
 	class FilterCopier : public RecursiveExpressor {
@@ -22,7 +51,7 @@ namespace w3c_sw {
 
 	    public:
 		FilterDuplicator (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
-		Filter* getFilter () { return last.filter; }
+		const Filter* getFilter () { return last.filter; }
 	    };
 	    
 	protected:
@@ -31,29 +60,30 @@ namespace w3c_sw {
 	public:
 	    FilterCopier (TableOperation* dest) : dest(dest) {  }
 
-	    virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void filter (Filter* self, Expression*) {
+	    virtual void filter (const Filter* const self, const Expression*) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
 		self->express(&fd);
 		dest->addFilter(fd.getFilter());
 	    }
-	    virtual void namedGraphPattern (NamedGraphPattern*, POS* /*p_name*/, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* /*p_TriplePatterns*/, ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
 		p_Filters->express(this);
 	    }
 
 	};
+
     protected:
 	TableDisjunction* constructed;
-	TableOperation* userQueryDisjoint;
+	const TableOperation* userQueryDisjoint;
 
     public:
-	OperationResultSet (POSFactory* posFactory, TableDisjunction* constructed, TableOperation* userQueryDisjoint) : 
+	OperationResultSet (POSFactory* posFactory, TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
 	    ResultSet(posFactory), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
-	void addTableOperation (TableOperation* op) { constructed->addTableOperation(op); }
+	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op); }
 	void copyFiltersTo (TableOperation* dest) {
 	    /* Copy the FILTER patterns across.
 	       !!! This isn't sound -- requires more exploration.
@@ -61,6 +91,30 @@ namespace w3c_sw {
 	    FilterCopier c(dest);
 	    userQueryDisjoint->express(&c);
 	}
+#ifndef APPLY_VARMAPS_INDISCRIMINATELY
+#if REGEX_LIB == SWOb_BOOST
+	size_t applyMaps (std::vector<POSmap> const &maps) {
+	    size_t matches = 0;
+	    for (ResultSetIterator row = begin(); row != end(); ++row) {
+		for (std::vector<POSmap>::const_iterator map = maps.begin();
+		     map != maps.end(); ++map) {
+		    BindingSetIterator binding = (*row)->find(map->selector);
+		    if (binding != (*row)->end()) {
+			const URI* u = dynamic_cast<const URI*>(binding->second.pos);
+			if ((u) != NULL) {
+			    std::string changed = map->mapString(u->getTerminal());
+			    if (changed.size() == 0)
+				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + u->getTerminal();
+			    (*row)->set(map->selector, posFactory->getURI(changed), false, true);
+			    ++matches;
+			}
+		    }
+		}
+	    }
+	    return matches;
+	}
+#endif /* REGEX_LIB == SWOb_BOOST */
+#endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
     };
 
     /* MappingConstruct — extends Construct::execute to peform steps 4 through 8
@@ -81,21 +135,66 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMap* includeRequiredness;
 	    Result* row;
-	    std::vector<URImap> uriMaps;
+#if REGEX_LIB == SWOb_BOOST
+	    std::vector<POSmap> uriMaps;
+#endif /* REGEX_LIB == SWOb_BOOST */
 	public:
-	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness, std::vector<URImap> uriMaps) :
-		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row), uriMaps(uriMaps) {  }
+	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness
+#if REGEX_LIB == SWOb_BOOST
+			      , std::vector<POSmap> uriMaps
+#endif /* REGEX_LIB == SWOb_BOOST */
+			      ) :
+		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row)
+#if REGEX_LIB == SWOb_BOOST
+		, uriMaps(uriMaps)
+#endif /* REGEX_LIB == SWOb_BOOST */
+		    {  }
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
-	    virtual void _TriplePatterns (ProductionVector<TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
-		for (std::vector<TriplePattern*>::iterator triple = p_TriplePatterns->begin();
+	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* bgp) {
+		for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
-		    (*triple)->construct(p, row, posFactory, false);
+#ifdef APPLY_VARMAPS_INDISCRIMINATELY
+		    {
+			/* Copy TriplePattern::construct functionality and inject transformation. */
+			const POS *s, *p, *o;
+			if ((s = (*triple)->getS()->evalPOS(row, false)) != NULL && 
+			    (p = (*triple)->getP()->evalPOS(row, false)) != NULL && 
+			    (o = (*triple)->getO()->evalPOS(row, false)) != NULL) {
+			    /* inject transformations */
+#if REGEX_LIB == SWOb_BOOST
+			    const POS** uris[3] = {&s, &p, &o};
+			    for (unsigned i = 0; i < 3; ++i) {
+				const URI* u = dynamic_cast<const URI*>(*uris[i]);
+				if (u != NULL) {
+				    for (std::vector<POSmap>::const_iterator map = uriMaps.begin();
+					 map != uriMaps.end(); ++map) {
+					std::string changed = map->mapString(u->getTerminal());
+					if (changed.size() != 0) {
+					    *uris[i] = posFactory->getURI(changed.c_str());
+					    break;
+					}
+				    }
+				}
+			    }
+#endif /* REGEX_LIB == SWOb_BOOST */
+			    if (posFactory == NULL) {
+				if (s == (*triple)->getS() && p == (*triple)->getP() && o == (*triple)->getO()) // lost:  && !weaklyBound
+				    bgp->addTriplePattern(*triple);
+				else
+				    throw(std::runtime_error("TriplePattern::construct requires POSFactory when constructing new triples."));
+			    } else
+				bgp->addTriplePattern(posFactory->getTriple(s, p, o));
+			}
+		    }
+#else /* !APPLY_VARMAPS_INDISCRIMINATELY */
+		    (*triple)->construct(bgp, row, posFactory, false);
+#endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
 	    }
 
 	    /* Overload SWObjectDuplicator::_TableOperations to handle tree depletion. */
-	    virtual void _TableOperations (ProductionVector<TableOperation*>* p_TableOperations, TableJunction* j) {
-		for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	    virtual void _TableOperations (const ProductionVector<const TableOperation*>* p_TableOperations, TableJunction* j) {
+		for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		     it != p_TableOperations->end(); it++) {
 		    last.tableOperation = NULL;
 		    (*it)->express(this);
@@ -104,7 +203,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (NamedGraphPattern* self, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -115,7 +214,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void defaultGraphPattern (DefaultGraphPattern* self, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
 		    return;
@@ -126,7 +225,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
 		}
 	    }
-	    virtual void tableConjunction (TableConjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -137,7 +236,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void tableDisjunction (TableDisjunction* self, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
 		    return;
@@ -148,7 +247,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void optionalGraphPattern (OptionalGraphPattern* self, TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
@@ -159,7 +258,7 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
 		}
 	    }
-	    virtual void graphGraphPattern (GraphGraphPattern* self, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
 		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	};
@@ -169,26 +268,32 @@ namespace w3c_sw {
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
 	POSFactory* posFactory;
-	std::vector<URImap> uriMaps;
+#if REGEX_LIB == SWOb_BOOST
+	std::vector<POSmap> uriMaps;
+#endif /* REGEX_LIB == SWOb_BOOST */
 	std::ostream** debugStream;
 
     public:
-	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<DatasetClause*>* p_DatasetClauses, 
+	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
 			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
-			  std::vector<URImap> uriMaps, std::ostream** debugStream) : 
+#if REGEX_LIB == SWOb_BOOST
+			  std::vector<POSmap> uriMaps, 
+#endif /* REGEX_LIB == SWOb_BOOST */
+			  std::ostream** debugStream) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
-	    posFactory(posFactory), uriMaps(uriMaps), debugStream(debugStream)
+	    posFactory(posFactory), 
+#if REGEX_LIB == SWOb_BOOST
+	    uriMaps(uriMaps), 
+#endif /* REGEX_LIB == SWOb_BOOST */
+	    debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
 	}
 	WhereClause* getRuleBody () { return m_WhereClause; }
-	virtual OperationResultSet* execute (RdfDB* userQueryAsAssertions, ResultSet* rs = NULL) {
-	    OperationResultSet* opRS = dynamic_cast<OperationResultSet*>(rs);
-	    if (opRS == NULL)
-		throw(std::runtime_error("MappingConstrucs need a result set.")); // @@ shouldn't happen? consequents[pos][bgp] = false;
+	virtual OperationResultSet* executeMapping (RdfDB* userQueryAsAssertions, OperationResultSet* opRS) {
 
 	    /* Build a disjoint in a where clause for the transformed user
 	     * query. Currently, the approach is to express the rule head as a
@@ -201,6 +306,9 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_04
 	     */
 	    m_WhereClause->bindVariables(userQueryAsAssertions, opRS);
+#ifndef APPLY_VARMAPS_INDISCRIMINATELY
+ 	    opRS->applyMaps(uriMaps);
+#endif
 	    if (*debugStream != NULL)
 		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
 
@@ -221,14 +329,18 @@ namespace w3c_sw {
 		 * 08 — Create a stem query disjoint DQS which is a reproduction of the mapping rule antecedent A
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
-		MappedDuplicator e(posFactory, *row, &includeRequiredness, uriMaps);
+		MappedDuplicator e(posFactory, *row, &includeRequiredness
+#if REGEX_LIB == SWOb_BOOST
+				   , uriMaps
+#endif /* REGEX_LIB == SWOb_BOOST */
+				   );
 		constructRuleBodyAsConsequent->express(&e);
 		TableOperation* t = e.getTableOperation();
 		if (t != NULL)
 		    patternSpanningRows->addTableOperation(t);
 	    }
 
-	    TableOperation* res = patternSpanningRows->simplify();
+	    TableOperation* res = patternSpanningRows->simplify(); // !!! should be a simplifying expressor
 	    if (res != NULL) {
 		opRS->copyFiltersTo(res);
 		opRS->addTableOperation(res);
@@ -238,7 +350,7 @@ namespace w3c_sw {
 		if (res == NULL)
 		    **debugStream << "yielding no transformed query disjoint." << endl << endl;
 		else
-		    **debugStream << "yielding transformed query disjoint:" << endl << res << endl;
+		    **debugStream << "yielding transformed query disjoint:" << endl << *res << endl;
 	    }
 	    return opRS;
 	}
@@ -253,10 +365,12 @@ namespace w3c_sw {
 	MappingConstruct* m_Construct;
 	std::ostream** debugStream;
 	bool inUserRuleHead;
-	std::map<POS*, size_t> variablesInLexicalOrder;
+	std::map<const POS*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
-	std::vector<URImap> uriMaps;
+#if REGEX_LIB == SWOb_BOOST
+	std::vector<POSmap> uriMaps;
+#endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
 	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
@@ -283,16 +397,16 @@ namespace w3c_sw {
 	 * userRuleBody.
 	 */
 	struct MapOrder {
-	    std::map<POS*, size_t>& v;
-	    MapOrder (std::map<POS*, size_t>& v) : v(v) {  }
-	    int _orderAtoms (POS* l, POS* r) {
+	    std::map<const POS*, size_t>& v;
+	    MapOrder (std::map<const POS*, size_t>& v) : v(v) {  }
+	    int _orderAtoms (const POS* l, const POS* r) {
 		if (v.find(l) == v.end())
 		    v[l] = v.size();
 		if (v.find(r) == v.end())
 		    v[r] = v.size();
 		return l == r ? 0 : v[l] < v[r] ? 1 : -1;
 	    }
-	    bool operator() (TriplePattern* l, TriplePattern* r) {
+	    bool operator() (const TriplePattern* l, const TriplePattern* r) {
 		int s = _orderAtoms(l->getS(), r->getS());
 		if (s == 1) return true;
 		if (s == -1) return false;
@@ -313,12 +427,8 @@ namespace w3c_sw {
 		//return TriplePattern::gt(l, r);
 	    }
 	};
-	virtual void variable (Variable* self, std::string terminal) {
-	    last.posz.pos = last.posz.variable = self;
-	    self->setMaps(uriMaps, posFactory);
-	}
 
-	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
 	    _Filters(p_Filters, bgp);
 	    last.tableOperation = bgp;
@@ -331,15 +441,15 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (NamedGraphPattern*, POS* p_name, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    p_name->express(this);
 	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool p_allOpts, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
 	}
 
-	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	    if (p_BindingClause != NULL)
 		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
 
@@ -367,7 +477,7 @@ namespace w3c_sw {
 	    last.whereClause = new WhereClause(op, last.bindingClause);
 	}
 
-	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 
@@ -391,46 +501,70 @@ namespace w3c_sw {
 					       _DatasetClauses(p_DatasetClauses),//
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
-					       posFactory, uriMaps, debugStream);
+					       posFactory, 
+#if REGEX_LIB == SWOb_BOOST
+					       uriMaps, 
+#endif /* REGEX_LIB == SWOb_BOOST */
+					       debugStream);
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs
 	 * get a run-time error. (A compile-time error would be nice, but the
 	 * expressor interface prevents that.
 	 */
-	virtual void select (Select*, e_distinctness, VarSet*, ProductionVector<DatasetClause*>*, WhereClause*, SolutionModifier*) {
+	virtual void select (const Select* const, e_distinctness, VarSet*, ProductionVector<const DatasetClause*>*, WhereClause*, SolutionModifier*) {
 	    throw(std::runtime_error("RuleInverter only works on CONSTRUCTs."));
 	}
 	// @@ should be similar errors for ASK, DESCRIBE and all SPARUL verbs.
 
-	virtual void functionCall (FunctionCall* me, URI* p_IRIref, ArgList* p_ArgList) {
+	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); it++) {
+		(*it)->express(this);
+		if (last.expression)
+		    l_Expressions->push_back(last.expression);
+	    }
+	    if (l_Expressions->size() == 0) {
+		delete l_Expressions;
+		return NULL;
+	    }
+	    return l_Expressions;
+	}
+
+	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* p_expressions) {
+	    last.argList = new ArgList(_Expressions(p_expressions)); /* links to RuleInverter::_Expressions */
+	}
+
+	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
+#if REGEX_LIB == SWOb_BOOST
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
 		FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
-	    std::vector<Expression*>::iterator it = p_ArgList->begin();
-	    VarExpression* varExp = dynamic_cast<VarExpression*>(*it);
+	    std::vector<const Expression*>::iterator it = p_ArgList->begin();
+	    const VarExpression* varExp = dynamic_cast<const VarExpression*>(*it);
 	    if (varExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
-	    Bindable* toModify = varExp->getBindable();
+	    const Bindable* toModify = varExp->getBindable();
 	    ++it;
-	    LiteralExpression* litExp = dynamic_cast<LiteralExpression*>(*it);
+	    const LiteralExpression* litExp = dynamic_cast<const LiteralExpression*>(*it);
 	    if (litExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
 	    /* localName
 	     * http://bsbm.example/db/productfeatureproduct/offer.nr=(?@offer=[0-9]+)&publisher=(?@pub=[0-9]+)
 	     */
-	    RDFLiteral* localName = litExp->getLiteral();
+	    const RDFLiteral* localName = litExp->getLiteral();
 
 	    ++it;
-	    litExp = dynamic_cast<LiteralExpression*>(*it);
+	    litExp = dynamic_cast<const LiteralExpression*>(*it);
 	    if (litExp == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
 	    /* ifaceName
 	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
 	     */
-	    RDFLiteral* ifaceName = litExp->getLiteral();
-	    last.functionCall = NULL;
+	    const RDFLiteral* ifaceName = litExp->getLiteral();
+	    last.expression = NULL;
 
 	    /* create a substitution regexp:
 	       from: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor([0-9]+)/Offer([0-9]+)
@@ -458,7 +592,8 @@ namespace w3c_sw {
 		}
 	    }
 
-	    URImap newMap;
+	    POSmap newMap;
+	    newMap.selector = toModify;
 
 	    {
 		string iriStr(localName->getString());
@@ -473,23 +608,22 @@ namespace w3c_sw {
 
 			subPattern << '\\' << patternVars[var].i;
 			std::string pattern = *it++;
-			if (pattern.size() != 0)
+			if (pattern.size() != 0) {
 			    if (patternVars[var].pattern.size() == 0)
 				patternVars[var].pattern = pattern;
 			    else if (patternVars[var].pattern != pattern)
 				FAIL3("local pattern for var %s: %s doesn't match iface pattern %s", 
 				      var.c_str(), pattern.c_str(), patternVars[var].pattern.c_str());
+			}
 		    }
 		}
 		newMap.localPattern = subPattern.str();
 	    }
 
 	    for (std::map<std::string, VarDetails>::const_iterator it = patternVars.begin();
-		 it != patternVars.end(); ++it) {
+		 it != patternVars.end(); ++it)
 		if (it->second.pattern.size() == 0)
 		    patternVars[it->first].pattern = ".*?";
-		cout << '\\' << it->second.i << ": " << it->first << "=" << it->second.pattern << endl;
-	    }
 
 	    {
 		std::stringstream iface;
@@ -502,6 +636,50 @@ namespace w3c_sw {
 		newMap.ifacePattern.assign(iface.str());
 	    }
 	    uriMaps.push_back(newMap);
+#else /* !REGEX_LIB == SWOb_BOOST */
+	    SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
+#endif /* !REGEX_LIB == SWOb_BOOST */
+	}
+
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new BooleanConjunction(v);
+		v->clear();
+		delete v;
+	    }
+	}
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new BooleanDisjunction(v);
+		v->clear();
+		delete v;
+	    }
+	}
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new ArithmeticSum(v);
+		v->clear();
+		delete v;
+	    }
+	}
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
+	    if (v == NULL)
+		last.expression = NULL;
+	    else {
+		last.expression = new ArithmeticProduct(v);
+		v->clear();
+		delete v;
+	    }
 	}
     };
 

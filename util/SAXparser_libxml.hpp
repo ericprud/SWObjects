@@ -1,4 +1,4 @@
-/* SAXparser_libxml.hpp: implementation of SAXparser for libxml.
+/* SAXparser_libxml.hpp: implementation of SWSAXparser for libxml.
  * interface per http://xmlsoft.org/html/libxml-tree.html
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
@@ -6,7 +6,8 @@
 
 #pragma once
 #include <map>
-#include "SAXparser.hpp"
+#include <libxml/parser.h>
+#include "util/SAXparser.hpp"
 
 namespace w3c_sw {
 
@@ -63,6 +64,13 @@ namespace w3c_sw {
 	virtual ~SAXparser_libxml () {
 	    ::xmlCleanupParser();
 	    ::xmlMemoryDump();
+	}
+
+	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
+	    this->saxHandler = saxHandler;
+	    std::string mem(start, finish);
+	    if (::xmlSAXUserParseMemory(&libXMLhandler, this, mem.c_str(), mem.size()) != 0)
+		throw( "Failed to parse document.\n" );
 	}
 
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
@@ -123,6 +131,13 @@ namespace w3c_sw {
 	    va_end(args);
 	}
     };
+
+#ifdef NEEDDEF_makeSAXparser
+    inline SWSAXparser* SWSAXparser::makeSAXparser () {
+	return new SAXparser_libxml();
+    }
+  #undef NEEDDEF_makeSAXparser
+#endif /* NEEDDEF_makeSAXparser */
 
 }
 

@@ -43,22 +43,22 @@ namespace w3c_sw {
 	public:
 	    WhereConstraint () {  }
 	    virtual ~WhereConstraint () {  }
-	    virtual std::string toString(std::string pad = "", e_PREC prec = PREC_High) = 0;
+	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) = 0;
 	};
 	class JunctionConstraint : public WhereConstraint {
 	    std::vector<WhereConstraint*> constraints;
 	public:
 	    JunctionConstraint () : WhereConstraint(), constraints() {  }
 	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) {
 		std::stringstream s;
-		if (getPrecedence() < prec) s << "(";
+		if (getPrecedence() < parentPrec) s << "(";
 		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    if (it != constraints.begin()) s << getJunctionString();
 		    s << (*it)->toString(pad, getPrecedence());
 		}
-		if (getPrecedence() < prec) s << ")";
+		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
 	    }
 	    virtual std::string getJunctionString() = 0;
@@ -72,20 +72,25 @@ namespace w3c_sw {
 	    virtual std::string getJunctionString () { return " OR "; }
 	    virtual e_PREC getPrecedence () { return PREC_Or; }
 	};
-	class BooleanConstraint : public WhereConstraint {
-	    WhereConstraint *left, *right;
+	class ArithOperation : public WhereConstraint {
+	    std::vector<WhereConstraint*> constraints;
 	    std::string sqlOperator;
+	    e_PREC prec;
+
 	public:
-	    BooleanConstraint (std::string sqlOperator) : WhereConstraint(), left(), right(), sqlOperator(sqlOperator) {  }
-	    void setLeft (WhereConstraint* constraint) { left = constraint; }
-	    void setRight (WhereConstraint* constraint) { right = constraint; }
-	    virtual std::string toString (std::string pad, e_PREC prec = PREC_High) {
+	    ArithOperation (std::string sqlOperator, e_PREC prec) : 
+		WhereConstraint(), sqlOperator(sqlOperator), prec(prec) {  }
+	    void push_back (WhereConstraint* constraint) { constraints.push_back(constraint); }
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) {
 		std::stringstream s;
-		if (PREC_EQ < prec) s << "(";
-		s << left->toString(pad, PREC_EQ);
-		s << " " <<  sqlOperator << " ";
-		s << right->toString(pad, PREC_EQ);
-		if (PREC_EQ < prec) s << ")";
+		if (prec < parentPrec) s << "(";
+		for (std::vector<WhereConstraint*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); ++it) {
+		    if (it != constraints.begin())
+			s << " " <<  sqlOperator << " ";
+		    s << (*it)->toString(pad, prec);
+		}
+		if (prec < parentPrec) s << ")";
 		return s.str();
 	    }
 	};
@@ -152,9 +157,9 @@ namespace w3c_sw {
 	    WhereConstraint* negated;
 	public:
 	    NegationConstraint (WhereConstraint* negated) : WhereConstraint(), negated(negated) {  }
-	    virtual std::string toString (std::string pad, e_PREC prec) {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec) {
 		std::stringstream s;
-		s << "!(" << negated->toString(pad, prec) << ")";
+		s << "!(" << negated->toString(pad, parentPrec) << ")";
 		return s.str();
 	    }
 	};
@@ -363,7 +368,7 @@ namespace w3c_sw {
 	protected:
 	    SQLQuery* parent;
 
-	    std::map<POS*, map<std::string, Join*> > aliasMap;
+	    std::map<const POS*, map<std::string, Join*> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
 	public: Join* curJoin; protected:
@@ -450,8 +455,8 @@ namespace w3c_sw {
 	    void setDistinct (bool state = true) { distinct = state; }
 	    void setLimit (int limit) { this->limit = limit; }
 	    void setOffset (int offset) { this->offset = offset; }
-	    std::string attachTuple (POS* subject, std::string toRelation) {
-		std::map<POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
+	    std::string attachTuple (const POS* subject, std::string toRelation) {
+		std::map<const POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
 		    map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end()) {
@@ -494,7 +499,7 @@ namespace w3c_sw {
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
-	    SQLUnion* makeUnion (std::vector<POS*> corefs) {
+	    SQLUnion* makeUnion (std::vector<const POS*> corefs) {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnion* ret = new SQLUnion(this, corefs, s.str());
@@ -502,7 +507,7 @@ namespace w3c_sw {
 		joins.push_back(curJoin);
 		return ret;
 	    }
-	    SQLOptional* makeOptional (std::vector<POS*> corefs) {
+	    SQLOptional* makeOptional (std::vector<const POS*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptional* ret = new SQLOptional(this, corefs, s.str());
@@ -576,10 +581,10 @@ namespace w3c_sw {
 	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
 	    std::vector<SQLDisjoint*> disjoints;
-	    std::vector<POS*> corefs;
+	    std::vector<const POS*> corefs;
 	    std::string name;
 	public:
-	    SQLUnion (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+	    SQLUnion (SQLQuery* parent, std::vector<const POS*> corefs, std::string name) : 
 		SQLQuery(parent), corefs(corefs), name(name)
 	    {  }
 	    virtual ~SQLUnion () {
@@ -597,7 +602,7 @@ namespace w3c_sw {
 		for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 		     dis != disjoints.end(); ++dis)
 		    (*dis)->selectConstant((int)nextDisjointCardinal++, "_DISJOINT_"); // cast to int to select selectConstant(int...)
-		for (std::vector<POS*>::iterator coref = corefs.begin();
+		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
@@ -620,15 +625,15 @@ namespace w3c_sw {
 	    }
 	};
 	class SQLOptional : public SQLQuery {
-	    std::vector<POS*> corefs;
+	    std::vector<const POS*> corefs;
 	    std::string name;
 	public:
-	    SQLOptional (SQLQuery* parent, std::vector<POS*> corefs, std::string name) : 
+	    SQLOptional (SQLQuery* parent, std::vector<const POS*> corefs, std::string name) : 
 		SQLQuery(parent), corefs(corefs), name(name)
 	    {  }
 	    virtual ~SQLOptional () {  }
 	    void attach () {
-		for (std::vector<POS*>::iterator coref = corefs.begin();
+		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    // SELECT <field for coref> AS <coref name>
 		    selectVariable((*coref)->getTerminal());
@@ -691,9 +696,9 @@ namespace w3c_sw {
 	/*	AliasContext* curAliases; */
 	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
 	SQLQuery* curQuery;
-	POS* curSubject;
+	const POS* curSubject;
 	AliasAttr curAliasAttr; // established by predicate
-	TableOperation* curTableOperation;
+	const TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
 	VarSet* selectVars;
@@ -705,17 +710,19 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
+	//static std::ostream** ErrorStream;
+
 	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], string defaultPKAttr, std::ostream** debugStream = NULL) : 
-	    stem(stem), mode(MODE_outside), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
+	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
 	{  }
 	~SQLizer () { delete curQuery; }
 
 	std::string getSQLstring () { return curQuery->toString(); }
 
-	virtual void base (Base*, std::string productionName) { throw(std::runtime_error(productionName)); };
+	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void uri (URI*, std::string terminal) {
+	virtual void uri (const URI* const, std::string terminal) {
 	    MARK;
 	    std::string relation, attribute;
 	    int value;
@@ -752,7 +759,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void variable (Variable*, std::string terminal) {
+	virtual void variable (const Variable* const, std::string terminal) {
 
 	    // enforce coreferences
 	    switch (mode) {
@@ -785,7 +792,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void bnode (BNode*, std::string terminal) {
+	virtual void bnode (const BNode* const, std::string terminal) {
 
 	    // enforce coreferences
 	    switch (mode) {
@@ -813,7 +820,7 @@ namespace w3c_sw {
 	    }
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
-	virtual void rdfLiteral (RDFLiteral*, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
+	virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
 	    MARK;
 	    std::string value = terminal;
 	    if (datatype != NULL) {
@@ -856,7 +863,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, int p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
 	    MARK;
 	    switch (mode) {
 
@@ -888,7 +895,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, float p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
 	    MARK;
 	    switch (mode) {
 
@@ -920,7 +927,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (NumericRDFLiteral*, double p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
 	    MARK;
 	    switch (mode) {
 
@@ -952,7 +959,7 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (BooleanRDFLiteral*, bool p_value) {
+	virtual void rdfLiteral (const BooleanRDFLiteral* const, bool p_value) {
 	    MARK;
 	    switch (mode) {
 
@@ -984,8 +991,8 @@ namespace w3c_sw {
 		FAIL("wierd state");
 	    }
 	}
-	virtual void nullpos (NULLpos*) {  }
-	virtual void triplePattern (TriplePattern*, POS* p_s, POS* p_p, POS* p_o) {
+	virtual void nullpos (const NULLpos* const) {  }
+	virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
 	    START("checking predicate");
@@ -1004,7 +1011,8 @@ namespace w3c_sw {
 	    mode = MODE_outside;
 	    //curQuery->curJoin = NULL;
 	}
-	virtual void filter (Filter*, Expression* p_Constraint) {
+	virtual void filter (const Filter* const, const Expression* p_Constraint) {
+	    mode = MODE_constraint;
 	    try {
 		p_Constraint->express(this);
 		curQuery->addConstraint(curConstraint);
@@ -1012,9 +1020,9 @@ namespace w3c_sw {
 		std::cerr << "filter {" << p_Constraint << "} is not handled by stem " << stem << " because " << e.what() << endl;
 	    }
 	}
-	void _BasicGraphPattern (ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
-	    for (std::vector<TriplePattern*>::iterator tripleIt = p_TriplePatterns->begin();
+	    for (std::vector<const TriplePattern*>::const_iterator tripleIt = p_TriplePatterns->begin();
 		 tripleIt != p_TriplePatterns->end(); ++tripleIt)
 		try {
 		    (*tripleIt)->express(this);
@@ -1022,22 +1030,22 @@ namespace w3c_sw {
 		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << endl;
 		}
 	    NOW("bgp filters");
-	    for (std::vector<Filter*>::iterator filterIt = p_Filters->begin();
+	    for (std::vector<const Filter*>::const_iterator filterIt = p_Filters->begin();
 		 filterIt != p_Filters->end(); ++filterIt)
 		(*filterIt)->express(this);
 	}
-	virtual void namedGraphPattern (NamedGraphPattern*, POS*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS*, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}
-	virtual void defaultGraphPattern (DefaultGraphPattern*, bool /*p_allOpts*/, ProductionVector<TriplePattern*>* p_TriplePatterns, ProductionVector<Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
 	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
 	}
-	virtual void tableDisjunction (TableDisjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	    SQLQuery* parent = curQuery;
 	    SQLUnion* disjunction = parent->makeUnion(consequentsP->entriesFor(curTableOperation));
-	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
 		MARK;
 		curQuery = disjunction->makeDisjoint();
@@ -1048,9 +1056,9 @@ namespace w3c_sw {
 	    p_Filters->express(this);
 	    curQuery = parent;
 	}
-	virtual void tableConjunction (TableConjunction*, ProductionVector<TableOperation*>* p_TableOperations, ProductionVector<Filter*>* p_Filters) {
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
-	    for (std::vector<TableOperation*>::iterator it = p_TableOperations->begin();
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
 		MARK;
 		curTableOperation = *it;
@@ -1058,7 +1066,7 @@ namespace w3c_sw {
 	    }
 	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (OptionalGraphPattern*, TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
 	    MARK;
 	    SQLQuery* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -1069,27 +1077,27 @@ namespace w3c_sw {
 	    optional->attach();
 	    curQuery = parent;
 	}
-	virtual void graphGraphPattern (GraphGraphPattern*, POS* p_POS, TableOperation* p_GroupGraphPattern) {
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    FAIL("don't do federation with GraphGraphPatterns yet");
 	    p_POS->express(this);
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
-	virtual void posList (POSList*, ProductionVector<POS*>* p_POSs) {
-	    for (std::vector<POS*>::iterator it = p_POSs->begin();
+	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		 it != p_POSs->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void starVarSet (StarVarSet*) {
+	virtual void starVarSet (const StarVarSet* const) {
 	    FAIL("need to select all pertinent vars");
 	}
-	virtual void defaultGraphClause (DefaultGraphClause*, POS* p_IRIref) {
+	virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	    p_IRIref->express(this);
 	}
-	virtual void namedGraphClause (NamedGraphClause*, POS* p_IRIref) {
+	virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
 	    p_IRIref->express(this);
 	}
-	virtual void solutionModifier (SolutionModifier*, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+	virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	    if (p_limit != LIMIT_None) curQuery->setLimit(p_limit);
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions)
@@ -1101,17 +1109,17 @@ namespace w3c_sw {
 		    curQuery->addOrderClause(curConstraint);
 		}
 	}
-	virtual void binding (Binding*, ProductionVector<POS*>* values) {//!!!
+	virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
 	    // !!!
-	    for (std::vector<POS*>::iterator it = values->begin();
+	    for (std::vector<const POS*>::const_iterator it = values->begin();
 		 it != values->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void bindingClause (BindingClause*, POSList* p_Vars, ProductionVector<Binding*>* p_Bindings) {
+	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	    p_Vars->express(this);
-	    p_Bindings->ProductionVector<Binding*>::express(this);
+	    p_Bindings->ProductionVector<const Binding*>::express(this);
 	}
-	virtual void whereClause (WhereClause*, TableOperation* p_GroupGraphPattern, BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	    START("p_GroupGraphPattern");
 	    Consequents consequents(p_GroupGraphPattern, selectVars, debugStream);
 	    consequentsP = &consequents;
@@ -1119,7 +1127,7 @@ namespace w3c_sw {
 	    curTableOperation->express(this);
 	    if (p_BindingClause) p_BindingClause->express(this);
 	}
-	virtual void select (Select*, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    START("cracking select clause");
 	    curQuery = new SQLQuery(NULL);
 	    selectVars = p_VarSet;
@@ -1132,81 +1140,80 @@ namespace w3c_sw {
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
 	}
-	virtual void construct (Construct*, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    FAIL("CONSTRUCT");
 	    p_ConstructTemplate->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
-	virtual void describe (Describe*, VarSet* p_VarSet, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    FAIL("DESCRIBE");
 	    p_VarSet->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
-	virtual void ask (Ask*, ProductionVector<DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	    FAIL("ASK");
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void replace (Replace*, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+	virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
 	    FAIL("REPLACE");
 	    p_WhereClause->express(this);
 	    p_GraphTemplate->express(this);
 	}
-	virtual void insert (Insert*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    FAIL("INSERT {");
 	    p_GraphTemplate->express(this);
 	    if (p_WhereClause) p_WhereClause->express(this);
 	}
-	virtual void del (Delete*, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    FAIL("DELET");
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void load (Load*, ProductionVector<URI*>* p_IRIrefs, URI* p_into) {
+	virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
 	    FAIL("LOAD");
 	    p_IRIrefs->express(this);
 	    p_into->express(this);
 	}
-	virtual void clear (Clear*, URI* p__QGraphIRI_E_Opt) {
+	virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
 	    FAIL("CLEAR");
 	    p__QGraphIRI_E_Opt->express(this);
 	}
-	virtual void create (Create*, e_Silence p_Silence, URI* p_GraphIRI) {
+	virtual void create (const Create* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
 	    FAIL("CREATE");
-	    if (p_Silence != SILENT_Yes) ;// !!!
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
-	virtual void drop (Drop*, e_Silence p_Silence, URI* p_GraphIRI) {
-	    if (p_Silence != SILENT_Yes) ;// !!!
+	virtual void drop (const Drop* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
-	virtual void varExpression (VarExpression*, Bindable* p_Bindable) {
+	virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
 	    MARK;
-	    mode = MODE_constraint;
 	    p_Bindable->express(this);
 	}
-	virtual void literalExpression (LiteralExpression*, RDFLiteral* p_RDFLiteral) {
+	virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
 	    MARK;
 	    p_RDFLiteral->express(this);
 	}
-	virtual void booleanExpression (BooleanExpression*, BooleanRDFLiteral* p_BooleanRDFLiteral) {
+	virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
 	    MARK;
 	    p_BooleanRDFLiteral->express(this);
 	}
-	virtual void uriExpression (URIExpression*, URI* p_URI) {
+	virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
 	    MARK;
 	    p_URI->express(this);
 	}
-	virtual void argList (ArgList*, ProductionVector<Expression*>* p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C) {
+	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
 	    MARK;
-	    p__O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C->express(this);
+	    expressions->express(this);
 	}
 	// !!!
-	virtual void functionCall (FunctionCall*, URI* iri, ArgList* args) {
+	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    MARK;
 	    args->express(this);
 	    if (iri->getTerminal() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
@@ -1214,94 +1221,98 @@ namespace w3c_sw {
 	    else
 		iri->express(this);
 	}
-	virtual void functionCallExpression (FunctionCallExpression*, FunctionCall* p_FunctionCall) {
+	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    MARK;
 	    p_FunctionCall->express(this);
 	}
 	/* Expressions */
-	virtual void booleanNegation (BooleanNegation*, Expression* p_Expression) {
+	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	    curConstraint = new NegationConstraint(curConstraint);
 	}
-	virtual void arithmeticNegation (ArithmeticNegation*, Expression* p_Expression) {
+	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void arithmeticInverse (ArithmeticInverse*, Expression* p_Expression) {
+	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void booleanConjunction (BooleanConjunction*, ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		conj->addConstraint(curConstraint);
 	    }
 	    curConstraint = conj;
 	}
-	virtual void booleanDisjunction (BooleanDisjunction*, ProductionVector<Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    DisjunctionConstraint* disj = new DisjunctionConstraint();
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		disj->addConstraint(curConstraint);
 	    }
 	    curConstraint = disj;
 	}
-	virtual void arithmeticSum (ArithmeticSum*, ProductionVector<Expression*>* p_Expressions) {
-	    MARK;
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
-		 it != p_Expressions->end(); ++it)
+	void _arithOp (std::string sqlOperator, const ProductionVector<const Expression*>* p_Expressions, e_PREC prec) {
+	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
-	}
-	virtual void arithmeticProduct (ArithmeticProduct*, ProductionVector<Expression*>* p_Expressions) {
-	    MARK;
-	    for (std::vector<Expression*>::iterator it = p_Expressions->begin();
-
-		 it != p_Expressions->end(); ++it)
-		(*it)->express(this);
-	}
-	void _boolConstraint (Expression* p_left, std::string sqlOperator, Expression* p_right) {
-	    BooleanConstraint* c = new BooleanConstraint(sqlOperator);
-	    p_left->express(this);
-	    c->setLeft(curConstraint);
-	    p_right->express(this);
-	    c->setRight(curConstraint);
+		c->push_back(curConstraint);
+	    }
 	    curConstraint = c;
 	}
-	virtual void booleanEQ (BooleanEQ*, Expression* p_left, Expression* p_right) {
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    _boolConstraint(p_left, "=", p_right);
+	    _arithOp("+", p_Expressions, PREC_Plus);
 	}
-	virtual void booleanNE (BooleanNE*, Expression* p_left, Expression* p_right) {
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
-	    _boolConstraint(p_left, "!=", p_right);
+	    _arithOp("*", p_Expressions, PREC_Times);
 	}
-	virtual void booleanLT (BooleanLT*, Expression* p_left, Expression* p_right) {
+	void _boolConstraint (const Expression* p_left, std::string sqlOperator, const Expression* p_right, e_PREC prec) {
+	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
+	    p_left->express(this);
+	    c->push_back(curConstraint);
+	    p_right->express(this);
+	    c->push_back(curConstraint);
+	    curConstraint = c;
+	}
+	virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "<", p_right);
+	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
 	}
-	virtual void booleanGT (BooleanGT*, Expression* p_left, Expression* p_right) {
+	virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, ">", p_right);
+	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
 	}
-	virtual void booleanLE (BooleanLE*, Expression* p_left, Expression* p_right) {
+	virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, "<=", p_right);
+	    _boolConstraint(p_left, "<", p_right, PREC_LT);
 	}
-	virtual void booleanGE (BooleanGE*, Expression* p_left, Expression* p_right) {
+	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {
 	    MARK;
-	    _boolConstraint(p_left, ">=", p_right);
+	    _boolConstraint(p_left, ">", p_right, PREC_GT);
 	}
-	virtual void comparatorExpression (ComparatorExpression*, BooleanComparator* p_BooleanComparator) {
+	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {
+	    MARK;
+	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
+	}
+	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
+	    MARK;
+	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
+	}
+	virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
 	    MARK;
 	    p_BooleanComparator->express(this);
 	}
-	virtual void numberExpression (NumberExpression*, NumericRDFLiteral* p_NumericRDFLiteral) {
+	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    MARK;
 	    p_NumericRDFLiteral->express(this);
 	}

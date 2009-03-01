@@ -2,32 +2,33 @@
  * $Id: ResultSet.cpp,v 1.7 2008-12-02 03:36:12 eric Exp $
  */
 
+#include <set>
 #include "ResultSet.hpp"
 #include "XMLQueryExpressor.hpp"
 #include <iostream>
 
 namespace w3c_sw {
-    void Result::set (const POS* variable, const POS* value, bool weaklyBound) {
+    void Result::set (const POS* variable, const POS* value, bool weaklyBound, bool replace) {
 	if (variable->toString() == "?") {
 	    std::stringstream s;
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
-	BindingSet::const_iterator vi = bindings.find((POS*)variable);
-	if (vi == bindings.end()) {
-	    BindingInfo b = {weaklyBound, (POS*)value};
-	    bindings[(POS*)variable] = b;
+	BindingSet::const_iterator vi = bindings.find(variable);
+	if (replace || vi == bindings.end()) {
+	    BindingInfo b = {weaklyBound, value};
+	    bindings[variable] = b;
 	} else {
 	    std::stringstream s;
 	    s << "variable " << variable->toString() << " reassigned:"
-		" old value:" << bindings[(POS*)variable].pos->toString() << 
+		" old value:" << bindings[variable].pos->toString() << 
 		" new value:" << value->toString();
 	    throw(std::runtime_error(s.str()));
 	}
     }
 
-    POS* Result::get (const POS* variable) const {
-	BindingSet::const_iterator vi = bindings.find((POS*)variable);
+    const POS* Result::get (const POS* variable) const {
+	BindingSet::const_iterator vi = bindings.find(variable);
 	if (vi == bindings.end())
 	    return NULL;
 	else
@@ -105,14 +106,40 @@ namespace w3c_sw {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		POS* l = pair.expression->eval((Result*)lhs, posFactory, false);
-		POS* r = pair.expression->eval((Result*)rhs, posFactory, false);
+		const POS* l = pair.expression->eval(lhs, posFactory, false);
+		const POS* r = pair.expression->eval(rhs, posFactory, false);
 		if (l != r)
 		    return pair.ascOrDesc == ORDER_Desc ? posFactory->lessThan(r, l) : posFactory->lessThan(l, r);
 	    }
 	    return false;
 	}
     };
+
+    void ResultSet::project (ProductionVector<const POS*> const * varsV) {
+	std::set<const POS*> vars(varsV->begin(), varsV->end());
+
+	/* List of vars to delete.
+	 * This is cheaper than walking all the bindings in a row, but assumes
+	 * that the row has no bindings which fail to appear in knownVars.
+	 */
+	std::set<const POS*> toDel;
+	for (std::set<const POS*>::const_iterator knownVar = knownVars.begin();
+	     knownVar != knownVars.end(); ++knownVar)
+	    if (vars.find(*knownVar) == vars.end())
+		toDel.insert(*knownVar);
+
+	/* Delete those vars from each row, and from knowVars. */
+	for (ResultSetIterator row = results.begin();
+	     row != results.end(); ++row)
+	    for (std::set<const POS*>::const_iterator var = toDel.begin();
+		 var != toDel.end(); ++var)
+		(*row)->erase((*row)->find(*var));
+
+	/* Delete those vars from knowVars. */
+	for (std::set<const POS*>::const_iterator var = toDel.begin();
+	     var != toDel.end(); ++var)
+	    knownVars.erase(*var);
+    }
 
     void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
 	if (orderConditions != NULL) {
@@ -142,17 +169,7 @@ namespace w3c_sw {
 
     std::string ResultSet::toString () const {
 	const char* NULL_REP = "--";
-#if ASCII_BOX_CHARS
-	const char ORDERED = 'O';
-	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
-	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
-#if (INTRA_ROW_SEPARATORS)
-	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
-#endif
-	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
-	const char UNLISTED_VAR = '!';
-#define STRING std::string
-#else /* !ASCII_BOX_CHARS */
+#if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
@@ -168,7 +185,17 @@ namespace w3c_sw {
 		    append(str);
 	    }
 	};
-#endif /* !ASCII_BOX_CHARS */
+#else /* !CONSOLE_ENCODING == SWOb_UTF8 */
+	const char ORDERED = 'O';
+	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
+	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
+#if (INTRA_ROW_SEPARATORS)
+	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
+#endif
+	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
+	const char UNLISTED_VAR = '!';
+#define STRING std::string
+#endif /* !CONSOLE_ENCODING == SWOb_UTF8 */
 
 	/* Get column widths. */
 	std::vector< const POS* > vars;
@@ -188,7 +215,7 @@ namespace w3c_sw {
 	    lastInKnownVars = count;
 	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++)
 		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
-		    POS* var = b->first;
+		    const POS* var = b->first;
 		    if (pos2col.find(var) == pos2col.end()) {
 			/* Error: a variable not listed in knownVars. */
 			pos2col[var] = count++;

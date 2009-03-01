@@ -7,13 +7,13 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser.hpp"
 #include <string.h>
 #include "SPARQLSerializer.hpp"
+#include "SWObjectDuplicator.hpp"
 
 namespace w3c_sw {
 
-void Base::express (Expressor* p_expressor) {
+void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
 
@@ -200,179 +200,179 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-void URI::express (Expressor* p_expressor) {
+void URI::express (Expressor* p_expressor) const {
     p_expressor->uri(this, terminal);
 }
-void Variable::express (Expressor* p_expressor) {
+void Variable::express (Expressor* p_expressor) const {
     p_expressor->variable(this, terminal);
 }
-void BNode::express (Expressor* p_expressor) {
+void BNode::express (Expressor* p_expressor) const {
     p_expressor->bnode(this, terminal);
 }
-void RDFLiteral::express (Expressor* p_expressor) {
+void RDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_String, datatype, m_LANGTAG);
 }
-void IntegerRDFLiteral::express (Expressor* p_expressor) {
+void IntegerRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void DecimalRDFLiteral::express (Expressor* p_expressor) {
+void DecimalRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void DoubleRDFLiteral::express (Expressor* p_expressor) {
+void DoubleRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void BooleanRDFLiteral::express (Expressor* p_expressor) {
+void BooleanRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void NULLpos::express (Expressor* p_expressor) {
+void NULLpos::express (Expressor* p_expressor) const {
     p_expressor->nullpos(this);
 }
-void TriplePattern::express (Expressor* p_expressor) {
-    p_expressor->triplePattern(this, m_s,m_p,m_o);
+void TriplePattern::express (Expressor* p_expressor) const {
+    p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
-void Filter::express (Expressor* p_expressor) {
+void Filter::express (Expressor* p_expressor) const {
     p_expressor->filter(this, m_Constraint);
 }
-void NamedGraphPattern::express (Expressor* p_expressor) {
+void NamedGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns, &m_Filters);
 }
-void DefaultGraphPattern::express (Expressor* p_expressor) {
+void DefaultGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->defaultGraphPattern(this, allOpts, &m_TriplePatterns, &m_Filters);
 }
-void TableDisjunction::express (Expressor* p_expressor) {
+void TableDisjunction::express (Expressor* p_expressor) const {
     p_expressor->tableDisjunction(this, &m_TableOperations, &m_Filters);
 }
-void TableConjunction::express (Expressor* p_expressor) {
+void TableConjunction::express (Expressor* p_expressor) const {
     p_expressor->tableConjunction(this, &m_TableOperations, &m_Filters);
 }
-void OptionalGraphPattern::express (Expressor* p_expressor) {
+void OptionalGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->optionalGraphPattern(this, m_TableOperation);
 }
-void GraphGraphPattern::express (Expressor* p_expressor) {
+void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
-void POSList::express (Expressor* p_expressor) {
+void POSList::express (Expressor* p_expressor) const {
     p_expressor->posList(this, &m_POSs);
 }
-void StarVarSet::express (Expressor* p_expressor) {
+void StarVarSet::express (Expressor* p_expressor) const {
     p_expressor->starVarSet(this);
 }
-void DefaultGraphClause::express (Expressor* p_expressor) {
+void DefaultGraphClause::express (Expressor* p_expressor) const {
     p_expressor->defaultGraphClause(this, m_IRIref);
 }
-void NamedGraphClause::express (Expressor* p_expressor) {
+void NamedGraphClause::express (Expressor* p_expressor) const {
     p_expressor->namedGraphClause(this, m_IRIref);
 }
-void SolutionModifier::express (Expressor* p_expressor) {
+void SolutionModifier::express (Expressor* p_expressor) const {
     p_expressor->solutionModifier(this, m_OrderConditions, m_limit,m_offset);
 }
-void Binding::express (Expressor* p_expressor) {
+void Binding::express (Expressor* p_expressor) const {
     p_expressor->binding(this, this);
 }
-void BindingClause::express (Expressor* p_expressor) {
+void BindingClause::express (Expressor* p_expressor) const {
     p_expressor->bindingClause(this, m_Vars, this);
 }
-void WhereClause::express (Expressor* p_expressor) {
+void WhereClause::express (Expressor* p_expressor) const {
     p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
 }
-void Select::express (Expressor* p_expressor) {
+void Select::express (Expressor* p_expressor) const {
     p_expressor->select(this, m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Construct::express (Expressor* p_expressor) {
+void Construct::express (Expressor* p_expressor) const {
     p_expressor->construct(this, m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Describe::express (Expressor* p_expressor) {
+void Describe::express (Expressor* p_expressor) const {
     p_expressor->describe(this, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
-void Ask::express (Expressor* p_expressor) {
+void Ask::express (Expressor* p_expressor) const {
     p_expressor->ask(this, m_DatasetClauses,m_WhereClause);
 }
-void Replace::express (Expressor* p_expressor) {
+void Replace::express (Expressor* p_expressor) const {
     p_expressor->replace(this, m_WhereClause,m_GraphTemplate);
 }
-void Insert::express (Expressor* p_expressor) {
+void Insert::express (Expressor* p_expressor) const {
     p_expressor->insert(this, m_GraphTemplate,m_WhereClause);
 }
-void Delete::express (Expressor* p_expressor) {
+void Delete::express (Expressor* p_expressor) const {
     p_expressor->del(this, m_GraphTemplate,m_WhereClause);
 }
-void Load::express (Expressor* p_expressor) {
+void Load::express (Expressor* p_expressor) const {
     p_expressor->load(this, m_IRIrefs,m_into);
 }
-void Clear::express (Expressor* p_expressor) {
+void Clear::express (Expressor* p_expressor) const {
     p_expressor->clear(this, m__QGraphIRI_E_Opt);
 }
-void Create::express (Expressor* p_expressor) {
+void Create::express (Expressor* p_expressor) const {
     p_expressor->create(this, m_Silence,m_GraphIRI);
 }
-void Drop::express (Expressor* p_expressor) {
+void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
 }
-void VarExpression::express (Expressor* p_expressor) {
+void VarExpression::express (Expressor* p_expressor) const {
     p_expressor->varExpression(this, m_Bindable);
 }
-void LiteralExpression::express (Expressor* p_expressor) {
+void LiteralExpression::express (Expressor* p_expressor) const {
     p_expressor->literalExpression(this, m_RDFLiteral);
 }
-void BooleanExpression::express (Expressor* p_expressor) {
+void BooleanExpression::express (Expressor* p_expressor) const {
     p_expressor->booleanExpression(this, m_BooleanRDFLiteral);
 }
-void URIExpression::express (Expressor* p_expressor) {
+void URIExpression::express (Expressor* p_expressor) const {
     p_expressor->uriExpression(this, m_URI);
 }
-void ArgList::express (Expressor* p_expressor) {
+void ArgList::express (Expressor* p_expressor) const {
     p_expressor->argList(this, expressions);
 }
-void FunctionCall::express (Expressor* p_expressor) {
+void FunctionCall::express (Expressor* p_expressor) const {
     p_expressor->functionCall(this, m_IRIref,m_ArgList);
 }
-void FunctionCallExpression::express (Expressor* p_expressor) {
+void FunctionCallExpression::express (Expressor* p_expressor) const {
     p_expressor->functionCallExpression(this, m_FunctionCall);
 }
 /* Expressions */
-void BooleanNegation::express (Expressor* p_expressor) {
+void BooleanNegation::express (Expressor* p_expressor) const {
     p_expressor->booleanNegation(this, m_Expression);
 }
-void ArithmeticNegation::express (Expressor* p_expressor) {
+void ArithmeticNegation::express (Expressor* p_expressor) const {
     p_expressor->arithmeticNegation(this, m_Expression);
 }
-void ArithmeticInverse::express (Expressor* p_expressor) {
+void ArithmeticInverse::express (Expressor* p_expressor) const {
     p_expressor->arithmeticInverse(this, m_Expression);
 }
-void BooleanConjunction::express (Expressor* p_expressor) {
+void BooleanConjunction::express (Expressor* p_expressor) const {
     p_expressor->booleanConjunction(this, &m_Expressions);
 }
-void BooleanDisjunction::express (Expressor* p_expressor) {
+void BooleanDisjunction::express (Expressor* p_expressor) const {
     p_expressor->booleanDisjunction(this, &m_Expressions);
 }
-void ArithmeticSum::express (Expressor* p_expressor) {
+void ArithmeticSum::express (Expressor* p_expressor) const {
     p_expressor->arithmeticSum(this, &m_Expressions);
 }
-void ArithmeticProduct::express (Expressor* p_expressor) {
+void ArithmeticProduct::express (Expressor* p_expressor) const {
     p_expressor->arithmeticProduct(this, &m_Expressions);
 }
-void BooleanEQ::express (Expressor* p_expressor) {
+void BooleanEQ::express (Expressor* p_expressor) const {
     p_expressor->booleanEQ(this, left,right);
 }
-void BooleanNE::express (Expressor* p_expressor) {
+void BooleanNE::express (Expressor* p_expressor) const {
     p_expressor->booleanNE(this, left,right);
 }
-void BooleanLT::express (Expressor* p_expressor) {
+void BooleanLT::express (Expressor* p_expressor) const {
     p_expressor->booleanLT(this, left,right);
 }
-void BooleanGT::express (Expressor* p_expressor) {
+void BooleanGT::express (Expressor* p_expressor) const {
     p_expressor->booleanGT(this, left,right);
 }
-void BooleanLE::express (Expressor* p_expressor) {
+void BooleanLE::express (Expressor* p_expressor) const {
     p_expressor->booleanLE(this, left,right);
 }
-void BooleanGE::express (Expressor* p_expressor) {
+void BooleanGE::express (Expressor* p_expressor) const {
     p_expressor->booleanGE(this, left,right);
 }
-void ComparatorExpression::express (Expressor* p_expressor) {
+void ComparatorExpression::express (Expressor* p_expressor) const {
     p_expressor->comparatorExpression(this, m_BooleanComparator);
 }
-void NumberExpression::express (Expressor* p_expressor) {
+void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
@@ -553,7 +553,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    return (NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
-    TriplePattern* POSFactory::getTriple (POS* s, POS* p, POS* o, bool weaklyBound) {
+    TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
 	std::stringstream key;
 	key << s << p << o << weaklyBound;
 	TriplePatternMap::const_iterator vi = triples.find(key.str());
@@ -567,6 +567,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
+#if REGEX_LIB == SWOb_BOOST
     void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
@@ -586,42 +587,26 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    flags |= boost::match_not_bob; 
 	}
     }
+#endif /* REGEX_LIB == SWOb_BOOST */
 
     /* EBV (Better place for this?) */
-    POS* POSFactory::ebv (POS* pos) {
+    const POS* POSFactory::ebv (const POS* pos) {
 	throw std::string("ebv ") + pos->toString() + " not implemented";
     }
 
     /* </POSFactory> */
 
-    POS* BNode::evalPOS (Result* r, bool bNodesGenSymbols) {
+    const POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
 	return bNodesGenSymbols ? this : r->get(this);
     }
-    POS* Variable::evalPOS (Result* r, bool) {
-	POS* ret = r->get(this);
-
-	URI* u;
-	if ((u = dynamic_cast<URI*>(ret)) != NULL) {
-	    for (std::vector<URImap>::iterator it = uriMaps.begin();
-		 it != uriMaps.end(); ++it) {
-		std::ostringstream t(std::ios::out | std::ios::binary);
-		std::ostream_iterator<char, char> oi(t);
-		std::string tweak = u->getTerminal();
-		//std::cerr << "s{" << it->ifacePattern << "}\n {" << it->localPattern << "}\n (" << tweak << ")\n=>";
-		boost::regex_replace(oi, tweak.begin(), tweak.end(),
-				     it->ifacePattern, it->localPattern, 
-				 boost::match_default | boost::format_all);
-		//std::cerr << t.str() << std::endl;
-		ret = u = posFactory->getURI(t.str());
-	    }
-	}
-	return ret;
+    const POS* Variable::evalPOS (const Result* r, bool) const {
+	return r->get(this);
     }
 
-    void TableJunction::addTableOperation (TableOperation* tableOp) {
+    void TableJunction::addTableOperation (const TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
-	    TableJunction* j = (TableJunction*)tableOp; // @@@ shameful downcast.
-	    for (std::vector<TableOperation*>::iterator it = j->m_TableOperations.begin();
+	    TableJunction* j = (TableJunction*)tableOp; /* !!! LIES !!! */
+	    for (std::vector<const TableOperation*>::const_iterator it = j->m_TableOperations.begin();
 		 it != j->m_TableOperations.end(); ++it)
 		m_TableOperations.push_back(*it);
 	    j->m_TableOperations.clear();
@@ -630,20 +615,21 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    m_TableOperations.push_back(tableOp);
     }
 
-    ResultSet* Select::execute (RdfDB* db, ResultSet* rs) {
+    ResultSet* Select::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getPOSFactory());
-	for (std::vector<DatasetClause*>::iterator ds = m_DatasetClauses->begin();
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
+	m_VarSet->project(rs);
 	if (m_SolutionModifier != NULL)
 	    m_SolutionModifier->modifyResult(rs);
 	return rs;
     }
 
-    ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) {
+    ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getPOSFactory());
-	for (std::vector<DatasetClause*>::iterator ds = m_DatasetClauses->begin();
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
@@ -653,42 +639,40 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return rs;
     }
 
-    void DatasetClause::_loadData (BasicGraphPattern* target) {
-	TurtleSDriver turtleParser("http://example.org/", m_posFactory);
-	if (turtleParser.parse_file(m_IRIref->getTerminal())) {
-	    std::cerr << m_IRIref->getTerminal() << ":0: error: unable to parse document" << std::endl;
-	} else {
-	    BasicGraphPattern* graph = turtleParser.root;
-	    SPARQLSerializer s; graph->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl;
-	    for (std::vector<TriplePattern*>::iterator from = graph->begin();
-		 from != graph->end(); ) {
-		target->addTriplePattern(*from);
-		graph->erase(from);
-	    }
-	    delete graph;
-	}
+    void DefaultGraphClause::loadData (RdfDB* db) const {
+	db->loadData(DefaultGraph, m_posFactory);
     }
-    void DefaultGraphClause::loadData (RdfDB* db) {
-	DatasetClause::_loadData(db->assureGraph(DefaultGraph));
-    }
-    void NamedGraphClause::loadData (RdfDB* db) {
-	DatasetClause::_loadData(db->assureGraph(m_IRIref));
+    void NamedGraphClause::loadData (RdfDB* db) const {
+	db->loadData(m_IRIref, m_posFactory);
     }
 
-    void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) {
+    void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
 	if (m_BindingClause != NULL) m_BindingClause->bindVariables(db, rs);
 	m_GroupGraphPattern->bindVariables(db, rs);
+    }
+
+    void POSList::project (ResultSet* rs) const {
+	rs->project(&m_POSs);
+    }
+
+    void StarVarSet::project (ResultSet* rs) const {
+	const VariableList* curVars = rs->getKnownVars();
+	ProductionVector<const POS*> justVars;
+	for (VariableListConstIterator it = curVars->begin();
+	     it != curVars->end(); ++it)
+	    if (dynamic_cast<const Variable*>(*it))
+		justVars.push_back(*it);
+	rs->project(&justVars);
+	justVars.clear();
     }
 
     void SolutionModifier::modifyResult (ResultSet* rs) {
 	rs->order(m_OrderConditions, m_offset, m_limit);
     }
 
-    void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) {
-	std::vector<Binding*>::iterator binding;
-
+    void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (ResultSetIterator it = rs->begin() ; it != rs->end(); ) {
-	    for (binding = begin() ; binding != end(); binding++) {
+	    for (std::vector<const Binding*>::const_iterator binding = begin() ; binding != end(); ++binding) {
 		Result* r = new Result(rs);
 		rs->insert(it, r);
 		(*binding)->bindVariables(db, rs, r, m_Vars);
@@ -698,9 +682,9 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
-    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, POSList* p_Vars) {
-	std::vector<POS*>::iterator variable = p_Vars->begin();
-	std::vector<POS*>::iterator value = begin();
+    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, POSList* p_Vars) const {
+	std::vector<const POS*>::const_iterator variable = p_Vars->begin();
+	std::vector<const POS*>::const_iterator value = begin();
 	while (value != end()) {
 	    rs->set(r, *variable, *value, false);
 	    variable++;
@@ -708,15 +692,15 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
-    void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) {
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+    void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++)
 	    (*it)->bindVariables(db, rs);
     }
 
-    void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) {
+    void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet* orig = rs->clone();
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
 	    ResultSet* clone = orig->clone();
 	    (*it)->bindVariables(db, clone);
@@ -730,20 +714,89 @@ void NumberExpression::express (Expressor* p_expressor) {
 	delete orig;
     }
 
-    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, m_name, this);
     }
-    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, NULL, this);
     }
 
-    void BasicGraphPattern::bindVariables (ResultSet* rs, POS* graphVar, BasicGraphPattern* toMatch, POS* graphName) {
+    std::ostream* BasicGraphPattern::DiffStream = NULL;
+    bool BasicGraphPattern::CompareVars = false;
+
+    /* constOrNull helper function for cheesy operator== below */
+    const POS* BasicGraphPattern::_cOrN (const POS* pos, const NULLpos* n) {
+	if (CompareVars)
+	    return dynamic_cast<const Bindable*>(pos) ? n : pos;
+	else
+	    return dynamic_cast<const BNode*>(pos) ? n : pos;
+    }
+
+    bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
+	unsigned errorCount = 0; // Only used if there's a DiffStream.
+	std::map<TriplePattern*, std::vector<const TriplePattern*> >mine;
+	POSFactory f; // temp to hold trimmed triples.
+	const NULLpos* n = f.getNULL();
+	for (std::vector<const TriplePattern*>::const_iterator mit = 
+		 m_TriplePatterns.begin();
+	     mit != m_TriplePatterns.end(); ++mit)
+	    mine[f.getTriple(_cOrN((*mit)->getS(), n), 
+			     _cOrN((*mit)->getP(), n), 
+			     _cOrN((*mit)->getO(), n))].push_back(*mit);
+
+	for (std::vector<const TriplePattern*>::const_iterator rit = 
+		 ref.m_TriplePatterns.begin();
+	     rit != ref.m_TriplePatterns.end(); ++rit) {
+	    TriplePattern* r = f.getTriple(_cOrN((*rit)->getS(), n), 
+					   _cOrN((*rit)->getP(), n), 
+					   _cOrN((*rit)->getO(), n));
+	    if (mine.find(r) == mine.end()) {
+		if (DiffStream != NULL) {
+		    *DiffStream << "- " << (*rit)->toString() << std::endl;
+		    ++errorCount;
+		} else
+		    return false;
+	    } else {
+		// Pick one at random.
+		mine[r].erase(mine[r].begin());
+		if (mine[r].size() == 0)
+		    mine.erase(r);
+	    }
+	}
+	if (mine.size() != 0) {
+	    if (DiffStream != NULL) {
+		for (std::map<TriplePattern*, 
+			 std::vector<const TriplePattern*> >::iterator mit = 
+			 mine.begin(); mit != mine.end(); ++mit)
+		    for (std::vector<const TriplePattern*>::iterator tpit = 
+			     mit->second.begin();
+			 tpit != mit->second.end(); ++ tpit) {
+			*DiffStream << "+ " << (*tpit)->toString() << std::endl;
+			++errorCount;
+		    }
+	    } else
+		return false;
+	}
+	if (errorCount > 0) {
+	    *DiffStream << errorCount << " errors" << std::endl;
+	    return false;
+	}
+
+	std::vector<const Filter*>::const_iterator mit = m_Filters.begin();
+	std::vector<const Filter*>::const_iterator rit = ref.m_Filters.begin();
+	for ( ; mit != m_Filters.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
+
+    void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
 	bool matched = true; // Pretend it's matched so we can try the first constraint.
-	for (std::vector<TriplePattern*>::iterator constraint = toMatch->m_TriplePatterns.begin();
+	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		matched = false;
-		for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
 		    Result* newRow = (*row)->duplicate(rs, row);
 		    if ((*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
@@ -762,10 +815,10 @@ void NumberExpression::express (Expressor* p_expressor) {
 	    }
 	}
     }
-    bool TriplePattern::_bindVariable (POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
+    bool TriplePattern::_bindVariable (const POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
 	if (pattern == NULL || constant == NULL)
 	    return true;
-	POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols
+	const POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
 	    rs->set(provisional, pattern, constant, weaklyBound);
 	    return true;
@@ -773,7 +826,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return constant == curVal;
     }
 
-    void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) {
+    void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
 	    m_TableOperation->bindVariables(db, rowRS);
@@ -794,16 +847,16 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
     }
 
-    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) {
+    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) const {
 	for (ResultSetIterator result = rs->begin() ; result != rs->end(); result++)
-	    for (std::vector<TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
 		(*triple)->construct(target, *result, rs->getPOSFactory());
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) {
+    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	bool ret = false;
-	POS *s, *p, *o;
+	const POS *s, *p, *o;
 	if ((s = m_s->evalPOS(r, bNodesGenSymbols)) != NULL && 
 	    (p = m_p->evalPOS(r, bNodesGenSymbols)) != NULL && 
 	    (o = m_o->evalPOS(r, bNodesGenSymbols)) != NULL) {
@@ -818,7 +871,7 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return ret;
     }
 
-    TableOperation* TableOperationOnOperation::getDNF ( ) {
+    TableOperation* TableOperationOnOperation::getDNF ( ) const {
 	TableOperation* op = m_TableOperation->getDNF();
 	TableDisjunction* disjoints;
 	if ((disjoints = dynamic_cast<TableDisjunction*>(op)) == NULL) {
@@ -828,24 +881,30 @@ void NumberExpression::express (Expressor* p_expressor) {
 	/* GRAPH <X> { A || B } => GRAPH <X> { A } || GRAPH <X> { B } 
 	 * likewise for OPTIONALS.*/
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+	for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 	     disjoint != disjoints->end(); disjoint++)
 	    ret->addTableOperation(makeANewThis(*disjoint));
 	disjoints->clear();
 	delete disjoints;
 	return ret;
     }
-    TableOperation* BasicGraphPattern::getDNF () {
-	return new DontDeleteThisBGP(this);
+    TableOperation::TableOperation (const TableOperation& ref) :
+	Base(ref), m_Filters() {
+	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+	for (std::vector<const Filter*>::const_iterator it = ref.m_Filters.begin();
+	     it != ref.m_Filters.end(); ++it) {
+	    (*it)->express(&dup);
+	    m_Filters.push_back(dup.last.filter);
+	}
     }
-    TableOperation* TableDisjunction::getDNF () {
+    TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); ++it) {
 	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
-		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+		for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 		     disjoint != disjoints->end(); disjoint++)
 		    ret->addTableOperation(*disjoint);
 		disjoints->clear();
@@ -856,13 +915,13 @@ void NumberExpression::express (Expressor* p_expressor) {
 	}
 	return ret;
     }
-    TableOperation* TableConjunction::getDNF () {
+    TableOperation* TableConjunction::getDNF () const {
 	/* Create a disjunction of conjunctions: (A & B) | (C & D) */
 	TableDisjunction* ret = new TableDisjunction();
 	ret->addTableOperation(new TableConjunction());
 
 	/* for each of our elements... */
-	for (std::vector<TableOperation*>::iterator it = m_TableOperations.begin();
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); ++it) {
 	    TableOperation* op = (*it)->getDNF();
 	    TableDisjunction* disjoints;
@@ -872,15 +931,15 @@ void NumberExpression::express (Expressor* p_expressor) {
 		 *                 ^^^^^^^^^^^^^
 		 * ret is already ( A & B ) | ( A & C ) so copy each ret and append disjoints.
 		 */
-		for (std::vector<TableOperation*>::iterator disjoint = disjoints->begin();
+		for (std::vector<const TableOperation*>::iterator disjoint = disjoints->begin();
 		     disjoint != disjoints->end(); ) {
 		    /* for each ret conjunction */
-		    for (std::vector<TableOperation*>::iterator reti = ret->begin();
+		    for (std::vector<const TableOperation*>::iterator reti = ret->begin();
 			 reti != ret->end(); reti++) {
-			TableConjunction* o = dynamic_cast<TableConjunction*>(*reti);
+			const TableConjunction* o = dynamic_cast<const TableConjunction*>(*reti);
 			TableConjunction* n = new TableConjunction();
 			/* Copy the conjunction. */
-			for (std::vector<TableOperation*>::iterator copyi = o->begin();
+			for (std::vector<const TableOperation*>::const_iterator copyi = o->begin();
 			     copyi != o->end(); copyi++)
 			    n->addTableOperation(*copyi);
 			/* Append the current disjoint. */
@@ -891,27 +950,31 @@ void NumberExpression::express (Expressor* p_expressor) {
 		
 	    } else if ((conjoints = dynamic_cast<TableConjunction*>(op)) != NULL) {
 		/* A & ( B & C ) i.e. tree was not simplified */
-		for (std::vector<TableOperation*>::iterator conjoint = conjoints->begin();
+		for (std::vector<const TableOperation*>::iterator conjoint = conjoints->begin();
 		     conjoint != conjoints->end(); ) {
 		    /* for each ret */
-		    for (std::vector<TableOperation*>::iterator reti = ret->begin();
-			 reti != ret->end(); reti++)
-			(dynamic_cast<TableConjunction*>(*reti))->addTableOperation(*conjoint);
+		    for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
+			 reti != ret->end(); reti++) {
+			const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
+			((TableConjunction*)c)->addTableOperation(*conjoint); /* !!! LIES !!! */
+		    }
 		    conjoints->erase(conjoint++);
 		}
 		delete conjoints;
 	    } else {
 		/* for each ret */
-		for (std::vector<TableOperation*>::iterator reti = ret->begin();
-		     reti != ret->end(); reti++)
-		    (dynamic_cast<TableConjunction*>(*reti))->addTableOperation(op);
+		for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
+		     reti != ret->end(); reti++) {
+		    const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
+		    ((TableConjunction*)c)->addTableOperation(op); /* !!! LIES !!! */
+		}
 	    }
 	}
 
 	/* If there's only one disjoint, return it. */
 	if (ret->size() == 1) {
-	    std::vector<TableOperation*>::iterator it = ret->begin();
-	    TableOperation* r = *it;
+	    std::vector<const TableOperation*>::iterator it = ret->begin();
+	    TableOperation* r = (TableOperation*)*it; /* !!! LIES !!! */
 	    ret->erase(it);
 	    delete ret;
 	    return r;
@@ -919,14 +982,26 @@ void NumberExpression::express (Expressor* p_expressor) {
 	return ret;
     }
 
+    std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
+    }
+
+    std::ostream& operator<< (std::ostream& os, WhereClause const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
+    }
+
 #ifdef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
-    void loadGraph (BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName) {
+    bool loadGraph (BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName) {
 	TurtleSDriver turtleParser(baseURI, f);
  	turtleParser.setGraph(bgp);
- 	turtleParser.parse_file(fileName);
+ 	return turtleParser.parse_file(fileName);
     }
 #endif /* _MSC_VER */
 } // namespace w3c_sw

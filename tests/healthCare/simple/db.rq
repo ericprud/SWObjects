@@ -1,0 +1,26 @@
+SELECT ?patient ?dob ?sex ?takes ?indicDate 
+WHERE
+{
+  {
+    ?patient <http://hospital.example/DB/Person#MiddleName> ?middleName .
+    ?patient <http://hospital.example/DB/Person#DateOfBirth> ?dob .
+    ?patient <http://hospital.example/DB/Person#SexDE> ?sexEntry_gen2 .
+  }
+  {
+    ?sexEntry_gen2 <http://hospital.example/DB/Sex_DE#EntryName> ?sex .
+  }
+  {
+    ?indicItem_gen4 <http://hospital.example/DB/Item_Medication#PatientID> ?patient .
+    ?indicItem_gen4 <http://hospital.example/DB/Item_Medication#PerformedDTTM> ?indicDate .
+    ?indicItem_gen4 <http://hospital.example/DB/Item_Medication#EntryName> ?takes .
+    ?indicMed_gen0 <http://hospital.example/DB/Medication#ItemID> ?indicItem_gen4 .
+    ?indicMed_gen0 <http://hospital.example/DB/Medication#DaysToTake> ?indicDuration_gen1 .
+    ?indicMed_gen0 <http://hospital.example/DB/Medication#MedDictDE> ?indicDE_gen5 .
+    ?indicDE_gen5 <http://hospital.example/DB/Medication_DE#NDC> ?indicNDC_gen6 .
+  }
+  {
+    ?indicCode_gen3 <http://hospital.example/DB/NDCcodes#NDC> ?indicNDC_gen6 .
+    ?indicCode_gen3 <http://hospital.example/DB/NDCcodes#ingredient> 6809  .
+  }
+}
+LIMIT 30

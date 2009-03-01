@@ -1,13 +1,19 @@
-/* SAXparser_expat.hpp: implementation of SAXparser for expat.
+/* SAXparser_expat.hpp: implementation of SWSAXparser for expat.
  * interface per http://xmlsoft.org/html/expat-tree.html
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
 #pragma once
+#include <fstream>
 #include <stack>
 #include <map>
-#include "SAXparser.hpp"
+#ifdef _MSC_VER
+  #include "xmlparse.h"
+#else /* !_MSC_VER */
+  #include "expat.h"
+#endif /* !_MSC_VER */
+#include "util/SAXparser.hpp"
 
 namespace w3c_sw {
 
@@ -64,15 +70,19 @@ namespace w3c_sw {
 	    ::XML_ParserFree(parser);
 	}
 
-	virtual void parse (const char* file, SWSAXhandler* handler) {
+	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) {
 	    this->handler = handler;
-	    std::string buf = readFile(file, "XML");
+	    std::string buf(start, finish);
 #ifdef _MSC_VER
-	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == 0)
+	    if (XML_Parse(parser, buf.c_str(), (int)buf.size(), true) == 0)
 #else /* !_MSC_VER */
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
 #endif /* !_MSC_VER */
 		throw( "Failed to parse document.\n" );
+	}
+	virtual void parse (const char* file, SWSAXhandler* handler) {
+	    std::string buf = readFile(file, "XML");
+	    parse(buf.begin(), buf.end(), handler);
 	}
 
 	static void _dumpNsFrame (std::map< const char*, const char* > nsframe) {
@@ -98,13 +108,19 @@ namespace w3c_sw {
 		    handler->error("namespace prefix \"%s\" not found", elPrefix);
 	    }
 	}
+	void __dumpNsz (const char* sit) {
+	    std::cerr << sit << "\n";
+	    for (std::map< const char*, const char* >::const_iterator it = nsz.top().begin();
+		 it != nsz.top().end(); ++it)
+		std::cerr << "    xmlns:" << it->first << "=\"" << it->second << "\"\n";
+	}
 	static void start (void *voidSelf,
 			   const XML_Char *name,
 			   const XML_Char **atts) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
 	    std::map< const char*, const char* > nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
-
+	    self.__dumpNsz(name);
 	    Attributes_expat attrs;
 	    { /* Walk attrs. */
 		for (const XML_Char** att = atts; *att; ++att) {
@@ -165,6 +181,13 @@ namespace w3c_sw {
  	    self.handler->characters((const char*)s, 0, len);
 	}
     };
+
+#ifdef NEEDDEF_makeSAXparser
+    inline SWSAXparser* SWSAXparser::makeSAXparser () {
+	return new SAXparser_expat();
+    }
+  #undef NEEDDEF_makeSAXparser
+#endif /* NEEDDEF_makeSAXparser */
 
 }
 

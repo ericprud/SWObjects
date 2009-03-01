@@ -1,0 +1,19 @@
+SELECT ?patient ?dob ?sex ?takes ?indicDate 
+WHERE
+{
+  ?patient <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#Person> .
+  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#entityName> ?middleName .
+  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#livingSubjectBirthTime> ?dob .
+  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#administrativeGenderCodePrintName> ?sex .
+  ?b0x9164140_gen3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#SubstanceAdministration> .
+  ?b0x91642f0_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#displayName> ?takes .
+  ?b0x91647c8_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#classCode> ?code .
+  ?b0x91642f0_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#activeIngredient> ?b0x91647c8_gen1 .
+  ?b0x9164140_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#consumable> ?b0x91642f0_gen0 .
+  ?b0x9164088_gen2 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#start> ?indicDate .
+  ?b0x9164140_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#effectiveTime> ?b0x9164088_gen2 .
+  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#substanceAdministration> ?b0x9164140_gen3 .
+  FILTER ( ?code = 6809  || ?code = 6810 )
+}
+LIMIT 30
+
