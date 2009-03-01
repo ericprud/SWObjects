@@ -13,7 +13,7 @@
 #else /* !_MSC_VER */
   #include "expat.h"
 #endif /* !_MSC_VER */
-#include "util/SAXparser.hpp"
+#include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
 

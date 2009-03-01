@@ -21,9 +21,9 @@
 #include "SPARQLSerializer.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
-  #include "util/SAXparser_libxml.hpp"
+  #include "../interface/SAXparser_libxml.hpp"
 #elif XML_PARSER == SWOb_EXPAT1
-  #include "util/SAXparser_expat.hpp"
+  #include "../interface/SAXparser_expat.hpp"
 #else
   #warning DAWG tests require an XML parser
 #endif

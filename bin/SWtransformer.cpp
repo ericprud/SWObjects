@@ -8,17 +8,17 @@
 
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
-#include "SPARQLfedParser.hpp"
-#include "TurtleSParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SQLizer.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
-  #include "util/SAXparser_libxml.hpp"
+  #include "../interface/SAXparser_libxml.hpp"
 #elif XML_PARSER == SWOb_EXPAT1
-  #include "util/SAXparser_expat.hpp"
+  #include "../interface/SAXparser_expat.hpp"
 #else
   #ifdef _MSC_VER
     #pragma message ("query federation requires an XML parser")
@@ -29,7 +29,7 @@
 
 #if HTTP_CLIENT == SWOb_ASIO
   #include "RdfRemoteDB.hpp"
-  #include "util/WEBagent_boostASIO.hpp"
+  #include "../interface/WEBagent_boostASIO.hpp"
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 
 #include <stdlib.h>

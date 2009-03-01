@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "TurtleSParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
 
 namespace w3c_sw {
 

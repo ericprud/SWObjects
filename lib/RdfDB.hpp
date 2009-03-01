@@ -7,7 +7,7 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {

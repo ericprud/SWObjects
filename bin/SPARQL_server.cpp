@@ -27,7 +27,7 @@
 
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
-#include "SPARQLfedParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SQLizer.hpp"
 
 #include "SPARQLSerializer.hpp"

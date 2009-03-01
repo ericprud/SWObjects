@@ -9,7 +9,7 @@
 #include <map>
 #include <boost/regex.hpp>
 #include <boost/asio.hpp>
-#include "util/WEBagent.hpp"
+#include "../interface/WEBagent.hpp"
 
 using boost::asio::ip::tcp;
 

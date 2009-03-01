@@ -16,7 +16,7 @@
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
-#include "util/SAXparser.hpp"
+#include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
 
 namespace w3c_sw {

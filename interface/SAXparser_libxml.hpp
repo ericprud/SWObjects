@@ -7,7 +7,7 @@
 #pragma once
 #include <map>
 #include <libxml/parser.h>
-#include "util/SAXparser.hpp"
+#include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
 
