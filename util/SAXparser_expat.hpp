@@ -74,7 +74,7 @@ namespace w3c_sw {
 	    this->handler = handler;
 	    std::string buf(start, finish);
 #ifdef _MSC_VER
-	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == 0)
+	    if (XML_Parse(parser, (int)buf.c_str(), buf.size(), true) == 0)
 #else /* !_MSC_VER */
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
 #endif /* !_MSC_VER */
