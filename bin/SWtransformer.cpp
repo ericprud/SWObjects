@@ -44,7 +44,7 @@ const char* PkAttr = "id";
 std::ostream* DebugStream = NULL;
 SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
-#if XML_PARSER != -1
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
   bool ExecuteQuery = false;
 #endif
 std::vector<const char*>SparqlEndpointPatterns;
@@ -62,11 +62,11 @@ bool option (int argc, char** argv, int* iArg) {
 	Quiet = true;
 	return true;
     } else if (!::strcmp(argv[*iArg], "-x")) {
-#if XML_PARSER == SWOb_DISABLED
+#if XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED
 	throw "SWtransformer cannot execute federation queries as it was not compiled with an XML parser.";
-#else /* !XML_PARSER == SWOb_DISABLED */
+#else /* ! XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 	ExecuteQuery = true;
-#endif /* !XML_PARSER == SWOb_DISABLED */
+#endif /* ! XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 	return true;
     } else if (argv[*iArg][0] == '-' && (argv[*iArg][1] == 'b' || argv[*iArg][1] == 's')) {
 	const char** target = argv[*iArg][1] == 'b' ? &BaseURI : &StemURI;
@@ -196,7 +196,7 @@ int main(int argc,char** argv) {
 			cout << "Transformed query: " << endl;
 		    cout << s2.getSQLstring() << endl;
 		}
-#if HTTP_CLIENT == SWOb_ASIO
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
 		else if (ExecuteQuery) {
 		    SWSAXparser* p = SWSAXparser::makeSAXparser();
 		    WEBagent_boostASIO client;
@@ -206,7 +206,7 @@ int main(int argc,char** argv) {
 		    delete p;
 		    std::cout << rs; // show results
 		}
-#endif /* HTTP_CLIENT == SWOb_ASIO */
+#endif /* XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED */
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;
