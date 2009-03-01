@@ -1,7 +1,0 @@
-RewriteEngine On
-RewriteBase /2008/04/SPARQLfed
-RewriteRule ^SPARQL\.hh$	SWObjects.hh [R=permanent,L]
-RewriteRule ^SPARQL\.cc$	SWObjects.cc [R=permanent,L]
-RewriteRule ^SPARQLConstructInverter\.hh$	RuleInverter.hh [R=permanent,L]
-RewriteRule ^SPARQLDuplicator\.hh$	SWObjectDuplicator.hh [R=permanent,L]
-RewriteRule ^SPARQLTransformer\.hh$	QueryMapper.hh [R=permanent,L]

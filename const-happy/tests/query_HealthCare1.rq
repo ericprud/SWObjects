@@ -1,8 +1,0 @@
-PREFIX sdtm: <http://www.w3.org/2008/04/DiabeticPatientsDataSet/ClinicalPracticeOntology-Version3.owl#sdtm_>
-SELECT ?somePerson
-#  FROM <data.ttl>
- WHERE {
-{?someTest sdtm:fool ?somePerson } UNION {
-_:someTestBNode sdtm:subject ?somePerson .
-}
-}
