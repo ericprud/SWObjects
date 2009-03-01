@@ -1,0 +1,16 @@
+# equivOpt1
+# from http://www.w3.org/2008/07/MappingRules/#equivOpt1 Revision: 1.38 
+# $Id: query_spec-equivOpt1.rq,v 1.1 2008-09-08 13:12:41 eric Exp $
+
+PREFIX emplP: <http://hr.example/DB/Employee#>
+
+SELECT ?emp1Name ?emp2Name ?emp3Name
+ WHERE { ?emp1     emplP:lastName   ?emp1Name .
+         OPTIONAL { ?emp1     emplP:birthday   ?birthday }
+         ?emp2     emplP:lastName   ?emp2Name .
+         OPTIONAL { ?emp2     emplP:birthday   ?birthday }
+         ?emp3     emplP:lastName   ?emp3Name .
+         ?emp3     emplP:birthday   ?birthday .
+         ?emp4     emplP:lastName   ?emp4Name .
+         ?emp4     emplP:birthday   ?birthday .
+         FILTER ( ?emp1Name < ?emp2Name && ?emp2Name < ?emp3Name && ?emp3Name < ?emp4Name) }

@@ -1,0 +1,41 @@
+# query_stem:Person.rq — stem query for Persons matching COI critieria for protocol #8
+# $Id: query_stem_Person.rq,v 1.1 2008-10-02 17:18:38 eric Exp $
+
+# Todo:
+#    check for *concurrent* indics and contra-indics
+
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Person: <http://hospital.example/DB/Person#>
+PREFIX Sex_DE: <http://hospital.example/DB/Sex_DE#>
+PREFIX Item_Medication: <http://hospital.example/DB/Item_Medication#>
+PREFIX Medication: <http://hospital.example/DB/Medication#>
+PREFIX Medication_DE: <http://hospital.example/DB/Medication_DE#>
+PREFIX NDCcodes: <http://hospital.example/DB/NDCcodes#>
+
+SELECT ?person ?dob ?sex ?takes ?indicDate ?indicDuration
+ WHERE {
+  ?person     Person:MiddleName  ?middleName ;
+              Person:DateOfBirth ?dob ;
+              Person:SexDE       ?sexEntry   .
+  ?sexEntry   Sex_DE:EntryName   ?sex .
+
+  ?indicItem  Item_Medication:PatientID   ?person ;
+              Item_Medication:PerformedDTTM ?indicDate ;
+              Item_Medication:EntryName ?takes .
+  ?indicMed   Medication:ItemID   ?indicItem ;
+              Medication:DaysToTake ?indicDuration ;
+              Medication:MedDictDE ?indicDE .
+  ?indicDE    Medication_DE:NDC    ?indicNDC .
+  ?indicCode  NDCcodes:NDC         ?indicNDC ;
+              NDCcodes:ingredient  6809 .
+
+  OPTIONAL {
+    ?contraItem Item_Medication:PatientID   ?person .
+    ?contraMed  Medication:ItemID   ?contraItem ;
+                Medication:MedDictDE ?contraDE .
+    ?contraDE   Medication_DE:NDC    ?contraNDC .
+    ?contraCode NDCcodes:NDC         ?contraNDC ;
+                NDCcodes:ingredient  11289
+  }
+  FILTER (?dob < "1984-01-01T00:00:00"^^xsd:dateTime && !BOUND(?contraItem))
+} LIMIT 30

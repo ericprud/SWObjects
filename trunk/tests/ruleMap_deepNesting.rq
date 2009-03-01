@@ -1,0 +1,22 @@
+# ruleMap_deepNesting — test OuterGraphs
+# $Id: ruleMap_deepNesting.rq,v 1.1 2008-09-22 08:30:54 eric Exp $
+
+PREFIX iface: <http://iface.example/>
+PREFIX stem: <http://stem.example/>
+
+CONSTRUCT {
+  ?s iface:depth1  ?inner1  .
+  ?s iface:depth2  ?inner2  .
+  ?s iface:depth3l ?inner3l .
+  ?s iface:depth3r ?inner3r }
+WHERE {
+  ?s                        stem:mand          ?mand1
+  { ?s			    stem:depth1	       ?inner1
+    OPTIONAL { ?s           stem:depth2	       ?inner2
+      {?s    		    stem:depth3l       ?inner3l}
+    UNION
+      {?s    		    stem:depth3r       ?inner3r}
+    }
+  }
+}
+
