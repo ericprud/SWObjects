@@ -60,7 +60,7 @@ namespace w3c_sw {
 	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
 	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
 	     */
-	    if (loadGraph(assureGraph(name), posFactory, "text/turtle", "", name->getTerminal())) {
+	    if (loadGraph(assureGraph(name), posFactory, "text/turtle", "", name->getTerminal()))
 #else /* !_MSC_VER */
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
 	    turtleParser.setGraph(assureGraph(name));
