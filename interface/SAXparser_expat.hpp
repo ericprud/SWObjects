@@ -41,9 +41,8 @@ namespace w3c_sw {
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
 
-	XML_Parser parser;
 	SWSAXhandler* handler;
-	std::stack< std::map< const char*, const char* > > nsz;
+	std::stack< std::map< std::string, std::string > > nsz;
 
 	std::string readFile (const char* filename, const char* type) {
 	    std::ifstream dataStream(filename);
@@ -59,26 +58,32 @@ namespace w3c_sw {
 	}
 
     public:
-	SAXparser_expat () : parser(XML_ParserCreate(NULL)) {
-	    XML_SetUserData(parser, this);
-	    XML_SetElementHandler(parser, &start, &end);
-	    XML_SetCharacterDataHandler(parser, &chars);
-	    std::map< const char*, const char* > aboveRoot;
+	SAXparser_expat () {
+	    std::map< std::string, std::string > aboveRoot;
 	    nsz.push(aboveRoot);
 	}
-	virtual ~SAXparser_expat () {
-	    ::XML_ParserFree(parser);
-	}
+	virtual ~SAXparser_expat () {  }
 
 	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) {
 	    this->handler = handler;
 	    std::string buf(start, finish);
+
+	    XML_Parser parser = ::XML_ParserCreate(NULL);
+	    ::XML_SetUserData(parser, this);
+	    ::XML_SetElementHandler(parser, &startEl, &endEl);
+	    ::XML_SetCharacterDataHandler(parser, &chars);
+
 #ifdef _MSC_VER
 	    if (XML_Parse(parser, buf.c_str(), (int)buf.size(), true) == 0)
 #else /* !_MSC_VER */
 	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
 #endif /* !_MSC_VER */
-		throw( "Failed to parse document.\n" );
+	    {
+		std::string msg("Failed to parse document: ");
+		msg.append(XML_ErrorString(XML_GetErrorCode(parser)));
+		throw msg;
+	    }
+	    ::XML_ParserFree(parser);
 	}
 	virtual void parse (const char* file, SWSAXhandler* handler) {
 	    std::string buf = readFile(file, "XML");
@@ -97,30 +102,29 @@ namespace w3c_sw {
 		*elLname = elPrefix;
 		elPrefix = "";
 		if (nsz.top().find("") != nsz.top().end())
-		    *elNs = nsz.top()[""];
+		    *elNs = nsz.top()[""].c_str();
 		else // don't whine about non-namespaced docs.
 		    *elNs = NULL;
 	    } else {
 		++*elLname;
 		if (nsz.top().find(elPrefix) != nsz.top().end())
-		    *elNs = nsz.top()[elPrefix];
+		    *elNs = nsz.top()[elPrefix].c_str();
 		else
 		    handler->error("namespace prefix \"%s\" not found", elPrefix);
 	    }
 	}
 	void __dumpNsz (const char* sit) {
 	    std::cerr << sit << "\n";
-	    for (std::map< const char*, const char* >::const_iterator it = nsz.top().begin();
+	    for (std::map< std::string, std::string >::const_iterator it = nsz.top().begin();
 		 it != nsz.top().end(); ++it)
 		std::cerr << "    xmlns:" << it->first << "=\"" << it->second << "\"\n";
 	}
-	static void start (void *voidSelf,
-			   const XML_Char *name,
-			   const XML_Char **atts) {
+	static void startEl (void *voidSelf,
+			     const XML_Char *name,
+			     const XML_Char **atts) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
-	    std::map< const char*, const char* > nsframe(self.nsz.top());
+	    std::map< std::string, std::string > nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
-	    self.__dumpNsz(name);
 	    Attributes_expat attrs;
 	    { /* Walk attrs. */
 		for (const XML_Char** att = atts; *att; ++att) {
@@ -155,7 +159,7 @@ namespace w3c_sw {
 			nss.namespaceURI = "";
 			attrs.byNS_localName[""][nss.localName] = nss.value;
 		    } else if (self.nsz.top().find(nss.prefix) != self.nsz.top().end()) {
-			nss.namespaceURI = self.nsz.top()[nss.prefix];
+			nss.namespaceURI = self.nsz.top()[nss.prefix].c_str();
 			attrs.byNS_localName[nss.namespaceURI][nss.localName] = nss.value;
 		    } else
 			self.handler->error("namespace prefix \"%s\" not found", nss.prefix);
@@ -164,8 +168,8 @@ namespace w3c_sw {
  	    self.handler->startElement(elNs, elLname, name, &attrs);
 	}
 
-	static void end (void *voidSelf,
-			 const XML_Char *name) {
+	static void endEl (void *voidSelf,
+			   const XML_Char *name) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
 	    const char* elLname;
 	    const char* elNs;
