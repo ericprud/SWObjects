@@ -32,7 +32,7 @@ WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
 
-INCLUDES += -I${PWD}/lib
+INCLUDES += -I${PWD} -I${PWD}/lib  # . (for config.h) and ./lib (for the rest)
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
 INCLUDES += $(I3:%=-I${PWD}/%)
@@ -254,18 +254,18 @@ unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
-tests/test_%.d : test/test_%.cpp config.h
+tests/test_%.d : tests/test_%.cpp config.h
 	-touch $@
 	-makedepend -btests/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-tests/test_%: tests/test_%.cpp $(LIB) SWObjects.hpp tests/test_%.d config.h
+tests/test_%: tests/test_%.cpp $(LIB) lib/SWObjects.hpp tests/test_%.d config.h
 	$(CXX) $(CXXFLAGS) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
-	$< $(TEST_ARGS)
+	( cd tests && $(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
-	valgrind --leak-check=yes --xml=no $< $(TEST_ARGS)
+	( cd tests && valgrind --leak-check=yes --xml=no $< $(TEST_ARGS) )
 
 
 ### SWtransformer tests:
