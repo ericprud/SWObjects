@@ -6,8 +6,8 @@
 #define RDF_REMOTE_DB_H
 
 #include "RdfDB.hpp"
-#include "util/SAXparser.hpp"
-#include "util/WEBagent_boostASIO.hpp"
+#include "../interface/SAXparser.hpp"
+#include "../interface/WEBagent_boostASIO.hpp"
 
 namespace w3c_sw {
 

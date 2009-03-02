@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "SPARQLfedParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 
 namespace w3c_sw {
 

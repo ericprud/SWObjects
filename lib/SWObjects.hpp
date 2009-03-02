@@ -9,7 +9,7 @@
 # define SWOBJECTS_HH
 
 /* defines for controlling includes from utils */
-#include "config.h"
+#include "../config.h"
 
 /* non-portable debug messages */
 #ifdef _MSC_VER

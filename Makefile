@@ -32,7 +32,7 @@ WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
 
-INCLUDES += -I${PWD}
+INCLUDES += -I${PWD}/lib
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
 INCLUDES += $(I3:%=-I${PWD}/%)
@@ -151,15 +151,15 @@ config.h: CONFIG
 
 .SECONDARY:
 
-%.d : %.cpp config.h
+lib/%.d : lib/%.cpp config.h
 	-touch $@
 	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-%.cpp  %.hpp : %.ypp
+lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
 	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
 
-%.cpp : %.lpp
+lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
 
 #	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
@@ -186,16 +186,16 @@ VER=0.1
 #LLVMLIBS= ` llvm-config --libs`
 # ... you get the idea...
 CFLAGS	+= $(LLVMCFLAGS)
-LIBINC	+= -L$(PWD)
+LIBINC	+= -L$(PWD)/lib
 
 ### dirt simple generic static module ###
-BISONOBJ :=  $(subst .ypp,.o,$(wildcard */*.ypp)) 
-FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard *.lpp))
-OBJLIST  :=  $(subst .cpp,.o,$(wildcard *.cpp))
+BISONOBJ :=  $(subst .ypp,.o,$(wildcard lib/*/*.ypp)) 
+FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard lib/*.lpp))
+OBJLIST  :=  $(subst .cpp,.o,$(wildcard lib/*.cpp))
 BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 LIBNAME  :=  SWObjects
-LIB	 :=	 lib$(LIBNAME).a
+LIB	 :=	 lib/lib$(LIBNAME).a
 LIBINC	+=	 -l$(LIBNAME) $(REGEX_LIB) $(XML_PARSER_LIB)
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
@@ -343,10 +343,10 @@ release:
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
 clean:
-	$(RM) *.o */*.o *.a *.dylib *.so *.la */*.bak *.bak config.h \
-        $(subst .lpp,.cpp,$(wildcard *.lpp)) \
-        $(subst .ypp,.cpp,$(wildcard */*.ypp)) \
-        $(subst .ypp,.hpp,$(wildcard */*.ypp)) \
+	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
+        $(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
+        $(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
+        $(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND)
 	$(RM) -fr tests/execute_*
 
