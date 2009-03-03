@@ -146,6 +146,11 @@ public:
 	    is >> d;
 	    normalized << d;
 	    return posFactory->getNumericRDFLiteral(normalized.str().c_str(), d);
+	} else if (p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
+	    bool b;
+	    is >> b;
+	    normalized << b;
+	    return posFactory->getBooleanRDFLiteral(normalized.str().c_str(), b);
 	} else
 	    return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
