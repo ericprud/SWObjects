@@ -22,21 +22,23 @@
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"
+  w3c_sw::SAXparser_libxml P;
 #elif XML_PARSER == SWOb_EXPAT1
   #include "../interface/SAXparser_expat.hpp"
+  w3c_sw::SAXparser_expat P;
 #else
   #warning DAWG tests require an XML parser
 #endif
 
 using namespace w3c_sw;
 
-POSFactory f;
-SPARQLfedDriver sparqlParser("", &f);
+POSFactory F;
+SPARQLfedDriver sparqlParser("", &F);
 #ifndef _MSC_VER
     /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
      *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
      */
-TurtleSDriver turtleParser("", &f);
+TurtleSDriver turtleParser("", &F);
 #endif /* !_MSC_VER */
 
 /* Sentinal to mark end of arrays of files: */
@@ -55,69 +57,60 @@ std::string readFile (const char* filename, const char* type) {
     return ret;
 }
 
-void queryTest (const char* defGraphs[], const char* namGraphs[], 
-		const char* queryFile, const char* resultsFile) {
- 
-    /* Parse query. */
-    if (sparqlParser.parse_file(queryFile)) {
-	std::string msg = std::string("failed to parse query \"") + 
-	    queryFile + std::string("\".");
-	throw msg;
-    }
-
-    /* Parse data. */
+struct TestResultSet : public ResultSet {
     RdfDB d;
-    for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
-#ifdef _MSC_VER
-    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-     */
-	loadGraph(d.assureGraph(NULL), &f, "text/turtle", "", defGraphs[i]);
-#else /* !_MSC_VER */
- 	turtleParser.setGraph(d.assureGraph(NULL));
- 	turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSC_VER */
-    }
-    for (size_t i = 0; namGraphs[i] != Sentinel; ++i) {
-#ifdef _MSC_VER
-    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-     */
-	loadGraph(d.assureGraph(f.getURI(namGraphs[i])), &f, "text/turtle", "", defGraphs[i]);
-#else /* !_MSC_VER */
- 	turtleParser.setGraph(d.assureGraph(f.getURI(namGraphs[i])));
- 	turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSC_VER */
-    }
-    std::cout << "Database: " << d;
+    TestResultSet (const char* defGraphs[], const char* namGraphs[], 
+		   const char* queryFile) : ResultSet(&F) {
+ 
+	/* Parse query. */
+	if (sparqlParser.parse_file(queryFile)) {
+	    std::string msg = std::string("failed to parse query \"") + 
+		queryFile + std::string("\".");
+	    throw msg;
+	}
 
-    /* Exectute query. */
-    ResultSet got(&f);
-    sparqlParser.root->execute(&d, &got);
-    std::cout << "query: " << *sparqlParser.root;
-    std::cout << "got: " << got;
+	/* Parse data. */
+	for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
+#ifdef _MSC_VER
+	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
+	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
+	     */
+	    loadGraph(d.assureGraph(NULL), &F, "text/turtle", "", defGraphs[i]);
+#else /* !_MSC_VER */
+	    turtleParser.setGraph(d.assureGraph(NULL));
+	    turtleParser.parse_file(defGraphs[i]);
+#endif /* !_MSC_VER */
+	}
+	for (size_t i = 0; namGraphs[i] != Sentinel; ++i) {
+#ifdef _MSC_VER
+	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
+	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
+	     */
+	    loadGraph(d.assureGraph(F.getURI(namGraphs[i])), &F, "text/turtle", "", defGraphs[i]);
+#else /* !_MSC_VER */
+	    turtleParser.setGraph(d.assureGraph(F.getURI(namGraphs[i])));
+	    turtleParser.parse_file(defGraphs[i]);
+#endif /* !_MSC_VER */
+	}
 
-    /* Compare to expected results. */
-    if (!::strncmp(resultsFile + ::strlen(resultsFile) - 4, ".srx", 4)) {
-#if XML_PARSER == SWOb_DISABLED
-	throw "XML parser needed for parsing srx files";
-#else /* !XML_PARSER == SWOb_DISABLED */
-	SWSAXparser* p = SWSAXparser::makeSAXparser();
-	ResultSet expected(&f, p, resultsFile);
-	delete p;
-	std::cout << "expected: " << expected;
-	BOOST_CHECK_EQUAL(got, expected);
-#endif /* !XML_PARSER == SWOb_DISABLED */
-    } else {
-	ResultSet expected(&f, readFile(resultsFile, "results"), false);
-	std::cout << "expected: " << expected;
-	BOOST_CHECK_EQUAL(got, expected);
+	/* Exectute query. */
+	sparqlParser.root->execute(&d, this);
     }
+};
+
+std::ostream& operator<< (std::ostream& os, TestResultSet const& my) {
+    os << "Database: " << my.d;
+    os << "query: " << *sparqlParser.root;
+    os << "result: ";
+    operator<<(os, (ResultSet)my);
+    return os;
 }
 
 /* Macros for terse test syntax: */
-#define QTEST(Q, R) \
-    queryTest(defaultGraphs, namedGraphs, Q, R);
+#define QTEST(QUERY_FILE, RESULT_FILE) \
+    TestResultSet measured(defaultGraphs, namedGraphs, QUERY_FILE); \
+    ResultSet expected(&F, &P, RESULT_FILE); \
+    BOOST_CHECK_EQUAL(measured, expected);
 #define S Sentinel
 
 BOOST_AUTO_TEST_SUITE( basic )
@@ -126,7 +119,6 @@ BOOST_AUTO_TEST_CASE( Basic_graph_pattern___spoo ) {
     const char* namedGraphs[] = { S };
     QTEST("data-r2/basic/spoo-1.rq", "data-r2/basic/spoo-1.srx");
 }
-#if 0
 BOOST_AUTO_TEST_CASE( Basic___List_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-2.ttl", S };
     const char* namedGraphs[] = { S };
@@ -257,7 +249,6 @@ BOOST_AUTO_TEST_CASE( Prefix_name_1 ) {
     const char* namedGraphs[] = { S };
     QTEST("data-r2/basic/prefix-name-1.rq", "data-r2/basic/prefix-name-1.srx");
 }
-#endif
 BOOST_AUTO_TEST_SUITE_END()
 
 // EOF
