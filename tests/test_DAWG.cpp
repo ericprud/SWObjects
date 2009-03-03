@@ -59,6 +59,17 @@ std::string readFile (const char* filename, const char* type) {
 
 struct TestResultSet : public ResultSet {
     RdfDB d;
+    void _loadGraphWrapper (const POS* graphName, const char* fileName) {
+#ifdef _MSC_VER
+	/* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
+	 *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
+	 */
+	loadGraph(d.assureGraph(graphName), &F, "text/turtle", "", fileName);
+#else /* !_MSC_VER */
+	turtleParser.setGraph(d.assureGraph(graphName));
+	turtleParser.parse_file(fileName);
+#endif /* !_MSC_VER */
+    }
     TestResultSet (const char* defGraphs[], const char* namGraphs[], 
 		   const char* queryFile) : ResultSet(&F) {
  
@@ -70,28 +81,13 @@ struct TestResultSet : public ResultSet {
 	}
 
 	/* Parse data. */
-	for (size_t i = 0; defGraphs[i] != Sentinel; ++i) {
-#ifdef _MSC_VER
-	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-	     */
-	    loadGraph(d.assureGraph(NULL), &F, "text/turtle", "", defGraphs[i]);
-#else /* !_MSC_VER */
-	    turtleParser.setGraph(d.assureGraph(NULL));
-	    turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSC_VER */
-	}
-	for (size_t i = 0; namGraphs[i] != Sentinel; ++i) {
-#ifdef _MSC_VER
-	    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-	     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-	     */
-	    loadGraph(d.assureGraph(F.getURI(namGraphs[i])), &F, "text/turtle", "", defGraphs[i]);
-#else /* !_MSC_VER */
-	    turtleParser.setGraph(d.assureGraph(F.getURI(namGraphs[i])));
-	    turtleParser.parse_file(defGraphs[i]);
-#endif /* !_MSC_VER */
-	}
+	if (defGraphs != NULL)
+	    for (size_t i = 0; defGraphs[i] != Sentinel; ++i)
+		_loadGraphWrapper(NULL, defGraphs[i]);
+
+	if (namGraphs != NULL)
+	    for (size_t i = 0; namGraphs[i] != Sentinel; ++i)
+		_loadGraphWrapper(F.getURI(namGraphs[i]), namGraphs[i]);
 
 	/* Exectute query. */
 	sparqlParser.root->execute(&d, this);
@@ -107,8 +103,8 @@ std::ostream& operator<< (std::ostream& os, TestResultSet const& my) {
 }
 
 /* Macros for terse test syntax: */
-#define QTEST(QUERY_FILE, RESULT_FILE) \
-    TestResultSet measured(defaultGraphs, namedGraphs, QUERY_FILE); \
+#define DEFGRAPH_TEST(QUERY_FILE, RESULT_FILE) \
+    TestResultSet measured(defaultGraphs, NULL, QUERY_FILE); \
     ResultSet expected(&F, &P, RESULT_FILE); \
     BOOST_CHECK_EQUAL(measured, expected);
 #define S Sentinel
@@ -116,138 +112,111 @@ std::ostream& operator<< (std::ostream& os, TestResultSet const& my) {
 BOOST_AUTO_TEST_SUITE( basic )
 BOOST_AUTO_TEST_CASE( Basic_graph_pattern___spoo ) {
     const char* defaultGraphs[] ={ "data-r2/basic/data-6.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/spoo-1.rq", "data-r2/basic/spoo-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/spoo-1.rq", "data-r2/basic/spoo-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___List_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-2.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/list-1.rq", "data-r2/basic/list-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/list-1.rq", "data-r2/basic/list-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___List_2 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-2.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/list-2.rq", "data-r2/basic/list-2.srx");
+    DEFGRAPH_TEST("data-r2/basic/list-2.rq", "data-r2/basic/list-2.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___List_3 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-2.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/list-3.rq", "data-r2/basic/list-3.srx");
+    DEFGRAPH_TEST("data-r2/basic/list-3.rq", "data-r2/basic/list-3.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___List_4 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-2.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/list-4.rq", "data-r2/basic/list-4.srx");
+    DEFGRAPH_TEST("data-r2/basic/list-4.rq", "data-r2/basic/list-4.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-1.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/base-prefix-1.rq", "data-r2/basic/base-prefix-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/base-prefix-1.rq", "data-r2/basic/base-prefix-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_2 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-1.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/base-prefix-2.rq", "data-r2/basic/base-prefix-2.srx");
+    DEFGRAPH_TEST("data-r2/basic/base-prefix-2.rq", "data-r2/basic/base-prefix-2.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_3 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-1.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/base-prefix-3.rq", "data-r2/basic/base-prefix-3.srx");
+    DEFGRAPH_TEST("data-r2/basic/base-prefix-3.rq", "data-r2/basic/base-prefix-3.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_4 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-1.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/base-prefix-4.rq", "data-r2/basic/base-prefix-4.srx");
+    DEFGRAPH_TEST("data-r2/basic/base-prefix-4.rq", "data-r2/basic/base-prefix-4.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_5 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-1.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/base-prefix-5.rq", "data-r2/basic/base-prefix-5.srx");
+    DEFGRAPH_TEST("data-r2/basic/base-prefix-5.rq", "data-r2/basic/base-prefix-5.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Quotes_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-3.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/quotes-1.rq", "data-r2/basic/quotes-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/quotes-1.rq", "data-r2/basic/quotes-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Quotes_2 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-3.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/quotes-2.rq", "data-r2/basic/quotes-2.srx");
+    DEFGRAPH_TEST("data-r2/basic/quotes-2.rq", "data-r2/basic/quotes-2.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Quotes_3 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-3.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/quotes-3.rq", "data-r2/basic/quotes-3.srx");
+    DEFGRAPH_TEST("data-r2/basic/quotes-3.rq", "data-r2/basic/quotes-3.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Quotes_4 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-3.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/quotes-4.rq", "data-r2/basic/quotes-4.srx");
+    DEFGRAPH_TEST("data-r2/basic/quotes-4.rq", "data-r2/basic/quotes-4.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-1.rq", "data-r2/basic/term-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-1.rq", "data-r2/basic/term-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_2 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-2.rq", "data-r2/basic/term-2.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-2.rq", "data-r2/basic/term-2.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_3 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-3.rq", "data-r2/basic/term-3.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-3.rq", "data-r2/basic/term-3.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_4 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-4.rq", "data-r2/basic/term-4.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-4.rq", "data-r2/basic/term-4.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_5 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-5.rq", "data-r2/basic/term-5.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-5.rq", "data-r2/basic/term-5.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_6 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-6.rq", "data-r2/basic/term-6.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-6.rq", "data-r2/basic/term-6.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_7 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-7.rq", "data-r2/basic/term-7.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-7.rq", "data-r2/basic/term-7.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_8 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-8.rq", "data-r2/basic/term-8.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-8.rq", "data-r2/basic/term-8.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Term_9 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-4.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/term-9.rq", "data-r2/basic/term-9.srx");
+    DEFGRAPH_TEST("data-r2/basic/term-9.rq", "data-r2/basic/term-9.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Var_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-5.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/var-1.rq", "data-r2/basic/var-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/var-1.rq", "data-r2/basic/var-1.srx");
 }
 BOOST_AUTO_TEST_CASE( Basic___Var_2 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-5.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/var-2.rq", "data-r2/basic/var-2.srx");
+    DEFGRAPH_TEST("data-r2/basic/var-2.rq", "data-r2/basic/var-2.srx");
 }
 BOOST_AUTO_TEST_CASE( Non_matching_triple_pattern ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-7.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/bgp-no-match.rq", "data-r2/basic/bgp-no-match.srx");
+    DEFGRAPH_TEST("data-r2/basic/bgp-no-match.rq", "data-r2/basic/bgp-no-match.srx");
 }
 BOOST_AUTO_TEST_CASE( Prefix_name_1 ) {
     const char* defaultGraphs[] = { "data-r2/basic/data-6.ttl", S };
-    const char* namedGraphs[] = { S };
-    QTEST("data-r2/basic/prefix-name-1.rq", "data-r2/basic/prefix-name-1.srx");
+    DEFGRAPH_TEST("data-r2/basic/prefix-name-1.rq", "data-r2/basic/prefix-name-1.srx");
 }
 BOOST_AUTO_TEST_SUITE_END()
 
