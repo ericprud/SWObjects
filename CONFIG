@@ -62,3 +62,8 @@ INCLUDES += -I../../../../dlib-17.11
 # Note that you may also set INCLUDES, LIBINC, etc on the command line:
 # INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. expat1" make -j 4 t_DAWG
 
+
+##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
+# This is needed on cygwin, which doesn't create symlinks for base names,
+# e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
+#BOOST_VERSION=-gcc34-mt-1_38

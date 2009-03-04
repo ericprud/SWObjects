@@ -71,7 +71,7 @@ endif
 
 ifeq ($(REGEX_LIB), BOOST)
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\\n"
-  REGEX_LIB?= -lboost_regex
+  REGEX_LIB?= -lboost_regex$(BOOST_VERSION)
 else
   ifneq ($(REGEX_LIB), )
     $(warning $(REGEX_LIB) may not be supported)
@@ -82,7 +82,7 @@ endif
 
 ifeq ($(HTTP_CLIENT), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\\n"
-  HTTP_CLIENT_LIB?= -lboost_system
+  HTTP_CLIENT_LIB?= -lboost_system$(BOOST_VERSION)
 else ifeq ($(HTTP_CLIENT), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\\n"
   $(warning DLIB HTTP client code not yet written)
@@ -96,7 +96,7 @@ endif
 
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
-  HTTP_SERVER_LIB?= -lboost_system
+  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION)
   $(warning ASIO HTTP server code not yet written)
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
@@ -120,7 +120,7 @@ else
 endif
 
 
-TEST_LIB?= -lboost_unit_test_framework
+TEST_LIB?= -lboost_unit_test_framework$(BOOST_VERSION)
 
 
 .PHONY: all dep lib test
