@@ -43,13 +43,13 @@ PWD ?= $(shell pwd -P)
 ifeq ($(XML_PARSER), LIBXML2)
   CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_LIBXML2 "\\n"
   INCLUDES += -I/usr/include/libxml2
-  XML_PARSER_LIB= -lxml2
+  XML_PARSER_LIB?= -lxml2
 else ifeq ($(XML_PARSER), EXPAT1)
   CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\\n"
-  XML_PARSER_LIB= -lexpat
+  XML_PARSER_LIB?= -lexpat
 else ifeq ($(XML_PARSER), MSXML)
   CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML "\\n"
-  XML_PARSER_LIB= -lmsxml
+  XML_PARSER_LIB?= -lmsxml
   $(warning MSXML adapter code not yet written)
 else
   ifneq ($(XML_PARSER), )
@@ -71,7 +71,7 @@ endif
 
 ifeq ($(REGEX_LIB), BOOST)
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\\n"
-  REGEX_LIB= -lboost_regex
+  REGEX_LIB?= -lboost_regex
 else
   ifneq ($(REGEX_LIB), )
     $(warning $(REGEX_LIB) may not be supported)
@@ -82,7 +82,7 @@ endif
 
 ifeq ($(HTTP_CLIENT), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\\n"
-  HTTP_CLIENT_LIB= -lboost_system
+  HTTP_CLIENT_LIB?= -lboost_system
 else ifeq ($(HTTP_CLIENT), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\\n"
   $(warning DLIB HTTP client code not yet written)
@@ -96,7 +96,7 @@ endif
 
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
-  HTTP_SERVER_LIB= -lboost_system
+  HTTP_SERVER_LIB?= -lboost_system
   $(warning ASIO HTTP server code not yet written)
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
@@ -111,7 +111,7 @@ endif
 
 ifeq ($(SQL_CLIENT), MYSQL)
   CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\\n"
-  SQL_CLIENT_LIB= -lmysqlclient
+  SQL_CLIENT_LIB?= -lmysqlclient
 else
   ifneq ($(SQL_CLIENT), )
     $(warning $(SQL_CLIENT) may not be supported)
@@ -120,7 +120,7 @@ else
 endif
 
 
-TEST_LIB= -lboost_unit_test_framework
+TEST_LIB?= -lboost_unit_test_framework
 
 
 .PHONY: all dep lib test
