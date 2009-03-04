@@ -29,7 +29,7 @@ CONSOLE_ENCODING= UTF8
 # Tested with:
 #   Boost v1.36.
 #   http://www.boost.org/doc/libs/1_36_0/libs/regex/doc/html/index.html
-REGEX_LIB= BOOST
+REGEX= BOOST
 
 # HTTP_CLIENT: ASIO |  - what library provies HTTP client support. #####
 # Needed for query federation features in SWtransformer.

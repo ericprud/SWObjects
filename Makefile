@@ -69,11 +69,11 @@ else
 endif
 
 
-ifeq ($(REGEX_LIB), BOOST)
+ifeq ($(REGEX), BOOST)
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\\n"
   REGEX_LIB?= -lboost_regex$(BOOST_VERSION)
 else
-  ifneq ($(REGEX_LIB), )
+  ifneq ($(REGEX), )
     $(warning $(REGEX_LIB) may not be supported)
   endif
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_DISABLED "\\n"
