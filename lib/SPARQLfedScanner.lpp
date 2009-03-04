@@ -234,8 +234,8 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
 {IT_REGEX}		{return token::IT_REGEX;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
-{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("TRUE", yytext); return token::IT_true;}
-{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("FALSE", yytext); return token::IT_false;}
+{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
+{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
 {IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
