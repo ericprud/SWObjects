@@ -115,44 +115,7 @@ public:
     BNode* createBNode () { return posFactory->createBNode(); }
     BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
     RDFLiteral* getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
-	std::istringstream is(p_String);
-	std::ostringstream normalized;
-
-	if (p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#integer") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#negativeInteger") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#long") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#int") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#short") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#byte") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#nonNegativeInteger") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#unsignedLong") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#unsignedInt") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#unsignedShort") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#unsignedByte") || 
-	    p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#positiveInteger")) {
-	    int i;
-	    is >> i;
-	    normalized << i;
-	    return posFactory->getNumericRDFLiteral(normalized.str().c_str(), i);
-	} else if (p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#decimal") || 
-		   p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#float")) {
-	    float f;
-	    is >> f;
-	    normalized << f;
-	    return posFactory->getNumericRDFLiteral(normalized.str().c_str(), f);
-	} else if (p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#double")) {
-	    double d;
-	    is >> d;
-	    normalized << d;
-	    return posFactory->getNumericRDFLiteral(normalized.str().c_str(), d);
-	} else if (p_URI == posFactory->getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
-	    bool b;
-	    is >> b;
-	    normalized << b;
-	    return posFactory->getBooleanRDFLiteral(normalized.str().c_str(), b);
-	} else
-	    return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
+	return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
 
     IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }

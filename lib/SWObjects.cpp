@@ -462,6 +462,46 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
+	std::istringstream is(p_String);
+	std::ostringstream normalized;
+
+	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#negativeInteger") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#long") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#int") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#short") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#byte") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonNegativeInteger") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedLong") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedInt") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedShort") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedByte") || 
+	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#positiveInteger")) {
+	    int i;
+	    is >> i;
+	    normalized << i;
+	    return getNumericRDFLiteral(normalized.str().c_str(), i);
+	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#decimal") || 
+		   p_URI == getURI("http://www.w3.org/2001/XMLSchema#float")) {
+	    float f;
+	    is >> f;
+	    normalized << f;
+	    return getNumericRDFLiteral(normalized.str().c_str(), f);
+	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#double")) {
+	    double d;
+	    is >> d;
+	    normalized << d;
+	    return getNumericRDFLiteral(normalized.str().c_str(), d);
+	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
+	    if (p_String == "0" || p_String == "false")
+		return getBooleanRDFLiteral("false", 0);
+	    bool b;
+	    is >> b;
+	    normalized << (b ? "true" : "false");
+	    return getBooleanRDFLiteral(normalized.str().c_str(), b);
+	}
+
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
 	if (p_URI)
