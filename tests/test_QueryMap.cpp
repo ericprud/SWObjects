@@ -12,7 +12,7 @@
 #include <vector>
 #include <fstream>
 #include "SWObjects.hpp"
-#include "SPARQLfedParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "QueryMapper.hpp"
