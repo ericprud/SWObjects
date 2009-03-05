@@ -31,7 +31,7 @@ PREFIX vendor: <http://bsbm.example/db/vendor#>
 PREFIX tr: <http://www.w3.org/2008/04/SPARQLfed/#>
 
 CONSTRUCT {
-tr:bind(?offer, bsbm-inst:, "dataFromVendor$(offer_publisher)/Offer$(offer_nr)")
+?offer # tr:bind(?offer, bsbm-inst:, "dataFromVendor$(offer_publisher)/Offer$(offer_nr)")
        a bsbm:Offer ;
        bsbm:product ?product ;
        bsbm:vendor ?vendor ;
