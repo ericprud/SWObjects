@@ -290,13 +290,13 @@ struct SQLizerTest {
 BOOST_AUTO_TEST_SUITE( healthCare )
 BOOST_AUTO_TEST_SUITE( simple )
 BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
-    RuleMapTest t("tests/healthCare/simple/sdtm.rq", "tests/healthCare/simple/hl7-sdtm.rq", "tests/healthCare/simple/hl7.rq");
+    RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
 BOOST_AUTO_TEST_CASE( sdtm_db ) {
-    RuleMapTest t("tests/healthCare/simple/hl7.rq", "tests/healthCare/simple/db-hl7.rq", "tests/healthCare/simple/db.rq");
+    RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "tests/healthCare/simple/db.sql");
+    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/simple/db.sql");
     BOOST_CHECK_EQUAL(s.transformed, s.ref);
 }
 BOOST_AUTO_TEST_SUITE_END()
