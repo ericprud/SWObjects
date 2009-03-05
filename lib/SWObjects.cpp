@@ -831,11 +831,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
-	bool matched = true; // Pretend it's matched so we can try the first constraint.
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
-	     constraint != toMatch->m_TriplePatterns.end() && (matched || toMatch->allOpts); constraint++) {
+	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
-		matched = false;
+		bool matched = false;
 		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
 		    Result* newRow = (*row)->duplicate(rs, row);
