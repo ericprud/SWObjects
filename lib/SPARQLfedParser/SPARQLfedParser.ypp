@@ -263,10 +263,10 @@ public:
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_Construct> Construct
 %type <p_Describe> Describe
-%type <p_POSs> _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C _Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt
+%type <p_POSs> _QGraphNode_E_Star _O_QGraphNode_E_S_QGraphNode_E_Star_C _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt
 %type <p_Ask> Ask
 %type <p_DatasetClause> DatasetClause _O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C DefaultGraphClause NamedGraphClause
-%type <p_POS> SourceSelector _O_QGT_COMMA_E_S_QGraphNode_E_C
+%type <p_POS> SourceSelector
 %type <p_WhereClause> _QWhereClause_E_Opt WhereClause
 %type <p_SolutionModifier> SolutionModifier
 %type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt LimitClause _QLimitClause_E_Opt OffsetClause _QOffsetClause_E_Opt
@@ -1301,8 +1301,8 @@ BlankNodePropertyList:
 ;
 
 Generator:
-    // '(' GraphNode+ ')'
-    IRIref GT_LPAREN _Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
+    // IRIref '(' ( GraphNode GraphNode* )? ')'
+    IRIref GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
 	if ($1 == driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#exactly")) {
 	    $$ = driver.createBNode();
 	    POS* tail = $$;
@@ -1331,27 +1331,20 @@ Generator:
     }
 ;
 
-// ',' GraphNode
-_O_QGT_COMMA_E_S_QGraphNode_E_C:
-    GT_COMMA GraphNode	{
-	$$ = $2;
-    }
-;
-
-// ( ',' GraphNode )*
-_Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star:
+// GraphNode*
+_QGraphNode_E_Star:
     {
 	$$ = new ProductionVector<const POS*>();
     }
-  | _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star _O_QGT_COMMA_E_S_QGraphNode_E_C	{
+  | _QGraphNode_E_Star GraphNode	{
 	$1->push_back($2);
 	$$ = $1;
     }
 ;
 
-// GraphNode ( ',' GraphNode )*
-_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C:
-    GraphNode _Q_O_QGT_COMMA_E_S_QGraphNode_E_C_E_Star	{
+// GraphNode GraphNode*
+_O_QGraphNode_E_S_QGraphNode_E_Star_C:
+    GraphNode _QGraphNode_E_Star	{
 	/* no push_front
 	   $2->push_front($1);
 	   $$ = $2;
@@ -1366,12 +1359,12 @@ _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C:
     }
 ;
 
-// ( GraphNode ( ',' GraphNode )* )?
-_Q_O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C_E_Opt:
+// ( GraphNode GraphNode* )?
+_Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt:
     {
 	$$ = new ProductionVector<const POS*>();
     }
-    | _O_QGraphNode_E_S_QGT_COMMA_E_S_QGraphNode_E_Star_C	
+    | _O_QGraphNode_E_S_QGraphNode_E_Star_C	
 ;
 
 GraphNode:
