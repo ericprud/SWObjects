@@ -124,6 +124,7 @@ public:
 
     Select* p_Select;
     e_distinctness p_distinctness;
+    e_listModifier p_listModifier;
     e_Silence p_Silence;
     POSList* p_POSList;
     VarSet* p_VarSet;
@@ -194,6 +195,7 @@ public:
 %token <p_void> IT_LIMIT
 %token <p_void> IT_OFFSET
 %token <p_void> IT_BINDINGS
+%token <p_void> IT_MEMBERS IT_STARTS IT_ENDS IT_ANY IT_UNORDERED
 %token <p_void> GT_LCURLEY GT_RCURLEY IT_ASK IT_WHERE
 %token <p_void> GT_LPAREN
 %token <p_void> GT_RPAREN
@@ -258,6 +260,7 @@ public:
 
 %type <p_Select> Select
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
+%type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 %type <p_POSList> _QVar_E_Plus _QVarOrIRIref_E_Plus
 %type <p_VarSet> _O_QVar_E_Plus_Or_QGT_TIMES_E_C _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C
 %type <p_DatasetClauses> _QDatasetClause_E_Star
@@ -1301,9 +1304,9 @@ BlankNodePropertyList:
 ;
 
 Generator:
-    // IRIref '(' ( GraphNode GraphNode* )? ')'
-    IRIref GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
-	if ($1 == driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#exactly")) {
+    // ('members' | 'starts' | 'ends' | 'any' | 'unordered')? '(' ( GraphNode GraphNode* )? ')' ;
+    _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
+	if ($1 == LIST_exact) {
 	    $$ = driver.createBNode();
 	    POS* tail = $$;
 	    ProductionVector<const POS*>* members = $3;
@@ -1320,15 +1323,37 @@ Generator:
 	    }
 	    members->clear();
 	    delete members;
-	} else if ($1 == driver.getURI("http://www.w3.org/2008/04/SPARQLfed/#bind")) {
-	    ProductionVector<const POS*>* members = $3;
-	    $$ = (POS*)*(members->begin());
-	    members->clear();
-	    delete members;
 	} else {
 	    error(*(yylocation_stack_.end()), "unsupported function");
 	}
     }
+;
+
+_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C:
+    // 'members' | 'starts' | 'ends' | 'any' | 'unordered'
+    IT_MEMBERS	{
+	$$ = LIST_members;
+    }
+  | IT_STARTS	{
+	$$ = LIST_starts;
+    }
+  | IT_ENDS	{
+	$$ = LIST_ends;
+    }
+  | IT_ANY	{
+	$$ = LIST_any;
+    }
+  | IT_UNORDERED	{
+	$$ = LIST_unordered;
+    }
+;
+
+_Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt:
+    // ('members' | 'starts' | 'ends' | 'any' | 'unordered')?
+    {
+	$$ = LIST_exact
+    }
+  | _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C	
 ;
 
 // GraphNode*

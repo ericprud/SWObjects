@@ -541,6 +541,7 @@ public:
 };
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
+typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
 typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 #define LIMIT_None -1
 #define OFFSET_None -1

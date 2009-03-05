@@ -84,6 +84,11 @@ IT_DESC		[Dd][Ee][Ss][Cc]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 IT_BINDINGS		[Bb][Ii][Nn][Dd][Ii][Nn][Gg][Ss]
+IT_MEMBERS		[Mm][Ee][Mm][Bb][Ee][Rr][Ss]
+IT_STARTS		[Ss][Tt][Aa][Rr][Tt][Ss]
+IT_ENDS		[Ee][Nn][Dd][Ss]
+IT_ANY		[Aa][Nn][Yy]
+IT_UNORDERED		[Uu][Nn][Oo][Rr][Dd][Ee][Rr][Ee][Dd]
 GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 GT_LPAREN		"("
@@ -196,6 +201,11 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {IT_BINDINGS}		{return token::IT_BINDINGS;}
+{IT_MEMBERS}		{return token::IT_MEMBERS;}
+{IT_STARTS}		{return token::IT_STARTS;}
+{IT_ENDS}		{return token::IT_ENDS;}
+{IT_ANY}		{return token::IT_ANY;}
+{IT_UNORDERED}		{return token::IT_UNORDERED;}
 {GT_LCURLEY}		{return token::GT_LCURLEY;}
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
