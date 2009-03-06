@@ -402,10 +402,10 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const POS* graphVar, Result* provisional, const POS* graphName) const {
 	return
-	    _bindVariable(graphVar, graphName, rs, provisional, weaklyBound) &&
-	    _bindVariable(tp->m_s, m_s, rs, provisional, weaklyBound) && 
-	    _bindVariable(tp->m_p, m_p, rs, provisional, weaklyBound) && 
-	    _bindVariable(tp->m_o, m_o, rs, provisional, weaklyBound);
+	    _bindVariable(graphName, graphVar, rs, provisional, weaklyBound) &&
+	    _bindVariable(m_s, tp->m_s, rs, provisional, weaklyBound) && 
+	    _bindVariable(m_p, tp->m_p, rs, provisional, weaklyBound) && 
+	    _bindVariable(m_o, tp->m_o, rs, provisional, weaklyBound);
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
 };

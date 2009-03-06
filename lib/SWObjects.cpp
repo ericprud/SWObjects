@@ -838,7 +838,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
 		    Result* newRow = (*row)->duplicate(rs, row);
-		    if ((*triple)->bindVariables(*constraint, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
 			matched = true;
 			rs->insert(row, newRow);
 		    } else {
