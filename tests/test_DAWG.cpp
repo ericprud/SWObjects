@@ -44,19 +44,6 @@ TurtleSDriver turtleParser("", &F);
 /* Sentinal to mark end of arrays of files: */
 const char* Sentinel = "sentinel";
 
-std::string readFile (const char* filename, const char* type) {
-    std::ifstream dataStream(filename);
-    if (!dataStream.is_open()) {
-	std::string msg = std::string("failed to ") + std::string(type) + 
-	    std::string(" data \"") + filename + std::string("\".");
-	throw msg;
-    }
-    std::istreambuf_iterator<char> i(dataStream), e;
-    std::string ret(i, e);
-    dataStream.close();
-    return ret;
-}
-
 struct TestResultSet : public ResultSet {
     RdfDB d;
     void _loadGraphWrapper (const POS* graphName, const char* fileName) {
