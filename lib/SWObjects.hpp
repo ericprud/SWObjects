@@ -213,6 +213,7 @@ public:
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
+    bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
@@ -366,7 +367,6 @@ class TriplePattern : public Base {
 private:
     const POS* m_s; const POS* m_p; const POS* m_o;
     bool weaklyBound;
-    static bool _bindVariable(const POS* it, const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound);
     TriplePattern (const POS* p_s, const POS* p_p, const POS* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
     TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
 public:
@@ -402,10 +402,10 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const POS* graphVar, Result* provisional, const POS* graphName) const {
 	return
-	    _bindVariable(graphName, graphVar, rs, provisional, weaklyBound) &&
-	    _bindVariable(m_s, tp->m_s, rs, provisional, weaklyBound) && 
-	    _bindVariable(m_p, tp->m_p, rs, provisional, weaklyBound) && 
-	    _bindVariable(m_o, tp->m_o, rs, provisional, weaklyBound);
+	    graphName->bindVariable(graphVar, rs, provisional, weaklyBound) &&
+	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
+	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
+	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
 };

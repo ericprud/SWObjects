@@ -854,12 +854,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
     }
-    bool TriplePattern::_bindVariable (const POS* pattern, const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) {
-	if (pattern == NULL || constant == NULL)
+    bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+	if (this == NULL || constant == NULL)
 	    return true;
-	const POS* curVal = pattern->evalPOS(provisional, false); // doesn't need to generate symbols
+	const POS* curVal = evalPOS(provisional, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
-	    rs->set(provisional, pattern, constant, weaklyBound);
+	    rs->set(provisional, this, constant, weaklyBound);
 	    return true;
 	}
 	return constant == curVal;
