@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <stack>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -44,6 +45,13 @@
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 namespace w3c_sw {
+
+class POS;
+class URI;
+class POSFactory;
+class ResultSet;
+class Result;
+class RdfDB;
 
 class StringException : public std::exception {
 public:
@@ -157,6 +165,20 @@ public:
 };
 #endif
 
+typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
+class Expression;
+class Bindable;
+class Variable;
+class TriplePattern;
+class POSFactory;
+typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
+
+} /* namespace w3c_sw */
+
+#include "ResultSet.hpp"
+
+namespace w3c_sw {
+
 class Terminal : public Base {
 protected:
     std::string terminal;
@@ -173,14 +195,6 @@ public:
     std::string getTerminal () const { return terminal; }
 };
 
-} // namespace w3c_sw
-
-namespace w3c_sw {
-
-class ResultSet;
-class Result;
-class RdfDB;
-
 class LANGTAG : public Terminal {
 public:
     LANGTAG(std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
@@ -194,9 +208,6 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const Operation& ref) const = 0;
 };
-
-class POS;
-class POSFactory;
 
 /* START Parts Of Speach */
 class POS : public Terminal {
@@ -213,7 +224,7 @@ public:
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
-    bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
+    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
@@ -271,6 +282,14 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
+};
+
+class ListPOS : public Bindable {
+    ProductionVector<const POS*>* m_POSs;
+public:
+    ListPOS (std::string str, ProductionVector<const POS*>* p_POSs) : Bindable(str), m_POSs(p_POSs) {  }
+public:
+    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const;
 };
 
 class RDFLiteral : public POS {
@@ -400,12 +419,25 @@ public:
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
-    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const POS* graphVar, Result* provisional, const POS* graphName) const {
-	return
-	    graphName->bindVariable(graphVar, rs, provisional, weaklyBound) &&
-	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
-	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
-	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
+    size_t bindVariables (const TriplePattern* tp, ResultSet* rs, 
+			  const POS* graphVar, const POS* graphName, 
+			  ResultSetIteratorPair rows) const {
+	struct {
+	    const POS* var;
+	    const POS* val;
+	} toTest[] = {{graphName, graphVar}, 
+		      {m_s, tp->m_s}, 
+		      {m_p, tp->m_p}, 
+		      {m_o, tp->m_o}};
+	bool matched = true;
+	for (size_t i = 0; matched && i < sizeof(toTest)/sizeof(toTest[0]); ++i) {
+	    for (ResultSetIterator it = rows.begin; matched && it != rows.end; ++it)
+		toTest[i].var->bindVariable(toTest[i].val, rs, it, weaklyBound);
+	}
+	size_t matches;
+	for (ResultSetIterator it = rows.begin; it != rows.end; ++it)
+	    ++matches;
+	return matches;
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
 };
@@ -542,10 +574,8 @@ public:
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
 typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
-typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 #define LIMIT_None -1
 #define OFFSET_None -1
-typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
 typedef enum { SILENT_Yes, SILENT_No } e_Silence;
 
 class Filter : public Base {

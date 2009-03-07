@@ -53,7 +53,7 @@ namespace w3c_sw {
 	SWSAXhandler* saxHandler;
     public:
 	SAXparser_libxml () {
-	    ::memset(&libXMLhandler, 0, sizeof(libXMLhandler));
+	    //::memset(&libXMLhandler, 0, sizeof(libXMLhandler));
 	    libXMLhandler.initialized = XML_SAX2_MAGIC;  // so we do this to force parsing as SAX2.
 	    libXMLhandler.startElementNs = &startElementNs;
 	    libXMLhandler.endElementNs = &endElementNs;

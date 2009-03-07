@@ -6,8 +6,6 @@
 #ifndef SPARQLSerializer_H
 #define SPARQLSerializer_H
 
-#include <stack>
-
 namespace w3c_sw {
 
 class SPARQLSerializer : public Expressor {

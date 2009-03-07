@@ -21,7 +21,7 @@ XML_PARSER= LIBXML2
 #                                                 │  ││      |  ||
 #                                                 └──┴┘      +--++
 # @@TODO= add CSV.
-CONSOLE_ENCODING= UTF8
+##CONSOLE_ENCODING= UTF8
 
 # REGEX_LIB: BOOST |  - what library provides regular expressions. #####
 # Needed for URI and literal mappings and for parsing command line
@@ -29,7 +29,7 @@ CONSOLE_ENCODING= UTF8
 # Tested with:
 #   Boost v1.36.
 #   http://www.boost.org/doc/libs/1_36_0/libs/regex/doc/html/index.html
-REGEX= BOOST
+##REGEX= BOOST
 
 # HTTP_CLIENT: ASIO |  - what library provies HTTP client support. #####
 # Needed for query federation features in SWtransformer.
@@ -37,7 +37,7 @@ REGEX= BOOST
 #   Boost ASIO v1.36.
 #   http://www.boost.org/doc/libs/1_36_0/doc/html/boost_asio.html
 # @@TODO= add DLIB client code.
-HTTP_CLIENT= ASIO
+##HTTP_CLIENT= ASIO
 
 # HTTP_SERVER: DLIB |  - what library provies HTTP server support. #####
 # Needed for SPARQL_server.
@@ -45,7 +45,7 @@ HTTP_CLIENT= ASIO
 #   DLIB v?.??
 #   http://dclib.sourceforge.net/
 # @@TODO= add ASIO server code.
-HTTP_SERVER= DLIB
+##HTTP_SERVER= DLIB
 
 # SQL_CLIENT: MYSQL |  - what library provies HTTP server support. #####
 # Needed for any binary exectuting relational queries.
@@ -53,7 +53,7 @@ HTTP_SERVER= DLIB
 #   MYSQL v?.??
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
-SQL_CLIENT= MYSQL
+##SQL_CLIENT= MYSQL
 
 
 ##### INCLUDES: /some/path... - Directories containing additional headers #####

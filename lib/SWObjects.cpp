@@ -6,7 +6,7 @@
  */
 
 #include "SWObjects.hpp"
-#include "ResultSet.hpp"
+#include "RdfDB.hpp"
 #include <string.h>
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
@@ -832,37 +832,39 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
-	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
-	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
-		bool matched = false;
-		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
-		     triple != m_TriplePatterns.end(); triple++) {
-		    Result* newRow = (*row)->duplicate(rs, row);
-		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
-			matched = true;
-			rs->insert(row, newRow);
-		    } else {
-			delete newRow;
-		    }
-		}
-		if (matched || !toMatch->allOpts) {
-		    delete *row;
-		    rs->erase(row++);
-		} else {
-		    row++;
-		}
-	    }
-	}
+	     constraint != toMatch->m_TriplePatterns.end(); constraint++)
+	    rs->matchConstraint(*constraint, &m_TriplePatterns, toMatch->allOpts, graphVar, graphName);
     }
-    bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+    bool POS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
 	    return true;
-	const POS* curVal = evalPOS(provisional, false); // doesn't need to generate symbols
+	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
-	    rs->set(provisional, this, constant, weaklyBound);
+	    Result* newRow = (*row)->duplicate(rs, row);
+	    rs->set(newRow, this, constant, weaklyBound);
+	    rs->insert(row, newRow);
 	    return true;
 	}
-	return constant == curVal;
+	if (constant == curVal)
+	    return true;
+	rs->erase(row);
+	return false;
+    }
+
+    bool ListPOS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const {
+	if (this == NULL || constant == NULL)
+	    return true;
+	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
+	if (curVal == NULL) {
+	    Result* newRow = (*row)->duplicate(rs, row);
+	    rs->set(newRow, this, constant, weaklyBound);
+	    rs->insert(row, newRow);
+	    return true;
+	}
+	if (constant == curVal)
+	    return true;
+	rs->erase(row);
+	return false;
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
