@@ -1915,13 +1915,6 @@ class TestExpressor : public RecursiveExpressor {
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
 
-#ifdef _MSC_VER
-    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-     */
-    bool loadGraph(BasicGraphPattern* bgp, POSFactory* f, std::string mediaType, std::string baseURI, std::string fileName);
-#endif /* _MSC_VER */
-
 } //namespace w3c_sw
 
 

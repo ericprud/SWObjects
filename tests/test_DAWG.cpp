@@ -34,12 +34,7 @@ using namespace w3c_sw;
 
 POSFactory F;
 SPARQLfedDriver sparqlParser("", &F);
-#ifndef _MSC_VER
-    /* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-     *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-     */
 TurtleSDriver turtleParser("", &F);
-#endif /* !_MSC_VER */
 
 /* Sentinal to mark end of arrays of files: */
 const char* Sentinel = "sentinel";
@@ -47,15 +42,8 @@ const char* Sentinel = "sentinel";
 struct TestResultSet : public ResultSet {
     RdfDB d;
     void _loadGraphWrapper (const POS* graphName, const char* fileName) {
-#ifdef _MSC_VER
-	/* @@@ Temporary work-around for a build bug in MSVC++ where TurltSDriver
-	 *     isn't defined by including TurtleSParser/TurtleSParser.hpp .
-	 */
-	loadGraph(d.assureGraph(graphName), &F, "text/turtle", "", fileName);
-#else /* !_MSC_VER */
 	turtleParser.setGraph(d.assureGraph(graphName));
 	turtleParser.parse_file(fileName);
-#endif /* !_MSC_VER */
     }
     TestResultSet (const char* defGraphs[], const char* namGraphs[], 
 		   const char* queryFile) : ResultSet(&F) {
