@@ -72,6 +72,41 @@ namespace w3c_sw {
 	results.insert(results.begin(), new Result(this));
     }
 
+#if REGEX_LIB == SWOb_BOOST
+    ResultSet::ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
+	const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
+	std::string::const_iterator start, end; 
+	start = str.begin(); 
+	end = str.end(); 
+	boost::match_results<std::string::const_iterator> what;
+	boost::match_flag_type flags = boost::match_default;
+	bool firstRow = true;
+	std::vector<POS*> headers;
+	int col = 0;
+	Result* curRow;
+	while (regex_search(start, end, what, expression, flags)) {
+	    std::string matched(what[1].first, what[1].second);
+	    if (matched == "\n") {
+		firstRow = false;
+		col = 0;
+		curRow = new Result(this);
+		insert(this->end(), curRow);
+	    } else {
+		POS* pos = posFactory->getPOS(matched);
+		if (firstRow)
+		    headers.push_back(pos);
+		else
+		    set(curRow, headers[col++], pos, false);
+	    }
+
+	    start = what[0].second; 
+	    // update flags: 
+	    flags |= boost::match_prev_avail; 
+	    flags |= boost::match_not_bob; 
+	}
+    }
+#endif /* !REGEX_LIB == SWOb_BOOST */
+
     ResultSet::~ResultSet () {
 	for (ResultSetIterator it = results.begin(); it != results.end(); it++)
 	    delete *it;
@@ -390,14 +425,30 @@ namespace w3c_sw {
     void ResultSet::matchConstraint (const TriplePattern* constraint, 
 				     const ProductionVector<const TriplePattern*>* data, 
 				     bool allOpts, const POS* graphVar, const POS* graphName) {
+	/* For each row, insert all the bindings which are consistent with that
+	   row, then delete that row. */
 	for (ResultSetIterator row = begin() ; row != end(); ) {
-	    ResultSetIterator nextRow = row;
-	    ++nextRow;
-	    ResultSetIteratorPair span(row, nextRow);
-	    size_t matched = 0;
-	    for (std::vector<const TriplePattern*>::const_iterator triple = data->begin();
-		 triple != data->end(); triple++)
-		matched += constraint->bindVariables(*triple, this, graphVar, graphName, span);
+	    bool matched = false;
+	    for (std::vector<const TriplePattern*>::const_iterator datum = data->begin();
+		 datum != data->end(); datum++) {
+		/* Because generators can produce more than one binding per
+		   (TriplePattern:Datum) pair, create a span object which keeps
+		   track of any row additions from e.g. { members(?x) <p1> 1 }. */
+		ResultSetIterator newRow = insert(row, (*row)->duplicate(this, row));
+		ResultSetIterator nextRow = newRow;
+		ResultSetIteratorPair span(newRow, ++nextRow);
+
+		/* If the binding matched, fab. Otherwise, remove any rows that
+		   were generated either in creating the initial span, or while
+		   it was binding generators, e.g. { memers(?x) <notFound> 1 }. */
+		if (constraint->bindVariables(*datum, this, graphVar, graphName, &span))
+		    matched = true;
+		else
+		    for (ResultSetIterator it = span.begin; it != span.end; ) {
+			delete *it;
+			erase(it++);
+		    }
+	    }
 	    if (matched || !allOpts) {
 		delete *row;
 		erase(row++);

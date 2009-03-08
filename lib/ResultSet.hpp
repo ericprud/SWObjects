@@ -97,38 +97,7 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB == SWOb_BOOST
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
-	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
-	    std::string::const_iterator start, end; 
-	    start = str.begin(); 
-	    end = str.end(); 
-	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    bool firstRow = true;
-	    std::vector<POS*> headers;
-	    int col = 0;
-	    Result* curRow;
-	    while (regex_search(start, end, what, expression, flags)) {
-		std::string matched(what[1].first, what[1].second);
-		if (matched == "\n") {
-		    firstRow = false;
-		    col = 0;
-		    curRow = new Result(this);
-		    insert(this->end(), curRow);
-		} else {
-		    POS* pos = posFactory->getPOS(matched);
-		    if (firstRow)
-			headers.push_back(pos);
-		    else
-			set(curRow, headers[col++], pos, false);
-		}
-
-		start = what[0].second; 
-		// update flags: 
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
-	    }
-	}
+	ResultSet(POSFactory* posFactory, std::string str, bool ordered);
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
 	ResultSet(POSFactory* posFactory, SWSAXparser* parser, const char* filename);

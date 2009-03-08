@@ -224,7 +224,7 @@ public:
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
-    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const;
+    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
@@ -419,25 +419,30 @@ public:
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
-    size_t bindVariables (const TriplePattern* tp, ResultSet* rs, 
+    bool bindVariables (const TriplePattern* datum, ResultSet* rs, 
 			  const POS* graphVar, const POS* graphName, 
-			  ResultSetIteratorPair rows) const {
+			  ResultSetIteratorPair* span) const {
+	/* Create a list of the atoms which need to match for a TriplePattern to
+	   match a datum. */
 	struct {
 	    const POS* var;
 	    const POS* val;
 	} toTest[] = {{graphName, graphVar}, 
-		      {m_s, tp->m_s}, 
-		      {m_p, tp->m_p}, 
-		      {m_o, tp->m_o}};
+		      {m_s, datum->m_s}, 
+		      {m_p, datum->m_p}, 
+		      {m_o, datum->m_o}};
 	bool matched = true;
-	for (size_t i = 0; matched && i < sizeof(toTest)/sizeof(toTest[0]); ++i) {
-	    for (ResultSetIterator it = rows.begin; matched && it != rows.end; ++it)
-		toTest[i].var->bindVariable(toTest[i].val, rs, it, weaklyBound);
-	}
-	size_t matches;
-	for (ResultSetIterator it = rows.begin; it != rows.end; ++it)
-	    ++matches;
-	return matches;
+	/* For each row in the working span, for each atom, test if that atom's
+	   value in that row matches the corresponding position in the datum
+	   triple. For variable atoms yet unbound in the row, this will create a
+	   new binding. For generator atoms, this will replace the row with zero
+	   or more rows. */
+	for (size_t i = 0; matched && i < sizeof(toTest)/sizeof(toTest[0]); ++i)
+	    for (ResultSetIterator it = span->begin; matched && it != span->end; ++it)
+		if (!toTest[i].var->bindVariable(toTest[i].val, rs, it, weaklyBound, span))
+		    matched = false;
+
+	return matched;
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
 };

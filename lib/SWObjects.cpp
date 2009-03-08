@@ -835,19 +835,17 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++)
 	    rs->matchConstraint(*constraint, &m_TriplePatterns, toMatch->allOpts, graphVar, graphName);
     }
-    bool POS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const {
+    bool POS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const {
 	if (this == NULL || constant == NULL)
 	    return true;
 	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
 	if (curVal == NULL) {
-	    Result* newRow = (*row)->duplicate(rs, row);
-	    rs->set(newRow, this, constant, weaklyBound);
-	    rs->insert(row, newRow);
+	    for (ResultSetIterator it = rows->begin; it != rows->end; ++it)
+		rs->set(*it, this, constant, weaklyBound);
 	    return true;
 	}
 	if (constant == curVal)
 	    return true;
-	rs->erase(row);
 	return false;
     }
 
