@@ -42,6 +42,13 @@
 %error-verbose
 
 %{ /*** C/C++ Declarations ***/
+/* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
+ * which varies by parser_class_name . Overriding with define specific to
+ * this parser.
+ */
+#endif /* !PARSER_HEADER_H */
+#ifndef TURTLES_PARSER_HPP
+#define TURTLES_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "ParserCommon.hpp"
