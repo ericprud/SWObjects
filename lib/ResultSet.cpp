@@ -441,12 +441,12 @@ namespace w3c_sw {
 		/* If the binding matched, fab. Otherwise, remove any rows that
 		   were generated either in creating the initial span, or while
 		   it was binding generators, e.g. { memers(?x) <notFound> 1 }. */
-		if (constraint->bindVariables(*datum, this, graphVar, graphName, &span))
+		if (constraint->bindVariables(*datum, this, graphVar, graphName, &span, data))
 		    matched = true;
 		else
 		    for (ResultSetIterator it = span.begin; it != span.end; ) {
 			delete *it;
-			erase(it++);
+			erase(it++); throw "not needed";
 		    }
 	    }
 	    if (matched || !allOpts) {

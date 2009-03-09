@@ -476,7 +476,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	key << listModifier; // addr
 	for (std::vector<const POS*>::const_iterator it = posz->begin(); 
 	     it != posz->end(); ++it)
-	    key << *it; // addr
+	    key << (*it)->toString(); // addr
 	ListOpMap::const_iterator vi = listOps.find(key.str());
 	if (vi == listOps.end()) {
 	    ListOp* ret = new ListOp(key.str(), listModifier, posz);
@@ -860,34 +860,116 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++)
 	    rs->matchConstraint(*constraint, &m_TriplePatterns, toMatch->allOpts, graphVar, graphName);
     }
-    bool POS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const {
+    bool POS::bindVariable (const POS* constant, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* /* data */) const {
+	bool matched = false;
 	if (this == NULL || constant == NULL)
 	    return true;
-	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
-	if (curVal == NULL) {
-	    for (ResultSetIterator it = rows->begin; it != rows->end; ++it)
-		rs->set(*it, this, constant, weaklyBound);
-	    return true;
+	for (ResultSetIterator row = rows->begin; row != rows->end; ) {
+	    const POS* curVal = evalPOS(*row, false); // could be factored out (of loop) for StaticPOSs.
+	    if (curVal == NULL) {
+		rs->set(*row, this, constant, weaklyBound);
+		matched = true;
+		++row;
+	    } else if (constant == curVal) {
+		matched = true;
+		++row;
+	    } else {
+		if (row == rows->begin)
+		    ++rows->begin;
+		delete *row;
+		rs->erase(row++);
+	    }
 	}
-	if (constant == curVal)
-	    return true;
-	return false;
+	return matched;
     }
 
-    bool ListOp::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const {
-	if (this == NULL || constant == NULL)
-	    return true;
-	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
-	if (curVal == NULL) {
-	    Result* newRow = (*row)->duplicate(rs, row);
-	    rs->set(newRow, this, constant, weaklyBound);
-	    rs->insert(row, newRow);
-	    return true;
+    void _listsFrom (std::map<const POS*, std::vector<const POS*> >& lists, POSFactory* f, const ProductionVector<const TriplePattern*>* data) {
+	std::set<const TriplePattern*> trips(data->begin(), data->end());
+	std::map<const POS*, std::vector<const POS*> > cdr;
+	std::map<const POS*, const POS*>inCdr;
+	std::map<const POS*, const POS*>car;
+	for (std::vector<const TriplePattern*>::const_iterator datum = data->begin();
+	     datum != data->end(); ++datum) {
+	    const TriplePattern* pat = *datum;
+	    const POS* s = pat->getS();
+	    const POS* p = pat->getP();
+	    const POS* o = pat->getO();
+	    if (p == f->getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")) {
+		car[s] = o;
+	    } else if (p == f->getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")) {
+		/* if s is not found in any list */
+		const POS* head;
+		if (inCdr.find(s) == inCdr.end()) {
+		    /* s appears to be a list head. */
+		    head = s;
+		} else {
+		    /* insert ourselves in s's parent's list. */
+		    head = inCdr[s];
+		}
+    		cdr[head].push_back(o);
+		inCdr[o] = head;
+		/* Move o's children into this list. */
+		if (cdr.find(o) != cdr.end()) {
+		    for (std::vector<const POS*>::iterator it = cdr[o].begin();
+			 it != cdr[o].end(); ++it) {
+			 cdr[head].push_back(*it);
+			 inCdr[*it] = head;
+		    }
+		    cdr.erase(o);
+		}
+	    }
 	}
-	if (constant == curVal)
-	    return true;
-	rs->erase(row);
-	return false;
+	for (std::map<const POS*, std::vector<const POS*> >::const_iterator head = cdr.begin();
+	     head != cdr.end(); ++head) {
+	    const POS* parentNode = head->first;
+	    for (std::vector<const POS*>::const_iterator node = head->second.begin();
+		 node != head->second.end(); ++node) {
+		lists[head->first].push_back(car[parentNode]);
+		parentNode = *node;
+	    }
+	}
+    }
+
+    bool ListOp::bindVariable (const POS* constant, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const {
+	if (listModifier == LIST_exact) {
+	    const POS* targetVar = *m_POSs->begin();
+	    ResultSetIterator firstInsert = rs->end();
+	    ResultSetIterator lastInsert = rs->end();
+	    std::map<const POS*, std::vector<const POS*> > lists;
+	    _listsFrom(lists, rs->getPOSFactory(), data);
+	    for (ResultSetIterator row = rows->begin; row != rows->end; ) {
+		const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
+		std::map<const POS*, std::vector<const POS*> >::const_iterator begin;
+		std::map<const POS*, std::vector<const POS*> >::const_iterator end;
+		if (curVal == NULL) {
+		    begin = lists.begin();
+		    end = lists.end();
+		} else {
+		    begin = lists.find(curVal);
+		    end = begin;
+		    ++end;
+		}
+		for (std::map<const POS*, std::vector<const POS*> >::const_iterator list = begin;
+		     list != end; ++list)
+		    for (std::vector<const POS*>::const_iterator el = list->second.begin();
+			 el != list->second.end(); ++el) {
+			Result* newRow = (*row)->duplicate(rs, row);
+			rs->set(newRow, this, list->first, false);
+			rs->set(newRow, targetVar, *el, false);
+			lastInsert = rs->insert(row, newRow);
+			if (firstInsert == rs->end())
+			    firstInsert = lastInsert;
+		    }
+		delete *row;
+		rs->erase(row++);
+	    }
+	    rows->begin = firstInsert;
+	    rows->end = ++lastInsert;
+	} else {
+	    throw std::string("ListOp code ") + toString() + " is not implemented";
+	}
+	return rows->begin != rows->end;
+	//rs->erase(row);
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {

@@ -234,7 +234,7 @@ public:
 	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
-    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const;
+    virtual bool bindVariable (const POS* p, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
@@ -271,6 +271,7 @@ public:
 
 class Variable : public Bindable {
     friend class POSFactory;
+    friend class ListOp;
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
@@ -279,6 +280,26 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
     virtual std::string getBindingAttributeName () const { return "name"; }
+};
+
+class ListOp : public Variable {
+    e_listModifier listModifier;
+    const ProductionVector<const POS*>* m_POSs;
+    static const char* typeStrings[];
+
+public:
+    ListOp (std::string str, e_listModifier listModifier, const ProductionVector<const POS*>* p_POSs) : 
+	Variable(str), listModifier(listModifier), m_POSs(p_POSs) {  }
+public:
+    virtual bool bindVariable (const POS* p, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const;
+    virtual void express(Expressor* p_expressor) const;
+    virtual std::string getBindingAttributeName () const { return "listop"; }
+    virtual std::string toString () const {
+	std::stringstream s;
+	s << typeStrings[listModifier];
+	s << '(' << m_POSs->toString(" ") << ')';
+	return s.str();
+    }
 };
 
 class BNode : public Bindable {
@@ -292,26 +313,6 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
-};
-
-class ListOp : public Bindable {
-    e_listModifier listModifier;
-    const ProductionVector<const POS*>* m_POSs;
-    static const char* typeStrings[];
-
-public:
-    ListOp (std::string str, e_listModifier listModifier, const ProductionVector<const POS*>* p_POSs) : 
-	Bindable(str), listModifier(listModifier), m_POSs(p_POSs) {  }
-public:
-    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const;
-    virtual void express(Expressor* p_expressor) const;
-    virtual std::string getBindingAttributeName () const { return "listop"; }
-    virtual std::string toString () const {
-	std::stringstream s;
-	s << typeStrings[listModifier];
-	s << '(' << m_POSs->toString(" ") << ')';
-	return s.str();
-    }
 };
 
 class RDFLiteral : public POS {
@@ -443,13 +444,13 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool bindVariables (const TriplePattern* datum, ResultSet* rs, 
 			  const POS* graphVar, const POS* graphName, 
-			  ResultSetIteratorPair* span) const {
+			  ResultSetIteratorPair* span, const ProductionVector<const TriplePattern*>* data) const {
 	/* Create a list of the atoms which need to match for a TriplePattern to
 	   match a datum. */
 	struct {
 	    const POS* var;
 	    const POS* val;
-	} toTest[] = {{graphName, graphVar}, 
+	} toTest[] = {{graphName, graphVar}, /* TODO: sort constants first, ListOps last. */
 		      {m_s, datum->m_s}, 
 		      {m_p, datum->m_p}, 
 		      {m_o, datum->m_o}};
@@ -460,10 +461,8 @@ public:
 	   new binding. For generator atoms, this will replace the row with zero
 	   or more rows. */
 	for (size_t i = 0; matched && i < sizeof(toTest)/sizeof(toTest[0]); ++i)
-	    for (ResultSetIterator it = span->begin; matched && it != span->end; ++it)
-		if (!toTest[i].var->bindVariable(toTest[i].val, rs, it, weaklyBound, span))
-		    matched = false;
-
+	    if (!toTest[i].var->bindVariable(toTest[i].val, rs, weaklyBound, span, data))
+		matched = false;
 	return matched;
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
