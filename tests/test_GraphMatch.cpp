@@ -53,6 +53,10 @@ ResultSet makeResultSet (R rows[], int count) {
     return rs;
 }
 
+#if REGEX_LIB == SWOb_DISABLED
+#warning REGEX needed for bgp tests.
+#else /* ! REGEX_LIB != SWOb_DISABLED */
+
 BOOST_AUTO_TEST_CASE( bgp ) {
     DefaultGraphPattern data, pattern;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
@@ -147,4 +151,6 @@ BOOST_AUTO_TEST_CASE( bgp ) {
     }
 
 }
+
+#endif /* ! REGEX_LIB != SWOb_DISABLED */
 
