@@ -96,9 +96,9 @@ namespace w3c_sw {
 			  "<n4> \"l1\"" )
 	 * A \n on the last line creates a row with no bindings.
 	 */
-#if REGEX_LIB == SWOb_BOOST
+#if REGEX_LIB != SWOb_DISABLED
 	ResultSet(POSFactory* posFactory, std::string str, bool ordered);
-#endif /* !REGEX_LIB == SWOb_BOOST */
+#endif /* REGEX_LIB != SWOb_DISABLED */
 
 	ResultSet(POSFactory* posFactory, SWSAXparser* parser, const char* filename);
 
