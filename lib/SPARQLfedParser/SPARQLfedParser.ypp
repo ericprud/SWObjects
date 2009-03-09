@@ -1313,7 +1313,7 @@ BlankNodePropertyList:
 Generator:
     // ('members' | 'starts' | 'ends' | 'any' | 'unordered')? '(' ( GraphNode GraphNode* )? ')' ;
     _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
-	if ($1 == LIST_exact) {
+	if ($1 == LIST_exact && false) {
 	    $$ = driver.createBNode();
 	    POS* tail = $$;
 	    ProductionVector<const POS*>* members = $3;
@@ -1331,7 +1331,17 @@ Generator:
 	    members->clear();
 	    delete members;
 	} else {
-	    error(*(yylocation_stack_.end()), "unsupported function");
+	    /* Validate paraneters.
+	     */
+	    switch ($1) {
+	    case LIST_exact:
+		if ($3->size() != 1)
+		    error(*(yylocation_stack_.end()), "unsupported function");
+		break;
+	    default:
+		break;
+	    }
+	    $$ = driver.posFactory->getListOp(LIST_exact, $3);
 	}
     }
 ;

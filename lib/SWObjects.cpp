@@ -209,6 +209,9 @@ void Variable::express (Expressor* p_expressor) const {
 void BNode::express (Expressor* p_expressor) const {
     p_expressor->bnode(this, terminal);
 }
+void ListOp::express (Expressor* /* p_expressor */) const {
+    // !!! need to add to all Expressors p_expressor->listOp(this, );
+}
 void RDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_String, datatype, m_LANGTAG);
 }
@@ -402,6 +405,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete iBNodes->second;
 	bnodes.clear();
 
+	std::map<std::string, ListOp*>::iterator iListOps;
+	for (iListOps = listOps.begin(); iListOps != listOps.end(); iListOps++)
+	    delete iListOps->second;
+	listOps.clear();
+
 	std::map<std::string, RDFLiteral*>::iterator iRDFLiterals;
 	for (iRDFLiterals = rdfLiterals.begin(); iRDFLiterals != rdfLiterals.end(); iRDFLiterals++)
 	    delete iRDFLiterals->second;
@@ -459,6 +467,23 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (posStr[0] == '?')
 	    return getVariable(posStr.substr(1, posStr.size()-1));
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
+    }
+
+    const char* ListOp::typeStrings[] = {"", "members", "starts", "ends", "any", "unordered"};
+
+    ListOp* POSFactory::getListOp (e_listModifier listModifier, const ProductionVector<const POS*>* posz) {
+	std::stringstream key;
+	key << listModifier; // addr
+	for (std::vector<const POS*>::const_iterator it = posz->begin(); 
+	     it != posz->end(); ++it)
+	    key << *it; // addr
+	ListOpMap::const_iterator vi = listOps.find(key.str());
+	if (vi == listOps.end()) {
+	    ListOp* ret = new ListOp(key.str(), listModifier, posz);
+	    listOps[key.str()] = ret;
+	    return ret;
+	} else
+	    return vi->second;
     }
 
     RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
@@ -849,7 +874,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return false;
     }
 
-    bool ListPOS::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const {
+    bool ListOp::bindVariable (const POS* constant, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const {
 	if (this == NULL || constant == NULL)
 	    return true;
 	const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols

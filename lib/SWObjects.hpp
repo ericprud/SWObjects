@@ -136,6 +136,15 @@ public:
 	    return false;
 	return true;
     }
+    std::string toString (const char* separator) const {
+	std::stringstream ret;
+	for (typename std::vector<T>::const_iterator it = begin(); it != end(); ++it) {
+	    if (it != begin())
+		ret << separator;
+	    ret << (*it)->toString();
+	}
+	return ret.str();
+    }
 #if 0
     class iterator;
     iterator begin() { return iterator(data.begin(), this); }
@@ -172,6 +181,7 @@ class Variable;
 class TriplePattern;
 class POSFactory;
 typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
+typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
 
 } /* namespace w3c_sw */
 
@@ -284,12 +294,24 @@ public:
     virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
 
-class ListPOS : public Bindable {
-    ProductionVector<const POS*>* m_POSs;
+class ListOp : public Bindable {
+    e_listModifier listModifier;
+    const ProductionVector<const POS*>* m_POSs;
+    static const char* typeStrings[];
+
 public:
-    ListPOS (std::string str, ProductionVector<const POS*>* p_POSs) : Bindable(str), m_POSs(p_POSs) {  }
+    ListOp (std::string str, e_listModifier listModifier, const ProductionVector<const POS*>* p_POSs) : 
+	Bindable(str), listModifier(listModifier), m_POSs(p_POSs) {  }
 public:
-    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound) const;
+    virtual bool bindVariable (const POS* p, ResultSet* rs, ResultSetIterator row, bool weaklyBound, ResultSetIteratorPair* rows) const;
+    virtual void express(Expressor* p_expressor) const;
+    virtual std::string getBindingAttributeName () const { return "listop"; }
+    virtual std::string toString () const {
+	std::stringstream s;
+	s << typeStrings[listModifier];
+	s << '(' << m_POSs->toString(" ") << ')';
+	return s.str();
+    }
 };
 
 class RDFLiteral : public POS {
@@ -452,6 +474,7 @@ class POSFactory {
     typedef std::map<std::string, Variable*> VariableMap;
     typedef std::map<std::string, BNode*> BNodeMap;
     typedef std::map<std::string, URI*> URIMap;
+    typedef std::map<std::string, ListOp*> ListOpMap;
     typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
     typedef std::map<std::string, TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
     class MakeNumericRDFLiteral {
@@ -464,6 +487,7 @@ protected:
     VariableMap		variables;
     BNodeMap		bnodes;
     URIMap		uris;
+    ListOpMap		listOps;
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
     NULLpos		nullPOS;
@@ -487,6 +511,7 @@ public:
     BNode* getBNode(std::string name);
     URI* getURI(std::string name);
     POS* getPOS(std::string posStr);
+    ListOp* getListOp(e_listModifier listModifier, const ProductionVector<const POS*>* posz);
     RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
@@ -578,7 +603,6 @@ public:
 };
 
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
-typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
 #define LIMIT_None -1
 #define OFFSET_None -1
 typedef enum { SILENT_Yes, SILENT_No } e_Silence;
