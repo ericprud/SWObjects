@@ -1334,9 +1334,9 @@ Generator:
 	    /* Validate paraneters.
 	     */
 	    switch ($1) {
-	    case LIST_exact:
+	    case LIST_members:
 		if ($3->size() != 1)
-		    error(*(yylocation_stack_.end()), "unsupported function");
+		    error(*(yylocation_stack_.end()), "members should only have one argument");
 		break;
 	    default:
 		break;
