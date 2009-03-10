@@ -667,6 +667,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const POS* Variable::evalPOS (const Result* r, bool) const {
 	return r->get(this);
     }
+    const POS* ListOp::evalPOS (const Result* r, bool) const {
+	return r->get(this);
+    }
 
     void TableJunction::addTableOperation (const TableOperation* tableOp) {
 	if (typeid(*tableOp) == typeid(*this)) {
@@ -933,43 +936,52 @@ void NumberExpression::express (Expressor* p_expressor) const {
     bool ListOp::bindVariable (const POS* constant, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const {
 	if (listModifier == LIST_exact) {
 	    const POS* targetVar = *m_POSs->begin();
-	    ResultSetIterator firstInsert = rs->end();
-	    ResultSetIterator lastInsert = rs->end();
+	    bool firstInsert = true;
 	    std::map<const POS*, std::vector<const POS*> > lists;
 	    _listsFrom(lists, rs->getPOSFactory(), data);
 	    for (ResultSetIterator row = rows->begin; row != rows->end; ) {
 		const POS* curVal = evalPOS(*row, false); // doesn't need to generate symbols
-		std::map<const POS*, std::vector<const POS*> >::const_iterator begin;
-		std::map<const POS*, std::vector<const POS*> >::const_iterator end;
-		if (curVal == NULL) {
-		    begin = lists.begin();
-		    end = lists.end();
+		if (curVal != NULL && constant != curVal) {
+		    /* List was used earlier, and not for this constant, so
+		     * we're going to remove this row with no replacement.
+		     */
 		} else {
-		    begin = lists.find(curVal);
-		    end = begin;
-		    ++end;
-		}
-		for (std::map<const POS*, std::vector<const POS*> >::const_iterator list = begin;
-		     list != end; ++list)
-		    for (std::vector<const POS*>::const_iterator el = list->second.begin();
-			 el != list->second.end(); ++el) {
-			Result* newRow = (*row)->duplicate(rs, row);
-			rs->set(newRow, this, list->first, false);
-			rs->set(newRow, targetVar, *el, false);
-			lastInsert = rs->insert(row, newRow);
-			if (firstInsert == rs->end())
-			    firstInsert = lastInsert;
+		    std::map<const POS*, std::vector<const POS*> >::iterator list = lists.find(constant);
+		    if (list != lists.end()) {
+			/* If this is a new binding, set it in *row to be copied to
+			 * each newRow.
+			 */
+			if (curVal == NULL)
+			    rs->set(*row, this, constant, false);
+
+			/* Insert new solutions for each element in this list. */
+			for (std::vector<const POS*>::const_iterator el = list->second.begin();
+			     el != list->second.end(); ++el) {
+			    Result* newRow = (*row)->duplicate(rs, row);
+			    rs->set(newRow, targetVar, *el, false);
+			    ResultSetIterator lastInsert = rs->insert(row, newRow);
+			    if (firstInsert == true) {
+				/* We need to record the iterator which gets
+				 * inserted first.
+				 */
+				rows->begin = lastInsert;
+				firstInsert = false;
+			    }
+			}
 		    }
+		}
+		/* We've either replaced the last row, or it didn't match so we
+		 * need to delete it anyways.
+		 */
+		if (row == rows->begin)
+		    ++rows->begin;
 		delete *row;
 		rs->erase(row++);
 	    }
-	    rows->begin = firstInsert;
-	    rows->end = ++lastInsert;
 	} else {
 	    throw std::string("ListOp code ") + toString() + " is not implemented";
 	}
 	return rows->begin != rows->end;
-	//rs->erase(row);
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {

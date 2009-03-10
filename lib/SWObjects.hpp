@@ -282,17 +282,18 @@ public:
     virtual std::string getBindingAttributeName () const { return "name"; }
 };
 
-class ListOp : public Variable {
+class ListOp : public Bindable {
     e_listModifier listModifier;
     const ProductionVector<const POS*>* m_POSs;
     static const char* typeStrings[];
 
 public:
     ListOp (std::string str, e_listModifier listModifier, const ProductionVector<const POS*>* p_POSs) : 
-	Variable(str), listModifier(listModifier), m_POSs(p_POSs) {  }
+	Bindable(str), listModifier(listModifier), m_POSs(p_POSs) {  }
 public:
     virtual bool bindVariable (const POS* p, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const;
     virtual void express(Expressor* p_expressor) const;
+    virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
     virtual std::string getBindingAttributeName () const { return "listop"; }
     virtual std::string toString () const {
 	std::stringstream s;
