@@ -949,12 +949,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		    while (queryEl != m_POSs->end() && dataEl != list->second.end()) {
 			const POS* curVal = (*queryEl)->evalPOS(*row, false);
 			if (curVal == NULL) {
-			    rs->set(*row, *queryEl, constant, weaklyBound);
+			    rs->set(*row, *queryEl, *dataEl, weaklyBound);
 			    matched = true;
-			    ++row;
-			} else if (constant == curVal) {
+			} else if (*dataEl == curVal) {
 			    matched = true;
-			    ++row;
 			} else {
 			    if (row == rows->begin)
 				++rows->begin;
@@ -973,11 +971,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 			    return false;
 			}
 		    }
+		    ++row;
 		} else {
 		    if (row == rows->begin)
 			++rows->begin;
 		    delete *row;
 		    rs->erase(row++);
+		    return false;
 		}
 	    }
 	    return matched;
