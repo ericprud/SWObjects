@@ -1341,7 +1341,7 @@ Generator:
 	    default:
 		break;
 	    }
-	    $$ = driver.posFactory->getListOp(LIST_exact, $3);
+	    $$ = driver.posFactory->getListOp($1, $3);
 	}
     }
 ;

@@ -935,6 +935,53 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     bool ListOp::bindVariable (const POS* constant, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const {
 	if (listModifier == LIST_exact) {
+	    std::map<const POS*, std::vector<const POS*> > lists;
+	    _listsFrom(lists, rs->getPOSFactory(), data);
+
+	    bool matched = false;
+	    if (this == NULL || constant == NULL)
+		return true;
+	    std::map<const POS*, std::vector<const POS*> >::iterator list = lists.find(constant);
+	    for (ResultSetIterator row = rows->begin; row != rows->end; ) {
+		if (list != lists.end()) {
+		    std::vector<const POS*>::const_iterator dataEl = list->second.begin();
+		    std::vector<const POS*>::const_iterator queryEl = m_POSs->begin();
+		    while (queryEl != m_POSs->end() && dataEl != list->second.end()) {
+			const POS* curVal = (*queryEl)->evalPOS(*row, false);
+			if (curVal == NULL) {
+			    rs->set(*row, *queryEl, constant, weaklyBound);
+			    matched = true;
+			    ++row;
+			} else if (constant == curVal) {
+			    matched = true;
+			    ++row;
+			} else {
+			    if (row == rows->begin)
+				++rows->begin;
+			    delete *row;
+			    rs->erase(row++);
+			    return false;
+			}
+			++dataEl;
+			++queryEl;
+			if ((queryEl == m_POSs->end() && dataEl != list->second.end()) || 
+			    (queryEl != m_POSs->end() && dataEl == list->second.end())) {
+			    if (row == rows->begin)
+				++rows->begin;
+			    delete *row;
+			    rs->erase(row++);
+			    return false;
+			}
+		    }
+		} else {
+		    if (row == rows->begin)
+			++rows->begin;
+		    delete *row;
+		    rs->erase(row++);
+		}
+	    }
+	    return matched;
+	} else if (listModifier == LIST_members) {
 	    const POS* targetVar = *m_POSs->begin();
 	    bool firstInsert = true;
 	    std::map<const POS*, std::vector<const POS*> > lists;
@@ -952,13 +999,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 			 * each newRow.
 			 */
 			if (curVal == NULL)
-			    rs->set(*row, this, constant, false);
+			    rs->set(*row, this, constant, weaklyBound);
 
 			/* Insert new solutions for each element in this list. */
 			for (std::vector<const POS*>::const_iterator el = list->second.begin();
 			     el != list->second.end(); ++el) {
 			    Result* newRow = (*row)->duplicate(rs, row);
-			    rs->set(newRow, targetVar, *el, false);
+			    rs->set(newRow, targetVar, *el, weaklyBound);
 			    ResultSetIterator lastInsert = rs->insert(row, newRow);
 			    if (firstInsert == true) {
 				/* We need to record the iterator which gets

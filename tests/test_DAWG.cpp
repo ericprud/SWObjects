@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE( Basic_graph_pattern___spoo ) {
     std::ifstream defaultGraph( "data-r2/basic/data-6.ttl" );
     DEFGRAPH_FILE_TEST("data-r2/basic/spoo-1.rq", "data-r2/basic/spoo-1.srx");
 }
-#if 0
 BOOST_AUTO_TEST_CASE( Basic___List_1 ) {
     std::ifstream defaultGraph( "data-r2/basic/data-2.ttl" );
     DEFGRAPH_FILE_TEST("data-r2/basic/list-1.rq", "data-r2/basic/list-1.srx");
@@ -43,7 +42,6 @@ BOOST_AUTO_TEST_CASE( Basic___List_4 ) {
     std::ifstream defaultGraph( "data-r2/basic/data-2.ttl" );
     DEFGRAPH_FILE_TEST("data-r2/basic/list-4.rq", "data-r2/basic/list-4.srx");
 }
-#endif
 BOOST_AUTO_TEST_CASE( Basic___Prefix_Base_1 ) {
     std::ifstream defaultGraph( "data-r2/basic/data-1.ttl" );
     DEFGRAPH_FILE_TEST("data-r2/basic/base-prefix-1.rq", "data-r2/basic/base-prefix-1.srx");
