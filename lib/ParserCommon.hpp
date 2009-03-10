@@ -41,6 +41,16 @@ public:
     Driver(std::string baseURI, POSFactory* posFactory);
     virtual ~Driver () {  }
 
+    void clear () {
+	namespaces.clear();
+	base = NULL;
+    }
+
+    void clear (std::string baseURI) {
+	namespaces.clear();
+	base = getURI(baseURI);
+    }
+
     /// enable debug output in the flex scanner
     bool trace_scanning;
 
