@@ -46,6 +46,7 @@ struct TestResultSet : public ResultSet {
     void _loadGraphWrapper (const POS* graphName, const char* fileName) {
 	turtleParser.setGraph(d.assureGraph(graphName));
 	turtleParser.parse_file(fileName);
+	turtleParser.clear(""); // clear out namespaces and base URI.
     }
     TestResultSet (std::istream& defGraph, const char* namGraphs[], 
 		   std::istream& query) : ResultSet(&F) {
@@ -53,11 +54,13 @@ struct TestResultSet : public ResultSet {
 	/* Parse query. */
 	if (sparqlParser.parse_stream(query))
 	    throw std::string("failed to parse query.");
+	sparqlParser.clear(""); // clear out namespaces and base URI.
 
 	/* Parse data. */
 	if (defGraph != NULL) {
 	    turtleParser.setGraph(d.assureGraph(NULL));
 	    turtleParser.parse_stream(defGraph);
+	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}
 
 	if (namGraphs != NULL)
@@ -203,10 +206,12 @@ BOOST_AUTO_TEST_CASE( Prefix_name_1 ) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE( lists )
 typedef std::stringstream STREAM;
 #if REGEX_LIB == SWOb_DISABLED
   #warning ListOp tests require REGEX
 #else /* ! REGEX_LIB == SWOb_DISABLED */
+
 BOOST_AUTO_TEST_CASE( Members_1 ) {
     STREAM defaultGraph( "(<a> <b>) <p> (<x> <y> <z>) ." );
     STREAM query( "SELECT * {members(?s) <p> members(?o)}" );
@@ -219,9 +224,12 @@ BOOST_AUTO_TEST_CASE( Members_1 ) {
 					  "<b> <x>\n"
 					  "<b> <y>\n"
 					  "<b> <z>",
-					  true));
+					  false));
 }
+
 #endif /* ! REGEX_LIB == SWOb_DISABLED */
+
+BOOST_AUTO_TEST_SUITE_END()
 
 // EOF
 
