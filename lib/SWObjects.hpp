@@ -181,7 +181,7 @@ class ResultSet;
 class Result;
 class RdfDB;
 
-class LANGTAG : public Terminal {
+    class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
 public:
     LANGTAG(std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
 };
@@ -1608,10 +1608,10 @@ public:
 
     virtual void base(const Base* const self, std::string productionName) = 0;
 
-    virtual void uri(const URI* const self, std::string terminal) = 0;
-    virtual void variable(const Variable* const self, std::string terminal) = 0;
-    virtual void bnode(const BNode* const self, std::string terminal) = 0;
-    virtual void rdfLiteral(const RDFLiteral* const self, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) = 0;
+    virtual void uri(const URI* const self, std::string lexicalValue) = 0;
+    virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
+    virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
+    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, int p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, float p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value) = 0;

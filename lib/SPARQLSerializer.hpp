@@ -55,17 +55,17 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void uri (const URI* const, std::string terminal) {
-	ret << '<' << terminal << '>';
+    virtual void uri (const URI* const, std::string lexicalValue) {
+	ret << '<' << lexicalValue << '>';
     }
-    virtual void variable (const Variable* const, std::string terminal) {
-	ret << '?' << terminal;
+    virtual void variable (const Variable* const, std::string lexicalValue) {
+	ret << '?' << lexicalValue;
     }
-    virtual void bnode (const BNode* const, std::string terminal) {
-	ret << "_:" << terminal; // rewrite when combining named BNodes from multiple docs?
+    virtual void bnode (const BNode* const, std::string lexicalValue) {
+	ret << "_:" << lexicalValue; // rewrite when combining named BNodes from multiple docs?
     }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
-	ret << '"' << terminal << '"';
+    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) {
+	ret << '"' << lexicalValue << '"';
 	if (datatype != NULL) { ret << "^^<" << datatype->getLexicalValue() << '>'; }
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
 	ret << ' ';

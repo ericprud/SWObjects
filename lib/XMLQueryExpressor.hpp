@@ -23,18 +23,18 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void uri (const URI* const, std::string terminal) {
-	xml->leaf("uri", terminal);
+    virtual void uri (const URI* const, std::string lexicalValue) {
+	xml->leaf("uri", lexicalValue);
     }
-    virtual void variable (const Variable* const, std::string terminal) {
+    virtual void variable (const Variable* const, std::string lexicalValue) {
 	xml->empty("variable");
-	xml->attribute("name", terminal);
+	xml->attribute("name", lexicalValue);
     }
-    virtual void bnode (const BNode* const, std::string terminal) {
-	xml->leaf("bnode", terminal);
+    virtual void bnode (const BNode* const, std::string lexicalValue) {
+	xml->leaf("bnode", lexicalValue);
     }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
-	xml->leaf("literal", terminal);
+    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) {
+	xml->leaf("literal", lexicalValue);
 	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getLexicalValue()); //!!!
 	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getLexicalValue());
     }

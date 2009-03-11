@@ -25,9 +25,9 @@ namespace w3c_sw {
 	    std::string getFederationString () const { return federationString; }
 
 	protected:
-	    virtual void variable (const Variable* const self, std::string terminal) {
+	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		vars.insert(self);
-		SPARQLSerializer::variable(self, terminal);
+		SPARQLSerializer::variable(self, lexicalValue);
 	    }
 
 	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
