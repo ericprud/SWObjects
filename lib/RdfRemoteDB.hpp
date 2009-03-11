@@ -71,7 +71,7 @@ namespace w3c_sw {
 		 it != endpointPatterns.end(); ++it) {
 		boost::regex re(*it);
 		boost::cmatch matches;
-		if (boost::regex_match(name->getTerminal().c_str(), matches, re)) {
+		if (boost::regex_match(name->getLexicalValue().c_str(), matches, re)) {
 		    loadedEndpoints.insert(name);
 		    this->posFactory = posFactory;
 		    return;
@@ -93,7 +93,7 @@ namespace w3c_sw {
 		u.setf(std::ios::hex, std::ios::basefield);
 		u.setf(std::ios::uppercase);
 
-		u << graph->getTerminal() << "?query=";
+		u << graph->getLexicalValue() << "?query=";
 		GraphSerializer ser(rs);
 		toMatch->express(&ser);
 		std::string q = ser.getSelectString() + '{' + ser.getSPARQLstring() + ser.getFederationString() + '}';

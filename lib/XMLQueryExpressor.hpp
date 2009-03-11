@@ -35,8 +35,8 @@ public:
     }
     virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
 	xml->leaf("literal", terminal);
-	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getTerminal()); //!!!
-	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getTerminal());
+	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getLexicalValue()); //!!!
+	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getLexicalValue());
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
 	xml->leaf("literal", p_value);

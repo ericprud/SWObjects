@@ -102,9 +102,9 @@ namespace w3c_sw {
 		    if (binding != (*row)->end()) {
 			const URI* u = dynamic_cast<const URI*>(binding->second.pos);
 			if ((u) != NULL) {
-			    std::string changed = map->mapString(u->getTerminal());
+			    std::string changed = map->mapString(u->getLexicalValue());
 			    if (changed.size() == 0)
-				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + u->getTerminal();
+				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + u->getLexicalValue();
 			    (*row)->set(map->selector, posFactory->getURI(changed), false, true);
 			    ++matches;
 			}
@@ -169,7 +169,7 @@ namespace w3c_sw {
 				if (u != NULL) {
 				    for (std::vector<POSmap>::const_iterator map = uriMaps.begin();
 					 map != uriMaps.end(); ++map) {
-					std::string changed = map->mapString(u->getTerminal());
+					std::string changed = map->mapString(u->getLexicalValue());
 					if (changed.size() != 0) {
 					    *uris[i] = posFactory->getURI(changed.c_str());
 					    break;
@@ -579,7 +579,7 @@ namespace w3c_sw {
 	    std::vector<std::string> ifaceComponents;
 
 	    {
-		string iriStr(ifaceName->getTerminal());
+		string iriStr(ifaceName->getLexicalValue());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		for (unsigned index = 1; it != nullIt; ++index) {
 		    ifaceComponents.push_back(*it++);
@@ -596,7 +596,7 @@ namespace w3c_sw {
 	    newMap.selector = toModify;
 
 	    {
-		string iriStr(localName->getTerminal());
+		string iriStr(localName->getLexicalValue());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		std::stringstream subPattern;
 		while (it != nullIt) {

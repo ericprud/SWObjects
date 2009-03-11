@@ -217,7 +217,7 @@ PrefixDecl:
       } PNAME_NS {
 	  driver.ignorePrefix(false);
       } IRI_REF	{
-	  std::string prefix($3->getTerminal());
+	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
       } GT_DOT
 ;

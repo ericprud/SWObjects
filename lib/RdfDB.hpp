@@ -57,8 +57,8 @@ namespace w3c_sw {
 	virtual void loadData (const POS* name, POSFactory* posFactory) {
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
 	    turtleParser.setGraph(assureGraph(name));
-	    if (turtleParser.parse_file(name->getTerminal()))
-		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
+	    if (turtleParser.parse_file(name->getLexicalValue()))
+		std::cerr << name->getLexicalValue() << ":0: error: unable to parse document" << std::endl;
 	    else
 		{ SPARQLSerializer s; assureGraph(name)->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl; }
 	}

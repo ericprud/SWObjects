@@ -347,7 +347,7 @@ URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
 	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
 	throw(std::runtime_error(err.str()));
     }
-    ret.replace(0, index+1, nspace->getTerminal());
+    ret.replace(0, index+1, nspace->getLexicalValue());
     return resolveBase(ret.c_str(), false);
 }
 
@@ -376,7 +376,7 @@ URI* SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
     URI* baseURI = driver->getBase();
     std::string base;
     if (baseURI != NULL)
-	std::string base = baseURI->getTerminal();
+	std::string base = baseURI->getLexicalValue();
     std::string base_scheme;
     if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
 	base_scheme = what[1];

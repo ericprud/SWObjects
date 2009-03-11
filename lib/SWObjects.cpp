@@ -505,9 +505,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
 	if (p_URI)
-	    buf << "^^<" << p_URI->getTerminal() << ">";
+	    buf << "^^<" << p_URI->getLexicalValue() << ">";
 	if (p_LANGTAG)
-	    buf << "@" << p_LANGTAG->getTerminal();
+	    buf << "@" << p_LANGTAG->getLexicalValue();
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
@@ -582,7 +582,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
 	if (uri)
-	    buf << "^^<" << uri->getTerminal() << ">";
+	    buf << "^^<" << uri->getLexicalValue() << ">";
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {

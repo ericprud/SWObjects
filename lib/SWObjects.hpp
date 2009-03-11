@@ -170,7 +170,7 @@ protected:
     }
     ~Terminal () {  }
 public:
-    std::string getTerminal () const { return terminal; }
+    std::string getLexicalValue () const { return terminal; }
 };
 
 } // namespace w3c_sw
@@ -210,7 +210,7 @@ public:
     static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(FUNCTION_STRING)); }
     virtual int compare (POS* to, Result*) const {
 	bool same = typeid(*to) == typeid(*this);
-	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
+	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
     bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
@@ -294,7 +294,7 @@ public:
 	/* Could just print terminal here. */
 	s << '"' << terminal << '"';
 	if (datatype) s << datatype->toString();
-	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
+	if (m_LANGTAG) s << m_LANGTAG->getLexicalValue();
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
@@ -497,7 +497,7 @@ public:
 	    if (li > ri)
 		return false;
 	}
-	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
     }
 };
 
@@ -522,7 +522,7 @@ public:
 	const int ri = typeOrder[rt];
 	if (li < ri)
 	    return true;
-	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
     }
 };
 

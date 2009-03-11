@@ -66,8 +66,8 @@ public:
     }
     virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
 	ret << '"' << terminal << '"';
-	if (datatype != NULL) { ret << "^^<" << datatype->getTerminal() << '>'; }
-	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getTerminal(); }
+	if (datatype != NULL) { ret << "^^<" << datatype->getLexicalValue() << '>'; }
+	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
 	ret << ' ';
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {

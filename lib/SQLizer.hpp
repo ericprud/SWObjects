@@ -465,7 +465,7 @@ namespace w3c_sw {
 		    }
 		}
 
-		string aliasName = subject->getTerminal();
+		string aliasName = subject->getLexicalValue();
 		/* Try to get a good name for URIs.
 		 * e.g. http://bsbm.example/db/producttypeproduct/producttype.59
 		 *   => producttype_59
@@ -489,13 +489,13 @@ namespace w3c_sw {
 		unsigned ordinal = 0;
 		while (usedAliases.find(aliasName) != usedAliases.end()) {
 		    std::stringstream s;
-		    s << subject->getTerminal() << "_" << ++ordinal;
+		    s << subject->getLexicalValue() << "_" << ++ordinal;
 		    aliasName = s.str();
 		}
 		curJoin = new TableJoin(toRelation, aliasName, false);
 		joins.push_back(curJoin);
 		usedAliases.insert(aliasName);
-		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getTerminal() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
+		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getLexicalValue() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
@@ -607,9 +607,9 @@ namespace w3c_sw {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
 			// SELECT <field for coref> AS <coref name>
-			(*dis)->selectVariable((*coref)->getTerminal());
+			(*dis)->selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
@@ -636,9 +636,9 @@ namespace w3c_sw {
 		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    // SELECT <field for coref> AS <coref name>
-		    selectVariable((*coref)->getTerminal());
+		    selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
@@ -824,10 +824,10 @@ namespace w3c_sw {
 	    MARK;
 	    std::string value = terminal;
 	    if (datatype != NULL) {
-		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime")
+		if (datatype->getLexicalValue() == "http://www.w3.org/2001/XMLSchema#dateTime")
 		    value.replace(value.find("T"), 1, " ");
 		else
-		    FAIL1("unknown datatype: <%s>", datatype->getTerminal().c_str());
+		    FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
 		FAIL("how do we literalMap langtags?");
@@ -1216,7 +1216,7 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    MARK;
 	    args->express(this);
-	    if (iri->getTerminal() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
+	    if (iri->getLexicalValue() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
 		curConstraint = new NullConstraint(curConstraint);
 	    else
 		iri->express(this);

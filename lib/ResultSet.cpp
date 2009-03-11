@@ -41,7 +41,7 @@ namespace w3c_sw {
 	xml->attribute("addr", this);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++) {
 	    xml->open("binding");
-	    xml->attribute(it->first->getBindingAttributeName(), it->first->getTerminal());
+	    xml->attribute(it->first->getBindingAttributeName(), it->first->getLexicalValue());
 	    if (it->second.weaklyBound) xml->attribute("binding", "weak" );
 	    it->second.pos->express(&xmlizer);
 	    xml->close();
@@ -285,7 +285,7 @@ namespace w3c_sw {
 	xml->open("head");
 	for (VariableListIterator it = knownVars.begin() ; it != knownVars.end(); it++) {
 	    xml->empty("variable");
-	    xml->attribute("name", (*it)->getTerminal());
+	    xml->attribute("name", (*it)->getLexicalValue());
 	}
 	xml->close();
 	xml->open("results");
