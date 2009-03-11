@@ -276,12 +276,11 @@ public:
 class RDFLiteral : public POS {
     friend class POSFactory;
 private:
-    std::string m_String;
     URI* datatype;
     LANGTAG* m_LANGTAG;
 
 protected:
-    RDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG, std::string matched) : POS(matched), m_String(p_String) {
+    RDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) : POS(p_String) {
 	datatype = p_URI;
 	m_LANGTAG = p_LANGTAG;
     }
@@ -293,19 +292,18 @@ public:
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
-	s << '"' << m_String << '"';
+	s << '"' << terminal << '"';
 	if (datatype) s << datatype->toString();
 	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { return "literal"; }
-    std::string getString () const { return m_String; }
 };
 class NumericRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
-    NumericRDFLiteral (std::string p_String, URI* p_URI, std::string matched) : RDFLiteral(p_String, p_URI, NULL, matched) {  }
+    NumericRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
     ~NumericRDFLiteral () {  }
 public:
     virtual void express(Expressor* p_expressor) const = 0;
@@ -314,7 +312,7 @@ class IntegerRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     int m_value;
-    IntegerRDFLiteral (std::string p_String, URI* p_URI, std::string matched, int p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    IntegerRDFLiteral (std::string p_String, URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
     int getValue () { return m_value; }
@@ -325,7 +323,7 @@ class DecimalRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     float m_value;
-    DecimalRDFLiteral (std::string p_String, URI* p_URI, std::string matched, float p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DecimalRDFLiteral () {  }
     virtual void express(Expressor* p_expressor) const;
 public:
@@ -335,7 +333,7 @@ class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     double m_value;
-    DoubleRDFLiteral (std::string p_String, URI* p_URI, std::string matched, double p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    DoubleRDFLiteral (std::string p_String, URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
     virtual void express(Expressor* p_expressor) const;
 };
@@ -343,7 +341,7 @@ class BooleanRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
     bool m_value;
-    BooleanRDFLiteral (std::string p_String, std::string matched, bool p_value) : RDFLiteral(p_String, NULL, NULL, matched), m_value(p_value) {  }
+    BooleanRDFLiteral (std::string p_String, bool p_value) : RDFLiteral(p_String, NULL, NULL), m_value(p_value) {  }
 public:
     virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
     virtual void express(Expressor* p_expressor) const;
@@ -420,7 +418,7 @@ class POSFactory {
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
-	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
+	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI) = 0;
     };
 
 protected:

@@ -210,7 +210,7 @@ void BNode::express (Expressor* p_expressor) const {
     p_expressor->bnode(this, terminal);
 }
 void RDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_String, datatype, m_LANGTAG);
+    p_expressor->rdfLiteral(this, terminal, datatype, m_LANGTAG);
 }
 void IntegerRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
@@ -511,7 +511,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    RDFLiteral* ret = new RDFLiteral(p_String, p_URI, p_LANGTAG, key.c_str());
+	    RDFLiteral* ret = new RDFLiteral(p_String, p_URI, p_LANGTAG);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -524,8 +524,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new IntegerRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new IntegerRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeIntegerRDFLiteral maker(p_value);
@@ -537,8 +537,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new DecimalRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new DecimalRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDecimalRDFLiteral maker(p_value);
@@ -550,8 +550,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new DoubleRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new DoubleRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDoubleRDFLiteral maker(p_value);
@@ -565,7 +565,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, key.c_str(), p_value);
+	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, p_value);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -586,7 +586,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    NumericRDFLiteral* ret = maker->makeIt(p_String, uri, key.c_str());
+	    NumericRDFLiteral* ret = maker->makeIt(p_String, uri);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else

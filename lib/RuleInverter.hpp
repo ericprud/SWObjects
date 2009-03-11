@@ -579,7 +579,7 @@ namespace w3c_sw {
 	    std::vector<std::string> ifaceComponents;
 
 	    {
-		string iriStr(ifaceName->getString());
+		string iriStr(ifaceName->getTerminal());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		for (unsigned index = 1; it != nullIt; ++index) {
 		    ifaceComponents.push_back(*it++);
@@ -596,7 +596,7 @@ namespace w3c_sw {
 	    newMap.selector = toModify;
 
 	    {
-		string iriStr(localName->getString());
+		string iriStr(localName->getTerminal());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		std::stringstream subPattern;
 		while (it != nullIt) {
