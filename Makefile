@@ -267,6 +267,13 @@ t_%: tests/test_%
 v_%: tests/test_%
 	( cd tests && valgrind --leak-check=yes --xml=no $< $(TEST_ARGS) )
 
+tests/manifest2unitTest.d : tests/manifest2unitTest.cpp config.h
+	-touch $@
+	-makedepend -btests/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
+
+tests/manifest2unitTest: tests/manifest2unitTest.cpp $(LIB) lib/SWObjects.hpp tests/manifest2unitTest.d config.h
+	$(CXX) $(CXXFLAGS) $(TEST_LIB) -o $@ $< $(LDFLAGS)
+
 
 ### SWtransformer tests:
 

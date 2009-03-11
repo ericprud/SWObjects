@@ -1,0 +1,155 @@
+/* Parse DAWG manifest files and create unit tests.
+ *
+ * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ */
+
+#include <fstream>
+#include <iostream>
+#if REGEX_LIB == SWOb_BOOST
+  #include "boost/regex.hpp"
+#endif
+#include "SWObjects.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "RdfDB.hpp"
+
+#define PREFIXES \
+	"PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"		\
+	"PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"			\
+	"PREFIX dawgt:  <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>\n"	\
+	"PREFIX mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n"	\
+	"PREFIX qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n"
+
+using namespace w3c_sw;
+
+POSFactory F;
+SPARQLfedDriver sparqlParser("", &F);
+
+std::string sanitize (std::string in) {
+    const boost::regex e("[^a-zA-Z0-9]");
+    const std::string underbar("_");
+    return boost::regex_replace(in, e, underbar, boost::match_default | boost::format_all);
+}
+
+int main (int argc, char* argv[]) {
+    try {
+	if (argc != 2)
+	    throw std::string("Invocation: ") + argv[0] + " <data-r2/basic/manifest.ttl>";
+
+	std::ifstream manifestStream(argv[1]);
+	if (!manifestStream.is_open())
+	    throw std::string("Unable to open manifest file \"") + argv[1] + "\".";
+
+#if REGEX_LIB == SWOb_BOOST
+	boost::regex pathre("(.*?/([^/]+)/)([^/]+)$");
+	boost::cmatch matches;
+	std::string path;
+	std::string group;
+	if (boost::regex_match(argv[1], matches, pathre)) {
+	    path = std::string(matches[1].first, matches[1].second);
+	    group = sanitize(std::string(matches[2].first, matches[2].second));
+	} else  {
+	    std::cerr << std::string("unable to find group in path \"") + argv[1] + "\"";
+	}
+#else /* !REGEX_LIB == SWOb_BOOST */
+	std::string path(".");
+	std::string group("unknown");
+#endif /* !REGEX_LIB == SWOb_BOOST */
+
+	RdfDB d;
+
+	/* Parse the manifest file. */
+	TurtleSDriver turtleParser(argv[1], &F);
+	turtleParser.setGraph(d.assureGraph(NULL));
+	turtleParser.parse_stream(manifestStream);
+
+
+	/* Grab the test identifiers. */
+	std::stringstream testsQuery(PREFIXES 
+			     "SELECT ?test {?manifest mf:entries members(?test)}");
+	if (sparqlParser.parse_stream(testsQuery))
+	    throw std::string("failed to parse tests query.");
+	ResultSet listOfTests(&F);
+	sparqlParser.root->execute(&d, &listOfTests);
+	sparqlParser.clear("");
+
+	std::cout << "BOOST_AUTO_TEST_SUITE( " << group << " )" << std::endl;
+	for (ResultSetIterator testRecord = listOfTests.begin(); 
+	     testRecord != listOfTests.end(); ++testRecord) {
+	    std::string test = (*testRecord)->get(F.getVariable("test"))->toString();
+
+	    /* Grab attributes of this test. */
+	    std::stringstream 
+		attrsQuery(PREFIXES "SELECT ?type ?name ?result ?action ?query ?data {\n" + 
+			   test + " a ?type ;\n"
+"        mf:name    ?name ;\n"
+"#        rdfs:comment    ?comment ;\n"
+"        mf:result  ?result ;\n"
+"        dawgt:approval dawgt:Approved ;\n"
+"        mf:action ?action .\n"
+"#OPTIONAL \n"
+"{ ?action qt:query  ?query ;\n"
+"          qt:data   ?data }\n"
+"}");
+	    if (sparqlParser.parse_stream(attrsQuery))
+		throw std::string("failed to parse test attributes query.");
+	    ResultSet listOfAttrs(&F);
+	    sparqlParser.root->execute(&d, &listOfAttrs);
+	    sparqlParser.clear("");
+
+	    ResultSetIterator attrsRecord = listOfAttrs.begin();
+	    const POS* type = (*attrsRecord)->get(F.getVariable("type"));
+	    std::string name = (*attrsRecord)->get(F.getVariable("name"))->getTerminal();
+	    std::string result = (*attrsRecord)->get(F.getVariable("result"))->getTerminal();
+	    //std::string action = (*attrsRecord)->get(F.getVariable("action"))->toString();
+	    std::string query = (*attrsRecord)->get(F.getVariable("query"))->getTerminal();
+	    std::string data = (*attrsRecord)->get(F.getVariable("data"))->getTerminal();
+
+	    std::stringstream 
+		graphsQuery(PREFIXES "SELECT * {\n" + 
+			    test + " mf:action [ qt:graphData   ?graph ] }");
+	    if (sparqlParser.parse_stream(graphsQuery))
+		throw std::string("failed to parse test attributes query.");
+	    ResultSet listOfGraphs(&F);
+	    sparqlParser.root->execute(&d, &listOfGraphs);
+	    sparqlParser.clear("");
+
+	    std::stringstream 
+		reqsQuery(PREFIXES "SELECT * {\n" + 
+			  test + " mf:requires ?requires }");
+	    if (sparqlParser.parse_stream(reqsQuery))
+		throw std::string("failed to parse test attributes query.");
+	    ResultSet listOfReqs(&F);
+	    sparqlParser.root->execute(&d, &listOfReqs);
+	    sparqlParser.clear("");
+
+	    if (type == 
+		F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#QueryEvaluationTest")) {
+		if (listOfReqs.size() == 0) {
+		    std::string out = sanitize(group + "_" + name);
+		    std::cout << "BOOST_AUTO_TEST_CASE( " << out << " ) {" << std::endl;
+		    std::cout << "    std::ifstream defaultGraph( \"" << path << data << "\" );" << std::endl;
+		    std::cout << "    DEFGRAPH_FILE_TEST(\"" << path << query << "\", \"" << path << result << "\");" << std::endl;
+		    std::cout << "}" << std::endl;
+		} else {
+		    std::cerr << "skipping test " << test << " as it requires ";
+		    for (ResultSetIterator reqRecord = listOfReqs.begin(); 
+			 reqRecord != listOfReqs.end(); ++reqRecord) {
+			if (reqRecord != listOfReqs.begin())
+			    std::cerr << ", ";
+			std::cerr << (*reqRecord)->get(F.getVariable("requires"))->toString();
+		    }
+		    std::cerr << std::endl;
+		}
+	    } else {
+		std::cerr << "skipping test " << test << " as it is of type " << type->toString() << std::endl;
+	    }
+	}
+	std::cout << "BOOST_AUTO_TEST_SUITE_END(/* " << group << " */)" << std::endl;
+    } catch (std::string s) {
+	std::cerr << s << std::endl;
+	return 1;
+    }
+    return 0;
+}
+
