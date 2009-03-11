@@ -58,6 +58,7 @@ IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_DOT		"."
+GT_COMMA		","
 GT_SEMI		";"
 IT_a		"a"
 GT_LBRACKET		"\["
@@ -107,6 +108,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DOT}		{return token::GT_DOT;}
+{GT_COMMA}		{return token::GT_COMMA;}
 {GT_SEMI}		{return token::GT_SEMI;}
 {IT_a}		{return token::IT_a;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
