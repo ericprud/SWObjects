@@ -6,7 +6,6 @@
 #define RDF_DB_H
 
 #include "SWObjects.hpp"
-#include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
 
