@@ -18,6 +18,8 @@
 #include "XMLSerializer.hpp"
 #include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 
 namespace w3c_sw {
 
@@ -275,6 +277,37 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
+	ResultSet (POSFactory* posFactory, TurtleSDriver* turtleParser, SPARQLfedDriver* sparqlParser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	    RdfDB d;
+	    turtleParser->setGraph(d.assureGraph(NULL));
+	    turtleParser->parse_file(filename);
+	    turtleParser->clear("");
+	    std::stringstream q("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>"
+				"SELECT * {?soln rs:binding ["
+				"		 rs:variable ?var ;"
+				"		 rs:value ?val"
+				" ]} ORDER BY ?soln");
+	    if (sparqlParser->parse_stream(q))
+		throw std::string("failed to parse ResultSet constructor query from \"") + filename + "\".";
+	    ResultSet listOfResults(posFactory);
+	    sparqlParser->root->execute(&d, &listOfResults);
+	    sparqlParser->clear(""); // clear out namespaces and base URI.
+	    const POS* lastSoln = NULL;
+	    Result* r = NULL;
+	    for (ResultSetIterator resultRecord = listOfResults.begin(); 
+		 resultRecord != listOfResults.end(); ++resultRecord) {
+		const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
+		const POS* var  = posFactory->getVariable((*resultRecord)->get(posFactory->getVariable("var" ))->getTerminal());
+		const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
+		if (lastSoln != soln) {
+		    r = new Result(this);
+		    insert(end(), r);
+		    lastSoln = soln;
+		}
+		set(r, var, val, false);
+	    }
+	}
+
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);

@@ -9,13 +9,23 @@
 #define BOOST_TEST_MODULE DAWG_tests
 #include "../tests/SparqlQueryTestResultSet.hpp"
 
-/* Macros for terse test syntax: */
-#define DEFGRAPH_FILE_TEST(QUERY_FILE, RESULT_FILE) \
-    std::ifstream query(QUERY_FILE); \
-    if (!query.is_open()) throw std::string("failed to open query file ") + QUERY_FILE; \
-    SparqlQueryTestResultSet measured(defaultGraph, NULL, 0, query);	\
-    ResultSet expected(&F, &P, RESULT_FILE); \
-    BOOST_CHECK_EQUAL(measured, expected);
+/* Macros for terse test syntax
+ * Using macros means that error messages point you to the test invocation (a
+ * great help in quicky diagnosing the failure).
+ */
+#define DEFGRAPH_FILE_TEST(QUERY_FILE, RESULT_FILE)			       \
+    std::ifstream query(QUERY_FILE);					       \
+    if (!query.is_open())						       \
+	throw std::string("failed to open query file ") + QUERY_FILE;	       \
+    SparqlQueryTestResultSet measured(defaultGraph, NULL, 0, query);	       \
+    std::string rfs(RESULT_FILE);				    	       \
+    if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
+	ResultSet expected(&F, &P, RESULT_FILE);		    	       \
+	BOOST_CHECK_EQUAL(measured, expected);			    	       \
+    } else {							    	       \
+	ResultSet expected(&F, &turtleParser, &sparqlParser, RESULT_FILE);     \
+	BOOST_CHECK_EQUAL(measured, expected);				       \
+    }
 #define S Sentinel
 
 //BOOST_AUTO_TEST_SUITE( basic )
