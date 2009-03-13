@@ -679,6 +679,16 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
+    ResultSet* Ask::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
+	     ds != m_DatasetClauses->end(); ds++)
+	    (*ds)->loadData(db);
+	m_WhereClause->bindVariables(db, rs);
+	rs->makeBoolean();
+	return rs;
+    }
+
     void DefaultGraphClause::loadData (RdfDB* db) const {
 	db->loadData(DefaultGraph, m_posFactory);
     }

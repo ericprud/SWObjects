@@ -86,10 +86,11 @@ namespace w3c_sw {
 	VariableList knownVars;
 	ResultList results;
 	bool ordered;
+	bool isBool;
 
     public:
 	ResultSet(POSFactory* posFactory);
-	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered) {
+	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -101,7 +102,7 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
+	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered), isBool(false) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -277,43 +278,63 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
-	ResultSet (POSFactory* posFactory, TurtleSDriver* turtleParser, SPARQLfedDriver* sparqlParser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	ResultSet (POSFactory* posFactory, TurtleSDriver* turtleParser, SPARQLfedDriver* sparqlParser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
 	    RdfDB d;
 	    turtleParser->setGraph(d.assureGraph(NULL));
 	    turtleParser->parse_file(filename);
 	    turtleParser->clear("");
-	    std::stringstream q("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>"
-				"SELECT * {?soln rs:binding ["
-				"		 rs:variable ?var ;"
-				"		 rs:value ?val"
-				" ]} ORDER BY ?soln");
-	    if (sparqlParser->parse_stream(q))
+	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
+	    if (sparqlParser->parse_stream(boolq))
 		throw std::string("failed to parse ResultSet constructor query from \"") + filename + "\".";
-	    ResultSet listOfResults(posFactory);
-	    sparqlParser->root->execute(&d, &listOfResults);
+	    ResultSet booleanResult(posFactory);
+	    sparqlParser->root->execute(&d, &booleanResult);
 	    sparqlParser->clear(""); // clear out namespaces and base URI.
-	    const POS* lastSoln = NULL;
-	    Result* r = NULL;
-	    for (ResultSetIterator resultRecord = listOfResults.begin(); 
-		 resultRecord != listOfResults.end(); ++resultRecord) {
-		const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
-		const POS* var  = posFactory->getVariable((*resultRecord)->get(posFactory->getVariable("var" ))->getLexicalValue());
-		const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
-		if (lastSoln != soln) {
-		    r = new Result(this);
-		    insert(end(), r);
-		    lastSoln = soln;
+	    if (booleanResult.size() > 0) {
+		ResultSetIterator booleanRecord = booleanResult.begin();
+		const POS* bpos = (*booleanRecord)->get(posFactory->getVariable("bool"));
+		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(bpos);
+		if (blit == NULL || ++booleanRecord != end())
+		    throw std::string("database:\n") + 
+			d.toString() + 
+			"\nis not a validate initializer for a boolen ResultSet.";
+		/* So far, size() > 0 is how we test a boolean ResultSet. */
+		if (blit->getValue())
+		    results.insert(results.begin(), new Result(this));
+	    } else {
+		std::stringstream tableq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+					 "SELECT * {?soln rs:binding [\n"
+					 "		 rs:variable ?var ;\n"
+					 "		 rs:value ?val\n"
+					 " ]} ORDER BY ?soln\n");
+		if (sparqlParser->parse_stream(tableq))
+		    throw std::string("failed to parse ResultSet constructor query from \"") + filename + "\".";
+		ResultSet listOfResults(posFactory);
+		sparqlParser->root->execute(&d, &listOfResults);
+		sparqlParser->clear(""); // clear out namespaces and base URI.
+		const POS* lastSoln = NULL;
+		Result* r = NULL;
+		for (ResultSetIterator resultRecord = listOfResults.begin(); 
+		     resultRecord != listOfResults.end(); ++resultRecord) {
+		    const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
+		    const POS* var  = posFactory->getVariable((*resultRecord)->get(posFactory->getVariable("var" ))->getLexicalValue());
+		    const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
+		    if (lastSoln != soln) {
+			r = new Result(this);
+			insert(end(), r);
+			lastSoln = soln;
+		    }
+		    set(r, var, val, false);
 		}
-		set(r, var, val, false);
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(start, finish, &handler);
 	}
@@ -324,6 +345,8 @@ namespace w3c_sw {
 		return false;
 	    if (isOrdered()) {
 		return compareOrdered(ref);
+	    } else if (isBoolean()) {
+		return (ref.size() > 0) == (size() > 0) ;
 	    } else {
 		std::vector<s_OrderConditionPair> orderConditions;
 		for (VariableListConstIterator it = knownVars.begin();
@@ -410,6 +433,8 @@ namespace w3c_sw {
 	void project(ProductionVector<const POS*> const * varsV);
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
 	bool isOrdered () const { return ordered; }
+	void makeBoolean () { isBool = true; }
+	bool isBoolean () const { return isBool; }
 
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)

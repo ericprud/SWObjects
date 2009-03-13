@@ -57,7 +57,7 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
 	results.insert(results.begin(), new Result(this));
     }
 
