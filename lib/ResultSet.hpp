@@ -278,17 +278,13 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
-	ResultSet (POSFactory* posFactory, TurtleSDriver* turtleParser, SPARQLfedDriver* sparqlParser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
-	    RdfDB d;
-	    turtleParser->setGraph(d.assureGraph(NULL));
-	    turtleParser->parse_file(filename);
-	    turtleParser->clear("");
+	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
 	    if (sparqlParser->parse_stream(boolq))
-		throw std::string("failed to parse ResultSet constructor query from \"") + filename + "\".";
+		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
-	    sparqlParser->root->execute(&d, &booleanResult);
+	    sparqlParser->root->execute(db, &booleanResult);
 	    sparqlParser->clear(""); // clear out namespaces and base URI.
 	    if (booleanResult.size() > 0) {
 		ResultSetIterator booleanRecord = booleanResult.begin();
@@ -296,7 +292,7 @@ namespace w3c_sw {
 		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(bpos);
 		if (blit == NULL /* !!! || ++booleanRecord != end() */)
 		    throw std::string("database:\n") + 
-			d.toString() + 
+			db->toString() + 
 			"\nis not a validate initializer for a boolen ResultSet.";
 		/* So far, size() > 0 is how we test a boolean ResultSet. */
 		if (blit->getValue())
@@ -308,9 +304,9 @@ namespace w3c_sw {
 					 "		 rs:value ?val\n"
 					 " ]} ORDER BY ?soln\n");
 		if (sparqlParser->parse_stream(tableq))
-		    throw std::string("failed to parse ResultSet constructor query from \"") + filename + "\".";
+		    throw std::string("failed to parse boolean ResultSet constructor query.");
 		ResultSet listOfResults(posFactory);
-		sparqlParser->root->execute(&d, &listOfResults);
+		sparqlParser->root->execute(db, &listOfResults);
 		sparqlParser->clear(""); // clear out namespaces and base URI.
 		const POS* lastSoln = NULL;
 		Result* r = NULL;

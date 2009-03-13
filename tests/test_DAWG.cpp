@@ -21,12 +21,19 @@
     std::string rfs(RESULT_FILE);				    	       \
     if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
 	ResultSet expected(&F, &P, RESULT_FILE);		    	       \
-	BOOST_CHECK_EQUAL(measured, expected);			    	       \
-    } else {							    	       \
-	ResultSet expected(&F, &turtleParser, &sparqlParser, RESULT_FILE);     \
+	BOOST_CHECK_EQUAL(measured, expected);				       \
+    } else {								       \
+	RdfDB rdfDB;							       \
+	if (rfs.substr(rfs.size()-4, 4) == ".ttl") {			       \
+	    turtleParser.setGraph(rdfDB.assureGraph(NULL));		       \
+	    turtleParser.parse_file(RESULT_FILE);			       \
+	    turtleParser.clear("");					       \
+	} else {							       \
+	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
+	}								       \
+	ResultSet expected(&F, &rdfDB, &sparqlParser);			       \
 	BOOST_CHECK_EQUAL(measured, expected);				       \
     }
-#define S Sentinel
 
 //BOOST_AUTO_TEST_SUITE( basic )
 BOOST_AUTO_TEST_CASE( basic__Basic___Prefix_Base_1_ ) {
