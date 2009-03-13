@@ -294,7 +294,7 @@ namespace w3c_sw {
 		ResultSetIterator booleanRecord = booleanResult.begin();
 		const POS* bpos = (*booleanRecord)->get(posFactory->getVariable("bool"));
 		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(bpos);
-		if (blit == NULL || ++booleanRecord != end())
+		if (blit == NULL /* !!! || ++booleanRecord != end() */)
 		    throw std::string("database:\n") + 
 			d.toString() + 
 			"\nis not a validate initializer for a boolen ResultSet.";
