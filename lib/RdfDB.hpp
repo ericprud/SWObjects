@@ -64,12 +64,15 @@ namespace w3c_sw {
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
+	std::string toString () const {
+	    SPARQLSerializer s;
+	    express(&s);
+	    return s.getSPARQLstring();
+	}
     };
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
-	SPARQLSerializer s;
-	my.express(&s);
-	return os << s.getSPARQLstring();
+	return os << my.toString();
     }
 
 } // namespace w3c_sw
