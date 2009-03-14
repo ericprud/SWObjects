@@ -13,6 +13,11 @@
 
 namespace w3c_sw {
 
+    extern const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
+    extern const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"		;
+    extern const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"	;
+    extern const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
+
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
@@ -461,7 +466,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
     }
 
-    RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
+    RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
 	std::istringstream is(p_String);
 	std::ostringstream normalized;
 

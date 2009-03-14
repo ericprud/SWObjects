@@ -50,7 +50,7 @@ namespace w3c_sw {
 	virtual void bnode (const BNode* const self, std::string lexicalValue) {
 	    last.posz.pos = posFactory ? posFactory->getBNode(lexicalValue.c_str()) : self;
 	}
-	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) {
+	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
 	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {

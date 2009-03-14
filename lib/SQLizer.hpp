@@ -820,7 +820,7 @@ namespace w3c_sw {
 	    }
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
-	virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) {
+	virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
 	    MARK;
 	    std::string value = lexicalValue;
 	    if (datatype != NULL) {

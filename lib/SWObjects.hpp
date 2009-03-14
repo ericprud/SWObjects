@@ -45,6 +45,11 @@
 
 namespace w3c_sw {
 
+    extern const char* NS_xml;
+    extern const char* NS_xsd;
+    extern const char* NS_rdf;
+    extern const char* NS_srx;
+
 class StringException : public std::exception {
 public:
     char const* str;
@@ -276,11 +281,11 @@ public:
 class RDFLiteral : public POS {
     friend class POSFactory;
 private:
-    URI* datatype;
+    const URI* datatype;
     LANGTAG* m_LANGTAG;
 
 protected:
-    RDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) : POS(p_String) {
+    RDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) : POS(p_String) {
 	datatype = p_URI;
 	m_LANGTAG = p_LANGTAG;
     }
@@ -449,7 +454,7 @@ public:
     BNode* getBNode(std::string name);
     URI* getURI(std::string name);
     POS* getPOS(std::string posStr);
-    RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
+    RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG);
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
@@ -1613,7 +1618,7 @@ public:
     virtual void uri(const URI* const self, std::string lexicalValue) = 0;
     virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
     virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
-    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) = 0;
+    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, int p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, float p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value) = 0;
@@ -1679,7 +1684,7 @@ public:
     virtual void uri (const URI* const, std::string) {  }
     virtual void variable (const Variable* const, std::string) {  }
     virtual void bnode (const BNode* const, std::string) {  }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string, URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, LANGTAG* p_LANGTAG) {
 	if (datatype) datatype->express(this);
 	if (p_LANGTAG) p_LANGTAG->express(this);
     }

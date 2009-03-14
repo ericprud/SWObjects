@@ -64,7 +64,7 @@ public:
     virtual void bnode (const BNode* const, std::string lexicalValue) {
 	ret << "_:" << lexicalValue; // rewrite when combining named BNodes from multiple docs?
     }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
 	ret << '"' << lexicalValue << '"';
 	if (datatype != NULL) { ret << "^^<" << datatype->getLexicalValue() << '>'; }
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
