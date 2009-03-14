@@ -8,6 +8,10 @@
 #include <iostream>
 
 namespace w3c_sw {
+
+    const char* ResultSet::NS_srx = "http://www.w3.org/2005/sparql-results#";
+    const char* ResultSet::NS_xml = "http://www.w3.org/XML/1998/namespace";
+
     void Result::set (const POS* variable, const POS* value, bool weaklyBound, bool replace) {
 	if (variable->toString() == "?") {
 	    std::stringstream s;

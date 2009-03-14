@@ -89,6 +89,9 @@ namespace w3c_sw {
 	bool isBool;
 
     public:
+	static const char* NS_srx;
+	static const char* NS_xml;
+
 	ResultSet(POSFactory* posFactory);
 	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
@@ -146,8 +149,6 @@ namespace w3c_sw {
 			 s_ERROR};
 	    std::vector<std::string> knownVars;
 	    std::stack<enum STATES> stateStack;
-#define SRX "http://www.w3.org/2005/sparql-results#"
-#define XML "http://www.w3.org/XML/1998/namespace"
 	    Result* result;
 	    POS* variable;
 	    URI* datatype;
@@ -171,7 +172,7 @@ namespace w3c_sw {
 				       std::string localName,
 				       std::string qName,
 				       Attributes* attrs) {
-		if (uri != SRX)
+		if (uri != NS_srx)
 		    error("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
 		enum STATES newState = s_ERROR;
 		switch (stateStack.top()) {
@@ -221,7 +222,7 @@ namespace w3c_sw {
 			newState = LITERAL;
 			std::string s = attrs->getValue("", "datatype");
 			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
-			lang = attrs->getValue(XML, "lang");
+			lang = attrs->getValue(NS_xml, "lang");
 		    }
 		    break;
 		case _URI:
@@ -243,7 +244,10 @@ namespace w3c_sw {
 				     std::string) {
 		switch (stateStack.top()) {
 		case BOOLEAN:
-		    error("boolean ResultSets not implemented");
+		    /* http://www.w3.org/TR/rdf-sparql-XMLres/#boolean-results */
+		    if (chars == "true")
+			rs->insert(rs->end(), new Result(rs));
+		    error("boolean ResultSets not tested");
 		    break;
 		case BINDING: //@@
 		    break;
