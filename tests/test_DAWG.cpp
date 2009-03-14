@@ -28,6 +28,8 @@
 	    turtleParser.setGraph(rdfDB.assureGraph(NULL));		       \
 	    turtleParser.parse_file(RESULT_FILE);			       \
 	    turtleParser.clear("");					       \
+	} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {		       \
+	    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), RESULT_FILE);	       \
 	} else {							       \
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \

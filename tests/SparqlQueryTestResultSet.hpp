@@ -17,6 +17,7 @@
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
+#include "RdfXmlParser.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"
@@ -33,6 +34,8 @@ using namespace w3c_sw;
 POSFactory F;
 SPARQLfedDriver sparqlParser("", &F);
 TurtleSDriver turtleParser("", &F);
+RdfXmlParser GRdfXmlParser(&F, &P);
+
 
 struct SparqlQueryTestResultSet : public ResultSet {
     RdfDB d;
