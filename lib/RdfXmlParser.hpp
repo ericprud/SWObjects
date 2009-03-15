@@ -35,6 +35,7 @@ namespace w3c_sw {
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
 		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars("") {
 		stateStack.push(DOCUMENT);
+		predicateStack.push(NULL);
 	    }
 
 	    virtual void startElement (std::string uri,
@@ -86,7 +87,7 @@ namespace w3c_sw {
 		    if ( !(uri == NS_rdf && localName == "RDF") ) {
 			const POS* p = posFactory->getURI(std::string(NS_rdf) + "type");
 			const POS* t = posFactory->getURI(uri + localName);
-			bgp->addTriplePattern(posFactory->getTriple(subjectStack.top(), p, t));
+			bgp->addTriplePattern(posFactory->getTriple(node, p, t));
 		    }
 		    newState = PROPERTY;
 		    subjectStack.push(node);
@@ -121,8 +122,11 @@ namespace w3c_sw {
 			     !(attrURI == NS_rdf && attrLName == "resource") && 
 			     !(attrURI == NS_xsd && attrLName == "datatype") && 
 			     !(attrURI == NS_xml && attrLName == "lang")) {
-			    if (node == NULL)
+			    if (node == NULL) {
 				node = posFactory->createBNode();
+				bgp->addTriplePattern(posFactory->getTriple(subjectStack.top(), 
+									    pred, node));
+			    }
 			    const POS* predicate = posFactory->getURI(attrURI + attrLName);
 			    std::string value = attrs->getValue(attrURI, attrLName);
 			    const POS* object = posFactory->getRDFLiteral(value, NULL, NULL);
@@ -155,17 +159,20 @@ namespace w3c_sw {
 		case DOCUMENT:
 		case SUBJECT:
 		case COLLECTION: {
+		    const POS* p = predicateStack.top();
+		    predicateStack.pop();
+		    const POS* o = subjectStack.top();
 		    subjectStack.pop();
-		    break;
-		}
-		case PROPERTY: {
-		    if ( !chars.empty() ) {
+		    if (o == NULL) {
+			/* Expected chars. */
 			const POS* s = subjectStack.top();
-			const POS* p = predicateStack.top();
-			const POS* o = posFactory->getRDFLiteral(chars, datatype, langtag);
+			o = posFactory->getRDFLiteral(chars, datatype, langtag);
 			chars = "";
 			bgp->addTriplePattern(posFactory->getTriple(s, p, o));
 		    }
+		    break;
+		}
+		case PROPERTY: {
 		    subjectStack.pop();
 		    predicateStack.pop();
 		    break;
