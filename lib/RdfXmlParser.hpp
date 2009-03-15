@@ -13,7 +13,26 @@ namespace w3c_sw {
     class RdfXmlParser {
 	class RdfXmlSaxHandler : public SWSAXhandler {
 	protected:
-	    enum STATES {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
+	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
+	    struct State {
+		enum Expect expect;
+		const POS* s;
+		const POS* p;
+		const char* stateStr () const {
+		    static const char* stateStrs[] =
+			{"document", "subject", "property", "collection", "huh?"};
+		    return stateStrs[expect];
+		}
+		std::string toString () const {
+		    std::stringstream ret;
+		    ret << 
+			"{ " << stateStr() << 
+			"	" << (s == NULL ? "NULL" : s->toString()) << 
+			"	" << (p == NULL ? "NULL" : p->toString()) << 
+			"}" << std::endl;
+		    return ret.str();
+		}
+	    };
 
 	    BasicGraphPattern* bgp;
 	    POSFactory* posFactory;
@@ -21,37 +40,46 @@ namespace w3c_sw {
 	    std::string chars;
 	    const URI* datatype;
 	    LANGTAG* langtag;
-	    std::stack<enum STATES> stateStack;
-	    std::stack<const POS*> subjectStack;
-	    std::stack<const POS*> predicateStack;
+	    std::stack<State> stack;
 
-	    const char* stateStr () {
-		static const char* stateStrs[] =
-		    {"document", "subject", "property", "collection", "huh?"};
-		return stateStrs[stateStack.top()];
+	    std::string dumpStack () {
+		std::vector<State> copy;
+		for ( ; !stack.empty(); stack.pop())
+		    copy.insert(copy.begin(), stack.top());
+
+		std::stringstream ret;
+		for (std::vector<State>::const_iterator it = copy.begin();
+		     it != copy.end(); ++it) {
+		    stack.push(*it);
+		    ret << it->toString();
+		}
+		return ret.str();
 	    }
 
 	public:
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
 		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars("") {
-		stateStack.push(DOCUMENT);
-		predicateStack.push(NULL);
+		State newState = {DOCUMENT, NULL, NULL};
+		stack.push(newState);
 	    }
 
 	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string qName,
 				       Attributes* attrs) {
-		enum STATES newState = s_ERROR;
-		switch (stateStack.top()) {
+		State newState = {s_ERROR, NULL, NULL};
+		switch (stack.top().expect) {
 		case DOCUMENT:
 		    if (uri == NS_rdf && localName == "RDF") {
-			newState = SUBJECT;
+			newState.expect = SUBJECT;
 			break;
 		    }
 		case SUBJECT:
 		case COLLECTION: {
-		    const POS* node;
+		    newState.expect = PROPERTY;
+
+		    /* Each subject element represents a node.
+		     */
 		    {
 			/* subject comes from about or ID or is a BNode. */
 			std::string subject;
@@ -59,130 +87,173 @@ namespace w3c_sw {
 			if (subject.empty()) {
 			    subject = attrs->getValue(NS_rdf, "ID");
 			    if (subject.empty())
-				node = posFactory->createBNode();
+				newState.s = posFactory->createBNode();
 			    else
-				node = posFactory->getURI(baseURI + "#" + subject);
+				newState.s = posFactory->getURI(baseURI + "#" + subject);
 			} else
-			    node = posFactory->getURI(subject);
+			    newState.s = posFactory->getURI(subject);
 		    }
-		    const POS* p = predicateStack.top();
+
+		    /* Subject elements nested inside a predicate element are
+		     * objects of that predicate.
+		     */
+		    const POS* p = stack.top().p;
 		    if (p != NULL) {
-			const POS* s = subjectStack.top();
-			predicateStack.pop(); // replace predicate.
-			if (stateStack.top() == COLLECTION) {
+			State parentState = stack.top();
+			const POS* s = parentState.s;
+
+			stack.pop(); // we will re-push with a new predicate.
+			if (stack.top().expect == COLLECTION) {
 			    const POS* b = posFactory->createBNode();
+
+			    /* Subsequent entries will be rests. */
+			    parentState.p = posFactory->getURI( std::string(NS_rdf) + "rest");
+			    /* Subsequent entries will append the tail of the list. */
+			    parentState.s = b;
+			    stack.push(parentState);
+
+			    /*
+			     *	    s
+			     *	     \p [was rest if nth in a Collection]
+			     *	      \
+			     *	       b _type_ rdf:Collection
+			     *	      /	\
+			     *	first/   \rest
+			     *	    /	  \
+			     *	 node      [another list or rdf:Nil]
+			     */
 			    const POS* f = posFactory->getURI(std::string(NS_rdf) + "first");
 			    const POS* t = posFactory->getURI(std::string(NS_rdf) + "type");
-				const POS* c = posFactory->getURI(std::string(NS_rdf) + "Collection");
+			    const POS* c = posFactory->getURI(std::string(NS_rdf) + "Collection");
 			    bgp->addTriplePattern(posFactory->getTriple(s, p, b));
 			    bgp->addTriplePattern(posFactory->getTriple(b, t, c));
-			    bgp->addTriplePattern(posFactory->getTriple(b, f, node));
-			    predicateStack.push(
-				posFactory->getURI( std::string(NS_rdf) + "rest") );
+			    bgp->addTriplePattern(posFactory->getTriple(b, f, newState.s));
 			} else {
-			    bgp->addTriplePattern(posFactory->getTriple(s, p, node));
-			    predicateStack.push(NULL);
+			    /* Only one nested subject allowed. */
+			    parentState.p = NULL;
+			    stack.push(parentState);
+
+			    /*
+			     *	    s
+			     *	     \p
+			     *	      \
+			     *	      node
+			     */
+			    bgp->addTriplePattern(posFactory->getTriple(s, p, newState.s));
 			}
 		    }
+
+		    /* Add type arc for typed nodes. */
 		    if ( !(uri == NS_rdf && localName == "RDF") ) {
 			const POS* p = posFactory->getURI(std::string(NS_rdf) + "type");
 			const POS* t = posFactory->getURI(uri + localName);
-			bgp->addTriplePattern(posFactory->getTriple(node, p, t));
+			bgp->addTriplePattern(posFactory->getTriple(newState.s, p, t));
 		    }
-		    newState = PROPERTY;
-		    subjectStack.push(node);
 		    break;
 		}
 		case PROPERTY: {
 		    std::string t; // used a couple times below
-		    const POS* node = NULL;
-		    const POS* pred = posFactory->getURI(uri + localName);
+		    newState.p = posFactory->getURI(uri + localName);
 		    std::string parseType = attrs->getValue(NS_rdf, "parseType");
 
-		    /* rdf:parseType or rdf:resource attributes imply a new node. */
+		    /* rdf:parseType or rdf:resource attributes imply a new node.
+		     * Otherwise, may be a:
+		     *   literal - expect chars).
+		     *   Collection - may be nil for an empty Collection.
+		     *   node with predicate attributes - handled below.
+		     */
 		    t = attrs->getValue(NS_rdf, "resource");
 		    if ( !t.empty() )
-			node = posFactory->getURI(t);
+			newState.s = posFactory->getURI(t);
 		    else if ( !parseType.empty() )
-			node = posFactory->createBNode();
-		    if (node != NULL)
-			bgp->addTriplePattern(posFactory->getTriple(subjectStack.top(), 
-							    pred, node));
+			newState.s = posFactory->createBNode();
+		    if (newState.s != NULL)
+			bgp->addTriplePattern(posFactory->getTriple(stack.top().s, 
+							    newState.p, newState.s));
 
-		    t = attrs->getValue(NS_xsd, "datatype");
+		    /* Grab xsd:datatype and xml:lang.
+		     * These are non-recursive (a literal predicate can't
+		     * contain another predicate) so we leave them out of the
+		     * stack state.
+		     */
+		    t = attrs->getValue(NS_rdf, "datatype");
 		    datatype = t.empty() ? NULL : posFactory->getURI(t);
 		    t = attrs->getValue(NS_xml, "lang");
 		    langtag = t.empty() ? NULL : new LANGTAG(t.c_str());
 
+		    /* Create statements for predicate attributes. */
 		    for (size_t i = 0; i < attrs->getLength(); ++i) {
 			std::string attrURI = attrs->getURI(i);
 			std::string attrLName = attrs->getLocalName(i);
-			/* Create statements for unknown attributes */
 			if ( !(attrURI == NS_rdf && attrLName == "parseType") && 
 			     !(attrURI == NS_rdf && attrLName == "resource") && 
-			     !(attrURI == NS_xsd && attrLName == "datatype") && 
+			     !(attrURI == NS_rdf && attrLName == "datatype") && 
 			     !(attrURI == NS_xml && attrLName == "lang")) {
-			    if (node == NULL) {
-				node = posFactory->createBNode();
-				bgp->addTriplePattern(posFactory->getTriple(subjectStack.top(), 
-									    pred, node));
+
+			    /* We must have a current node. */
+			    if (newState.s == NULL) {
+				newState.s = posFactory->createBNode();
+				bgp->addTriplePattern(posFactory->getTriple(stack.top().s, 
+									    newState.p, newState.s));
 			    }
+
+			    /* newState.s -[attribute]-> [value] . */
 			    const POS* predicate = posFactory->getURI(attrURI + attrLName);
 			    std::string value = attrs->getValue(attrURI, attrLName);
 			    const POS* object = posFactory->getRDFLiteral(value, NULL, NULL);
-			    bgp->addTriplePattern(posFactory->getTriple(node, predicate, object));
+			    bgp->addTriplePattern(posFactory->getTriple(newState.s, predicate, object));
 			}
 		    }
 
 		    /* Nested state depends souly on parseType. */
-		    newState = 
+		    newState.expect = 
 			parseType == "Collection" ? COLLECTION : 
 			parseType == "Resource" ? PROPERTY : 
 			SUBJECT;
 
-		    subjectStack.push(node);
-		    predicateStack.push(pred);
 		    break;
 		}
 		default:
-		    error("unexpected element %s within %s", qName.c_str(), stateStr());
+		    error("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
 		}
-		if (newState == s_ERROR)
-		    error("unexpected element %s within %s", qName.c_str(), stateStr());
-		stateStack.push(newState);
+		if (newState.expect == s_ERROR)
+		    error("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
+		stack.push(newState);
 		chars = "";
+		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
 	    virtual void endElement (std::string,
 				     std::string,
-				     std::string) {
-		switch (stateStack.top()) {
+				     std::string qName) {
+		State nestedState = stack.top();
+		stack.pop();
+		switch (nestedState.expect) {
 		case DOCUMENT:
+		    break;
 		case SUBJECT:
-		case COLLECTION: {
-		    const POS* p = predicateStack.top();
-		    predicateStack.pop();
-		    const POS* o = subjectStack.top();
-		    subjectStack.pop();
-		    if (o == NULL) {
-			/* Expected chars. */
-			const POS* s = subjectStack.top();
-			o = posFactory->getRDFLiteral(chars, datatype, langtag);
+		    if (nestedState.p != NULL && nestedState.s == NULL) {
+			/* We were expecting a literal node. */
+			const POS* o = posFactory->getRDFLiteral(chars, datatype, langtag);
 			chars = "";
-			bgp->addTriplePattern(posFactory->getTriple(s, p, o));
+			bgp->addTriplePattern(posFactory->getTriple(stack.top().s, nestedState.p, o));
 		    }
 		    break;
+		case COLLECTION: {
+		    /* Tack on trailing nil to current predicate (rdf:rest,
+		     * except when parsing an empty Collection).
+		     */
+		    const POS* n = posFactory->getURI(std::string(NS_rdf) + "nil");
+		    bgp->addTriplePattern(posFactory->getTriple(stack.top().s, stack.top().p, n));
 		}
-		case PROPERTY: {
-		    subjectStack.pop();
-		    predicateStack.pop();
 		    break;
-		}
+		case PROPERTY:
+		    break;
 		default:
-		    error("unexpected state %d", stateStack.top());
+		    error("unexpected state %d", stack.top().expect);
 		}
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
-		    error("unexpected characters %s within %s", chars.c_str(), stateStr());
-		stateStack.pop();
+		    error("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
+		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
 	    virtual void characters (const char ch[],
 				     int start,
