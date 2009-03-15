@@ -172,6 +172,11 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toString () const {
+	if (bgp != NULL) {
+	    SPARQLSerializer s;
+	    bgp->express(&s);
+	    return std::string("<graph result>\n") + s.getSPARQLstring() + "\n</graph result>";
+	}
 	const char* NULL_REP = "--";
 #if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";

@@ -678,9 +678,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	DefaultGraphPattern g;
-	m_ConstructTemplate->construct(&g, rs);
-	std::cerr << "CONSTRUCTED: " << g << std::endl;
+	m_ConstructTemplate->construct(resultGraph, rs);
+	rs->setGraph(resultGraph);
+	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
 
@@ -1034,6 +1034,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return r;
 	}
 	return ret;
+    }
+
+    std::ostream& operator<< (std::ostream& os, BasicGraphPattern const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
     }
 
     std::ostream& operator<< (std::ostream& os, TableOperation const& my) {

@@ -668,13 +668,13 @@ protected:
     BasicGraphPattern (const BasicGraphPattern& ref) :
 	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
 	allOpts(ref.allOpts) {  }
-    bool operator==(const BasicGraphPattern& ref) const;
 
     /* Misc helper functions: */
     static const POS* _cOrN(const POS* pos, const NULLpos* n);
 
 public:
 
+    bool operator==(const BasicGraphPattern& ref) const;
     /* Controls for operator==(BasicGraphPatter&)
      */
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
@@ -949,13 +949,17 @@ protected:
     ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
+    DefaultGraphPattern* resultGraph;
+
 public:
-    Construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    Construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : 
+	Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier), resultGraph(new DefaultGraphPattern()) {  }
     ~Construct () {
 	delete m_ConstructTemplate;
 	delete m_DatasetClauses;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
+	delete resultGraph;
     }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -1891,6 +1895,7 @@ class TestExpressor : public RecursiveExpressor {
     virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
+    std::ostream& operator<<(std::ostream& os, BasicGraphPattern const& my);
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
 

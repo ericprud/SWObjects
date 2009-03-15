@@ -87,13 +87,14 @@ namespace w3c_sw {
 	ResultList results;
 	bool ordered;
 	bool isBool;
+	BasicGraphPattern* bgp;
 
     public:
 	static const char* NS_srx;
 	static const char* NS_xml;
 
 	ResultSet(POSFactory* posFactory);
-	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool) {
+	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool), bgp(ref.bgp) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -105,7 +106,7 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered), isBool(false) {
+	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered), isBool(false), bgp(NULL) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -247,7 +248,8 @@ namespace w3c_sw {
 		    /* http://www.w3.org/TR/rdf-sparql-XMLres/#boolean-results */
 		    if (chars == "true")
 			rs->insert(rs->end(), new Result(rs));
-		    error("boolean ResultSets not tested");
+		    rs->makeBoolean();
+		    chars = "";
 		    break;
 		case BINDING: //@@
 		    break;
@@ -282,7 +284,7 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
-	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
+	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(db->assureGraph(NULL)) {
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
 	    if (sparqlParser->parse_stream(boolq))
@@ -329,12 +331,12 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(start, finish, &handler);
 	}
@@ -347,6 +349,8 @@ namespace w3c_sw {
 		return compareOrdered(ref);
 	    } else if (isBoolean()) {
 		return (ref.size() > 0) == (size() > 0) ;
+	    } else if (bgp != NULL && ref.bgp != NULL) {
+		return (*bgp == *ref.bgp) ;
 	    } else {
 		std::vector<s_OrderConditionPair> orderConditions;
 		for (VariableListConstIterator it = knownVars.begin();
@@ -435,6 +439,7 @@ namespace w3c_sw {
 	bool isOrdered () const { return ordered; }
 	void makeBoolean () { isBool = true; }
 	bool isBoolean () const { return isBool; }
+	void setGraph (BasicGraphPattern* bgp) { this->bgp = bgp; }
 
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)
