@@ -1185,7 +1185,10 @@ public:
 	for (std::vector<const POS*>::iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
-	    s << (*it)->toString();
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
 	}
 	s << ')';
 	s << " not implemented";
@@ -1448,7 +1451,10 @@ public:
 	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
-	    s << (*it)->toString();
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
 	}
 	s << ')';
 	s << " not implemented";
@@ -1507,7 +1513,10 @@ public:
 	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
-	    s << (*it)->toString();
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
 	}
 	s << ')';
 	s << " not implemented";
