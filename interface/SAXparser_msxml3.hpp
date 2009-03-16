@@ -18,11 +18,14 @@ using namespace MSXML2;
 
 namespace w3c_sw {
 
-    std::string to8bit (wchar_t __RPC_FAR *wchar) {
+    std::string to8bit (wchar_t __RPC_FAR *wchar, int len) {
 	std::wstring wstr(wchar);
+	if (len == -1)
+	    len = (int)wstr.length();
 	std::string str;
+	int i = 0;
 	for (std::wstring::iterator it = wstr.begin();
-	     it != wstr.end(); ++it)
+	     i < len; ++it, ++i)
 	    str += (char)*it;
 	return str;
     }
@@ -56,14 +59,14 @@ namespace w3c_sw {
 		int attrCount;
 		attrs->getLength(&attrCount);
 		for (int i = 0; i < attrCount; ++i) {
-		    int len;
-		    unsigned short* lname; attrs->getLocalName(i, &lname, &len);
-		    unsigned short* qname; attrs->getQName(i, &qname, &len);
-		    unsigned short* namespaceURI; attrs->getURI(i, &namespaceURI, &len);
-		    unsigned short* value; attrs->getValue(i, &value, &len);
+		    int llname, lqname, luri, lvalue;
+		    unsigned short* lname; attrs->getLocalName(i, &lname, &llname);
+		    unsigned short* qname; attrs->getQName(i, &qname, &lqname);
+		    unsigned short* namespaceURI; attrs->getURI(i, &namespaceURI, &luri);
+		    unsigned short* value; attrs->getValue(i, &value, &lvalue);
 
-		    byIndex.push_back(NsSet(namespaceURI ? to8bit(namespaceURI) : "", to8bit(lname), to8bit(qname)));
-		    byNS_localName[namespaceURI ? to8bit(namespaceURI) : ""][to8bit(lname)] = to8bit(value);
+		    byIndex.push_back(NsSet(to8bit(namespaceURI, luri), to8bit(lname, llname), to8bit(qname, lqname)));
+		    byNS_localName[to8bit(namespaceURI, luri)][to8bit(lname, llname)] = to8bit(value, lvalue);
 		}
 		initialized = true;
 	    }
@@ -145,9 +148,9 @@ namespace w3c_sw {
 						   ISAXAttributes __RPC_FAR *pAttributes)
 	    {
 		Attributes_msxml3 attrs(pAttributes);
-		h->saxHandler->startElement((const char*)to8bit(pwchNamespaceUri).c_str(), 
-					    (const char*)to8bit(pwchLocalName).c_str(), 
-					    (const char*)to8bit(pwchRawName).c_str(), 
+		h->saxHandler->startElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
+					    (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
+					    (const char*)to8bit(pwchRawName, cchRawName).c_str(), 
 					    &attrs);
 		return S_OK;
 	    }
@@ -159,16 +162,16 @@ namespace w3c_sw {
 						 wchar_t __RPC_FAR *pwchRawName,
 						 int cchRawName)
 	    {
-		h->saxHandler->endElement((const char*)to8bit(pwchNamespaceUri).c_str(), 
-					  (const char*)to8bit(pwchLocalName).c_str(), 
-					  (const char*)to8bit(pwchRawName).c_str());
+		h->saxHandler->endElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
+					  (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
+					  (const char*)to8bit(pwchRawName, cchRawName).c_str());
 		return S_OK;
 	    }
 
 	    virtual HRESULT STDMETHODCALLTYPE characters(wchar_t __RPC_FAR *pwchChars,
 							 int cchChars)
 	    {
-		h->saxHandler->characters((const char*)to8bit(pwchChars).c_str(), 0, cchChars);
+		h->saxHandler->characters((const char*)to8bit(pwchChars, cchChars).c_str(), 0, cchChars);
 		return S_OK;
 	    }
 
@@ -233,7 +236,7 @@ namespace w3c_sw {
 						    unsigned short * pwchErrorMessage,
 						    HRESULT errCode) 
 	    {
-		myerror(to8bit(pwchErrorMessage).c_str());
+		myerror(to8bit(pwchErrorMessage, -1).c_str());
 		return S_OK;
 	    }
         
