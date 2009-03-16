@@ -36,8 +36,7 @@
 	if (measured.getGraph() == NULL)				       \
 	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, &sparqlParser)); \
 	else								       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL), \
-						  &sparqlParser));	       \
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL)));\
     }
 
 //BOOST_AUTO_TEST_SUITE( basic )

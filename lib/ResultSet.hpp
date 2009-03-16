@@ -285,7 +285,7 @@ namespace w3c_sw {
 	    }
 	};
 
-	ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp, SPARQLfedDriver* sparqlParser) : 
+	ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp) : 
 	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(bgp) {  }
 
 	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : 
