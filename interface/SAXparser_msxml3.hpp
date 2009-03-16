@@ -305,7 +305,6 @@ namespace w3c_sw {
 	    this->saxHandler = saxHandler;
 	    std::string str(start, finish);
 	    std::wstring wstr(to16bit(str.c_str()));
-	    std::cout << "Parsing document --\"" << str << "\"-- ..." << std::endl;
 	    VARIANT data /* !!! (wstr.c_str()) */;
 	    VariantInit(&data);
 	    HRESULT hr = pXMLReader->parse(data);
@@ -315,12 +314,10 @@ namespace w3c_sw {
 		throw s.str();
 // 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
 	    }
-	    std::cout << "parsed" << std::endl;
 	}
 
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
 	    this->saxHandler = saxHandler;
-	    std::cout << "Parsing file: \"" << file << "\"..." << std::endl;
 	    // parse the document
 	    HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
 	    if(FAILED(hr)) {
@@ -329,7 +326,6 @@ namespace w3c_sw {
 		throw s.str();
 // 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
 	    }
-	    std::cout << "parsed" << file << std::endl;
 	}
 
     };
