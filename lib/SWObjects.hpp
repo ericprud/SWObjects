@@ -493,6 +493,10 @@ public:
     /* EBV (Better place for this?) */
     const POS* ebv(const POS* pos);
     bool lessThan (const POS* lhs, const POS* rhs) {
+	if (rhs == NULL)
+	    return false;
+	if (lhs == NULL)
+	    return true;
 	const std::string lt = typeid(*lhs).name();
 	const std::string rt = typeid(*rhs).name();
 	if (lt != rt) {
