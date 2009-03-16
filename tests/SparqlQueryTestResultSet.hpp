@@ -25,6 +25,9 @@
 #elif XML_PARSER == SWOb_EXPAT1
   #include "../interface/SAXparser_expat.hpp"
   w3c_sw::SAXparser_expat P;
+#elif XML_PARSER == SWOb_MSXML3
+  #include "../interface/SAXparser_msxml3.hpp"
+  w3c_sw::SAXparser_msxml3 P;
 #else
   #warning DAWG tests require an XML parser
 #endif

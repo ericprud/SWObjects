@@ -6,7 +6,7 @@
  /* XML Parsers: */
  #define SWOb_LIBXML2		137
  #define SWOb_EXPAT1		138
- #define SWOb_MSXML		139
+ #define SWOb_MSXML3		139
  /* Character Encodings: */
  #define SWOb_UTF8		143
  /* Regexp Libs: */
@@ -17,7 +17,7 @@
  /* SQL Libs: */
  #define SWOb_MYSQL		148
  
- #define XML_PARSER SWOb_EXPAT1 
+ #define XML_PARSER SWOb_MSXML3 
  #define CONSOLE_ENCODING SWOb_DISABLED 
  #define REGEX_LIB SWOb_BOOST 
  #define HTTP_CLIENT SWOb_ASIO 
