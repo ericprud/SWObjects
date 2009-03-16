@@ -33,8 +33,11 @@
 	} else {							       \
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
-	ResultSet expected(&F, &rdfDB, &sparqlParser);			       \
-	BOOST_CHECK_EQUAL(measured, expected);				       \
+	if (measured.getGraph() == NULL)				       \
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, &sparqlParser)); \
+	else								       \
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL), \
+						  &sparqlParser));	       \
     }
 
 //BOOST_AUTO_TEST_SUITE( basic )

@@ -284,7 +284,12 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
-	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(db->assureGraph(NULL)) {
+
+	ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp, SPARQLfedDriver* sparqlParser) : 
+	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(bgp) {  }
+
+	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : 
+	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
 	    if (sparqlParser->parse_stream(boolq))
@@ -440,6 +445,7 @@ namespace w3c_sw {
 	void makeBoolean () { isBool = true; }
 	bool isBoolean () const { return isBool; }
 	void setGraph (BasicGraphPattern* bgp) { this->bgp = bgp; }
+	BasicGraphPattern* getGraph () { return bgp; }
 
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)
