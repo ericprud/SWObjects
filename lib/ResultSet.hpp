@@ -378,9 +378,10 @@ namespace w3c_sw {
 	    }
 	}
 	const VariableList* getKnownVars () { return &knownVars; }
-	void joinIn (ResultSet* ref) { // !!! make const ref
+	void joinIn (ResultSet* ref, bool outer = false) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
-		 myRow != results.end(); ) {		
+		 myRow != results.end(); ) {
+		bool matchedSomeRow = false;
 		for (ResultSetConstIterator yourRow = ref->results.begin();
 		     yourRow != ref->results.end(); ++yourRow) {
 		    bool matched = true;
@@ -405,9 +406,13 @@ namespace w3c_sw {
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
 			insert(myRow, newRow);
+			matchedSomeRow = true;
 		    }
 		}
-		erase(myRow++);
+		if (outer && !matchedSomeRow)
+		    myRow++;
+		else
+		    erase(myRow++);
 	    }
 	}
 	bool compareOrdered (const ResultSet & ref) const {

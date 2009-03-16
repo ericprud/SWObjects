@@ -881,6 +881,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet optRS(NULL); // no POSFactory
+	m_TableOperation->bindVariables(db, &optRS);
+	rs->joinIn(&optRS, true);
+#if 0
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
 	    m_TableOperation->bindVariables(db, rowRS);
@@ -899,6 +903,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    else
 		rs->erase(row++);
 	}
+#endif
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) const {
