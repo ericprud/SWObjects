@@ -14,6 +14,7 @@ using namespace MSXML2;
 #include <iostream>
 #include <tchar.h>
 #include <map>
+#include <comutil.h>
 #include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
@@ -301,13 +302,18 @@ namespace w3c_sw {
 	    CoUninitialize();
 	}
 
+	void static to_variant(const std::wstring& str, VARIANT& vt) {
+	    _bstr_t bs(str.c_str());
+	    reinterpret_cast<_variant_t&>(vt) = bs;
+	}
+
 	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
 	    this->saxHandler = saxHandler;
 	    std::string str(start, finish);
 	    std::wstring wstr(to16bit(str.c_str()));
-	    VARIANT data /* !!! (wstr.c_str()) */;
-	    VariantInit(&data);
-	    HRESULT hr = pXMLReader->parse(data);
+	    _variant_t vt;
+	    to_variant(wstr, vt);
+	    HRESULT hr = pXMLReader->parse(vt);
 	    if(FAILED(hr)) {
 		std::stringstream s;
 		s << "parse failed: result code: " << hr;
