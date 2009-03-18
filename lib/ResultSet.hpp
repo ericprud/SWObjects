@@ -325,7 +325,8 @@ namespace w3c_sw {
 		for (ResultSetIterator resultRecord = listOfResults.begin(); 
 		     resultRecord != listOfResults.end(); ++resultRecord) {
 		    const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
-		    const POS* var  = posFactory->getVariable((*resultRecord)->get(posFactory->getVariable("var" ))->getLexicalValue());
+		    const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
+		    const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
 		    const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
 		    if (lastSoln != soln) {
 			r = new Result(this);
