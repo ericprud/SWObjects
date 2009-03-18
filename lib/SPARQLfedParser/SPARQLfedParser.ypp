@@ -919,6 +919,13 @@ GroupGraphPattern:
 
 	  driver.neededBGP = NULL;
 	  driver.bgpStack.pop_back();
+	  /* Prevents optimization in e.g. <data-r2/algebra/join-combo-1.rq>
+	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
+	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
+	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
+	   * @@@ should it be the former? if so, remove or put a switch on this.
+	   */
+	  driver.bgpStack.back() = NULL;
       }
 ;
 
