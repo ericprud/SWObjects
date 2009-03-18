@@ -209,7 +209,7 @@ namespace w3c_sw {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
 		const TableOperation* parent = currentBGP;
@@ -217,6 +217,7 @@ namespace w3c_sw {
 		_nestedIn(self, parent);
 
 		p_GroupGraphPattern->express(this);
+		p_Filters->express(this);
 
 		currentBGP = parent;
 		optState = oldOptState;

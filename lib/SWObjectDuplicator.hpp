@@ -136,9 +136,10 @@ namespace w3c_sw {
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	    p_GroupGraphPattern->express(this);
-	    last.tableOperation = new OptionalGraphPattern(last.tableOperation);
+	    p_Filters->express(this);
+	    last.tableOperation = new OptionalGraphPattern(last.tableOperation); // @@@ last.filters
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    p_POS->express(this);

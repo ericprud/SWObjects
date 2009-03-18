@@ -15,6 +15,7 @@ public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
 protected:
     std::stringstream ret;
+    const ProductionVector<const Filter*>* injectFilters;
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		  PREC_And, 
 		  PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
@@ -49,7 +50,7 @@ protected:
     }
 public:
     SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+	injectFilters(NULL), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
     std::string getSPARQLstring () { return ret.str(); }
     //!!!
@@ -117,6 +118,10 @@ public:
 	else
 	    p_TriplePatterns->express(this);
 	p_Filters->express(this);
+	if (injectFilters != NULL) {
+	    injectFilters->express(this);
+	    injectFilters = NULL;
+	}
 	depth--;
 	lead();
 	ret << '}' << std::endl;
@@ -146,6 +151,10 @@ public:
 	    (*it)->express(this);
 	}
 	p_Filters->express(this);
+	if (injectFilters != NULL) {
+	    injectFilters->express(this);
+	    injectFilters = NULL;
+	}
 	depth--;
 	lead();
 	ret << '}' << std::endl;
@@ -158,15 +167,20 @@ public:
 	depth++;
 	p_TableOperations->express(this);
 	p_Filters->express(this);
+	if (injectFilters != NULL) {
+	    injectFilters->express(this);
+	    injectFilters = NULL;
+	}
 	depth--;
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
+	injectFilters = p_Filters;
 	p_GroupGraphPattern->express(this);
 	depth--;
     }

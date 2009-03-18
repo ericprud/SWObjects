@@ -103,9 +103,10 @@ public:
 	p_Filters->express(this);
 	xml->close();
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	xml->open("OptionalGraphPattern");
 	p_GroupGraphPattern->express(this);
+	p_Filters->express(this);
 	xml->close();
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {

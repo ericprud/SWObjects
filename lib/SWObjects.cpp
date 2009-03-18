@@ -251,7 +251,7 @@ void TableConjunction::express (Expressor* p_expressor) const {
     p_expressor->tableConjunction(this, &m_TableOperations, &m_Filters);
 }
 void OptionalGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->optionalGraphPattern(this, m_TableOperation);
+    p_expressor->optionalGraphPattern(this, m_TableOperation, &m_Filters);
 }
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);

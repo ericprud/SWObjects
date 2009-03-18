@@ -1066,7 +1066,7 @@ namespace w3c_sw {
 	    }
 	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
 	    SQLQuery* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -1075,6 +1075,7 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
 	    optional->attach();
+	    p_Filters->express(this);
 	    curQuery = parent;
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {

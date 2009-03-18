@@ -247,7 +247,7 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
 		}
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
