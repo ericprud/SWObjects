@@ -78,12 +78,14 @@ protected:
     std::stack<POS*> curGraphNameStack;
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
-	BasicGraphPattern* ret;
-	if (curGraphNameStack.empty())
-	    ret = new DefaultGraphPattern();
-	else
-	    ret = new NamedGraphPattern(curGraphNameStack.top());
-	return ret;
+	if (!bgpStack.back()) {
+	    if (curGraphNameStack.empty())
+		neededBGP = new DefaultGraphPattern();
+	    else
+		neededBGP = new NamedGraphPattern(curGraphNameStack.top());
+	    bgpStack.back() = neededBGP;
+	}
+	return bgpStack.back();
     }
 
 public:
@@ -1122,10 +1124,7 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	$$ = new Filter($2);
-	if (!driver.bgpStack.back()) {
-	    driver.neededBGP = driver.makeBasicGraphPattern();
-	    driver.bgpStack.back() = driver.neededBGP;
-	}
+	driver.makeBasicGraphPattern();
 	driver.bgpStack.back()->addFilter($$);
     }
 ;
@@ -1290,10 +1289,7 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 
 Object:
     GraphNode	{
-	if (!driver.bgpStack.back()) {
-	    driver.neededBGP = driver.makeBasicGraphPattern();
-	    driver.bgpStack.back() = driver.neededBGP;
-	}
+	driver.makeBasicGraphPattern();
 	driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
 	$$ = $1;
     }
@@ -1341,10 +1337,7 @@ Generator:
 	    URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
 	    POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
-	    if (!driver.bgpStack.back()) {
-		driver.neededBGP = driver.makeBasicGraphPattern();
-		driver.bgpStack.back() = driver.neededBGP;
-	    }
+	    driver.makeBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
 		POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
