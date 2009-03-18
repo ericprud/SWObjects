@@ -34,7 +34,7 @@
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
 	if (measured.getGraph() == NULL)				       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, &sparqlParser)); \
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, "")); \
 	else								       \
 	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL)));\
     }

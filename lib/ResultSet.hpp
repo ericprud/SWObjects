@@ -288,15 +288,16 @@ namespace w3c_sw {
 	ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp) : 
 	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(bgp) {  }
 
-	ResultSet (POSFactory* posFactory, RdfDB* db, SPARQLfedDriver* sparqlParser) : 
+	ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
 	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
-	    if (sparqlParser->parse_stream(boolq))
+	    if (sparqlParser.parse_stream(boolq))
 		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
-	    sparqlParser->root->execute(db, &booleanResult);
-	    sparqlParser->clear(""); // clear out namespaces and base URI.
+	    sparqlParser.root->execute(db, &booleanResult);
+	    sparqlParser.clear(""); // clear out namespaces and base URI.
 	    if (booleanResult.size() > 0) {
 		ResultSetIterator booleanRecord = booleanResult.begin();
 		const POS* bpos = (*booleanRecord)->get(posFactory->getVariable("bool"));
@@ -314,11 +315,11 @@ namespace w3c_sw {
 					 "		 rs:variable ?var ;\n"
 					 "		 rs:value ?val\n"
 					 " ]} ORDER BY ?soln\n");
-		if (sparqlParser->parse_stream(tableq))
+		if (sparqlParser.parse_stream(tableq))
 		    throw std::string("failed to parse boolean ResultSet constructor query.");
 		ResultSet listOfResults(posFactory);
-		sparqlParser->root->execute(db, &listOfResults);
-		sparqlParser->clear(""); // clear out namespaces and base URI.
+		sparqlParser.root->execute(db, &listOfResults);
+		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		const POS* lastSoln = NULL;
 		Result* r = NULL;
 		for (ResultSetIterator resultRecord = listOfResults.begin(); 
