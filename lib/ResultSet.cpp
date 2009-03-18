@@ -137,7 +137,8 @@ namespace w3c_sw {
 	     row != results.end(); ++row)
 	    for (std::set<const POS*>::const_iterator var = toDel.begin();
 		 var != toDel.end(); ++var)
-		(*row)->erase((*row)->find(*var));
+		if ((*row)->find(*var) != (*row)->end())
+		    (*row)->erase((*row)->find(*var));
 
 	/* Delete those vars from knowVars. */
 	for (std::set<const POS*>::const_iterator var = toDel.begin();
