@@ -70,7 +70,7 @@ class SPARQLfedDriver : public Driver {
 protected:
     POS* curSubject;
     POS* curPredicate;
-    BasicGraphPattern* curBGP;
+    std::vector<BasicGraphPattern*> bgpStack;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
     BindingClause* curBindingClause;
     Binding* curBinding;
@@ -88,6 +88,7 @@ protected:
 
 public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
+    ~SPARQLfedDriver();
 
     virtual bool parse_stream(std::istream& in,
 		      const std::string& sname = "stream input");
@@ -896,7 +897,8 @@ _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus:
 GroupGraphPattern:
     // '{' TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.neededBGP = driver.curBGP = NULL;
+	driver.neededBGP = NULL;
+	driver.bgpStack.push_back(NULL);
       } _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
 	  if (($3 != NULL && $4->size() > 0) ||
 	      ($3 == NULL && $4->size() > 1)) {
@@ -915,7 +917,8 @@ GroupGraphPattern:
 	  $4->clear();
 	  delete $4;
 
-	  driver.neededBGP = driver.curBGP = NULL;
+	  driver.neededBGP = NULL;
+	  driver.bgpStack.pop_back();
       }
 ;
 
@@ -971,7 +974,8 @@ _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Op
 GraphTemplate:
     // '{' TriplesBlock? ( ( 'GRAPH' VarOrIRIref GraphTemplate | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.neededBGP = driver.curBGP = NULL;
+	driver.neededBGP = NULL;
+	driver.bgpStack.push_back(NULL);
       } _QTriplesBlock_E_Opt _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
 	  if (($3 != NULL && $4->size() > 0) ||
 	      ($3 == NULL && $4->size() > 1)) {
@@ -990,7 +994,8 @@ GraphTemplate:
 	  $4->clear();
 	  delete $4;
 
-	  driver.neededBGP = driver.curBGP = NULL;
+	  driver.neededBGP = NULL;
+	  driver.bgpStack.pop_back();
       }
 ;
 
@@ -1110,9 +1115,11 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	$$ = new Filter($2);
-	if (!driver.curBGP)
-	    driver.neededBGP = driver.curBGP = driver.makeBasicGraphPattern();
-	driver.curBGP->addFilter($$);
+	if (!driver.bgpStack.back()) {
+	    driver.neededBGP = driver.makeBasicGraphPattern();
+	    driver.bgpStack.back() = driver.neededBGP;
+	}
+	driver.bgpStack.back()->addFilter($$);
     }
 ;
 
@@ -1172,9 +1179,14 @@ _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_Q
 
 ConstructTemplate:
     // '{' ConstructTriples? '}'
-    GT_LCURLEY _QConstructTriples_E_Opt GT_RCURLEY	{
-	$$ = $2;
-    }
+    GT_LCURLEY {
+	driver.neededBGP = NULL;
+	driver.bgpStack.push_back(NULL);
+      } _QConstructTriples_E_Opt GT_RCURLEY	{
+	  $$ = $3;
+	  driver.neededBGP = NULL;
+	  driver.bgpStack.pop_back();
+      }
 ;
 
 // ConstructTriples?
@@ -1271,9 +1283,11 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 
 Object:
     GraphNode	{
-	if (!driver.curBGP)
-	    driver.neededBGP = driver.curBGP = driver.makeBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	if (!driver.bgpStack.back()) {
+	    driver.neededBGP = driver.makeBasicGraphPattern();
+	    driver.bgpStack.back() = driver.neededBGP;
+	}
+	driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
 	$$ = $1;
     }
 ;
@@ -1320,12 +1334,14 @@ Generator:
 	    URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
 	    POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
-	    if (!driver.curBGP)
-		driver.neededBGP = driver.curBGP = driver.makeBasicGraphPattern();
+	    if (!driver.bgpStack.back()) {
+		driver.neededBGP = driver.makeBasicGraphPattern();
+		driver.bgpStack.back() = driver.neededBGP;
+	    }
 	    for (unsigned i = 0; i < members->size(); i++) {
-		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
+		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
 		POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -1906,12 +1922,20 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 
 namespace w3c_sw {
 
-    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory), curGraphNameStack(), root(NULL) {
+    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory), curGraphNameStack(), root(NULL)
+{
     curSubject = curPredicate = NULL;
-    neededBGP = curBGP = NULL;
+    neededBGP = NULL;
+    bgpStack.push_back(NULL);
     curBindingClause = NULL;
     curBinding = NULL;
     curExprList = NULL;
+}
+
+    SPARQLfedDriver::~SPARQLfedDriver ()
+{
+    bgpStack.pop_back();
+    assert (bgpStack.empty());
 }
 
 bool SPARQLfedDriver::parse_stream(std::istream& in, const std::string& sname)
