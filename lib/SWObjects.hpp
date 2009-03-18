@@ -70,6 +70,14 @@ public:
     char const* what() const throw() { 	return str; }
 };
 
+class TypeError : public std::exception {
+public:
+    std::string msg;
+    TypeError (std::string type, std::string context) : msg(type + " not expected in " + context) {  }
+    virtual ~TypeError () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
 class Expressor;
 class RecursiveExpressor;
 
@@ -294,6 +302,7 @@ protected:
 	delete m_LANGTAG;
     }
 public:
+    const URI* getDatatype () const { return datatype; }
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
@@ -320,9 +329,9 @@ protected:
     IntegerRDFLiteral (std::string p_String, URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
-    int getValue () { return m_value; }
-    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
+    int getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -330,8 +339,9 @@ protected:
     float m_value;
     DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DecimalRDFLiteral () {  }
-    virtual void express(Expressor* p_expressor) const;
 public:
+    float getValue () const { return m_value; }
+    virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
@@ -340,6 +350,8 @@ protected:
     double m_value;
     DoubleRDFLiteral (std::string p_String, URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
+public:
+    double getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
 };
 class BooleanRDFLiteral : public RDFLiteral {
@@ -348,9 +360,9 @@ protected:
     bool m_value;
     BooleanRDFLiteral (std::string p_String, bool p_value) : RDFLiteral(p_String, NULL, NULL), m_value(p_value) {  }
 public:
-    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
-    virtual void express(Expressor* p_expressor) const;
     bool getValue () const { return m_value; }
+    virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
 };
 class NULLpos : public POS {
     friend class POSFactory;
@@ -565,6 +577,13 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const Filter& ref) const {
 	return *m_Constraint == *ref.m_Constraint;
+    }
+    bool eval (const Result* r, POSFactory* posFactory) const {
+	try {
+	    return posFactory->ebv(m_Constraint->eval(r, posFactory, false)) == posFactory->getTrue();
+	} catch (TypeError&) {
+	    return false;
+	}
     }
 };
 

@@ -447,6 +447,7 @@ namespace w3c_sw {
 	}
 
 	void project(ProductionVector<const POS*> const * varsV);
+	void restrict(const Filter* filter);
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
 	bool isOrdered () const { return ordered; }
 	void makeBoolean () { isBool = true; }

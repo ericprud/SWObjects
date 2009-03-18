@@ -146,6 +146,16 @@ namespace w3c_sw {
 	    knownVars.erase(*var);
     }
 
+    void ResultSet::restrict (const Filter* filter) {
+	for (ResultSetIterator it = begin(); it != end(); )
+	    if (filter->eval(*it, posFactory))
+		++it;
+	    else {
+		delete *it;
+		erase(it++);
+	    }
+    }
+
     void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
 	if (orderConditions != NULL) {
 	    ResultComp resultComp(orderConditions, posFactory);

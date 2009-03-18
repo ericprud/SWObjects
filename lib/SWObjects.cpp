@@ -636,7 +636,22 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     /* EBV (Better place for this?) */
     const POS* POSFactory::ebv (const POS* pos) {
-	throw std::string("ebv ") + pos->toString() + " not implemented";
+	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(pos);
+	if (b != NULL)
+	    return b->getValue() ? getTrue() : getFalse();
+	const IntegerRDFLiteral* i = dynamic_cast<const IntegerRDFLiteral*>(pos);
+	if (i != NULL)
+	    return i->getValue() == 0 ? getFalse() : getTrue();
+	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(pos);
+	if (f != NULL)
+	    return f->getValue() == 0.0 ? getFalse() : getTrue();
+	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(pos);
+	if (d != NULL)
+	    return d->getValue() == 0.0 ? getFalse() : getTrue();
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(pos);
+	if (l != NULL && l->getDatatype() == getURI("http://www.w3.org/2001/XMLSchema#string"))
+	    return std::string(l->getLexicalValue()).empty() ? getFalse() : getTrue();
+	throw TypeError("beats me", "EBV");
     }
 
     /* </POSFactory> */
@@ -751,6 +766,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++)
 	    (*it)->bindVariables(db, rs);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -759,6 +777,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_TableOperations.end(); it++) {
 	    ResultSet* clone = orig->clone();
 	    (*it)->bindVariables(db, clone);
+	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+		 it != m_Filters.end(); it++)
+		clone->restrict(*it);
 	    for (ResultSetIterator row = clone->begin() ; row != clone->end(); ) {
 		rs->insert(row, (*row)->duplicate(rs, rs->end()));
 		delete *row;
@@ -771,9 +792,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, m_name, this);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
     }
     void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	db->bindVariables(rs, NULL, this);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
     }
 
     std::ostream* BasicGraphPattern::DiffStream = NULL;
@@ -881,9 +908,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(NULL); // no POSFactory
+	ResultSet optRS(rs->getPOSFactory()); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, true);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
 #if 0
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
