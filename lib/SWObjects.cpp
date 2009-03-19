@@ -905,10 +905,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(rs->getPOSFactory()); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
-	rs->joinIn(&optRS, true);
+	ResultSet filterMe(*rs); // no POSFactory
+	filterMe.joinIn(&optRS, true);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
-	    rs->restrict(*it);
+	    filterMe.restrict(*it);
+	rs->joinIn(&filterMe, true);
 #if 0
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
