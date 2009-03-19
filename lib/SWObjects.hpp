@@ -331,7 +331,7 @@ protected:
 public:
     int getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -342,7 +342,7 @@ protected:
 public:
     float getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -353,6 +353,7 @@ protected:
 public:
     double getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class BooleanRDFLiteral : public RDFLiteral {
     friend class POSFactory;

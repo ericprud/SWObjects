@@ -281,7 +281,6 @@ SPARQLfedScanner::~SPARQLfedScanner () {  }
 
 SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::semantic_type*& yylval, SPARQLfedParser::token_type tok) {
     std::istringstream is(yytext);
-    std::ostringstream normalized;
 
     switch (tok) {
     case token::INTEGER:
@@ -289,24 +288,21 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
     case token::INTEGER_NEGATIVE:
 	int i;
 	is >> i;
-	normalized << i;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), i);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
 	return tok;
     case token::DECIMAL:
     case token::DECIMAL_POSITIVE:
     case token::DECIMAL_NEGATIVE:
 	float f;
 	is >> f;
-	normalized << f;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), f);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
 	return tok;
     case token::DOUBLE:
     case token::DOUBLE_POSITIVE:
     case token::DOUBLE_NEGATIVE:
 	double d;
 	is >> d;
-	normalized << d;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), d);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
 	return tok;
     default: throw(new std::exception());
     }
