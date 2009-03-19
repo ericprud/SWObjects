@@ -88,7 +88,7 @@ namespace w3c_sw {
 	delete *ret->begin();
 	ret->erase(ret->begin());
 	for (ResultSetIterator it = begin() ; it != end(); it++)
-	    (*it)->duplicate(ret, ret->end());
+	    ret->insert(ret->begin(), (*it)->duplicate(ret, ret->end()));
 	return ret;
     }
 
