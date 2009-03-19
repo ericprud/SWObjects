@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include <string.h>
 #include <map>
 #include <libxml/parser.h>
 #include "../interface/SAXparser.hpp"
