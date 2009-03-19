@@ -505,6 +505,83 @@ public:
 
     /* EBV (Better place for this?) */
     const POS* ebv(const POS* pos);
+
+    int cmp (const POS* lpos, const POS* rpos) {
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (lpos);
+	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (rpos);
+	if (l == NULL || r == NULL)
+	    throw TypeError(lpos ? lpos->toString() : "NULL", rpos ? rpos->toString() : "NULL");
+	const URI* ldt = l->getDatatype();
+	const URI* rdt = r->getDatatype();
+	if (dynamic_cast<const NumericRDFLiteral*>(l) && 
+	    dynamic_cast<const NumericRDFLiteral*>(r)) {
+	    if (dynamic_cast<const DoubleRDFLiteral*>(l) || 
+		dynamic_cast<const DoubleRDFLiteral*>(r)) {
+		double dl = 
+		    dynamic_cast<const DoubleRDFLiteral*> (l) ?         dynamic_cast<const DoubleRDFLiteral*> (l)->getValue() : 
+		    dynamic_cast<const DecimalRDFLiteral*>(l) ? (double)dynamic_cast<const DecimalRDFLiteral*>(l)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (double)dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		double dr = 
+		    dynamic_cast<const DoubleRDFLiteral*> (r) ?         dynamic_cast<const DoubleRDFLiteral*> (r)->getValue() : 
+		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (double)dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (double)dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else if (dynamic_cast<const DecimalRDFLiteral*>(l) || 
+		       dynamic_cast<const DecimalRDFLiteral*>(r)) {
+		float dl = 
+		    dynamic_cast<const DecimalRDFLiteral*>(l) ? (float) dynamic_cast<const DecimalRDFLiteral*>(l)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (float) dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		float dr = 
+		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (float) dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (float) dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else if (dynamic_cast<const IntegerRDFLiteral*>(l) || 
+		       dynamic_cast<const IntegerRDFLiteral*>(r)) {
+		int dl = 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (int)   dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		int dr = 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (int)   dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else {
+		throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+	    }
+	} else if (ldt == NULL && 
+		   rdt == NULL) {
+	    return l->getLexicalValue().compare(r->getLexicalValue());
+	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#string") && 
+		   rdt == getURI("http://www.w3.org/2001/XMLSchema#string")) {
+	    return l->getLexicalValue().compare(r->getLexicalValue());
+	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
+		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
+	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
+	    bool br = dynamic_cast<const BooleanRDFLiteral*>(r)->getValue();
+	    return 
+		!bl && br ? -1 : 
+		bl && !br ?  1 : 
+		0;
+	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#dateTime") && 
+		   rdt == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
+	    return l->getLexicalValue().compare(r->getLexicalValue()); // luv dem isodates
+	} else {
+	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
+	}
+    }
+
     bool lessThan (const POS* lhs, const POS* rhs) {
 	if (rhs == NULL)
 	    return false;
@@ -1346,9 +1423,9 @@ public:
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	return left->eval(res, posFactory, bNodesGenSymbols) == 
-	    right->eval(res, posFactory, bNodesGenSymbols) ? 
-	    posFactory->getTrue() : posFactory->getFalse();
+	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
+	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -1363,7 +1440,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getFalse() : posFactory->getTrue();
+	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -1378,7 +1455,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l < r ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) < 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -1393,8 +1470,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getFalse() : 
-	    r < l ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) > 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -1409,8 +1485,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getTrue() : 
-	    l < r ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) <= 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -1425,8 +1500,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getTrue() : 
-	    r < l ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) >= 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
