@@ -16,6 +16,7 @@ public:
 protected:
     std::stringstream ret;
     const ProductionVector<const Filter*>* injectFilters;
+    bool normalizing; // no constructor switch for this yet.
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		  PREC_And, 
 		  PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
@@ -50,7 +51,7 @@ protected:
     }
 public:
     SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	injectFilters(NULL), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+	injectFilters(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
     std::string getSPARQLstring () { return ret.str(); }
     //!!!
@@ -71,17 +72,29 @@ public:
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
 	ret << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
-	ret << p_value << ' ';
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
+	if (normalizing)
+	    ret << p_value << ' ';
+	else
+	    ret << self->toString() << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
-	ret << p_value << ' ';
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value) {
+	if (normalizing)
+	    ret << p_value << ' ';
+	else
+	    ret << self->toString() << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
-	ret << p_value << ' ';
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value) {
+	if (normalizing)
+	    ret << p_value << ' ';
+	else
+	    ret << self->toString() << ' ';
     }
-    virtual void rdfLiteral (const BooleanRDFLiteral* const, bool p_value) {
-	ret << (p_value ? "true" : "false") << ' ';
+    virtual void rdfLiteral (const BooleanRDFLiteral* const self, bool p_value) {
+	if (normalizing)
+	    ret << (p_value ? "true" : "false") << ' ';
+	else
+	    ret << self->toString() << ' ';
     }
     virtual void nullpos (const NULLpos* const) {
 	ret << "NULL ";
