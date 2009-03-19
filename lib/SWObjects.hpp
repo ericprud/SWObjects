@@ -876,6 +876,7 @@ protected:
 
     /* Misc helper functions: */
     static const POS* _cOrN(const POS* pos, const NULLpos* n);
+    void _bindVariables(RdfDB* db, ResultSet* rs, const POS* p_name) const;
 
 public:
 
@@ -916,7 +917,9 @@ public:
     NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
     virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+	_bindVariables(db, rs, m_name);
+    }
     virtual bool operator== (const TableOperation& ref) const {
 	const NamedGraphPattern* pref = dynamic_cast<const NamedGraphPattern*>(&ref);
 	return pref == NULL ? false : 
@@ -930,7 +933,9 @@ public:
     DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
     virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+	_bindVariables(db, rs, NULL);
+    }
     virtual bool operator== (const TableOperation& ref) const {
 	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
 	return pref == NULL ? false :

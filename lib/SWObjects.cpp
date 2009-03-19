@@ -776,7 +776,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 it != m_Filters.end(); it++)
 		clone->restrict(*it);
 	    for (ResultSetIterator row = clone->begin() ; row != clone->end(); ) {
-		rs->insert(row, (*row)->duplicate(rs, rs->end()));
+		rs->insert(rs->end(), (*row)->duplicate(rs, rs->end()));
 		delete *row;
 		clone->erase(row++);
 	    }
@@ -785,17 +785,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	delete orig;
     }
 
-    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	db->bindVariables(rs, m_name, this);
+    void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
+	ResultSet island(rs->getPOSFactory());
+	db->bindVariables(&island, p_name, this);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
-	    rs->restrict(*it);
-    }
-    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	db->bindVariables(rs, NULL, this);
-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-	     it != m_Filters.end(); it++)
-	    rs->restrict(*it);
+	    island.restrict(*it);
+	rs->joinIn(&island, false);
     }
 
     std::ostream* BasicGraphPattern::DiffStream = NULL;
