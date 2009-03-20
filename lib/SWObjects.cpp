@@ -777,7 +777,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 it != m_Filters.end(); it++)
 		disjoint.restrict(*it);
 	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
-		island.insert(rs->end(), (*row)->duplicate(rs, rs->end()));
+		island.insert(island.end(), (*row)->duplicate(rs, rs->end()));
 		delete *row;
 		disjoint.erase(row++);
 	    }
