@@ -18,7 +18,6 @@
 #include "XMLSerializer.hpp"
 #include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 
 namespace w3c_sw {
@@ -310,13 +309,29 @@ namespace w3c_sw {
 		if (blit->getValue())
 		    results.insert(results.begin(), new Result(this));
 	    } else {
-		std::stringstream tableq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-					 "SELECT * {?soln rs:binding [\n"
-					 "		 rs:variable ?var ;\n"
-					 "		 rs:value ?val\n"
-					 " ]} ORDER BY ?soln\n");
-		if (sparqlParser.parse_stream(tableq))
-		    throw std::string("failed to parse boolean ResultSet constructor query.");
+		/* Get list of known variables. */
+		std::stringstream variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+					     "SELECT ?var {?set rs:resultVariable ?var }\n");
+		if (sparqlParser.parse_stream(variablesQ))
+		    throw std::string("failed to parse boolean ResultSet variables query.");
+		ResultSet listOfVariables(posFactory);
+		sparqlParser.root->execute(db, &listOfVariables);
+		sparqlParser.clear(""); // not necessary unless we re-use parser.
+		for (ResultSetIterator resultRecord = listOfVariables.begin(); 
+		     resultRecord != listOfVariables.end(); ++resultRecord) {
+		    const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
+		    const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
+		    knownVars.insert(var);
+		}
+
+		/* Get list of bindings. */
+		std::stringstream bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+					    "SELECT * {?soln rs:binding [\n"
+					    "		 rs:variable ?var ;\n"
+					    "		 rs:value ?val\n"
+					    " ]} ORDER BY ?soln\n");
+		if (sparqlParser.parse_stream(bindingsQ))
+		    throw std::string("failed to parse boolean ResultSet bindings query.");
 		ResultSet listOfResults(posFactory);
 		sparqlParser.root->execute(db, &listOfResults);
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
