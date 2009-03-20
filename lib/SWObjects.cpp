@@ -767,22 +767,22 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet* orig = rs->clone();
+	ResultSet island(rs->getPOSFactory());
+	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet* clone = orig->clone();
-	    (*it)->bindVariables(db, clone);
+	    ResultSet disjoint(rs->getPOSFactory());
+	    (*it)->bindVariables(db, &disjoint);
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 		 it != m_Filters.end(); it++)
-		clone->restrict(*it);
-	    for (ResultSetIterator row = clone->begin() ; row != clone->end(); ) {
-		rs->insert(rs->end(), (*row)->duplicate(rs, rs->end()));
+		disjoint.restrict(*it);
+	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+		island.insert(rs->end(), (*row)->duplicate(rs, rs->end()));
 		delete *row;
-		clone->erase(row++);
+		disjoint.erase(row++);
 	    }
-	    delete clone;
 	}
-	delete orig;
+	rs->joinIn(&island, false);
     }
 
     void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
