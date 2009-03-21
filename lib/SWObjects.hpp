@@ -26,6 +26,7 @@
 #endif /* !_MSC_VER */
 
 
+#include <ctype.h>
 #include <map>
 #include <set>
 #include <list>
@@ -71,10 +72,24 @@ public:
     char const* what() const throw() { 	return str; }
 };
 
-class TypeError : public std::exception {
+class SafeEvaluationError : public std::exception {
 public:
     std::string msg;
-    TypeError (std::string type, std::string context) : msg(type + " not expected in " + context) {  }
+    SafeEvaluationError (std::string msg) : msg(msg) {  }
+    virtual ~SafeEvaluationError () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
+class NotImplemented : public SafeEvaluationError {
+public:
+    NotImplemented (std::string msg) : SafeEvaluationError(msg + " not implemented") {  }
+    virtual ~NotImplemented () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
+class TypeError : public SafeEvaluationError {
+public:
+    TypeError (std::string type, std::string context) : SafeEvaluationError(type + " not expected in " + context) {  }
     virtual ~TypeError () throw() {   }
     char const* what() const throw() { 	return msg.c_str(); }
 };
@@ -304,6 +319,7 @@ protected:
     }
 public:
     const URI* getDatatype () const { return datatype; }
+    const LANGTAG* getLangtag () const { return m_LANGTAG; }
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
@@ -468,7 +484,7 @@ public:
     BNode* getBNode(std::string name);
     URI* getURI(std::string name);
     POS* getPOS(std::string posStr);
-    RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG);
+    RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
@@ -763,7 +779,7 @@ public:
     bool eval (const Result* r, POSFactory* posFactory) const {
 	try {
 	    return posFactory->ebv(m_Constraint->eval(r, posFactory, false)) == posFactory->getTrue();
-	} catch (TypeError&) {
+	} catch (SafeEvaluationError&) {
 	    return false;
 	}
     }
@@ -1394,6 +1410,104 @@ public:
 	std::vector<const POS*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    subd.push_back((*it)->eval(r, posFactory, bNodesGenSymbols));
+
+	/* Write down the first 3 for convenience. */
+	std::vector<const POS*>::const_iterator it = subd.begin();
+	const POS* first = it == subd.end() ? NULL : *it++;
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound") && 
+	    subd.size() == 1)
+	    return first == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const URI*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const BNode*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    return posFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(URI)
+	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
+	    return posFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-lang") && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
+	    return posFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
+	}
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype") && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
+	    return dt ? dt : posFactory->getURI("http://www.w3.org/2001/XMLSchema#string");
+	}
+
+	const POS* second = it == subd.end() ? NULL : *it++;
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm") && 
+	    subd.size() == 2) {
+	    return first == second && first != NULL ? posFactory->getTrue() : posFactory->getFalse();
+	}
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches") && 
+	    subd.size() == 2 && 
+	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
+	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
+
+	    /* knock off the easy ones... */
+	    if (first == second)
+		return posFactory->getTrue();
+	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
+	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
+	    if (range == "*")
+		return tag.empty() ? posFactory->getFalse() : posFactory->getTrue();
+
+	    std::string::iterator t = tag.begin();
+	    std::string::iterator te = tag.end();
+	    std::string::iterator r = range.begin();
+	    std::string::iterator re = range.end();
+
+	    while (t != te && r != re)
+		if (::tolower(*t++) != ::tolower(*r++))
+		    return posFactory->getFalse();
+
+	    if (r == re && 
+		(t == te || *t == '-'))
+		return posFactory->getTrue();
+
+	    return posFactory->getFalse();
+	}
+
+	const POS* third = it == subd.end() ? NULL : *it++;
+	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
+	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
+	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-regex") && 
+	    ( subd.size() == 2 || subd.size() == 3 ) && 
+	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
+	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
+	    ( subd.size() == 2 || 
+	      (thirdLit != NULL && thirdLit->getDatatype() == NULL && thirdLit->getLangtag() == NULL))) {
+#if REGEX_LIB == SWOb_DISABLED
+	    throw std::string("no regular expression library was linked in");
+#else
+	    const boost::regex pattern(secondLit->getLexicalValue());
+	    boost::match_results<std::string::const_iterator> what;
+	    boost::match_flag_type flags = boost::match_default; // @@@ parser thirdLit
+	    return regex_search(spo, what, pattern, flags) ? posFactory->getTrue() : posFactory->getFalse();
+#endif
+	}
+
 	std::stringstream s;
 	s << m_IRIref->toString() << '(';
 	for (std::vector<const POS*>::iterator it = subd.begin(); it != subd.end(); ++it) {
@@ -1405,8 +1519,7 @@ public:
 		s << "NULL";
 	}
 	s << ')';
-	s << " not implemented";
-	throw s.str();
+	throw NotImplemented(s.str());
     }
     bool operator== (const FunctionCall& ref) const {
 	if (m_IRIref != ref.m_IRIref)
