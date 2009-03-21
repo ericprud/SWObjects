@@ -137,7 +137,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {ANON}		{yylval->p_POS = driver->createBNode(); return token::ANON;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 {PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
-{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext); return token::BLANK_NODE_LABEL;}
+{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 
 <<EOF>>			{ yyterminate();}
 %%
