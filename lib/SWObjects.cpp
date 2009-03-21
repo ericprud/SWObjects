@@ -676,9 +676,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	m_VarSet->project(rs);
 	if (m_SolutionModifier != NULL)
 	    m_SolutionModifier->modifyResult(rs);
+	m_VarSet->project(rs);
 	return rs;
     }
 
