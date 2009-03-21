@@ -40,19 +40,19 @@ public:
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema/integer");
+	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#integer");
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema/float");
+	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#float");
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema/decimal");
+	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#decimal");
     }
     virtual void rdfLiteral (const BooleanRDFLiteral* const, bool p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema/boolean");
+	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#boolean");
     }
     virtual void nullpos (const NULLpos* const) {
 	xml->empty("NULL");

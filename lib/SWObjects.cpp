@@ -518,7 +518,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-#define XSD "http://www.w3.org/2001/XMLSchema/"
+#define XSD "http://www.w3.org/2001/XMLSchema#"
 #define LEN_XSD sizeof(XSD)
     IntegerRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
@@ -561,7 +561,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     BooleanRDFLiteral* POSFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
-	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema/boolean>"; // p_String
+	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>"; // p_String
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
