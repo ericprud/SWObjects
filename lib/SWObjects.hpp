@@ -337,6 +337,9 @@ protected:
     NumericRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
     ~NumericRDFLiteral () {  }
 public:
+    virtual int getInt() const = 0;
+    virtual float getFloat() const = 0;
+    virtual double getDouble() const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
 };
 class IntegerRDFLiteral : public NumericRDFLiteral {
@@ -347,6 +350,9 @@ protected:
     ~IntegerRDFLiteral () {  }
 public:
     int getValue () const { return m_value; }
+    virtual int getInt () const { return m_value; }
+    virtual float getFloat () const { return (float)m_value; }
+    virtual double getDouble () const  { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const { return getLexicalValue(); }
 };
@@ -358,6 +364,9 @@ protected:
     ~DecimalRDFLiteral () {  }
 public:
     float getValue () const { return m_value; }
+    virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
+    virtual float getFloat () const { return m_value; }
+    virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const { return getLexicalValue(); }
 };
@@ -369,6 +378,9 @@ protected:
     ~DoubleRDFLiteral () {  }
 public:
     double getValue () const { return m_value; }
+    virtual int getInt () const { throw TypeError(std::string("(double)") + toString(), "getInt()"); }
+    virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
+    virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const { return getLexicalValue(); }
 };
@@ -1766,47 +1778,47 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	std::vector<const POS*> subd;
+	std::vector<const NumericRDFLiteral*> subd;
 	enum { Int, Dec, Double } highestType = Int;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it) {
 	    const POS* val = (*it)->eval(res, posFactory, bNodesGenSymbols);
-	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL && 
-		highestType < Int)
-		highestType = Int;
-	    else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL && 
-		highestType < Dec)
-		highestType = Dec;
-	    else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL && 
-		highestType < Double)
-		highestType = Double;
-	    else if (val == NULL)
+	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL) {
+		if (highestType < Int)
+		    highestType = Int;
+	    } else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL) {
+		if (highestType < Dec)
+		    highestType = Dec;
+	    } else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL) {
+		if (highestType < Double)
+		    highestType = Double;
+	    } else if (val == NULL)
 		throw TypeError("NULL", "+");
 	    else
 		throw TypeError((val)->toString(), "+");
-	    subd.push_back(val);
+	    subd.push_back(dynamic_cast<const NumericRDFLiteral*>(val));
 	}
 
 	std::stringstream s;
 	switch (highestType) {
 	case Int: {
 	    int i(0);
-	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		i += dynamic_cast<const IntegerRDFLiteral*>(*it)->getValue();
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		i += (*it)->getInt();
 	    s << i;
 	    return posFactory->getNumericRDFLiteral(s.str(), i);
 	}
 	case Dec: {
 	    float f(0);
-	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		f += dynamic_cast<const DecimalRDFLiteral*>(*it)->getValue();
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		f += (*it)->getFloat();
 	    s << f;
 	    return posFactory->getNumericRDFLiteral(s.str(), f);
 	}
 	case Double: {
 	    double d(0);
-	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		d += dynamic_cast<const DoubleRDFLiteral*>(*it)->getValue();
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		d += (*it)->getDouble();
 	    s << d;
 	    return posFactory->getNumericRDFLiteral(s.str(), d);
 	}
