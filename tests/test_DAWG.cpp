@@ -14,6 +14,7 @@
  * great help in quicky diagnosing the failure).
  */
 #define DEFGRAPH_FILE_TEST(QUERY_FILE, RESULT_FILE)			       \
+    try {								       \
     std::ifstream query(QUERY_FILE);					       \
     if (!query.is_open())						       \
 	throw std::string("failed to open query file ") + QUERY_FILE;	       \
@@ -34,9 +35,12 @@
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
 	if (measured.getGraph() == NULL)				       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, "")); \
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, "")); 	       \
 	else								       \
 	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL)));\
+    }									       \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
     }
 
 //BOOST_AUTO_TEST_SUITE( basic )
