@@ -31,25 +31,23 @@ std::string sanitize (std::string in) {
     return boost::regex_replace(in, e, underbar, boost::match_default | boost::format_all);
 }
 
-int main (int argc, char* argv[]) {
+void processManifest (const char* manifestFile) {
     try {
-	if (argc != 2)
-	    throw std::string("Invocation: ") + argv[0] + " <data-r2/basic/manifest.ttl>";
 
-	std::ifstream manifestStream(argv[1]);
+	std::ifstream manifestStream(manifestFile);
 	if (!manifestStream.is_open())
-	    throw std::string("Unable to open manifest file \"") + argv[1] + "\".";
+	    throw std::string("Unable to open manifest file \"") + manifestFile + "\".";
 
 #if REGEX_LIB == SWOb_BOOST
 	boost::regex pathre("(.*?/([^/]+)/)([^/]+)$");
 	boost::cmatch matches;
 	std::string path;
 	std::string group;
-	if (boost::regex_match(argv[1], matches, pathre)) {
+	if (boost::regex_match(manifestFile, matches, pathre)) {
 	    path = std::string(matches[1].first, matches[1].second);
 	    group = sanitize(std::string(matches[2].first, matches[2].second));
 	} else  {
-	    std::cerr << std::string("unable to find group in path \"") + argv[1] + "\"";
+	    std::cerr << std::string("unable to find group in path \"") + manifestFile + "\"";
 	}
 #else /* !REGEX_LIB == SWOb_BOOST */
 	std::string path(".");
@@ -59,7 +57,7 @@ int main (int argc, char* argv[]) {
 	RdfDB d;
 
 	/* Parse the manifest file. */
-	TurtleSDriver turtleParser(argv[1], &F);
+	TurtleSDriver turtleParser(manifestFile, &F);
 	turtleParser.setGraph(d.assureGraph(NULL));
 	turtleParser.parse_stream(manifestStream);
 
@@ -96,7 +94,7 @@ int main (int argc, char* argv[]) {
 	    ResultSet listOfAttrs(&F);
 	    sparqlParser.root->execute(&d, &listOfAttrs);
 	    sparqlParser.clear("");
-
+//std::cerr << listOfAttrs;
 	    ResultSetIterator attrsRecord = listOfAttrs.begin();
 	    const POS* type = (*attrsRecord)->get(F.getVariable("type"));
 	    std::string name = (*attrsRecord)->get(F.getVariable("name"))->getTerminal();
@@ -148,8 +146,14 @@ int main (int argc, char* argv[]) {
 	std::cout << "BOOST_AUTO_TEST_SUITE_END(/* " << group << " */)" << std::endl;
     } catch (std::string s) {
 	std::cerr << s << std::endl;
-	return 1;
     }
+}
+
+int main (int argc, char* argv[]) {
+    if (argc < 2)
+	throw std::string("Invocation: ") + argv[0] + " <data-r2/basic/manifest.ttl>";
+    for (int i = 1; i < argc; ++i)
+	processManifest(argv[i]);
     return 0;
 }
 
