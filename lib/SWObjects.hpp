@@ -1504,7 +1504,7 @@ public:
 	    const boost::regex pattern(secondLit->getLexicalValue());
 	    boost::match_results<std::string::const_iterator> what;
 	    boost::match_flag_type flags = boost::match_default; // @@@ parser thirdLit
-	    return regex_search(spo, what, pattern, flags) ? posFactory->getTrue() : posFactory->getFalse();
+	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? posFactory->getTrue() : posFactory->getFalse();
 #endif
 	}
 
