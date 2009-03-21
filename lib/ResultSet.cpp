@@ -183,7 +183,9 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toString () const {
-	if (bgp != NULL) {
+	if (isBoolean()) {
+	    return size() > 0 ? "true" : "false" ;
+	} else if (bgp != NULL) {
 	    SPARQLSerializer s;
 	    bgp->express(&s);
 	    return std::string("<graph result>\n") + s.getSPARQLstring() + "\n</graph result>";

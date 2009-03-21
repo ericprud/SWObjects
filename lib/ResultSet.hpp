@@ -305,6 +305,7 @@ namespace w3c_sw {
 		    throw std::string("database:\n") + 
 			db->toString() + 
 			"\nis not a validate initializer for a boolen ResultSet.";
+		isBool = true;
 		/* So far, size() > 0 is how we test a boolean ResultSet. */
 		if (blit->getValue())
 		    results.insert(results.begin(), new Result(this));
@@ -370,7 +371,7 @@ namespace w3c_sw {
 	    if (isOrdered()) {
 		return compareOrdered(ref);
 	    } else if (isBoolean()) {
-		return (ref.size() > 0) == (size() > 0) ;
+		return ref.isBool && (ref.size() > 0) == (size() > 0) ;
 	    } else if (bgp != NULL && ref.bgp != NULL) {
 		return (*bgp == *ref.bgp) ;
 	    } else {
