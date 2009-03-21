@@ -1677,7 +1677,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return posFactory->cmp(l, r) < 0 ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) < 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -1692,7 +1692,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return posFactory->cmp(l, r) > 0 ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) > 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -1707,7 +1707,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return posFactory->cmp(l, r) <= 0 ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) <= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -1722,7 +1722,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return posFactory->cmp(l, r) >= 0 ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) >= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
@@ -1767,22 +1767,51 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	std::vector<const POS*> subd;
+	enum { Int, Dec, Double } highestType = Int;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-	     it != m_Expressions.end(); ++it)
-	    subd.push_back((*it)->eval(res, posFactory, bNodesGenSymbols));
-	std::stringstream s;
-	s << "(+ ";
-	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
-	    if (it != subd.begin())
-		s << ", ";
-	    if (*it)
-		s << (*it)->toString();
+	     it != m_Expressions.end(); ++it) {
+	    const POS* val = (*it)->eval(res, posFactory, bNodesGenSymbols);
+	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL && 
+		highestType < Int)
+		highestType = Int;
+	    else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL && 
+		highestType < Dec)
+		highestType = Dec;
+	    else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL && 
+		highestType < Double)
+		highestType = Double;
+	    else if (val == NULL)
+		throw TypeError("NULL", "+");
 	    else
-		s << "NULL";
+		throw TypeError((val)->toString(), "+");
+	    subd.push_back(val);
 	}
-	s << ')';
-	s << " not implemented";
-	throw s.str();
+
+	std::stringstream s;
+	switch (highestType) {
+	case Int: {
+	    int i(0);
+	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		i += dynamic_cast<const IntegerRDFLiteral*>(*it)->getValue();
+	    s << i;
+	    return posFactory->getNumericRDFLiteral(s.str(), i);
+	}
+	case Dec: {
+	    float f(0);
+	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		f += dynamic_cast<const DecimalRDFLiteral*>(*it)->getValue();
+	    s << f;
+	    return posFactory->getNumericRDFLiteral(s.str(), f);
+	}
+	case Double: {
+	    double d(0);
+	    for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		d += dynamic_cast<const DoubleRDFLiteral*>(*it)->getValue();
+	    s << d;
+	    return posFactory->getNumericRDFLiteral(s.str(), d);
+	}
+	}
+	throw "shouldn't arrive a bottom of eval"; // g++ doesn't notice that all paths in above switch return.
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
