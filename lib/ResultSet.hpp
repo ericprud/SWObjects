@@ -82,10 +82,15 @@ namespace w3c_sw {
 	VariableList knownVars;
 	ResultList results;
 	bool ordered;
+	bool isBool;
+	BasicGraphPattern* bgp;
 
     public:
+	static const char* NS_srx;
+	static const char* NS_xml;
+
 	ResultSet(POSFactory* posFactory);
-	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered) {
+	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool), bgp(ref.bgp) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -99,6 +104,10 @@ namespace w3c_sw {
 #if REGEX_LIB != SWOb_DISABLED
 	ResultSet(POSFactory* posFactory, std::string str, bool ordered);
 #endif /* REGEX_LIB != SWOb_DISABLED */
+	
+	ResultSet(POSFactory* posFactory, BasicGraphPattern* bgp);
+
+	ResultSet(POSFactory* posFactory, RdfDB* db, const char* baseURI);
 
 	ResultSet(POSFactory* posFactory, SWSAXparser* parser, const char* filename);
 
@@ -107,9 +116,10 @@ namespace w3c_sw {
 	virtual ~ResultSet();
 	bool operator==(const ResultSet & ref) const;
 	const VariableList* getKnownVars () { return &knownVars; }
-	void joinIn (ResultSet* ref) { // !!! make const ref
+	void joinIn (ResultSet* ref, bool outer = false) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
-		 myRow != results.end(); ) {		
+		 myRow != results.end(); ) {
+		bool matchedSomeRow = false;
 		for (ResultSetConstIterator yourRow = ref->results.begin();
 		     yourRow != ref->results.end(); ++yourRow) {
 		    bool matched = true;
@@ -134,9 +144,13 @@ namespace w3c_sw {
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
 			insert(myRow, newRow);
+			matchedSomeRow = true;
 		    }
 		}
-		erase(myRow++);
+		if (outer && !matchedSomeRow)
+		    myRow++;
+		else
+		    erase(myRow++);
 	    }
 	}
 	bool compareOrdered (const ResultSet & ref) const {
@@ -169,8 +183,13 @@ namespace w3c_sw {
 	}
 
 	void project(ProductionVector<const POS*> const * varsV);
+	void restrict(const Filter* filter);
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
 	bool isOrdered () const { return ordered; }
+	void makeBoolean () { isBool = true; }
+	bool isBoolean () const { return isBool; }
+	void setGraph (BasicGraphPattern* bgp) { this->bgp = bgp; }
+	BasicGraphPattern* getGraph () { return bgp; }
 
 	POSFactory* getPOSFactory () {
 	    if (posFactory == NULL)

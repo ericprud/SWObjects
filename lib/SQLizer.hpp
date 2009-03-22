@@ -465,7 +465,7 @@ namespace w3c_sw {
 		    }
 		}
 
-		string aliasName = subject->getTerminal();
+		string aliasName = subject->getLexicalValue();
 		/* Try to get a good name for URIs.
 		 * e.g. http://bsbm.example/db/producttypeproduct/producttype.59
 		 *   => producttype_59
@@ -489,13 +489,13 @@ namespace w3c_sw {
 		unsigned ordinal = 0;
 		while (usedAliases.find(aliasName) != usedAliases.end()) {
 		    std::stringstream s;
-		    s << subject->getTerminal() << "_" << ++ordinal;
+		    s << subject->getLexicalValue() << "_" << ++ordinal;
 		    aliasName = s.str();
 		}
 		curJoin = new TableJoin(toRelation, aliasName, false);
 		joins.push_back(curJoin);
 		usedAliases.insert(aliasName);
-		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getTerminal() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
+		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getLexicalValue() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
@@ -515,42 +515,42 @@ namespace w3c_sw {
 		joins.push_back(curJoin);
 		return ret;
 	    }
-	    void attachVariable (AliasAttr aattr, std::string terminal) {
-		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
+	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
+		std::map<string, Attachment*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    attachments[terminal] = new TightAttachment(aattr, terminal);
+		    attachments[lexicalValue] = new TightAttachment(aattr, lexicalValue);
 		else
-		    attachments[terminal]->constrain(aattr, this);
+		    attachments[lexicalValue]->constrain(aattr, this);
 	    }
-	    AliasAttrConstraint* getVariableConstraint (std::string terminal) {
-		std::map<string, Attachment*>::iterator it = attachments.find(terminal);
+	    AliasAttrConstraint* getVariableConstraint (std::string lexicalValue) {
+		std::map<string, Attachment*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    FAIL1("can't find variable \"%s\"", terminal.c_str());
+		    FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
 		else
 		    return new AliasAttrConstraint(it->second->getAliasAttr());
 	    }
-	    void selectVariable (std::string terminal) {
-		if (attachments.find(terminal) == attachments.end())
-		    attachments[terminal] = new NullAttachment(terminal);
-		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
-		selects.push_back(attachments[terminal]);
+	    void selectVariable (std::string lexicalValue) {
+		if (attachments.find(lexicalValue) == attachments.end())
+		    attachments[lexicalValue] = new NullAttachment(lexicalValue);
+		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
+		selects.push_back(attachments[lexicalValue]);
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new IntAttachment(value, alias);
-		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
 		selects.push_back(attachments[alias]);
 	    }
 	    void selectConstant (float value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new FloatAttachment(value, alias);
-		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
 		selects.push_back(attachments[alias]);
 	    }
 	    void selectConstant (double value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new DoubleAttachment(value, alias);
-		//std::cerr << "selectVariable " << terminal << " attached to " << attachments[terminal]->toString() << std::endl;
+		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
 		selects.push_back(attachments[alias]);
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
@@ -607,9 +607,9 @@ namespace w3c_sw {
 		    for (std::vector<SQLDisjoint*>::iterator dis = disjoints.begin();
 			 dis != disjoints.end(); ++dis)
 			// SELECT <field for coref> AS <coref name>
-			(*dis)->selectVariable((*coref)->getTerminal());
+			(*dis)->selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
@@ -636,9 +636,9 @@ namespace w3c_sw {
 		for (std::vector<const POS*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    // SELECT <field for coref> AS <coref name>
-		    selectVariable((*coref)->getTerminal());
+		    selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getTerminal()), (*coref)->getTerminal());
+		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 	    virtual std::string toString (std::string pad = "") {
@@ -722,7 +722,7 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void uri (const URI* const, std::string terminal) {
+	virtual void uri (const URI* const, std::string lexicalValue) {
 	    MARK;
 	    std::string relation, attribute;
 	    int value;
@@ -731,7 +731,7 @@ namespace w3c_sw {
 
 	    case MODE_predicate:
 		NOW("URI as predicate");
-		if (resolve(terminal, &relation, &attribute) != 2) FAIL2("malformed predicate \"%s\" didn't match \"%s\"", terminal.c_str(), stem.c_str());
+		if (resolve(lexicalValue, &relation, &attribute) != 2) FAIL2("malformed predicate \"%s\" didn't match \"%s\"", lexicalValue.c_str(), stem.c_str());
 		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
@@ -739,7 +739,7 @@ namespace w3c_sw {
 
 	    case MODE_subject:
 		NOW("URI as subject");
-		if (resolve(terminal, &relation, &attribute, &value) != 3) FAIL("incomplete key");
+		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
 		curQuery->constrain(AliasAttr(curAliasAttr.alias, attribute), value);
@@ -747,26 +747,26 @@ namespace w3c_sw {
 
 	    case MODE_object:
 		NOW("URI as object");
-		if (resolve(terminal, &relation, &attribute, &value) != 3) FAIL("incomplete key");
+		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) FAIL("incomplete key");
 		curQuery->constrain(curAliasAttr, value);
 		break;
 
 	    case MODE_constraint:
-		FAIL1("URI <%s> as constraint is unimplemented", terminal.c_str());
+		FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
 		break;
 
 	    default:
 		FAIL("wierd state");
 	    }
 	}
-	virtual void variable (const Variable* const, std::string terminal) {
+	virtual void variable (const Variable* const, std::string lexicalValue) {
 
 	    // enforce coreferences
 	    switch (mode) {
 
 	    case MODE_subject:
 		NOW("Variable as subject");
-		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), terminal);
+		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), lexicalValue);
 		break;
 
 	    case MODE_predicate:
@@ -775,31 +775,31 @@ namespace w3c_sw {
 
 	    case MODE_object:
 		NOW("Variable as object");
-		curQuery->attachVariable(curAliasAttr, terminal);
+		curQuery->attachVariable(curAliasAttr, lexicalValue);
 		break;
 
 	    case MODE_selectVar:
 		NOW("URI as selectVar");
-		curQuery->selectVariable(terminal);
+		curQuery->selectVariable(lexicalValue);
 		break;
 
 	    case MODE_constraint:
 		NOW("Variable as constraint");
-		curConstraint = curQuery->getVariableConstraint(terminal);
+		curConstraint = curQuery->getVariableConstraint(lexicalValue);
 		break;
 
 	    default:
 		FAIL("wierd state");
 	    }
 	}
-	virtual void bnode (const BNode* const, std::string terminal) {
+	virtual void bnode (const BNode* const, std::string lexicalValue) {
 
 	    // enforce coreferences
 	    switch (mode) {
 
 	    case MODE_subject:
 		NOW("Variable as subject");
-		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), terminal);
+		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), lexicalValue);
 		break;
 
 	    case MODE_predicate:
@@ -808,7 +808,7 @@ namespace w3c_sw {
 
 	    case MODE_object:
 		NOW("Variable as object");
-		curQuery->attachVariable(curAliasAttr, terminal);
+		curQuery->attachVariable(curAliasAttr, lexicalValue);
 		break;
 
 	    case MODE_selectVar:
@@ -820,14 +820,14 @@ namespace w3c_sw {
 	    }
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
-	virtual void rdfLiteral (const RDFLiteral* const, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
+	virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
 	    MARK;
-	    std::string value = terminal;
+	    std::string value = lexicalValue;
 	    if (datatype != NULL) {
-		if (datatype->getTerminal() == "http://www.w3.org/2001/XMLSchema#dateTime")
+		if (datatype->getLexicalValue() == "http://www.w3.org/2001/XMLSchema#dateTime")
 		    value.replace(value.find("T"), 1, " ");
 		else
-		    FAIL1("unknown datatype: <%s>", datatype->getTerminal().c_str());
+		    FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
 		FAIL("how do we literalMap langtags?");
@@ -1066,7 +1066,7 @@ namespace w3c_sw {
 	    }
 	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	    MARK;
 	    SQLQuery* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -1075,6 +1075,7 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
 	    optional->attach();
+	    p_Filters->express(this);
 	    curQuery = parent;
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
@@ -1216,7 +1217,7 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    MARK;
 	    args->express(this);
-	    if (iri->getTerminal() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
+	    if (iri->getLexicalValue() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
 		curConstraint = new NullConstraint(curConstraint);
 	    else
 		iri->express(this);

@@ -6,8 +6,8 @@
 
 /* START main */
 
-#include <stdio.h>  //\_for strcmp
-#include <string.h> ///
+#include <stdio.h>  // -\_for strcmp
+#include <string.h> // -/
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "XMLQueryExpressor.hpp"
@@ -19,6 +19,8 @@
   #include "../interface/SAXparser_libxml.hpp"
 #elif XML_PARSER == SWOb_EXPAT1
   #include "../interface/SAXparser_expat.hpp"
+#elif XML_PARSER == SWOb_MSXML3
+  #include "../interface/SAXparser_msxml3.hpp"
 #else
   #ifdef _MSC_VER
     #pragma message ("query federation requires an XML parser")

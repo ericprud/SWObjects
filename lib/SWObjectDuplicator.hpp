@@ -41,17 +41,17 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void uri (const URI* const self, std::string terminal) {
-	    last.posz.pos = last.posz.uri = posFactory ? posFactory->getURI(terminal.c_str()) : self;
+	virtual void uri (const URI* const self, std::string lexicalValue) {
+	    last.posz.pos = last.posz.uri = posFactory ? posFactory->getURI(lexicalValue.c_str()) : self;
 	}
-	virtual void variable (const Variable* const self, std::string terminal) {
-	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(terminal.c_str()) : self;
+	virtual void variable (const Variable* const self, std::string lexicalValue) {
+	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(lexicalValue.c_str()) : self;
 	}
-	virtual void bnode (const BNode* const self, std::string terminal) {
-	    last.posz.pos = posFactory ? posFactory->getBNode(terminal.c_str()) : self;
+	virtual void bnode (const BNode* const self, std::string lexicalValue) {
+	    last.posz.pos = posFactory ? posFactory->getBNode(lexicalValue.c_str()) : self;
 	}
-	virtual void rdfLiteral (const RDFLiteral* const self, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) {
-	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(terminal.c_str(), datatype, p_LANGTAG) : self;
+	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
+	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
 	    std::stringstream s;
@@ -136,9 +136,10 @@ namespace w3c_sw {
 	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	    p_GroupGraphPattern->express(this);
-	    last.tableOperation = new OptionalGraphPattern(last.tableOperation);
+	    p_Filters->express(this);
+	    last.tableOperation = new OptionalGraphPattern(last.tableOperation); // @@@ last.filters
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    p_POS->express(this);

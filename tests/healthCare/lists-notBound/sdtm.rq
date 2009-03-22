@@ -1,0 +1,31 @@
+PREFIX sdtm: <http://www.sdtm.org/vocabulary#>
+PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
+SELECT ?patient ?dob ?sex ?takes ?indicDate # ?indicEnd ?contra
+ WHERE {
+  ?patient a sdtm:Patient ;
+          sdtm:middleName ?middleName ;
+          sdtm:dateTimeOfBirth ?dob ;
+          sdtm:sex ?sex .
+
+  [	  sdtm:subject ?patient ;
+	  sdtm:standardizedMedicationName ?takes ;
+
+	  # nothing by ingredient in sdtm/caBIG/...
+	  spl:activeIngredient [ spl:classCode ?code ] ;
+          sdtm:startDateTimeOfMedication ?indicDate
+  ] .
+  FILTER ( ?code = 6809 || ?code = 6810 )
+
+  OPTIONAL {
+
+        [ sdtm:subject ?patient ;
+      	  spl:activeIngredient [ spl:classCode ?contCode ] ;
+          sdtm:startDateTimeOfMedication ?indicDate
+        ] .
+        FILTER ( ?contCode = 11289 || ?contCode = 11290 )
+
+  }
+  FILTER ( !BOUND(?contCode) )
+
+} LIMIT 30

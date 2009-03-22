@@ -102,7 +102,7 @@ namespace w3c_sw {
 		 varIt != end(); ++varIt)
 		for (ConsequentMap::iterator graphIt = varIt->second.begin();
 		     graphIt != varIt->second.end(); ++graphIt)
-		    s << "consequents[" << varIt->first->getTerminal() << "]["
+		    s << "consequents[" << varIt->first->getLexicalValue() << "]["
 		      << graphIt->first << "] = "
 		      << bindingStr(operator[](varIt->first)[graphIt->first])
 		      << endl;
@@ -209,7 +209,7 @@ namespace w3c_sw {
 		_each(self, p_TableOperations);
 		p_Filters->express(this);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
 		const TableOperation* parent = currentBGP;
@@ -217,6 +217,7 @@ namespace w3c_sw {
 		_nestedIn(self, parent);
 
 		p_GroupGraphPattern->express(this);
+		p_Filters->express(this);
 
 		currentBGP = parent;
 		optState = oldOptState;
@@ -360,7 +361,7 @@ namespace w3c_sw {
 				++graph2parents;
 // 				if (*graph1parents == *graph2parents &&
 // 				    graph1parents == outerGraphs[graph1It->first].end()) {
-// 				    std::cout << "while resolving " << varIt->first->getTerminal() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
+// 				    std::cout << "while resolving " << varIt->first->getLexicalValue() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
 // 				    std::cout << dumpConsequents();
 // 				    std::cout << dumpOuterGraphs();
 // 				}
@@ -401,7 +402,7 @@ namespace w3c_sw {
 	    Bindable* ret = NULL;
 	    do {
 		std::stringstream name;
-		name << base->getTerminal() << "_gen" << index;
+		name << base->getLexicalValue() << "_gen" << index;
 		ret = posFactory->getVariable(name.str().c_str());
 		++index;
 	    } while (row->get(ret) != NULL || gendVars.find(ret) != gendVars.end());

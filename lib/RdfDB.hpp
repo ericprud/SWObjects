@@ -6,7 +6,6 @@
 #define RDF_DB_H
 
 #include "SWObjects.hpp"
-#include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
 
@@ -58,19 +57,22 @@ namespace w3c_sw {
 	virtual void loadData (const POS* name, POSFactory* posFactory) {
 	    TurtleSDriver turtleParser("http://example.org/", posFactory);
 	    turtleParser.setGraph(assureGraph(name));
-	    if (turtleParser.parse_file(name->getTerminal()))
-		std::cerr << name->getTerminal() << ":0: error: unable to parse document" << std::endl;
+	    if (turtleParser.parse_file(name->getLexicalValue()))
+		std::cerr << name->getLexicalValue() << ":0: error: unable to parse document" << std::endl;
 	    else
 		{ SPARQLSerializer s; assureGraph(name)->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl; }
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
+	std::string toString () const {
+	    SPARQLSerializer s;
+	    express(&s);
+	    return s.getSPARQLstring();
+	}
     };
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
-	SPARQLSerializer s;
-	my.express(&s);
-	return os << s.getSPARQLstring();
+	return os << my.toString();
     }
 
 } // namespace w3c_sw

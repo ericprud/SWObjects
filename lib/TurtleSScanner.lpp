@@ -58,6 +58,7 @@ IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_DOT		"."
+GT_COMMA		","
 GT_SEMI		";"
 IT_a		"a"
 GT_LBRACKET		"\["
@@ -107,6 +108,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DOT}		{return token::GT_DOT;}
+{GT_COMMA}		{return token::GT_COMMA;}
 {GT_SEMI}		{return token::GT_SEMI;}
 {IT_a}		{return token::IT_a;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
@@ -135,7 +137,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {ANON}		{yylval->p_POS = driver->createBNode(); return token::ANON;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 {PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
-{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext); return token::BLANK_NODE_LABEL;}
+{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 
 <<EOF>>			{ yyterminate();}
 %%
@@ -158,7 +160,7 @@ TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_
 	int i;
 	is >> i;
 	normalized << i;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), i);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
 	return tok;
     case token::DECIMAL:
     case token::DECIMAL_POSITIVE:
@@ -166,7 +168,7 @@ TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_
 	float f;
 	is >> f;
 	normalized << f;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), f);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
 	return tok;
     case token::DOUBLE:
     case token::DOUBLE_POSITIVE:
@@ -174,7 +176,7 @@ TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_
 	double d;
 	is >> d;
 	normalized << d;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(normalized.str().c_str(), d);
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
 	return tok;
     default: throw(new std::exception());
     }
@@ -215,7 +217,7 @@ URI* TurtleSScanner::resolvePrefix (const char* yytext){
 	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
 	throw(std::runtime_error(err.str()));
     }
-    ret.replace(0, index+1, nspace->getTerminal());
+    ret.replace(0, index+1, nspace->getLexicalValue());
     return resolveBase(ret.c_str(), false);
 }
 
@@ -244,7 +246,7 @@ URI* TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
     URI* baseURI = driver->getBase();
     std::string base;
     if (baseURI != NULL)
-	std::string base = baseURI->getTerminal();
+	std::string base = baseURI->getLexicalValue();
     std::string base_scheme;
     if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
 	base_scheme = what[1];

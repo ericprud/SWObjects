@@ -6,9 +6,15 @@
 #include "SWObjects.hpp"
 #include "SPARQLSerializer.hpp"
 #include "XMLQueryExpressor.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "RdfDB.hpp"
 #include <iostream>
 
 namespace w3c_sw {
+
+    const char* ResultSet::NS_srx = "http://www.w3.org/2005/sparql-results#";
+    const char* ResultSet::NS_xml = "http://www.w3.org/XML/1998/namespace";
+
     std::string Result::toString () const {
 	std::stringstream s;
 	s << "{";
@@ -52,7 +58,7 @@ namespace w3c_sw {
 	xml->attribute("addr", this);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++) {
 	    xml->open("binding");
-	    xml->attribute(it->first->getBindingAttributeName(), it->first->getTerminal());
+	    xml->attribute(it->first->getBindingAttributeName(), it->first->getLexicalValue());
 	    if (it->second.weaklyBound) xml->attribute("binding", "weak" );
 	    it->second.pos->express(&xmlizer);
 	    xml->close();
@@ -68,12 +74,12 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	results.insert(results.begin(), new Result(this));
     }
 
 #if REGEX_LIB == SWOb_BOOST
-    ResultSet::ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered) {
+    ResultSet::ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered), isBool(false), bgp(NULL) {
 	const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	std::string::const_iterator start, end; 
 	start = str.begin(); 
@@ -115,7 +121,7 @@ namespace w3c_sw {
     ResultSet* Result::makeResultSet (POSFactory* posFactory) {
 	ResultSet* ret = new ResultSet(posFactory);
 	ret->erase(ret->begin());
-	duplicate(ret, ret->begin());
+	ret->insert(ret->begin(), duplicate(ret, ret->begin()));
 	return ret;
     }
     void Result::assumeNewBindings (Result* from) {
@@ -135,8 +141,6 @@ namespace w3c_sw {
 		     s_ERROR};
 	std::vector<std::string> knownVars;
 	std::stack<enum STATES> stateStack;
-#define SRX "http://www.w3.org/2005/sparql-results#"
-#define XML "http://www.w3.org/XML/1998/namespace"
 	Result* result;
 	POS* variable;
 	URI* datatype;
@@ -160,7 +164,7 @@ namespace w3c_sw {
 				   std::string localName,
 				   std::string qName,
 				   Attributes* attrs) {
-	    if (uri != SRX)
+	    if (uri != NS_srx)
 		error("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
 	    enum STATES newState = s_ERROR;
 	    switch (stateStack.top()) {
@@ -210,7 +214,7 @@ namespace w3c_sw {
 		    newState = LITERAL;
 		    std::string s = attrs->getValue("", "datatype");
 		    datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
-		    lang = attrs->getValue(XML, "lang");
+		    lang = attrs->getValue(NS_xml, "lang");
 		}
 		break;
 	    case _URI:
@@ -232,7 +236,11 @@ namespace w3c_sw {
 				 std::string) {
 	    switch (stateStack.top()) {
 	    case BOOLEAN:
-		error("boolean ResultSets not implemented");
+		/* http://www.w3.org/TR/rdf-sparql-XMLres/#boolean-results */
+		if (chars == "true")
+		    rs->insert(rs->end(), new Result(rs));
+		rs->makeBoolean();
+		chars = "";
 		break;
 	    case BINDING: //@@
 		break;
@@ -267,11 +275,82 @@ namespace w3c_sw {
 	    chars += std::string(ch + start, length);
 	}
     };
-    ResultSet::ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+
+    ResultSet::ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp) : 
+	posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(bgp) {  }
+
+    ResultSet::ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
+	posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+	SPARQLfedDriver sparqlParser(baseURI, posFactory);
+	std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				"SELECT ?bool { ?t rs:boolean ?bool . }\n");
+	if (sparqlParser.parse_stream(boolq))
+	    throw std::string("failed to parse boolean ResultSet constructor query.");
+	ResultSet booleanResult(posFactory);
+	sparqlParser.root->execute(db, &booleanResult);
+	sparqlParser.clear(""); // clear out namespaces and base URI.
+	if (booleanResult.size() > 0) {
+	    ResultSetIterator booleanRecord = booleanResult.begin();
+	    const POS* bpos = (*booleanRecord)->get(posFactory->getVariable("bool"));
+	    const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(bpos);
+	    if (blit == NULL /* !!! || ++booleanRecord != end() */)
+		throw std::string("database:\n") + 
+		    db->toString() + 
+		    "\nis not a validate initializer for a boolen ResultSet.";
+	    isBool = true;
+	    /* So far, size() > 0 is how we test a boolean ResultSet. */
+	    if (blit->getValue())
+		results.insert(results.begin(), new Result(this));
+	} else {
+	    /* Get list of known variables. */
+	    std::stringstream variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+					 "SELECT ?var {?set rs:resultVariable ?var }\n");
+	    if (sparqlParser.parse_stream(variablesQ))
+		throw std::string("failed to parse boolean ResultSet variables query.");
+	    ResultSet listOfVariables(posFactory);
+	    sparqlParser.root->execute(db, &listOfVariables);
+	    sparqlParser.clear(""); // not necessary unless we re-use parser.
+	    for (ResultSetIterator resultRecord = listOfVariables.begin(); 
+		 resultRecord != listOfVariables.end(); ++resultRecord) {
+		const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
+		const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
+		knownVars.insert(var);
+	    }
+
+	    /* Get list of bindings. */
+	    std::stringstream bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+					"SELECT * {?soln rs:binding [\n"
+					"		 rs:variable ?var ;\n"
+					"		 rs:value ?val\n"
+					" ]} ORDER BY ?soln\n");
+	    if (sparqlParser.parse_stream(bindingsQ))
+		throw std::string("failed to parse boolean ResultSet bindings query.");
+	    ResultSet listOfResults(posFactory);
+	    sparqlParser.root->execute(db, &listOfResults);
+	    sparqlParser.clear(""); // not necessary unless we re-use parser.
+	    const POS* lastSoln = NULL;
+	    Result* r = NULL;
+	    for (ResultSetIterator resultRecord = listOfResults.begin(); 
+		 resultRecord != listOfResults.end(); ++resultRecord) {
+		const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
+		const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
+		const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
+		const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
+		if (lastSoln != soln) {
+		    r = new Result(this);
+		    insert(end(), r);
+		    lastSoln = soln;
+		}
+		set(r, var, val, false);
+	    }
+	}
+    }
+
+    ResultSet::ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	RSsax handler(this, posFactory);
 	parser->parse(filename, &handler);
     }
-    ResultSet::ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false) {
+    ResultSet::ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
 	RSsax handler(this, posFactory);
 	parser->parse(start, finish, &handler);
     }
@@ -280,6 +359,10 @@ namespace w3c_sw {
 	    return false;
 	if (isOrdered()) {
 	    return compareOrdered(ref);
+	} else if (isBoolean()) {
+	    return ref.isBool && (ref.size() > 0) == (size() > 0) ;
+	} else if (bgp != NULL && ref.bgp != NULL) {
+	    return (*bgp == *ref.bgp) ;
 	} else {
 	    std::vector<s_OrderConditionPair> orderConditions;
 	    for (VariableListConstIterator it = knownVars.begin();
@@ -306,7 +389,7 @@ namespace w3c_sw {
 	delete *ret->begin();
 	ret->erase(ret->begin());
 	for (ResultSetIterator it = begin() ; it != end(); it++)
-	    (*it)->duplicate(ret, ret->end());
+	    ret->insert(ret->begin(), (*it)->duplicate(ret, ret->end()));
 	return ret;
     }
 
@@ -355,12 +438,23 @@ namespace w3c_sw {
 	     row != results.end(); ++row)
 	    for (std::set<const POS*>::const_iterator var = toDel.begin();
 		 var != toDel.end(); ++var)
-		(*row)->erase((*row)->find(*var));
+		if ((*row)->find(*var) != (*row)->end())
+		    (*row)->erase((*row)->find(*var));
 
 	/* Delete those vars from knowVars. */
 	for (std::set<const POS*>::const_iterator var = toDel.begin();
 	     var != toDel.end(); ++var)
 	    knownVars.erase(*var);
+    }
+
+    void ResultSet::restrict (const Filter* filter) {
+	for (ResultSetIterator it = begin(); it != end(); )
+	    if (filter->eval(*it, posFactory))
+		++it;
+	    else {
+		delete *it;
+		erase(it++);
+	    }
     }
 
     void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
@@ -459,6 +553,13 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toString () const {
+	if (isBoolean()) {
+	    return size() > 0 ? "true" : "false" ;
+	} else if (bgp != NULL) {
+	    SPARQLSerializer s;
+	    bgp->express(&s);
+	    return std::string("<graph result>\n") + s.getSPARQLstring() + "\n</graph result>";
+	}
 	const char* NULL_REP = "--";
 #if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";
@@ -576,7 +677,7 @@ namespace w3c_sw {
 	xml->open("head");
 	for (VariableListIterator it = knownVars.begin() ; it != knownVars.end(); it++) {
 	    xml->empty("variable");
-	    xml->attribute("name", (*it)->getTerminal());
+	    xml->attribute("name", (*it)->getLexicalValue());
 	}
 	xml->close();
 	xml->open("results");

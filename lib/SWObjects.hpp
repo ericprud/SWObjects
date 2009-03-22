@@ -26,6 +26,7 @@
 #endif /* !_MSC_VER */
 
 
+#include <ctype.h>
 #include <map>
 #include <set>
 #include <list>
@@ -36,6 +37,7 @@
 #include <stdexcept>
 #include <exception>
 
+#include <cstdlib>
 #include <cstdarg>
 #include <cassert>
 #include <typeinfo>
@@ -52,6 +54,11 @@ class POSFactory;
 class ResultSet;
 class Result;
 class RdfDB;
+
+    extern const char* NS_xml;
+    extern const char* NS_xsd;
+    extern const char* NS_rdf;
+    extern const char* NS_srx;
 
 class StringException : public std::exception {
 public:
@@ -71,6 +78,28 @@ public:
 #endif
     virtual ~StringException () throw() { strs.erase(this); }
     char const* what() const throw() { 	return str; }
+};
+
+class SafeEvaluationError : public std::exception {
+public:
+    std::string msg;
+    SafeEvaluationError (std::string msg) : msg(msg) {  }
+    virtual ~SafeEvaluationError () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
+class NotImplemented : public SafeEvaluationError {
+public:
+    NotImplemented (std::string msg) : SafeEvaluationError(msg + " not implemented") {  }
+    virtual ~NotImplemented () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
+class TypeError : public SafeEvaluationError {
+public:
+    TypeError (std::string type, std::string context) : SafeEvaluationError(type + " not expected in " + context) {  }
+    virtual ~TypeError () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
 };
 
 class Expressor;
@@ -176,9 +205,11 @@ public:
 
 typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 class Expression;
+class Filter;
 class Bindable;
 class Variable;
 class TriplePattern;
+class BasicGraphPattern;
 class POSFactory;
 typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
 typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
@@ -202,10 +233,10 @@ protected:
     }
     ~Terminal () {  }
 public:
-    std::string getTerminal () const { return terminal; }
+    std::string getLexicalValue () const { return terminal; }
 };
 
-class LANGTAG : public Terminal {
+    class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
 public:
     LANGTAG(std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
 };
@@ -214,8 +245,8 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
-    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); }
     virtual void express(Expressor* p_expressor) const = 0;
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); }
     virtual bool operator==(const Operation& ref) const = 0;
 };
 
@@ -231,7 +262,7 @@ public:
     static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(FUNCTION_STRING)); }
     virtual int compare (POS* to, Result*) const {
 	bool same = typeid(*to) == typeid(*this);
-	return same ? getTerminal() != to->getTerminal() : orderByType(this, to);
+	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
     }
     virtual const POS* evalPOS (const Result*, bool) const { return this; }
     virtual bool bindVariable (const POS* p, ResultSet* rs, bool weaklyBound, ResultSetIteratorPair* rows, const ProductionVector<const TriplePattern*>* data) const;
@@ -319,12 +350,11 @@ public:
 class RDFLiteral : public POS {
     friend class POSFactory;
 private:
-    std::string m_String;
-    URI* datatype;
+    const URI* datatype;
     LANGTAG* m_LANGTAG;
 
 protected:
-    RDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG, std::string matched) : POS(matched), m_String(p_String) {
+    RDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) : POS(p_String) {
 	datatype = p_URI;
 	m_LANGTAG = p_LANGTAG;
     }
@@ -333,63 +363,81 @@ protected:
 	delete m_LANGTAG;
     }
 public:
+    const URI* getDatatype () const { return datatype; }
+    const LANGTAG* getLangtag () const { return m_LANGTAG; }
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
-	s << '"' << m_String << '"';
+	s << '"' << terminal << '"';
 	if (datatype) s << datatype->toString();
-	if (m_LANGTAG) s << m_LANGTAG->getTerminal();
+	if (m_LANGTAG) s << m_LANGTAG->getLexicalValue();
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { return "literal"; }
-    std::string getString () const { return m_String; }
 };
 class NumericRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
-    NumericRDFLiteral (std::string p_String, URI* p_URI, std::string matched) : RDFLiteral(p_String, p_URI, NULL, matched) {  }
+    NumericRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
     ~NumericRDFLiteral () {  }
 public:
+    virtual int getInt() const = 0;
+    virtual float getFloat() const = 0;
+    virtual double getDouble() const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
 };
 class IntegerRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     int m_value;
-    IntegerRDFLiteral (std::string p_String, URI* p_URI, std::string matched, int p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    IntegerRDFLiteral (std::string p_String, URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
-    int getValue () { return m_value; }
-    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
+    int getValue () const { return m_value; }
+    virtual int getInt () const { return m_value; }
+    virtual float getFloat () const { return (float)m_value; }
+    virtual double getDouble () const  { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     float m_value;
-    DecimalRDFLiteral (std::string p_String, URI* p_URI, std::string matched, float p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DecimalRDFLiteral () {  }
-    virtual void express(Expressor* p_expressor) const;
 public:
-    virtual std::string toString () const { std::stringstream s; s << m_value; return s.str(); }
+    float getValue () const { return m_value; }
+    virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
+    virtual float getFloat () const { return m_value; }
+    virtual double getDouble () const { return (double)m_value; }
+    virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     double m_value;
-    DoubleRDFLiteral (std::string p_String, URI* p_URI, std::string matched, double p_value) : NumericRDFLiteral(p_String, p_URI, matched), m_value(p_value) {  }
+    DoubleRDFLiteral (std::string p_String, URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
+public:
+    double getValue () const { return m_value; }
+    virtual int getInt () const { throw TypeError(std::string("(double)") + toString(), "getInt()"); }
+    virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
+    virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { return getLexicalValue(); }
 };
 class BooleanRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
     bool m_value;
-    BooleanRDFLiteral (std::string p_String, std::string matched, bool p_value) : RDFLiteral(p_String, NULL, NULL, matched), m_value(p_value) {  }
+    BooleanRDFLiteral (std::string p_String, bool p_value) : RDFLiteral(p_String, NULL, NULL), m_value(p_value) {  }
 public:
-    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
+    bool getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
 };
 class NULLpos : public POS {
     friend class POSFactory;
@@ -480,7 +528,7 @@ class POSFactory {
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
-	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI, std::string matched) = 0;
+	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI) = 0;
     };
 
 protected:
@@ -512,7 +560,7 @@ public:
     URI* getURI(std::string name);
     POS* getPOS(std::string posStr);
     ListOp* getListOp(e_listModifier listModifier, const ProductionVector<const POS*>* posz);
-    RDFLiteral* getRDFLiteral(std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG);
+    RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
@@ -550,7 +598,191 @@ public:
 
     /* EBV (Better place for this?) */
     const POS* ebv(const POS* pos);
+
+    void _validateNumeric (std::string str) {
+#ifdef HAVE_STRTOLD
+	const char* s = str.c_str();
+	char* end;
+	::strtold(s, &end);
+	if (*end)
+	    throw TypeError(s, "validate numeric");
+#else
+	if (str.find_first_not_of("0123456789+-Ee.") != str.npos)
+	    throw TypeError(str, "validate numeric");
+#endif
+    }
+    void _validateBoolean (std::string s) {
+	if (s != "false" || s != "0" || 
+	    s != "true"  || s != "1")
+	    throw TypeError(s, "validate boolean");
+    }
+    void _validateDateTime (std::string s) {
+	/* '-'? yyyy '-' mm '-' dd 'T' hh ':' mm ':' ss ('.' s+)? (zzzzzz)?
+	 * per <http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#dateTime-lexical-representation>
+	 */
+	const char* ptr = s.c_str();
+	char* end;
+	long int l;
+	if (*ptr == '-')
+	    ++ptr;
+
+	l = strtol(ptr, &end, 10);
+	if (l == 0 || end != ptr+4)
+		throw TypeError(s, "xsd:datetime year");
+	ptr += 4;
+	if (*ptr++ != '-')
+	    throw TypeError(s, "xsd:datetime year-month separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 1 || l > 12 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime month");
+	ptr += 2;
+	if (*ptr++ != '-')
+	    throw TypeError(s, "xsd:datetime year-month separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 1 || l > 31 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime date");
+	ptr += 2;
+	if (*ptr++ != 'T')
+	    throw TypeError(s, "xsd:datetime date-hour separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 23 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime hour");
+	ptr += 2;
+	if (*ptr++ != ':')
+	    throw TypeError(s, "xsd:datetime hour-minute separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime minute");
+	ptr += 2;
+	if (*ptr++ != ':')
+	    throw TypeError(s, "xsd:datetime minute-second separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime second");
+	ptr += 2;
+
+	if (*ptr == '.') {
+	    ++ptr;
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || end == ptr)
+		throw TypeError(s, "xsd:datetime decimal seconds");
+	    ptr = end;
+	}
+
+	if (*ptr == '+' || *ptr == '-') {
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || l > 23 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime timezone hour");
+	    ptr += 2;
+	    if (*ptr++ != ':')
+		throw TypeError(s, "xsd:datetime timezone hour-minute separator");
+
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime timezone minute");
+	    ptr += 2;
+	} else if (*ptr != 'Z')
+	    throw TypeError(s, "xsd:datetime timezone");
+
+	if (*ptr)
+	    throw TypeError(s, "xsd:datetime (garbage at end)");
+    }
+    int cmp (const POS* lpos, const POS* rpos) {
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (lpos);
+	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (rpos);
+	if (l == NULL || r == NULL)
+	    throw TypeError(lpos ? lpos->toString() : "NULL", rpos ? rpos->toString() : "NULL");
+	const URI* ldt = l->getDatatype();
+	const URI* rdt = r->getDatatype();
+	if (dynamic_cast<const NumericRDFLiteral*>(l) && 
+	    dynamic_cast<const NumericRDFLiteral*>(r)) {
+	    if (dynamic_cast<const DoubleRDFLiteral*>(l) || 
+		dynamic_cast<const DoubleRDFLiteral*>(r)) {
+		double dl = 
+		    dynamic_cast<const DoubleRDFLiteral*> (l) ?         dynamic_cast<const DoubleRDFLiteral*> (l)->getValue() : 
+		    dynamic_cast<const DecimalRDFLiteral*>(l) ? (double)dynamic_cast<const DecimalRDFLiteral*>(l)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (double)dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		double dr = 
+		    dynamic_cast<const DoubleRDFLiteral*> (r) ?         dynamic_cast<const DoubleRDFLiteral*> (r)->getValue() : 
+		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (double)dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (double)dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		_validateNumeric(l->getLexicalValue());
+		_validateNumeric(r->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else if (dynamic_cast<const DecimalRDFLiteral*>(l) || 
+		       dynamic_cast<const DecimalRDFLiteral*>(r)) {
+		float dl = 
+		    dynamic_cast<const DecimalRDFLiteral*>(l) ? (float) dynamic_cast<const DecimalRDFLiteral*>(l)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (float) dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		float dr = 
+		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (float) dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (float) dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		_validateNumeric(l->getLexicalValue());
+		_validateNumeric(r->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else if (dynamic_cast<const IntegerRDFLiteral*>(l) || 
+		       dynamic_cast<const IntegerRDFLiteral*>(r)) {
+		int dl = 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (int)   dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		int dr = 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (int)   dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		_validateNumeric(l->getLexicalValue());
+		_validateNumeric(r->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else {
+		throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+	    }
+	} else if (ldt == NULL && 
+		   rdt == NULL) {
+	    return l->getLexicalValue().compare(r->getLexicalValue());
+	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#string") && 
+		   rdt == getURI("http://www.w3.org/2001/XMLSchema#string")) {
+	    return l->getLexicalValue().compare(r->getLexicalValue());
+	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
+		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
+	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
+	    bool br = dynamic_cast<const BooleanRDFLiteral*>(r)->getValue();
+	    _validateBoolean(l->getLexicalValue());
+	    _validateBoolean(r->getLexicalValue());
+	    return 
+		!bl && br ? -1 : 
+		bl && !br ?  1 : 
+		0;
+	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#dateTime") && 
+		   rdt == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
+	    _validateDateTime(l->getLexicalValue());
+	    _validateDateTime(r->getLexicalValue());
+	    return l->getLexicalValue().compare(r->getLexicalValue()); // luv dem isodates
+	} else {
+	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
+	}
+    }
+
     bool lessThan (const POS* lhs, const POS* rhs) {
+	if (rhs == NULL)
+	    return false;
+	if (lhs == NULL)
+	    return true;
 	const std::string lt = typeid(*lhs).name();
 	const std::string rt = typeid(*rhs).name();
 	if (lt != rt) {
@@ -561,7 +793,7 @@ public:
 	    if (li > ri)
 		return false;
 	}
-	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
     }
 };
 
@@ -586,7 +818,7 @@ public:
 	const int ri = typeOrder[rt];
 	if (li < ri)
 	    return true;
-	return lhs->getTerminal().compare(rhs->getTerminal()) < 0;
+	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
     }
 };
 
@@ -616,6 +848,13 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const Filter& ref) const {
 	return *m_Constraint == *ref.m_Constraint;
+    }
+    bool eval (const Result* r, POSFactory* posFactory) const {
+	try {
+	    return posFactory->ebv(m_Constraint->eval(r, posFactory, false)) == posFactory->getTrue();
+	} catch (SafeEvaluationError&) {
+	    return false;
+	}
     }
 };
 
@@ -723,13 +962,14 @@ protected:
     BasicGraphPattern (const BasicGraphPattern& ref) :
 	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
 	allOpts(ref.allOpts) {  }
-    bool operator==(const BasicGraphPattern& ref) const;
 
     /* Misc helper functions: */
     static const POS* _cOrN(const POS* pos, const NULLpos* n);
+    void _bindVariables(RdfDB* db, ResultSet* rs, const POS* p_name) const;
 
 public:
 
+    bool operator==(const BasicGraphPattern& ref) const;
     /* Controls for operator==(BasicGraphPatter&)
      */
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
@@ -766,7 +1006,9 @@ public:
     NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
     virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+	_bindVariables(db, rs, m_name);
+    }
     virtual bool operator== (const TableOperation& ref) const {
 	const NamedGraphPattern* pref = dynamic_cast<const NamedGraphPattern*>(&ref);
 	return pref == NULL ? false : 
@@ -780,7 +1022,9 @@ public:
     DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
     virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+	_bindVariables(db, rs, NULL);
+    }
     virtual bool operator== (const TableOperation& ref) const {
 	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
 	return pref == NULL ? false :
@@ -1004,13 +1248,17 @@ protected:
     ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
+    DefaultGraphPattern* resultGraph;
+
 public:
-    Construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    Construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : 
+	Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier), resultGraph(new DefaultGraphPattern()) {  }
     ~Construct () {
 	delete m_ConstructTemplate;
 	delete m_DatasetClauses;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
+	delete resultGraph;
     }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -1049,6 +1297,7 @@ public:
 	delete m_WhereClause;
     }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -1234,16 +1483,116 @@ public:
 	std::vector<const POS*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    subd.push_back((*it)->eval(r, posFactory, bNodesGenSymbols));
+
+	/* Write down the first 3 for convenience. */
+	std::vector<const POS*>::const_iterator it = subd.begin();
+	const POS* first = it == subd.end() ? NULL : *it++;
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound") && 
+	    subd.size() == 1)
+	    return first == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const URI*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const BNode*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral") && 
+	    subd.size() == 1)
+	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? posFactory->getFalse() : posFactory->getTrue();
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    return posFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(URI)
+	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
+	    return posFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-lang") && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
+	    return posFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
+	}
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype") && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
+	    return dt ? dt : posFactory->getURI("http://www.w3.org/2001/XMLSchema#string");
+	}
+
+	const POS* second = it == subd.end() ? NULL : *it++;
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm") && 
+	    subd.size() == 2) {
+	    return first == second && first != NULL ? posFactory->getTrue() : posFactory->getFalse();
+	}
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches") && 
+	    subd.size() == 2 && 
+	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
+	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
+
+	    /* knock off the easy ones... */
+	    if (first == second)
+		return posFactory->getTrue();
+	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
+	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
+	    if (range == "*")
+		return tag.empty() ? posFactory->getFalse() : posFactory->getTrue();
+
+	    std::string::iterator t = tag.begin();
+	    std::string::iterator te = tag.end();
+	    std::string::iterator r = range.begin();
+	    std::string::iterator re = range.end();
+
+	    while (t != te && r != re)
+		if (::tolower(*t++) != ::tolower(*r++))
+		    return posFactory->getFalse();
+
+	    if (r == re && 
+		(t == te || *t == '-'))
+		return posFactory->getTrue();
+
+	    return posFactory->getFalse();
+	}
+
+	const POS* third = it == subd.end() ? NULL : *it++;
+	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
+	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
+	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
+
+	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-regex") && 
+	    ( subd.size() == 2 || subd.size() == 3 ) && 
+	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
+	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
+	    ( subd.size() == 2 || 
+	      (thirdLit != NULL && thirdLit->getDatatype() == NULL && thirdLit->getLangtag() == NULL))) {
+#if REGEX_LIB == SWOb_DISABLED
+	    throw std::string("no regular expression library was linked in");
+#else
+	    const boost::regex pattern(secondLit->getLexicalValue());
+	    boost::match_results<std::string::const_iterator> what;
+	    boost::match_flag_type flags = boost::match_default; // @@@ parser thirdLit
+	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? posFactory->getTrue() : posFactory->getFalse();
+#endif
+	}
+
 	std::stringstream s;
 	s << m_IRIref->toString() << '(';
 	for (std::vector<const POS*>::iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
-	    s << (*it)->toString();
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
 	}
 	s << ')';
-	s << " not implemented";
-	throw s.str();
+	throw NotImplemented(s.str());
     }
     bool operator== (const FunctionCall& ref) const {
 	if (m_IRIref != ref.m_IRIref)
@@ -1369,9 +1718,9 @@ public:
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	return left->eval(res, posFactory, bNodesGenSymbols) == 
-	    right->eval(res, posFactory, bNodesGenSymbols) ? 
-	    posFactory->getTrue() : posFactory->getFalse();
+	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
+	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -1386,7 +1735,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getFalse() : posFactory->getTrue();
+	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -1401,7 +1750,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l < r ? posFactory->getFalse() : posFactory->getTrue();
+	return posFactory->cmp(l, r) < 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -1416,8 +1765,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getFalse() : 
-	    r < l ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) > 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -1432,8 +1780,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getTrue() : 
-	    l < r ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) <= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -1448,8 +1795,7 @@ public:
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
 	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
 	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
-	return l == r ? posFactory->getTrue() : 
-	    r < l ? posFactory->getTrue() : posFactory->getFalse();
+	return posFactory->cmp(l, r) >= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
@@ -1493,20 +1839,52 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	std::vector<const POS*> subd;
+	std::vector<const NumericRDFLiteral*> subd;
+	enum { Int, Dec, Double } highestType = Int;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-	     it != m_Expressions.end(); ++it)
-	    subd.push_back((*it)->eval(res, posFactory, bNodesGenSymbols));
-	std::stringstream s;
-	s << "(+ ";
-	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
-	    if (it != subd.begin())
-		s << ", ";
-	    s << (*it)->toString();
+	     it != m_Expressions.end(); ++it) {
+	    const POS* val = (*it)->eval(res, posFactory, bNodesGenSymbols);
+	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL) {
+		if (highestType < Int)
+		    highestType = Int;
+	    } else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL) {
+		if (highestType < Dec)
+		    highestType = Dec;
+	    } else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL) {
+		if (highestType < Double)
+		    highestType = Double;
+	    } else if (val == NULL)
+		throw TypeError("NULL", "+");
+	    else
+		throw TypeError((val)->toString(), "+");
+	    subd.push_back(dynamic_cast<const NumericRDFLiteral*>(val));
 	}
-	s << ')';
-	s << " not implemented";
-	throw s.str();
+
+	std::stringstream s;
+	switch (highestType) {
+	case Int: {
+	    int i(0);
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		i += (*it)->getInt();
+	    s << i;
+	    return posFactory->getNumericRDFLiteral(s.str(), i);
+	}
+	case Dec: {
+	    float f(0);
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		f += (*it)->getFloat();
+	    s << f;
+	    return posFactory->getNumericRDFLiteral(s.str(), f);
+	}
+	case Double: {
+	    double d(0);
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		d += (*it)->getDouble();
+	    s << d;
+	    return posFactory->getNumericRDFLiteral(s.str(), d);
+	}
+	}
+	throw "shouldn't arrive a bottom of eval"; // g++ doesn't notice that all paths in above switch return.
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
@@ -1561,7 +1939,10 @@ public:
 	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
-	    s << (*it)->toString();
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
 	}
 	s << ')';
 	s << " not implemented";
@@ -1669,10 +2050,10 @@ public:
 
     virtual void base(const Base* const self, std::string productionName) = 0;
 
-    virtual void uri(const URI* const self, std::string terminal) = 0;
-    virtual void variable(const Variable* const self, std::string terminal) = 0;
-    virtual void bnode(const BNode* const self, std::string terminal) = 0;
-    virtual void rdfLiteral(const RDFLiteral* const self, std::string terminal, URI* datatype, LANGTAG* p_LANGTAG) = 0;
+    virtual void uri(const URI* const self, std::string lexicalValue) = 0;
+    virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
+    virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
+    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, int p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, float p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value) = 0;
@@ -1684,7 +2065,7 @@ public:
     virtual void defaultGraphPattern(const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) = 0;
     virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) = 0;
     virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) = 0;
-    virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
+    virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
@@ -1738,7 +2119,7 @@ public:
     virtual void uri (const URI* const, std::string) {  }
     virtual void variable (const Variable* const, std::string) {  }
     virtual void bnode (const BNode* const, std::string) {  }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string, URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, LANGTAG* p_LANGTAG) {
 	if (datatype) datatype->express(this);
 	if (p_LANGTAG) p_LANGTAG->express(this);
     }
@@ -1772,8 +2153,9 @@ public:
 	p_TableOperations->express(this);
 	p_Filters->express(this);
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	p_GroupGraphPattern->express(this);
+	p_Filters->express(this);
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);
@@ -1936,6 +2318,7 @@ class TestExpressor : public RecursiveExpressor {
     virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
+    std::ostream& operator<<(std::ostream& os, BasicGraphPattern const& my);
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
 

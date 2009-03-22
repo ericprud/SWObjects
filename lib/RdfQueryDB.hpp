@@ -47,10 +47,11 @@ namespace w3c_sw {
 	    p_TableOperations->express(this);
 	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
 	    bool oldOptState = optState;
 	    optState = true;
 	    p_GroupGraphPattern->express(this);
+	    p_Filters->express(this);
 	    optState = oldOptState;
 	}
     };

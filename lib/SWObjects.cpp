@@ -13,6 +13,11 @@
 
 namespace w3c_sw {
 
+    extern const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
+    extern const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"		;
+    extern const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"	;
+    extern const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
+
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
@@ -213,7 +218,7 @@ void ListOp::express (Expressor* /* p_expressor */) const {
     // !!! need to add to all Expressors p_expressor->listOp(this, );
 }
 void RDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_String, datatype, m_LANGTAG);
+    p_expressor->rdfLiteral(this, terminal, datatype, m_LANGTAG);
 }
 void IntegerRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
@@ -249,7 +254,7 @@ void TableConjunction::express (Expressor* p_expressor) const {
     p_expressor->tableConjunction(this, &m_TableOperations, &m_Filters);
 }
 void OptionalGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->optionalGraphPattern(this, m_TableOperation);
+    p_expressor->optionalGraphPattern(this, m_TableOperation, &m_Filters);
 }
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
@@ -486,9 +491,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
+    RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
 	std::istringstream is(p_String);
-	std::ostringstream normalized;
 
 	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
 	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger") || 
@@ -505,52 +509,48 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#positiveInteger")) {
 	    int i;
 	    is >> i;
-	    normalized << i;
-	    return getNumericRDFLiteral(normalized.str().c_str(), i);
+	    return getNumericRDFLiteral(p_String.c_str(), i);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#decimal") || 
 		   p_URI == getURI("http://www.w3.org/2001/XMLSchema#float")) {
 	    float f;
 	    is >> f;
-	    normalized << f;
-	    return getNumericRDFLiteral(normalized.str().c_str(), f);
+	    return getNumericRDFLiteral(p_String.c_str(), f);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#double")) {
 	    double d;
 	    is >> d;
-	    normalized << d;
-	    return getNumericRDFLiteral(normalized.str().c_str(), d);
+	    return getNumericRDFLiteral(p_String.c_str(), d);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
 	    is >> b;
-	    normalized << (b ? "true" : "false");
-	    return getBooleanRDFLiteral(normalized.str().c_str(), b);
+	    return getBooleanRDFLiteral(p_String.c_str(), b);
 	}
 
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
 	if (p_URI)
-	    buf << "^^<" << p_URI->getTerminal() << ">";
+	    buf << "^^<" << p_URI->getLexicalValue() << ">";
 	if (p_LANGTAG)
-	    buf << "@" << p_LANGTAG->getTerminal();
+	    buf << "@" << p_LANGTAG->getLexicalValue();
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    RDFLiteral* ret = new RDFLiteral(p_String, p_URI, p_LANGTAG, key.c_str());
+	    RDFLiteral* ret = new RDFLiteral(p_String, p_URI, p_LANGTAG);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
 	    return vi->second;
     }
 
-#define XSD "http://www.w3.org/2001/XMLSchema/"
+#define XSD "http://www.w3.org/2001/XMLSchema#"
 #define LEN_XSD sizeof(XSD)
     IntegerRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new IntegerRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new IntegerRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeIntegerRDFLiteral maker(p_value);
@@ -562,8 +562,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new DecimalRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new DecimalRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDecimalRDFLiteral maker(p_value);
@@ -575,8 +575,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI, std::string matched) {
-		return new DoubleRDFLiteral(p_String, p_URI, matched, m_value);
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new DoubleRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDoubleRDFLiteral maker(p_value);
@@ -586,11 +586,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     BooleanRDFLiteral* POSFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
-	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema/boolean>"; // p_String
+	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>"; // p_String
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, key.c_str(), p_value);
+	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, p_value);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -607,11 +607,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
 	if (uri)
-	    buf << "^^<" << uri->getTerminal() << ">";
+	    buf << "^^<" << uri->getLexicalValue() << ">";
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    NumericRDFLiteral* ret = maker->makeIt(p_String, uri, key.c_str());
+	    NumericRDFLiteral* ret = maker->makeIt(p_String, uri);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -656,7 +656,22 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     /* EBV (Better place for this?) */
     const POS* POSFactory::ebv (const POS* pos) {
-	throw std::string("ebv ") + pos->toString() + " not implemented";
+	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(pos);
+	if (b != NULL)
+	    return b->getValue() ? getTrue() : getFalse();
+	const IntegerRDFLiteral* i = dynamic_cast<const IntegerRDFLiteral*>(pos);
+	if (i != NULL)
+	    return i->getValue() == 0 ? getFalse() : getTrue();
+	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(pos);
+	if (f != NULL)
+	    return f->getValue() == 0.0 ? getFalse() : getTrue();
+	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(pos);
+	if (d != NULL)
+	    return d->getValue() == 0.0 ? getFalse() : getTrue();
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(pos);
+	if (l != NULL && l->getDatatype() == getURI("http://www.w3.org/2001/XMLSchema#string"))
+	    return std::string(l->getLexicalValue()).empty() ? getFalse() : getTrue();
+	throw TypeError("beats me", "EBV");
     }
 
     /* </POSFactory> */
@@ -689,9 +704,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	m_VarSet->project(rs);
 	if (m_SolutionModifier != NULL)
 	    m_SolutionModifier->modifyResult(rs);
+	m_VarSet->project(rs);
 	return rs;
     }
 
@@ -701,9 +716,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	DefaultGraphPattern g;
-	m_ConstructTemplate->construct(&g, rs);
-	std::cerr << "CONSTRUCTED: " << g << std::endl;
+	m_ConstructTemplate->construct(resultGraph, rs);
+	rs->setGraph(resultGraph);
+	//std::cerr << "CONSTRUCTED: " << g << std::endl;
+	return rs;
+    }
+
+    ResultSet* Ask::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
+	     ds != m_DatasetClauses->end(); ds++)
+	    (*ds)->loadData(db);
+	m_WhereClause->bindVariables(db, rs);
+	rs->makeBoolean();
 	return rs;
     }
 
@@ -764,29 +789,37 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++)
 	    (*it)->bindVariables(db, rs);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet* orig = rs->clone();
+	ResultSet island(rs->getPOSFactory());
+	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet* clone = orig->clone();
-	    (*it)->bindVariables(db, clone);
-	    for (ResultSetIterator row = clone->begin() ; row != clone->end(); ) {
-		rs->insert(row, (*row)->duplicate(rs, rs->end()));
+	    ResultSet disjoint(rs->getPOSFactory());
+	    (*it)->bindVariables(db, &disjoint);
+	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+		 it != m_Filters.end(); it++)
+		disjoint.restrict(*it);
+	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+		island.insert(island.end(), (*row)->duplicate(rs, rs->end()));
 		delete *row;
-		clone->erase(row++);
+		disjoint.erase(row++);
 	    }
-	    delete clone;
 	}
-	delete orig;
+	rs->joinIn(&island, false);
     }
 
-    void NamedGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	db->bindVariables(rs, m_name, this);
-    }
-    void DefaultGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	db->bindVariables(rs, NULL, this);
+    void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
+	ResultSet island(rs->getPOSFactory());
+	db->bindVariables(&island, p_name, this);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    island.restrict(*it);
+	rs->joinIn(&island, false);
     }
 
     std::ostream* BasicGraphPattern::DiffStream = NULL;
@@ -1032,6 +1065,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet optRS(rs->getPOSFactory()); // no POSFactory
+	m_TableOperation->bindVariables(db, &optRS);
+	ResultSet filterMe(*rs); // no POSFactory
+	filterMe.joinIn(&optRS, true);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    filterMe.restrict(*it);
+	rs->joinIn(&filterMe, true);
+#if 0
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
 	    m_TableOperation->bindVariables(db, rowRS);
@@ -1050,6 +1092,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    else
 		rs->erase(row++);
 	}
+#endif
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) const {
@@ -1185,6 +1228,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return r;
 	}
 	return ret;
+    }
+
+    std::ostream& operator<< (std::ostream& os, BasicGraphPattern const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.getSPARQLstring();
     }
 
     std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
