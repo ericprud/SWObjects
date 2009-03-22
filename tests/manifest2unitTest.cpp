@@ -1,6 +1,13 @@
 /* Parse DAWG manifest files and create unit tests.
  *
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ *
+ * cd tests && 
+ * ./manifest2unitTest data-r2/{\
+ * 	triple-match,basic,ask,construct,algebra,dataset,graph,i18n,open-world,\
+ * 	optional,optional-filter,solution-seq,boolean-effective-value,bound,\
+ * 	cast,expr-builtin,expr-equals,expr-ops,regex,sort,type-promotion,
+ * 	bnode-coreference,distinct,reduced}/manifest.ttl
  */
 
 #include <fstream>
@@ -76,11 +83,12 @@ void processManifest (const char* manifestFile) {
 	for (ResultSetIterator testRecord = listOfTests.begin(); 
 	     testRecord != listOfTests.end(); ++testRecord) {
 	    std::string test = (*testRecord)->get(F.getVariable("test"))->toString();
+	    std::string testLexical = (*testRecord)->get(F.getVariable("test"))->getLexicalValue();
 	    try {
 
 		/* Grab attributes of this test. */
 		std::stringstream 
-		    attrsQuery(PREFIXES "SELECT ?type ?name ?result ?action ?query ?data {\n" + 
+		    attrsQuery(PREFIXES "SELECT ?type ?name ?description ?result ?action ?query ?data {\n" + 
 			       test + " a ?type ;\n"
 			       "        mf:name    ?name ;\n"
 			       "#        rdfs:comment    ?comment ;\n"
@@ -88,6 +96,7 @@ void processManifest (const char* manifestFile) {
 			       "        mf:action ?action .\n"
 			       "OPTIONAL { ?action qt:query     ?query }\n"
 			       "OPTIONAL { ?action qt:data      ?data }\n"
+			       "OPTIONAL { " + test + " rdfs:comment ?description }\n"
 			       "}");
 		if (sparqlParser.parse_stream(attrsQuery))
 		    throw std::string("failed to parse test attributes query.");
@@ -103,6 +112,8 @@ void processManifest (const char* manifestFile) {
 		std::string query = (*attrsRecord)->get(F.getVariable("query"))->getLexicalValue();
 		const POS* data_A = (*attrsRecord)->get(F.getVariable("data"));
 		std::string data = data_A ? data_A->getLexicalValue() : "";
+		const POS* description_A = (*attrsRecord)->get(F.getVariable("description"));
+		std::string description = description_A ? description_A->getLexicalValue() : "";
 
 		std::stringstream 
 		    graphsQuery(PREFIXES "SELECT * {\n" + 
@@ -124,19 +135,26 @@ void processManifest (const char* manifestFile) {
 
 		if (type == 
 		    F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#QueryEvaluationTest")) {
-		    std::string out = sanitize(group + "_" + name);
+		    std::string testSuffix = testLexical.substr(testLexical.find_last_of("#"));
+		    std::string out = sanitize(group + "_" + testSuffix);
 		    std::cout << "BOOST_AUTO_TEST_CASE( " << out << " ) {" << std::endl;
+		    std::cout << "    /* name: " << name << std::endl;
+		    if (!description.empty())
+			std::cout << "     * " << description << std::endl;
+		    std::cout << "     */" << std::endl;
 		    std::cout << "    std::ifstream defaultGraph( \"" << path << data << "\" );" << std::endl;
 		    if (listOfGraphs.size() > 0) {
 // std::cerr << listOfGraphs;
-			std::cout << "    std::ifstream namedGraphs[" << listOfGraphs.size() << "];" << std::endl;
-			int i = 0;
+			std::cout << "    const char* namedGraphs[] = {";
 			for (ResultSetIterator it = listOfGraphs.begin(); it != listOfGraphs.end(); ++it) {
 			    std::string graphData = (*it)->get(F.getVariable("graphData"))->getLexicalValue();
-			    std::cout << "    namedGraphs[" << i << "].open(\"" << path << graphData << "\");" << std::endl;
+			    if (it != listOfGraphs.begin())
+				std::cout << "," << std::endl << "                                 ";
+			    std::cout << "\"" << graphData << "\"";
 			}
+			std::cout << "};" << std::endl;
 		    } else {
-			std::cout << "    std::ifstream* namedGraphs = NULL;" << std::endl;
+			std::cout << "    const char** namedGraphs = NULL;" << std::endl;
 		    }
 		    if (listOfReqs.size() > 0) {
 // std::cerr << listOfReqs;
@@ -145,13 +163,14 @@ void processManifest (const char* manifestFile) {
 			    std::string require = (*it)->get(F.getVariable("requires"))->getLexicalValue();
 			    if (it != listOfReqs.begin())
 				std::cout << "," << std::endl << "                             ";
-			    std::cout << "F->getURI(\"" << require << "\")";
+			    std::cout << "F.getURI(\"" << require << "\")";
 			}
 			std::cout << "};" << std::endl;
 		    } else {
-			std::cout << "    const char** requires = NULL;" << std::endl;
+			std::cout << "    const URI** requires = NULL;" << std::endl;
 		    }
-		    std::cout << "    DEFGRAPH_FILE_TEST(\"" << path << query << "\", \"" << path << result << "\");" << std::endl;
+		    std::cout << "    DAWG_TEST(\"" << path << query << "\", \"" << path << result << "\", " 
+			      << listOfGraphs.size() << ", " << listOfReqs.size() << ");" << std::endl;
 		    std::cout << "}" << std::endl;
 		} else {
 		    std::cerr << "skipping test " << test << " as it is of type " << type->toString() << std::endl;
