@@ -42,13 +42,9 @@ RdfXmlParser GRdfXmlParser(&F, &P);
 
 struct SparqlQueryTestResultSet : public ResultSet {
     RdfDB d;
-    void _loadGraphWrapper (const POS* graphName, const char* fileName) {
-	turtleParser.setGraph(d.assureGraph(graphName));
-	turtleParser.parse_file(fileName);
-	turtleParser.clear(""); // clear out namespaces and base URI.
-    }
     SparqlQueryTestResultSet (std::istream& defGraph, 
 			      const char* namedGraphs[], size_t namedCount, 
+			      const URI* requires[], size_t reqsCount, 
 			      std::istream& query) : ResultSet(&F) {
  
 	/* Parse query. */
@@ -63,9 +59,14 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}
 
-	if (namedGraphs != NULL)
-	    for (size_t i = 0; i < namedCount; ++i)
-		_loadGraphWrapper(F.getURI(namedGraphs[i]), namedGraphs[i]);
+	for (size_t i = 0; i < namedCount; ++i) {
+	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
+	    turtleParser.parse_file(namedGraphs[i]);
+	    turtleParser.clear(""); // clear out namespaces and base URI.
+	}
+
+	for (size_t i = 0; i < reqsCount; ++i)
+	    std::cerr << "ignoring " << requires[i]->toString() << std::endl;
 
 	/* Exectute query. */
 	sparqlParser.root->execute(&d, this);
