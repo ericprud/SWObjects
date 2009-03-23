@@ -54,9 +54,9 @@ namespace w3c_sw {
 	virtual ~RdfDB();
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
-	virtual void loadData (const POS* name, POSFactory* posFactory) {
-	    TurtleSDriver turtleParser("http://example.org/", posFactory);
-	    turtleParser.setGraph(assureGraph(name));
+	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
+	    TurtleSDriver turtleParser(name->getLexicalValue(), posFactory);
+	    turtleParser.setGraph(target);
 	    if (turtleParser.parse_file(name->getLexicalValue()))
 		std::cerr << name->getLexicalValue() << ":0: error: unable to parse document" << std::endl;
 	    else

@@ -15,10 +15,7 @@
  */
 #define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
     try {								       \
-    std::ifstream query(QUERY_FILE);					       \
-    if (!query.is_open())						       \
-	throw std::string("failed to open query file ") + QUERY_FILE;	       \
-    SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, NGS, requires, REQS, query); \
+    SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, NGS, requires, REQS, QUERY_FILE); \
     std::string rfs(RESULT_FILE);				    	       \
     if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
 	ResultSet expected(&F, &P, RESULT_FILE);		    	       \
@@ -517,144 +514,144 @@ BOOST_AUTO_TEST_CASE( algebra__join_combo_2 ) {
 BOOST_AUTO_TEST_SUITE_END(/* algebra */)
 
 BOOST_AUTO_TEST_SUITE( dataset )
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_01 ) {
-//     /* name: dataset-01
-//      * Data: default dataset / Query: default dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-01.rq", "data-r2/dataset/dataset-01.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_02 ) {
-//     /* name: dataset-02
-//      * Data: named dataset / Query: default dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-02.rq", "data-r2/dataset/dataset-02.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_03 ) {
-//     /* name: dataset-03
-//      * Data: named dataset / Query: named dataset dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-03.rq", "data-r2/dataset/dataset-03.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_04 ) {
-//     /* name: dataset-04
-//      * Data: named dataset / Query: default dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-04.rq", "data-r2/dataset/dataset-04.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_05 ) {
-//     /* name: dataset-05
-//      * Data: default and named / Query: default dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-05.rq", "data-r2/dataset/dataset-05.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_06 ) {
-//     /* name: dataset-06
-//      * Data: default and named / Query: named dataset
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-06.rq", "data-r2/dataset/dataset-06.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_07 ) {
-//     /* name: dataset-07
-//      * Data: default and named / Query: all data by UNION
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-07.rq", "data-r2/dataset/dataset-07.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_08 ) {
-//     /* name: dataset-08
-//      * Data: default and named / Query: common subjects
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-08.rq", "data-r2/dataset/dataset-08.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_11 ) {
-//     /* name: dataset-11
-//      * Data: default and named (several) / Query: get everything
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-11.rq", "data-r2/dataset/dataset-11.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_09b ) {
-//     /* name: dataset-09b
-//      * Data: default and named (bnodes) / Query: common subjects
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-09b.rq", "data-r2/dataset/dataset-09.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_10b ) {
-//     /* name: dataset-10b
-//      * Data: default and named (same data, with bnodes) / Query: common subjects
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-10b.rq", "data-r2/dataset/dataset-10.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_12b ) {
-//     /* name: dataset-12b
-//      * Data: default (several) and named (several) / Query: get everything
-//      */
-//     std::ifstream defaultGraph( "data-r2/dataset/" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/dataset/dataset-12b.rq", "data-r2/dataset/dataset-12.ttl", 0, 0);
-// }
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_01 ) {
+    /* name: dataset-01
+     * Data: default dataset / Query: default dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-01.rq", "data-r2/dataset/dataset-01.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_02 ) {
+    /* name: dataset-02
+     * Data: named dataset / Query: default dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-02.rq", "data-r2/dataset/dataset-02.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_03 ) {
+    /* name: dataset-03
+     * Data: named dataset / Query: named dataset dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-03.rq", "data-r2/dataset/dataset-03.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_04 ) {
+    /* name: dataset-04
+     * Data: named dataset / Query: default dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-04.rq", "data-r2/dataset/dataset-04.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_05 ) {
+    /* name: dataset-05
+     * Data: default and named / Query: default dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-05.rq", "data-r2/dataset/dataset-05.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_06 ) {
+    /* name: dataset-06
+     * Data: default and named / Query: named dataset
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-06.rq", "data-r2/dataset/dataset-06.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_07 ) {
+    /* name: dataset-07
+     * Data: default and named / Query: all data by UNION
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-07.rq", "data-r2/dataset/dataset-07.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_08 ) {
+    /* name: dataset-08
+     * Data: default and named / Query: common subjects
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-08.rq", "data-r2/dataset/dataset-08.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_11 ) {
+    /* name: dataset-11
+     * Data: default and named (several) / Query: get everything
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-11.rq", "data-r2/dataset/dataset-11.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_09b ) {
+    /* name: dataset-09b
+     * Data: default and named (bnodes) / Query: common subjects
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-09b.rq", "data-r2/dataset/dataset-09.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_10b ) {
+    /* name: dataset-10b
+     * Data: default and named (same data, with bnodes) / Query: common subjects
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-10b.rq", "data-r2/dataset/dataset-10.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( dataset__dawg_dataset_12b ) {
+    /* name: dataset-12b
+     * Data: default (several) and named (several) / Query: get everything
+     */
+    std::ifstream defaultGraph( "/dev/null" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/dataset/dataset-12b.rq", "data-r2/dataset/dataset-12.ttl", 0, 0);
+}
 BOOST_AUTO_TEST_SUITE_END(/* dataset */)
 
 BOOST_AUTO_TEST_SUITE( graph )
-// BOOST_AUTO_TEST_CASE( graph__dawg_graph_01 ) {
-//     /* name: graph-01
-//      * Data: default graph / Query: default graph
-//      */
-//     std::ifstream defaultGraph( "data-r2/graph/data-g1.ttl" );
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/graph/graph-01.rq", "data-r2/graph/graph-01.ttl", 0, 0);
-// }
-// BOOST_AUTO_TEST_CASE( graph__dawg_graph_02 ) {
-//     /* name: graph-02
-//      * Data: named graph / Query: default graph
-//      */
-//     std::ifstream defaultGraph( "data-r2/graph/" );
-//     const char* namedGraphs[] = {"data-g1.ttl"};
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/graph/graph-02.rq", "data-r2/graph/graph-02.ttl", 1, 0);
-// }
-// BOOST_AUTO_TEST_CASE( graph__dawg_graph_03 ) {
-//     /* name: graph-03
-//      * Data: named graph / Query: named graph graph
-//      */
-//     std::ifstream defaultGraph( "data-r2/graph/" );
-//     const char* namedGraphs[] = {"data-g1.ttl"};
-//     const URI** requires = NULL;
-//     DAWG_TEST("data-r2/graph/graph-03.rq", "data-r2/graph/graph-03.ttl", 1, 0);
-// }
+BOOST_AUTO_TEST_CASE( graph__dawg_graph_01 ) {
+    /* name: graph-01
+     * Data: default graph / Query: default graph
+     */
+    std::ifstream defaultGraph( "data-r2/graph/data-g1.ttl" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/graph/graph-01.rq", "data-r2/graph/graph-01.ttl", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( graph__dawg_graph_02 ) {
+    /* name: graph-02
+     * Data: named graph / Query: default graph
+     */
+    std::ifstream defaultGraph( "data-r2/graph/" );
+    const char* namedGraphs[] = {"data-g1.ttl"};
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/graph/graph-02.rq", "data-r2/graph/graph-02.ttl", 1, 0);
+}
+BOOST_AUTO_TEST_CASE( graph__dawg_graph_03 ) {
+    /* name: graph-03
+     * Data: named graph / Query: named graph graph
+     */
+    std::ifstream defaultGraph( "data-r2/graph/" );
+    const char* namedGraphs[] = {"data-g1.ttl"};
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/graph/graph-03.rq", "data-r2/graph/graph-03.ttl", 1, 0);
+}
 BOOST_AUTO_TEST_CASE( graph__dawg_graph_04 ) {
     /* name: graph-04
      * Data: named graph / Query: default graph

@@ -45,22 +45,29 @@ struct SparqlQueryTestResultSet : public ResultSet {
     SparqlQueryTestResultSet (std::istream& defGraph, 
 			      const char* namedGraphs[], size_t namedCount, 
 			      const URI* requires[], size_t reqsCount, 
-			      std::istream& query) : ResultSet(&F) {
+			      const char* query) : ResultSet(&F) {
  
+	std::string baseStr(query);
+	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
+	const URI* baseURI = F.getURI(baseStr.c_str());
+
 	/* Parse query. */
-	if (sparqlParser.parse_stream(query))
-	    throw std::string("failed to parse query.");
+	sparqlParser.setBase(baseURI);
+	if (sparqlParser.parse_file(query))
+	    throw std::string("failed to parse query file \"") + query + "\".";
 	sparqlParser.clear(""); // clear out namespaces and base URI.
 
 	/* Parse data. */
 	if (defGraph != NULL) {
 	    turtleParser.setGraph(d.assureGraph(NULL));
+	    turtleParser.setBase(baseURI);
 	    turtleParser.parse_stream(defGraph);
 	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}
 
 	for (size_t i = 0; i < namedCount; ++i) {
 	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
+	    turtleParser.setBase(baseURI);
 	    turtleParser.parse_file(namedGraphs[i]);
 	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}

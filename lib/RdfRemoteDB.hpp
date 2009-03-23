@@ -66,7 +66,7 @@ namespace w3c_sw {
 	RdfRemoteDB (std::vector<const char*> endpointPatterns, SWSAXparser* xmlParser, SWWEBagent* webAgent) : 
 	    RdfDB(), endpointPatterns(endpointPatterns), xmlParser(xmlParser), webAgent(webAgent) {  }
 #if REGEX_LIB == SWOb_BOOST
-	virtual void loadData (const POS* name, POSFactory* posFactory) {
+	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();
 		 it != endpointPatterns.end(); ++it) {
 		boost::regex re(*it);
@@ -77,7 +77,7 @@ namespace w3c_sw {
 		    return;
 		}
 	    }
-	    RdfDB::loadData(name, posFactory);
+	    RdfDB::loadData(name, target, posFactory);
 	}
 #endif /* REGEX_LIB == SWOb_BOOST */
 

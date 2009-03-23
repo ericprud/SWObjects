@@ -178,6 +178,12 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 		result += given.getRelative();		/* Add given one */
 	    }
 	} else if(given.hasRelative()) {
+	    if(related->hasRelative()) {
+		std::string r = related->getRelative();
+		size_t endOfPath = r.find_last_of("/");
+		if (endOfPath != std::string::npos)
+		    result += r.substr(0, endOfPath+1);
+	    }
 	    result += given.getRelative();		/* what we've got */
 	} else if(related->hasRelative()) {
 	    result += related->getRelative();
@@ -714,10 +720,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void DefaultGraphClause::loadData (RdfDB* db) const {
-	db->loadData(DefaultGraph, m_posFactory);
+	db->loadData(m_IRIref, db->assureGraph(DefaultGraph), m_posFactory);
     }
     void NamedGraphClause::loadData (RdfDB* db) const {
-	db->loadData(m_IRIref, m_posFactory);
+	db->loadData(m_IRIref, db->assureGraph(m_IRIref), m_posFactory);
     }
 
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
