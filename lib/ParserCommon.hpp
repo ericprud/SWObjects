@@ -32,7 +32,7 @@ class Driver
 protected:
     POSFactory * const posFactory;
     namespacemap_type	namespaces;
-    URI*		base;
+    const URI*		base;
     bool ignorePrefixFlag;
 
 public:
@@ -99,7 +99,8 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    void setBase (URI* b) { /* base is centrally managed -- don't delete */ base = b; }
+    const URI* getBase () const { return base; }
+    void setBase (const URI* b) { /* base is centrally managed -- don't delete */ base = b; }
     void addPrefix (std::string prefix, URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
@@ -115,7 +116,6 @@ public:
 	} else
 	    return vi->second;
     }
-    URI* getBase () { return base; }
 
 
     /* POSFactory relay. */
