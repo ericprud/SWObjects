@@ -651,10 +651,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     /* </POSFactory> */
 
-    const POS* BNode::evalPOS (const Result* r, bool bNodesGenSymbols) const {
-	return bNodesGenSymbols ? this : r->get(this);
+    const POS* BNode::evalPOS (const Result* r, BNodeEvaluator* evaluator) const {
+	return evaluator->evaluate(this, r);
     }
-    const POS* Variable::evalPOS (const Result* r, bool) const {
+    const POS* Variable::evalPOS (const Result* r, BNodeEvaluator*) const {
 	return r->get(this);
     }
 
@@ -688,7 +688,16 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	m_ConstructTemplate->construct(resultGraph, rs);
+	struct MakeNewBNode : public BNodeEvaluator {
+	    POSFactory* posFactory;
+	    virtual const POS* evaluate (const BNode* node, const Result* r) {
+		return posFactory->createBNode();
+	    }
+	public:
+	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
+	};
+	MakeNewBNode makeNewBNode(rs->getPOSFactory());
+	m_ConstructTemplate->construct(resultGraph, rs, &makeNewBNode);
 	rs->setGraph(resultGraph);
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
@@ -890,7 +899,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
     bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
 	    return true;
-	const POS* curVal = evalPOS(provisional, false); // doesn't need to generate symbols
+	struct TreatAsVar : public BNodeEvaluator {
+	    virtual const POS* evaluate (const BNode* node, const Result* r) {
+		return r->get(node);
+	    }
+	};
+	TreatAsVar treatAsVar;
+	const POS* curVal = evalPOS(provisional, &treatAsVar); // doesn't need to generate symbols
 	if (curVal == NULL) {
 	    rs->set(provisional, this, constant, weaklyBound);
 	    return true;
@@ -929,19 +944,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 #endif
     }
 
-    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs) const {
+    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs, BNodeEvaluator* evaluator) const {
 	for (ResultSetIterator result = rs->begin() ; result != rs->end(); result++)
 	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
-		(*triple)->construct(target, *result, rs->getPOSFactory());
+		(*triple)->construct(target, *result, rs->getPOSFactory(), evaluator);
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	bool ret = false;
 	const POS *s, *p, *o;
-	if ((s = m_s->evalPOS(r, bNodesGenSymbols)) != NULL && 
-	    (p = m_p->evalPOS(r, bNodesGenSymbols)) != NULL && 
-	    (o = m_o->evalPOS(r, bNodesGenSymbols)) != NULL) {
+	if ((s = m_s->evalPOS(r, evaluator)) != NULL && 
+	    (p = m_p->evalPOS(r, evaluator)) != NULL && 
+	    (o = m_o->evalPOS(r, evaluator)) != NULL) {
 	    if (posFactory == NULL) {
 		if (s == m_s && p == m_p && o == m_o && !weaklyBound)
 		    target->addTriplePattern(this);

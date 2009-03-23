@@ -224,7 +224,7 @@ public:
     virtual bool operator==(const Operation& ref) const = 0;
 };
 
-class POS;
+class BNodeEvaluator;
 class POSFactory;
 
 /* START Parts Of Speach */
@@ -241,13 +241,13 @@ public:
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
     }
-    virtual const POS* evalPOS (const Result*, bool) const { return this; }
+    virtual const POS* evalPOS (const Result*, BNodeEvaluator* evaluator) const { return this; }
     bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     virtual std::string toString() const = 0;
-    std::string substitutedString (Result* row, bool bNodesGenSymbols) const {
-	const POS* subd = evalPOS(row, bNodesGenSymbols); /* re-uses atoms -- doesn't create them */
+    std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
+	const POS* subd = evalPOS(row, evaluator); /* re-uses atoms -- doesn't create them */
 	if (subd != NULL)
 	    return subd->toString();
 	std::stringstream s;
@@ -285,10 +285,16 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
+    virtual const POS* evalPOS(const Result* r, BNodeEvaluator* evaluator) const;
     virtual std::string getBindingAttributeName () const { return "name"; }
 };
 
+class BNodeEvaluator {
+    friend class BNode;
+protected:
+    virtual ~BNodeEvaluator () {  }
+    virtual const POS* evaluate(const BNode* node, const Result* r) = 0;
+};
 class BNode : public Bindable {
     friend class POSFactory;
 private:
@@ -298,7 +304,7 @@ public:
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* evalPOS(const Result* r, bool bNodesGenSymbols) const;
+    virtual const POS* evalPOS(const Result* r, BNodeEvaluator* evaluator) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
 
@@ -453,7 +459,7 @@ public:
 	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
     }
-    bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, bool bNodesGenSymbols = true) const;
+    bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const;
 };
 
 class DefaultGraphPattern;
@@ -766,7 +772,7 @@ public:
     Expression () : Base() { }
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual const POS* eval(const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const = 0;
+    virtual const POS* eval(const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const = 0;
     virtual bool operator==(const Expression&) const = 0;
 };
 
@@ -923,7 +929,7 @@ public:
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const;
-    void construct(BasicGraphPattern* target, ResultSet* rs) const;
+    void construct(BasicGraphPattern* target, ResultSet* rs, BNodeEvaluator* evaluator) const;
     size_t size () const { return m_TriplePatterns.size(); }
     std::vector<const TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
@@ -1334,8 +1340,8 @@ public:
     ~VarExpression () { /* m_Bindable is centrally managed */ }
     const Bindable* getBindable () const { return m_Bindable; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_Bindable->evalPOS(r, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+	return m_Bindable->evalPOS(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const VarExpression* pref = dynamic_cast<const VarExpression*>(&ref);
@@ -1350,8 +1356,8 @@ public:
     ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
     const RDFLiteral* getLiteral () const { return m_RDFLiteral; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_RDFLiteral->evalPOS(r, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+	return m_RDFLiteral->evalPOS(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const LiteralExpression* pref = dynamic_cast<const LiteralExpression*>(&ref);
@@ -1365,8 +1371,8 @@ public:
     BooleanExpression (const BooleanRDFLiteral* p_BooleanRDFLiteral) : Expression(), m_BooleanRDFLiteral(p_BooleanRDFLiteral) {  }
     ~BooleanExpression () { /* m_BooleanRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_BooleanRDFLiteral->evalPOS(r, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+	return m_BooleanRDFLiteral->evalPOS(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanExpression* pref = dynamic_cast<const BooleanExpression*>(&ref);
@@ -1380,8 +1386,8 @@ public:
     URIExpression (const URI* p_URI) : Expression(), m_URI(p_URI) {  }
     ~URIExpression () { /* m_URI is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_URI->evalPOS(r, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+	return m_URI->evalPOS(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const URIExpression* pref = dynamic_cast<const URIExpression*>(&ref);
@@ -1418,10 +1424,10 @@ public:
     }
     ~FunctionCall () { delete m_ArgList; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::vector<const POS*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
-	    subd.push_back((*it)->eval(r, posFactory, bNodesGenSymbols));
+	    subd.push_back((*it)->eval(r, posFactory, evaluator));
 
 	/* Write down the first 3 for convenience. */
 	std::vector<const POS*>::const_iterator it = subd.begin();
@@ -1553,8 +1559,8 @@ public:
     FunctionCallExpression (FunctionCall* p_FunctionCall) : Expression(), m_FunctionCall(p_FunctionCall) {  }
     ~FunctionCallExpression () { delete m_FunctionCall; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	return m_FunctionCall->eval(r, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	return m_FunctionCall->eval(r, posFactory, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const FunctionCallExpression* pref = dynamic_cast<const FunctionCallExpression*>(&ref);
@@ -1606,9 +1612,9 @@ public:
     BooleanConjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "&&"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
-	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, bNodesGenSymbols));
+	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
 	    if (ret != posFactory->getTrue())
 		return ret;
 	}
@@ -1625,9 +1631,9 @@ public:
     BooleanDisjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "||"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
-	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, bNodesGenSymbols));
+	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
 	    if (ret != posFactory->getFalse())
 		return ret;
 	}
@@ -1656,9 +1662,9 @@ public:
     BooleanEQ (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1671,9 +1677,9 @@ public:
     BooleanNE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return "!="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return l == r || posFactory->cmp(l, r) == 0 ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1686,9 +1692,9 @@ public:
     BooleanLT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return "<"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return posFactory->cmp(l, r) < 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1701,9 +1707,9 @@ public:
     BooleanGT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return ">"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return posFactory->cmp(l, r) > 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1716,9 +1722,9 @@ public:
     BooleanLE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return "<="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return posFactory->cmp(l, r) <= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1731,9 +1737,9 @@ public:
     BooleanGE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
     virtual const char* getComparisonNotation () { return ">="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* l = left->eval(res, posFactory, bNodesGenSymbols);
-	const POS* r = right->eval(res, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	const POS* r = right->eval(res, posFactory, evaluator);
 	return posFactory->cmp(l, r) >= 0 ? posFactory->getTrue() : posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1748,8 +1754,8 @@ public:
     ComparatorExpression (const BooleanComparator* p_BooleanComparator) : Expression(), m_BooleanComparator(p_BooleanComparator) {  }
     ~ComparatorExpression () { delete m_BooleanComparator; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	return m_BooleanComparator->eval(r, posFactory, bNodesGenSymbols);
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	return m_BooleanComparator->eval(r, posFactory, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
@@ -1762,8 +1768,8 @@ public:
     ~BooleanNegation () {  }
     virtual const char* getUnaryOperator () { return "!"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
-	const POS* v = posFactory->ebv(m_Expression->eval(res, posFactory, bNodesGenSymbols));
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* v = posFactory->ebv(m_Expression->eval(res, posFactory, evaluator));
 	return v == posFactory->getTrue() ? posFactory->getFalse() : posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1777,12 +1783,12 @@ public:
     ArithmeticSum (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::vector<const NumericRDFLiteral*> subd;
 	enum { Int, Dec, Double } highestType = Int;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it) {
-	    const POS* val = (*it)->eval(res, posFactory, bNodesGenSymbols);
+	    const POS* val = (*it)->eval(res, posFactory, evaluator);
 	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL) {
 		if (highestType < Int)
 		    highestType = Int;
@@ -1836,9 +1842,9 @@ public:
     ~ArithmeticNegation () {  }
     virtual const char* getUnaryOperator () { return "-"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::stringstream s;
-	s << "(- _0 " << m_Expression->eval(res, posFactory, bNodesGenSymbols) <<
+	s << "(- _0 " << m_Expression->eval(res, posFactory, evaluator) <<
 	    ')' << " not implemented";
 	throw s.str();
     }
@@ -1854,8 +1860,8 @@ public:
     NumberExpression (const NumericRDFLiteral* p_NumericRDFLiteral) : Expression(), m_NumericRDFLiteral(p_NumericRDFLiteral) {  }
     ~NumberExpression () { /* m_NumericRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* /* posFactory */, bool bNodesGenSymbols) const {
-	return m_NumericRDFLiteral->evalPOS(res, bNodesGenSymbols);
+    virtual const POS* eval (const Result* res, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+	return m_NumericRDFLiteral->evalPOS(res, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const NumberExpression* pref = dynamic_cast<const NumberExpression*>(&ref);
@@ -1868,11 +1874,11 @@ public:
     ArithmeticProduct (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::vector<const POS*> subd;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it)
-	    subd.push_back((*it)->eval(res, posFactory, bNodesGenSymbols));
+	    subd.push_back((*it)->eval(res, posFactory, evaluator));
 	std::stringstream s;
 	s << "(- ";
 	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
@@ -1898,9 +1904,9 @@ public:
     ~ArithmeticInverse () {  }
     virtual const char* getUnaryOperator () { return "1/"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* res, POSFactory* posFactory, bool bNodesGenSymbols) const {
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::stringstream s;
-	s << "(/ 1 " << m_Expression->eval(res, posFactory, bNodesGenSymbols) <<
+	s << "(/ 1 " << m_Expression->eval(res, posFactory, evaluator) <<
 	    ')' << " not implemented";
 	throw s.str();
     }
