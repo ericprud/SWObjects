@@ -33,6 +33,10 @@ typedef w3c_sw::SPARQLfedParser::token_type token_type;
 
 /* change the name of the scanner class. results in "SPARQLfedFlexLexer" */
 %option prefix="SPARQLfed"
+/* consider using class instead
+ * %option yyclass="SPARQLfedScanner"
+ * void SPARQLfedFlexLexer::LexerError( yyconst char msg[] )
+ */
 
 /* the manual says "somewhat more optimized" */
 %option batch
