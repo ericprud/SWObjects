@@ -3,6 +3,7 @@
  */
 
 #include "RdfDB.hpp"
+#include "ResultSet.hpp"
 
 namespace w3c_sw {
 
@@ -39,18 +40,26 @@ namespace w3c_sw {
     POS* DefaultGraph = &defaultGraphInst;
 
     void RdfDB::bindVariables (ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch) {
-	graphmap_type::const_iterator vi;
 	if (graph == NULL) graph = DefaultGraph;
+	graphmap_type::const_iterator vi;
+	size_t matched = 0;
 
 	/* Look in each candidate graph. */
 	if (graph->isConstant()) {
-	    if ((vi = graphs.find(graph)) != graphs.end())
+	    if ((vi = graphs.find(graph)) != graphs.end()) {
 		vi->second->bindVariables(rs, graph, toMatch, vi->first);
+		++matched;
+	    }
 	} else {
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
-		if (vi->first != DefaultGraph)
+		if (vi->first != DefaultGraph) {
 		    vi->second->bindVariables(rs, graph, toMatch, vi->first);
+		    ++matched;
+		}
 	}
+	if (matched == 0)
+	    for (ResultSetIterator it = rs->begin(); it != rs->end(); )
+		rs->erase(it++);
     }
 
     void RdfDB::express (Expressor* expressor) const {
