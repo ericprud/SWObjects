@@ -178,7 +178,7 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 		result += given.getRelative();		/* Add given one */
 	    }
 	} else if(given.hasRelative()) {
-	    if(related->hasRelative()) {
+	    if(related->hasRelative() && result.empty()) {
 		std::string r = related->getRelative();
 		size_t endOfPath = r.find_last_of("/");
 		if (endOfPath != std::string::npos)
@@ -696,7 +696,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	m_WhereClause->bindVariables(db, rs);
 	struct MakeNewBNode : public BNodeEvaluator {
 	    POSFactory* posFactory;
-	    virtual const POS* evaluate (const BNode* node, const Result* r) {
+	    virtual const POS* evaluate (const BNode* /* node */, const Result* /* r */) {
 		return posFactory->createBNode();
 	    }
 	public:
@@ -803,10 +803,29 @@ void NumberExpression::express (Expressor* p_expressor) const {
     void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
 	ResultSet island(rs->getPOSFactory());
 	db->bindVariables(&island, p_name, this);
+	rs->joinIn(&island, false);
+	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
+	     it != m_Filters.end(); it++)
+	    rs->restrict(*it);
+
+	/*
++ "algebra__filter_nested_2": 			check measured == expected
+- "optional__dawg_optional_complex_1": 		check measured == ResultSet(&F, &rdfDB, "")
+- "optional_filter__dawg_optional_filter_002": 	check measured == ResultSet(&F, &rdfDB, "")
+- "optional_filter__dawg_optional_filter_003": 	check measured == ResultSet(&F, &rdfDB, "")
+- "boolean_effective_value__dawg_bev_5": 	check measured == ResultSet(&F, &rdfDB, "")
+- "boolean_effective_value__dawg_bev_6": 	check measured == ResultSet(&F, &rdfDB, "")
+- "bound__dawg_bound_query_001": 		check measured == ResultSet(&F, &rdfDB, "")!
+
+compared against
+	ResultSet island(rs->getPOSFactory());
+	db->bindVariables(&island, p_name, this);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
 	    island.restrict(*it);
 	rs->joinIn(&island, false);
+
+	*/
     }
 
     std::ostream* BasicGraphPattern::DiffStream = NULL;
