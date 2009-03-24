@@ -241,7 +241,7 @@ public:
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
     }
-    virtual const POS* evalPOS (const Result*, BNodeEvaluator* evaluator) const { return this; }
+    virtual const POS* evalPOS (const Result*, BNodeEvaluator* /* evaluator */) const { return this; }
     bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
@@ -289,6 +289,7 @@ public:
     virtual std::string getBindingAttributeName () const { return "name"; }
 };
 
+class BNode;
 class BNodeEvaluator {
     friend class BNode;
 protected:
