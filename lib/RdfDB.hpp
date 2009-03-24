@@ -58,9 +58,7 @@ namespace w3c_sw {
 	    TurtleSDriver turtleParser(name->getLexicalValue(), posFactory);
 	    turtleParser.setGraph(target);
 	    if (turtleParser.parse_file(name->getLexicalValue()))
-		std::cerr << name->getLexicalValue() << ":0: error: unable to parse document" << std::endl;
-	    else
-		{ SPARQLSerializer s; assureGraph(name)->express(&s); std::cerr << "PARSED: " << s.getSPARQLstring() << std::endl; }
+		throw name->getLexicalValue() + ":0: error: unable to parse document";
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
