@@ -265,7 +265,8 @@ t_%: tests/test_%
 	( cd tests && $(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
-	( cd tests && valgrind --leak-check=yes --xml=no $< $(TEST_ARGS) )
+	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no $(notdir $<) $(TEST_ARGS) )
+# update suppressions with --gen-suppressions=yes and copy to boost-test.supp
 
 
 ### SWtransformer tests:
