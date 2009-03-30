@@ -92,7 +92,7 @@ class WebServer : public server::http_1a_c
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
 	SPARQLSerializer s;
 	query->express(&s);
-	cerr << s.getSPARQLstring() << endl;
+	cout << s.getSPARQLstring() << endl;
 	query->express(&queryMapper);
 	const Operation* mapped = queryMapper.last.operation;
 	delete query;
@@ -112,47 +112,48 @@ class WebServer : public server::http_1a_c
 	if (!(result=mysql_store_result(sock)))
 	    throw(SimpleMessageException("couldn't get result"));
 
+	stringstream ret;
 #if HTML_RESULTS
-	head(sout, "Query Results");
+	head(ret, "Query Results");
 
-	sout <<
+	ret <<
 	    "<h1>SPARQL Query</h1>\n"
 	    "<pre>" << queryStr << "</pre>\n"
 	    "<h1>SQL Query</h1>\n"
 	    "<pre>" << sqlizer.getSQLstring() << "</pre>\n";
 	char space[1024];
 	sprintf(space, "<p>number of fields: %d</p>\n", mysql_num_fields(result));
-	sout << space;
+	ret << space;
 
 	int num_fields = mysql_num_fields(result);
-	sout << 
+	ret << 
 	    "    <table>\n"
 	    "      <tr>";
 
 	/* dump headers in <th/>s */
 	MYSQL_FIELD *field;
        	while((field = mysql_fetch_field(result)))
-	    sout << "<th>" << field->name << "[" << field->type << "]</th>";
-	sout << "</tr>\n";
+	    ret << "<th>" << field->name << "[" << field->type << "]</th>";
+	ret << "</tr>\n";
 
 	/* dump data in <td/>s */
 	MYSQL_ROW row;
 	while ((row = mysql_fetch_row(result))) {
 	    unsigned long *lengths;
 	    lengths = mysql_fetch_lengths(result);
-	    sout << "      <tr>";
+	    ret << "      <tr>";
 	    for(int i = 0; i < num_fields; i++) {
 		sprintf(space, "[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
-		sout << "<td>" << space << "</td>";
+		ret << "<td>" << space << "</td>";
 	    }
-	    sout("</tr>");
+	    ret("</tr>");
 	}
-	sout << "    </table>";
-	foot(sout);
+	ret << "    </table>";
+	foot(ret);
 
 #else /* !HTML_RESULTS */
 	int num_fields = mysql_num_fields(result);
-	sout << 
+	ret << 
 	    "<?xml version='1.0'?>\n"
 	    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
 	    "  <head>\n";
@@ -161,28 +162,30 @@ class WebServer : public server::http_1a_c
 	MYSQL_FIELD *field;
 	MYSQL_FIELD *fields = mysql_fetch_fields(result);
 	for(int i = 0; i < num_fields; i++)
-	    sout << "    <variable name='" << fields[i].name << "'/>\n";
-	sout << "  </head>\n";
-	sout << "  <results>\n";
+	    ret << "    <variable name='" << fields[i].name << "'/>\n";
+	ret << "  </head>\n";
+	ret << "  <results>\n";
 
 	/* dump data in <td/>s */
 	MYSQL_ROW row;
 	while ((row = mysql_fetch_row(result))) {
 	    unsigned long *lengths;
 	    lengths = mysql_fetch_lengths(result);
-	    sout << "    <result>\n";
+	    ret << "    <result>\n";
 	    for(int i = 0; i < num_fields; i++)
 		if (row[i])
-		    sout << "      <binding name='" << fields[i].name << "'>\n"
+		    ret << "      <binding name='" << fields[i].name << "'>\n"
 			"        <literal>" << row[i] << "</literal>\n"
 			"      </binding>\n";
-	    sout << "    </result>\n";
+	    ret << "    </result>\n";
 	}
-	sout << 
+	ret << 
 	    "  </results>\n"
 	    "</sparql>";
 #endif /* !HTML_RESULTS */
 
+	sout << ret.str();
+	cout << ret.str() << endl;
 	++Served;
 	if (RunOnce)
 	    Done = true;
