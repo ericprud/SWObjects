@@ -178,7 +178,7 @@ int main(int argc,char** argv) {
 
 // 		XMLQueryExpressor xmlizer("  ", false);
 // 		o->express(&xmlizer);
-// 		cout << "post-rule query (XML):" << endl << xmlizer.getXMLstring() << endl;
+// 		cout << "post-rule query (XML):" << endl << xmlizer.getString() << endl;
 
 		{
 		    SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
@@ -186,7 +186,7 @@ int main(int argc,char** argv) {
 		    if (!Quiet)
 			cout << "post-rule query (SPARQL):" << endl;
 		    if (!Quiet || StemURI == NULL)
-			cout << sparqlizer.getSPARQLstring() << endl;
+			cout << sparqlizer.getString() << endl;
 		}
 
 		if (StemURI != NULL) {

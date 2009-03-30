@@ -189,7 +189,7 @@ namespace w3c_sw {
 	} else if (bgp != NULL) {
 	    SPARQLSerializer s;
 	    bgp->express(&s);
-	    return std::string("<graph result>\n") + s.getSPARQLstring() + "\n</graph result>";
+	    return std::string("<graph result>\n") + s.getString() + "\n</graph result>";
 	}
 	const char* NULL_REP = "--";
 #if CONSOLE_ENCODING == SWOb_UTF8

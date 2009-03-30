@@ -65,7 +65,7 @@ namespace w3c_sw {
 	std::string toString () const {
 	    SPARQLSerializer s;
 	    express(&s);
-	    return s.getSPARQLstring();
+	    return s.getString();
 	}
     };
 

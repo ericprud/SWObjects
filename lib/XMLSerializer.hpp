@@ -31,15 +31,18 @@ public:
 	depth++;
     }
     void attribute (std::string attr, std::string val) {
-	if (!needs.size()) throw(std::runtime_error("no open tag to recieve attribute"));
+	if (!needs.size())
+	    throw(std::runtime_error("no open tag to recieve attribute"));
 	ret << " " << attr << "=\"" << val << "\"";
     }
     void attribute (std::string attr, int val) {
-	if (!needs.size()) throw(std::runtime_error("no open tag to recieve attribute"));
+	if (!needs.size())
+	    throw(std::runtime_error("no open tag to recieve attribute"));
 	ret << " " << attr << "=\"" << val << "\"";
     }
     void attribute (std::string attr, void* ptr) {
-	if (!needs.size()) throw(std::runtime_error("no open tag to recieve attribute"));
+	if (!needs.size())
+	    throw(std::runtime_error("no open tag to recieve attribute"));
 	ret << " " << attr << "=\"" << ptr << "\"";
     }
     void empty (std::string tag) {
@@ -88,8 +91,9 @@ public:
 	ret << "</" << tag << ">" << std::endl;
     }
 public:
-    XMLSerializer (const char* p_tab = "  ") : tab(p_tab), depth(0), needs("") {  }
-    std::string getXMLstring () { return ret.str(); }
+    XMLSerializer (const char* p_tab = "  ") : 
+	tab(p_tab), depth(0), needs("") {  }
+    std::string getString () { return ret.str(); }
 };
 
 #endif // XMLSerializer_H

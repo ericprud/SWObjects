@@ -10,7 +10,7 @@
 
 namespace w3c_sw {
 
-class SPARQLSerializer : public Expressor {
+class SPARQLSerializer : public ExpressorSerializer {
 public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
 protected:
@@ -53,7 +53,7 @@ public:
     SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
 	injectFilters(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
-    std::string getSPARQLstring () { return ret.str(); }
+    virtual std::string getString () { return ret.str(); }
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
@@ -492,13 +492,13 @@ public:
     inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
 	SPARQLSerializer s;
 	((DefaultGraphPattern&)my).express(&s);
-	return os << s.getSPARQLstring();
+	return os << s.getString();
     }
 
     inline std::ostream& operator<< (std::ostream& os, Operation const& my) {
 	SPARQLSerializer s;
 	((Operation&)my).express(&s);
-	return os << s.getSPARQLstring();
+	return os << s.getString();
     }
 
 }

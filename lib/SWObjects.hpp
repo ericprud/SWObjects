@@ -2057,6 +2057,16 @@ public:
     virtual void numberExpression(const NumberExpression* const self, const NumericRDFLiteral* p_NumericRDFLiteral) = 0;
 };
 
+
+/* ExpressorSerializer - provide a common getString() interface.
+ * Derive serializers (SPARQLSerializer, XMLQueryExpressor) from this.
+ */
+class ExpressorSerializer : public Expressor {
+public:
+    virtual std::string getString() = 0;
+};
+
+
 /* RecursiveExpressor - default actions for expressor.
  * Use this Expressor when you don't feel like supplying all of the methods.
  */

@@ -92,7 +92,7 @@ class WebServer : public server::http_1a_c
     void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
 	SPARQLSerializer s;
 	query->express(&s);
-	cout << s.getSPARQLstring() << endl;
+	cout << s.getString() << endl;
 	query->express(&queryMapper);
 	const Operation* mapped = queryMapper.last.operation;
 	delete query;

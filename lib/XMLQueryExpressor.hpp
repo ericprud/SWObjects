@@ -10,16 +10,16 @@
 
 using namespace w3c_sw;
 
-class XMLQueryExpressor : public Expressor {
+class XMLQueryExpressor : public ExpressorSerializer {
 protected:
     bool createdXMLSerializer;
     bool sparqlx;
     XMLSerializer* xml;
 public:
-    XMLQueryExpressor (const char* p_tab = "  ", bool p_sparqlx = true) : Expressor(), createdXMLSerializer(true), sparqlx(p_sparqlx) { xml = new XMLSerializer(p_tab); }
-    XMLQueryExpressor (XMLSerializer* p_xml, bool p_sparqlx = true) : Expressor(), createdXMLSerializer(false), sparqlx(p_sparqlx), xml(p_xml) {  }
+    XMLQueryExpressor (const char* p_tab = "  ", bool p_sparqlx = true) : ExpressorSerializer(), createdXMLSerializer(true), sparqlx(p_sparqlx) { xml = new XMLSerializer(p_tab); }
+    XMLQueryExpressor (XMLSerializer* p_xml, bool p_sparqlx = true) : ExpressorSerializer(), createdXMLSerializer(false), sparqlx(p_sparqlx), xml(p_xml) {  }
     ~XMLQueryExpressor () { if (createdXMLSerializer) delete xml; }
-    std::string getXMLstring () { return xml->getXMLstring(); }
+    virtual std::string getString () { return xml->getString(); }
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 

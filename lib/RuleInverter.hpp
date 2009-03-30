@@ -493,7 +493,7 @@ namespace w3c_sw {
 	    if (*debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getSPARQLstring() << endl;
+		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getString() << endl;
 	    }
 	    p_SolutionModifier->express(this);
 

@@ -96,7 +96,7 @@ namespace w3c_sw {
 		u << graph->getLexicalValue() << "?query=";
 		GraphSerializer ser(rs);
 		toMatch->express(&ser);
-		std::string q = ser.getSelectString() + '{' + ser.getSPARQLstring() + ser.getFederationString() + '}';
+		std::string q = ser.getSelectString() + '{' + ser.getString() + ser.getFederationString() + '}';
 		for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
 		    if (*it == ' ')
 			u << '+';

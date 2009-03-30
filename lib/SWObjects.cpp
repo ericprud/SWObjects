@@ -1107,19 +1107,19 @@ compared against
     std::ostream& operator<< (std::ostream& os, BasicGraphPattern const& my) {
 	SPARQLSerializer s;
 	my.express(&s);
-	return os << s.getSPARQLstring();
+	return os << s.getString();
     }
 
     std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
 	SPARQLSerializer s;
 	my.express(&s);
-	return os << s.getSPARQLstring();
+	return os << s.getString();
     }
 
     std::ostream& operator<< (std::ostream& os, WhereClause const& my) {
 	SPARQLSerializer s;
 	my.express(&s);
-	return os << s.getSPARQLstring();
+	return os << s.getString();
     }
 
 } // namespace w3c_sw
