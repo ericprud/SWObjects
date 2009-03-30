@@ -65,17 +65,18 @@ namespace w3c_sw {
 	    std::cout << std::string(ch, start, length);
 	}
 
-	void error(const char * msg, ...) {
+	void varError(const char * msg, ...) {
 	    va_list args;
 	    va_start(args, msg);
 	    error( msg, args );
 	    va_end(args);
-	    throw("SWSAX exception");
+	    throw("program flow exception");
 	}
 
 	virtual void error(const char* msg, va_list args) {
-	    vprintf(msg, args);
-	    throw("SWSAX exception");
+	    char space[8192];
+	    vsnprintf(space, sizeof(space), msg, args);
+	    throw std::string("SWSAX exception: ") + space;
 	}
 
 	void warning(const char * msg, ...) {

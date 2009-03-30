@@ -173,7 +173,7 @@ namespace w3c_sw {
 				       std::string qName,
 				       Attributes* attrs) {
 		if (uri != NS_srx)
-		    error("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
+		    varError("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
 		enum STATES newState = s_ERROR;
 		switch (stateStack.top()) {
 		case DOCUMENT:
@@ -232,10 +232,10 @@ namespace w3c_sw {
 		case LITERAL:
 		    break;
 		default:
-		    error("unexpected element %s within %s", qName.c_str(), stateStr());
+		    varError("unexpected element %s within %s", qName.c_str(), stateStr());
 		}
 		if (newState == s_ERROR)
-		    error("unexpected element %s within %s", qName.c_str(), stateStr());
+		    varError("unexpected element %s within %s", qName.c_str(), stateStr());
 		stateStack.push(newState);
 		chars = "";
 	    }
@@ -274,7 +274,7 @@ namespace w3c_sw {
 		    break;
 		}
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
-		    error("unexpected characters %s within %s", chars.c_str(), stateStr());
+		    varError("unexpected characters %s within %s", chars.c_str(), stateStr());
 		stateStack.pop();
 	    }
 	    virtual void characters (const char ch[],
