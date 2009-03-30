@@ -321,6 +321,12 @@ tests/server_mouseToxicity_remote-screening-assay.results: bin/SPARQL_server bin
 	( cd tests/mouseToxicity/remote-screening-assay/ && ../../../bin/SWtransformer -q --sparql http://localhost:8888/screeningAssay --sqlmap-pattern .map ToxicAssoc0.rq )
 
 
+tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SWtransformer tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
+	( cd tests/7tm_receptors/flat/ && ../../../$< --once http://localhost:8888/7tm_receptors receptors.map | tee ../../../$@ )&
+	sleep 1
+	( cd tests/7tm_receptors/flat/ && ../../../bin/SWtransformer -x -q --sparql-pattern http://localhost:8888/.\* q.rq )
+
+
 SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 
 SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)

@@ -1,0 +1,19 @@
+# q - federate a query over several independent clinical databases
+# For further description, see http://spam.w3.org/2004/10/04-pharmaFederate/
+
+# $Id: ToxicAssoc0-remote.rq,v 1.1 2009/02/17 15:15:34 eric Exp $
+
+# Assign convenient prefixes to common for later syntactic shorthand.
+PREFIX iface: <http://neuro.example/receptors#>
+
+SELECT ?family
+
+FROM NAMED <http://localhost:8888/7tm_receptors>
+
+WHERE {
+
+# Get a name and a chemical from the (SQL) MicroArray database.
+GRAPH <http://localhost:8888/7tm_receptors> {
+         ?g	iface:family	?family  }
+}
+

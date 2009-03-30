@@ -1,0 +1,22 @@
+# receptors.map - federate a query over several independent clinical databases
+# For further description, see http://spam.w3.org/2004/10/04-pharmaFederate/
+
+# $Id: ToxicAssoc0.rq,v 1.4 2009/02/17 15:00:45 eric Exp $
+
+ server: localhost
+ user: root
+ database: 7tm_receptors
+ stemURI: http://db.example/7tm_receptors/
+ primaryKey: id
+ construct:
+
+
+PREFIX iface: <http://neuro.example/receptors#>
+
+PREFIX receptors: <http://db.example/7tm_receptors/receptors#>
+
+CONSTRUCT {
+  ?a	iface:family	?family .
+} WHERE {
+  ?a	receptors:Family	?family .
+}
