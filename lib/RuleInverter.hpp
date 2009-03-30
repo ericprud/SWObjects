@@ -255,7 +255,7 @@ namespace w3c_sw {
 			// let p_GroupGraphPattern set last.tableOperation
 			p_GroupGraphPattern->express(this);
 		    else
-			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
+			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern, p_Filters);
 		}
 	    }
 	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
