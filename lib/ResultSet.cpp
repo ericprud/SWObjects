@@ -72,6 +72,7 @@ namespace w3c_sw {
 
     ResultSet* Result::makeResultSet (POSFactory* posFactory) {
 	ResultSet* ret = new ResultSet(posFactory);
+	delete *ret->begin();
 	ret->erase(ret->begin());
 	ret->insert(ret->begin(), duplicate(ret, ret->begin()));
 	return ret;

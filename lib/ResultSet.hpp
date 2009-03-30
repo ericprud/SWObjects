@@ -296,6 +296,7 @@ namespace w3c_sw {
 		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
 	    sparqlParser.root->execute(db, &booleanResult);
+	    delete sparqlParser.root;
 	    sparqlParser.clear(""); // clear out namespaces and base URI.
 	    if (booleanResult.size() > 0) {
 		ResultSetIterator booleanRecord = booleanResult.begin();
@@ -317,6 +318,7 @@ namespace w3c_sw {
 		    throw std::string("failed to parse boolean ResultSet variables query.");
 		ResultSet listOfVariables(posFactory);
 		sparqlParser.root->execute(db, &listOfVariables);
+		delete sparqlParser.root;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		for (ResultSetIterator resultRecord = listOfVariables.begin(); 
 		     resultRecord != listOfVariables.end(); ++resultRecord) {
@@ -335,6 +337,7 @@ namespace w3c_sw {
 		    throw std::string("failed to parse boolean ResultSet bindings query.");
 		ResultSet listOfResults(posFactory);
 		sparqlParser.root->execute(db, &listOfResults);
+		delete sparqlParser.root;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		const POS* lastSoln = NULL;
 		Result* r = NULL;
@@ -429,8 +432,10 @@ namespace w3c_sw {
 		}
 		if (outer && !matchedSomeRow)
 		    myRow++;
-		else
+		else {
+		    delete *myRow;
 		    erase(myRow++);
+		}
 	    }
 	}
 	bool compareOrdered (const ResultSet & ref) const {
