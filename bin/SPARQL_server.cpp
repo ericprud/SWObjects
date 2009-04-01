@@ -214,8 +214,9 @@ class WebServer : public server::http_1a_c
 			lexval = lexval = "-0-0T00:00";
 			break;
 		    case MYSQL_TYPE_STRING:
-		    case MYSQL_TYPE_VARCHAR:
 			dt = "http://www.w3.org/2001/XMLSchema#string";
+		    case MYSQL_TYPE_VARCHAR:
+		    case MYSQL_TYPE_VAR_STRING:
 			for (size_t p = lexval.find_first_of("&<>"); 
 			     p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
 			    lexval.replace(p, 1, 
