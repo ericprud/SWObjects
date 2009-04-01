@@ -1433,7 +1433,28 @@ public:
 	/* Write down the first 3 for convenience. */
 	std::vector<const POS*>::const_iterator it = subd.begin();
 	const POS* first = it == subd.end() ? NULL : *it++;
+	std::string func = m_IRIref->getLexicalValue();
 
+	/* casts */
+	if (func == "http://www.w3.org/2001/XMLSchema#float"  || 
+	    func == "http://www.w3.org/2001/XMLSchema#double" || 
+	    func == "http://www.w3.org/2001/XMLSchema#dec"    || 
+	    func == "http://www.w3.org/2001/XMLSchema#int"      ) {
+	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
+	    if (s != NULL) {
+		const URI* dt = s->getDatatype();
+		std::string dtl = dt ? dt->getLexicalValue() : ":noDT";
+		if (dt == NULL || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#string"  || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#float"   || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#double"  || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#decimal" || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#integer"   )
+		    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref);
+	    }
+	}
+
+	/* operators */
 	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound") && 
 	    subd.size() == 1)
 	    return first == NULL ? posFactory->getFalse() : posFactory->getTrue();
