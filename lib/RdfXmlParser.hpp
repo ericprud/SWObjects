@@ -214,10 +214,10 @@ namespace w3c_sw {
 		    break;
 		}
 		default:
-		    error("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
+		    varError("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
 		}
 		if (newState.expect == s_ERROR)
-		    error("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
+		    varError("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
 		stack.push(newState);
 		chars = "";
 		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
@@ -249,10 +249,10 @@ namespace w3c_sw {
 		case PROPERTY:
 		    break;
 		default:
-		    error("unexpected state %d", stack.top().expect);
+		    varError("unexpected state %d", stack.top().expect);
 		}
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
-		    error("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
+		    varError("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
 		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
 	    virtual void characters (const char ch[],
