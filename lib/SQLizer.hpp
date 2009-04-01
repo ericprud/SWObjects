@@ -832,7 +832,25 @@ namespace w3c_sw {
 	    if (datatype != NULL) {
 		if (datatype->getLexicalValue() == "http://www.w3.org/2001/XMLSchema#dateTime")
 		    value.replace(value.find("T"), 1, " ");
-		else
+		/* These have the same lexical value in SQL as in RDF. */
+		else if (datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#integer" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#decimal" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#float" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#double" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#string" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#boolean" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#nonPositiveInteger" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#negativeInteger" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#long" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#int" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#short" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#byte" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#nonNegativeInteger" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedLong" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedInt" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedShort" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedByte" && 
+			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#positiveInteger" )
 		    FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {

@@ -173,10 +173,69 @@ class WebServer : public server::http_1a_c
 	    lengths = mysql_fetch_lengths(result);
 	    ret << "    <result>\n";
 	    for(int i = 0; i < num_fields; i++)
-		if (row[i])
-		    ret << "      <binding name='" << fields[i].name << "'>\n"
-			"        <literal>" << row[i] << "</literal>\n"
-			"      </binding>\n";
+		if (row[i]) {
+		    const char* dt = NULL;
+		    std::string lexval(row[i]);
+		    bool isNull = false;
+		    switch (fields[i].type) {
+		    case MYSQL_TYPE_DECIMAL:
+			dt = "http://www.w3.org/2001/XMLSchema#decimal";
+			break;
+		    case MYSQL_TYPE_TINY:
+			dt = "http://www.w3.org/2001/XMLSchema#tiny";
+			break;
+		    case MYSQL_TYPE_SHORT:
+			dt = "http://www.w3.org/2001/XMLSchema#short";
+			break;
+		    case MYSQL_TYPE_LONG:
+			dt = "http://www.w3.org/2001/XMLSchema#long";
+			break;
+		    case MYSQL_TYPE_FLOAT:
+			dt = "http://www.w3.org/2001/XMLSchema#float";
+			break;
+		    case MYSQL_TYPE_DOUBLE:
+			dt = "http://www.w3.org/2001/XMLSchema#double";
+			break;
+		    case MYSQL_TYPE_LONGLONG:
+			dt = "http://www.w3.org/2001/XMLSchema#decimal";
+			break;
+		    case MYSQL_TYPE_INT24:
+			dt = "http://www.w3.org/2001/XMLSchema#integer";
+			break;
+		    case MYSQL_TYPE_NULL:
+			isNull = true;
+			break;
+		    case MYSQL_TYPE_TIMESTAMP:
+			dt = "http://www.w3.org/2001/XMLSchema#dateTime";
+			lexval = "0-0-0T" + lexval;
+			break;
+		    case MYSQL_TYPE_YEAR:
+			dt = "http://www.w3.org/2001/XMLSchema#dateTime";
+			lexval = lexval = "-0-0T00:00";
+			break;
+		    case MYSQL_TYPE_STRING:
+		    case MYSQL_TYPE_VARCHAR:
+			dt = "http://www.w3.org/2001/XMLSchema#string";
+			for (size_t p = lexval.find_first_of("&<>"); 
+			     p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
+			    lexval.replace(p, 1, 
+					   lexval[p] == '&' ? "&amp;" : 
+					   lexval[p] == '<' ? "&lt;" : 
+					   lexval[p] == '>' ? "&gt;" : "huh??");
+			break;
+		    default:
+			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + fields[i].type;
+		    }
+		    if (!isNull) {
+			ret << "      <binding name='" << fields[i].name << "'>\n"
+			    "        ";
+			ret << "<literal";
+			if (dt)
+			    ret << " datatype=\"" << dt << "\"";
+			ret << ">" << lexval << "</literal>\n";
+			ret << "      </binding>\n";
+		    }
+		}
 	    ret << "    </result>\n";
 	}
 	ret << 

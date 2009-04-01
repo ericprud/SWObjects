@@ -331,8 +331,8 @@ public:
 	std::stringstream s;
 	/* Could just print terminal here. */
 	s << '"' << terminal << '"';
-	if (datatype) s << datatype->toString();
-	if (m_LANGTAG) s << m_LANGTAG->getLexicalValue();
+	if (datatype) s << "^^" << datatype->toString();
+	if (m_LANGTAG) s << "@" << m_LANGTAG->getLexicalValue();
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
