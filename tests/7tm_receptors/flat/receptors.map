@@ -21,6 +21,7 @@ CONSTRUCT {
   ?iuphar	iface:ligand		?ligand .
   ?iuphar	iface:iupharName	?iupharName .
 
+  ?human	a			iface:HumanGene .
   ?human	iface:iuphar		?iuphar .
   ?human	iface:geneName		?human_gene_name .
   ?human	iface:geneID		?hgnc_ID .
@@ -30,23 +31,25 @@ CONSTRUCT {
   ?human	iface:swissProt		?human_SwissProt .
   ?human	iface:entrezGene	?human_Entrez_Gene .
 
-  ?rat		iface:iuphar		?iuphar .
-  ?rat		iface:geneName		?rat_gene_name .
-  ?rat		iface:geneID		?rat_Genome_Database_ID .
-  ?rat		iface:localisation	?rat_genetic_localisation .
-  ?rat		iface:nucleotideRefSeq	?rat_nucleotide_RefSeq .
-  ?rat		iface:proteinRefSeq	?rat_protein_RefSeq .
-  ?rat		iface:swissProt		?rat_SwissProt .
-  ?rat		iface:entrezGene	?rat_Entrez_Gene .
-
-  ?mouse	iface:iuphar		?iuphar .
-  ?mouse	iface:geneName		?mouse_gene_name .
-  ?mouse	iface:geneID		?mouse_Genome_Informatics_ID .
-  ?mouse	iface:localisation	?mouse_genetic_localisation .
-  ?mouse	iface:nucleotideRefSeq	?mouse_nucleotide_RefSeq .
-  ?mouse	iface:proteinRefSeq	?mouse_protein_RefSeq .
-  ?mouse	iface:swissProt		?mouse_SwissProt .
-  ?mouse	iface:entrezGene	?mouse_Entrez_Gene .
+##  ?ret		a			iface:RatGene .
+##  ?rat		iface:iuphar		?iuphar .
+##  ?rat		iface:geneName		?rat_gene_name .
+##  ?rat		iface:geneID		?rat_Genome_Database_ID .
+##  ?rat		iface:localisation	?rat_genetic_localisation .
+##  ?rat		iface:nucleotideRefSeq	?rat_nucleotide_RefSeq .
+##  ?rat		iface:proteinRefSeq	?rat_protein_RefSeq .
+##  ?rat		iface:swissProt		?rat_SwissProt .
+##  ?rat		iface:entrezGene	?rat_Entrez_Gene .
+##
+##  ?mouse	a			iface:MouseGene .
+##  ?mouse	iface:iuphar		?iuphar .
+##  ?mouse	iface:geneName		?mouse_gene_name .
+##  ?mouse	iface:geneID		?mouse_Genome_Informatics_ID .
+##  ?mouse	iface:localisation	?mouse_genetic_localisation .
+##  ?mouse	iface:nucleotideRefSeq	?mouse_nucleotide_RefSeq .
+##  ?mouse	iface:proteinRefSeq	?mouse_protein_RefSeq .
+##  ?mouse	iface:swissProt		?mouse_SwissProt .
+##  ?mouse	iface:entrezGene	?mouse_Entrez_Gene .
 
 } WHERE {
   # primary key ?a    receptors:ID	?ID .

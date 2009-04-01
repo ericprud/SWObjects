@@ -20,7 +20,7 @@ GRAPH <http://localhost:8888/7tm_receptors> {
   ?iuphar	iface:iupharName	?iupharNm .
   ?human	iface:iuphar	?iuphar .
   ?human	iface:geneName	?humanNm .
-#  ?human	iface:entrezGene	?humanEntrez .
+  ?human	iface:entrezGene	?humanEntrez .
   }
 #GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
 #  {?a <http://dbpedia.org/ontology/entrezgene> "2550" }
