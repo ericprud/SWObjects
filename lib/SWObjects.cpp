@@ -804,9 +804,6 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	ResultSet island(rs->getPOSFactory());
 	db->bindVariables(&island, p_name, this);
 	rs->joinIn(&island, false);
-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-	     it != m_Filters.end(); it++)
-	    rs->restrict(*it);
 
 	/*
 + "algebra__filter_nested_2": 			check measured == expected
@@ -920,6 +917,9 @@ compared against
 		}
 	    }
 	}
+	for (std::vector<const Filter*>::const_iterator it = toMatch->m_Filters.begin();
+	     it != toMatch->m_Filters.end(); it++)
+	    rs->restrict(*it);
     }
     bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
