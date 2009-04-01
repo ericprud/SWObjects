@@ -752,7 +752,13 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
+		if (lexicalValue == "http://www.w3.org/2001/XMLSchema#integer" || 
+		    lexicalValue == "http://www.w3.org/2001/XMLSchema#decimal" || 
+		    lexicalValue == "http://www.w3.org/2001/XMLSchema#float" || 
+		    lexicalValue == "http://www.w3.org/2001/XMLSchema#double"  ) {
+		} else {
+		    FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
+		}
 		break;
 
 	    default:
