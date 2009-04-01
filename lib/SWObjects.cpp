@@ -800,10 +800,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	rs->joinIn(&island, false);
     }
 
+    /* wrapper function pushed into .cpp because RdfDB is incomplete. */
     void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
-	ResultSet island(rs->getPOSFactory());
-	db->bindVariables(&island, p_name, this);
-	rs->joinIn(&island, false);
+	db->bindVariables(rs, p_name, this);
 
 	/*
 + "algebra__filter_nested_2": 			check measured == expected
@@ -895,23 +894,24 @@ compared against
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
+	ResultSet island(rs->getPOSFactory());
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
-	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
+	    for (ResultSetIterator row = island.begin() ; row != island.end(); ) {
 		bool matched = false;
 		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
-		    Result* newRow = (*row)->duplicate(rs, row);
-		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+		    Result* newRow = (*row)->duplicate(&island, row);
+		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, &island, graphVar, newRow, graphName)) {
 			matched = true;
-			rs->insert(row, newRow);
+			island.insert(row, newRow);
 		    } else {
 			delete newRow;
 		    }
 		}
 		if (matched || !toMatch->allOpts) {
 		    delete *row;
-		    rs->erase(row++);
+		    island.erase(row++);
 		} else {
 		    row++;
 		}
@@ -919,7 +919,8 @@ compared against
 	}
 	for (std::vector<const Filter*>::const_iterator it = toMatch->m_Filters.begin();
 	     it != toMatch->m_Filters.end(); it++)
-	    rs->restrict(*it);
+	    island.restrict(*it);
+	rs->joinIn(&island, false);
     }
     bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)

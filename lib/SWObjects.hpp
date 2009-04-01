@@ -911,6 +911,7 @@ protected:
 
     /* Misc helper functions: */
     static const POS* _cOrN(const POS* pos, const NULLpos* n);
+    /* wrapper function pushed into .cpp because RdfDB is incomplete. */
     void _bindVariables(RdfDB* db, ResultSet* rs, const POS* p_name) const;
 
 public:
@@ -953,7 +954,7 @@ public:
     virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
-	_bindVariables(db, rs, m_name);
+	_bindVariables(db, rs, m_name); /* RdfDB is incomplete. */
     }
     virtual bool operator== (const TableOperation& ref) const {
 	const NamedGraphPattern* pref = dynamic_cast<const NamedGraphPattern*>(&ref);
@@ -969,7 +970,7 @@ public:
     virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
-	_bindVariables(db, rs, NULL);
+	_bindVariables(db, rs, NULL); /* RdfDB is incomplete. */
     }
     virtual bool operator== (const TableOperation& ref) const {
 	const DefaultGraphPattern* pref = dynamic_cast<const DefaultGraphPattern*>(&ref);
