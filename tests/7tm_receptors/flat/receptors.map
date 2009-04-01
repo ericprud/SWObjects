@@ -16,7 +16,71 @@ PREFIX iface: <http://neuro.example/receptors#>
 PREFIX receptors: <http://db.example/7tm_receptors/receptors#>
 
 CONSTRUCT {
-  ?a	iface:family	?family .
+  ?iuphar	iface:family		?family .
+  ?iuphar	iface:code		?code .
+  ?iuphar	iface:ligand		?ligand .
+  ?iuphar	iface:iupharName	?iupharName .
+
+  ?human	iface:iuphar		?iuphar .
+  ?human	iface:geneName		?human_gene_name .
+  ?human	iface:geneID		?hgnc_ID .
+  ?human	iface:localisation	?human_genetic_localisation .
+  ?human	iface:nucleotideRefSeq	?human_nucleotide_RefSeq .
+  ?human	iface:proteinRefSeq	?human_protein_RefSeq .
+  ?human	iface:swissProt		?human_SwissProt .
+  ?human	iface:entrezGene	?human_Entrez_Gene .
+
+  ?rat		iface:iuphar		?iuphar .
+  ?rat		iface:geneName		?rat_gene_name .
+  ?rat		iface:geneID		?rat_Genome_Database_ID .
+  ?rat		iface:localisation	?rat_genetic_localisation .
+  ?rat		iface:nucleotideRefSeq	?rat_nucleotide_RefSeq .
+  ?rat		iface:proteinRefSeq	?rat_protein_RefSeq .
+  ?rat		iface:swissProt		?rat_SwissProt .
+  ?rat		iface:entrezGene	?rat_Entrez_Gene .
+
+  ?mouse	iface:iuphar		?iuphar .
+  ?mouse	iface:geneName		?mouse_gene_name .
+  ?mouse	iface:geneID		?mouse_Genome_Informatics_ID .
+  ?mouse	iface:localisation	?mouse_genetic_localisation .
+  ?mouse	iface:nucleotideRefSeq	?mouse_nucleotide_RefSeq .
+  ?mouse	iface:proteinRefSeq	?mouse_protein_RefSeq .
+  ?mouse	iface:swissProt		?mouse_SwissProt .
+  ?mouse	iface:entrezGene	?mouse_Entrez_Gene .
+
 } WHERE {
-  ?a	receptors:Family	?family .
+  # primary key ?a    receptors:ID	?ID .
+
+  # IUPHAR
+  ?a	receptors:Family			?family .
+  ?a	receptors:Code				?code .
+  ?a	receptors:Ligand			?ligand .
+  ?a	receptors:Official_IUPHAR_name		?iupharName .
+
+  # human
+  ?a	receptors:Human_gene_name		?human_gene_name .
+  ?a	receptors:HGNC_ID			?hgnc_ID .
+  ?a	receptors:Human_genetic_localisation	?human_genetic_localisation .
+  ?a	receptors:Human_nucleotide_RefSeq	?human_nucleotide_RefSeq .
+  ?a	receptors:Human_protein_RefSeq		?human_protein_RefSeq .
+  ?a	receptors:Human_SwissProt		?human_SwissProt .
+  ?a	receptors:Human_Entrez_Gene		?human_Entrez_Gene .
+
+  # rat
+  ?a	receptors:Rat_gene_name			?rat_gene_name .
+  ?a	receptors:Rat_Genome_Database_ID	?rat_Genome_Database_ID .
+  ?a	receptors:Rat_genetic_localisation	?rat_genetic_localisation .
+  ?a	receptors:Rat_nucleotide_RefSeq		?rat_nucleotide_RefSeq .
+  ?a	receptors:Rat_protein_RefSeq		?rat_protein_RefSeq .
+  ?a	receptors:Rat_SwissProt			?rat_SwissProt .
+  ?a	receptors:Rat_Entrez_Gene		?rat_Entrez_Gene .
+
+  # mouse
+  ?a	receptors:Mouse_gene_name		?mouse_gene_name .
+  ?a	receptors:Mouse_Genome_Informatics_ID	?mouse_Genome_Informatics_ID .
+  ?a	receptors:Mouse_genetic_localisation	?mouse_genetic_localisation .
+  ?a	receptors:Mouse_nucleotide_RefSeq	?mouse_nucleotide_RefSeq .
+  ?a	receptors:Mouse_protein_RefSeq		?mouse_protein_RefSeq .
+  ?a	receptors:Mouse_SwissProt		?mouse_SwissProt .
+  ?a	receptors:Mouse_Entrez_Gene		?mouse_Entrez_Gene .
 }

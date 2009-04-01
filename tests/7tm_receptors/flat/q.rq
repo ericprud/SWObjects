@@ -6,7 +6,8 @@
 # Assign convenient prefixes to common for later syntactic shorthand.
 PREFIX iface: <http://neuro.example/receptors#>
 
-SELECT ?family
+SELECT *
+#?code ?humanNm ?humanEntrez
 
 FROM NAMED <http://localhost:8888/7tm_receptors>
 
@@ -14,6 +15,14 @@ WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
 GRAPH <http://localhost:8888/7tm_receptors> {
-         ?g	iface:family	?family  }
+  ?iuphar	iface:family	?family .
+  ?iuphar	iface:code	?code .
+  ?iuphar	iface:iupharName	?iupharNm .
+  ?human	iface:iuphar	?iuphar .
+  ?human	iface:geneName	?humanNm .
+#  ?human	iface:entrezGene	?humanEntrez .
+  }
+#GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
+#  {?a <http://dbpedia.org/ontology/entrezgene> "2550" }
 }
 
