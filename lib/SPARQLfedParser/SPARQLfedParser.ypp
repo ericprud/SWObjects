@@ -101,6 +101,7 @@ public:
 
     /** Reference to the object created during parsing of the SPARQL stream. */
     Operation* root;
+    bool leanAndMean;
 };
 
     class FilterHolder : public BasicGraphPattern {
@@ -943,7 +944,8 @@ GroupGraphPattern:
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   * @@@ should it be the former? if so, remove or put a switch on this.
 	   */
-	  driver.bgpStack.back() = NULL;
+	  if (!driver.leanAndMean)
+	      driver.bgpStack.back() = NULL;
       }
 ;
 
@@ -1092,23 +1094,33 @@ GraphPatternNotTriples:
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
-	$<p_FilterHolder>$ = new FilterHolder();
-	driver.bgpStack.push_back($<p_FilterHolder>$);
+	if (!driver.leanAndMean) {
+	    $<p_FilterHolder>$ = new FilterHolder();
+	    driver.bgpStack.push_back($<p_FilterHolder>$);
+	}
       } GroupGraphPattern	{
 	  $$ = new OptionalGraphPattern($3);
-	  $<p_FilterHolder>2->copyFiltersTo($$);
-	  delete $<p_FilterHolder>2;
-	  driver.bgpStack.pop_back();
+	  if (!driver.leanAndMean) {
+	      $<p_FilterHolder>2->copyFiltersTo($$);
+	      delete $<p_FilterHolder>2;
+	      driver.bgpStack.pop_back();
+	      driver.neededBGP = NULL;
+	      driver.bgpStack.back() = NULL;
+	  }
       }
 ;
 
 GraphGraphPattern:
     IT_GRAPH VarOrIRIref {
 	driver.curGraphNameStack.push($2);
-    } GroupGraphPattern	{
-	$$ = new GraphGraphPattern($2, $4);
-	driver.curGraphNameStack.pop();
-    }
+      } GroupGraphPattern	{
+	  $$ = new GraphGraphPattern($2, $4);
+	  driver.curGraphNameStack.pop();
+	  if (!driver.leanAndMean) {
+	      driver.neededBGP = NULL;
+	      driver.bgpStack.back() = NULL;
+	  }
+	}
 ;
 
 GroupOrUnionGraphPattern:
@@ -1149,6 +1161,10 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	$$ = new Filter($2);
+	if (driver.leanAndMean) {
+	    driver.makeBasicGraphPattern();
+	    driver.bgpStack.back()->addFilter($$);
+	} else {
 	size_t bgps = driver.bgpStack.size();
 	FilterHolder* h = bgps <= 1 ? NULL : 
 	    dynamic_cast<FilterHolder*>(driver.bgpStack.at(bgps - 2));
@@ -1157,6 +1173,7 @@ Filter:
 	    driver.bgpStack.back()->addFilter($$);
 	} else {
 	    h->addFilter($$);
+	}
 	}
     }
 ;
@@ -1954,7 +1971,8 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 
 namespace w3c_sw {
 
-    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory), curGraphNameStack(), root(NULL)
+    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
+	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL), leanAndMean(false)
 {
     curSubject = curPredicate = NULL;
     neededBGP = NULL;
