@@ -283,7 +283,7 @@ namespace w3c_sw {
 					  (void **)&pXMLReader);
 	    if(FAILED(hr)) {
 		std::stringstream s;
-		s << "CoCreateInstance failed: result code: " << hr;
+		s << "SAXparser_msxml3: CoCreateInstance failed: result code: " << hr;
 		throw s.str();
 // 		throw (std::stringstream("CoCreateInstance failed: result code: ") << hr).str();
 	    }
@@ -316,7 +316,7 @@ namespace w3c_sw {
 	    HRESULT hr = pXMLReader->parse(vt);
 	    if(FAILED(hr)) {
 		std::stringstream s;
-		s << "parse failed: result code: " << hr;
+		s << "SAXparser_msxml3: parse failed: result code: " << hr;
 		throw s.str();
 // 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
 	    }
@@ -328,7 +328,7 @@ namespace w3c_sw {
 	    HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
 	    if(FAILED(hr)) {
 		std::stringstream s;
-		s << "parseURL failed: result code: " << hr;
+		s << "SAXparser_msxml3: parseURL failed: result code: " << hr;
 		throw s.str();
 // 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
 	    }
