@@ -7,8 +7,7 @@
 PREFIX iface: <http://neuro.example/receptors#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT *
-#?code ?humanNm ?humanEntrez
+SELECT ?pout ?oout
 
 FROM NAMED <http://rdal.org:8888/7tm_receptors>
 FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
@@ -25,10 +24,8 @@ GRAPH <http://rdal.org:8888/7tm_receptors> {
   ?human	iface:entrezGene	?humanEntrez .
   }
 GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
-  {_:gene <http://dbpedia.org/ontology/entrezgene> ?humanEntrez ; 
-          a ?type ;
-          rdfs:label ?label .
-  FILTER (lang(?label) = "en")
+  {_:gene <http://dbpedia.org/ontology/entrezgene> ?humanEntrez ;
+          ?pout ?oout
   }
 }
 
