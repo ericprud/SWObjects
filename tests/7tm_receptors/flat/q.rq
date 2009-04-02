@@ -9,12 +9,13 @@ PREFIX iface: <http://neuro.example/receptors#>
 SELECT *
 #?code ?humanNm ?humanEntrez
 
-FROM NAMED <http://localhost:8888/7tm_receptors>
+FROM NAMED <http://rdal.org:8888/7tm_receptors>
+FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
 
 WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
-GRAPH <http://localhost:8888/7tm_receptors> {
+GRAPH <http://rdal.org:8888/7tm_receptors> {
   ?iuphar	iface:family	?family .
   ?iuphar	iface:code	?code .
   ?iuphar	iface:iupharName	?iupharNm .
@@ -22,7 +23,7 @@ GRAPH <http://localhost:8888/7tm_receptors> {
   ?human	iface:geneName	?humanNm .
   ?human	iface:entrezGene	?humanEntrez .
   }
-#GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
-#  {?a <http://dbpedia.org/ontology/entrezgene> "2550" }
+GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
+  {?a <http://dbpedia.org/ontology/entrezgene> ?humanEntrez }
 }
 
