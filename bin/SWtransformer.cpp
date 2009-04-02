@@ -212,19 +212,24 @@ int main(int argc,char** argv) {
 		delete o;
 	    } catch (runtime_error& e) {
 		cerr << "Serialization problem:" << e.what() << endl;
-		throw(e);
+		return -1;
 	    } catch (exception& e) {
 		cerr << "Serialization problem:" << e.what() << endl;
-		throw(e);
+		return -1;
+	    } catch (std::string& e) {
+		cerr << "Serialization problem:" << e << endl;
+		return -1;
 	    }
 	}
 
 	return result;
 
     } catch (runtime_error& e) {
-	cerr << "Runtime error: " << e.what() << endl;
+	cerr << "runtime_error: " << e.what() << endl;
     } catch (exception& e) {
-	cerr << "Exception: " << e.what() << endl;
+	cerr << "exception: " << e.what() << endl;
+    } catch (std::string& e) {
+	cerr << "std::string exception: " << e << endl;
     }
     return -1;
 }
