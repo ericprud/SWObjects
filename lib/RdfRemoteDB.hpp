@@ -93,7 +93,12 @@ namespace w3c_sw {
 		u.setf(std::ios::hex, std::ios::basefield);
 		u.setf(std::ios::uppercase);
 
-		u << graph->getLexicalValue() << "?query=";
+		std::string srvc = graph->getLexicalValue();
+		u << srvc;
+		u << (srvc.find_first_of("?") == std::string::npos ? "?" : 
+		      srvc.at(srvc.size()-1) == '&' ? "" : 
+		      "&");
+		u << "query=";
 		GraphSerializer ser(rs);
 		toMatch->express(&ser);
 		std::string q = ser.getSelectString() + '{' + ser.getString() + ser.getFederationString() + '}';
