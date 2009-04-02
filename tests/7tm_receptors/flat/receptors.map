@@ -3,8 +3,8 @@
 
 # $Id: ToxicAssoc0.rq,v 1.4 2009/02/17 15:00:45 eric Exp $
 
- server: localhost
- user: root
+ server: rdal.org
+ user: receptorUser
  database: 7tm_receptors
  stemURI: http://db.example/7tm_receptors/
  primaryKey: id
