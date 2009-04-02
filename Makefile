@@ -332,8 +332,7 @@ SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)
 
 
-
-.PHONY: test valgrind
+.PHONY: test valgrind tests/7tm_receptors-flat.results
 test: lib $(unitTESTS) $(transformTEST_RESULTS)
 valgrind: lib $(transformVALGRIND)
 
