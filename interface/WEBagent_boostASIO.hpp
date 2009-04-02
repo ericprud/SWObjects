@@ -44,6 +44,9 @@ namespace w3c_sw {
 	    std::string path(matches[PATH].first, matches[PATH].second);
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
+	    if (port.empty())
+		port = "80";
+
 	    std::cerr << "http://" << host << ":" << port << path << std::endl;
 
 	    boost::asio::io_service io_service;
