@@ -27,6 +27,8 @@ GRAPH <http://rdal.org:8888/7tm_receptors> {
 GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
   {_:gene <http://dbpedia.org/ontology/entrezgene> ?humanEntrez ; 
           a ?type ;
-          rdfs:label ?label }
+          rdfs:label ?label .
+  FILTER (lang(?label) = "en")
+  }
 }
 
