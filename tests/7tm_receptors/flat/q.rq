@@ -24,6 +24,6 @@ GRAPH <http://rdal.org:8888/7tm_receptors> {
   ?human	iface:entrezGene	?humanEntrez .
   }
 GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
-  {?a <http://dbpedia.org/ontology/entrezgene> ?humanEntrez }
+  {_:gene <http://dbpedia.org/ontology/entrezgene> ?humanEntrez ; ?p ?o }
 }
 
