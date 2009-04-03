@@ -293,7 +293,8 @@ class WebServer : public server::http_1a_c
 		} else {
 		    Operation* query = sparqlParser.root;
 		    executeQuery(sout, query, queries["query"]);
-		    //response_headers["Content-Type"] = "text/html";
+		    response_headers.add(string("Content-Type"), 
+		      string("application/sparql-results+xml; charset=UTF-8"));
 		}
 	    } else if (path != "/") {
 		head(sout, "Not Found");
