@@ -368,7 +368,7 @@ namespace w3c_sw {
 	protected:
 	    SQLQuery* parent;
 
-	    std::map<const POS*, map<std::string, Join*> > aliasMap;
+	    std::map<const POS*, std::map<std::string, Join*> > aliasMap;
 	    std::set<string> usedAliases;
 	    std::vector<Join*> joins;
 	public: Join* curJoin; protected:
@@ -456,9 +456,9 @@ namespace w3c_sw {
 	    void setLimit (int limit) { this->limit = limit; }
 	    void setOffset (int offset) { this->offset = offset; }
 	    std::string attachTuple (const POS* subject, std::string toRelation) {
-		std::map<const POS*, map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
+		std::map<const POS*, std::map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
 		if (byPOS != aliasMap.end()) {
-		    map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
+		    std::map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end()) {
 			curJoin = aliasMap[subject][toRelation];
 			return curJoin->debug_getAlias();
