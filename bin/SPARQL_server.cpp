@@ -17,6 +17,10 @@
 #if REGEX_LIB == SWOb_BOOST
   #include "boost/regex.hpp"
 #endif
+#if HTTP_SERVER == SWOb_DLIB
+#include "dlib/server.h"
+using namespace dlib;
+#endif
 #if SQL_CLIENT == SWOb_SWOb_MYSQL
   #ifdef WIN32
     #include <mysql.h>
@@ -34,10 +38,6 @@
 
 const char* SELECT_QUERY = "SELECT * FROM test";
 
-#if HTTP_SERVER == SWOb_DLIB
-#include "dlib/server.h"
-using namespace dlib;
-#endif
 using namespace std;
 using namespace w3c_sw;
 
@@ -293,6 +293,7 @@ class WebServer : public server::http_1a_c
 		} else {
 		    Operation* query = sparqlParser.root;
 		    executeQuery(sout, query, queries["query"]);
+		    //response_headers["Content-Type"] = "text/html";
 		}
 	    } else if (path != "/") {
 		head(sout, "Not Found");
