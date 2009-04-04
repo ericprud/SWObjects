@@ -78,7 +78,7 @@ struct SimpleMessageException : public StringException {
     string make (string msg) {
 	ostringstream sout;
 
-	head(sout, "Q&D SPARQL Server Error");
+	head(sout, "Q&amp;D SPARQL Server Error");
 	sout << 
 	    "    <pre>" << msg << "</pre>\n";
 	foot(sout);
@@ -325,7 +325,7 @@ class WebServer : public server::http_1a_c
 
 		foot(sout);
 	    } else {
-		head(sout, "Q&D SPARQL Server");
+		head(sout, "Q&amp;D SPARQL Server");
 		sout << 
 		    "    <form action='" << ServerPath << "' method='get'>\n"
 		    "      Query: <textarea name='query' rows='25' cols='50'></textarea> <input type='submit' />\n"
@@ -348,7 +348,7 @@ class WebServer : public server::http_1a_c
             ostringstream sout;
 
             cerr << what << endl;
-	    head(sout, "Q&D SPARQL Server Error");
+	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
 		"    <pre>" << query << "</pre>\n"
 		"    <p>yeilded</p>\n"
