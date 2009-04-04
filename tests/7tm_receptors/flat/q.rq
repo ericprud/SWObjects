@@ -9,13 +9,13 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?pout ?oout
 
-FROM NAMED <http://rdal.org:8888/7tm_receptors>
+FROM NAMED <http://localhost:8888/7tm_receptors>
 FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
 
 WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
-GRAPH <http://rdal.org:8888/7tm_receptors> {
+GRAPH <http://localhost:8888/7tm_receptors> {
   ?iuphar	iface:family	?family .
   ?iuphar	iface:code	?code .
   ?iuphar	iface:iupharName	?iupharNm .
