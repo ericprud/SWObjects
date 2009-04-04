@@ -347,7 +347,11 @@ class WebServer : public server::http_1a_c
                     on_request(path,result,queries,cookies,new_cookies,incoming_headers, response_headers, foreign_ip,local_ip,foreign_port,local_port);
                 my_fault = true;
 
-                out << "HTTP/1.0 200 OK\r\n";
+		string statusString("200 OK");
+		if (response_headers.is_in_domain("Status"))
+		    statusString = response_headers["Status"];
+		    // should response_headers.remove("Status") if that's not too hard.
+                out << "HTTP/1.0 " << statusString << "\r\n";
                 // only send this header if the user hasn't told us to send another kind
                 if (response_headers.is_in_domain("Content-Type") == false && 
                     response_headers.is_in_domain("content-type") == false)
@@ -591,7 +595,10 @@ class WebServer : public server::http_1a_c
 			"    <pre>" << queries["query"] << "</pre>\n"
 			"    <p>is screwed up.</p>\n"
 			 << endl;
-		    cerr << "400 Bad Request: " << queries["query"] << endl;
+		    cerr << "400: " << queries["query"] << endl;
+		    string st("Status");
+		    string cd("400 Bad Request");
+		    response_headers.add(st, cd);
 
 		    foot(sout);
 		} else {
@@ -609,6 +616,9 @@ class WebServer : public server::http_1a_c
 		    "    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
 		     << endl;
 		cerr << "404: " << path << endl;
+		string st("Status");
+		string cd("404 Not Found");
+		response_headers.add(st, cd);
 
 		sout << "    <h2>Client Headers</h2>\n"
 		    "    <ul>";
@@ -636,6 +646,9 @@ class WebServer : public server::http_1a_c
         }
         catch (SimpleMessageException& e)
         {
+	    string st("Status");
+	    string cd("400 Bad Request");
+	    response_headers.add(st, cd);
 	    result = e.what();
         }
         catch (exception& e)
@@ -644,6 +657,9 @@ class WebServer : public server::http_1a_c
 	    string what(e.what());
             ostringstream sout;
 
+	    string st("Status");
+	    string cd("400 Bad Request");
+	    response_headers.add(st, cd);
             cerr << what << endl;
 	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
