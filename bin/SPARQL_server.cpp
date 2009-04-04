@@ -348,9 +348,11 @@ class WebServer : public server::http_1a_c
                 my_fault = true;
 
 		string statusString("200 OK");
-		if (response_headers.is_in_domain("Status"))
+		if (response_headers.is_in_domain("Status")) {
 		    statusString = response_headers["Status"];
-		    // should response_headers.remove("Status") if that's not too hard.
+		    string junk;
+		    response_headers.remove("Status", junk, statusString);
+		}
                 out << "HTTP/1.0 " << statusString << "\r\n";
                 // only send this header if the user hasn't told us to send another kind
                 if (response_headers.is_in_domain("Content-Type") == false && 
@@ -582,28 +584,31 @@ class WebServer : public server::http_1a_c
 		   when it's not set.  So, I make all uses of this
 		   function use exactly the same query parameters.
 		 */
-		if (queries["query"] == "stop") {
+		string query;
+		if (queries.is_in_domain("query"))
+		    query = queries["query"];
+		if (query == "stop") {
 		    head(sout, "Done!");
 		    sout << "    <p>Served " << Served << " queries.</p>\n";
 		    foot(sout);
 
 		    Done = true;
-		} else if (sparqlParser.parse_string(queries["query"])) {
+		} else if (sparqlParser.parse_string(query)) {
 		    head(sout, "Query Error");
 
 		    sout << "    <p>Query</p>\n"
-			"    <pre>" << queries["query"] << "</pre>\n"
+			"    <pre>" << query << "</pre>\n"
 			"    <p>is screwed up.</p>\n"
 			 << endl;
-		    cerr << "400: " << queries["query"] << endl;
+		    cerr << "400: " << query << endl;
 		    string st("Status");
 		    string cd("400 Bad Request");
 		    response_headers.add(st, cd);
 
 		    foot(sout);
 		} else {
-		    Operation* query = sparqlParser.root;
-		    executeQuery(sout, query, queries["query"]);
+		    Operation* op = sparqlParser.root;
+		    executeQuery(sout, op, query);
 		    string ct("Content-Type");
 		    string mt("application/sparql-results+xml; charset=UTF-8");
 		    response_headers.add(ct, mt);
@@ -653,7 +658,7 @@ class WebServer : public server::http_1a_c
         }
         catch (exception& e)
         {
-	    string query(queries["query"]);
+	    string query(query);
 	    string what(e.what());
             ostringstream sout;
 
