@@ -116,121 +116,106 @@ int main(int argc,char** argv) {
 
     int result;
     w3c_sw::Operation* query = NULL;
+    std::string errorContext("input parsing");
     try {
 	char* inputId;
-	try {
-	    int iArg = 1;
-	    while (iArg < argc && option(argc, argv, &iArg))
-		++iArg;
-	    if (iArg == argc) {
-		cerr << "No query specified." << endl;
+	int iArg = 1;
+	while (iArg < argc && option(argc, argv, &iArg))
+	    ++iArg;
+	if (iArg == argc) {
+	    cerr << "No query specified." << endl;
+	    usage(argv[0]);
+	    return 1;
+	}
+
+	/* Parse input query. */
+	inputId = argv[iArg++];
+	if (inputId[0] == '-' && inputId[1] == '\0') {
+	    inputId = (char*)"- standard input -";
+	    result = sparqlParser.parse_stream(cin);
+	} else
+	    result = sparqlParser.parse_file(inputId);
+	query = sparqlParser.root;
+
+	/* Parse deduction rules. */
+	for (; iArg < argc && !result; ++iArg) {
+	    if (option(argc, argv, &iArg))
+		continue;
+	    result = sparqlParser.parse_file(inputId = argv[iArg]);
+	    Operation* rule = sparqlParser.root;
+	    Construct* c;
+	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
+		queryMapper.addRule(c);
+		delete rule;
+	    } else {
+		cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT." << endl;
 		usage(argv[0]);
 		return 1;
 	    }
-
-	    /* Parse input query. */
-	    inputId = argv[iArg++];
-	    if (inputId[0] == '-' && inputId[1] == '\0') {
-		inputId = (char*)"- standard input -";
-		result = sparqlParser.parse_stream(cin);
-	    } else
-		result = sparqlParser.parse_file(inputId);
-	    query = sparqlParser.root;
-
-	    /* Parse deduction rules. */
-	    for (; iArg < argc && !result; ++iArg) {
-		if (option(argc, argv, &iArg))
-		    continue;
-		result = sparqlParser.parse_file(inputId = argv[iArg]);
-		Operation* rule = sparqlParser.root;
-		Construct* c;
-		if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
-		    queryMapper.addRule(c);
-		    delete rule;
-		} else {
-		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << inputId << " was not a SPARQL CONSTRUCT." << endl;
-		    usage(argv[0]);
-		    return 1;
-		}
-	    }
-	} catch (runtime_error& e) {
-	    cerr << "Parsing problem runtime_error:" << e.what() << endl;
-	    throw(e);
-	} catch (exception& e) {
-	    cerr << "Parsing problem exception:" << e.what() << endl;
-	    throw(e);
 	}
-
 
 	if (result)
-	    cerr << "Error: " << inputId << " did not contain a valid SPARQLfed string." << endl;
-	else {
-	    try {
-		const Operation* o;
-		if (queryMapper.getRuleCount() > 0) {
-		    if (DebugStream != NULL)
-			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
-		    query->express(&queryMapper);
-		    o = queryMapper.last.operation;
-		    delete query;
-		} else
-		    o = query;
+	    throw std::string(inputId) +" did not contain a valid SPARQLfed string.";
 
-// 		XMLQueryExpressor xmlizer("  ", false);
-// 		o->express(&xmlizer);
-// 		cout << "post-rule query (XML):" << endl << xmlizer.getString() << endl;
+	errorContext = "transformation";
+	const Operation* o;
+	if (queryMapper.getRuleCount() > 0) {
+	    if (DebugStream != NULL)
+		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
+	    query->express(&queryMapper);
+	    o = queryMapper.last.operation;
+	    delete query;
+	} else
+	    o = query;
 
-		{
-		    SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
-		    o->express(&sparqlizer);
-		    if (!Quiet)
-			cout << "post-rule query (SPARQL):" << endl;
-		    if (!Quiet || StemURI == NULL)
-			cout << sparqlizer.getString() << endl;
-		}
+	// 		XMLQueryExpressor xmlizer("  ", false);
+	// 		o->express(&xmlizer);
+	// 		cout << "post-rule query (XML):" << endl << xmlizer.getString() << endl;
 
-		if (StemURI != NULL) {
-		    char predicateDelims[]={'#',' ',' '};
-		    char nodeDelims[]={'/','.',' '};
-		    SQLizer s2(StemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
-		    o->express(&s2);
-		    if (!Quiet)
-			cout << "Transformed query: " << endl;
-		    cout << s2.getSQLstring() << endl;
-		}
-#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
-		else if (ExecuteQuery) {
-		    SWSAXparser* p = SWSAXparser::makeSAXparser();
-		    WEBagent_boostASIO client;
-		    RdfRemoteDB db(SparqlEndpointPatterns, p, &client);
-		    ResultSet rs(&posFactory);
-		    o->execute(&db, &rs);
-		    delete p;
-		    std::cout << rs; // show results
-		}
-#endif /* XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED */
-		delete o;
-	    } catch (runtime_error& e) {
-		cerr << "Serialization problem:" << e.what() << endl;
-		return -1;
-	    } catch (exception& e) {
-		cerr << "Serialization problem:" << e.what() << endl;
-		return -1;
-	    } catch (std::string& e) {
-		cerr << "Serialization problem:" << e << endl;
-		return -1;
-	    }
+	{
+	    errorContext = "serialization";
+	    SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
+	    o->express(&sparqlizer);
+	    if (!Quiet)
+		cout << "post-rule query (SPARQL):" << endl;
+	    if (!Quiet || StemURI == NULL)
+		cout << sparqlizer.getString() << endl;
 	}
+
+	if (StemURI != NULL) {
+	    errorContext = "SQL-ization";
+	    char predicateDelims[]={'#',' ',' '};
+	    char nodeDelims[]={'/','.',' '};
+	    SQLizer s2(StemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
+	    o->express(&s2);
+	    if (!Quiet)
+		cout << "Transformed query: " << endl;
+	    cout << s2.getSQLstring() << endl;
+	}
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
+	else if (ExecuteQuery) {
+	    errorContext = "query execution";
+	    SWSAXparser* p = SWSAXparser::makeSAXparser();
+	    WEBagent_boostASIO client;
+	    RdfRemoteDB db(SparqlEndpointPatterns, p, &client);
+	    ResultSet rs(&posFactory);
+	    o->execute(&db, &rs);
+	    delete p;
+	    std::cout << rs; // show results
+	}
+#endif /* XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED */
+	delete o;
 
 	return result;
 
     } catch (runtime_error& e) {
-	cerr << "runtime_error: " << e.what() << endl;
+	cerr << "Error during " << errorContext << " -- runtime_error: " << e.what() << endl;
     } catch (exception& e) {
-	cerr << "exception: " << e.what() << endl;
+	cerr << "Error during " << errorContext << " -- exception: " << e.what() << endl;
     } catch (std::string& e) {
-	cerr << "std::string exception: " << e << endl;
+	cerr << "Error during " << errorContext << " -- std::string exception: " << e << endl;
     }
+
     return -1;
 }
 
