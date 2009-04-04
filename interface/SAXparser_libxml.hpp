@@ -111,10 +111,10 @@ namespace w3c_sw {
 		::xmlSAXUserParseMemory(&libXMLhandler, this, mem.c_str(), mem.size()) != 0;
 	    if (aborted) {
 		aborted = false;
-		throw exceptionString;
+		throw std::string("SAXparser_libxml: ") + exceptionString;
 	    }
 	    if (failed)
-		throw( std::string("Unknown error parsing document [[") + mem.substr(0, 100) + "]].\n" );
+		throw( std::string("SAXparser_libxml: Unknown error parsing document [[") + mem.substr(0, 100) + "]].\n" );
 	}
 
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
@@ -124,10 +124,10 @@ namespace w3c_sw {
 		::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0;
 	    if (aborted) {
 		aborted = false;
-		throw exceptionString;
+		throw std::string("SAXparser_libxml: ") + exceptionString;
 	    }
 	    if (failed)
-		throw( std::string("Unknown error parsing file \"") + file + "\".\n" );
+		throw std::string("SAXparser_libxml: Unknown error parsing file \"") + file + "\".\n";
 	}
 
 	static void startElementNs (void * voidSelf, 

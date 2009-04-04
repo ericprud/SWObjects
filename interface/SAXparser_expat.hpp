@@ -17,7 +17,7 @@
 
 namespace w3c_sw {
 
-    class SAXparser_expat : public SWSAXparser {
+    class SAXparser_expat : public InsulatedSAXparser {
     protected:
 	struct NsSet {
 	    const char* namespaceURI;
@@ -41,7 +41,6 @@ namespace w3c_sw {
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
 
-	SWSAXhandler* handler;
 	std::stack< std::map< std::string, std::string > > nsz;
 
 	std::string readFile (const char* filename, const char* type) {
@@ -64,8 +63,8 @@ namespace w3c_sw {
 	}
 	virtual ~SAXparser_expat () {  }
 
-	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) {
-	    this->handler = handler;
+	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
+	    SAXhandlerInsulator insulator(this, saxHandler);
 	    std::string buf(start, finish);
 
 	    XML_Parser parser = ::XML_ParserCreate(NULL);
@@ -73,21 +72,26 @@ namespace w3c_sw {
 	    ::XML_SetElementHandler(parser, &startEl, &endEl);
 	    ::XML_SetCharacterDataHandler(parser, &chars);
 
+	    bool failed = 
 #ifdef _MSC_VER
-	    if (XML_Parse(parser, buf.c_str(), (int)buf.size(), true) == 0)
+		XML_Parse(parser, buf.c_str(), (int)buf.size(), true) == 0;
 #else /* !_MSC_VER */
-	    if (XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR)
+		XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR;
 #endif /* !_MSC_VER */
-	    {
-		std::string msg("Failed to parse document: ");
-		msg.append(XML_ErrorString(XML_GetErrorCode(parser)));
-		throw msg;
-	    }
 	    ::XML_ParserFree(parser);
+	    if (aborted) {
+		aborted = false;
+		throw std::string("SAXparser_expat: ") + exceptionString;
+	    }
+	    if (failed)
+		throw(std::string("SAXparser_expat: Error ") + 
+		      XML_ErrorString(XML_GetErrorCode(parser)) + 
+		      " parsing document [[" + 
+		      buf.substr(0, 100) + "]].\n" );
 	}
-	virtual void parse (const char* file, SWSAXhandler* handler) {
+	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
 	    std::string buf = readFile(file, "XML");
-	    parse(buf.begin(), buf.end(), handler);
+	    parse(buf.begin(), buf.end(), saxHandler);
 	}
 
 	static void _dumpNsFrame (std::map< const char*, const char* > nsframe) {
@@ -110,7 +114,7 @@ namespace w3c_sw {
 		if (nsz.top().find(elPrefix) != nsz.top().end())
 		    *elNs = nsz.top()[elPrefix].c_str();
 		else
-		    handler->error("namespace prefix \"%s\" not found", elPrefix);
+		    insulator->error("namespace prefix \"%s\" not found", (char*)elPrefix);
 	    }
 	}
 	void __dumpNsz (const char* sit) {
@@ -162,10 +166,10 @@ namespace w3c_sw {
 			nss.namespaceURI = self.nsz.top()[nss.prefix].c_str();
 			attrs.byNS_localName[nss.namespaceURI][nss.localName] = nss.value;
 		    } else
-			self.handler->error("namespace prefix \"%s\" not found", nss.prefix);
+			self.insulator->error("namespace prefix \"%s\" not found", (char*)nss.prefix);
 		}
 	    }
- 	    self.handler->startElement(elNs, elLname, name, &attrs);
+ 	    self.insulator->startElement(elNs, elLname, name, &attrs);
 	}
 
 	static void endEl (void *voidSelf,
@@ -174,7 +178,7 @@ namespace w3c_sw {
 	    const char* elLname;
 	    const char* elNs;
 	    self._crackQName(name, &elLname, &elNs);
- 	    self.handler->endElement(elNs, elLname, (const char*)name);
+ 	    self.insulator->endElement(elNs, elLname, (const char*)name);
 	    self.nsz.pop();
 	}
 
@@ -182,7 +186,7 @@ namespace w3c_sw {
 			   const XML_Char *s,
 			   int len) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
- 	    self.handler->characters((const char*)s, 0, len);
+ 	    self.insulator->characters((const char*)s, 0, len);
 	}
     };
 

@@ -40,7 +40,7 @@ namespace w3c_sw {
 	return wstr;
     }
 
-    class SAXparser_msxml3 : public SWSAXparser {
+    class SAXparser_msxml3 : public InsulatedSAXparser {
     protected:
 	struct NsSet {
 	    std::string namespaceURI;
@@ -267,7 +267,6 @@ namespace w3c_sw {
 
 	};
 
-	SWSAXhandler* saxHandler;
 	ISAXXMLReader* pXMLReader;
 	long m_RefCount;
     public:
@@ -308,29 +307,41 @@ namespace w3c_sw {
 	}
 
 	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
-	    this->saxHandler = saxHandler;
+	    SAXhandlerInsulator insulator(this, saxHandler);
 	    std::string str(start, finish);
 	    std::wstring wstr(to16bit(str.c_str()));
 	    _variant_t vt;
 	    to_variant(wstr, vt);
 	    HRESULT hr = pXMLReader->parse(vt);
+	    if (aborted) {
+		aborted = false;
+		throw std::string("SAXparser_msxml3: ") + exceptionString;
+	    }
 	    if(FAILED(hr)) {
 		std::stringstream s;
-		s << "SAXparser_msxml3: parse failed: result code: " << hr;
-		throw s.str();
-// 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
+		s << hr;
+		throw(std::string("SAXparser_msxml3: Error ") + 
+		      s.str() + 
+		      " parsing document [[" + 
+		      str.substr(0, 100) + "]].\n" );
 	    }
 	}
 
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
-	    this->saxHandler = saxHandler;
+	    SAXhandlerInsulator insulator(this, saxHandler);
 	    // parse the document
 	    HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
+	    if (aborted) {
+		aborted = false;
+		throw std::string("SAXparser_msxml3: ") + exceptionString;
+	    }
 	    if(FAILED(hr)) {
 		std::stringstream s;
-		s << "SAXparser_msxml3: parseURL failed: result code: " << hr;
-		throw s.str();
-// 		throw (std::stringstream("parseURL failed: result code: ") << hr).str();
+		s << hr;
+		throw(std::string("SAXparser_msxml3: Error ") + 
+		      s.str() + 
+		      " parsing file \"" + 
+		      file + "\".\n" );
 	    }
 	}
 
