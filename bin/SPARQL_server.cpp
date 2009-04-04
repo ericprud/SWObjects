@@ -106,11 +106,18 @@ class WebServer : public server::http_1a_c
 	MYSQL_RES *result;
 	mysql_init(&mysql);
 	if (!(sock = mysql_real_connect(&mysql,Server.c_str(),User.c_str(),0,Database.c_str(),0,NULL,0)))
-	    throw(SimpleMessageException("couldn't connect"));
+	    throw(SimpleMessageException("couldn't connect to mysql://" + 
+					 User + "@" + Server + "/" + Database));
 	if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
-	    throw(SimpleMessageException("couldn't execute"));
+	    throw(SimpleMessageException("mysql://" + User + "@" + Server + "/" + Database +
+					 "could not execute [[\n" + 
+					 sqlizer.getSQLstring() + 
+					 "\n]]"));
 	if (!(result=mysql_store_result(sock)))
-	    throw(SimpleMessageException("couldn't get result"));
+	    throw(SimpleMessageException("mysql://" + User + "@" + Server + "/" + Database +
+					 "could not retrieve results of [[\n" + 
+					 sqlizer.getSQLstring() + 
+					 "\n]]"));
 
 	stringstream ret;
 #if HTML_RESULTS
@@ -293,8 +300,9 @@ class WebServer : public server::http_1a_c
 		} else {
 		    Operation* query = sparqlParser.root;
 		    executeQuery(sout, query, queries["query"]);
-		    response_headers.add(string("Content-Type"), 
-		      string("application/sparql-results+xml; charset=UTF-8"));
+		    string ct("Content-Type");
+		    string mt("application/sparql-results+xml; charset=UTF-8");
+		    response_headers.add(ct, mt);
 		}
 	    } else if (path != "/") {
 		head(sout, "Not Found");
