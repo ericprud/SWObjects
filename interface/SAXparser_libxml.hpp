@@ -12,7 +12,7 @@
 
 namespace w3c_sw {
 
-    class SAXparser_libxml : public SWSAXparser {
+    class SAXparser_libxml : public InsulatedSAXparser {
     protected:
 	struct NsSet {
 	    const char* namespaceURI;
@@ -52,9 +52,13 @@ namespace w3c_sw {
 	};
 
 	::xmlSAXHandler libXMLhandler; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler
-	SWSAXhandler* saxHandler;
-	bool aborted; // hack until i work out how to call ::xmlStopParser
-	/* notes:
+	
+	/* @TODO
+	virtual void handleError (std::string& e) {
+	    InsulatedSAXparser::handleError(e);
+	    xmlStopParser(contxt);
+	}
+
 	  xml_context = xmlCreateFileParserCtxt(filename.c_str());
 	  xmlSAXHandlerPtr old_sax = xml_context->sax;
 	  xml_context->sax = &xml_handler;
@@ -84,10 +88,8 @@ namespace w3c_sw {
 	   http://www.opensource.apple.com/darwinsource/10.3/libxml2-4/libxml2/doc/html/libxml-parser.html
 	 */
 
-	std::string exceptionString;
-
     public:
-	SAXparser_libxml () : aborted(false) {
+	SAXparser_libxml () {
 	    ::memset(&libXMLhandler, 0, sizeof(libXMLhandler));
 	    libXMLhandler.initialized = XML_SAX2_MAGIC;  // so we do this to force parsing as SAX2.
 	    libXMLhandler.startElementNs = &startElementNs;
@@ -102,7 +104,8 @@ namespace w3c_sw {
 	}
 
 	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
-	    this->saxHandler = saxHandler;
+	    SAXhandlerInsulator insulator(this, saxHandler);
+
 	    std::string mem(start, finish);
 	    bool failed =
 		::xmlSAXUserParseMemory(&libXMLhandler, this, mem.c_str(), mem.size()) != 0;
@@ -111,13 +114,20 @@ namespace w3c_sw {
 		throw exceptionString;
 	    }
 	    if (failed)
-		throw( "Unknown error parsing document.\n" );
+		throw( std::string("Unknown error parsing document [[") + mem.substr(0, 100) + "]].\n" );
 	}
 
 	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
-	    this->saxHandler = saxHandler;
-	    if (::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0)
-		throw( "Failed to parse document.\n" );
+	    SAXhandlerInsulator insulator(this, saxHandler);
+
+	    bool failed = 
+		::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0;
+	    if (aborted) {
+		aborted = false;
+		throw exceptionString;
+	    }
+	    if (failed)
+		throw( std::string("Unknown error parsing file \"") + file + "\".\n" );
 	}
 
 	static void startElementNs (void * voidSelf, 
@@ -131,18 +141,11 @@ namespace w3c_sw {
 				    const xmlChar ** attributes )
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    if (self.aborted) return;
  	    Attributes_libxml attrs(attributes, nb_attributes);
-	    try {
-		self.saxHandler->startElement((const char*)URI, 
-					      (const char*)localname, 
-					      SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
-					      &attrs);
-	    }
-	    catch (std::string& e) {
-		self.aborted = true;
-		self.exceptionString = e;
-	    }
+ 	    self.insulator->startElement((const char*)URI, 
+					  (const char*)localname, 
+					  SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
+					  &attrs);
 	}
 
 	static void endElementNs (void * voidSelf, 
@@ -151,59 +154,31 @@ namespace w3c_sw {
 				  const xmlChar * URI )
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    if (self.aborted) return;
-	    try {
-		self.saxHandler->endElement((const char*)URI, 
-					    (const char*)localname, 
-					    SWSAXhandler::qName((const char*)prefix, (const char*)localname));
-	    }
-	    catch (std::string& e) {
-		self.aborted = true;
-		self.exceptionString = e;
-	    }
+ 	    self.insulator->endElement((const char*)URI, 
+					(const char*)localname, 
+					SWSAXhandler::qName((const char*)prefix, (const char*)localname));
 	}
 
 	static void characters (void * voidSelf,
 				const xmlChar * ch,
 				int len) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    if (self.aborted) return;
-	    try {
-		self.saxHandler->characters((const char*)ch, 0, len);
-	    }
-	    catch (std::string& e) {
-		self.aborted = true;
-		self.exceptionString = e;
-	    }
+ 	    self.insulator->characters((const char*)ch, 0, len);
 	}
 
 	static void myerror( void * voidSelf, const char * msg, ... ) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    if (self.aborted) return;
 	    va_list args;
 	    va_start(args, msg);
-	    try {
-		self.saxHandler->error(msg, args);
-	    }
-	    catch (std::string& e) {
-		self.aborted = true;
-		self.exceptionString = e;
-	    }
+	    self.insulator->error(msg, args);
 	    va_end(args);
 	}
 
 	static void mywarning( void * voidSelf, const char * msg, ... ) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    if (self.aborted) return;
 	    va_list args;
 	    va_start(args, msg);
-	    try {
-		self.saxHandler->warning(msg, args);
-	    }
-	    catch (std::string& e) {
-		self.aborted = true;
-		self.exceptionString = e;
-	    }
+	    self.insulator->warning(msg, args);
 	    va_end(args);
 	}
     };

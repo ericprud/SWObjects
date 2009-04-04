@@ -140,5 +140,95 @@ namespace w3c_sw {
 #define NEEDDEF_makeSAXparser 1
     };
 
+
+    class SAXhandlerInsulator;
+    class InsulatedSAXparser : public SWSAXparser {
+	friend class SAXhandlerInsulator;
+    protected:
+	bool aborted; // hack until i work out how to call analog of ::xmlStopParser in all parsers
+	std::string exceptionString;
+	SAXhandlerInsulator* insulator;
+
+	/* SAXhandlerInsulator reports errors here.
+	 * feel free to overload with e.g. xmlStopParser.
+	 */
+	virtual void handleError (std::string& e) {
+	    /* For derivatives of InsulatedSAXparser where we don't
+	     *  know how to stop the parser, we may recieve
+	     *  e.g. encoding errors after the first error. We record
+	     *  only the first one.
+	     */
+	    if (!aborted) {
+		aborted = true;
+		exceptionString = e;
+	    }
+	}
+
+    public:
+	InsulatedSAXparser () : aborted(false) {  }
+    };
+
+    class SAXhandlerInsulator : public SWSAXhandler {
+    protected:
+	InsulatedSAXparser* parser;
+	SWSAXhandler* handler;
+
+    public:
+	SAXhandlerInsulator (InsulatedSAXparser* parser, SWSAXhandler* handler) : 
+	    parser(parser), handler(handler) {
+	    parser->insulator = this;
+	}
+	virtual void startElement (std::string uri,
+				   std::string localName,
+				   std::string qName,
+				   Attributes* attrs) {
+	    if (parser->aborted) return;
+	    try {
+		handler->startElement(uri, localName, qName, attrs);
+	    }
+	    catch (std::string& e) {
+		parser->handleError(e);
+	    }
+	}
+	virtual void endElement (std::string uri,
+				 std::string localName,
+				 std::string qName) {
+	    if (parser->aborted) return;
+	    try {
+		handler->endElement(uri, localName, qName);
+	    }
+	    catch (std::string& e) {
+		parser->handleError(e);
+	    }
+	}
+	virtual void characters (const char ch[],
+				 int start,
+				 int length) {
+	    if (parser->aborted) return;
+	    try {
+		handler->characters(ch, start, length);
+	    }
+	    catch (std::string& e) {
+		parser->handleError(e);
+	    }
+	}
+	virtual void error(const char* msg, va_list args) {
+	    try {
+		handler->error(msg, args);
+	    }
+	    catch (std::string& e) {
+		parser->handleError(e);
+	    }
+	}
+	virtual void warnting(const char* msg, va_list args) {
+	    try {
+		handler->warning(msg, args);
+	    }
+	    catch (std::string& e) {
+		parser->handleError(e);
+	    }
+	}
+    };
+
 }
 
