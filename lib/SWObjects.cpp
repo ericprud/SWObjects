@@ -776,7 +776,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
-	     it != m_TableOperations.end(); it++)
+	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, rs);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
