@@ -18,6 +18,7 @@ namespace w3c_sw {
     extern const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"	;
     extern const char* NS_rdfs= "http://www.w3.org/2000/01/rdf-schema#"		;
     extern const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
+    extern const char* NS_dc  = "http://purl.org/dc/terms/"			;
 
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
