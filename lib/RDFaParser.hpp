@@ -14,13 +14,14 @@ namespace w3c_sw {
 	class RDFaSaxHandler : public SWSAXhandler {
 	protected:
 	    struct State {
+		bool inHead;
 		std::string baseURI;
 		const POS* about;
 		const POS* rel;
 		const POS* property;
 		const URI* datatype;
 		std::string langtag;
-		State () : baseURI(""), about(NULL), rel(NULL), property(NULL), datatype(NULL), langtag("") {  }
+		State () : inHead(false), baseURI(""), about(NULL), rel(NULL), property(NULL), datatype(NULL), langtag("") {  }
 		std::string toString () const {
 		    std::stringstream ret;
 		    ret << 
@@ -76,12 +77,13 @@ namespace w3c_sw {
 	    }
 
 	    virtual void startElement (std::string /* uri */,
-				       std::string /* localName */,
+				       std::string localName,
 				       std::string /* qName */,
 				       Attributes* attrs, 
 				       NSmap& nsz) {
 		State parent = stack.top();
 		State nested;
+		nested.inHead = localName == "head";
 		nested.rel = parent.rel;
 
 		std::string t;
@@ -140,9 +142,13 @@ namespace w3c_sw {
 		    nested.property = _QnameToURI(t, nsz);
 		    t = attrs->getValue("", "content");
 		    if (!t.empty()) {
-			bgp->addTriplePattern(posFactory->getTriple(parent.about, 
-								    nested.property, 
-								    posFactory->getRDFLiteral(t, NULL, NULL)));
+			bgp->addTriplePattern(posFactory->
+				getTriple(parent.about, 
+					  nested.property, 
+					  posFactory->getRDFLiteral(t, 
+					    nested.datatype, 
+					    nested.langtag.empty() ? NULL : 
+					    new LANGTAG(nested.langtag))));
 			nested.property = NULL;
 		    }
 		}
@@ -152,12 +158,21 @@ namespace w3c_sw {
 		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
 	    virtual void endElement (std::string,
-				     std::string,
+				     std::string localName,
 				     std::string, 
 				     NSmap& /* nsz */) {
 		State nested = stack.top();
 		stack.pop();
-		if (nested.property) {
+		if (stack.top().inHead && localName == "title")
+		    bgp->addTriplePattern(posFactory->
+				getTriple(posFactory->getURI(nested.baseURI), 
+					  posFactory->getURI(std::string(NS_dc) + "title"), 
+					  posFactory->getRDFLiteral(chars, 
+					    NULL, 
+					    nested.langtag.empty() ? NULL : 
+					    new LANGTAG(nested.langtag))));
+
+		else if (nested.property) {
 		    const POS* o = posFactory->getRDFLiteral(chars, 
 							     nested.datatype, 
 							     nested.langtag.empty() ? NULL : new LANGTAG(nested.langtag));
