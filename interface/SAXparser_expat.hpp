@@ -19,6 +19,14 @@ namespace w3c_sw {
 
     class SAXparser_expat : public InsulatedSAXparser {
     protected:
+	typedef std::map< std::string, std::string > NSmapImpl;
+	class NSmapWrapper : public SWSAXhandler::NSmap {
+	    NSmapImpl& map;
+	public:
+	    NSmapWrapper (NSmapImpl& map) : map(map) {  }
+	    virtual std::string operator[] (std::string prefix) { return map[prefix]; }
+	};
+
 	struct NsSet {
 	    const char* namespaceURI;
 	    const char* localName;
@@ -41,7 +49,7 @@ namespace w3c_sw {
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
 
-	std::stack< std::map< std::string, std::string > > nsz;
+	std::stack< NSmapImpl > nsz;
 
 	std::string readFile (const char* filename, const char* type) {
 	    std::ifstream dataStream(filename);
@@ -58,7 +66,8 @@ namespace w3c_sw {
 
     public:
 	SAXparser_expat () {
-	    std::map< std::string, std::string > aboveRoot;
+	    NSmapImpl aboveRoot;
+	    aboveRoot["xml"] = NS_xml;
 	    nsz.push(aboveRoot);
 	}
 	virtual ~SAXparser_expat () {  }
@@ -119,7 +128,7 @@ namespace w3c_sw {
 	}
 	void __dumpNsz (const char* sit) {
 	    std::cerr << sit << "\n";
-	    for (std::map< std::string, std::string >::const_iterator it = nsz.top().begin();
+	    for (NSmapImpl::const_iterator it = nsz.top().begin();
 		 it != nsz.top().end(); ++it)
 		std::cerr << "    xmlns:" << it->first << "=\"" << it->second << "\"\n";
 	}
@@ -127,7 +136,7 @@ namespace w3c_sw {
 			     const XML_Char *name,
 			     const XML_Char **atts) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
-	    std::map< std::string, std::string > nsframe(self.nsz.top());
+	    NSmapImpl nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
 	    Attributes_expat attrs;
 	    { /* Walk attrs. */
@@ -138,13 +147,16 @@ namespace w3c_sw {
 		    if (lname == NULL) {
 			lname = prefix;
 			prefix = "";
-		    }
+		    } else
+			++lname;
 		    if (!strncmp(prefix[0] ? prefix : lname, "xmlns", 5)) {
 			self.nsz.top()[prefix[0] ? lname+1 : ""] = value;
-		    } else if (prefix) {
-			char* dup = new char[lname - prefix];
-			strncpy(dup, prefix, lname - prefix - 1);
-			attrs.byIndex.push_back(NsSet(lname, prefix ? prefix : "", value));
+		    } else if (prefix[0]) {
+			size_t len = lname - prefix - 1;
+			char* dup = new char[len + 1];
+			strncpy(dup, prefix, len);
+			dup[len] = 0;
+			attrs.byIndex.push_back(NsSet(lname, dup, value));
 		    } else {
 			attrs.byIndex.push_back(NsSet(lname, "", value));
 		    }
@@ -169,7 +181,8 @@ namespace w3c_sw {
 			self.insulator->error("namespace prefix \"%s\" not found", (char*)nss.prefix);
 		}
 	    }
- 	    self.insulator->startElement(elNs, elLname, name, &attrs);
+	    NSmapWrapper wrap(self.nsz.top());
+ 	    self.insulator->startElement(elNs, elLname, name, &attrs, wrap);
 	}
 
 	static void endEl (void *voidSelf,
@@ -178,7 +191,8 @@ namespace w3c_sw {
 	    const char* elLname;
 	    const char* elNs;
 	    self._crackQName(name, &elLname, &elNs);
- 	    self.insulator->endElement(elNs, elLname, (const char*)name);
+	    NSmapWrapper wrap(self.nsz.top());
+ 	    self.insulator->endElement(elNs, elLname, (const char*)name, wrap);
 	    self.nsz.pop();
 	}
 
@@ -186,7 +200,8 @@ namespace w3c_sw {
 			   const XML_Char *s,
 			   int len) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
- 	    self.insulator->characters((const char*)s, 0, len);
+	    NSmapWrapper wrap(self.nsz.top());
+ 	    self.insulator->characters((const char*)s, 0, len, wrap);
 	}
     };
 

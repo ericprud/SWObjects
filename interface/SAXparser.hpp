@@ -15,9 +15,16 @@ namespace w3c_sw {
 
     class SWSAXhandler {
     public:
+	class NSmap {
+	public:
+	    virtual ~NSmap () {  }
+	    virtual std::string operator[](std::string prefix) = 0;
+	};
+
 	static std::string qName (const char* prefix, const char* localName) {
 	    return (prefix && prefix[0] ? std::string((const char*)prefix) + '~' : std::string("")) + (const char*)localName;
 	}
+
 	class Attributes {
 	public:
 	    Attributes () {  }
@@ -46,7 +53,8 @@ namespace w3c_sw {
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
-				   Attributes* attrs) {
+				   Attributes* attrs, 
+				   NSmap& /* nsz */) {
 	    std::cout << "<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
@@ -56,12 +64,14 @@ namespace w3c_sw {
 	}
 	virtual void endElement (std::string uri,
 				 std::string localName,
-				 std::string qName) {
+				 std::string qName, 
+				 NSmap& /* nsz */) {
 	    std::cout << "</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
 	}
 	virtual void characters (const char ch[],
 				 int start,
-				 int length) {
+				 int length, 
+				 NSmap& /* nsz */) {
 	    std::cout << std::string(ch, start, length);
 	}
 
@@ -181,10 +191,11 @@ namespace w3c_sw {
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
-				   Attributes* attrs) {
+				   Attributes* attrs, 
+				   NSmap& nsz) {
 	    if (parser->aborted) return;
 	    try {
-		handler->startElement(uri, localName, qName, attrs);
+		handler->startElement(uri, localName, qName, attrs, nsz);
 	    }
 	    catch (std::string& e) {
 		parser->handleError(e);
@@ -192,10 +203,11 @@ namespace w3c_sw {
 	}
 	virtual void endElement (std::string uri,
 				 std::string localName,
-				 std::string qName) {
+				 std::string qName, 
+				 NSmap& nsz) {
 	    if (parser->aborted) return;
 	    try {
-		handler->endElement(uri, localName, qName);
+		handler->endElement(uri, localName, qName, nsz);
 	    }
 	    catch (std::string& e) {
 		parser->handleError(e);
@@ -203,10 +215,11 @@ namespace w3c_sw {
 	}
 	virtual void characters (const char ch[],
 				 int start,
-				 int length) {
+				 int length, 
+				 NSmap& nsz) {
 	    if (parser->aborted) return;
 	    try {
-		handler->characters(ch, start, length);
+		handler->characters(ch, start, length, nsz);
 	    }
 	    catch (std::string& e) {
 		parser->handleError(e);
