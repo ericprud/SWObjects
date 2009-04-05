@@ -42,6 +42,16 @@ namespace w3c_sw {
 
     class SAXparser_msxml3 : public InsulatedSAXparser {
     protected:
+	class MsNsMap : public SWSAXhandler::NSmap {
+	    const SAXparser_msxml3* h;
+	public:
+	    MsNsMap (const SAXparser_msxml3* h) : h(h) {  }
+	    virtual std::string operator[] (std::string prefix) {
+		return std::string(""); // !!!
+		// return h->pXMLReader->getURI(prefix);
+	    }
+	};
+
 	struct NsSet {
 	    std::string namespaceURI;
 	    std::string localName;
@@ -149,10 +159,11 @@ namespace w3c_sw {
 						   ISAXAttributes __RPC_FAR *pAttributes)
 	    {
 		Attributes_msxml3 attrs(pAttributes);
-		h->saxHandler->startElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
+		MsNsMap nsMap(this->h);
+		h->insulator->startElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					    (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
 					    (const char*)to8bit(pwchRawName, cchRawName).c_str(), 
-					    &attrs);
+					   &attrs, nsMap);
 		return S_OK;
 	    }
 
@@ -163,16 +174,18 @@ namespace w3c_sw {
 						 wchar_t __RPC_FAR *pwchRawName,
 						 int cchRawName)
 	    {
-		h->saxHandler->endElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
+		MsNsMap nsMap(this->h);
+		h->insulator->endElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					  (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
-					  (const char*)to8bit(pwchRawName, cchRawName).c_str());
+					 (const char*)to8bit(pwchRawName, cchRawName).c_str(), nsMap);
 		return S_OK;
 	    }
 
 	    virtual HRESULT STDMETHODCALLTYPE characters(wchar_t __RPC_FAR *pwchChars,
 							 int cchChars)
 	    {
-		h->saxHandler->characters((const char*)to8bit(pwchChars, cchChars).c_str(), 0, cchChars);
+		MsNsMap nsMap(this->h);
+		h->insulator->characters((const char*)to8bit(pwchChars, cchChars).c_str(), 0, cchChars, nsMap);
 		return S_OK;
 	    }
 
@@ -254,14 +267,14 @@ namespace w3c_sw {
 	    void myerror(const char * msg, ...) {
 		va_list args;
 		va_start(args, msg);
-		h->saxHandler->error(msg, args);
+		h->insulator->error(msg, args);
 		va_end(args);
 	    }
 
 	    void mywarning(const char * msg, ...) {
 		va_list args;
 		va_start(args, msg);
-		h->saxHandler->warning(msg, args);
+		h->insulator->warning(msg, args);
 		va_end(args);
 	    }
 
