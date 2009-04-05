@@ -122,7 +122,7 @@ namespace w3c_sw {
 			if (parent.about)
 			    bgp->addTriplePattern(posFactory->getTriple(parent.about, 
 									nested.rel, 
-									_QnameToURI(t, nsz)));
+									_relativeURI(t, nested.baseURI)));
 			nested.rel = NULL;
 		    }
 		}
