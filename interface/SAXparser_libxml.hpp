@@ -14,6 +14,16 @@ namespace w3c_sw {
 
     class SAXparser_libxml : public InsulatedSAXparser {
     protected:
+
+	class LibXmlNsMap : public SWSAXhandler::NSmap {
+	    const SAXparser_libxml& p;
+	public:
+	    LibXmlNsMap (const SAXparser_libxml& p) : p(p) {  }
+	    virtual std::string operator[] (std::string /* prefix */) {
+		return std::string(""); // !!! what's the libxml call for this?
+	    }
+	};
+
 	struct NsSet {
 	    const char* namespaceURI;
 	    const char* localName;
@@ -142,10 +152,11 @@ namespace w3c_sw {
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
  	    Attributes_libxml attrs(attributes, nb_attributes);
+	    LibXmlNsMap map(self);
  	    self.insulator->startElement((const char*)URI, 
 					  (const char*)localname, 
 					  SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
-					  &attrs);
+					 &attrs, map);
 	}
 
 	static void endElementNs (void * voidSelf, 
@@ -154,16 +165,18 @@ namespace w3c_sw {
 				  const xmlChar * URI )
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
+	    LibXmlNsMap map(self);
  	    self.insulator->endElement((const char*)URI, 
-					(const char*)localname, 
-					SWSAXhandler::qName((const char*)prefix, (const char*)localname));
+				       (const char*)localname, 
+				       SWSAXhandler::qName((const char*)prefix, (const char*)localname), map);
 	}
 
 	static void characters (void * voidSelf,
 				const xmlChar * ch,
 				int len) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
- 	    self.insulator->characters((const char*)ch, 0, len);
+	    LibXmlNsMap map(self);
+ 	    self.insulator->characters((const char*)ch, 0, len, map);
 	}
 
 	static void myerror( void * voidSelf, const char * msg, ... ) {
