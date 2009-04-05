@@ -23,6 +23,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_QueryMap", "win\test_Q
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RDFaParser", "win\test_RDFaParser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980001}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -49,6 +54,10 @@ Global
 		{56EF9C8B-007E-4CEE-AE32-6233A898491B}.Debug|Win32.Build.0 = Debug|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A898491B}.Release|Win32.ActiveCfg = Release|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A898491B}.Release|Win32.Build.0 = Release|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980001}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980001}.Debug|Win32.Build.0 = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980001}.Release|Win32.ActiveCfg = Release|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980001}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
