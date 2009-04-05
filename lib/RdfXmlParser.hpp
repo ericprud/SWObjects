@@ -66,7 +66,8 @@ namespace w3c_sw {
 	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string qName,
-				       Attributes* attrs) {
+				       Attributes* attrs, 
+				       NSmap& /* nsz */) {
 		State newState = {s_ERROR, NULL, NULL};
 		switch (stack.top().expect) {
 		case DOCUMENT:
@@ -224,7 +225,8 @@ namespace w3c_sw {
 	    }
 	    virtual void endElement (std::string,
 				     std::string,
-				     std::string qName) {
+				     std::string qName, 
+				     NSmap& /* nsz */) {
 		State nestedState = stack.top();
 		stack.pop();
 		switch (nestedState.expect) {
@@ -257,7 +259,8 @@ namespace w3c_sw {
 	    }
 	    virtual void characters (const char ch[],
 				     int start,
-				     int length) {
+				     int length, 
+				     NSmap& /* nsz */) {
 		chars += std::string(ch + start, length);
 	    }
 	};

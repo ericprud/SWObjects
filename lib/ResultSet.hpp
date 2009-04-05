@@ -171,7 +171,8 @@ namespace w3c_sw {
 	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string qName,
-				       Attributes* attrs) {
+				       Attributes* attrs, 
+				       NSmap& /* nsz */) {
 		if (uri != NS_srx)
 		    varError("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
 		enum STATES newState = s_ERROR;
@@ -241,7 +242,8 @@ namespace w3c_sw {
 	    }
 	    virtual void endElement (std::string,
 				     std::string,
-				     std::string) {
+				     std::string, 
+				     NSmap& /* nsz */) {
 		switch (stateStack.top()) {
 		case BOOLEAN:
 		    /* http://www.w3.org/TR/rdf-sparql-XMLres/#boolean-results */
@@ -279,7 +281,8 @@ namespace w3c_sw {
 	    }
 	    virtual void characters (const char ch[],
 				     int start,
-				     int length) {
+				     int length, 
+				     NSmap& /* nsz */) {
 		chars += std::string(ch + start, length);
 	    }
 	};

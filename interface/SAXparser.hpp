@@ -109,7 +109,8 @@ namespace w3c_sw {
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
-				   Attributes* attrs) {
+				   Attributes* attrs, 
+				   NSmap& /* nsz */) {
 	    out << "SM<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
@@ -119,12 +120,14 @@ namespace w3c_sw {
 	}
 	virtual void endElement (std::string uri,
 				 std::string localName,
-				 std::string qName) {
+				 std::string qName, 
+				 NSmap& /* nsz */) {
 	    out << "SM</" << qName << " _:ns=\"" << uri << "|" << localName << "\">" << std::endl;;
 	}
 	virtual void characters (const char ch[],
 				 int start,
-				 int length) {
+				 int length, 
+				 NSmap& /* nsz */) {
 	    out << std::string(ch, start, length);
 	}
     };
