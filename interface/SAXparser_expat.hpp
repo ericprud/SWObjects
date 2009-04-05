@@ -150,7 +150,7 @@ namespace w3c_sw {
 		    } else
 			++lname;
 		    if (!strncmp(prefix[0] ? prefix : lname, "xmlns", 5)) {
-			self.nsz.top()[prefix[0] ? lname+1 : ""] = value;
+			self.nsz.top()[prefix[0] ? lname : ""] = value;
 		    } else if (prefix[0]) {
 			size_t len = lname - prefix - 1;
 			char* dup = new char[len + 1];
