@@ -220,7 +220,7 @@ bin/%.d : bin/%.cpp config.h
 	-makedepend -bbin/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
 bin/%.o. : bin/%.cpp bin/%.d config.h
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
 	$(CXX) -o $@ $< $(LDFLAGS)
@@ -258,8 +258,11 @@ tests/test_%.d : tests/test_%.cpp config.h
 	-touch $@
 	-makedepend -btests/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
 
-tests/test_%: tests/test_%.cpp $(LIB) lib/SWObjects.hpp tests/test_%.d config.h
-	$(CXX) $(CXXFLAGS) $(TEST_LIB) -o $@ $< $(LDFLAGS)
+tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.d config.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+tests/test_%: tests/test_%.o $(LIB)
+	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
 	( cd tests && $(notdir $<) $(TEST_ARGS) )
