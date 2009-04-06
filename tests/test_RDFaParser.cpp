@@ -30,21 +30,45 @@
   #warning DAWG tests require an XML parser
 #endif
 
+#if HTTP_CLIENT == SWOb_ASIO
+  #include "../interface/WEBagent_boostASIO.hpp"
+  w3c_sw::WEBagent_boostASIO WebClient;
+#else /* ! HTTP_CLIENT == SWOb_ASIO */
+  #warning unable to test RDFa over HTTP
+#endif /* ! HTTP_CLIENT == SWOb_ASIO */
+
 using namespace w3c_sw;
 
 POSFactory F;
 TurtleSDriver turtleParser("", &F);
 RDFaParser GRDFaParser(&F, &P);
+const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
 
-BOOST_AUTO_TEST_CASE( bgp ) {
+BOOST_AUTO_TEST_CASE( by_file ) {
     DefaultGraphPattern tested;
-    GRDFaParser.parse(&tested, "RDFa-1.html", "http://hcls.deri.org/atag-data/gabab_example.html");
+    GRDFaParser.parse(&tested, "RDFa-0.html", gabab);
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
-    //turtleParser.setBase(baseURI);
-    turtleParser.parse_file("RDFa-1.ttl");
+    turtleParser.setBase(F.getURI(gabab));
+    turtleParser.parse_file("RDFa-0.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }
+
+#if HTTP_CLIENT != SWOb_DISABLED
+BOOST_AUTO_TEST_CASE( by_http ) {
+    DefaultGraphPattern tested;
+    std::string s(WebClient.get("http://mouni.local/RDFa-0.html"));
+    BOOST_CHECK_EQUAL(WebClient.getMediaType().substr(0, 9), "text/html");
+    GRDFaParser.parse(&tested, s.begin(), s.end(), gabab);
+
+    DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase(F.getURI(gabab));
+    turtleParser.parse_file("RDFa-0.ttl");
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+#endif /* HTTP_CLIENT != SWOb_DISABLED */
 
