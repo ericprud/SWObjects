@@ -9,7 +9,7 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sioc: <http://rdfs.org/sioc/ns#>
 PREFIX dbp: <http://dbpedia.org/ontology/>
 
-SELECT *
+SELECT ?post
 
 FROM NAMED <http://localhost:8888/7tm_receptors>
 FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
