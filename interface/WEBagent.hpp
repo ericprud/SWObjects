@@ -15,9 +15,12 @@
 namespace w3c_sw {
 
     class SWWEBagent {
+    protected:
+	std::string mediaType;
     public:
 	SWWEBagent () {  }
 	virtual ~SWWEBagent () {  }
+	std::string getMediaType () { return mediaType; }
 	virtual std::string get(
 #if REGEX_LIB == SWOb_DISABLED
 				std::string host, std::string port, std::string path

@@ -105,9 +105,15 @@ namespace w3c_sw {
 
 	    // Process the response headers.
 	    std::string header;
-	    while (std::getline(response_stream, header) && header != "\r")
-		std::cout << header << "\n";
-	    std::cout << "\n";
+	    while (std::getline(response_stream, header) && header != "\r") {
+		size_t colon = header.find_first_of(":");
+		if (colon != std::string::npos) {
+		    if (!header.compare(0, colon, "Content-Type"))
+			mediaType = header.substr(colon+2);
+		}
+		//std::cout << header << "\n";
+	    }
+	    //std::cout << "\n";
 
 	    std::ostringstream xmlResults;
 	    // Write whatever content we already have to output.
