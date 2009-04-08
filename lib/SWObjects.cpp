@@ -927,11 +927,6 @@ compared against
     bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
 	    return true;
-	struct TreatAsVar : public BNodeEvaluator {
-	    virtual const POS* evaluate (const BNode* node, const Result* r) {
-		return r->get(node);
-	    }
-	};
 	TreatAsVar treatAsVar;
 	const POS* curVal = evalPOS(provisional, &treatAsVar); // doesn't need to generate symbols
 	if (curVal == NULL) {

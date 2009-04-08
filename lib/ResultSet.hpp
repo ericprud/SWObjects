@@ -531,6 +531,12 @@ namespace w3c_sw {
 
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);
 
+    struct TreatAsVar : public BNodeEvaluator {
+	virtual const POS* evaluate (const BNode* node, const Result* r) {
+	    return r->get(node);
+	}
+    };
+
 } // namespace w3c_sw
 
 #endif // !RESULT_SET_H

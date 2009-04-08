@@ -152,15 +152,16 @@ namespace w3c_sw {
 	    TableOperation* getTableOperation () { return last.tableOperation; }
 
 	    virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* bgp) {
+		TreatAsVar treatAsVar;
 		for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
 		     triple != p_TriplePatterns->end(); triple++)
 #ifdef APPLY_VARMAPS_INDISCRIMINATELY
 		    {
 			/* Copy TriplePattern::construct functionality and inject transformation. */
 			const POS *s, *p, *o;
-			if ((s = (*triple)->getS()->evalPOS(row, false)) != NULL && 
-			    (p = (*triple)->getP()->evalPOS(row, false)) != NULL && 
-			    (o = (*triple)->getO()->evalPOS(row, false)) != NULL) {
+			if ((s = (*triple)->getS()->evalPOS(row, &treatAsVar)) != NULL && 
+			    (p = (*triple)->getP()->evalPOS(row, &treatAsVar)) != NULL && 
+			    (o = (*triple)->getO()->evalPOS(row, &treatAsVar)) != NULL) {
 			    /* inject transformations */
 #if REGEX_LIB == SWOb_BOOST
 			    const POS** uris[3] = {&s, &p, &o};
