@@ -61,11 +61,14 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (POSFactory* posFactory) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+    ResultSet::ResultSet (POSFactory* posFactory) : 
+	posFactory(posFactory), knownVars(), results(), ordered(false), 
+	isBool(false), bgp(NULL), selectOrder(), orderedSelect(false) {
 	results.insert(results.begin(), new Result(this));
     }
 
     ResultSet::~ResultSet () {
+	selectOrder.clear();
 	for (ResultSetIterator it = results.begin(); it != results.end(); it++)
 	    delete *it;
     }
@@ -145,6 +148,9 @@ namespace w3c_sw {
 	for (std::set<const POS*>::const_iterator var = toDel.begin();
 	     var != toDel.end(); ++var)
 	    knownVars.erase(*var);
+
+	selectOrder = *varsV;
+	orderedSelect = true;
     }
 
     void ResultSet::restrict (const Filter* filter) {
@@ -227,11 +233,20 @@ namespace w3c_sw {
 	unsigned lastInKnownVars = 0;
 	{
 	    std::map< const POS*, unsigned > pos2col;
-	    for (std::set<const POS*>::const_iterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
-		const POS* var = *varIt;
-		pos2col[var] = count++;
-		widths.push_back(var->toString().size());
-		vars.push_back(var);
+	    if (orderedSelect) {
+		for (std::vector<const POS*>::const_iterator varIt = selectOrder.begin() ; varIt != selectOrder.end(); ++varIt) {
+		    const POS* var = *varIt;
+		    pos2col[var] = count++;
+		    widths.push_back(var->toString().size());
+		    vars.push_back(var);
+		}
+	    } else {
+		for (std::set<const POS*>::const_iterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
+		    const POS* var = *varIt;
+		    pos2col[var] = count++;
+		    widths.push_back(var->toString().size());
+		    vars.push_back(var);
+		}
 	    }
 
 	    VariableList intruders;

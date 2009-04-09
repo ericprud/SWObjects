@@ -87,13 +87,18 @@ namespace w3c_sw {
 	bool ordered;
 	bool isBool;
 	BasicGraphPattern* bgp;
+	ProductionVector<const POS*> selectOrder;
+	bool orderedSelect;
 
     public:
 	static const char* NS_srx;
 	static const char* NS_xml;
 
 	ResultSet(POSFactory* posFactory);
-	ResultSet (const ResultSet& ref) : posFactory(ref.posFactory), knownVars(ref.knownVars), results(), ordered(ref.ordered), isBool(ref.isBool), bgp(ref.bgp) {
+	ResultSet (const ResultSet& ref) : 
+	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
+	    results(), ordered(ref.ordered), isBool(ref.isBool), 
+	    bgp(ref.bgp), selectOrder(), orderedSelect(false) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -105,7 +110,10 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : posFactory(posFactory), knownVars(), results(), ordered(ordered), isBool(false), bgp(NULL) {
+	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : 
+	    posFactory(posFactory), knownVars(), 
+	    results(), ordered(ordered), isBool(false), 
+	    bgp(NULL), selectOrder(), orderedSelect(false) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -288,10 +296,14 @@ namespace w3c_sw {
 	};
 
 	ResultSet (POSFactory* posFactory, BasicGraphPattern* bgp) : 
-	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(bgp) {  }
+	    posFactory(posFactory), knownVars(), 
+	    results(), ordered(false), isBool(false), 
+	    bgp(bgp), selectOrder(), orderedSelect(false) {  }
 
 	ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
-	    posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+	    posFactory(posFactory), knownVars(), 
+	    results(), ordered(false), isBool(false), 
+	    bgp(NULL), selectOrder(), orderedSelect(false) {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
@@ -360,12 +372,18 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : 
+	    posFactory(posFactory), knownVars(), 
+	    results(), ordered(false), isBool(false), 
+	    bgp(NULL), selectOrder(), orderedSelect(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : posFactory(posFactory), knownVars(), results(), ordered(false), isBool(false), bgp(NULL) {
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : 
+	    posFactory(posFactory), knownVars(), 
+	    results(), ordered(false), isBool(false), 
+	    bgp(NULL), selectOrder(), orderedSelect(false) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(start, finish, &handler);
 	}
