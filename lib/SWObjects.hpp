@@ -170,6 +170,11 @@ public:
     NoDelProductionVector () {  }
     NoDelProductionVector (T v) : ProductionVector<T>(v) {  }
     virtual ~NoDelProductionVector () { ProductionVector<T>::clear(); }
+    void operator= (const ProductionVector<T>& ref) {
+	for (typename std::vector<T>::iterator it = ref.begin(); it != ref.end(); ++it) {
+	    push_back(*it);
+	}
+    }
 };
 #if 0
 template <class T> class ProductionVector<T>::iterator:
@@ -458,8 +463,8 @@ public:
     bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const POS* graphVar, Result* provisional, const POS* graphName) const {
 	return
 	    graphName->bindVariable(graphVar, rs, provisional, weaklyBound) &&
-	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
+	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
     }
     bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const;
