@@ -247,6 +247,7 @@ bin/% : bin/%.o $(LIB) #lib
 #	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
 unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
+unitTESTexes := $(subst .cpp,,$(wildcard tests/test_*.cpp))
 # You can override unitTESTS while fiddling with them.
 #unitTESTS=t_GraphMatch
 #$(error unitTESTS: $(unitTESTS))
@@ -265,10 +266,10 @@ tests/test_%: tests/test_%.o $(LIB)
 	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 t_%: tests/test_%
-	( cd tests && $(notdir $<) $(TEST_ARGS) )
+	( cd tests && ./$(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
-	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no $(notdir $<) $(TEST_ARGS) )
+	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp
 
 
@@ -356,8 +357,8 @@ clean:
         $(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
         $(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
         $(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
-        $(transformTEST_RESULTS) $(transformVALGRIND)
-	$(RM) -fr tests/execute_*
+        $(transformTEST_RESULTS) $(transformVALGRIND) \
+	$(unitTESTexes)
 
 cleaner: clean
 	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
