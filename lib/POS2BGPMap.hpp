@@ -465,9 +465,6 @@ namespace w3c_sw {
 			       introduces constraints used by
 			       an OPT included later.
 			    */
-#ifndef WIN32
-#warning not including dependent optionals yet
-#endif
 			    continue;
 			}
 		    }
