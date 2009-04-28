@@ -225,11 +225,10 @@ struct Rule {
     Pattern head;
     Pattern body;
     std::string label;
-    PatternIdx headIdx;
     Rule (const Arc* hFirst, const Arc* hLast, 
 	  const Arc* bFirst, const Arc* bLast, std::string label) : 
 	head(hFirst, hLast), body(bFirst, bLast), 
-	label(label), headIdx(head.begin(), head.end()) {  }
+	label(label) {  }
     std::string getLabel () const { return label; }
 };
 bool operator< (const Rule l, const Rule r) {
