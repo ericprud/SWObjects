@@ -143,9 +143,6 @@ struct AtomDict : public std::map<std::string, const T*> {
 
 AtomDict<Const> Consts;
 AtomDict<Var> Vars;
-struct Result;
-struct ResultSet;
-struct RuleArc;
 
 /* Arc:  Atom--Atom->Atom
  */
@@ -276,59 +273,59 @@ std::ostream& operator<< (std::ostream& os, PatternOfRules const& arcSet) {
 typedef IdxPair<const Atom*, std::set<RuleArc>::const_iterator> PatternOfRulesIdx; // !!!DOOMED
 
 /* Mapping from Query Vars to Rule/Atom */
-struct RuleAtom {
-    unsigned invocation;
+struct AtomInvocation {
     const Atom* atom;
-    RuleAtom () : invocation(NULL), atom(NULL) {  }
-    RuleAtom (unsigned invocation, const Atom* atom) : 
-	invocation(invocation), atom(atom) {  }
+    unsigned invocation;
+    AtomInvocation () : atom(NULL), invocation(-1) {  }
+    AtomInvocation (const Atom* atom, unsigned invocation) : 
+	atom(atom), invocation(invocation) {  }
 };
-std::ostream& operator<< (std::ostream& os, RuleAtom const& ra) {
+std::ostream& operator<< (std::ostream& os, AtomInvocation const& ra) {
     os << *ra.atom << "(" << ra.invocation << ")";
     return os;
 }
 
-struct ResultsPerRule : public std::map<const Rule*, RuleAtom> {
+struct AtomInvocationsPerRule : public std::map<const Rule*, AtomInvocation> {
 };
-std::ostream& operator<< (std::ostream& os, ResultsPerRule const& resultsPerRule) {
-    for (ResultsPerRule::const_iterator it = resultsPerRule.begin(); it != resultsPerRule.end(); ++it) {
+std::ostream& operator<< (std::ostream& os, AtomInvocationsPerRule const& resultsPerRule) {
+    for (AtomInvocationsPerRule::const_iterator it = resultsPerRule.begin(); it != resultsPerRule.end(); ++it) {
 	if (it != resultsPerRule.begin())
 	    os << "\n         ";
 	os << it->first->getLabel() << ":" << it->second;
     }
     return os;
 }
-struct Result : public std::map<const Atom*, ResultsPerRule> {
+struct MappingSolution : public std::map<const Atom*, AtomInvocationsPerRule> {
 };
-bool operator< (const Result l, const Result r) {
+bool operator< (const MappingSolution l, const MappingSolution r) {
     /* Could memoize this. */
     std::set<const Atom*> ps;
-    for (Result::const_iterator it = l.begin(); it != l.end(); ++it)
+    for (MappingSolution::const_iterator it = l.begin(); it != l.end(); ++it)
 	ps.insert(it->first);
-    for (Result::const_iterator it = r.begin(); it != r.end(); ++it)
+    for (MappingSolution::const_iterator it = r.begin(); it != r.end(); ++it)
 	ps.insert(it->first);
     std::vector<const Atom*> vs(ps.begin(), ps.end());
     std::sort(vs.begin(), vs.end(), Atom::orderPtrs);
     for (std::vector<const Atom*>::const_iterator atom = vs.begin();
 	 atom != vs.end(); ++atom) {
-	Result::const_iterator lit = l.find(*atom);
-	Result::const_iterator rit = r.find(*atom);
+	MappingSolution::const_iterator lit = l.find(*atom);
+	MappingSolution::const_iterator rit = r.find(*atom);
 	if (lit == l.end())
 	    return true;
 	if (rit == r.end())
 	    return false;
 
 	std::set<const Atom*> resPerRule;
-	//!!! for (Result::const_iterator it = lit.second.begin(); it != lit.second.end(); ++it)
+	//!!! for (MappingSolution::const_iterator it = lit.second.begin(); it != lit.second.end(); ++it)
 	//     resPerRule.insert(it->first);
-	// for (Result::const_iterator it = rit.second.begin(); it != rit.second.end(); ++it)
+	// for (MappingSolution::const_iterator it = rit.second.begin(); it != rit.second.end(); ++it)
 	//     resPerRule.insert(it->first);
 	// std::vector<const Atom*> v_resPerRule(resPerRule.begin(), resPerRule.end());
 
 	// for (std::vector<const Atom*>::const_iterator atom = v_resPerRule.begin();
 	//      atom != v_resPerRule.end(); ++atom) {
-	//     ResultsPerRule::const_iterator lit_resPerRule = lit.second.find(*atom);
-	//     ResultsPerRule::const_iterator rit_resPerRule = rit.second.find(*atom);
+	//     AtomInvocationsPerRule::const_iterator lit_resPerRule = lit.second.find(*atom);
+	//     AtomInvocationsPerRule::const_iterator rit_resPerRule = rit.second.find(*atom);
 	//     if (lit_resPerRule == lit.second.end())
 	// 	return true;
 	//     if (rit_resPerRule == rit.second.end())
@@ -340,9 +337,9 @@ bool operator< (const Result l, const Result r) {
     }
     return false;
 }
-std::ostream& operator<< (std::ostream& os, Result const& row) {
+std::ostream& operator<< (std::ostream& os, MappingSolution const& row) {
     os << "  {";
-    for (Result::const_iterator it = row.begin(); it != row.end(); ++it) {
+    for (MappingSolution::const_iterator it = row.begin(); it != row.end(); ++it) {
 	if (it != row.begin())
 	    os << "\n   ";
 	os << *it->first << " => " << it->second;
@@ -351,15 +348,15 @@ std::ostream& operator<< (std::ostream& os, Result const& row) {
     return os;
 }
 
-struct  ResultSet : public std::vector<Result> {
-    ResultSet () {
-	Result s;
+struct  MappingSet : public std::vector<MappingSolution> {
+    MappingSet () {
+	MappingSolution s;
 	push_back(s);
     }
 };
-std::ostream& operator<< (std::ostream& os, ResultSet const& rs) {
+std::ostream& operator<< (std::ostream& os, MappingSet const& rs) {
     os << "[\n";
-    for (ResultSet::const_iterator it = rs.begin(); it != rs.end(); ++it)
+    for (MappingSet::const_iterator it = rs.begin(); it != rs.end(); ++it)
 	os << *it;
     os << "]" << std::endl;
     return os;
@@ -374,13 +371,13 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
     std::map<const Rule*, std::map<const Atom*, int> > invocationsByRuleAtom;
     int maxInvocations = 0;
 
-    ResultSet rs;
+    MappingSet rs;
     for (Pattern::const_iterator constraint = query.begin(); 
 	 rs.size() != 0 && constraint != query.end(); ) {
 	if (DebugStream) *DebugStream << *constraint << std::endl;
 
 	for (size_t iRow = 0; iRow < rs.size(); ++iRow) {
-	    ResultSet::iterator row = rs.begin();
+	    MappingSet::iterator row = rs.begin();
 	    for (size_t j = 0; j < iRow; ++j) ++row; // synch up an iterator
 	    bool matched = false;
 
@@ -395,7 +392,7 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 			 to->isConst() ? byRel->second.find(to) : byRel->second.begin();
 		     triple != byRel->second.end(); ++triple) {
 		    if (DebugStream) *DebugStream << "considering " << *triple->second << "\n";
-		    Result newRow(*row);
+		    MappingSolution newRow(*row);
 		    Arc a(*constraint);
 		    const RuleArc ruleArc = *triple->second;
 
@@ -409,19 +406,19 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 			int& thisInvocation = invocationsByRuleArc[ruleArc.rule][ruleArc.arc];
 			if (!from->isConst() && (newRow.find(from) == newRow.end() ||
 						 newRow[from].find(ruleArc.rule) == newRow[from].end())) {
-			    newRow[from][ruleArc.rule] = RuleAtom(thisInvocation, f);
+			    newRow[from][ruleArc.rule] = AtomInvocation(f, thisInvocation);
 			    if (invocationsByRuleAtom[ruleArc.rule][f] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][f] = thisInvocation;
 			}
 			if (!rel ->isConst() && (newRow.find(rel ) == newRow.end() ||
 						 newRow[rel ].find(ruleArc.rule) == newRow[rel ].end())) {
-			    newRow[rel ][ruleArc.rule] = RuleAtom(thisInvocation, r);
+			    newRow[rel ][ruleArc.rule] = AtomInvocation(r, thisInvocation);
 			    if (invocationsByRuleAtom[ruleArc.rule][r] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][r] = thisInvocation;
 			}
 			if (!to  ->isConst() && (newRow.find(to  ) == newRow.end() ||
 						 newRow[to  ].find(ruleArc.rule) == newRow[to  ].end())) {
-			    newRow[to  ][ruleArc.rule] = RuleAtom(thisInvocation, t);
+			    newRow[to  ][ruleArc.rule] = AtomInvocation(t, thisInvocation);
 			    if (invocationsByRuleAtom[ruleArc.rule][t] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][t] = thisInvocation;
 			}
@@ -447,16 +444,16 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
     
     if (DebugStream) *DebugStream << rs;
 
-    for (ResultSet::const_iterator row = rs.begin(); 
+    for (MappingSet::const_iterator row = rs.begin(); 
 	 row != rs.end(); ++row) {
 
-	std::map<const Rule*, ResultSet> resSetsByRule;
+	std::map<const Rule*, MappingSet> resSetsByRule;
 
 	for (int curInvocation = 0; curInvocation < maxInvocations; ++curInvocation) {
-	    for (Result::const_iterator binding = row->begin();
+	    for (MappingSolution::const_iterator binding = row->begin();
 		 binding != row->end(); ++binding) {
 
-	    for (ResultsPerRule::const_iterator resultsPerRuleIt = binding->second.begin();
+	    for (AtomInvocationsPerRule::const_iterator resultsPerRuleIt = binding->second.begin();
 		 resultsPerRuleIt != binding->second.end(); ++resultsPerRuleIt) {
 
 		const Atom* queryAtom = binding->first;
@@ -468,23 +465,23 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 		    continue;
 		if (resSetsByRule[rule].back().find(ruleAtom) != resSetsByRule[rule].back().end() && 
 		    resSetsByRule.find(rule) != resSetsByRule.end()) {
-		    Result result;
+		    MappingSolution result;
 		    resSetsByRule[rule].push_back(result);
 		}
 		resSetsByRule[rule].back()[ruleAtom][rule] = 
-		    RuleAtom(ruleInvocation, queryAtom);
+		    AtomInvocation(queryAtom, ruleInvocation);
 	    }
 	    }
 	}
 
 	Pattern disjoint;
-	for (std::map<const Rule*, ResultSet>::const_iterator rule = resSetsByRule.begin();
+	for (std::map<const Rule*, MappingSet>::const_iterator rule = resSetsByRule.begin();
 	     rule != resSetsByRule.end(); ++rule) {
 	    for (Pattern::const_iterator triple = rule->first->body.begin();
 		 triple != rule->first->body.end(); ++triple) {
-		ResultSet ruleResultSet = rule->second;
+		MappingSet ruleResultSet = rule->second;
 		if (DebugStream) *DebugStream << "filling " << *triple << " from\n" << ruleResultSet;
-		for (ResultSet::const_iterator ruleResultSetRow = ruleResultSet.begin(); 
+		for (MappingSet::const_iterator ruleResultSetRow = ruleResultSet.begin(); 
 		     ruleResultSetRow != ruleResultSet.end(); ++ruleResultSetRow) {
 		    const Atom* f = triple->from->isConst() ? triple->from : 
 		     	ruleResultSetRow->find(triple->from) == ruleResultSetRow->end() || 
