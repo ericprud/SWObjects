@@ -1,3 +1,19 @@
+/* feddemo - test of federation algorithm
+
+   compiles with very strict error checking:
+   g++ -g -O0 -std=c++0x -pedantic-errors -Wall -Wextra -Wno-empty-body \
+       -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated \
+       -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros \
+       -fmessage-length=0 -ftemplate-depth-128 -fno-merge-constants \
+       -fno-nonansi-builtins -fno-gnu-keywords -fno-elide-constructors \
+       -fstrict-aliasing -Winvalid-pch \
+       -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_GLIBCXX_CONCEPT_CHECKS \
+       -o feddemo feddemo.cpp
+
+   executes with no memory leaks:
+   valgrind --leak-check=yes  --xml=no ./feddemo
+ */
+
 #include <map>
 #include <set>
 #include <vector>
