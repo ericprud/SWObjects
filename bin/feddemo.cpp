@@ -280,6 +280,18 @@ struct AtomInvocation {
     AtomInvocation (const Atom* atom, unsigned invocation) : 
 	atom(atom), invocation(invocation) {  }
 };
+bool operator!= (const AtomInvocation& l, const AtomInvocation& r) {
+    bool ret = *l.atom != *r.atom;
+    if (ret)
+	return true;
+    return l.invocation != r.invocation;
+}
+bool operator< (const AtomInvocation& l, const AtomInvocation& r) {
+    bool ret = *l.atom != *r.atom;
+    if (ret)
+	return *l.atom < *r.atom;
+    return l.invocation < r.invocation;
+}
 std::ostream& operator<< (std::ostream& os, AtomInvocation const& ra) {
     os << *ra.atom << "(" << ra.invocation << ")";
     return os;
@@ -287,6 +299,52 @@ std::ostream& operator<< (std::ostream& os, AtomInvocation const& ra) {
 
 struct AtomInvocationsPerRule : public std::map<const Rule*, AtomInvocation> {
 };
+bool operator!= (const AtomInvocationsPerRule& l, const AtomInvocationsPerRule& r) {
+    std::set<const Rule*> ps;
+    for (AtomInvocationsPerRule::const_iterator it = l.begin(); it != l.end(); ++it)
+	ps.insert(it->first);
+    for (AtomInvocationsPerRule::const_iterator it = r.begin(); it != r.end(); ++it)
+	ps.insert(it->first);
+    std::vector<const Rule*> vs(ps.begin(), ps.end());
+    std::sort(vs.begin(), vs.end());
+    for (std::vector<const Rule*>::const_iterator atom = vs.begin();
+	 atom != vs.end(); ++atom) {
+	AtomInvocationsPerRule::const_iterator lit = l.find(*atom);
+	AtomInvocationsPerRule::const_iterator rit = r.find(*atom);
+	if (lit == l.end())
+	    return true;
+	if (rit == r.end())
+	    return true;
+	AtomInvocation lms = lit->second;
+	AtomInvocation rms = rit->second;
+	if (lms != rms)
+	    return true;
+    }
+    return false;
+}
+bool operator< (const AtomInvocationsPerRule& l, const AtomInvocationsPerRule& r) {
+    std::set<const Rule*> ps;
+    for (AtomInvocationsPerRule::const_iterator it = l.begin(); it != l.end(); ++it)
+	ps.insert(it->first);
+    for (AtomInvocationsPerRule::const_iterator it = r.begin(); it != r.end(); ++it)
+	ps.insert(it->first);
+    std::vector<const Rule*> vs(ps.begin(), ps.end());
+    std::sort(vs.begin(), vs.end());
+    for (std::vector<const Rule*>::const_iterator atom = vs.begin();
+	 atom != vs.end(); ++atom) {
+	AtomInvocationsPerRule::const_iterator lit = l.find(*atom);
+	AtomInvocationsPerRule::const_iterator rit = r.find(*atom);
+	if (lit == l.end())
+	    return true;
+	if (rit == r.end())
+	    return false;
+	AtomInvocation lms = lit->second;
+	AtomInvocation rms = rit->second;
+	if (lms != rms)
+	    return lms < rms;
+    }
+    return false;
+}
 std::ostream& operator<< (std::ostream& os, AtomInvocationsPerRule const& resultsPerRule) {
     for (AtomInvocationsPerRule::const_iterator it = resultsPerRule.begin(); it != resultsPerRule.end(); ++it) {
 	if (it != resultsPerRule.begin())
@@ -295,9 +353,10 @@ std::ostream& operator<< (std::ostream& os, AtomInvocationsPerRule const& result
     }
     return os;
 }
+
 struct MappingSolution : public std::map<const Atom*, AtomInvocationsPerRule> {
 };
-bool operator< (const MappingSolution l, const MappingSolution r) {
+bool operator< (const MappingSolution& l, const MappingSolution& r) {
     /* Could memoize this. */
     std::set<const Atom*> ps;
     for (MappingSolution::const_iterator it = l.begin(); it != l.end(); ++it)
@@ -314,26 +373,10 @@ bool operator< (const MappingSolution l, const MappingSolution r) {
 	    return true;
 	if (rit == r.end())
 	    return false;
-
-	std::set<const Atom*> resPerRule;
-	//!!! for (MappingSolution::const_iterator it = lit.second.begin(); it != lit.second.end(); ++it)
-	//     resPerRule.insert(it->first);
-	// for (MappingSolution::const_iterator it = rit.second.begin(); it != rit.second.end(); ++it)
-	//     resPerRule.insert(it->first);
-	// std::vector<const Atom*> v_resPerRule(resPerRule.begin(), resPerRule.end());
-
-	// for (std::vector<const Atom*>::const_iterator atom = v_resPerRule.begin();
-	//      atom != v_resPerRule.end(); ++atom) {
-	//     AtomInvocationsPerRule::const_iterator lit_resPerRule = lit.second.find(*atom);
-	//     AtomInvocationsPerRule::const_iterator rit_resPerRule = rit.second.find(*atom);
-	//     if (lit_resPerRule == lit.second.end())
-	// 	return true;
-	//     if (rit_resPerRule == rit.second.end())
-	// 	return false;
-	
-	//     if (*lit_resPerRule->second.atom != *rit_resPerRule->second.atom)
-	// 	return *lit_resPerRule->second.atom < *rit_resPerRule->second.atom;
-	// }
+	AtomInvocationsPerRule lms = lit->second;
+	AtomInvocationsPerRule rms = rit->second;
+	if (lms != rms)
+	    return lms < rms;
     }
     return false;
 }
@@ -433,11 +476,7 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 		    }
 		}
 	    }
-	    if (matched) {
-		rs.erase(row++);
-	    } else {
-		row++;
-	    }
+	    rs.erase(row++);
 	}
 	++constraint;
     }
