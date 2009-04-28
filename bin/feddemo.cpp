@@ -21,7 +21,7 @@
 #include <iostream>
 #include <algorithm>
 
-std::ostream* DebugStream = NULL; // &std::cerr;
+std::ostream* DebugStream = &std::cerr;
 
 template <typename KeyType, typename T> 
 struct SingleIdx : public std::multimap<KeyType, T> {  };
@@ -280,7 +280,7 @@ struct RuleAtom {
     unsigned invocation;
     const Atom* atom;
     RuleAtom () : invocation(NULL), atom(NULL) {  }
-    RuleAtom (const Rule* rule, unsigned invocation, const Atom* atom) : 
+    RuleAtom (unsigned invocation, const Atom* atom) : 
 	invocation(invocation), atom(atom) {  }
 };
 std::ostream& operator<< (std::ostream& os, RuleAtom const& ra) {
@@ -409,19 +409,19 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 			int& thisInvocation = invocationsByRuleArc[ruleArc.rule][ruleArc.arc];
 			if (!from->isConst() && (newRow.find(from) == newRow.end() ||
 						 newRow[from].find(ruleArc.rule) == newRow[from].end())) {
-			    newRow[from][ruleArc.rule] = RuleAtom(ruleArc.rule, thisInvocation, f);
+			    newRow[from][ruleArc.rule] = RuleAtom(thisInvocation, f);
 			    if (invocationsByRuleAtom[ruleArc.rule][f] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][f] = thisInvocation;
 			}
 			if (!rel ->isConst() && (newRow.find(rel ) == newRow.end() ||
 						 newRow[rel ].find(ruleArc.rule) == newRow[rel ].end())) {
-			    newRow[rel ][ruleArc.rule] = RuleAtom(ruleArc.rule, thisInvocation, r);
+			    newRow[rel ][ruleArc.rule] = RuleAtom(thisInvocation, r);
 			    if (invocationsByRuleAtom[ruleArc.rule][r] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][r] = thisInvocation;
 			}
 			if (!to  ->isConst() && (newRow.find(to  ) == newRow.end() ||
 						 newRow[to  ].find(ruleArc.rule) == newRow[to  ].end())) {
-			    newRow[to  ][ruleArc.rule] = RuleAtom(ruleArc.rule, thisInvocation, t);
+			    newRow[to  ][ruleArc.rule] = RuleAtom(thisInvocation, t);
 			    if (invocationsByRuleAtom[ruleArc.rule][t] < thisInvocation)
 				invocationsByRuleAtom[ruleArc.rule][t] = thisInvocation;
 			}
@@ -472,7 +472,7 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 		    resSetsByRule[rule].push_back(result);
 		}
 		resSetsByRule[rule].back()[ruleAtom][rule] = 
-		    RuleAtom(rule, ruleInvocation, queryAtom);
+		    RuleAtom(ruleInvocation, queryAtom);
 	    }
 	    }
 	}
