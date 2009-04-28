@@ -277,15 +277,14 @@ typedef IdxPair<const Atom*, std::set<RuleArc>::const_iterator> PatternOfRulesId
 
 /* Mapping from Query Vars to Rule/Atom */
 struct RuleAtom {
-    const Rule* rule;
     unsigned invocation;
     const Atom* atom;
-    RuleAtom () : rule(NULL), invocation(NULL), atom(NULL) {  }
+    RuleAtom () : invocation(NULL), atom(NULL) {  }
     RuleAtom (const Rule* rule, unsigned invocation, const Atom* atom) : 
-	rule(rule), invocation(invocation), atom(atom) {  }
+	invocation(invocation), atom(atom) {  }
 };
 std::ostream& operator<< (std::ostream& os, RuleAtom const& ra) {
-    os << *ra.atom << "(" << ra.invocation << ") per " << ra.rule->getLabel();
+    os << *ra.atom << "(" << ra.invocation << ")";
     return os;
 }
 
@@ -462,7 +461,7 @@ Disjunction PatternOfRules::transformQuery (const Pattern& query) {
 
 		const Atom* queryAtom = binding->first;
 		const Atom* ruleAtom = resultsPerRuleIt->second.atom;
-		const Rule* rule = resultsPerRuleIt->second.rule;
+		const Rule* rule = resultsPerRuleIt->first;
 		int ruleInvocation = resultsPerRuleIt->second.invocation;
 		if (ruleInvocation != curInvocation && 
 		    invocationsByRuleAtom[rule][ruleAtom] >= curInvocation)
