@@ -23,6 +23,9 @@ FLEX:=flex
 YACC:=bison
 TEE:=tee
 SED:=sed
+# GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
+ECHO:=`which echo`
+ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
 #OPT=-O4
@@ -128,7 +131,7 @@ all:   lib test
 
 
 config.h: CONFIG
-	@echo -e "/* Generated from CONFIG.\\n" \
+	@$(ECHO) -e "/* Generated from CONFIG.\\n" \
 	"* In order to keep your link directives appropriate for the features enabled\\n" \
 	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\\n" \
 	"*/\\n" \
@@ -147,7 +150,7 @@ config.h: CONFIG
 	"/* SQL Libs: */\\n" \
 	"#define SWOb_MYSQL		148\\n" \
 	"\\n" $(CONFIG_DEFS) > config.h
-	@echo config.h updated.
+	@$(ECHO) config.h updated.
 
 .SECONDARY:
 
@@ -345,8 +348,8 @@ valgrind: lib $(transformVALGRIND)
 release:
 	$(RM) -f SWObjects_$(VER).tar.gz README.html
 	lynx -dump -source http://www.w3.org/2008/04/SPARQLfed/ | perl -pe 's{href="\.\./\.\./\.\.}{href="http://www.w3.org}g;s{href="\.\./\.\.}{href="http://www.w3.org/2008}g'> README.html
-	@echo "Generating the inclusion from the manifest (HEADER.html)"
-	@(echo "README.html" && perl -ne 'print join("\n", m/class="tar" href="([a-zA-Z]{2}[a-zA-Z0-9._\/]+)"/g, undef)' HEADER.html) | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
+	@$(echo) "Generating the inclusion from the manifest (HEADER.html)"
+	@($(echo) "README.html" && perl -ne 'print join("\n", m/class="tar" href="([a-zA-Z]{2}[a-zA-Z0-9._\/]+)"/g, undef)' HEADER.html) | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
 	$(RM) README.html
 
 
