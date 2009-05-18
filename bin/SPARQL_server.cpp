@@ -22,11 +22,7 @@
 using namespace dlib;
 #endif
 #if SQL_CLIENT == SWOb_SWOb_MYSQL
-  #ifdef WIN32
-    #include <mysql.h>
-   #else
-    #include <mysql/mysql.h>
-  #endif
+  #include "interface/SQLclient_MySQL.hpp"
 #endif /* SQL_CLIENT == SWOb_MYSQL */
 
 #include "SWObjects.hpp"
@@ -405,24 +401,19 @@ class WebServer : public server::http_1a_c
 	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, PkAttribute, &DebugStream);
 	mapped->express(&sqlizer);
 
-	MYSQL mysql,*sock;
-	MYSQL_RES *result;
-	mysql_init(&mysql);
-	if (!(sock = mysql_real_connect(&mysql,Server.c_str(),User.c_str(),0,Database.c_str(),0,NULL,0)))
-	    throw(SimpleMessageException("couldn't connect to mysql://" + 
-					 User + "@" + Server + "/" + Database));
-	if (mysql_query(sock, sqlizer.getSQLstring().c_str()))
-	    throw(SimpleMessageException("mysql://" + User + "@" + Server + "/" + Database +
-					 "could not execute [[\n" + 
-					 sqlizer.getSQLstring() + 
-					 "\n]]"));
-	if (!(result=mysql_store_result(sock)))
-	    throw(SimpleMessageException("mysql://" + User + "@" + Server + "/" + Database +
-					 "could not retrieve results of [[\n" + 
-					 sqlizer.getSQLstring() + 
-					 "\n]]"));
+	SQLclient_MySQL MySQLclient;
+	SQLclient* SQLclient(&MySQLclient);
+	SQLclient::Result* res;
+	try {
+	    SQLclient->connect(Server, Database, User);
+	    res = SQLclient->executeQuery(sqlizer.getSQLstring());
+	}
+	catch (std::string ex) {
+	    throw SimpleMessageException(ex);
+	}
 
 	stringstream ret;
+	SQLclient::Result::ColumnSet cols = res->cols();
 #if HTML_RESULTS
 	head(ret, "Query Results");
 
@@ -432,28 +423,25 @@ class WebServer : public server::http_1a_c
 	    "<h1>SQL Query</h1>\n"
 	    "<pre>" << sqlizer.getSQLstring() << "</pre>\n";
 	char space[1024];
-	sprintf(space, "<p>number of fields: %d</p>\n", mysql_num_fields(result));
+	sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
 	ret << space;
 
-	int num_fields = mysql_num_fields(result);
 	ret << 
 	    "    <table>\n"
 	    "      <tr>";
 
 	/* dump headers in <th/>s */
-	MYSQL_FIELD *field;
-       	while((field = mysql_fetch_field(result)))
-	    ret << "<th>" << field->name << "[" << field->type << "]</th>";
+	for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
+	     it != cols.end(); ++it)
+	    ret << "<th>" << it->name << "[" << it->type << "]</th>";
 	ret << "</tr>\n";
 
 	/* dump data in <td/>s */
-	MYSQL_ROW row;
-	while ((row = mysql_fetch_row(result))) {
-	    unsigned long *lengths;
-	    lengths = mysql_fetch_lengths(result);
+	SQLclient::Result::Row row;
+	while ((row = res->nextRow()) != res->end()) { // !!! use iterator
 	    ret << "      <tr>";
-	    for(int i = 0; i < num_fields; i++) {
-		sprintf(space, "[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
+	    for(int i = 0; i < cols.size(); i++) {
+		sprintf(space, "[%.*s] ", row[i].size(), row[i] ? row[i] : "NULL");
 		ret << "<td>" << space << "</td>";
 	    }
 	    ret("</tr>");
@@ -462,83 +450,39 @@ class WebServer : public server::http_1a_c
 	foot(ret);
 
 #else /* !HTML_RESULTS */
-	int num_fields = mysql_num_fields(result);
 	ret << 
 	    "<?xml version='1.0'?>\n"
 	    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
 	    "  <head>\n";
 
 	/* dump headers in <th/>s */
-	MYSQL_FIELD *field;
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
-	for(int i = 0; i < num_fields; i++)
-	    ret << "    <variable name='" << fields[i].name << "'/>\n";
+	for(int i = 0; i < cols.size(); i++)
+	    ret << "    <variable name='" << cols[i].name << "'/>\n";
 	ret << "  </head>\n";
 	ret << "  <results>\n";
 
 	/* dump data in <td/>s */
-	MYSQL_ROW row;
-	while ((row = mysql_fetch_row(result))) {
-	    unsigned long *lengths;
-	    lengths = mysql_fetch_lengths(result);
+	SQLclient::Result::Row row;
+	while ((row = res->nextRow()) != res->end()) { // !!! use iterator
 	    ret << "    <result>\n";
-	    for(int i = 0; i < num_fields; i++)
-		if (row[i]) {
+	    for(int i = 0; i < cols.size(); i++)
+		if (row[i].size() > 0) {
 		    const char* dt = NULL;
 		    std::string lexval(row[i]);
 		    bool isNull = false;
-		    switch (fields[i].type) {
-		    case MYSQL_TYPE_DECIMAL:
-			dt = "http://www.w3.org/2001/XMLSchema#decimal";
-			break;
-		    case MYSQL_TYPE_TINY:
-			dt = "http://www.w3.org/2001/XMLSchema#tiny";
-			break;
-		    case MYSQL_TYPE_SHORT:
-			dt = "http://www.w3.org/2001/XMLSchema#short";
-			break;
-		    case MYSQL_TYPE_LONG:
-			dt = "http://www.w3.org/2001/XMLSchema#long";
-			break;
-		    case MYSQL_TYPE_FLOAT:
-			dt = "http://www.w3.org/2001/XMLSchema#float";
-			break;
-		    case MYSQL_TYPE_DOUBLE:
-			dt = "http://www.w3.org/2001/XMLSchema#double";
-			break;
-		    case MYSQL_TYPE_LONGLONG:
-			dt = "http://www.w3.org/2001/XMLSchema#decimal";
-			break;
-		    case MYSQL_TYPE_INT24:
-			dt = "http://www.w3.org/2001/XMLSchema#integer";
-			break;
-		    case MYSQL_TYPE_NULL:
-			isNull = true;
-			break;
-		    case MYSQL_TYPE_TIMESTAMP:
-			dt = "http://www.w3.org/2001/XMLSchema#dateTime";
-			lexval = "0-0-0T" + lexval;
-			break;
-		    case MYSQL_TYPE_YEAR:
-			dt = "http://www.w3.org/2001/XMLSchema#dateTime";
-			lexval = lexval = "-0-0T00:00";
-			break;
-		    case MYSQL_TYPE_STRING:
-			dt = "http://www.w3.org/2001/XMLSchema#string";
-		    case MYSQL_TYPE_VARCHAR:
-		    case MYSQL_TYPE_VAR_STRING:
-			for (size_t p = lexval.find_first_of("&<>"); 
-			     p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
-			    lexval.replace(p, 1, 
-					   lexval[p] == '&' ? "&amp;" : 
-					   lexval[p] == '<' ? "&lt;" : 
-					   lexval[p] == '>' ? "&gt;" : "huh??");
-			break;
-		    default:
-			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + fields[i].type;
-		    }
-		    if (!isNull) {
-			ret << "      <binding name='" << fields[i].name << "'>\n"
+		    if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
+			cols[i].type == SQLclient::Result::Field::TYPE__unknown)
+			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
+
+		    for (size_t p = lexval.find_first_of("&<>"); 
+			 p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
+			lexval.replace(p, 1, 
+				       lexval[p] == '&' ? "&amp;" : 
+				       lexval[p] == '<' ? "&lt;" : 
+				       lexval[p] == '>' ? "&gt;" : "huh??");
+
+		    if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
+			ret << "      <binding name='" << cols[i].name << "'>\n"
 			    "        ";
 			ret << "<literal";
 			if (dt)
