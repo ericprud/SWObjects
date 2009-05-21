@@ -7,7 +7,7 @@
 #ifndef SQL_CLIENT_MYSQL_H
 #define SQL_CLIENT_MYSQL_H
 
-#include "interface/SQLclient.hpp"
+#include "../interface/SQLclient.hpp"
 
 #ifdef WIN32
   #include <mysql.h>
