@@ -21,8 +21,8 @@
 #include "dlib/server.h"
 using namespace dlib;
 #endif
-#if SQL_CLIENT == SWOb_SWOb_MYSQL
-  #include "interface/SQLclient_MySQL.hpp"
+#if SQL_CLIENT == SWOb_MYSQL
+  #include "../interface/SQLclient_MySQL.hpp"
 #endif /* SQL_CLIENT == SWOb_MYSQL */
 
 #include "SWObjects.hpp"
@@ -82,9 +82,47 @@ struct SimpleMessageException : public StringException {
     }
 };
 
+class SqlResultSet : public ResultSet {
+public:
+    SqlResultSet (POSFactory* posFactory, SQLclient::Result* res) : ResultSet(posFactory) {
+	erase(begin());
+	SQLclient::Result::ColumnSet cols = res->cols();
+	std::vector<const POS*> vars;
+
+	/* dump headers in <th/>s */
+	for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
+	     it != cols.end(); ++it)
+	    vars.push_back(posFactory->getVariable(it->name));
+
+	knownVars.insert(vars.begin(), vars.end());
+
+	SQLclient::Result::Row row;
+	while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+	    Result* result = new Result(this);
+	    for(size_t i = 0; i < cols.size(); i++)
+		if (row[i].size() > 0) {
+		    const char* dt = NULL;
+		    std::string lexval(row[i]);
+		    if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
+			cols[i].type == SQLclient::Result::Field::TYPE__unknown)
+			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
+
+		    if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
+			const URI* dtpos = dt ? posFactory->getURI(dt) : NULL;
+			const POS* val = posFactory->getRDFLiteral(lexval, dtpos, NULL);
+			set(result, vars[i], val, false);
+		    }
+		}
+	}
+    }
+};
+
+
 #if HTTP_SERVER == SWOb_DLIB
 class WebServer : public server::http_1a_c
 {
+
+    RdfDB db;
 
     /* wholesale import of stuff from dlib-17.11/dlib/server/server_http_1.h
      * in order to provide control over the status message.
@@ -388,7 +426,15 @@ class WebServer : public server::http_1a_c
 
 
 
-    void executeQuery (ostringstream& sout, Operation* query, string queryStr) {
+    void executeQuery (ostringstream& sout, Operation* query, string queryStr, bool htmlResults) {
+#if SQL_CLIENT == SWOb_DISABLED
+	ostringstream ret;
+	string finalQuery = queryStr;
+	string language = "SPARQL";
+	ResultSet rs(&posFactory);
+	query->execute(&db, &rs);
+#else /* SQL_CLIENT != SWOb_DISABLED */
+
 	SPARQLSerializer s;
 	query->express(&s);
 	cout << s.getString() << endl;
@@ -401,102 +447,107 @@ class WebServer : public server::http_1a_c
 	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, PkAttribute, &DebugStream);
 	mapped->express(&sqlizer);
 
+	string finalQuery = sqlizer.getSQLstring();
+	string language = "SQL";
+
 	SQLclient_MySQL MySQLclient;
 	SQLclient* SQLclient(&MySQLclient);
 	SQLclient::Result* res;
 	try {
 	    SQLclient->connect(Server, Database, User);
-	    res = SQLclient->executeQuery(sqlizer.getSQLstring());
+	    res = SQLclient->executeQuery(finalQuery);
 	}
 	catch (std::string ex) {
 	    throw SimpleMessageException(ex);
 	}
+	SqlResultSet rs(&posFactory, res);
 
-	stringstream ret;
+	ostringstream ret;
 	SQLclient::Result::ColumnSet cols = res->cols();
-#if HTML_RESULTS
-	head(ret, "Query Results");
 
-	ret <<
-	    "<h1>SPARQL Query</h1>\n"
-	    "<pre>" << queryStr << "</pre>\n"
-	    "<h1>SQL Query</h1>\n"
-	    "<pre>" << sqlizer.getSQLstring() << "</pre>\n";
-	char space[1024];
-	sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
-	ret << space;
+#endif /* SQL_CLIENT != SWOb_DISABLED */
 
-	ret << 
-	    "    <table>\n"
-	    "      <tr>";
+	if (htmlResults) {
+	    head(ret, "Query Results");
 
-	/* dump headers in <th/>s */
-	for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
-	     it != cols.end(); ++it)
-	    ret << "<th>" << it->name << "[" << it->type << "]</th>";
-	ret << "</tr>\n";
+	    ret <<
+		"<h1>SPARQL Query</h1>\n"
+		"<pre>" << queryStr << "</pre>\n"
+		"<h1>" << language << " Query</h1>\n"
+		"<pre>" << finalQuery << "</pre>\n";
+	    char space[1024];
+	    sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
+	    ret << space;
 
-	/* dump data in <td/>s */
-	SQLclient::Result::Row row;
-	while ((row = res->nextRow()) != res->end()) { // !!! use iterator
-	    ret << "      <tr>";
-	    for(int i = 0; i < cols.size(); i++) {
-		sprintf(space, "[%.*s] ", row[i].size(), row[i] ? row[i] : "NULL");
-		ret << "<td>" << space << "</td>";
-	    }
-	    ret("</tr>");
-	}
-	ret << "    </table>";
-	foot(ret);
+	    ret << 
+		"    <table>\n"
+		"      <tr>";
 
-#else /* !HTML_RESULTS */
-	ret << 
-	    "<?xml version='1.0'?>\n"
-	    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
-	    "  <head>\n";
+	    /* dump headers in <th/>s */
+	    for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
+		 it != cols.end(); ++it)
+		ret << "<th>" << it->name << "[" << it->type << "]</th>";
+	    ret << "</tr>\n";
 
-	/* dump headers in <th/>s */
-	for(int i = 0; i < cols.size(); i++)
-	    ret << "    <variable name='" << cols[i].name << "'/>\n";
-	ret << "  </head>\n";
-	ret << "  <results>\n";
-
-	/* dump data in <td/>s */
-	SQLclient::Result::Row row;
-	while ((row = res->nextRow()) != res->end()) { // !!! use iterator
-	    ret << "    <result>\n";
-	    for(int i = 0; i < cols.size(); i++)
-		if (row[i].size() > 0) {
-		    const char* dt = NULL;
-		    std::string lexval(row[i]);
-		    bool isNull = false;
-		    if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
-			cols[i].type == SQLclient::Result::Field::TYPE__unknown)
-			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
-
-		    for (size_t p = lexval.find_first_of("&<>"); 
-			 p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
-			lexval.replace(p, 1, 
-				       lexval[p] == '&' ? "&amp;" : 
-				       lexval[p] == '<' ? "&lt;" : 
-				       lexval[p] == '>' ? "&gt;" : "huh??");
-
-		    if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
-			ret << "      <binding name='" << cols[i].name << "'>\n"
-			    "        ";
-			ret << "<literal";
-			if (dt)
-			    ret << " datatype=\"" << dt << "\"";
-			ret << ">" << lexval << "</literal>\n";
-			ret << "      </binding>\n";
-		    }
+	    /* dump data in <td/>s */
+	    SQLclient::Result::Row row;
+	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+		ret << "      <tr>";
+		for(int i = 0; i < cols.size(); i++) {
+		    sprintf(space, "[%.*s] ", row[i].size(), row[i] ? row[i] : "NULL");
+		    ret << "<td>" << space << "</td>";
 		}
-	    ret << "    </result>\n";
-	}
-	ret << 
-	    "  </results>\n"
-	    "</sparql>";
-#endif /* !HTML_RESULTS */
+		ret("</tr>");
+	    }
+	    ret << "    </table>";
+	    foot(ret);
+	} else { /* !htmlResults */
+	    ret << 
+		"<?xml version='1.0'?>\n"
+		"<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
+		"  <head>\n";
+
+	    /* dump headers in <th/>s */
+	    for(int i = 0; i < cols.size(); i++)
+		ret << "    <variable name='" << cols[i].name << "'/>\n";
+	    ret << "  </head>\n";
+	    ret << "  <results>\n";
+
+	    /* dump data in <td/>s */
+	    SQLclient::Result::Row row;
+	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+		ret << "    <result>\n";
+		for(int i = 0; i < cols.size(); i++)
+		    if (row[i].size() > 0) {
+			const char* dt = NULL;
+			std::string lexval(row[i]);
+			if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
+			    cols[i].type == SQLclient::Result::Field::TYPE__unknown)
+			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
+
+			for (size_t p = lexval.find_first_of("&<>"); 
+			     p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
+			    lexval.replace(p, 1, 
+					   lexval[p] == '&' ? "&amp;" : 
+					   lexval[p] == '<' ? "&lt;" : 
+					   lexval[p] == '>' ? "&gt;" : "huh??");
+
+			if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
+			    ret << "      <binding name='" << cols[i].name << "'>\n"
+				"        ";
+			    ret << "<literal";
+			    if (dt)
+				ret << " datatype=\"" << dt << "\"";
+			    ret << ">" << lexval << "</literal>\n";
+			    ret << "      </binding>\n";
+			}
+		    }
+		ret << "    </result>\n";
+	    }
+	    ret << 
+		"  </results>\n"
+		"</sparql>";
+	} /* !htmlResults */
 
 	sout << ret.str();
 	cout << ret.str() << endl;
@@ -552,7 +603,7 @@ class WebServer : public server::http_1a_c
 		    foot(sout);
 		} else {
 		    Operation* op = sparqlParser.root;
-		    executeQuery(sout, op, query);
+		    executeQuery(sout, op, query, false);
 		    string ct("Content-Type");
 		    string mt("application/sparql-results+xml; charset=UTF-8");
 		    response_headers.add(ct, mt);
