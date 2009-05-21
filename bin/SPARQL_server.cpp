@@ -113,6 +113,7 @@ public:
 			set(result, vars[i], val, false);
 		    }
 		}
+	    insert(end(), result);
 	}
     }
 };
@@ -460,7 +461,7 @@ class WebServer : public server::http_1a_c
 	catch (std::string ex) {
 	    throw SimpleMessageException(ex);
 	}
-	SqlResultSet rs(&posFactory, res);
+	//SqlResultSet rs(&posFactory, res);
 
 	ostringstream ret;
 	SQLclient::Result::ColumnSet cols = res->cols();
@@ -494,10 +495,11 @@ class WebServer : public server::http_1a_c
 	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
 		ret << "      <tr>";
 		for(int i = 0; i < cols.size(); i++) {
-		    sprintf(space, "[%.*s] ", row[i].size(), row[i] ? row[i] : "NULL");
+		    //sprintf(space, "[%.*s] ", row[i].size() ? row[i].c_str() : "NULL"); // !!!
+		    sprintf(space, "%s ", row[i].size() ? row[i].c_str() : "NULL");
 		    ret << "<td>" << space << "</td>";
 		}
-		ret("</tr>");
+		ret << "</tr>";
 	    }
 	    ret << "    </table>";
 	    foot(ret);
