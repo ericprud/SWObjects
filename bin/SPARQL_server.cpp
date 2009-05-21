@@ -461,10 +461,10 @@ class WebServer : public server::http_1a_c
 	catch (std::string ex) {
 	    throw SimpleMessageException(ex);
 	}
-	//SqlResultSet rs(&posFactory, res);
+	SqlResultSet rs(&posFactory, res);
 
 	ostringstream ret;
-	SQLclient::Result::ColumnSet cols = res->cols();
+	const VariableList* cols = rs.getKnownVars();
 
 #endif /* SQL_CLIENT != SWOb_DISABLED */
 
@@ -477,7 +477,7 @@ class WebServer : public server::http_1a_c
 		"<h1>" << language << " Query</h1>\n"
 		"<pre>" << finalQuery << "</pre>\n";
 	    char space[1024];
-	    sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
+	    sprintf(space, "<p>number of fields: %d</p>\n", cols->size());
 	    ret << space;
 
 	    ret << 
@@ -485,19 +485,21 @@ class WebServer : public server::http_1a_c
 		"      <tr>";
 
 	    /* dump headers in <th/>s */
-	    for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
-		 it != cols.end(); ++it)
-		ret << "<th>" << it->name << "[" << it->type << "]</th>";
+	    for (VariableList::const_iterator col = cols->begin();
+		 col != cols->end(); ++col)
+		ret << "<th>" << (*col)->toString() << "</th>";
 	    ret << "</tr>\n";
 
 	    /* dump data in <td/>s */
-	    SQLclient::Result::Row row;
-	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "      <tr>";
-		for(int i = 0; i < cols.size(); i++) {
-		    //sprintf(space, "[%.*s] ", row[i].size() ? row[i].c_str() : "NULL"); // !!!
-		    sprintf(space, "%s ", row[i].size() ? row[i].c_str() : "NULL");
-		    ret << "<td>" << space << "</td>";
+		for (VariableList::const_iterator col = cols->begin();
+		     col != cols->end(); ++col) {
+		    const POS* val = (*row)->get(*col);
+		    if (val != NULL)
+			ret << "<td>" << val->toString() << "</td>";
+		    else
+			ret << "<td></td>";
 		}
 		ret << "</tr>";
 	    }
@@ -510,40 +512,34 @@ class WebServer : public server::http_1a_c
 		"  <head>\n";
 
 	    /* dump headers in <th/>s */
-	    for(int i = 0; i < cols.size(); i++)
-		ret << "    <variable name='" << cols[i].name << "'/>\n";
+	    for (VariableList::const_iterator col = cols->begin();
+		 col != cols->end(); ++col)
+		ret << "    <variable name='" << (*col)->toString() << "'/>\n";
 	    ret << "  </head>\n";
 	    ret << "  <results>\n";
 
 	    /* dump data in <td/>s */
-	    SQLclient::Result::Row row;
-	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "    <result>\n";
-		for(int i = 0; i < cols.size(); i++)
-		    if (row[i].size() > 0) {
-			const char* dt = NULL;
-			std::string lexval(row[i]);
-			if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
-			    cols[i].type == SQLclient::Result::Field::TYPE__unknown)
-			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
+		for (BindingSetConstIterator val = (*row)->begin(); val != (*row)->end(); ++val) {
+		    const char* dt = NULL;
+		    std::string lexval(val->second.pos->getLexicalValue());
 
-			for (size_t p = lexval.find_first_of("&<>"); 
-			     p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
-			    lexval.replace(p, 1, 
-					   lexval[p] == '&' ? "&amp;" : 
-					   lexval[p] == '<' ? "&lt;" : 
-					   lexval[p] == '>' ? "&gt;" : "huh??");
+		    for (size_t p = lexval.find_first_of("&<>"); 
+			 p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
+			lexval.replace(p, 1, 
+				       lexval[p] == '&' ? "&amp;" : 
+				       lexval[p] == '<' ? "&lt;" : 
+				       lexval[p] == '>' ? "&gt;" : "huh??");
 
-			if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
-			    ret << "      <binding name='" << cols[i].name << "'>\n"
+		    ret << "      <binding name='" << val->first->getLexicalValue() << "'>\n"
 				"        ";
-			    ret << "<literal";
-			    if (dt)
-				ret << " datatype=\"" << dt << "\"";
-			    ret << ">" << lexval << "</literal>\n";
-			    ret << "      </binding>\n";
-			}
-		    }
+		    ret << "<literal";
+		    if (dt)
+			ret << " datatype=\"" << dt << "\"";
+		    ret << ">" << lexval << "</literal>\n";
+		    ret << "      </binding>\n";
+		}
 		ret << "    </result>\n";
 	    }
 	    ret << 
