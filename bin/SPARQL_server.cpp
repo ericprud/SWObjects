@@ -101,14 +101,14 @@ public:
 	    Result* result = new Result(this);
 	    for(size_t i = 0; i < cols.size(); i++)
 		if (row[i].size() > 0) {
-		    const char* dt = NULL;
+		    std::string dt = SQLclient::Result::Field::typeNames[cols[i].type];
 		    std::string lexval(row[i]);
 		    if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
 			cols[i].type == SQLclient::Result::Field::TYPE__unknown)
 			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
 
 		    if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
-			const URI* dtpos = dt ? posFactory->getURI(dt) : NULL;
+			const URI* dtpos = dt.size() > 0 ? posFactory->getURI(dt.c_str()) : NULL;
 			const POS* val = posFactory->getRDFLiteral(lexval, dtpos, NULL);
 			set(result, vars[i], val, false);
 		    }
@@ -514,16 +514,16 @@ class WebServer : public server::http_1a_c
 	    /* dump headers in <th/>s */
 	    for (VariableList::const_iterator col = cols->begin();
 		 col != cols->end(); ++col)
-		ret << "    <variable name='" << (*col)->toString() << "'/>\n";
+		ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
 	    ret << "  </head>\n";
 	    ret << "  <results>\n";
 
 	    /* dump data in <td/>s */
 	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "    <result>\n";
-		for (BindingSetConstIterator val = (*row)->begin(); val != (*row)->end(); ++val) {
-		    const char* dt = NULL;
-		    std::string lexval(val->second.pos->getLexicalValue());
+		for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
+		    const POS* val = binding->second.pos;
+		    std::string lexval(val->getLexicalValue());
 
 		    for (size_t p = lexval.find_first_of("&<>"); 
 			 p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
@@ -532,12 +532,19 @@ class WebServer : public server::http_1a_c
 				       lexval[p] == '<' ? "&lt;" : 
 				       lexval[p] == '>' ? "&gt;" : "huh??");
 
-		    ret << "      <binding name='" << val->first->getLexicalValue() << "'>\n"
+		    ret << "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
 				"        ";
-		    ret << "<literal";
-		    if (dt)
-			ret << " datatype=\"" << dt << "\"";
-		    ret << ">" << lexval << "</literal>\n";
+		    
+		    const RDFLiteral* lit = dynamic_cast<const RDFLiteral*>(val);
+		    const URI* uri = dynamic_cast<const URI*>(val);
+		    const BNode* bnode = dynamic_cast<const BNode*>(val);
+		    if (lit != NULL) {
+			ret << "<literal";
+			const URI* dt(lit->getDatatype());
+			if (dt)
+			    ret << " datatype=\"" << dt->getLexicalValue() << "\"";
+			ret << ">" << lexval << "</literal>\n";
+		    }
 		    ret << "      </binding>\n";
 		}
 		ret << "    </result>\n";
