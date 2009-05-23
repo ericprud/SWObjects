@@ -14,18 +14,18 @@
 #include <string>
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
+#include "SWObjects.hpp"
 #if REGEX_LIB == SWOb_BOOST
   #include "boost/regex.hpp"
 #endif
 #if HTTP_SERVER == SWOb_DLIB
-#include "dlib/server.h"
-using namespace dlib;
+  #include "dlib/server.h"
+  using namespace dlib;
 #endif
 #if SQL_CLIENT == SWOb_MYSQL
   #include "../interface/SQLclient_MySQL.hpp"
 #endif /* SQL_CLIENT == SWOb_MYSQL */
 
-#include "SWObjects.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SQLizer.hpp"
@@ -82,6 +82,7 @@ struct SimpleMessageException : public StringException {
     }
 };
 
+#if SQL_CLIENT == SWOb_MYSQL
 class SqlResultSet : public ResultSet {
 public:
     SqlResultSet (POSFactory* posFactory, SQLclient::Result* res) : ResultSet(posFactory) {
@@ -117,6 +118,7 @@ public:
 	}
     }
 };
+#endif /* SQL_CLIENT == SWOb_MYSQL */
 
 
 #if HTTP_SERVER == SWOb_DLIB
@@ -464,9 +466,10 @@ class WebServer : public server::http_1a_c
 	SqlResultSet rs(&posFactory, res);
 
 	ostringstream ret;
-	const VariableList* cols = rs.getKnownVars();
 
 #endif /* SQL_CLIENT != SWOb_DISABLED */
+
+	const VariableList* cols = rs.getKnownVars();
 
 	if (htmlResults) {
 	    head(ret, "Query Results");
@@ -751,7 +754,7 @@ int main (int argc, char** argv) {
 	++iArg;
     }
 
-    if (argc - iArg < 2) {
+    if (argc - iArg < 1) {
 	cerr << "Usage: " << argv[0] << "[--once] serverURL ruleMap.rq+" << endl;
 	return 1;
     }
