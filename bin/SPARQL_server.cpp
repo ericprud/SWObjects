@@ -428,6 +428,17 @@ class WebServer : public server::http_1a_c
      */
 
 
+    static std::string escapeHTML (std::string escapeMe) {
+	std::string ret;
+	for (size_t p = ret.find_first_of("&<>"); 
+	     p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
+	    ret.replace(p, 1, 
+			   ret[p] == '&' ? "&amp;" : 
+			   ret[p] == '<' ? "&lt;" : 
+			   ret[p] == '>' ? "&gt;" : "huh??");
+	return ret;
+    }
+
 
     void executeQuery (ostringstream& sout, Operation* query, string queryStr, bool htmlResults) {
 #if SQL_CLIENT == SWOb_DISABLED
@@ -526,14 +537,7 @@ class WebServer : public server::http_1a_c
 		ret << "    <result>\n";
 		for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
 		    const POS* val = binding->second.pos;
-		    std::string lexval(val->getLexicalValue());
-
-		    for (size_t p = lexval.find_first_of("&<>"); 
-			 p != std::string::npos; p = lexval.find_first_of("&<>", p + 1))
-			lexval.replace(p, 1, 
-				       lexval[p] == '&' ? "&amp;" : 
-				       lexval[p] == '<' ? "&lt;" : 
-				       lexval[p] == '>' ? "&gt;" : "huh??");
+		    std::string lexval(escapeHTML(val->getLexicalValue()));
 
 		    ret << "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
 				"        ";
@@ -600,7 +604,7 @@ class WebServer : public server::http_1a_c
 		    head(sout, "Query Error");
 
 		    sout << "    <p>Query</p>\n"
-			"    <pre>" << query << "</pre>\n"
+			"    <pre>" << escapeHTML(query) << "</pre>\n"
 			"    <p>is screwed up.</p>\n"
 			 << endl;
 		    cerr << "400: " << query << endl;
