@@ -177,7 +177,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(HTTP_SERVER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(HTTP_SERVER_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 VER=0.1
 
 #some progressive macports
@@ -199,7 +199,7 @@ BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib/lib$(LIBNAME).a
-LIBINC	+=	 -l$(LIBNAME) $(REGEX_LIB) $(XML_PARSER_LIB)
+LIBINC	+=	 -l$(LIBNAME)
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
