@@ -15,6 +15,10 @@
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
 #include "SWObjects.hpp"
+#include "QueryMapper.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SQLizer.hpp"
+
 #if REGEX_LIB == SWOb_BOOST
   #include "boost/regex.hpp"
 #endif
@@ -22,13 +26,28 @@
   #include "dlib/server.h"
   using namespace dlib;
 #endif
+
 #if SQL_CLIENT == SWOb_MYSQL
   #include "../interface/SQLclient_MySQL.hpp"
 #endif /* SQL_CLIENT == SWOb_MYSQL */
 
-#include "QueryMapper.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "SQLizer.hpp"
+#if XML_PARSER == SWOb_LIBXML2
+  #include "../interface/SAXparser_libxml.hpp"
+#elif XML_PARSER == SWOb_EXPAT1
+  #include "../interface/SAXparser_expat.hpp"
+#elif XML_PARSER == SWOb_MSXML3
+  #include "../interface/SAXparser_msxml3.hpp"
+#else
+  #ifdef _MSC_VER
+    #pragma message ("unable to parse RDF/XML without an RDF parser")
+  #else /* !_MSC_VER */
+    #warning unable to parse RDF/XML without an RDF parser
+  #endif /* !_MSC_VER */
+#endif
+
+#if HTTP_CLIENT == SWOb_ASIO
+  #include "../interface/WEBagent_boostASIO.hpp"
+#endif /* HTTP_CLIENT == SWOb_ASIO */
 
 #include "SPARQLSerializer.hpp"
 
@@ -126,6 +145,16 @@ class WebServer : public server::http_1a_c
 {
 
     RdfDB db;
+#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
+    WEBagent_boostASIO client;
+    SAXparser_libxml p;
+    // SWSAXparser* p = SWSAXparser::makeSAXparser(); // !!!+  delete
+public:
+    WebServer () : db(&client, &p) {  }
+protected:
+
+#else /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
+#endif /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 
     /* wholesale import of stuff from dlib-17.11/dlib/server/server_http_1.h
      * in order to provide control over the status message.
