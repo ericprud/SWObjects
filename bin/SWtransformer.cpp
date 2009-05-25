@@ -197,7 +197,7 @@ int main(int argc,char** argv) {
 	    errorContext = "query execution";
 	    SWSAXparser* p = SWSAXparser::makeSAXparser();
 	    WEBagent_boostASIO client;
-	    RdfRemoteDB db(SparqlEndpointPatterns, p, &client);
+	    RdfRemoteDB db(&client, p, SparqlEndpointPatterns);
 	    ResultSet rs(&posFactory);
 	    o->execute(&db, &rs);
 	    delete p;

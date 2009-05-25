@@ -6,9 +6,7 @@
 #define RDF_REMOTE_DB_H
 
 #include "RdfDB.hpp"
-#include "RDFaParser.hpp"
-#include "../interface/SAXparser.hpp"
-#include "../interface/WEBagent_boostASIO.hpp"
+#include "../interface/WEBagent.hpp"
 
 namespace w3c_sw {
 
@@ -60,12 +58,10 @@ namespace w3c_sw {
 	std::vector<const char*> endpointPatterns;
 	std::set<const POS*> loadedEndpoints;
 	POSFactory* posFactory;
-	SWSAXparser* xmlParser;
-	SWWEBagent* webAgent;
 
     public:
-	RdfRemoteDB (std::vector<const char*> endpointPatterns, SWSAXparser* xmlParser, SWWEBagent* webAgent) : 
-	    RdfDB(), endpointPatterns(endpointPatterns), xmlParser(xmlParser), webAgent(webAgent) {  }
+	RdfRemoteDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::vector<const char*> endpointPatterns) : 
+	    RdfDB(webAgent), endpointPatterns(endpointPatterns), xmlParser(xmlParser) {  }
 #if REGEX_LIB == SWOb_BOOST
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();
@@ -78,22 +74,7 @@ namespace w3c_sw {
 		    return;
 		}
 	    }
-	    std::string nameStr = name->getLexicalValue();
-	    if (!nameStr.compare(0, 5, "http:")) {
-		std::string s(webAgent->get(nameStr.c_str()));
-		std::stringstream stream(s); // would be nice to use webAgent stream, or have a callback.
-		if (!webAgent->getMediaType().compare(0, 9, "text/html")) {
-		    RDFaParser rdfaParser(posFactory, xmlParser);
-		    rdfaParser.parse(target, s.begin(), s.end(), nameStr);
-		} else {
-		    TurtleSDriver turtleParser(nameStr, posFactory);
-		    turtleParser.setGraph(target);
-		    if (turtleParser.parse_stream(stream))
-			throw nameStr + ":0: error: unable to parse document";
-		}
-	    } else {
-		RdfDB::loadData(name, target, posFactory);
-	    }
+	    RdfDB::loadData(name, target, posFactory);
 	}
 #endif /* REGEX_LIB == SWOb_BOOST */
 
