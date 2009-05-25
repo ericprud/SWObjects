@@ -231,6 +231,7 @@ public:
     virtual bool operator==(const Operation& ref) const = 0;
 };
 
+class BNode;
 class BNodeEvaluator;
 class POSFactory;
 
@@ -252,6 +253,10 @@ public:
     bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
+    struct BNodeMap : public std::map<const BNode*, std::string> {
+	std::string get(const BNode* bnode);
+    };
+    virtual std::string toXMLResults(BNodeMap*) const = 0;
     virtual std::string toString() const = 0;
     std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
 	const POS* subd = evalPOS(row, evaluator); /* re-uses atoms -- doesn't create them */
@@ -271,7 +276,8 @@ public:
     ~URI () { }
     virtual const char * getToken () { return "-POS-"; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { std::stringstream s; s << "<" << terminal << ">"; return s.str(); }
+    virtual std::string toXMLResults (BNodeMap*) const { return std::string("<uri>") + terminal + "</uri>";  }
+    virtual std::string toString () const { return std::string("<") + terminal + ">"; }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
 };
@@ -289,6 +295,9 @@ class Variable : public Bindable {
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
+    virtual std::string toXMLResults (POS::BNodeMap*) const {
+	return std::string("<variable>") + terminal + "</variable> <!-- should not appear in XML Results -->";
+    }
     virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor) const;
@@ -309,12 +318,24 @@ private:
     BNode (std::string str) : Bindable(str) {  }
     BNode () : Bindable("b", true) {  }
 public:
+    virtual std::string toXMLResults (POS::BNodeMap* map) const {
+	return std::string("<bnode>") + map->get(this) + "</bnode>";
+    }
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* evalPOS(const Result* r, BNodeEvaluator* evaluator) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
+inline std::string POS::BNodeMap::get (const BNode* bnode) {
+    BNodeMap::const_iterator it = find(bnode);
+    if (it == end()) {
+	std::stringstream s;
+	s << size();
+	it = insert(std::pair<const BNode*, std::string>(bnode, std::string("r") + s.str())).first;
+    }
+    return it->second;
+}
 
 class RDFLiteral : public POS {
     friend class POSFactory;
@@ -334,6 +355,14 @@ protected:
 public:
     const URI* getDatatype () const { return datatype; }
     const LANGTAG* getLangtag () const { return m_LANGTAG; }
+    virtual std::string toXMLResults (POS::BNodeMap*) const {
+	std::stringstream s;
+	s << "<literal";
+	if (datatype) s << " datatype=\"" << datatype->getLexicalValue() << "\"";
+	if (m_LANGTAG) s << " xml:lang=\"" << m_LANGTAG->getLexicalValue() << "\"";
+	s << ">" << terminal << "</literal>\n";
+	return s.str();
+    }
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
@@ -415,6 +444,7 @@ private:
     ~NULLpos () {  }
 public:
     virtual const char * getToken () { return "-NULL-"; }
+    virtual std::string toXMLResults (POS::BNodeMap*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
     virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
