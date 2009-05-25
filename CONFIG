@@ -60,7 +60,7 @@ SQL_CLIENT= MYSQL
 # You must prefix each directory with "-I" and separate them with spaces.
 INCLUDES += -I/usr/local/dlib-17.11
 # Note that you may also set INCLUDES, LIBINC, etc on the command line:
-# INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. expat1" make -j 4 t_DAWG
+# INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. -lexpat1" make -j 4 t_DAWG
 
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
