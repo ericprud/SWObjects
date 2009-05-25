@@ -562,26 +562,17 @@ protected:
 	    ret << "  <results>\n";
 
 	    /* dump data in <td/>s */
+	    POS::BNodeMap nodeMap;
 	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "    <result>\n";
 		for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
 		    const POS* val = binding->second.pos;
 		    std::string lexval(escapeHTML(val->getLexicalValue()));
 
-		    ret << "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
-				"        ";
-		    
-		    const RDFLiteral* lit = dynamic_cast<const RDFLiteral*>(val);
-		    const URI* uri = dynamic_cast<const URI*>(val);
-		    const BNode* bnode = dynamic_cast<const BNode*>(val);
-		    if (lit != NULL) {
-			ret << "<literal";
-			const URI* dt(lit->getDatatype());
-			if (dt)
-			    ret << " datatype=\"" << dt->getLexicalValue() << "\"";
-			ret << ">" << lexval << "</literal>\n";
-		    }
-		    ret << "      </binding>\n";
+		    ret << 
+			"      <binding name='" << binding->first->getLexicalValue() << "'>\n"
+			"        " << val->toXMLResults(&nodeMap) << "\n"
+			"      </binding>\n";
 		}
 		ret << "    </result>\n";
 	    }

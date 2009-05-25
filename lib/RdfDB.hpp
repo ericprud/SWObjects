@@ -37,6 +37,7 @@ namespace w3c_sw {
     class DefaultGraphClass : public POS {
     public:
 	DefaultGraphClass () : POS("::DefaultGraphClass::") {  }
+	virtual std::string toXMLResults (POS::BNodeMap*) const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual std::string toString () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual void express (Expressor*) const { throw(std::runtime_error(FUNCTION_STRING)); };
