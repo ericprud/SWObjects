@@ -67,3 +67,5 @@ INCLUDES += -I/usr/local/dlib-17.11
 # This is needed on cygwin, which doesn't create symlinks for base names,
 # e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
 #BOOST_VERSION=-gcc34-mt-1_38
+# or you may need to link to multi-threaded versions of boost libraries:
+#BOOST_VERSION=-mt
