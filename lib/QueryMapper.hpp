@@ -14,6 +14,24 @@
 
 namespace w3c_sw {
 
+    struct LabeledConstruct {
+	const RDFLiteral* label;
+	const Construct* constr;
+	LabeledConstruct (const RDFLiteral* label, const Construct* constr) : label(label), constr(constr) {  }
+    };
+    inline bool operator== (const LabeledConstruct& l, const LabeledConstruct& r) {
+	return l.label == r.label && *(l.constr) == *(r.constr);
+    }
+    inline bool operator< (const LabeledConstruct& l, const LabeledConstruct& r) {
+	return l.label != r.label ? 
+	    l.label->getLexicalValue() < r.label->getLexicalValue() : // !!! should be POSFactory::cmp
+	    l.constr < r.constr; // compare addrs. really needs Construct::operator<(Construct&).
+    }
+    inline std::ostream& operator<< (std::ostream& os, LabeledConstruct const& labeledConstruct) {
+	os << "    rule " << labeledConstruct.label->toString();
+	return os;
+    }
+
     class QueryMapper : public SWObjectDuplicator {
     protected:
 	std::vector<MappingConstruct*> invertedRules;
@@ -103,6 +121,71 @@ namespace w3c_sw {
 	    last.whereClause = new WhereClause(pattern, last.bindingClause);
 	}
     };
+
+    class MapSet : public Operation {
+	friend class MapSetParser;
+    protected:
+	const RDFLiteral* server;
+	const RDFLiteral* user;
+	const RDFLiteral* password;
+	const RDFLiteral* database;
+	const URI* stemURI;
+	const RDFLiteral* primaryKey;
+	std::vector<LabeledConstruct> maps;
+#if REGEX_LIB == SWOb_BOOST
+#endif /* REGEX_LIB == SWOb_BOOST */
+
+    public:
+	~MapSet () {
+	    for (std::vector<LabeledConstruct>::iterator it = maps.begin(); 
+		 it != maps.end(); ++it) {
+		delete it->constr;
+	    }
+	}
+	virtual void express(Expressor* p_expressor) const;
+	virtual bool operator== (const Operation& ref) const {
+	    const MapSet* pMapSet = dynamic_cast<const MapSet*>(&ref);
+	    if (pMapSet == NULL)
+		return false;
+	    return
+		server == pMapSet->server && 
+		user == pMapSet->user && 
+		password == pMapSet->password && 
+		database == pMapSet->database && 
+		stemURI == pMapSet->stemURI && 
+		primaryKey == pMapSet->primaryKey && 
+		maps == pMapSet->maps
+#if REGEX_LIB != SWOb_DISABLED
+#if NotYet
+		&& rewriteVars == pMapSet->rewriteVars
+
+#endif /* NotYet */
+#endif /* REGEX_LIB != SWOb_DISABLED */
+		;
+	}
+	/* Gives rules to QueryMapper and !deletes self!.
+	 */
+#if NotYet
+	void addRules (QueryMapper* queryMapper) {
+	    for (std::vector<LabeledConstruct>::iterator it = maps.begin(); 
+		 it != maps.end(); ++it) {
+		queryMapper->addRule(*it);
+	    }
+	    maps.clear();
+#if REGEX_LIB == SWOb_BOOST
+	    for (ProductionVector<POSmap*>::iterator it = rewriteVars.begin(); 
+		 it != rewriteVars.end(); ++it)
+		queryMapper.addRule(*it); !!!
+	    rewriteVars.clear();
+#endif /* REGEX_LIB == SWOb_BOOST */
+	    delete this;
+	}
+#endif /* NotYet */
+    };
+
+    inline void MapSet::express (Expressor* /* p_expressor */) const {
+	// p_expressor->construct(this, m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
+    }
 
 } // namespace w3c_sw
 
