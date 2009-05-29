@@ -360,12 +360,10 @@ namespace w3c_sw {
 
     };
 
-#ifdef NEEDDEF_makeSAXparser
-    inline SWSAXparser* SWSAXparser::makeSAXparser () {
-	return new SAXparser_msxml3();
-    }
-  #undef NEEDDEF_makeSAXparser
-#endif /* NEEDDEF_makeSAXparser */
+#ifdef NEEDDEF_SAXPARSER
+  #define SAXPARSER SAXparser_msxml3
+  #undef NEEDDEF_SAXPARSER
+#endif /* NEEDDEF_SAXPARSER */
 
 }
 

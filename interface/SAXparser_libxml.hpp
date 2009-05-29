@@ -196,12 +196,10 @@ namespace w3c_sw {
 	}
     };
 
-#ifdef NEEDDEF_makeSAXparser
-    inline SWSAXparser* SWSAXparser::makeSAXparser () {
-	return new SAXparser_libxml();
-    }
-  #undef NEEDDEF_makeSAXparser
-#endif /* NEEDDEF_makeSAXparser */
+#ifdef NEEDDEF_SAXPARSER
+  #define SAXPARSER SAXparser_libxml
+  #undef NEEDDEF_SAXPARSER
+#endif /* NEEDDEF_SAXPARSER */
 
 }
 

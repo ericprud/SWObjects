@@ -195,12 +195,11 @@ int main(int argc,char** argv) {
 #if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
 	else if (ExecuteQuery) {
 	    errorContext = "query execution";
-	    SWSAXparser* p = SWSAXparser::makeSAXparser();
+	    SAXPARSER p;
 	    WEBagent_boostASIO client;
-	    RdfRemoteDB db(&client, p, SparqlEndpointPatterns);
+	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns);
 	    ResultSet rs(&posFactory);
 	    o->execute(&db, &rs);
-	    delete p;
 	    std::cout << rs; // show results
 	}
 #endif /* XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED */

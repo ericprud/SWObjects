@@ -96,7 +96,7 @@ namespace w3c_sw {
 	    va_end(args);
 	}
 
-	virtual void warnting(const char* msg, va_list args) {
+	virtual void warning(const char* msg, va_list args) {
 	    vprintf(msg, args);
 	}
 
@@ -150,7 +150,7 @@ namespace w3c_sw {
 	    parse(testStr.begin(), testStr.end(), &handler);
 	}
 	static SWSAXparser* makeSAXparser();
-#define NEEDDEF_makeSAXparser 1
+#define NEEDDEF_SAXPARSER 1
     };
 
 
@@ -236,7 +236,7 @@ namespace w3c_sw {
 		parser->handleError(e);
 	    }
 	}
-	virtual void warnting(const char* msg, va_list args) {
+	virtual void warning(const char* msg, va_list args) {
 	    try {
 		handler->warning(msg, args);
 	    }

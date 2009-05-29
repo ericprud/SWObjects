@@ -205,12 +205,10 @@ namespace w3c_sw {
 	}
     };
 
-#ifdef NEEDDEF_makeSAXparser
-    inline SWSAXparser* SWSAXparser::makeSAXparser () {
-	return new SAXparser_expat();
-    }
-  #undef NEEDDEF_makeSAXparser
-#endif /* NEEDDEF_makeSAXparser */
+#ifdef NEEDDEF_SAXPARSER
+  #undef NEEDDEF_SAXPARSER
+  #define SAXPARSER SAXparser_expat
+#endif /* NEEDDEF_SAXPARSER */
 
 }
 
