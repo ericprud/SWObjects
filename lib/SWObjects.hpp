@@ -495,7 +495,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const POS* graphVar, Result* provisional, const POS* graphName) const {
 	return
-	    graphName->bindVariable(graphVar, rs, provisional, weaklyBound) &&
+	    graphVar->bindVariable(graphName, rs, provisional, weaklyBound) &&
 	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
 	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
