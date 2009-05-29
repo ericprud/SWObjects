@@ -53,6 +53,7 @@ namespace w3c_sw {
     extern const char* NS_rdfs;
     extern const char* NS_srx;
     extern const char* NS_dc;
+    extern const char* NS_sadl;
 
 class StringException : public std::exception {
 public:
