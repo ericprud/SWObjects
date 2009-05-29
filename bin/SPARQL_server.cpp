@@ -197,18 +197,27 @@ class WebServer : public server::http_1a_c
 {
 
     RdfDB db;
-#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
+
+#if HTTP_CLIENT != SWOb_DISABLED
     WEBagent_boostASIO client;
+    #define pClient &client
+#else /* HTTP_CLIENT == SWOb_DISABLED */
+    #define pClient NULL
+#endif /* HTTP_CLIENT == SWOb_DISABLED */
+
+#if XML_PARSER != SWOb_DISABLED
     SAXPARSER p;
+    #define pParser &p
+#else /* XML_PARSER == SWOb_DISABLED */
+    #define pParser NULL
+#endif /* XML_PARSER == SWOb_DISABLED */
+
 public:
-    WebServer () : db(&client, &p) {  }
+    WebServer () : db(pClient, pParser) {  }
     BasicGraphPattern* assureGraph (const POS* name) {
 	return db.assureGraph(name);
     }
 protected:
-
-#else /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
-#endif /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 
     /* wholesale import of stuff from dlib-17.11/dlib/server/server_http_1.h
      * in order to provide control over the status message.
