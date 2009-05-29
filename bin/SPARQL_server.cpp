@@ -14,6 +14,9 @@
 #include <string>
 #include <stdio.h>  //\_for strcmp
 #include <string.h> ///
+#if !_MSC_VER
+  #include <unistd.h>
+#endif /* !_MSC_VER */
 #include "SWObjects.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
@@ -66,7 +69,7 @@ using namespace w3c_sw;
 ostream* DebugStream = NULL;
 string ServerPath = "/SPARQL";
 int ServerPort = 8888;
-string ServerTerminate;
+string ServiceURLstr;
 const char* ServerURI;
 std::string StemURI;
 POSFactory posFactory;
@@ -199,6 +202,9 @@ class WebServer : public server::http_1a_c
     SAXPARSER p;
 public:
     WebServer () : db(&client, &p) {  }
+    BasicGraphPattern* assureGraph (const POS* name) {
+	return db.assureGraph(name);
+    }
 protected:
 
 #else /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
@@ -781,7 +787,7 @@ WebServer TheServer;
 void thread ()
 {
 #if DLIB_TIGHT_LOOP
-    cout << "a POST to <" << ServerTerminate << "> with query=stop will terminate the server." << endl;
+    cout << "a POST to <" << ServiceURLstr << "> with query=stop will terminate the server." << endl;
     while (!Done) dlib::sleep(1000);
     cout << "Done: served " << Served << " queries." << endl;
 #else
@@ -815,7 +821,45 @@ void startServer (const char* url) {
 
     ostringstream s;
     s << "http://localhost:" << ServerPort << ServerPath;
-    ServerTerminate = s.str();
+    ServiceURLstr = s.str();
+
+    const URI* serviceURI = posFactory.getURI(ServiceURLstr);
+    BasicGraphPattern* serviceGraph = TheServer.assureGraph(serviceURI);
+    const URI* rdfType = posFactory.
+	getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+
+    serviceGraph->addTriplePattern(posFactory.getTriple(
+			   serviceURI, 
+			   posFactory.getURI(std::string(NS_rdf)+"type"), 
+			   posFactory.getURI(std::string(NS_sadl)+"Service")));
+    {
+	char buf[1024];
+	buf[0] = 0;
+#if _MSC_VER
+	TCHAR szDirectory[MAX_PATH];	
+	szDirectory[0] = 0;
+	if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
+	    std::wstring wstr(szDirectory);
+	    size_t len = (int)wstr.length();
+	    std::string str = "\\";
+	    int i = 0;
+	    for (std::wstring::iterator it = wstr.begin();
+		 i < len; ++it, ++i)
+		str += (char)*it;
+	    strncpy(buf, str.c_str(), sizeof(buf)-1);
+	}
+#else /* !_MSV_VER */
+	getcwd(buf, sizeof(buf)-1);
+#endif /* !_MSV_VER */
+	if (buf) {
+	    cout << "working directory: " << buf << endl;
+	    std::string base = std::string("file://localhost") + buf;
+	    serviceGraph->addTriplePattern(posFactory.getTriple(
+			   serviceURI, 
+			   posFactory.getURI(std::string(NS_sadl)+"base"), 
+			   posFactory.getURI(base)));
+	}
+    }
 
     TheServer.set_listening_port(ServerPort);
     thread_function t(thread);
