@@ -51,11 +51,20 @@ namespace w3c_sw {
 		++matched;
 	    }
 	} else {
+	    ResultSet island(rs->getPOSFactory());
+	    island.erase(island.begin());
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
 		if (vi->first != DefaultGraph) {
-		    vi->second->bindVariables(rs, graph, toMatch, vi->first);
+		    ResultSet disjoint(rs->getPOSFactory());
+		    vi->second->bindVariables(&disjoint, graph, toMatch, vi->first);
+		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+			island.insert(island.end(), (*row)->duplicate(&island, island.end()));
+			delete *row;
+			disjoint.erase(row++);
+		    }
 		    ++matched;
 		}
+	    rs->joinIn(&island, false);
 	}
 	if (matched == 0)
 	    for (ResultSetIterator it = rs->begin(); it != rs->end(); )
