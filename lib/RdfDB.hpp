@@ -106,7 +106,7 @@ namespace w3c_sw {
 		    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
 		    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
 		    "text/turtle";
-		if (!loadData(target, stream, mediaType, nameStr, posFactory))
+		if (loadData(target, stream, mediaType, nameStr, posFactory))
 		    throw nameStr + ":0: error: unable to parse file";
 	    }
 	}
