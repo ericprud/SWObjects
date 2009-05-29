@@ -118,7 +118,7 @@ public:
 }
 
 %{
-#include "TurtleSScanner.hpp"
+#include "../TurtleSScanner.hpp"
 %}
 %token			__EOF__	     0	"end of file"
 /* START TokenBlock */
@@ -169,7 +169,7 @@ public:
  /*** END SPARQLfed - Change the grammar's tokens above ***/
 
 %{
-#include "TurtleSScanner.hpp"
+#include "../TurtleSScanner.hpp"
 
 /* this "connects" the bison parser in the driver to the flex scanner class
  * object. it defines the yylex() function call to pull the next token from the

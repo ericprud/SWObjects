@@ -173,7 +173,7 @@ public:
 }
 
 %{
-#include "MapSetScanner.hpp"
+#include "../MapSetScanner.hpp"
 %}
 %token			__EOF__	     0	"end of file"
 /* START TokenBlock */
@@ -335,7 +335,7 @@ public:
  /*** END MapSet - Change the grammar's tokens above ***/
 
 %{
-#include "MapSetScanner.hpp"
+#include "../MapSetScanner.hpp"
 
 /* this "connects" the bison parser in the driver to the flex scanner class
  * object. it defines the yylex() function call to pull the next token from the
@@ -363,7 +363,9 @@ AccessParms_Star:
 #if REGEX_LIB == SWOb_DISABLED
       throw std::string("not compiled with REGEX_LIB: can't map ") + $3->toString() + " from " + $4->toString() + " to " + $5->toString() + ".";
 #else /* ! REGEX_LIB == SWOb_DISABLED */
+#if NotYet
       driver.root->rewriteVars.push_back(POSmap($3, $4->getLexicalValue(), $5->getLexicalValue()));
+#endif /* NotYet */
 #endif /* ! REGEX_LIB == SWOb_DISABLED */
     }
   | AccessParms_Star IT_SERVER RDFLiteral	{
