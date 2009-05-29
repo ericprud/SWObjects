@@ -5,14 +5,14 @@
 #ifndef RDF_DB_H
 #define RDF_DB_H
 
+#include <fstream>
 #include "SWObjects.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
-#if HTTP_CLIENT != SWOb_DISABLED
-  #include "../interface/WEBagent.hpp"
-  #include "../interface/SAXparser.hpp"
-  #include "RDFaParser.hpp"
-#endif /* HTTP_CLIENT != SWOb_DISABLED */
+#include "../interface/WEBagent.hpp"
+#include "../interface/SAXparser.hpp"
+#include "RdfXmlParser.hpp"
+#include "RDFaParser.hpp"
 
 namespace w3c_sw {
 #if 0
@@ -48,20 +48,13 @@ namespace w3c_sw {
 	typedef std::map<const POS*, BasicGraphPattern*> graphmap_type;
     protected:
 	graphmap_type graphs;
-#if HTTP_CLIENT != SWOb_DISABLED
 	SWWEBagent* webAgent;
-#endif /* HTTP_CLIENT != SWOb_DISABLED */
 	SWSAXparser* xmlParser;
 
     public:
-	RdfDB (SWSAXparser* xmlParser = NULL) : graphs(), 
-#if HTTP_CLIENT != SWOb_DISABLED
-		webAgent(NULL), 
-#endif /* HTTP_CLIENT != SWOb_DISABLED */
-		xmlParser(xmlParser) {  }
-#if HTTP_CLIENT != SWOb_DISABLED
+	RdfDB (SWSAXparser* xmlParser = NULL) : 
+	    graphs(), webAgent(NULL), xmlParser(xmlParser) {  }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL) : graphs() , webAgent(webAgent), xmlParser(xmlParser) {  }
-#endif /* HTTP_CLIENT != SWOb_DISABLED */
 	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
 	RdfDB (const DefaultGraphPattern* graph) : graphs() {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
@@ -72,33 +65,50 @@ namespace w3c_sw {
 	virtual ~RdfDB();
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
+	bool loadData (BasicGraphPattern* target, std::istream& stream, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
+	    if (!mediaType.compare(0, 9, "text/html") || 
+		!mediaType.compare(0, 9, "application/xhtml")) {
+		if (xmlParser != NULL)
+		    throw std::string("no XML parser to parse ") + mediaType + 
+			" document " + nameStr;
+		RDFaParser rdfaParser(posFactory, xmlParser);
+		std::string s;
+		stream >> s;
+		rdfaParser.parse(target, s.begin(), s.end(), nameStr);
+		return false;
+	    } else if (!mediaType.compare(0, 9, "text/rdf") || 
+		       !mediaType.compare(0, 9, "text/rdf+xml")) {
+		if (xmlParser != NULL)
+		    throw std::string("no XML parser to parse ") + mediaType + 
+			" document " + nameStr;
+		RdfXmlParser p(posFactory, xmlParser);
+		std::string s;
+		stream >> s;
+		p.parse(assureGraph(NULL), s.c_str());
+		return false;
+	    } else {
+		TurtleSDriver turtleParser(nameStr, posFactory);
+		turtleParser.setGraph(target);
+		return turtleParser.parse_stream(stream);
+	    }
+	}
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
-#if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
 	    std::string nameStr = name->getLexicalValue();
-	    if (!nameStr.compare(0, 5, "http:")) {
+	    if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 		std::string s(webAgent->get(nameStr.c_str()));
 		std::stringstream stream(s); // would be nice to use webAgent stream, or have a callback.
-		if (!webAgent->getMediaType().compare(0, 9, "text/html")) {
-		    RDFaParser rdfaParser(posFactory, xmlParser);
-		    rdfaParser.parse(target, s.begin(), s.end(), nameStr);
-		} else {
-		    TurtleSDriver turtleParser(nameStr, posFactory);
-		    turtleParser.setGraph(target);
-		    if (turtleParser.parse_stream(stream))
-			throw nameStr + ":0: error: unable to parse document";
-		}
+		std::string mediaType = webAgent->getMediaType();
+		if (loadData(target, stream, mediaType, nameStr, posFactory))
+		    throw nameStr + ":0: error: unable to parse web document";
 	    } else {
-		TurtleSDriver turtleParser(name->getLexicalValue(), posFactory);
-		turtleParser.setGraph(target);
-		if (turtleParser.parse_file(name->getLexicalValue()))
-		    throw name->getLexicalValue() + ":0: error: unable to parse document";
+		std::ifstream stream(nameStr.c_str());
+		std::string mediaType = 
+		    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
+		    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
+		    "text/turtle";
+		if (!loadData(target, stream, mediaType, nameStr, posFactory))
+		    throw nameStr + ":0: error: unable to parse file";
 	    }
-#else /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
-	    TurtleSDriver turtleParser(name->getLexicalValue(), posFactory);
-	    turtleParser.setGraph(target);
-	    if (turtleParser.parse_file(name->getLexicalValue()))
-		throw name->getLexicalValue() + ":0: error: unable to parse document";
-#endif /* XML_PARSER == SWOb_DISABLED || HTTP_CLIENT == SWOb_DISABLED */
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
