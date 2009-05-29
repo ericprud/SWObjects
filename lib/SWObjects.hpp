@@ -358,9 +358,11 @@ public:
     virtual std::string toXMLResults (POS::BNodeMap*) const {
 	std::stringstream s;
 	s << "<literal";
-	if (datatype) s << " datatype=\"" << datatype->getLexicalValue() << "\"";
-	if (m_LANGTAG) s << " xml:lang=\"" << m_LANGTAG->getLexicalValue() << "\"";
-	s << ">" << terminal << "</literal>\n";
+	if (datatype) 
+	    s << " datatype=\"" << datatype->getLexicalValue() << "\"";
+	if (m_LANGTAG) 
+	    s << " xml:lang=\"" << m_LANGTAG->getLexicalValue() << "\"";
+	s << ">" << terminal << "</literal>";
 	return s.str();
     }
     virtual std::string toString () const {
