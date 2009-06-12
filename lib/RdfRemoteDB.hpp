@@ -60,8 +60,8 @@ namespace w3c_sw {
 	POSFactory* posFactory;
 
     public:
-	RdfRemoteDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::vector<const char*> endpointPatterns) : 
-	    RdfDB(webAgent, xmlParser), endpointPatterns(endpointPatterns) {  }
+	RdfRemoteDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::vector<const char*> endpointPatterns, std::ostream** debugStream = NULL) : 
+	    RdfDB(webAgent, xmlParser, debugStream), endpointPatterns(endpointPatterns) {  }
 #if REGEX_LIB == SWOb_BOOST
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();

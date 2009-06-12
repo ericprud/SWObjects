@@ -197,7 +197,7 @@ int main(int argc,char** argv) {
 	    errorContext = "query execution";
 	    SAXPARSER p;
 	    WEBagent_boostASIO client;
-	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns);
+	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns, &DebugStream);
 	    ResultSet rs(&posFactory);
 	    o->execute(&db, &rs);
 	    std::cout << rs; // show results
