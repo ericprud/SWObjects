@@ -28,7 +28,7 @@ ECHO:=`which echo`
 ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
-#OPT=-O4
+OPT=-fPIC
 DEFS:=-DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
@@ -216,6 +216,19 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS)
 
+# TODO: cleanup mod_sparul build, autoconf dependency paths?
+bin/mod_sparul.o: bin/mod_sparul.cpp config.h $(LIB)
+	$(CXX) -shared -Wall -fPIC `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I../../codea -I../../ccl -I/usr/include/apr-1/ $(INCLUDES) -o $@ $< $(LDFLAGS)
+
+bin/mod_sparul.so: bin/mod_sparul.o #lib
+	$(CXX) -shared -Wall -fPIC ../../codea/codea_hooks.o -lnsl -lpthread -o $@ $< $(LDFLAGS)
+
+clean-mod_sparul:
+	rm -f bin/mod_sparul.{o,so}
+
+install-mod_sparul: bin/mod_sparul.so
+	make bin/mod_sparul.so
+	apxs -i -n sparul_module bin/mod_sparul.so
 
 # bin/ general rules
 bin/%.d : bin/%.cpp config.h
