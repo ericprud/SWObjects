@@ -27,25 +27,28 @@ public:
     static int Handler( request_rec* r ) {
         const char *ctype;
         ctype = apr_table_get(r->headers_in, "Content-Type");
-        if (1) {
-            /*
-            ctype != NULL
-            && strcmp(ctype, "application/sparql-query")==0
-            && strcmp(r->method, "POST")==0) {
-            */
+        if (r->method_number == M_POST && ctype != NULL
+            && strcmp(ctype, "application/sparql-query")==0) {
+            ap_setup_client_block(r, REQUEST_CHUNKED_DECHUNK);
+
             // trigger SPARUL query on request URI
-            long q = 1;
+            int ret = 0;
             string query = "";
             char buf[1024];
             buf[0] = 0;
 
-            //do {
-                // accumulate client post data (query)
-                q = ap_get_client_block(r, buf, 1024);
-            //    query += buf;
-            //} while (q > 0);
+            if (!ap_should_client_block(r))
+                return DECLINED;
 
-            // figure absolute URI
+            // accumulate client post data (query)
+            while ((ret = ap_get_client_block(r, buf, 1024)) > 0) {
+                query.append(buf, ret);
+                if (ret < 1024)
+                    break;
+            }
+            printf("query: %s\n", query.c_str());
+
+            // determine absolute URI
             const char *req_uri, *port;
             port = ap_is_default_port(ap_get_server_port(r), r)
                    ? "" : apr_psprintf(r->pool, ":%u", ap_get_server_port(r));
@@ -65,9 +68,7 @@ public:
             printf("filename: %s\n", r->filename);
             tp.parse_file(r->filename);
             SPARQLfedDriver sp(req_uri, &f);
-            //sp.parse_string(query);
-            printf("SPARUL: %s\n", buf);
-            sp.parse_string("SELECT ?s ?p ?o { ?s ?p ?o. }");
+            sp.parse_string(query);
 
             ResultSet rs(&f);
             sp.root->execute(&db, &rs);
@@ -76,9 +77,7 @@ public:
             cout << db;
             delete tp.root;
 
-            // its working
-            //printf("SPARUL on %s: %s\n", req_uri, buf);
-            //ap_rputs("SPARUL module invoked successfully.", r);
+            // its worked
             return OK;
         }
 
