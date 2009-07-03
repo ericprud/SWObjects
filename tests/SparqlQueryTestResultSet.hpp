@@ -14,6 +14,7 @@
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
+#include "TrigSParser/TrigSParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
@@ -37,6 +38,7 @@ using namespace w3c_sw;
 POSFactory F;
 SPARQLfedDriver sparqlParser("", &F);
 TurtleSDriver turtleParser("", &F);
+TrigSDriver trigParser("", &F);
 RdfXmlParser GRdfXmlParser(&F, &P);
 
 

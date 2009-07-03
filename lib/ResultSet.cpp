@@ -63,7 +63,7 @@ namespace w3c_sw {
 
     ResultSet::ResultSet (POSFactory* posFactory) : 
 	posFactory(posFactory), knownVars(), results(), ordered(false), 
-	isBool(false), bgp(NULL), selectOrder(), orderedSelect(false) {
+	isBool(false), bgp(NULL), db(NULL), selectOrder(), orderedSelect(false) {
 	results.insert(results.begin(), new Result(this));
     }
 
@@ -192,6 +192,8 @@ namespace w3c_sw {
     std::string ResultSet::toString () const {
 	if (isBoolean()) {
 	    return size() > 0 ? "true" : "false" ;
+	} else if (db != NULL) {
+	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
 	} else if (bgp != NULL) {
 	    SPARQLSerializer s;
 	    bgp->express(&s);

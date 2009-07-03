@@ -722,6 +722,26 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
+    ResultSet* Insert::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (m_WhereClause != NULL)
+	    m_WhereClause->bindVariables(db, rs);
+	struct MakeNewBNode : public BNodeEvaluator {
+	    POSFactory* posFactory;
+	    virtual const POS* evaluate (const BNode* /* node */, const Result* /* r */) {
+		return posFactory->createBNode();
+	    }
+	public:
+	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
+	};
+	MakeNewBNode makeNewBNode(rs->getPOSFactory());
+	m_GraphTemplate->construct(db, rs, &makeNewBNode, NULL);
+	rs->setRdfDB(db);
+// 	std::cerr << "CONSTRUCTED: " << *rs << std::endl;
+// 	std::cerr << "from: " << *db << std::endl;
+	return rs;
+    }
+
     void DefaultGraphClause::loadData (RdfDB* db) const {
 	db->loadData(m_IRIref, db->assureGraph(DefaultGraph), m_posFactory);
     }
@@ -782,6 +802,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
 	    rs->restrict(*it);
+    }
+
+    void TableConjunction::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	if (m_Filters.size() > 0)
+	    throw(std::runtime_error("Can not construct into a pattern with filters."));
+
+	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
+	     it != m_TableOperations.end() && rs->size() > 0; it++)
+	    (*it)->construct(target, rs, evaluator, bgp);
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -937,6 +966,22 @@ compared against
 	return constant == curVal;
     }
 
+    void GraphGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* /* bgp */) const {
+	const URI* graphName = dynamic_cast<const URI*>(m_VarOrIRIref);
+	if (graphName != NULL) {
+	    /* GRAPH <x> { ?s ?p ?o } */
+	    BasicGraphPattern* bgp = target->assureGraph(graphName);
+	    m_TableOperation->construct(target, rs, evaluator, bgp);
+	} else {
+	    /* GRAPH ?g { ?s ?p ?o } */
+	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
+		const POS* evaldGraphName = m_VarOrIRIref->evalPOS(*result, evaluator);
+		BasicGraphPattern* bgp = target->assureGraph(evaldGraphName);
+		m_TableOperation->construct(target, rs, evaluator, bgp);
+	    }
+	}
+    }
+
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(rs->getPOSFactory()); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
@@ -968,14 +1013,20 @@ compared against
 #endif
     }
 
-    void BasicGraphPattern::construct (BasicGraphPattern* target, ResultSet* rs, BNodeEvaluator* evaluator) const {
-	for (ResultSetIterator result = rs->begin() ; result != rs->end(); result++)
+    void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {
+	for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++)
 	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
 		(*triple)->construct(target, *result, rs->getPOSFactory(), evaluator);
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+    void BasicGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	if (bgp == NULL)
+	    bgp = target->assureGraph(NULL);
+	construct(bgp, rs, evaluator);
+    }
+
+    bool TriplePattern::construct (BasicGraphPattern* target, const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	bool ret = false;
 	const POS *s, *p, *o;
 	if ((s = m_s->evalPOS(r, evaluator)) != NULL && 

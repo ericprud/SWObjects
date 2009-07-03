@@ -66,6 +66,25 @@ namespace w3c_sw {
 		bgp->addTriplePattern(*it);
 	}
 	virtual ~RdfDB();
+	bool operator== (const RdfDB& ref) const {
+	    std::set<const POS*> thisGraphs;
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		thisGraphs.insert(it->first);
+
+	    std::set<const POS*> refGraphs;
+	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it)
+		refGraphs.insert(it->first);
+
+	    if (thisGraphs != refGraphs)
+		return false;
+
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		// compare BasicGraphPatterns *it->second and *ref.graphs.find(it->first)->second;
+		if (!(*it->second == *ref.graphs.find(it->first)->second))
+		    return false;
+
+	    return true;
+	}
 	void clearTriples();
 	BasicGraphPattern* assureGraph(const POS* name);
 	bool loadData (BasicGraphPattern* target, std::istream& stream, std::string mediaType, std::string nameStr, POSFactory* posFactory) {

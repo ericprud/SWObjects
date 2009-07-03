@@ -500,7 +500,7 @@ public:
 	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
     }
-    bool construct(BasicGraphPattern* target, Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const;
+    bool construct(BasicGraphPattern* target, const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const;
 };
 
 class DefaultGraphPattern;
@@ -875,6 +875,7 @@ public:
 	m_Filters.push_back(filter);
     }
     virtual void bindVariables(RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual TableOperation* getDNF() const = 0;
@@ -924,6 +925,7 @@ public:
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperation* getDNF() const;
 };
 class TableDisjunction : public TableJunction { // ⊎
@@ -935,6 +937,9 @@ public:
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
+    }
     virtual TableOperation* getDNF() const;
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
@@ -971,7 +976,8 @@ public:
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const;
-    void construct(BasicGraphPattern* target, ResultSet* rs, BNodeEvaluator* evaluator) const;
+    void construct(BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const;
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     size_t size () const { return m_TriplePatterns.size(); }
     std::vector<const TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
@@ -1044,6 +1050,7 @@ public:
     virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
 	m_TableOperation->bindVariables(db, rs);
     }
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new GraphGraphPattern(m_VarOrIRIref, p_TableOperation); }
 };
 class OptionalGraphPattern : public TableOperationOnOperation {
@@ -1056,6 +1063,9 @@ public:
 	    *m_TableOperation == *pref->m_TableOperation;
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{OPTIONAL{?s?p?o}}");
+    }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new OptionalGraphPattern(p_TableOperation); }
 };
 
@@ -1309,6 +1319,7 @@ public:
     Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Insert () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
