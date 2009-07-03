@@ -55,11 +55,11 @@ namespace w3c_sw {
 
     public:
 	RdfDB (SWSAXparser* xmlParser = NULL) : 
-	    graphs(), webAgent(NULL), xmlParser(xmlParser) {  }
+	    graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL) {  }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL) : 
 	    graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream) {  }
 	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
-	RdfDB (const DefaultGraphPattern* graph) : graphs() {
+	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL) {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
 		 it != graph->end(); it++)
@@ -117,7 +117,7 @@ namespace w3c_sw {
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
 	    if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-		if (*debugStream != NULL)
+		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "reading web resource " << nameStr << std::endl;
 		std::string s(webAgent->get(nameStr.c_str()));
 		std::stringstream stream(s); // would be nice to use webAgent stream, or have a callback.
@@ -125,7 +125,7 @@ namespace w3c_sw {
 		if (loadData(target, stream, mediaType, nameStr, posFactory))
 		    throw nameStr + ":0: error: unable to parse web document";
 	    } else {
-		if (*debugStream != NULL)
+		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "reading file " << nameStr << std::endl;
 		std::ifstream stream(nameStr.c_str());
 		std::string mediaType = 
