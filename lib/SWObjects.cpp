@@ -706,8 +706,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
 	};
 	MakeNewBNode makeNewBNode(rs->getPOSFactory());
-	m_ConstructTemplate->construct(resultGraph, rs, &makeNewBNode);
-	rs->setGraph(resultGraph);
+	rs->tabularResults = false;
+	m_ConstructTemplate->construct(rs->getRdfDB()->assureGraph(DefaultGraph), rs, &makeNewBNode);
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
@@ -735,8 +735,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
 	};
 	MakeNewBNode makeNewBNode(rs->getPOSFactory());
-	m_GraphTemplate->construct(db, rs, &makeNewBNode, NULL);
-	rs->setRdfDB(db);
+	rs->tabularResults = false;
+	m_GraphTemplate->construct(rs->getRdfDB(), rs, &makeNewBNode, NULL);
 // 	std::cerr << "CONSTRUCTED: " << *rs << std::endl;
 // 	std::cerr << "from: " << *db << std::endl;
 	return rs;

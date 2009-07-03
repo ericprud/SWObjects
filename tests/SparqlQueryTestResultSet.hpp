@@ -44,6 +44,7 @@ RdfXmlParser GRdfXmlParser(&F, &P);
 
 struct SparqlQueryTestResultSet : public ResultSet {
     RdfDB d;
+    RdfDB constructed;
     SparqlQueryTestResultSet (const char* defGraph, 
 			      const char* namedGraphs[], size_t namedCount, 
 			      const URI* requires[], size_t reqsCount, 
@@ -78,6 +79,7 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	    std::cerr << "ignoring " << requires[i]->toString() << std::endl;
 
 	/* Exectute query. */
+	setRdfDB(&constructed);
 	sparqlParser.root->execute(&d, this);
     }
 };

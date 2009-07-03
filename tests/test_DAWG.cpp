@@ -31,10 +31,10 @@
 	} else {							       \
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
-	if (measured.getGraph() == NULL)				       \
+	if (measured.tabularResults == true)				       \
 	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, "")); 	       \
 	else								       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, rdfDB.assureGraph(NULL)));\
+	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB));\
     }									       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
@@ -507,7 +507,7 @@ BOOST_AUTO_TEST_CASE( algebra__join_combo_2 ) {
      * Tests combination of Join operator with Graph on LHS and Union on RHS
      */
     const char* defaultGraph( "data-r2/algebra/join-combo-graph-2.ttl" );
-    const char* namedGraphs[] = {"join-combo-graph-1.ttl"};
+    const char* namedGraphs[] = {"data-r2/algebra/join-combo-graph-1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/algebra/join-combo-2.rq", "data-r2/algebra/join-combo-2.srx", 1, 0);
 }

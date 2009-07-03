@@ -63,7 +63,7 @@ namespace w3c_sw {
 
     ResultSet::ResultSet (POSFactory* posFactory) : 
 	posFactory(posFactory), knownVars(), results(), ordered(false), 
-	isBool(false), bgp(NULL), db(NULL), selectOrder(), orderedSelect(false) {
+	isBool(false), db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
 	results.insert(results.begin(), new Result(this));
     }
 
@@ -190,15 +190,12 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toString () const {
-	if (isBoolean()) {
+	if (isBoolean())
 	    return size() > 0 ? "true" : "false" ;
-	} else if (db != NULL) {
+
+	else if (tabularResults == false)
 	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
-	} else if (bgp != NULL) {
-	    SPARQLSerializer s;
-	    bgp->express(&s);
-	    return std::string("<graph result>\n") + s.getString() + "\n</graph result>";
-	}
+
 	const char* NULL_REP = "--";
 #if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";
