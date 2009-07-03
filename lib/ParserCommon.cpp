@@ -18,6 +18,8 @@ namespace w3c_sw {
 
     bool Driver::parse_file (const std::string &filename) {
 	std::ifstream in(filename.c_str());
+	if (!in.is_open())
+	    throw std::string("unable to open file \"") + filename + "\"";
 	return parse_stream(in, filename);
     }
 
