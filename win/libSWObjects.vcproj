@@ -49,7 +49,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\win"
+				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\lib\TrigSParser;..\win"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;HAVE_REGEX=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\win"
+				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\lib\TrigSParser;..\win"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;HAVE_REGEX=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -264,6 +264,50 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\lib\TrigSParser\TrigSParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\lib\TrigSScanner.lpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="FlexGenerator"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Source Files"
@@ -370,6 +414,46 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\lib\TrigSParser\TrigSParser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\lib\TrigSScanner.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -450,6 +534,14 @@
 			</File>
 			<File
 				RelativePath="..\lib\TurtleSScanner.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\TrigSParser\TrigSParser.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\TrigSScanner.hpp"
 				>
 			</File>
 			<File
