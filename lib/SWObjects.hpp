@@ -784,7 +784,7 @@ public:
 class POSsorter;
 extern POSsorter* ThePOSsorter;
 
-class POSsorter {
+struct POSsorter {
 public:
     std::map<const std::string, int> typeOrder;
     POSsorter () {
@@ -794,7 +794,7 @@ public:
 	typeOrder[typeid(RDFLiteral).name()] = 4;
 	ThePOSsorter = this;
     }
-    bool sort (const POS* lhs, const POS* rhs) {
+    bool operator() (const POS* lhs, const POS* rhs) {
 	const std::string lt = typeid(*lhs).name();
 	const std::string rt = typeid(*rhs).name();
 	const int li = typeOrder[lt];
