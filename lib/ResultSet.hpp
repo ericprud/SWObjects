@@ -494,6 +494,16 @@ namespace w3c_sw {
 	void project(ProductionVector<const POS*> const * varsV);
 	void restrict(const Filter* filter);
 	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
+	void order () {
+	    const VariableList* curVars = getKnownVars();
+	    ProductionVector<const POS*> justVars;
+	    for (VariableListConstIterator it = curVars->begin();
+		 it != curVars->end(); ++it)
+		if (dynamic_cast<const Variable*>(*it))
+		    justVars.push_back(*it);
+	    project(&justVars);
+	    justVars.clear();
+	}
 	bool isOrdered () const { return ordered; }
 	void makeBoolean () { isBool = true; }
 	bool isBoolean () const { return isBool; }

@@ -759,14 +759,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void StarVarSet::project (ResultSet* rs) const {
-	const VariableList* curVars = rs->getKnownVars();
-	ProductionVector<const POS*> justVars;
-	for (VariableListConstIterator it = curVars->begin();
-	     it != curVars->end(); ++it)
-	    if (dynamic_cast<const Variable*>(*it))
-		justVars.push_back(*it);
-	rs->project(&justVars);
-	justVars.clear();
+	rs->order();
     }
 
     void SolutionModifier::modifyResult (ResultSet* rs) {
