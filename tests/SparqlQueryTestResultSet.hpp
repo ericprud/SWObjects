@@ -88,7 +88,57 @@ std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) 
     os << "Database: " << my.d;
     os << "query: " << *sparqlParser.root;
     os << "result: ";
-    operator<<(os, (ResultSet)my);
+    ResultSet orderedCopy(my);
+    orderedCopy.order();
+    operator<<(os, orderedCopy);
+    return os;
+}
+
+/* ExpectedRS attempts to copy the column order from measured.
+   Provides only the interfaces needed for the DAWG tests.
+ */
+struct ExpectedRS : public ResultSet {
+    ResultSet& measured;
+    ExpectedRS (ResultSet& measured, POSFactory* posFactory, 
+		SWSAXparser* parser, const char* filename) : 
+	ResultSet(posFactory, parser, filename), measured(measured) {  }
+    ExpectedRS (ResultSet& measured, 
+		POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
+	ResultSet(posFactory, db, baseURI), measured(measured) {  }
+    ExpectedRS (ResultSet& measured, 
+		POSFactory* posFactory, RdfDB* db) : 
+	ResultSet(posFactory, db), measured(measured) {  }
+};
+
+std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
+    ResultSet orderedCopy(my);
+    const VariableList* t = orderedCopy.getKnownVars();
+    std::set<const POS*> referenceVars(t->begin(), t->end());
+    const VariableList* measuredVars = my.measured.getKnownVars();
+
+    ProductionVector<const POS*> justVars;
+
+    /* Copy the measuredVars which have corresponding referenceVars
+     * into the new order set.
+     * Don't put BNodes into the order set.
+     */
+    for (VariableListConstIterator it = measuredVars->begin();
+	 it != measuredVars->end(); ++it)
+	if (referenceVars.find(*it) != referenceVars.end()) {
+	    if (dynamic_cast<const Variable*>(*it))
+		justVars.push_back(*it);
+	    referenceVars.erase(*it);
+	}
+
+    /* Add any remaining measuredVars into the order set. */
+    for (VariableListConstIterator it = referenceVars.begin();
+	 it != referenceVars.end(); ++it)
+	if (dynamic_cast<const Variable*>(*it))
+	    justVars.push_back(*it);
+
+    orderedCopy.project(&justVars);
+    justVars.clear();
+    operator<<(os, orderedCopy);
     return os;
 }
 

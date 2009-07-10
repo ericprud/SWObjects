@@ -15,10 +15,11 @@
  */
 #define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
     try {								       \
-    SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, NGS, requires, REQS, QUERY_FILE); \
+    SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, 	       \
+				      NGS, requires, REQS, QUERY_FILE);	       \
     std::string rfs(RESULT_FILE);				    	       \
     if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
-	ResultSet expected(&F, &P, RESULT_FILE);		    	       \
+	ExpectedRS expected(measured, &F, &P, RESULT_FILE);		       \
 	BOOST_CHECK_EQUAL(measured, expected);				       \
     } else {								       \
 	RdfDB rdfDB;							       \
@@ -31,10 +32,10 @@
 	} else {							       \
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
-	if (measured.tabularResults == true)				       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB, "")); 	       \
-	else								       \
-	    BOOST_CHECK_EQUAL(measured, ResultSet(&F, &rdfDB));\
+	ExpectedRS expected = measured.tabularResults == true ?		       \
+	    ExpectedRS(measured, &F, &rdfDB, ""):			       \
+	    ExpectedRS(measured, &F, &rdfDB);				       \
+	BOOST_CHECK_EQUAL(measured, expected);				       \
     }									       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \

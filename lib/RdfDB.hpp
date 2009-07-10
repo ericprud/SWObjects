@@ -139,9 +139,21 @@ namespace w3c_sw {
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
 	std::string toString () const {
-	    SPARQLSerializer s;
-	    express(&s);
-	    return s.getString();
+	    /* simple unordered serializer -
+	       SPARQLSerializer s;
+	       express(&s);
+	       return s.getString(); */
+
+	    /* ordered serializer */
+	    std::list<const POS*> graphList;
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		graphList.push_back(it->first);
+	    POSsorter sorter;
+	    graphList.sort(sorter);
+	    std::stringstream s;
+	    for (std::list<const POS*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it)
+		s << *graphs.find(*it)->second;
+	    return s.str();
 	}
     };
 
