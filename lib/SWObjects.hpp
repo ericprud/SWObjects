@@ -238,7 +238,7 @@ class POSFactory;
 
 /* START Parts Of Speach */
 class POS : public Terminal {
-    friend class POSsorter;
+    friend struct POSsorter;
 protected:
     POS (std::string matched) : Terminal(matched) {  }
     POS (std::string matched, bool gensym) : Terminal(matched, gensym) { }
@@ -781,7 +781,7 @@ public:
 };
 
     /* Sorter for the POSs. */
-class POSsorter;
+struct POSsorter;
 extern POSsorter* ThePOSsorter;
 
 struct POSsorter {
