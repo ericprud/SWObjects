@@ -706,7 +706,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
 	};
 	MakeNewBNode makeNewBNode(rs->getPOSFactory());
-	rs->tabularResults = false;
+	rs->resultType = ResultSet::RESULT_Graphs;
 	m_ConstructTemplate->construct(rs->getRdfDB()->assureGraph(DefaultGraph), rs, &makeNewBNode);
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
@@ -718,7 +718,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	rs->makeBoolean();
+	rs->resultType = ResultSet::RESULT_Boolean;
 	return rs;
     }
 
@@ -735,7 +735,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
 	};
 	MakeNewBNode makeNewBNode(rs->getPOSFactory());
-	rs->tabularResults = false;
+	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->construct(rs->getRdfDB(), rs, &makeNewBNode, NULL);
 // 	std::cerr << "CONSTRUCTED: " << *rs << std::endl;
 // 	std::cerr << "from: " << *db << std::endl;

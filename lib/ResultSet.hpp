@@ -85,7 +85,6 @@ namespace w3c_sw {
 	VariableList knownVars;
 	ResultList results;
 	bool ordered;
-	bool isBool;
 	RdfDB* db;
 	ProductionVector<const POS*> selectOrder;
 	bool orderedSelect;
@@ -93,13 +92,14 @@ namespace w3c_sw {
     public:
 	static const char* NS_srx;
 	static const char* NS_xml;
-	bool tabularResults;
+	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
+	ResultType resultType;
 
 	ResultSet(POSFactory* posFactory);
 	ResultSet (const ResultSet& ref) : 
 	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
-	    results(), ordered(ref.ordered), isBool(ref.isBool), 
-	    db(ref.db), selectOrder(), orderedSelect(false), tabularResults(ref.tabularResults) {
+	    results(), ordered(ref.ordered), db(ref.db), selectOrder(), 
+	    orderedSelect(false), resultType(ref.resultType) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -113,8 +113,8 @@ namespace w3c_sw {
 #if REGEX_LIB != SWOb_DISABLED
 	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : 
 	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(ordered), isBool(false), 
-	    db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
+	    results(), ordered(ordered), db(NULL), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -258,7 +258,7 @@ namespace w3c_sw {
 		    /* http://www.w3.org/TR/rdf-sparql-XMLres/#boolean-results */
 		    if (chars == "true")
 			rs->insert(rs->end(), new Result(rs));
-		    rs->makeBoolean();
+		    rs->resultType = RESULT_Boolean;
 		    chars = "";
 		    break;
 		case BINDING: //@@
@@ -298,13 +298,13 @@ namespace w3c_sw {
 
 	ResultSet (POSFactory* posFactory, RdfDB* db) : 
 	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(false), isBool(false), 
-	    db(db), selectOrder(), orderedSelect(false), tabularResults(false) {  }
+	    results(), ordered(false), db(db), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Graphs) {  }
 
 	ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
 	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(false), isBool(false), 
-	    db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
+	    results(), ordered(false), db(NULL), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
@@ -322,7 +322,7 @@ namespace w3c_sw {
 		    throw std::string("database:\n") + 
 			db->toString() + 
 			"\nis not a validate initializer for a boolen ResultSet.";
-		isBool = true;
+		resultType = RESULT_Boolean;
 		/* So far, size() > 0 is how we test a boolean ResultSet. */
 		if (blit->getValue())
 		    results.insert(results.begin(), new Result(this));
@@ -375,16 +375,16 @@ namespace w3c_sw {
 
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : 
 	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(false), isBool(false), 
-	    db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
+	    results(), ordered(false), db(NULL), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
 
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : 
 	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(false), isBool(false), 
-	    db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
+	    results(), ordered(false), db(NULL), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(start, finish, &handler);
 	}
@@ -392,14 +392,14 @@ namespace w3c_sw {
 	virtual ~ResultSet();
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.isOrdered() != isOrdered() || 
-		ref.tabularResults != tabularResults)
+		ref.resultType != resultType)
 		return false;
 
 	    if (isOrdered()) {
 		return compareOrdered(ref);
-	    } else if (isBoolean()) {
-		return ref.isBool && (ref.size() > 0) == (size() > 0) ;
-	    } else if (!tabularResults) {
+	    } else if (resultType == RESULT_Boolean) {
+		return (ref.size() > 0) == (size() > 0) ;
+	    } else if (resultType == RESULT_Graphs) {
 		return (*db == *ref.db) ;
 	    } else {
 		std::vector<s_OrderConditionPair> orderConditions;
@@ -505,8 +505,6 @@ namespace w3c_sw {
 	    justVars.clear();
 	}
 	bool isOrdered () const { return ordered; }
-	void makeBoolean () { isBool = true; }
-	bool isBoolean () const { return isBool; }
 	void setRdfDB (RdfDB* db) { this->db = db; }
 	RdfDB* getRdfDB () { return db; }
 

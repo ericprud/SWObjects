@@ -18,11 +18,11 @@
     SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, 	       \
 				      NGS, requires, REQS, QUERY_FILE);	       \
     std::string rfs(RESULT_FILE);				    	       \
+    ExpectedRS* expected;						       \
+    RdfDB rdfDB;							       \
     if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
-	ExpectedRS expected(measured, &F, &P, RESULT_FILE);		       \
-	BOOST_CHECK_EQUAL(measured, expected);				       \
+	expected = new ExpectedRS(measured, &F, &P, RESULT_FILE);	       \
     } else {								       \
-	RdfDB rdfDB;							       \
 	if (rfs.substr(rfs.size()-4, 4) == ".ttl") {			       \
 	    turtleParser.setGraph(rdfDB.assureGraph(NULL));		       \
 	    turtleParser.parse_file(RESULT_FILE);			       \
@@ -32,11 +32,12 @@
 	} else {							       \
 	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
 	}								       \
-	ExpectedRS expected = measured.tabularResults == true ?		       \
-	    ExpectedRS(measured, &F, &rdfDB, ""):			       \
-	    ExpectedRS(measured, &F, &rdfDB);				       \
-	BOOST_CHECK_EQUAL(measured, expected);				       \
+	expected = measured.resultType == ResultSet::RESULT_Graphs ?	       \
+	    new ExpectedRS(measured, &F, &rdfDB) :			       \
+	    new ExpectedRS(measured, &F, &rdfDB, "");			       \
     }									       \
+    BOOST_CHECK_EQUAL(measured, *expected);				       \
+    delete expected;							       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
     }

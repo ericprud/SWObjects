@@ -62,8 +62,8 @@ namespace w3c_sw {
     }
 
     ResultSet::ResultSet (POSFactory* posFactory) : 
-	posFactory(posFactory), knownVars(), results(), ordered(false), 
-	isBool(false), db(NULL), selectOrder(), orderedSelect(false), tabularResults(true) {
+	posFactory(posFactory), knownVars(), results(), ordered(false),  db(NULL), 
+	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular) {
 	results.insert(results.begin(), new Result(this));
     }
 
@@ -190,10 +190,10 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toString () const {
-	if (isBoolean())
+	if (resultType == RESULT_Boolean)
 	    return size() > 0 ? "true" : "false" ;
 
-	else if (tabularResults == false)
+	else if (resultType == RESULT_Graphs)
 	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
 
 	const char* NULL_REP = "--";
