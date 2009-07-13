@@ -69,11 +69,13 @@ namespace w3c_sw {
 	bool operator== (const RdfDB& ref) const {
 	    std::set<const POS*> thisGraphs;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		thisGraphs.insert(it->first);
+		if (it->second->size() > 0)
+		    thisGraphs.insert(it->first);
 
 	    std::set<const POS*> refGraphs;
 	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it)
-		refGraphs.insert(it->first);
+		if (it->second->size() > 0)
+		    refGraphs.insert(it->first);
 
 	    if (thisGraphs != refGraphs)
 		return false;
@@ -147,7 +149,8 @@ namespace w3c_sw {
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		graphList.push_back(it->first);
+		if (it->second->size() > 0)
+		    graphList.push_back(it->first);
 	    POSsorter sorter;
 	    graphList.sort(sorter);
 	    std::stringstream s;
