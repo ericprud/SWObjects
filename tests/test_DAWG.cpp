@@ -9,39 +9,6 @@
 #define BOOST_TEST_MODULE DAWG_tests
 #include "../tests/SparqlQueryTestResultSet.hpp"
 
-/* Macros for terse test syntax
- * Using macros means that error messages point you to the test invocation (a
- * great help in quicky diagnosing the failure).
- */
-#define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
-    try {								       \
-    SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, 	       \
-				      NGS, requires, REQS, QUERY_FILE);	       \
-    std::string rfs(RESULT_FILE);				    	       \
-    ExpectedRS* expected;						       \
-    RdfDB rdfDB;							       \
-    if (rfs.substr(rfs.size()-4, 4) == ".srx") { 		    	       \
-	expected = new ExpectedRS(measured, &F, &P, RESULT_FILE);	       \
-    } else {								       \
-	if (rfs.substr(rfs.size()-4, 4) == ".ttl") {			       \
-	    turtleParser.setGraph(rdfDB.assureGraph(NULL));		       \
-	    turtleParser.parse_file(RESULT_FILE);			       \
-	    turtleParser.clear("");					       \
-	} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {		       \
-	    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), RESULT_FILE);	       \
-	} else {							       \
-	    throw std::string("unable to parse results file ") + RESULT_FILE;  \
-	}								       \
-	expected = measured.resultType == ResultSet::RESULT_Graphs ?	       \
-	    new ExpectedRS(measured, &F, &rdfDB) :			       \
-	    new ExpectedRS(measured, &F, &rdfDB, "");			       \
-    }									       \
-    BOOST_CHECK_EQUAL(measured, *expected);				       \
-    delete expected;							       \
-    } catch (std::string& s) {						       \
-	BOOST_ERROR ( s );						       \
-    }
-
 BOOST_AUTO_TEST_SUITE( triple_match )
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
     /* name: dawg-triple-pattern-001

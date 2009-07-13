@@ -1,3 +1,3 @@
-<sparul/g> {
-  <sparul/x> <sparul/y> <sparul/z> .
+<g> {
+  <x> <y> <z> .
 }

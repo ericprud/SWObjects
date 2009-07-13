@@ -82,6 +82,32 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	setRdfDB(&constructed);
 	sparqlParser.root->execute(&d, this);
     }
+
+    SparqlQueryTestResultSet (const char* input, const char* query)
+	: ResultSet(&F) {
+ 
+	std::string baseStr(query);
+	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
+	const URI* baseURI = F.getURI(baseStr.c_str());
+
+	/* Parse query. */
+	sparqlParser.setBase(baseURI);
+	if (sparqlParser.parse_file(query))
+	    throw std::string("failed to parse query file \"") + query + "\".";
+	sparqlParser.clear(""); // clear out namespaces and base URI.
+
+	/* Parse data. */
+	if (input != NULL) {
+	    trigParser.setDB(&d);
+	    trigParser.setBase(baseURI);
+	    trigParser.parse_file(input);
+	    trigParser.clear("");
+	}
+
+	/* Exectute query. */
+	setRdfDB(&constructed);
+	sparqlParser.root->execute(&d, this);
+    }
 };
 
 std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) {
@@ -97,21 +123,55 @@ std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) 
 /* ExpectedRS attempts to copy the column order from measured.
    Provides only the interfaces needed for the DAWG tests.
  */
-struct ExpectedRS : public ResultSet {
+struct ExpectedRS {
     ResultSet& measured;
-    ExpectedRS (ResultSet& measured, POSFactory* posFactory, 
-		SWSAXparser* parser, const char* filename) : 
-	ResultSet(posFactory, parser, filename), measured(measured) {  }
-    ExpectedRS (ResultSet& measured, 
-		POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
-	ResultSet(posFactory, db, baseURI), measured(measured) {  }
-    ExpectedRS (ResultSet& measured, 
-		POSFactory* posFactory, RdfDB* db) : 
-	ResultSet(posFactory, db), measured(measured) {  }
+    ResultSet* reference;
+    RdfDB rdfDB;
+
+    ExpectedRS (ResultSet& measured, std::string rfs, 
+		POSFactory* posFactory, SWSAXparser* saxParser) : 
+	measured(measured) {
+	if (rfs.size() == 0) {		/* empty result graph */
+	    reference = new ResultSet(posFactory, &rdfDB);
+
+	} else if (rfs.substr(rfs.size()-4, 4) == ".srx") {
+	    reference = new ResultSet(posFactory, saxParser, rfs.c_str());
+
+	} else {			/* retults in a graph */
+	    if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
+		turtleParser.setGraph(rdfDB.assureGraph(NULL));
+		turtleParser.parse_file(rfs.c_str());
+		turtleParser.clear("");
+	    } else if (rfs.substr(rfs.size()-4, 4) == ".trg") {			       
+		std::string baseStr = rfs.substr(0, rfs.find_last_of("/")+1);
+		const URI* baseURI = F.getURI(baseStr.c_str());
+		trigParser.setBase(baseURI);
+		trigParser.setDB(&rdfDB);		       
+		trigParser.parse_file(rfs.c_str());			       
+		trigParser.clear("");					       
+	    } else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
+		GRdfXmlParser.parse(rdfDB.assureGraph(NULL), rfs.c_str());
+	    } else {
+		throw std::string("unable to parse results file ") + rfs.c_str();
+	    }
+
+	    /* if !RESULT_Graphs, graph is an RDF form of a ResultSet. */
+	    reference = measured.resultType == ResultSet::RESULT_Graphs ?
+		new ResultSet(posFactory, &rdfDB) :
+		new ResultSet(posFactory, &rdfDB, "");
+	}
+    }
+    ~ExpectedRS () { delete reference; }
 };
 
+
+bool operator== (ResultSet const& measured, ExpectedRS const& expected) {
+    return measured == *expected.reference;
+}
+
+
 std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
-    ResultSet orderedCopy(my);
+    ResultSet orderedCopy(*my.reference);
     const VariableList* t = orderedCopy.getKnownVars();
     std::set<const POS*> referenceVars(t->begin(), t->end());
     const VariableList* measuredVars = my.measured.getKnownVars();
@@ -141,4 +201,31 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
     operator<<(os, orderedCopy);
     return os;
 }
+
+/* Macros for terse test syntax
+ * Using macros means that error messages point you to the test invocation (a
+ * great help in quicky diagnosing the failure).
+ */
+#define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
+    try {								       \
+	SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, 	       \
+					  NGS, requires, REQS, QUERY_FILE);    \
+	ExpectedRS expected(measured, RESULT_FILE, &F, &P);		       \
+	BOOST_CHECK_EQUAL(measured, expected);				       \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::runtime_error& s) {					       \
+	BOOST_ERROR ( std::string(s.what()).append(" not implemented") );      \
+    }
+
+#define GRAPH_TEST(DATA_FILE, QUERY_FILE, RESULT_FILE)			       \
+    try {								       \
+	SparqlQueryTestResultSet measured(DATA_FILE, QUERY_FILE);	       \
+	ExpectedRS expected(measured, RESULT_FILE, &F, &P);		       \
+	BOOST_CHECK_EQUAL(measured, expected);				       \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::runtime_error& s) {					       \
+	BOOST_ERROR ( std::string(s.what()).append(" not implemented") );      \
+    }
 
