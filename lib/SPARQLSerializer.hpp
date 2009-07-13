@@ -307,9 +307,10 @@ public:
     }
     virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
-	ret << "DELETE";
+	ret << "DELETE { ";
 	p_GraphTemplate->express(this);
-	p_WhereClause->express(this);
+	if (p_WhereClause) p_WhereClause->express(this);
+	ret << "}" << std::endl;
     }
     virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
 	lead();
