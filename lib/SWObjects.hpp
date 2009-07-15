@@ -136,7 +136,7 @@ public:
     typename std::vector<T>::const_iterator begin () const { return data.begin(); }
     typename std::vector<T>::iterator end () { return data.end(); }
     typename std::vector<T>::const_iterator end () const { return data.end(); }
-    void erase (typename std::vector<T>::iterator it) { data.erase(it); }
+    typename std::vector<T>::iterator erase (typename std::vector<T>::iterator it) { return data.erase(it); }
     void sort (bool (*comp)(T, T)) {
 	std::list<T> l;
 	for (typename std::vector<T>::iterator it = begin(); it != end(); ++it)
@@ -903,7 +903,7 @@ public:
     std::vector<const TableOperation*>::iterator end () { return m_TableOperations.end(); }
     std::vector<const TableOperation*>::const_iterator end () const { return m_TableOperations.end(); }
     void clear () { m_TableOperations.clear(); }
-    void erase (std::vector<const TableOperation*>::iterator it) { m_TableOperations.erase(it); }
+    std::vector<const TableOperation*>::iterator erase (std::vector<const TableOperation*>::iterator it) { return m_TableOperations.erase(it); }
     size_t size () const { return m_TableOperations.size(); }
     /* simplify lies -- it modifies otherwise unmodifiable TableOperations. */
     TableOperation* simplify () {
@@ -989,7 +989,7 @@ public:
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
     std::vector<const TriplePattern*>::const_iterator end () const { return m_TriplePatterns.end(); }
-    void erase (std::vector<const TriplePattern*>::iterator it) { m_TriplePatterns.erase(it); }
+    std::vector<const TriplePattern*>::iterator erase (std::vector<const TriplePattern*>::iterator it) { return m_TriplePatterns.erase(it); }
     void sort (bool (*comp)(const TriplePattern*, const TriplePattern*)) { m_TriplePatterns.sort(comp); }
     void clearTriples () { m_TriplePatterns.clear(); }
     virtual void express(Expressor* p_expressor) const = 0;
