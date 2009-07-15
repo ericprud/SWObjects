@@ -153,7 +153,7 @@ public:
 
 %type <p_POSs> _QGraphNode_E_Plus
 
-%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate
+%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate _QTrigTemplate_E_Star
 
 %type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
 %type <p_RDFLiteral> RDFLiteral
@@ -185,9 +185,9 @@ public:
 
  /*** BEGIN SPARQLfed - Change the grammar rules below ***/
 Query:
-    // Prologue Construct
-    Prologue TrigTemplate	{
-	driver.root = $2;
+    // Prologue TrigTemplate*
+    Prologue _QTrigTemplate_E_Star	{
+	driver.root = $2; // last graph -- kinda useless
     }
 ;
 
@@ -223,6 +223,14 @@ PrefixDecl:
 	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
       } GT_DOT
+;
+
+// TrigTemplate*
+_QTrigTemplate_E_Star:
+    { $$ = NULL; }
+  | _QTrigTemplate_E_Star TrigTemplate	{
+	$$ = $2;
+    }
 ;
 
 TrigTemplate:
