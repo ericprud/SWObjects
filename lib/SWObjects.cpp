@@ -1053,7 +1053,7 @@ compared against
 	construct(bgp, rs, evaluator);
     }
 
-    void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+    void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* /* evaluator */, BasicGraphPattern* bgp) const {
 	if (bgp == NULL)
 	    bgp = target->assureGraph(NULL);
 	for (std::vector<const TriplePattern*>::const_iterator constraint = m_TriplePatterns.begin();
@@ -1063,7 +1063,7 @@ compared against
 		     triple != bgp->m_TriplePatterns.end(); ) {
 		    ResultSet* island = (*row)->makeResultSet(rs->getPOSFactory());
 		    if ((*constraint)->bindVariables(*triple, false, island, NULL, *island->begin(), NULL))
-			bgp->m_TriplePatterns.erase(triple++);
+			triple = bgp->m_TriplePatterns.erase(triple);
 		    else
 			triple++;
 		}
