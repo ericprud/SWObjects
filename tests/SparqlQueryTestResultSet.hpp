@@ -103,6 +103,8 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	    trigParser.parse_file(input);
 	    trigParser.clear("");
 	}
+	/* Copy db so we can show the original. */
+	constructed = d;
 
 	/* Exectute query. */
 	setRdfDB(&constructed);

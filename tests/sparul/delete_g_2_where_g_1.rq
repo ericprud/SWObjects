@@ -1,0 +1,5 @@
+# insert0
+# $Id$
+
+DELETE { GRAPH <g> { ?x <y> 2 } }
+WHERE  { GRAPH <g> { ?x <y> 1 } }
