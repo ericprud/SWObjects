@@ -1,0 +1,4 @@
+# delete0
+# $Id$
+
+DELETE { GRAPH <g> { <x> <y> 1, 2 } }

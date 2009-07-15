@@ -1,4 +1,0 @@
-# insert0
-# $Id$
-
-INSERT { GRAPH <g> { <x> <y> <z> } }

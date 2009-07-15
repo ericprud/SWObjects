@@ -1,4 +1,0 @@
-# delete0
-# $Id$
-
-DELETE { GRAPH <g> { <x> <y> <z> } }

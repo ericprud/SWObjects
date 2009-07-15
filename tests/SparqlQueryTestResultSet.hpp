@@ -128,38 +128,43 @@ struct ExpectedRS {
     ResultSet* reference;
     RdfDB rdfDB;
 
-    ExpectedRS (ResultSet& measured, std::string rfs, 
+    ExpectedRS (ResultSet& measured, const char* resultFile, 
 		POSFactory* posFactory, SWSAXparser* saxParser) : 
 	measured(measured) {
-	if (rfs.size() == 0) {		/* empty result graph */
+	if (resultFile == NULL) {	/* empty result graph */
 	    reference = new ResultSet(posFactory, &rdfDB);
 
-	} else if (rfs.substr(rfs.size()-4, 4) == ".srx") {
-	    reference = new ResultSet(posFactory, saxParser, rfs.c_str());
+	} else {
+	    std::string rfs(resultFile);
+	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
+		reference = new ResultSet(posFactory, saxParser, rfs.c_str());
 
-	} else {			/* retults in a graph */
-	    if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
-		turtleParser.setGraph(rdfDB.assureGraph(NULL));
-		turtleParser.parse_file(rfs.c_str());
-		turtleParser.clear("");
-	    } else if (rfs.substr(rfs.size()-4, 4) == ".trg") {			       
-		std::string baseStr = rfs.substr(0, rfs.find_last_of("/")+1);
-		const URI* baseURI = F.getURI(baseStr.c_str());
-		trigParser.setBase(baseURI);
-		trigParser.setDB(&rdfDB);		       
-		trigParser.parse_file(rfs.c_str());			       
-		trigParser.clear("");					       
-	    } else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
-		GRdfXmlParser.parse(rdfDB.assureGraph(NULL), rfs.c_str());
-	    } else {
-		throw std::string("unable to parse results file ") + rfs.c_str();
+	    } else {			/* retults in a graph */
+		if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
+		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
+		    turtleParser.parse_file(rfs.c_str());
+		    turtleParser.clear("");
+		} else if (rfs.substr(rfs.size()-4, 4) == ".trg") {			       
+		    std::string baseStr = rfs.substr(0, rfs.find_last_of("/")+1);
+		    const URI* baseURI = F.getURI(baseStr.c_str());
+		    trigParser.setBase(baseURI);
+		    trigParser.setDB(&rdfDB);		       
+		    trigParser.parse_file(rfs.c_str());			       
+		    trigParser.clear("");					       
+		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
+		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), rfs.c_str());
+		} else {
+		    throw std::string("unable to parse results file ") + rfs.c_str();
+		}
+
+		/* if !RESULT_Graphs, graph is an RDF form of a ResultSet. */
+		reference = measured.resultType == ResultSet::RESULT_Graphs ?
+		    new ResultSet(posFactory, &rdfDB) :
+		    new ResultSet(posFactory, &rdfDB, "");
 	    }
-
-	    /* if !RESULT_Graphs, graph is an RDF form of a ResultSet. */
-	    reference = measured.resultType == ResultSet::RESULT_Graphs ?
-		new ResultSet(posFactory, &rdfDB) :
-		new ResultSet(posFactory, &rdfDB, "");
 	}
+	if (measured.resultType == ResultSet::RESULT_Graphs)
+	    rdfDB.assureGraphs(measured.getRdfDB()->getGraphNames());
     }
     ~ExpectedRS () { delete reference; }
 };
