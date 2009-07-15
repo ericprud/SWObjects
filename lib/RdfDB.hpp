@@ -66,29 +66,66 @@ namespace w3c_sw {
 		bgp->addTriplePattern(*it);
 	}
 	virtual ~RdfDB();
+	std::set<const POS*> getGraphNames () {
+	    std::set<const POS*> names;
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		names.insert(it->first);
+	    return names;
+		    
+	}
+	BasicGraphPattern* assureGraph(const POS* name);
+	void assureGraphs(std::set<const POS*> names) {
+	    for (std::set<const POS*>::const_iterator it = names.begin(); it != names.end(); ++it)
+		assureGraph(*it);
+	}
+	RdfDB& operator= (const RdfDB &ref) {
+	    for (graphmap_type::const_iterator it = graphs.begin(); // @@@ same as ~RdfDB()
+		 it != graphs.end(); it++)
+		delete it->second;
+
+	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it) {
+		BasicGraphPattern* to = assureGraph(it->first);
+		const BasicGraphPattern* from = it->second;
+		for (std::vector<const TriplePattern*>::const_iterator it = from->begin(); 
+		     it != from->end(); ++it)
+		    to->addTriplePattern(*it);
+	    }	
+
+	    webAgent = ref.webAgent;
+	    xmlParser = ref.xmlParser;
+
+	    debugStream = ref.debugStream;
+	    return *this;
+	}
 	bool operator== (const RdfDB& ref) const {
 	    std::set<const POS*> thisGraphs;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		if (it->second->size() > 0)
+		// if (it->second->size() > 0)
 		    thisGraphs.insert(it->first);
 
 	    std::set<const POS*> refGraphs;
 	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it)
-		if (it->second->size() > 0)
+		// if (it->second->size() > 0)
 		    refGraphs.insert(it->first);
 
 	    if (thisGraphs != refGraphs)
 		return false;
 
-	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it) {
 		// compare BasicGraphPatterns *it->second and *ref.graphs.find(it->first)->second;
-		if (!(*it->second == *ref.graphs.find(it->first)->second))
+		const POS* label = it->first;
+		BasicGraphPattern* l = it->second;
+		graphmap_type::const_iterator rit = ref.graphs.find(label);
+		if (rit == ref.graphs.end())
 		    return false;
+		BasicGraphPattern* r = rit->second;
+		if (! (*l == *r) )
+		    return false;
+	    }
 
 	    return true;
 	}
 	void clearTriples();
-	BasicGraphPattern* assureGraph(const POS* name);
 	bool loadData (BasicGraphPattern* target, std::istream& stream, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
 	    if (!mediaType.compare(0, 9, "text/html") || 
 		!mediaType.compare(0, 9, "application/xhtml")) {
@@ -149,7 +186,7 @@ namespace w3c_sw {
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		if (it->second->size() > 0)
+		// if (it->second->size() > 0)
 		    graphList.push_back(it->first);
 	    POSsorter sorter;
 	    graphList.sort(sorter);
