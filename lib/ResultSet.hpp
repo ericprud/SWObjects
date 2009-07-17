@@ -35,6 +35,9 @@ namespace w3c_sw {
     typedef std::list<Result*>::iterator ResultSetIterator;
     typedef std::list<Result*>::const_iterator ResultSetConstIterator;
 
+    inline bool operator== (const BindingInfo& l, const BindingInfo& r) {
+	return l.pos == r.pos;
+    }
 
     class Result {
     protected:
@@ -49,6 +52,26 @@ namespace w3c_sw {
 	    }
 	}
 	~Result () {  }
+	bool operator== (const Result& ref) const {
+	    std::set<const POS*> boundInFirst;
+	    for (BindingSetConstIterator it = begin(); it != end(); ++it)
+		boundInFirst.insert(it->first);
+
+	    for (BindingSetConstIterator it = ref.begin(); it != ref.end(); ++it)
+		if (boundInFirst.find(it->first) == boundInFirst.end())
+		    return false;
+	    // done with boundInFirst
+
+	    for (BindingSetConstIterator l = begin(); l != end(); ++l) {
+		BindingSetConstIterator r = ref.find(l->first);
+		if (r == ref.end())
+		    return false;
+		if (! (l->second == r->second) )
+		    return false;
+	    }
+
+	    return true;	    
+	}
 	std::string toString () const {
 	    std::stringstream s;
 	    s << "{";
@@ -66,6 +89,7 @@ namespace w3c_sw {
 	BindingSetConstIterator end () const { return bindings.end(); }
 	size_t size () const { return bindings.size(); }
 	BindingSetIterator find (const POS* pos) { return bindings.find(pos); }
+	BindingSetConstIterator find (const POS* pos) const { return bindings.find(pos); }
 	void erase (BindingSetIterator it) { bindings.erase(it); }
 
 	const POS* get(const POS* variable) const;
@@ -94,12 +118,13 @@ namespace w3c_sw {
 	static const char* NS_xml;
 	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
 	ResultType resultType;
+	std::ostream** debugStream;
 
 	ResultSet(POSFactory* posFactory);
 	ResultSet (const ResultSet& ref) : 
 	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
 	    results(), ordered(ref.ordered), db(ref.db), selectOrder(), 
-	    orderedSelect(false), resultType(ref.resultType) {
+	    orderedSelect(false), resultType(ref.resultType), debugStream(NULL) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -114,7 +139,7 @@ namespace w3c_sw {
 	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
+	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
@@ -156,7 +181,6 @@ namespace w3c_sw {
 	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
 			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, 
 			 s_ERROR};
-	    std::vector<std::string> knownVars;
 	    std::stack<enum STATES> stateStack;
 	    Result* result;
 	    POS* variable;
@@ -203,7 +227,7 @@ namespace w3c_sw {
 			newState = LINK;
 		    else if (localName == "variable") {
 			newState = VARIABLE;
-			knownVars.push_back(attrs->getValue("", "name"));
+			rs->addKnownVar(posFactory->getVariable(attrs->getValue("", "name")));
 		    }
 		    break;
 		case LINK:
@@ -299,12 +323,12 @@ namespace w3c_sw {
 	ResultSet (POSFactory* posFactory, RdfDB* db) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(db), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Graphs) {  }
+	    orderedSelect(false), resultType(RESULT_Graphs), debugStream(NULL) {  }
 
 	ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
+	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
 	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
@@ -376,7 +400,7 @@ namespace w3c_sw {
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
+	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(filename, &handler);
 	}
@@ -384,7 +408,7 @@ namespace w3c_sw {
 	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
+	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(start, finish, &handler);
 	}
@@ -412,9 +436,11 @@ namespace w3c_sw {
 		}
 		ResultSet self(*this);
 		ResultSet newRef(ref);
-		self.order(&orderConditions, -1, -1);
-		newRef.order(&orderConditions, -1, -1);
-		
+// std::cerr << self.toString(); // std::cerr << newRef.toString();
+		self.order(&orderConditions);
+		newRef.order(&orderConditions);
+// std::cerr << self.toString(); // std::cerr << newRef.toString();
+// std::ostream* pcerr = &std::cerr; self.debugStream = &pcerr;
 		for (std::vector<s_OrderConditionPair>::iterator it = orderConditions.begin();
 		     it != orderConditions.end(); ++it) {
  		    delete it->expression;
@@ -422,7 +448,8 @@ namespace w3c_sw {
 		return self.compareOrdered(newRef);
 	    }
 	}
-	const VariableList* getKnownVars () { return &knownVars; }
+	const VariableList* getKnownVars () const { return &knownVars; }
+	void addKnownVar (const POS* var) { knownVars.insert(var); }
 	void joinIn (ResultSet* ref, bool outer = false) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {
@@ -468,8 +495,11 @@ namespace w3c_sw {
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
 	    while (myRow != results.end()) {
-		if ((*yourRow)->size() != (*myRow)->size())
+		if ((*yourRow)->size() != (*myRow)->size()) {
+		    if (debugStream != NULL && *debugStream != NULL)
+			**debugStream << "l->size: " << (*myRow)->size() << " != r->size: " << (*yourRow)->size() << std::endl;
 		    return false;
+		}
 		std::set<const POS*> yourVars;
 		for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 		     yourBinding != (*yourRow)->end(); ++yourBinding)
@@ -477,14 +507,23 @@ namespace w3c_sw {
 		for (BindingSetConstIterator myBinding = (*myRow)->begin();
 		     myBinding != (*myRow)->end(); ++myBinding) {
 		    const POS* var = myBinding->first;
-		    if (yourVars.erase(var) == 0)
+		    if (yourVars.erase(var) == 0) {
+			if (debugStream != NULL && *debugStream != NULL)
+			    **debugStream << "r missing: " << var->toString() << std::endl;
 			return false;
+		    }
 		    const POS* yours = (*yourRow)->find(var)->second.pos;
-		    if (yours != myBinding->second.pos)
+		    if (yours != myBinding->second.pos) {
+			if (debugStream != NULL && *debugStream != NULL)
+			    **debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.pos->toString() << std::endl;
 			return false;
+		    }
 		}
-		if (yourVars.size() != 0)
+		if (yourVars.size() != 0) {
+		    if (debugStream != NULL && *debugStream != NULL)
+			**debugStream << "l missing: " << (*yourVars.begin())->toString() << std::endl;
 		    return false;
+		}
 		++myRow;
 		++yourRow;
 	    }
@@ -493,18 +532,10 @@ namespace w3c_sw {
 
 	void project(ProductionVector<const POS*> const * varsV);
 	void restrict(const Filter* filter);
-	void order(std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit);
-	void order () {
-	    const VariableList* curVars = getKnownVars();
-	    ProductionVector<const POS*> justVars;
-	    for (VariableListConstIterator it = curVars->begin();
-		 it != curVars->end(); ++it)
-		if (dynamic_cast<const Variable*>(*it))
-		    justVars.push_back(*it);
-	    project(&justVars);
-	    justVars.clear();
-	}
+	void order(std::vector<s_OrderConditionPair>* orderConditions);
+	void order ();
 	bool isOrdered () const { return ordered; }
+	void trim(e_distinctness distinctness, int offset, int limit);
 	void setRdfDB (RdfDB* db) { this->db = db; }
 	RdfDB* getRdfDB () { return db; }
 
@@ -520,7 +551,7 @@ namespace w3c_sw {
 	ResultSetIterator end () { return results.end(); }
 	ResultSetConstIterator end () const { return results.end(); }
 	size_t size () const { return results.size(); }
-	void erase (ResultSetIterator it) { results.erase(it); }
+	ResultSetIterator erase (ResultSetIterator it) { return results.erase(it); }
 	void set(Result* r, const POS* variable, const POS* value, bool weaklyBound);
 	ResultSetIterator insert (ResultSetIterator at, Result* elem) { return results.insert(at, elem); }
 	ResultSet* clone();

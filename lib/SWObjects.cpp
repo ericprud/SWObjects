@@ -493,21 +493,33 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#positiveInteger")) {
 	    int i;
 	    is >> i;
+// 	    std::stringstream canonical;
+// 	    canonical << std::dec << i;
+// 	    return getNumericRDFLiteral(canonical.str().c_str(), i);
 	    return getNumericRDFLiteral(p_String.c_str(), i);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#decimal") || 
 		   p_URI == getURI("http://www.w3.org/2001/XMLSchema#float")) {
 	    float f;
 	    is >> f;
+// 	    std::stringstream canonical;
+// 	    canonical << std::fixed << f;
+// 	    return getNumericRDFLiteral(canonical.str().c_str(), f);
 	    return getNumericRDFLiteral(p_String.c_str(), f);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#double")) {
 	    double d;
 	    is >> d;
+// 	    std::stringstream canonical;
+// 	    canonical << std::scientific << d;
+// 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
 	    is >> b;
+// 	    std::stringstream canonical;
+// 	    canonical << std::boolalpha << b;
+// 	    return getNumericRDFLiteral(canonical.str().c_str(), b);
 	    return getBooleanRDFLiteral(p_String.c_str(), b);
 	}
 
@@ -686,8 +698,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	if (m_SolutionModifier != NULL)
-	    m_SolutionModifier->modifyResult(rs);
+	    m_SolutionModifier->order(rs);
 	m_VarSet->project(rs);
+	if (m_SolutionModifier == NULL)
+	    rs->trim(m_distinctness, -1, -1);
+	else
+	    rs->trim(m_distinctness, m_SolutionModifier->m_limit, m_SolutionModifier->m_offset);
 	return rs;
     }
 
@@ -741,12 +757,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Delete::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) {
+	    rs = new ResultSet(rs->getPOSFactory());
+	    *rs->getRdfDB() = *db;
+	}
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	TreatAsVar treatAsVar;
 	rs->resultType = ResultSet::RESULT_Graphs;
-	*rs->getRdfDB() = *db;
 	m_GraphTemplate->deletePattern(rs->getRdfDB(), rs, &treatAsVar, NULL);
 	return rs;
     }
@@ -767,12 +785,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	rs->project(&m_POSs);
     }
 
-    void StarVarSet::project (ResultSet* rs) const {
-	rs->order();
+    void StarVarSet::project (ResultSet* /* rs */) const {
     }
 
-    void SolutionModifier::modifyResult (ResultSet* rs) {
-	rs->order(m_OrderConditions, m_offset, m_limit);
+    void SolutionModifier::order (ResultSet* rs) {
+	if (m_OrderConditions != NULL)
+	    rs->order(m_OrderConditions);
     }
 
     void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -867,6 +885,7 @@ compared against
 	*/
     }
 
+    CanonicalRDFLiteral::e_CANON CanonicalRDFLiteral::format = CANON_brief;
     std::ostream* BasicGraphPattern::DiffStream = NULL;
     bool BasicGraphPattern::CompareVars = false;
 

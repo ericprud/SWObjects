@@ -377,10 +377,24 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { return "literal"; }
 };
-class NumericRDFLiteral : public RDFLiteral {
+class CanonicalRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
-    NumericRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
+    CanonicalRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
+    ~CanonicalRDFLiteral () {  }
+public:
+    typedef enum {CANON_brief, CANON_roundTrip, CANON_icalize} e_CANON;
+    static e_CANON format;
+    std::string nonCanonicalString () const {
+	if (CanonicalRDFLiteral::format == CANON_brief)
+	    return getLexicalValue();
+	return RDFLiteral::toString();
+    }
+};
+class NumericRDFLiteral : public CanonicalRDFLiteral {
+    friend class POSFactory;
+protected:
+    NumericRDFLiteral (std::string p_String, URI* p_URI) : CanonicalRDFLiteral(p_String, p_URI) {  }
     ~NumericRDFLiteral () {  }
 public:
     virtual int getInt() const = 0;
@@ -400,7 +414,14 @@ public:
     virtual float getFloat () const { return (float)m_value; }
     virtual double getDouble () const  { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { return getLexicalValue(); }
+    virtual std::string toString () const {
+	if (CanonicalRDFLiteral::format == CANON_icalize) {
+	    std::stringstream canonical;
+	    canonical << m_value;
+	    return canonical.str();
+	}
+	return CanonicalRDFLiteral::nonCanonicalString();
+    }
 };
 class DecimalRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -414,7 +435,14 @@ public:
     virtual float getFloat () const { return m_value; }
     virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { return getLexicalValue(); }
+    virtual std::string toString () const {
+	if (CanonicalRDFLiteral::format == CANON_icalize) {
+	    std::stringstream canonical;
+	    canonical << std::fixed << m_value;
+	    return canonical.str();
+	}
+	return CanonicalRDFLiteral::nonCanonicalString();
+    }
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -428,17 +456,31 @@ public:
     virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { return getLexicalValue(); }
+    virtual std::string toString () const {
+	if (CanonicalRDFLiteral::format == CANON_icalize) {
+	    std::stringstream canonical;
+	    canonical << std::scientific << m_value;
+	    return canonical.str();
+	}
+	return CanonicalRDFLiteral::nonCanonicalString();
+    }
 };
-class BooleanRDFLiteral : public RDFLiteral {
+class BooleanRDFLiteral : public CanonicalRDFLiteral {
     friend class POSFactory;
 protected:
     bool m_value;
-    BooleanRDFLiteral (std::string p_String, bool p_value) : RDFLiteral(p_String, NULL, NULL), m_value(p_value) {  }
+    BooleanRDFLiteral (std::string p_String, bool p_value) : CanonicalRDFLiteral(p_String, NULL), m_value(p_value) {  }
 public:
     bool getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const { std::stringstream s; s << (m_value ? "true" : "false"); return s.str(); }
+    virtual std::string toString () const {
+	if (CanonicalRDFLiteral::format == CANON_icalize) {
+	    std::stringstream canonical;
+	    canonical << std::boolalpha << m_value;
+	    return canonical.str();
+	}
+	return CanonicalRDFLiteral::nonCanonicalString();
+    }
 };
 class NULLpos : public POS {
     friend class POSFactory;
@@ -536,6 +578,10 @@ public:
 	typeOrder[typeid(BNode).name()] = 2;
 	typeOrder[typeid(URI).name()] = 3;
 	typeOrder[typeid(RDFLiteral).name()] = 4;
+	typeOrder[typeid(IntegerRDFLiteral).name()] = 5;
+	typeOrder[typeid(DecimalRDFLiteral).name()] = 6;
+	typeOrder[typeid(DoubleRDFLiteral).name()] = 7;
+	typeOrder[typeid(BooleanRDFLiteral).name()] = 8;
     }
     ~POSFactory();
     Variable* getVariable(std::string name);
@@ -766,17 +812,67 @@ public:
 	    return false;
 	if (lhs == NULL)
 	    return true;
+	try {
+	    int ret = cmp(lhs, rhs);
+	    if (ret != 0)
+		return ret < 0;
+	} catch (SafeEvaluationError&) {
+	}
+
 	const std::string lt = typeid(*lhs).name();
 	const std::string rt = typeid(*rhs).name();
 	if (lt != rt) {
-	    const int li = typeOrder[lt];
-	    const int ri = typeOrder[rt];
-	    if (li < ri)
-		return true;
-	    if (li > ri)
-		return false;
+	    if (typeOrder.find(lt) != typeOrder.end() && 
+		typeOrder.find(rt) != typeOrder.end()) {
+		const int li = typeOrder[lt];
+		const int ri = typeOrder[rt];
+		if (li < ri)
+		    return true;
+		if (li > ri)
+		    return false;
+	    }
 	}
-	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
+	const RDFLiteral* llit = dynamic_cast<const RDFLiteral*>(lhs);
+	const RDFLiteral* rlit = dynamic_cast<const RDFLiteral*>(rhs);
+	if (llit != NULL && rlit != NULL) {
+	    /* Sort literals first by datatype... */
+	    if (llit->getDatatype() != NULL) {
+		if (rlit->getDatatype() != NULL) {
+		    const std::string lt = llit->getDatatype()->getLexicalValue();
+		    const std::string rt = rlit->getDatatype()->getLexicalValue();
+		    bool lex = lt.compare(rt);
+		    if (lex != 0)
+			return lex < 0;
+		} else {
+		    return false; // "5"^^my:int > "5"
+		}
+	    } else {
+		if (rlit->getDatatype() != NULL) {
+		    return true; // "5" < "5"^^my:int
+		}
+	    }
+
+	    /* ... then by langtag. */
+	    if (llit->getLangtag() != NULL) {
+		if (rlit->getLangtag() != NULL) {
+		    const std::string lt = llit->getLangtag()->getLexicalValue();
+		    const std::string rt = rlit->getLangtag()->getLexicalValue();
+		    bool lex = lt.compare(rt);
+		    if (lex != 0)
+			return lex < 0;
+		} else {
+		    return false; // "5"@en > "5"
+		}
+	    } else {
+		if (rlit->getLangtag() != NULL) {
+		    return true; // "5" < "5"@en
+		}
+	    }
+	}
+	int lex = lhs->getLexicalValue().compare(rhs->getLexicalValue());
+	if (lex != 0)
+	    return lex < 0;
+	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
     }
 };
 
@@ -1152,9 +1248,9 @@ public:
 class SolutionModifier : public Base {
 private:
     std::vector<s_OrderConditionPair>* m_OrderConditions;
+public:
     int m_limit;
     int m_offset;
-public:
     SolutionModifier (std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) : Base(), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset) {  }
     ~SolutionModifier () {
 	if (m_OrderConditions != NULL)
@@ -1162,7 +1258,7 @@ public:
 		delete m_OrderConditions->at(i).expression;
 	delete m_OrderConditions;
     }
-    void modifyResult(ResultSet* rs);
+    void order(ResultSet* rs);
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const SolutionModifier& ref) const {
 	if (m_limit != ref.m_limit ||
@@ -1929,7 +2025,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::stringstream s;
-	s << "(- _0 " << m_Expression->eval(res, posFactory, evaluator) <<
+	s << "(- 0 " << m_Expression->eval(res, posFactory, evaluator)->toString() <<
 	    ')' << " not implemented";
 	throw s.str();
     }

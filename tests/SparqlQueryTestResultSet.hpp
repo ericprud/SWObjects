@@ -116,6 +116,10 @@ std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) 
     os << "Database: " << my.d;
     os << "query: " << *sparqlParser.root;
     os << "result: ";
+
+    if (my.isOrdered())
+	return operator<<(os, (ResultSet&)my);
+
     ResultSet orderedCopy(my);
     orderedCopy.order();
     operator<<(os, orderedCopy);
@@ -178,35 +182,12 @@ bool operator== (ResultSet const& measured, ExpectedRS const& expected) {
 
 
 std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
+    if (my.reference->isOrdered() == true)
+	return operator<<(os, *my.reference);
+
     ResultSet orderedCopy(*my.reference);
-    const VariableList* t = orderedCopy.getKnownVars();
-    std::set<const POS*> referenceVars(t->begin(), t->end());
-    const VariableList* measuredVars = my.measured.getKnownVars();
-
-    ProductionVector<const POS*> justVars;
-
-    /* Copy the measuredVars which have corresponding referenceVars
-     * into the new order set.
-     * Don't put BNodes into the order set.
-     */
-    for (VariableListConstIterator it = measuredVars->begin();
-	 it != measuredVars->end(); ++it)
-	if (referenceVars.find(*it) != referenceVars.end()) {
-	    if (dynamic_cast<const Variable*>(*it))
-		justVars.push_back(*it);
-	    referenceVars.erase(*it);
-	}
-
-    /* Add any remaining measuredVars into the order set. */
-    for (VariableListConstIterator it = referenceVars.begin();
-	 it != referenceVars.end(); ++it)
-	if (dynamic_cast<const Variable*>(*it))
-	    justVars.push_back(*it);
-
-    orderedCopy.project(&justVars);
-    justVars.clear();
-    operator<<(os, orderedCopy);
-    return os;
+    orderedCopy.order();
+    return operator<<(os, orderedCopy);
 }
 
 /* Macros for terse test syntax

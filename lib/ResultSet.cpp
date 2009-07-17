@@ -63,7 +63,7 @@ namespace w3c_sw {
 
     ResultSet::ResultSet (POSFactory* posFactory) : 
 	posFactory(posFactory), knownVars(), results(), ordered(false),  db(NULL), 
-	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular) {
+	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	results.insert(results.begin(), new Result(this));
     }
 
@@ -123,6 +123,33 @@ namespace w3c_sw {
 	}
     };
 
+    struct AscendingOrder {
+	const VariableList* vars;
+	POSFactory* posFactory;
+	AscendingOrder (const VariableList* vars, POSFactory* posFactory) : 
+	    vars(vars), posFactory(posFactory) {  }
+	bool operator() (const Result* lhs, const Result* rhs) {
+	    for (VariableListConstIterator it = vars->begin();
+		 it != vars->end(); ++it) {
+		// 			SPARQLSerializer s;
+		// 			pair.expression->express(&s);
+		const POS* l = lhs->get(*it);
+		const POS* r = rhs->get(*it);
+		if (r == NULL) {
+		    if (l == NULL)
+			continue;
+		    else
+			return false;
+		}
+		if (l == NULL)
+		    return true;
+		if (l != r)
+		    return posFactory->lessThan(l, r);
+	    }
+	    return false;
+	}
+    };
+
     void ResultSet::project (ProductionVector<const POS*> const * varsV) {
 	std::set<const POS*> vars(varsV->begin(), varsV->end());
 
@@ -151,6 +178,7 @@ namespace w3c_sw {
 
 	selectOrder = *varsV;
 	orderedSelect = true;
+
     }
 
     void ResultSet::restrict (const Filter* filter) {
@@ -159,21 +187,42 @@ namespace w3c_sw {
 		++it;
 	    else {
 		delete *it;
-		erase(it++);
+		it = erase(it);
 	    }
     }
 
-    void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions, int offset, int limit) {
-	if (orderConditions != NULL) {
-	    ResultComp resultComp(orderConditions, posFactory);
-	    results.sort(resultComp);
-	}
+    void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions) {
+	ResultComp resultComp(orderConditions, posFactory);
+	results.sort(resultComp);
+    }
+
+
+    void ResultSet::order () {
+	AscendingOrder resultComp(getKnownVars(), posFactory);
+	results.sort(resultComp);
+    }
+
+
+    void ResultSet::trim (e_distinctness distinctness, int limit, int offset) {
+	if (distinctness == DIST_distinct)
+	    for (ResultSetIterator lead = begin() ; lead != end(); ) {
+		bool matched = false;
+		for (ResultSetIterator look = begin() ; look != lead; ++look)
+		    if (**look == **lead) {
+			delete *lead;
+			lead = erase(lead);
+			matched = true;
+			break;
+		    }
+		if (matched == false)
+		    ++lead;
+	    }
 
 	if (offset > 0) {
 	    int at = 0;
 	    for (ResultSetIterator it = begin() ; it != end() && at < offset; ++at) {
 		delete *it;
-		erase(it++);
+		it = erase(it);
 	    }
 	}
 
@@ -184,7 +233,7 @@ namespace w3c_sw {
 		++it;
 	    for ( ; it != end(); ++at) {
 		delete *it;
-		erase(it++);
+		it = erase(it);
 	    }
 	}
     }
