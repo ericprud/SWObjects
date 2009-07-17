@@ -60,7 +60,7 @@ namespace w3c_sw {
 		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 			island.insert(island.end(), (*row)->duplicate(&island, island.end()));
 			delete *row;
-			disjoint.erase(row++);
+			row = disjoint.erase(row);
 		    }
 		    ++matched;
 		}
@@ -68,7 +68,7 @@ namespace w3c_sw {
 	}
 	if (matched == 0)
 	    for (ResultSetIterator it = rs->begin(); it != rs->end(); )
-		rs->erase(it++);
+		it = rs->erase(it);
     }
 
     void RdfDB::express (Expressor* expressor) const {

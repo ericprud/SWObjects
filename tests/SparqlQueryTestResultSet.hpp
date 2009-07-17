@@ -186,6 +186,7 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
 	return operator<<(os, *my.reference);
 
     ResultSet orderedCopy(*my.reference);
+    orderedCopy.leadWithColumns(my.measured.getOrderedVars());
     orderedCopy.order();
     return operator<<(os, orderedCopy);
 }

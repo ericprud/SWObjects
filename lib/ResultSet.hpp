@@ -30,6 +30,9 @@ namespace w3c_sw {
     typedef std::set<const POS*> VariableList;
     typedef std::set<const POS*>::iterator VariableListIterator;
     typedef std::set<const POS*>::const_iterator VariableListConstIterator;
+    typedef std::vector<const POS*> VariableVector;
+    typedef std::vector<const POS*>::iterator VariableVectorIterator;
+    typedef std::vector<const POS*>::const_iterator VariableVectorConstIterator;
 
     typedef std::list<Result*> ResultList;
     typedef std::list<Result*>::iterator ResultSetIterator;
@@ -123,8 +126,8 @@ namespace w3c_sw {
 	ResultSet(POSFactory* posFactory);
 	ResultSet (const ResultSet& ref) : 
 	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
-	    results(), ordered(ref.ordered), db(ref.db), selectOrder(), 
-	    orderedSelect(false), resultType(ref.resultType), debugStream(NULL) {
+	    results(), ordered(ref.ordered), db(ref.db), selectOrder(ref.selectOrder), 
+	    orderedSelect(ref.orderedSelect), resultType(ref.resultType), debugStream(NULL) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -450,6 +453,41 @@ namespace w3c_sw {
 	}
 	const VariableList* getKnownVars () const { return &knownVars; }
 	void addKnownVar (const POS* var) { knownVars.insert(var); }
+	VariableVector getOrderedVars () const {
+	    VariableVector ret;
+	    if (orderedSelect)
+		for (std::vector<const POS*>::const_iterator it = selectOrder.begin() ; it != selectOrder.end(); ++it)
+		    ret.push_back(*it);
+	    else
+		for (VariableListConstIterator it = knownVars.begin() ; it != knownVars.end(); ++it)
+		    ret.push_back(*it);
+	    return ret;
+	}
+	int leadWithColumns (VariableVector copyMe) {
+	    int mismatches = 0;
+	    VariableVector target;
+	    VariableVector curOrder = getOrderedVars();
+	    selectOrder.clear();
+	    std::set<const POS*> curVars(curOrder.begin(), curOrder.end());
+	    std::set<const POS*> newVars;
+
+	    for (VariableVectorConstIterator it = copyMe.begin(); it != copyMe.end(); ++it)
+		if (curVars.find(*it) == curVars.end())
+		    ++mismatches;
+		else {
+		    selectOrder.push_back(*it);
+		    newVars.insert(*it);
+		}
+
+	    for (VariableVectorConstIterator it = curOrder.begin(); it != curOrder.end(); ++it)
+		if (newVars.find(*it) == newVars.end()) {
+		    ++mismatches;
+		    selectOrder.push_back(*it);
+		}
+
+	    orderedSelect = true;
+	    return mismatches;
+	}
 	void joinIn (ResultSet* ref, bool outer = false) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {
@@ -485,7 +523,7 @@ namespace w3c_sw {
 		    myRow++;
 		else {
 		    delete *myRow;
-		    erase(myRow++);
+		    myRow = erase(myRow);
 		}
 	    }
 	}

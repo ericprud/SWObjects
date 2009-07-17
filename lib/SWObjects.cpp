@@ -801,7 +801,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		(*binding)->bindVariables(db, rs, r, m_Vars);
 	    }
 	    delete *it;
-	    rs->erase(it++);
+	    it = rs->erase(it);
 	}
     }
 
@@ -855,7 +855,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 		island.insert(island.end(), (*row)->duplicate(&island, island.end()));
 		delete *row;
-		disjoint.erase(row++);
+		row = disjoint.erase(row);
 	    }
 	}
 	rs->joinIn(&island, false);
@@ -973,7 +973,7 @@ compared against
 		}
 		if (matched || !toMatch->allOpts) {
 		    delete *row;
-		    island.erase(row++);
+		    row = island.erase(row);
 		} else {
 		    row++;
 		}
@@ -1048,13 +1048,13 @@ compared against
 		rs->insert(row, r);
 		r->assumeNewBindings(*optRow);
 		delete *optRow;
-		rowRS->erase(optRow++);
+		optRow = rowRS->erase(optRow);
 	    }
 	    delete rowRS;
 	    if (empty)
 		row++;
 	    else
-		rs->erase(row++);
+		row = rs->erase(row);
 	}
 #endif
     }
@@ -1181,7 +1181,7 @@ compared against
 			/* Append the current disjoint. */
 			n->addTableOperation(*disjoint);
 		    }
-		    disjoints->erase(disjoint++);
+		    disjoint = disjoints->erase(disjoint);
 		}
 		
 	    } else if ((conjoints = dynamic_cast<TableConjunction*>(op)) != NULL) {
@@ -1194,7 +1194,7 @@ compared against
 			const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
 			((TableConjunction*)c)->addTableOperation(*conjoint); /* !!! LIES !!! */
 		    }
-		    conjoints->erase(conjoint++);
+		    conjoint = conjoints->erase(conjoint);
 		}
 		delete conjoints;
 	    } else {

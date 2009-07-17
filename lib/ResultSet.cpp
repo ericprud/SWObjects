@@ -124,13 +124,13 @@ namespace w3c_sw {
     };
 
     struct AscendingOrder {
-	const VariableList* vars;
+	const VariableVector vars;
 	POSFactory* posFactory;
-	AscendingOrder (const VariableList* vars, POSFactory* posFactory) : 
+	AscendingOrder (const VariableVector vars, POSFactory* posFactory) : 
 	    vars(vars), posFactory(posFactory) {  }
 	bool operator() (const Result* lhs, const Result* rhs) {
-	    for (VariableListConstIterator it = vars->begin();
-		 it != vars->end(); ++it) {
+	    for (VariableVectorConstIterator it = vars.begin();
+		 it != vars.end(); ++it) {
 		// 			SPARQLSerializer s;
 		// 			pair.expression->express(&s);
 		const POS* l = lhs->get(*it);
@@ -198,7 +198,7 @@ namespace w3c_sw {
 
 
     void ResultSet::order () {
-	AscendingOrder resultComp(getKnownVars(), posFactory);
+	AscendingOrder resultComp(getOrderedVars(), posFactory);
 	results.sort(resultComp);
     }
 
@@ -281,20 +281,13 @@ namespace w3c_sw {
 	unsigned lastInKnownVars = 0;
 	{
 	    std::map< const POS*, unsigned > pos2col;
-	    if (orderedSelect) {
-		for (std::vector<const POS*>::const_iterator varIt = selectOrder.begin() ; varIt != selectOrder.end(); ++varIt) {
-		    const POS* var = *varIt;
-		    pos2col[var] = count++;
-		    widths.push_back(var->toString().size());
-		    vars.push_back(var);
-		}
-	    } else {
-		for (std::set<const POS*>::const_iterator varIt = knownVars.begin() ; varIt != knownVars.end(); ++varIt) {
-		    const POS* var = *varIt;
-		    pos2col[var] = count++;
-		    widths.push_back(var->toString().size());
-		    vars.push_back(var);
-		}
+	    const VariableVector cols = getOrderedVars();
+//	    vars = getOrderedVars();
+	    for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
+		const POS* var = *varIt;
+		pos2col[var] = count++;
+		widths.push_back(var->toString().size());
+		vars.push_back(var);
 	    }
 
 	    VariableList intruders;
@@ -369,7 +362,7 @@ namespace w3c_sw {
 	xml->open("sparql");
 	xml->attribute("xmlns", "http://www.w3.org/2005/sparql-results#");
 	xml->open("head");
-	for (VariableListIterator it = knownVars.begin() ; it != knownVars.end(); it++) {
+	for (VariableVectorConstIterator it = getOrderedVars().begin() ; it != getOrderedVars().end(); it++) {
 	    xml->empty("variable");
 	    xml->attribute("name", (*it)->getLexicalValue());
 	}

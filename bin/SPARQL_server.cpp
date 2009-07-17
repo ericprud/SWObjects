@@ -572,7 +572,7 @@ protected:
 
 #endif /* SQL_CLIENT != SWOb_DISABLED */
 
-	const VariableList* cols = rs.getKnownVars();
+	const VariableVector* cols = rs.getOrderedVars();
 
 	if (htmlResults) {
 	    head(ret, "Query Results");
@@ -591,7 +591,7 @@ protected:
 		"      <tr>";
 
 	    /* dump headers in <th/>s */
-	    for (VariableList::const_iterator col = cols->begin();
+	    for (VariableVector::const_iterator col = cols->begin();
 		 col != cols->end(); ++col)
 		ret << "<th>" << (*col)->toString() << "</th>";
 	    ret << "</tr>\n";
@@ -599,7 +599,7 @@ protected:
 	    /* dump data in <td/>s */
 	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "      <tr>";
-		for (VariableList::const_iterator col = cols->begin();
+		for (VariableVector::const_iterator col = cols->begin();
 		     col != cols->end(); ++col) {
 		    const POS* val = (*row)->get(*col);
 		    if (val != NULL)
@@ -618,7 +618,7 @@ protected:
 		"  <head>\n";
 
 	    /* dump headers in <th/>s */
-	    for (VariableList::const_iterator col = cols->begin();
+	    for (VariableVector::const_iterator col = cols->begin();
 		 col != cols->end(); ++col)
 		ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
 	    ret << "  </head>\n";
