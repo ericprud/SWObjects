@@ -52,10 +52,10 @@ struct SparqlQueryTestResultSet : public ResultSet {
  
 	std::string baseStr(query);
 	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
+	d.baseStr = baseStr;
 	const URI* baseURI = F.getURI(baseStr.c_str());
 
 	/* Parse query. */
-	sparqlParser.setBase(baseURI);
 	if (sparqlParser.parse_file(query))
 	    throw std::string("failed to parse query file \"") + query + "\".";
 	sparqlParser.clear(""); // clear out namespaces and base URI.
@@ -69,7 +69,8 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	}
 
 	for (size_t i = 0; i < namedCount; ++i) {
-	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
+	    std::string graphName = std::string(namedGraphs[i]).substr(baseStr.size());
+	    turtleParser.setGraph(d.assureGraph(F.getURI(graphName.c_str())));
 	    turtleParser.setBase(baseURI);
 	    turtleParser.parse_file(namedGraphs[i]);
 	    turtleParser.clear(""); // clear out namespaces and base URI.
