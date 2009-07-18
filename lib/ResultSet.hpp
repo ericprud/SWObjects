@@ -532,6 +532,7 @@ namespace w3c_sw {
 		return false;
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
+	    std::map<const POS*, const POS*> refBNodes2myBNodes;
 	    while (myRow != results.end()) {
 		if ((*yourRow)->size() != (*myRow)->size()) {
 		    if (debugStream != NULL && *debugStream != NULL)
@@ -551,7 +552,14 @@ namespace w3c_sw {
 			return false;
 		    }
 		    const POS* yours = (*yourRow)->find(var)->second.pos;
-		    if (yours != myBinding->second.pos) {
+		    const POS* mine = myBinding->second.pos;
+		    if (dynamic_cast<const Bindable*>(yours) && 
+			dynamic_cast<const Bindable*>(mine)) {
+			if (refBNodes2myBNodes.find(yours) == refBNodes2myBNodes.end())
+			    refBNodes2myBNodes[yours] = mine;
+			yours = refBNodes2myBNodes[yours];
+		    }
+		    if (yours != mine) {
 			if (debugStream != NULL && *debugStream != NULL)
 			    **debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.pos->toString() << std::endl;
 			return false;

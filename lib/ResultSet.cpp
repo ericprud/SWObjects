@@ -116,6 +116,9 @@ namespace w3c_sw {
 		pair.expression->express(&s);
 		const POS* l = pair.expression->eval(lhs, posFactory, false);
 		const POS* r = pair.expression->eval(rhs, posFactory, false);
+		if (dynamic_cast<const Bindable*>(l) && 
+		    dynamic_cast<const Bindable*>(r))
+		    continue;
 		if (l != r)
 		    return pair.ascOrDesc == ORDER_Desc ? posFactory->lessThan(r, l) : posFactory->lessThan(l, r);
 	    }
@@ -143,6 +146,9 @@ namespace w3c_sw {
 		}
 		if (l == NULL)
 		    return true;
+		if (dynamic_cast<const Bindable*>(l) && 
+		    dynamic_cast<const Bindable*>(r))
+		    continue;
 		if (l != r)
 		    return posFactory->lessThan(l, r);
 	    }
