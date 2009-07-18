@@ -608,7 +608,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_02 ) {
      * Data: named graph / Query: default graph
      */
     const char* defaultGraph( NULL );
-    const char* namedGraphs[] = {"data-g1.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-02.rq", "data-r2/graph/graph-02.ttl", 1, 0);
 }
@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_03 ) {
      * Data: named graph / Query: named graph graph
      */
     const char* defaultGraph( NULL );
-    const char* namedGraphs[] = {"data-g1.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-03.rq", "data-r2/graph/graph-03.ttl", 1, 0);
 }
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_05 ) {
      * Data: default and named / Query: default graph
      */
     const char* defaultGraph( "data-r2/graph/data-g1.ttl" );
-    const char* namedGraphs[] = {"data-g2.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g2.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-05.rq", "data-r2/graph/graph-05.ttl", 1, 0);
 }
@@ -644,7 +644,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_06 ) {
      * Data: default and named / Query: named graph
      */
     const char* defaultGraph( "data-r2/graph/data-g1.ttl" );
-    const char* namedGraphs[] = {"data-g2.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g2.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-06.rq", "data-r2/graph/graph-06.ttl", 1, 0);
 }
@@ -653,7 +653,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_07 ) {
      * Data: default and named / Query: all data by UNION
      */
     const char* defaultGraph( "data-r2/graph/data-g1.ttl" );
-    const char* namedGraphs[] = {"data-g2.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g2.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-07.rq", "data-r2/graph/graph-07.ttl", 1, 0);
 }
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_08 ) {
      * Data: default and named / Query: common subjects
      */
     const char* defaultGraph( "data-r2/graph/data-g1.ttl" );
-    const char* namedGraphs[] = {"data-g2.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g2.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-08.rq", "data-r2/graph/graph-08.ttl", 1, 0);
 }
@@ -671,7 +671,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_09 ) {
      * Data: default and named (bnodes) / Query: common subjects
      */
     const char* defaultGraph( "data-r2/graph/data-g3.ttl" );
-    const char* namedGraphs[] = {"data-g4.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g4.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-09.rq", "data-r2/graph/graph-09.ttl", 1, 0);
 }
@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_10b ) {
      * Data: default and named (same data, with bnodes) / Query: common subjects
      */
     const char* defaultGraph( "data-r2/graph/data-g3.ttl" );
-    const char* namedGraphs[] = {"data-g3-dup.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g3-dup.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-10.rq", "data-r2/graph/graph-10.ttl", 1, 0);
 }
@@ -689,10 +689,10 @@ BOOST_AUTO_TEST_CASE( graph__dawg_graph_11 ) {
      * Data: default and named (several) / Query: get everything
      */
     const char* defaultGraph( "data-r2/graph/data-g1.ttl" );
-    const char* namedGraphs[] = {"data-g1.ttl",
-                                 "data-g2.ttl",
-                                 "data-g3.ttl",
-                                 "data-g4.ttl"};
+    const char* namedGraphs[] = {"data-r2/graph/data-g1.ttl",
+                                 "data-r2/graph/data-g2.ttl",
+                                 "data-r2/graph/data-g3.ttl",
+                                 "data-r2/graph/data-g4.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/graph/graph-11.rq", "data-r2/graph/graph-11.ttl", 4, 0);
 }
@@ -946,7 +946,7 @@ BOOST_AUTO_TEST_CASE( optional__dawg_optional_complex_2 ) {
      * Complex optional: LeftJoin(Join(BGP(..),Graph(var,{..})),Union(..,..))
      */
     const char* defaultGraph( "data-r2/optional/complex-data-2.ttl" );
-    const char* namedGraphs[] = {"complex-data-1.ttl"};
+    const char* namedGraphs[] = {"data-r2/optional/complex-data-1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/optional/q-opt-complex-2.rq", "data-r2/optional/result-opt-complex-2.ttl", 1, 0);
 }
@@ -955,7 +955,7 @@ BOOST_AUTO_TEST_CASE( optional__dawg_optional_complex_3 ) {
      * Complex optional: LeftJoin(Join(BGP(..),Graph(var,{..})),LeftJoin(BGP(..),{..}))
      */
     const char* defaultGraph( "data-r2/optional/complex-data-2.ttl" );
-    const char* namedGraphs[] = {"complex-data-1.ttl"};
+    const char* namedGraphs[] = {"data-r2/optional/complex-data-1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/optional/q-opt-complex-3.rq", "data-r2/optional/result-opt-complex-3.ttl", 1, 0);
 }
@@ -964,7 +964,7 @@ BOOST_AUTO_TEST_CASE( optional__dawg_optional_complex_4 ) {
      * Complex optional: LeftJoin(Join(BGP(..),Union(..,..)),Join(BGP(..),Graph(varOrIRI,{..})))
      */
     const char* defaultGraph( "data-r2/optional/complex-data-2.ttl" );
-    const char* namedGraphs[] = {"complex-data-1.ttl"};
+    const char* namedGraphs[] = {"data-r2/optional/complex-data-1.ttl"};
     const URI** requires = NULL;
     DAWG_TEST("data-r2/optional/q-opt-complex-4.rq", "data-r2/optional/result-opt-complex-4.ttl", 1, 0);
 }
