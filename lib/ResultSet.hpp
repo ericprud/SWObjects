@@ -13,6 +13,7 @@
 
 #include <set>
 #include <list>
+#include <vector>
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
@@ -422,32 +423,29 @@ namespace w3c_sw {
 		ref.resultType != resultType)
 		return false;
 
-	    if (isOrdered()) {
+	    if (isOrdered())
 		return compareOrdered(ref);
-	    } else if (resultType == RESULT_Boolean) {
+
+	    else if (resultType == RESULT_Boolean)
 		return (ref.size() > 0) == (size() > 0) ;
-	    } else if (resultType == RESULT_Graphs) {
+
+	    else if (resultType == RESULT_Graphs)
 		return (*db == *ref.db) ;
-	    } else {
-		std::vector<s_OrderConditionPair> orderConditions;
-		for (VariableListConstIterator it = knownVars.begin();
-		     it != knownVars.end(); ++it) {
-		    const Bindable* v = dynamic_cast<const Bindable*>(*it);
-		    VarExpression* ve = new VarExpression(v);
-		    s_OrderConditionPair p = {ORDER_Asc, ve}; // @@@ expand for our expanded key types (URI, lit...).
-		    orderConditions.push_back(p);
-		}
+
+	    else {
+		/* Copy ResultSets */
 		ResultSet self(*this);
 		ResultSet newRef(ref);
-// std::cerr << self.toString(); // std::cerr << newRef.toString();
-		self.order(&orderConditions);
-		newRef.order(&orderConditions);
-// std::cerr << self.toString(); // std::cerr << newRef.toString();
-// std::ostream* pcerr = &std::cerr; self.debugStream = &pcerr;
-		for (std::vector<s_OrderConditionPair>::iterator it = orderConditions.begin();
-		     it != orderConditions.end(); ++it) {
- 		    delete it->expression;
-		}
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << self.toString() << newRef.toString();
+
+		/* Sort according to variables in this ResultSet. */
+		self.order();
+		newRef.leadWithColumns(self.getOrderedVars());
+		newRef.order();
+
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << self.toString() << newRef.toString();
 		return self.compareOrdered(newRef);
 	    }
 	}
@@ -458,9 +456,12 @@ namespace w3c_sw {
 	    if (orderedSelect)
 		for (std::vector<const POS*>::const_iterator it = selectOrder.begin() ; it != selectOrder.end(); ++it)
 		    ret.push_back(*it);
-	    else
+	    else {
 		for (VariableListConstIterator it = knownVars.begin() ; it != knownVars.end(); ++it)
 		    ret.push_back(*it);
+		POSsorter sorter;
+		std::sort(ret.begin(), ret.end(), sorter);
+	    }
 	    return ret;
 	}
 	int leadWithColumns (VariableVector copyMe) {
@@ -579,7 +580,7 @@ namespace w3c_sw {
 	void project(ProductionVector<const POS*> const * varsV);
 	void restrict(const Filter* filter);
 	void order(std::vector<s_OrderConditionPair>* orderConditions);
-	void order ();
+	void order();
 	bool isOrdered () const { return ordered; }
 	void trim(e_distinctness distinctness, int offset, int limit);
 	void setRdfDB (RdfDB* db) { this->db = db; }
