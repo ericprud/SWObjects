@@ -423,15 +423,15 @@ public:
 	return CanonicalRDFLiteral::nonCanonicalString();
     }
 };
-class DecimalRDFLiteral : public NumericRDFLiteral {
+class FloatRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     float m_value;
-    DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
-    ~DecimalRDFLiteral () {  }
+    FloatRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
+    ~FloatRDFLiteral () {  }
 public:
     float getValue () const { return m_value; }
-    virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
+    virtual int getInt () const { throw TypeError(std::string("(float)") + toString(), "getInt()"); }
     virtual float getFloat () const { return m_value; }
     virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
@@ -443,6 +443,14 @@ public:
 	}
 	return CanonicalRDFLiteral::nonCanonicalString();
     }
+};
+class DecimalRDFLiteral : public FloatRDFLiteral {
+    friend class POSFactory;
+protected:
+    DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
+public:
+    virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
+    virtual void express(Expressor* p_expressor) const;
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
@@ -580,8 +588,9 @@ public:
 	typeOrder[typeid(RDFLiteral).name()] = 4;
 	typeOrder[typeid(IntegerRDFLiteral).name()] = 5;
 	typeOrder[typeid(DecimalRDFLiteral).name()] = 6;
-	typeOrder[typeid(DoubleRDFLiteral).name()] = 7;
-	typeOrder[typeid(BooleanRDFLiteral).name()] = 8;
+	typeOrder[typeid(FloatRDFLiteral).name()] = 7;
+	typeOrder[typeid(DoubleRDFLiteral).name()] = 8;
+	typeOrder[typeid(BooleanRDFLiteral).name()] = 9;
     }
     ~POSFactory();
     Variable* getVariable(std::string name);
@@ -593,6 +602,7 @@ public:
 
     IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
     DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
 
     BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
@@ -735,12 +745,30 @@ public:
 		double dl = 
 		    dynamic_cast<const DoubleRDFLiteral*> (l) ?         dynamic_cast<const DoubleRDFLiteral*> (l)->getValue() : 
 		    dynamic_cast<const DecimalRDFLiteral*>(l) ? (double)dynamic_cast<const DecimalRDFLiteral*>(l)->getValue() : 
+		    dynamic_cast<const FloatRDFLiteral*>  (l) ? (double)dynamic_cast<const FloatRDFLiteral*>  (l)->getValue() : 
 		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (double)dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
 		double dr = 
 		    dynamic_cast<const DoubleRDFLiteral*> (r) ?         dynamic_cast<const DoubleRDFLiteral*> (r)->getValue() : 
 		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (double)dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
+		    dynamic_cast<const FloatRDFLiteral*>  (r) ? (double)dynamic_cast<const FloatRDFLiteral*>  (r)->getValue() : 
 		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (double)dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		_validateNumeric(l->getLexicalValue());
+		_validateNumeric(r->getLexicalValue());
+		return
+		    dl < dr ? -1 : 
+		    dl > dr ?  1 : 
+		    0;
+	    } else if (dynamic_cast<const FloatRDFLiteral*>(l) || 
+		       dynamic_cast<const FloatRDFLiteral*>(r)) {
+		float dl = 
+		    dynamic_cast<const FloatRDFLiteral*>  (l) ? (float) dynamic_cast<const FloatRDFLiteral*>  (l)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(l) ? (float) dynamic_cast<const IntegerRDFLiteral*>(l)->getValue() : 
+		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
+		float dr = 
+		    dynamic_cast<const FloatRDFLiteral*>  (r) ? (float) dynamic_cast<const FloatRDFLiteral*>  (r)->getValue() : 
+		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (float) dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
 		_validateNumeric(l->getLexicalValue());
 		_validateNumeric(r->getLexicalValue());
@@ -1966,7 +1994,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	std::vector<const NumericRDFLiteral*> subd;
-	enum { Int, Dec, Double } highestType = Int;
+	enum { Int, Dec, Float, Double } highestType = Int;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it) {
 	    const POS* val = (*it)->eval(res, posFactory, evaluator);
@@ -1976,6 +2004,9 @@ public:
 	    } else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL) {
 		if (highestType < Dec)
 		    highestType = Dec;
+	    } else if (dynamic_cast<const FloatRDFLiteral*>(val) != NULL) {
+		if (highestType < Float)
+		    highestType = Float;
 	    } else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL) {
 		if (highestType < Double)
 		    highestType = Double;
@@ -2001,6 +2032,13 @@ public:
 		f += (*it)->getFloat();
 	    s << f;
 	    return posFactory->getNumericRDFLiteral(s.str(), f);
+	}
+	case Float: {
+	    float f(0);
+	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
+		f += (*it)->getFloat();
+	    s << f;
+	    return posFactory->getNumericRDFLiteral(s.str(), f, true); // Floatness
 	}
 	case Double: {
 	    double d(0);

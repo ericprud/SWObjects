@@ -232,6 +232,9 @@ void IntegerRDFLiteral::express (Expressor* p_expressor) const {
 void DecimalRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
+void FloatRDFLiteral::express (Expressor* p_expressor) const {
+    p_expressor->rdfLiteral(this, m_value);
+}
 void DoubleRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
@@ -504,7 +507,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 // 	    std::stringstream canonical;
 // 	    canonical << std::fixed << f;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), f);
-	    return getNumericRDFLiteral(p_String.c_str(), f);
+	    return p_URI == getURI("http://www.w3.org/2001/XMLSchema#float") ? 
+		getNumericRDFLiteral(p_String.c_str(), f, true) :
+		getNumericRDFLiteral(p_String.c_str(), f);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#double")) {
 	    double d;
 	    is >> d;
@@ -564,6 +569,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	};
 	MakeDecimalRDFLiteral maker(p_value);
 	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(p_String, "decimal", &maker);
+	return ret;
+    }
+
+    FloatRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
+	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
+	private: float m_value;
+	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
+	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+		return new FloatRDFLiteral(p_String, p_URI, m_value);
+	    }
+	};
+	MakeFloatRDFLiteral maker(p_value);
+	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(p_String, "float", &maker);
 	return ret;
     }
 
@@ -661,6 +679,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(pos);
 	if (f != NULL)
 	    return f->getValue() == 0.0 ? getFalse() : getTrue();
+	const FloatRDFLiteral* fl = dynamic_cast<const FloatRDFLiteral*>(pos);
+	if (fl != NULL)
+	    return fl->getValue() == 0.0 ? getFalse() : getTrue();
 	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(pos);
 	if (d != NULL)
 	    return d->getValue() == 0.0 ? getFalse() : getTrue();
