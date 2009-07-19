@@ -52,7 +52,7 @@ struct SparqlQueryTestResultSet : public ResultSet {
  
 	std::string baseStr(query);
 	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
-	d.baseStr = baseStr;
+	d.baseURIstr = baseStr;
 	const URI* baseURI = F.getURI(baseStr.c_str());
 
 	/* Parse query. */

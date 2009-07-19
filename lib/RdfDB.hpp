@@ -54,7 +54,7 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
-	std::string baseStr;
+	std::string baseURIstr; // base for loading relative URIs (e.g. files)
 	RdfDB (SWSAXparser* xmlParser = NULL) : 
 	    graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL) {  }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL) : 
@@ -165,7 +165,7 @@ namespace w3c_sw {
 		if (loadData(target, stream, mediaType, nameStr, posFactory))
 		    throw nameStr + ":0: error: unable to parse web document";
 	    } else {
-		nameStr = baseStr + nameStr;
+		nameStr = baseURIstr + nameStr;
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "reading file " << nameStr << std::endl;
 		std::ifstream stream(nameStr.c_str());
