@@ -119,11 +119,12 @@ namespace w3c_sw {
 		else // don't whine about non-namespaced docs.
 		    *elNs = NULL;
 	    } else {
+		std::string prefix(elPrefix, *elLname);
 		++*elLname;
-		if (nsz.top().find(elPrefix) != nsz.top().end())
-		    *elNs = nsz.top()[elPrefix].c_str();
+		if (nsz.top().find(prefix) != nsz.top().end())
+		    *elNs = nsz.top()[prefix].c_str();
 		else
-		    insulator->error("namespace prefix \"%s\" not found", (char*)elPrefix);
+		    insulator->error("namespace prefix \"%s\" not found", (char*)prefix.c_str());
 	    }
 	}
 	void __dumpNsz (const char* sit) {
