@@ -122,7 +122,7 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
     std::string scheme;
     std::string relStr(rel ? *rel : "junk");
 
-    if (name.size() == 0) return "";
+    if (name.size() == 0) return rel ? *rel : "";
     //if (!relatedName)        /* HWL 23/8/94: dont dump due to NULL */
     //    relatedName = "";
     
