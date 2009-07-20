@@ -572,7 +572,7 @@ protected:
 
 #endif /* SQL_CLIENT != SWOb_DISABLED */
 
-	const VariableVector* cols = rs.getOrderedVars();
+	const VariableVector cols = rs.getOrderedVars();
 
 	if (htmlResults) {
 	    head(ret, "Query Results");
@@ -583,7 +583,7 @@ protected:
 		"<h1>" << language << " Query</h1>\n"
 		"<pre>" << finalQuery << "</pre>\n";
 	    char space[1024];
-	    sprintf(space, "<p>number of fields: %d</p>\n", cols->size());
+	    sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
 	    ret << space;
 
 	    ret << 
@@ -591,16 +591,16 @@ protected:
 		"      <tr>";
 
 	    /* dump headers in <th/>s */
-	    for (VariableVector::const_iterator col = cols->begin();
-		 col != cols->end(); ++col)
+	    for (VariableVector::const_iterator col = cols.begin();
+		 col != cols.end(); ++col)
 		ret << "<th>" << (*col)->toString() << "</th>";
 	    ret << "</tr>\n";
 
 	    /* dump data in <td/>s */
 	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "      <tr>";
-		for (VariableVector::const_iterator col = cols->begin();
-		     col != cols->end(); ++col) {
+		for (VariableVector::const_iterator col = cols.begin();
+		     col != cols.end(); ++col) {
 		    const POS* val = (*row)->get(*col);
 		    if (val != NULL)
 			ret << "<td>" << val->toString() << "</td>";
@@ -618,8 +618,8 @@ protected:
 		"  <head>\n";
 
 	    /* dump headers in <th/>s */
-	    for (VariableVector::const_iterator col = cols->begin();
-		 col != cols->end(); ++col)
+	    for (VariableVector::const_iterator col = cols.begin();
+		 col != cols.end(); ++col)
 		ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
 	    ret << "  </head>\n";
 	    ret << "  <results>\n";
