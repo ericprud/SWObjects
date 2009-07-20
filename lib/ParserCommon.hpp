@@ -44,12 +44,13 @@ public:
 
     void clear () {
 	namespaces.clear();
-	base = NULL;
 	nodeMap.clear();
+	base = NULL;
     }
 
     void clear (std::string baseURI) {
 	namespaces.clear();
+	nodeMap.clear();
 	base = getURI(baseURI);
     }
 
