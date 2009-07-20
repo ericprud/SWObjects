@@ -1,0 +1,325 @@
+# RDFa-1.ttl
+# reference for RDFa_test.cpp test 1
+
+@prefix dcmitype: <http://purl.org/dc/dcmitype/> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix ht:       <http://www.w3.org/2006/http#> .
+@prefix hth:      <http://www.w3.org/2008/http-headers#> .
+@prefix htx:      <http://buzzword.org.uk/rdf/http-ext#> .
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sioc:     <http://rdfs.org/sioc/ns#> .
+
+<http://dbpedia.org/resource/5-HT3_antagonist> rdfs:label "5-HT3 antagonist"@en .
+
+<http://dbpedia.org/resource/5-HT3_receptor> rdfs:label "5-HT3 receptor"@en .
+
+<http://dbpedia.org/resource/Acetylcholinesterase_inhibitor> rdfs:label "Acetylcholinesterase inhibitor"@en .
+
+<http://dbpedia.org/resource/Agonist> rdfs:label "Agonist"@en .
+
+<http://dbpedia.org/resource/Alzheimer%27s_disease> rdfs:label "Alzheimer's disease"@en ,
+		"Alzheimer\\'s disease"@en .
+
+<http://dbpedia.org/resource/Alzheimer%E2%80%99s_disease> rdfs:label "Alzheimer’s disease"@en .
+
+<http://dbpedia.org/resource/Amyloid> rdfs:label "Amyloid"@en .
+
+<http://dbpedia.org/resource/Amyloid_precursor_protein> rdfs:label "Amyloid precursor protein"@en .
+
+<http://dbpedia.org/resource/Androgenic_alopecia> rdfs:label "Androgenic alopecia"@en .
+
+<http://dbpedia.org/resource/Angiogenesis_inhibitor> rdfs:label "Angiogenesis inhibitor"@en .
+
+<http://dbpedia.org/resource/Anti-inflammatory> rdfs:label "Anti-inflammatory"@en .
+
+<http://dbpedia.org/resource/Antioxidant> rdfs:label "Antioxidant"@en .
+
+<http://dbpedia.org/resource/Anxiety> rdfs:label "Anxiety"@en .
+
+<http://dbpedia.org/resource/Baclofen> rdfs:label "Baclofen"@en .
+
+<http://dbpedia.org/resource/Benzodiazepine> rdfs:label "Benzodiazepine"@en .
+
+<http://dbpedia.org/resource/Bicuculline> rdfs:label "Bicuculline"@en .
+
+<http://dbpedia.org/resource/Calcium_channel> rdfs:label "Calcium channel"@en .
+
+<http://dbpedia.org/resource/Calcium_signaling> rdfs:label "Calcium signaling"@en .
+
+<http://dbpedia.org/resource/Cell_growth> rdfs:label "Cell growth"@en .
+
+<http://dbpedia.org/resource/Cholecystokinin> rdfs:label "Cholecystokinin"@en .
+
+<http://dbpedia.org/resource/Dopamine> rdfs:label "Dopamine"@en .
+
+<http://dbpedia.org/resource/Endoplasmic_reticulum> rdfs:label "Endoplasmic reticulum"@en .
+
+<http://dbpedia.org/resource/Ethanol> rdfs:label "Ethanol"@en .
+
+<http://dbpedia.org/resource/GABA> rdfs:label "GABA"@en .
+
+<http://dbpedia.org/resource/GABAA_receptor> rdfs:label "GABAA receptor"@en .
+
+<http://dbpedia.org/resource/GABAB_receptor> rdfs:label "GABAB receptor"@en .
+
+<http://dbpedia.org/resource/GABA_agonist> rdfs:label "GABA agonist"@en .
+
+<http://dbpedia.org/resource/GABA_antagonist> rdfs:label "GABA antagonist"@en .
+
+<http://dbpedia.org/resource/G_protein-coupled_inwardly-rectifying_potassium_channel> rdfs:label "G protein-coupled inwardly-rectifying potassium channel"@en .
+
+<http://dbpedia.org/resource/Gaboxadol> rdfs:label "Gaboxadol"@en .
+
+<http://dbpedia.org/resource/Glutamate> rdfs:label "Glutamate"@en .
+
+<http://dbpedia.org/resource/Heart> rdfs:label "Heart"@en .
+
+<http://dbpedia.org/resource/Hippocampus> rdfs:label "Hippocampus"@en .
+
+<http://dbpedia.org/resource/Huperzine_A> rdfs:label "Huperzine A"@en .
+
+<http://dbpedia.org/resource/Hyperforin> rdfs:label "Hyperforin"@en .
+
+<http://dbpedia.org/resource/Inflammation> rdfs:label "Inflammation"@en .
+
+<http://dbpedia.org/resource/Ketoconazole> rdfs:label "Ketoconazole"@en .
+
+<http://dbpedia.org/resource/LTP_induction> rdfs:label "LTP induction"@en .
+
+<http://dbpedia.org/resource/MAPK/ERK_pathway> rdfs:label "MAPK/ERK pathway"@en .
+
+<http://dbpedia.org/resource/Malassezia> rdfs:label "Malassezia"@en .
+
+<http://dbpedia.org/resource/Memantine> rdfs:label "Memantine"@en .
+
+<http://dbpedia.org/resource/Muscarinic_acetylcholine_receptor> rdfs:label "Muscarinic acetylcholine receptor"@en .
+
+<http://dbpedia.org/resource/Muscimol> rdfs:label "Muscimol"@en .
+
+<http://dbpedia.org/resource/NMDA_receptor> rdfs:label "NMDA receptor"@en .
+
+<http://dbpedia.org/resource/NMDA_receptor_antagonist> rdfs:label "NMDA receptor antagonist"@en .
+
+<http://dbpedia.org/resource/Peroxiredoxin> rdfs:label "Peroxiredoxin"@en .
+
+<http://dbpedia.org/resource/Potassium_channel> rdfs:label "Potassium channel"@en .
+
+<http://dbpedia.org/resource/Presenilin> rdfs:label "Presenilin"@en .
+
+<http://dbpedia.org/resource/Scopolamine> rdfs:label "Scopolamine"@en .
+
+<http://dbpedia.org/resource/Somatostatin> rdfs:label "Somatostatin"@en .
+
+<http://dbpedia.org/resource/Spatial_memory> rdfs:label "Spatial memory"@en .
+
+<http://dbpedia.org/resource/St._Johns_Wort> rdfs:label "St. Johns Wort"@en .
+
+<http://dbpedia.org/resource/Stress> rdfs:label "Stress"@en .
+
+<http://dbpedia.org/resource/Synaptic_plasticity> rdfs:label "Synaptic plasticity"@en .
+
+<http://dbpedia.org/resource/Anti-inflammatory> rdfs:label "NF-kappaB"@en .
+
+<http://hcls.deri.org/atag-data/gabab_example.html> 
+	dcterms:title "aTag Pastebin"@en .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0f52458c27> a sioc:Item ;
+	sioc:content "Huperzine A ameliorates the impaired memory naturally occurring or induced by scopolamine in aged rats"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Huperzine_A> ,
+		<http://dbpedia.org/resource/Scopolamine> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/11263250?ordinalpos=20&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0fb9be63d5> a sioc:Item ;
+	sioc:content "By blocking NMDA ion channels without psychotomimetic side-effects, HUP-A may protect against diverse neurodegenerative states observed during ischemia or Alzheimer's disease"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/NMDA_receptor> ,
+		<http://dbpedia.org/resource/Huperzine_A> ,
+		<http://dbpedia.org/resource/Alzheimer%27s_disease> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/11920920?ordinalpos=5&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0fd66ad0a3> a sioc:Item ;
+	sioc:content "Memantine is a low-affinity voltage-dependent uncompetitive antagonist at glutamatergic NMDA receptors"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Memantine> ,
+		<http://dbpedia.org/resource/NMDA_receptor_antagonist> ;
+	rdfs:seeAlso <http://en.wikipedia.org/wiki/Memantine> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0fe2c62060> a sioc:Item ;
+	sioc:content "Memantine acts as an uncompetitive antagonist at the 5HT3 receptor"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Memantine> ,
+		<http://dbpedia.org/resource/5-HT3_antagonist> ,
+		<http://dbpedia.org/resource/5-HT3_receptor> ;
+	rdfs:seeAlso <http://en.wikipedia.org/wiki/Memantine> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0ff6f9e7d9> a sioc:Item ;
+	sioc:content "Bicuculline recovered tetanic LTP"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/LTP_induction> ,
+		<http://dbpedia.org/resource/GABA_antagonist> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18971795?ordinalpos=2&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c0fff8854e8> a sioc:Item ;
+	sioc:content "Bicuculline is a light-sensitive competitive antagonist of GABAA receptors"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Bicuculline> ,
+		<http://dbpedia.org/resource/GABA_antagonist> ;
+	rdfs:seeAlso <http://en.wikipedia.org/wiki/Bicuculline> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c1271b42ff8> a sioc:Item ;
+	sioc:content "these findings indicate that endogenous sAPP alpha is a key contributor to synaptic plasticity and spatial memory. Its reduced production in Alzheimer's disease may thus contribute to the clinical memory deficits."@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Amyloid_precursor_protein> ,
+		<http://dbpedia.org/resource/Synaptic_plasticity> ,
+		<http://dbpedia.org/resource/Spatial_memory> ,
+		<http://dbpedia.org/resource/Alzheimer%27s_disease> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18585048?ordinalpos=19&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c12f7294797> a sioc:Item ;
+	sioc:content "our data suggest actions of memantine beyond NMDA receptor antagonism, including stimulating effects on cholinergic signalling via muscarinic receptors"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Memantine> ,
+		<http://dbpedia.org/resource/Muscarinic_acetylcholine_receptor> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18198419?ordinalpos=38&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c13967edeeb> a sioc:Item ;
+	sioc:content "changes in ERK phosphorylation in hippocampus and PFC were regulated by GABAA receptor in a learning and memory paradigm under acute restraint stress conditions"@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/MAPK/ERK_pathway> ,
+		<http://dbpedia.org/resource/Hippocampus> ,
+		<http://dbpedia.org/resource/Stress> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/17916335?ordinalpos=3&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c13faaabfc9> a sioc:Item ;
+	sioc:content "there may be a significant action of KCZ upon the course of androgenic alopecia and that Malassezia spp. may play a role in the inflammatory reaction."@en ;
+	sioc:ip_address "85.127.79.250"@en ;
+	sioc:topic <http://dbpedia.org/resource/Ketoconazole> ,
+		<http://dbpedia.org/resource/Androgenic_alopecia> ,
+		<http://dbpedia.org/resource/Malassezia> ,
+		<http://dbpedia.org/resource/Inflammation> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/9669136?ordinalpos=17&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c225c1d6a38> a sioc:Item ;
+	sioc:content "recently published data provide a growing body of evidence supporting the critical role of calcium signalling in AD"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Calcium_signaling> ,
+		<http://dbpedia.org/resource/Alzheimer%27s_disease> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18035450?ordinalpos=19&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c2268fc025a> a sioc:Item ;
+	sioc:content "presenilins, which are mutated in familial cases of AD, were demonstrated to form low conductance calcium channels in the ER and elevated cytosolic calcium concentration increases amyloid generation"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Presenilin> ,
+		<http://dbpedia.org/resource/Alzheimer%E2%80%99s_disease> ,
+		<http://dbpedia.org/resource/Calcium_channel> ,
+		<http://dbpedia.org/resource/Endoplasmic_reticulum> ,
+		<http://dbpedia.org/resource/Amyloid> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18035450?ordinalpos=19&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c2293e7d52f> a sioc:Item ;
+	sioc:content "The ionotropic GABAA receptor protein complex is also the molecular target of the benzodiazepine (BZ) class of tranquilizer drugs"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/GABAA_receptor> ,
+		<http://dbpedia.org/resource/Benzodiazepine> ;
+	rdfs:seeAlso <http://en.wikipedia.org/wiki/GABAA_receptor> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c22a190044f> a sioc:Item ;
+	sioc:content "some GABAA agonists such as muscimol and gaboxadol do bind to the same site on the GABAA receptor complex as GABA itself"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/GABAA_receptor> ,
+		<http://dbpedia.org/resource/GABA_agonist> ,
+		<http://dbpedia.org/resource/Muscimol> ,
+		<http://dbpedia.org/resource/Gaboxadol> ;
+	rdfs:seeAlso <http://en.wikipedia.org/wiki/GABAA_receptor> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c22f5a6faa9> a sioc:Item ;
+	sioc:content "GABAB receptor function: Inhibition of somatostatin and cholecystokinin release."@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/GABAB_receptor> ,
+		<http://dbpedia.org/resource/Somatostatin> ,
+		<http://dbpedia.org/resource/Cholecystokinin> ;
+	rdfs:seeAlso <http://www.iuphar-db.org/GPCR/ReceptorDisplayForward?receptorID=3038> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c25b4684abc> a sioc:Item ;
+	sioc:content "Hyperforin prevents translocation to the nucleus of NF-kappaB, a transcription factor regulating numerous genes involved in cell growth, survival, angiogenesis and invasion"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Hyperforin> ,
+		<http://dbpedia.org/resource/Anti-inflammatory> ,
+		<http://dbpedia.org/resource/Cell_growth> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/19223175?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c260683cd69> a sioc:Item ;
+	sioc:content "Hyperforin: an anti-inflammatory angioprevention agent, acting as a strong inhibitor of inflammation- or tumour-triggered angiogenesis"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Hyperforin> ,
+		<http://dbpedia.org/resource/Anti-inflammatory> ,
+		<http://dbpedia.org/resource/Angiogenesis_inhibitor> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/19223175?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c265b202d5b> a sioc:Item ;
+	sioc:content "Hyperforin represents a major antidepressive constituent of St. John's wort (SJW) extract. It [...] also inhibits GABA and L-glutamate uptake."@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Hyperforin> ,
+		<http://dbpedia.org/resource/St._Johns_Wort> ,
+		<http://dbpedia.org/resource/GABA> ,
+		<http://dbpedia.org/resource/Glutamate> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/11518085?ordinalpos=7&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c3b79344638> a sioc:Item ;
+	sioc:content "local antioxidant activity of peroxiredoxin 3 may have a role in maintaining cardiac function"@en ;
+	sioc:ip_address "131.130.132.4"@en ;
+	sioc:topic <http://dbpedia.org/resource/Peroxiredoxin> ,
+		<http://dbpedia.org/resource/Antioxidant> ,
+		<http://dbpedia.org/resource/Heart> ;
+	rdfs:seeAlso <http://www.febsletters.org/article/S0014-5793(09)00112-4/abstract> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c78d5a4d391> a sioc:Item ;
+	sioc:content "Huperzine A, a novel promising acetylcholinesterase inhibitor"@en ;
+	sioc:ip_address "85.127.78.196"@en ;
+	sioc:topic <http://dbpedia.org/resource/Huperzine_A> ,
+		<http://dbpedia.org/resource/Acetylcholinesterase_inhibitor> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/9051760?ordinalpos=156&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49c8bacf503b7> a sioc:Item ;
+	sioc:content "Huperzine A treatment protects against N-methyl-D-aspartate-induced seizure/status epilepticus in rats."@en ;
+	sioc:ip_address "10.2.17.60"@en ;
+	sioc:topic <http://dbpedia.org/resource/Huperzine_A> ,
+		<http://dbpedia.org/resource/NMDA_receptor> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18588864?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49cab3f287c53> a sioc:Item ;
+	sioc:content "Baclofen is a full agonist of GABAB receptors"@en ;
+	sioc:ip_address "77.116.174.166"@en ;
+	sioc:topic <http://dbpedia.org/resource/Baclofen> ,
+		<http://dbpedia.org/resource/GABAB_receptor> ,
+		<http://dbpedia.org/resource/Agonist> ;
+	rdfs:seeAlso <http://www.iuphar-db.org/GPCR/ReceptorDisplayForward?receptorID=3038> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49cab494999c6> a sioc:Item ;
+	sioc:content "A function of GABAB receptors: Production of K+ currents"@en ;
+	sioc:ip_address "77.116.174.166"@en ;
+	sioc:topic <http://dbpedia.org/resource/GABAB_receptor> ,
+		<http://dbpedia.org/resource/Potassium_channel> ;
+	rdfs:seeAlso <http://www.iuphar-db.org/GPCR/ReceptorDisplayForward?receptorID=3038> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49d230abda515> a sioc:Item ;
+	sioc:content "GABA(B) receptor positive modulation represents a novel therapeutic strategy for the development of anxiolytic drugs with a superior side-effect profile"@en ;
+	sioc:ip_address "131.130.108.158"@en ;
+	sioc:topic <http://dbpedia.org/resource/GABAB_receptor> ,
+		<http://dbpedia.org/resource/Anxiety> ,
+		<http://dbpedia.org/resource/Positive_modulation> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/18328507?ordinalpos=5&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://hcls.deri.org/atag-data/gabab_example.html#49d3249aec0b0> a sioc:Item ;
+	sioc:content "Ethanol enhances GABA(B)-mediated inhibitory postsynaptic transmission on rat midbrain dopaminergic neurons by facilitating GIRK currents."@en ;
+	sioc:ip_address "85.127.77.139"@en ;
+	sioc:topic <http://dbpedia.org/resource/Ethanol> ,
+		<http://dbpedia.org/resource/GABAB_receptor> ,
+		<http://dbpedia.org/resource/Dopamine> ,
+		<http://dbpedia.org/resource/G_protein-coupled_inwardly-rectifying_potassium_channel> ;
+	rdfs:seeAlso <http://www.ncbi.nlm.nih.gov/pubmed/19309316?ordinalpos=6&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum> .
+
+<http://dbpedia.org/resource/Positive_modulation> rdfs:label "positive modulation"@en .
+

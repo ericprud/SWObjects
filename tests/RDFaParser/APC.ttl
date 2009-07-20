@@ -1,0 +1,2 @@
+<> <http://purl.org/dc/terms/title> "aTag Pastebin"@en  .
+<http://dbpedia.org/resource/Agonist> <http://www.w3.org/2000/01/rdf-schema#label> "Agonist"@en  .
