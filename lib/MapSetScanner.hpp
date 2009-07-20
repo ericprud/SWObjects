@@ -58,8 +58,8 @@ public:
 
     MapSetParser::token_type typedLiteral(MapSetParser::semantic_type*&, MapSetParser::token_type tok);
     MapSetParser::token_type unescape(MapSetParser::semantic_type*&, size_t skip, MapSetParser::token_type tok);
-    URI* resolvePrefix(const char*);
-    URI* resolveBase(const char*, bool stripDelims);
+    const URI* resolvePrefix(const char*);
+    const URI* resolveBase(const char*, bool stripDelims);
 };
 
 } // namespace w3c_sw

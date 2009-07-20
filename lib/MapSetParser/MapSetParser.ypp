@@ -69,14 +69,14 @@ class MapSetScanner;
 class MapSetDriver : public Driver {
     friend class MapSetParser;
 protected:
-    POS* curSubject;
-    POS* curPredicate;
+    const POS* curSubject;
+    const POS* curPredicate;
     std::vector<BasicGraphPattern*> bgpStack;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
     BindingClause* curBindingClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
-    std::stack<POS*> curGraphNameStack;
+    std::stack<const POS*> curGraphNameStack;
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
 	if (!bgpStack.back()) {
@@ -113,9 +113,9 @@ public:
 
 %union {
     void* p_void;
-    struct {POS* subject; POS* predicate;} p_SubjectPredicatePair;
+    struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
-    struct {URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
+    struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
     struct {Operation* operation; WhereClause* whereClause;} p_OperationWhereClausePair;
     s_OrderConditionPair p_OrderConditionPair;
     std::vector<s_OrderConditionPair>* p_OrderConditions;
@@ -127,12 +127,12 @@ public:
 
     std::string* p_string;
 
-    NumericRDFLiteral* p_NumericRDFLiteral;
-    BooleanRDFLiteral* p_BooleanRDFLiteral;
+    const NumericRDFLiteral* p_NumericRDFLiteral;
+    const BooleanRDFLiteral* p_BooleanRDFLiteral;
 
     /* Productions */
     Operation* p_Operation;
-    Variable* p_Variable;
+    const Variable* p_Variable;
 
     e_distinctness p_distinctness;
     e_listModifier p_listModifier;
@@ -160,15 +160,15 @@ public:
     Filter* p_Filter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
-    POS* p_POS;
+    const POS* p_POS;
     ProductionVector<const POS*>* p_POSs;
     Expression* p_Expression;
     ProductionVector<const Expression*>* p_Expressions;
     BooleanComparator* p_BooleanComparator;
-    URI* p_URI;
+    const URI* p_URI;
     ProductionVector<const URI*>* p_URIs;
-    RDFLiteral* p_RDFLiteral;
-    BNode* p_BNode;
+    const RDFLiteral* p_RDFLiteral;
+    const BNode* p_BNode;
 
 }
 
@@ -1117,15 +1117,15 @@ Generator:
     _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
 	if ($1 == LIST_exact) {
 	    $$ = driver.createBNode();
-	    POS* tail = $$;
+	    const POS* tail = $$;
 	    ProductionVector<const POS*>* members = $3;
-	    URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
-	    URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	    POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	    const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	    driver.makeBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-		POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+		const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
 		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
 		tail = nextTail;
 	    }

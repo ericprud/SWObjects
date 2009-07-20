@@ -8,7 +8,7 @@
  *   queries, which have a single namespace for all veriables, to SQL, which
  *   requires subqueries with different table alias namespaces to express
  *   certain OPTIONALs and all UNIONs.
- * vector<POS*> entriesFor(TableOperation*)
+ * vector<const POS*> entriesFor(TableOperation*)
  *
  * • For RuleMap query translation, POS2BGP keeps track of which OPTIONALs in
  *   the rule antecedent are needed to produce the data for a given query, and
@@ -21,7 +21,7 @@
  *   called by: MappingConstruct::execute
  *   returns: a ConsequentMap of the constructRuleBodyAsConsequent (see below).
  *
- * std::vector<POS*> entriesFor (TableOperation* op)
+ * std::vector<const POS*> entriesFor (TableOperation* op)
  *   called by: SQLizer::tableDisjunction
  *              SQLizer::optionalGraphPattern
  *   returns: all the POS entries referenced in a particular TableOperation.
@@ -397,9 +397,9 @@ namespace w3c_sw {
 
     protected:
 	ConsequentMapList consequents;
-	std::set<POS*> gendVars; // @@@ could be a re-use map outside
-	Bindable* _genVar (const Bindable* base, int index, Result* row, POSFactory* posFactory) {
-	    Bindable* ret = NULL;
+	std::set<const POS*> gendVars; // @@@ could be a re-use map outside
+	const Bindable* _genVar (const Bindable* base, int index, Result* row, POSFactory* posFactory) {
+	    const Bindable* ret = NULL;
 	    do {
 		std::stringstream name;
 		name << base->getLexicalValue() << "_gen" << index;

@@ -37,7 +37,7 @@ namespace w3c_sw {
 	std::cerr << m << std::endl;
     }
 
-    URI* Driver::getAbsoluteURI (std::string name) {
+    const URI* Driver::getAbsoluteURI (std::string name) {
 	std::string str = base ? base->getLexicalValue() : "";
 	std::string abs(libwww::HTParse(name, base ? &str : NULL, libwww::PARSE_all));
 	return posFactory->getURI(abs.c_str());

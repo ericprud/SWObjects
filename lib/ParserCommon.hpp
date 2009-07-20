@@ -28,7 +28,7 @@ protected:
 class Driver
 {
     /// type of the namespace storage
-    typedef std::map<std::string, URI*> namespacemap_type;
+    typedef std::map<std::string, const URI*> namespacemap_type;
 protected:
     POSFactory * const posFactory;
     namespacemap_type	namespaces;
@@ -101,12 +101,12 @@ public:
 
     const URI* getBase () const { return base; }
     void setBase (const URI* b) { /* base is centrally managed -- don't delete */ base = b; }
-    void addPrefix (std::string prefix, URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
+    void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
-    URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
+    const URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
 	namespacemap_type::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end()) {
 	    if (returnNull)
@@ -119,21 +119,21 @@ public:
 
 
     /* POSFactory relay. */
-    Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
-    URI* getURI (std::string name) { return posFactory->getURI(name); }
-    URI* getAbsoluteURI(std::string name);
-    BNode* createBNode () { return posFactory->createBNode(); }
-    BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
-    RDFLiteral* getRDFLiteral (std::string p_String, URI* p_URI, LANGTAG* p_LANGTAG) {
+    const Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
+    const URI* getURI (std::string name) { return posFactory->getURI(name); }
+    const URI* getAbsoluteURI(std::string name);
+    const BNode* createBNode () { return posFactory->createBNode(); }
+    const BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
+    const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
 	return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
 
-    IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    const IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    const DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
 
-    BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
-    NULLpos* getNULL  () { return posFactory->getNULL(); }
+    const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
+    const NULLpos* getNULL  () { return posFactory->getNULL(); }
 
 };
 

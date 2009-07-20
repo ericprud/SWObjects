@@ -151,7 +151,7 @@ namespace w3c_sw {
 	    boost::match_results<std::string::const_iterator> what;
 	    boost::match_flag_type flags = boost::match_default;
 	    bool firstRow = true;
-	    std::vector<POS*> headers;
+	    std::vector<const POS*> headers;
 	    int col = 0;
 	    Result* curRow;
 	    while (regex_search(start, end, what, expression, flags)) {
@@ -162,7 +162,7 @@ namespace w3c_sw {
 		    curRow = new Result(this);
 		    insert(this->end(), curRow);
 		} else {
-		    POS* pos = posFactory->getPOS(matched);
+		    const POS* pos = posFactory->getPOS(matched);
 		    if (firstRow)
 			headers.push_back(pos);
 		    else
@@ -187,8 +187,8 @@ namespace w3c_sw {
 			 s_ERROR};
 	    std::stack<enum STATES> stateStack;
 	    Result* result;
-	    POS* variable;
-	    URI* datatype;
+	    const POS* variable;
+	    const URI* datatype;
 	    std::string lang;
 	    std::string chars;
 

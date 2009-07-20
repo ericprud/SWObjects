@@ -399,33 +399,33 @@ void NumberExpression::express (Expressor* p_expressor) const {
     /* <POSFactory> */
     POSFactory::~POSFactory () {
 
-	std::map<std::string, TriplePattern*>::iterator iTriples;
+	std::map<std::string, const TriplePattern*>::iterator iTriples;
 	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
 	    delete iTriples->second;
 	triples.clear();
 
-	std::map<std::string, Variable*>::iterator iVariables;
+	std::map<std::string, const Variable*>::iterator iVariables;
 	for (iVariables = variables.begin(); iVariables != variables.end(); iVariables++)
 	    delete iVariables->second;
 	variables.clear();
 
-	std::map<std::string, URI*>::iterator iURIs;
+	std::map<std::string, const URI*>::iterator iURIs;
 	for (iURIs = uris.begin(); iURIs != uris.end(); iURIs++)
 	    delete iURIs->second;
 	uris.clear();
 
-	std::map<std::string, BNode*>::iterator iBNodes;
+	std::map<std::string, const BNode*>::iterator iBNodes;
 	for (iBNodes = bnodes.begin(); iBNodes != bnodes.end(); iBNodes++)
 	    delete iBNodes->second;
 	bnodes.clear();
 
-	std::map<std::string, RDFLiteral*>::iterator iRDFLiterals;
+	std::map<std::string, const RDFLiteral*>::iterator iRDFLiterals;
 	for (iRDFLiterals = rdfLiterals.begin(); iRDFLiterals != rdfLiterals.end(); iRDFLiterals++)
 	    delete iRDFLiterals->second;
 	rdfLiterals.clear();
     }
 
-    Variable* POSFactory::getVariable (std::string name) {
+    const Variable* POSFactory::getVariable (std::string name) {
 	std::string key(name);
 	VariableMap::const_iterator vi = variables.find(key);
 	if (vi == variables.end()) {
@@ -436,7 +436,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    BNode* POSFactory::createBNode () {
+    const BNode* POSFactory::createBNode () {
 	BNode* ret = new BNode();
 	std::stringstream name;
 	name << ret; // addr
@@ -444,7 +444,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    BNode* POSFactory::getBNode (std::string name) {
+    const BNode* POSFactory::getBNode (std::string name) {
 	std::string key(name);
 	BNodeMap::const_iterator vi = bnodes.find(key);
 	if (vi == bnodes.end()) {
@@ -455,7 +455,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    URI* POSFactory::getURI (std::string name) {
+    const URI* POSFactory::getURI (std::string name) {
 	std::string key(name);
 	URIMap::const_iterator vi = uris.find(key);
 	if (vi == uris.end()) {
@@ -466,7 +466,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    POS* POSFactory::getPOS (std::string posStr) {
+    const POS* POSFactory::getPOS (std::string posStr) {
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
@@ -478,7 +478,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
     }
 
-    RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
+    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
 	std::istringstream is(p_String);
 
 	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
@@ -546,11 +546,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 #define XSD "http://www.w3.org/2001/XMLSchema#"
 #define LEN_XSD sizeof(XSD)
-    IntegerRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
+    const IntegerRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
 		return new IntegerRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
@@ -559,11 +559,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    DecimalRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
+    const DecimalRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
 		return new DecimalRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
@@ -572,11 +572,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    FloatRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
+    const FloatRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
 	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
 		return new FloatRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
@@ -585,11 +585,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    DoubleRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
+    const DoubleRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
-	    virtual NumericRDFLiteral* makeIt (std::string p_String, URI* p_URI) {
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
 		return new DoubleRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
@@ -598,7 +598,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    BooleanRDFLiteral* POSFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
+    const BooleanRDFLiteral* POSFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
 	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>"; // p_String
 	std::string key(buf.str());
@@ -611,12 +611,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return (BooleanRDFLiteral*)vi->second; // shameful downcast
     }
 
-    NumericRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
+    const NumericRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
 
 	std::string str;
 	str += XSD;
 	str += type;
-	URI* uri = getURI(str);
+	const URI* uri = getURI(str);
 
 	std::stringstream buf;
 	buf << '"' << p_String << '"';
@@ -625,14 +625,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    NumericRDFLiteral* ret = maker->makeIt(p_String, uri);
+	    const NumericRDFLiteral* ret = maker->makeIt(p_String, uri);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
-	    return (NumericRDFLiteral*)vi->second; // shameful downcast
+	    return (const NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
-    TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
+    const TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
 	std::stringstream key;
 	key << s << p << o << weaklyBound;
 	TriplePatternMap::const_iterator vi = triples.find(key.str());
@@ -641,7 +641,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    triples[key.str()] = ret;
 	    return ret;
 	} else {
-	    TriplePattern* ret = vi->second;
+	    const TriplePattern* ret = vi->second;
 	    return ret;
 	}
     }
@@ -920,7 +920,7 @@ compared against
 
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
 	unsigned errorCount = 0; // Only used if there's a DiffStream.
-	std::map<TriplePattern*, std::vector<const TriplePattern*> >mine;
+	std::map<const TriplePattern*, std::vector<const TriplePattern*> >mine;
 	POSFactory f; // temp to hold trimmed triples.
 	const NULLpos* n = f.getNULL();
 	for (std::vector<const TriplePattern*>::const_iterator mit = 
@@ -933,9 +933,10 @@ compared against
 	for (std::vector<const TriplePattern*>::const_iterator rit = 
 		 ref.m_TriplePatterns.begin();
 	     rit != ref.m_TriplePatterns.end(); ++rit) {
-	    TriplePattern* r = f.getTriple(_cOrN((*rit)->getS(), n), 
-					   _cOrN((*rit)->getP(), n), 
-					   _cOrN((*rit)->getO(), n));
+	    const TriplePattern* r = 
+		f.getTriple(_cOrN((*rit)->getS(), n), 
+			    _cOrN((*rit)->getP(), n), 
+			    _cOrN((*rit)->getO(), n));
 	    if (mine.find(r) == mine.end()) {
 		if (DiffStream != NULL) {
 		    *DiffStream << "- " << (*rit)->toString() << std::endl;
@@ -951,7 +952,7 @@ compared against
 	}
 	if (mine.size() != 0) {
 	    if (DiffStream != NULL) {
-		for (std::map<TriplePattern*, 
+		for (std::map<const TriplePattern*, 
 			 std::vector<const TriplePattern*> >::iterator mit = 
 			 mine.begin(); mit != mine.end(); ++mit)
 		    for (std::vector<const TriplePattern*>::iterator tpit = 

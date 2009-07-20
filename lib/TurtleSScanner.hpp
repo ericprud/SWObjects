@@ -58,8 +58,8 @@ public:
 
     TurtleSParser::token_type typedLiteral(TurtleSParser::semantic_type*&, TurtleSParser::token_type tok);
     TurtleSParser::token_type unescape(TurtleSParser::semantic_type*&, size_t skip, TurtleSParser::token_type tok);
-    URI* resolvePrefix(const char*);
-    URI* resolveBase(const char*, bool stripDelims);
+    const URI* resolvePrefix(const char*);
+    const URI* resolveBase(const char*, bool stripDelims);
 };
 
 } // namespace w3c_sw

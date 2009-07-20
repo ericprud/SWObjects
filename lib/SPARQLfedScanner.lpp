@@ -336,12 +336,12 @@ SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semanti
 }
 
 
-URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
+const URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
     std::string ret(yytext);
     size_t index = ret.find(':');
     if (index == std::string::npos)
 	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
-    URI* nspace = driver->getNamespace(ret.substr(0, index), true);
+    const URI* nspace = driver->getNamespace(ret.substr(0, index), true);
     if (nspace == NULL) {
 	std::stringstream err;
 	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
@@ -358,7 +358,7 @@ void SPARQLfedScanner::set_debug(bool b)
 
 /* END SPARQLfedScanner */
 
-URI* SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
+const URI* SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
     std::string stripped(p_rel);
     if (stripDelims) {
 	stripped.replace(0, 1, "");

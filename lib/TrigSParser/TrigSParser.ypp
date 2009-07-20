@@ -68,8 +68,8 @@ namespace w3c_sw {
 class TrigSDriver : public Driver {
     friend class TrigSParser;
 protected:
-    POS* curSubject;
-    POS* curPredicate;
+    const POS* curSubject;
+    const POS* curPredicate;
     RdfDB* db;
     BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
@@ -97,25 +97,25 @@ public:
 
 %union {
     void* p_void;
-    struct {POS* subject; POS* predicate;} p_SubjectPredicatePair;
-    struct {URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
+    struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
+    struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
     /* Terminals */
     LANGTAG* p_LANGTAG;
 
     std::string* p_string;
 
-    NumericRDFLiteral* p_NumericRDFLiteral;
-    BooleanRDFLiteral* p_BooleanRDFLiteral;
+    const NumericRDFLiteral* p_NumericRDFLiteral;
+    const BooleanRDFLiteral* p_BooleanRDFLiteral;
 
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
-    POS* p_POS;
-    ProductionVector<POS*>* p_POSs;
-    URI* p_URI;
+    const POS* p_POS;
+    ProductionVector<const POS*>* p_POSs;
+    const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
-    RDFLiteral* p_RDFLiteral;
-    BNode* p_BNode;
+    const RDFLiteral* p_RDFLiteral;
+    const BNode* p_BNode;
 
 }
 
@@ -387,16 +387,16 @@ Collection:
     // '(' GraphNode+ ')'
     GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
 	$$ = driver.createBNode();
-	POS* tail = $$;
-	ProductionVector<POS*>* members = $2;
-	URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
-	URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	const POS* tail = $$;
+	ProductionVector<const POS*>* members = $2;
+	const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	for (unsigned i = 0; i < members->size(); i++) {
 	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-	    POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+	    const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
 	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
 	    tail = nextTail;
 	}
@@ -408,7 +408,7 @@ Collection:
 // GraphNode+
 _QGraphNode_E_Plus:
     GraphNode	{
-	$$ = new ProductionVector<POS*>($1);
+	$$ = new ProductionVector<const POS*>($1);
     }
   | _QGraphNode_E_Plus GraphNode	{
 	$1->push_back($2);

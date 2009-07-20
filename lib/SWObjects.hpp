@@ -380,7 +380,7 @@ public:
 class CanonicalRDFLiteral : public RDFLiteral {
     friend class POSFactory;
 protected:
-    CanonicalRDFLiteral (std::string p_String, URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
+    CanonicalRDFLiteral (std::string p_String, const URI* p_URI) : RDFLiteral(p_String, p_URI, NULL) {  }
     ~CanonicalRDFLiteral () {  }
 public:
     typedef enum {CANON_brief, CANON_roundTrip, CANON_icalize} e_CANON;
@@ -394,7 +394,7 @@ public:
 class NumericRDFLiteral : public CanonicalRDFLiteral {
     friend class POSFactory;
 protected:
-    NumericRDFLiteral (std::string p_String, URI* p_URI) : CanonicalRDFLiteral(p_String, p_URI) {  }
+    NumericRDFLiteral (std::string p_String, const URI* p_URI) : CanonicalRDFLiteral(p_String, p_URI) {  }
     ~NumericRDFLiteral () {  }
 public:
     virtual int getInt() const = 0;
@@ -406,7 +406,7 @@ class IntegerRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     int m_value;
-    IntegerRDFLiteral (std::string p_String, URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
+    IntegerRDFLiteral (std::string p_String, const URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
     int getValue () const { return m_value; }
@@ -427,7 +427,7 @@ class FloatRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     float m_value;
-    FloatRDFLiteral (std::string p_String, URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
+    FloatRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~FloatRDFLiteral () {  }
 public:
     float getValue () const { return m_value; }
@@ -447,7 +447,7 @@ public:
 class DecimalRDFLiteral : public FloatRDFLiteral {
     friend class POSFactory;
 protected:
-    DecimalRDFLiteral (std::string p_String, URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
+    DecimalRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
 public:
     virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
     virtual void express(Expressor* p_expressor) const;
@@ -456,7 +456,7 @@ class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class POSFactory;
 protected:
     double m_value;
-    DoubleRDFLiteral (std::string p_String, URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
+    DoubleRDFLiteral (std::string p_String, const URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
 public:
     double getValue () const { return m_value; }
@@ -555,15 +555,15 @@ public:
 
 class DefaultGraphPattern;
 class POSFactory {
-    typedef std::map<std::string, Variable*> VariableMap;
-    typedef std::map<std::string, BNode*> BNodeMap;
-    typedef std::map<std::string, URI*> URIMap;
-    typedef std::map<std::string, RDFLiteral*> RDFLiteralMap;
-    typedef std::map<std::string, TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
+    typedef std::map<std::string, const Variable*> VariableMap;
+    typedef std::map<std::string, const BNode*> BNodeMap;
+    typedef std::map<std::string, const URI*> URIMap;
+    typedef std::map<std::string, const RDFLiteral*> RDFLiteralMap;
+    typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
-	virtual NumericRDFLiteral* makeIt(std::string p_String, URI* p_URI) = 0;
+	virtual const NumericRDFLiteral* makeIt(std::string p_String, const URI* p_URI) = 0;
     };
 
 protected:
@@ -573,15 +573,15 @@ protected:
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
     NULLpos		nullPOS;
-    BooleanRDFLiteral*	litFalse;
-    BooleanRDFLiteral*	litTrue;
-    NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+    const BooleanRDFLiteral*	litFalse;
+    const BooleanRDFLiteral*	litTrue;
+    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
     std::map<const std::string, int> typeOrder;
 
 public:
-    POSFactory () {
-	litFalse  = getBooleanRDFLiteral("false", false);
-	litTrue  = getBooleanRDFLiteral("true", true);
+    POSFactory () :
+	litFalse(getBooleanRDFLiteral("false", false)), 
+	litTrue(getBooleanRDFLiteral("true", true)) {
 
 	typeOrder[typeid(BNode).name()] = 2;
 	typeOrder[typeid(URI).name()] = 3;
@@ -593,33 +593,33 @@ public:
 	typeOrder[typeid(BooleanRDFLiteral).name()] = 9;
     }
     ~POSFactory();
-    Variable* getVariable(std::string name);
-    BNode* createBNode();
-    BNode* getBNode(std::string name);
-    URI* getURI(std::string name);
-    POS* getPOS(std::string posStr);
-    RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
+    const Variable* getVariable(std::string name);
+    const BNode* createBNode();
+    const BNode* getBNode(std::string name);
+    const URI* getURI(std::string name);
+    const POS* getPOS(std::string posStr);
+    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
 
-    IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
-    DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
-    FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
-    DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+    const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
+    const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
 
-    BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
-    BooleanRDFLiteral* getFalse () { return litFalse; }
-    BooleanRDFLiteral* getTrue () { return litTrue; }
-    NULLpos* getNULL () { return &nullPOS; }
+    const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
+    const BooleanRDFLiteral* getFalse () { return litFalse; }
+    const BooleanRDFLiteral* getTrue () { return litTrue; }
+    const NULLpos* getNULL () { return &nullPOS; }
 
     /* getTriple(s) interface: */
-    TriplePattern* getTriple (const TriplePattern* p, bool weaklyBound) {
+    const TriplePattern* getTriple (const TriplePattern* p, bool weaklyBound) {
 	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
     }
-    TriplePattern* getTriple(const POS* s, const POS* p, const POS* o, bool weaklyBound = false);
-    TriplePattern* getTriple (std::string s, std::string p, std::string o) {
+    const TriplePattern* getTriple(const POS* s, const POS* p, const POS* o, bool weaklyBound = false);
+    const TriplePattern* getTriple (std::string s, std::string p, std::string o) {
 	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
     }
 #if REGEX_LIB == SWOb_BOOST
-    TriplePattern* getTriple (std::string spo) {
+    const TriplePattern* getTriple (std::string spo) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");

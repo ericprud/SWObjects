@@ -206,12 +206,12 @@ TurtleSParser::token_type TurtleSScanner::unescape (TurtleSParser::semantic_type
 }
 
 
-URI* TurtleSScanner::resolvePrefix (const char* yytext){
+const URI* TurtleSScanner::resolvePrefix (const char* yytext){
     std::string ret(yytext);
     size_t index = ret.find(':');
     if (index == std::string::npos)
 	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
-    URI* nspace = driver->getNamespace(ret.substr(0, index));
+    const URI* nspace = driver->getNamespace(ret.substr(0, index));
     if (nspace == NULL) {
 	std::stringstream err;
 	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
@@ -228,7 +228,7 @@ void TurtleSScanner::set_debug(bool b)
 
 /* END TurtleSScanner */
 
-URI* TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
+const URI* TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
     std::string stripped(p_rel);
     if (stripDelims) {
 	stripped.replace(0, 1, "");

@@ -58,8 +58,8 @@ public:
 
     TrigSParser::token_type typedLiteral(TrigSParser::semantic_type*&, TrigSParser::token_type tok);
     TrigSParser::token_type unescape(TrigSParser::semantic_type*&, size_t skip, TrigSParser::token_type tok);
-    URI* resolvePrefix(const char*);
-    URI* resolveBase(const char*, bool stripDelims);
+    const URI* resolvePrefix(const char*);
+    const URI* resolveBase(const char*, bool stripDelims);
 };
 
 } // namespace w3c_sw
