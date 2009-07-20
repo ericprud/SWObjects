@@ -15,7 +15,7 @@
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"
-#include "RDFaParser.hpp"
+#include "RdfDB.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"
@@ -42,30 +42,43 @@ using namespace w3c_sw;
 POSFactory F;
 TurtleSDriver turtleParser("", &F);
 RDFaParser GRDFaParser(&F, &P);
-const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
 
-BOOST_AUTO_TEST_CASE( by_file ) {
+BOOST_AUTO_TEST_CASE( APC ) {
     DefaultGraphPattern tested;
-    GRDFaParser.parse(&tested, "RDFa-0.html", gabab);
+    GRDFaParser.parse(&tested, "RDFaParser/APC.html", "APC.html");
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
-    turtleParser.setBase(F.getURI(gabab));
-    turtleParser.parse_file("RDFa-0.ttl");
+    turtleParser.setBase(F.getURI("APC.html"));
+    turtleParser.parse_file("RDFaParser/APC.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }
 
-#if HTTP_CLIENT != SWOb_DISABLED
-BOOST_AUTO_TEST_CASE( by_http ) {
+BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern tested;
-    std::string s(WebClient.get("http://mouni.local/RDFa-0.html"));
-    BOOST_CHECK_EQUAL(WebClient.getMediaType().substr(0, 9), "text/html");
-    GRDFaParser.parse(&tested, s.begin(), s.end(), gabab);
+    const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
+    GRDFaParser.parse(&tested, "RDFa-1.html", gabab);
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase(F.getURI(gabab));
+    turtleParser.parse_file("RDFa-1.ttl");
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+/* invoke with e.g. -DHTTP_RDFa_test=http://mouni.local/RDFa-0.html */
+#if HTTP_CLIENT != SWOb_DISABLED && defined(HTTP_RDFa_test)
+BOOST_AUTO_TEST_CASE( by_http ) {
+    DefaultGraphPattern tested;
+    std::string s(WebClient.get(HTTP_RDFa_test));
+    BOOST_CHECK_EQUAL(WebClient.getMediaType().substr(0, 9), "text/html");
+    GRDFaParser.parse(&tested, s.begin(), s.end(), HTTP_RDFa_test);
+
+    DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase(F.getURI(HTTP_RDFa_test));
     turtleParser.parse_file("RDFa-0.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
