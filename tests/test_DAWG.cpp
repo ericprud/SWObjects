@@ -2,8 +2,15 @@
  * call from: ..
  * files: <tests>/data-r2  -- from http://www.w3.org/2001/sw/DataAccess/tests/data-r2/
  *
+ * compilations switches:
+ *   usual ones from ../CONFIG
+ *   TEST_DAWG_EXTENSIONS
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define MARK std::cout << __FILE__ "(" TOSTRING(__LINE__) "): warning MARK" << std::endl;
 
 #define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE DAWG_tests
@@ -720,8 +727,8 @@ BOOST_AUTO_TEST_CASE( i18n__normalization_1 ) {
      */
     const char* defaultGraph( "data-r2/i18n/normalization-01.ttl" );
     const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-r2/i18n/normalization-01.rq", "data-r2/i18n/normalization-01-results.ttl", 0, 0);
+    const URI** requires = NULL; /* SPARQLfedParser sends 0x301 to stdout; TurtleSParser sends two. */
+    DAWG_TEST("data-r2/i18n/normalization-01.rq", "data-r2/i18n/normalization-01-results.ttl", 0, 0); std::cout << "<-- uglies" << std::endl;
 }
 BOOST_AUTO_TEST_CASE( i18n__normalization_2 ) {
     /* name: normalization-02
@@ -798,6 +805,7 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_06 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/open-world/open-eq-06.rq", "data-r2/open-world/open-eq-06-result.srx", 0, 0);
 }
+#ifdef TEST_DAWG_EXTENSIONS
 BOOST_AUTO_TEST_CASE( open_world__open_eq_07 ) {
     /* name: open-eq-07
      * Test of '=' 
@@ -819,6 +827,7 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_08 ) {
                              F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#KnownTypesDefault2Neq")};
     DAWG_TEST("data-r2/open-world/open-eq-08.rq", "data-r2/open-world/open-eq-08-result.srx", 0, 3);
 }
+#endif /* TEST_DAWG_EXTENSIONS */
 BOOST_AUTO_TEST_CASE( open_world__open_eq_09 ) {
     /* name: open-eq-09
      * Test of '='
@@ -828,6 +837,7 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_09 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/open-world/open-eq-09.rq", "data-r2/open-world/open-eq-09-result.srx", 0, 0);
 }
+#ifdef TEST_DAWG_EXTENSIONS
 BOOST_AUTO_TEST_CASE( open_world__open_eq_10 ) {
     /* name: open-eq-10
      * Test of '!='
@@ -875,6 +885,7 @@ BOOST_AUTO_TEST_CASE( open_world__date_3 ) {
     const URI* requires[] = {F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#XsdDateOperations")};
     DAWG_TEST("data-r2/open-world/date-3.rq", "data-r2/open-world/date-3-result.srx", 0, 1);
 }
+#endif /* TEST_DAWG_EXTENSIONS */
 BOOST_AUTO_TEST_CASE( open_world__date_4 ) {
     /* name: date-4
      * xsd:date ORDER BY
