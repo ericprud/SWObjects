@@ -18,6 +18,7 @@ namespace w3c_sw {
 
     struct SWObjectDuplicator : public Expressor {
 	POSFactory* posFactory; /* Can be used to create SWObjects in a different atom space. */
+	POS::String2BNode nodeMap;
 
 	union {
 	    struct { const POS* pos; const URI* uri; const Variable* variable; const RDFLiteral* rdfLiteral; const BooleanRDFLiteral* booleanRDFLiteral; const NumericRDFLiteral* numericRDFLiteral; } posz;
@@ -48,7 +49,7 @@ namespace w3c_sw {
 	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(lexicalValue.c_str()) : self;
 	}
 	virtual void bnode (const BNode* const self, std::string lexicalValue) {
-	    last.posz.pos = posFactory ? posFactory->getBNode(lexicalValue.c_str()) : self;
+	    last.posz.pos = posFactory ? posFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
 	}
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
 	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;

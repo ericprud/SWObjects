@@ -33,7 +33,8 @@ protected:
     POSFactory * const posFactory;
     namespacemap_type	namespaces;
     const URI*		base;
-    bool ignorePrefixFlag;
+    bool		ignorePrefixFlag;
+    POS::String2BNode	nodeMap;
 
 public:
     /// construct a new parser driver context
@@ -44,6 +45,7 @@ public:
     void clear () {
 	namespaces.clear();
 	base = NULL;
+	nodeMap.clear();
     }
 
     void clear (std::string baseURI) {
@@ -123,7 +125,7 @@ public:
     const URI* getURI (std::string name) { return posFactory->getURI(name); }
     const URI* getAbsoluteURI(std::string name);
     const BNode* createBNode () { return posFactory->createBNode(); }
-    const BNode* getBNode (std::string name) { return posFactory->getBNode(name); }
+    const BNode* getBNode (std::string name) { return posFactory->getBNode(name, nodeMap); }
     const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
 	return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }

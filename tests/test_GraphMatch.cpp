@@ -38,9 +38,9 @@ struct R {
     R (B bindings[], int count) : bindings(bindings), count(count) {  }
 };
 #define row(X) R(X, sizeof(X)/sizeof(X[0]))
-#define RS(X) makeResultSet(X, sizeof(X)/sizeof(X[0]))
+#define RS(X, M) makeResultSet(X, sizeof(X)/sizeof(X[0]), M)
 
-ResultSet makeResultSet (R rows[], int count) {
+ResultSet makeResultSet (R rows[], int count, POS::String2BNode& bnodeMap) {
     ResultSet rs(&f);
     rs.erase(rs.begin());
     for (int i = 0; i < count; ++i) {
@@ -48,7 +48,8 @@ ResultSet makeResultSet (R rows[], int count) {
 	rs.insert(rs.end(), r);
 	B* bindings = rows[i].bindings;
 	for (int j = 0; j < rows[i].count; ++j)
-	    rs.set(r, f.getPOS(bindings[j].bound), f.getPOS(bindings[j].to), false);
+	    rs.set(r, f.getPOS(bindings[j].bound, bnodeMap), 
+		   f.getPOS(bindings[j].to, bnodeMap), false);
     }
     return rs;
 }
@@ -59,27 +60,28 @@ ResultSet makeResultSet (R rows[], int count) {
 
 BOOST_AUTO_TEST_CASE( bgp ) {
     DefaultGraphPattern data, pattern;
-    data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
+    POS::String2BNode bnodeMap;
+    data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
 
     /* Verify NTriples input, which will be used in remaining tests. */ {
 	DefaultGraphPattern d2;
-	d2.addTriplePattern(f.getTriple("<n1>", "<p1>", "<n2>"));
+	d2.addTriplePattern(f.getTriple("<n1>", "<p1>", "<n2>", bnodeMap));
 	BOOST_REQUIRE(data.size() == 1);
 	BOOST_REQUIRE(data == d2);
     }
 
-    pattern.addTriplePattern(f.getTriple("?n1", "<p1>", "_:n2"));
+    pattern.addTriplePattern(f.getTriple("?n1", "<p1>", "_:n2", bnodeMap));
 
     /* 1 datum, 1 pattern */ {
 	B _bz1[] = {B("?n1", "<n1>"), B("_:n2", "<n2>")}; R r1 = row(_bz1);
 	R rows[] = { r1 };
-	ResultSet ref = RS(rows);
+	ResultSet ref = RS(rows, bnodeMap);
 
 	ResultSet expected(&f, 
 			   "?n1  _:n2\n"
-			   "<n1> <n2>", false);
+			   "<n1> <n2>", false, bnodeMap);
 
-	BOOST_CHECK_EQUAL(RS(rows), expected);
+	BOOST_CHECK_EQUAL(RS(rows, bnodeMap), expected);
 
 	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
@@ -87,14 +89,14 @@ BOOST_AUTO_TEST_CASE( bgp ) {
     }
 
     /* Redundant triples don't change BGP size. */ {
-	data.addTriplePattern(f.getTriple("<n1> <p1> <n2> ."));
+	data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
 	BOOST_CHECK_EQUAL(data.size(), 1);
     }
 
     /* parseTriples */ {
 	f.parseTriples(&data, 
 		       "<n1> <p1> \"l1\" ."
-		       "<n2> <p1> <n3> .");
+		       "<n2> <p1> <n3> .", bnodeMap);
 	BOOST_CHECK_EQUAL(data.size(), 3);
 
 	ResultSet r(&f);
@@ -104,10 +106,10 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 				       "<n1> <n2>\n"
 				       "<n1> \"l1\"\n"
 				       "<n2> <n3>",
-				       false));
+				       false, bnodeMap));
     }
 
-    pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 ."));
+    pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 .", bnodeMap));
 
     {
 	ResultSet r(&f);
@@ -115,10 +117,10 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>",
-				       false));
+				       false, bnodeMap));
     }
 
-    data.addTriplePattern(f.getTriple("<n2> <p1> <n4> ."));
+    data.addTriplePattern(f.getTriple("<n2> <p1> <n4> .", bnodeMap));
 
     /* <n1> <p1> <n2> . <n2> <p1> <n3>,<n4> . */ {
 	ResultSet r(&f);
@@ -127,7 +129,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>\n"
 				       "<n1> <n2> <n4>",
-				       false));
+				       false, bnodeMap));
     }
 
     /* Test a subset of BSBM q1. */ {
@@ -135,18 +137,18 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	f.parseTriples(&d, 
 		       "?product     <label>   ?label ."
  		       "?product     <feature> <feature1> ."
- 		       "?product     <feature> \"feature2\" .");
+ 		       "?product     <feature> \"feature2\" .", bnodeMap);
 	DefaultGraphPattern p;
 	f.parseTriples(&p, 
 		       "?ruleProduct <label>   ?ruleLabel ."
-		       "?ruleProduct <feature> ?ruleFeature .");
+		       "?ruleProduct <feature> ?ruleFeature .", bnodeMap);
 	ResultSet tested(&f);
 	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
 			   "?product     ?label     <feature1> \n"
 			   "?product     ?label     \"feature2\"",
-			   false);
+			   false, bnodeMap);
 	BOOST_CHECK_EQUAL(tested, expected);
     }
 

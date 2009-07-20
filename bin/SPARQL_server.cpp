@@ -625,7 +625,7 @@ protected:
 	    ret << "  <results>\n";
 
 	    /* dump data in <td/>s */
-	    POS::BNodeMap nodeMap;
+	    POS::BNode2string nodeMap;
 	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		ret << "    <result>\n";
 		for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {

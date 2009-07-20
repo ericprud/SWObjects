@@ -254,10 +254,13 @@ public:
     bool bindVariable (const POS* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
-    struct BNodeMap : public std::map<const BNode*, std::string> {
+    struct BNode2string : public std::map<const BNode*, std::string> {
 	std::string get(const BNode* bnode);
     };
-    virtual std::string toXMLResults(BNodeMap*) const = 0;
+    struct String2BNode : public std::map<std::string, const BNode*> {
+	const BNode* get(std::string bnode);
+    };
+    virtual std::string toXMLResults(BNode2string*) const = 0;
     virtual std::string toString() const = 0;
     std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
 	const POS* subd = evalPOS(row, evaluator); /* re-uses atoms -- doesn't create them */
@@ -277,7 +280,7 @@ public:
     ~URI () { }
     virtual const char * getToken () { return "-POS-"; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toXMLResults (BNodeMap*) const { return std::string("<uri>") + terminal + "</uri>";  }
+    virtual std::string toXMLResults (BNode2string*) const { return std::string("<uri>") + terminal + "</uri>";  }
     virtual std::string toString () const { return std::string("<") + terminal + ">"; }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
@@ -296,7 +299,7 @@ class Variable : public Bindable {
 private:
     Variable (std::string str) : Bindable(str) {  }
 public:
-    virtual std::string toXMLResults (POS::BNodeMap*) const {
+    virtual std::string toXMLResults (POS::BNode2string*) const {
 	return std::string("<variable>") + terminal + "</variable> <!-- should not appear in XML Results -->";
     }
     virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
@@ -319,7 +322,7 @@ private:
     BNode (std::string str) : Bindable(str) {  }
     BNode () : Bindable("b", true) {  }
 public:
-    virtual std::string toXMLResults (POS::BNodeMap* map) const {
+    virtual std::string toXMLResults (POS::BNode2string* map) const {
 	return std::string("<bnode>") + map->get(this) + "</bnode>";
     }
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
@@ -328,8 +331,8 @@ public:
     virtual const POS* evalPOS(const Result* r, BNodeEvaluator* evaluator) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
-inline std::string POS::BNodeMap::get (const BNode* bnode) {
-    BNodeMap::const_iterator it = find(bnode);
+inline std::string POS::BNode2string::get (const BNode* bnode) {
+    BNode2string::const_iterator it = find(bnode);
     if (it == end()) {
 	std::stringstream s;
 	s << size();
@@ -356,7 +359,7 @@ protected:
 public:
     const URI* getDatatype () const { return datatype; }
     const LANGTAG* getLangtag () const { return m_LANGTAG; }
-    virtual std::string toXMLResults (POS::BNodeMap*) const {
+    virtual std::string toXMLResults (POS::BNode2string*) const {
 	std::stringstream s;
 	s << "<literal";
 	if (datatype) 
@@ -497,7 +500,7 @@ private:
     ~NULLpos () {  }
 public:
     virtual const char * getToken () { return "-NULL-"; }
-    virtual std::string toXMLResults (POS::BNodeMap*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
+    virtual std::string toXMLResults (POS::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
     virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
@@ -555,11 +558,15 @@ public:
 
 class DefaultGraphPattern;
 class POSFactory {
+public:
+//     typedef std::map<const BNode*, std::string> BNode2string;
+//     typedef std::map<std::string, const BNode*> String2BNode;
+protected:
+    typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
-    typedef std::map<std::string, const BNode*> BNodeMap;
     typedef std::map<std::string, const URI*> URIMap;
     typedef std::map<std::string, const RDFLiteral*> RDFLiteralMap;
-    typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // i don't know what the key should be. string for now...
+    typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
@@ -568,7 +575,7 @@ class POSFactory {
 
 protected:
     VariableMap		variables;
-    BNodeMap		bnodes;
+    BNodeSet		bnodes;
     URIMap		uris;
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
@@ -595,9 +602,9 @@ public:
     ~POSFactory();
     const Variable* getVariable(std::string name);
     const BNode* createBNode();
-    const BNode* getBNode(std::string name);
+    const BNode* getBNode(std::string name, POS::String2BNode& nodeMap);
     const URI* getURI(std::string name);
-    const POS* getPOS(std::string posStr);
+    const POS* getPOS(std::string posStr, POS::String2BNode& nodeMap);
     const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
 
     const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
@@ -615,11 +622,13 @@ public:
 	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
     }
     const TriplePattern* getTriple(const POS* s, const POS* p, const POS* o, bool weaklyBound = false);
-    const TriplePattern* getTriple (std::string s, std::string p, std::string o) {
-	return getTriple(getPOS(s), getPOS(p), getPOS(o), false);
+    const TriplePattern* getTriple (std::string s, std::string p, std::string o, POS::String2BNode& nodeMap) {
+	return getTriple(getPOS(s, nodeMap), 
+			 getPOS(p, nodeMap), 
+			 getPOS(o, nodeMap), false);
     }
 #if REGEX_LIB == SWOb_BOOST
-    const TriplePattern* getTriple (std::string spo) {
+    const TriplePattern* getTriple (std::string spo, POS::String2BNode& nodeMap) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
@@ -628,12 +637,12 @@ public:
 	if (!regex_search(spo, what, expression, flags))
 	    return NULL;
 	std::string s(what[1].first, what[1].second);
-	return getTriple(getPOS(std::string(what[1].first, what[1].second)), 
-			 getPOS(std::string(what[2].first, what[2].second)), 
-			 getPOS(std::string(what[3].first, what[3].second)), false);
+	return getTriple(getPOS(std::string(what[1].first, what[1].second), nodeMap), 
+			 getPOS(std::string(what[2].first, what[2].second), nodeMap), 
+			 getPOS(std::string(what[3].first, what[3].second), nodeMap), false);
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
-    void parseTriples (BasicGraphPattern* g, std::string spo);
+    void parseTriples (BasicGraphPattern* g, std::string spo, POS::String2BNode& nodeMap);
 
     /* EBV (Better place for this?) */
     const POS* ebv(const POS* pos);

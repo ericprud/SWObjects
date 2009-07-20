@@ -414,9 +414,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete iURIs->second;
 	uris.clear();
 
-	std::map<std::string, const BNode*>::iterator iBNodes;
-	for (iBNodes = bnodes.begin(); iBNodes != bnodes.end(); iBNodes++)
-	    delete iBNodes->second;
+	std::set<const BNode*>::iterator iBNodes;
+	for (iBNodes = bnodes.begin(); iBNodes != bnodes.end(); ++iBNodes)
+	    delete *iBNodes;
 	bnodes.clear();
 
 	std::map<std::string, const RDFLiteral*>::iterator iRDFLiterals;
@@ -440,16 +440,17 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	BNode* ret = new BNode();
 	std::stringstream name;
 	name << ret; // addr
-	bnodes[name.str()] = ret;
+	bnodes.insert(ret);
 	return ret;
     }
 
-    const BNode* POSFactory::getBNode (std::string name) {
+    const BNode* POSFactory::getBNode (std::string name, POS::String2BNode& nodeMap) {
 	std::string key(name);
-	BNodeMap::const_iterator vi = bnodes.find(key);
-	if (vi == bnodes.end()) {
+	POS::String2BNode::const_iterator vi = nodeMap.find(key);
+	if (vi == nodeMap.end()) {
 	    BNode* ret = new BNode(name);
-	    bnodes[key] = ret;
+	    nodeMap[key] = ret;
+	    bnodes.insert(ret);
 	    return ret;
 	} else
 	    return vi->second;
@@ -466,11 +467,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    const POS* POSFactory::getPOS (std::string posStr) {
+    const POS* POSFactory::getPOS (std::string posStr, POS::String2BNode& nodeMap) {
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
-	    return getBNode(posStr.substr(2, posStr.size()-2));
+	    return getBNode(posStr.substr(2, posStr.size()-2), nodeMap);
 	if (posStr[0] == '"' && posStr[posStr.size()-1] == '"')
 	    return getRDFLiteral(posStr.substr(1, posStr.size()-2), NULL, NULL);
 	if (posStr[0] == '?')
@@ -647,7 +648,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
 #if REGEX_LIB == SWOb_BOOST
-    void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo) {
+    void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo, POS::String2BNode& nodeMap) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
@@ -657,9 +658,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	boost::match_results<std::string::const_iterator> what;
 	boost::match_flag_type flags = boost::match_default;
 	while (regex_search(start, end, what, expression, flags)) {
-	    g->addTriplePattern(getTriple(getPOS(std::string(what[1].first, what[1].second)), 
-					  getPOS(std::string(what[2].first, what[2].second)), 
-					  getPOS(std::string(what[3].first, what[3].second)), false));
+	    g->addTriplePattern(getTriple(getPOS(std::string(what[1].first, what[1].second), nodeMap), 
+					  getPOS(std::string(what[2].first, what[2].second), nodeMap), 
+					  getPOS(std::string(what[3].first, what[3].second), nodeMap), false));
 	    start = what[0].second; 
 	    // update flags: 
 	    flags |= boost::match_prev_avail; 

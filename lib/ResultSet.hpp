@@ -140,7 +140,7 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered) : 
+	ResultSet (POSFactory* posFactory, std::string str, bool ordered, POS::String2BNode& nodeMap) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
@@ -162,7 +162,7 @@ namespace w3c_sw {
 		    curRow = new Result(this);
 		    insert(this->end(), curRow);
 		} else {
-		    const POS* pos = posFactory->getPOS(matched);
+		    const POS* pos = posFactory->getPOS(matched, nodeMap);
 		    if (firstRow)
 			headers.push_back(pos);
 		    else
@@ -181,6 +181,7 @@ namespace w3c_sw {
 	protected:
 	    ResultSet* rs;
 	    POSFactory* posFactory;
+	    POS::String2BNode	nodeMap;
 
 	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
 			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, 
@@ -296,7 +297,7 @@ namespace w3c_sw {
 		    chars = "";
 		    break;
 		case BNODE:
-		    result->set(variable, posFactory->getBNode(chars), false);
+		    result->set(variable, posFactory->getBNode(chars, nodeMap), false);
 		    chars = "";
 		    break;
 		case LITERAL:
