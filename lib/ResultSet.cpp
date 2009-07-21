@@ -224,7 +224,7 @@ namespace w3c_sw {
 		    ++lead;
 	    }
 
-	if (offset > 0) {
+	if (offset != OFFSET_None) {
 	    int at = 0;
 	    for (ResultSetIterator it = begin() ; it != end() && at < offset; ++at) {
 		delete *it;
@@ -232,7 +232,7 @@ namespace w3c_sw {
 	    }
 	}
 
-	if (limit > 0) {
+	if (limit != LIMIT_None) {
 	    int at = 0;
 	    ResultSetIterator it = begin();
 	    for ( ; it != end() && at < limit; ++at)
