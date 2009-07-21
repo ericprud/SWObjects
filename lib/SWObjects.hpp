@@ -1831,11 +1831,20 @@ public:
     virtual const char* getInfixNotation () { return "&&"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	SafeEvaluationError lastError("no error");
+	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
-	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
-	    if (ret != posFactory->getTrue())
-		return ret;
+	    try {
+		const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
+		if (ret != posFactory->getTrue())
+		    return ret;
+	    } catch (SafeEvaluationError& e) {
+		lastError = e;
+		++errorCount;
+	    }
 	}
+	if (errorCount > 0)
+	    throw lastError;
 	return posFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
@@ -1850,11 +1859,20 @@ public:
     virtual const char* getInfixNotation () { return "||"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	SafeEvaluationError lastError("no error");
+	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
-	    const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
-	    if (ret != posFactory->getFalse())
-		return ret;
+	    try {
+		const POS* ret = posFactory->ebv((*it)->eval(r, posFactory, evaluator));
+		if (ret != posFactory->getFalse())
+		    return ret;
+	    } catch (SafeEvaluationError& e) {
+		lastError = e;
+		++errorCount;
+	    }
 	}
+	if (errorCount > 0)
+	    throw lastError;
 	return posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
