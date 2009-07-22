@@ -204,8 +204,8 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
 	BOOST_CHECK_EQUAL(measured, expected);				       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
-    } catch (std::runtime_error& s) {					       \
-	BOOST_ERROR ( std::string(s.what()).append(" not implemented") );      \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
     }
 
 #define GRAPH_TEST(DATA_FILE, QUERY_FILE, RESULT_FILE)			       \
@@ -215,7 +215,7 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
 	BOOST_CHECK_EQUAL(measured, expected);				       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
-    } catch (std::runtime_error& s) {					       \
-	BOOST_ERROR ( std::string(s.what()).append(" not implemented") );      \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
     }
 
