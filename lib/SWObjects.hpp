@@ -480,7 +480,7 @@ class BooleanRDFLiteral : public CanonicalRDFLiteral {
     friend class POSFactory;
 protected:
     bool m_value;
-    BooleanRDFLiteral (std::string p_String, bool p_value) : CanonicalRDFLiteral(p_String, NULL), m_value(p_value) {  }
+    BooleanRDFLiteral (std::string p_String, const URI* p_URI, bool p_value) : CanonicalRDFLiteral(p_String, p_URI), m_value(p_value) {  }
 public:
     bool getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
@@ -605,7 +605,7 @@ public:
     const BNode* getBNode(std::string name, POS::String2BNode& nodeMap);
     const URI* getURI(std::string name);
     const POS* getPOS(std::string posStr, POS::String2BNode& nodeMap);
-    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL);
+    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL, bool validate = false);
 
     const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
@@ -1632,10 +1632,11 @@ public:
 	std::string func = m_IRIref->getLexicalValue();
 
 	/* casts */
-	if (func == "http://www.w3.org/2001/XMLSchema#float"  || 
-	    func == "http://www.w3.org/2001/XMLSchema#double" || 
-	    func == "http://www.w3.org/2001/XMLSchema#dec"    || 
-	    func == "http://www.w3.org/2001/XMLSchema#integer"  ) {
+	if (func == "http://www.w3.org/2001/XMLSchema#float"    || 
+	    func == "http://www.w3.org/2001/XMLSchema#double"   || 
+	    func == "http://www.w3.org/2001/XMLSchema#decimal"  || 
+	    func == "http://www.w3.org/2001/XMLSchema#integer"  || 
+	    func == "http://www.w3.org/2001/XMLSchema#boolean"    ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
@@ -1644,9 +1645,21 @@ public:
 		    dtl == "http://www.w3.org/2001/XMLSchema#string"  || 
 		    dtl == "http://www.w3.org/2001/XMLSchema#float"   || 
 		    dtl == "http://www.w3.org/2001/XMLSchema#double"  || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#decimal" || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#integer"   )
-		    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref);
+		    dtl == "http://www.w3.org/2001/XMLSchema#decimal" || // check
+		    dtl == "http://www.w3.org/2001/XMLSchema#integer" || // check
+		    dtl == "http://www.w3.org/2001/XMLSchema#boolean"   )// adjust
+		    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
+	    }
+	}
+
+	if (func == "http://www.w3.org/2001/XMLSchema#dateTime"   ) {
+	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
+	    if (s != NULL) {
+		const URI* dt = s->getDatatype();
+		std::string dtl = dt ? dt->getLexicalValue() : ":noDT";
+		if (dt == NULL || 
+		    dtl == "http://www.w3.org/2001/XMLSchema#dateTime"  )// adjust
+		    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
 	}
 

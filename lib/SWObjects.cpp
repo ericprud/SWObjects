@@ -479,7 +479,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
     }
 
-    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
+    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool validate) {
 	std::istringstream is(p_String);
 
 	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
@@ -519,6 +519,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
+	    if (validate) {
+		if (p_String != "true" && p_String != "false" && 
+		    p_String != "1" && p_String != "0")
+		    throw TypeError(p_String, "boolean constructor");
+	    }
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
@@ -605,7 +610,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, p_value);
+	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, getURI("http://www.w3.org/2001/XMLSchema#boolean"), p_value);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
