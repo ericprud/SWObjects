@@ -1635,7 +1635,7 @@ public:
 	if (func == "http://www.w3.org/2001/XMLSchema#float"  || 
 	    func == "http://www.w3.org/2001/XMLSchema#double" || 
 	    func == "http://www.w3.org/2001/XMLSchema#dec"    || 
-	    func == "http://www.w3.org/2001/XMLSchema#int"      ) {
+	    func == "http://www.w3.org/2001/XMLSchema#integer"  ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
