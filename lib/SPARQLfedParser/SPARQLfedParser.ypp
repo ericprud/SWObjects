@@ -1787,7 +1787,7 @@ BuiltInCall:
 RegexExpression:
     // 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
     IT_REGEX GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#funcex-regex"), $3, $5, $6));
+	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-regex"), $3, $5, $6));
     }
 ;
 
