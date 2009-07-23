@@ -1839,9 +1839,21 @@ public:
 #if REGEX_LIB == SWOb_DISABLED
 	    throw std::string("no regular expression library was linked in");
 #else
-	    const boost::regex pattern(secondLit->getLexicalValue());
 	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default; // @@@ parser thirdLit
+	    boost::match_flag_type flags = boost::match_default;
+	    unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
+	    if (thirdLit != NULL) {
+		std::string smix = thirdLit->getLexicalValue();
+		if (smix.find_first_of('s') != std::string::npos)
+		    l_flags &= ~boost::regex::no_mod_s;
+		if (smix.find_first_of('m') != std::string::npos)
+		    l_flags &= ~boost::regex::no_mod_m;
+		if (smix.find_first_of('i') != std::string::npos)
+		    l_flags |= boost::regex::icase;
+		if (smix.find_first_of('x') != std::string::npos)
+		    l_flags |= boost::regex::mod_x;
+	    }
+	    const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
 	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? posFactory->getTrue() : posFactory->getFalse();
 #endif
 	}
