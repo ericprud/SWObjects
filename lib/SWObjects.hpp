@@ -826,10 +826,18 @@ public:
 	    throw TypeError(s, "xsd:datetime (garbage at end)");
     }
     int cmp (const POS* lpos, const POS* rpos) {
+	/* Compare URIs lexically */
+	const URI* luri = dynamic_cast<const URI*> (lpos);
+	const URI* ruri = dynamic_cast<const URI*> (rpos);
+	if (luri != NULL && ruri != NULL)
+	    return luri->getLexicalValue().compare(ruri->getLexicalValue());
+
+	/* Compare literals. */
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (lpos);
 	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (rpos);
 	if (l == NULL || r == NULL)
 	    throw TypeError(lpos ? lpos->toString() : "NULL", rpos ? rpos->toString() : "NULL");
+
 	const URI* ldt = l->getDatatype();
 	const URI* rdt = r->getDatatype();
 	if (dynamic_cast<const NumericRDFLiteral*>(l) && 
