@@ -1792,7 +1792,8 @@ public:
 	}
 
 	if (m_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype") && 
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL && 
+	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
 	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
 	    return dt ? dt : posFactory->getURI("http://www.w3.org/2001/XMLSchema#string");
 	}
