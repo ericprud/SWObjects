@@ -723,7 +723,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (d != NULL)
 	    return d->getValue() == 0.0 ? getFalse() : getTrue();
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(pos);
-	if (l != NULL && l->getDatatype() == getURI("http://www.w3.org/2001/XMLSchema#string"))
+	const URI* dt = l == NULL ? NULL : l->getDatatype();
+	if (l != NULL && 
+	    (dt == NULL || dt == getURI("http://www.w3.org/2001/XMLSchema#string")))
 	    return std::string(l->getLexicalValue()).empty() ? getFalse() : getTrue();
 	throw TypeError("beats me", "EBV");
     }
