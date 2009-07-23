@@ -479,9 +479,45 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
     }
 
-    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool validate) {
+     void POSFactory::validate (std::string value, std::string datatype) {
+#if REGEX_LIB == SWOb_BOOST
+	 ValidatorSet::const_iterator it = validators.find(datatype);
+	 if (it == validators.end())
+	     return;
+	 const Validator& v = it->second;
+	 boost::match_results<std::string::const_iterator> what;
+	 if (!regex_search(value, what, v.pattern, boost::match_default)) {
+	     if (debugStream && *debugStream)
+		 **debugStream << "pattern \"" << v.pattern << "\" failed to match \"" << value << "\"." << std::endl;
+	     throw TypeError(value, datatype);
+	 }
+	 if (v.intmin != RANGE_unlimited || v.intmax != RANGE_unlimited) {
+	     std::istringstream is(value);
+	     long i;
+	     is >> i;
+	     if ((v.intmin != RANGE_unlimited && i < -v.intmin) || 
+		 (v.intmax != RANGE_unlimited && i > -v.intmax))
+		 throw TypeError(value, datatype);
+	 }
+	 if (v.floatmin != RANGE_unlimited || v.floatmax != RANGE_unlimited) {
+	     std::istringstream is(value);
+	     double d;
+	     is >> d;
+	     if ((v.floatmin != RANGE_unlimited && d < -v.floatmin) || 
+		 (v.floatmax != RANGE_unlimited && d > -v.floatmax))
+		 throw TypeError(value, datatype);
+	 }
+#else /* REGEX_LIB == SWOb_BOOST */
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "unable to validate that \"" << value << "\" is a " << datatype << " without boost regular expression" << std::endl;
+#endif /* REGEX_LIB != SWOb_BOOST */
+    }
+
+    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool needsValidation) {
 	std::istringstream is(p_String);
 
+	if (p_URI != NULL && needsValidation == true)
+	    validate(p_String, p_URI->getLexicalValue());
 	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
 	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger") || 
 	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#negativeInteger") || 
@@ -519,11 +555,6 @@ void NumberExpression::express (Expressor* p_expressor) const {
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
-	    if (validate) {
-		if (p_String != "true" && p_String != "false" && 
-		    p_String != "1" && p_String != "0")
-		    throw TypeError(p_String, "boolean constructor");
-	    }
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;

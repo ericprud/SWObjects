@@ -25,7 +25,6 @@
 #endif /* !__GNUC__ */
 #endif /* !_MSC_VER */
 
-
 #include <ctype.h>
 #include <map>
 #include <set>
@@ -585,7 +584,36 @@ protected:
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
     std::map<const std::string, int> typeOrder;
 
+#if REGEX_LIB == SWOb_BOOST
+    enum {RANGE_unlimited = -2} Range;
+    struct Validator {
+	boost::regex pattern;
+	long long intmin, intmax; // could be bignums from http://gmplib.org/
+	long double floatmin, floatmax;
+	Validator(const char* pattern) : 
+	    pattern(pattern), 
+	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
+	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
+	{  }
+	Validator(const char* pattern, long long min, long long max) : 
+	    pattern(pattern), 
+	    intmin(min), intmax(max), 
+	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
+	{  }
+	Validator(const char* pattern, long double min, long double max) : 
+	    pattern(pattern), 
+	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
+	    floatmin(min), floatmax(max)
+	{  }
+    };
+    typedef std::map<std::string, Validator> ValidatorSet;
+    typedef std::pair<std::string, Validator> ValidatorElt;
+    ValidatorSet validators;
+    void validate(std::string value, std::string datatype);
+#endif /* REGEX_LIB == SWOb_BOOST */
+
 public:
+    std::ostream** debugStream;
     POSFactory () :
 	litFalse(getBooleanRDFLiteral("false", false)), 
 	litTrue(getBooleanRDFLiteral("true", true)) {
@@ -598,6 +626,63 @@ public:
 	typeOrder[typeid(FloatRDFLiteral).name()] = 7;
 	typeOrder[typeid(DoubleRDFLiteral).name()] = 8;
 	typeOrder[typeid(BooleanRDFLiteral).name()] = 9;
+
+#if REGEX_LIB == SWOb_BOOST
+	using std::numeric_limits;
+  #define _VAL1(T, P) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P)))
+  #define _VALL(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long long)L, (long long)U)))
+  #define _VALD(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long double)L, (long double)U)))
+  #define _MIND RANGE_unlimited /* -numeric_limits<long double>::max() */
+  #define _MAXD RANGE_unlimited /* numeric_limits<long double>::max() */
+  #define _MINL RANGE_unlimited /* numeric_limits<long long>::min() */
+  #define _MAXL RANGE_unlimited /* numeric_limits<long long>::max() */
+
+	const char* longPattern =    "^[-+]?[0-9]+$";
+	const char* decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
+	const char* floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
+	_VAL1("integer", 	    longPattern);
+	_VAL1("decimal", 	    decimalPattern);
+	_VALD("float", 		    floatPattern, _MIND, _MAXD); // -149E16777216, 104E16777216);
+	_VALL("double", 	    floatPattern, _MIND, _MAXD); // -1075E2251799813685248, 970E2251799813685248);
+	_VAL1("string", 	    ".*");
+	_VAL1("boolean", 	    "^(true|false|1|0)$");
+	_VAL1("dateTime", "^("
+	      "([\\-+]?)"	// optional sign @@ perhaps not supported by time(2)
+	      "(\\d{4,})"	// 2004
+	      "-(\\d{2})"	//     -12
+	      "-(\\d{2})"	//        -31
+	      "T(\\d{2})"	//           T19
+	      ":(\\d{2})"	//              :01
+	      "(?::(\\d{2}))?"	//                 :00
+	      "(?:Z|"		//                    Z
+	       "(?:([+\\-])"	//                    -
+	        "(\\d{2})"	//                     05
+	        ":(\\d{2})"	//                       :00
+	        "))" ")$");		// 2004-12-31T19:01:00-05:00
+
+	    //derived numerics
+
+	_VAL1("nonPositiveInteger", "^\\+?0+|-[0-9]+$");
+	_VALL("negativeInteger",    "^-[0-9]+$", RANGE_unlimited, -1);
+	_VALL("long", 		    longPattern, _MINL, _MAXL); // -9223372036854775808, 9223372036854775807);
+	_VALL("int", 		    longPattern, _MINL, _MAXL); // -2147483648, 2147483647);
+	_VALL("short", 		    longPattern, -32768, 32767);
+	_VALL("byte",		    longPattern, -128, 127);
+	_VALL("nonNegativeInteger", longPattern, 0, RANGE_unlimited);
+	_VALL("unsignedLong", 	    longPattern, 0, _MAXL); // 18446744073709551615);
+	_VALL("unsignedInt", 	    longPattern, 0, _MAXL); // 4294967295);
+	_VALL("unsignedShort", 	    longPattern, 0, 65535);
+	_VALL("unsignedByte", 	    longPattern, 0, 255);
+	_VALL("positiveInteger",    longPattern, 1, RANGE_unlimited);
+
+  #undef _VAL1
+  #undef _VALL
+  #undef _VALD
+  #undef _MINL
+  #undef _MAXL
+  #undef _MIND
+  #undef _MAXD
+#endif /* REGEX_LIB == SWOb_BOOST */
     }
     ~POSFactory();
     const Variable* getVariable(std::string name);
@@ -1661,6 +1746,10 @@ public:
 		    dtl == "http://www.w3.org/2001/XMLSchema#dateTime"  )// adjust
 		    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
+	}
+
+	if (func == "http://www.w3.org/2001/XMLSchema#string"   ) {
+	    return posFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	}
 
 	/* operators */
