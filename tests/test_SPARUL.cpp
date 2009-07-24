@@ -5,7 +5,6 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE SPARUL_tests
 #include "../tests/SPARQLTest.hpp"
 
