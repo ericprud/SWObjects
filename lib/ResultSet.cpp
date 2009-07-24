@@ -254,6 +254,9 @@ namespace w3c_sw {
 	const char* NULL_REP = "--";
 #if CONSOLE_ENCODING == SWOb_UTF8
 	const char* ORDERED = "O";
+
+	/* Fancy rounded box chars not supported in many fonts: 
+	const char* UL = "◜"; const char* UB = "─"; const char* US = "┬"; const char* UR = "◝"; */
 	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
 	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
 #if (INTRA_ROW_SEPARATORS)
