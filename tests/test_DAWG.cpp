@@ -1,20 +1,32 @@
-/* perform DAWG tests.
- * call from: ..
+/* test_DAWG: perform DAWG tests.
+ *
+ * invoke from: .. (up one directory)
+ *
  * files: <tests>/data-r2  -- from http://www.w3.org/2001/sw/DataAccess/tests/data-r2/
  *
  * compilations switches:
- *   usual ones from ../CONFIG
- *   TEST_DAWG_EXTENSIONS
+ *   TEST_DAWG_EXTENSIONS: invoke tests which require extensions.
+ *   from ../CONFIG:
+ *     XML_PARRSER: needed for RDF and ResultSet parsers.
+ *     CONSOLE_ENCODING: how to display tables.
+ *     REGEX: needed for certain SPARQL functionality
+ *
+ * debugging tips:
+ *   turn on e.g. matching debugging for a given test:
+ *     std::ostream* err = &std::cerr;
+ *     F.debugStream = &err;
+ *     DAWG_TEST(...)
+ *     F.debugStream = NULL;
+ *   echo filename(lineno):
+ *     MARK;
+ *     MARK << "about to foo the bar." << std::endl; // outputs your text.
+ *
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define MARK std::cout << __FILE__ "(" TOSTRING(__LINE__) "): warning MARK" << std::endl;
-
 #define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE DAWG_tests
-#include "../tests/SparqlQueryTestResultSet.hpp"
+#include "../tests/SPARQLTest.hpp"
 
 BOOST_AUTO_TEST_SUITE( triple_match )
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
@@ -805,7 +817,6 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_06 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/open-world/open-eq-06.rq", "data-r2/open-world/open-eq-06-result.srx", 0, 0);
 }
-#ifdef TEST_DAWG_EXTENSIONS
 BOOST_AUTO_TEST_CASE( open_world__open_eq_07 ) {
     /* name: open-eq-07
      * Test of '=' 
@@ -827,7 +838,6 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_08 ) {
                              F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#KnownTypesDefault2Neq")};
     DAWG_TEST("data-r2/open-world/open-eq-08.rq", "data-r2/open-world/open-eq-08-result.srx", 0, 3);
 }
-#endif /* TEST_DAWG_EXTENSIONS */
 BOOST_AUTO_TEST_CASE( open_world__open_eq_09 ) {
     /* name: open-eq-09
      * Test of '='
@@ -837,7 +847,6 @@ BOOST_AUTO_TEST_CASE( open_world__open_eq_09 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/open-world/open-eq-09.rq", "data-r2/open-world/open-eq-09-result.srx", 0, 0);
 }
-#ifdef TEST_DAWG_EXTENSIONS
 BOOST_AUTO_TEST_CASE( open_world__open_eq_10 ) {
     /* name: open-eq-10
      * Test of '!='
@@ -885,7 +894,6 @@ BOOST_AUTO_TEST_CASE( open_world__date_3 ) {
     const URI* requires[] = {F.getURI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#XsdDateOperations")};
     DAWG_TEST("data-r2/open-world/date-3.rq", "data-r2/open-world/date-3-result.srx", 0, 1);
 }
-#endif /* TEST_DAWG_EXTENSIONS */
 BOOST_AUTO_TEST_CASE( open_world__date_4 ) {
     /* name: date-4
      * xsd:date ORDER BY
@@ -2204,8 +2212,5 @@ BOOST_AUTO_TEST_CASE( reduced__reduced_2 ) {
 }
 BOOST_AUTO_TEST_SUITE_END(/* reduced */)
 
-BOOST_AUTO_TEST_CASE( test_fail ) {
-    BOOST_CHECK_EQUAL(1, 0);
-}
 // EOF
 

@@ -7,12 +7,7 @@
 
 #define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE SPARUL_tests
-#include "../tests/SparqlQueryTestResultSet.hpp"
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define MARK std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning MARK\n";
-
+#include "../tests/SPARQLTest.hpp"
 
 BOOST_AUTO_TEST_SUITE( insert )
 BOOST_AUTO_TEST_CASE( g_0_insert_g_1 ) {

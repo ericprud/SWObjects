@@ -1,9 +1,28 @@
-/* Common code for SPARQL query tests.
+/* SPARQLTest.hpp -- Common code for SPARQL query tests.
+ *
+ * The DAWG and SPARUL tests take input graphs, a query and a reference result
+ * set. The MeasuredRS populates its results by executing the query on the input
+ * graphs. The ReferenceRS aligns itself with the MeasuredRS to have the minimal
+ * differences with the MeasuredRS. The comparison is done with operator== per
+ * the boost::test paradigm.
  *
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
+/* Handy debugging from Curtis Krauskopf
+ * http://www.decompile.com/cpp/faq/file_and_line_error_string.htm
+ */
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define MARK std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning MARK\n";
+
+
+#define BOOST_TEST_DYN_LINK 1
 #include <boost/test/unit_test.hpp>
+
+/* included/unit_test.hpp produces an object that doesn't require linking to
+ * boost_unit_test_framework. It's prettier if you disable 4273 in MSVC.
+ */
 //#pragma warning( disable : 4273 )
 //#include <boost/test/included/unit_test.hpp>
 
@@ -42,13 +61,20 @@ TrigSDriver trigParser("", &F);
 RdfXmlParser GRdfXmlParser(&F, &P);
 
 
-struct SparqlQueryTestResultSet : public ResultSet {
+struct MeasuredRS : public ResultSet {
     RdfDB d;
     RdfDB constructed;
-    SparqlQueryTestResultSet (const char* defGraph, 
-			      const char* namedGraphs[], size_t namedCount, 
-			      const URI* requires[], size_t reqsCount, 
-			      const char* query) : ResultSet(&F) {
+
+    /* DAWG tests consist of:
+     *   default graph
+     *   a set of named graphs
+     *   a set of required features
+     *   a query to peform.
+     */
+    MeasuredRS (const char* defGraph, 
+		const char* namedGraphs[], size_t namedCount, 
+		const URI* requires[], size_t reqsCount, 
+		const char* query) : ResultSet(&F) {
  
 	std::string baseStr(query);
 	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
@@ -77,14 +103,18 @@ struct SparqlQueryTestResultSet : public ResultSet {
 	}
 
 	for (size_t i = 0; i < reqsCount; ++i)
-	    std::cerr << "ignoring " << requires[i]->toString() << std::endl;
+	    std::cerr << "assuming support for extension " << requires[i]->toString() << std::endl;
 
 	/* Exectute query. */
 	setRdfDB(&constructed);
 	sparqlParser.root->execute(&d, this);
     }
 
-    SparqlQueryTestResultSet (const char* input, const char* query)
+    /* SPARQUL tests consist of:
+     *   a trig (set of graphs) for input
+     *   a query to perform
+     */
+    MeasuredRS (const char* input, const char* query)
 	: ResultSet(&F) {
  
 	std::string baseStr(query);
@@ -113,7 +143,14 @@ struct SparqlQueryTestResultSet : public ResultSet {
     }
 };
 
-std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) {
+/* Measured result sets are generally printed if there's an error so
+ * the diagnostic information includes:
+ *   input data
+ *   query
+ *   the resulting result set.
+ */
+
+std::ostream& operator<< (std::ostream& os, MeasuredRS const& my) {
     os << "Database: " << my.d;
     os << "query: " << *sparqlParser.root;
     os << "result: ";
@@ -127,15 +164,18 @@ std::ostream& operator<< (std::ostream& os, SparqlQueryTestResultSet const& my) 
     return os;
 }
 
-/* ExpectedRS attempts to copy the column order from measured.
-   Provides only the interfaces needed for the DAWG tests.
+/* ReferenceRS represent the expected results of a query on some
+ * database. To simplify visual comparison, ReferenceRS emulates the
+ * column order from a measured result set. ReferenceRS encapsulates a
+ * ResultSet and provides only the interfaces needed for the DAWG
+ * tests.
  */
-struct ExpectedRS {
+struct ReferenceRS {
     ResultSet& measured;
     ResultSet* reference;
     RdfDB rdfDB;
 
-    ExpectedRS (ResultSet& measured, const char* resultFile, 
+    ReferenceRS (ResultSet& measured, const char* resultFile, 
 		POSFactory* posFactory, SWSAXparser* saxParser) : 
 	measured(measured) {
 	if (resultFile == NULL) {	/* empty result graph */
@@ -173,16 +213,22 @@ struct ExpectedRS {
 	if (measured.resultType == ResultSet::RESULT_Graphs)
 	    rdfDB.assureGraphs(measured.getRdfDB()->getGraphNames());
     }
-    ~ExpectedRS () { delete reference; }
+    ~ReferenceRS () { delete reference; }
 };
 
 
-bool operator== (ResultSet const& measured, ExpectedRS const& expected) {
+/* Compare a measured ResultSet to an encapsulated refrence ResultSet.
+ */
+bool operator== (ResultSet const& measured, ReferenceRS const& expected) {
     return measured == *expected.reference;
 }
 
+/* As with measured ResultSets, reference ResultSets are ordered when
+ * serialized if the query constructing the measured ResultSet did not
+ * specify an order.
+ */
 
-std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
+std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
     if (my.reference->isOrdered() == true)
 	return operator<<(os, *my.reference);
 
@@ -195,13 +241,25 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
 /* Macros for terse test syntax
  * Using macros means that error messages point you to the test invocation (a
  * great help in quicky diagnosing the failure).
+ *
+ * TEST_ENABLED allows you to turn on and off extension testing by defining
+ * TEST_DAWG_EXTENSIONS.
  */
+
+#ifdef TEST_DAWG_EXTENSIONS
+  #define TEST_ENABLED(X) true
+#else /* !TEST_DAWG_EXTENSIONS */
+  #define TEST_ENABLED(X) (X) == 0
+#endif /* !TEST_DAWG_EXTENSIONS */
+
 #define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
     try {								       \
-	SparqlQueryTestResultSet measured(defaultGraph, namedGraphs, 	       \
-					  NGS, requires, REQS, QUERY_FILE);    \
-	ExpectedRS expected(measured, RESULT_FILE, &F, &P);		       \
-	BOOST_CHECK_EQUAL(measured, expected);				       \
+	if (TEST_ENABLED(REQS)) {					       \
+	    MeasuredRS measured(defaultGraph, namedGraphs,		       \
+				NGS, requires, REQS, QUERY_FILE);	       \
+	    ReferenceRS expected(measured, RESULT_FILE, &F, &P);	       \
+	    BOOST_CHECK_EQUAL(measured, expected);			       \
+	}								       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
     } catch (std::exception& s) {					       \
@@ -210,8 +268,8 @@ std::ostream& operator<< (std::ostream& os, ExpectedRS const& my) {
 
 #define GRAPH_TEST(DATA_FILE, QUERY_FILE, RESULT_FILE)			       \
     try {								       \
-	SparqlQueryTestResultSet measured(DATA_FILE, QUERY_FILE);	       \
-	ExpectedRS expected(measured, RESULT_FILE, &F, &P);		       \
+	MeasuredRS measured(DATA_FILE, QUERY_FILE);			       \
+	ReferenceRS expected(measured, RESULT_FILE, &F, &P);		       \
 	BOOST_CHECK_EQUAL(measured, expected);				       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \

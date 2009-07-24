@@ -29,7 +29,7 @@ ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
 OPT=-fPIC
-DEFS:=-DYYTEXT_POINTER=1
+DEFS += -DYYTEXT_POINTER=1
 WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
