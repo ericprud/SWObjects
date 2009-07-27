@@ -569,8 +569,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	buf << '"' << p_String << '"';
 	if (p_URI)
 	    buf << "^^<" << p_URI->getLexicalValue() << ">";
-	if (p_LANGTAG)
-	    buf << "@" << p_LANGTAG->getLexicalValue();
+	if (p_LANGTAG) {
+	    std::string lang(p_LANGTAG->getLexicalValue());
+	    std::locale loc("C");
+	    for(std::string::iterator each= lang.begin(); each!= lang.end(); ++each)
+		*each= std::tolower(*each, loc);
+	    buf << "@" << lang;
+	}
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
