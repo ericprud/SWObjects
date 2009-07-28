@@ -710,6 +710,92 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
 
+    const POS* POSFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
+	const POS* v = arg->eval(func->res, this, func->evaluator);
+	const std::string lt = typeid(*v).name();
+	TypeOrder::const_iterator dtp = typeOrder.find(lt);
+	if (dtp == typeOrder.end())
+	    throw lt + " is not a known datatype.";
+	DT_Numeric dt = dtp->second;
+	switch (dt) {
+	case DT_Integer: {
+	    int i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getInt());
+	    std::stringstream s;
+	    s << i;
+	    v = getNumericRDFLiteral(s.str(), i);
+	     break;
+	 }
+	 case DT_Float:
+	     case DT_Decimal: {
+		 float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
+		 std::stringstream s;
+		 s << i;
+		 v = getNumericRDFLiteral(s.str(), i);
+		 break;
+	     }
+	     case DT_Double: {
+		 double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
+		 std::stringstream s;
+		 s << i;
+		 v = getNumericRDFLiteral(s.str(), i);
+		 break;
+	     }
+	     default:
+		 throw lt + " is not a numeric datatype: " + v->toString();
+	}
+	return v;
+    }
+    const POS* POSFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func) {
+	std::vector<const Expression*>::const_iterator it = args.begin();
+	const POS* l = (*it)->eval(func->res, this, func->evaluator);
+	const std::string lt = typeid(*l).name();
+	TypeOrder::const_iterator dtp = typeOrder.find(lt);
+	if (dtp == typeOrder.end())
+	    throw lt + " is not a known datatype.";
+	DT_Numeric dt = dtp->second;
+	++it;
+	while (it != args.end()) {
+	    const POS* r = (*it)->eval(func->res, this, func->evaluator);
+	    const std::string rt = typeid(*r).name();
+	    dtp = typeOrder.find(rt);
+	    if (dtp == typeOrder.end())
+		throw rt + " is not a known datatype.";
+	    if (dtp->second > dt)
+		dt = dtp->second;
+	    switch (dt) {
+	    case DT_Integer: {
+		int i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getInt(), 
+				   static_cast<const NumericRDFLiteral*>(r)->getInt());
+		std::stringstream s;
+		s << i;
+		l = getNumericRDFLiteral(s.str(), i);
+		break;
+	    }
+	    case DT_Float:
+	    case DT_Decimal: {
+		float i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getFloat(), 
+				     static_cast<const NumericRDFLiteral*>(r)->getFloat());
+		std::stringstream s;
+		s << i;
+		l = dt == DT_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
+		break;
+	    }
+	    case DT_Double: {
+		double i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getDouble(), 
+				      static_cast<const NumericRDFLiteral*>(r)->getDouble());
+		std::stringstream s;
+		s << i;
+		l = getNumericRDFLiteral(s.str(), i);
+		break;
+	    }
+	    default:
+		throw rt + " is not a numeric datatype: " + r->toString();
+	    }
+	    ++it;
+	}
+	return l;
+    }
+
     /* EBV (Better place for this?) */
     const POS* POSFactory::ebv (const POS* pos) {
 	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(pos);

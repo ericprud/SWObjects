@@ -556,6 +556,7 @@ public:
 };
 
 class DefaultGraphPattern;
+class Expression;
 class POSFactory {
 public:
 //     typedef std::map<const BNode*, std::string> BNode2string;
@@ -579,10 +580,16 @@ protected:
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
     NULLpos		nullPOS;
-    const BooleanRDFLiteral*	litFalse;
-    const BooleanRDFLiteral*	litTrue;
+    const BooleanRDFLiteral* litFalse;
+    const BooleanRDFLiteral* litTrue;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
-    std::map<const std::string, int> typeOrder;
+public:
+    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, 
+		  DT_Integer, DT_Decimal, DT_Float, DT_Double, 
+		  DT_Boolean} DT_Numeric;
+protected:
+    typedef std::map<const std::string, DT_Numeric> TypeOrder;
+    TypeOrder typeOrder;
 
 #if REGEX_LIB == SWOb_BOOST
     enum {RANGE_unlimited = -2} Range;
@@ -618,14 +625,14 @@ public:
 	litFalse(getBooleanRDFLiteral("false", false)), 
 	litTrue(getBooleanRDFLiteral("true", true)) {
 
-	typeOrder[typeid(BNode).name()] = 2;
-	typeOrder[typeid(URI).name()] = 3;
-	typeOrder[typeid(RDFLiteral).name()] = 4;
-	typeOrder[typeid(IntegerRDFLiteral).name()] = 5;
-	typeOrder[typeid(DecimalRDFLiteral).name()] = 6;
-	typeOrder[typeid(FloatRDFLiteral).name()] = 7;
-	typeOrder[typeid(DoubleRDFLiteral).name()] = 8;
-	typeOrder[typeid(BooleanRDFLiteral).name()] = 9;
+	typeOrder[typeid(BNode).name()] = DT_BNode;
+	typeOrder[typeid(URI).name()] = DT_URI;
+	typeOrder[typeid(RDFLiteral).name()] = DT_Literal;
+	typeOrder[typeid(IntegerRDFLiteral).name()] = DT_Integer;
+	typeOrder[typeid(DecimalRDFLiteral).name()] = DT_Decimal;
+	typeOrder[typeid(FloatRDFLiteral).name()] = DT_Float;
+	typeOrder[typeid(DoubleRDFLiteral).name()] = DT_Double;
+	typeOrder[typeid(BooleanRDFLiteral).name()] = DT_Boolean;
 
 #if REGEX_LIB == SWOb_BOOST
 	using std::numeric_limits;
@@ -731,6 +738,34 @@ public:
 
     /* EBV (Better place for this?) */
     const POS* ebv(const POS* pos);
+
+    struct Functor {
+	const Result* res;
+	POSFactory* posFactory;
+	BNodeEvaluator* evaluator;
+
+	Functor (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    res(res), posFactory(posFactory), evaluator(evaluator) {  }
+	virtual ~Functor () {  }
+    };
+    struct UnaryFunctor : public Functor {
+
+	UnaryFunctor (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    Functor(res, posFactory, evaluator) {  }
+	virtual int eval(int v) = 0;
+	virtual float eval(float v) = 0;
+	virtual double eval(double v) = 0;
+    };
+    struct NaryFunctor : public Functor {
+
+	NaryFunctor (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    Functor(res, posFactory, evaluator) {  }
+	virtual int eval(int l, int r) = 0;
+	virtual float eval(float l, float r) = 0;
+	virtual double eval(double l, double r) = 0;
+    };
+    const POS* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
+    const POS* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
 
     void _validateNumeric (std::string str) {
 #ifdef HAVE_STRTOLD
@@ -2143,62 +2178,14 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	std::vector<const NumericRDFLiteral*> subd;
-	enum { Int, Dec, Float, Double } highestType = Int;
-	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-	     it != m_Expressions.end(); ++it) {
-	    const POS* val = (*it)->eval(res, posFactory, evaluator);
-	    if (dynamic_cast<const IntegerRDFLiteral*>(val) != NULL) {
-		if (highestType < Int)
-		    highestType = Int;
-	    } else if (dynamic_cast<const DecimalRDFLiteral*>(val) != NULL) {
-		if (highestType < Dec)
-		    highestType = Dec;
-	    } else if (dynamic_cast<const FloatRDFLiteral*>(val) != NULL) {
-		if (highestType < Float)
-		    highestType = Float;
-	    } else if (dynamic_cast<const DoubleRDFLiteral*>(val) != NULL) {
-		if (highestType < Double)
-		    highestType = Double;
-	    } else if (val == NULL)
-		throw TypeError("NULL", "+");
-	    else
-		throw TypeError((val)->toString(), "+");
-	    subd.push_back(dynamic_cast<const NumericRDFLiteral*>(val));
-	}
-
-	std::stringstream s;
-	switch (highestType) {
-	case Int: {
-	    int i(0);
-	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		i += (*it)->getInt();
-	    s << i;
-	    return posFactory->getNumericRDFLiteral(s.str(), i);
-	}
-	case Dec: {
-	    float f(0);
-	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		f += (*it)->getFloat();
-	    s << f;
-	    return posFactory->getNumericRDFLiteral(s.str(), f);
-	}
-	case Float: {
-	    float f(0);
-	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		f += (*it)->getFloat();
-	    s << f;
-	    return posFactory->getNumericRDFLiteral(s.str(), f, true); // Floatness
-	}
-	case Double: {
-	    double d(0);
-	    for (std::vector<const NumericRDFLiteral*>::const_iterator it = subd.begin(); it != subd.end(); ++it)
-		d += (*it)->getDouble();
-	    s << d;
-	    return posFactory->getNumericRDFLiteral(s.str(), d);
-	}
-	}
-	throw "shouldn't arrive a bottom of eval"; // g++ doesn't notice that all paths in above switch return.
+	struct x : public POSFactory::NaryFunctor {
+	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+		POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
+	    virtual int eval (int l, int r) { return l + r; }
+	    virtual float eval (float l, float r) { return l + r; }
+	    virtual double eval (double l, double r) { return l + r; }
+	} f(res, posFactory, evaluator);
+	return posFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
@@ -2212,10 +2199,14 @@ public:
     virtual const char* getUnaryOperator () { return "-"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	std::stringstream s;
-	s << "(- 0 " << m_Expression->eval(res, posFactory, evaluator)->toString() <<
-	    ')' << " not implemented";
-	throw s.str();
+	struct x : public POSFactory::UnaryFunctor {
+	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+		POSFactory::UnaryFunctor(res, posFactory, evaluator) {  }
+	    virtual int eval (int v) { return -v; }
+	    virtual float eval (float v) { return -v; }
+	    virtual double eval (double v) { return -v; }
+	} f(res, posFactory, evaluator);
+	return posFactory->applyCommonNumeric(m_Expression, &f);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticNegation* pref = dynamic_cast<const ArithmeticNegation*>(&ref);
@@ -2244,23 +2235,14 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	std::vector<const POS*> subd;
-	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-	     it != m_Expressions.end(); ++it)
-	    subd.push_back((*it)->eval(res, posFactory, evaluator));
-	std::stringstream s;
-	s << "(- ";
-	for (std::vector<const POS*>::const_iterator it = subd.begin(); it != subd.end(); ++it) {
-	    if (it != subd.begin())
-		s << ", ";
-	    if (*it)
-		s << (*it)->toString();
-	    else
-		s << "NULL";
-	}
-	s << ')';
-	s << " not implemented";
-	throw s.str();
+	struct x : public POSFactory::NaryFunctor {
+	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+		POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
+	    virtual int eval (int l, int r) { return l * r; }
+	    virtual float eval (float l, float r) { return l * r; }
+	    virtual double eval (double l, double r) { return l * r; }
+	} f(res, posFactory, evaluator);
+	return posFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticProduct* pref = dynamic_cast<const ArithmeticProduct*>(&ref);
