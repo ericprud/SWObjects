@@ -8,6 +8,18 @@
 #ifndef SWOBJECTS_HH
 # define SWOBJECTS_HH
 
+/* Handy debugging from Curtis Krauskopf
+ * http://www.decompile.com/cpp/faq/file_and_line_error_string.htm
+
+ * debugging tips:
+ *   echo filename(lineno):
+ *     LINE;
+ *     LINE << "about to foo the bar." << std::endl; // outputs your text.
+ */
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define LINE std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning LINE\n"
+
 /* defines for controlling includes from utils */
 #include "config.h"
 
@@ -125,6 +137,7 @@ public:
     size_t size () const { return data.size(); }
     virtual T operator [] (size_t i) const { return data[i]; }
     virtual T at (size_t i) const { return data.at(i); }
+    virtual T back () const { return data.back(); }
     void clear () { data.clear(); }
     void pop_back () { data.pop_back(); }
     virtual void express(Expressor* p_expressor) const {
@@ -165,6 +178,13 @@ public:
     iterator end() { return iterator(data.end(), this); }
 #endif
 };
+template <typename T> std::ostream& operator<<(std::ostream& os, ProductionVector<T> const& my) {
+    os << "{\n";
+    for (typename std::vector<T>::const_iterator it = my.begin(); it != my.end(); ++it)
+	os << **it;
+    return os << "}\n";
+}
+
 template <typename T> class NoDelProductionVector : public ProductionVector<T> {
 public:
     NoDelProductionVector () {  }
@@ -1141,6 +1161,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual TableOperation* getDNF() const = 0;
+    std::string toString() const;
 };
 class TableJunction : public TableOperation {
 protected:
@@ -1158,7 +1179,7 @@ public:
 		return false;
 	return true;
     }
-    virtual void addTableOperation(const TableOperation* tableOp);
+    virtual void addTableOperation(const TableOperation* tableOp, bool flatten);
     std::vector<const TableOperation*>::iterator begin () { return m_TableOperations.begin(); }
     std::vector<const TableOperation*>::const_iterator begin () const { return m_TableOperations.begin(); }
     std::vector<const TableOperation*>::iterator end () { return m_TableOperations.end(); }

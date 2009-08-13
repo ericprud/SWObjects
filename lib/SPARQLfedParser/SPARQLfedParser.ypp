@@ -72,6 +72,7 @@ protected:
     const POS* curPredicate;
     std::vector<BasicGraphPattern*> bgpStack;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
+    TableOperation* triplesBlockOpt;
     BindingClause* curBindingClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
@@ -88,6 +89,30 @@ protected:
 	return bgpStack.back();
     }
 
+    TableOperation* makeConjunction (TableOperation* l, TableOperation* r, bool nullable) {
+	if (l != NULL) {
+	    if (r != NULL) {
+		TableConjunction* ret = new TableConjunction();
+		ret->addTableOperation(l, unnestTree);
+		ret->addTableOperation(r, unnestTree);
+		return ret;
+	    } else
+		return l;
+	}
+	if (r != NULL)
+	    return r;
+	if (!nullable)
+	    return makeBasicGraphPattern();
+	return NULL;
+    }
+
+    TableOperation* makeDisjunction (TableOperation* l, TableOperation* r) {
+	TableDisjunction* ret = new TableDisjunction();
+	ret->addTableOperation(l, unnestTree);
+	ret->addTableOperation(r, unnestTree);
+	return ret;
+    }
+
 public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
@@ -101,7 +126,10 @@ public:
 
     /** Reference to the object created during parsing of the SPARQL stream. */
     Operation* root;
+
+    /** Control attributes. */
     bool leanAndMean;
+    bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
 };
 
     class FilterHolder : public BasicGraphPattern {
@@ -314,8 +342,8 @@ public:
 
 %type <p_BasicGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt ConstructTemplate
 
-%type <p_TableOperations> _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
-%type <p_TableOperations> _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
+%type <p_TableOperation> _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
+%type <p_TableOperation> _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
 
 %type <p_Filter> Filter
 %type <p_ArgList> ArgList _QArgList_E_Opt
@@ -918,34 +946,27 @@ GroupGraphPattern:
     GT_LCURLEY {
 	driver.neededBGP = NULL;
 	driver.bgpStack.push_back(NULL);
-      } _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
-	  if (($3 != NULL && $4->size() > 0) ||
-	      ($3 == NULL && $4->size() > 1)) {
-	      TableConjunction* ret = new TableConjunction();
-	      $$ = ret;
-	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (std::vector<const TableOperation*>::iterator it = $4->begin();
-		   it != $4->end(); ++it)
-		  ret->addTableOperation(*it);
-	  } else if ($3 != NULL)
-	      $$ = $3;
-	  else if ($4->size() > 0) // sole item in ProductionVector
-	      $$ = (TableOperation*)$4->at(0);
-	  else
-	      $$ = driver.makeBasicGraphPattern(); // or NULL -- are those simplifications OK?
-	  $4->clear();
-	  delete $4;
-
+	$<p_TableOperation>$ = driver.triplesBlockOpt;
+	driver.triplesBlockOpt = NULL;
+      } _QTriplesBlock_E_Opt {
+	  driver.triplesBlockOpt = $3;
+      } _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
+	  // if ($3) LINE << $3 << ": " << *$3 << "--\n";
+	  // if ($5) LINE << $5 << ": " << *$5 << "--\n";
+	  $$ = 
+	      $5 ? $5 : 
+	      $3 ? $3 :
+	      driver.makeBasicGraphPattern();
 	  driver.neededBGP = NULL;
 	  driver.bgpStack.pop_back();
-	  /* Prevents optimization in e.g. <data-r2/algebra/join-combo-1.rq>
+	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
 	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
 	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
-	   * @@@ should it be the former? if so, remove or put a switch on this.
 	   */
 	  if (!driver.leanAndMean)
 	      driver.bgpStack.back() = NULL;
+	  driver.triplesBlockOpt = $<p_TableOperation>2;
       }
 ;
 
@@ -974,30 +995,26 @@ _QGT_DOT_E_Opt:
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
 _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
-    _O_QGraphPatternNotTriples_E_Or_QFilter_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	{
-	if ($1 && $3) { // ??? && $3 != $1
-	    TableConjunction* ret = new TableConjunction();
-	    $$ = ret;
-	    ret->addTableOperation($1);
-	    ret->addTableOperation($3);
-	} else if ($1) {
-	    $$ = $1;
-	} else {
-	    $$ = $3;
-	}
-    }
+    _O_QGraphPatternNotTriples_E_Or_QFilter_E_C {
+	$<p_TableOperation>$ = driver.triplesBlockOpt ? driver.makeConjunction(driver.triplesBlockOpt, $1, true) : $1;;
+	driver.triplesBlockOpt = NULL;
+      } _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	{
+	  $$ = driver.makeConjunction($<p_TableOperation>2, $4, true);
+      }
 ;
 
 // ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
 _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
     {
-	$$ = new ProductionVector<const TableOperation*>();
+	$$ = NULL;
     }
   | // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
     _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
-	if ($2)
-	    $1->push_back($2);
-	$$ = $1;
+	if (driver.triplesBlockOpt) {
+	    $1 = driver.makeConjunction(driver.triplesBlockOpt, $1, true);
+	    driver.triplesBlockOpt = NULL;
+	}
+	$$ = driver.makeConjunction($1, $2, false);
     }
 ;
 
@@ -1007,25 +1024,16 @@ GraphTemplate:
 	driver.neededBGP = NULL;
 	driver.bgpStack.push_back(NULL);
       } _QTriplesBlock_E_Opt _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
-	  if (($3 != NULL && $4->size() > 0) ||
-	      ($3 == NULL && $4->size() > 1)) {
-	      TableConjunction* ret = new TableConjunction();
-	      $$ = ret;
-	      if ($3 != NULL) ret->addTableOperation($3);
-	      for (std::vector<const TableOperation*>::iterator it = $4->begin();
-		   it != $4->end(); ++it)
-		  ret->addTableOperation(*it);
-	  } else if ($3 != NULL)
-	      $$ = $3;
-	  else if ($4->size() > 0) // sole item in ProductionVector
-	      $$ = (TableOperation*)$4->at(0);
-	  else
-	      $$ = driver.makeBasicGraphPattern(); // or NULL -- are those simplifications OK?
-	  $4->clear();
-	  delete $4;
-
+	  $$ = driver.makeConjunction($3, $4, true);
 	  driver.neededBGP = NULL;
 	  driver.bgpStack.pop_back();
+	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
+	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
+	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
+	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
+	   */
+	  if (!driver.leanAndMean)
+	      driver.bgpStack.back() = NULL;
       }
 ;
 
@@ -1042,25 +1050,17 @@ _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C:
 // ( 'GRAPH' VarOrIRIref GraphTemplate ) '.'? TriplesBlock?
 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
     _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	{
-	if ($3) { // ??? && $3 != $1
-	    TableConjunction* ret = new TableConjunction();
-	    $$ = ret;
-	    ret->addTableOperation($1);
-	    ret->addTableOperation($3);
-	} else
-	    $$ = $1;
+	$$ = driver.makeConjunction($1, $3, true);
     }
 ;
 
 // ( ( 'GRAPH' VarOrIRIref GraphTemplate ) '.'? TriplesBlock? )*
 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
     {
-	$$ = new ProductionVector<const TableOperation*>();
+	$$ = NULL;
     }
   | _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
-	if ($2)
-	    $1->push_back($2);
-	$$ = $1;
+	$$ = driver.makeConjunction($1, $2, true);
     }
 ;
 
@@ -1099,14 +1099,15 @@ OptionalGraphPattern:
 	    driver.bgpStack.push_back($<p_FilterHolder>$);
 	}
       } GroupGraphPattern	{
-	  $$ = new OptionalGraphPattern($3);
+	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
 	  if (!driver.leanAndMean) {
-	      $<p_FilterHolder>2->copyFiltersTo($$);
+	      $<p_FilterHolder>2->copyFiltersTo(ret);
 	      delete $<p_FilterHolder>2;
 	      driver.bgpStack.pop_back();
 	      driver.neededBGP = NULL;
 	      driver.bgpStack.back() = NULL;
 	  }
+	  $$ = ret;
       }
 ;
 
@@ -1120,23 +1121,13 @@ GraphGraphPattern:
 	      driver.neededBGP = NULL;
 	      driver.bgpStack.back() = NULL;
 	  }
-	}
+      }
 ;
 
 GroupOrUnionGraphPattern:
     // GroupGraphPattern ( 'UNION' GroupGraphPattern )*
     GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	if ($2->size() > 0) {
-	    TableDisjunction* ret= new TableDisjunction();
-	    $$ = ret;
-	    ret->addTableOperation($1);
-	    for (std::vector<const TableOperation*>::iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		ret->addTableOperation(*it);
-	} else
-	    $$ = $1;
-	$2->clear();
-	delete $2;
+	$$ = $2 ? driver.makeDisjunction($1, $2) : $1;
     }
 ;
 
@@ -1150,11 +1141,10 @@ _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
 // ( 'UNION' GroupGraphPattern )*
 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
     {
-	$$ = new ProductionVector<const TableOperation*>();
+	$$ = NULL;
     }
-  | _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star _O_QIT_UNION_E_S_QGroupGraphPattern_E_C	{
-	$1->push_back($2);
-	$$ = $1;
+  | _O_QIT_UNION_E_S_QGroupGraphPattern_E_C _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
+	$$ = $2 ? driver.makeDisjunction($1, $2) : $1;
     }
 ;
 
@@ -1338,8 +1328,8 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 
 Object:
     GraphNode	{
-	driver.makeBasicGraphPattern();
-	driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	BasicGraphPattern* bgp = driver.makeBasicGraphPattern();
+	bgp->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
 	$$ = $1;
     }
 ;
@@ -1972,11 +1962,12 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL), leanAndMean(false)
+	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL), leanAndMean(false), unnestTree(false)
 {
     curSubject = curPredicate = NULL;
     neededBGP = NULL;
     bgpStack.push_back(NULL);
+    triplesBlockOpt = NULL;
     curBindingClause = NULL;
     curBinding = NULL;
     curExprList = NULL;

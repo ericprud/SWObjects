@@ -83,7 +83,7 @@ namespace w3c_sw {
     public:
 	OperationResultSet (POSFactory* posFactory, TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
 	    ResultSet(posFactory), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
-	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op); }
+	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op, true); }
 	void copyFiltersTo (TableOperation* dest) {
 	    /* Copy the FILTER patterns across.
 	       !!! This isn't sound -- requires more exploration.
@@ -200,7 +200,7 @@ namespace w3c_sw {
 		    last.tableOperation = NULL;
 		    (*it)->express(this);
 		    if (last.tableOperation != NULL)
-			j->addTableOperation(last.tableOperation);
+			j->addTableOperation(last.tableOperation, true);
 		}
 	    }
 
@@ -338,7 +338,7 @@ namespace w3c_sw {
 		constructRuleBodyAsConsequent->express(&e);
 		TableOperation* t = e.getTableOperation();
 		if (t != NULL)
-		    patternSpanningRows->addTableOperation(t);
+		    patternSpanningRows->addTableOperation(t, true);
 	    }
 
 	    TableOperation* res = patternSpanningRows->simplify(); // !!! should be a simplifying expressor

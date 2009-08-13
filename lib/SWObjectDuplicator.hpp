@@ -122,7 +122,7 @@ namespace w3c_sw {
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); it++) {
 		(*it)->express(this);
-		j->addTableOperation(last.tableOperation);
+		j->addTableOperation(last.tableOperation, true);
 	    }
 	}
 	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {

@@ -830,8 +830,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return r->get(this);
     }
 
-    void TableJunction::addTableOperation (const TableOperation* tableOp) {
-	if (typeid(*tableOp) == typeid(*this)) {
+    void TableJunction::addTableOperation (const TableOperation* tableOp, bool flatten) {
+	if (flatten == true && typeid(*tableOp) == typeid(*this)) { // deactivated
 	    TableJunction* j = (TableJunction*)tableOp; /* !!! LIES !!! */
 	    for (std::vector<const TableOperation*>::const_iterator it = j->m_TableOperations.begin();
 		 it != j->m_TableOperations.end(); ++it)
@@ -967,9 +967,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet island(rs->getPOSFactory(), rs->debugStream);
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
-	    (*it)->bindVariables(db, rs);
+	    (*it)->bindVariables(db, &island);
+	rs->joinIn(&island, false);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
 	    rs->restrict(*it);
@@ -994,11 +996,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getPOSFactory());
+	ResultSet island(rs->getPOSFactory(), rs->debugStream);
 	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet disjoint(rs->getPOSFactory());
+	    ResultSet disjoint(rs->getPOSFactory(), rs->debugStream);
 	    (*it)->bindVariables(db, &disjoint);
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 		 it != m_Filters.end(); it++)
@@ -1108,30 +1110,33 @@ compared against
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
-	ResultSet island(rs->getPOSFactory());
+	if (rs->debugStream != NULL && *rs->debugStream != NULL)
+	    **rs->debugStream << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
-	    for (ResultSetIterator row = island.begin() ; row != island.end(); ) {
-		bool matched = false;
+	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
+		bool rowMatched = false;
 		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		     triple != m_TriplePatterns.end(); triple++) {
-		    Result* newRow = (*row)->duplicate(&island, row);
-		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, &island, graphVar, newRow, graphName)) {
-			matched = true;
-			island.insert(row, newRow);
+		    Result* newRow = (*row)->duplicate(rs, row);
+		    /* @@@ move filter her */
+		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+			rowMatched = true;
+			rs->insert(row, newRow);
 		    } else {
 			delete newRow;
 		    }
 		}
-		if (matched || !toMatch->allOpts) {
+		if (rowMatched || !toMatch->allOpts) {
 		    delete *row;
-		    row = island.erase(row);
+		    row = rs->erase(row);
 		} else {
 		    row++;
 		}
 	    }
 	}
-	rs->joinIn(&island, false);
+	if (rs->debugStream != NULL && *rs->debugStream != NULL)
+	    **rs->debugStream << "produced\n" << *rs;
 	for (std::vector<const Filter*>::const_iterator it = toMatch->m_Filters.begin();
 	     it != toMatch->m_Filters.end(); it++)
 	    rs->restrict(*it);
@@ -1181,34 +1186,9 @@ compared against
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(rs->getPOSFactory()); // no POSFactory
+	ResultSet optRS(*rs); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
-	ResultSet filterMe(*rs); // no POSFactory
-	filterMe.joinIn(&optRS, true);
-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-	     it != m_Filters.end(); it++)
-	    filterMe.restrict(*it);
-	rs->joinIn(&filterMe, true);
-#if 0
-	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
-	    ResultSet* rowRS = (*row)->makeResultSet(NULL); // no POSFactory
-	    m_TableOperation->bindVariables(db, rowRS);
-	    bool empty = true;
-	    for (ResultSetIterator optRow = rowRS->begin() ; optRow != rowRS->end(); ) {
-		empty = false;
-		Result* r = (*row)->duplicate(rs, row);
-		rs->insert(row, r);
-		r->assumeNewBindings(*optRow);
-		delete *optRow;
-		optRow = rowRS->erase(optRow);
-	    }
-	    delete rowRS;
-	    if (empty)
-		row++;
-	    else
-		row = rs->erase(row);
-	}
-#endif
+	rs->joinIn(&optRS, &m_Filters, ResultSet::OP_outer);
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {
@@ -1271,7 +1251,7 @@ compared against
 	TableDisjunction* ret = new TableDisjunction();
 	for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 	     disjoint != disjoints->end(); disjoint++)
-	    ret->addTableOperation(makeANewThis(*disjoint));
+	    ret->addTableOperation(makeANewThis(*disjoint), true);
 	disjoints->clear();
 	delete disjoints;
 	return ret;
@@ -1285,6 +1265,11 @@ compared against
 	    m_Filters.push_back(dup.last.filter);
 	}
     }
+    std::string TableOperation::toString () const {
+	SPARQLSerializer s;
+	express(&s);
+	return s.getString();
+    }
     TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
@@ -1294,11 +1279,11 @@ compared against
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
 		for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 		     disjoint != disjoints->end(); disjoint++)
-		    ret->addTableOperation(*disjoint);
+		    ret->addTableOperation(*disjoint, true);
 		disjoints->clear();
 		delete disjoints;
 	    } else {
-		ret->addTableOperation(op);
+		ret->addTableOperation(op, true);
 	    }
 	}
 	return ret;
@@ -1306,7 +1291,7 @@ compared against
     TableOperation* TableConjunction::getDNF () const {
 	/* Create a disjunction of conjunctions: (A & B) | (C & D) */
 	TableDisjunction* ret = new TableDisjunction();
-	ret->addTableOperation(new TableConjunction());
+	ret->addTableOperation(new TableConjunction(), true);
 
 	/* for each of our elements... */
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
@@ -1329,9 +1314,9 @@ compared against
 			/* Copy the conjunction. */
 			for (std::vector<const TableOperation*>::const_iterator copyi = o->begin();
 			     copyi != o->end(); copyi++)
-			    n->addTableOperation(*copyi);
+			    n->addTableOperation(*copyi, true);
 			/* Append the current disjoint. */
-			n->addTableOperation(*disjoint);
+			n->addTableOperation(*disjoint, true);
 		    }
 		    disjoint = disjoints->erase(disjoint);
 		}
@@ -1344,7 +1329,7 @@ compared against
 		    for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
 			 reti != ret->end(); reti++) {
 			const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
-			((TableConjunction*)c)->addTableOperation(*conjoint); /* !!! LIES !!! */
+			((TableConjunction*)c)->addTableOperation(*conjoint, true); /* !!! LIES !!! */
 		    }
 		    conjoint = conjoints->erase(conjoint);
 		}
@@ -1354,7 +1339,7 @@ compared against
 		for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
 		     reti != ret->end(); reti++) {
 		    const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
-		    ((TableConjunction*)c)->addTableOperation(op); /* !!! LIES !!! */
+		    ((TableConjunction*)c)->addTableOperation(op, true); /* !!! LIES !!! */
 		}
 	    }
 	}
@@ -1377,9 +1362,7 @@ compared against
     }
 
     std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
-	SPARQLSerializer s;
-	my.express(&s);
-	return os << s.getString();
+	return os << my.toString();
     }
 
     std::ostream& operator<< (std::ostream& os, WhereClause const& my) {
