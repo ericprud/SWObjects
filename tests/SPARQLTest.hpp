@@ -9,13 +9,6 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-/* Handy debugging from Curtis Krauskopf
- * http://www.decompile.com/cpp/faq/file_and_line_error_string.htm
- */
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define MARK std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning MARK\n";
-
 
 #define BOOST_TEST_DYN_LINK 1
 #include <boost/test/unit_test.hpp>
@@ -74,7 +67,7 @@ struct MeasuredRS : public ResultSet {
     MeasuredRS (const char* defGraph, 
 		const char* namedGraphs[], size_t namedCount, 
 		const URI* requires[], size_t reqsCount, 
-		const char* query) : ResultSet(&F) {
+		const char* query) : ResultSet(&F, F.debugStream) {
  
 	std::string baseStr(query);
 	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);

@@ -18,8 +18,8 @@
  *     DAWG_TEST(...)
  *     F.debugStream = NULL;
  *   echo filename(lineno):
- *     MARK;
- *     MARK << "about to foo the bar." << std::endl; // outputs your text.
+ *     LINE;
+ *     LINE << "about to foo the bar." << std::endl; // outputs your text.
  *
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */

@@ -61,9 +61,9 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (POSFactory* posFactory) : 
+    ResultSet::ResultSet (POSFactory* posFactory, std::ostream** debugStream) : 
 	posFactory(posFactory), knownVars(), results(), ordered(false),  db(NULL), 
-	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular), debugStream(debugStream) {
 	results.insert(results.begin(), new Result(this));
     }
 

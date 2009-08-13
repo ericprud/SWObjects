@@ -124,7 +124,7 @@ namespace w3c_sw {
 	ResultType resultType;
 	std::ostream** debugStream;
 
-	ResultSet(POSFactory* posFactory);
+	ResultSet(POSFactory* posFactory, std::ostream** debugStream = NULL);
 	ResultSet (const ResultSet& ref) : 
 	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
 	    results(), ordered(ref.ordered), db(ref.db), selectOrder(ref.selectOrder), 
@@ -490,7 +490,8 @@ namespace w3c_sw {
 	    orderedSelect = true;
 	    return mismatches;
 	}
-	void joinIn (ResultSet* ref, bool outer = false) { // !!! make const ref
+	typedef enum {OP_join, OP_outer, OP_minus} e_OP;
+	void joinIn (ResultSet* ref, const ProductionVector<const Filter*>* filters = NULL, e_OP operation = OP_join) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {
 		bool matchedSomeRow = false;
@@ -517,11 +518,17 @@ namespace w3c_sw {
 			for (std::set<const POS*>::iterator vars = copy.begin();
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
-			insert(myRow, newRow);
-			matchedSomeRow = true;
+			if (filters != NULL)
+			    for (std::vector<const Filter*>::const_iterator filter = filters->begin();
+				 matched && filter != filters->end(); filter++)
+				matched &= (*filter)->eval(newRow, posFactory);
+			if (matched) {
+			    insert(myRow, newRow);
+			    matchedSomeRow = true;
+			}
 		    }
 		}
-		if (outer && !matchedSomeRow)
+		if (operation == OP_outer && !matchedSomeRow)
 		    myRow++;
 		else {
 		    delete *myRow;
