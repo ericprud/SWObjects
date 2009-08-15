@@ -1,5 +1,11 @@
 /* $Id: SPARQLfedParser.ypp,v 1.3 2008-11-13 19:18:01 eric Exp $ -*- mode: c++ -*- */
-/** \file SPARQLfedParser.yy Contains the Bison parser source */
+
+/* Bison parser for SPARQL + SPARUL
+ * conventions:
+ *   generated production names are composed of their constituents.
+ *   { $$ = $1; } elided.
+ *   driver has extra state for hard-to-generate tries like  Foo Bar* => ((Foo Bar) Bar)
+ */
 
 /*** yacc/bison Declarations ***/
 
@@ -71,7 +77,7 @@ protected:
     const POS* curPredicate;
     BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
-    TableOperation* triplesBlockOpt;
+    TableOperation* triplesBlockOpt; // needed to make right-descending tree for TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     BindingClause* curBindingClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
@@ -195,7 +201,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    struct {FilterHolder* holder; BasicGraphPattern* bgp;} p_FilterPair;
+    FilterHolder* p_FilterHolder;
     Filter* p_Filter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
@@ -241,13 +247,14 @@ public:
 %token <p_NIL> NIL
 
 /* Productions */
- //%type <p_Query> Query
 %type <p_Operation> _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C
-		    Select Construct Describe Ask  // SPARQL 1
+		    Query Select Construct Describe Ask  // SPARQL 1
 		    Update Manage Replace Delete Insert Load Clear Create Drop // SPARUL
 
-%type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
-%type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
+%type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
+		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
+%type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
+		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 %type <p_Silence> _QIT_SILENT_E_Opt
 
 %type <p_URIs> _QIRIref_E_Plus
@@ -364,7 +371,7 @@ public:
 Query:
     // Prologue ( Select | Construct | Describe | Ask )
     Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C	{
-	driver.root = $2;
+	driver.root = $$ = $2;
     }
 ;
 
@@ -996,14 +1003,14 @@ GraphPatternNotTriples:
 OptionalGraphPattern:
     IT_OPTIONAL	{
 	if (!driver.leanAndMean) {
-	    $<p_FilterPair>$.holder = new FilterHolder();
+	    $<p_FilterHolder>$ = new FilterHolder();
 	    driver.curBGP = driver.neededBGP = NULL;
 	}
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
 	  if (!driver.leanAndMean) {
-	      $<p_FilterPair>2.holder->copyFiltersTo(ret);
-	      delete $<p_FilterPair>2.holder;
+	      $<p_FilterHolder>2->copyFiltersTo(ret);
+	      delete $<p_FilterHolder>2;
 	      driver.curBGP = driver.neededBGP = NULL;
 	  }
 	  $$ = ret;
