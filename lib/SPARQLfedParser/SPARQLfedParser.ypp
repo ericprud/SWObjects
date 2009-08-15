@@ -70,7 +70,7 @@ class SPARQLfedDriver : public Driver {
 protected:
     const POS* curSubject;
     const POS* curPredicate;
-    std::vector<BasicGraphPattern*> bgpStack;
+    BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
     TableOperation* triplesBlockOpt;
     BindingClause* curBindingClause;
@@ -79,14 +79,14 @@ protected:
     const POS* curGraphName;
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
-	if (!bgpStack.back()) {
+	if (curBGP == NULL) {
 	    if (curGraphName == NULL)
 		neededBGP = new DefaultGraphPattern();
 	    else
 		neededBGP = new NamedGraphPattern(curGraphName);
-	    bgpStack.back() = neededBGP;
+	    curBGP = neededBGP;
 	}
-	return bgpStack.back();
+	return curBGP;
     }
 
     TableOperation* makeConjunction (TableOperation* l, TableOperation* r, bool nullable) {
@@ -199,7 +199,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    FilterHolder* p_FilterHolder;
+    struct {FilterHolder* holder; BasicGraphPattern* bgp;} p_FilterPair;
     Filter* p_Filter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
@@ -945,7 +945,8 @@ GroupGraphPattern:
     // '{' TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
 	driver.neededBGP = NULL;
-	driver.bgpStack.push_back(NULL);
+	$<p_BasicGraphPattern>$ = driver.curBGP;
+	driver.curBGP = NULL;
 	$<p_TableOperation>$ = driver.triplesBlockOpt;
 	driver.triplesBlockOpt = NULL;
       } _QTriplesBlock_E_Opt {
@@ -958,14 +959,14 @@ GroupGraphPattern:
 	      $3 ? $3 :
 	      driver.makeBasicGraphPattern();
 	  driver.neededBGP = NULL;
-	  driver.bgpStack.pop_back();
+	  driver.curBGP = $<p_BasicGraphPattern>2;
 	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
 	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
 	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   */
 	  if (!driver.leanAndMean)
-	      driver.bgpStack.back() = NULL;
+	      driver.curBGP = NULL;
 	  driver.triplesBlockOpt = $<p_TableOperation>2;
       }
 ;
@@ -1022,18 +1023,19 @@ GraphTemplate:
     // '{' TriplesBlock? ( ( 'GRAPH' VarOrIRIref GraphTemplate | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
 	driver.neededBGP = NULL;
-	driver.bgpStack.push_back(NULL);
+	$<p_BasicGraphPattern>$ = driver.curBGP;
+	driver.curBGP = NULL;
       } _QTriplesBlock_E_Opt _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
 	  $$ = driver.makeConjunction($3, $4, true);
 	  driver.neededBGP = NULL;
-	  driver.bgpStack.pop_back();
+	  driver.curBGP = $<p_BasicGraphPattern>2;
 	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
 	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
 	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   */
 	  if (!driver.leanAndMean)
-	      driver.bgpStack.back() = NULL;
+	      driver.curBGP = NULL;
       }
 ;
 
@@ -1096,17 +1098,18 @@ GraphPatternNotTriples:
 OptionalGraphPattern:
     IT_OPTIONAL	{
 	if (!driver.leanAndMean) {
-	    $<p_FilterHolder>$ = new FilterHolder();
-	    driver.bgpStack.push_back($<p_FilterHolder>$);
+	    $<p_FilterPair>$.holder = new FilterHolder();
+	    $<p_FilterPair>$.bgp = driver.curBGP;
+	    driver.curBGP = NULL;
 	}
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
 	  if (!driver.leanAndMean) {
-	      $<p_FilterHolder>2->copyFiltersTo(ret);
-	      delete $<p_FilterHolder>2;
-	      driver.bgpStack.pop_back();
+	      $<p_FilterPair>2.holder->copyFiltersTo(ret);
+	      delete $<p_FilterPair>2.holder;
+	      // driver.curBGP = $<p_FilterPair>$.bgp;
 	      driver.neededBGP = NULL;
-	      driver.bgpStack.back() = NULL;
+	      driver.curBGP = NULL;
 	  }
 	  $$ = ret;
       }
@@ -1121,7 +1124,7 @@ GraphGraphPattern:
 	  driver.curGraphName = $<p_POS>3;
 	  if (!driver.leanAndMean) {
 	      driver.neededBGP = NULL;
-	      driver.bgpStack.back() = NULL;
+	      driver.curBGP = NULL;
 	  }
       }
 ;
@@ -1155,14 +1158,12 @@ Filter:
 	$$ = new Filter($2);
 	if (driver.leanAndMean) {
 	    driver.makeBasicGraphPattern();
-	    driver.bgpStack.back()->addFilter($$);
+	    driver.curBGP->addFilter($$);
 	} else {
-	size_t bgps = driver.bgpStack.size();
-	FilterHolder* h = bgps <= 1 ? NULL : 
-	    dynamic_cast<FilterHolder*>(driver.bgpStack.at(bgps - 2));
+	FilterHolder* h = dynamic_cast<FilterHolder*>(driver.curBGP);
 	if (h == NULL) {
 	    driver.makeBasicGraphPattern();
-	    driver.bgpStack.back()->addFilter($$);
+	    driver.curBGP->addFilter($$);
 	} else {
 	    h->addFilter($$);
 	}
@@ -1228,11 +1229,12 @@ ConstructTemplate:
     // '{' ConstructTriples? '}'
     GT_LCURLEY {
 	driver.neededBGP = NULL;
-	driver.bgpStack.push_back(NULL);
+	$<p_BasicGraphPattern>$ = driver.curBGP;
+	driver.curBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
 	  $$ = $3;
 	  driver.neededBGP = NULL;
-	  driver.bgpStack.pop_back();
+	  driver.curBGP = $<p_BasicGraphPattern>2;
       }
 ;
 
@@ -1380,9 +1382,9 @@ Generator:
 	    const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	    driver.makeBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
-		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
+		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
 		const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-		driver.bgpStack.back()->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -1968,7 +1970,7 @@ namespace w3c_sw {
 {
     curSubject = curPredicate = NULL;
     neededBGP = NULL;
-    bgpStack.push_back(NULL);
+    curBGP = NULL;
     triplesBlockOpt = NULL;
     curBindingClause = NULL;
     curBinding = NULL;
@@ -1977,8 +1979,6 @@ namespace w3c_sw {
 
     SPARQLfedDriver::~SPARQLfedDriver ()
 {
-    bgpStack.pop_back();
-    assert (bgpStack.empty());
 }
 
 bool SPARQLfedDriver::parse_stream(std::istream& in, const std::string& sname)
