@@ -76,14 +76,14 @@ protected:
     BindingClause* curBindingClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
-    std::stack<const POS*> curGraphNameStack;
+    const POS* curGraphName;
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
 	if (!bgpStack.back()) {
-	    if (curGraphNameStack.empty())
+	    if (curGraphName == NULL)
 		neededBGP = new DefaultGraphPattern();
 	    else
-		neededBGP = new NamedGraphPattern(curGraphNameStack.top());
+		neededBGP = new NamedGraphPattern(curGraphName);
 	    bgpStack.back() = neededBGP;
 	}
 	return bgpStack.back();
@@ -1040,10 +1040,11 @@ GraphTemplate:
 // 'GRAPH' VarOrIRIref GraphTemplate
 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C:
     IT_GRAPH VarOrIRIref {
-	driver.curGraphNameStack.push($2);
+	$<p_POS>$ = driver.curGraphName;
+	driver.curGraphName = $2;
     } GraphTemplate	{
 	$$ = new GraphGraphPattern($2, $4);
-	driver.curGraphNameStack.pop();
+	driver.curGraphName = $<p_POS>3;
     }
 ;
 
@@ -1113,10 +1114,11 @@ OptionalGraphPattern:
 
 GraphGraphPattern:
     IT_GRAPH VarOrIRIref {
-	driver.curGraphNameStack.push($2);
+	$<p_POS>$ = driver.curGraphName;
+	driver.curGraphName = $2;
       } GroupGraphPattern	{
 	  $$ = new GraphGraphPattern($2, $4);
-	  driver.curGraphNameStack.pop();
+	  driver.curGraphName = $<p_POS>3;
 	  if (!driver.leanAndMean) {
 	      driver.neededBGP = NULL;
 	      driver.bgpStack.back() = NULL;
@@ -1962,7 +1964,7 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL), leanAndMean(false), unnestTree(false)
+	Driver(baseURI, posFactory), curGraphName(NULL), root(NULL), leanAndMean(false), unnestTree(false)
 {
     curSubject = curPredicate = NULL;
     neededBGP = NULL;
