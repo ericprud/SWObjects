@@ -53,7 +53,6 @@
 #include "SWObjects.hpp"
 #include "ParserCommon.hpp"
 
-#include <stack>
 namespace w3c_sw {
 
 class SPARQLfedScanner;
@@ -80,11 +79,9 @@ protected:
 
     BasicGraphPattern* makeBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
-	    if (curGraphName == NULL)
-		neededBGP = new DefaultGraphPattern();
-	    else
-		neededBGP = new NamedGraphPattern(curGraphName);
-	    curBGP = neededBGP;
+	    curBGP = neededBGP = curGraphName == NULL ? 
+		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
+		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
 	}
 	return curBGP;
     }
@@ -154,7 +151,6 @@ public:
  /*** BEGIN SPARQLfed - Change the grammar's tokens below ***/
 
 %union {
-    void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
@@ -219,169 +215,133 @@ public:
 #include "../SPARQLfedScanner.hpp"
 %}
 %token			__EOF__	     0	"end of file"
-/* START TokenBlock */
-/* Terminals */
-%token <p_void> IT_REPLACE
-%token <p_void> IT_WITH
-%token <p_void> IT_DELETE
-%token <p_void> IT_INSERT
-%token <p_void> IT_GRAPH
-%token <p_void> IT_LOAD
-%token <p_void> IT_INTO
-%token <p_void> IT_CLEAR
-%token <p_void> IT_CREATE
-%token <p_void> IT_SILENT
-%token <p_void> IT_DROP
 
-%token <p_void> IT_BASE
-%token <p_void> IT_PREFIX
-%token <p_void> IT_SELECT
-%token <p_void> IT_DISTINCT
-%token <p_void> IT_REDUCED
-%token <p_void> GT_TIMES
-%token <p_void> IT_CONSTRUCT
-%token <p_void> IT_DESCRIBE
-%token <p_void> IT_FROM
-%token <p_void> IT_NAMED
-%token <p_void> IT_ORDER
-%token <p_void> IT_BY
-%token <p_void> IT_ASC
-%token <p_void> IT_DESC
-%token <p_void> IT_LIMIT
-%token <p_void> IT_OFFSET
-%token <p_void> IT_BINDINGS
-%token <p_void> IT_MEMBERS IT_STARTS IT_ENDS IT_ANY IT_UNORDERED
-%token <p_void> GT_LCURLEY GT_RCURLEY IT_ASK IT_WHERE
-%token <p_void> GT_LPAREN
-%token <p_void> GT_RPAREN
-%token <p_void> IT_NULL
-%token <p_void> GT_DOT
-%token <p_void> IT_OPTIONAL
-%token <p_void> IT_UNION
-%token <p_void> IT_FILTER
-%token <p_void> GT_COMMA
-%token <p_void> GT_SEMI
-%token <p_void> IT_a
-%token <p_void> GT_LBRACKET
-%token <p_void> GT_RBRACKET
-%token <p_void> GT_OR
-%token <p_void> GT_AND
-%token <p_void> GT_EQUAL
-%token <p_void> GT_NEQUAL
-%token <p_void> GT_LT
-%token <p_void> GT_GT
-%token <p_void> GT_LE
-%token <p_void> GT_GE
-%token <p_void> GT_PLUS
-%token <p_void> GT_MINUS
-%token <p_void> GT_DIVIDE
-%token <p_void> GT_NOT
-%token <p_void> IT_STR
-%token <p_void> IT_LANG
-%token <p_void> IT_LANGMATCHES
-%token <p_void> IT_DATATYPE
-%token <p_void> IT_BOUND
-%token <p_void> IT_sameTerm
-%token <p_void> IT_isIRI
-%token <p_void> IT_isURI
-%token <p_void> IT_isBLANK
-%token <p_void> IT_isLITERAL
-%token <p_void> IT_REGEX
-%token <p_void> GT_DTYPE
+/* Language tokens */
+%token IT_REPLACE IT_WITH IT_DELETE IT_INSERT IT_GRAPH IT_LOAD IT_INTO IT_CLEAR
+       IT_CREATE IT_SILENT IT_DROP IT_BASE IT_PREFIX IT_SELECT IT_DISTINCT
+       IT_REDUCED GT_TIMES IT_CONSTRUCT IT_DESCRIBE IT_FROM IT_NAMED IT_ORDER
+       IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
+       IT_ENDS IT_ANY IT_UNORDERED GT_LCURLEY GT_RCURLEY IT_ASK IT_WHERE
+       GT_LPAREN GT_RPAREN IT_NULL GT_DOT IT_OPTIONAL IT_UNION IT_FILTER
+       GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_OR GT_AND GT_EQUAL
+       GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
+       IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
+       IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
+
 %token <p_BooleanRDFLiteral> IT_true IT_false
-%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE DECIMAL_NEGATIVE DOUBLE_NEGATIVE
-%token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
+%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE
+			     DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE
+			     DECIMAL_NEGATIVE DOUBLE_NEGATIVE
+%token <p_string> STRING_LITERAL1 STRING_LITERAL_LONG1
+		  STRING_LITERAL2 STRING_LITERAL_LONG2
 %token <p_URI> IRI_REF PNAME_NS PNAME_LN
-%token <p_BNode> BLANK_NODE_LABEL ANON
+%token <p_POS> BLANK_NODE_LABEL ANON
 %token <p_Variable> VAR1 VAR2
 %token <p_LANGTAG> LANGTAG
 %token <p_NIL> NIL
 
 /* Productions */
-%type <p_Query> Query
+ //%type <p_Query> Query
 %type <p_Operation> _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C
+		    Select Construct Describe Ask  // SPARQL 1
+		    Update Manage Replace Delete Insert Load Clear Create Drop // SPARUL
 
-%type <p_Operation> Update
-%type <p_Operation> Manage
-%type <p_Operation> Replace
-%type <p_Operation> Delete
-%type <p_Operation> Insert
-%type <p_Operation> Load
-%type <p_Operation> Clear
-%type <p_Operation> Create
-%type <p_Operation> Drop
-%type <p_URIs> _QIRIref_E_Plus
-%type <p_Silence> _QIT_SILENT_E_Opt
-
-%type <p_Select> Select
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
+%type <p_Silence> _QIT_SILENT_E_Opt
+
+%type <p_URIs> _QIRIref_E_Plus
 %type <p_POSList> _QVar_E_Plus _QVarOrIRIref_E_Plus
 %type <p_VarSet> _O_QVar_E_Plus_Or_QGT_TIMES_E_C _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C
 %type <p_DatasetClauses> _QDatasetClause_E_Star
-%type <p_Construct> Construct
-%type <p_Describe> Describe
-%type <p_POSs> _QGraphNode_E_Star _O_QGraphNode_E_S_QGraphNode_E_Star_C _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt
-%type <p_Ask> Ask
-%type <p_DatasetClause> DatasetClause _O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C DefaultGraphClause NamedGraphClause
-%type <p_POS> SourceSelector
+%type <p_DatasetClause> DatasetClause
+			_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C
+			DefaultGraphClause NamedGraphClause
 %type <p_WhereClause> _QWhereClause_E_Opt WhereClause
 %type <p_SolutionModifier> SolutionModifier
-%type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt LimitClause _QLimitClause_E_Opt OffsetClause _QOffsetClause_E_Opt
-%type <p_OrderConditions> _QOrderClause_E_Opt OrderClause _QOrderCondition_E_Plus
-%type <p_OrderConditionPair> OrderCondition _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
+%type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt
+			  _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt
+			  LimitClause _QLimitClause_E_Opt
+			  OffsetClause _QOffsetClause_E_Opt
+%type <p_OrderConditions> _QOrderClause_E_Opt OrderClause
+			  _QOrderCondition_E_Plus
+%type <p_OrderConditionPair> OrderCondition
+			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
 %type <p_BindingClause> BindingClause _QBindingClause_E_Opt
 %type <p_Bindings> _QBinding_E_Star
 %type <p_Binding> Binding
-%type <p_POS> _O_QVarOrTerm_E_Or_QIT_NULL_E_C
-%type <p_POSs> _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus
 
-%type <p_TableOperation> GroupGraphPattern _O_QIT_UNION_E_S_QGroupGraphPattern_E_C _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C _O_QGraphPatternNotTriples_E_Or_QFilter_E_C GraphPatternNotTriples GroupOrUnionGraphPattern OptionalGraphPattern GraphGraphPattern _QTriplesBlock_E_Opt TriplesBlock _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt
-%type <p_TableOperation> GraphTemplate _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
+%type <p_TableOperation> GroupGraphPattern
+			 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C
+			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
+			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_C
+			 GraphPatternNotTriples GroupOrUnionGraphPattern
+			 OptionalGraphPattern GraphGraphPattern
+			 _QTriplesBlock_E_Opt TriplesBlock
+			 _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C
+			 _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt
+			 GraphTemplate
+			 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C
+			 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
+			 _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
+			 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
+			 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
 
-%type <p_BasicGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt ConstructTemplate
-
-%type <p_TableOperation> _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
-%type <p_TableOperation> _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
+%type <p_BasicGraphPattern> ConstructTriples
+			    _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt
+			    _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
+			    _QConstructTriples_E_Opt
+			    ConstructTemplate
 
 %type <p_Filter> Filter
 %type <p_ArgList> ArgList _QArgList_E_Opt
-%type <p_Expressions> _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
-%type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode TriplesNode Generator
+%type <p_Expressions> _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C
+		      _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
+		      _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star
+		      _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star
+		      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
+
+ /* Parts Of Speach */
+%type <p_POS> SourceSelector
+	      _O_QVarOrTerm_E_Or_QIT_NULL_E_C
+	      BlankNodePropertyList
+	      Verb VarOrIRIref VarOrTerm GraphNode Object
+	      GraphTerm BlankNode TriplesNode Generator
+%type <p_POSs> _QGraphNode_E_Star _O_QGraphNode_E_S_QGraphNode_E_Star_C
+	       _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt
+	       _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus
 %type <p_RDFLiteral> RDFLiteral
-%type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
+%type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
+			    NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
-%type <p_BNode> BlankNodePropertyList
 %type <p_Variable> Var
 
 /* Expressions */
-%type <p_Expression> Expression Constraint _O_QConstraint_E_Or_QVar_E_C BrackettedExpression BuiltInCall FunctionCall ConditionalOrExpression _O_QGT_OR_E_S_QConditionalAndExpression_E_C ConditionalAndExpression _O_QGT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression NumericExpression AdditiveExpression _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C MultiplicativeExpression _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C UnaryExpression PrimaryExpression RegexExpression _O_QGT_COMMA_E_S_QExpression_E_C _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
-%type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
+%type <p_Expression> Expression Constraint _O_QConstraint_E_Or_QVar_E_C
+		     BrackettedExpression BuiltInCall FunctionCall
+		     ConditionalOrExpression
+		     _O_QGT_OR_E_S_QConditionalAndExpression_E_C
+		     ConditionalAndExpression _O_QGT_AND_E_S_QValueLogical_E_C
+		     ValueLogical RelationalExpression NumericExpression
+		     AdditiveExpression
+		     _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C
+		     MultiplicativeExpression
+		     _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C
+		     UnaryExpression PrimaryExpression RegexExpression
+		     _O_QGT_COMMA_E_S_QExpression_E_C
+		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
 
-%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName GraphIRI _QGraphIRI_E_Opt _Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt _O_QIT_INTO_E_S_QIRIref_E_C
-%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
+%type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C
+			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
 
-/*
-%type <p_void> _QTriplesBlock_E_Opt
-%type <p_void> _QGT_DOT_E_Opt
-%type <p_void> _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star
-%type <p_void> ConstructTriples _QConstructTriples_E_Opt
-%type <p_void> _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
-%type <p_void> _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt
-%type <p_void> TriplesSameSubject
-%type <p_void> PropertyListNotEmpty
-%type <p_void> _O_QVerb_E_S_QObjectList_E_C
-%type <p_void> _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt
-%type <p_void> _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
-%type <p_void> _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star
-%type <p_void> PropertyList
-%type <p_void> _QPropertyListNotEmpty_E_Opt
-%type <p_void> ObjectList
-%type <p_void> _O_QGT_COMMA_E_S_QObject_E_C
-%type <p_void> _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star
-*/
+%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName GraphIRI
+	      _QGraphIRI_E_Opt _Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt
+	      _O_QIT_INTO_E_S_QIRIref_E_C
+%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C
+			 _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
+
 /* END TokenBlock */
 
 //%destructor { delete $$; } BlankNode
@@ -410,42 +370,20 @@ Query:
 
 // Select | Construct | Describe | Ask
 _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C:
-    Select	{
-	$$ = $1;
-    }
-  | Construct	{
-	$$ = $1;
-    }
-  | Describe	{
-	$$ = $1;
-    }
-  | Ask	{
-	$$ = $1;
-    }
-  | Replace	{
-	$$ = $1;
-    }
-  | Update	{
-	$$ = $1;
-    }
-  | Manage	{
-	$$ = $1;
-    }
+    Select	
+  | Construct	
+  | Describe	
+  | Ask	
+  | Replace	
+  | Update	
+  | Manage	
 ;
 
 Update:
-    Insert	{
-	$$ = $1;
-    }
-  | Delete	{
-	$$ = $1;
-    }
-  | Load	{
-	$$ = $1;
-    }
-  | Clear	{
-	$$ = $1;
-}
+    Insert	
+  | Delete	
+  | Load	
+  | Clear	
 ;
 
 Replace:
@@ -501,9 +439,7 @@ _Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt:
     {
 	$$ = NULL;
     }
-  | _O_QIT_INTO_E_S_QIRIref_E_C	{
-	$$ = $1;
-    }
+  | _O_QIT_INTO_E_S_QIRIref_E_C	
 ;
 
 GraphIRI:
@@ -516,18 +452,12 @@ _QGraphIRI_E_Opt:
     {
 	$$ = NULL;
     }
-  | GraphIRI	{
-	$$ = $1;
-    }
+  | GraphIRI	
 ;
 
 Manage:
-    Create	{
-	$$ = $1;
-    }
-  | Drop	{
-	$$ = $1;
-    }
+    Create	
+  | Drop	
 ;
 
 Create:
@@ -607,9 +537,7 @@ _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt:
     {
 	$$ = DIST_all;
     }
-  | _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C	{
-	$$ = $1;
-    }
+  | _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C	
 ;
 
 // Var+
@@ -687,9 +615,7 @@ _QWhereClause_E_Opt:
     {
 	$$ = NULL;
     }
-  | WhereClause	{
-	$$ = $1;
-    }
+  | WhereClause	
 ;
 
 Ask:
@@ -708,12 +634,8 @@ DatasetClause:
 
 // DefaultGraphClause | NamedGraphClause
 _O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C:
-    DefaultGraphClause	{
-	$$ = $1;
-    }
-  | NamedGraphClause	{
-	$$ = $1;
-    }
+    DefaultGraphClause	
+  | NamedGraphClause	
 ;
 
 DefaultGraphClause:
@@ -750,9 +672,7 @@ _QBindingClause_E_Opt:
     {
 	$$ = NULL;
     }
-  | BindingClause	{
-	$$ = $1;
-    }
+  | BindingClause	
 ;
 
 SolutionModifier:
@@ -767,9 +687,7 @@ _QOrderClause_E_Opt:
     {
 	$$ = NULL;
     }
-  | OrderClause	{
-	$$ = $1;
-    }
+  | OrderClause	
 ;
 
 // LimitOffsetClauses?
@@ -791,9 +709,7 @@ _QOffsetClause_E_Opt:
     {
 	$$.offset = OFFSET_None;
     }
-  | OffsetClause	{
-	$$ = $1;
-    }
+  | OffsetClause	
 ;
 
 // LimitClause?
@@ -801,9 +717,7 @@ _QLimitClause_E_Opt:
     {
 	$$.limit = LIMIT_None;
     }
-  | LimitClause	{
-	$$ = $1;
-    }
+  | LimitClause	
 ;
 
 // LimitClause OffsetClause? | OffsetClause LimitClause?
@@ -868,9 +782,7 @@ _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C:
 
 // Constraint | Var
 _O_QConstraint_E_Or_QVar_E_C:
-    Constraint	{
-	$$ = $1;
-    }
+    Constraint	
   | Var	{
 	$$ = new VarExpression($1);
     }
@@ -921,9 +833,7 @@ Binding:
 
 // VarOrTerm | 'NULL'
 _O_QVarOrTerm_E_Or_QIT_NULL_E_C:
-    VarOrTerm	{
-	$$ = $1;
-    }
+    VarOrTerm	
   | IT_NULL	{
 	$$ = driver.getNULL();
     }
@@ -944,9 +854,7 @@ _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus:
 GroupGraphPattern:
     // '{' TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.neededBGP = NULL;
-	$<p_BasicGraphPattern>$ = driver.curBGP;
-	driver.curBGP = NULL;
+	driver.curBGP = driver.neededBGP = NULL;
 	$<p_TableOperation>$ = driver.triplesBlockOpt;
 	driver.triplesBlockOpt = NULL;
       } _QTriplesBlock_E_Opt {
@@ -958,15 +866,12 @@ GroupGraphPattern:
 	      $5 ? $5 : 
 	      $3 ? $3 :
 	      driver.makeBasicGraphPattern();
-	  driver.neededBGP = NULL;
-	  driver.curBGP = $<p_BasicGraphPattern>2;
+	  driver.curBGP = driver.neededBGP = NULL;
 	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
 	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
 	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   */
-	  if (!driver.leanAndMean)
-	      driver.curBGP = NULL;
 	  driver.triplesBlockOpt = $<p_TableOperation>2;
       }
 ;
@@ -974,9 +879,7 @@ GroupGraphPattern:
 // TriplesBlock?
 _QTriplesBlock_E_Opt:
     { $$ = NULL; }
-  | TriplesBlock	{
-	$$ = $1;
-    }
+  | TriplesBlock	
 ;
 
 // GraphPatternNotTriples | Filter
@@ -1022,20 +925,15 @@ _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Op
 GraphTemplate:
     // '{' TriplesBlock? ( ( 'GRAPH' VarOrIRIref GraphTemplate | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.neededBGP = NULL;
-	$<p_BasicGraphPattern>$ = driver.curBGP;
-	driver.curBGP = NULL;
+	driver.curBGP = driver.neededBGP = NULL;
       } _QTriplesBlock_E_Opt _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
 	  $$ = driver.makeConjunction($3, $4, true);
-	  driver.neededBGP = NULL;
-	  driver.curBGP = $<p_BasicGraphPattern>2;
+	  driver.curBGP = driver.neededBGP = NULL;
 	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
 	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
 	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   */
-	  if (!driver.leanAndMean)
-	      driver.curBGP = NULL;
       }
 ;
 
@@ -1070,7 +968,7 @@ _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesB
 TriplesBlock:
     // TriplesSameSubject ( '.' TriplesBlock? )?
     TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	{
-	$$ = driver.neededBGP ? driver.neededBGP : $2;
+	$$ = driver.neededBGP;
 	driver.neededBGP = NULL;
     }
 ;
@@ -1099,17 +997,14 @@ OptionalGraphPattern:
     IT_OPTIONAL	{
 	if (!driver.leanAndMean) {
 	    $<p_FilterPair>$.holder = new FilterHolder();
-	    $<p_FilterPair>$.bgp = driver.curBGP;
-	    driver.curBGP = NULL;
+	    driver.curBGP = driver.neededBGP = NULL;
 	}
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
 	  if (!driver.leanAndMean) {
 	      $<p_FilterPair>2.holder->copyFiltersTo(ret);
 	      delete $<p_FilterPair>2.holder;
-	      // driver.curBGP = $<p_FilterPair>$.bgp;
-	      driver.neededBGP = NULL;
-	      driver.curBGP = NULL;
+	      driver.curBGP = driver.neededBGP = NULL;
 	  }
 	  $$ = ret;
       }
@@ -1122,10 +1017,8 @@ GraphGraphPattern:
       } GroupGraphPattern	{
 	  $$ = new GraphGraphPattern($2, $4);
 	  driver.curGraphName = $<p_POS>3;
-	  if (!driver.leanAndMean) {
-	      driver.neededBGP = NULL;
-	      driver.curBGP = NULL;
-	  }
+	  if (!driver.leanAndMean)
+	      driver.curBGP = driver.neededBGP = NULL;
       }
 ;
 
@@ -1172,15 +1065,9 @@ Filter:
 ;
 
 Constraint:
-    BrackettedExpression	{
-	$$ = $1;
-    }
-  | BuiltInCall	{
-	$$ = $1;
-    }
-  | FunctionCall	{
-	$$ = $1;
-    }
+    BrackettedExpression	
+  | BuiltInCall	
+  | FunctionCall	
 ;
 
 FunctionCall:
@@ -1228,28 +1115,23 @@ _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_Q
 ConstructTemplate:
     // '{' ConstructTriples? '}'
     GT_LCURLEY {
-	driver.neededBGP = NULL;
-	$<p_BasicGraphPattern>$ = driver.curBGP;
-	driver.curBGP = NULL;
+	driver.curBGP = driver.neededBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
 	  $$ = $3;
-	  driver.neededBGP = NULL;
-	  driver.curBGP = $<p_BasicGraphPattern>2;
+	  driver.curBGP = driver.neededBGP = NULL;
       }
 ;
 
 // ConstructTriples?
 _QConstructTriples_E_Opt:
     { $$ = NULL; }
-  | ConstructTriples	{
-	$$ = $1;
-    }
+  | ConstructTriples	
 ;
 
 ConstructTriples:
     // TriplesSameSubject ( '.' ConstructTriples? )?
     TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	{
-	$$ = driver.neededBGP ? driver.neededBGP : $2;
+	$$ = driver.neededBGP;
 	driver.neededBGP = NULL;
     }
 ;
@@ -1350,12 +1232,8 @@ Verb:
 ;
 
 TriplesNode:
-    Generator	{
-	$$ = $1;
-    }
-  | BlankNodePropertyList	{
-	$$ = $1;
-    }
+    Generator	
+  | BlankNodePropertyList	
 ;
 
 BlankNodePropertyList:
@@ -1364,7 +1242,7 @@ BlankNodePropertyList:
 	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       } PropertyListNotEmpty GT_RBRACKET	{
-	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
+	  $$ = driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
 	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
       }
@@ -1459,21 +1337,15 @@ _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt:
 ;
 
 GraphNode:
-    VarOrTerm	{
-	$$ = $1;
-    }
-  | TriplesNode	{
-	$$ = $1;
-    }
+    VarOrTerm	
+  | TriplesNode	
 ;
 
 VarOrTerm:
     Var	{
 	$$ = $1;
     }
-  | GraphTerm	{
-	$$ = $1;
-    }
+  | GraphTerm	
 ;
 
 VarOrIRIref:
@@ -1486,12 +1358,8 @@ VarOrIRIref:
 ;
 
 Var:
-    VAR1	{
-	$$ = $1;
-    }
-  | VAR2	{
-	$$ = $1;
-    }
+    VAR1	
+  | VAR2	
 ;
 
 GraphTerm:
@@ -1507,18 +1375,14 @@ GraphTerm:
   | BooleanLiteral	{
 	$$ = $1;
     }
-  | BlankNode	{
-	$$ = $1;
-    }
+  | BlankNode	
   | NIL	{
 	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
 ;
 
 Expression:
-    ConditionalOrExpression	{
-	$$ = $1;
-    }
+    ConditionalOrExpression	
 ;
 
 ConditionalOrExpression:
@@ -1576,9 +1440,7 @@ _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star:
 ;
 
 ValueLogical:
-    RelationalExpression	{
-	$$ = $1;
-    }
+    RelationalExpression	
 ;
 
 RelationalExpression:
@@ -1620,15 +1482,11 @@ _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_O
 	$$ = NULL;
     }
 
-  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C	{
-	$$ = $1;
-    }
+  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C	
 ;
 
 NumericExpression:
-    AdditiveExpression	{
-	$$ = $1;
-    }
+    AdditiveExpression	
 ;
 
 AdditiveExpression:
@@ -1707,21 +1565,13 @@ UnaryExpression:
   | GT_MINUS PrimaryExpression	{
 	$$ = new ArithmeticNegation($2);
     }
-  | PrimaryExpression	{
-	$$ = $1;
-    }
+  | PrimaryExpression	
 ;
 
 PrimaryExpression:
-    BrackettedExpression	{
-	$$ = $1;
-    }
-  | BuiltInCall	{
-	$$ = $1;
-    }
-  | IRIrefOrFunction	{
-	$$ = $1;
-    }
+    BrackettedExpression	
+  | BuiltInCall	
+  | IRIrefOrFunction	
   | RDFLiteral	{
 	$$ = new LiteralExpression($1);
     }
@@ -1773,9 +1623,7 @@ BuiltInCall:
   | IT_isLITERAL GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral"), $3, NULL, NULL));
     }
-  | RegexExpression	{
-	$$ = $1;
-    }
+  | RegexExpression	
 ;
 
 RegexExpression:
@@ -1790,9 +1638,7 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
     {
 	$$ = NULL;
     }
-  | _O_QGT_COMMA_E_S_QExpression_E_C	{
-	$$ = $1;
-    }
+  | _O_QGT_COMMA_E_S_QExpression_E_C	
 ;
 
 IRIrefOrFunction:
@@ -1809,9 +1655,7 @@ _QArgList_E_Opt:
     {
 	$$ = NULL;
     }
-  | ArgList	{
-	$$ = $1;
-    }
+  | ArgList	
 ;
 
 RDFLiteral:
@@ -1847,108 +1691,58 @@ _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt:
 	$$.uri = NULL;
 	$$.langtag = NULL;
     }
-  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C	{
-	$$ = $1;
-    }
+  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C	
 ;
 
 NumericLiteral:
-    NumericLiteralUnsigned	{
-	$$ = $1;
-    }
-  | NumericLiteralPositive	{
-	$$ = $1;
-    }
-  | NumericLiteralNegative	{
-	$$ = $1;
-    }
+    NumericLiteralUnsigned	
+  | NumericLiteralPositive	
+  | NumericLiteralNegative	
 ;
 
 NumericLiteralUnsigned:
-    INTEGER	{
-	$$ = $1;
-    }
-  | DECIMAL	{
-	$$ = $1;
-    }
-  | DOUBLE	{
-	$$ = $1;
-    }
+    INTEGER	
+  | DECIMAL	
+  | DOUBLE	
 ;
 
 NumericLiteralPositive:
-    INTEGER_POSITIVE	{
-	$$ = $1;
-    }
-  | DECIMAL_POSITIVE	{
-	$$ = $1;
-    }
-  | DOUBLE_POSITIVE	{
-	$$ = $1;
-    }
+    INTEGER_POSITIVE	
+  | DECIMAL_POSITIVE	
+  | DOUBLE_POSITIVE	
 ;
 
 NumericLiteralNegative:
-    INTEGER_NEGATIVE	{
-	$$ = $1;
-    }
-  | DECIMAL_NEGATIVE	{
-	$$ = $1;
-    }
-  | DOUBLE_NEGATIVE	{
-	$$ = $1;
-    }
+    INTEGER_NEGATIVE	
+  | DECIMAL_NEGATIVE	
+  | DOUBLE_NEGATIVE	
 ;
 
 BooleanLiteral:
-    IT_true	{
-	$$ = $1;
-    }
-  | IT_false	{
-	$$ = $1;
-    }
-;
+    IT_true	
+  | IT_false	
+    ;
 
 String:
-    STRING_LITERAL1	{
-	$$ = $1;
-    }
-  | STRING_LITERAL2	{
-	$$ = $1;
-    }
-  | STRING_LITERAL_LONG1	{
-	$$ = $1;
-    }
-  | STRING_LITERAL_LONG2	{
-	$$ = $1;
-    }
+    STRING_LITERAL1	
+  | STRING_LITERAL2	
+  | STRING_LITERAL_LONG1	
+  | STRING_LITERAL_LONG2	
 ;
 
 IRIref:
-    IRI_REF	{
-	$$ = $1;
-    }
-  | PrefixedName	{
-	$$ = $1;
-    }
+    IRI_REF	
+  | PrefixedName	
 ;
 
 PrefixedName:
-    PNAME_LN	{
-	$$ = $1;
-    }
-  | PNAME_NS	{
-	$$ = $1;
-    }
+    PNAME_LN	
+  | PNAME_NS	
 ;
 
 BlankNode:
-    BLANK_NODE_LABEL	{
-	$$ = $1;
-    }
-  | ANON	{
-	$$ = $1;
-    }
+    BLANK_NODE_LABEL	
+  | ANON	
 ;
 
 /*** END SPARQLfed - Change the grammar rules above ***/
@@ -1966,15 +1760,11 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curGraphName(NULL), root(NULL), leanAndMean(false), unnestTree(false)
+	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
+	curBGP(NULL), neededBGP(NULL), triplesBlockOpt(NULL), 
+	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
+	curGraphName(NULL), root(NULL), leanAndMean(false),  unnestTree(false)
 {
-    curSubject = curPredicate = NULL;
-    neededBGP = NULL;
-    curBGP = NULL;
-    triplesBlockOpt = NULL;
-    curBindingClause = NULL;
-    curBinding = NULL;
-    curExprList = NULL;
 }
 
     SPARQLfedDriver::~SPARQLfedDriver ()
