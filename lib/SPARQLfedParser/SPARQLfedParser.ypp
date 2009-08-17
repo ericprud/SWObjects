@@ -295,11 +295,7 @@ public:
 			 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
 			 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
 
-%type <p_BasicGraphPattern> ConstructTriples
-			    _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt
-			    _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
-			    _QConstructTriples_E_Opt
-			    ConstructTemplate
+%type <p_BasicGraphPattern> ConstructTemplate
 
 %type <p_Filter> Filter
 %type <p_ArgList> ArgList _QArgList_E_Opt
@@ -1124,35 +1120,30 @@ ConstructTemplate:
     GT_LCURLEY {
 	driver.curBGP = driver.neededBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
-	  $$ = $3;
+	  $$ = driver.neededBGP;
 	  driver.curBGP = driver.neededBGP = NULL;
       }
 ;
 
 // ConstructTriples?
 _QConstructTriples_E_Opt:
-    { $$ = NULL; }
+    
   | ConstructTriples	
 ;
 
 ConstructTriples:
     // TriplesSameSubject ( '.' ConstructTriples? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	{
-	$$ = driver.neededBGP;
-	driver.neededBGP = NULL;
-    }
+    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	
 ;
 
 // '.' ConstructTriples?
 _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
-    GT_DOT _QConstructTriples_E_Opt	{
-	$$ = $2;
-    }
+    GT_DOT _QConstructTriples_E_Opt	
 ;
 
 // ( '.' ConstructTriples? )?
 _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
-    { $$ = NULL; }
+    
   | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
 ;
 
