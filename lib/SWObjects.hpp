@@ -249,6 +249,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); }
     virtual bool operator==(const Operation& ref) const = 0;
+    std::string toString() const;
 };
 
 class BNode;

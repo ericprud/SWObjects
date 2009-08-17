@@ -830,6 +830,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return r->get(this);
     }
 
+    std::string Operation::toString () const {
+	SPARQLSerializer s;
+	express(&s);
+	return s.getString();
+    }
+
     void TableJunction::addTableOperation (const TableOperation* tableOp, bool flatten) {
 	if (flatten == true && typeid(*tableOp) == typeid(*this)) { // deactivated
 	    TableJunction* j = (TableJunction*)tableOp; /* !!! LIES !!! */
