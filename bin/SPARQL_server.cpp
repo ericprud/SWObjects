@@ -966,10 +966,14 @@ int main (int argc, char** argv) {
 	}
 
 	startServer(ServerURI);
+	return 0;
     }
     catch (exception& e) {
 	cerr << e.what() << endl;
     }
-    return 0;
+    catch (std::string& s) {
+	cerr << s << endl;
+    }
+    return 1;
 }
 
