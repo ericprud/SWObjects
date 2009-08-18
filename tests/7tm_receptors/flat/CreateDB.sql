@@ -5,12 +5,12 @@
  *   empty fields (i.e. ",,") map to 0's in INT fields. hoped for NULL.
  */
 
-CREATE TABLE receptors (ID TINYINT PRIMARY KEY NOT NULL AUTO_INCREMENT, Family CHAR(40) NOT NULL, Code CHAR(25), Ligand CHAR(13), Official_IUPHAR_name CHAR(20) NOT NULL, 
-    Human_gene_name CHAR(10),                     HGNC_ID INT, Human_genetic_localisation CHAR(15), Human_nucleotide_RefSeq CHAR(15), Human_protein_RefSeq CHAR(15), Human_SwissProt CHAR(10), Human_Entrez_Gene CHAR(10),
-      Rat_gene_name CHAR(10),      Rat_Genome_Database_ID INT,   Rat_genetic_localisation CHAR(15),   Rat_nucleotide_RefSeq CHAR(15),   Rat_protein_RefSeq CHAR(15),   Rat_SwissProt CHAR(10),   Rat_Entrez_Gene CHAR(10),
-    Mouse_gene_name CHAR(10), Mouse_Genome_Informatics_ID INT, Mouse_genetic_localisation CHAR(15), Mouse_nucleotide_RefSeq CHAR(15), Mouse_protein_RefSeq CHAR(15), Mouse_SwissProt CHAR(10), Mouse_Entrez_Gene CHAR(10))
+CREATE TABLE receptors (ID TINYINT PRIMARY KEY NOT NULL AUTO_INCREMENT, Family VARCHAR(40) NOT NULL, Code VARCHAR(25), Ligand VARCHAR(13), Official_IUPHAR_name VARCHAR(20) NOT NULL, 
+    Human_gene_name VARCHAR(10),                     HGNC_ID INT, Human_genetic_localisation VARCHAR(15), Human_nucleotide_RefSeq VARCHAR(15), Human_protein_RefSeq VARCHAR(15), Human_SwissProt VARCHAR(10), Human_Entrez_Gene VARCHAR(10),
+      Rat_gene_name VARCHAR(10),      Rat_Genome_Database_ID INT,   Rat_genetic_localisation VARCHAR(15),   Rat_nucleotide_RefSeq VARCHAR(15),   Rat_protein_RefSeq VARCHAR(15),   Rat_SwissProt VARCHAR(10),   Rat_Entrez_Gene VARCHAR(10),
+    Mouse_gene_name VARCHAR(10), Mouse_Genome_Informatics_ID INT, Mouse_genetic_localisation VARCHAR(15), Mouse_nucleotide_RefSeq VARCHAR(15), Mouse_protein_RefSeq VARCHAR(15), Mouse_SwissProt VARCHAR(10), Mouse_Entrez_Gene VARCHAR(10))
        ENGINE = INNODB;
-LOAD DATA LOCAL INFILE '/home/eric/checkouts/swobjects/trunk/tests/7tm_receptors/IUPHAR_Receptors_ClassC.csv'
+LOAD DATA LOCAL INFILE '../IUPHAR_Receptors_ClassC.csv'
             INTO TABLE receptors
             FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\r\n' IGNORE 1 LINES
             (Family, Code, Ligand, Official_IUPHAR_name, 
