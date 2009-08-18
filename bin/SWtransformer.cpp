@@ -48,6 +48,7 @@ SPARQLSerializer::e_DEBUG SerializereDebugFlags = SPARQLSerializer::DEBUG_none;
 bool Quiet = false;
 #if XML_PARSER != SWOb_DISABLED && HTTP_CLIENT != SWOb_DISABLED
   bool ExecuteQuery = false;
+  bool LexicalCompare = false;
 #endif
 std::vector<const char*>SparqlEndpointPatterns;
 
@@ -97,6 +98,9 @@ bool option (int argc, char** argv, int* iArg) {
 		SparqlEndpointPatterns.push_back(argv[++(*iArg)]);
 	else
 	    SparqlEndpointPatterns.push_back(argv[*iArg]+2);
+	return true;
+    } else if (!::strncmp(argv[*iArg], "--lexical-compare", 17)) {
+	LexicalCompare = true;
 	return true;
     }
     return false;
@@ -176,10 +180,10 @@ int main(int argc,char** argv) {
 	    errorContext = "serialization";
 	    SPARQLSerializer sparqlizer("  ", StemURI == NULL ? SPARQLSerializer::DEBUG_none : SerializereDebugFlags);
 	    o->express(&sparqlizer);
-	    if (!Quiet)
+	    if (!Quiet) {
 		cout << "post-rule query (SPARQL):" << endl;
-	    if (!Quiet || StemURI == NULL)
 		cout << sparqlizer.getString() << endl;
+	    }
 	}
 
 	if (StemURI != NULL) {
@@ -197,7 +201,7 @@ int main(int argc,char** argv) {
 	    errorContext = "query execution";
 	    SAXPARSER p;
 	    WEBagent_boostASIO client;
-	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns, &DebugStream);
+	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns, LexicalCompare, &DebugStream);
 	    ResultSet rs(&posFactory);
 	    o->execute(&db, &rs);
 	    std::cout << rs; // show results

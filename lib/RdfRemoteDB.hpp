@@ -14,12 +14,15 @@ namespace w3c_sw {
 	class GraphSerializer : public SPARQLSerializer {
 	    ResultSet* rs;
 	    bool expectOuterGraph;
+	    bool lexicalCompare;
 	    std::set<const Variable*> vars;
 	    std::string selectString;
 	    std::string federationString;
 
 	public:
-	    GraphSerializer (ResultSet* rs) : SPARQLSerializer(), rs(rs), expectOuterGraph(true) {  }
+	    GraphSerializer (ResultSet* rs, bool lexicalCompare = false) : 
+		SPARQLSerializer(), rs(rs), expectOuterGraph(true), lexicalCompare(lexicalCompare)
+	    {  }
 	    std::string getSelectString () const { return selectString; }
 	    std::string getFederationString () const { return federationString; }
 
@@ -46,7 +49,7 @@ namespace w3c_sw {
 		    for (std::set<const Variable*>::const_iterator it = vars.begin();
 			 it != vars.end(); ++it)
 			selectString += (*it)->toString() + ' ';
-		    federationString = rs->buildFederationString(vars);
+		    federationString = rs->buildFederationString(vars, lexicalCompare);
 
 		    expectOuterGraph = true;
 		} else
@@ -58,10 +61,13 @@ namespace w3c_sw {
 	std::vector<const char*> endpointPatterns;
 	std::set<const POS*> loadedEndpoints;
 	POSFactory* posFactory;
+	bool lexicalCompare;
 
     public:
-	RdfRemoteDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::vector<const char*> endpointPatterns, std::ostream** debugStream = NULL) : 
-	    RdfDB(webAgent, xmlParser, debugStream), endpointPatterns(endpointPatterns) {  }
+	RdfRemoteDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, 
+		     std::vector<const char*> endpointPatterns, 
+		     bool lexicalCompare = false, std::ostream** debugStream = NULL) : 
+	    RdfDB(webAgent, xmlParser, debugStream), endpointPatterns(endpointPatterns), lexicalCompare(lexicalCompare) {  }
 #if REGEX_LIB == SWOb_BOOST
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();
@@ -96,15 +102,18 @@ namespace w3c_sw {
 		      srvc.at(srvc.size()-1) == '&' ? "" : 
 		      "&");
 		u << "query=";
-		GraphSerializer ser(rs);
+		GraphSerializer ser(rs, lexicalCompare);
 		toMatch->express(&ser);
 		std::string q = ser.getSelectString() + '{' + ser.getString() + ser.getFederationString() + '}';
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << "Querying <" << srvc << "> for\n" << q;
 		for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
 		    if (*it == ' ')
 			u << '+';
 		    else if ((*it >= 'a' && *it <= 'z') || 
 			     (*it >= 'A' && *it <= 'Z') || 
-			     (*it >= '0' && *it <= '9'))
+			     (*it >= '0' && *it <= '9') || 
+			     *it == '.' || *it == '-' || *it == '_')
 			u << *it;
 		    else if (*it < 0x10)
 			u << "%0" << (unsigned)*it;
@@ -124,6 +133,8 @@ namespace w3c_sw {
 
 		/* Parse results into a ResultSet. */
 		ResultSet red(posFactory, xmlParser, s.begin(), s.end());
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << " yielded\n" << red;
 
 		/* Join those results against our initial results. */
 		rs->joinIn(&red);

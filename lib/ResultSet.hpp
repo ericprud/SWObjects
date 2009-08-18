@@ -612,7 +612,7 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
-	std::string buildFederationString (std::set<const Variable*> vars) {
+	std::string buildFederationString (std::set<const Variable*> vars, bool lexicalCompare = false) {
 	    std::stringstream rsStr;
 	    bool noRowsYet = true;
 	    for (ResultSetConstIterator row = results.begin();
@@ -627,7 +627,10 @@ namespace w3c_sw {
 			    noValuesYet = false;
 			else
 			    rowStr << " && ";
-			rowStr << (*var)->toString() << "=" << value->toString();
+			if (lexicalCompare == true)
+			    rowStr << "STR(" << (*var)->toString() << ")=\"" << value->getLexicalValue() << "\"";
+			else
+			    rowStr << (*var)->toString() << "=" << value->toString();
 		    }
 		    
 		}
