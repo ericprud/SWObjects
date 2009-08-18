@@ -98,7 +98,7 @@ namespace w3c_sw {
 		if ((row = mysql_fetch_row(result)) == NULL)
 		    return ret;
 		for(int i = 0; i < num_fields; i++) {
-		    std::string lexval(row[i]);
+		    std::string lexval(row[i] ? row[i] : "SQL NULL");
 		    switch (fields[i].type) {
 		    case MYSQL_TYPE_TIMESTAMP:
 			lexval = "0-0-0T" + lexval;
