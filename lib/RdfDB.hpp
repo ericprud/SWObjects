@@ -130,22 +130,22 @@ namespace w3c_sw {
 	bool loadData (BasicGraphPattern* target, std::istream& stream, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
 	    if (!mediaType.compare(0, 9, "text/html") || 
 		!mediaType.compare(0, 9, "application/xhtml")) {
-		if (xmlParser != NULL)
+		if (xmlParser == NULL)
 		    throw std::string("no XML parser to parse ") + mediaType + 
 			" document " + nameStr;
 		RDFaParser rdfaParser(posFactory, xmlParser);
-		std::string s;
-		stream >> s;
+		std::istreambuf_iterator<char> i(stream), e;
+		std::string s(i, e); 
 		rdfaParser.parse(target, s.begin(), s.end(), nameStr);
 		return false;
 	    } else if (!mediaType.compare(0, 9, "text/rdf") || 
 		       !mediaType.compare(0, 9, "text/rdf+xml")) {
-		if (xmlParser != NULL)
+		if (xmlParser == NULL)
 		    throw std::string("no XML parser to parse ") + mediaType + 
 			" document " + nameStr;
 		RdfXmlParser p(posFactory, xmlParser);
-		std::string s;
-		stream >> s;
+		std::istreambuf_iterator<char> i(stream), e;
+		std::string s(i, e); 
 		p.parse(assureGraph(NULL), s.c_str());
 		return false;
 	    } else {
