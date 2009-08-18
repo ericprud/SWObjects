@@ -59,7 +59,7 @@ namespace w3c_sw {
 	PREFIX_XSI "long", 
 	PREFIX_XSI "dateTime", 
 	PREFIX_XSI "string", 
-	PREFIX_SWO "_literal", 
+	"", // PREFIX_SWO "_literal", 
 	PREFIX_SWO "_null", 
 	PREFIX_SWO "_unknown", 
     };
