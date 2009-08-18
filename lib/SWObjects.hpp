@@ -386,7 +386,19 @@ public:
 	    s << " datatype=\"" << datatype->getLexicalValue() << "\"";
 	if (m_LANGTAG) 
 	    s << " xml:lang=\"" << m_LANGTAG->getLexicalValue() << "\"";
-	s << ">" << terminal << "</literal>";
+	s << ">";
+	for (std::string::const_iterator ch = terminal.begin(); ch != terminal.end(); ++ch)
+	    switch (*ch) {
+	    case '<':
+		s << "&lt;";
+		break;
+	    case '>':
+		s << "&gt;";
+		break;
+	    default:
+		s << *ch;
+	    }
+	s << "</literal>";
 	return s.str();
     }
     virtual std::string toString () const {
