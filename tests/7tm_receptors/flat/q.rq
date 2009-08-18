@@ -9,11 +9,11 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sioc: <http://rdfs.org/sioc/ns#>
 PREFIX dbp: <http://dbpedia.org/ontology/>
 
-SELECT *
+SELECT ?label ?post ?humanEntrez ?code ?family ?iupharNm
 
 FROM NAMED <http://localhost:8888/7tm_receptors>
 FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
-FROM NAMED <http://hcls.deri.org/atag-data/gabab_example.html>
+FROM NAMED <http://hcls.deri.org/atag/data/gabab_example.html>
 
 WHERE {
 
@@ -31,7 +31,7 @@ GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&shou
           rdfs:label     ?label ;
 	  FILTER (lang(?label) = "en")
   }
-GRAPH <http://hcls.deri.org/atag-data/gabab_example.html> {
+GRAPH <http://hcls.deri.org/atag/data/gabab_example.html> {
       ?topic rdfs:label ?label .
       ?post  sioc:topic ?topic
   }
