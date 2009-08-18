@@ -47,8 +47,6 @@ namespace w3c_sw {
 	    if (port.empty())
 		port = "80";
 
-	    std::cerr << "http://" << host << ":" << port << path << std::endl;
-
 	    boost::asio::io_service io_service;
 
 	    // Get a list of endpoints corresponding to the server name.
