@@ -564,6 +564,7 @@ protected:
 	    res = SQLclient->executeQuery(finalQuery);
 	}
 	catch (std::string ex) {
+	    std::cerr << ex << std::endl;
 	    throw SimpleMessageException(ex);
 	}
 	SqlResultSet rs(&posFactory, res);
