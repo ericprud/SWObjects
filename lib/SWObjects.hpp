@@ -1038,7 +1038,7 @@ public:
 		if (rlit->getDatatype() != NULL) {
 		    const std::string lt = llit->getDatatype()->getLexicalValue();
 		    const std::string rt = rlit->getDatatype()->getLexicalValue();
-		    bool lex = lt.compare(rt);
+		    int lex = lt.compare(rt);
 		    if (lex != 0)
 			return lex < 0;
 		} else {
@@ -1055,7 +1055,7 @@ public:
 		if (rlit->getLangtag() != NULL) {
 		    const std::string lt = llit->getLangtag()->getLexicalValue();
 		    const std::string rt = rlit->getLangtag()->getLexicalValue();
-		    bool lex = lt.compare(rt);
+		    int lex = lt.compare(rt);
 		    if (lex != 0)
 			return lex < 0;
 		} else {
