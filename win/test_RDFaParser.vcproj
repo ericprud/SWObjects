@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xmlparse.lib"
+				AdditionalDependencies=""
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
