@@ -2211,14 +2211,15 @@ public:
     ArithmeticSum (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
+    struct NaryAdder : public POSFactory::NaryFunctor {
+	NaryAdder (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
+	virtual int eval (int l, int r) { return l + r; }
+	virtual float eval (float l, float r) { return l + r; }
+	virtual double eval (double l, double r) { return l + r; }
+    };
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	struct x : public POSFactory::NaryFunctor {
-	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
-		POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
-	    virtual int eval (int l, int r) { return l + r; }
-	    virtual float eval (float l, float r) { return l + r; }
-	    virtual double eval (double l, double r) { return l + r; }
-	} f(res, posFactory, evaluator);
+	NaryAdder f(res, posFactory, evaluator);
 	return posFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -2232,14 +2233,15 @@ public:
     ~ArithmeticNegation () {  }
     virtual const char* getUnaryOperator () { return "-"; };
     virtual void express(Expressor* p_expressor) const;
+    struct UnaryNegator : public POSFactory::UnaryFunctor {
+	UnaryNegator (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    POSFactory::UnaryFunctor(res, posFactory, evaluator) {  }
+	virtual int eval (int v) { return -v; }
+	virtual float eval (float v) { return -v; }
+	virtual double eval (double v) { return -v; }
+    };
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	struct x : public POSFactory::UnaryFunctor {
-	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
-		POSFactory::UnaryFunctor(res, posFactory, evaluator) {  }
-	    virtual int eval (int v) { return -v; }
-	    virtual float eval (float v) { return -v; }
-	    virtual double eval (double v) { return -v; }
-	} f(res, posFactory, evaluator);
+	UnaryNegator f(res, posFactory, evaluator);
 	return posFactory->applyCommonNumeric(m_Expression, &f);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -2268,14 +2270,15 @@ public:
     ArithmeticProduct (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : NaryExpression(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
+    struct NaryMultiplier : public POSFactory::NaryFunctor {
+	NaryMultiplier (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
+	    POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
+	virtual int eval (int l, int r) { return l * r; }
+	virtual float eval (float l, float r) { return l * r; }
+	virtual double eval (double l, double r) { return l * r; }
+    };
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	struct x : public POSFactory::NaryFunctor {
-	    x (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
-		POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
-	    virtual int eval (int l, int r) { return l * r; }
-	    virtual float eval (float l, float r) { return l * r; }
-	    virtual double eval (double l, double r) { return l * r; }
-	} f(res, posFactory, evaluator);
+	NaryMultiplier f(res, posFactory, evaluator);
 	return posFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
     }
     virtual bool operator== (const Expression& ref) const {
