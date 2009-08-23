@@ -2212,6 +2212,7 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     struct NaryAdder : public POSFactory::NaryFunctor {
+	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
 	NaryAdder (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
 	    POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
 	virtual int eval (int l, int r) { return l + r; }
@@ -2234,6 +2235,7 @@ public:
     virtual const char* getUnaryOperator () { return "-"; };
     virtual void express(Expressor* p_expressor) const;
     struct UnaryNegator : public POSFactory::UnaryFunctor {
+	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
 	UnaryNegator (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
 	    POSFactory::UnaryFunctor(res, posFactory, evaluator) {  }
 	virtual int eval (int v) { return -v; }
@@ -2271,6 +2273,7 @@ public:
     virtual const char* getInfixNotation () { return "+"; };    
     virtual void express(Expressor* p_expressor) const;
     struct NaryMultiplier : public POSFactory::NaryFunctor {
+	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
 	NaryMultiplier (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) : 
 	    POSFactory::NaryFunctor(res, posFactory, evaluator) {  }
 	virtual int eval (int l, int r) { return l * r; }
