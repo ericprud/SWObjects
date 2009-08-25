@@ -46,7 +46,7 @@ public:
                 if (ret < 1024)
                     break;
             }
-            printf("query: %s\n", query.c_str());
+            //printf("query: %s\n", query.c_str());
 
             // determine absolute URI
             const char *req_uri, *port;
@@ -56,28 +56,29 @@ public:
                                    ap_http_scheme(r), ap_get_server_name(r), port,
                                    (*r->uri == '/') ? "" : "/",
                                    r->uri);
+            //printf("req_uri: %s\n", req_uri);
+            //printf("filename: %s\n", r->filename);
 
             // execute query
             POSFactory f;
-
-            printf("req_uri: %s\n", req_uri);
-            TurtleSDriver tp(req_uri, &f);
             RdfDB db;
-            tp.setGraph(db.assureGraph(NULL));
 
-            printf("filename: %s\n", r->filename);
+            TurtleSDriver tp(req_uri, &f);
+            tp.setGraph(db.assureGraph(NULL));
             tp.parse_file(r->filename);
-            SPARQLfedDriver sp(req_uri, &f);
-            sp.parse_string(query);
 
             ResultSet rs(&f);
+            rs.setRdfDB(&db);
+
+            SPARQLfedDriver sp(req_uri, &f);
+            sp.parse_string(query);
             sp.root->execute(&db, &rs);
+
             //std::string out = db.assureGraph(NULL)->toString();
             //std::ofstream of(r->filename);
-            cout << db;
-            delete tp.root;
+            //delete tp.root;
+            cout << db.assureGraph(NULL)->toString();
 
-            // its worked
             return OK;
         }
 

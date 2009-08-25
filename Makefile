@@ -217,18 +217,17 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS)
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
-bin/mod_sparul.o: bin/mod_sparul.cpp config.h $(LIB)
-	$(CXX) -shared -Wall -fPIC `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I../../codea -I../../ccl -I/usr/include/apr-1/ $(INCLUDES) -o $@ $< $(LDFLAGS)
 
-bin/mod_sparul.so: bin/mod_sparul.o #lib
-	$(CXX) -shared -Wall -fPIC ../../codea/codea_hooks.o -lnsl -lpthread -o $@ $< $(LDFLAGS)
+bin/mod_sparul.so: $(LIB)
+	cd bin; \
+	gcc -fPIC -Wall `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(INCLUDES) -c mod_sparul.cpp -o mod_sparul.o; \
+	apxs -c mod_sparul.o /usr/local/src/codea/codea_hooks.o ../lib/libSWObjects.a $(LDFLAGS)
 
 clean-mod_sparul:
-	rm -f bin/mod_sparul.{o,so}
+	rm -f bin/mod_sparul.{o,so,la} bin/.libs/mod_sparul.*
 
 install-mod_sparul: bin/mod_sparul.so
-	make bin/mod_sparul.so
-	apxs -i -n sparul_module bin/mod_sparul.so
+	apxs -i -n sparul_module bin/.libs/mod_sparul.so
 
 # bin/ general rules
 bin/%.d : bin/%.cpp config.h
