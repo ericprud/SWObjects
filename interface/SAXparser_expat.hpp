@@ -17,16 +17,8 @@
 
 namespace w3c_sw {
 
-    class SAXparser_expat : public InsulatedSAXparser {
+    class SAXparser_expat : public NSdInsulatedSAXparser {
     protected:
-	typedef std::map< std::string, std::string > NSmapImpl;
-	class NSmapWrapper : public SWSAXhandler::NSmap {
-	    NSmapImpl& map;
-	public:
-	    NSmapWrapper (NSmapImpl& map) : map(map) {  }
-	    virtual std::string operator[] (std::string prefix) { return map[prefix]; }
-	};
-
 	struct NsSet {
 	    const char* namespaceURI;
 	    const char* localName;
@@ -49,8 +41,6 @@ namespace w3c_sw {
 	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
 	};
 
-	std::stack< NSmapImpl > nsz;
-
 	std::string readFile (const char* filename, const char* type) {
 	    std::ifstream dataStream(filename);
 	    if (!dataStream.is_open()) {
@@ -65,11 +55,7 @@ namespace w3c_sw {
 	}
 
     public:
-	SAXparser_expat () {
-	    NSmapImpl aboveRoot;
-	    aboveRoot["xml"] = NS_xml;
-	    nsz.push(aboveRoot);
-	}
+	SAXparser_expat () {  }
 	virtual ~SAXparser_expat () {  }
 
 	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
@@ -182,8 +168,8 @@ namespace w3c_sw {
 			self.insulator->error("namespace prefix \"%s\" not found", (char*)nss.prefix);
 		}
 	    }
-	    NSmapWrapper wrap(self.nsz.top());
- 	    self.insulator->startElement(elNs, elLname, name, &attrs, wrap);
+	    SimpleNsMap nsMap(self.nsz.top());
+ 	    self.insulator->startElement(elNs, elLname, name, &attrs, nsMap);
 	}
 
 	static void endEl (void *voidSelf,
@@ -192,8 +178,8 @@ namespace w3c_sw {
 	    const char* elLname;
 	    const char* elNs;
 	    self._crackQName(name, &elLname, &elNs);
-	    NSmapWrapper wrap(self.nsz.top());
- 	    self.insulator->endElement(elNs, elLname, (const char*)name, wrap);
+	    SimpleNsMap nsMap(self.nsz.top());
+ 	    self.insulator->endElement(elNs, elLname, (const char*)name, nsMap);
 	    self.nsz.pop();
 	}
 
@@ -201,8 +187,8 @@ namespace w3c_sw {
 			   const XML_Char *s,
 			   int len) {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
-	    NSmapWrapper wrap(self.nsz.top());
- 	    self.insulator->characters((const char*)s, 0, len, wrap);
+	    SimpleNsMap nsMap(self.nsz.top());
+ 	    self.insulator->characters((const char*)s, 0, len, nsMap);
 	}
     };
 

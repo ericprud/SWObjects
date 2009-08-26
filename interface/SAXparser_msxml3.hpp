@@ -40,18 +40,8 @@ namespace w3c_sw {
 	return wstr;
     }
 
-    class SAXparser_msxml3 : public InsulatedSAXparser {
+    class SAXparser_msxml3 : public NsdInsulatedSAXparser {
     protected:
-	class MsNsMap : public SWSAXhandler::NSmap {
-	    const SAXparser_msxml3* h;
-	public:
-	    MsNsMap (const SAXparser_msxml3* h) : h(h) {  }
-	    virtual std::string operator[] (std::string prefix) {
-		return std::string(""); // !!!
-		// return h->pXMLReader->getURI(prefix);
-	    }
-	};
-
 	struct NsSet {
 	    std::string namespaceURI;
 	    std::string localName;
@@ -138,17 +128,22 @@ namespace w3c_sw {
 	    virtual HRESULT STDMETHODCALLTYPE endDocument( void)
 	    {return S_OK;}
         
-	    virtual HRESULT STDMETHODCALLTYPE startPrefixMapping( 
-								 wchar_t __RPC_FAR *pwchPrefix,
+	    virtual HRESULT STDMETHODCALLTYPE startPrefixMapping(wchar_t __RPC_FAR *pwchPrefix,
 								 int cchPrefix,
 								 wchar_t __RPC_FAR *pwchUri,
-								 int cchUri)
-	    {return S_OK;}
+								 int cchUri) {
+		/* Cheasy re-use of std::stack<NSmapImpl>nsz to record single additons to map. */
+		NSmapImpl nsframe(self.nsz.top());
+		self.nsz.push(nsframe);
+		self.nsz.top()[pwchPrefix ? (const char*)to8bit(pwchPrefix, cchPrefix) : ""] = (const char*)to8bit(pwchUri, cchUri);
+		return S_OK;
+	    }
         
-	    virtual HRESULT STDMETHODCALLTYPE endPrefixMapping( 
-							       wchar_t __RPC_FAR *pwchPrefix,
-							       int cchPrefix)
-	    {return S_OK;}
+	    virtual HRESULT STDMETHODCALLTYPE endPrefixMapping(wchar_t __RPC_FAR *pwchPrefix,
+							       int cchPrefix) {
+		self.nsz.pop();
+		return S_OK;
+	    }
         
 	    HRESULT STDMETHODCALLTYPE startElement(wchar_t __RPC_FAR *pwchNamespaceUri,
 						   int cchNamespaceUri,
@@ -159,7 +154,7 @@ namespace w3c_sw {
 						   ISAXAttributes __RPC_FAR *pAttributes)
 	    {
 		Attributes_msxml3 attrs(pAttributes);
-		MsNsMap nsMap(this->h);
+		SimpleNsMap nsMap(self.nsz.top());
 		h->insulator->startElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					    (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
 					    (const char*)to8bit(pwchRawName, cchRawName).c_str(), 
@@ -174,7 +169,7 @@ namespace w3c_sw {
 						 wchar_t __RPC_FAR *pwchRawName,
 						 int cchRawName)
 	    {
-		MsNsMap nsMap(this->h);
+		SimpleNsMap nsMap(self.nsz.top());
 		h->insulator->endElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					  (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
 					 (const char*)to8bit(pwchRawName, cchRawName).c_str(), nsMap);
@@ -184,7 +179,7 @@ namespace w3c_sw {
 	    virtual HRESULT STDMETHODCALLTYPE characters(wchar_t __RPC_FAR *pwchChars,
 							 int cchChars)
 	    {
-		MsNsMap nsMap(this->h);
+		SimpleNsMap nsMap(self.nsz.top());
 		h->insulator->characters((const char*)to8bit(pwchChars, cchChars).c_str(), 0, cchChars, nsMap);
 		return S_OK;
 	    }

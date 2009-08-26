@@ -12,16 +12,8 @@
 
 namespace w3c_sw {
 
-    class SAXparser_libxml : public InsulatedSAXparser {
+    class SAXparser_libxml : public NSdInsulatedSAXparser {
     protected:
-	typedef std::map< std::string, std::string > NSmapImpl;
-	class LibXmlNsMap : public SWSAXhandler::NSmap {
-	    NSmapImpl& map;
-	public:
-	    LibXmlNsMap (NSmapImpl& map) : map(map) {  }
-	    virtual std::string operator[] (std::string prefix) { return map[prefix]; }
-	};
-
 	struct NsSet {
 	    const char* namespaceURI;
 	    const char* localName;
@@ -58,8 +50,6 @@ namespace w3c_sw {
 	    virtual std::string getQName (size_t i) { if (!initialized) init(); return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
 	    virtual std::string getValue (std::string uri, std::string localName) { if (!initialized) init(); return byNS_localName[uri][localName]; }
 	};
-
-	std::stack< NSmapImpl > nsz;
 
 	::xmlSAXHandler libXMLhandler; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler
 	
@@ -107,10 +97,6 @@ namespace w3c_sw {
 	    libXMLhandler.characters = &characters;
 	    libXMLhandler.warning = &mywarning;
 	    libXMLhandler.error = &myerror;
-
-	    NSmapImpl aboveRoot;
-	    aboveRoot["xml"] = NS_xml;
-	    nsz.push(aboveRoot);
 	}
 	virtual ~SAXparser_libxml () {
 	    ::xmlCleanupParser();
@@ -157,19 +143,15 @@ namespace w3c_sw {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
 	    NSmapImpl nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
-	    for (int i = 0; i < nb_namespaces; ++i) {
+	    for (int i = 0; i < nb_namespaces; ++i)
 		self.nsz.top()[namespaces[i] ? (char*)namespaces[i] : ""] = (char*)namespaces[2*i+1];
-		std::string prefixStr;
-		if (namespaces[i] != NULL)
-		    prefixStr.append(":").append((char*)namespaces[i]);
-		std::cerr << "namespace[" << i << "]: xmlns" << prefixStr << "=\"" << namespaces[2*i+1] << "\"" << std::endl;
-	    }
+
  	    Attributes_libxml attrs(attributes, nb_attributes);
-	    LibXmlNsMap map(self.nsz.top());
+	    SimpleNsMap nsMap(self.nsz.top());
  	    self.insulator->startElement((const char*)URI, 
 					  (const char*)localname, 
 					  SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
-					 &attrs, map);
+					 &attrs, nsMap);
 	}
 
 	static void endElementNs (void * voidSelf, 
@@ -178,10 +160,10 @@ namespace w3c_sw {
 				  const xmlChar * URI )
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    LibXmlNsMap map(self.nsz.top());
+	    SimpleNsMap nsMap(self.nsz.top());
  	    self.insulator->endElement((const char*)URI, 
 				       (const char*)localname, 
-				       SWSAXhandler::qName((const char*)prefix, (const char*)localname), map);
+				       SWSAXhandler::qName((const char*)prefix, (const char*)localname), nsMap);
 	    self.nsz.pop();
 	}
 
@@ -189,8 +171,8 @@ namespace w3c_sw {
 				const xmlChar * ch,
 				int len) {
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
-	    LibXmlNsMap map(self.nsz.top());
- 	    self.insulator->characters((const char*)ch, 0, len, map);
+	    SimpleNsMap nsMap(self.nsz.top());
+ 	    self.insulator->characters((const char*)ch, 0, len, nsMap);
 	}
 
 	static void myerror( void * voidSelf, const char * msg, ... ) {

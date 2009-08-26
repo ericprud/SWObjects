@@ -246,5 +246,24 @@ namespace w3c_sw {
 	}
     };
 
+    class NSdInsulatedSAXparser : public InsulatedSAXparser {
+    protected:
+	typedef std::map< std::string, std::string > NSmapImpl;
+	class SimpleNsMap : public SWSAXhandler::NSmap {
+	    NSmapImpl& map;
+	public:
+	    SimpleNsMap (NSmapImpl& map) : map(map) {  }
+	    virtual std::string operator[] (std::string prefix) { return map[prefix]; }
+	};
+
+	std::stack< NSmapImpl > nsz;
+
+	NSdInsulatedSAXparser () {
+	    NSmapImpl aboveRoot;
+	    aboveRoot["xml"] = NS_xml;
+	    nsz.push(aboveRoot);
+	};
+    };
+
 }
 

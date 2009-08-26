@@ -50,10 +50,9 @@ ifeq ($(XML_PARSER), LIBXML2)
 else ifeq ($(XML_PARSER), EXPAT1)
   CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\\n"
   XML_PARSER_LIB?= -lexpat
-else ifeq ($(XML_PARSER), MSXML)
-  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML "\\n"
+else ifeq ($(XML_PARSER), MSXML3)
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML3 "\\n"
   XML_PARSER_LIB?= -lmsxml
-  $(warning MSXML adapter code not yet written)
 else
   ifneq ($(XML_PARSER), )
     $(warning $(XML_PARSER) may not be supported)
@@ -139,7 +138,7 @@ config.h: CONFIG
 	"/* XML Parsers: */\\n" \
 	"#define SWOb_LIBXML2		137\\n" \
 	"#define SWOb_EXPAT1		138\\n" \
-	"#define SWOb_MSXML		139\\n" \
+	"#define SWOb_MSXML3		139\\n" \
 	"/* Character Encodings: */\\n" \
 	"#define SWOb_UTF8		143\\n" \
 	"/* Regexp Libs: */\\n" \

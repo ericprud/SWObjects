@@ -5,7 +5,7 @@
 # $Id$
 
 
-# XML_PARSER: LIBMXL2 | EXPAT1 |  - (SAX) XML parser library. #####
+# XML_PARSER: LIBMXL2 | EXPAT1 | MSXML3 - (SAX) XML parser library. #####
 # Needed for query federation (client side) and for running the
 # SPARQL tests.
 # Tested with:
@@ -13,7 +13,6 @@
 #   http://xmlsoft.org/
 #   expat 1.5.2
 #   http://sourceforge.net/projects/expat/
-# @@TODO= add MSXML shim code.
 XML_PARSER= LIBXML2
 
 # CONSOLE_ENCODING: UTF8 |  - what encoding to use for console output
