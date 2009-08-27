@@ -9,6 +9,9 @@
 #include "../tests/SPARQLTest.hpp"
 
 BOOST_AUTO_TEST_SUITE( insert )
+BOOST_AUTO_TEST_CASE( g_0_insert_1 ) {
+    GRAPH_TEST(NULL, "sparul/insert_1.rq", "sparul/1.trg");
+}
 BOOST_AUTO_TEST_CASE( g_0_insert_g_1 ) {
     GRAPH_TEST(NULL, "sparul/insert_g_1.rq", "sparul/g_1.trg");
 }

@@ -1,0 +1,4 @@
+# insert0
+# $Id$
+
+INSERT { <x> <y> 1 }
