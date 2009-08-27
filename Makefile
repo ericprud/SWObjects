@@ -99,7 +99,6 @@ endif
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
   HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION)
-  $(warning ASIO HTTP server code not yet written)
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
@@ -278,6 +277,9 @@ tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.d config.h
 
 tests/test_%: tests/test_%.o $(LIB)
 	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS)
+
+tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
+	$(CXX) $(TEST_LIB) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
 
 t_%: tests/test_%
 	( cd tests && ./$(notdir $<) $(TEST_ARGS) )

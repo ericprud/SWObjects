@@ -30,6 +30,9 @@ namespace w3c_sw {
 	    int http_version_major;
 	    int http_version_minor;
 	    std::vector<header> headers;
+	    std::string request_path;
+	    std::map<std::string, std::string> parms;
+	    virtual ~request () {  }
 	};
 
 	struct reply
@@ -361,51 +364,11 @@ namespace w3c_sw {
 
 	    /// Perform URL-decoding on a string. Returns false if the encoding was
 	    /// invalid.
-	    static bool url_decode(const std::string& in, std::string& out);
 	};
 
 	inline request_handler::request_handler(const std::string& doc_root)
 	    : doc_root_(doc_root)
 	{
-	}
-
-	inline bool request_handler::url_decode(const std::string& in, std::string& out)
-	{
-	    out.clear();
-	    out.reserve(in.size());
-	    for (std::size_t i = 0; i < in.size(); ++i)
-		{
-		    if (in[i] == '%')
-			{
-			    if (i + 3 <= in.size())
-				{
-				    int value;
-				    std::istringstream is(in.substr(i + 1, 2));
-				    if (is >> std::hex >> value)
-					{
-					    out += static_cast<char>(value);
-					    i += 2;
-					}
-				    else
-					{
-					    return false;
-					}
-				}
-			    else
-				{
-				    return false;
-				}
-			}
-		    else if (in[i] == '+')
-			{
-			    out += ' ';
-			}
-		    else
-			{
-			    out += in[i];
-			}
-		}
-	    return true;
 	}
 
     }

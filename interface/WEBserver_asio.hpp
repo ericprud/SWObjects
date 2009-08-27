@@ -10,12 +10,15 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-//#include <boost/enable_shared_from_this.hpp> ?? why was this included in connection.hpp?
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/logic/tribool.hpp>
 #include <boost/tuple/tuple.hpp>
 
 #if defined(_WIN32)
   #include <boost/function.hpp>
+  namespace boost {
+    typedef boost::asio::detail::thread thread;
+  }
 #else // !defined(_WIN32)
   #include <boost/thread.hpp>
   #include <pthread.h>
@@ -353,6 +356,92 @@ namespace w3c_sw {
 	    return c >= '0' && c <= '9';
 	}
 
+	struct asioRequest : public request {
+	    void url_decode();
+	    virtual std::string getPath() const;
+	    asioRequest();
+	protected:
+	};
+	inline asioRequest::asioRequest () {
+	    url_decode();
+	}
+	inline void asioRequest::url_decode ()
+	{
+	    request_path.clear();
+	    request_path.reserve(uri.size());
+	    std::string& in = uri;
+	    std::string* out = &request_path;
+	    enum {IN_path, IN_parm, IN_value} nowIn = IN_path;
+	    std::string parm;
+	    std::string value;
+	    std::size_t end = uri.find_last_of("?");
+	    if (end == std::string::npos)
+		end = uri.size();
+	    std::size_t i = 0;
+	    while (true) {
+		for (; i < end; ++i) {
+		    if (in[i] == '%') {
+			if (i + 3 <= in.size()) {
+			    int value;
+			    std::istringstream is(in.substr(i + 1, 2));
+			    if (is >> std::hex >> value) {
+				*out += static_cast<char>(value);
+				i += 2;
+			    } else {
+				throw w3c_sw::webserver::reply::
+				    stock_reply(w3c_sw::webserver::reply::bad_request);
+			    }
+			} else {
+			    throw w3c_sw::webserver::reply::
+				stock_reply(w3c_sw::webserver::reply::bad_request);
+			}
+		    } else if (in[i] == '+') {
+			*out += ' ';
+		    } else {
+			*out += in[i];
+		    }
+		}
+		switch (nowIn) {
+		case IN_path:
+		    if (end == uri.size())
+		        goto done;
+		    nowIn = IN_parm;
+		    out = &parm;
+		    end = uri.find_first_of("=", end);
+		    if (end == std::string::npos)
+			throw w3c_sw::webserver::reply::
+			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    ++i;
+		    break;
+		case IN_parm:
+		    nowIn = IN_value;
+		    out = &value;
+		    end = uri.find_first_of("&", end);
+		    if (end == std::string::npos)
+			end = uri.size();
+		    ++i;
+		    break;
+		case IN_value:
+		    parms[parm] = value;
+		    std::cerr << "parms[" << parm << "] = " << value << "\n";
+		    if (end == uri.size())
+		        goto done;
+		    nowIn = IN_parm;
+		    parm.clear();
+		    value.clear();
+		    out = &parm;
+		    end = uri.find_first_of("=", end);
+		    if (end == std::string::npos)
+			throw w3c_sw::webserver::reply::
+			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    ++i;
+		    break;
+		}
+	    };
+	done:
+	    ;
+	}
+
 	/// The common handler for all incoming requests.
 	/// inline void request_handler::handle_request(const request& req, reply& rep) was here
 
@@ -365,6 +454,7 @@ namespace w3c_sw {
 	    /// Construct a connection with the given io_service.
 	    explicit connection(boost::asio::io_service& io_service,
 				request_handler& handler);
+	    ~connection();
 
 	    /// Get the socket associated with the connection.
 	    boost::asio::ip::tcp::socket& socket();
@@ -393,7 +483,7 @@ namespace w3c_sw {
 	    boost::array<char, 8192> buffer_;
 
 	    /// The incoming request.
-	    request request_;
+	    request* request_;
 
 	    /// The parser for the incoming request.
 	    request_parser request_parser_;
@@ -408,7 +498,12 @@ namespace w3c_sw {
 				      request_handler& handler)
 	    : strand_(io_service),
 	      socket_(io_service),
-	      request_handler_(handler) {  }
+	      request_handler_(handler),
+	      request_(new asioRequest()), reply_() {  }
+
+	inline connection::~connection() {
+	    delete request_;
+	}
 
 	inline boost::asio::ip::tcp::socket& connection::socket() {
 	    return socket_;
@@ -427,10 +522,10 @@ namespace w3c_sw {
 	    if (!e) {
 		boost::tribool result;
 		boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-		  request_, buffer_.data(), buffer_.data() + bytes_transferred);
+		  *request_, buffer_.data(), buffer_.data() + bytes_transferred);
 
 		if (result) {
-		    request_handler_.handle_request(request_, reply_);
+		    request_handler_.handle_request(*request_, reply_);
 		    std::cerr << reply_.content << std::endl;
 		    boost::asio::async_write(socket_, reply_.to_buffers(),
 		     strand_.wrap(
@@ -571,6 +666,8 @@ namespace w3c_sw {
      */
     class WEBserver_asio : public WEBserver {
 #if defined(_WIN32)
+	static boost::function0<void> console_ctrl_function;
+
 	static BOOL WINAPI console_ctrl_handler (DWORD ctrl_type) {
 	    switch (ctrl_type)
 		{
@@ -640,6 +737,10 @@ namespace w3c_sw {
 	    server = NULL;
 	}
     };
+
+#if defined(_WIN32)
+    boost::function0<void> WEBserver_asio::console_ctrl_function = NULL;
+#endif // defined(_WIN32)
 
 } // namespace w3c_sw
 
