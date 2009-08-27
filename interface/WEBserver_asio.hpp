@@ -358,11 +358,12 @@ namespace w3c_sw {
 
 	struct asioRequest : public request {
 	    void url_decode();
-	    virtual std::string getPath() const;
 	    asioRequest();
+	    virtual void crackURI();
 	protected:
 	};
-	inline asioRequest::asioRequest () {
+	inline asioRequest::asioRequest () {  }
+	inline void asioRequest::crackURI () {
 	    url_decode();
 	}
 	inline void asioRequest::url_decode ()
@@ -443,7 +444,7 @@ namespace w3c_sw {
 	}
 
 	/// The common handler for all incoming requests.
-	/// inline void request_handler::handle_request(const request& req, reply& rep) was here
+	/// inline void request_handler::handle_request(request& req, reply& rep) was here
 
 	/// Represents a single connection from a client.
 	class connection

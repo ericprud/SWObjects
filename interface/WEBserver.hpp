@@ -32,6 +32,7 @@ namespace w3c_sw {
 	    std::vector<header> headers;
 	    std::string request_path;
 	    std::map<std::string, std::string> parms;
+	    virtual void crackURI() = 0;
 	    virtual ~request () {  }
 	};
 
@@ -356,7 +357,7 @@ namespace w3c_sw {
 	    virtual ~request_handler () {  }
 
 	    /// Handle a request and produce a reply.
-	    virtual void handle_request(const request& req, reply& rep) = 0;
+	    virtual void handle_request(request& req, reply& rep) = 0;
 
 	protected:
 	    /// The directory containing the files to be served.

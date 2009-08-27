@@ -36,10 +36,11 @@
 class MyHandler : public w3c_sw::webserver::request_handler {
     WEBSERVER& server;
     bool runOnce;
-    inline void handle_request (const w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
+    inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
 	/* caution: early returns */
 
 	try {
+	    req.crackURI();
 	    std::map<std::string, std::string>::const_iterator force = req.parms.find("force");
 	    if (force != req.parms.end()) {
 		std::stringstream s;
@@ -50,7 +51,8 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 			req.http_version_major << "/" << req.http_version_minor << "\n";
 		    for (std::vector<w3c_sw::webserver::header>::const_iterator it = req.headers.begin(); 
 			 it != req.headers.end(); ++it)
-			s << it->name << ": " << it->value << "\n\n";
+			s << it->name << ": " << it->value << "\n";
+		    s << "\n";
 		}
 
 		if (force->second == "parms" || force->second == "all")
