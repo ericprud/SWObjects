@@ -365,13 +365,13 @@ public:
 
  /*** BEGIN SPARQLfed - Change the grammar rules below ***/
 Query:
-    // Prologue ( Select | Construct | Describe | Ask )
+    // Prologue ( Select | Construct | Describe | Ask | Replace | Update | Magage )
     Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C	{
 	driver.root = $$ = $2;
     }
 ;
 
-// Select | Construct | Describe | Ask
+// Select | Construct | Describe | Ask | Replace | Update | Magage
 _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C:
     Select	
   | Construct	
