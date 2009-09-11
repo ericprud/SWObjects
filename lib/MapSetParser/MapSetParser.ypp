@@ -102,7 +102,6 @@ public:
 
     /** Reference to the object created during parsing of the SPARQL stream. */
     Operation* root;
-    bool leanAndMean;
 };
 
 } // namespace w3c_sw
@@ -743,8 +742,7 @@ GroupGraphPattern:
 	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
 	   * @@@ should it be the former? if so, remove or put a switch on this.
 	   */
-	  if (!driver.leanAndMean)
-	      driver.bgpStack.back() = NULL;
+	  driver.bgpStack.back() = NULL;
       }
 ;
 
@@ -830,19 +828,15 @@ GraphPatternNotTriples:
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
-	if (!driver.leanAndMean) {
-	    $<p_FilterHolder>$ = new FilterHolder();
-	    driver.bgpStack.push_back($<p_FilterHolder>$);
-	}
+	$<p_FilterHolder>$ = new FilterHolder();
+	driver.bgpStack.push_back($<p_FilterHolder>$);
       } GroupGraphPattern	{
 	  $$ = new OptionalGraphPattern($3);
-	  if (!driver.leanAndMean) {
-	      $<p_FilterHolder>2->copyFiltersTo($$);
-	      delete $<p_FilterHolder>2;
-	      driver.bgpStack.pop_back();
-	      driver.neededBGP = NULL;
-	      driver.bgpStack.back() = NULL;
-	  }
+	  $<p_FilterHolder>2->copyFiltersTo($$);
+	  delete $<p_FilterHolder>2;
+	  driver.bgpStack.pop_back();
+	  driver.neededBGP = NULL;
+	  driver.bgpStack.back() = NULL;
       }
 ;
 
@@ -852,10 +846,8 @@ GraphGraphPattern:
       } GroupGraphPattern	{
 	  $$ = new GraphGraphPattern($2, $4);
 	  driver.curGraphNameStack.pop();
-	  if (!driver.leanAndMean) {
-	      driver.neededBGP = NULL;
-	      driver.bgpStack.back() = NULL;
-	  }
+	  driver.neededBGP = NULL;
+	  driver.bgpStack.back() = NULL;
 	}
 ;
 
@@ -897,20 +889,17 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	$$ = new Filter($2);
-	if (driver.leanAndMean) {
-	    driver.makeBasicGraphPattern();
-	    driver.bgpStack.back()->addFilter($$);
-	} else {
 	size_t bgps = driver.bgpStack.size();
 	FilterHolder* h = bgps <= 1 ? NULL : 
 	    dynamic_cast<FilterHolder*>(driver.bgpStack.at(bgps - 2));
+#if 0
 	if (h == NULL) {
 	    driver.makeBasicGraphPattern();
 	    driver.bgpStack.back()->addFilter($$);
 	} else {
 	    h->addFilter($$);
 	}
-	}
+#endif
     }
 ;
 
@@ -1708,7 +1697,7 @@ void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
 namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL), leanAndMean(false)
+	Driver(baseURI, posFactory), curGraphNameStack(), root(NULL)
 {
     curSubject = curPredicate = NULL;
     neededBGP = NULL;

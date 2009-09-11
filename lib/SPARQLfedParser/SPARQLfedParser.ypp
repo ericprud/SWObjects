@@ -131,18 +131,22 @@ public:
     Operation* root;
 
     /** Control attributes. */
-    bool leanAndMean;
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
 };
 
     class FilterHolder : public BasicGraphPattern {
+	ProductionVector<const Filter*> m_Filters;
     public:
 	FilterHolder () : BasicGraphPattern(false) {  }
 	~FilterHolder () { m_Filters.clear(); }
+	//size_t filters () { return m_Filters.size(); }
+	void addFilter (const Filter* filter) {
+	    m_Filters.push_back(filter);
+	}
 	void copyFiltersTo (TableOperation* target) {
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 		 it != m_Filters.end(); ++it)
-		target->addFilter(*it);
+		; //target->addFilter(*it);
 	}
 	virtual void bindVariables(RdfDB*, ResultSet*) const {  }
 	virtual void express(Expressor* /* p_expressor */) const {  }
@@ -202,7 +206,6 @@ public:
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
     FilterHolder* p_FilterHolder;
-    Filter* p_Filter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;
@@ -279,7 +282,7 @@ public:
 %type <p_Bindings> _QBinding_E_Star
 %type <p_Binding> Binding
 
-%type <p_TableOperation> GroupGraphPattern
+%type <p_TableOperation> Filter GroupGraphPattern
 			 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C
 			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
 			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_C
@@ -297,7 +300,6 @@ public:
 
 %type <p_BasicGraphPattern> ConstructTemplate
 
-%type <p_Filter> Filter
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C
 		      _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -888,10 +890,7 @@ _QTriplesBlock_E_Opt:
 // GraphPatternNotTriples | Filter
 _O_QGraphPatternNotTriples_E_Or_QFilter_E_C:
     GraphPatternNotTriples
-  | Filter	{
-	$$ = driver.neededBGP;
-	driver.neededBGP = NULL;
-    }
+  | Filter	
 ;
 
 // '.'?
@@ -972,7 +971,7 @@ TriplesBlock:
     // TriplesSameSubject ( '.' TriplesBlock? )?
     TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	{
 	$$ = driver.neededBGP;
-	driver.neededBGP = NULL;
+	//	driver.neededBGP = NULL;
     }
 ;
 
@@ -998,17 +997,13 @@ GraphPatternNotTriples:
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
-	if (!driver.leanAndMean) {
-	    $<p_FilterHolder>$ = new FilterHolder();
-	    driver.curBGP = driver.neededBGP = NULL;
-	}
+	$<p_FilterHolder>$ = new FilterHolder();
+	driver.curBGP = driver.neededBGP = NULL;
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
-	  if (!driver.leanAndMean) {
-	      $<p_FilterHolder>2->copyFiltersTo(ret);
-	      delete $<p_FilterHolder>2;
-	      driver.curBGP = driver.neededBGP = NULL;
-	  }
+	  $<p_FilterHolder>2->copyFiltersTo(ret);
+	  delete $<p_FilterHolder>2;
+	  driver.curBGP = driver.neededBGP = NULL;
 	  $$ = ret;
       }
 ;
@@ -1020,8 +1015,7 @@ GraphGraphPattern:
       } GroupGraphPattern	{
 	  $$ = new GraphGraphPattern($2, $4);
 	  driver.curGraphName = $<p_POS>3;
-	  if (!driver.leanAndMean)
-	      driver.curBGP = driver.neededBGP = NULL;
+	  driver.curBGP = driver.neededBGP = NULL;
       }
 ;
 
@@ -1052,18 +1046,15 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	$$ = new Filter($2);
-	if (driver.leanAndMean) {
-	    driver.makeBasicGraphPattern();
-	    driver.curBGP->addFilter($$);
-	} else {
 	FilterHolder* h = dynamic_cast<FilterHolder*>(driver.curBGP);
+#if 0
 	if (h == NULL) {
 	    driver.makeBasicGraphPattern();
 	    driver.curBGP->addFilter($$);
 	} else {
 	    h->addFilter($$);
 	}
-	}
+#endif
     }
 ;
 
@@ -1761,7 +1752,7 @@ namespace w3c_sw {
 	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), neededBGP(NULL), triplesBlockOpt(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
-	curGraphName(NULL), root(NULL), leanAndMean(false),  unnestTree(false)
+	curGraphName(NULL), root(NULL),  unnestTree(false)
 {
 }
 

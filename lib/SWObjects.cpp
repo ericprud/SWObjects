@@ -248,22 +248,22 @@ void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
 void Filter::express (Expressor* p_expressor) const {
-    p_expressor->filter(this, m_Constraint);
+    p_expressor->filter(this, &m_Expressions);
 }
 void NamedGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns, &m_Filters);
+    p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns);
 }
 void DefaultGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->defaultGraphPattern(this, allOpts, &m_TriplePatterns, &m_Filters);
+    p_expressor->defaultGraphPattern(this, allOpts, &m_TriplePatterns);
 }
 void TableDisjunction::express (Expressor* p_expressor) const {
-    p_expressor->tableDisjunction(this, &m_TableOperations, &m_Filters);
+    p_expressor->tableDisjunction(this, &m_TableOperations);
 }
 void TableConjunction::express (Expressor* p_expressor) const {
-    p_expressor->tableConjunction(this, &m_TableOperations, &m_Filters);
+    p_expressor->tableConjunction(this, &m_TableOperations);
 }
 void OptionalGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->optionalGraphPattern(this, m_TableOperation, &m_Filters);
+    p_expressor->optionalGraphPattern(this, m_TableOperation);
 }
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
@@ -972,30 +972,27 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
+    void Filter::bindVariables (RdfDB*, ResultSet* rs) const {
+	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+	     it != m_Expressions.end(); it++)
+	    rs->restrict(*it);
+    }
+
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getPOSFactory(), rs->debugStream);
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
 	rs->joinIn(&island, false);
-	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-	     it != m_Filters.end(); it++)
-	    rs->restrict(*it);
     }
 
     void TableConjunction::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
-	if (m_Filters.size() > 0)
-	    throw(std::runtime_error("Can not construct into a pattern with filters."));
-
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->construct(target, rs, evaluator, bgp);
     }
 
     void TableConjunction::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
-	if (m_Filters.size() > 0)
-	    throw(std::runtime_error("Can not construct into a pattern with filters."));
-
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->deletePattern(target, rs, evaluator, bgp);
@@ -1008,9 +1005,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_TableOperations.end(); it++) {
 	    ResultSet disjoint(rs->getPOSFactory(), rs->debugStream);
 	    (*it)->bindVariables(db, &disjoint);
+#if 0
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 		 it != m_Filters.end(); it++)
 		disjoint.restrict(*it);
+#endif
 	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 		island.insert(island.end(), (*row)->duplicate(&island, island.end()));
 		delete *row;
@@ -1106,12 +1105,6 @@ compared against
 	    *DiffStream << errorCount << " errors" << std::endl;
 	    return false;
 	}
-
-	std::vector<const Filter*>::const_iterator mit = m_Filters.begin();
-	std::vector<const Filter*>::const_iterator rit = ref.m_Filters.begin();
-	for ( ; mit != m_Filters.end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
 	return true;
     }
 
@@ -1143,9 +1136,6 @@ compared against
 	}
 	if (rs->debugStream != NULL && *rs->debugStream != NULL)
 	    **rs->debugStream << "produced\n" << *rs;
-	for (std::vector<const Filter*>::const_iterator it = toMatch->m_Filters.begin();
-	     it != toMatch->m_Filters.end(); it++)
-	    rs->restrict(*it);
     }
     bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
@@ -1194,7 +1184,8 @@ compared against
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(*rs); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
-	rs->joinIn(&optRS, &m_Filters, ResultSet::OP_outer);
+	// rs->joinIn(&optRS, &m_Filters, ResultSet::OP_outer);
+	rs->joinIn(&optRS, NULL, ResultSet::OP_outer); // !!!
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {
@@ -1263,13 +1254,15 @@ compared against
 	return ret;
     }
     TableOperation::TableOperation (const TableOperation& ref) :
-	Base(ref), m_Filters() {
+	Base(ref) {
+#if 0
 	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
 	for (std::vector<const Filter*>::const_iterator it = ref.m_Filters.begin();
 	     it != ref.m_Filters.end(); ++it) {
 	    (*it)->express(&dup);
 	    m_Filters.push_back(dup.last.filter);
 	}
+#endif
     }
     std::string TableOperation::toString () const {
 	SPARQLSerializer s;

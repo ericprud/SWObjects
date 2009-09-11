@@ -108,13 +108,13 @@ public:
 	p_o->express(this);
 	ret << " ." << std::endl;
     }
-    virtual void filter (const Filter* const, const Expression* p_Constraint) {
+    virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
 	lead();
 	ret << "FILTER ";
-	p_Constraint->express(this);
+	p_Constraints->express(this);
 	ret << std::endl;
     }
-    void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters, bool p_allOpts) {
+    void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
@@ -130,7 +130,6 @@ public:
 	    }
 	else
 	    p_TriplePatterns->express(this);
-	p_Filters->express(this);
 	if (injectFilters != NULL) {
 	    injectFilters->express(this);
 	    injectFilters = NULL;
@@ -139,17 +138,17 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	lead();
 	p_name->express(this);
 	ret << ' ';
-	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
+	_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
     }
-    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	lead();
-	_BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
+	_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
     }
-    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -163,7 +162,6 @@ public:
 	    }
 	    (*it)->express(this);
 	}
-	p_Filters->express(this);
 	if (injectFilters != NULL) {
 	    injectFilters->express(this);
 	    injectFilters = NULL;
@@ -172,14 +170,13 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	lead();
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
 	p_TableOperations->express(this);
-	p_Filters->express(this);
 	if (injectFilters != NULL) {
 	    injectFilters->express(this);
 	    injectFilters = NULL;
@@ -188,12 +185,12 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
-	injectFilters = p_Filters;
+	//injectFilters = p_Filters; // !!! where'd these go now?
 	p_GroupGraphPattern->express(this);
 	depth--;
     }

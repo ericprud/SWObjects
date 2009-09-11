@@ -1072,6 +1072,7 @@ public:
 	    return lex < 0;
 	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
     }
+    bool eval(const Expression* expression, const Result* row);
 };
 
     /* Sorter for the POSs. */
@@ -1111,6 +1112,16 @@ public:
     virtual bool operator==(const Expression&) const = 0;
 };
 
+inline bool POSFactory::eval (const Expression* expression, const Result* row) {
+    bool ret;
+    try {
+	ret = ebv(expression->eval(row, this, NULL)) == getTrue();
+    } catch (SafeEvaluationError&) {
+	ret = false;
+    }
+    return ret;
+}
+
 typedef enum {DIST_all, DIST_distinct, DIST_reduced} e_distinctness;
 typedef enum {LIST_exact, LIST_members, LIST_starts, LIST_ends, LIST_any, LIST_unordered} e_listModifier;
 typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
@@ -1118,25 +1129,6 @@ typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 #define OFFSET_None -1
 typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
 typedef enum { SILENT_Yes, SILENT_No } e_Silence;
-
-class Filter : public Base {
-private:
-    const Expression* m_Constraint;
-public:
-    Filter (const Expression* p_Constraint) : Base(), m_Constraint(p_Constraint) {  }
-    ~Filter () { delete m_Constraint; }
-    virtual void express(Expressor* p_expressor) const;
-    bool operator== (const Filter& ref) const {
-	return *m_Constraint == *ref.m_Constraint;
-    }
-    bool eval (const Result* r, POSFactory* posFactory) const {
-	try {
-	    return posFactory->ebv(m_Constraint->eval(r, posFactory, false)) == posFactory->getTrue();
-	} catch (SafeEvaluationError&) {
-	    return false;
-	}
-    }
-};
 
 /*
 TableOperation class hierarchy:               Base
@@ -1160,21 +1152,52 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 
 class TableOperation : public Base {
 protected:
-    ProductionVector<const Filter*> m_Filters;
-    TableOperation () : Base(), m_Filters() {  }
+    TableOperation () : Base() {  }
     TableOperation(const TableOperation& ref);
 public:
-    //size_t filters () { return m_Filters.size(); }
-    void addFilter (const Filter* filter) {
-	m_Filters.push_back(filter);
-    }
     virtual void bindVariables(RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual bool operator==(const TableOperation& ref) const = 0;
     virtual TableOperation* getDNF() const = 0;
+    virtual bool operator==(const TableOperation& ref) const = 0;
     std::string toString() const;
+};
+class Filter : public TableOperation {
+private:
+    const TableOperation* op;
+    ProductionVector<const Expression*> m_Expressions;
+public:
+    Filter (const Expression* p_Expression) : TableOperation() {
+	m_Expressions.push_back(p_Expression);
+    }
+    ~Filter () {
+	delete op;
+    }
+
+    //size_t filters () { return m_Filters.size(); }
+    void addExpression (const Expression* expression) {
+	m_Expressions.push_back(expression);
+    }
+
+    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{FILTER(...)}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("DELETEPATTERN{FILTER(...)}");
+    }
+    virtual void express(Expressor* p_expressor) const;
+    virtual TableOperation* getDNF () const {
+	throw NotImplemented("getDNF(Filter(...))");
+    }
+    bool operator== (const Filter& ref) const {
+	return *op == *ref.op && m_Expressions == ref.m_Expressions;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const Filter* pref = dynamic_cast<const Filter*>(&ref);
+	return pref == NULL ? false : operator==(*pref);
+    }
 };
 class TableJunction : public TableOperation {
 protected:
@@ -2396,12 +2419,12 @@ public:
     virtual void rdfLiteral(const BooleanRDFLiteral* const self, bool p_value) = 0;
     virtual void nullpos(const NULLpos* const self) = 0;
     virtual void triplePattern(const TriplePattern* const self, const POS* p_s, const POS* p_p, const POS* p_o) = 0;
-    virtual void filter(const Filter* const self, const Expression* p_Constraint) = 0;
-    virtual void namedGraphPattern(const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) = 0;
-    virtual void defaultGraphPattern(const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) = 0;
-    virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) = 0;
-    virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) = 0;
-    virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) = 0;
+    virtual void filter(const Filter* const self, const ProductionVector<const Expression*>* p_Constraints) = 0;
+    virtual void namedGraphPattern(const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
+    virtual void defaultGraphPattern(const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
+    virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
+    virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
+    virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
@@ -2479,29 +2502,24 @@ public:
 	p_p->express(this);
 	p_o->express(this);
     }
-    virtual void filter (const Filter* const, const Expression* p_Constraint) {
-	p_Constraint->express(this);
+    virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
+	p_Constraints->express(this);
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	p_name->express(this);
 	p_TriplePatterns->express(this);
-	p_Filters->express(this);
     }
-    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	p_TriplePatterns->express(this);
-	p_Filters->express(this);
     }
-    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	p_TableOperations->express(this);
-	p_Filters->express(this);
     }
-    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	p_TableOperations->express(this);
-	p_Filters->express(this);
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
 	p_GroupGraphPattern->express(this);
-	p_Filters->express(this);
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);

@@ -84,10 +84,39 @@ namespace w3c_sw {
 	    const POS* o = last.posz.pos;
 	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
-	virtual void filter (const Filter* const, const Expression* p_Constraint) {
-	    p_Constraint->express(this);
-	    last.filter = last.expression ? new Filter(last.expression) : NULL;
+	virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
+	    last.filter = NULL;
+	    for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
+		 it != p_Constraints->end(); ++it) {
+		p_Constraints->express(this);
+		if (last.expression != NULL) {
+		    if (last.filter == NULL)
+			last.filter = new Filter(last.expression);
+		    else
+			((Filter*)last.filter)->addExpression(last.expression); // !!! LIES
+		}
+	    }
 	}
+#if 0
+	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*> p_Expressions) {
+	    p_op.express(this);
+	    TableOperation* op = last.operation;
+	    Filter* f = new Filter(op);
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); it++) {
+		(*it)->express(this);
+		if (last.expression != NULL)
+		    f->addExpression(last.expression);
+	    }
+	    if (f.size() > 0)
+		last.operation = last.filter = f;
+	    else {
+		delete op;
+		last.filter = NULL;
+		p_op.express(this); // re-sets last.operation;
+	    }
+	}
+#endif
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
@@ -96,25 +125,15 @@ namespace w3c_sw {
 		p->addTriplePattern(last.triplePattern);
 	    }
 	}
-	void _Filters (const ProductionVector<const Filter*>* p_Filters, TableOperation* op) {
-	    for (std::vector<const Filter*>::const_iterator it = p_Filters->begin();
-		 it != p_Filters->end(); it++) {
-		(*it)->express(this);
-		if (last.filter != NULL)
-		    op->addFilter(last.filter);
-	    }
-	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
 	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos);
 	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    DefaultGraphPattern* ret = new DefaultGraphPattern();
 	    _TriplePatterns(p_TriplePatterns, ret);
-	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
 	/* _TableOperations factored out supporter function; virtual for MappedDuplicator. */
@@ -125,21 +144,18 @@ namespace w3c_sw {
 		j->addTableOperation(last.tableOperation, true);
 	    }
 	}
-	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    TableDisjunction* ret = new TableDisjunction();
 	    _TableOperations(p_TableOperations, ret);
-	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    TableConjunction* ret = new TableConjunction();
 	    _TableOperations(p_TableOperations, ret);
-	    _Filters(p_Filters, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
 	    p_GroupGraphPattern->express(this);
-	    p_Filters->express(this);
 	    last.tableOperation = new OptionalGraphPattern(last.tableOperation); // @@@ last.filters
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
