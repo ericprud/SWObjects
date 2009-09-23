@@ -15,7 +15,7 @@ public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
 protected:
     std::stringstream ret;
-    const ProductionVector<const Filter*>* injectFilters;
+    const ProductionVector<const Expression*>* injectFilter;
     bool normalizing; // no constructor switch for this yet.
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		  PREC_And, 
@@ -51,7 +51,7 @@ protected:
     }
 public:
     SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	injectFilters(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
     virtual std::string getString () { return ret.str(); }
     //!!!
@@ -108,11 +108,24 @@ public:
 	p_o->express(this);
 	ret << " ." << std::endl;
     }
-    virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
+    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+#if 0
+	injectFilter = p_Constraints;
+#endif
+	if (p_op) p_op->express(this); else ret << "No nested operation!"; // !!!
 	lead();
 	ret << "FILTER ";
 	p_Constraints->express(this);
 	ret << std::endl;
+    }
+    void injectFilters () {
+	if (injectFilter != NULL) {
+	    lead();
+	    ret << "FILTER ";
+	    injectFilter->express(this);
+	    ret << std::endl;
+	    injectFilter = NULL;
+	}
     }
     void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
 	ret << '{';
@@ -130,10 +143,7 @@ public:
 	    }
 	else
 	    p_TriplePatterns->express(this);
-	if (injectFilters != NULL) {
-	    injectFilters->express(this);
-	    injectFilters = NULL;
-	}
+	injectFilters();
 	depth--;
 	lead();
 	ret << '}' << std::endl;
@@ -162,10 +172,7 @@ public:
 	    }
 	    (*it)->express(this);
 	}
-	if (injectFilters != NULL) {
-	    injectFilters->express(this);
-	    injectFilters = NULL;
-	}
+	injectFilters();
 	depth--;
 	lead();
 	ret << '}' << std::endl;
@@ -177,20 +184,17 @@ public:
 	ret << std::endl;
 	depth++;
 	p_TableOperations->express(this);
-	if (injectFilters != NULL) {
-	    injectFilters->express(this);
-	    injectFilters = NULL;
-	}
+	injectFilters();
 	depth--;
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
-	//injectFilters = p_Filters; // !!! where'd these go now?
+	//injectFilter = p_Filter; // !!! where'd these go now?
 	p_GroupGraphPattern->express(this);
 	depth--;
     }

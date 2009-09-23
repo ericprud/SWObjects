@@ -64,7 +64,8 @@ public:
 	p_o->express(this);
 	xml->close();
     }
-    virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
+    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+	p_op->express(this);
 	xml->open("Filter");
 	p_Constraints->express(this);
 	xml->close();
@@ -99,9 +100,10 @@ public:
 	p_TableOperations->express(this);
 	xml->close();
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	xml->open("OptionalGraphPattern");
 	p_GroupGraphPattern->express(this);
+	p_Expressions->express(this);
 	xml->close();
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {

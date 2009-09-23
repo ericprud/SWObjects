@@ -248,7 +248,7 @@ void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
 void Filter::express (Expressor* p_expressor) const {
-    p_expressor->filter(this, &m_Expressions);
+    p_expressor->filter(this, op, &m_Expressions);
 }
 void NamedGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns);
@@ -263,7 +263,7 @@ void TableConjunction::express (Expressor* p_expressor) const {
     p_expressor->tableConjunction(this, &m_TableOperations);
 }
 void OptionalGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->optionalGraphPattern(this, m_TableOperation);
+    p_expressor->optionalGraphPattern(this, m_TableOperation, &m_Expressions);
 }
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
@@ -972,10 +972,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
-    void Filter::bindVariables (RdfDB*, ResultSet* rs) const {
+    void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	op->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
-	    rs->restrict(*it);
+	    island.restrict(*it);
+	rs->joinIn(&island, false);
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -1184,8 +1187,7 @@ compared against
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(*rs); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
-	// rs->joinIn(&optRS, &m_Filters, ResultSet::OP_outer);
-	rs->joinIn(&optRS, NULL, ResultSet::OP_outer); // !!!
+	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {

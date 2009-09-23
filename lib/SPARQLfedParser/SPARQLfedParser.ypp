@@ -63,6 +63,22 @@ namespace w3c_sw {
 
 class SPARQLfedScanner;
 
+    class ParserFilter : public Filter {
+    public:
+	ParserFilter () : Filter(NULL) {  }
+	void setOp (TableOperation* newOp) { op = newOp; }
+    };
+
+    class FilterHolder : public ParserFilter {
+    public:
+	void copyExpressionsTo (OptionalGraphPattern* target) {
+	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+		 it != m_Expressions.end(); ++it)
+		target->addExpression(*it);
+	    m_Expressions.clear();
+	}
+    };
+
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -76,23 +92,40 @@ protected:
     const POS* curSubject;
     const POS* curPredicate;
     BasicGraphPattern* curBGP;
-    BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
-    TableOperation* triplesBlockOpt; // needed to make right-descending tree for TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
+    ParserFilter* curFilter;
+    TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     BindingClause* curBindingClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
     const POS* curGraphName;
+    ProductionVector<const Expression*> filterExpressions;
 
-    BasicGraphPattern* makeBasicGraphPattern ( ) {
+    void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
-	    curBGP = neededBGP = curGraphName == NULL ? 
+	    curBGP = curGraphName == NULL ? 
 		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
 		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
+	    curOp = makeConjunction(curOp, curBGP);
 	}
-	return curBGP;
     }
 
-    TableOperation* makeConjunction (TableOperation* l, TableOperation* r, bool nullable) {
+    ParserFilter* saveFilter () {
+	ParserFilter* ret = curFilter;
+	curFilter = NULL;
+	return ret;
+    }
+
+    void restoreFilter (ParserFilter* was) {
+	if (curFilter != NULL) {
+	    if (curOp == NULL)
+		ensureBasicGraphPattern();
+	    curFilter->setOp(curOp);
+	    curOp = curFilter;
+	}
+	curFilter = was;
+    }
+
+    TableOperation* makeConjunction (TableOperation* l, TableOperation* r) {
 	if (l != NULL) {
 	    if (r != NULL) {
 		TableConjunction* ret = new TableConjunction();
@@ -104,8 +137,6 @@ protected:
 	}
 	if (r != NULL)
 	    return r;
-	if (!nullable)
-	    return makeBasicGraphPattern();
 	return NULL;
     }
 
@@ -133,26 +164,6 @@ public:
     /** Control attributes. */
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
 };
-
-    class FilterHolder : public BasicGraphPattern {
-	ProductionVector<const Filter*> m_Filters;
-    public:
-	FilterHolder () : BasicGraphPattern(false) {  }
-	~FilterHolder () { m_Filters.clear(); }
-	//size_t filters () { return m_Filters.size(); }
-	void addFilter (const Filter* filter) {
-	    m_Filters.push_back(filter);
-	}
-	void copyFiltersTo (TableOperation* target) {
-	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
-		 it != m_Filters.end(); ++it)
-		; //target->addFilter(*it);
-	}
-	virtual void bindVariables(RdfDB*, ResultSet*) const {  }
-	virtual void express(Expressor* /* p_expressor */) const {  }
-	virtual bool operator==(const TableOperation& /* ref */) const { return false; }
-	virtual TableOperation* getDNF() const { return NULL; }
-    };
 
 } // namespace w3c_sw
 
@@ -205,7 +216,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    FilterHolder* p_FilterHolder;
+    ParserFilter* p_FilterHolder;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;
@@ -282,22 +293,6 @@ public:
 %type <p_Bindings> _QBinding_E_Star
 %type <p_Binding> Binding
 
-%type <p_TableOperation> Filter GroupGraphPattern
-			 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C
-			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
-			 _O_QGraphPatternNotTriples_E_Or_QFilter_E_C
-			 GraphPatternNotTriples GroupOrUnionGraphPattern
-			 OptionalGraphPattern GraphGraphPattern
-			 _QTriplesBlock_E_Opt TriplesBlock
-			 _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C
-			 _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt
-			 GraphTemplate
-			 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C
-			 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C
-			 _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
-			 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star
-			 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star
-
 %type <p_BasicGraphPattern> ConstructTemplate
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
@@ -311,7 +306,7 @@ public:
 %type <p_POS> SourceSelector
 	      _O_QVarOrTerm_E_Or_QIT_NULL_E_C
 	      BlankNodePropertyList
-	      Verb VarOrIRIref VarOrTerm GraphNode Object
+	      Verb VarOrIRIref VarOrTerm GraphNode
 	      GraphTerm BlankNode TriplesNode Generator
 %type <p_POSs> _QGraphNode_E_Star _O_QGraphNode_E_S_QGraphNode_E_Star_C
 	       _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt
@@ -393,19 +388,19 @@ Update:
 
 Replace:
     IT_REPLACE WhereClause IT_WITH GraphTemplate	{
-	$$ = new Replace($2, $4);
+	$$ = new Replace($2, driver.curOp);
     }
 ;
 
 Insert:
     IT_INSERT GraphTemplate _QWhereClause_E_Opt	{
-	$$ = new Insert($2, $3);
+	$$ = new Insert(driver.curOp, $3);
 }
 ;
 
 Delete:
     IT_DELETE GraphTemplate _QWhereClause_E_Opt	{
-	$$ = new Delete($2, $3);
+	$$ = new Delete(driver.curOp, $3);
     }
 ;
 
@@ -663,8 +658,9 @@ SourceSelector:
 
 WhereClause:
     // 'WHERE'? GroupGraphPattern BindingClause?
-    _QIT_WHERE_E_Opt GroupGraphPattern _QBindingClause_E_Opt	{
-	$$ = new WhereClause($2, $3);
+    _QIT_WHERE_E_Opt  GroupGraphPattern _QBindingClause_E_Opt	{
+	driver.restoreFilter(NULL);
+	$$ = new WhereClause(driver.curOp, $3);
     }
 ;
 
@@ -859,31 +855,18 @@ _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus:
 GroupGraphPattern:
     // '{' TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.curBGP = driver.neededBGP = NULL;
-	$<p_TableOperation>$ = driver.triplesBlockOpt;
-	driver.triplesBlockOpt = NULL;
-      } _QTriplesBlock_E_Opt {
-	  driver.triplesBlockOpt = $3;
-      } _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
-	  // if ($3) LINE << $3 << ": " << *$3 << "--\n";
-	  // if ($5) LINE << $5 << ": " << *$5 << "--\n";
-	  $$ = 
-	      $5 ? $5 : 
-	      $3 ? $3 :
-	      driver.makeBasicGraphPattern();
-	  driver.curBGP = driver.neededBGP = NULL;
-	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
-	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
-	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
-	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
-	   */
-	  driver.triplesBlockOpt = $<p_TableOperation>2;
+	driver.curOp = NULL;
+	driver.curBGP = NULL;
+      } _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
+ 	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
+	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
+	  driver.curBGP = NULL;
       }
 ;
 
 // TriplesBlock?
 _QTriplesBlock_E_Opt:
-    { $$ = NULL; }
+    
   | TriplesBlock	
 ;
 
@@ -901,90 +884,64 @@ _QGT_DOT_E_Opt:
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
 _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
-    _O_QGraphPatternNotTriples_E_Or_QFilter_E_C {
-	$<p_TableOperation>$ = driver.triplesBlockOpt ? driver.makeConjunction(driver.triplesBlockOpt, $1, true) : $1;;
-	driver.triplesBlockOpt = NULL;
-      } _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	{
-	  $$ = driver.makeConjunction($<p_TableOperation>2, $4, true);
-      }
+    _O_QGraphPatternNotTriples_E_Or_QFilter_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	
 ;
 
 // ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
 _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
-    {
-	$$ = NULL;
-    }
+    
   | // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
-    _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
-	if (driver.triplesBlockOpt) {
-	    $1 = driver.makeConjunction(driver.triplesBlockOpt, $1, true);
-	    driver.triplesBlockOpt = NULL;
-	}
-	$$ = driver.makeConjunction($1, $2, false);
-    }
+    _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	
 ;
 
 GraphTemplate:
     // '{' TriplesBlock? ( ( 'GRAPH' VarOrIRIref GraphTemplate | Filter ) '.'? TriplesBlock? )* '}'
     GT_LCURLEY {
-	driver.curBGP = driver.neededBGP = NULL;
+	driver.curBGP = NULL;
+	driver.curOp = NULL;
       } _QTriplesBlock_E_Opt _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
-	  $$ = driver.makeConjunction($3, $4, true);
-	  driver.curBGP = driver.neededBGP = NULL;
-	  /* Prevents "optimization" in e.g. <data-r2/algebra/join-combo-1.rq>
-	   *  of ?a :p ?c . OPTIONAL { ?a :r ?d } ?a ?p 1 .
-	   *  to { ?a :p ?c . ?a ?p 1 . } OPTIONAL { ?a :r ?d }
-	   * now { ?a :p ?c . } OPTIONAL { ?a :r ?d } { ?a ?p 1 . }
-	   */
+	  driver.curBGP = NULL;
       }
 ;
 
 // 'GRAPH' VarOrIRIref GraphTemplate
 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C:
-    IT_GRAPH VarOrIRIref {
-	$<p_POS>$ = driver.curGraphName;
-	driver.curGraphName = $2;
-    } GraphTemplate	{
-	$$ = new GraphGraphPattern($2, $4);
-	driver.curGraphName = $<p_POS>3;
-    }
+    {
+	$<p_TableOperation>$ = driver.curOp;
+	driver.curFilter = NULL;
+      } IT_GRAPH VarOrIRIref {
+	  $<p_POS>$ = driver.curGraphName;
+	  driver.curGraphName = $3;
+      } GraphTemplate	{
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, new GraphGraphPattern($3, driver.curOp));
+	  driver.curGraphName = $<p_POS>4;
+      }
 ;
 
 // ( 'GRAPH' VarOrIRIref GraphTemplate ) '.'? TriplesBlock?
 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
-    _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	{
-	$$ = driver.makeConjunction($1, $3, true);
-    }
+    _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	
 ;
 
 // ( ( 'GRAPH' VarOrIRIref GraphTemplate ) '.'? TriplesBlock? )*
 _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
-    {
-	$$ = NULL;
-    }
-  | _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	{
-	$$ = driver.makeConjunction($1, $2, true);
-    }
+    
+  | _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	
 ;
 
 TriplesBlock:
     // TriplesSameSubject ( '.' TriplesBlock? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	{
-	$$ = driver.neededBGP;
-	//	driver.neededBGP = NULL;
-    }
+    TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	
 ;
 
 // '.' TriplesBlock?
 _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C:
-    GT_DOT _QTriplesBlock_E_Opt	{
-	$$ = $2;
-    }
+    GT_DOT _QTriplesBlock_E_Opt	
 ;
 
 // ( '.' TriplesBlock? )?
 _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt:
-    { $$ = NULL; }
+    
   | // '.' TriplesBlock?
     _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C
 ;
@@ -997,64 +954,69 @@ GraphPatternNotTriples:
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
-	$<p_FilterHolder>$ = new FilterHolder();
-	driver.curBGP = driver.neededBGP = NULL;
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_FilterHolder>$ = driver.curFilter;
+	  driver.curFilter = new FilterHolder();
       } GroupGraphPattern	{
-	  OptionalGraphPattern* ret = new OptionalGraphPattern($3);
-	  $<p_FilterHolder>2->copyFiltersTo(ret);
-	  delete $<p_FilterHolder>2;
-	  driver.curBGP = driver.neededBGP = NULL;
-	  $$ = ret;
+	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
+	  ((FilterHolder*)driver.curFilter)->copyExpressionsTo(ret); // @@ nasty cast
+	  delete driver.curFilter;
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
+	  driver.curFilter = $<p_FilterHolder>3;
       }
 ;
 
 GraphGraphPattern:
-    IT_GRAPH VarOrIRIref {
-	$<p_POS>$ = driver.curGraphName;
-	driver.curGraphName = $2;
+    IT_GRAPH {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_FilterHolder>$ = driver.saveFilter();
+      } VarOrIRIref {
+	  $<p_POS>$ = driver.curGraphName;
+	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  $$ = new GraphGraphPattern($2, $4);
-	  driver.curGraphName = $<p_POS>3;
-	  driver.curBGP = driver.neededBGP = NULL;
+	  driver.restoreFilter($<p_FilterHolder>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
+	  driver.curGraphName = $<p_POS>5;
       }
 ;
 
 GroupOrUnionGraphPattern:
     // GroupGraphPattern ( 'UNION' GroupGraphPattern )*
-    GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	$$ = $2 ? driver.makeDisjunction($1, $2) : $1;
-    }
+    {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_FilterHolder>$ = driver.saveFilter();
+      } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
+	  driver.restoreFilter($<p_FilterHolder>2);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, driver.curOp);
+      }
 ;
 
 // 'UNION' GroupGraphPattern
 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
-    IT_UNION GroupGraphPattern	{
-	$$ = $2;
-    }
+    IT_UNION {
+	$<p_TableOperation>$ = driver.curOp;
+      } GroupGraphPattern	{
+	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.curOp);
+      }
 ;
 
 // ( 'UNION' GroupGraphPattern )*
 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
-    {
-	$$ = NULL;
-    }
-  | _O_QIT_UNION_E_S_QGroupGraphPattern_E_C _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	$$ = $2 ? driver.makeDisjunction($1, $2) : $1;
-    }
+    
+  | _O_QIT_UNION_E_S_QGroupGraphPattern_E_C _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	
 ;
 
 Filter:
     IT_FILTER Constraint	{
-	$$ = new Filter($2);
-	FilterHolder* h = dynamic_cast<FilterHolder*>(driver.curBGP);
-#if 0
-	if (h == NULL) {
-	    driver.makeBasicGraphPattern();
-	    driver.curBGP->addFilter($$);
-	} else {
-	    h->addFilter($$);
+	if (driver.curFilter == NULL) {
+	    if (driver.curOp == NULL)
+		driver.ensureBasicGraphPattern();
+	    driver.curFilter = new ParserFilter();
 	}
-#endif
+	driver.curFilter->addExpression($2);
     }
 ;
 
@@ -1109,10 +1071,9 @@ _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_Q
 ConstructTemplate:
     // '{' ConstructTriples? '}'
     GT_LCURLEY {
-	driver.curBGP = driver.neededBGP = NULL;
+	driver.curBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
-	  $$ = driver.neededBGP;
-	  driver.curBGP = driver.neededBGP = NULL;
+	  $$ = driver.curBGP;
       }
 ;
 
@@ -1203,9 +1164,8 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 
 Object:
     GraphNode	{
-	BasicGraphPattern* bgp = driver.makeBasicGraphPattern();
-	bgp->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-	$$ = $1;
+	driver.ensureBasicGraphPattern();
+	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
     }
 ;
 
@@ -1247,7 +1207,7 @@ Generator:
 	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
 	    const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
-	    driver.makeBasicGraphPattern();
+	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
 		const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
@@ -1750,7 +1710,7 @@ namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
 	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), neededBGP(NULL), triplesBlockOpt(NULL), 
+	curBGP(NULL), curFilter(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
 	curGraphName(NULL), root(NULL),  unnestTree(false)
 {

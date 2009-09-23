@@ -84,21 +84,22 @@ namespace w3c_sw {
 	    const POS* o = last.posz.pos;
 	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
-	virtual void filter (const Filter* const, const ProductionVector<const Expression*>* p_Constraints) {
+	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
 	    last.filter = NULL;
+	    p_op->express(this);
+	    const TableOperation* ret = last.tableOperation;
 	    for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
 		 it != p_Constraints->end(); ++it) {
 		p_Constraints->express(this);
 		if (last.expression != NULL) {
 		    if (last.filter == NULL)
-			last.filter = new Filter(last.expression);
-		    else
-			((Filter*)last.filter)->addExpression(last.expression); // !!! LIES
+			ret = last.filter = new Filter(ret);
+		    ((Filter*)last.filter)->addExpression(last.expression); // !!! LIES
 		}
 	    }
 	}
 #if 0
-	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*> p_Expressions) {
+	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Expressions) {
 	    p_op.express(this);
 	    TableOperation* op = last.operation;
 	    Filter* f = new Filter(op);
@@ -154,9 +155,10 @@ namespace w3c_sw {
 	    _TableOperations(p_TableOperations, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new OptionalGraphPattern(last.tableOperation); // @@@ last.filters
+	    // !!! addExpressions
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    p_POS->express(this);

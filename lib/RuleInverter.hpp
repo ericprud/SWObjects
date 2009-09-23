@@ -248,15 +248,16 @@ namespace w3c_sw {
 		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations);
 		}
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
 		    if (s == GraphInclusion_STRONG)
 			// let p_GroupGraphPattern set last.tableOperation
 			p_GroupGraphPattern->express(this);
+			// !!! p_Expressions
 		    else
-			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern);
+			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern, p_Expressions);
 		}
 	    }
 	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {

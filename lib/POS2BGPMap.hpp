@@ -205,7 +205,7 @@ namespace w3c_sw {
 	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		_each(self, p_TableOperations);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
 		const TableOperation* parent = currentBGP;
@@ -213,6 +213,7 @@ namespace w3c_sw {
 		_nestedIn(self, parent);
 
 		p_GroupGraphPattern->express(this);
+		// !!! m_Expressions
 
 		currentBGP = parent;
 		optState = oldOptState;
