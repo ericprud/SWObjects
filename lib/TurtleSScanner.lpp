@@ -116,8 +116,16 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {GT_PLUS}		{return token::GT_PLUS;}
 {GT_MINUS}		{return token::GT_MINUS;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
-{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", yytext); return token::IT_true;}
-{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", yytext); return token::IT_false;}
+{IT_true}		{
+std::cerr << "TurtleSScanner:IT_true: ";
+yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", yytext); 
+std::cerr << yylval->p_BooleanRDFLiteral << std::endl;
+return token::IT_true;}
+{IT_false}		{
+std::cerr << "TurtleSScanner:IT_false: ";
+yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", yytext); 
+std::cerr << yylval->p_BooleanRDFLiteral << std::endl;
+return token::IT_false;}
 {IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
