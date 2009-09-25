@@ -109,13 +109,8 @@ public:
 	ret << " ." << std::endl;
     }
     virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
-#if 0
 	injectFilter = p_Constraints;
-#endif
-	if (p_op) p_op->express(this); else ret << "No nested operation!"; // !!!
-	lead();
-	ret << "FILTER ";
-	p_Constraints->express(this);
+	p_op->express(this);
 	ret << std::endl;
     }
     void injectFilters () {
@@ -194,7 +189,7 @@ public:
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
-	//injectFilter = p_Filter; // !!! where'd these go now?
+	injectFilter = p_Expressions;
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
