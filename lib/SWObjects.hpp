@@ -1191,7 +1191,14 @@ public:
 	throw NotImplemented("getDNF(Filter(...))");
     }
     bool operator== (const Filter& ref) const {
-	return *op == *ref.op && m_Expressions == ref.m_Expressions;
+	if ( !(*op == *ref.op) )
+	    return false;
+	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
+	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
+	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
     }
     bool operator== (const TableOperation& ref) const {
 	const Filter* pref = dynamic_cast<const Filter*>(&ref);
@@ -1629,8 +1636,13 @@ public:
     }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
-    virtual bool operator== (const Operation&) const {
-	return false;
+    virtual bool operator== (const Operation& ref) const {
+	const Ask* pSel = dynamic_cast<const Ask*>(&ref);
+	if (pSel == NULL)
+	    return false;
+	return
+	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
+	    *m_WhereClause == *pSel->m_WhereClause;
     }
 };
 class Replace : public Operation {
