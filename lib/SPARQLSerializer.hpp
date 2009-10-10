@@ -116,9 +116,19 @@ public:
     void injectFilters () {
 	if (injectFilter != NULL) {
 	    lead();
-	    ret << "FILTER ";
-	    injectFilter->express(this);
-	    ret << std::endl;
+	    ret << "FILTER (";
+	    for (std::vector<const Expression*>::const_iterator expr = injectFilter->begin();
+		 expr != injectFilter->end(); ++expr) {
+		lead();
+		depth++;
+		if (expr != injectFilter->begin())
+		    ret << "&& ";
+		(*expr)->express(this);
+		depth--;
+		lead();
+	    }
+	    lead();
+	    ret << ")" << std::endl;
 	    injectFilter = NULL;
 	}
     }
