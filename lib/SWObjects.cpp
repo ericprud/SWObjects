@@ -558,7 +558,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
+#ifdef _MSC_VER
+	    b = true; // MSC80 release operator>> interprests "true" as false.
+#else
 	    is >> b;
+#endif
 // 	    std::stringstream canonical;
 // 	    canonical << std::boolalpha << b;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), b);
