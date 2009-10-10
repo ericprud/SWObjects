@@ -13,7 +13,7 @@ PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabular
 PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
 
 CONSTRUCT {
-_:thisQuery acl:allowed ?enabled .
+_:thisQuery acl:allowance ?enabled .
 ?person
     a					  hl7:Person ;
     hl7:entityName			  ?middleName ;
@@ -35,6 +35,12 @@ _:thisQuery acl:allowed ?enabled .
 } ?product CONSTRUCT "http://hospital.example/patientCode(?id=[0-9]+)#patient"
 			WHERE "http://hospital.example/DB/Person?(?id=[0-9]+)#me"
 } WHERE {
+  OPTIONAL {
+	?_requestor
+		principals:username $USER ;
+		principals:ip       $IP ;
+		principals:account  ?enabled .
+  }
   ?person     Person:SexDE		     ?sexEntry   .
               ?sexEntry   Sex_DE:EntryName   ?sex .
 
@@ -62,10 +68,4 @@ _:thisQuery acl:allowed ?enabled .
 	       ?acl acls:includes  acls:medication
   }
 
-  OPTIONAL {
-	?_requestor
-		principals:username $USER ;
-		principals:ip       $IP ;
-		principals:account  ?enabled .
-  }
 }
