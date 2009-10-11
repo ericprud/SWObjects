@@ -245,7 +245,8 @@ BOOST_AUTO_TEST_CASE( bgp_opt_combo ) {
     (join\n\
       (leftjoin\n\
         (table unit)\n\
-        (bgp (triple ?s ?p 0)))\n\
+        (bgp (triple ?s ?p 0))\n\
+      )\n\
       (bgp\n\
         (triple ?s ?p 1)\n\
         (triple ?s ?p 2)\n\
