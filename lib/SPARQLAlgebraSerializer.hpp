@@ -537,6 +537,7 @@ public:
     }
 };
 
+#ifdef STREAM_ALGEBRA
     inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
 	SPARQLAlgebraSerializer s;
 	((DefaultGraphPattern&)my).express(&s);
@@ -548,6 +549,7 @@ public:
 	((Operation&)my).express(&s);
 	return os << s.getString();
     }
+#endif /* STREAM_ALGEBRA */
 
 }
 
