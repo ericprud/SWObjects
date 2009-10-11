@@ -17,6 +17,7 @@
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLSerializer.hpp"
+#include "SPARQLAlgebraSerializer.hpp"
 
 using namespace w3c_sw;
 
@@ -36,7 +37,10 @@ bool operator== (const OpWrap& l, const OpWrap& r) {
 }
 
 std::ostream& operator<< (std::ostream& os, OpWrap const& my) {
-    return operator<<(os, my.str);
+    os << operator<<(os, my.str);
+    SPARQLAlgebraSerializer s;
+    my.op->express(&s);
+    return os << s.getString();
 }
 
 struct OpPair {
