@@ -30,7 +30,7 @@ protected:
     const char* leadStr;
     void start (e_PREC prec) {
 	if (prec < precStack.top())
-	    ret << "( ";
+	    ret << "(";
 	precStack.push(prec);
     }
     void end () {
@@ -107,22 +107,26 @@ public:
 	p_o->express(this);
 	ret << ")";
     }
-    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
-#if 0
-	injectFilter = p_Constraints;
-#endif
-	lead();
-	ret << "(filter";
+    virtual void _exprlist (const ProductionVector<const Expression*>* p_Constraints) {
 	if (p_Constraints->size() > 1)
-	    ret << " (exprlist";
+	    ret << "(exprlist ";
 	for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
 	     it != p_Constraints->end(); ++it) {
-	    ret << " ";
+	    if (it != p_Constraints->begin())
+		ret << " ";
 	    (*it)->express(this);
 	}
 	if (p_Constraints->size() > 1)
 	    ret << ")";
 	ret << std::endl;
+    }
+    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+#if 0
+	injectFilter = p_Constraints;
+#endif
+	lead();
+	ret << "(filter ";
+	_exprlist(p_Constraints);
 	++depth;
 	if (p_op) p_op->express(this); else ret << "No nested operation!"; // !!!
 	--depth;
@@ -233,14 +237,8 @@ public:
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	p_GroupGraphPattern->express(this);
-	if (p_Expressions->size() > 0) {
-	    lead();
-	    if (p_Expressions->size() > 1)
-		ret << "(exprlist";
-	    p_Expressions->express(this);
-	    if (p_Expressions->size() > 1)
-		ret << ")";
-	}
+	lead();
+	_exprlist(p_Expressions);
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	lead();
@@ -489,43 +487,49 @@ public:
     }
     virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_EQ);
+	ret << "= ";
 	p_left->express(this);
-	ret << " = ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
     virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_NE);
+	ret << "!= ";
 	p_left->express(this);
-	ret << " != ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
     virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_LT);
+	ret << "< ";
 	p_left->express(this);
-	ret << " < ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
     virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_GT);
+	ret << "> ";
 	p_left->express(this);
-	ret << " > ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
     virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_LE);
+	ret << "<= ";
 	p_left->express(this);
-	ret << " <= ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
     virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
 	start(PREC_GE);
+	ret << ">= ";
 	p_left->express(this);
-	ret << " >= ";
+	ret << " ";
 	p_right->express(this);
 	end();
     }
