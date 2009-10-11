@@ -237,8 +237,10 @@ public:
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	p_GroupGraphPattern->express(this);
-	lead();
-	_exprlist(p_Expressions);
+	if (p_Expressions->size() > 0) {
+	    lead();
+	    _exprlist(p_Expressions);
+	}
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	lead();
