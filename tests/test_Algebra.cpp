@@ -112,7 +112,9 @@ BOOST_AUTO_TEST_CASE( algebra__opt_filter_1 ) {
   (leftjoin\n\
     (bgp (triple ?x <p> ?v))\n\
     (bgp (triple ?y <q> ?w))\n\
-    (exprlist (= ?v 1) (= ?v 2))))\n\
+    (exprlist (= ?v 1) (= ?v 2))\n\
+  )\n\
+)\n\
 ");
 }
 
