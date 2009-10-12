@@ -44,7 +44,7 @@ HTTP_CLIENT= ASIO
 #   DLIB v?.??
 #   http://dclib.sourceforge.net/
 # @@TODO= add ASIO server code.
-HTTP_SERVER= DLIB
+HTTP_SERVER= ASIO
 
 # SQL_CLIENT: MYSQL |  - what library provies HTTP server support. #####
 # Needed for any binary exectuting relational queries.

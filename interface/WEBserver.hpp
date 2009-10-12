@@ -29,11 +29,14 @@ namespace w3c_sw {
 	    std::string uri;
 	    int http_version_major;
 	    int http_version_minor;
-	    std::vector<header> headers;
-	    std::string request_path;
-	    std::map<std::string, std::string> parms;
-	    virtual void crackURI() = 0;
+	    typedef std::vector<header> headerset;
+	    headerset headers;
+	    virtual std::string getPath() const = 0;
 	    virtual ~request () {  }
+	    void url_decode();
+	    std::string request_path;
+	    typedef std::map<std::string, std::string> parmmap;
+	    parmmap parms;
 	};
 
 	struct reply
@@ -62,6 +65,11 @@ namespace w3c_sw {
 	    /// The headers to be included in the reply.
 	    std::vector<header> headers;
 
+	    void addHeader (std::string name, std::string value) {
+		headers[headers.size()].name = name;
+		headers[headers.size()].value = value;
+	    }
+
 	    /// The content to be sent in the reply.
 	    std::string content;
 
@@ -73,6 +81,82 @@ namespace w3c_sw {
 	    /// Get a stock reply.
 	    static reply stock_reply(status_type status);
 	};
+
+	inline void request::url_decode ()
+	{
+	    request_path.clear();
+	    request_path.reserve(uri.size());
+	    std::string& in = uri;
+	    std::string* out = &request_path;
+	    enum {IN_path, IN_parm, IN_value} nowIn = IN_path;
+	    std::string parm;
+	    std::string value;
+	    std::size_t end = uri.find_last_of("?");
+	    if (end == std::string::npos)
+		end = uri.size();
+	    std::size_t i = 0;
+	    while (true) {
+		for (; i < end; ++i) {
+		    if (in[i] == '%') {
+			if (i + 3 <= in.size()) {
+			    int value;
+			    std::istringstream is(in.substr(i + 1, 2));
+			    if (is >> std::hex >> value) {
+				*out += static_cast<char>(value);
+				i += 2;
+			    } else {
+				throw w3c_sw::webserver::reply::
+				    stock_reply(w3c_sw::webserver::reply::bad_request);
+			    }
+			} else {
+			    throw w3c_sw::webserver::reply::
+				stock_reply(w3c_sw::webserver::reply::bad_request);
+			}
+		    } else if (in[i] == '+') {
+			*out += ' ';
+		    } else {
+			*out += in[i];
+		    }
+		}
+		switch (nowIn) {
+		case IN_path:
+		    if (end == uri.size())
+		        goto done;
+		    nowIn = IN_parm;
+		    out = &parm;
+		    end = uri.find_first_of("=", end);
+		    if (end == std::string::npos)
+			throw w3c_sw::webserver::reply::
+			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    break;
+		case IN_parm:
+		    nowIn = IN_value;
+		    out = &value;
+		    end = uri.find_first_of("&", end);
+		    if (end == std::string::npos)
+			throw w3c_sw::webserver::reply::
+			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    break;
+		case IN_value:
+		    parms[parm] = value;
+		    std::cerr << "parms[" << parm << "] = " << value << "\n";
+		    if (end == uri.size())
+		        goto done;
+		    nowIn = IN_parm;
+		    parm.clear();
+		    value.clear();
+		    out = &parm;
+		    end = uri.find_first_of("=", end);
+		    if (end == std::string::npos)
+			throw w3c_sw::webserver::reply::
+			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    ++i;
+		    break;
+		}
+	    };
+	done:
+	    ;
+	}
 
 	namespace status_strings {
 

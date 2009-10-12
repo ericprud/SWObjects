@@ -357,91 +357,28 @@ namespace w3c_sw {
 	}
 
 	struct asioRequest : public request {
-	    void url_decode();
+	    virtual std::string getPath() const;
 	    asioRequest();
-	    virtual void crackURI();
 	protected:
+	    bool initialized;
 	};
-	inline asioRequest::asioRequest () {  }
-	inline void asioRequest::crackURI () {
-	    url_decode();
+	inline asioRequest::asioRequest () : initialized(false) {
+	    
 	}
-	inline void asioRequest::url_decode ()
-	{
-	    request_path.clear();
-	    request_path.reserve(uri.size());
-	    std::string& in = uri;
-	    std::string* out = &request_path;
-	    enum {IN_path, IN_parm, IN_value} nowIn = IN_path;
-	    std::string parm;
-	    std::string value;
-	    std::size_t end = uri.find_last_of("?");
-	    if (end == std::string::npos)
-		end = uri.size();
-	    std::size_t i = 0;
-	    while (true) {
-		for (; i < end; ++i) {
-		    if (in[i] == '%') {
-			if (i + 3 <= in.size()) {
-			    int value;
-			    std::istringstream is(in.substr(i + 1, 2));
-			    if (is >> std::hex >> value) {
-				*out += static_cast<char>(value);
-				i += 2;
-			    } else {
-				throw w3c_sw::webserver::reply::
-				    stock_reply(w3c_sw::webserver::reply::bad_request);
-			    }
-			} else {
-			    throw w3c_sw::webserver::reply::
-				stock_reply(w3c_sw::webserver::reply::bad_request);
-			}
-		    } else if (in[i] == '+') {
-			*out += ' ';
-		    } else {
-			*out += in[i];
-		    }
-		}
-		switch (nowIn) {
-		case IN_path:
-		    if (end == uri.size())
-		        goto done;
-		    nowIn = IN_parm;
-		    out = &parm;
-		    end = uri.find_first_of("=", end);
-		    if (end == std::string::npos)
-			throw w3c_sw::webserver::reply::
-			    stock_reply(w3c_sw::webserver::reply::bad_request);
-		    ++i;
-		    break;
-		case IN_parm:
-		    nowIn = IN_value;
-		    out = &value;
-		    end = uri.find_first_of("&", end);
-		    if (end == std::string::npos)
-			end = uri.size();
-		    ++i;
-		    break;
-		case IN_value:
-		    parms[parm] = value;
-		    std::cerr << "parms[" << parm << "] = " << value << "\n";
-		    if (end == uri.size())
-		        goto done;
-		    nowIn = IN_parm;
-		    parm.clear();
-		    value.clear();
-		    out = &parm;
-		    end = uri.find_first_of("=", end);
-		    if (end == std::string::npos)
-			throw w3c_sw::webserver::reply::
-			    stock_reply(w3c_sw::webserver::reply::bad_request);
-		    ++i;
-		    break;
-		}
-	    };
-	done:
-	    ;
+	inline std::string asioRequest::getPath () const {
+	    if (!initialized)
+		(const_cast<asioRequest*>(this))->url_decode();
+	    return request_path;
 	}
+	//     void url_decode();
+	//     asioRequest();
+	//     virtual void crackURI();
+	// protected:
+	// };
+	// inline asioRequest::asioRequest () {  }
+	// inline void asioRequest::crackURI () {
+	//     url_decode();
+	// }
 
 	/// The common handler for all incoming requests.
 	/// inline void request_handler::handle_request(request& req, reply& rep) was here
