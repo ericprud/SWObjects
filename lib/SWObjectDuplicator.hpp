@@ -157,8 +157,14 @@ namespace w3c_sw {
 	}
 	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	    p_GroupGraphPattern->express(this);
-	    last.tableOperation = new OptionalGraphPattern(last.tableOperation); // @@@ last.filters
-	    // !!! addExpressions
+	    p_Expressions->express(this);
+	    OptionalGraphPattern* ret = new OptionalGraphPattern(last.tableOperation);
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); it++) {
+		(*it)->express(this);
+		ret->addExpression(last.expression);
+	    }
+	    last.tableOperation = ret;
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    p_POS->express(this);

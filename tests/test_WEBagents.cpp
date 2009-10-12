@@ -36,11 +36,14 @@
 class MyHandler : public w3c_sw::webserver::request_handler {
     WEBSERVER& server;
     bool runOnce;
+
     inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
 	/* caution: early returns */
 
 	try {
-	    req.crackURI();
+	    // Decode url to path.
+	    std::string request_path(req.getPath());
+
 	    std::map<std::string, std::string>::const_iterator force = req.parms.find("force");
 	    if (force != req.parms.end()) {
 		std::stringstream s;
@@ -71,9 +74,6 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		rep.headers[1].value = "text/plain";
 		return;
 	    }
-
-	    // Decode url to path.
-	    const std::string& request_path = req.request_path;
 
 	    // Request path must be absolute and not contain "..".
 	    if (request_path.empty() || request_path[0] != '/'

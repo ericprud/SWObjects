@@ -32,15 +32,16 @@ namespace w3c_sw {
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		if (expectOuterGraph) {
 		    expectOuterGraph = false;
 		    lead();
 
 		    /* Serialize nested stuff. */
 		    depth++;
+		    ExprSet* filters = injectFilter; injectFilter = NULL;
 		    p_TriplePatterns->express(this);
-		    p_Filters->express(this);
+		    serializeFilter(filters);
 		    depth--;
 		    // _BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
 
@@ -53,7 +54,7 @@ namespace w3c_sw {
 
 		    expectOuterGraph = true;
 		} else
-		    SPARQLSerializer::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    SPARQLSerializer::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns);
 	    }
 
 	};
