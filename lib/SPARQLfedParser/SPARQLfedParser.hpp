@@ -35,7 +35,7 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-# define PARSER_HEADER_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -48,7 +48,7 @@ namespace w3c_sw
 }
 
 /* First part of user declarations.  */
-#line 50 "..\\lib\\SPARQLfedParser\\SPARQLfedParser.ypp"
+#line 50 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
  /*** C/C++ Declarations ***/
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -172,7 +172,7 @@ public:
 
 
 /* Line 35 of lalr1.cc.  */
-#line 176 "\\\\vboxsvr\\sparul\\lib\\SPARQLfedParser\\SPARQLfedParser.hpp"
+#line 176 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -223,7 +223,7 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 174 "..\\lib\\SPARQLfedParser\\SPARQLfedParser.ypp"
+#line 174 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 {
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -284,7 +284,7 @@ namespace w3c_sw
 
 }
 /* Line 35 of lalr1.cc.  */
-#line 288 "\\\\vboxsvr\\sparul\\lib\\SPARQLfedParser\\SPARQLfedParser.hpp"
+#line 288 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 	;
 #else
     typedef YYSTYPE semantic_type;

@@ -525,6 +525,8 @@ namespace w3c_sw {
 			if (matched) {
 			    insert(myRow, newRow);
 			    matchedSomeRow = true;
+			} else {
+			    delete newRow;
 			}
 		    }
 		}

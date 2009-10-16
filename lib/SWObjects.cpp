@@ -558,10 +558,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
-#ifdef _MSC_VER
-	    b = true; // MSC80 release operator>> interprests "true" as false.
-#else
+#ifdef LIBC_PARSES_BOOL
 	    is >> b;
+#else
+	    b = true;
 #endif
 // 	    std::stringstream canonical;
 // 	    canonical << std::boolalpha << b;
@@ -586,8 +586,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    RDFLiteral* ret = new RDFLiteral(p_String, p_URI, p_LANGTAG);
 	    rdfLiterals[key] = ret;
 	    return ret;
-	} else
+	} else {
+	    delete p_LANGTAG; // will not be used to create an RDFLiteral.
 	    return vi->second;
+	}
     }
 
 #define XSD "http://www.w3.org/2001/XMLSchema#"
@@ -1007,6 +1009,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	delete *(island.begin());
 	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
@@ -1220,6 +1223,7 @@ compared against
 			triple = bgp->m_TriplePatterns.erase(triple);
 		    else
 			triple++;
+		    delete island;
 		}
 	    }
 	}
