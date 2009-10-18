@@ -66,6 +66,7 @@ namespace w3c_sw {
 	    std::vector<header> headers;
 
 	    void addHeader (std::string name, std::string value) {
+		headers.resize(headers.size() + 1);
 		headers[headers.size()].name = name;
 		headers[headers.size()].value = value;
 	    }
@@ -122,20 +123,26 @@ namespace w3c_sw {
 		case IN_path:
 		    if (end == uri.size())
 		        goto done;
-		    nowIn = IN_parm;
-		    out = &parm;
-		    end = uri.find_first_of("=", end);
-		    if (end == std::string::npos)
-			throw w3c_sw::webserver::reply::
-			    stock_reply(w3c_sw::webserver::reply::bad_request);
+		    if (in[end] == '?') {
+			nowIn = IN_parm;
+			out = &parm;
+			++i;
+			if (++end != uri.size()) {
+			    end = uri.find_first_of("=", end);
+			    if (end == std::string::npos)
+				throw w3c_sw::webserver::reply::
+				    stock_reply(w3c_sw::webserver::reply::bad_request);
+			}
+		    }
 		    break;
 		case IN_parm:
 		    nowIn = IN_value;
 		    out = &value;
 		    end = uri.find_first_of("&", end);
 		    if (end == std::string::npos)
-			throw w3c_sw::webserver::reply::
-			    stock_reply(w3c_sw::webserver::reply::bad_request);
+			end = uri.size();
+		    if (i < uri.size())
+			++i;
 		    break;
 		case IN_value:
 		    parms[parm] = value;
