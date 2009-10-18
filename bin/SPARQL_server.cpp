@@ -31,9 +31,9 @@
 #endif
 
 #if HTTP_SERVER == SWOb_ASIO
- #include "interface/WEBserver_asio.hpp"
+ #include "../interface/WEBserver_asio.hpp"
 #elif HTTP_SERVER == SWOb_DLIB
- #include "interface/WEBserver_dlib.hpp"
+ #include "../interface/WEBserver_dlib.hpp"
 #else
   #ifdef _MSC_VER
     #pragma message ("unable to serve HTTP without an HTTP server.")
@@ -410,11 +410,6 @@ protected:
             ostringstream sout;
 
 	    if (path == ServerPath) {
-		/* dlib doesn't use STL.  I don't know how to test
-		   queries["action"] without throwing an exception
-		   when it's not set.  So, I make all uses of this
-		   function use exactly the same query parameters.
-		 */
 		w3c_sw::webserver::request::parmmap::const_iterator it = req.parms.find("query");
 		if (it != req.parms.end())
 		    query = it->second;
