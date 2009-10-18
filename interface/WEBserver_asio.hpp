@@ -463,7 +463,11 @@ namespace w3c_sw {
 		  *request_, buffer_.data(), buffer_.data() + bytes_transferred);
 
 		if (result) {
-		    request_handler_.handle_request(*request_, reply_);
+		    try {
+			request_handler_.handle_request(*request_, reply_);
+		    } catch (webserver::reply rep) {
+			reply_ = rep;
+		    }
 		    std::cerr << reply_.content << std::endl;
 		    boost::asio::async_write(socket_, reply_.to_buffers(),
 		     strand_.wrap(
