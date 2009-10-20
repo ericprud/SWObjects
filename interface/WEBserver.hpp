@@ -4,9 +4,12 @@
  #include <boost/asio.hpp>
  #define CONST_BUFFER boost::asio::const_buffer
  #define MUTABLE_BUFFER boost::asio::buffer
+ #include <boost/algorithm/string.hpp>
+ #define HEADER_EQUALS(A, B) boost::iequals(A, B)
 #elif HTTP_SERVER == SWOb_DLIB
  #define CONST_BUFFER std::string
  #define MUTABLE_BUFFER std::string
+ #define HEADER_EQUALS(A, B) A.compare(B)
 #else
  #error unknown HTTP_SERVER (neither ASIO or DLIB)
 #endif
@@ -66,9 +69,7 @@ namespace w3c_sw {
 	    std::vector<header> headers;
 
 	    void addHeader (std::string name, std::string value) {
-		headers.resize(headers.size() + 1);
-		headers[headers.size()].name = name;
-		headers[headers.size()].value = value;
+		headers.push_back(header(name, value));
 	    }
 
 	    /// The content to be sent in the reply.
@@ -246,21 +247,40 @@ namespace w3c_sw {
 
 	inline std::vector<CONST_BUFFER> reply::to_buffers()
 	{
-	    const char name_value_separator[] = { ':', ' ' };
-	    const char crlf[] = { '\r', '\n' };
+	    static const char name_value_separator[] = { ':', ' ' };
+	    static const char crlf[] = { '\r', '\n' };
+	    static std::string cl("Content-Length");
+	    bool clFound = false;
 
 	    std::vector<CONST_BUFFER> buffers;
 	    buffers.push_back(status_strings::to_buffer(status));
-	    for (std::size_t i = 0; i < headers.size(); ++i)
-		{
-		    header& h = headers[i];
-		    buffers.push_back(MUTABLE_BUFFER(h.name));
-		    buffers.push_back(MUTABLE_BUFFER(name_value_separator));
-		    buffers.push_back(MUTABLE_BUFFER(h.value));
-		    buffers.push_back(MUTABLE_BUFFER(crlf));
-		}
+	    for (std::size_t i = 0; i < headers.size(); ++i) {
+		header& h = headers[i];
+		buffers.push_back(MUTABLE_BUFFER(h.name));
+		buffers.push_back(MUTABLE_BUFFER(name_value_separator));
+		buffers.push_back(MUTABLE_BUFFER(h.value));
+		buffers.push_back(MUTABLE_BUFFER(crlf));
+		if (HEADER_EQUALS(cl, h.name))
+		    clFound = true;
+	    }
+	    if (clFound == false) {
+		static char size[100] = ""; // @@!!!
+		std::stringstream s;
+		buffers.push_back(MUTABLE_BUFFER(cl));
+		buffers.push_back(MUTABLE_BUFFER(name_value_separator));
+		s << content.size();
+		strcpy(size, s.str().c_str());
+		buffers.push_back(MUTABLE_BUFFER(size, strlen(size)));
+		buffers.push_back(MUTABLE_BUFFER(crlf));
+	    }
 	    buffers.push_back(MUTABLE_BUFFER(crlf));
 	    buffers.push_back(MUTABLE_BUFFER(content));
+	    // for (std::vector<CONST_BUFFER>::const_iterator it = buffers.begin();
+	    // 	 it != buffers.end(); ++it) {
+	    // 	std::size_t s = boost::asio::buffer_size(*it);
+	    // 	const char* p = boost::asio::buffer_cast<const char*>(*it);
+	    // 	std::cout.write(p, s);
+	    // }
 	    return buffers;
 	}
 
