@@ -427,7 +427,7 @@ protected:
 			"    <p>is screwed up.</p>\n"
 			 << endl;
 		    cerr << "400: " << query << endl;
-		    rep.addHeader("Status", "400 Bad Request");
+		    rep.status = webserver::reply::bad_request;
 
 		    foot(sout);
 		} else {
@@ -437,6 +437,7 @@ protected:
 				  "application/sparql-results+xml; charset=UTF-8");
 		}
 	    } else if (path == "/") {
+		rep.status = webserver::reply::ok;
 		head(sout, "Q&amp;D SPARQL Server");
 		sout << 
 		    "    <form action='" << ServerPath << "' method='get'>\n"
@@ -445,6 +446,7 @@ protected:
 		    "    <form action='" << ServerPath << "' method='post'>\n"
 		    "      server status: running, " << Served << " served. <input name='query' type='submit' value='stop'/>\n"
 		    "    </form>\n"; 
+		rep.addHeader("Content-Type", "text/html");
 		foot(sout);
 	    } else if (path == "/favicon.ico") {
 		sout.write((char*)favicon, sizeof(favicon));
@@ -457,7 +459,7 @@ protected:
 		    "    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
 		     << endl;
 		cerr << "404: " << path << endl;
-		rep.addHeader("Status", "404 Not Found");
+		rep.status = webserver::reply::not_found;
 
 		sout << "    <h2>Client Headers</h2>\n"
 		    "    <ul>";
@@ -475,7 +477,8 @@ protected:
         }
         catch (SimpleMessageException& e)
         {
-	    rep.addHeader("Status", "400 Bad Request");
+	    rep.status = webserver::reply::bad_request;
+	    rep.addHeader("Content-Type", "text/html");
 	    rep.content = e.what();
         }
         catch (exception& e)
@@ -483,7 +486,7 @@ protected:
 	    string what(e.what());
             ostringstream sout;
 
-	    rep.addHeader("Status", "400 Bad Request");
+	    rep.status = webserver::reply::bad_request;
             cerr << what << endl;
 	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
@@ -545,7 +548,7 @@ void startServer (const char* url) {
 	    std::wstring wstr(szDirectory);
 	    size_t len = (int)wstr.length();
 	    std::string str = "\\";
-	    int i = 0;
+	    unsigned int i = 0;
 	    for (std::wstring::iterator it = wstr.begin();
 		 i < len; ++it, ++i)
 		str += (char)*it;
