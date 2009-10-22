@@ -433,6 +433,7 @@ protected:
 		} else {
 		    Operation* op = sparqlParser.root;
 		    executeQuery(sout, op, query, false);
+		    rep.status = webserver::reply::ok;
 		    rep.addHeader("Content-Type", 
 				  "application/sparql-results+xml; charset=UTF-8");
 		}
