@@ -694,7 +694,8 @@ namespace w3c_sw {
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
-	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
+	typedef enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} e_Mode;
+	e_Mode mode;
 	SQLQuery* curQuery;
 	const POS* curSubject;
 	AliasAttr curAliasAttr; // established by predicate
@@ -1095,6 +1096,17 @@ namespace w3c_sw {
 	    curQuery = optional;
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
+	    e_Mode oldMode = mode;
+	    mode = MODE_constraint;
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it)
+		try {
+		    (*it)->express(this);
+		    curQuery->addConstraint(curConstraint);
+		} catch (nonLocalIdentifierException& e) {
+		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		}
+	    mode = oldMode;
 	    optional->attach();
 	    curQuery = parent;
 	}
