@@ -18,6 +18,7 @@
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
+#include "SWObjectDuplicator.hpp"
 
 using namespace w3c_sw;
 
@@ -44,11 +45,12 @@ std::ostream& operator<< (std::ostream& os, OpWrap const& my) {
 }
 
 struct OpPair {
-    OpPair (const OpWrap once, const OpWrap twice) : 
-	once(once), twice(twice) {  }
-    void cleanup () { delete once.op; delete twice.op; }
+    OpPair (const OpWrap once, const OpWrap twice, const OpWrap dup) : 
+	once(once), twice(twice), dup(dup) {  }
+    void cleanup () { delete once.op; delete twice.op; delete dup.op; } // i never worked out the Op copy constructor
     const OpWrap once;
     const OpWrap twice;
+    const OpWrap dup;
 };
 
 OpPair algebrize_TWICE (std::string sparql) {
@@ -61,11 +63,19 @@ OpPair algebrize_TWICE (std::string sparql) {
     sparqlParser.root->express(&s);
     OpWrap once(sparql, sparqlParser.root);
     sparqlParser.root = NULL;
+
     if (sparqlParser.parse_string(s.getString()))
 	throw std::string("failed to parse re-serialized SPARQL \"") + s.getString() + "\".";
     OpWrap twice(s.getString(), sparqlParser.root);
     sparqlParser.root = NULL;
-    return OpPair(once, twice);
+
+    SWObjectDuplicator duper(&F);
+    once.op->express(&duper);
+    s.str(""); // Clear out serializer.
+    duper.last.operation->express(&s);
+    OpWrap dup(s.getString(), duper.last.operation);
+
+    return OpPair(once, twice, dup);
 }
 
 
@@ -73,11 +83,13 @@ OpPair algebrize_TWICE (std::string sparql) {
  * Using macros means that error messages point you to the test invocation (a
  * great help in quicky diagnosing the failure).
  */
+//@@SWOBjectDuplicator
 
 #define SERIALIZER_TEST(SPARQL)						       \
     try {								       \
 	OpPair p = algebrize_TWICE(SPARQL);				       \
 	BOOST_CHECK_EQUAL(p.once, p.twice);				       \
+	BOOST_CHECK_EQUAL(p.once, p.dup);				       \
 	p.cleanup();							       \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
