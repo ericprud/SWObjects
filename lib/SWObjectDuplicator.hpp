@@ -6,6 +6,14 @@
  * Classes derived from SWObjectDuplicator are likely to get and set the values
  * in last.
  *
+ * invocation:
+ *   Operation* copyMe = @@@;
+ *   SWObjectDuplicator duper;
+ *   copyMe->express(&duper);
+ *   Operation* copy = copyMe.last.operation;
+ *
+ * Copies of parts of query objects are accessed through members of copyMe.last.
+ *
  * $Id: SWObjectDuplicator.hpp,v 1.8 2008-11-21 17:13:29 eric Exp $
  */
 
@@ -85,18 +93,19 @@ namespace w3c_sw {
 	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
 	}
 	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
-	    last.filter = NULL;
+	    Filter* lastFilter = NULL;
 	    p_op->express(this);
-	    const TableOperation* ret = last.tableOperation;
+	    TableOperation* ret = last.tableOperation;
 	    for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
 		 it != p_Constraints->end(); ++it) {
-		p_Constraints->express(this);
+		(*it)->express(this);
 		if (last.expression != NULL) {
-		    if (last.filter == NULL)
-			ret = last.filter = new Filter(ret);
-		    ((Filter*)last.filter)->addExpression(last.expression); // !!! LIES
+		    if (lastFilter == NULL)
+			ret = lastFilter = new Filter(ret);
+		    ((Filter*)lastFilter)->addExpression(last.expression); // !!! LIES
 		}
 	    }
+	    last.tableOperation = ret;
 	}
 #if 0
 	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Expressions) {
@@ -157,7 +166,6 @@ namespace w3c_sw {
 	}
 	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	    p_GroupGraphPattern->express(this);
-	    p_Expressions->express(this);
 	    OptionalGraphPattern* ret = new OptionalGraphPattern(last.tableOperation);
 	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); it++) {
