@@ -55,6 +55,7 @@ public:
 	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
     virtual std::string getString () { return ret.str(); }
+    virtual void str (std::string seed) { ret.str(seed); }
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
