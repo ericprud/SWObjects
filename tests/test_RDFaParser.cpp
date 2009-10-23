@@ -58,12 +58,16 @@ BOOST_AUTO_TEST_CASE( APC ) {
 BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern tested;
     const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
-    GRDFaParser.parse(&tested, "RDFa-1.html", gabab);
+    try {
+	GRDFaParser.parse(&tested, "RDFaParser/gabab.html", gabab);
+    } catch (std::string e) {
+	throw(std::string("exception while parsing RDFaParser/gabab.html: ").append(e));
+    }
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase(F.getURI(gabab));
-    turtleParser.parse_file("RDFa-1.ttl");
+    turtleParser.parse_file("RDFaParser/gabab.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }
