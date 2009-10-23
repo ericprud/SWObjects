@@ -174,7 +174,7 @@ int main(int argc,char** argv) {
 
 	// 		XMLQueryExpressor xmlizer("  ", false);
 	// 		o->express(&xmlizer);
-	// 		cout << "post-rule query (XML):" << endl << xmlizer.getString() << endl;
+	// 		cout << "post-rule query (XML):" << endl << xmlizer.str() << endl;
 
 	{
 	    errorContext = "serialization";
@@ -182,7 +182,7 @@ int main(int argc,char** argv) {
 	    o->express(&sparqlizer);
 	    if (!Quiet) {
 		cout << "post-rule query (SPARQL):" << endl;
-		cout << sparqlizer.getString() << endl;
+		cout << sparqlizer.str() << endl;
 	    }
 	}
 

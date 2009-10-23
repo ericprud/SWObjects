@@ -183,7 +183,7 @@ namespace w3c_sw {
 	    /* simple unordered serializer -
 	       SPARQLSerializer s;
 	       express(&s);
-	       return s.getString(); */
+	       return s.str(); */
 
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;

@@ -53,7 +53,8 @@ public:
     SPARQLAlgebraSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
 	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
-    virtual std::string getString () { return ret.str(); }
+    virtual std::string str () { return ret.str(); }
+    virtual void str (std::string seed) { ret.str(seed); }
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
@@ -547,13 +548,13 @@ public:
     inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
 	SPARQLAlgebraSerializer s;
 	((DefaultGraphPattern&)my).express(&s);
-	return os << s.getString();
+	return os << s.str();
     }
 
     inline std::ostream& operator<< (std::ostream& os, Operation const& my) {
 	SPARQLAlgebraSerializer s;
 	((Operation&)my).express(&s);
-	return os << s.getString();
+	return os << s.str();
     }
 #endif /* STREAM_ALGEBRA */
 

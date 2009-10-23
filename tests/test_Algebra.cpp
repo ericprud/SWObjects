@@ -33,7 +33,7 @@ std::string algebrize (std::string sparql) {
     SPARQLAlgebraSerializer s;
     sparqlParser.root->express(&s);
     delete sparqlParser.root;
-    return s.getString();
+    return s.str();
 }
 
 

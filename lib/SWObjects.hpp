@@ -2489,12 +2489,12 @@ public:
 };
 
 
-/* ExpressorSerializer - provide a common getString() interface.
+/* ExpressorSerializer - provide a common str() interface.
  * Derive serializers (SPARQLSerializer, XMLQueryExpressor) from this.
  */
 class ExpressorSerializer : public Expressor {
 public:
-    virtual std::string getString() = 0;
+    virtual std::string str() = 0;
 };
 
 

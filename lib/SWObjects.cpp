@@ -839,7 +839,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     std::string Operation::toString () const {
 	SPARQLSerializer s;
 	express(&s);
-	return s.getString();
+	return s.str();
     }
 
     void TableJunction::addTableOperation (const TableOperation* tableOp, bool flatten) {
@@ -1277,7 +1277,7 @@ compared against
     std::string TableOperation::toString () const {
 	SPARQLSerializer s;
 	express(&s);
-	return s.getString();
+	return s.str();
     }
     TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();
@@ -1367,7 +1367,7 @@ compared against
     std::ostream& operator<< (std::ostream& os, BasicGraphPattern const& my) {
 	SPARQLSerializer s;
 	my.express(&s);
-	return os << s.getString();
+	return os << s.str();
     }
 
     std::ostream& operator<< (std::ostream& os, TableOperation const& my) {
@@ -1377,7 +1377,7 @@ compared against
     std::ostream& operator<< (std::ostream& os, WhereClause const& my) {
 	SPARQLSerializer s;
 	my.express(&s);
-	return os << s.getString();
+	return os << s.str();
     }
 
 } // namespace w3c_sw

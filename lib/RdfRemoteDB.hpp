@@ -105,7 +105,7 @@ namespace w3c_sw {
 		u << "query=";
 		GraphSerializer ser(rs, lexicalCompare);
 		toMatch->express(&ser);
-		std::string q = ser.getSelectString() + '{' + ser.getString() + ser.getFederationString() + '}';
+		std::string q = ser.getSelectString() + '{' + ser.str() + ser.getFederationString() + '}';
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "Querying <" << srvc << "> for\n" << q;
 		for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {

@@ -294,7 +294,7 @@ protected:
 
 	SPARQLSerializer s;
 	query->express(&s);
-	cout << s.getString() << endl;
+	cout << s.str() << endl;
 	query->express(&queryMapper);
 	const Operation* mapped = queryMapper.last.operation;
 	delete query;

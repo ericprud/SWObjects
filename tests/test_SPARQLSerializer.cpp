@@ -41,7 +41,7 @@ std::ostream& operator<< (std::ostream& os, OpWrap const& my) {
     os << operator<<(os, my.str);
     SPARQLAlgebraSerializer s;
     my.op->express(&s);
-    return os << s.getString();
+    return os << s.str();
 }
 
 struct OpPair {
@@ -64,16 +64,16 @@ OpPair algebrize_TWICE (std::string sparql) {
     OpWrap once(sparql, sparqlParser.root);
     sparqlParser.root = NULL;
 
-    if (sparqlParser.parse_string(s.getString()))
-	throw std::string("failed to parse re-serialized SPARQL \"") + s.getString() + "\".";
-    OpWrap twice(s.getString(), sparqlParser.root);
+    if (sparqlParser.parse_string(s.str()))
+	throw std::string("failed to parse re-serialized SPARQL \"") + s.str() + "\".";
+    OpWrap twice(s.str(), sparqlParser.root);
     sparqlParser.root = NULL;
 
     SWObjectDuplicator duper(&F);
     once.op->express(&duper);
     s.str(""); // Clear out serializer.
     duper.last.operation->express(&s);
-    OpWrap dup(s.getString(), duper.last.operation);
+    OpWrap dup(s.str(), duper.last.operation);
 
     return OpPair(once, twice, dup);
 }
