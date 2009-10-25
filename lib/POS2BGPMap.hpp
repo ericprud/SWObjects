@@ -168,24 +168,22 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		START("POS2BGPMap::namedGraphPattern");
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		_depends(p_name, optState);
 		p_TriplePatterns->express(this);
-		p_Filters->express(this);
 		currentBGP = parent;
 	    }
 
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		START("POS2BGPMap::defaultGraphPattern");
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
 		p_TriplePatterns->express(this);
-		p_Filters->express(this);
 		currentBGP = parent;
 	    }
 
@@ -201,15 +199,13 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		_each(self, p_TableOperations);
-		p_Filters->express(this);
 	    }
-	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		_each(self, p_TableOperations);
-		p_Filters->express(this);
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* /* p_Expressions */) {
 		_BindingStrength oldOptState = optState;
 		optState = (_BindingStrength)(optState | _Binding_WEAK);
 		const TableOperation* parent = currentBGP;
@@ -217,7 +213,7 @@ namespace w3c_sw {
 		_nestedIn(self, parent);
 
 		p_GroupGraphPattern->express(this);
-		p_Filters->express(this);
+		// !!! m_Expressions
 
 		currentBGP = parent;
 		optState = oldOptState;

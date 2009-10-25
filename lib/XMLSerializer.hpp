@@ -93,7 +93,8 @@ public:
 public:
     XMLSerializer (const char* p_tab = "  ") : 
 	tab(p_tab), depth(0), needs("") {  }
-    std::string getString () { return ret.str(); }
+    std::string str () { return ret.str(); }
+    void str (std::string seed) { ret.str(seed); }
 };
 
 #endif // XMLSerializer_H

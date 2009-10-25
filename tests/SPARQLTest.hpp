@@ -134,6 +134,9 @@ struct MeasuredRS : public ResultSet {
 	setRdfDB(&constructed);
 	sparqlParser.root->execute(&d, this);
     }
+    ~MeasuredRS () {
+	delete sparqlParser.root;
+    }
 };
 
 /* Measured result sets are generally printed if there's an error so

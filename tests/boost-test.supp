@@ -37,3 +37,10 @@
    fun:_ZN5boost9unit_test14unit_test_mainEPFbvEiPPc
    fun:main
 }
+{
+   exit_uninit4
+   Memcheck:Addr4
+   fun:_ZN5boost9unit_test14framework_implD1Ev
+   fun:exit
+   fun:(below main)
+}

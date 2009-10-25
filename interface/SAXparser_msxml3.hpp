@@ -40,7 +40,7 @@ namespace w3c_sw {
 	return wstr;
     }
 
-    class SAXparser_msxml3 : public NsdInsulatedSAXparser {
+    class SAXparser_msxml3 : public NSdInsulatedSAXparser {
     protected:
 	struct NsSet {
 	    std::string namespaceURI;
@@ -133,15 +133,15 @@ namespace w3c_sw {
 								 wchar_t __RPC_FAR *pwchUri,
 								 int cchUri) {
 		/* Cheasy re-use of std::stack<NSmapImpl>nsz to record single additons to map. */
-		NSmapImpl nsframe(self.nsz.top());
-		self.nsz.push(nsframe);
-		self.nsz.top()[pwchPrefix ? (const char*)to8bit(pwchPrefix, cchPrefix) : ""] = (const char*)to8bit(pwchUri, cchUri);
+		NSmapImpl nsframe(h->nsz.top());
+		h->nsz.push(nsframe);
+		h->nsz.top()[pwchPrefix ? to8bit(pwchPrefix, cchPrefix).c_str() : ""] = to8bit(pwchUri, cchUri).c_str();
 		return S_OK;
 	    }
         
 	    virtual HRESULT STDMETHODCALLTYPE endPrefixMapping(wchar_t __RPC_FAR *pwchPrefix,
 							       int cchPrefix) {
-		self.nsz.pop();
+		h->nsz.pop();
 		return S_OK;
 	    }
         
@@ -154,7 +154,7 @@ namespace w3c_sw {
 						   ISAXAttributes __RPC_FAR *pAttributes)
 	    {
 		Attributes_msxml3 attrs(pAttributes);
-		SimpleNsMap nsMap(self.nsz.top());
+		SimpleNsMap nsMap(h->nsz.top());
 		h->insulator->startElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					    (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
 					    (const char*)to8bit(pwchRawName, cchRawName).c_str(), 
@@ -169,7 +169,7 @@ namespace w3c_sw {
 						 wchar_t __RPC_FAR *pwchRawName,
 						 int cchRawName)
 	    {
-		SimpleNsMap nsMap(self.nsz.top());
+		SimpleNsMap nsMap(h->nsz.top());
 		h->insulator->endElement((const char*)to8bit(pwchNamespaceUri, cchNamespaceUri).c_str(), 
 					  (const char*)to8bit(pwchLocalName, cchLocalName).c_str(), 
 					 (const char*)to8bit(pwchRawName, cchRawName).c_str(), nsMap);
@@ -179,7 +179,7 @@ namespace w3c_sw {
 	    virtual HRESULT STDMETHODCALLTYPE characters(wchar_t __RPC_FAR *pwchChars,
 							 int cchChars)
 	    {
-		SimpleNsMap nsMap(self.nsz.top());
+		SimpleNsMap nsMap(h->nsz.top());
 		h->insulator->characters((const char*)to8bit(pwchChars, cchChars).c_str(), 0, cchChars, nsMap);
 		return S_OK;
 	    }

@@ -52,6 +52,7 @@ namespace w3c_sw {
 	    }
 	} else {
 	    ResultSet island(rs->getPOSFactory());
+	    delete *(island.begin());
 	    island.erase(island.begin());
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
 		if (vi->first != DefaultGraph) {
@@ -67,8 +68,10 @@ namespace w3c_sw {
 	    rs->joinIn(&island, false);
 	}
 	if (matched == 0)
-	    for (ResultSetIterator it = rs->begin(); it != rs->end(); )
+	    for (ResultSetIterator it = rs->begin(); it != rs->end(); ) {
+		delete *it;
 		it = rs->erase(it);
+	    }
     }
 
     void RdfDB::express (Expressor* expressor) const {

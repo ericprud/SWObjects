@@ -42,6 +42,7 @@ struct R {
 
 ResultSet makeResultSet (R rows[], int count, POS::String2BNode& bnodeMap) {
     ResultSet rs(&f);
+    delete *(rs.begin());
     rs.erase(rs.begin());
     for (int i = 0; i < count; ++i) {
 	Result* r = new Result(&rs);

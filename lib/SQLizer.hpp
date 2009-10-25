@@ -694,7 +694,8 @@ namespace w3c_sw {
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
-	enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} mode;
+	typedef enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} e_Mode;
+	e_Mode mode;
 	SQLQuery* curQuery;
 	const POS* curSubject;
 	AliasAttr curAliasAttr; // established by predicate
@@ -1035,16 +1036,19 @@ namespace w3c_sw {
 	    mode = MODE_outside;
 	    //curQuery->curJoin = NULL;
 	}
-	virtual void filter (const Filter* const, const Expression* p_Constraint) {
+	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+	    p_op->express(this);
 	    mode = MODE_constraint;
-	    try {
-		p_Constraint->express(this);
-		curQuery->addConstraint(curConstraint);
-	    } catch (nonLocalIdentifierException& e) {
-		std::cerr << "filter {" << p_Constraint << "} is not handled by stem " << stem << " because " << e.what() << endl;
-	    }
+	    for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
+		 it != p_Constraints->end(); ++it)
+		try {
+		    (*it)->express(this);
+		    curQuery->addConstraint(curConstraint);
+		} catch (nonLocalIdentifierException& e) {
+		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		}
 	}
-	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    MARK;
 	    for (std::vector<const TriplePattern*>::const_iterator tripleIt = p_TriplePatterns->begin();
 		 tripleIt != p_TriplePatterns->end(); ++tripleIt)
@@ -1053,20 +1057,16 @@ namespace w3c_sw {
 		} catch (nonLocalIdentifierException& e) {
 		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << endl;
 		}
-	    NOW("bgp filters");
-	    for (std::vector<const Filter*>::const_iterator filterIt = p_Filters->begin();
-		 filterIt != p_Filters->end(); ++filterIt)
-		(*filterIt)->express(this);
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS*, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    MARK;
-	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
+	    _BasicGraphPattern(p_TriplePatterns);
 	}
-	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    MARK;
-	    _BasicGraphPattern(p_TriplePatterns, p_Filters);
+	    _BasicGraphPattern(p_TriplePatterns);
 	}
-	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    SQLQuery* parent = curQuery;
 	    SQLUnion* disjunction = parent->makeUnion(consequentsP->entriesFor(curTableOperation));
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
@@ -1077,10 +1077,9 @@ namespace w3c_sw {
 		curTableOperation->express(this);
 	    }
 	    disjunction->attach();
-	    p_Filters->express(this);
 	    curQuery = parent;
 	}
-	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    MARK;
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
@@ -1088,9 +1087,8 @@ namespace w3c_sw {
 		curTableOperation = *it;
 		curTableOperation->express(this);
 	    }
-	    p_Filters->express(this);
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	    MARK;
 	    SQLQuery* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -1098,8 +1096,18 @@ namespace w3c_sw {
 	    curQuery = optional;
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
+	    e_Mode oldMode = mode;
+	    mode = MODE_constraint;
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it)
+		try {
+		    (*it)->express(this);
+		    curQuery->addConstraint(curConstraint);
+		} catch (nonLocalIdentifierException& e) {
+		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		}
+	    mode = oldMode;
 	    optional->attach();
-	    p_Filters->express(this);
 	    curQuery = parent;
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {

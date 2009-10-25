@@ -491,7 +491,7 @@ namespace w3c_sw {
 	    return mismatches;
 	}
 	typedef enum {OP_join, OP_outer, OP_minus} e_OP;
-	void joinIn (ResultSet* ref, const ProductionVector<const Filter*>* filters = NULL, e_OP operation = OP_join) { // !!! make const ref
+	void joinIn (ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {
 		bool matchedSomeRow = false;
@@ -518,13 +518,15 @@ namespace w3c_sw {
 			for (std::set<const POS*>::iterator vars = copy.begin();
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
-			if (filters != NULL)
-			    for (std::vector<const Filter*>::const_iterator filter = filters->begin();
-				 matched && filter != filters->end(); filter++)
-				matched &= (*filter)->eval(newRow, posFactory);
+			if (expressions != NULL)
+			    for (std::vector<const Expression*>::const_iterator expression = expressions->begin();
+				 matched && expression != expressions->end(); expression++)
+				matched &= posFactory->eval(*expression, newRow);
 			if (matched) {
 			    insert(myRow, newRow);
 			    matchedSomeRow = true;
+			} else {
+			    delete newRow;
 			}
 		    }
 		}
@@ -586,7 +588,7 @@ namespace w3c_sw {
 	}
 
 	void project(ProductionVector<const POS*> const * varsV);
-	void restrict(const Filter* filter);
+	void restrict(const Expression* expression);
 	void order(std::vector<s_OrderConditionPair>* orderConditions);
 	void order();
 	bool isOrdered () const { return ordered; }

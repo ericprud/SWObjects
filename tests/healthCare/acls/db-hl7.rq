@@ -1,0 +1,71 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Person: <http://hospital.example/DB/Person#>
+PREFIX Sex_DE: <http://hospital.example/DB/Sex_DE#>
+PREFIX Item_Medication: <http://hospital.example/DB/Item_Medication#>
+PREFIX Medication: <http://hospital.example/DB/Medication#>
+PREFIX Medication_DE: <http://hospital.example/DB/Medication_DE#>
+PREFIX NDCcodes: <http://hospital.example/DB/NDCcodes#>
+
+  PREFIX principals: <http://hospital.example/DB/Principals#>
+  PREFIX acls: <http://hospital.example/DB/Acls#>
+
+PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
+CONSTRUCT {
+_:thisQuery acl:allowance ?enabled .
+?person
+    a					  hl7:Person ;
+    hl7:entityName			  ?middleName ;
+    hl7:livingSubjectBirthTime		  ?dob ;
+    hl7:administrativeGenderCodePrintName ?sex ;
+    hl7:substanceAdministration		  [
+	a	       hl7:SubstanceAdministration ;
+ 	hl7:consumable [
+	    hl7:displayName	 ?takes ;
+	    spl:activeIngredient [
+		spl:classCode ?ingred
+	    ]
+	] ;
+	hl7:effectiveTime [
+	    hl7:start ?indicDate
+	    # hl7:end   (?indicDate + ?indicDuration)
+	]
+    ] .
+} ?product CONSTRUCT "http://hospital.example/patientCode(?id=[0-9]+)#patient"
+			WHERE "http://hospital.example/DB/Person?(?id=[0-9]+)#me"
+} WHERE {
+  OPTIONAL {
+	?_requestor
+		principals:username $USER ;
+		principals:ip       $IP ;
+		principals:account  ?enabled .
+  }
+  ?person     Person:SexDE		     ?sexEntry   .
+              ?sexEntry   Sex_DE:EntryName   ?sex .
+
+  OPTIONAL {
+  ?person     Person:MiddleName		     ?middleName ;
+              Person:DateOfBirth	     ?dob ;
+
+               ?acl acls:entitles  ?_requester .
+	       ?acl acls:includes  acls:identity  
+  }
+
+  ?indicItem  Item_Medication:PatientID	     ?person ;
+              Item_Medication:PerformedDTTM  ?indicDate ;
+  ?indicMed   Medication:ItemID	             ?indicItem ;
+              Medication:DaysToTake          ?indicDuration ;
+
+  OPTIONAL {
+  ?indicItem  Item_Medication:EntryName      ?takes .
+  ?indicMed   Medication:MedDictDE           ?indicDE .
+  ?indicDE    Medication_DE:NDC	             ?indicNDC .
+  ?indicCode  NDCcodes:NDC                   ?indicNDC ;
+              NDCcodes:ingredient            ?ingred .
+
+	       ?acl acls:entitles  ?_requester .
+	       ?acl acls:includes  acls:medication
+  }
+
+}

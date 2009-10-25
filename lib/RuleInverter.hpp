@@ -62,17 +62,17 @@ namespace w3c_sw {
 
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void filter (const Filter* const self, const Expression*) {
+	    virtual void filter (const Filter* const self, const ProductionVector<const Expression*>*) {
 		FilterDuplicator fd(NULL); // requires the same POSFactory.
 		self->express(&fd);
-		dest->addFilter(fd.getFilter());
+		// dest->addFilter(fd.getFilter()); // !!!
 	    }
-	    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
-		p_Filters->express(this);
-	    }
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/, const ProductionVector<const Filter*>* p_Filters) {
-		p_Filters->express(this);
-	    }
+	    // virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/) {
+	    // 	p_Filters->express(this);
+	    // }
+	    // virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/) {
+	    // 	p_Filters->express(this);
+	    // }
 
 	};
 
@@ -204,59 +204,60 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::namedGraphPattern (self, p_name, p_allOpts, p_TriplePatterns);
 		}
 	    }
-	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::defaultGraphPattern(self, p_allOpts, p_TriplePatterns);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns, p_Filters);
+		    SWObjectDuplicator::defaultGraphPattern (self, p_allOpts, p_TriplePatterns);
 		}
 	    }
-	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::tableConjunction(self, p_TableOperations, p_Filters);
+		    SWObjectDuplicator::tableConjunction(self, p_TableOperations);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::tableConjunction (self, p_TableOperations, p_Filters);
+		    SWObjectDuplicator::tableConjunction (self, p_TableOperations);
 		}
 	    }
-	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		if (WatchOptsOnly) {
-		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations, p_Filters);
+		    SWObjectDuplicator::tableDisjunction(self, p_TableOperations);
 		    return;
 		}
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(self);
 		if (s != GraphInclusion_NONE) {
-		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations, p_Filters);
+		    SWObjectDuplicator::tableDisjunction (self, p_TableOperations);
 		}
 	    }
-	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Filter*>* p_Filters) {
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 		last.tableOperation = NULL;
 		GraphInclusion s = includeRequiredness->getOperationStrength(p_GroupGraphPattern);
 		if (s != GraphInclusion_NONE) {
 		    if (s == GraphInclusion_STRONG)
 			// let p_GroupGraphPattern set last.tableOperation
 			p_GroupGraphPattern->express(this);
+			// !!! p_Expressions
 		    else
-			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern, p_Filters);
+			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern, p_Expressions);
 		}
 	    }
 	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
@@ -429,9 +430,8 @@ namespace w3c_sw {
 	    }
 	};
 
-	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	void _graphPattern (BasicGraphPattern* bgp, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    _TriplePatterns(p_TriplePatterns, bgp);
-	    _Filters(p_Filters, bgp);
 	    last.tableOperation = bgp;
 
 	    if (inUserRuleHead)
@@ -442,12 +442,12 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
-	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
 	}
-	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns, const ProductionVector<const Filter*>* p_Filters) {
-	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns, p_Filters); // allOpts = true when in rule body
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
 	}
 
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
@@ -494,7 +494,7 @@ namespace w3c_sw {
 	    if (*debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.getString() << endl;
+		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.str() << endl;
 	    }
 	    p_SolutionModifier->express(this);
 

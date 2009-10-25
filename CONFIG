@@ -13,7 +13,7 @@
 #   http://xmlsoft.org/
 #   expat 1.5.2
 #   http://sourceforge.net/projects/expat/
-XML_PARSER= LIBXML2
+XML_PARSER= EXPAT1
 
 # CONSOLE_ENCODING: UTF8 |  - what encoding to use for console output
 # controls whether tables should be printed like "┌──┬┐" or "+--++"
@@ -67,4 +67,4 @@ INCLUDES += -I/usr/local/dlib-17.11
 # e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
 #BOOST_VERSION=-gcc34-mt-1_38
 # or you may need to link to multi-threaded versions of boost libraries:
-#BOOST_VERSION=-mt
+BOOST_VERSION=-mt

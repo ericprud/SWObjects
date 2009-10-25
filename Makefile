@@ -98,7 +98,7 @@ endif
 
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
-  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION)
+  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
@@ -175,7 +175,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(HTTP_SERVER_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 VER=0.1
 
 #some progressive macports
@@ -212,7 +212,7 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 	$(CXX) -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS)
+	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS) $(HTTP_SERVER_LIB)
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 
