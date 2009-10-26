@@ -206,6 +206,58 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 
+struct DNFtest : public EqualsTest {
+    const TableOperation* dnf;
+    const TableOperation* ref;
+    struct GetRootOp : public RecursiveExpressor {
+	const TableOperation* rootOp;
+	virtual void base (const w3c_sw::Base*, std::string) {  }
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause*) {
+	    rootOp = p_GroupGraphPattern;
+	}
+    };
+    DNFtest (const char* leftString, const char* rightString) : 
+	EqualsTest (leftString, rightString) {
+	GetRootOp g;
+	left->express(&g);
+	dnf = g.rootOp->getDNF();
+
+	right->express(&g);
+	ref = g.rootOp;
+    }
+    ~DNFtest () {
+	delete dnf;
+    }
+};
+
+BOOST_AUTO_TEST_SUITE( DNFtests )
+
+BOOST_AUTO_TEST_SUITE( unions )
+BOOST_AUTO_TEST_CASE( A_or_B ) {
+    DNFtest t("ASK {{ ?s1 ?p1 ?o1 } UNION { ?s2 ?p2 ?o2 }}", 
+	      "ASK {{ ?s1 ?p1 ?o1 } UNION { ?s2 ?p2 ?o2 }}");
+    BOOST_CHECK_EQUAL(*t.dnf, *t.ref);
+}
+BOOST_AUTO_TEST_CASE( A_or_B_and_C ) {
+    DNFtest t("ASK { { { ?s1 ?p1 ?o1 } UNION { ?s2 ?p2 ?o2 } } { ?s3 ?p3 ?o3 } }", 
+	      "ASK { { { ?s1 ?p1 ?o1 } { ?s3 ?p3 ?o3 } } UNION { { ?s2 ?p2 ?o2 } { ?s3 ?p3 ?o3 } } }");
+    BOOST_CHECK_MESSAGE( !(*t.dnf == *t.ref), *t.dnf << " == " << *t.ref );
+}
+BOOST_AUTO_TEST_CASE( union_equiv_filter_positive ) {
+    DNFtest t("ASK { { ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+	      "ASK { { { ?s ?p ?o FILTER(1*(2+3)=?x) } } UNION { { ?s ?p ?o FILTER(1*(2+3)=?x) } } }");
+    BOOST_CHECK_EQUAL(*t.dnf, *t.ref);
+}
+BOOST_AUTO_TEST_CASE( union_different_vars_in_filter ) {
+    DNFtest t("ASK { { ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+	      "ASK { { ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}");
+    BOOST_CHECK_MESSAGE( !(*t.dnf == *t.ref), *t.dnf << " == " << *t.ref );
+}
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 struct RuleMapTest {
     bool bgpCompareVars;
     const Operation* transformed;

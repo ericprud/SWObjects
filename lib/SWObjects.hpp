@@ -1163,48 +1163,6 @@ public:
     virtual bool operator==(const TableOperation& ref) const = 0;
     std::string toString() const;
 };
-class Filter : public TableOperation {
-protected:
-    const TableOperation* op;
-    ProductionVector<const Expression*> m_Expressions;
-
-public:
-    Filter (const TableOperation* op) : TableOperation(), op(op) {  }
-    ~Filter () {
-	delete op;
-    }
-
-    //size_t filters () { return m_Filters.size(); }
-    void addExpression (const Expression* expression) {
-	m_Expressions.push_back(expression);
-    }
-
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
-    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{FILTER(...)}");
-    }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{FILTER(...)}");
-    }
-    virtual void express(Expressor* p_expressor) const;
-    virtual TableOperation* getDNF () const {
-	throw NotImplemented("getDNF(Filter(...))");
-    }
-    bool operator== (const Filter& ref) const {
-	if ( !(*op == *ref.op) )
-	    return false;
-	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
-	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
-	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
-    }
-    bool operator== (const TableOperation& ref) const {
-	const Filter* pref = dynamic_cast<const Filter*>(&ref);
-	return pref == NULL ? false : operator==(*pref);
-    }
-};
 class TableJunction : public TableOperation {
 protected:
     ProductionVector<const TableOperation*> m_TableOperations;
@@ -1362,6 +1320,43 @@ protected:
     virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const = 0;
 public:
     virtual TableOperation* getDNF() const;
+};
+class Filter : public TableOperationOnOperation {
+protected:
+    ProductionVector<const Expression*> m_Expressions;
+
+public:
+    Filter (const TableOperation* op) : TableOperationOnOperation(op) {  }
+    ~Filter () {  }
+
+    //size_t filters () { return m_Filters.size(); }
+    void addExpression (const Expression* expression) {
+	m_Expressions.push_back(expression);
+    }
+
+    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{FILTER(...)}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("DELETEPATTERN{FILTER(...)}");
+    }
+    virtual void express(Expressor* p_expressor) const;
+    bool operator== (const Filter& ref) const {
+	if ( !(*m_TableOperation == *ref.m_TableOperation) )
+	    return false;
+	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
+	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
+	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
+	    if ( !(**mit == **rit) )
+		return false;
+	return true;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const Filter* pref = dynamic_cast<const Filter*>(&ref);
+	return pref == NULL ? false : operator==(*pref);
+    }
+    virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const;
 };
 /* GraphGraphPattern: pass-through class that's just used to reproduce verbatim SPARQL queries
  */

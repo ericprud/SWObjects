@@ -248,7 +248,7 @@ void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
 void Filter::express (Expressor* p_expressor) const {
-    p_expressor->filter(this, op, &m_Expressions);
+    p_expressor->filter(this, m_TableOperation, &m_Expressions);
 }
 void NamedGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns);
@@ -983,7 +983,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getPOSFactory(), rs->debugStream);
-	op->bindVariables(db, &island);
+	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
 	    island.restrict(*it);
@@ -1397,7 +1397,7 @@ compared against
 	TableDisjunction* ret = new TableDisjunction();
 	for (std::vector<const TableOperation*>::const_iterator disjoint = disjoints->begin();
 	     disjoint != disjoints->end(); disjoint++)
-	    ret->addTableOperation(makeANewThis(*disjoint), true);
+	    ret->addTableOperation(makeANewThis(*disjoint), false);
 	disjoints->clear();
 	delete disjoints;
 	return ret;
@@ -1499,6 +1499,17 @@ compared against
 	    ret->erase(it);
 	    delete ret;
 	    return r;
+	}
+	return ret;
+    }
+
+    TableOperationOnOperation* Filter::makeANewThis (const TableOperation* p_TableOperation) const {
+	Filter* ret = new Filter(p_TableOperation);
+	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+	     it != m_Expressions.end(); ++it) {
+	    (*it)->express(&dup);
+	    ret->m_Expressions.push_back(dup.last.expression);
 	}
 	return ret;
     }

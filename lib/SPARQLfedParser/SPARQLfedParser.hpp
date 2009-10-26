@@ -68,7 +68,7 @@ class SPARQLfedScanner;
     class ParserFilter : public Filter {
     public:
 	ParserFilter () : Filter(NULL) {  }
-	void setOp (TableOperation* newOp) { op = newOp; }
+	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
     };
 
     class FilterHolder : public ParserFilter {
