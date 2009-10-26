@@ -1116,6 +1116,12 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+	    FAIL("don't do federation with ServiceGraphPatterns yet");
+	    p_POS->express(this);
+	    curTableOperation = p_GroupGraphPattern;
+	    curTableOperation->express(this);
+	}
 	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
 	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		 it != p_POSs->end(); ++it)

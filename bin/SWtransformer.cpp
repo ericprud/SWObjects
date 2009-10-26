@@ -30,7 +30,7 @@
 #endif
 
 #if HTTP_CLIENT == SWOb_ASIO
-  #include "RdfRemoteDB.hpp"
+//  #include "RdfRemoteDB.hpp"
   #include "../interface/WEBagent_boostASIO.hpp"
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 
@@ -50,7 +50,6 @@ bool Quiet = false;
   bool ExecuteQuery = false;
   bool LexicalCompare = false;
 #endif
-std::vector<const char*>SparqlEndpointPatterns;
 
 void usage (const char* exe) {
     cerr << "USAGE: " << exe << " [-d] [-q] [-bbase|-b base] [-sstem|-s stem] <query file or '-' for stdin> <SPARQL CONSTRUCT rule file>*" << endl;
@@ -89,15 +88,6 @@ bool option (int argc, char** argv, int* iArg) {
 		PkAttr = argv[++(*iArg)];
 	else
 	    PkAttr = argv[*iArg]+2;
-	return true;
-    } else if (!::strncmp(argv[*iArg], "--sparql-pattern", 16)) {
-	if (argv[*iArg][16] == '\0')
-	    if (*iArg > argc - 2)
-		usage(argv[0]);
-	    else
-		SparqlEndpointPatterns.push_back(argv[++(*iArg)]);
-	else
-	    SparqlEndpointPatterns.push_back(argv[*iArg]+2);
 	return true;
     } else if (!::strncmp(argv[*iArg], "--lexical-compare", 17)) {
 	LexicalCompare = true;
@@ -201,7 +191,7 @@ int main(int argc,char** argv) {
 	    errorContext = "query execution";
 	    SAXPARSER p;
 	    WEBagent_boostASIO client;
-	    RdfRemoteDB db(&client, &p, SparqlEndpointPatterns, LexicalCompare, &DebugStream);
+	    RdfDB db(&client, &p, &DebugStream);
 	    ResultSet rs(&posFactory);
 	    o->execute(&db, &rs);
 	    std::cout << rs; // show results

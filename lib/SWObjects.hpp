@@ -1384,6 +1384,31 @@ public:
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new GraphGraphPattern(m_VarOrIRIref, p_TableOperation); }
 };
+/* ServiceGraphPattern: pass-through class that's just used to reproduce verbatim SPARQL queries
+ */
+class ServiceGraphPattern : public TableOperationOnOperation {
+private:
+    const POS* m_VarOrIRIref;
+    POSFactory* posFactory;
+    bool lexicalCompare;
+public:
+    ServiceGraphPattern (const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) : 
+	TableOperationOnOperation(p_GroupGraphPattern), 
+	m_VarOrIRIref(p_POS), posFactory(posFactory), 
+	lexicalCompare(lexicalCompare) // use STR(?foo) = ?bar instead of ?foo = ?bar
+    {  }
+    virtual void express(Expressor* p_expressor) const;
+    virtual bool operator== (const TableOperation& ref) const {
+	const ServiceGraphPattern* pref = dynamic_cast<const ServiceGraphPattern*>(&ref);
+	return pref == NULL ? false : 
+	    m_VarOrIRIref == pref->m_VarOrIRIref &&
+	    *m_TableOperation == *pref->m_TableOperation;
+    }
+    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, posFactory, lexicalCompare); }
+};
 class OptionalGraphPattern : public TableOperationOnOperation {
 protected:
     ProductionVector<const Expression*> m_Expressions;
@@ -2444,6 +2469,7 @@ public:
     virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
     virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
+    virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) = 0;
     virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const POS* p_IRIref) = 0;
@@ -2542,6 +2568,10 @@ public:
 	p_Expressions->express(this);
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	p_POS->express(this);
+	p_GroupGraphPattern->express(this);
+    }
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
 	p_POS->express(this);
 	p_GroupGraphPattern->express(this);
     }

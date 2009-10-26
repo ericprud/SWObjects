@@ -116,6 +116,15 @@ public:
 	} else
 	    p_GroupGraphPattern->express(this);
     }
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+	if (sparqlx) {
+	    xml->open("ServiceGraphPattern");
+	    p_POS->express(this);
+	    p_GroupGraphPattern->express(this);
+	    xml->close();
+	} else
+	    p_GroupGraphPattern->express(this);
+    }
     virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
 	xml->open("POSList");
 	p_POSs->express(this);

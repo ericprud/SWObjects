@@ -232,6 +232,19 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+		const POS* oldGraphName = graphName;
+		graphName = p_POS;
+		const TableOperation* parent = currentBGP;
+		currentBGP = self;
+		_nestedIn(self, parent);
+
+		p_GroupGraphPattern->express(this);
+
+		currentBGP = parent;
+		graphName = oldGraphName;
+	    }
+
 	    /* Add _Binding_SELECT where necessary. */
 	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
 		for (std::vector<const POS*>::const_iterator it = p_POSs->begin();

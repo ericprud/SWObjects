@@ -237,7 +237,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_REPLACE IT_WITH IT_DELETE IT_INSERT IT_GRAPH IT_LOAD IT_INTO IT_CLEAR
+%token IT_REPLACE IT_WITH IT_DELETE IT_INSERT IT_GRAPH IT_SERVICE IT_LOAD IT_INTO IT_CLEAR
        IT_CREATE IT_SILENT IT_DROP IT_BASE IT_PREFIX IT_SELECT IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_DESCRIBE IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
@@ -958,6 +958,7 @@ GraphPatternNotTriples:
     OptionalGraphPattern
     | GroupOrUnionGraphPattern
     | GraphGraphPattern
+    | ServiceGraphPattern
 ;
 
 OptionalGraphPattern:
@@ -986,6 +987,21 @@ GraphGraphPattern:
       } GroupGraphPattern	{
 	  driver.restoreFilter($<p_FilterHolder>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
+	  driver.curGraphName = $<p_POS>5;
+      }
+;
+
+ServiceGraphPattern:
+    IT_SERVICE {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_FilterHolder>$ = driver.saveFilter();
+      } VarOrIRIref {
+	  $<p_POS>$ = driver.curGraphName;
+	  driver.curGraphName = $4;
+      } GroupGraphPattern	{
+	  driver.restoreFilter($<p_FilterHolder>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.posFactory, false));
 	  driver.curGraphName = $<p_POS>5;
       }
 ;

@@ -11,14 +11,12 @@ PREFIX dbp: <http://dbpedia.org/ontology/>
 
 SELECT ?label ?post ?humanEntrez ?code ?family ?iupharNm
 
-FROM NAMED <http://localhost:8888/7tm_receptors>
-FROM NAMED <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
 FROM NAMED <http://hcls.deri.org/atag/data/gabab_example.html>
 
 WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
-GRAPH <http://localhost:8888/7tm_receptors> {
+SERVICE <http://localhost:8888/7tm_receptors> {
   ?iuphar	iface:family	?family .
   ?iuphar	iface:code	?code .
   ?iuphar	iface:iupharName	?iupharNm .
@@ -26,7 +24,7 @@ GRAPH <http://localhost:8888/7tm_receptors> {
   ?human	iface:geneName	"GABBR1" .
   ?human	iface:entrezGene	?humanEntrez .
   }
-GRAPH <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
+SERVICE <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
   {_:gene dbp:entrezgene ?humanEntrez ;
           rdfs:label     ?label ;
 	  FILTER (lang(?label) = "en")

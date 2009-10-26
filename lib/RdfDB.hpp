@@ -48,13 +48,13 @@ namespace w3c_sw {
 	typedef std::map<const POS*, BasicGraphPattern*> graphmap_type;
     protected:
 	graphmap_type graphs;
-	SWWEBagent* webAgent;
-	SWSAXparser* xmlParser;
-
-	std::ostream** debugStream;
 
     public:
+	SWWEBagent* webAgent;
+	SWSAXparser* xmlParser;
+	std::ostream** debugStream;
 	std::string baseURIstr; // base for loading relative URIs (e.g. files)
+
 	RdfDB (SWSAXparser* xmlParser = NULL) : 
 	    graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL) {  }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL) : 

@@ -180,6 +180,12 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new GraphGraphPattern(name, last.tableOperation);
 	}
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) {
+	    p_POS->express(this);
+	    const POS* name = last.posz.pos;
+	    p_GroupGraphPattern->express(this);
+	    last.tableOperation = new ServiceGraphPattern(name, last.tableOperation, posFactory, lexicalCompare);
+	}
 	void _POSs (const ProductionVector<const POS*>* p_POSs, POSList* p) { // !!! single use
 	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
 		 it != p_POSs->end(); it++) {

@@ -63,6 +63,7 @@ IT_WITH		[Ww][Ii][Tt][Hh]
 IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
 IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
 IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
+IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
 IT_LOAD		[Ll][Oo][Aa][Dd]
 IT_INTO		[Ii][Nn][Tt][Oo]
 IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
@@ -180,6 +181,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_DELETE}		{return token::IT_DELETE;}
 {IT_INSERT}		{return token::IT_INSERT;}
 {IT_GRAPH}		{return token::IT_GRAPH;}
+{IT_SERVICE}		{return token::IT_SERVICE;}
 {IT_LOAD}		{return token::IT_LOAD;}
 {IT_INTO}		{return token::IT_INTO;}
 {IT_CLEAR}		{return token::IT_CLEAR;}

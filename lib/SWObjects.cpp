@@ -268,6 +268,9 @@ void OptionalGraphPattern::express (Expressor* p_expressor) const {
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
+void ServiceGraphPattern::express (Expressor* p_expressor) const {
+    p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, posFactory, lexicalCompare);
+}
 void POSList::express (Expressor* p_expressor) const {
     p_expressor->posList(this, &m_POSs);
 }
@@ -1189,6 +1192,142 @@ compared against
 		m_TableOperation->deletePattern(target, rs, evaluator, bgp);
 	    }
 	}
+    }
+
+    void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+	class GraphSerializer : public SPARQLSerializer {
+	    ResultSet* rs;
+	    bool expectOuterGraph;
+	    bool lexicalCompare;
+	    std::set<const Variable*> vars;
+	    std::string selectString;
+	    std::string federationString;
+
+	public:
+	    GraphSerializer (ResultSet* rs, bool lexicalCompare = false) : 
+		SPARQLSerializer(), rs(rs), expectOuterGraph(true), lexicalCompare(lexicalCompare)
+	    {  }
+	    std::string getSelectString () const { return selectString; }
+	    std::string getFederationString () const { return federationString; }
+
+	protected:
+	    virtual void variable (const Variable* const self, std::string lexicalValue) {
+		vars.insert(self);
+		SPARQLSerializer::variable(self, lexicalValue);
+	    }
+
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		if (expectOuterGraph) {
+		    expectOuterGraph = false;
+		    lead();
+
+		    /* Serialize nested stuff. */
+		    depth++;
+		    ExprSet* filters = injectFilter; injectFilter = NULL;
+		    p_TriplePatterns->express(this);
+		    serializeFilter(filters);
+		    depth--;
+		    // _BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
+
+		    /* Build SELECT and FILTER strings from enountered Variables. */
+		    selectString = "SELECT ";
+		    for (std::set<const Variable*>::const_iterator it = vars.begin();
+			 it != vars.end(); ++it)
+			selectString += (*it)->toString() + ' ';
+		    federationString = rs->buildFederationString(vars, lexicalCompare);
+
+		    expectOuterGraph = true;
+		} else
+		    SPARQLSerializer::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns);
+	    }
+
+	};
+
+	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
+	if (graph == NULL)
+	    throw std::string("@@haven't written the iterator for SERVICE calls to variables, specifically, SERVICE ").append(m_VarOrIRIref->toString());
+
+	/* Build the request URL in buffer u. */
+	std::stringstream u;
+	u.setf(std::ios::hex, std::ios::basefield);
+	u.setf(std::ios::uppercase);
+
+	std::string srvc = graph->getLexicalValue();
+	u << srvc;
+	u << (srvc.find_first_of("?") == std::string::npos ? "?" : 
+	      srvc.at(srvc.size()-1) == '&' ? "" : 
+	      "&");
+	u << "query=";
+	GraphSerializer ser(rs, lexicalCompare);
+	m_TableOperation->express(&ser);
+	std::string q = ser.getSelectString() + '{' + ser.str() + ser.getFederationString() + '}';
+	if (db->debugStream != NULL && *(db->debugStream) != NULL)
+	    **(db->debugStream) << "Querying <" << srvc << "> for\n" << q;
+	for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
+	    if (*it == ' ')
+		u << '+';
+	    else if ((*it >= 'a' && *it <= 'z') || 
+		     (*it >= 'A' && *it <= 'Z') || 
+		     (*it >= '0' && *it <= '9') || 
+		     *it == '.' || *it == '-' || *it == '_')
+		u << *it;
+	    else if (*it < 0x10)
+		u << "%0" << (unsigned)*it;
+	    else
+		u << '%' << (unsigned)*it;
+	}
+
+	/* Do an HTTP GET. */
+	std::string s(db->webAgent->get(
+#if REGEX_LIB == SWOb_DISABLED
+#warning "Web agent needs REGEX to parse service URL -- defaulting to http://localhost:8888/sparql"
+				    "localhost", "8888", "/sparql"
+#else /* !REGEX_LIB == SWOb_DISABLED */
+				    u.str().c_str()
+#endif /* !REGEX_LIB == SWOb_DISABLED */
+				    ));
+
+	/* Parse results into a ResultSet. */
+	ResultSet red(posFactory, db->xmlParser, s.begin(), s.end());
+	if (db->debugStream != NULL && *(db->debugStream) != NULL)
+	    **(db->debugStream) << " yielded\n" << red;
+
+	/* Join those results against our initial results. */
+	rs->joinIn(&red);
+    }
+
+    void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw std::string("@@ServiceGraphPattern::construct not yet written");
+	// const URI* serviceName = dynamic_cast<const URI*>(m_VarOrIRIref);
+	// if (serviceName != NULL) {
+	//     /* GRAPH <x> { ?s ?p ?o } */
+	//     BasicGraphPattern* bgp = target->assureGraph(graphName);
+	//     m_TableOperation->construct(target, rs, evaluator, bgp);
+	// } else {
+	//     /* SERVICE ?g { ?s ?p ?o } */
+	//     for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
+	// 	const POS* evaldServiceName = m_VarOrIRIref->evalPOS(*result, evaluator);
+	// 	BasicGraphPattern* bgp = target->assureGraph(evaldServiceName);
+	// 	m_TableOperation->construct(target, rs, evaluator, bgp);
+	//     }
+	// }
+    }
+
+    void ServiceGraphPattern::deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw std::string("@@ServiceGraphPattern::delete not yet written");
+	// const URI* serviceName = dynamic_cast<const URI*>(m_VarOrIRIref);
+	// if (serviceName != NULL) {
+	//     /* GRAPH <x> { ?s ?p ?o } */
+	//     BasicGraphPattern* bgp = target->assureGraph(graphName);
+	//     m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+	// } else {
+	//     /* SERVICE ?g { ?s ?p ?o } */
+	//     for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
+	// 	const POS* evaldServiceName = m_VarOrIRIref->evalPOS(*result, evaluator);
+	// 	BasicGraphPattern* bgp = target->assureGraph(evaldServiceName);
+	// 	m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+	//     }
+	// }
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {

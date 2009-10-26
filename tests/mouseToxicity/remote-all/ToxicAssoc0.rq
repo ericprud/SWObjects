@@ -12,16 +12,10 @@ PREFIX mt: <http://med.example/mt#>
 
 SELECT ?name ?chemical ?motif ?saProt ?kd50 ?leik ?ld
 
-FROM NAMED <http://localhost:8881/microArray>
-FROM NAMED <http://localhost:8882/uniprot>
-FROM NAMED <http://localhost:8883/screeningAssay>
-FROM NAMED <http://localhost:8884/chemStructure>
-FROM NAMED <http://localhost:8885/mouseToxicity>
-
 WHERE {
 
 # Get a name and a chemical from the (SQL) MicroArray database.
-GRAPH <http://localhost:8881/microArray> {
+SERVICE <http://localhost:8881/microArray> {
          ?g	ma:name		?name .
 	 ?g	ma:expression	"up" .
 	 ?g	ma:experiment	?kinase .
@@ -29,13 +23,13 @@ GRAPH <http://localhost:8881/microArray> {
 	 ?agin	cs:chemical	?chemical }
 
 # The uniprot data (in RDF) has motif and pathway information.
-GRAPH <http://localhost:8882/uniprot> {
+SERVICE <http://localhost:8882/uniprot> {
          ?p	ma:name		?name .		# bound to ?ma.ma:name
 	 ?p	up:motif	?motif .
 	 ?p	up:pathway	"apoptosis" }
 
 # Use the (SQL) Kinase databaes to limit to the interesting chemicals.
-GRAPH <http://localhost:8883/screeningAssay> {
+SERVICE <http://localhost:8883/screeningAssay> {
          ?a	sa:name		"KinaseAssay" .
 	 ?a	cs:chemical	?chemical .	# bound to ?ma.cs:chemical
 	 ?a	sa:upname	?saProt .
@@ -43,7 +37,7 @@ GRAPH <http://localhost:8883/screeningAssay> {
          FILTER (?kd50 >= .7 || ?kd50 < .2) }
 
 # This (SQL) chemical database indexes leik sidechains.
-GRAPH <http://localhost:8884/chemStructure> {
+SERVICE <http://localhost:8884/chemStructure> {
          ?c	cs:chemical	?chemical .	# bound to ?ma.cs:chemical, ?sa.cs:chemical
 	 ?c	cs:structure	"asdfasdf" .
 	 ?c	cs:sidechain	?side .
@@ -52,7 +46,7 @@ GRAPH <http://localhost:8884/chemStructure> {
 	 ?c2	cs:chemical	?leik }
 
 # Limit by toxicity in the (SQL) MouseToxicity experiments.
-GRAPH <http://localhost:8885/mouseToxicity> {
+SERVICE <http://localhost:8885/mouseToxicity> {
          ?t	cs:chemical	?leik .		# bound to ?cs.cs:sidechain
 	 ?t	mt:toxicity	?ld 
          FILTER (?ld < .35) }

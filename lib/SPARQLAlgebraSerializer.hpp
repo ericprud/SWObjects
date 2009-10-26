@@ -243,15 +243,24 @@ public:
 	    _exprlist(p_Expressions);
 	}
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-	lead();
-	ret << "GRAPH ";
-	if (debug & DEBUG_graphs) ret << ' ' << self;
+    void _nestedGraphPattern (const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);
 	ret << std::endl;
 	depth++;
 	p_GroupGraphPattern->express(this);
 	depth--;
+    }
+    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	lead();
+	ret << "GRAPH ";
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	_nestedGraphPattern(p_POS, p_GroupGraphPattern);
+    }
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+	lead();
+	ret << "SERVICE ";
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	_nestedGraphPattern(p_POS, p_GroupGraphPattern);
     }
     virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
 	for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
