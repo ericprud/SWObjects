@@ -962,10 +962,8 @@ OptionalGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.curFilter;
-	  //	  driver.curFilter = new FilterHolder();
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
-	  // ((FilterHolder*)driver.curFilter)->copyExpressionsTo(ret); // @@ nasty cast
 	  if (driver.curFilter) {
 	      driver.curFilter->copyExpressionsTo(ret);
 	      delete driver.curFilter;

@@ -80,10 +80,28 @@ protected:
     ProductionVector<const Expression*> filterExpressions;
 
     void ensureBasicGraphPattern ( ) {
-	if (curBGP == NULL)
+	if (curBGP == NULL) {
 	    curBGP = curGraphName == NULL ? 
 		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
 		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
+	    curOp = makeConjunction(curOp, curBGP);
+	}
+    }
+
+    ParserFilter* saveFilter () {
+	ParserFilter* ret = curFilter;
+	curFilter = NULL;
+	return ret;
+    }
+
+    void restoreFilter (ParserFilter* was) {
+	if (curFilter != NULL) {
+	    if (curOp == NULL)
+		ensureBasicGraphPattern();
+	    curFilter->setOp(curOp);
+	    curOp = curFilter;
+	}
+	curFilter = was;
     }
 
     TableOperation* makeConjunction (TableOperation* l, TableOperation* r) {
@@ -467,11 +485,11 @@ SourceSelector:
 
 WhereClause:
     // 'WHERE'? GroupGraphPattern BindingClause?
-    _QIT_WHERE_E_Opt {
-	driver.curFilter = NULL;
-      } GroupGraphPattern _QBindingClause_E_Opt	{
-	  $$ = new WhereClause(driver.curOp, $4);
-      }
+    _QIT_WHERE_E_Opt  GroupGraphPattern _QBindingClause_E_Opt	{
+	driver.restoreFilter(NULL);
+	$$ = new WhereClause(driver.curOp, $3);
+	driver.curOp = NULL;
+    }
 ;
 
 _QIT_WHERE_E_Opt:
@@ -671,7 +689,6 @@ GroupGraphPattern:
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
 	  driver.curBGP = NULL;
-	  driver.curFilter = NULL;
       }
 ;
 
@@ -731,39 +748,43 @@ GraphPatternNotTriples:
 OptionalGraphPattern:
     IT_OPTIONAL	{
 	$<p_TableOperation>$ = driver.curOp;
-      }	{
+      } {
 	  $<p_ParserFilter>$ = driver.curFilter;
-	  // driver.curFilter = $<p_ParserFilter>$ = new FilterHolder();
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
-	  // $<p_ParserFilter>3->copyExpressionsTo(ret);
 	  if (driver.curFilter) {
 	      driver.curFilter->copyExpressionsTo(ret);
 	      delete driver.curFilter;
 	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
+	  driver.curFilter = $<p_ParserFilter>3;
       }
 ;
 
 GraphGraphPattern:
     IT_GRAPH {
 	$<p_TableOperation>$ = driver.curOp;
-	driver.curFilter = NULL;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
       } VarOrIRIref {
-	$<p_POS>$ = driver.curGraphName;
-	driver.curGraphName = $3;
+	  $<p_POS>$ = driver.curGraphName;
+	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($3, driver.curOp));
-	  driver.curGraphName = $<p_POS>4;
+	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
+	  driver.curGraphName = $<p_POS>5;
       }
 ;
 
 GroupOrUnionGraphPattern:
     // GroupGraphPattern ( 'UNION' GroupGraphPattern )*
     {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-	driver.curFilter = NULL;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
       } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
+	  driver.restoreFilter($<p_ParserFilter>2);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, driver.curOp);
       }
 ;
@@ -771,9 +792,10 @@ GroupOrUnionGraphPattern:
 // 'UNION' GroupGraphPattern
 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
     IT_UNION {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-	/* driver.curFilter = NULL; -- parallel, but unnecessary. */
       } GroupGraphPattern	{
+	  driver.restoreFilter(NULL);
 	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.curOp);
       }
 ;
@@ -786,8 +808,11 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 
 Filter:
     IT_FILTER Constraint	{
-	if (driver.curFilter == NULL)
-	    driver.curOp = driver.curFilter = new ParserFilter();
+	if (driver.curFilter == NULL) {
+	    if (driver.curOp == NULL)
+		driver.ensureBasicGraphPattern();
+	    driver.curFilter = new ParserFilter();
+	}
 	driver.curFilter->addExpression($2);
     }
 ;
@@ -1482,7 +1507,7 @@ namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, POSFactory* posFactory) : 
 	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), 
+	curBGP(NULL), curFilter(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
 	root(NULL)
 {

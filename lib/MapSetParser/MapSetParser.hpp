@@ -88,10 +88,28 @@ protected:
     ProductionVector<const Expression*> filterExpressions;
 
     void ensureBasicGraphPattern ( ) {
-	if (curBGP == NULL)
+	if (curBGP == NULL) {
 	    curBGP = curGraphName == NULL ? 
 		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
 		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
+	    curOp = makeConjunction(curOp, curBGP);
+	}
+    }
+
+    ParserFilter* saveFilter () {
+	ParserFilter* ret = curFilter;
+	curFilter = NULL;
+	return ret;
+    }
+
+    void restoreFilter (ParserFilter* was) {
+	if (curFilter != NULL) {
+	    if (curOp == NULL)
+		ensureBasicGraphPattern();
+	    curFilter->setOp(curOp);
+	    curOp = curFilter;
+	}
+	curFilter = was;
     }
 
     TableOperation* makeConjunction (TableOperation* l, TableOperation* r) {
@@ -139,7 +157,7 @@ public:
 
 
 /* Line 35 of lalr1.cc.  */
-#line 143 "lib/MapSetParser/MapSetParser.hpp"
+#line 161 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -190,7 +208,7 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 135 "lib/MapSetParser/MapSetParser.ypp"
+#line 153 "lib/MapSetParser/MapSetParser.ypp"
 {
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -250,7 +268,7 @@ namespace w3c_sw
 
 }
 /* Line 35 of lalr1.cc.  */
-#line 254 "lib/MapSetParser/MapSetParser.hpp"
+#line 272 "lib/MapSetParser/MapSetParser.hpp"
 	;
 #else
     typedef YYSTYPE semantic_type;
