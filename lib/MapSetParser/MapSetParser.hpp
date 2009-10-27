@@ -79,7 +79,7 @@ protected:
     const POS* curSubject;
     const POS* curPredicate;
     BasicGraphPattern* curBGP;
-    Filter* curFilter;
+    ParserFilter* curFilter;
     TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     BindingClause* curBindingClause;
     Binding* curBinding;
@@ -235,7 +235,7 @@ namespace w3c_sw
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    FilterHolder* p_FilterHolder;
+    ParserFilter* p_ParserFilter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;

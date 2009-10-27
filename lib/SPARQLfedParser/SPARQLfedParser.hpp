@@ -69,10 +69,6 @@ class SPARQLfedScanner;
     public:
 	ParserFilter () : Filter(NULL) {  }
 	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
-    };
-
-    class FilterHolder : public ParserFilter {
-    public:
 	void copyExpressionsTo (OptionalGraphPattern* target) {
 	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 		 it != m_Expressions.end(); ++it)
@@ -172,7 +168,7 @@ public:
 
 
 /* Line 35 of lalr1.cc.  */
-#line 176 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 172 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -223,7 +219,7 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 174 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 170 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 {
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -269,7 +265,7 @@ namespace w3c_sw
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_FilterHolder;
+    ParserFilter* p_ParserFilter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;
@@ -284,7 +280,7 @@ namespace w3c_sw
 
 }
 /* Line 35 of lalr1.cc.  */
-#line 288 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 284 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 	;
 #else
     typedef YYSTYPE semantic_type;

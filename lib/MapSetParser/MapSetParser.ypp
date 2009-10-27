@@ -71,7 +71,7 @@ protected:
     const POS* curSubject;
     const POS* curPredicate;
     BasicGraphPattern* curBGP;
-    Filter* curFilter;
+    ParserFilter* curFilter;
     TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     BindingClause* curBindingClause;
     Binding* curBinding;
@@ -176,7 +176,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    FilterHolder* p_FilterHolder;
+    ParserFilter* p_ParserFilter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;
@@ -732,11 +732,15 @@ OptionalGraphPattern:
     IT_OPTIONAL	{
 	$<p_TableOperation>$ = driver.curOp;
       }	{
-	driver.curFilter = $<p_FilterHolder>$ = new FilterHolder();
+	  $<p_ParserFilter>$ = driver.curFilter;
+	  // driver.curFilter = $<p_ParserFilter>$ = new FilterHolder();
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
-	  $<p_FilterHolder>3->copyExpressionsTo(ret);
-	  delete $<p_FilterHolder>3;
+	  // $<p_ParserFilter>3->copyExpressionsTo(ret);
+	  if (driver.curFilter) {
+	      driver.curFilter->copyExpressionsTo(ret);
+	      delete driver.curFilter;
+	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
       }
 ;
@@ -783,7 +787,7 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	if (driver.curFilter == NULL)
-	    driver.curOp = driver.curFilter = new Filter(driver.curOp);
+	    driver.curOp = driver.curFilter = new ParserFilter();
 	driver.curFilter->addExpression($2);
     }
 ;

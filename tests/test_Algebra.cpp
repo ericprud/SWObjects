@@ -276,3 +276,178 @@ BOOST_AUTO_TEST_CASE( bgp_with_triples ) {
 ");
 }
 
+BOOST_AUTO_TEST_CASE( union_with_filters ) {
+    /* Filters in both sides of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  { ?s ?p ?o FILTER(1) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(2) }\n\
+}", "(ask\n \
+ (union\n\
+    (filter 1\n\
+      (bgp (triple ?s ?p ?o))\n\
+    )\n\
+    (filter 2\n\
+      (bgp (triple ?s ?p ?o))\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( union_with_leading_filter ) {
+    /* Filters in three sides and begin and end of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  FILTER(0)\n\
+  { ?s ?p ?o }\n\
+ UNION\n\
+  { ?s ?p ?o }\n\
+}", "(ask\n\
+  (join\n\
+    (filter 0\n\
+      (table unit)\n\
+    )\n\
+    (union\n\
+      (bgp (triple ?s ?p ?o))\n\
+      (bgp (triple ?s ?p ?o))\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( union_with_trailing_filter ) {
+    /* Filters in both sides and end of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  { ?s ?p ?o FILTER(1) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(2) }\n\
+  FILTER(3)\n\
+}", "(ask\n\
+  (filter 3\n\
+    (union\n\
+      (filter 1\n\
+        (bgp (triple ?s ?p ?o))\n\
+      )\n\
+      (filter 2\n\
+        (bgp (triple ?s ?p ?o))\n\
+      )\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( triple_union_with_trailing_filter ) {
+    /* Filters in three sides and end of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  { ?s ?p ?o FILTER(1) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(2) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(3) }\n\
+  FILTER(4)\n\
+}", "(ask\n\
+  (filter 4\n\
+    (union\n\
+      (union\n\
+        (filter 1\n\
+          (bgp (triple ?s ?p ?o))\n\
+        )\n\
+        (filter 2\n\
+          (bgp (triple ?s ?p ?o))\n\
+        )\n\
+      )\n\
+      (filter 3\n\
+        (bgp (triple ?s ?p ?o))\n\
+      )\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( filtered_union_with_leading_filter ) {
+    /* Filters in three sides and begin and end of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  FILTER(0)\n\
+  { ?s ?p ?o FILTER(1) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(2) }\n\
+}", "(ask\n\
+  (join\n\
+    (filter 0\n\
+      (table unit)\n\
+    )\n\
+    (union\n\
+      (filter 1\n\
+        (bgp (triple ?s ?p ?o))\n\
+      )\n\
+      (filter 2\n\
+        (bgp (triple ?s ?p ?o))\n\
+      )\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( triple_union_with_leading_and_trailing_filter ) {
+    /* Filters in three sides and begin and end of a UNION.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  FILTER(0)\n\
+  { ?s ?p ?o FILTER(1) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(2) }\n\
+ UNION\n\
+  { ?s ?p ?o FILTER(3) }\n\
+  FILTER(4)\n\
+}", "(ask\n\
+  (filter 4\n\
+    (join\n\
+      (filter 0\n\
+        (table unit)\n\
+      )\n\
+      (union\n\
+        (union\n\
+          (filter 1\n\
+            (bgp (triple ?s ?p ?o))\n\
+          )\n\
+          (filter 2\n\
+            (bgp (triple ?s ?p ?o))\n\
+          )\n\
+        )\n\
+        (filter 3\n\
+          (bgp (triple ?s ?p ?o))\n\
+        )\n\
+      )\n\
+    )\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( optional__q_opt_complex_1 ) {
+    /* copy of DAWG test optional/q-opt-complex-1
+     */
+    ALGEBRA_TEST("PREFIX  foaf:   <http://xmlns.com/foaf/0.1/>\n\
+ASK { \n\
+    OPTIONAL { \n\
+        # { ?person foaf:depiction ?img } UNION \n\
+        { ?person foaf:firstName ?firstN } \n\
+    }\n\
+}", "(ask\n\
+  (leftjoin\n\
+    (table unit)\n\
+    (bgp (triple ?person <http://xmlns.com/foaf/0.1/firstName> ?firstN))\n\
+  )\n\
+)\n\
+");
+}
+

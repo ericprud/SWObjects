@@ -66,11 +66,7 @@ class SPARQLfedScanner;
     class ParserFilter : public Filter {
     public:
 	ParserFilter () : Filter(NULL) {  }
-	void setOp (TableOperation* newOp) { op = newOp; }
-    };
-
-    class FilterHolder : public ParserFilter {
-    public:
+	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
 	void copyExpressionsTo (OptionalGraphPattern* target) {
 	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 		 it != m_Expressions.end(); ++it)
@@ -216,7 +212,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_FilterHolder;
+    ParserFilter* p_ParserFilter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const POS* p_POS;
@@ -965,14 +961,17 @@ OptionalGraphPattern:
     IT_OPTIONAL	{
 	$<p_TableOperation>$ = driver.curOp;
       } {
-	  $<p_FilterHolder>$ = driver.curFilter;
-	  driver.curFilter = new FilterHolder();
+	  $<p_ParserFilter>$ = driver.curFilter;
+	  //	  driver.curFilter = new FilterHolder();
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
-	  ((FilterHolder*)driver.curFilter)->copyExpressionsTo(ret); // @@ nasty cast
-	  delete driver.curFilter;
+	  // ((FilterHolder*)driver.curFilter)->copyExpressionsTo(ret); // @@ nasty cast
+	  if (driver.curFilter) {
+	      driver.curFilter->copyExpressionsTo(ret);
+	      delete driver.curFilter;
+	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
-	  driver.curFilter = $<p_FilterHolder>3;
+	  driver.curFilter = $<p_ParserFilter>3;
       }
 ;
 
@@ -980,12 +979,12 @@ GraphGraphPattern:
     IT_GRAPH {
 	$<p_TableOperation>$ = driver.curOp;
       } {
-	  $<p_FilterHolder>$ = driver.saveFilter();
+	  $<p_ParserFilter>$ = driver.saveFilter();
       } VarOrIRIref {
 	  $<p_POS>$ = driver.curGraphName;
 	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_FilterHolder>3);
+	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
 	  driver.curGraphName = $<p_POS>5;
       }
@@ -995,12 +994,12 @@ ServiceGraphPattern:
     IT_SERVICE {
 	$<p_TableOperation>$ = driver.curOp;
       } {
-	  $<p_FilterHolder>$ = driver.saveFilter();
+	  $<p_ParserFilter>$ = driver.saveFilter();
       } VarOrIRIref {
 	  $<p_POS>$ = driver.curGraphName;
 	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_FilterHolder>3);
+	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.posFactory, false));
 	  driver.curGraphName = $<p_POS>5;
       }
@@ -1009,11 +1008,12 @@ ServiceGraphPattern:
 GroupOrUnionGraphPattern:
     // GroupGraphPattern ( 'UNION' GroupGraphPattern )*
     {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
-	  $<p_FilterHolder>$ = driver.saveFilter();
+	  $<p_ParserFilter>$ = driver.saveFilter();
       } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	  driver.restoreFilter($<p_FilterHolder>2);
+	  driver.restoreFilter($<p_ParserFilter>2);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, driver.curOp);
       }
 ;
@@ -1021,8 +1021,10 @@ GroupOrUnionGraphPattern:
 // 'UNION' GroupGraphPattern
 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
     IT_UNION {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } GroupGraphPattern	{
+	  driver.restoreFilter(NULL);
 	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.curOp);
       }
 ;
