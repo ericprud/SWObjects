@@ -889,21 +889,25 @@ namespace w3c_sw
   case 103:
 #line 794 "lib/MapSetParser/MapSetParser.ypp"
     {
+	if (driver.curOp == NULL)
+	    driver.ensureBasicGraphPattern();
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
       ;}
     break;
 
   case 104:
-#line 797 "lib/MapSetParser/MapSetParser.ypp"
+#line 799 "lib/MapSetParser/MapSetParser.ypp"
     {
+	  if (driver.curOp == NULL)
+	      driver.ensureBasicGraphPattern();
 	  driver.restoreFilter(NULL);
 	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.curOp);
       ;}
     break;
 
   case 107:
-#line 810 "lib/MapSetParser/MapSetParser.ypp"
+#line 814 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if (driver.curFilter == NULL) {
 	    if (driver.curOp == NULL)
@@ -915,49 +919,49 @@ namespace w3c_sw
     break;
 
   case 111:
-#line 827 "lib/MapSetParser/MapSetParser.ypp"
+#line 831 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
     ;}
     break;
 
   case 112:
-#line 834 "lib/MapSetParser/MapSetParser.ypp"
+#line 838 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_ArgList) = new ArgList((yysemantic_stack_[(1) - (1)].p_Expressions));
     ;}
     break;
 
   case 113:
-#line 841 "lib/MapSetParser/MapSetParser.ypp"
+#line 845 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 115:
-#line 849 "lib/MapSetParser/MapSetParser.ypp"
+#line 853 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 116:
-#line 856 "lib/MapSetParser/MapSetParser.ypp"
+#line 860 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = NULL;
     ;}
     break;
 
   case 117:
-#line 860 "lib/MapSetParser/MapSetParser.ypp"
+#line 864 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(2) - (2)].p_Expression));
       ;}
     break;
 
   case 118:
-#line 862 "lib/MapSetParser/MapSetParser.ypp"
+#line 866 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_Expressions) = driver.curExprList;
 	  driver.curExprList = NULL;
@@ -965,35 +969,35 @@ namespace w3c_sw
     break;
 
   case 119:
-#line 870 "lib/MapSetParser/MapSetParser.ypp"
+#line 874 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curBGP = NULL;
       ;}
     break;
 
   case 120:
-#line 872 "lib/MapSetParser/MapSetParser.ypp"
+#line 876 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_BasicGraphPattern) = driver.curBGP;
       ;}
     break;
 
   case 127:
-#line 900 "lib/MapSetParser/MapSetParser.ypp"
+#line 904 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
     ;}
     break;
 
   case 129:
-#line 903 "lib/MapSetParser/MapSetParser.ypp"
+#line 907 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
     ;}
     break;
 
   case 145:
-#line 963 "lib/MapSetParser/MapSetParser.ypp"
+#line 967 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.ensureBasicGraphPattern();
 	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_POS)));
@@ -1001,7 +1005,7 @@ namespace w3c_sw
     break;
 
   case 146:
-#line 970 "lib/MapSetParser/MapSetParser.ypp"
+#line 974 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
 	driver.curPredicate = (yyval.p_POS);
@@ -1009,7 +1013,7 @@ namespace w3c_sw
     break;
 
   case 147:
-#line 974 "lib/MapSetParser/MapSetParser.ypp"
+#line 978 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_POS);
@@ -1017,7 +1021,7 @@ namespace w3c_sw
     break;
 
   case 150:
-#line 986 "lib/MapSetParser/MapSetParser.ypp"
+#line 990 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -1026,7 +1030,7 @@ namespace w3c_sw
     break;
 
   case 151:
-#line 990 "lib/MapSetParser/MapSetParser.ypp"
+#line 994 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_POS) = driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -1035,7 +1039,7 @@ namespace w3c_sw
     break;
 
   case 152:
-#line 999 "lib/MapSetParser/MapSetParser.ypp"
+#line 1003 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
 	    (yyval.p_POS) = driver.createBNode();
@@ -1060,56 +1064,56 @@ namespace w3c_sw
     break;
 
   case 153:
-#line 1024 "lib/MapSetParser/MapSetParser.ypp"
+#line 1028 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_members;
     ;}
     break;
 
   case 154:
-#line 1027 "lib/MapSetParser/MapSetParser.ypp"
+#line 1031 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_starts;
     ;}
     break;
 
   case 155:
-#line 1030 "lib/MapSetParser/MapSetParser.ypp"
+#line 1034 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_ends;
     ;}
     break;
 
   case 156:
-#line 1033 "lib/MapSetParser/MapSetParser.ypp"
+#line 1037 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_any;
     ;}
     break;
 
   case 157:
-#line 1036 "lib/MapSetParser/MapSetParser.ypp"
+#line 1040 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_unordered;
     ;}
     break;
 
   case 158:
-#line 1043 "lib/MapSetParser/MapSetParser.ypp"
+#line 1047 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_exact;
     ;}
     break;
 
   case 160:
-#line 1051 "lib/MapSetParser/MapSetParser.ypp"
+#line 1055 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POSs) = new ProductionVector<const POS*>();
     ;}
     break;
 
   case 161:
-#line 1054 "lib/MapSetParser/MapSetParser.ypp"
+#line 1058 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_POSs)->push_back((yysemantic_stack_[(2) - (2)].p_POS));
 	(yyval.p_POSs) = (yysemantic_stack_[(2) - (1)].p_POSs);
@@ -1117,7 +1121,7 @@ namespace w3c_sw
     break;
 
   case 162:
-#line 1062 "lib/MapSetParser/MapSetParser.ypp"
+#line 1066 "lib/MapSetParser/MapSetParser.ypp"
     {
 	/* no push_front
 	   $2->push_front($1);
@@ -1134,70 +1138,70 @@ namespace w3c_sw
     break;
 
   case 163:
-#line 1079 "lib/MapSetParser/MapSetParser.ypp"
+#line 1083 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POSs) = new ProductionVector<const POS*>();
     ;}
     break;
 
   case 167:
-#line 1091 "lib/MapSetParser/MapSetParser.ypp"
+#line 1095 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_Variable);
     ;}
     break;
 
   case 169:
-#line 1098 "lib/MapSetParser/MapSetParser.ypp"
+#line 1102 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_Variable);
     ;}
     break;
 
   case 170:
-#line 1101 "lib/MapSetParser/MapSetParser.ypp"
+#line 1105 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
     ;}
     break;
 
   case 173:
-#line 1112 "lib/MapSetParser/MapSetParser.ypp"
+#line 1116 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
     ;}
     break;
 
   case 174:
-#line 1115 "lib/MapSetParser/MapSetParser.ypp"
+#line 1119 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     ;}
     break;
 
   case 175:
-#line 1118 "lib/MapSetParser/MapSetParser.ypp"
+#line 1122 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     ;}
     break;
 
   case 176:
-#line 1121 "lib/MapSetParser/MapSetParser.ypp"
+#line 1125 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     ;}
     break;
 
   case 178:
-#line 1125 "lib/MapSetParser/MapSetParser.ypp"
+#line 1129 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     ;}
     break;
 
   case 180:
-#line 1136 "lib/MapSetParser/MapSetParser.ypp"
+#line 1140 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -1206,21 +1210,21 @@ namespace w3c_sw
     break;
 
   case 181:
-#line 1145 "lib/MapSetParser/MapSetParser.ypp"
+#line 1149 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 182:
-#line 1152 "lib/MapSetParser/MapSetParser.ypp"
+#line 1156 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     ;}
     break;
 
   case 183:
-#line 1155 "lib/MapSetParser/MapSetParser.ypp"
+#line 1159 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1228,7 +1232,7 @@ namespace w3c_sw
     break;
 
   case 184:
-#line 1163 "lib/MapSetParser/MapSetParser.ypp"
+#line 1167 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -1237,21 +1241,21 @@ namespace w3c_sw
     break;
 
   case 185:
-#line 1172 "lib/MapSetParser/MapSetParser.ypp"
+#line 1176 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 186:
-#line 1179 "lib/MapSetParser/MapSetParser.ypp"
+#line 1183 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     ;}
     break;
 
   case 187:
-#line 1182 "lib/MapSetParser/MapSetParser.ypp"
+#line 1186 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1259,7 +1263,7 @@ namespace w3c_sw
     break;
 
   case 189:
-#line 1194 "lib/MapSetParser/MapSetParser.ypp"
+#line 1198 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) {
 	    (yysemantic_stack_[(2) - (2)].p_BooleanComparator)->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1270,56 +1274,56 @@ namespace w3c_sw
     break;
 
   case 190:
-#line 1205 "lib/MapSetParser/MapSetParser.ypp"
+#line 1209 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 191:
-#line 1208 "lib/MapSetParser/MapSetParser.ypp"
+#line 1212 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 192:
-#line 1211 "lib/MapSetParser/MapSetParser.ypp"
+#line 1215 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 193:
-#line 1214 "lib/MapSetParser/MapSetParser.ypp"
+#line 1218 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 194:
-#line 1217 "lib/MapSetParser/MapSetParser.ypp"
+#line 1221 "lib/MapSetParser/MapSetParser.ypp"
     {
     (yyval.p_BooleanComparator) = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 195:
-#line 1220 "lib/MapSetParser/MapSetParser.ypp"
+#line 1224 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 196:
-#line 1227 "lib/MapSetParser/MapSetParser.ypp"
+#line 1231 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_BooleanComparator) = NULL;
     ;}
     break;
 
   case 199:
-#line 1240 "lib/MapSetParser/MapSetParser.ypp"
+#line 1244 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticSum((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -1328,42 +1332,42 @@ namespace w3c_sw
     break;
 
   case 200:
-#line 1249 "lib/MapSetParser/MapSetParser.ypp"
+#line 1253 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 201:
-#line 1252 "lib/MapSetParser/MapSetParser.ypp"
+#line 1256 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 202:
-#line 1255 "lib/MapSetParser/MapSetParser.ypp"
+#line 1259 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     ;}
     break;
 
   case 203:
-#line 1258 "lib/MapSetParser/MapSetParser.ypp"
+#line 1262 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     ;}
     break;
 
   case 204:
-#line 1265 "lib/MapSetParser/MapSetParser.ypp"
+#line 1269 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     ;}
     break;
 
   case 205:
-#line 1268 "lib/MapSetParser/MapSetParser.ypp"
+#line 1272 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1371,7 +1375,7 @@ namespace w3c_sw
     break;
 
   case 206:
-#line 1276 "lib/MapSetParser/MapSetParser.ypp"
+#line 1280 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticProduct((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -1380,28 +1384,28 @@ namespace w3c_sw
     break;
 
   case 207:
-#line 1285 "lib/MapSetParser/MapSetParser.ypp"
+#line 1289 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 208:
-#line 1288 "lib/MapSetParser/MapSetParser.ypp"
+#line 1292 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 209:
-#line 1295 "lib/MapSetParser/MapSetParser.ypp"
+#line 1299 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     ;}
     break;
 
   case 210:
-#line 1298 "lib/MapSetParser/MapSetParser.ypp"
+#line 1302 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1409,147 +1413,147 @@ namespace w3c_sw
     break;
 
   case 211:
-#line 1305 "lib/MapSetParser/MapSetParser.ypp"
+#line 1309 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 212:
-#line 1308 "lib/MapSetParser/MapSetParser.ypp"
+#line 1312 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     ;}
     break;
 
   case 213:
-#line 1311 "lib/MapSetParser/MapSetParser.ypp"
+#line 1315 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     ;}
     break;
 
   case 218:
-#line 1321 "lib/MapSetParser/MapSetParser.ypp"
+#line 1325 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new LiteralExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
     ;}
     break;
 
   case 219:
-#line 1324 "lib/MapSetParser/MapSetParser.ypp"
+#line 1328 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     ;}
     break;
 
   case 220:
-#line 1327 "lib/MapSetParser/MapSetParser.ypp"
+#line 1331 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     ;}
     break;
 
   case 221:
-#line 1330 "lib/MapSetParser/MapSetParser.ypp"
+#line 1334 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new VarExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     ;}
     break;
 
   case 222:
-#line 1336 "lib/MapSetParser/MapSetParser.ypp"
+#line 1340 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
     ;}
     break;
 
   case 223:
-#line 1342 "lib/MapSetParser/MapSetParser.ypp"
+#line 1346 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 224:
-#line 1345 "lib/MapSetParser/MapSetParser.ypp"
+#line 1349 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-lang"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 225:
-#line 1348 "lib/MapSetParser/MapSetParser.ypp"
+#line 1352 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches"), (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     ;}
     break;
 
   case 226:
-#line 1351 "lib/MapSetParser/MapSetParser.ypp"
+#line 1355 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 227:
-#line 1354 "lib/MapSetParser/MapSetParser.ypp"
+#line 1358 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new VarExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     ;}
     break;
 
   case 228:
-#line 1357 "lib/MapSetParser/MapSetParser.ypp"
+#line 1361 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm"), (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     ;}
     break;
 
   case 229:
-#line 1360 "lib/MapSetParser/MapSetParser.ypp"
+#line 1364 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 230:
-#line 1363 "lib/MapSetParser/MapSetParser.ypp"
+#line 1367 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 231:
-#line 1366 "lib/MapSetParser/MapSetParser.ypp"
+#line 1370 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 232:
-#line 1369 "lib/MapSetParser/MapSetParser.ypp"
+#line 1373 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral"), (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     ;}
     break;
 
   case 234:
-#line 1377 "lib/MapSetParser/MapSetParser.ypp"
+#line 1381 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-regex"), (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     ;}
     break;
 
   case 235:
-#line 1384 "lib/MapSetParser/MapSetParser.ypp"
+#line 1388 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     ;}
     break;
 
   case 237:
-#line 1391 "lib/MapSetParser/MapSetParser.ypp"
+#line 1395 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
 	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
@@ -1559,14 +1563,14 @@ namespace w3c_sw
     break;
 
   case 238:
-#line 1401 "lib/MapSetParser/MapSetParser.ypp"
+#line 1405 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_ArgList) = NULL;
     ;}
     break;
 
   case 240:
-#line 1409 "lib/MapSetParser/MapSetParser.ypp"
+#line 1413 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -1574,14 +1578,14 @@ namespace w3c_sw
     break;
 
   case 241:
-#line 1417 "lib/MapSetParser/MapSetParser.ypp"
+#line 1421 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     ;}
     break;
 
   case 242:
-#line 1424 "lib/MapSetParser/MapSetParser.ypp"
+#line 1428 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -1589,7 +1593,7 @@ namespace w3c_sw
     break;
 
   case 243:
-#line 1428 "lib/MapSetParser/MapSetParser.ypp"
+#line 1432 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -1597,7 +1601,7 @@ namespace w3c_sw
     break;
 
   case 244:
-#line 1436 "lib/MapSetParser/MapSetParser.ypp"
+#line 1440 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -1606,7 +1610,7 @@ namespace w3c_sw
 
 
     /* Line 675 of lalr1.cc.  */
-#line 1610 "lib/MapSetParser/MapSetParser.cpp"
+#line 1614 "lib/MapSetParser/MapSetParser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -2458,23 +2462,23 @@ namespace w3c_sw
      655,   665,   666,   673,   677,   685,   685,   696,   698,   703,
      704,   708,   710,   715,   719,   722,   727,   732,   736,   739,
      743,   744,   745,   749,   751,   749,   765,   767,   769,   765,
-     781,   784,   781,   794,   794,   804,   806,   810,   821,   822,
-     823,   827,   834,   841,   847,   849,   856,   860,   860,   870,
-     870,   878,   880,   885,   890,   894,   896,   900,   900,   903,
-     903,   910,   915,   919,   921,   926,   930,   932,   937,   941,
-     943,   948,   953,   957,   959,   963,   970,   974,   981,   982,
-     986,   986,   999,  1024,  1027,  1030,  1033,  1036,  1043,  1046,
-    1051,  1054,  1062,  1079,  1082,  1086,  1087,  1091,  1094,  1098,
-    1101,  1107,  1108,  1112,  1115,  1118,  1121,  1124,  1125,  1131,
-    1136,  1145,  1152,  1155,  1163,  1172,  1179,  1182,  1189,  1194,
-    1205,  1208,  1211,  1214,  1217,  1220,  1227,  1231,  1235,  1240,
-    1249,  1252,  1255,  1258,  1265,  1268,  1276,  1285,  1288,  1295,
-    1298,  1305,  1308,  1311,  1314,  1318,  1319,  1320,  1321,  1324,
-    1327,  1330,  1336,  1342,  1345,  1348,  1351,  1354,  1357,  1360,
-    1363,  1366,  1369,  1372,  1377,  1384,  1387,  1391,  1401,  1404,
-    1409,  1417,  1424,  1428,  1436,  1440,  1444,  1445,  1446,  1450,
-    1451,  1452,  1456,  1457,  1458,  1462,  1463,  1464,  1468,  1469,
-    1473,  1474,  1475,  1476,  1480,  1481,  1485,  1486,  1490,  1491
+     781,   784,   781,   794,   794,   808,   810,   814,   825,   826,
+     827,   831,   838,   845,   851,   853,   860,   864,   864,   874,
+     874,   882,   884,   889,   894,   898,   900,   904,   904,   907,
+     907,   914,   919,   923,   925,   930,   934,   936,   941,   945,
+     947,   952,   957,   961,   963,   967,   974,   978,   985,   986,
+     990,   990,  1003,  1028,  1031,  1034,  1037,  1040,  1047,  1050,
+    1055,  1058,  1066,  1083,  1086,  1090,  1091,  1095,  1098,  1102,
+    1105,  1111,  1112,  1116,  1119,  1122,  1125,  1128,  1129,  1135,
+    1140,  1149,  1156,  1159,  1167,  1176,  1183,  1186,  1193,  1198,
+    1209,  1212,  1215,  1218,  1221,  1224,  1231,  1235,  1239,  1244,
+    1253,  1256,  1259,  1262,  1269,  1272,  1280,  1289,  1292,  1299,
+    1302,  1309,  1312,  1315,  1318,  1322,  1323,  1324,  1325,  1328,
+    1331,  1334,  1340,  1346,  1349,  1352,  1355,  1358,  1361,  1364,
+    1367,  1370,  1373,  1376,  1381,  1388,  1391,  1395,  1405,  1408,
+    1413,  1421,  1428,  1432,  1440,  1444,  1448,  1449,  1450,  1454,
+    1455,  1456,  1460,  1461,  1462,  1466,  1467,  1468,  1472,  1473,
+    1477,  1478,  1479,  1480,  1484,  1485,  1489,  1490,  1494,  1495
   };
 
   // Print the state stack on the debug stream.
@@ -2572,7 +2576,7 @@ namespace w3c_sw
 
 } // namespace w3c_sw
 
-#line 1496 "lib/MapSetParser/MapSetParser.ypp"
+#line 1500 "lib/MapSetParser/MapSetParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,

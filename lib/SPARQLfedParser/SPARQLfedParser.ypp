@@ -1019,9 +1019,13 @@ GroupOrUnionGraphPattern:
 // 'UNION' GroupGraphPattern
 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
     IT_UNION {
+	if (driver.curOp == NULL)
+	    driver.ensureBasicGraphPattern();
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } GroupGraphPattern	{
+	  if (driver.curOp == NULL)
+	      driver.ensureBasicGraphPattern();
 	  driver.restoreFilter(NULL);
 	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.curOp);
       }

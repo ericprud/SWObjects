@@ -97,6 +97,67 @@ BOOST_AUTO_TEST_CASE( algebra__filter_place_3 ) {
 ");
 }
 
+BOOST_AUTO_TEST_CASE( opt_filter_filter ) {
+    /* OPTIONAL with two FILTERs.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  OPTIONAL {\n\
+    FILTER(0) FILTER(1)\n\
+  }\n\
+}", "(ask\n\
+  (leftjoin\n\
+    (table unit)\n\
+    (table unit)\n\
+    (exprlist 0 1)\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( opt_filter_unit_filter ) {
+    /* OPTIONAL with FILTER, unit, FILTER.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  OPTIONAL {\n\
+    FILTER(0) { } FILTER(1)\n\
+  }\n\
+}", "(ask\n\
+  (leftjoin\n\
+    (table unit)\n\
+    (filter 0\n\
+      (table unit)\n\
+    )\n\
+    1\n\
+  )\n\
+)\n\
+");
+}
+
+BOOST_AUTO_TEST_CASE( opt_filter_union_filter ) {
+    /* OPTIONAL with FILTER, UNION, FILTER.
+     */
+    ALGEBRA_TEST("ASK {\n\
+  OPTIONAL {\n\
+    FILTER(0) { } UNION { } FILTER(1)\n\
+  }\n\
+}", "(ask\n\
+  (leftjoin\n\
+    (table unit)\n\
+    (join\n\
+      (filter 0\n\
+        (table unit)\n\
+      )\n\
+      (union\n\
+        (table unit)\n\
+        (table unit)\n\
+      )\n\
+    )\n\
+    1\n\
+  )\n\
+)\n\
+");
+}
+
 BOOST_AUTO_TEST_CASE( algebra__opt_filter_1 ) {
     /* shape of DAWG test algebra/opt_filter_1.
      */
