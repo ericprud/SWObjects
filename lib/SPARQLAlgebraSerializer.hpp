@@ -28,6 +28,15 @@ protected:
     size_t depth;
     std::stack<e_PREC> precStack;
     const char* leadStr;
+
+    /* Simulate SPARQL semantics serialization:
+     *   Joins test members and express as leftjoins where 2nd is an optional.
+     *   Optionals outside of a join express as (leftjoin (table unit) ...).
+     *
+     */
+    bool optionalIsChildOfJoin;
+
+
     void start (e_PREC prec) {
 	if (prec < precStack.top())
 	    ret << "(";
@@ -51,7 +60,7 @@ protected:
     }
 public:
     SPARQLAlgebraSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), optionalIsChildOfJoin(false)
     { precStack.push(PREC_High); }
     virtual std::string str () { return ret.str(); }
     virtual void str (std::string seed) { ret.str(seed); }
@@ -189,22 +198,18 @@ public:
     }
     virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	lead();
-	ret << '{';
+	ret << "(union";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
 	for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 	     it != p_TableOperations->end(); ++it) {
-	    if (it != p_TableOperations->begin()) {
-		lead(depth - 1);
-		ret << "UNION" << std::endl;
-	    }
 	    (*it)->express(this);
 	}
 	injectFilters();
 	depth--;
 	lead();
-	ret << '}' << std::endl;
+	ret << ")" << std::endl;
     }
 
     void recursiveJoiner (const ProductionVector<const TableOperation*>* p_TableOperations, std::vector<const TableOperation*>::const_reverse_iterator it) {
@@ -217,7 +222,9 @@ public:
 		lead(); ret << "(leftjoin" << std::endl;
 		depth++;
 		lead(); ret << "(table unit)" << std::endl;
-		r->express(this);
+		optionalIsChildOfJoin = true;
+		opt->express(this);
+		optionalIsChildOfJoin = false;
 		depth--;
 		lead(); ret << ")" << std::endl;
 	    } else {
@@ -227,7 +234,13 @@ public:
 	    lead(); ret << (opt != NULL ? "(leftjoin" : "(join") << std::endl;
 	    depth++;
 	    recursiveJoiner(p_TableOperations, it);
-	    r->express(this);
+	    if (opt != NULL) {
+		optionalIsChildOfJoin = true;
+		opt->express(this);
+		optionalIsChildOfJoin = false;
+	    } else {
+		r->express(this);
+	    }
 	    depth--;
 	    lead(); ret << ")" << std::endl;
 	}
@@ -237,10 +250,19 @@ public:
 	recursiveJoiner(p_TableOperations, std::vector<const TableOperation*>::const_reverse_iterator(p_TableOperations->end()));
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+	if (optionalIsChildOfJoin == false) {
+	    lead(); ret << "(leftjoin" << std::endl;
+	    depth++;
+	    lead(); ret << "(table unit)" << std::endl;
+	}
 	p_GroupGraphPattern->express(this);
 	if (p_Expressions->size() > 0) {
 	    lead();
 	    _exprlist(p_Expressions);
+	}
+	if (optionalIsChildOfJoin == false) {
+	    depth--;
+	    lead(); ret << ")" << std::endl;
 	}
     }
     void _nestedGraphPattern (const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
