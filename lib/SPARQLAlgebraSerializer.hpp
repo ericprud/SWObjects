@@ -1,4 +1,5 @@
 /* SPARQLAlgebraSerializer.hpp - simple SPARQL algebra for SPARQL compile trees.
+ * Creates s-expressions similar to http://www.sparql.org/validator.html .
  *
  * $Id: SPARQLAlgebraSerializer.hpp,v 1.10 2008-11-13 20:53:54 eric Exp $
  */
