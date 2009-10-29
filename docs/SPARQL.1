@@ -1,0 +1,203 @@
+.TH SPARQL 1  "October 29, 2009" "version 1.0" "USER COMMANDS"
+.SH NAME
+SPARQL \- Semantic Web toolbox
+.SH SYNOPSIS
+.B SPARQL
+query
+.PP
+.B
+SPARQL
+\-f <query file>
+.PP
+.B
+SPARQL
+"INSERT {GRAPH <g> {<> a <document>} }" \-L text/trig \-i mydata.trig
+.PP
+.B
+SPARQL
+query viewfile*
+.PP
+Get started with "SPARQL help tutorial".
+
+.SH DESCRIPTION
+SPARQL is a general query re-write and execution tool.
+.B
+Viewfiles
+define virtual views. The query is pushed backwards through the series of viewfiles.
+.PP
+
+.SH General options
+.TP
+\-h
+full help message minus tutorial
+.TP
+\-H <topic>
+general, query, data, authentication, SQL, tutorial
+.TP
+\-\-debug <level>
+.TP
+\-n
+don't execute query
+.TP
+\-p
+print final query
+.TP
+\-q
+quiet
+.TP
+\-a
+use ASCII\-only
+.TP
+\-8
+use utf\-8
+.TP
+\-0
+terminate lines with \\0
+.TP
+\-v
+version (implies \-n)
+
+.SH Key
+.TP
+<cwd>
+current working directory -- e.g. /home/bob/stuff/ or C:/myStuff.
+.TP
+<relURI>
+a URI relative to the currrent base: file://localhost/<cwd>
+.TP
+<relURI>|-
+a relative URI or '-' meaning stdin/stdout
+.TP
+ |?
+a '?' shows the current value or list available choices, implies -n.
+.TP
+<relURI>|.
+a relative URI or '.' to use file://localhost/<cwd>
+.PP
+All arguments apply to all following arguments, e.g.
+"-b http://a.example/foo/ -b bar -b ?" will show a final base URI of
+"http://a.example/foo/bar".
+
+.SH Query options
+.TP
+\-b <relURI>|.|?
+base URI
+.TP
+\-B <relURI>|.|?
+base URI for command line arguments
+  "-b <foo> -B . -d bar.ttl"
+sets the base URI for data and queries to <foo> but looks for bar.ttl in <cwd>.
+.TP
+\-f <relURI>|\-
+read a query from relURI or stdin.
+
+.SH Data options
+.TP
+\-d <relURI>|\-
+read default graph from relURI or stdin.
+.TP
+\-g <name>|. <relURI>|\-
+read relURI into a graph called name.
+A graph name of '.' means to use the retrieval URI for the name.
+  "\-g . http://swobj.org/SPARQL/v1" populates a graph with that name.
+.TP
+\-l <string>|guess|?
+data language, e.g. turtle, or guess.  !! turtle, trig, rdfxml, guess
+   "guess" indicates that SPARQL should guess from file extension.
+.TP
+\-L <media type>|?
+data media type, e.g. text/turtle or text/plain. see
+.B
+data languages
+   text/plain \-\- guess from the file extension
+.TP
+\-o <relURI>|\-
+send results to relURI or stdout.
+.TP
+\-i <relURI>|\-
+update relURI with the results of the query.
+   This is the same as \-d for read\-only operations ASK, SELECT and DESCRIBE.
+.TP
+\-D
+read application description graph (see section) into default graph.
+.TP
+\-G <name>
+read application description graph into named graph.
+.PP
+SPARQL will "guess" that data from '\-' is trig and output is either a table
+or trig.
+
+.SH Data languages
+
+   text/turtle			  turtle
+   text/trig			  trig
+   application/rdf+xml		  rdfxml
+   application/sparql\-results+xml sparql
+   text/plain			  guess
+				  table  (report only)
+
+.SH Authentication options
+.TP
+\-u username
+.TP
+\-p password
+
+.SH HTTP Options
+.TP
+\-\-header= <header pair>
+assign header value
+  "\-\-header 'Accept: text/turtle,text/html;q=.8'" prefers turtle over HTML.
+.TP
+\-\-header+ <header pair>
+append earlier value of header.
+
+.SH SQL options
+.TP
+\-s <stem url>
+.TP
+\-S <string>|?
+odbc\-style SQL database
+   driver://[username[:password]@]host[:port]/database
+   mysql://localhost/orders
+.TP
+\-m <relURI>
+mapset file, which supplies above parameters
+
+.SH Application description graph
+  @prefix doap: <http://usefulinc.com/ns/doap#> .
+  <> a doap:Project ;
+     doap:homepage <http://swobj.org/SPARQL/v1> ;
+     doap:shortdesc "a semantic web query toolbox" .
+
+.SH Tutorial:
+SPARQL \-D "SELECT ?proj ?page WHERE {?proj <http://usefulinc.com/ns/doap#homepage> ?page}"
+.PP
+SPARQL "SELECT ?s?p?o FROM <http://swobj.org/SPARQL/v1> WHERE {?s<BAR>?o}"
+  table to stdout
+.PP
+SPARQL "SELECT ?s?p?o WHERE {?s<BAR>?o}" \-d data.ttl >> table to stdout
+.PP
+SPARQL "SELECT ?s?p?o FROM NAMED <data.ttl> WHERE { GRAPH <data.ttl> {?s<BAR>?o} }" >> table to stdout
+.PP
+SPARQL "SELECT ?s?p?o WHERE { GRAPH <data.ttl> {?s<BAR>?o} }" \-g . data.ttl >> table to stdout
+.PP
+SPARQL "SELECT ?s?p?o WHERE { GRAPH <foo.ttl> {?s<BAR>?o} }" \-g foo.ttl data.ttl >> table to stdout
+.PP
+cat data.ttl | SPARQL "SELECT ?s?p?o WHERE { GRAPH <foo.ttl> {?s<BAR>?o} }" \-g foo.ttl \- >> table to stdout
+.PP
+SPARQL "CONSTRUCT {?s<foo>?o} WHERE {?s<BAR>?o}" \-d data.ttl >> ttl to stdout
+.PP
+SPARQL "CONSTRUCT {?s<foo>?o} WHERE {?s<BAR>?o}" \-i data.ttl >> re\-write data.ttl, count to stdout
+
+.SH Return code:
+.TP
+0:
+no erors
+.TP
+1:
+file system error
+
+.SH AUTHOR
+Eric Prud'hommeaux (eric (at) w3.org)
+.SH SEE ALSO
+SPARQL_server(1)
