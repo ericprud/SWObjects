@@ -3,11 +3,11 @@
 SPARQL \- Semantic Web toolbox
 .SH SYNOPSIS
 .B SPARQL
-query
+\-e query
 .PP
 .B
 SPARQL
-\-f <query file>
+<query file>
 .PP
 .B
 SPARQL
@@ -29,10 +29,10 @@ define virtual views. The query is pushed backwards through the series of viewfi
 .SH General options
 .TP
 \-h
-full help message minus tutorial
+brief help message. Implies -n
 .TP
 \-H <topic>
-general, query, data, authentication, SQL, tutorial
+general|query|data|authentication|SQL|tutorial|all. Implies -n
 .TP
 \-\-debug <level>
 .TP
@@ -78,7 +78,7 @@ All arguments apply to all following arguments, e.g.
 "-b http://a.example/foo/ -b bar -b ?" will show a final base URI of
 "http://a.example/foo/bar".
 
-.SH Query options
+.SH URI resolution options
 .TP
 \-b <relURI>|.|?
 base URI
@@ -87,9 +87,15 @@ base URI
 base URI for command line arguments
   "-b <foo> -B . -d bar.ttl"
 sets the base URI for data and queries to <foo> but looks for bar.ttl in <cwd>.
+
+.SH Query options
+Queries are specified by reference:
+.PP
+.B SPARQL <relURI>|\-
+.PP
+or on the command line:
 .TP
-\-f <relURI>|\-
-read a query from relURI or stdin.
+.B SPARQL \-e <relURI>|\-
 
 .SH Data options
 .TP
