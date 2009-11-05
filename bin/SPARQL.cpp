@@ -133,7 +133,7 @@ int main(int ac, char* av[])
             ("help,h", "brief help message")    
             ("Help,H", 
 	     po::value< std::vector<std::string> >()->composing(), 
-	     "general, query, data, authentication, SQL, tutorial, all")
+	     "general, results, URI, query, data, authentication, SQL, tutorial, all")
             ("debug,D", po::value<debugLevel>(), 
 	     "debugging level")
             ("no-exec,n", "don't execute")
@@ -143,8 +143,8 @@ int main(int ac, char* av[])
 	    ;
 
 	/* cli overrides cfg file. */
-        po::options_description formatOpts("");
-        formatOpts.add_options()
+        po::options_description resultsOpts("");
+        resultsOpts.add_options()
             ("ascii,a", "output ASCII-only")
             ("utf-8,u", "output utf-8")
             ("nullterm,0", "terminate lines with \0")
@@ -162,12 +162,12 @@ int main(int ac, char* av[])
 	     "base URI for command line arguments")
             ;
 
-        po::options_description dataOpts("");
+        po::options_description dataOpts("Reading data");
         dataOpts.add_options()
             ("data,d", po::value<dataURI>(), 
 	     "read default graph from arg or stdin")
             ("graph,g", po::value<graphURI>(), 
-	     "read default graph from arg or stdin")
+	     "URI  read named graph <arg> from <URI> or stdin")
             ;
     
         /* Ordered options -- not shown with --help.
@@ -180,13 +180,13 @@ int main(int ac, char* av[])
             ;
 
         po::options_description cmdline_options;
-        cmdline_options.add(generalOpts).add(formatOpts).add(uriOpts).add(dataOpts).add(hidden);
+        cmdline_options.add(generalOpts).add(resultsOpts).add(uriOpts).add(dataOpts).add(hidden);
 
         po::options_description config_file_options;
-        config_file_options.add(formatOpts).add(uriOpts).add(dataOpts).add(hidden);
+        config_file_options.add(resultsOpts).add(uriOpts).add(dataOpts).add(hidden);
 
-        po::options_description visible("Allowed options");
-        visible.add(generalOpts).add(formatOpts).add(uriOpts);
+        po::options_description visible("");
+        visible.add(generalOpts).add(resultsOpts).add(uriOpts).add(dataOpts);
         
         po::positional_options_description p;
         p.add("ordered", -1);
@@ -206,7 +206,11 @@ int main(int ac, char* av[])
         }
 
         if (vm.count("help")) {
-            std::cout << visible << "\n";
+            std::cout << 
+		"Usage: SPARQL [opts] queryURI mapURI*\n" << 
+		"Usage: SPARQL [opts] -e query mapURI*\n\n" << 
+		"get started with: SPARQL help tutorial\n" << 
+		visible << "\n";
             NoExec = true;
         }
 
@@ -214,8 +218,27 @@ int main(int ac, char* av[])
         {
 	    std::vector<std::string> helps(vm["Help"].as< std::vector<std::string> >());
 	    for (std::vector<std::string>::const_iterator it = helps.begin();
-		 it != helps.end(); ++it)
-		std::cout << "Help on " << *it << "\n";
+		 it != helps.end(); ++it) {
+		std::string nl = "\n"; // !it->compare("all") ? "\n" : "";
+		bool matched = false;
+		if (!it->compare("general") || !it->compare("all"))
+		    matched = true, std::cout << generalOpts << nl;
+		if (!it->compare("results") || !it->compare("all"))
+		    matched = true, std::cout << resultsOpts << nl;
+ 		if (!it->compare("uri") || !it->compare("all"))
+		    matched = true, std::cout << uriOpts << nl;
+ 		if (!it->compare("query") || !it->compare("all"))
+		    matched = true, std::cout
+			<< "Queries and maps:\n"
+			<< "  <queryURI>            read and execute a query from <queryURI>.\n"
+			<< "  -e <query>            execute <query>.\n"
+			<< "  <mapURI>              map query through <mapURI> before executing.\n"
+			<<  nl;
+		if (!it->compare("data") || !it->compare("all"))
+		    matched = true, std::cout << dataOpts << nl;
+		if (matched == false)
+		    std::cout << "Unknown help topic: " << *it << "\n";
+	    }
             NoExec = true;
         }
 
