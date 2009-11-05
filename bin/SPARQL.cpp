@@ -23,64 +23,109 @@ namespace libwww {
     }
 };
 
+std::string CwdURI;
 std::string BaseURI;
 std::string ArgBaseURI;
 bool NoExec = false;
+int Debug = 0;
+std::string NamedGraphName;
+std::string Query;
+std::vector< std::string >Maps;
 
+
+/* Set Debug when parsed. */
+struct debugLevel { };
+void validate (boost::any& v, const std::vector<std::string>& values, debugLevel*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    std::stringstream stream(s);
+    int i;
+    stream >> i;
+    Debug = i;
+    v = boost::any(debugLevel());
+    if (Debug > 0)
+	std::cout << "debug level: " << Debug << "\n";
+}
 
 /* Base class for all relative URI arguments. */
-struct baseArg {
-public:
-    baseArg(std::string s) : s(s) {  }
-    std::string s;
-    virtual std::string& global() = 0;
-};
+struct relURI {};
 
-struct relURI : public baseArg {
-public:
-    relURI(std::string s) : baseArg(s) {  }
-};
-
-std::string validateBase(boost::any& v, const std::vector<std::string>& values, std::string* setMe) {
+void validateBase(const std::vector<std::string>& values, std::string* setMe, std::string* copySource, const char* argName) {
     const std::string& s = po::validators::get_single_string(values);
     if (s == "?") {
-	std::cout << "Base URI: <" << *setMe << ">\n";
-	NoExec = true;
-	return boost::lexical_cast<std::string>(*setMe);
+	std::cout << argName << "URI: " << *setMe << "\n";
     } else {
-	std::string abs(libwww::HTParse(s, setMe->empty() ? NULL : setMe, libwww::PARSE_all));
-	*setMe = abs;
-	return boost::lexical_cast<std::string>(abs);
+	std::string val = 
+	    (s == ".") ? CwdURI : 
+	    (s == ":") ? *copySource : 
+	    libwww::HTParse(s, setMe->empty() ? NULL : setMe, libwww::PARSE_all);
+
+	if (Debug > 0)
+	    std::cout << "setting " << argName << " URI to " << val << "\n";
+	*setMe = val;
     }
 }
 
 /* Overload of relURI to validate --base arguments. */
-struct baseURI : public relURI {
-    baseURI(std::string s) : relURI(s) {  }
-    virtual std::string& global () { std::cerr << "baseURI\n"; return BaseURI; }
-};
+struct baseURI : public relURI {};
 void validate (boost::any& v, const std::vector<std::string>& values, baseURI*, int)
 {
-    v = boost::any(baseURI(validateBase(v, values, &BaseURI)));
+    validateBase(values, &BaseURI, &ArgBaseURI, "base");
 }
 
 /* Overload of relURI to validate --arg-base arguments. */
-struct argBaseURI : public relURI {
-    argBaseURI(std::string s) : relURI(s) {  }
-    virtual std::string& global () { std::cerr << "baseURI\n"; return ArgBaseURI; }
-};
+struct argBaseURI : public relURI {};
 void validate (boost::any& v, const std::vector<std::string>& values, argBaseURI*, int)
 {
-    v = boost::any(argBaseURI(validateBase(v, values, &ArgBaseURI)));
+    validateBase(values, &ArgBaseURI, &BaseURI, "argument base");
+}
+
+/* Overload of relURI to validate --data arguments. */
+struct dataURI : public relURI {};
+void validate (boost::any& v, const std::vector<std::string>& values, dataURI*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    std::string abs(libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all));
+    if (Debug > 0)
+	std::cout << "reading default graph from " << abs << " with base URI " << BaseURI << "\n";
+}
+
+/* Overload of relURI to validate --graph arguments. */
+struct graphURI : public relURI {};
+void validate (boost::any& v, const std::vector<std::string>& values, graphURI*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    NamedGraphName = s == "." ? s : libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all);
+}
+
+/* Overload of relURI to validate --graph, query and map arguments. */
+struct orderedURI : public relURI {};
+void validate (boost::any& v, const std::vector<std::string>& values, orderedURI*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    std::string vald = libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all);
+    if (NamedGraphName != "") {
+	if (NamedGraphName == ".")
+	    NamedGraphName = vald;
+	if (Debug > 0)
+	    std::cout << "reading named graph " << NamedGraphName << " from " << vald << " with base URI " << BaseURI << "\n";
+	NamedGraphName = "";
+    } else if (Query == "") {
+	if (Debug > 0)
+	    std::cout << "query: " << vald << "\n";
+	Query = vald;
+    } else {
+	if (Debug > 0)
+	    std::cout << "view: " << vald << "\n";
+	Maps.push_back(vald);
+    }
 }
 
 
 int main(int ac, char* av[])
 {
     try {
-	ArgBaseURI = BaseURI = "file://localhost/";
-
-	int debug;
+	CwdURI = ArgBaseURI = BaseURI = "file://localhost/";
 
         /* General options -- cli-only. */
         po::options_description generalOpts("General options");
@@ -89,7 +134,7 @@ int main(int ac, char* av[])
             ("Help,H", 
 	     po::value< std::vector<std::string> >()->composing(), 
 	     "general, query, data, authentication, SQL, tutorial, all")
-            ("debug", po::value<int>(&debug)->default_value(0), 
+            ("debug,D", po::value<debugLevel>(), 
 	     "debugging level")
             ("no-exec,n", "don't execute")
             ("print,p", "print final query")
@@ -117,45 +162,54 @@ int main(int ac, char* av[])
 	     "base URI for command line arguments")
             ;
 
-        /* Ordered options -- not shown with --help. */
-        po::options_description orderedArgs("Ordered options");
-        orderedArgs.add_options()
-            ("query", po::value<std::string>(), "SPARQL Query")
-            ("view", po::value< std::vector<std::string> >(), "SPARQL View")
-            ;
-        
         po::options_description dataOpts("");
         dataOpts.add_options()
-            ("data,d", po::value<baseURI>(), 
+            ("data,d", po::value<dataURI>(), 
 	     "read default graph from arg or stdin")
-            ("graph,g", po::value<baseURI>(), 
+            ("graph,g", po::value<graphURI>(), 
 	     "read default graph from arg or stdin")
             ;
     
+        /* Ordered options -- not shown with --help.
+	 * Hack: 2nd arg to --graph is a orderedURI 'cause boost::po doesn't
+	 * handle "--foo arg1 arg2".
+	 */
+        po::options_description hidden("Hidden options");
+        hidden.add_options()
+            ("ordered", po::value<orderedURI>(), "URIs")
+            ;
+
         po::options_description cmdline_options;
-        cmdline_options.add(generalOpts).add(formatOpts).add(uriOpts).add(orderedArgs);
+        cmdline_options.add(generalOpts).add(formatOpts).add(uriOpts).add(dataOpts).add(hidden);
 
         po::options_description config_file_options;
-        config_file_options.add(formatOpts).add(uriOpts).add(orderedArgs);
+        config_file_options.add(formatOpts).add(uriOpts).add(dataOpts).add(hidden);
 
         po::options_description visible("Allowed options");
         visible.add(generalOpts).add(formatOpts).add(uriOpts);
         
         po::positional_options_description p;
-        p.add("query", 1).add("view", -1);
+        p.add("ordered", -1);
         
         po::variables_map vm;
-        store(po::command_line_parser(ac, av).
+	po::store(po::command_line_parser(ac, av).
               options(cmdline_options).positional(p).run(), vm);
 
 	std::ifstream ifs(".SPARQL");
-        store(parse_config_file(ifs, config_file_options), vm);
-        notify(vm);
+	po::store(parse_config_file(ifs, config_file_options), vm);
+	po::notify(vm);
     
+        if (vm.count("no-exec")) {
+	    if (Debug > 0)
+		std::cout << "Execution suppressed.\n";
+            NoExec = true;
+        }
+
         if (vm.count("help")) {
             std::cout << visible << "\n";
             NoExec = true;
         }
+
         if (vm.count("Help"))
         {
 	    std::vector<std::string> helps(vm["Help"].as< std::vector<std::string> >());
@@ -171,21 +225,8 @@ int main(int ac, char* av[])
             return 0;
         }
 
-        if (vm.count("query"))
-        {
-            std::cout << "SPARQL query is: " 
-		      << vm["query"].as<std::string>() << "\n";
-        }
-
-        if (vm.count("view"))
-        {
-	    std::vector<std::string> helps(vm["view"].as< std::vector<std::string> >());
-	    for (std::vector<std::string>::const_iterator it = helps.begin();
-		 it != helps.end(); ++it)
-		std::cout << "through view " << *it << "\n";
-        }
-
-        std::cout << "debugging level is " << debug << "\n";                
+	if (NoExec == false)
+	    std::cout << "now we do stuff \n";
     }
     catch(std::exception& e)
     {
