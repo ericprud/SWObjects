@@ -8,7 +8,7 @@
 
 #include "XMLSerializer.hpp"
 
-using namespace w3c_sw;
+namespace w3c_sw {
 
 class XMLQueryExpressor : public ExpressorSerializer {
 protected:
@@ -374,6 +374,8 @@ public:
 	xml->close();
     }
 };
+
+}; // namespace w3c_sw
 
 #endif // XMLQueryExpressor_H
 
