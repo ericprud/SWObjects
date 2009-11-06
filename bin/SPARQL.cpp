@@ -11,31 +11,85 @@ namespace po = boost::program_options;
 #include <fstream>
 #include <iterator>
 
-/* Simulate HTParse interface (with bogus results, but good enough for testing CLI). */
-namespace libwww {
-    typedef enum {PARSE_all} e_PARSE_opts;
-    std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts /* wanted */)
-    {
-	std::string ret;
-	if (rel)
-	    ret = *rel;
-	return ret.append(name);
-    }
-};
+#ifndef TEST_CLI
+#include "SWObjects.hpp"
+namespace sw = w3c_sw;
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "TrigSParser/TrigSParser.hpp"
+#include "RdfDB.hpp"
+#include "ResultSet.hpp"
+#include "RdfXmlParser.hpp"
 
-std::string CwdURI;
-std::string BaseURI;
-std::string ArgBaseURI;
+#include "XMLQueryExpressor.hpp"
+#include "QueryMapper.hpp"
+#include "SPARQLSerializer.hpp"
+#include "SQLizer.hpp"
+
+#if XML_PARSER == SWOb_LIBXML2
+  #include "../interface/SAXparser_libxml.hpp"
+  w3c_sw::SAXparser_libxml P;
+#elif XML_PARSER == SWOb_EXPAT1
+  #include "../interface/SAXparser_expat.hpp"
+  w3c_sw::SAXparser_expat P;
+#elif XML_PARSER == SWOb_MSXML3
+  #include "../interface/SAXparser_msxml3.hpp"
+  w3c_sw::SAXparser_msxml3 P;
+#else
+  #warning DAWG tests require an XML parser
+#endif
+
+#if HTTP_CLIENT == SWOb_ASIO
+//  #include "RdfRemoteDB.hpp"
+  #include "../interface/WEBagent_boostASIO.hpp"
+#endif /* HTTP_CLIENT == SWOb_ASIO */
+#endif /* !TEST_CLI */
+
+#if TEST_CLI
+/* Simulate HTParse interface (with bogus results, but good enough for testing CLI). */
+namespace sw {
+    namespace libwww {
+	typedef enum {PARSE_all} e_PARSE_opts;
+	std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts /* wanted */)
+	{
+	    std::string ret;
+	    if (rel)
+		ret = *rel;
+	    return ret.append(name);
+	}
+    };
+};
+#endif
+
+const sw::POS* CwdURI;
+const sw::POS* BaseURI;
+const sw::POS* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
-std::string NamedGraphName;
-std::string Query;
-std::vector< std::string >Maps;
+const sw::POS* NamedGraphName = NULL;
+const sw::POS* Query;
+std::vector<const sw::POS*>Maps;
 std::string DataMediaType;
 std::string UserName;
 std::string PassWord;
 std::map<std::string, std::string> HTTPHeaders;
 
+#ifndef TEST_CLI
+std::ostream* DebugStream = NULL;
+sw::POSFactory F;
+sw::RdfDB Db;
+sw::SPARQLfedDriver SparqlParser("", &F);
+sw::TurtleSDriver TurtleParser("", &F);
+sw::TrigSDriver TrigParser("", &F);
+sw::RdfXmlParser GRdfXmlParser(&F, &P);
+sw::QueryMapper QueryMapper(&F, &DebugStream);
+
+void loadGraph (const sw::POS* graphName, const sw::POS* resource) {
+    const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
+    Db.loadData(resource, Db.assureGraph(graph), &F);
+}
+
+#endif /* TEST_CLI */
 
 /* Set Debug when parsed. */
 struct debugLevel { };
@@ -51,9 +105,21 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
 	std::cout << "debug level: " << Debug << "\n";
 }
 
+/* Set Query to an RDFLiteral when parsed. */
+struct queryString {};
+void validate (boost::any&, const std::vector<std::string>& values, queryString*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    if (Query != NULL)
+	throw boost::program_options
+	    ::validation_error(std::string("query string: \"").
+			       append(s).append("\" is redundant against ").
+			       append(Query->getLexicalValue()));
+    Query = F.getRDFLiteral(s);
+}
 /* Set DataMediaType when parsed. */
 struct langName { };
-void validate (boost::any& v, const std::vector<std::string>& values, langName*, int)
+void validate (boost::any&, const std::vector<std::string>& values, langName*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
@@ -71,17 +137,19 @@ void validate (boost::any& v, const std::vector<std::string>& values, langName*,
 	    DataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
 	    DataMediaType = "application/rdf+xml";
-	else
+	else {
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
-	if (Debug > 0)
+	}
+	if (Debug > 0) {
 	    if (DataMediaType.size() == 0)
 		std::cout << "using no language mediatype.\n";
 	    else
 		std::cout << "using language mediatype " << DataMediaType << ".\n";
+	}
     }
 }
 struct langType { };
-void validate (boost::any& v, const std::vector<std::string>& values, langType*, int)
+void validate (boost::any&, const std::vector<std::string>& values, langType*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
@@ -99,100 +167,107 @@ void validate (boost::any& v, const std::vector<std::string>& values, langType*,
 	    DataMediaType = "text/html";
 	else if (!s.compare("application/rdf+xml"))
 	    DataMediaType = "application/rdf+xml";
-	else
+	else {
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
-	if (Debug > 0)
+	}
+	if (Debug > 0) {
 	    if (DataMediaType.size() == 0)
 		std::cout << "using no language mediatype.\n";
 	    else
 		std::cout << "using language mediatype " << DataMediaType << ".\n";
+	}
     }
 }
 
 /* Base class for all relative URI arguments. */
 struct relURI {};
 
-void validateBase(const std::vector<std::string>& values, std::string* setMe, std::string* copySource, const char* argName) {
+const sw::POS* htparseWrapper(std::string s, const sw::POS* base) {
+    std::string baseURIstring = base->getLexicalValue();
+    std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all);
+    return F.getURI(t.c_str());
+}
+void validateBase(const std::vector<std::string>& values, const sw::POS** setMe, const sw::POS* copySource, const char* argName) {
     const std::string& s = po::validators::get_single_string(values);
     if (s == "?") {
-	std::cout << argName << "URI: " << *setMe << "\n";
+	std::cout << argName << "URI: " << (*setMe ? (*setMe)->getLexicalValue() : "\"\"") << "\n";
     } else {
-	std::string val = 
+	*setMe = 
 	    (s == ".") ? CwdURI : 
-	    (s == ":") ? *copySource : 
-	    libwww::HTParse(s, setMe->empty() ? NULL : setMe, libwww::PARSE_all);
-
+	    (s == ":") ? copySource : 
+	    htparseWrapper(s, *setMe);
 	if (Debug > 0)
-	    std::cout << "setting " << argName << " URI to " << val << "\n";
-	*setMe = val;
+	    std::cout << "setting " << argName << " URI to " << (*setMe)->getLexicalValue() << "\n";
     }
 }
 
 /* Overload of relURI to validate --base arguments. */
 struct baseURI : public relURI {};
-void validate (boost::any& v, const std::vector<std::string>& values, baseURI*, int)
+void validate (boost::any&, const std::vector<std::string>& values, baseURI*, int)
 {
-    validateBase(values, &BaseURI, &ArgBaseURI, "base");
+    validateBase(values, &BaseURI, ArgBaseURI, "base");
 }
 
 /* Overload of relURI to validate --arg-base arguments. */
 struct argBaseURI : public relURI {};
-void validate (boost::any& v, const std::vector<std::string>& values, argBaseURI*, int)
+void validate (boost::any&, const std::vector<std::string>& values, argBaseURI*, int)
 {
-    validateBase(values, &ArgBaseURI, &BaseURI, "argument base");
+    validateBase(values, &ArgBaseURI, BaseURI, "argument base");
 }
 
 /* Overload of relURI to validate --data arguments. */
 struct dataURI : public relURI {};
-void validate (boost::any& v, const std::vector<std::string>& values, dataURI*, int)
+void validate (boost::any&, const std::vector<std::string>& values, dataURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    std::string abs(libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all));
+    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
     if (Debug > 0)
-	std::cout << "reading default graph from " << abs << " with base URI " << BaseURI << "\n";
+	std::cout << "reading default graph from " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
 }
 
 /* Overload of relURI to validate --graph arguments. */
 struct graphURI : public relURI {};
-void validate (boost::any& v, const std::vector<std::string>& values, graphURI*, int)
+void validate (boost::any&, const std::vector<std::string>& values, graphURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    NamedGraphName = s == "." ? s : libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all);
+    NamedGraphName = s == "." ? F.getURI(".") : htparseWrapper(s, ArgBaseURI);
 }
 
 /* Overload of relURI to validate --graph, query and map arguments. */
 struct orderedURI : public relURI {};
-void validate (boost::any& v, const std::vector<std::string>& values, orderedURI*, int)
+void validate (boost::any&, const std::vector<std::string>& values, orderedURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    std::string vald = libwww::HTParse(s, ArgBaseURI == "" ? NULL : &ArgBaseURI, libwww::PARSE_all);
-    if (NamedGraphName != "") {
-	if (NamedGraphName == ".")
+    const sw::POS* vald = htparseWrapper(s, ArgBaseURI);
+    if (NamedGraphName != NULL) {
+	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
 	if (Debug > 0)
-	    std::cout << "reading named graph " << NamedGraphName << " from " << vald << " with base URI " << BaseURI << "\n";
-	NamedGraphName = "";
-    } else if (Query == "") {
+	    std::cout << "reading named graph " << NamedGraphName->getLexicalValue()
+		      << " from " << vald->getLexicalValue()
+		      << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	NamedGraphName = NULL;
+    } else if (Query == NULL) {
 	if (Debug > 0)
-	    std::cout << "query: " << vald << "\n";
+	    std::cout << "query resource: " << vald->getLexicalValue() << "\n";
 	Query = vald;
     } else {
 	if (Debug > 0)
-	    std::cout << "view: " << vald << "\n";
+	    std::cout << "view: " << vald->getLexicalValue() << "\n";
 	Maps.push_back(vald);
     }
 }
 
 /* Set UserName when parsed. */
 struct userName {};
-void validate (boost::any& v, const std::vector<std::string>& values, userName*, int)
+void validate (boost::any&, const std::vector<std::string>& values, userName*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     UserName = s;
 }
 /* Set Password when parsed. */
 struct passWord {};
-void validate (boost::any& v, const std::vector<std::string>& values, passWord*, int)
+void validate (boost::any&, const std::vector<std::string>& values, passWord*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     PassWord = s;
@@ -212,13 +287,13 @@ HeaderPair parseHeaderPair (const std::vector<std::string>& values)
     return HeaderPair(s.substr(0, pos), s.substr(pos+2));
 }
 struct headerAssign {};
-void validate (boost::any& v, const std::vector<std::string>& values, headerAssign*, int)
+void validate (boost::any&, const std::vector<std::string>& values, headerAssign*, int)
 {
     HeaderPair pair = parseHeaderPair(values);
     HTTPHeaders[pair.name] = pair.value;
 }
 struct headerAppend {};
-void validate (boost::any& v, const std::vector<std::string>& values, headerAppend*, int)
+void validate (boost::any&, const std::vector<std::string>& values, headerAppend*, int)
 {
     HeaderPair pair = parseHeaderPair(values);
     HTTPHeaders[pair.name].append(", ").append(pair.value);
@@ -228,7 +303,7 @@ void validate (boost::any& v, const std::vector<std::string>& values, headerAppe
 int main(int ac, char* av[])
 {
     try {
-	CwdURI = ArgBaseURI = BaseURI = "file://localhost/";
+	CwdURI = ArgBaseURI = BaseURI = F.getURI("file://localhost/");
 
         /* General options -- cli-only. */
         po::options_description generalOpts("General options");
@@ -312,6 +387,7 @@ int main(int ac, char* av[])
 	 */
         po::options_description hidden("Hidden options");
         hidden.add_options()
+            ("exec,e", po::value<queryString>(), "queries")
             ("ordered", po::value<orderedURI>(), "URIs")
             ;
 
@@ -354,7 +430,8 @@ int main(int ac, char* av[])
             "        doap:homepage <http://swobj.org/SPARQL/v1> ;\n"
             "        doap:shortdesc \"a semantic web query toolbox\" .\n";
 	static const char* tutorial = 
-	    "SPARQL -D \"SELECT ?proj ?page WHERE {?proj <http://use‐fulinc.com/ns/doap#homepage> ?page}\""
+	    "Tutorial:\n"
+	    "    SPARQL -D \"SELECT ?proj ?page WHERE {?proj <http://use‐fulinc.com/ns/doap#homepage> ?page}\""
 	    ;
 
         if (vm.count("help")) {
