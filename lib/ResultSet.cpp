@@ -246,44 +246,53 @@ namespace w3c_sw {
 	}
     }
 
+    BoxChars BoxChars::AsciiBoxChars(false, // instraRow
+			   "--", // null
+			   "O", // ordered
+			   "!", // unlistedVar
+			   /*   ul   ub   us   ur */
+			   /**/ "+", "-", "+", "+", 
+			   /*   rl   rb   rs   rr */
+			   /**/ ">", " ", "|", "<", 
+			   /*   sl   sb   ss   sr */
+			   /**/ ">", "-", "+", "<", 
+			   /*   ll   lb   ls   lr */
+			   /**/ "+", "-", "+", "+"
+			   );
+    BoxChars BoxChars::Utf8BoxChars (false, // instraRow
+			   "--", // null
+			   "O", // ordered
+			   "!", // unlistedVar
+			   /*   ul   ub   us   ur */
+			   /* Fancy rounded box chars not supported in many fonts: */
+			   /*   "◜", "─", "┬", "◝", */
+			   /**/ "┌", "─", "┬", "┐", 
+			   /*   rl   rb   rs   rr */
+			   /**/ "│", " ", "│", "│", 
+			   /*   sl   sb   ss   sr */
+			   /**/ "├", "─", "┼", "┤", 
+			   /*   ll   lb   ls   lr */
+			   /**/ "└", "─", "┴", "┘"
+			   );
+
+    // AsciiBoxChars = &asciiBoxChars;
+    // Utf8BoxChars = &utf8BoxChars;
+    BoxChars* BoxChars::GBoxChars = &BoxChars::AsciiBoxChars;
+
+    class STRING : public std::string {
+    public:
+	STRING (size_t repts, const char* str) : std::string() {
+	    for (size_t i = 0; i < repts; ++i)
+		append(str);
+	    }
+    };
+
     std::string ResultSet::toString () const {
 	if (resultType == RESULT_Boolean)
 	    return size() > 0 ? "true" : "false" ;
 
 	else if (resultType == RESULT_Graphs)
 	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
-
-	const char* NULL_REP = "--";
-#if CONSOLE_ENCODING == SWOb_UTF8
-	const char* ORDERED = "O";
-
-	/* Fancy rounded box chars not supported in many fonts: 
-	const char* UL = "◜"; const char* UB = "─"; const char* US = "┬"; const char* UR = "◝"; */
-	const char* UL = "┌"; const char* UB = "─"; const char* US = "┬"; const char* UR = "┐";
-	const char* RL = "│"; const char* RB = " "; const char* RS = "│"; const char* RR = "│";
-#if (INTRA_ROW_SEPARATORS)
-	const char* SL = "├"; const char* SB = "─"; const char* SS = "┼"; const char* SR = "┤";
-#endif
-	const char* LL = "└"; const char* LB = "─"; const char* LS = "┴"; const char* LR = "┘";
-	const char* UNLISTED_VAR = "!";
-	class STRING : public std::string {
-	public:
-	    STRING (size_t repts, const char* str) : std::string() {
-		for (size_t i = 0; i < repts; ++i)
-		    append(str);
-	    }
-	};
-#else /* !CONSOLE_ENCODING == SWOb_UTF8 */
-	const char ORDERED = 'O';
-	const char UL = '+'; const char UB = '-'; const char US = '+'; const char UR = '+';
-	const char RL = '>'; const char RB = ' '; const char RS = '|'; const char RR = '<';
-#if (INTRA_ROW_SEPARATORS)
-	const char SL = '>'; const char SB = '-'; const char SS = '+'; const char SR = '<';
-#endif
-	const char LL = '+'; const char LB = '-'; const char LS = '+'; const char LR = '+';
-	const char UNLISTED_VAR = '!';
-#define STRING std::string
-#endif /* !CONSOLE_ENCODING == SWOb_UTF8 */
 
 	/* Get column widths. */
 	std::vector< const POS* > vars;
@@ -324,48 +333,48 @@ namespace w3c_sw {
 	/*   Top Border */
 	unsigned i;
 	for (i = 0; i < count; i++) {
-	    s << (i == 0 ? (ordered == true ? ORDERED : UL) : US);
-	    s << STRING(widths[i]+2, UB);
+	    s << (i == 0 ? (ordered == true ? BoxChars::GBoxChars->ordered : BoxChars::GBoxChars->ul) : BoxChars::GBoxChars->us);
+	    s << STRING(widths[i]+2, BoxChars::GBoxChars->ub);
 	}
-	s << UR << std::endl;
+	s << BoxChars::GBoxChars->ur << std::endl;
 
 	/*   Column Headings */
 	for (i = 0; i < count; i++) {
 	    const POS* var = vars[i];
-	    s << (i == 0 ? RL : i < lastInKnownVars ? RS : UNLISTED_VAR) << ' ';
+	    s << (i == 0 ? BoxChars::GBoxChars->rl : i < lastInKnownVars ? BoxChars::GBoxChars->rs : BoxChars::GBoxChars->unlistedVar) << ' ';
 	    size_t width = var->toString().length();
-	    s << var->toString() << STRING(widths[i] - width, RB) << ' '; // left justified.
+	    s << var->toString() << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << ' '; // left justified.
 	}
-	s << RR << std::endl;
+	s << BoxChars::GBoxChars->rr << std::endl;
 
 	/*  Rows */
 	for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++) {
 #if (INTRA_ROW_SEPARATORS)
 	    /*  Intra-row Border */
 	    for (i = 0; i < count; i++) {
-		s << (i == 0 ? SL : SS);
-		s << std::string(widths[i]+2, SB);
+		s << (i == 0 ? BoxChars::GBoxChars->sl : BoxChars::GBoxChars->ss);
+		s << std::string(widths[i]+2, BoxChars::GBoxChars->sb);
 	    }
-	    s << SR << std::endl;
+	    s << BoxChars::GBoxChars->sr << std::endl;
 #endif
 	    /*  Values */
 	    for (i = 0; i < count; ++i) {
 		const POS* var = vars[i];
 		const POS* val = (*row)->get(var);
-		const std::string str = val ? val->toString().c_str() : NULL_REP;
-		s << (i == 0 ? RL : RS) << ' ';
+		const std::string str = val ? val->toString().c_str() : BoxChars::GBoxChars->null;
+		s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
 		size_t width = str.length();
-		s << STRING(widths[i] - width, RB) << str << ' '; // right justified.
+		s << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << str << ' '; // right justified.
 	    }
-	    s << RR << std::endl;
+	    s << BoxChars::GBoxChars->rr << std::endl;
 	}
 
 	/*   Bottom Border */
 	for (i = 0; i < count; i++) {
-	    s << (i == 0 ? LL : LS);
-	    s << STRING(widths[i]+2, LB);
+	    s << (i == 0 ? BoxChars::GBoxChars->ll : BoxChars::GBoxChars->ls);
+	    s << STRING(widths[i]+2, BoxChars::GBoxChars->lb);
 	}
-	s << LR << std::endl;
+	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
     XMLSerializer* ResultSet::toXml (XMLSerializer* xml) {
