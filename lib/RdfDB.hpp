@@ -155,35 +155,13 @@ namespace w3c_sw {
 	    }
 	}
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
-	    // const std::istream& toy = OpenIStream(name, NULL, ISTREAM_none);
 	    std::string nameStr = name->getLexicalValue();
-	    if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << "reading web resource " << nameStr << std::endl;
-		std::string s(webAgent->get(nameStr.c_str()));
-		std::stringstream stream(s); // would be nice to use webAgent stream, or have a callback.
-		std::string mediaType = webAgent->getMediaType();
-		if (loadData(target, stream, mediaType, nameStr, posFactory))
-		    throw nameStr + ":0: error: unable to parse web document";
-	    } else {
-		nameStr = baseURIstr + nameStr;
-		/* Remove file://[^/]+ . */
-		if (nameStr.substr(0, 7) == "file://") {
-		    size_t slash = nameStr.find_first_of('/', 7);
-		    nameStr = nameStr.substr(slash);
-		}
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << "reading file " << nameStr << std::endl;
-		std::ifstream stream(nameStr.c_str());
-		if (!stream.is_open())
-		    throw std::string("unable to open file \"").append(nameStr).append("\"");
-		std::string mediaType = 
-		    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
-		    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
-		    "text/turtle";
-		if (loadData(target, stream, mediaType, nameStr, posFactory))
-		    throw nameStr + ":0: error: unable to parse file";
-	    }
+	    std::string mediaType;
+	    std::auto_ptr<std::istream> iptr = 
+		OpenResourceStream(nameStr, baseURIstr, ISTREAM_none, 
+				   &mediaType, webAgent, debugStream);
+	    if (loadData(target, *iptr, mediaType, nameStr, posFactory))
+		throw nameStr + ":0: error: unable to parse web document";
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;

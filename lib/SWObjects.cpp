@@ -10,6 +10,7 @@
 #include <string.h>
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
+#include "../interface/WEBagent.hpp"
 
 namespace w3c_sw {
 
@@ -213,6 +214,36 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 } // namespace libwww
 
 namespace w3c_sw {
+
+    std::auto_ptr<std::istream> OpenResourceStream (std::string nameStr, std::string baseURIstr, e_ISTREAM_opts, std::string* mediaType, SWWEBagent* webAgent, std::ostream** debugStream) {
+    if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "reading web resource " << nameStr << std::endl;
+	std::string s(webAgent->get(nameStr.c_str()));
+	if (mediaType != NULL)
+	    *mediaType = webAgent->getMediaType();
+	return std::auto_ptr<std::istream>(new std::stringstream(s)); // would be nice to use webAgent stream, or have a callback.
+    } else {
+	nameStr = baseURIstr + nameStr;
+	/* Remove file://[^/]+ . */
+	if (nameStr.substr(0, 7) == "file://") {
+	    size_t slash = nameStr.find_first_of('/', 7);
+	    nameStr = nameStr.substr(slash);
+	}
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "reading file " << nameStr << std::endl;
+	if (mediaType != NULL)
+	    *mediaType = 
+		nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
+		"text/turtle";
+	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
+	if (!ifs->is_open())
+	    throw std::string("unable to open file \"").append(nameStr).append("\"");
+	return std::auto_ptr<std::istream>(ifs);
+    }
+    return std::auto_ptr<std::istream>(new std::stringstream);
+}
 
 void URI::express (Expressor* p_expressor) const {
     p_expressor->uri(this, terminal);

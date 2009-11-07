@@ -44,6 +44,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <memory>
 #include <stdexcept>
 #include <exception>
 
@@ -2440,6 +2441,17 @@ std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wante
 } // namespace libwww
 
 namespace w3c_sw {
+
+typedef enum {
+    ISTREAM_none =		 0,	/* don't do nuthin */
+    ISTREAM_stdin =		 1,	/* '-' means stdin */
+    ISTREAM_literal =		 2,	/* literals become stringstreams */
+} e_ISTREAM_opts;
+
+class SWWEBagent;
+std::auto_ptr<std::istream> OpenResourceStream(std::string nameStr, std::string baseURIstr, e_ISTREAM_opts = ISTREAM_none, 
+					       std::string* mediaType = NULL, SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+
 
 class Expressor {
 public:
