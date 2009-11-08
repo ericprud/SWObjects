@@ -6,6 +6,8 @@
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 #include <boost/regex.hpp>
 #include <iostream>
 #include <fstream>
@@ -28,20 +30,20 @@ namespace sw = w3c_sw;
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"
-  w3c_sw::SAXparser_libxml P;
+  sw::SAXparser_libxml P;
 #elif XML_PARSER == SWOb_EXPAT1
   #include "../interface/SAXparser_expat.hpp"
-  w3c_sw::SAXparser_expat P;
+  sw::SAXparser_expat P;
 #elif XML_PARSER == SWOb_MSXML3
   #include "../interface/SAXparser_msxml3.hpp"
-  w3c_sw::SAXparser_msxml3 P;
+  sw::SAXparser_msxml3 P;
 #else
   #warning DAWG tests require an XML parser
 #endif
 
 #if HTTP_CLIENT == SWOb_ASIO
-//  #include "RdfRemoteDB.hpp"
   #include "../interface/WEBagent_boostASIO.hpp"
+  sw::WEBagent_boostASIO Agent;
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 #endif /* !TEST_CLI */
 
@@ -67,8 +69,9 @@ const sw::POS* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
 const sw::POS* NamedGraphName = NULL;
-const sw::POS* Query;
-std::vector<const sw::POS*>Maps;
+const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
+typedef std::vector<const sw::POS*> mapList;
+mapList Maps;
 std::string DataMediaType;
 std::string UserName;
 std::string PassWord;
@@ -77,17 +80,26 @@ std::map<std::string, std::string> HTTPHeaders;
 #ifndef TEST_CLI
 std::ostream* DebugStream = NULL;
 sw::POSFactory F;
-sw::RdfDB Db;
+sw::RdfDB Db(&Agent, &P, &DebugStream);
 sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::TrigSDriver TrigParser("", &F);
 sw::RdfXmlParser GRdfXmlParser(&F, &P);
 sw::QueryMapper QueryMapper(&F, &DebugStream);
 
-void loadGraph (const sw::POS* graphName, const sw::POS* resource) {
-    const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
-    Db.loadData(resource, Db.assureGraph(graph), &F);
-}
+struct loadEntry {
+    const sw::POS* graphName;
+    const sw::POS* resource;
+    const sw::POS* baseURI;
+    loadEntry (const sw::POS* graphName, const sw::POS* resource, const sw::POS* baseURI)
+	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
+    void loadGraph () {
+	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
+	Db.loadData(resource, Db.assureGraph(graph), &F); // !!! baseURI
+    }
+};
+typedef std::vector<loadEntry> loadList;
+loadList LoadList;
 
 #endif /* TEST_CLI */
 
@@ -117,6 +129,7 @@ void validate (boost::any&, const std::vector<std::string>& values, queryString*
 			       append(Query->getLexicalValue()));
     Query = F.getRDFLiteral(s);
 }
+
 /* Set DataMediaType when parsed. */
 struct langName { };
 void validate (boost::any&, const std::vector<std::string>& values, langName*, int)
@@ -221,6 +234,7 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0)
 	std::cout << "reading default graph from " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
 }
@@ -242,6 +256,7 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
+	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI));
 	if (Debug > 0)
 	    std::cout << "reading named graph " << NamedGraphName->getLexicalValue()
 		      << " from " << vald->getLexicalValue()
@@ -300,10 +315,22 @@ void validate (boost::any&, const std::vector<std::string>& values, headerAppend
 }
 
 
+std::string adjustPath (std::string nameStr) {
+    if (nameStr.substr(0, 7) == "file://") {
+	size_t slash = nameStr.find_first_of('/', 7);
+	nameStr = nameStr.substr(slash);
+    }
+    return nameStr;
+}
+
 int main(int ac, char* av[])
 {
+    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
     try {
-	CwdURI = ArgBaseURI = BaseURI = F.getURI("file://localhost/");
+	CwdURI = ArgBaseURI = BaseURI = 
+	    F.getURI(std::string("file://localhost")
+		     .append(fs::current_path().string())
+		     .append("/"));
 
         /* General options -- cli-only. */
         po::options_description generalOpts("General options");
@@ -410,10 +437,22 @@ int main(int ac, char* av[])
 	po::store(po::command_line_parser(ac, av).
               options(cmdline_options).positional(p).run(), vm);
 
-	std::ifstream ifs(".SPARQL");
+	std::ifstream ifs(".SPARQL.cfg");
 	po::store(parse_config_file(ifs, config_file_options), vm);
 	po::notify(vm);
     
+        if (vm.count("utf-8")) {
+	    if (Debug > 0)
+		std::cout << "Switching to utf-8.\n";
+	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
+        }
+
+        if (vm.count("ascii")) {
+	    if (Debug > 0)
+		std::cout << "Switching to ASCII.\n";
+	    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
+        }
+
         if (vm.count("no-exec")) {
 	    if (Debug > 0)
 		std::cout << "Execution suppressed.\n";
@@ -484,12 +523,64 @@ int main(int ac, char* av[])
             return 0;
         }
 
-	if (NoExec == false)
-	    std::cout << "now we do stuff \n";
+	if (NoExec == false) {
+	    for (loadList::iterator it = LoadList.begin();
+		 it != LoadList.end(); ++it)
+		it->loadGraph();
+
+	    std::string queryStr = Query->getLexicalValue();
+	    int result = (queryStr == "-") ? 
+		// inputId = (char*)"- standard input -";
+		SparqlParser.parse_stream(std::cin) : 
+		SparqlParser.parse_file(adjustPath(queryStr).c_str());
+	    if (result)
+		throw std::string("error when parsing query ").append(queryStr);
+	    sw::Operation* query = SparqlParser.root;
+
+	    sw::QueryMapper queryMapper(&F, &DebugStream);
+	    for (mapList::const_iterator it = Maps.begin(); it != Maps.end(); ++it) {
+		std::string mapStr = (*it)->getLexicalValue();
+		result = (mapStr == "-") ? 
+		    SparqlParser.parse_stream(std::cin) : 
+		    SparqlParser.parse_file(adjustPath(mapStr).c_str());
+		if (result)
+		    throw std::string("error when parsing map ").append(mapStr);
+		sw::Operation* rule = SparqlParser.root;
+		sw::Construct* c;
+		if ((c = dynamic_cast<sw::Construct*>(rule)) != NULL) {
+		    queryMapper.addRule(c);
+		    delete rule;
+		} else {
+		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << mapStr << " was not a SPARQL CONSTRUCT." << endl;
+		    return 1;
+		}
+	    }
+
+	    const sw::Operation* o;
+	    if (queryMapper.getRuleCount() > 0) {
+		if (DebugStream != NULL)
+		    *DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
+		query->express(&queryMapper);
+		o = queryMapper.last.operation;
+		delete query;
+	    } else
+		o = query;
+
+	    sw::ResultSet rs(&F);
+	    o->execute(&Db, &rs);
+	    if (Debug > 0)
+		std::cout << Db;
+	    std::cout << rs; // show results
+	}
     }
     catch(std::exception& e)
     {
         std::cout << e.what() << "\n";
+        return 1;
+    }    
+    catch(std::string& e)
+    {
+        std::cout << e << "\n";
         return 1;
     }    
     return 0;
