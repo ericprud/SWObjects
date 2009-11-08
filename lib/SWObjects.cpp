@@ -215,14 +215,22 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-    std::auto_ptr<std::istream> OpenResourceStream (std::string nameStr, std::string baseURIstr, e_ISTREAM_opts, std::string* mediaType, SWWEBagent* webAgent, std::ostream** debugStream) {
-    if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+StreamPtr::StreamPtr (std::string nameStr, std::string baseURIstr, e_opts opts, 
+	   std::string* mediaType, SWWEBagent* webAgent, std::ostream** debugStream)
+    : p(NULL), malloced(true)
+{
+    if (opts & STRING) {
+	p = new std::stringstream(nameStr);
+    } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
 	if (mediaType != NULL)
 	    *mediaType = webAgent->getMediaType();
-	return std::auto_ptr<std::istream>(new std::stringstream(s)); // would be nice to use webAgent stream, or have a callback.
+	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
+    } else if ((opts & STDIN) && nameStr == "-") {
+	p = &std::cin;
+	malloced = false;
     } else {
 	nameStr = baseURIstr + nameStr;
 	/* Remove file://[^/]+ . */
@@ -238,11 +246,10 @@ namespace w3c_sw {
 		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
 		"text/turtle";
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
+	p = ifs;
 	if (!ifs->is_open())
 	    throw std::string("unable to open file \"").append(nameStr).append("\"");
-	return std::auto_ptr<std::istream>(ifs);
     }
-    return std::auto_ptr<std::istream>(new std::stringstream);
 }
 
 void URI::express (Expressor* p_expressor) const {

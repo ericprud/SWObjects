@@ -2442,16 +2442,22 @@ std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wante
 
 namespace w3c_sw {
 
-typedef enum {
-    ISTREAM_none =		 0,	/* don't do nuthin */
-    ISTREAM_stdin =		 1,	/* '-' means stdin */
-    ISTREAM_literal =		 2,	/* literals become stringstreams */
-} e_ISTREAM_opts;
-
 class SWWEBagent;
-std::auto_ptr<std::istream> OpenResourceStream(std::string nameStr, std::string baseURIstr, e_ISTREAM_opts = ISTREAM_none, 
-					       std::string* mediaType = NULL, SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+struct StreamPtr {
+    typedef enum {
+	NONE =		0,	/* don't do nuthin */
+	STDIN =		1,	/* '-' means stdin */
+	STRING =	2,	/* nameStr is the contents */
+    } e_opts;
 
+    std::istream* p;
+    bool malloced;
+    StreamPtr(std::string nameStr, std::string baseURIstr, e_opts = NONE, 
+	      std::string* mediaType = NULL, SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+    ~StreamPtr () { if (malloced) delete p; }
+    std::istream& operator* () { return *p; }
+
+};
 
 class Expressor {
 public:

@@ -157,9 +157,8 @@ namespace w3c_sw {
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
 	    std::string mediaType;
-	    std::auto_ptr<std::istream> iptr = 
-		OpenResourceStream(nameStr, baseURIstr, ISTREAM_none, 
-				   &mediaType, webAgent, debugStream);
+	    StreamPtr iptr(nameStr, baseURIstr, StreamPtr::NONE, 
+			   &mediaType, webAgent, debugStream);
 	    if (loadData(target, *iptr, mediaType, nameStr, posFactory))
 		throw nameStr + ":0: error: unable to parse web document";
 	}
