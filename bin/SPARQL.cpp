@@ -68,6 +68,7 @@ const sw::POS* BaseURI;
 const sw::POS* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
+bool Quiet = false;
 const sw::POS* NamedGraphName = NULL;
 const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
 typedef std::vector<const sw::POS*> mapList;
@@ -144,7 +145,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "language options: \"\", guess, turtle, trig, rdfa, rdfxml";
+	std::cout << "data language options: \"\", guess, turtle, trig, rdfa, rdfxml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -163,9 +164,9 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	}
 	if (Debug > 0) {
 	    if (DataMediaType.size() == 0)
-		std::cout << "using no language mediatype.\n";
+		std::cout << "using no data language mediatype.\n";
 	    else
-		std::cout << "using language mediatype " << DataMediaType << ".\n";
+		std::cout << "using data language mediatype " << DataMediaType << ".\n";
 	}
     }
 }
@@ -174,7 +175,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "language options: \"\", text/plain, text/turtle, text/trig, text/html, application/rdf:xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/turtle, text/trig, text/html, application/rdf:xml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -193,9 +194,9 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	}
 	if (Debug > 0) {
 	    if (DataMediaType.size() == 0)
-		std::cout << "using no language mediatype.\n";
+		std::cout << "using no data mediatype mediatype.\n";
 	    else
-		std::cout << "using language mediatype " << DataMediaType << ".\n";
+		std::cout << "using data mediatype mediatype " << DataMediaType << ".\n";
 	}
     }
 }
@@ -335,6 +336,7 @@ std::string adjustPath (std::string nameStr) {
 
 int main(int ac, char* av[])
 {
+    int ret = 0; /* no errors */
     sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
     try {
 	CwdURI = 
@@ -349,7 +351,7 @@ int main(int ac, char* av[])
             ("Help,H", 
 	     po::value< std::vector<std::string> >()->composing(), 
 	     "general, results, uri, query, data, http, sql, tutorial, all")
-            ("debug,D", po::value<debugLevel>(), 
+            ("debug", po::value<debugLevel>(), 
 	     "debugging level")
             ("no-exec,n", "don't execute")
             ("print,p", "print final query")
@@ -394,7 +396,7 @@ int main(int ac, char* av[])
 	     "update arg with the results.\n\"-\" to read from stdin and write to stdout.")
             ("description,D", 
 	     "read application description graph (see section) into default graph.")
-            ("desc-graph,G", po::value<std::string>(), 
+            ("desc-graph,G", po::value<std::vector <std::string> >(), 
 	     "read application description graph into graph arg.")
             ;
     
@@ -478,6 +480,12 @@ int main(int ac, char* av[])
             NoExec = true;
         }
 
+        if (vm.count("quiet")) {
+	    if (Debug > 0)
+		std::cout << "Non-debug messages supressed.\n";
+            Quiet = true;
+        }
+
 	static const char* queryHelp = "Queries and maps:\n"
 	    "  <queryURI>            read and execute a query from <queryURI>.\n"
 	    "  -e <query>            execute <query>.\n"
@@ -489,20 +497,57 @@ int main(int ac, char* av[])
             "        doap:shortdesc \"a semantic web query toolbox\" .\n";
 	static const char* tutorial = 
 	    "Tutorial:\n"
-	    "    SPARQL -D \"SELECT ?proj ?page WHERE {?proj <http://use‐fulinc.com/ns/doap#homepage> ?page}\""
+	    "  The SPARQL executable contains a short description of itself, with the\n"
+	    "  following assertions:\n"
+	    "    SPARQL is a doap project.\n"
+	    "    SPARQL has a homepage http://swobj.org/SPARQL/v1 .\n"
+	    "    SPARQL is \"a Semantic Web query toolbox\".\n"
+	    "  You can load this description (-D) and query it:\n"
+	    "    SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"\n"
+	    "  Giving resuls like:\n"
+	    "    +----+-------------------------------+----------------------------------------+\n"
+	    "    | ?s | ?p                            | ?o                                     |\n"
+	    "    | <> | <http://www.w3....ax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+	    "    | <> |           <http...p#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+	    "    | <> |          <http:...#shortdesc> |         \"a semantic web query toolbox\" |\n"
+	    "    +----+-------------------------------+----------------------------------------+\n"
+	    "\n"
+	    "-D loaded the three assertions into the \"default graph\", the graph to which\n"
+	    "SPARQL queries are directed unless otherwise directed by GRAPH clause. To try a\n"
+	    "GRAPH clause, load the description into the graph foo and query that graph:\n"
+	    "    SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"\n"
+	    "\n"
+	    "We can load the description into a couple graphs *and* the default graph and ask\n"
+	    "all of the graphs which include an assertion about a doap project:\n"
+	    "    SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}\"\n"
+	    "    +--------+\n"
+	    "    | ?g     |\n"
+	    "    |  <foo> |\n"
+	    "    | <foo2> |\n"
+	    "    +--------+\n"
+	    "Note that the default graph did not appear as the query only matches loaded\n"
+	    "*named* graphs. You can use a UNION to match both the default graph and loaded\n"
+	    "named graphs:\n"
+	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {{?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
+	    "UNION {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n"
+	    "    +--------+\n"
+	    "    | ?g     |\n"
+	    "    |     -- |\n"
+	    "    |  <foo> |\n"
+	    "    | <foo2> |\n"
+	    "    +--------+\n"
 	    ;
 
         if (vm.count("help")) {
             std::cout << 
 		"Usage: SPARQL [opts] queryURI mapURI*\n"
 		"Usage: SPARQL [opts] -e query mapURI*\n\n"
-		"get started with: SPARQL help tutorial\n" << 
+		"get started with: SPARQL --Help tutorial\n" << 
 		queryHelp << cursory;
             NoExec = true;
         }
 
-        if (vm.count("Help"))
-        {
+        if (vm.count("Help")) {
 	    std::vector<std::string> helps(vm["Help"].as< std::vector<std::string> >());
 	    for (std::vector<std::string>::const_iterator it = helps.begin();
 		 it != helps.end(); ++it) {
@@ -543,23 +588,41 @@ int main(int ac, char* av[])
         }
 
 	if (NoExec == false) {
+	    if (vm.count("description")) {
+		std::stringstream s(appDescGraph);
+		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, "text/turtle", "", &F); // !!! baseURI
+	    }
+
+	    if (vm.count("desc-graph")) {
+		std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
+		for (std::vector<std::string>::const_iterator it = descs.begin();
+		     it != descs.end(); ++it) {
+		    std::stringstream s(appDescGraph);
+		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, "text/turtle", *it, &F); // !!! baseURI
+		}
+	    }
+
 	    for (loadList::iterator it = LoadList.begin();
 		 it != LoadList.end(); ++it)
 		it->loadGraph();
 
-	    std::string queryStr = Query->getLexicalValue();
-	    int result = (queryStr == "-") ? 
-		// inputId = (char*)"- standard input -";
-		SparqlParser.parse_stream(std::cin) : 
-		SparqlParser.parse_file(adjustPath(queryStr).c_str());
-	    if (result)
-		throw std::string("error when parsing query ").append(queryStr);
-	    sw::Operation* query = SparqlParser.root;
+	    sw::Operation* query;
+	    {
+		std::string querySpec = Query->getLexicalValue();
+		sw::StreamPtr::e_opts opts = 
+		    (dynamic_cast<const sw::RDFLiteral*>(Query) != NULL) ? 
+		    sw::StreamPtr::STRING : 
+		    sw::StreamPtr::STDIN;
+		sw::StreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
+		if (SparqlParser.parse_stream(*iptr) != 0)
+		    throw std::string("error when parsing query ").append(querySpec);
+		query = SparqlParser.root;
+	    }
 
 	    sw::QueryMapper queryMapper(&F, &DebugStream);
 	    for (mapList::const_iterator it = Maps.begin(); it != Maps.end(); ++it) {
 		std::string mapStr = (*it)->getLexicalValue();
-		result = (mapStr == "-") ? 
+		int result = (mapStr == "-") ? 
 		    SparqlParser.parse_stream(std::cin) : 
 		    SparqlParser.parse_file(adjustPath(mapStr).c_str());
 		if (result)
@@ -571,7 +634,7 @@ int main(int ac, char* av[])
 		    delete rule;
 		} else {
 		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << mapStr << " was not a SPARQL CONSTRUCT." << endl;
-		    return 1;
+		    return 2;
 		}
 	    }
 
@@ -599,30 +662,34 @@ int main(int ac, char* av[])
 		    TurtleParser.setGraph(resGraph.assureGraph(NULL));
 		    TurtleParser.parse_stream(*iptr);
 		    TurtleParser.clear("");
-		    sw::ResultSet* reference = 
-			rs.resultType == sw::ResultSet::RESULT_Graphs ?
-			new sw::ResultSet(&F, &resGraph) :
-			new sw::ResultSet(&F, &resGraph, "");
-		    if (!(rs == *reference))
-			std::cout << rs << "\n!=\n" << *reference << "\n";
-		    else
-			std::cout << "matched\n";
-		    delete reference;
+		} else {
+		    throw std::string("media-type \"").append(mediaType).append("\" unknown.");
 		}
+		sw::ResultSet* reference = 
+		    rs.resultType == sw::ResultSet::RESULT_Graphs ?
+		    new sw::ResultSet(&F, &resGraph) :
+		    new sw::ResultSet(&F, &resGraph, "");
+		if (!(rs == *reference)) {
+		    if (!Quiet)
+			std::cout << rs << "!=\n" << *reference << "\n";
+		    ret = 1;
+		} else {
+		    if (!Quiet)
+			std::cout << "matched\n";
+		    ret = 0;
+		}
+		delete reference;
 	    } else {
 		std::cout << rs.toString();
 	    }
 	}
-    }
-    catch(std::exception& e)
-    {
+    } catch(std::exception& e) {
         std::cout << e.what() << "\n";
-        return 1;
-    }    
-    catch(std::string& e)
-    {
+        ret = 2;
+    } catch(std::string& e) {
         std::cout << e << "\n";
-        return 1;
+        ret = 2;
     }    
-    return 0;
+
+    return ret;
 }
