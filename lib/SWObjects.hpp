@@ -2452,8 +2452,8 @@ struct StreamPtr {
 
     std::istream* p;
     bool malloced;
-    StreamPtr(std::string nameStr, std::string baseURIstr, e_opts = NONE, 
-	      std::string* mediaType = NULL, SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+    StreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
     ~StreamPtr () { if (malloced) delete p; }
     std::istream& operator* () { return *p; }
 

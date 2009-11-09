@@ -53,9 +53,25 @@ TurtleSDriver turtleParser("", &F);
 TrigSDriver trigParser("", &F);
 RdfXmlParser GRdfXmlParser(&F, &P);
 
+/* This is like a normal RdfDB except that it prepends file load paths with
+ * directory in which the test is located.
+ * 
+ */
+struct FakePathRdfDB : public RdfDB {
+    std::string pathPrefix; // prepend file paths with this to get to the subdirectory, e.g. data-r2/dataset/
+    virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
+	std::string nameStr = name->getLexicalValue();
+	std::string mediaType;
+	nameStr = pathPrefix + nameStr;
+	StreamPtr iptr(nameStr, StreamPtr::NONE, 
+		       &mediaType, webAgent, debugStream);
+	if (RdfDB::loadData(target, *iptr, mediaType, nameStr, posFactory))
+	    throw nameStr + ":0: error: unable to parse web document";
+    }
+};
 
 struct MeasuredRS : public ResultSet {
-    RdfDB d;
+    FakePathRdfDB d;
     RdfDB constructed;
 
     /* DAWG tests consist of:
@@ -71,7 +87,7 @@ struct MeasuredRS : public ResultSet {
  
 	std::string baseStr(query);
 	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
-	d.baseURIstr = baseStr;
+	d.pathPrefix = baseStr; // load files from ./baseStr
 	const URI* baseURI = F.getURI(baseStr.c_str());
 
 	/* Parse query. */

@@ -215,8 +215,8 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-StreamPtr::StreamPtr (std::string nameStr, std::string baseURIstr, e_opts opts, 
-	   std::string* mediaType, SWWEBagent* webAgent, std::ostream** debugStream)
+StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
+		      SWWEBagent* webAgent, std::ostream** debugStream)
     : p(NULL), malloced(true)
 {
     if (opts & STRING) {
@@ -232,7 +232,6 @@ StreamPtr::StreamPtr (std::string nameStr, std::string baseURIstr, e_opts opts,
 	p = &std::cin;
 	malloced = false;
     } else {
-	nameStr = baseURIstr + nameStr;
 	/* Remove file://[^/]+ . */
 	if (nameStr.substr(0, 7) == "file://") {
 	    size_t slash = nameStr.find_first_of('/', 7);

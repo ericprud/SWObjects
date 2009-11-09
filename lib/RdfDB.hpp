@@ -53,7 +53,6 @@ namespace w3c_sw {
 	SWWEBagent* webAgent;
 	SWSAXparser* xmlParser;
 	std::ostream** debugStream;
-	std::string baseURIstr; // base for loading relative URIs (e.g. files)
 
 	RdfDB (SWSAXparser* xmlParser = NULL) : 
 	    graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL) {  }
@@ -157,7 +156,7 @@ namespace w3c_sw {
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
 	    std::string mediaType;
-	    StreamPtr iptr(nameStr, baseURIstr, StreamPtr::NONE, 
+	    StreamPtr iptr(nameStr, StreamPtr::NONE, 
 			   &mediaType, webAgent, debugStream);
 	    if (loadData(target, *iptr, mediaType, nameStr, posFactory))
 		throw nameStr + ":0: error: unable to parse web document";
