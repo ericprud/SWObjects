@@ -35,7 +35,7 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-# define PARSER_HEADER_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -48,7 +48,7 @@ namespace w3c_sw
 }
 
 /* First part of user declarations.  */
-#line 44 "..\\lib\\TrigSParser\\TrigSParser.ypp"
+#line 44 "lib/TrigSParser/TrigSParser.ypp"
  /*** C/C++ Declarations ***/
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -66,7 +66,7 @@ namespace w3c_sw
 
 namespace w3c_sw {
 
-/** The YaccDriver class brings together all components. It creates an instance of
+/** The Driver class brings together all components. It creates an instance of
  * the TrigSParser and TrigSScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
@@ -102,7 +102,7 @@ public:
 
 
 /* Line 35 of lalr1.cc.  */
-#line 106 "\\\\vboxsvr\\sparul\\lib\\TrigSParser\\TrigSParser.hpp"
+#line 106 "lib/TrigSParser/TrigSParser.hpp"
 
 #include "location.hh"
 
@@ -153,7 +153,7 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 98 "..\\lib\\TrigSParser\\TrigSParser.ypp"
+#line 98 "lib/TrigSParser/TrigSParser.ypp"
 {
     void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -178,7 +178,7 @@ namespace w3c_sw
 
 }
 /* Line 35 of lalr1.cc.  */
-#line 182 "\\\\vboxsvr\\sparul\\lib\\TrigSParser\\TrigSParser.hpp"
+#line 182 "lib/TrigSParser/TrigSParser.hpp"
 	;
 #else
     typedef YYSTYPE semantic_type;

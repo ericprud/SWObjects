@@ -484,7 +484,7 @@ namespace w3c_sw
   case 21:
 #line 407 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI));
+	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     ;}
     break;
 
@@ -2585,7 +2585,7 @@ void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
     driver.error(l, m);
 }
 
-/* START YaccDriver (@@ stand-alone would allow it to be shared with other parsers */
+/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
 
 namespace w3c_sw {
 
@@ -2618,6 +2618,6 @@ bool MapSetDriver::parse_stream(std::istream& in, const std::string& sname)
 
 } // namespace w3c_sw
 
-/* END YaccDriver */
+/* END Driver */
 
 

@@ -66,7 +66,7 @@ namespace w3c_sw {
 
 class MapSetScanner;
 
-/** The YaccDriver class brings together all components. It creates an instance of
+/** The Driver class brings together all components. It creates an instance of
  * the MapSetParser and MapSetScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as

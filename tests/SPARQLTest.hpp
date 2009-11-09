@@ -85,10 +85,9 @@ struct MeasuredRS : public ResultSet {
 		const URI* requires[], size_t reqsCount, 
 		const char* query) : ResultSet(&F, F.debugStream) {
  
-	std::string baseStr(query);
-	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
-	d.pathPrefix = baseStr; // load files from ./baseStr
-	const URI* baseURI = F.getURI(baseStr.c_str());
+	std::string baseURI(query);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	d.pathPrefix = baseURI; // load files from ./baseURI
 
 	/* Parse query. */
 	if (sparqlParser.parse_file(query))
@@ -104,7 +103,7 @@ struct MeasuredRS : public ResultSet {
 	}
 
 	for (size_t i = 0; i < namedCount; ++i) {
-	    std::string graphName = std::string(namedGraphs[i]).substr(baseStr.size());
+	    std::string graphName = std::string(namedGraphs[i]).substr(baseURI.size());
 	    turtleParser.setGraph(d.assureGraph(F.getURI(graphName.c_str())));
 	    turtleParser.setBase(baseURI);
 	    turtleParser.parse_file(namedGraphs[i]);
@@ -126,9 +125,8 @@ struct MeasuredRS : public ResultSet {
     MeasuredRS (const char* input, const char* query)
 	: ResultSet(&F) {
  
-	std::string baseStr(query);
-	baseStr = baseStr.substr(0, baseStr.find_last_of("/")+1);
-	const URI* baseURI = F.getURI(baseStr.c_str());
+	std::string baseURI(query);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
 
 	/* Parse query. */
 	sparqlParser.setBase(baseURI);
@@ -204,8 +202,7 @@ struct ReferenceRS {
 		    turtleParser.parse_file(rfs.c_str());
 		    turtleParser.clear("");
 		} else if (rfs.substr(rfs.size()-4, 4) == ".trg") {			       
-		    std::string baseStr = rfs.substr(0, rfs.find_last_of("/")+1);
-		    const URI* baseURI = F.getURI(baseStr.c_str());
+		    std::string baseURI = rfs.substr(0, rfs.find_last_of("/")+1);
 		    trigParser.setBase(baseURI);
 		    trigParser.setDB(&rdfDB);		       
 		    trigParser.parse_file(rfs.c_str());			       

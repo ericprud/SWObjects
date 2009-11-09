@@ -82,7 +82,7 @@ class SPARQLfedScanner;
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class SPARQLfedDriver : public Driver {
+class SPARQLfedDriver : public YaccDriver {
     friend class SPARQLfedParser;
 protected:
     const POS* curSubject;
@@ -503,7 +503,7 @@ _QPrefixDecl_E_Star:
 
 BaseDecl:
     IT_BASE IRI_REF	{
-	driver.setBase($2);
+	driver.setBase($2->getLexicalValue());
     }
 ;
 
@@ -1737,7 +1737,7 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
+	YaccDriver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
 	curGraphName(NULL), root(NULL),  unnestTree(false)

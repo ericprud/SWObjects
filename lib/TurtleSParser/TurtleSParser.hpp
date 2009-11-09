@@ -35,7 +35,7 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-# define PARSER_HEADER_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -48,7 +48,7 @@ namespace w3c_sw
 }
 
 /* First part of user declarations.  */
-#line 44 "..\\lib\\TurtleSParser\\TurtleSParser.ypp"
+#line 44 "lib/TurtleSParser/TurtleSParser.ypp"
  /*** C/C++ Declarations ***/
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -65,7 +65,7 @@ namespace w3c_sw
 
 namespace w3c_sw {
 
-/** The YaccDriver class brings together all components. It creates an instance of
+/** The Driver class brings together all components. It creates an instance of
  * the TurtleSParser and TurtleSScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
@@ -100,7 +100,7 @@ public:
 
 
 /* Line 35 of lalr1.cc.  */
-#line 104 "\\\\vboxsvr\\sparul\\lib\\TurtleSParser\\TurtleSParser.hpp"
+#line 104 "lib/TurtleSParser/TurtleSParser.hpp"
 
 #include "location.hh"
 
@@ -151,7 +151,7 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 96 "..\\lib\\TurtleSParser\\TurtleSParser.ypp"
+#line 96 "lib/TurtleSParser/TurtleSParser.ypp"
 {
     void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -176,7 +176,7 @@ namespace w3c_sw
 
 }
 /* Line 35 of lalr1.cc.  */
-#line 180 "\\\\vboxsvr\\sparul\\lib\\TurtleSParser\\TurtleSParser.hpp"
+#line 180 "lib/TurtleSParser/TurtleSParser.hpp"
 	;
 #else
     typedef YYSTYPE semantic_type;

@@ -11,10 +11,10 @@
 namespace w3c_sw {
 
     YaccDriver::YaccDriver (POSFactory* posFactory)
-	: posFactory(posFactory), namespaces(), base(NULL), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: posFactory(posFactory), namespaces(), baseURI(""), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
-	: posFactory(posFactory), namespaces(), base(getURI(baseURI)), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: posFactory(posFactory), namespaces(), baseURI(baseURI), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     bool YaccDriver::parse_file (const std::string &filename) {
 	std::ifstream in(filename.c_str());
@@ -38,8 +38,7 @@ namespace w3c_sw {
     }
 
     const URI* YaccDriver::getAbsoluteURI (std::string name) {
-	std::string str = base ? base->getLexicalValue() : "";
-	std::string abs(libwww::HTParse(name, base ? &str : NULL, libwww::PARSE_all));
+	std::string abs(libwww::HTParse(name, &baseURI, libwww::PARSE_all));
 	return posFactory->getURI(abs.c_str());
     }
 

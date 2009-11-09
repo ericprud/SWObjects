@@ -65,7 +65,7 @@ class MapSetScanner;
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class MapSetDriver : public Driver {
+class MapSetDriver : public YaccDriver {
     friend class MapSetParser;
 protected:
     const POS* curSubject;
@@ -405,7 +405,7 @@ _QPrefixDecl_E_Star:
 
 BaseDecl:
     IT_BASE IRI_REF	{
-	driver.setBase($2);
+	driver.setBase($2->getLexicalValue());
     }
 ;
 
@@ -1510,7 +1510,7 @@ void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
 namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
+	YaccDriver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
 	root(NULL)

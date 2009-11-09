@@ -32,7 +32,7 @@ class YaccDriver
 protected:
     POSFactory * const posFactory;
     namespacemap_type	namespaces;
-    const URI*		base;
+    std::string		baseURI;
     bool		ignorePrefixFlag;
     POS::String2BNode	nodeMap;
 
@@ -45,13 +45,13 @@ public:
     void clear () {
 	namespaces.clear();
 	nodeMap.clear();
-	base = NULL;
+	baseURI = "";
     }
 
     void clear (std::string baseURI) {
 	namespaces.clear();
 	nodeMap.clear();
-	base = getURI(baseURI);
+	this->baseURI = baseURI;
     }
 
     /// enable debug output in the flex scanner
@@ -102,8 +102,8 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    const URI* getBase () const { return base; }
-    void setBase (const URI* b) { /* base is centrally managed -- don't delete */ base = b; }
+    std::string getBase () const { return baseURI; }
+    void setBase (std::string b) { /* base is centrally managed -- don't delete */ baseURI = b; }
     void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
