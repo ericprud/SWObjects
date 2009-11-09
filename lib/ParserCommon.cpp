@@ -10,11 +10,20 @@
 
 namespace w3c_sw {
 
+    /* Base class for all parsers. */
+    ParserDriver::ParserDriver ()
+	: baseURI("") {  }
+
+    ParserDriver::ParserDriver (std::string baseURI)
+	: baseURI(baseURI) {  }
+
+
+    /* Base class for Yacc parsers. */
     YaccDriver::YaccDriver (POSFactory* posFactory)
-	: posFactory(posFactory), namespaces(), baseURI(""), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: ParserDriver(), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
-	: posFactory(posFactory), namespaces(), baseURI(baseURI), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: ParserDriver(baseURI), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     bool YaccDriver::parse_file (const std::string &filename) {
 	std::ifstream in(filename.c_str());

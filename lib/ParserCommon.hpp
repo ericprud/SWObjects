@@ -24,15 +24,25 @@ protected:
     }
 };
 
+class ParserDriver {
+protected:
+    std::string		baseURI;
+    
+    ParserDriver();
+    ParserDriver(std::string baseURI);
 
-class YaccDriver
-{
+public:
+    std::string getBase () const { return baseURI; }
+    void setBase (std::string b) { baseURI = b; }
+};
+
+class YaccDriver : public ParserDriver {
+
     /// type of the namespace storage
     typedef std::map<std::string, const URI*> namespacemap_type;
 protected:
     POSFactory * const posFactory;
     namespacemap_type	namespaces;
-    std::string		baseURI;
     bool		ignorePrefixFlag;
     POS::String2BNode	nodeMap;
 
@@ -45,13 +55,13 @@ public:
     void clear () {
 	namespaces.clear();
 	nodeMap.clear();
-	baseURI = "";
+	setBase("");
     }
 
     void clear (std::string baseURI) {
 	namespaces.clear();
 	nodeMap.clear();
-	this->baseURI = baseURI;
+	setBase(baseURI);
     }
 
     /// enable debug output in the flex scanner
@@ -102,8 +112,6 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    std::string getBase () const { return baseURI; }
-    void setBase (std::string b) { /* base is centrally managed -- don't delete */ baseURI = b; }
     void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }

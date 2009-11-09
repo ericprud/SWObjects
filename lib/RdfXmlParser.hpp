@@ -36,7 +36,6 @@ namespace w3c_sw {
 
 	    BasicGraphPattern* bgp;
 	    POSFactory* posFactory;
-	    std::string baseURI;
 	    std::string chars;
 	    const URI* datatype;
 	    LANGTAG* langtag;
@@ -58,7 +57,7 @@ namespace w3c_sw {
 
 	public:
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
-		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars("") {
+		SWSAXhandler(baseURI), bgp(bgp), posFactory(posFactory), chars("") {
 		State newState = {DOCUMENT, NULL, NULL};
 		stack.push(newState);
 	    }
