@@ -85,7 +85,16 @@ sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::TrigSDriver TrigParser("", &F);
 sw::RdfXmlParser GRdfXmlParser(&F, &P);
+sw::RDFaParser GRDFaParser(&F, &P);
 sw::QueryMapper QueryMapper(&F, &DebugStream);
+sw::ParserDriver* Parsers[] = {
+    &SparqlParser, 
+    &TurtleParser, 
+    &TrigParser
+// , 
+//     &GRdfXmlParser, 
+//     &GRDFaParser
+};
 
 struct loadEntry {
     const sw::POS* graphName;
@@ -219,6 +228,8 @@ struct baseURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, baseURI*, int)
 {
     validateBase(values, &BaseURI, ArgBaseURI, "base");
+    for (size_t i = 0; i < sizeof(Parsers)/sizeof(Parsers[0]); ++i)
+	Parsers[i]->setBase(BaseURI->getLexicalValue());
 }
 
 /* Overload of relURI to validate --arg-base arguments. */
