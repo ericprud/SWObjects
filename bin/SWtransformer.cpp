@@ -39,6 +39,7 @@
 #include <fstream>
 
 using namespace std;
+using namespace w3c_sw;
 
 const char* BaseURI = "http://example.org/";
 const char* StemURI = NULL;
