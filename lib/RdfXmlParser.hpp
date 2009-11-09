@@ -10,7 +10,7 @@
 
 namespace w3c_sw {
 
-    class RdfXmlParser {
+    class RdfXmlParser : public ParserDriver { // !!! doesn't respect setBase API
 	class RdfXmlSaxHandler : public SWSAXhandler {
 	protected:
 	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
@@ -36,6 +36,7 @@ namespace w3c_sw {
 
 	    BasicGraphPattern* bgp;
 	    POSFactory* posFactory;
+	    std::string baseURI;
 	    std::string chars;
 	    const URI* datatype;
 	    LANGTAG* langtag;
@@ -57,7 +58,7 @@ namespace w3c_sw {
 
 	public:
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
-		SWSAXhandler(baseURI), bgp(bgp), posFactory(posFactory), chars("") {
+		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars("") {
 		State newState = {DOCUMENT, NULL, NULL};
 		stack.push(newState);
 	    }
@@ -269,7 +270,7 @@ namespace w3c_sw {
 	SWSAXparser* saxParser;
 
     public:
-	RdfXmlParser (POSFactory* posFactory, SWSAXparser* saxParser) : posFactory(posFactory), saxParser(saxParser) {  }
+	RdfXmlParser (POSFactory* posFactory, SWSAXparser* saxParser) : ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
 	void parse (BasicGraphPattern* bgp, const char* filename) {
 	    RdfXmlSaxHandler handler(bgp, posFactory);
 	    saxParser->parse(filename, &handler);

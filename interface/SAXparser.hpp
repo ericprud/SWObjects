@@ -13,7 +13,7 @@
 
 namespace w3c_sw {
 
-    class SWSAXhandler : public ParserDriver {
+    class SWSAXhandler {
     public:
 	class NSmap {
 	public:
@@ -48,8 +48,7 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	SWSAXhandler () : ParserDriver("") {  }
-	SWSAXhandler (std::string baseURI) : ParserDriver(baseURI) {  }
+	SWSAXhandler () {  }
 	virtual ~SWSAXhandler () {  }
 	virtual void startElement (std::string uri,
 				   std::string localName,

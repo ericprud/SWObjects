@@ -90,10 +90,9 @@ sw::QueryMapper QueryMapper(&F, &DebugStream);
 sw::ParserDriver* Parsers[] = {
     &SparqlParser, 
     &TurtleParser, 
-    &TrigParser
-// , 
-//     &GRdfXmlParser, 
-//     &GRDFaParser
+    &TrigParser, 
+    &GRdfXmlParser, 
+    &GRDFaParser
 };
 
 struct loadEntry {
@@ -205,8 +204,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 struct relURI {};
 
 const sw::POS* htparseWrapper(std::string s, const sw::POS* base) {
-    std::string baseURIstring = base->getLexicalValue();
-    std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all);
+    std::string baseURIstring = base ? base->getLexicalValue() : "";
+    std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
     return F.getURI(t.c_str());
 }
 void validateBase(const std::vector<std::string>& values, const sw::POS** setMe, const sw::POS* copySource, const char* argName) {
@@ -338,7 +337,7 @@ int main(int ac, char* av[])
 {
     sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
     try {
-	CwdURI = ArgBaseURI = BaseURI = 
+	CwdURI = 
 	    F.getURI(std::string("file://localhost")
 		     .append(fs::current_path().string())
 		     .append("/"));
@@ -364,7 +363,10 @@ int main(int ac, char* av[])
         resultsOpts.add_options()
             ("ascii,a", "output ASCII-only")
             ("utf-8,u", "output utf-8")
+            ("bold", "output bold-bordered utf-8 boxes")
             ("nullterm,0", "terminate lines with \0")
+            ("compare", po::value<std::string>(), 
+	     "compare to some expected results.")
             ;
     
         po::options_description uriOpts("URI resolution");
@@ -462,6 +464,12 @@ int main(int ac, char* av[])
 	    if (Debug > 0)
 		std::cout << "Switching to ASCII.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
+        }
+
+        if (vm.count("bold")) {
+	    if (Debug > 0)
+		std::cout << "Switching to bold-bordered boxes.\n";
+	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BldChars;
         }
 
         if (vm.count("no-exec")) {
@@ -581,7 +589,29 @@ int main(int ac, char* av[])
 	    o->execute(&Db, &rs);
 	    if (Debug > 0)
 		std::cout << Db;
-	    std::cout << rs; // show results
+	    if (vm.count("compare")) {
+		const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
+		std::string mediaType;
+		sw::StreamPtr iptr(cmp->getLexicalValue(), sw::StreamPtr::NONE, 
+				   &mediaType, &Agent, &DebugStream);
+		sw::RdfDB resGraph;
+		if (mediaType == "text/turtle") {
+		    TurtleParser.setGraph(resGraph.assureGraph(NULL));
+		    TurtleParser.parse_stream(*iptr);
+		    TurtleParser.clear("");
+		    sw::ResultSet* reference = 
+			rs.resultType == sw::ResultSet::RESULT_Graphs ?
+			new sw::ResultSet(&F, &resGraph) :
+			new sw::ResultSet(&F, &resGraph, "");
+		    if (!(rs == *reference))
+			std::cout << rs << "\n!=\n" << *reference << "\n";
+		    else
+			std::cout << "matched\n";
+		    delete reference;
+		}
+	    } else {
+		std::cout << rs.toString();
+	    }
 	}
     }
     catch(std::exception& e)

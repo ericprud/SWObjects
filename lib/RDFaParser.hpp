@@ -10,7 +10,7 @@
 
 namespace w3c_sw {
 
-    class RDFaParser {
+    class RDFaParser : public ParserDriver { // !!! doesn't respect setBase API
 	class RDFaSaxHandler : public SWSAXhandler {
 	protected:
 	    struct State {
@@ -195,7 +195,7 @@ namespace w3c_sw {
 
     public:
 	RDFaParser (POSFactory* posFactory, SWSAXparser* saxParser) : 
-	    posFactory(posFactory), saxParser(saxParser) {  }
+	    ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
 
 	void parse (BasicGraphPattern* bgp, 
 		    const char* filename, std::string baseURI = "") {

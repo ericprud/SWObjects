@@ -250,33 +250,37 @@ namespace w3c_sw {
 			   "--", // null
 			   "O", // ordered
 			   "!", // unlistedVar
-			   /*   ul   ub   us   ur */
-			   /**/ "+", "-", "+", "+", 
-			   /*   rl   rb   rs   rr */
-			   /**/ ">", " ", "|", "<", 
-			   /*   sl   sb   ss   sr */
-			   /**/ ">", "-", "+", "<", 
-			   /*   ll   lb   ls   lr */
-			   /**/ "+", "-", "+", "+"
+			   /*        .l   .b   .s   .r */
+			   /* u. */ "+", "-", "+", "+", 
+			   /* r. */ "|", " ", "|", "|", 
+			   /* s. */ "+", "-", "+", "+", 
+			   /* l. */ "+", "-", "+", "+"
 			   );
     BoxChars BoxChars::Utf8BoxChars (false, // instraRow
 			   "--", // null
 			   "O", // ordered
 			   "!", // unlistedVar
-			   /*   ul   ub   us   ur */
 			   /* Fancy rounded box chars not supported in many fonts: */
 			   /*   "◜", "─", "┬", "◝", */
-			   /**/ "┌", "─", "┬", "┐", 
-			   /*   rl   rb   rs   rr */
-			   /**/ "│", " ", "│", "│", 
-			   /*   sl   sb   ss   sr */
-			   /**/ "├", "─", "┼", "┤", 
-			   /*   ll   lb   ls   lr */
-			   /**/ "└", "─", "┴", "┘"
+			   /*        .l   .b   .s   .r */
+			   /* u. */ "┌", "─", "┬", "┐", 
+			   /* r. */ "│", " ", "│", "│", 
+			   /* s. */ "├", "─", "┼", "┤", 
+			   /* l. */ "└", "─", "┴", "┘"
 			   );
 
-    // AsciiBoxChars = &asciiBoxChars;
-    // Utf8BoxChars = &utf8BoxChars;
+    /* Fancy rounded box chars not supported in many fonts: */
+    BoxChars BoxChars::Utf8BldChars (false, // instraRow
+			   "--", // null
+			   "O", // ordered
+			   "!", // unlistedVar
+			   /*        .l   .b   .s   .r */
+			   /* u. */ "┏", "━", "┯", "┓", 
+			   /* r. */ "┃", " ", "│", "┃", 
+			   /* s. */ "┠", "─", "┼", "┨", 
+			   /* l. */ "┗", "━", "┷", "┛"
+			   );
+
     BoxChars* BoxChars::GBoxChars = &BoxChars::AsciiBoxChars;
 
     class STRING : public std::string {

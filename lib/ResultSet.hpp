@@ -681,6 +681,7 @@ namespace w3c_sw {
 	{  }
 	static BoxChars AsciiBoxChars;
 	static BoxChars Utf8BoxChars;
+	static BoxChars Utf8BldChars;
 	static BoxChars* GBoxChars;
     };
 
