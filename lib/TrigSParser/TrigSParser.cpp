@@ -1464,7 +1464,7 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
     driver.error(l, m);
 }
 
-/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+/* START YaccDriver (@@ stand-alone would allow it to be shared with other parsers */
 
 namespace w3c_sw {
 
@@ -1483,6 +1483,6 @@ bool TrigSDriver::parse_stream(std::istream& in, const std::string& sname)
 
 } // namespace w3c_sw
 
-/* END Driver */
+/* END YaccDriver */
 
 

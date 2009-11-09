@@ -2585,12 +2585,12 @@ void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
     driver.error(l, m);
 }
 
-/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+/* START YaccDriver (@@ stand-alone would allow it to be shared with other parsers */
 
 namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, POSFactory* posFactory) : 
-	Driver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
+	YaccDriver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingClause(NULL), curBinding(NULL), curExprList(NULL), 
 	root(NULL)
@@ -2618,6 +2618,6 @@ bool MapSetDriver::parse_stream(std::istream& in, const std::string& sname)
 
 } // namespace w3c_sw
 
-/* END Driver */
+/* END YaccDriver */
 
 

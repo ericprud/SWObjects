@@ -77,14 +77,14 @@ class SPARQLfedScanner;
 	}
     };
 
-/** The Driver class brings together all components. It creates an instance of
+/** The YaccDriver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class SPARQLfedDriver : public Driver {
+class SPARQLfedDriver : public YaccDriver {
     friend class SPARQLfedParser;
 protected:
     const POS* curSubject;

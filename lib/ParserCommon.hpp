@@ -25,7 +25,7 @@ protected:
 };
 
 
-class Driver
+class YaccDriver
 {
     /// type of the namespace storage
     typedef std::map<std::string, const URI*> namespacemap_type;
@@ -38,9 +38,9 @@ protected:
 
 public:
     /// construct a new parser driver context
-    Driver(POSFactory* posFactory);
-    Driver(std::string baseURI, POSFactory* posFactory);
-    virtual ~Driver () {  }
+    YaccDriver(POSFactory* posFactory);
+    YaccDriver(std::string baseURI, POSFactory* posFactory);
+    virtual ~YaccDriver () {  }
 
     void clear () {
 	namespaces.clear();

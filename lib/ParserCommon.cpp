@@ -10,34 +10,34 @@
 
 namespace w3c_sw {
 
-    Driver::Driver (POSFactory* posFactory)
+    YaccDriver::YaccDriver (POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(NULL), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
-    Driver::Driver (std::string baseURI, POSFactory* posFactory)
+    YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
 	: posFactory(posFactory), namespaces(), base(getURI(baseURI)), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
-    bool Driver::parse_file (const std::string &filename) {
+    bool YaccDriver::parse_file (const std::string &filename) {
 	std::ifstream in(filename.c_str());
 	if (!in.is_open())
 	    throw std::string("unable to open file \"") + filename + "\"";
 	return parse_stream(in, filename);
     }
 
-    bool Driver::parse_string (const std::string &input, const std::string& sname) {
+    bool YaccDriver::parse_string (const std::string &input, const std::string& sname) {
 	std::istringstream iss(input);
 	return parse_stream(iss, sname);
     }
 
-    void Driver::error (const class location& l,
+    void YaccDriver::error (const class location& l,
 			const std::string& m) {
 	std::cerr << l << ": " << m << std::endl;
     }
 
-    void Driver::error (const std::string& m) {
+    void YaccDriver::error (const std::string& m) {
 	std::cerr << m << std::endl;
     }
 
-    const URI* Driver::getAbsoluteURI (std::string name) {
+    const URI* YaccDriver::getAbsoluteURI (std::string name) {
 	std::string str = base ? base->getLexicalValue() : "";
 	std::string abs(libwww::HTParse(name, base ? &str : NULL, libwww::PARSE_all));
 	return posFactory->getURI(abs.c_str());

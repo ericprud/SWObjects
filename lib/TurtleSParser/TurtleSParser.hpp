@@ -65,14 +65,14 @@ namespace w3c_sw
 
 namespace w3c_sw {
 
-/** The Driver class brings together all components. It creates an instance of
+/** The YaccDriver class brings together all components. It creates an instance of
  * the TurtleSParser and TurtleSScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class TurtleSDriver : public Driver {
+class TurtleSDriver : public YaccDriver {
     friend class TurtleSParser;
 protected:
     const POS* curSubject;
@@ -80,7 +80,7 @@ protected:
     BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
-    TurtleSDriver (std::string baseURI, POSFactory* posFactory) : Driver(baseURI, posFactory) {
+    TurtleSDriver (std::string baseURI, POSFactory* posFactory) : YaccDriver(baseURI, posFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
