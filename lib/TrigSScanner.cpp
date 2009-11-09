@@ -1,6 +1,6 @@
-#line 2 "\\\\vboxsvr\\sparul\\lib\\TrigSScanner.cpp"
+#line 2 "lib/TrigSScanner.cpp"
 
-#line 4 "\\\\vboxsvr\\sparul\\lib\\TrigSScanner.cpp"
+#line 4 "lib/TrigSScanner.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -79,7 +79,6 @@ typedef int flex_int32_t;
 typedef unsigned char flex_uint8_t; 
 typedef unsigned short int flex_uint16_t;
 typedef unsigned int flex_uint32_t;
-#endif /* ! C99 */
 
 /* Limits of integral types. */
 #ifndef INT8_MIN
@@ -109,6 +108,8 @@ typedef unsigned int flex_uint32_t;
 #ifndef UINT32_MAX
 #define UINT32_MAX             (4294967295U)
 #endif
+
+#endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
@@ -190,7 +191,15 @@ typedef unsigned int flex_uint32_t;
 
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k.
+ * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+ * Ditto for the __ia64__ case accordingly.
+ */
+#define YY_BUF_SIZE 32768
+#else
 #define YY_BUF_SIZE 16384
+#endif /* __ia64__ */
 #endif
 
 /* The state buf must be large enough to hold one state per character in the main buffer.
@@ -1645,10 +1654,10 @@ static yyconst flex_int16_t yy_rule_linenum[38] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "..\\lib\\TrigSScanner.lpp"
+#line 1 "lib/TrigSScanner.lpp"
 /* $Id: TrigSScanner.lpp,v 1.3 2008-10-03 07:06:04 eric Exp $ -*- mode: c++ -*- */
 /** \file TrigSScanner.ll Define the Flex lexical scanner */
-#line 5 "..\\lib\\TrigSScanner.lpp"
+#line 5 "lib/TrigSScanner.lpp"
 
 #include "TrigSParser/TrigSParser.hpp"
 #include "TrigSScanner.hpp"
@@ -1681,12 +1690,12 @@ typedef w3c_sw::TrigSParser::token_type token_type;
 /* enables the use of start condition stacks */
 /* The following paragraph suffices to track locations accurately. Each time
  * yylex is invoked, the begin position is moved onto the end position. */
-#line 53 "..\\lib\\TrigSScanner.lpp"
+#line 53 "lib/TrigSScanner.lpp"
 #define YY_USER_ACTION  yylloc->columns(yyleng);
 /* START patterns for SPARQLfed terminals */
 /* END patterns for SPARQLfed terminals */
 /* START semantic actions for SPARQLfed terminals */
-#line 1690 "\\\\vboxsvr\\sparul\\lib\\TrigSScanner.cpp"
+#line 1699 "lib/TrigSScanner.cpp"
 
 #define INITIAL 0
 
@@ -1743,7 +1752,12 @@ static int yy_flex_strlen (yyconst char * );
 
 /* Amount of stuff to slurp up with each read. */
 #ifndef YY_READ_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k */
+#define YY_READ_BUF_SIZE 16384
+#else
 #define YY_READ_BUF_SIZE 8192
+#endif /* __ia64__ */
 #endif
 
 /* Copy whatever the last rule matched to the standard output. */
@@ -1843,9 +1857,9 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 107 "..\\lib\\TrigSScanner.lpp"
+#line 107 "lib/TrigSScanner.lpp"
 
-#line 1849 "\\\\vboxsvr\\sparul\\lib\\TrigSScanner.cpp"
+#line 1863 "lib/TrigSScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -1957,203 +1971,203 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 108 "..\\lib\\TrigSScanner.lpp"
+#line 108 "lib/TrigSScanner.lpp"
 { /* yylloc->step(); @@ needed? useful? */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 109 "..\\lib\\TrigSScanner.lpp"
+#line 109 "lib/TrigSScanner.lpp"
 {return token::IT_PREFIX;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 110 "..\\lib\\TrigSScanner.lpp"
+#line 110 "lib/TrigSScanner.lpp"
 {return token::GT_LCURLEY;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 111 "..\\lib\\TrigSScanner.lpp"
+#line 111 "lib/TrigSScanner.lpp"
 {return token::GT_RCURLEY;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 112 "..\\lib\\TrigSScanner.lpp"
+#line 112 "lib/TrigSScanner.lpp"
 {return token::GT_LPAREN;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 113 "..\\lib\\TrigSScanner.lpp"
+#line 113 "lib/TrigSScanner.lpp"
 {return token::GT_RPAREN;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 114 "..\\lib\\TrigSScanner.lpp"
+#line 114 "lib/TrigSScanner.lpp"
 {return token::GT_DOT;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 115 "..\\lib\\TrigSScanner.lpp"
+#line 115 "lib/TrigSScanner.lpp"
 {return token::GT_COMMA;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 116 "..\\lib\\TrigSScanner.lpp"
+#line 116 "lib/TrigSScanner.lpp"
 {return token::GT_SEMI;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 117 "..\\lib\\TrigSScanner.lpp"
+#line 117 "lib/TrigSScanner.lpp"
 {return token::IT_a;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 118 "..\\lib\\TrigSScanner.lpp"
+#line 118 "lib/TrigSScanner.lpp"
 {return token::GT_LBRACKET;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 119 "..\\lib\\TrigSScanner.lpp"
+#line 119 "lib/TrigSScanner.lpp"
 {return token::GT_RBRACKET;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 120 "..\\lib\\TrigSScanner.lpp"
+#line 120 "lib/TrigSScanner.lpp"
 {return token::GT_PLUS;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 121 "..\\lib\\TrigSScanner.lpp"
+#line 121 "lib/TrigSScanner.lpp"
 {return token::GT_MINUS;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 122 "..\\lib\\TrigSScanner.lpp"
+#line 122 "lib/TrigSScanner.lpp"
 {return token::GT_DTYPE;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 123 "..\\lib\\TrigSScanner.lpp"
+#line 123 "lib/TrigSScanner.lpp"
 {yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", yytext); return token::IT_true;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 124 "..\\lib\\TrigSScanner.lpp"
+#line 124 "lib/TrigSScanner.lpp"
 {yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", yytext); return token::IT_false;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 125 "..\\lib\\TrigSScanner.lpp"
+#line 125 "lib/TrigSScanner.lpp"
 {yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 126 "..\\lib\\TrigSScanner.lpp"
+#line 126 "lib/TrigSScanner.lpp"
 {yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 127 "..\\lib\\TrigSScanner.lpp"
+#line 127 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 128 "..\\lib\\TrigSScanner.lpp"
+#line 128 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 129 "..\\lib\\TrigSScanner.lpp"
+#line 129 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_POSITIVE);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 130 "..\\lib\\TrigSScanner.lpp"
+#line 130 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 131 "..\\lib\\TrigSScanner.lpp"
+#line 131 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 132 "..\\lib\\TrigSScanner.lpp"
+#line 132 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 133 "..\\lib\\TrigSScanner.lpp"
+#line 133 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 134 "..\\lib\\TrigSScanner.lpp"
+#line 134 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 135 "..\\lib\\TrigSScanner.lpp"
+#line 135 "lib/TrigSScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
 	YY_BREAK
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 136 "..\\lib\\TrigSScanner.lpp"
+#line 136 "lib/TrigSScanner.lpp"
 {return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 137 "..\\lib\\TrigSScanner.lpp"
+#line 137 "lib/TrigSScanner.lpp"
 {return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 138 "..\\lib\\TrigSScanner.lpp"
+#line 138 "lib/TrigSScanner.lpp"
 {return unescape(yylval, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 139 "..\\lib\\TrigSScanner.lpp"
+#line 139 "lib/TrigSScanner.lpp"
 {return unescape(yylval, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 140 "..\\lib\\TrigSScanner.lpp"
+#line 140 "lib/TrigSScanner.lpp"
 {return token::NIL;}
 	YY_BREAK
 case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
-#line 141 "..\\lib\\TrigSScanner.lpp"
+#line 141 "lib/TrigSScanner.lpp"
 {yylval->p_POS = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 142 "..\\lib\\TrigSScanner.lpp"
+#line 142 "lib/TrigSScanner.lpp"
 {yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 143 "..\\lib\\TrigSScanner.lpp"
+#line 143 "lib/TrigSScanner.lpp"
 {yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 144 "..\\lib\\TrigSScanner.lpp"
+#line 144 "lib/TrigSScanner.lpp"
 {yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 146 "..\\lib\\TrigSScanner.lpp"
+#line 146 "lib/TrigSScanner.lpp"
 { yyterminate();}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 147 "..\\lib\\TrigSScanner.lpp"
+#line 147 "lib/TrigSScanner.lpp"
 ECHO;
 	YY_BREAK
-#line 2157 "\\\\vboxsvr\\sparul\\lib\\TrigSScanner.cpp"
+#line 2171 "lib/TrigSScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -3200,7 +3214,7 @@ void TrigSfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 147 "..\\lib\\TrigSScanner.lpp"
+#line 147 "lib/TrigSScanner.lpp"
 
 
 /* END semantic actions for SPARQLfed terminals */
