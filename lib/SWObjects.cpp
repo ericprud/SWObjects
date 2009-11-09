@@ -220,6 +220,7 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
     : p(NULL), malloced(true)
 {
     if (opts & STRING) {
+	malloced = false;
 	p = new std::stringstream(nameStr);
     } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
