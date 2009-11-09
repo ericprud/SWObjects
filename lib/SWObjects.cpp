@@ -242,8 +242,10 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
 	if (mediaType != NULL)
 	    *mediaType = 
 		nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/rdf+xml" : 
-		"text/turtle";
+		nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
+		"text/plain";
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
 	p = ifs;
 	if (!ifs->is_open())
