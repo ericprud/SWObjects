@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( APC ) {
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
-    turtleParser.setBase(F.getURI("APC.html"));
+    turtleParser.setBase("APC.html");
     turtleParser.parse_file("RDFaParser/APC.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( gabab ) {
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
-    turtleParser.setBase(F.getURI(gabab));
+    turtleParser.setBase(gabab);
     turtleParser.parse_file("RDFaParser/gabab.ttl");
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
