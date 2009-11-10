@@ -648,7 +648,9 @@ int main(int ac, char* av[])
 	    } else
 		o = query;
 
+	    sw::RdfDB constructed;
 	    sw::ResultSet rs(&F);
+	    rs.setRdfDB(&constructed);
 	    o->execute(&Db, &rs);
 	    if (Debug > 0)
 		std::cout << Db;
@@ -680,7 +682,10 @@ int main(int ac, char* av[])
 		}
 		delete reference;
 	    } else {
-		std::cout << rs.toString();
+		if (rs.resultType == sw::ResultSet::RESULT_Graphs)
+		    std::cout << constructed.toString();
+		else
+		    std::cout << rs.toString();
 	    }
 	}
     } catch(std::exception& e) {
