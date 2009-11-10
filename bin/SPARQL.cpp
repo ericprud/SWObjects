@@ -109,6 +109,8 @@ struct loadEntry {
 };
 typedef std::vector<loadEntry> loadList;
 loadList LoadList;
+loadEntry Output(NULL, NULL, NULL);
+bool InPlace = false;
 
 #endif /* TEST_CLI */
 
@@ -239,6 +241,35 @@ void validate (boost::any&, const std::vector<std::string>& values, argBaseURI*,
     validateBase(values, &ArgBaseURI, BaseURI, "argument base");
 }
 
+/* Overload of relURI to validate --output arguments. */
+struct outPut : public relURI {};
+void validate (boost::any&, const std::vector<std::string>& values, outPut*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    Output = loadEntry(NULL, abs, BaseURI);
+    if (Debug > 0)
+	std::cout << "Sending output to " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
+}
+
+/* Overload of relURI to validate --in-place arguments. */
+struct inPlace : public relURI {};
+void validate (boost::any&, const std::vector<std::string>& values, inPlace*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    if (s == ".") {
+	InPlace = true;
+	if (Debug > 0)
+	    std::cout << "Manipulating other input data.\n";
+    } else {
+	const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
+	Output = loadEntry(NULL, abs, BaseURI);
+	if (Debug > 0)
+	    std::cout << "Replacing data from " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
+    }
+}
+
 /* Overload of relURI to validate --data arguments. */
 struct dataURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, dataURI*, int)
@@ -258,7 +289,7 @@ void validate (boost::any&, const std::vector<std::string>& values, graphURI*, i
     NamedGraphName = s == "." ? F.getURI(".") : htparseWrapper(s, ArgBaseURI);
 }
 
-/* Overload of relURI to validate --graph, query and map arguments. */
+/* Overload of relURI to validate --graph 2nd args, query and map arguments. */
 struct orderedURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, orderedURI*, int)
 {
@@ -334,6 +365,18 @@ std::string adjustPath (std::string nameStr) {
     return nameStr;
 }
 
+sw::Operation* parseQuery (const sw::POS* query) {
+    std::string querySpec = query->getLexicalValue();
+    sw::StreamPtr::e_opts opts = 
+	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
+	sw::StreamPtr::STRING : 
+	sw::StreamPtr::STDIN;
+    sw::StreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
+    if (SparqlParser.parse_stream(*iptr) != 0)
+	throw std::string("error when parsing query ").append(querySpec);
+    return SparqlParser.root;
+}
+
 int main(int ac, char* av[])
 {
     int ret = 0; /* no errors */
@@ -390,10 +433,10 @@ int main(int ac, char* av[])
 	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
             ("lang-media-type,L", po::value<langType>(), 
 	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
-            ("output,o", po::value<std::string>(), 
+            ("output,o", po::value<outPut>(), 
 	     "send results to relURI or \"-\" for stdout.")
-            ("in-place,i", po::value<std::string>(), 
-	     "update arg with the results.\n\"-\" to read from stdin and write to stdout.")
+            ("in-place,i", po::value<inPlace>(), 
+	     "update arg with the results.\n\"-\" to read from stdin and write to stdout, \".\" manipulate input graphs.")
             ("description,D", 
 	     "read application description graph (see section) into default graph.")
             ("desc-graph,G", po::value<std::vector <std::string> >(), 
@@ -582,12 +625,9 @@ int main(int ac, char* av[])
         }
 
 
-        if (vm.count("version")) {
-            std::cout << "Multiple sources example, version 1.0\n";
-            return 0;
-        }
-
-	if (NoExec == false) {
+        if (vm.count("version"))
+            std::cout << "SPARQL version 1.0, revision: $Id$\n";
+	else if (NoExec == false) {
 	    if (vm.count("description")) {
 		std::stringstream s(appDescGraph);
 		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, "text/turtle", "", &F); // !!! baseURI
@@ -606,36 +646,16 @@ int main(int ac, char* av[])
 		 it != LoadList.end(); ++it)
 		it->loadGraph();
 
-	    sw::Operation* query;
-	    {
-		std::string querySpec = Query->getLexicalValue();
-		sw::StreamPtr::e_opts opts = 
-		    (dynamic_cast<const sw::RDFLiteral*>(Query) != NULL) ? 
-		    sw::StreamPtr::STRING : 
-		    sw::StreamPtr::STDIN;
-		sw::StreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
-		if (SparqlParser.parse_stream(*iptr) != 0)
-		    throw std::string("error when parsing query ").append(querySpec);
-		query = SparqlParser.root;
-	    }
+	    sw::Operation* query = parseQuery(Query);
 
 	    sw::QueryMapper queryMapper(&F, &DebugStream);
 	    for (mapList::const_iterator it = Maps.begin(); it != Maps.end(); ++it) {
-		std::string mapStr = (*it)->getLexicalValue();
-		int result = (mapStr == "-") ? 
-		    SparqlParser.parse_stream(std::cin) : 
-		    SparqlParser.parse_file(adjustPath(mapStr).c_str());
-		if (result)
-		    throw std::string("error when parsing map ").append(mapStr);
-		sw::Operation* rule = SparqlParser.root;
+		sw::Operation* rule = parseQuery(*it);
 		sw::Construct* c;
-		if ((c = dynamic_cast<sw::Construct*>(rule)) != NULL) {
-		    queryMapper.addRule(c);
-		    delete rule;
-		} else {
-		    cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << mapStr << " was not a SPARQL CONSTRUCT." << endl;
-		    return 2;
-		}
+		if ((c = dynamic_cast<sw::Construct*>(rule)) == NULL)
+		    throw std::string("Rule file ").append(": ").append((*it)->getLexicalValue()).append(" was not a SPARQL CONSTRUCT");
+		queryMapper.addRule(c);
+		delete rule;
 	    }
 
 	    const sw::Operation* o;
@@ -649,8 +669,8 @@ int main(int ac, char* av[])
 		o = query;
 
 	    sw::RdfDB constructed;
-	    sw::ResultSet rs(&F);
-	    rs.setRdfDB(&constructed);
+	    sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
+	    rs.setRdfDB(InPlace ? &Db : &constructed);
 	    o->execute(&Db, &rs);
 	    if (Debug > 0)
 		std::cout << Db;
