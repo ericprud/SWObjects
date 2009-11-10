@@ -246,6 +246,7 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
 		nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
 		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
 		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
+		nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
 		"text/plain";
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
 	p = ifs;

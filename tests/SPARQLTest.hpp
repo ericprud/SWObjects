@@ -201,7 +201,7 @@ struct ReferenceRS {
 		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
 		    turtleParser.parse_file(rfs.c_str());
 		    turtleParser.clear("");
-		} else if (rfs.substr(rfs.size()-4, 4) == ".trg") {			       
+		} else if (rfs.substr(rfs.size()-5, 5) == ".trig") {			       
 		    std::string baseURI = rfs.substr(0, rfs.find_last_of("/")+1);
 		    trigParser.setBase(baseURI);
 		    trigParser.setDB(&rdfDB);		       
