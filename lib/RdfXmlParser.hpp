@@ -271,13 +271,13 @@ namespace w3c_sw {
 
     public:
 	RdfXmlParser (POSFactory* posFactory, SWSAXparser* saxParser) : ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
-	void parse (BasicGraphPattern* bgp, const char* filename) {
+	void parse (BasicGraphPattern* bgp, StreamPtr* sptr) {
 	    RdfXmlSaxHandler handler(bgp, posFactory);
-	    saxParser->parse(filename, &handler);
+	    saxParser->parse(sptr, &handler);
 	}
-	void parse (BasicGraphPattern* bgp, std::string::iterator begin, std::string::iterator end) {
+	void parse (BasicGraphPattern* bgp, std::istream& istr) {
 	    RdfXmlSaxHandler handler(bgp, posFactory);
-	    saxParser->parse(begin, end, &handler);
+	    saxParser->parse(istr, &handler);
 	}
 
     };

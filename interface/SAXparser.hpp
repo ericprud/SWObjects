@@ -143,11 +143,14 @@ namespace w3c_sw {
     public:
 	SWSAXparser () {  }
 	virtual ~SWSAXparser () {  }
-	virtual void parse(const char* file, SWSAXhandler* handler) = 0;
-	virtual void parse(std::string::iterator start, std::string::iterator finish, SWSAXhandler* handler) = 0;
+	virtual void parse(std::istream& istr, SWSAXhandler* handler) = 0;
+	virtual void parse (StreamPtr* pstr, SWSAXhandler* handler) {
+	    parse(**pstr, handler);
+	}
 	void test (std::string testStr = "<root xmlns=\"http://ns.example/\"><el attr=\"value\"/>text</root>") {
 	    SAXserializer handler(std::cout);
-	    parse(testStr.begin(), testStr.end(), &handler);
+	    std::stringstream istr(testStr);
+	    parse(istr, &handler);
 	}
 	static SWSAXparser* makeSAXparser();
 #define NEEDDEF_SAXPARSER 1

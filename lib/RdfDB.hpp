@@ -126,16 +126,14 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	bool loadData (BasicGraphPattern* target, std::istream& stream, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
+	bool loadData (BasicGraphPattern* target, std::istream& istr, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
 	    if (!mediaType.compare(0, 9, "text/html") || 
 		!mediaType.compare(0, 9, "application/xhtml")) {
 		if (xmlParser == NULL)
 		    throw std::string("no XML parser to parse ") + mediaType + 
 			" document " + nameStr;
 		RDFaParser rdfaParser(posFactory, xmlParser);
-		std::istreambuf_iterator<char> i(stream), e;
-		std::string s(i, e); 
-		rdfaParser.parse(target, s.begin(), s.end(), nameStr);
+		rdfaParser.parse(target, istr, nameStr);
 		return false;
 	    } else if (!mediaType.compare(0, 9, "text/rdf") || 
 		       !mediaType.compare(0, 9, "text/rdf+xml")) {
@@ -143,14 +141,12 @@ namespace w3c_sw {
 		    throw std::string("no XML parser to parse ") + mediaType + 
 			" document " + nameStr;
 		RdfXmlParser p(posFactory, xmlParser);
-		std::istreambuf_iterator<char> i(stream), e;
-		std::string s(i, e); 
-		p.parse(assureGraph(NULL), s.c_str());
+		p.parse(assureGraph(NULL), istr);
 		return false;
 	    } else {
 		TurtleSDriver turtleParser(nameStr, posFactory);
 		turtleParser.setGraph(target);
-		return turtleParser.parse_stream(stream);
+		return turtleParser.parse_stream(istr);
 	    }
 	}
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {

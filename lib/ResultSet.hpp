@@ -402,20 +402,20 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, const char* filename) : 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, StreamPtr* sptr) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    RSsax handler(this, posFactory);
-	    parser->parse(filename, &handler);
+	    parser->parse(sptr, &handler);
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::string::iterator start, std::string::iterator finish) : 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::istream& ist) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    RSsax handler(this, posFactory);
-	    parser->parse(start, finish, &handler);
+	    parser->parse(ist, &handler);
 	}
 
 	virtual ~ResultSet();

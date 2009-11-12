@@ -653,7 +653,9 @@ int main(int ac, char* av[])
 		sw::Operation* rule = parseQuery(*it);
 		sw::Construct* c;
 		if ((c = dynamic_cast<sw::Construct*>(rule)) == NULL)
-		    throw std::string("Rule file ").append(": ").append((*it)->getLexicalValue()).append(" was not a SPARQL CONSTRUCT");
+		    throw std::string("Rule file ").append(": ").
+			append((*it)->getLexicalValue()).
+			append(" was not a SPARQL CONSTRUCT");
 		queryMapper.addRule(c);
 		delete rule;
 	    }
@@ -679,18 +681,24 @@ int main(int ac, char* av[])
 		std::string mediaType;
 		sw::StreamPtr iptr(cmp->getLexicalValue(), sw::StreamPtr::NONE, 
 				   &mediaType, &Agent, &DebugStream);
-		sw::RdfDB resGraph;
-		if (mediaType == "text/turtle") {
-		    TurtleParser.setGraph(resGraph.assureGraph(NULL));
-		    TurtleParser.parse_stream(*iptr);
-		    TurtleParser.clear("");
+
+		sw::ResultSet* reference;
+		if (mediaType == "application/sparql-results+xml") {
+		    reference = new sw::ResultSet(&F, &P, *iptr);
 		} else {
-		    throw std::string("media-type \"").append(mediaType).append("\" unknown.");
+		    sw::RdfDB resGraph;
+		    if (mediaType == "text/turtle") {
+			TurtleParser.setGraph(resGraph.assureGraph(NULL));
+			TurtleParser.parse_stream(*iptr);
+			TurtleParser.clear("");
+		    } else {
+			throw std::string("media-type \"").append(mediaType).append("\" unknown.");
+		    }
+		    reference = 
+			rs.resultType == sw::ResultSet::RESULT_Graphs ?
+			new sw::ResultSet(&F, &resGraph) :
+			new sw::ResultSet(&F, &resGraph, "");
 		}
-		sw::ResultSet* reference = 
-		    rs.resultType == sw::ResultSet::RESULT_Graphs ?
-		    new sw::ResultSet(&F, &resGraph) :
-		    new sw::ResultSet(&F, &resGraph, "");
 		if (!(rs == *reference)) {
 		    if (!Quiet)
 			std::cout << rs << "!=\n" << *reference << "\n";

@@ -103,31 +103,39 @@ namespace w3c_sw {
 	    ::xmlMemoryDump();
 	}
 
-	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
-	    SAXhandlerInsulator insulator(this, saxHandler);
-
-	    std::string mem(start, finish);
-	    bool failed =
-		::xmlSAXUserParseMemory(&libXMLhandler, this, mem.c_str(), mem.size()) != 0;
-	    if (aborted) {
-		aborted = false;
-		throw std::string("SAXparser_libxml: ") + exceptionString;
-	    }
-	    if (failed)
-		throw( std::string("SAXparser_libxml: Unknown error parsing document [[") + mem.substr(0, 100) + "]].\n" );
+	std::string locationStr (/* XML_Parser parser */) {
+	    std::stringstream ret;
+	    ret << ":" << 0 // XML_GetCurrentLineNumber(parser)
+		<< ":" << 0 // XML_GetCurrentColumnNumber(parser)
+		<< "(" << 0 // XML_GetCurrentByteIndex(parser)
+		<< ") SAXparser_libxml ";
+	    return ret.str();
 	}
 
-	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
+// #ifndef LIBXML2_BUFFER_SIZE
+//  #define LIBXML2_BUFFER_SIZE 8192
+// #endif /* LIBXML2_BUFFER_SIZE */
+
+	/* I haven't found a stream-based libxml parse function so we have to
+	 * read all of the istr into a string. LIBXML2_BUFFER_SIZE would be
+	 * useful for a stream buffer. */
+	virtual void parse (std::istream& istr, SWSAXhandler* saxHandler) {
 	    SAXhandlerInsulator insulator(this, saxHandler);
 
-	    bool failed = 
-		::xmlSAXUserParseFile(&libXMLhandler, this, file) != 0;
+	    std::istreambuf_iterator<char> i(istr), e;
+	    std::string s(i, e);
+
+	    bool failed =
+		::xmlSAXUserParseMemory(&libXMLhandler, this, s.c_str(), s.size()) != 0;
 	    if (aborted) {
 		aborted = false;
 		throw std::string("SAXparser_libxml: ") + exceptionString;
 	    }
-	    if (failed)
-		throw std::string("SAXparser_libxml: Unknown error parsing file \"") + file + "\".\n";
+	    if (failed) {
+		throw locationStr(/* parser */) + "error " + 
+		    // XML_ErrorString(XML_GetErrorCode(parser)) + 
+		    " parsing document [[" + s.substr(0, 50) + "]].\n";
+	    }
 	}
 
 	static void startElementNs (void * voidSelf, 

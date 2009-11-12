@@ -247,6 +247,7 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
 		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
 		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
 		nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
+		nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
 		"text/plain";
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
 	p = ifs;
@@ -1274,7 +1275,7 @@ compared against
 		    selectString = "SELECT ";
 		    for (std::set<const Variable*>::const_iterator it = vars.begin();
 			 it != vars.end(); ++it)
-			selectString += (*it)->toString() + ' ';
+			selectString.append((*it)->toString()).append(" ");
 		    federationString = rs->buildFederationString(vars, lexicalCompare);
 
 		    expectOuterGraph = true;
@@ -1329,7 +1330,8 @@ compared against
 				    ));
 
 	/* Parse results into a ResultSet. */
-	ResultSet red(posFactory, db->xmlParser, s.begin(), s.end());
+	std::stringstream str(s);
+	ResultSet red(posFactory, db->xmlParser, str);
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << " yielded\n" << red;
 

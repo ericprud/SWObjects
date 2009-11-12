@@ -45,7 +45,8 @@ RDFaParser GRDFaParser(&F, &P);
 
 BOOST_AUTO_TEST_CASE( APC ) {
     DefaultGraphPattern tested;
-    GRDFaParser.parse(&tested, "RDFaParser/APC.html", "APC.html");
+    std::ifstream ifs("RDFaParser/APC.html");
+    GRDFaParser.parse(&tested, ifs, "APC.html");
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
@@ -58,8 +59,9 @@ BOOST_AUTO_TEST_CASE( APC ) {
 BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern tested;
     const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
+    std::ifstream ifs("RDFaParser/gabab.html");
     try {
-	GRDFaParser.parse(&tested, "RDFaParser/gabab.html", gabab);
+	GRDFaParser.parse(&tested, ifs, gabab);
     } catch (std::string e) {
 	throw(std::string("exception while parsing RDFaParser/gabab.html: ").append(e));
     }

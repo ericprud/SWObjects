@@ -58,35 +58,54 @@ namespace w3c_sw {
 	SAXparser_expat () {  }
 	virtual ~SAXparser_expat () {  }
 
-	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
+	std::string locationStr (XML_Parser parser) {
+	    std::stringstream ret;
+	    ret << ":" << XML_GetCurrentLineNumber(parser)
+		<< ":" << XML_GetCurrentColumnNumber(parser)
+		<< "(" << XML_GetCurrentByteIndex(parser)
+		<< ") SAXparser_expat ";
+	    return ret.str();
+	}
+
+#ifndef EXPAT_BUFFER_SIZE
+ #define EXPAT_BUFFER_SIZE 8192
+#endif /* EXPAT_BUFFER_SIZE */
+
+	virtual void parse (std::istream& istr, SWSAXhandler* saxHandler) {
+	    //toy(istr, saxHandler);
 	    SAXhandlerInsulator insulator(this, saxHandler);
-	    std::string buf(start, finish);
 
 	    XML_Parser parser = ::XML_ParserCreate(NULL);
 	    ::XML_SetUserData(parser, this);
 	    ::XML_SetElementHandler(parser, &startEl, &endEl);
 	    ::XML_SetCharacterDataHandler(parser, &chars);
 
-	    bool failed = 
+	    while (istr) {
+		char* buff = (char*)XML_GetBuffer(parser, EXPAT_BUFFER_SIZE);
+		if (buff == NULL)
+		    throw std::string("SAXparser_expat unable to allocate buffer.");
+		istr.read(buff, EXPAT_BUFFER_SIZE);
+		bool isFinal = istr ? false : true;
+		bool failed = 
 #ifdef _MSC_VER
-		XML_Parse(parser, buf.c_str(), (int)buf.size(), true) == 0;
+		    XML_ParseBuffer(parser, istr.gcount(), isFinal) == 0;
 #else /* !_MSC_VER */
-		XML_Parse(parser, buf.c_str(), buf.size(), true) == XML_STATUS_ERROR;
+		    XML_ParseBuffer(parser, istr.gcount(), isFinal) == XML_STATUS_ERROR;
 #endif /* !_MSC_VER */
-	    ::XML_ParserFree(parser);
-	    if (aborted) {
-		aborted = false;
-		throw std::string("SAXparser_expat: ") + exceptionString;
+		if (aborted) {
+		    aborted = false;
+		    throw locationStr(parser) + exceptionString;
+		}
+
+		if (failed) {
+		    buff[istr.gcount()] = 0;
+		    buff[100] = 0;
+		    throw locationStr(parser) + "error " + 
+			XML_ErrorString(XML_GetErrorCode(parser)) + 
+			" parsing document [[" + buff + "]].\n";
+		}
 	    }
-	    if (failed)
-		throw(std::string("SAXparser_expat: Error ") + 
-		      XML_ErrorString(XML_GetErrorCode(parser)) + 
-		      " parsing document [[" + 
-		      buf.substr(0, 100) + "]].\n" );
-	}
-	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
-	    std::string buf = readFile(file, "XML");
-	    parse(buf.begin(), buf.end(), saxHandler);
+	    ::XML_ParserFree(parser);
 	}
 
 	static void _dumpNsFrame (std::map< const char*, const char* > nsframe) {

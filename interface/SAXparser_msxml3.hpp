@@ -314,10 +314,13 @@ namespace w3c_sw {
 	    reinterpret_cast<_variant_t&>(vt) = bs;
 	}
 
-	virtual void parse (std::string::iterator start, std::string::iterator finish, SWSAXhandler* saxHandler) {
+	virtual void parse (std::istream& istr, SWSAXhandler* saxHandler) {
 	    SAXhandlerInsulator insulator(this, saxHandler);
-	    std::string str(start, finish);
-	    std::wstring wstr(to16bit(str.c_str()));
+
+	    std::istreambuf_iterator<char> i(istr), e;
+	    std::string s(i, e);
+
+	    std::wstring wstr(to16bit(s.c_str()));
 	    _variant_t vt;
 	    to_variant(wstr, vt);
 	    HRESULT hr = pXMLReader->parse(vt);
@@ -326,32 +329,32 @@ namespace w3c_sw {
 		throw std::string("SAXparser_msxml3: ") + exceptionString;
 	    }
 	    if(FAILED(hr)) {
-		std::stringstream s;
-		s << hr;
-		throw(std::string("SAXparser_msxml3: Error ") + 
-		      s.str() + 
+		std::stringstream str;
+		str << hr;
+		throw std::string("SAXparser_msxml3: Error ") + 
+		      str.str() + 
 		      " parsing document [[" + 
-		      str.substr(0, 100) + "]].\n" );
+		      s.substr(0, 100) + "]].\n" ;
 	    }
 	}
 
-	virtual void parse (const char* file, SWSAXhandler* saxHandler) {
-	    SAXhandlerInsulator insulator(this, saxHandler);
-	    // parse the document
-	    HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
-	    if (aborted) {
-		aborted = false;
-		throw std::string("SAXparser_msxml3: ") + exceptionString;
-	    }
-	    if(FAILED(hr)) {
-		std::stringstream s;
-		s << hr;
-		throw(std::string("SAXparser_msxml3: Error ") + 
-		      s.str() + 
-		      " parsing file \"" + 
-		      file + "\".\n" );
-	    }
-	}
+	// virtual void parse (const char* file, SWSAXhandler* saxHandler) {
+	//     SAXhandlerInsulator insulator(this, saxHandler);
+	//     // parse the document
+	//     HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
+	//     if (aborted) {
+	// 	aborted = false;
+	// 	throw std::string("SAXparser_msxml3: ") + exceptionString;
+	//     }
+	//     if(FAILED(hr)) {
+	// 	std::stringstream s;
+	// 	s << hr;
+	// 	throw(std::string("SAXparser_msxml3: Error ") + 
+	// 	      s.str() + 
+	// 	      " parsing file \"" + 
+	// 	      file + "\".\n" );
+	//     }
+	// }
 
     };
 

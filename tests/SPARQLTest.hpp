@@ -193,8 +193,9 @@ struct ReferenceRS {
 
 	} else {
 	    std::string rfs(resultFile);
+	    std::ifstream istr(resultFile);
 	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
-		reference = new ResultSet(posFactory, saxParser, rfs.c_str());
+		reference = new ResultSet(posFactory, saxParser, istr);
 
 	    } else {			/* retults in a graph */
 		if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
@@ -208,7 +209,7 @@ struct ReferenceRS {
 		    trigParser.parse_file(rfs.c_str());			       
 		    trigParser.clear("");					       
 		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
-		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), rfs.c_str());
+		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), istr);
 		} else {
 		    throw std::string("unable to parse results file ") + rfs.c_str();
 		}
