@@ -5,7 +5,7 @@
 # $Id$
 
 
-# XML_PARSER: LIBMXL2 | EXPAT1 | MSXML3 - (SAX) XML parser library. #####
+# XML_PARSER: LIBXML2 | EXPAT1 | MSXML3 - (SAX) XML parser library. #####
 # Needed for query federation (client side) and for running the
 # SPARQL tests.
 # Tested with:
