@@ -173,7 +173,9 @@ BOOST_AUTO_TEST_CASE( a ) {
     try	{
 	WEBSERVER s;
 	MyHandler h(".", s, true);
-	s.serve(address, port, num_threads, h);
+	if (boost::unit_test::framework::master_test_suite().argc > 1 && 
+	    std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
+	    s.serve(address, port, num_threads, h);
     }
     catch (std::exception& e)	{
 	std::cerr << "exception: " << e.what() << "\n";
