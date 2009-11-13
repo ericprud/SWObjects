@@ -2459,6 +2459,21 @@ struct StreamPtr {
 
 };
 
+struct OtreamPtr {
+    typedef enum {
+	NONE =		0,	/* don't do nuthin */
+	STDIN =		1,	/* '-' means stdin */
+	STRING =	2,	/* nameStr is the contents */
+    } e_opts;
+
+    std::ostream* p;
+    bool malloced;
+    OtreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+    ~OtreamPtr();
+    std::ostream& operator* () { return *p; }
+};
+
 class Expressor {
 public:
     virtual ~Expressor () {  }

@@ -65,6 +65,12 @@ namespace sw {
 
 const sw::POS* CwdURI;
 const sw::POS* BaseURI;
+std::string BaseUriMessage () {
+    return (BaseURI == NULL)
+	? std::string(" with no base URI")
+	: std::string(" with base URI ") + BaseURI->getLexicalValue();
+}
+
 const sw::POS* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
@@ -249,7 +255,7 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
     const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
     Output = loadEntry(NULL, abs, BaseURI);
     if (Debug > 0)
-	std::cout << "Sending output to " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	std::cout << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << "\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -302,7 +308,7 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
 	if (Debug > 0)
 	    std::cout << "reading named graph " << NamedGraphName->getLexicalValue()
 		      << " from " << vald->getLexicalValue()
-		      << " with base URI " << BaseURI->getLexicalValue() << "\n";
+		      << BaseUriMessage() << "\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL) {
 	if (Debug > 0)
@@ -646,74 +652,93 @@ int main(int ac, char* av[])
 		 it != LoadList.end(); ++it)
 		it->loadGraph();
 
-	    sw::Operation* query = parseQuery(Query);
-
-	    sw::QueryMapper queryMapper(&F, &DebugStream);
-	    for (mapList::const_iterator it = Maps.begin(); it != Maps.end(); ++it) {
-		sw::Operation* rule = parseQuery(*it);
-		sw::Construct* c;
-		if ((c = dynamic_cast<sw::Construct*>(rule)) == NULL)
-		    throw std::string("Rule file ").append(": ").
-			append((*it)->getLexicalValue()).
-			append(" was not a SPARQL CONSTRUCT");
-		queryMapper.addRule(c);
-		delete rule;
-	    }
-
-	    const sw::Operation* o;
-	    if (queryMapper.getRuleCount() > 0) {
-		if (DebugStream != NULL)
-		    *DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
-		query->express(&queryMapper);
-		o = queryMapper.last.operation;
-		delete query;
-	    } else
-		o = query;
-
-	    sw::RdfDB constructed;
-	    sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
-	    rs.setRdfDB(InPlace ? &Db : &constructed);
-	    o->execute(&Db, &rs);
 	    if (Debug > 0)
-		std::cout << Db;
-	    if (vm.count("compare")) {
-		const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
-		std::string mediaType;
-		sw::StreamPtr iptr(cmp->getLexicalValue(), sw::StreamPtr::NONE, 
-				   &mediaType, &Agent, &DebugStream);
+		std::cout << "Loaded data:\n" << Db;
 
-		sw::ResultSet* reference;
-		if (mediaType == "application/sparql-results+xml") {
-		    reference = new sw::ResultSet(&F, &P, *iptr);
-		} else {
-		    sw::RdfDB resGraph;
-		    if (mediaType == "text/turtle") {
-			TurtleParser.setGraph(resGraph.assureGraph(NULL));
-			TurtleParser.parse_stream(*iptr);
-			TurtleParser.clear("");
-		    } else {
-			throw std::string("media-type \"").append(mediaType).append("\" unknown.");
-		    }
-		    reference = 
-			rs.resultType == sw::ResultSet::RESULT_Graphs ?
-			new sw::ResultSet(&F, &resGraph) :
-			new sw::ResultSet(&F, &resGraph, "");
-		}
-		if (!(rs == *reference)) {
-		    if (!Quiet)
-			std::cout << rs << "!=\n" << *reference << "\n";
-		    ret = 1;
-		} else {
-		    if (!Quiet)
-			std::cout << "matched\n";
-		    ret = 0;
-		}
-		delete reference;
+	    if (Query == NULL) {
+		if (Maps.begin() != Maps.end())
+		    throw std::string("Mapping rules found with no query to map.");
 	    } else {
-		if (rs.resultType == sw::ResultSet::RESULT_Graphs)
-		    std::cout << constructed.toString();
-		else
-		    std::cout << rs.toString();
+		sw::Operation* query = parseQuery(Query);
+
+		sw::QueryMapper queryMapper(&F, &DebugStream);
+		for (mapList::const_iterator it = Maps.begin(); it != Maps.end(); ++it) {
+		    sw::Operation* rule = parseQuery(*it);
+		    sw::Construct* c;
+		    if ((c = dynamic_cast<sw::Construct*>(rule)) == NULL)
+			throw std::string("Rule file ").append(": ").
+			    append((*it)->getLexicalValue()).
+			    append(" was not a SPARQL CONSTRUCT");
+		    queryMapper.addRule(c);
+		    delete rule;
+		}
+
+		const sw::Operation* o;
+		if (queryMapper.getRuleCount() > 0) {
+		    if (DebugStream != NULL)
+			*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
+		    query->express(&queryMapper);
+		    o = queryMapper.last.operation;
+		    delete query;
+		} else
+		    o = query;
+
+		sw::RdfDB constructed;
+		sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
+		rs.setRdfDB(InPlace ? &Db : &constructed);
+		o->execute(&Db, &rs);
+		if (vm.count("compare")) {
+		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
+		    std::string mediaType;
+		    sw::StreamPtr iptr(cmp->getLexicalValue(), sw::StreamPtr::NONE, 
+				       &mediaType, &Agent, &DebugStream);
+
+		    sw::ResultSet* reference;
+		    if (mediaType == "application/sparql-results+xml") {
+			reference = new sw::ResultSet(&F, &P, *iptr);
+		    } else {
+			sw::RdfDB resGraph;
+			if (mediaType == "text/turtle") {
+			    TurtleParser.setGraph(resGraph.assureGraph(NULL));
+			    TurtleParser.parse_stream(*iptr);
+			    TurtleParser.clear("");
+			} else {
+			    throw std::string("media-type \"").append(mediaType).append("\" unknown.");
+			}
+			reference = 
+			    rs.resultType == sw::ResultSet::RESULT_Graphs ?
+			    new sw::ResultSet(&F, &resGraph) :
+			    new sw::ResultSet(&F, &resGraph, "");
+		    }
+		    if (!(rs == *reference)) {
+			if (!Quiet)
+			    std::cout << rs << "!=\n" << *reference << "\n";
+			ret = 1;
+		    } else {
+			if (!Quiet)
+			    std::cout << "matched\n";
+			ret = 0;
+		    }
+		    delete reference;
+		} else {
+		    if (rs.resultType == sw::ResultSet::RESULT_Graphs)
+			std::cout << (InPlace ? Db.toString() : constructed.toString());
+		    else
+			std::cout << rs.toString();
+		}
+	    }
+	    if (Output.resource != NULL) {
+		std::string outres = Output.resource->getLexicalValue();
+		std::string mediaType;
+		sw::OtreamPtr optr(outres, sw::OtreamPtr::STDIN, 
+				   &mediaType, &Agent, &DebugStream);
+		if (mediaType == "text/turtle") {
+		    std::string str(Db.assureGraph(NULL)->toString());
+		    *optr << str;
+		} else if (mediaType == "text/trig") {
+		    std::string str(Db.assureGraph(NULL)->toString());
+		    *optr << str;
+		}
 	    }
 	}
     } catch(std::exception& e) {

@@ -256,6 +256,53 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
     }
 }
 
+OtreamPtr::OtreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
+		      SWWEBagent* webAgent, std::ostream** debugStream)
+    : p(NULL), malloced(true)
+{
+    if (opts & STRING) {
+	malloced = false;
+	p = new std::stringstream(nameStr);
+    } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "reading web resource " << nameStr << std::endl;
+	std::string s(webAgent->get(nameStr.c_str()));
+	if (mediaType != NULL)
+	    *mediaType = webAgent->getMediaType();
+	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
+    } else if ((opts & STDIN) && nameStr == "-") {
+	p = &std::cout;
+	malloced = false;
+    } else {
+	/* Remove file://[^/]+ . */
+	if (nameStr.substr(0, 7) == "file://") {
+	    size_t slash = nameStr.find_first_of('/', 7);
+	    nameStr = nameStr.substr(slash);
+	}
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "reading file " << nameStr << std::endl;
+	if (mediaType != NULL)
+	    *mediaType = 
+		nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
+		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
+		nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
+		nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
+		"text/plain";
+	std::ofstream* ofs = new std::ofstream(nameStr.c_str());
+	p = ofs;
+	if (!ofs->is_open())
+	    throw std::string("unable to open file \"").append(nameStr).append("\"");
+    }
+}
+OtreamPtr::~OtreamPtr () {
+    /* do the PUT if it's a webAgent (unless i can make the webagent::close do it) */
+    if (malloced)
+	delete p;
+}
+
+
 void URI::express (Expressor* p_expressor) const {
     p_expressor->uri(this, terminal);
 }
