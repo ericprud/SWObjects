@@ -176,6 +176,7 @@ CXXFLAGS += $(CFLAGS)
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
 LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
 
 #some progressive macports
@@ -195,6 +196,7 @@ FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard lib/*.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard lib/*.cpp))
 BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
+TESTNAMELIST  :=  $(subst .cpp,,$(wildcard tests/test_*.cpp))
 LIBNAME  :=  SWObjects
 LIB	 :=	 lib/lib$(LIBNAME).a
 LIBINC	+=	 -l$(LIBNAME)
@@ -212,7 +214,7 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 	$(CXX) -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -o $@ $< $(LDFLAGS) $(HTTP_SERVER_LIB)
+	$(CXX) -lnsl -lpthread -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 
@@ -236,7 +238,7 @@ bin/%.o. : bin/%.cpp bin/%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
-	$(CXX) -o $@ $< $(LDFLAGS)
+	$(CXX) -o $@ $< $(LDAPPFLAGS)
 
 
 ##### packaged tests ####
@@ -259,8 +261,8 @@ bin/% : bin/%.o $(LIB) #lib
 # optJoin1: tests/execute_HealthCare1
 #	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
 
-unitTESTS := $(subst tests/test_,t_,$(subst .cpp,,$(wildcard tests/test_*.cpp)))
-unitTESTexes := $(subst .cpp,,$(wildcard tests/test_*.cpp))
+unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
+unitTESTexes := $(TESTNAMELIST)
 # You can override unitTESTS while fiddling with them.
 #unitTESTS=t_GraphMatch
 #$(error unitTESTS: $(unitTESTS))
@@ -333,12 +335,6 @@ tests/server_mouseToxicity_remote-all.results: \
 	( cd tests/mouseToxicity/remote-all/ &&\
 	  time ../../../bin/SWtransformer\
 	      -x -q ToxicAssoc0.rq )
-
-
-tests/server_mouseToxicity_remote-screening-assay.results: bin/SPARQL_server bin/SWtransformer tests/mouseToxicity/remote-screening-assay/ToxicAssoc0.rq tests/mouseToxicity/remote-screening-assay/ScreeningAssay.map
-	( cd tests/mouseToxicity/remote-screening-assay/ && ../../../$< --once http://localhost:8888/screeningAssay ScreeningAssay.map | tee ../../../$@ )&
-	sleep 1
-	( cd tests/mouseToxicity/remote-screening-assay/ && ../../../bin/SWtransformer -q --sparql http://localhost:8888/screeningAssay --sqlmap-pattern .map ToxicAssoc0.rq )
 
 
 tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SWtransformer tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
