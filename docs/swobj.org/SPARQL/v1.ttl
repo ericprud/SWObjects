@@ -1,0 +1,4 @@
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+<> a doap:Project ;
+     doap:homepage <http://swobj.org/SPARQL/v1> ;
+     doap:shortdesc "a semantic web query toolbox" .
