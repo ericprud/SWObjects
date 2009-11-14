@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\win;.."
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1"
+				AdditionalIncludeDirectories="..\..\lib;..\..\win;..\.."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1;BOOST_ALL_DYN_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -118,8 +118,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\lib;..\win;.."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1"
+				AdditionalIncludeDirectories="..\..\lib;..\..\win;..\.."
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1;BOOST_ALL_DYN_LINK"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -179,7 +179,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE520001}"
 			>
 			<File
-				RelativePath="..\lib\SPARQLAlgebraSerializer.hpp"
+				RelativePath="..\..\lib\SPARQLAlgebraSerializer.hpp"
 				>
 			</File>
 		</Filter>
@@ -189,7 +189,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D7520001}"
 			>
 			<File
-				RelativePath="..\tests\test_Algebra.cpp"
+				RelativePath="..\..\tests\test_Algebra.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

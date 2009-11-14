@@ -14,7 +14,7 @@
 	</Platforms>
 	<ToolFiles>
 		<ToolFile
-			RelativePath=".\FlexBison.rules"
+			RelativePath="..\FlexBison.rules"
 		/>
 	</ToolFiles>
 	<Configurations>
@@ -49,7 +49,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\lib\TrigSParser;..\win"
+				AdditionalIncludeDirectories="..\..\lib;..\..\lib\SPARQLfedParser;..\..\lib\TurtleSParser;..\..\lib\TrigSParser;..\..\win"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_DYN_LINK;HAVE_REGEX=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\lib;..\lib\SPARQLfedParser;..\lib\TurtleSParser;..\lib\TrigSParser;..\win"
+				AdditionalIncludeDirectories="..\..\lib;..\..\lib\SPARQLfedParser;..\..\lib\TurtleSParser;..\..\lib\TrigSParser;..\..\win"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_DYN_LINK;HAVE_REGEX=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -162,7 +162,7 @@
 			Name="grammar"
 			>
 			<File
-				RelativePath="..\lib\SPARQLfedParser\SPARQLfedParser.ypp"
+				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.ypp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -184,7 +184,7 @@
 				</FileConfiguration>
 			</File>
 			<!-- File
-				RelativePath="..\lib\SPARQLfedScanner.lpp"
+				RelativePath="..\..\lib\SPARQLfedScanner.lpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -204,7 +204,7 @@
 				</FileConfiguration>
 			</File -->
 			<File
-				RelativePath="..\lib\TrigSParser\TrigSParser.ypp"
+				RelativePath="..\..\lib\TrigSParser\TrigSParser.ypp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -226,7 +226,7 @@
 				</FileConfiguration>
 			</File>
 			<!-- File
-				RelativePath="..\lib\TrigSScanner.lpp"
+				RelativePath="..\..\lib\TrigSScanner.lpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -246,7 +246,7 @@
 				</FileConfiguration>
 			</File -->
 			<File
-				RelativePath="..\lib\TurtleSParser\TurtleSParser.ypp"
+				RelativePath="..\..\lib\TurtleSParser\TurtleSParser.ypp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -268,7 +268,7 @@
 				</FileConfiguration>
 			</File>
 			<!-- File
-				RelativePath="..\lib\TurtleSScanner.lpp"
+				RelativePath="..\..\lib\TurtleSScanner.lpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -294,43 +294,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\lib\ParserCommon.cpp"
+				RelativePath="..\..\lib\ParserCommon.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\RdfDB.cpp"
+				RelativePath="..\..\lib\RdfDB.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\RdfQueryDB.cpp"
+				RelativePath="..\..\lib\RdfQueryDB.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\ResultSet.cpp"
+				RelativePath="..\..\lib\ResultSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SPARQLfedParser\SPARQLfedParser.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\lib\SPARQLfedScanner.cpp"
+				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -350,11 +330,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lib\SWObjects.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\lib\TrigSParser\TrigSParser.cpp"
+				RelativePath="..\..\lib\SPARQLfedScanner.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -374,7 +350,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lib\TrigSScanner.cpp"
+				RelativePath="..\..\lib\SWObjects.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\TrigSParser\TrigSParser.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -394,7 +374,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lib\TurtleSParser\TurtleSParser.cpp"
+				RelativePath="..\..\lib\TrigSScanner.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -414,7 +394,27 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lib\TurtleSScanner.cpp"
+				RelativePath="..\..\lib\TurtleSParser\TurtleSParser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\TurtleSScanner.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -440,95 +440,95 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\lib\exs.hpp"
+				RelativePath="..\..\lib\exs.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\location.hpp"
+				RelativePath="..\..\lib\location.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\ParserCommon.hpp"
+				RelativePath="..\..\lib\ParserCommon.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\POS2BGPMap.hpp"
+				RelativePath="..\..\lib\POS2BGPMap.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\position.hpp"
+				RelativePath="..\..\lib\position.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\QueryMapper.hpp"
+				RelativePath="..\..\lib\QueryMapper.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\RdfDB.hpp"
+				RelativePath="..\..\lib\RdfDB.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\RdfQueryDB.hpp"
+				RelativePath="..\..\lib\RdfQueryDB.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\ResultSet.hpp"
+				RelativePath="..\..\lib\ResultSet.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\RuleInverter.hpp"
+				RelativePath="..\..\lib\RuleInverter.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SPARQLfedParser\SPARQLfedParser.hpp"
+				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SPARQLfedScanner.hpp"
+				RelativePath="..\..\lib\SPARQLfedScanner.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SPARQLSerializer.hpp"
+				RelativePath="..\..\lib\SPARQLSerializer.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SQLizer.hpp"
+				RelativePath="..\..\lib\SQLizer.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\stack.hpp"
+				RelativePath="..\..\lib\stack.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SWObjectDuplicator.hpp"
+				RelativePath="..\..\lib\SWObjectDuplicator.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\SWObjects.hpp"
+				RelativePath="..\..\lib\SWObjects.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\TrigSParser\TrigSParser.hpp"
+				RelativePath="..\..\lib\TrigSParser\TrigSParser.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\TrigSScanner.hpp"
+				RelativePath="..\..\lib\TrigSScanner.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\TurtleSParser\TurtleSParser.hpp"
+				RelativePath="..\..\lib\TurtleSParser\TurtleSParser.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\TurtleSScanner.hpp"
+				RelativePath="..\..\lib\TurtleSScanner.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\XMLQueryExpressor.hpp"
+				RelativePath="..\..\lib\XMLQueryExpressor.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\lib\XMLSerializer.hpp"
+				RelativePath="..\..\lib\XMLSerializer.hpp"
 				>
 			</File>
 		</Filter>

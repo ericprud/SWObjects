@@ -1,44 +1,49 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL_server", "win\SPARQL_server.vcproj", "{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL_server", "win\SPARQL_server\SPARQL_server.vcproj", "{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libSWObjects", "win\libSWObjects.vcproj", "{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libSWObjects", "win\libSWObjects\libSWObjects.vcproj", "{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SWtransformer", "win\SWtransformer.vcproj", "{8A5017B4-B240-4C6C-92FF-A2CE4699913C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DAWG", "win\test_DAWG.vcproj", "{A7163889-6F8D-4788-8DDA-39B6459C82CC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DAWG", "win\test_DAWG\test_DAWG.vcproj", "{A7163889-6F8D-4788-8DDA-39B6459C82CC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_QueryMap", "win\test_QueryMap.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898491B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_QueryMap", "win\test_QueryMap\test_QueryMap.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898491B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RDFaParser", "win\test_RDFaParser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980001}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RDFaParser", "win\test_RDFaParser\test_RDFaParser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980001}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WEBagents", "win\test_WEBagents.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WEBagents", "win\test_WEBagents\test_WEBagents.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980002}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Algebra", "win\test_Algebra.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980003}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Algebra", "win\test_Algebra\test_Algebra.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980003}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQLSerializer", "win\test_SPARQLSerializer.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980004}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQLSerializer", "win\test_SPARQLSerializer\test_SPARQLSerializer.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980004}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL", "win\SPARQL\SPARQL.vcproj", "{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
@@ -85,6 +90,10 @@ Global
 		{56EF9C8B-007E-4CEE-AE32-6233A8980004}.Debug|Win32.Build.0 = Debug|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A8980004}.Release|Win32.ActiveCfg = Release|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A8980004}.Release|Win32.Build.0 = Release|Win32
+		{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}.Debug|Win32.Build.0 = Debug|Win32
+		{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}.Release|Win32.ActiveCfg = Release|Win32
+		{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="test_SPARQLSerializer"
-	ProjectGUID="{56EF9C8B-007E-4CEE-AE32-6233A8980004}"
+	Name="test_WEBagents"
+	ProjectGUID="{56EF9C8B-007E-4CEE-AE32-6233A8980002}"
 	RootNamespace="w3c_sw_test"
 	Keyword="Win32Proj"
 	>
@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib;..\win;.."
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1"
+				AdditionalIncludeDirectories="..\..\lib;..\..\win;..\.."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_ALL_DYN_LINK;ASCII_BOX_CHARS=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -118,8 +118,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\lib;..\win;.."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;ASCII_BOX_CHARS=1"
+				AdditionalIncludeDirectories="..\..\lib;..\..\win;..\.."
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_ALL_DYN_LINK;ASCII_BOX_CHARS=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -176,10 +176,14 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE520004}"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE520001}"
 			>
 			<File
-				RelativePath="..\lib\SPARQLSerializer.hpp"
+				RelativePath="..\..\interface\WEBserver.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\interface\WEBserver_asio.hpp"
 				>
 			</File>
 		</Filter>
@@ -189,7 +193,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D7520001}"
 			>
 			<File
-				RelativePath="..\tests\test_SPARQLSerializer.cpp"
+				RelativePath="..\..\tests\test_WEBagents.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
