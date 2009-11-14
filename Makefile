@@ -216,22 +216,9 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -lpthread -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
-# TODO: cleanup mod_sparul build, autoconf dependency paths?
-
-bin/mod_sparul.so: $(LIB)
-	cd bin; \
-	gcc -fPIC -Wall `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(INCLUDES) -c mod_sparul.cpp -o mod_sparul.o; \
-	apxs -c mod_sparul.o /usr/local/src/codea/codea_hooks.o ../lib/libSWObjects.a $(LDFLAGS)
-
-clean-mod_sparul:
-	rm -f bin/mod_sparul.{o,so,la} bin/.libs/mod_sparul.*
-
-install-mod_sparul: bin/mod_sparul.so
-	apxs -i -n sparul_module bin/.libs/mod_sparul.so
-
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h
-	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ 2>/dev/null|| (rm $@; false)
+	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -239,6 +226,24 @@ bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
 
 bin/% : bin/%.o $(LIB) #lib
 	$(CXX) -o $@ $< $(LDAPPFLAGS)
+
+
+##### apache #####
+
+# TODO: cleanup mod_sparul build, autoconf dependency paths?
+apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
+	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+
+apache/mod_sparul.so: $(LIB) apache/mod_sparul.dep
+	cd bin; \
+	gcc -fPIC -Wall `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(INCLUDES) -c mod_sparul.cpp -o mod_sparul.o; \
+	apxs -c mod_sparul.o /usr/local/src/codea/codea_hooks.o ../lib/libSWObjects.a $(LDFLAGS)
+
+clean-mod_sparul:
+	rm -f apache/mod_sparul.{o,so,la} apache/.libs/mod_sparul.*
+
+install-mod_sparul: apache/mod_sparul.so
+	apxs -i -n sparul_module apache/.libs/mod_sparul.so
 
 
 ##### packaged tests ####
