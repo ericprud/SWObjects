@@ -653,7 +653,7 @@ int main(int ac, char* av[])
 		it->loadGraph();
 
 	    if (Debug > 0)
-		std::cout << "Loaded data:\n" << Db;
+		std::cout << "<loadedData>\n" << Db << "</loadedData>\n";
 
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
