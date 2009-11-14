@@ -14,13 +14,13 @@
 
 namespace w3c_sw {
 
-    extern const char* NS_xml = "http://www.w3.org/XML/1998/namespace"	       ;
-    extern const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"	       ;
-    extern const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"  ;
-    extern const char* NS_rdfs= "http://www.w3.org/2000/01/rdf-schema#"	       ;
-    extern const char* NS_srx = "http://www.w3.org/2005/sparql-results#"       ;
-    extern const char* NS_dc  = "http://purl.org/dc/terms/"		       ;
-    extern const char* NS_sadl= "http://www.w3.org/2005/03/saddle/#"	       ;
+    const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
+    const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"		;
+    const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"  ;
+    const char* NS_rdfs= "http://www.w3.org/2000/01/rdf-schema#"	;
+    const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
+    const char* NS_dc  = "http://purl.org/dc/terms/"			;
+    const char* NS_sadl= "http://www.w3.org/2005/03/saddle/#"		;
 
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
