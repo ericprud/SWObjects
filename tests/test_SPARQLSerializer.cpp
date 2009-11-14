@@ -6,9 +6,7 @@
  */
 
 
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE SPARQLSerializer
-#include <boost/test/unit_test.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -19,6 +17,11 @@
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
 
 using namespace w3c_sw;
 

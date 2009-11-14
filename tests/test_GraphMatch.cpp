@@ -3,15 +3,17 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE GraphMatch
-#include <boost/test/unit_test.hpp>
-//#include <boost/test/included/unit_test.hpp>
 
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
 
 using namespace w3c_sw;
 

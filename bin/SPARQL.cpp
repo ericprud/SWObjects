@@ -4,11 +4,6 @@
 
  * $Id$ */
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#include <boost/regex.hpp>
 #include <iostream>
 #include <fstream>
 #include <iterator>
@@ -46,6 +41,14 @@ namespace sw = w3c_sw;
   sw::WEBagent_boostASIO Agent;
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 #endif /* !TEST_CLI */
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or include config.h manually) */
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#include <boost/regex.hpp>
 
 #if TEST_CLI
 /* Simulate HTParse interface (with bogus results, but good enough for testing CLI). */

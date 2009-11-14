@@ -9,16 +9,6 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-
-#define BOOST_TEST_DYN_LINK 1
-#include <boost/test/unit_test.hpp>
-
-/* included/unit_test.hpp produces an object that doesn't require linking to
- * boost_unit_test_framework. It's prettier if you disable 4273 in MSVC.
- */
-//#pragma warning( disable : 4273 )
-//#include <boost/test/included/unit_test.hpp>
-
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -44,6 +34,17 @@
 #else
   #warning DAWG tests require an XML parser
 #endif
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
+
+/* included/unit_test.hpp produces an object that doesn't require linking to
+ * boost_unit_test_framework. It's prettier if you disable 4273 in MSVC.
+ */
+//#pragma warning( disable : 4273 )
+//#include <boost/test/included/unit_test.hpp>
 
 using namespace w3c_sw;
 

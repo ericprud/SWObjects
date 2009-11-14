@@ -50,7 +50,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\lib;..\..\lib\SPARQLfedParser;..\..\lib\TurtleSParser;..\..\lib\TrigSParser;..\..\win"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_DYN_LINK;HAVE_REGEX=1"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -119,7 +119,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\lib;..\..\lib\SPARQLfedParser;..\..\lib\TurtleSParser;..\..\lib\TrigSParser;..\..\win"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSWOBJECTS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;BOOST_DYN_LINK;HAVE_REGEX=1"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"

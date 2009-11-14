@@ -6,10 +6,7 @@
  * $Id: test_Algebra.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE Algebra
-#include <boost/test/unit_test.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -18,6 +15,11 @@
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
 
 using namespace w3c_sw;
 

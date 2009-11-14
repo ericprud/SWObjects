@@ -147,7 +147,8 @@ config.h: CONFIG
 	"#define SWOb_DLIB		146\\n" \
 	"/* SQL Libs: */\\n" \
 	"#define SWOb_MYSQL		148\\n" \
-	"\\n" $(CONFIG_DEFS) > config.h
+	"\\n" $(CONFIG_DEFS) "\\n"\
+	"#define BOOST_ALL_DYN_LINK\\n" > config.h
 	@$(ECHO) config.h updated.
 
 #the gcc commands to make deps used in .d rules

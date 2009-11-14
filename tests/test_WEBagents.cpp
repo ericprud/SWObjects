@@ -12,16 +12,9 @@
 // for ipv6 #define SERVER_ADDRESS "0::0"
 #define SERVER_PORT "8088"
 
-#define BOOST_TEST_DYN_LINK 1
-#define BOOST_TEST_MODULE WEBagents
-#include <boost/test/unit_test.hpp>
-//#include <boost/test/included/unit_test.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "SWObjects.hpp"
 
@@ -32,6 +25,15 @@
 #else
  #error unknown HTTP_SERVER (neither ASIO or DLIB)
 #endif
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#define BOOST_TEST_MODULE WEBagents
+#include <boost/test/unit_test.hpp>
+//#include <boost/test/included/unit_test.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 class MyHandler : public w3c_sw::webserver::request_handler {
     WEBSERVER& server;

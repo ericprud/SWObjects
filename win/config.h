@@ -24,3 +24,6 @@
  #define HTTP_SERVER SWOb_ASIO 
  #define SQL_CLIENT SWOb_MYSQL 
 
+#define BOOST_ALL_DYN_LINK /* implies e.g. BOOST_TEST_DYN_LINK */
+#define HAVE_REGEX
+#define _WIN32_WINNT 0x0501

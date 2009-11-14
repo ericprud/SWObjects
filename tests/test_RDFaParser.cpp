@@ -7,10 +7,7 @@
  *
  */
 
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE RDFaParser
-#include <boost/test/unit_test.hpp>
-//#include <boost/test/included/unit_test.hpp>
 
 #include <map>
 #include <vector>
@@ -36,6 +33,11 @@
 #else /* ! HTTP_CLIENT == SWOb_ASIO */
   #warning unable to test RDFa over HTTP
 #endif /* ! HTTP_CLIENT == SWOb_ASIO */
+
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
 
 using namespace w3c_sw;
 
