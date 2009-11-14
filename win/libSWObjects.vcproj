@@ -183,7 +183,7 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
+			<!-- File
 				RelativePath="..\lib\SPARQLfedScanner.lpp"
 				>
 				<FileConfiguration
@@ -202,7 +202,7 @@
 						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
-			</File>
+			</File -->
 			<File
 				RelativePath="..\lib\TrigSParser\TrigSParser.ypp"
 				>
@@ -225,7 +225,7 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
+			<!-- File
 				RelativePath="..\lib\TrigSScanner.lpp"
 				>
 				<FileConfiguration
@@ -244,7 +244,7 @@
 						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
-			</File>
+			</File -->
 			<File
 				RelativePath="..\lib\TurtleSParser\TurtleSParser.ypp"
 				>
@@ -267,7 +267,7 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
+			<!-- File
 				RelativePath="..\lib\TurtleSScanner.lpp"
 				>
 				<FileConfiguration
@@ -286,7 +286,7 @@
 						OutputFile="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
-			</File>
+			</File -->
 		</Filter>
 		<Filter
 			Name="Source Files"
