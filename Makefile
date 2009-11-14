@@ -150,22 +150,6 @@ config.h: CONFIG
 	"\\n" $(CONFIG_DEFS) > config.h
 	@$(ECHO) config.h updated.
 
-.SECONDARY:
-
-lib/%.d : lib/%.cpp config.h
-	-touch $@
-	-makedepend -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
-
-lib/%.cpp  lib/%.hpp : lib/%.ypp
-	$(YACC) -o $(@:.hpp=.cpp) $<
-	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
-
-lib/%.cpp : lib/%.lpp
-	$(FLEX) -o $@  $<
-
-#	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
-
-
 #the gcc commands to make deps used in .d rules
 #if -M[M]D is also in the build-clause without -E it update .d's as needed
 TOONOISEY=-ansi
@@ -207,6 +191,22 @@ $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 .PHONY: lib
 lib: dep $(LIB)
 
+.SECONDARY:
+
+lib/%.dep: lib/%.cpp config.h
+	(echo $@ \\; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
+
+lib/%.cpp  lib/%.hpp : lib/%.ypp
+	$(YACC) -o $(@:.hpp=.cpp) $<
+	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
+
+lib/%.cpp : lib/%.lpp
+	$(FLEX) -o $@  $<
+
+#	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+
+
 ##### bin dirs ####
 
 # overrides for specific targets in bin
@@ -230,11 +230,11 @@ install-mod_sparul: bin/mod_sparul.so
 	apxs -i -n sparul_module bin/.libs/mod_sparul.so
 
 # bin/ general rules
-bin/%.d : bin/%.cpp config.h
-	-touch $@
-	-makedepend -bbin/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
+bin/%.dep: bin/%.cpp config.h
+	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ 2>/dev/null|| (rm $@; false)
+DEPEND += $(BINOBJLIST:.o=.dep)
 
-bin/%.o. : bin/%.cpp bin/%.d config.h
+bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
@@ -270,11 +270,11 @@ unitTESTexes := $(TESTNAMELIST)
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
-tests/test_%.d : tests/test_%.cpp config.h
-	-touch $@
-	-makedepend -btests/ -y -f $@ $^ $(DEFS) $(INCLUDES) 2>/dev/null
+tests/test_%.dep: tests/test_%.cpp config.h
+	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+DEPEND += $(TESTSOBJLIST:.o=.dep)
 
-tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.d config.h
+tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 tests/test_%: tests/test_%.o $(LIB)
@@ -366,21 +366,17 @@ release:
 .PHONY: clean cleaner
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
-        $(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
-        $(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
-        $(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
-	$(unitTESTexes)
+	$(unitTESTexes) *~ */*.dep */*/*.d
 
 cleaner: clean
-	 $(RM) *~ */*.d *.d $(BISONHH:%=*/%)
+	$(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
+	$(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
+	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
+	$(RM) $(BISONHH:%=*/%)
 
-deps=$(BISONOBJ:.o=.d) $(FLEXOBJ:.o=.d) $(OBJLIST:.o=.d) $(BINOBJLIST:.o=.d) $(TESTSOBJLIST:.o=.d)
-
-dep: $(deps)
+dep: $(DEPEND)
 
 BISONHH=location.hh stack.hh position.hh
 #$(BISONHH): $(BISONOBJ)
--include $(deps)
-
-
+-include $(DEPEND)
