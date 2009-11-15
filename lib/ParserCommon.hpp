@@ -148,6 +148,16 @@ public:
 
 };
 
+class YaccDataDriver : public YaccDriver {
+protected:
+    BasicGraphPattern* curBGP;
+    YaccDataDriver (POSFactory* posFactory) : YaccDriver(posFactory) {  }
+    YaccDataDriver (std::string baseURI, POSFactory* posFactory) : YaccDriver (baseURI, posFactory) {  }
+
+public:
+    void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }
+};
+
 } //namespace w3c_sw
 
 #endif /* ! defined PARSER_COMMON_HH */

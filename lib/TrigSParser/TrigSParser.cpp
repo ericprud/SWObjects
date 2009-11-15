@@ -1,23 +1,23 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
-
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,19 +28,30 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
+/* First part of user declarations.  */
+
+
+/* Line 311 of lalr1.cc  */
+#line 43 "lib/TrigSParser/TrigSParser.cpp"
+
+
 #include "TrigSParser.hpp"
 
 /* User implementation prologue.  */
+
+/* Line 317 of lalr1.cc  */
 #line 122 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
+
+/* Line 317 of lalr1.cc  */
 #line 174 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
@@ -51,9 +62,11 @@
 #undef yylex
 #define yylex driver.lexer->lex
 
+#include "RdfDB.hpp"
 
-/* Line 317 of lalr1.cc.  */
-#line 57 "lib/TrigSParser/TrigSParser.cpp"
+
+/* Line 317 of lalr1.cc  */
+#line 70 "lib/TrigSParser/TrigSParser.cpp"
 
 #ifndef YY_
 # if YYENABLE_NLS
@@ -70,13 +83,11 @@
 /* Suppress unused-variable warnings by "using" E.  */
 #define YYUSE(e) ((void) (e))
 
-/* A pseudo ostream that takes yydebug_ into account.  */
-# define YYCDEBUG							\
-  for (bool yydebugcond_ = yydebug_; yydebugcond_; yydebugcond_ = false)	\
-    (*yycdebug_)
-
 /* Enable debugging if requested.  */
 #if YYDEBUG
+
+/* A pseudo ostream that takes yydebug_ into account.  */
+# define YYCDEBUG if (yydebug_) (*yycdebug_)
 
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
 do {							\
@@ -102,18 +113,29 @@ do {					\
 
 #else /* !YYDEBUG */
 
+# define YYCDEBUG if (false) std::cerr
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_REDUCE_PRINT(Rule)
 # define YY_STACK_PRINT()
 
 #endif /* !YYDEBUG */
 
+#define yyerrok		(yyerrstatus_ = 0)
+#define yyclearin	(yychar = yyempty_)
+
 #define YYACCEPT	goto yyacceptlab
 #define YYABORT		goto yyabortlab
 #define YYERROR		goto yyerrorlab
+#define YYRECOVERING()  (!!yyerrstatus_)
 
-namespace w3c_sw
-{
+
+/* Line 380 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 380 of lalr1.cc  */
+#line 139 "lib/TrigSParser/TrigSParser.cpp"
 #if YYERROR_VERBOSE
 
   /* Return YYSTR after stripping away unnecessary quotes and
@@ -157,8 +179,11 @@ namespace w3c_sw
 
   /// Build a parser object.
   TrigSParser::TrigSParser (class TrigSDriver& driver_yyarg)
-    : yydebug_ (false),
+    :
+#if YYDEBUG
+      yydebug_ (false),
       yycdebug_ (&std::cerr),
+#endif
       driver (driver_yyarg)
   {
   }
@@ -196,7 +221,7 @@ namespace w3c_sw
     yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
     *yycdebug_ << ')';
   }
-#endif /* ! YYDEBUG */
+#endif
 
   void
   TrigSParser::yydestruct_ (const char* yymsg,
@@ -224,6 +249,7 @@ namespace w3c_sw
     yylocation_stack_.pop (n);
   }
 
+#if YYDEBUG
   std::ostream&
   TrigSParser::debug_stream () const
   {
@@ -248,12 +274,12 @@ namespace w3c_sw
   {
     yydebug_ = l;
   }
-
+#endif
 
   int
   TrigSParser::parse ()
   {
-    /// Look-ahead and look-ahead in internal form.
+    /// Lookahead and lookahead in internal form.
     int yychar = yyempty_;
     int yytoken = 0;
 
@@ -266,12 +292,12 @@ namespace w3c_sw
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the look-ahead.
+    /// Semantic value of the lookahead.
     semantic_type yylval;
-    /// Location of the look-ahead.
+    /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location yyerror_range[2];
+    location_type yyerror_range[2];
 
     /// $$.
     semantic_type yyval;
@@ -284,13 +310,17 @@ namespace w3c_sw
 
 
     /* User initialization code.  */
-    #line 31 "lib/TrigSParser/TrigSParser.ypp"
+    
+/* Line 553 of lalr1.cc  */
+#line 31 "lib/TrigSParser/TrigSParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
-  /* Line 547 of yacc.c.  */
-#line 294 "lib/TrigSParser/TrigSParser.cpp"
+
+/* Line 553 of lalr1.cc  */
+#line 323 "lib/TrigSParser/TrigSParser.cpp"
+
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
@@ -305,17 +335,22 @@ namespace w3c_sw
   yynewstate:
     yystate_stack_.push (yystate);
     YYCDEBUG << "Entering state " << yystate << std::endl;
+
+    /* Accept?  */
+    if (yystate == yyfinal_)
+      goto yyacceptlab;
+
     goto yybackup;
 
     /* Backup.  */
   yybackup:
 
-    /* Try to take a decision without look-ahead.  */
+    /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
     if (yyn == yypact_ninf_)
       goto yydefault;
 
-    /* Read a look-ahead token.  */
+    /* Read a lookahead token.  */
     if (yychar == yyempty_)
       {
 	YYCDEBUG << "Reading a token: ";
@@ -351,16 +386,11 @@ namespace w3c_sw
 	goto yyreduce;
       }
 
-    /* Accept?  */
-    if (yyn == yyfinal_)
-      goto yyacceptlab;
-
-    /* Shift the look-ahead token.  */
+    /* Shift the lookahead token.  */
     YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-    /* Discard the token being shifted unless it is eof.  */
-    if (yychar != yyeof_)
-      yychar = yyempty_;
+    /* Discard the token being shifted.  */
+    yychar = yyempty_;
 
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yylloc);
@@ -406,181 +436,231 @@ namespace w3c_sw
     switch (yyn)
       {
 	  case 2:
-#line 189 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 191 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern); // last graph -- kinda useless
-    ;}
+    }
     break;
 
   case 8:
-#line 212 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 214 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
-    ;}
+    }
     break;
 
   case 9:
-#line 218 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 220 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.ignorePrefix(true);
-      ;}
+      }
     break;
 
   case 10:
-#line 220 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 222 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  driver.ignorePrefix(false);
-      ;}
+      }
     break;
 
   case 11:
-#line 222 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 224 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
-      ;}
+      }
     break;
 
   case 13:
-#line 230 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; ;}
+
+/* Line 678 of lalr1.cc  */
+#line 232 "lib/TrigSParser/TrigSParser.ypp"
+    { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 14:
-#line 231 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 233 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 15:
-#line 238 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 240 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curBGP = driver.db->assureGraph((yysemantic_stack_[(2) - (1)].p_URI));
 	driver.neededBGP = NULL;
-      ;}
+      }
     break;
 
   case 16:
-#line 241 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 243 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(5) - (4)].p_DefaultGraphPattern);
 	  driver.neededBGP = NULL;
 	  driver.curBGP = NULL;
-      ;}
+      }
     break;
 
   case 17:
-#line 249 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_URI) = NULL; ;}
+
+/* Line 678 of lalr1.cc  */
+#line 251 "lib/TrigSParser/TrigSParser.ypp"
+    { (yyval.p_URI) = NULL; }
     break;
 
   case 19:
-#line 255 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; ;}
+
+/* Line 678 of lalr1.cc  */
+#line 257 "lib/TrigSParser/TrigSParser.ypp"
+    { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 20:
-#line 256 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 258 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 21:
-#line 263 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 265 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
 	driver.neededBGP = NULL;
-    ;}
+    }
     break;
 
   case 22:
-#line 271 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 273 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 23:
-#line 278 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; ;}
+
+/* Line 678 of lalr1.cc  */
+#line 280 "lib/TrigSParser/TrigSParser.ypp"
+    { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 25:
-#line 283 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 285 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 27:
-#line 286 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 288 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 43:
-#line 346 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 348 "lib/TrigSParser/TrigSParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_POS)));
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 44:
-#line 355 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 357 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
 	driver.curPredicate = (yyval.p_POS);
-    ;}
+    }
     break;
 
   case 45:
-#line 359 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 361 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_POS);
-    ;}
+    }
     break;
 
   case 46:
-#line 366 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 368 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 47:
-#line 369 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 371 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 48:
-#line 375 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 377 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
-      ;}
+      }
     break;
 
   case 49:
-#line 379 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 381 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
-      ;}
+      }
     break;
 
   case 50:
-#line 388 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 390 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
 	const POS* tail = (yyval.p_BNode);
@@ -598,312 +678,398 @@ namespace w3c_sw
 	}
 	members->clear();
 	delete members;
-    ;}
+    }
     break;
 
   case 51:
-#line 410 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 412 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POSs) = new ProductionVector<const POS*>((yysemantic_stack_[(1) - (1)].p_POS));
-    ;}
+    }
     break;
 
   case 52:
-#line 413 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 415 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_POSs)->push_back((yysemantic_stack_[(2) - (2)].p_POS));
 	(yyval.p_POSs) = (yysemantic_stack_[(2) - (1)].p_POSs);
-    ;}
+    }
     break;
 
   case 53:
-#line 420 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 422 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 54:
-#line 423 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 425 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 55:
-#line 429 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 431 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 56:
-#line 435 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 437 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 57:
-#line 441 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 443 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 58:
-#line 444 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 446 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
-    ;}
+    }
     break;
 
   case 59:
-#line 447 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 449 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 60:
-#line 450 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 452 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 61:
-#line 453 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 455 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 62:
-#line 456 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 458 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
-    ;}
+    }
     break;
 
   case 63:
-#line 463 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 465 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 64:
-#line 471 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 473 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
-    ;}
+    }
     break;
 
   case 65:
-#line 478 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 480 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
-    ;}
+    }
     break;
 
   case 66:
-#line 482 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 484 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
-    ;}
+    }
     break;
 
   case 67:
-#line 490 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 492 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
-    ;}
+    }
     break;
 
   case 68:
-#line 494 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 496 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
-    ;}
+    }
     break;
 
   case 69:
-#line 500 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 502 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 70:
-#line 503 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 505 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 71:
-#line 506 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 508 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 72:
-#line 512 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 514 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 73:
-#line 515 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 517 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 74:
-#line 518 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 520 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 75:
-#line 524 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 526 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 76:
-#line 527 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 529 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 77:
-#line 530 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 532 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 78:
-#line 536 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 538 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 79:
-#line 539 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 541 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 80:
-#line 542 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 544 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 81:
-#line 548 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 550 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 82:
-#line 551 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 553 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 83:
-#line 557 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 559 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 84:
-#line 560 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 562 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 85:
-#line 563 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 565 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 86:
-#line 566 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 568 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 87:
-#line 572 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 574 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 88:
-#line 575 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 577 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 89:
-#line 581 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 583 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 90:
-#line 584 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 586 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 91:
-#line 590 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 592 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 92:
-#line 593 "lib/TrigSParser/TrigSParser.ypp"
+
+/* Line 678 of lalr1.cc  */
+#line 595 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
 
-    /* Line 675 of lalr1.cc.  */
-#line 906 "lib/TrigSParser/TrigSParser.cpp"
-	default: break;
+
+/* Line 678 of lalr1.cc  */
+#line 1071 "lib/TrigSParser/TrigSParser.cpp"
+	default:
+          break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
@@ -938,7 +1104,7 @@ namespace w3c_sw
     yyerror_range[0] = yylloc;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse look-ahead token after an
+	/* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
 	if (yychar <= yyeof_)
@@ -954,7 +1120,7 @@ namespace w3c_sw
 	  }
       }
 
-    /* Else will try to reuse look-ahead token after shifting the error
+    /* Else will try to reuse lookahead token after shifting the error
        token.  */
     goto yyerrlab1;
 
@@ -1011,19 +1177,16 @@ namespace w3c_sw
 	YY_STACK_PRINT ();
       }
 
-    if (yyn == yyfinal_)
-      goto yyacceptlab;
-
     yyerror_range[1] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
-    // the look-ahead.  YYLOC is available though.
+    // the lookahead.  YYLOC is available though.
     YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
     /* Shift the error token.  */
     YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		   &yysemantic_stack_[0], &yylocation_stack_[0]);
+		     &yysemantic_stack_[0], &yylocation_stack_[0]);
 
     yystate = yyn;
     goto yynewstate;
@@ -1039,7 +1202,7 @@ namespace w3c_sw
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyeof_ && yychar != yyempty_)
+    if (yychar != yyempty_)
       yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
 
     /* Do not reclaim the symbols of the rule which action triggered
@@ -1285,11 +1448,11 @@ namespace w3c_sw
   "STRING_LITERAL_LONG2", "IRI_REF", "PNAME_NS", "PNAME_LN",
   "BLANK_NODE_LABEL", "ANON", "LANGTAG", "NIL", "$accept", "Query",
   "Prologue", "_QBaseDecl_E_Opt", "_QPrefixDecl_E_Star", "BaseDecl",
-  "PrefixDecl", "@1", "@2", "@3", "_QTrigTemplate_E_Star", "TrigTemplate",
-  "@4", "GraphName_Opt", "_QConstructTriples_E_Opt", "ConstructTriples",
-  "_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C",
+  "PrefixDecl", "$@1", "$@2", "$@3", "_QTrigTemplate_E_Star",
+  "TrigTemplate", "$@4", "GraphName_Opt", "_QConstructTriples_E_Opt",
+  "ConstructTriples", "_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C",
   "_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt", "TriplesSameSubject",
-  "@5", "@6", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
+  "$@5", "$@6", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
   "_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C",
   "_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star", "PropertyList",
@@ -1355,16 +1518,16 @@ namespace w3c_sw
   const unsigned short int
   TrigSParser::yyrline_[] =
   {
-         0,   189,   189,   196,   200,   202,   206,   208,   212,   218,
-     220,   222,   218,   230,   231,   238,   238,   249,   250,   255,
-     256,   263,   271,   278,   279,   283,   283,   286,   286,   293,
-     298,   302,   304,   309,   313,   315,   320,   324,   326,   331,
-     336,   340,   342,   346,   355,   359,   366,   369,   375,   375,
-     388,   410,   413,   420,   423,   429,   435,   441,   444,   447,
-     450,   453,   456,   463,   471,   478,   482,   490,   494,   500,
-     503,   506,   512,   515,   518,   524,   527,   530,   536,   539,
-     542,   548,   551,   557,   560,   563,   566,   572,   575,   581,
-     584,   590,   593
+         0,   191,   191,   198,   202,   204,   208,   210,   214,   220,
+     222,   224,   220,   232,   233,   240,   240,   251,   252,   257,
+     258,   265,   273,   280,   281,   285,   285,   288,   288,   295,
+     300,   304,   306,   311,   315,   317,   322,   326,   328,   333,
+     338,   342,   344,   348,   357,   361,   368,   371,   377,   377,
+     390,   412,   415,   422,   425,   431,   437,   443,   446,   449,
+     452,   455,   458,   465,   473,   480,   484,   492,   496,   502,
+     505,   508,   514,   517,   520,   526,   529,   532,   538,   541,
+     544,   550,   553,   559,   562,   565,   568,   574,   577,   583,
+     586,   592,   595
   };
 
   // Print the state stack on the debug stream.
@@ -1386,7 +1549,7 @@ namespace w3c_sw
     int yynrhs = yyr2_[yyrule];
     /* Print the symbols being reduced, and their result.  */
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "), ";
+	       << " (line " << yylno << "):" << std::endl;
     /* The symbols being reduced.  */
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
@@ -1453,9 +1616,18 @@ namespace w3c_sw
   const unsigned int TrigSParser::yyuser_token_number_max_ = 294;
   const TrigSParser::token_number_type TrigSParser::yyundef_token_ = 2;
 
-} // namespace w3c_sw
 
-#line 600 "lib/TrigSParser/TrigSParser.ypp"
+/* Line 1054 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 1054 of lalr1.cc  */
+#line 1627 "lib/TrigSParser/TrigSParser.cpp"
+
+
+/* Line 1056 of lalr1.cc  */
+#line 602 "lib/TrigSParser/TrigSParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,

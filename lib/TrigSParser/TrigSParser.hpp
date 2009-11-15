@@ -1,23 +1,23 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
-
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,7 +28,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -37,19 +37,11 @@
 #ifndef PARSER_HEADER_H
 #pragma once
 
-#include <string>
-#include <iostream>
-#include "stack.hh"
+/* "%code requires" blocks.  */
 
-namespace w3c_sw
-{
-  class position;
-  class location;
-}
-
-/* First part of user declarations.  */
-#line 44 "lib/TrigSParser/TrigSParser.ypp"
- /*** C/C++ Declarations ***/
+/* Line 35 of lalr1.cc  */
+#line 45 "lib/TrigSParser/TrigSParser.ypp"
+ // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
@@ -59,7 +51,6 @@ namespace w3c_sw
 #define TRIGS_PARSER_HPP
 
 #include "SWObjects.hpp"
-#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -73,16 +64,15 @@ namespace w3c_sw {
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class TrigSDriver : public YaccDriver {
+class TrigSDriver : public YaccDataDriver {
     friend class TrigSParser;
 protected:
     const POS* curSubject;
     const POS* curPredicate;
     RdfDB* db;
-    BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
-    TrigSDriver (std::string baseURI, POSFactory* posFactory) : YaccDriver(baseURI, posFactory) {
+    TrigSDriver (std::string baseURI, POSFactory* posFactory) : YaccDataDriver(baseURI, posFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
@@ -99,10 +89,36 @@ public:
 
 } // namespace w3c_sw
 
+// %} // ##bison1
 
 
-/* Line 35 of lalr1.cc.  */
-#line 106 "lib/TrigSParser/TrigSParser.hpp"
+
+/* Line 35 of lalr1.cc  */
+#line 98 "lib/TrigSParser/TrigSParser.hpp"
+
+
+#include <string>
+#include <iostream>
+#include "stack.hh"
+
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 35 of lalr1.cc  */
+#line 112 "lib/TrigSParser/TrigSParser.hpp"
+  class position;
+  class location;
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 35 of lalr1.cc  */
+#line 122 "lib/TrigSParser/TrigSParser.hpp"
 
 #include "location.hh"
 
@@ -143,8 +159,14 @@ do {							\
 } while (false)
 #endif
 
-namespace w3c_sw
-{
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 35 of lalr1.cc  */
+#line 170 "lib/TrigSParser/TrigSParser.hpp"
 
   /// A Bison parser.
   class TrigSParser
@@ -153,8 +175,11 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
+    {
+
+/* Line 35 of lalr1.cc  */
 #line 98 "lib/TrigSParser/TrigSParser.ypp"
-{
+
     void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
@@ -176,10 +201,12 @@ namespace w3c_sw
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
 
-}
-/* Line 35 of lalr1.cc.  */
-#line 182 "lib/TrigSParser/TrigSParser.hpp"
-	;
+
+
+
+/* Line 35 of lalr1.cc  */
+#line 209 "lib/TrigSParser/TrigSParser.hpp"
+    };
 #else
     typedef YYSTYPE semantic_type;
 #endif
@@ -242,6 +269,7 @@ namespace w3c_sw
     /// \returns  0 iff parsing succeeded.
     virtual int parse ();
 
+#if YYDEBUG
     /// The current debugging stream.
     std::ostream& debug_stream () const;
     /// Set the current debugging stream.
@@ -253,6 +281,7 @@ namespace w3c_sw
     debug_level_type debug_level () const;
     /// Set the current debugging level.
     void set_debug_level (debug_level_type l);
+#endif
 
   private:
     /// Report a syntax error.
@@ -262,7 +291,7 @@ namespace w3c_sw
 
     /// Generate an error message.
     /// \param state   the state where the error occurred.
-    /// \param tok     the look-ahead token.
+    /// \param tok     the lookahead token.
     virtual std::string yysyntax_error_ (int yystate, int tok);
 
 #if YYDEBUG
@@ -280,7 +309,7 @@ namespace w3c_sw
     virtual void yy_symbol_print_ (int yytype,
 				   const semantic_type* yyvaluep,
 				   const location_type* yylocationp);
-#endif /* ! YYDEBUG */
+#endif
 
 
     /// State numbers.
@@ -357,6 +386,10 @@ namespace w3c_sw
     virtual void yy_reduce_print_ (int r);
     /// Print the state stack on the debug stream.
     virtual void yystack_print_ ();
+
+    /* Debugging.  */
+    int yydebug_;
+    std::ostream* yycdebug_;
 #endif
 
     /// Convert a scanner token number \a t to a symbol number.
@@ -388,15 +421,18 @@ namespace w3c_sw
     static const unsigned int yyuser_token_number_max_;
     static const token_number_type yyundef_token_;
 
-    /* Debugging.  */
-    int yydebug_;
-    std::ostream* yycdebug_;
-
-
     /* User arguments.  */
     class TrigSDriver& driver;
   };
-}
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 35 of lalr1.cc  */
+#line 435 "lib/TrigSParser/TrigSParser.hpp"
+
 
 
 #endif /* ! defined PARSER_HEADER_H */

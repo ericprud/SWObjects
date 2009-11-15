@@ -739,7 +739,7 @@ int main(int ac, char* av[])
 		    std::string str(Db.assureGraph(NULL)->toString());
 		    *optr << str;
 		} else if (mediaType == "text/trig") {
-		    std::string str(Db.assureGraph(NULL)->toString());
+		    std::string str(Db.toString());
 		    *optr << str;
 		}
 	    }

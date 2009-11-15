@@ -47,7 +47,8 @@
 /* verbose error messages */
 %error-verbose
 
-%{ /*** C/C++ Declarations ***/
+// %{ //  ##bison1
+%code requires { // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
@@ -163,9 +164,10 @@ public:
 
 } // namespace w3c_sw
 
-%}
+// %} // ##bison1
+} // ##bison2
 
- /*** BEGIN SPARQLfed - Change the grammar's tokens below ***/
+ /*** BEGIN SPARQLfed language tokens. ***/
 
 %union {
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -342,7 +344,7 @@ public:
 
 //%destructor { delete $$; } BlankNode
 
- /*** END SPARQLfed - Change the grammar's tokens above ***/
+ /*** END SPARQLfed language tokens. ***/
 
 %{
 #include "../SPARQLfedScanner.hpp"
@@ -356,7 +358,7 @@ public:
 
 %% /*** Grammar Rules ***/
 
- /*** BEGIN SPARQLfed - Change the grammar rules below ***/
+ /*** BEGIN SPARQLfed language structure. ***/
 Query:
     // Prologue ( Select | Construct | Describe | Ask | Replace | Update | Magage )
     Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C	{
@@ -1722,7 +1724,8 @@ BlankNode:
   | ANON	
 ;
 
-/*** END SPARQLfed - Change the grammar rules above ***/
+ /*** END SPARQLfed language structure. ***/
+
 
 %% /*** Additional Code ***/
 

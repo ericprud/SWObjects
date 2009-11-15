@@ -41,7 +41,8 @@
 /* verbose error messages */
 %error-verbose
 
-%{ /*** C/C++ Declarations ***/
+// %{ //  ##bison1
+%code requires { // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
@@ -51,7 +52,6 @@
 #define TRIGS_PARSER_HPP
 
 #include "SWObjects.hpp"
-#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -65,16 +65,15 @@ namespace w3c_sw {
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
 
-class TrigSDriver : public YaccDriver {
+class TrigSDriver : public YaccDataDriver {
     friend class TrigSParser;
 protected:
     const POS* curSubject;
     const POS* curPredicate;
     RdfDB* db;
-    BasicGraphPattern* curBGP;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
-    TrigSDriver (std::string baseURI, POSFactory* posFactory) : YaccDriver(baseURI, posFactory) {
+    TrigSDriver (std::string baseURI, POSFactory* posFactory) : YaccDataDriver(baseURI, posFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
@@ -91,9 +90,10 @@ public:
 
 } // namespace w3c_sw
 
-%}
+// %} // ##bison1
+} // ##bison2
 
- /*** BEGIN SPARQLfed - Change the grammar's tokens below ***/
+ /*** BEGIN TrigS language tokens. ***/
 
 %union {
     void* p_void;
@@ -169,7 +169,7 @@ public:
 
 //%destructor { delete $$; } BlankNode
 
- /*** END SPARQLfed - Change the grammar's tokens above ***/
+ /*** END TrigS language tokens. ***/
 
 %{
 #include "../TrigSScanner.hpp"
@@ -179,11 +179,13 @@ public:
  * current lexer object of the driver context. */
 #undef yylex
 #define yylex driver.lexer->lex
+
+#include "RdfDB.hpp"
 %}
 
 %% /*** Grammar Rules ***/
 
- /*** BEGIN SPARQLfed - Change the grammar rules below ***/
+ /*** BEGIN TrigS language structure. ***/
 Query:
     // Prologue TrigTemplate*
     Prologue _QTrigTemplate_E_Star	{
@@ -595,7 +597,7 @@ BlankNode:
     }
 ;
 
-/*** END SPARQLfed - Change the grammar rules above ***/
+ /*** END TrigS language structure. ***/
 
 %% /*** Additional Code ***/
 

@@ -1,23 +1,23 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
-
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,19 +28,30 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
+/* First part of user declarations.  */
+
+
+/* Line 311 of lalr1.cc  */
+#line 43 "lib/TurtleSParser/TurtleSParser.cpp"
+
+
 #include "TurtleSParser.hpp"
 
 /* User implementation prologue.  */
+
+/* Line 317 of lalr1.cc  */
 #line 120 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
+
+/* Line 317 of lalr1.cc  */
 #line 171 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
@@ -52,8 +63,8 @@
 #define yylex driver.lexer->lex
 
 
-/* Line 317 of lalr1.cc.  */
-#line 57 "lib/TurtleSParser/TurtleSParser.cpp"
+/* Line 317 of lalr1.cc  */
+#line 68 "lib/TurtleSParser/TurtleSParser.cpp"
 
 #ifndef YY_
 # if YYENABLE_NLS
@@ -70,13 +81,11 @@
 /* Suppress unused-variable warnings by "using" E.  */
 #define YYUSE(e) ((void) (e))
 
-/* A pseudo ostream that takes yydebug_ into account.  */
-# define YYCDEBUG							\
-  for (bool yydebugcond_ = yydebug_; yydebugcond_; yydebugcond_ = false)	\
-    (*yycdebug_)
-
 /* Enable debugging if requested.  */
 #if YYDEBUG
+
+/* A pseudo ostream that takes yydebug_ into account.  */
+# define YYCDEBUG if (yydebug_) (*yycdebug_)
 
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
 do {							\
@@ -102,18 +111,29 @@ do {					\
 
 #else /* !YYDEBUG */
 
+# define YYCDEBUG if (false) std::cerr
 # define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_REDUCE_PRINT(Rule)
 # define YY_STACK_PRINT()
 
 #endif /* !YYDEBUG */
 
+#define yyerrok		(yyerrstatus_ = 0)
+#define yyclearin	(yychar = yyempty_)
+
 #define YYACCEPT	goto yyacceptlab
 #define YYABORT		goto yyabortlab
 #define YYERROR		goto yyerrorlab
+#define YYRECOVERING()  (!!yyerrstatus_)
 
-namespace w3c_sw
-{
+
+/* Line 380 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 380 of lalr1.cc  */
+#line 137 "lib/TurtleSParser/TurtleSParser.cpp"
 #if YYERROR_VERBOSE
 
   /* Return YYSTR after stripping away unnecessary quotes and
@@ -157,8 +177,11 @@ namespace w3c_sw
 
   /// Build a parser object.
   TurtleSParser::TurtleSParser (class TurtleSDriver& driver_yyarg)
-    : yydebug_ (false),
+    :
+#if YYDEBUG
+      yydebug_ (false),
       yycdebug_ (&std::cerr),
+#endif
       driver (driver_yyarg)
   {
   }
@@ -196,7 +219,7 @@ namespace w3c_sw
     yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
     *yycdebug_ << ')';
   }
-#endif /* ! YYDEBUG */
+#endif
 
   void
   TurtleSParser::yydestruct_ (const char* yymsg,
@@ -224,6 +247,7 @@ namespace w3c_sw
     yylocation_stack_.pop (n);
   }
 
+#if YYDEBUG
   std::ostream&
   TurtleSParser::debug_stream () const
   {
@@ -248,12 +272,12 @@ namespace w3c_sw
   {
     yydebug_ = l;
   }
-
+#endif
 
   int
   TurtleSParser::parse ()
   {
-    /// Look-ahead and look-ahead in internal form.
+    /// Lookahead and lookahead in internal form.
     int yychar = yyempty_;
     int yytoken = 0;
 
@@ -266,12 +290,12 @@ namespace w3c_sw
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the look-ahead.
+    /// Semantic value of the lookahead.
     semantic_type yylval;
-    /// Location of the look-ahead.
+    /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location yyerror_range[2];
+    location_type yyerror_range[2];
 
     /// $$.
     semantic_type yyval;
@@ -284,13 +308,17 @@ namespace w3c_sw
 
 
     /* User initialization code.  */
-    #line 31 "lib/TurtleSParser/TurtleSParser.ypp"
+    
+/* Line 553 of lalr1.cc  */
+#line 31 "lib/TurtleSParser/TurtleSParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
-  /* Line 547 of yacc.c.  */
-#line 294 "lib/TurtleSParser/TurtleSParser.cpp"
+
+/* Line 553 of lalr1.cc  */
+#line 321 "lib/TurtleSParser/TurtleSParser.cpp"
+
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
@@ -305,17 +333,22 @@ namespace w3c_sw
   yynewstate:
     yystate_stack_.push (yystate);
     YYCDEBUG << "Entering state " << yystate << std::endl;
+
+    /* Accept?  */
+    if (yystate == yyfinal_)
+      goto yyacceptlab;
+
     goto yybackup;
 
     /* Backup.  */
   yybackup:
 
-    /* Try to take a decision without look-ahead.  */
+    /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
     if (yyn == yypact_ninf_)
       goto yydefault;
 
-    /* Read a look-ahead token.  */
+    /* Read a lookahead token.  */
     if (yychar == yyempty_)
       {
 	YYCDEBUG << "Reading a token: ";
@@ -351,16 +384,11 @@ namespace w3c_sw
 	goto yyreduce;
       }
 
-    /* Accept?  */
-    if (yyn == yyfinal_)
-      goto yyacceptlab;
-
-    /* Shift the look-ahead token.  */
+    /* Shift the lookahead token.  */
     YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-    /* Discard the token being shifted unless it is eof.  */
-    if (yychar != yyeof_)
-      yychar = yyempty_;
+    /* Discard the token being shifted.  */
+    yychar = yyempty_;
 
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yylloc);
@@ -406,146 +434,186 @@ namespace w3c_sw
     switch (yyn)
       {
 	  case 2:
+
+/* Line 678 of lalr1.cc  */
 #line 186 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 8:
+
+/* Line 678 of lalr1.cc  */
 #line 209 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
-    ;}
+    }
     break;
 
   case 9:
+
+/* Line 678 of lalr1.cc  */
 #line 215 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.ignorePrefix(true);
-      ;}
+      }
     break;
 
   case 10:
+
+/* Line 678 of lalr1.cc  */
 #line 217 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  driver.ignorePrefix(false);
-      ;}
+      }
     break;
 
   case 11:
+
+/* Line 678 of lalr1.cc  */
 #line 219 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
-      ;}
+      }
     break;
 
   case 13:
+
+/* Line 678 of lalr1.cc  */
 #line 227 "lib/TurtleSParser/TurtleSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; ;}
+    { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 14:
+
+/* Line 678 of lalr1.cc  */
 #line 228 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 15:
+
+/* Line 678 of lalr1.cc  */
 #line 235 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
 	driver.neededBGP = NULL;
-    ;}
+    }
     break;
 
   case 16:
+
+/* Line 678 of lalr1.cc  */
 #line 243 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    ;}
+    }
     break;
 
   case 17:
+
+/* Line 678 of lalr1.cc  */
 #line 250 "lib/TurtleSParser/TurtleSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; ;}
+    { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 19:
+
+/* Line 678 of lalr1.cc  */
 #line 255 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 21:
+
+/* Line 678 of lalr1.cc  */
 #line 258 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 37:
+
+/* Line 678 of lalr1.cc  */
 #line 318 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_POS)));
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 38:
+
+/* Line 678 of lalr1.cc  */
 #line 327 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
 	driver.curPredicate = (yyval.p_POS);
-    ;}
+    }
     break;
 
   case 39:
+
+/* Line 678 of lalr1.cc  */
 #line 331 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_POS);
-    ;}
+    }
     break;
 
   case 40:
+
+/* Line 678 of lalr1.cc  */
 #line 338 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 41:
+
+/* Line 678 of lalr1.cc  */
 #line 341 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 42:
+
+/* Line 678 of lalr1.cc  */
 #line 347 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
-      ;}
+      }
     break;
 
   case 43:
+
+/* Line 678 of lalr1.cc  */
 #line 351 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
-      ;}
+      }
     break;
 
   case 44:
+
+/* Line 678 of lalr1.cc  */
 #line 360 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
@@ -564,312 +632,398 @@ namespace w3c_sw
 	}
 	members->clear();
 	delete members;
-    ;}
+    }
     break;
 
   case 45:
+
+/* Line 678 of lalr1.cc  */
 #line 382 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POSs) = new ProductionVector<const POS*>((yysemantic_stack_[(1) - (1)].p_POS));
-    ;}
+    }
     break;
 
   case 46:
+
+/* Line 678 of lalr1.cc  */
 #line 385 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_POSs)->push_back((yysemantic_stack_[(2) - (2)].p_POS));
 	(yyval.p_POSs) = (yysemantic_stack_[(2) - (1)].p_POSs);
-    ;}
+    }
     break;
 
   case 47:
+
+/* Line 678 of lalr1.cc  */
 #line 392 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 48:
+
+/* Line 678 of lalr1.cc  */
 #line 395 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 49:
+
+/* Line 678 of lalr1.cc  */
 #line 401 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 50:
+
+/* Line 678 of lalr1.cc  */
 #line 407 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 51:
+
+/* Line 678 of lalr1.cc  */
 #line 413 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 52:
+
+/* Line 678 of lalr1.cc  */
 #line 416 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
-    ;}
+    }
     break;
 
   case 53:
+
+/* Line 678 of lalr1.cc  */
 #line 419 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 54:
+
+/* Line 678 of lalr1.cc  */
 #line 422 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 55:
+
+/* Line 678 of lalr1.cc  */
 #line 425 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-    ;}
+    }
     break;
 
   case 56:
+
+/* Line 678 of lalr1.cc  */
 #line 428 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
-    ;}
+    }
     break;
 
   case 57:
+
+/* Line 678 of lalr1.cc  */
 #line 435 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 58:
+
+/* Line 678 of lalr1.cc  */
 #line 443 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
-    ;}
+    }
     break;
 
   case 59:
+
+/* Line 678 of lalr1.cc  */
 #line 450 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
-    ;}
+    }
     break;
 
   case 60:
+
+/* Line 678 of lalr1.cc  */
 #line 454 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
-    ;}
+    }
     break;
 
   case 61:
+
+/* Line 678 of lalr1.cc  */
 #line 462 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
-    ;}
+    }
     break;
 
   case 62:
+
+/* Line 678 of lalr1.cc  */
 #line 466 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
-    ;}
+    }
     break;
 
   case 63:
+
+/* Line 678 of lalr1.cc  */
 #line 472 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 64:
+
+/* Line 678 of lalr1.cc  */
 #line 475 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 65:
+
+/* Line 678 of lalr1.cc  */
 #line 478 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 66:
+
+/* Line 678 of lalr1.cc  */
 #line 484 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 67:
+
+/* Line 678 of lalr1.cc  */
 #line 487 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 68:
+
+/* Line 678 of lalr1.cc  */
 #line 490 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 69:
+
+/* Line 678 of lalr1.cc  */
 #line 496 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 70:
+
+/* Line 678 of lalr1.cc  */
 #line 499 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 71:
+
+/* Line 678 of lalr1.cc  */
 #line 502 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 72:
+
+/* Line 678 of lalr1.cc  */
 #line 508 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 73:
+
+/* Line 678 of lalr1.cc  */
 #line 511 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 74:
+
+/* Line 678 of lalr1.cc  */
 #line 514 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    ;}
+    }
     break;
 
   case 75:
+
+/* Line 678 of lalr1.cc  */
 #line 520 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 76:
+
+/* Line 678 of lalr1.cc  */
 #line 523 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    ;}
+    }
     break;
 
   case 77:
+
+/* Line 678 of lalr1.cc  */
 #line 529 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 78:
+
+/* Line 678 of lalr1.cc  */
 #line 532 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 79:
+
+/* Line 678 of lalr1.cc  */
 #line 535 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 80:
+
+/* Line 678 of lalr1.cc  */
 #line 538 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    ;}
+    }
     break;
 
   case 81:
+
+/* Line 678 of lalr1.cc  */
 #line 544 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 82:
+
+/* Line 678 of lalr1.cc  */
 #line 547 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 83:
+
+/* Line 678 of lalr1.cc  */
 #line 553 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 84:
+
+/* Line 678 of lalr1.cc  */
 #line 556 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    ;}
+    }
     break;
 
   case 85:
+
+/* Line 678 of lalr1.cc  */
 #line 562 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
   case 86:
+
+/* Line 678 of lalr1.cc  */
 #line 565 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    ;}
+    }
     break;
 
 
-    /* Line 675 of lalr1.cc.  */
-#line 872 "lib/TurtleSParser/TurtleSParser.cpp"
-	default: break;
+
+/* Line 678 of lalr1.cc  */
+#line 1025 "lib/TurtleSParser/TurtleSParser.cpp"
+	default:
+          break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
@@ -904,7 +1058,7 @@ namespace w3c_sw
     yyerror_range[0] = yylloc;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse look-ahead token after an
+	/* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
 	if (yychar <= yyeof_)
@@ -920,7 +1074,7 @@ namespace w3c_sw
 	  }
       }
 
-    /* Else will try to reuse look-ahead token after shifting the error
+    /* Else will try to reuse lookahead token after shifting the error
        token.  */
     goto yyerrlab1;
 
@@ -977,19 +1131,16 @@ namespace w3c_sw
 	YY_STACK_PRINT ();
       }
 
-    if (yyn == yyfinal_)
-      goto yyacceptlab;
-
     yyerror_range[1] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
-    // the look-ahead.  YYLOC is available though.
+    // the lookahead.  YYLOC is available though.
     YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
     /* Shift the error token.  */
     YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		   &yysemantic_stack_[0], &yylocation_stack_[0]);
+		     &yysemantic_stack_[0], &yylocation_stack_[0]);
 
     yystate = yyn;
     goto yynewstate;
@@ -1005,7 +1156,7 @@ namespace w3c_sw
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyeof_ && yychar != yyempty_)
+    if (yychar != yyempty_)
       yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
 
     /* Do not reclaim the symbols of the rule which action triggered
@@ -1247,10 +1398,10 @@ namespace w3c_sw
   "STRING_LITERAL_LONG2", "IRI_REF", "PNAME_NS", "PNAME_LN",
   "BLANK_NODE_LABEL", "ANON", "LANGTAG", "NIL", "$accept", "Query",
   "Prologue", "_QBaseDecl_E_Opt", "_QPrefixDecl_E_Star", "BaseDecl",
-  "PrefixDecl", "@1", "@2", "@3", "_QConstructTriples_E_Opt",
+  "PrefixDecl", "$@1", "$@2", "$@3", "_QConstructTriples_E_Opt",
   "ConstructTriples", "_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C",
   "_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt", "TriplesSameSubject",
-  "@4", "@5", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
+  "$@4", "$@5", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
   "_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C",
   "_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star", "PropertyList",
@@ -1343,7 +1494,7 @@ namespace w3c_sw
     int yynrhs = yyr2_[yyrule];
     /* Print the symbols being reduced, and their result.  */
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "), ";
+	       << " (line " << yylno << "):" << std::endl;
     /* The symbols being reduced.  */
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
@@ -1410,8 +1561,17 @@ namespace w3c_sw
   const unsigned int TurtleSParser::yyuser_token_number_max_ = 292;
   const TurtleSParser::token_number_type TurtleSParser::yyundef_token_ = 2;
 
-} // namespace w3c_sw
 
+/* Line 1054 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 1054 of lalr1.cc  */
+#line 1572 "lib/TurtleSParser/TurtleSParser.cpp"
+
+
+/* Line 1056 of lalr1.cc  */
 #line 572 "lib/TurtleSParser/TurtleSParser.ypp"
  /*** Additional Code ***/
 

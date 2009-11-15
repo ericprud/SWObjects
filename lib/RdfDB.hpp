@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include "SWObjects.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLSerializer.hpp"
 #include "../interface/WEBagent.hpp"
 #include "../interface/SAXparser.hpp"
@@ -126,29 +125,7 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	bool loadData (BasicGraphPattern* target, std::istream& istr, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
-	    if (!mediaType.compare(0, 9, "text/html") || 
-		!mediaType.compare(0, 9, "application/xhtml")) {
-		if (xmlParser == NULL)
-		    throw std::string("no XML parser to parse ") + mediaType + 
-			" document " + nameStr;
-		RDFaParser rdfaParser(posFactory, xmlParser);
-		rdfaParser.parse(target, istr, nameStr);
-		return false;
-	    } else if (!mediaType.compare(0, 9, "text/rdf") || 
-		       !mediaType.compare(0, 9, "text/rdf+xml")) {
-		if (xmlParser == NULL)
-		    throw std::string("no XML parser to parse ") + mediaType + 
-			" document " + nameStr;
-		RdfXmlParser p(posFactory, xmlParser);
-		p.parse(assureGraph(NULL), istr);
-		return false;
-	    } else {
-		TurtleSDriver turtleParser(nameStr, posFactory);
-		turtleParser.setGraph(target);
-		return turtleParser.parse_stream(istr);
-	    }
-	}
+	bool loadData(BasicGraphPattern* target, std::istream& istr, std::string mediaType, std::string nameStr, POSFactory* posFactory);
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
 	    std::string mediaType;

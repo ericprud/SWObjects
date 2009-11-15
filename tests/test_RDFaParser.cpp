@@ -12,7 +12,8 @@
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"
-#include "RdfDB.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "RDFaParser.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"

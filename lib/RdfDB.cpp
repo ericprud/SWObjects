@@ -4,6 +4,8 @@
 
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "TrigSParser/TrigSParser.hpp"
 
 namespace w3c_sw {
 
@@ -33,6 +35,34 @@ namespace w3c_sw {
 	    return ret;
 	} else {
 	    return vi->second;
+	}
+    }
+
+    bool RdfDB::loadData (BasicGraphPattern* target, std::istream& istr, std::string mediaType, std::string nameStr, POSFactory* posFactory) {
+	if (!mediaType.compare(0, 9, "text/html") || 
+	    !mediaType.compare(0, 9, "application/xhtml")) {
+	    if (xmlParser == NULL)
+		throw std::string("no XML parser to parse ") + mediaType + 
+		    " document " + nameStr;
+	    RDFaParser rdfaParser(posFactory, xmlParser);
+	    rdfaParser.parse(target, istr, nameStr);
+	    return false;
+	} else if (!mediaType.compare(0, 8, "text/rdf") || 
+		   !mediaType.compare(0, 12, "text/rdf+xml")) {
+	    if (xmlParser == NULL)
+		throw std::string("no XML parser to parse ") + mediaType + 
+		    " document " + nameStr;
+	    RdfXmlParser p(posFactory, xmlParser);
+	    p.parse(assureGraph(NULL), istr);
+	    return false;
+	} else if (!mediaType.compare(0, 11, "text/turtle")) {
+	    TurtleSDriver turtleParser(nameStr, posFactory);
+	    turtleParser.setGraph(target);
+	    return turtleParser.parse_stream(istr);
+	} else {
+	    TrigSDriver trigParser(nameStr, posFactory);
+	    trigParser.setDB(this);
+	    return trigParser.parse_stream(istr);
 	}
     }
 

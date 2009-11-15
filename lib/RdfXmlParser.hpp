@@ -6,6 +6,7 @@
 #define RDF_XML_PARSER_H
 
 #include "RdfDB.hpp"
+#include "ParserCommon.hpp"
 #include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
