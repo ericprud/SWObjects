@@ -78,7 +78,7 @@ public:
      * @param sname	stream name for error messages
      * @return		true if successfully parsed
      */
-    virtual bool parse_stream(std::istream& in,
+    virtual bool parse_stream(IStreamPtr* in,
 			      const std::string& sname = "stream input") = 0;
 
     /** Invoke the scanner and parser on an input string.

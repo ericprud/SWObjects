@@ -148,7 +148,7 @@ public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse_stream(std::istream& in,
+    virtual bool parse_stream(IStreamPtr* in,
 		      const std::string& sname = "stream input");
 
     /** Pointer to the current lexer instance, this is used to connect the
@@ -1751,11 +1751,11 @@ namespace w3c_sw {
 {
 }
 
-bool SPARQLfedDriver::parse_stream(std::istream& in, const std::string& sname)
+bool SPARQLfedDriver::parse_stream(IStreamPtr* in, const std::string& sname)
 {
     streamname = sname;
 
-    SPARQLfedScanner scanner(this, &in);
+    SPARQLfedScanner scanner(this, in->p);
     scanner.set_debug(trace_scanning);
     lexer = &scanner;
 

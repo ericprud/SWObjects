@@ -380,8 +380,8 @@ sw::Operation* parseQuery (const sw::POS* query) {
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
 	sw::IStreamPtr::STRING : 
 	sw::IStreamPtr::STDIN;
-    sw::IStreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
-    if (SparqlParser.parse_stream(*iptr) != 0)
+    sw::IStreamPtr iptr(querySpec, opts, &Agent, &DebugStream);
+    if (SparqlParser.parse_stream(&iptr) != 0)
 	throw std::string("error when parsing query ").append(querySpec);
     return SparqlParser.root;
 }
@@ -638,16 +638,18 @@ int main(int ac, char* av[])
             std::cout << "SPARQL version 1.0, revision: $Id$\n";
 	else if (NoExec == false) {
 	    if (vm.count("description")) {
-		std::stringstream s(appDescGraph);
-		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, "text/turtle", "", &F); // !!! baseURI
+		sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
+		s.mediaType = "text/turtle";
+		Db.loadData(Db.assureGraph(sw::DefaultGraph), &s, "", &F); // !!! baseURI
 	    }
 
 	    if (vm.count("desc-graph")) {
 		std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
 		for (std::vector<std::string>::const_iterator it = descs.begin();
 		     it != descs.end(); ++it) {
-		    std::stringstream s(appDescGraph);
-		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, "text/turtle", *it, &F); // !!! baseURI
+		    sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
+		    s.mediaType = "text/turtle";
+		    Db.loadData(Db.assureGraph(F.getURI(*it)), &s, *it, &F); // !!! baseURI
 		}
 	    }
 
@@ -692,21 +694,21 @@ int main(int ac, char* av[])
 		o->execute(&Db, &rs);
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
-		    std::string mediaType;
-		    sw::IStreamPtr iptr(cmp->getLexicalValue(), sw::IStreamPtr::NONE, 
-					&mediaType, &Agent, &DebugStream);
+		    sw::IStreamPtr iptr(cmp->getLexicalValue(), 
+					sw::IStreamPtr::NONE, 
+					&Agent, &DebugStream);
 
 		    sw::ResultSet* reference;
-		    if (mediaType == "application/sparql-results+xml") {
+		    if (iptr.mediaType == "application/sparql-results+xml") {
 			reference = new sw::ResultSet(&F, &P, *iptr);
 		    } else {
 			sw::RdfDB resGraph;
-			if (mediaType == "text/turtle") {
+			if (iptr.mediaType == "text/turtle") {
 			    TurtleParser.setGraph(resGraph.assureGraph(NULL));
-			    TurtleParser.parse_stream(*iptr);
+			    TurtleParser.parse_stream(&iptr);
 			    TurtleParser.clear("");
 			} else {
-			    throw std::string("media-type \"").append(mediaType).append("\" unknown.");
+			    throw std::string("media-type \"").append(iptr.mediaType).append("\" unknown.");
 			}
 			reference = 
 			    rs.resultType == sw::ResultSet::RESULT_Graphs ?
@@ -732,13 +734,12 @@ int main(int ac, char* av[])
 	    }
 	    if (Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		std::string mediaType;
 		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
-				    &mediaType, &Agent, &DebugStream);
-		if (mediaType == "text/turtle") {
+				    &Agent, &DebugStream);
+		if (optr.mediaType == "text/turtle") {
 		    std::string str(Db.assureGraph(NULL)->toString());
 		    *optr << str;
-		} else if (mediaType == "text/trig") {
+		} else if (optr.mediaType == "text/trig") {
 		    std::string str(Db.toString());
 		    *optr << str;
 		}

@@ -26,15 +26,13 @@ namespace w3c_sw {
 	: ParserDriver(baseURI), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
     bool YaccDriver::parse_file (const std::string &filename) {
-	std::ifstream in(filename.c_str());
-	if (!in.is_open())
-	    throw std::string("unable to open file \"") + filename + "\"";
-	return parse_stream(in, filename);
+	IStreamPtr ifs(filename.c_str());
+	return parse_stream(&ifs, filename);
     }
 
     bool YaccDriver::parse_string (const std::string &input, const std::string& sname) {
-	std::istringstream iss(input);
-	return parse_stream(iss, sname);
+	IStreamPtr iss(input, StreamPtr::STRING);
+	return parse_stream(&iss, sname);
     }
 
     void YaccDriver::error (const class location& l,

@@ -215,20 +215,18 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-IStreamPtr::IStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
-		      SWWEBagent* webAgent, std::ostream** debugStream)
-    : p(NULL)
+IStreamPtr::IStreamPtr (std::string name, e_opts opts, 
+			SWWEBagent* webAgent, std::ostream** debugStream)
+    : StreamPtr(name), p(NULL)
 {
     malloced = true;
     if (opts & STRING) {
-	malloced = false;
 	p = new std::stringstream(nameStr);
     } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	if (mediaType != NULL)
-	    *mediaType = webAgent->getMediaType();
+	mediaType = webAgent->getMediaType();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDIN) && nameStr == "-") {
 	p = &std::cin;
@@ -241,8 +239,7 @@ IStreamPtr::IStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType
 	}
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading file " << nameStr << std::endl;
-	if (mediaType != NULL)
-	    *mediaType = guessMediaType(nameStr);
+	guessMediaType();
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
 	p = ifs;
 	if (!ifs->is_open())
@@ -250,19 +247,18 @@ IStreamPtr::IStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType
     }
 }
 
-OStreamPtr::OStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
-		      SWWEBagent* webAgent, std::ostream** debugStream)
-    : p(NULL), malloced(true)
+OStreamPtr::OStreamPtr (std::string name, e_opts opts, 
+			SWWEBagent* webAgent, std::ostream** debugStream)
+    : StreamPtr(name), p(NULL)
 {
+    malloced = true;
     if (opts & STRING) {
-	malloced = false;
 	p = new std::stringstream(nameStr);
     } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	if (mediaType != NULL)
-	    *mediaType = webAgent->getMediaType();
+	mediaType = webAgent->getMediaType();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDIN) && nameStr == "-") {
 	p = &std::cout;
@@ -275,8 +271,7 @@ OStreamPtr::OStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType
 	}
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading file " << nameStr << std::endl;
-	if (mediaType != NULL)
-	    *mediaType = guessMediaType(nameStr);
+	guessMediaType();
 	std::ofstream* ofs = new std::ofstream(nameStr.c_str());
 	p = ofs;
 	if (!ofs->is_open())

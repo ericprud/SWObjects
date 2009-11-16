@@ -78,7 +78,7 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse_stream(std::istream& in,
+    virtual bool parse_stream(IStreamPtr* in,
 		      const std::string& sname = "stream input");
 
     /** Pointer to the current lexer instance, this is used to connect the

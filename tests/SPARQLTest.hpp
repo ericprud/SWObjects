@@ -62,11 +62,9 @@ struct FakePathRdfDB : public RdfDB {
     std::string pathPrefix; // prepend file paths with this to get to the subdirectory, e.g. data-r2/dataset/
     virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	std::string nameStr = name->getLexicalValue();
-	std::string mediaType;
 	nameStr = pathPrefix + nameStr;
-	IStreamPtr iptr(nameStr, IStreamPtr::NONE, 
-			&mediaType, webAgent, debugStream);
-	if (RdfDB::loadData(target, *iptr, mediaType, nameStr, posFactory))
+	IStreamPtr iptr(nameStr, IStreamPtr::NONE, webAgent, debugStream);
+	if (RdfDB::loadData(target, &iptr, nameStr, posFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
 };

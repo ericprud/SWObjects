@@ -124,19 +124,21 @@ int main(int argc,char** argv) {
 	}
 
 	/* Parse input query. */
-	inputId = argv[iArg++];
-	if (inputId[0] == '-' && inputId[1] == '\0') {
-	    inputId = (char*)"- standard input -";
-	    result = sparqlParser.parse_stream(cin);
-	} else
-	    result = sparqlParser.parse_file(inputId);
-	query = sparqlParser.root;
+	{
+	    inputId = argv[iArg++];
+	    IStreamPtr istr(inputId);
+	    if (inputId[0] == '-' && inputId[1] == '\0')
+		inputId = (char*)"- standard input -";
+	    result = sparqlParser.parse_stream(&istr);
+	    query = sparqlParser.root;
+	}
 
 	/* Parse deduction rules. */
 	for (; iArg < argc && !result; ++iArg) {
 	    if (option(argc, argv, &iArg))
 		continue;
-	    result = sparqlParser.parse_file(inputId = argv[iArg]);
+	    IStreamPtr istr(inputId = argv[iArg]);
+	    result = sparqlParser.parse_stream(&istr);
 	    Operation* rule = sparqlParser.root;
 	    Construct* c;
 	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {

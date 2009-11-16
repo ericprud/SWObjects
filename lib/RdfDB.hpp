@@ -125,13 +125,11 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	bool loadData(BasicGraphPattern* target, std::istream& istr, std::string mediaType, std::string nameStr, POSFactory* posFactory);
+	bool loadData(BasicGraphPattern* target, IStreamPtr* istr, std::string nameStr, POSFactory* posFactory);
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
-	    std::string mediaType;
-	    IStreamPtr iptr(nameStr, IStreamPtr::NONE, 
-			    &mediaType, webAgent, debugStream);
-	    if (loadData(target, *iptr, mediaType, nameStr, posFactory))
+	    IStreamPtr iptr(nameStr, IStreamPtr::NONE, webAgent, debugStream);
+	    if (loadData(target, &iptr, nameStr, posFactory))
 		throw nameStr + ":0: error: unable to parse web document";
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);

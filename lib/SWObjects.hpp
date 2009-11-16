@@ -2449,10 +2449,14 @@ struct StreamPtr {
 	STDIN =		1,	/* '-' means stdin */
 	STRING =	2,	/* nameStr is the contents */
     } e_opts;
+    std::string nameStr;
+    std::string mediaType;
     bool malloced;
 
-    static std::string guessMediaType (std::string nameStr) {
-	return
+    StreamPtr (std::string nameStr) : nameStr(nameStr) {  }
+
+    void guessMediaType () {
+	mediaType = 
 	    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
 	    nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
 	    nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
@@ -2465,7 +2469,7 @@ struct StreamPtr {
 
 struct IStreamPtr : public StreamPtr {
     std::istream* p;
-    IStreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+    IStreamPtr(std::string nameStr, e_opts = NONE,
 	       SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
     ~IStreamPtr () { if (malloced) delete p; }
     std::istream& operator* () { return *p; }
@@ -2475,7 +2479,7 @@ struct IStreamPtr : public StreamPtr {
 struct OStreamPtr : public StreamPtr {
     std::ostream* p;
     bool malloced;
-    OStreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+    OStreamPtr(std::string nameStr, e_opts = NONE,
 	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
     ~OStreamPtr();
     std::ostream& operator* () { return *p; }

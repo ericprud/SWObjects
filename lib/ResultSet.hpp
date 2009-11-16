@@ -335,9 +335,9 @@ namespace w3c_sw {
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
-	    std::stringstream boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-				    "SELECT ?bool { ?t rs:boolean ?bool . }\n");
-	    if (sparqlParser.parse_stream(boolq))
+	    IStreamPtr boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", StreamPtr::STRING);
+	    if (sparqlParser.parse_stream(&boolq))
 		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
 	    sparqlParser.root->execute(db, &booleanResult);
@@ -357,9 +357,9 @@ namespace w3c_sw {
 		    results.insert(results.begin(), new Result(this));
 	    } else {
 		/* Get list of known variables. */
-		std::stringstream variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-					     "SELECT ?var {?set rs:resultVariable ?var }\n");
-		if (sparqlParser.parse_stream(variablesQ))
+		IStreamPtr variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				      "SELECT ?var {?set rs:resultVariable ?var }\n", StreamPtr::STRING);
+		if (sparqlParser.parse_stream(&variablesQ))
 		    throw std::string("failed to parse boolean ResultSet variables query.");
 		ResultSet listOfVariables(posFactory);
 		sparqlParser.root->execute(db, &listOfVariables);
@@ -373,12 +373,12 @@ namespace w3c_sw {
 		}
 
 		/* Get list of bindings. */
-		std::stringstream bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-					    "SELECT * {?soln rs:binding [\n"
-					    "		 rs:variable ?var ;\n"
-					    "		 rs:value ?val\n"
-					    " ]} ORDER BY ?soln\n");
-		if (sparqlParser.parse_stream(bindingsQ))
+		IStreamPtr bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				     "SELECT * {?soln rs:binding [\n"
+				     "		 rs:variable ?var ;\n"
+				     "		 rs:value ?val\n"
+				     " ]} ORDER BY ?soln\n", StreamPtr::STRING);
+		if (sparqlParser.parse_stream(&bindingsQ))
 		    throw std::string("failed to parse boolean ResultSet bindings query.");
 		ResultSet listOfResults(posFactory);
 		sparqlParser.root->execute(db, &listOfResults);

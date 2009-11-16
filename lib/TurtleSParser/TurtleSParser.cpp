@@ -1585,11 +1585,11 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TurtleSDriver::parse_stream(std::istream& in, const std::string& sname)
+bool TurtleSDriver::parse_stream(IStreamPtr* in, const std::string& sname)
 {
     streamname = sname;
 
-    TurtleSScanner scanner(this, &in);
+    TurtleSScanner scanner(this, in->p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 

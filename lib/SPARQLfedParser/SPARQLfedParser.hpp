@@ -141,7 +141,7 @@ public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse_stream(std::istream& in,
+    virtual bool parse_stream(IStreamPtr* in,
 		      const std::string& sname = "stream input");
 
     /** Pointer to the current lexer instance, this is used to connect the

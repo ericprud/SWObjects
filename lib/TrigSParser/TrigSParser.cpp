@@ -1640,11 +1640,11 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TrigSDriver::parse_stream(std::istream& in, const std::string& sname)
+bool TrigSDriver::parse_stream(IStreamPtr* in, const std::string& sname)
 {
     streamname = sname;
 
-    TrigSScanner scanner(this, &in);
+    TrigSScanner scanner(this, in->p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 

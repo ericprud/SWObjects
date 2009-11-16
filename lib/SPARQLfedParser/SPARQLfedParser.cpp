@@ -3303,11 +3303,11 @@ namespace w3c_sw {
 {
 }
 
-bool SPARQLfedDriver::parse_stream(std::istream& in, const std::string& sname)
+bool SPARQLfedDriver::parse_stream(IStreamPtr* in, const std::string& sname)
 {
     streamname = sname;
 
-    SPARQLfedScanner scanner(this, &in);
+    SPARQLfedScanner scanner(this, in->p);
     scanner.set_debug(trace_scanning);
     lexer = &scanner;
 
