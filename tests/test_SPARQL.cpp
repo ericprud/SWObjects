@@ -12,18 +12,13 @@
 
 BOOST_AUTO_TEST_CASE( D ) {
     std::string s("execution failure");
-    try {
-	FILE *p = ::popen("../bin/SPARQL -D --debug 1", "r");
-	char buf[100];
-	s = "";
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p));)
-	    s += std::string(buf, buf + count);
-	pclose(p);
-    } catch (std::exception e) {
-	std::cerr << e.what();
-    } catch (std::string e) {
-	std::cerr << e;
-    }
+    FILE *p = ::popen("../bin/SPARQL -D --debug 1", "r");
+    BOOST_REQUIRE(p != NULL);
+    char buf[100];
+    s = "";
+    for (size_t count; (count = fread(buf, 1, sizeof(buf), p));)
+	s += std::string(buf, buf + count);
+    pclose(p);
     BOOST_CHECK_EQUAL(s, 
 		      "debug level: 1\n"
 		      "<loadedData>\n"
