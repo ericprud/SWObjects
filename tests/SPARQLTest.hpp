@@ -64,8 +64,8 @@ struct FakePathRdfDB : public RdfDB {
 	std::string nameStr = name->getLexicalValue();
 	std::string mediaType;
 	nameStr = pathPrefix + nameStr;
-	StreamPtr iptr(nameStr, StreamPtr::NONE, 
-		       &mediaType, webAgent, debugStream);
+	IStreamPtr iptr(nameStr, IStreamPtr::NONE, 
+			&mediaType, webAgent, debugStream);
 	if (RdfDB::loadData(target, *iptr, mediaType, nameStr, posFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }

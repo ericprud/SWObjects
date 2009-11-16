@@ -144,7 +144,7 @@ namespace w3c_sw {
 	SWSAXparser () {  }
 	virtual ~SWSAXparser () {  }
 	virtual void parse(std::istream& istr, SWSAXhandler* handler) = 0;
-	virtual void parse (StreamPtr* pstr, SWSAXhandler* handler) {
+	virtual void parse (IStreamPtr* pstr, SWSAXhandler* handler) {
 	    parse(**pstr, handler);
 	}
 	void test (std::string testStr = "<root xmlns=\"http://ns.example/\"><el attr=\"value\"/>text</root>") {

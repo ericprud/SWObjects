@@ -402,7 +402,7 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, StreamPtr* sptr) : 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamPtr* sptr) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {

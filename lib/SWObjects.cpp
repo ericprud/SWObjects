@@ -215,10 +215,11 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
+IStreamPtr::IStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
 		      SWWEBagent* webAgent, std::ostream** debugStream)
-    : p(NULL), malloced(true)
+    : p(NULL)
 {
+    malloced = true;
     if (opts & STRING) {
 	malloced = false;
 	p = new std::stringstream(nameStr);
@@ -241,14 +242,7 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading file " << nameStr << std::endl;
 	if (mediaType != NULL)
-	    *mediaType = 
-		nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
-		nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
-		nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
-		"text/plain";
+	    *mediaType = guessMediaType(nameStr);
 	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
 	p = ifs;
 	if (!ifs->is_open())
@@ -256,7 +250,7 @@ StreamPtr::StreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
     }
 }
 
-OtreamPtr::OtreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
+OStreamPtr::OStreamPtr (std::string nameStr, e_opts opts, std::string* mediaType, 
 		      SWWEBagent* webAgent, std::ostream** debugStream)
     : p(NULL), malloced(true)
 {
@@ -282,21 +276,14 @@ OtreamPtr::OtreamPtr (std::string nameStr, e_opts opts, std::string* mediaType,
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading file " << nameStr << std::endl;
 	if (mediaType != NULL)
-	    *mediaType = 
-		nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
-		nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
-		nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
-		nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
-		"text/plain";
+	    *mediaType = guessMediaType(nameStr);
 	std::ofstream* ofs = new std::ofstream(nameStr.c_str());
 	p = ofs;
 	if (!ofs->is_open())
 	    throw std::string("unable to open file \"").append(nameStr).append("\"");
     }
 }
-OtreamPtr::~OtreamPtr () {
+OStreamPtr::~OStreamPtr () {
     /* do the PUT if it's a webAgent (unless i can make the webagent::close do it) */
     if (malloced)
 	delete p;

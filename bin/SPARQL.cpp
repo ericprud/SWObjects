@@ -376,11 +376,11 @@ std::string adjustPath (std::string nameStr) {
 
 sw::Operation* parseQuery (const sw::POS* query) {
     std::string querySpec = query->getLexicalValue();
-    sw::StreamPtr::e_opts opts = 
+    sw::IStreamPtr::e_opts opts = 
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
-	sw::StreamPtr::STRING : 
-	sw::StreamPtr::STDIN;
-    sw::StreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
+	sw::IStreamPtr::STRING : 
+	sw::IStreamPtr::STDIN;
+    sw::IStreamPtr iptr(querySpec, opts, NULL, &Agent, &DebugStream);
     if (SparqlParser.parse_stream(*iptr) != 0)
 	throw std::string("error when parsing query ").append(querySpec);
     return SparqlParser.root;
@@ -693,8 +693,8 @@ int main(int ac, char* av[])
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    std::string mediaType;
-		    sw::StreamPtr iptr(cmp->getLexicalValue(), sw::StreamPtr::NONE, 
-				       &mediaType, &Agent, &DebugStream);
+		    sw::IStreamPtr iptr(cmp->getLexicalValue(), sw::IStreamPtr::NONE, 
+					&mediaType, &Agent, &DebugStream);
 
 		    sw::ResultSet* reference;
 		    if (mediaType == "application/sparql-results+xml") {
@@ -733,8 +733,8 @@ int main(int ac, char* av[])
 	    if (Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
 		std::string mediaType;
-		sw::OtreamPtr optr(outres, sw::OtreamPtr::STDIN, 
-				   &mediaType, &Agent, &DebugStream);
+		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
+				    &mediaType, &Agent, &DebugStream);
 		if (mediaType == "text/turtle") {
 		    std::string str(Db.assureGraph(NULL)->toString());
 		    *optr << str;

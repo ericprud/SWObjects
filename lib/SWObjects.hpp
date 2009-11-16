@@ -2449,28 +2449,35 @@ struct StreamPtr {
 	STDIN =		1,	/* '-' means stdin */
 	STRING =	2,	/* nameStr is the contents */
     } e_opts;
-
-    std::istream* p;
     bool malloced;
-    StreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
-	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~StreamPtr () { if (malloced) delete p; }
+
+    static std::string guessMediaType (std::string nameStr) {
+	return
+	    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
+	    nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
+	    nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
+	    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
+	    nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
+	    nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
+	    "text/plain";
+    }
+};
+
+struct IStreamPtr : public StreamPtr {
+    std::istream* p;
+    IStreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+	       SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
+    ~IStreamPtr () { if (malloced) delete p; }
     std::istream& operator* () { return *p; }
 
 };
 
-struct OtreamPtr {
-    typedef enum {
-	NONE =		0,	/* don't do nuthin */
-	STDIN =		1,	/* '-' means stdin */
-	STRING =	2,	/* nameStr is the contents */
-    } e_opts;
-
+struct OStreamPtr : public StreamPtr {
     std::ostream* p;
     bool malloced;
-    OtreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
+    OStreamPtr(std::string nameStr, e_opts = NONE, std::string* mediaType = NULL,
 	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~OtreamPtr();
+    ~OStreamPtr();
     std::ostream& operator* () { return *p; }
 };
 
