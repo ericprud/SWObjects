@@ -276,6 +276,8 @@ unitTESTexes := $(TESTNAMELIST)
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
+t_SPARQL: bin/SPARQL
+
 tests/test_%.dep: tests/test_%.cpp config.h
 	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
