@@ -32,6 +32,7 @@ std::ostream& operator== (std::ostream& o, ExecResults& tested) {
     return o << tested.s;
 }
 
+BOOST_AUTO_TEST_SUITE( tutorial )
 BOOST_AUTO_TEST_CASE( D ) {
     ExecResults tested("../bin/SPARQL -D");
     BOOST_CHECK_EQUAL(tested.s, 
@@ -41,7 +42,6 @@ BOOST_AUTO_TEST_CASE( D ) {
 		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
 		      "}\n");
 }
-
 BOOST_AUTO_TEST_CASE( D_spo ) {
     ExecResults tested("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     BOOST_CHECK_EQUAL(tested.s, 
@@ -52,5 +52,39 @@ BOOST_AUTO_TEST_CASE( D_spo ) {
 		      "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
 		      "+----+---------------------------------------------------+----------------------------------------+\n");
 }
+BOOST_AUTO_TEST_CASE( G_spo ) {
+    ExecResults tested("../bin/SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "+----+---------------------------------------------------+----------------------------------------+\n"
+		      "| ?s | ?p                                                | ?o                                     |\n"
+		      "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+		      "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		      "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		      "+----+---------------------------------------------------+----------------------------------------+\n");
+}
+BOOST_AUTO_TEST_CASE( DG_sp ) {
+    ExecResults tested("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+		       "    GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "+--------+\n"
+		      "| ?g     |\n"
+		      "|  <foo> |\n"
+		      "| <foo2> |\n"
+		      "+--------+\n");
+}
+BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
+    ExecResults tested("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+		       "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
+		       "    UNION\n"
+		       "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "+--------+\n"
+		      "| ?g     |\n"
+		      "|     -- |\n"
+		      "|  <foo> |\n"
+		      "| <foo2> |\n"
+		      "+--------+\n");
+}
+BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 
 
