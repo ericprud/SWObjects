@@ -195,7 +195,7 @@ lib: dep $(LIB)
 .SECONDARY:
 
 lib/%.dep: lib/%.cpp config.h
-	(echo $@ \\; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	(echo -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
@@ -219,7 +219,7 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h
-	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	(echo -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -279,7 +279,7 @@ TEST_ARGS ?= ""
 t_SPARQL: bin/SPARQL
 
 tests/test_%.dep: tests/test_%.cpp config.h
-	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	(echo -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
