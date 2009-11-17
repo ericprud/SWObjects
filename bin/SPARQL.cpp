@@ -73,6 +73,11 @@ std::string BaseUriMessage () {
 	? std::string(" with no base URI")
 	: std::string(" with base URI ") + BaseURI->getLexicalValue();
 }
+std::string UriString (const sw::POS* uri) {
+    return (uri == NULL)
+	? ""
+	: std::string(uri->getLexicalValue());
+}
 
 const sw::POS* ArgBaseURI;
 bool NoExec = false;
@@ -113,7 +118,9 @@ struct loadEntry {
 	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
     void loadGraph () {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
-	Db.loadData(resource, Db.assureGraph(graph), &F); // !!! baseURI
+	std::string nameStr = graphName->getLexicalValue();
+	sw::IStreamPtr istr(nameStr, sw::StreamPtr::NONE, &Agent, &DebugStream);
+	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), &F);
     }
 };
 typedef std::vector<loadEntry> loadList;
@@ -556,14 +563,17 @@ int main(int ac, char* av[])
 	    "    SPARQL is a doap project.\n"
 	    "    SPARQL has a homepage http://swobj.org/SPARQL/v1 .\n"
 	    "    SPARQL is \"a Semantic Web query toolbox\".\n"
-	    "  You can load this description (-D) and display it:\n"
+	    "  You can load this description (-D) and display it with \"SPARQL -D\":\n"
 	    "{\n"
 	    "  <> <http://...-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
 	    "  <> <http://...#homepage> <http://swobj.org/SPARQL/v1> .\n"
 	    "  <> <http://...#shortdesc> \"a semantic web query toolbox\"  .\n"
 	    "}\n"
 	    "  Because you supplied no query, SPARQL showed the contents of the loaded\n"
-	    "  database. You can query for all the triples:\n"
+	    "  database. The default database output format is TriG, as specified at\n"
+	    "    http://www4.wiwiss.fu-berlin.de/bizer/TriG/\n"
+	    "\n"
+	    "  You can query for all the triples:\n"
 	    "    SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"\n"
 	    "  , giving resuls like:\n"
 	    " +----+-------------------------------+----------------------------------------+\n"
@@ -587,9 +597,10 @@ int main(int ac, char* av[])
 	    "    |  <foo> |\n"
 	    "    | <foo2> |\n"
 	    "    +--------+\n"
-	    "Note that the default graph did not appear as the query only matches loaded\n"
-	    "*named* graphs. You can use a UNION to match both the default graph and loaded\n"
-	    "named graphs:\n"
+	    "\n"
+	    "  Note that the default graph did not appear as the query only matches loaded\n"
+	    "  *named* graphs. You can use a UNION to match both the default graph and loaded\n"
+	    "  named graphs:\n"
 	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 	    "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
 	    "    UNION\n"
@@ -652,7 +663,7 @@ int main(int ac, char* av[])
 	    if (vm.count("description")) {
 		sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
 		s.mediaType = "text/turtle";
-		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, "", &F); // !!! baseURI
+		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), &F); // !!! baseURI
 	    }
 
 	    if (vm.count("desc-graph")) {
@@ -661,7 +672,7 @@ int main(int ac, char* av[])
 		     it != descs.end(); ++it) {
 		    sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
 		    s.mediaType = "text/turtle";
-		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, *it, &F); // !!! baseURI
+		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), &F); // !!! baseURI
 		}
 	    }
 
@@ -739,22 +750,23 @@ int main(int ac, char* av[])
 			ret = 0;
 		    }
 		    delete reference;
+		    Output.resource = NULL; // No other output reqired.
 		}
 	    }
-	    std::string outres = Output.resource->getLexicalValue();
-	    sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
-				&Agent, &DebugStream);
-	    if (optr.mediaType == "text/turtle") {
-		std::string str(Db.assureGraph(NULL)->toString());
-		*optr << str;
-	    } else if (optr.mediaType == "text/trig") {
-		std::string str(Db.toString());
-		*optr << str;
-	    } else if (Query == NULL || 
-		       rs.resultType == sw::ResultSet::RESULT_Graphs) {
-		std::cout << dumpDB.toString();
-	    } else {
-		std::cout << rs.toString();
+	    if (Output.resource != NULL) {
+		std::string outres = Output.resource->getLexicalValue();
+		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
+				    &Agent, &DebugStream);
+		if (optr.mediaType == "text/turtle") {
+		    *optr << Db.assureGraph(NULL)->toString();
+		} else if (optr.mediaType == "text/trig") {
+		    *optr << Db.toString();
+		} else if (Query == NULL || 
+			   rs.resultType == sw::ResultSet::RESULT_Graphs) {
+		    *optr << dumpDB.toString();
+		} else {
+		    *optr << rs.toString();
+		}
 	    }
 	}
     } catch(std::exception& e) {
