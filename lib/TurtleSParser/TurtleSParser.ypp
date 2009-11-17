@@ -77,8 +77,7 @@ public:
 	neededBGP = curBGP = NULL;
     }
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -581,11 +580,11 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TurtleSDriver::parse_stream(IStreamPtr* in, const std::string& sname)
+bool TurtleSDriver::parse(IStreamPtr& in)
 {
-    streamname = sname;
+    streamname = in.nameStr;
 
-    TurtleSScanner scanner(this, in->p);
+    TurtleSScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 

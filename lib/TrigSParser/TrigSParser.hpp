@@ -78,8 +78,7 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -94,7 +93,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 98 "lib/TrigSParser/TrigSParser.hpp"
+#line 97 "lib/TrigSParser/TrigSParser.hpp"
 
 
 #include <string>
@@ -108,7 +107,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 112 "lib/TrigSParser/TrigSParser.hpp"
+#line 111 "lib/TrigSParser/TrigSParser.hpp"
   class position;
   class location;
 
@@ -118,7 +117,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 122 "lib/TrigSParser/TrigSParser.hpp"
+#line 121 "lib/TrigSParser/TrigSParser.hpp"
 
 #include "location.hh"
 
@@ -166,7 +165,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 170 "lib/TrigSParser/TrigSParser.hpp"
+#line 169 "lib/TrigSParser/TrigSParser.hpp"
 
   /// A Bison parser.
   class TrigSParser
@@ -178,7 +177,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 98 "lib/TrigSParser/TrigSParser.ypp"
+#line 97 "lib/TrigSParser/TrigSParser.ypp"
 
     void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -205,7 +204,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 209 "lib/TrigSParser/TrigSParser.hpp"
+#line 208 "lib/TrigSParser/TrigSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -431,7 +430,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 435 "lib/TrigSParser/TrigSParser.hpp"
+#line 434 "lib/TrigSParser/TrigSParser.hpp"
 
 
 

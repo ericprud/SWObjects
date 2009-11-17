@@ -222,7 +222,7 @@ IStreamPtr::IStreamPtr (std::string name, e_opts opts,
     malloced = true;
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
-    } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+    } else if (!opts & FILE && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
@@ -247,6 +247,7 @@ IStreamPtr::IStreamPtr (std::string name, e_opts opts,
     }
 }
 
+/* @@ factor me */
 OStreamPtr::OStreamPtr (std::string name, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
     : StreamPtr(name), p(NULL)
@@ -254,13 +255,13 @@ OStreamPtr::OStreamPtr (std::string name, e_opts opts,
     malloced = true;
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
-    } else if (webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+    } else if (!opts & FILE && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
 	mediaType = webAgent->getMediaType();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
-    } else if ((opts & STDIN) && nameStr == "-") {
+    } else if ((opts & STDOUT) && nameStr == "-") {
 	p = &std::cout;
 	malloced = false;
     } else {
@@ -1359,8 +1360,8 @@ compared against
 				    ));
 
 	/* Parse results into a ResultSet. */
-	std::stringstream str(s);
-	ResultSet red(posFactory, db->xmlParser, str);
+	IStreamPtr istr(s, StreamPtr::STRING);
+	ResultSet red(posFactory, db->xmlParser, istr);
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << " yielded\n" << red;
 

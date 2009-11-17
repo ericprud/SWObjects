@@ -148,8 +148,7 @@ public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -1751,11 +1750,11 @@ namespace w3c_sw {
 {
 }
 
-bool SPARQLfedDriver::parse_stream(IStreamPtr* in, const std::string& sname)
+bool SPARQLfedDriver::parse(IStreamPtr& in)
 {
-    streamname = sname;
+    streamname = in.nameStr;
 
-    SPARQLfedScanner scanner(this, in->p);
+    SPARQLfedScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     lexer = &scanner;
 

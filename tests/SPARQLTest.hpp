@@ -64,7 +64,7 @@ struct FakePathRdfDB : public RdfDB {
 	std::string nameStr = name->getLexicalValue();
 	nameStr = pathPrefix + nameStr;
 	IStreamPtr iptr(nameStr, IStreamPtr::NONE, webAgent, debugStream);
-	if (RdfDB::loadData(target, &iptr, nameStr, posFactory))
+	if (RdfDB::loadData(target, iptr, nameStr, posFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
 };
@@ -89,15 +89,19 @@ struct MeasuredRS : public ResultSet {
 	d.pathPrefix = baseURI; // load files from ./baseURI
 
 	/* Parse query. */
-	if (sparqlParser.parse_file(query))
-	    throw std::string("failed to parse query file \"") + query + "\".";
-	sparqlParser.clear(""); // clear out namespaces and base URI.
+	{
+	    IStreamPtr istr(query, StreamPtr::FILE);
+	    if (sparqlParser.parse(istr))
+		throw std::string("failed to parse query file \"") + query + "\".";
+	    sparqlParser.clear(""); // clear out namespaces and base URI.
+	}
 
 	/* Parse data. */
 	if (defGraph != NULL) {
 	    turtleParser.setGraph(d.assureGraph(NULL));
 	    turtleParser.setBase(baseURI);
-	    turtleParser.parse_file(defGraph);
+	    IStreamPtr istr(defGraph, StreamPtr::FILE);
+	    turtleParser.parse(istr);
 	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}
 
@@ -105,7 +109,8 @@ struct MeasuredRS : public ResultSet {
 	    std::string graphName = std::string(namedGraphs[i]).substr(baseURI.size());
 	    turtleParser.setGraph(d.assureGraph(F.getURI(graphName.c_str())));
 	    turtleParser.setBase(baseURI);
-	    turtleParser.parse_file(namedGraphs[i]);
+	    IStreamPtr istr(namedGraphs[i], StreamPtr::FILE);
+	    turtleParser.parse(istr);
 	    turtleParser.clear(""); // clear out namespaces and base URI.
 	}
 
@@ -128,16 +133,20 @@ struct MeasuredRS : public ResultSet {
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
 
 	/* Parse query. */
-	sparqlParser.setBase(baseURI);
-	if (sparqlParser.parse_file(query))
-	    throw std::string("failed to parse query file \"") + query + "\".";
-	sparqlParser.clear(""); // clear out namespaces and base URI.
+	{
+	    sparqlParser.setBase(baseURI);
+	    IStreamPtr istr(query, StreamPtr::FILE);
+	    if (sparqlParser.parse(istr))
+		throw std::string("failed to parse query file \"") + query + "\".";
+	    sparqlParser.clear(""); // clear out namespaces and base URI.
+	}
 
 	/* Parse data. */
 	if (input != NULL) {
 	    trigParser.setDB(&d);
 	    trigParser.setBase(baseURI);
-	    trigParser.parse_file(input);
+	    IStreamPtr istr(input, StreamPtr::FILE);
+	    trigParser.parse(istr);
 	    trigParser.clear("");
 	}
 	/* Copy db so we can show the original. */
@@ -192,20 +201,22 @@ struct ReferenceRS {
 
 	} else {
 	    std::string rfs(resultFile);
-	    std::ifstream istr(resultFile);
+	    IStreamPtr istr(resultFile, StreamPtr::FILE);
 	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
 		reference = new ResultSet(posFactory, saxParser, istr);
 
 	    } else {			/* retults in a graph */
 		if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
 		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
-		    turtleParser.parse_file(rfs.c_str());
+		    IStreamPtr ttl(rfs.c_str(), StreamPtr::FILE);
+		    turtleParser.parse(ttl);
 		    turtleParser.clear("");
 		} else if (rfs.substr(rfs.size()-5, 5) == ".trig") {			       
 		    std::string baseURI = rfs.substr(0, rfs.find_last_of("/")+1);
 		    trigParser.setBase(baseURI);
-		    trigParser.setDB(&rdfDB);		       
-		    trigParser.parse_file(rfs.c_str());			       
+		    trigParser.setDB(&rdfDB);
+		    IStreamPtr trig(rfs.c_str(), StreamPtr::FILE);
+		    trigParser.parse(trig);			       
 		    trigParser.clear("");					       
 		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
 		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), istr);

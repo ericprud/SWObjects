@@ -76,8 +76,7 @@ public:
 	neededBGP = curBGP = NULL;
     }
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -92,7 +91,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 96 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 95 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 #include <string>
@@ -106,7 +105,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 110 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 109 "lib/TurtleSParser/TurtleSParser.hpp"
   class position;
   class location;
 
@@ -116,7 +115,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 120 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 119 "lib/TurtleSParser/TurtleSParser.hpp"
 
 #include "location.hh"
 
@@ -164,7 +163,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 168 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 167 "lib/TurtleSParser/TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -176,7 +175,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 96 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 95 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -203,7 +202,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 207 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 206 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -427,7 +426,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 431 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 430 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 

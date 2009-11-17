@@ -48,13 +48,14 @@ RDFaParser GRDFaParser(&F, &P);
 
 BOOST_AUTO_TEST_CASE( APC ) {
     DefaultGraphPattern tested;
-    std::ifstream ifs("RDFaParser/APC.html");
-    GRDFaParser.parse(&tested, ifs, "APC.html");
+    IStreamPtr html("RDFaParser/APC.html");
+    GRDFaParser.parse(&tested, html, "APC.html");
 
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("APC.html");
-    turtleParser.parse_file("RDFaParser/APC.ttl");
+    IStreamPtr reference("RDFaParser/APC.ttl", StreamPtr::FILE);
+    turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -62,9 +63,9 @@ BOOST_AUTO_TEST_CASE( APC ) {
 BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern tested;
     const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
-    std::ifstream ifs("RDFaParser/gabab.html");
+    IStreamPtr html("RDFaParser/gabab.html", StreamPtr::FILE);
     try {
-	GRDFaParser.parse(&tested, ifs, gabab);
+	GRDFaParser.parse(&tested, html, gabab);
     } catch (std::string e) {
 	throw(std::string("exception while parsing RDFaParser/gabab.html: ").append(e));
     }
@@ -72,7 +73,8 @@ BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase(gabab);
-    turtleParser.parse_file("RDFaParser/gabab.ttl");
+    IStreamPtr reference("RDFaParser/gabab.ttl", StreamPtr::FILE);
+    turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }

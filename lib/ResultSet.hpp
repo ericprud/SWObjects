@@ -337,7 +337,7 @@ namespace w3c_sw {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
 	    IStreamPtr boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", StreamPtr::STRING);
-	    if (sparqlParser.parse_stream(&boolq))
+	    if (sparqlParser.parse(boolq))
 		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
 	    sparqlParser.root->execute(db, &booleanResult);
@@ -359,7 +359,7 @@ namespace w3c_sw {
 		/* Get list of known variables. */
 		IStreamPtr variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				      "SELECT ?var {?set rs:resultVariable ?var }\n", StreamPtr::STRING);
-		if (sparqlParser.parse_stream(&variablesQ))
+		if (sparqlParser.parse(variablesQ))
 		    throw std::string("failed to parse boolean ResultSet variables query.");
 		ResultSet listOfVariables(posFactory);
 		sparqlParser.root->execute(db, &listOfVariables);
@@ -378,7 +378,7 @@ namespace w3c_sw {
 				     "		 rs:variable ?var ;\n"
 				     "		 rs:value ?val\n"
 				     " ]} ORDER BY ?soln\n", StreamPtr::STRING);
-		if (sparqlParser.parse_stream(&bindingsQ))
+		if (sparqlParser.parse(bindingsQ))
 		    throw std::string("failed to parse boolean ResultSet bindings query.");
 		ResultSet listOfResults(posFactory);
 		sparqlParser.root->execute(db, &listOfResults);
@@ -402,20 +402,12 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamPtr* sptr) : 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamPtr& sptr) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    RSsax handler(this, posFactory);
 	    parser->parse(sptr, &handler);
-	}
-
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, std::istream& ist) : 
-	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    RSsax handler(this, posFactory);
-	    parser->parse(ist, &handler);
 	}
 
 	virtual ~ResultSet();

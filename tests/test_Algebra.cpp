@@ -28,7 +28,8 @@ SPARQLfedDriver sparqlParser("", &F);
 
 std::string algebrize (std::string sparql) {
     /* Parse query. */
-    if (sparqlParser.parse_string(sparql))
+    IStreamPtr istr(sparql, StreamPtr::STRING);
+    if (sparqlParser.parse(istr))
 	throw std::string("failed to parse SPARQL \"") + sparql + "\".";
     sparqlParser.clear(""); // clear out namespaces and base URI.
 

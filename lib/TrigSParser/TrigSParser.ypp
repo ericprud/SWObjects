@@ -79,8 +79,7 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -611,11 +610,11 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TrigSDriver::parse_stream(IStreamPtr* in, const std::string& sname)
+bool TrigSDriver::parse(IStreamPtr& in)
 {
-    streamname = sname;
+    streamname = in.nameStr;
 
-    TrigSScanner scanner(this, in->p);
+    TrigSScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 

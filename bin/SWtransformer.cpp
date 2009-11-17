@@ -129,7 +129,7 @@ int main(int argc,char** argv) {
 	    IStreamPtr istr(inputId);
 	    if (inputId[0] == '-' && inputId[1] == '\0')
 		inputId = (char*)"- standard input -";
-	    result = sparqlParser.parse_stream(&istr);
+	    result = sparqlParser.parse(istr);
 	    query = sparqlParser.root;
 	}
 
@@ -138,7 +138,7 @@ int main(int argc,char** argv) {
 	    if (option(argc, argv, &iArg))
 		continue;
 	    IStreamPtr istr(inputId = argv[iArg]);
-	    result = sparqlParser.parse_stream(&istr);
+	    result = sparqlParser.parse(istr);
 	    Operation* rule = sparqlParser.root;
 	    Construct* c;
 	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {

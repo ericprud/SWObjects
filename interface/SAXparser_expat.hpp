@@ -71,7 +71,7 @@ namespace w3c_sw {
  #define EXPAT_BUFFER_SIZE 8192
 #endif /* EXPAT_BUFFER_SIZE */
 
-	virtual void parse (std::istream& istr, SWSAXhandler* saxHandler) {
+	virtual void parse (IStreamPtr& istr, SWSAXhandler* saxHandler) {
 	    //toy(istr, saxHandler);
 	    SAXhandlerInsulator insulator(this, saxHandler);
 
@@ -80,17 +80,17 @@ namespace w3c_sw {
 	    ::XML_SetElementHandler(parser, &startEl, &endEl);
 	    ::XML_SetCharacterDataHandler(parser, &chars);
 
-	    while (istr) {
+	    while (*istr.p) {
 		char* buff = (char*)XML_GetBuffer(parser, EXPAT_BUFFER_SIZE);
 		if (buff == NULL)
 		    throw std::string("SAXparser_expat unable to allocate buffer.");
-		istr.read(buff, EXPAT_BUFFER_SIZE);
-		bool isFinal = istr ? false : true;
+		istr.p->read(buff, EXPAT_BUFFER_SIZE);
+		bool isFinal = *istr.p ? false : true;
 		bool failed = 
 #ifdef _MSC_VER
-		    XML_ParseBuffer(parser, istr.gcount(), isFinal) == 0;
+		    XML_ParseBuffer(parser, istr.p->gcount(), isFinal) == 0;
 #else /* !_MSC_VER */
-		    XML_ParseBuffer(parser, istr.gcount(), isFinal) == XML_STATUS_ERROR;
+		    XML_ParseBuffer(parser, istr.p->gcount(), isFinal) == XML_STATUS_ERROR;
 #endif /* !_MSC_VER */
 		if (aborted) {
 		    aborted = false;
@@ -98,7 +98,7 @@ namespace w3c_sw {
 		}
 
 		if (failed) {
-		    buff[istr.gcount()] = 0;
+		    buff[istr.p->gcount()] = 0;
 		    buff[100] = 0;
 		    throw locationStr(parser) + "error " + 
 			XML_ErrorString(XML_GetErrorCode(parser)) + 

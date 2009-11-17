@@ -314,10 +314,10 @@ namespace w3c_sw {
 	    reinterpret_cast<_variant_t&>(vt) = bs;
 	}
 
-	virtual void parse (std::istream& istr, SWSAXhandler* saxHandler) {
+	virtual void parse (IStream& istr, SWSAXhandler* saxHandler) {
 	    SAXhandlerInsulator insulator(this, saxHandler);
 
-	    std::istreambuf_iterator<char> i(istr), e;
+	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
 
 	    std::wstring wstr(to16bit(s.c_str()));

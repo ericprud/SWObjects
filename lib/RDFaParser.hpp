@@ -198,15 +198,9 @@ namespace w3c_sw {
 	    ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
 
 	void parse (BasicGraphPattern* bgp, 
-		    IStreamPtr* sptr, std::string baseURI = "") {
+		    IStreamPtr& sptr, std::string baseURI = "") {
 	    RDFaSaxHandler handler(bgp, posFactory, baseURI);
 	    saxParser->parse(sptr, &handler);
-	}
-
-	void parse (BasicGraphPattern* bgp, 
-		    std::istream& istr, std::string baseURI = "") {
-	    RDFaSaxHandler handler(bgp, posFactory, baseURI);
-	    saxParser->parse(istr, &handler);
 	}
 
     };

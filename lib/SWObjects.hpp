@@ -2446,8 +2446,10 @@ class SWWEBagent;
 struct StreamPtr {
     typedef enum {
 	NONE =		0,	/* don't do nuthin */
-	STDIN =		1,	/* '-' means stdin */
-	STRING =	2,	/* nameStr is the contents */
+	STRING =	1,	/* nameStr is the contents */
+	STDIN =		2,	/* '-' means stdin */
+	STDOUT =	2,	/* '-' also means stdout */
+	FILE =		4,	/* must be a file */
     } e_opts;
     std::string nameStr;
     std::string mediaType;

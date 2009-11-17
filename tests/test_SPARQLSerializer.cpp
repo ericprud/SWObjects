@@ -58,7 +58,8 @@ struct OpPair {
 
 OpPair algebrize_TWICE (std::string sparql) {
     /* Parse query. */
-    if (sparqlParser.parse_string(sparql))
+    IStreamPtr sparstream(sparql, StreamPtr::STRING);
+    if (sparqlParser.parse(sparstream))
 	throw std::string("failed to parse SPARQL \"") + sparql + "\".";
     sparqlParser.clear(""); // clear out namespaces and base URI.
 
@@ -67,7 +68,8 @@ OpPair algebrize_TWICE (std::string sparql) {
     OpWrap once(sparql, sparqlParser.root);
     sparqlParser.root = NULL;
 
-    if (sparqlParser.parse_string(s.str()))
+    IStreamPtr serialstream(s.str(), StreamPtr::STRING);
+    if (sparqlParser.parse(serialstream))
 	throw std::string("failed to parse re-serialized SPARQL \"") + s.str() + "\".";
     OpWrap twice(s.str(), sparqlParser.root);
     sparqlParser.root = NULL;

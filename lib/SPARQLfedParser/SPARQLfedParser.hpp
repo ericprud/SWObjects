@@ -141,8 +141,7 @@ public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse_stream(IStreamPtr* in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -162,7 +161,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 166 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 165 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -176,7 +175,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 180 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 179 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -186,7 +185,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 190 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 189 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -234,7 +233,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 238 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 237 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -246,7 +245,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 172 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 171 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -309,7 +308,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 313 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 312 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -596,7 +595,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 600 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 599 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

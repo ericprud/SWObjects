@@ -25,16 +25,6 @@ namespace w3c_sw {
     YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
 	: ParserDriver(baseURI), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
 
-    bool YaccDriver::parse_file (const std::string &filename) {
-	IStreamPtr ifs(filename.c_str());
-	return parse_stream(&ifs, filename);
-    }
-
-    bool YaccDriver::parse_string (const std::string &input, const std::string& sname) {
-	IStreamPtr iss(input, StreamPtr::STRING);
-	return parse_stream(&iss, sname);
-    }
-
     void YaccDriver::error (const class location& l,
 			const std::string& m) {
 	std::cerr << l << ": " << m << std::endl;

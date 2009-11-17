@@ -419,23 +419,26 @@ protected:
 		    foot(sout);
 
 		    Done = true;
-		} else if (sparqlParser.parse_string(query)) {
-		    head(sout, "Query Error");
-
-		    sout << "    <p>Query</p>\n"
-			"    <pre>" << escapeHTML(query) << "</pre>\n"
-			"    <p>is screwed up.</p>\n"
-			 << endl;
-		    cerr << "400: " << query << endl;
-		    rep.status = webserver::reply::bad_request;
-
-		    foot(sout);
 		} else {
-		    Operation* op = sparqlParser.root;
-		    executeQuery(sout, op, query, false);
-		    rep.status = webserver::reply::ok;
-		    rep.addHeader("Content-Type", 
-				  "application/sparql-results+xml; charset=UTF-8");
+		    IStreamPtr istr(query, StreamPtr::STRING);
+		    if (sparqlParser.parse(istr)) {
+			head(sout, "Query Error");
+
+			sout << "    <p>Query</p>\n"
+			    "    <pre>" << escapeHTML(query) << "</pre>\n"
+			    "    <p>is screwed up.</p>\n"
+			     << endl;
+			cerr << "400: " << query << endl;
+			rep.status = webserver::reply::bad_request;
+
+			foot(sout);
+		    } else {
+			Operation* op = sparqlParser.root;
+			executeQuery(sout, op, query, false);
+			rep.status = webserver::reply::ok;
+			rep.addHeader("Content-Type", 
+				      "application/sparql-results+xml; charset=UTF-8");
+		    }
 		}
 	    } else if (path == "/") {
 		rep.status = webserver::reply::ok;
@@ -649,8 +652,9 @@ int main (int argc, char** argv) {
 	    }
 
 	    /* Remainder of file is a SPARQL query. */
-	    const std::string streamName = std::string(argv[iArg]) + " (post map:)";
-	    sparqlParser.parse_string(std::string(it, end), streamName);
+	    IStreamPtr istr(std::string(it, end), StreamPtr::STRING);
+	    istr.nameStr = std::string(argv[iArg]) + " (post map:)";
+	    sparqlParser.parse(istr);
 	    dataStream.close();
 
 	    Operation* rule = sparqlParser.root;
