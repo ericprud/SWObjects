@@ -118,7 +118,7 @@ struct loadEntry {
 };
 typedef std::vector<loadEntry> loadList;
 loadList LoadList;
-loadEntry Output(NULL, NULL, NULL);
+loadEntry Output(NULL, F.getURI("-"), NULL);
 bool InPlace = false;
 
 #endif /* TEST_CLI */
@@ -549,29 +549,39 @@ int main(int ac, char* av[])
             "        doap:shortdesc \"a semantic web query toolbox\" .\n";
 	static const char* tutorial = 
 	    "Tutorial:\n"
-	    "  The SPARQL executable contains a short description of itself, with the\n"
-	    "  following assertions:\n"
+	    "  The SPARQL Query Language matches patterns of Semantic Web data. This SPARQL\n"
+	    "  executable allows you to aggregate and query Semantic Web resources. To\n"
+	    "  introduce this, the SPARQL executable contains a short description of itself,\n"
+	    "  with the following assertions:\n"
 	    "    SPARQL is a doap project.\n"
 	    "    SPARQL has a homepage http://swobj.org/SPARQL/v1 .\n"
 	    "    SPARQL is \"a Semantic Web query toolbox\".\n"
-	    "  You can load this description (-D) and query it:\n"
+	    "  You can load this description (-D) and display it:\n"
+	    "{\n"
+	    "  <> <http://...-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+	    "  <> <http://...#homepage> <http://swobj.org/SPARQL/v1> .\n"
+	    "  <> <http://...#shortdesc> \"a semantic web query toolbox\"  .\n"
+	    "}\n"
+	    "  Because you supplied no query, SPARQL showed the contents of the loaded\n"
+	    "  database. You can query for all the triples:\n"
 	    "    SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"\n"
-	    "  Giving resuls like:\n"
-	    "    +----+-------------------------------+----------------------------------------+\n"
-	    "    | ?s | ?p                            | ?o                                     |\n"
-	    "    | <> | <http://www.w3....ax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-	    "    | <> |           <http...p#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
-	    "    | <> |          <http:...#shortdesc> |         \"a semantic web query toolbox\" |\n"
-	    "    +----+-------------------------------+----------------------------------------+\n"
+	    "  , giving resuls like:\n"
+	    " +----+-------------------------------+----------------------------------------+\n"
+	    " | ?s | ?p                            | ?o                                     |\n"
+	    " | <> | <http://www.w3....ax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+	    " | <> |           <http...p#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+	    " | <> |          <http:...#shortdesc> |         \"a semantic web query toolbox\" |\n"
+	    " +----+-------------------------------+----------------------------------------+\n"
 	    "\n"
-	    "-D loaded the three assertions into the \"default graph\", the graph to which\n"
-	    "SPARQL queries are directed unless otherwise directed by GRAPH clause. To try a\n"
-	    "GRAPH clause, load the description into the graph foo and query that graph:\n"
+	    "  -D loaded the three assertions into the \"default graph\", the graph to which\n"
+	    "  SPARQL queries are directed unless otherwise directed by GRAPH clause. To try\n"
+	    "  a GRAPH clause, load the description into the graph foo and query that graph:\n"
 	    "    SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"\n"
 	    "\n"
-	    "We can load the description into a couple graphs *and* the default graph and ask\n"
-	    "all of the graphs which include an assertion about a doap project:\n"
-	    "    SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}\"\n"
+	    "  We can load the description into a couple graphs *and* the default graph and\n"
+	    "  ask all of the graphs which include an assertion about a doap project:\n"
+	    "    SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+            "       GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"\n"
 	    "    +--------+\n"
 	    "    | ?g     |\n"
 	    "    |  <foo> |\n"
@@ -580,8 +590,10 @@ int main(int ac, char* av[])
 	    "Note that the default graph did not appear as the query only matches loaded\n"
 	    "*named* graphs. You can use a UNION to match both the default graph and loaded\n"
 	    "named graphs:\n"
-	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {{?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
-	    "UNION {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n"
+	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+	    "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
+	    "    UNION\n"
+	    "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n"
 	    "    +--------+\n"
 	    "    | ?g     |\n"
 	    "    |     -- |\n"
@@ -660,6 +672,11 @@ int main(int ac, char* av[])
 	    if (Debug > 0)
 		std::cout << "<loadedData>\n" << Db << "</loadedData>\n";
 
+	    sw::RdfDB constructed;
+	    sw::RdfDB& dumpDB(Query == NULL || InPlace ? Db : constructed);
+	    sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
+	    rs.setRdfDB(&dumpDB);
+
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
 		    throw std::string("Mapping rules found with no query to map.");
@@ -688,9 +705,6 @@ int main(int ac, char* av[])
 		} else
 		    o = query;
 
-		sw::RdfDB constructed;
-		sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
-		rs.setRdfDB(InPlace ? &Db : &constructed);
 		o->execute(&Db, &rs);
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
@@ -725,24 +739,22 @@ int main(int ac, char* av[])
 			ret = 0;
 		    }
 		    delete reference;
-		} else {
-		    if (rs.resultType == sw::ResultSet::RESULT_Graphs)
-			std::cout << (InPlace ? Db.toString() : constructed.toString());
-		    else
-			std::cout << rs.toString();
 		}
 	    }
-	    if (Output.resource != NULL) {
-		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
-				    &Agent, &DebugStream);
-		if (optr.mediaType == "text/turtle") {
-		    std::string str(Db.assureGraph(NULL)->toString());
-		    *optr << str;
-		} else if (optr.mediaType == "text/trig") {
-		    std::string str(Db.toString());
-		    *optr << str;
-		}
+	    std::string outres = Output.resource->getLexicalValue();
+	    sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
+				&Agent, &DebugStream);
+	    if (optr.mediaType == "text/turtle") {
+		std::string str(Db.assureGraph(NULL)->toString());
+		*optr << str;
+	    } else if (optr.mediaType == "text/trig") {
+		std::string str(Db.toString());
+		*optr << str;
+	    } else if (Query == NULL || 
+		       rs.resultType == sw::ResultSet::RESULT_Graphs) {
+		std::cout << dumpDB.toString();
+	    } else {
+		std::cout << rs.toString();
 	    }
 	}
     } catch(std::exception& e) {
