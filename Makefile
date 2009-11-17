@@ -196,6 +196,14 @@ lib: dep $(LIB)
 
 lib/%.dep: lib/%.cpp config.h
 	(echo -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
+	(echo -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
+	(echo -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
+	(echo -n $@ lib/TurtleSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/TrigSParser/%.dep: lib/TrigSParser/%.cpp config.h
+	(echo -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
