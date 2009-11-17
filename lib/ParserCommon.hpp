@@ -11,19 +11,6 @@ void stop(size_t line);
 
 namespace w3c_sw {
 
-struct UnknownPrefixException : StringException {
-    std::string prefix;
-    UnknownPrefixException (std::string prefix) : 
-	StringException(make(prefix)), prefix(prefix) {  }
-    virtual ~UnknownPrefixException () throw() {  }
-protected:
-    std::string make (std::string prefix) {
-	std::stringstream s;
-	s << "unknown prefix \"" << prefix << "\"";
-	return s.str();
-    }
-};
-
 class ParserDriver {
 protected:
     std::string		baseURI;
@@ -38,11 +25,40 @@ public:
 
 class YaccDriver : public ParserDriver {
 
-    /// type of the namespace storage
-    typedef std::map<std::string, const URI*> namespacemap_type;
+    class NamespaceMap {
+    protected:
+	std::map<std::string, const URI*> ns;
+    public:
+	void clear () { ns.clear(); }
+	const URI*& operator[] (std::string prefix) { return ns[prefix]; }
+
+	typedef std::map<std::string, const URI*>::iterator iterator;
+	typedef std::map<std::string, const URI*>::const_iterator const_iterator;
+
+	iterator begin () { return ns.begin(); }
+	const_iterator begin () const { return ns.begin(); }
+	iterator end () { return ns.end(); }
+	const_iterator end () const { return ns.end(); }
+	iterator find (std::string prefix) { return ns.find(prefix); }
+
+	struct UnknownPrefixException : StringException {
+	    std::string prefix;
+	    UnknownPrefixException (std::string prefix) : 
+		StringException(make(prefix)), prefix(prefix) {  }
+	    virtual ~UnknownPrefixException () throw() {  }
+	protected:
+	    std::string make (std::string prefix) {
+		std::stringstream s;
+		s << "unknown prefix \"" << prefix << "\"";
+		return s.str();
+	    }
+	};
+
+    };
+
 protected:
     POSFactory * const posFactory;
-    namespacemap_type	namespaces;
+    NamespaceMap	namespaces;
     bool		ignorePrefixFlag;
     POS::String2BNode	nodeMap;
 
@@ -96,11 +112,11 @@ public:
 
 
     const URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
-	namespacemap_type::const_iterator vi = namespaces.find(prefix);
+	NamespaceMap::const_iterator vi = namespaces.find(prefix);
 	if (vi == namespaces.end()) {
 	    if (returnNull)
 		return NULL;
-	    UnknownPrefixException e(prefix);
+	    NamespaceMap::UnknownPrefixException e(prefix);
 	    throw(e);
 	} else
 	    return vi->second;
