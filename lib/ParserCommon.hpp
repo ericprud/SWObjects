@@ -19,27 +19,11 @@ protected:
     ParserDriver(std::string baseURI);
 
 public:
-    std::string getBase () const { return baseURI; }
-    void setBase (std::string b) { baseURI = b; }
-};
-
-class YaccDriver : public ParserDriver {
 
     class NamespaceMap {
     protected:
 	std::map<std::string, const URI*> ns;
     public:
-	void clear () { ns.clear(); }
-	const URI*& operator[] (std::string prefix) { return ns[prefix]; }
-
-	typedef std::map<std::string, const URI*>::iterator iterator;
-	typedef std::map<std::string, const URI*>::const_iterator const_iterator;
-
-	iterator begin () { return ns.begin(); }
-	const_iterator begin () const { return ns.begin(); }
-	iterator end () { return ns.end(); }
-	const_iterator end () const { return ns.end(); }
-	iterator find (std::string prefix) { return ns.find(prefix); }
 
 	struct UnknownPrefixException : StringException {
 	    std::string prefix;
@@ -54,7 +38,37 @@ class YaccDriver : public ParserDriver {
 	    }
 	};
 
+	virtual ~NamespaceMap () {  }
+	virtual void clear () { ns.clear(); }
+	// const URI*& operator[] (std::string prefix) { return ns[prefix]; }
+	virtual const URI* get (std::string prefix, bool returnNull = false) {
+	    NamespaceMap::const_iterator vi = ns.find(prefix);
+	    if (vi == ns.end()) {
+		if (returnNull)
+		    return NULL;
+		NamespaceMap::UnknownPrefixException e(prefix);
+		throw(e);
+	    } else
+		return vi->second;
+	}
+	virtual void set (std::string prefix, const URI* uri) { ns[prefix] = uri; }
+
+	typedef std::map<std::string, const URI*>::iterator iterator;
+	typedef std::map<std::string, const URI*>::const_iterator const_iterator;
+
+	iterator begin () { return ns.begin(); }
+	const_iterator begin () const { return ns.begin(); }
+	iterator end () { return ns.end(); }
+	const_iterator end () const { return ns.end(); }
+	iterator find (std::string prefix) { return ns.find(prefix); }
+
     };
+
+    std::string getBase () const { return baseURI; }
+    void setBase (std::string b) { baseURI = b; }
+};
+
+class YaccDriver : public ParserDriver {
 
 protected:
     POSFactory * const posFactory;
@@ -106,20 +120,13 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces[prefix] = namespaceURI; }
+    void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces.set(prefix, namespaceURI); }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
     const URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
-	NamespaceMap::const_iterator vi = namespaces.find(prefix);
-	if (vi == namespaces.end()) {
-	    if (returnNull)
-		return NULL;
-	    NamespaceMap::UnknownPrefixException e(prefix);
-	    throw(e);
-	} else
-	    return vi->second;
+	return namespaces.get(prefix, returnNull);
     }
 
 
