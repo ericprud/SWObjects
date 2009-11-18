@@ -196,15 +196,15 @@ lib: dep $(LIB)
 .SECONDARY:
 
 lib/%.dep: lib/%.cpp config.h
-	(echo -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
-	(echo -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
-	(echo -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
-	(echo -n $@ lib/TurtleSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TurtleSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/TrigSParser/%.dep: lib/TrigSParser/%.cpp config.h
-	(echo -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
@@ -228,7 +228,7 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
-	(echo -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -242,7 +242,7 @@ bin/% : bin/%.o $(LIB) #lib
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
-	(echo $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 
 apache/mod_sparul.so: $(LIB) apache/mod_sparul.dep
 	cd bin; \
@@ -288,7 +288,7 @@ TEST_ARGS ?= ""
 t_SPARQL: bin/SPARQL
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	(echo -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
@@ -384,7 +384,7 @@ release:
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
-	$(unitTESTexes) *~ */*.dep */*/*.d
+	$(unitTESTexes) *~ */*.dep */*/*.dep
 
 cleaner: clean
 	$(RM) \
