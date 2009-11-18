@@ -120,6 +120,7 @@ typedef unsigned int flex_uint32_t;
 #include <iostream> 
 #include <errno.h>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 /* end standard C++ headers. */
 /* %endif */
@@ -1683,7 +1684,7 @@ typedef w3c_sw::TurtleSParser::token_type token_type;
 /* START patterns for SPARQLfed terminals */
 /* END patterns for SPARQLfed terminals */
 /* START semantic actions for SPARQLfed terminals */
-#line 1687 "lib/TurtleSScanner.cpp"
+#line 1688 "lib/TurtleSScanner.cpp"
 
 #define INITIAL 0
 
@@ -1847,7 +1848,7 @@ YY_DECL
 /* %% [7.0] user's declarations go here */
 #line 105 "lib/TurtleSScanner.lpp"
 
-#line 1851 "lib/TurtleSScanner.cpp"
+#line 1852 "lib/TurtleSScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -2145,7 +2146,7 @@ YY_RULE_SETUP
 #line 143 "lib/TurtleSScanner.lpp"
 ECHO;
 	YY_BREAK
-#line 2149 "lib/TurtleSScanner.cpp"
+#line 2150 "lib/TurtleSScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{

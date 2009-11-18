@@ -120,6 +120,7 @@ typedef unsigned int flex_uint32_t;
 #include <iostream> 
 #include <errno.h>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 /* end standard C++ headers. */
 /* %endif */
@@ -3225,7 +3226,7 @@ typedef w3c_sw::SPARQLfedParser::token_type token_type;
 /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
 /* END patterns for SPARQLfed terminals */
 /* START semantic actions for SPARQLfed terminals */
-#line 3229 "lib/SPARQLfedScanner.cpp"
+#line 3230 "lib/SPARQLfedScanner.cpp"
 
 #define INITIAL 0
 
@@ -3389,7 +3390,7 @@ YY_DECL
 /* %% [7.0] user's declarations go here */
 #line 177 "lib/SPARQLfedScanner.lpp"
 
-#line 3393 "lib/SPARQLfedScanner.cpp"
+#line 3394 "lib/SPARQLfedScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -4007,7 +4008,7 @@ YY_RULE_SETUP
 #line 279 "lib/SPARQLfedScanner.lpp"
 ECHO;
 	YY_BREAK
-#line 4011 "lib/SPARQLfedScanner.cpp"
+#line 4012 "lib/SPARQLfedScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{

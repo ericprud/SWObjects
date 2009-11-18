@@ -120,6 +120,7 @@ typedef unsigned int flex_uint32_t;
 #include <iostream> 
 #include <errno.h>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 /* end standard C++ headers. */
 /* %endif */
@@ -1695,7 +1696,7 @@ typedef w3c_sw::TrigSParser::token_type token_type;
 /* START patterns for SPARQLfed terminals */
 /* END patterns for SPARQLfed terminals */
 /* START semantic actions for SPARQLfed terminals */
-#line 1699 "lib/TrigSScanner.cpp"
+#line 1700 "lib/TrigSScanner.cpp"
 
 #define INITIAL 0
 
@@ -1859,7 +1860,7 @@ YY_DECL
 /* %% [7.0] user's declarations go here */
 #line 107 "lib/TrigSScanner.lpp"
 
-#line 1863 "lib/TrigSScanner.cpp"
+#line 1864 "lib/TrigSScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -2167,7 +2168,7 @@ YY_RULE_SETUP
 #line 147 "lib/TrigSScanner.lpp"
 ECHO;
 	YY_BREAK
-#line 2171 "lib/TrigSScanner.cpp"
+#line 2172 "lib/TrigSScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
