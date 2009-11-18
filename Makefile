@@ -177,6 +177,7 @@ LIBINC	+= -L$(PWD)/lib
 
 ### dirt simple generic static module ###
 BISONOBJ :=  $(subst .ypp,.o,$(wildcard lib/*/*.ypp)) 
+BISONH :=  $(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) 
 FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard lib/*.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard lib/*.cpp))
 BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
@@ -226,7 +227,7 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -lpthread -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 # bin/ general rules
-bin/%.dep: bin/%.cpp config.h
+bin/%.dep: bin/%.cpp config.h $(BISONH)
 	(echo -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
@@ -286,7 +287,7 @@ TEST_ARGS ?= ""
 
 t_SPARQL: bin/SPARQL
 
-tests/test_%.dep: tests/test_%.cpp config.h
+tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 	(echo -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
@@ -386,10 +387,11 @@ clean:
 	$(unitTESTexes) *~ */*.dep */*/*.d
 
 cleaner: clean
+	$(RM) \
 	$(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
 	$(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
 	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
-	$(RM) $(BISONHH:%=*/%)
+	$(BISONHH:%=*/%)
 
 dep: $(DEPEND)
 
