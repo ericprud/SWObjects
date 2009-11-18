@@ -1,23 +1,23 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
-
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,7 +28,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -37,19 +37,11 @@
 #ifndef PARSER_HEADER_H
 #pragma once
 
-#include <string>
-#include <iostream>
-#include "stack.hh"
+/* "%code requires" blocks.  */
 
-namespace w3c_sw
-{
-  class position;
-  class location;
-}
-
-/* First part of user declarations.  */
-#line 44 "lib/MapSetParser/MapSetParser.ypp"
- /*** C/C++ Declarations ***/
+/* Line 35 of lalr1.cc  */
+#line 45 "lib/MapSetParser/MapSetParser.ypp"
+ // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
@@ -138,8 +130,7 @@ public:
     MapSetDriver(std::string baseURI, POSFactory* posFactory);
     ~MapSetDriver();
 
-    virtual bool parse_stream(std::istream& in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -154,10 +145,36 @@ public:
 
 } // namespace w3c_sw
 
+// %} // ##bison1
 
 
-/* Line 35 of lalr1.cc.  */
-#line 161 "lib/MapSetParser/MapSetParser.hpp"
+
+/* Line 35 of lalr1.cc  */
+#line 154 "lib/MapSetParser/MapSetParser.hpp"
+
+
+#include <string>
+#include <iostream>
+#include "stack.hh"
+
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 35 of lalr1.cc  */
+#line 168 "lib/MapSetParser/MapSetParser.hpp"
+  class position;
+  class location;
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 35 of lalr1.cc  */
+#line 178 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -198,8 +215,14 @@ do {							\
 } while (false)
 #endif
 
-namespace w3c_sw
-{
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 35 of lalr1.cc  */
+#line 226 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -208,8 +231,11 @@ namespace w3c_sw
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 153 "lib/MapSetParser/MapSetParser.ypp"
-{
+    {
+
+/* Line 35 of lalr1.cc  */
+#line 154 "lib/MapSetParser/MapSetParser.ypp"
+
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
@@ -266,10 +292,12 @@ namespace w3c_sw
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
 
-}
-/* Line 35 of lalr1.cc.  */
-#line 272 "lib/MapSetParser/MapSetParser.hpp"
-	;
+
+
+
+/* Line 35 of lalr1.cc  */
+#line 300 "lib/MapSetParser/MapSetParser.hpp"
+    };
 #else
     typedef YYSTYPE semantic_type;
 #endif
@@ -400,6 +428,7 @@ namespace w3c_sw
     /// \returns  0 iff parsing succeeded.
     virtual int parse ();
 
+#if YYDEBUG
     /// The current debugging stream.
     std::ostream& debug_stream () const;
     /// Set the current debugging stream.
@@ -411,6 +440,7 @@ namespace w3c_sw
     debug_level_type debug_level () const;
     /// Set the current debugging level.
     void set_debug_level (debug_level_type l);
+#endif
 
   private:
     /// Report a syntax error.
@@ -420,7 +450,7 @@ namespace w3c_sw
 
     /// Generate an error message.
     /// \param state   the state where the error occurred.
-    /// \param tok     the look-ahead token.
+    /// \param tok     the lookahead token.
     virtual std::string yysyntax_error_ (int yystate, int tok);
 
 #if YYDEBUG
@@ -438,7 +468,7 @@ namespace w3c_sw
     virtual void yy_symbol_print_ (int yytype,
 				   const semantic_type* yyvaluep,
 				   const location_type* yylocationp);
-#endif /* ! YYDEBUG */
+#endif
 
 
     /// State numbers.
@@ -515,6 +545,10 @@ namespace w3c_sw
     virtual void yy_reduce_print_ (int r);
     /// Print the state stack on the debug stream.
     virtual void yystack_print_ ();
+
+    /* Debugging.  */
+    int yydebug_;
+    std::ostream* yycdebug_;
 #endif
 
     /// Convert a scanner token number \a t to a symbol number.
@@ -546,15 +580,18 @@ namespace w3c_sw
     static const unsigned int yyuser_token_number_max_;
     static const token_number_type yyundef_token_;
 
-    /* Debugging.  */
-    int yydebug_;
-    std::ostream* yycdebug_;
-
-
     /* User arguments.  */
     class MapSetDriver& driver;
   };
-}
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 35 of lalr1.cc  */
+#line 594 "lib/MapSetParser/MapSetParser.hpp"
+
 
 
 #endif /* ! defined PARSER_HEADER_H */

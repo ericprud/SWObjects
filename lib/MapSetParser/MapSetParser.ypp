@@ -41,7 +41,8 @@
 /* verbose error messages */
 %error-verbose
 
-%{ /*** C/C++ Declarations ***/
+// %{ //  ##bison1
+%code requires { // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
@@ -130,8 +131,7 @@ public:
     MapSetDriver(std::string baseURI, POSFactory* posFactory);
     ~MapSetDriver();
 
-    virtual bool parse_stream(std::istream& in,
-		      const std::string& sname = "stream input");
+    virtual bool parse(IStreamPtr& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -146,9 +146,10 @@ public:
 
 } // namespace w3c_sw
 
-%}
+// %} // ##bison1
+} // ##bison2
 
- /*** BEGIN MapSet - Change the grammar's tokens below ***/
+ /*** BEGIN MapSet language tokens. ***/
 
 %union {
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
@@ -316,7 +317,7 @@ public:
 
 //%destructor { delete $$; } BlankNode
 
- /*** END MapSet - Change the grammar's tokens above ***/
+ /*** END MapSet language tokens. ***/
 
 %{
 #include "../MapSetScanner.hpp"
@@ -1495,7 +1496,8 @@ BlankNode:
   | ANON	
 ;
 
-/*** END MapSet - Change the grammar rules above ***/
+ /*** END MapSet language structure. ***/
+
 
 %% /*** Additional Code ***/
 
@@ -1521,11 +1523,11 @@ namespace w3c_sw {
 {
 }
 
-bool MapSetDriver::parse_stream(std::istream& in, const std::string& sname)
+bool MapSetDriver::parse(IStreamPtr& in)
 {
-    streamname = sname;
+    streamname = in.nameStr;
 
-    MapSetScanner scanner(this, &in);
+    MapSetScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     lexer = &scanner;
 

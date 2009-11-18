@@ -120,6 +120,7 @@ typedef unsigned int flex_uint32_t;
 #include <iostream> 
 #include <errno.h>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 /* end standard C++ headers. */
 /* %endif */
@@ -2995,7 +2996,7 @@ typedef w3c_sw::MapSetParser::token_type token_type;
 /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
 /* END patterns for MapSet terminals */
 /* START semantic actions for MapSet terminals */
-#line 2999 "lib/MapSetScanner.cpp"
+#line 3000 "lib/MapSetScanner.cpp"
 
 #define INITIAL 0
 
@@ -3159,7 +3160,7 @@ YY_DECL
 /* %% [7.0] user's declarations go here */
 #line 164 "lib/MapSetScanner.lpp"
 
-#line 3163 "lib/MapSetScanner.cpp"
+#line 3164 "lib/MapSetScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -3707,7 +3708,7 @@ YY_RULE_SETUP
 #line 252 "lib/MapSetScanner.lpp"
 ECHO;
 	YY_BREAK
-#line 3711 "lib/MapSetScanner.cpp"
+#line 3712 "lib/MapSetScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
