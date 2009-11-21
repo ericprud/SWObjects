@@ -86,6 +86,7 @@ namespace w3c_sw {
 	    s << "}";
 	    return s.str();
 	}
+
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	BindingSetIterator begin () { return bindings.begin(); }
 	BindingSetConstIterator begin () const { return bindings.begin(); }
@@ -593,7 +594,15 @@ namespace w3c_sw {
 		throw(std::runtime_error("ConstructResultSet has no POSFactory."));
 	    return posFactory;
 	}
-	std::string toString() const;
+	std::string toString(NamespaceMap* namespaces = NULL) const;
+	std::string toString (std::string mediaType = "", NamespaceMap* namespaces = NULL, bool preferDb = false) {
+	    return
+		mediaType == "text/turtle" ||
+		mediaType == "text/trig" ||
+		preferDb ||
+		resultType == RESULT_Graphs ? db->toString(mediaType.empty() ? "text/trig" : mediaType, namespaces) :
+		toString(namespaces);
+	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }

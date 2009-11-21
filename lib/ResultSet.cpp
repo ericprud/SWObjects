@@ -291,14 +291,24 @@ namespace w3c_sw {
 	    }
     };
 
-    std::string ResultSet::toString () const {
+    std::string render (const POS* p, NamespaceMap* namespaces) {
+	return
+	    p == NULL
+	    ? BoxChars::GBoxChars->null
+	    : (namespaces == NULL || dynamic_cast<const URI*>(p) == NULL)
+	    ? p->toString()
+	    : namespaces->unmap(p->getLexicalValue());
+    }
+
+    std::string ResultSet::toString (NamespaceMap* namespaces) const {
+	std::stringstream s;
 	if (resultType == RESULT_Boolean)
 	    return size() > 0 ? "true" : "false" ;
 
 	else if (resultType == RESULT_Graphs)
 	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
 
-	/* Get column widths. */
+	/* Get column widths and fill namespace declarations. */
 	std::vector< const POS* > vars;
 	std::vector< size_t > widths;
 	unsigned count = 0;
@@ -316,24 +326,25 @@ namespace w3c_sw {
 
 	    VariableList intruders;
 	    lastInKnownVars = count;
-	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++)
+	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); ++row)
 		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
 		    const POS* var = b->first;
 		    if (pos2col.find(var) == pos2col.end()) {
 			/* Error: a variable not listed in knownVars. */
 			pos2col[var] = count++;
-			widths.push_back(var->toString().size());
+			std::string rendered(render(var, namespaces));
+			widths.push_back(rendered.size());
 			vars.push_back(var);
 			intruders.insert(var);
 		    }
-		    size_t width = b->second.pos->toString().length();
+		    std::string rendered(render(b->second.pos, namespaces));
+		    size_t width = rendered.size();
 		    if (width > widths[pos2col[var]])
 			widths[pos2col[var]] = width;
 		}
 	}
 
 	/* Generate ResultSet string. */
-	std::stringstream s;
 	/*   Top Border */
 	unsigned i;
 	for (i = 0; i < count; i++) {
@@ -365,7 +376,7 @@ namespace w3c_sw {
 	    for (i = 0; i < count; ++i) {
 		const POS* var = vars[i];
 		const POS* val = (*row)->get(var);
-		const std::string str = val ? val->toString().c_str() : BoxChars::GBoxChars->null;
+		const std::string str = render(val, namespaces);
 		s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
 		size_t width = str.length();
 		s << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << str << ' '; // right justified.
