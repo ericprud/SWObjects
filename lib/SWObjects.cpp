@@ -285,6 +285,10 @@ OStreamPtr::~OStreamPtr () {
 	delete p;
 }
 
+std::string NamespaceMap::unmap (std::string mapped) {
+    return std::string("<") + mapped + ">";
+    // return std::string("[[") + mapped + "]]";
+}
 
 void URI::express (Expressor* p_expressor) const {
     p_expressor->uri(this, terminal);
@@ -1486,8 +1490,8 @@ compared against
 	}
 #endif
     }
-    std::string TableOperation::toString () const {
-	SPARQLSerializer s;
+    std::string TableOperation::toString (NamespaceMap* namespaces) const {
+	SPARQLSerializer s("  ", SPARQLSerializer::DEBUG_none, "", namespaces);
 	express(&s);
 	return s.str();
     }

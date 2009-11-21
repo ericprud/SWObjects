@@ -38,13 +38,15 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamPtr& istr, std::string nameStr, POSFactory* posFactory) {
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamPtr& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap) {
 	if (!istr.mediaType.compare(0, 9, "text/html") || 
 	    !istr.mediaType.compare(0, 9, "application/xhtml")) {
 	    if (xmlParser == NULL)
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
 	    RDFaParser rdfaParser(posFactory, xmlParser);
+	    // if (nsMap != NULL)
+	    // 	rdfaParser.setNamespaceMap(nsMap);
 	    rdfaParser.parse(target, istr, nameStr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 8, "text/rdf") || 
@@ -53,15 +55,21 @@ namespace w3c_sw {
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
 	    RdfXmlParser p(posFactory, xmlParser);
+	    // if (nsMap != NULL)
+	    // 	p.setNamespaceMap(nsMap);
 	    p.parse(assureGraph(NULL), istr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 11, "text/turtle")) {
 	    TurtleSDriver turtleParser(nameStr, posFactory);
 	    turtleParser.setGraph(target);
+	    if (nsMap != NULL)
+		turtleParser.setNamespaceMap(nsMap);
 	    return turtleParser.parse(istr);
 	} else {
 	    TrigSDriver trigParser(nameStr, posFactory);
 	    trigParser.setDB(this);
+	    if (nsMap != NULL)
+		trigParser.setNamespaceMap(nsMap);
 	    return trigParser.parse(istr);
 	}
     }

@@ -1151,6 +1151,8 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 
 */
 
+class NamespaceMap;
+
 class TableOperation : public Base {
 protected:
     TableOperation () : Base() {  }
@@ -1162,7 +1164,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
-    std::string toString() const;
+    std::string toString(NamespaceMap* namespaces = NULL) const;
 };
 class TableJunction : public TableOperation {
 protected:
@@ -2485,6 +2487,51 @@ struct OStreamPtr : public StreamPtr {
 	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
     ~OStreamPtr();
     std::ostream& operator* () { return *p; }
+};
+
+class NamespaceMap {
+protected:
+    std::map<std::string, const URI*> ns;
+public:
+
+    struct UnknownPrefixException : StringException {
+	std::string prefix;
+	UnknownPrefixException (std::string prefix) : 
+	    StringException(make(prefix)), prefix(prefix) {  }
+	virtual ~UnknownPrefixException () throw() {  }
+    protected:
+	std::string make (std::string prefix) {
+	    std::stringstream s;
+	    s << "unknown prefix \"" << prefix << "\"";
+	    return s.str();
+	}
+    };
+
+    virtual ~NamespaceMap () {  }
+    virtual void clear () { ns.clear(); }
+    // const URI*& operator[] (std::string prefix) { return ns[prefix]; }
+    virtual const URI* get (std::string prefix, bool returnNull = false) {
+	NamespaceMap::const_iterator vi = ns.find(prefix);
+	if (vi == ns.end()) {
+	    if (returnNull)
+		return NULL;
+	    NamespaceMap::UnknownPrefixException e(prefix);
+	    throw(e);
+	} else
+	    return vi->second;
+    }
+    virtual void set (std::string prefix, const URI* uri) { ns[prefix] = uri; }
+    virtual std::string unmap (std::string mapped);
+
+    typedef std::map<std::string, const URI*>::iterator iterator;
+    typedef std::map<std::string, const URI*>::const_iterator const_iterator;
+
+    iterator begin () { return ns.begin(); }
+    const_iterator begin () const { return ns.begin(); }
+    iterator end () { return ns.end(); }
+    const_iterator end () const { return ns.end(); }
+    iterator find (std::string prefix) { return ns.find(prefix); }
+
 };
 
 class Expressor {

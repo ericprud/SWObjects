@@ -125,7 +125,7 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	bool loadData(BasicGraphPattern* target, IStreamPtr& istr, std::string nameStr, POSFactory* posFactory);
+	bool loadData(BasicGraphPattern* target, IStreamPtr& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap = NULL);
 	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
 	    std::string nameStr = name->getLexicalValue();
 	    IStreamPtr iptr(nameStr, IStreamPtr::NONE, webAgent, debugStream);
@@ -134,7 +134,7 @@ namespace w3c_sw {
 	}
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
-	std::string toString () const {
+	std::string toString (std::string mediaType = "text/trig", NamespaceMap* namespaces = NULL) const {
 	    /* simple unordered serializer -
 	       SPARQLSerializer s;
 	       express(&s);
@@ -142,14 +142,17 @@ namespace w3c_sw {
 
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;
-	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		// if (it->second->size() > 0)
+	    if (mediaType == "text/turtle" || mediaType == "application/rdf+xml")
+		graphList.push_back(DefaultGraph);
+	    else
+		for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		    // if (it->second->size() > 0)
 		    graphList.push_back(it->first);
 	    POSsorter sorter;
 	    graphList.sort(sorter);
 	    std::stringstream s;
 	    for (std::list<const POS*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it)
-		s << *graphs.find(*it)->second;
+		s << graphs.find(*it)->second->toString(namespaces);
 	    return s.str();
 	}
     };

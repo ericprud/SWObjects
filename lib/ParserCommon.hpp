@@ -20,50 +20,6 @@ protected:
 
 public:
 
-    class NamespaceMap {
-    protected:
-	std::map<std::string, const URI*> ns;
-    public:
-
-	struct UnknownPrefixException : StringException {
-	    std::string prefix;
-	    UnknownPrefixException (std::string prefix) : 
-		StringException(make(prefix)), prefix(prefix) {  }
-	    virtual ~UnknownPrefixException () throw() {  }
-	protected:
-	    std::string make (std::string prefix) {
-		std::stringstream s;
-		s << "unknown prefix \"" << prefix << "\"";
-		return s.str();
-	    }
-	};
-
-	virtual ~NamespaceMap () {  }
-	virtual void clear () { ns.clear(); }
-	// const URI*& operator[] (std::string prefix) { return ns[prefix]; }
-	virtual const URI* get (std::string prefix, bool returnNull = false) {
-	    NamespaceMap::const_iterator vi = ns.find(prefix);
-	    if (vi == ns.end()) {
-		if (returnNull)
-		    return NULL;
-		NamespaceMap::UnknownPrefixException e(prefix);
-		throw(e);
-	    } else
-		return vi->second;
-	}
-	virtual void set (std::string prefix, const URI* uri) { ns[prefix] = uri; }
-
-	typedef std::map<std::string, const URI*>::iterator iterator;
-	typedef std::map<std::string, const URI*>::const_iterator const_iterator;
-
-	iterator begin () { return ns.begin(); }
-	const_iterator begin () const { return ns.begin(); }
-	iterator end () { return ns.end(); }
-	const_iterator end () const { return ns.end(); }
-	iterator find (std::string prefix) { return ns.find(prefix); }
-
-    };
-
     std::string getBase () const { return baseURI; }
     void setBase (std::string b) { baseURI = b; }
 };
@@ -72,7 +28,8 @@ class YaccDriver : public ParserDriver {
 
 protected:
     POSFactory * const posFactory;
-    NamespaceMap	namespaces;
+    NamespaceMap*	namespaces;
+    bool		freeNamespaces;
     bool		ignorePrefixFlag;
     POS::String2BNode	nodeMap;
 
@@ -80,18 +37,29 @@ public:
     /// construct a new parser driver context
     YaccDriver(POSFactory* posFactory);
     YaccDriver(std::string baseURI, POSFactory* posFactory);
-    virtual ~YaccDriver () {  }
+    virtual ~YaccDriver () {
+	if (freeNamespaces)
+	    delete namespaces;
+    }
 
     void clear () {
-	namespaces.clear();
+	namespaces->clear();
 	nodeMap.clear();
 	setBase("");
     }
 
     void clear (std::string baseURI) {
-	namespaces.clear();
+	namespaces->clear();
 	nodeMap.clear();
 	setBase(baseURI);
+    }
+
+
+    void setNamespaceMap (NamespaceMap* newMap, bool pFreeNamespaces = false) {
+	if (freeNamespaces)
+	    delete namespaces;
+	namespaces = newMap;
+	freeNamespaces = pFreeNamespaces;
     }
 
     /// enable debug output in the flex scanner
@@ -120,13 +88,13 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
-    void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces.set(prefix, namespaceURI); }
+    void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces->set(prefix, namespaceURI); }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }
 
 
     const URI* getNamespace (std::string prefix, bool returnNull = false) { // @@@ is anyone served by an exception here?
-	return namespaces.get(prefix, returnNull);
+	return namespaces->get(prefix, returnNull);
     }
 
 

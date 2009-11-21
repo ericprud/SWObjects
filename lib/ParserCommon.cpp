@@ -20,10 +20,16 @@ namespace w3c_sw {
 
     /* Base class for Yacc parsers. */
     YaccDriver::YaccDriver (POSFactory* posFactory)
-	: ParserDriver(), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: ParserDriver(), posFactory(posFactory),
+	  namespaces(new NamespaceMap()), freeNamespaces(true),
+	  ignorePrefixFlag(false),
+	  trace_scanning(false), trace_parsing(false) {  }
 
     YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
-	: ParserDriver(baseURI), posFactory(posFactory), namespaces(), ignorePrefixFlag(false), trace_scanning(false), trace_parsing(false) {  }
+	: ParserDriver(baseURI), posFactory(posFactory),
+	  namespaces(new NamespaceMap), freeNamespaces(true),
+	  ignorePrefixFlag(false),
+	  trace_scanning(false), trace_parsing(false) {  }
 
     void YaccDriver::error (const class location& l,
 			const std::string& m) {

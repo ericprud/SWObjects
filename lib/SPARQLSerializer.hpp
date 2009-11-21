@@ -29,6 +29,8 @@ protected:
     size_t depth;
     std::stack<e_PREC> precStack;
     const char* leadStr;
+    NamespaceMap* namespaces;
+
     void start (e_PREC prec) {
 	if (prec < precStack.top())
 	    ret << "( ";
@@ -51,8 +53,8 @@ protected:
 	    ret << tab;
     }
 public:
-    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "", NamespaceMap* namespaces = NULL) : 
+	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), namespaces(namespaces)
     { precStack.push(PREC_High); }
     virtual std::string str () { return ret.str(); }
     virtual void str (std::string seed) { ret.str(seed); }
@@ -60,7 +62,12 @@ public:
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
     virtual void uri (const URI* const, std::string lexicalValue) {
-	ret << '<' << lexicalValue << '>';
+	std::string l;
+	if (namespaces != NULL)
+	    l = namespaces->unmap(lexicalValue);
+	if (l.empty())
+	    l = '<' + lexicalValue + '>';
+	ret << l;
     }
     virtual void variable (const Variable* const, std::string lexicalValue) {
 	ret << '?' << lexicalValue;

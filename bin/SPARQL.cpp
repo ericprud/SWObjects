@@ -109,6 +109,33 @@ sw::ParserDriver* Parsers[] = {
     &GRdfXmlParser, 
     &GRDFaParser
 };
+class NamespaceAccumulator : public sw::NamespaceMap {
+public:
+    std::string toString (const char* mediaType = NULL) {
+	std::stringstream sstr;
+	if (mediaType == NULL)
+	    for (sw::NamespaceMap::const_iterator it = begin();
+		 it != end(); ++it)
+		sstr << it->first << "=> " << it->second->toString() << "\n";
+	return sstr.str();
+    }
+};
+class NamespaceRelay : public sw::NamespaceMap {
+    sw::NamespaceMap& relay;
+public:
+    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
+    virtual void set (std::string prefix, const sw::URI* uri) {
+	sw::NamespaceMap::set(prefix, uri);
+	relay.set(prefix, uri);
+    }
+};
+
+// std::ostream& operator<< (std::ostream& os, sw::NamespaceMap map) {
+//     return os << map->toString();
+// }
+
+NamespaceAccumulator NsAccumulator;
+NamespaceRelay NsRelay(NsAccumulator);
 
 struct loadEntry {
     const sw::POS* graphName;
@@ -603,7 +630,7 @@ int main(int ac, char* av[])
 	    "  named graphs:\n"
 	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 	    "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
-	    "    UNION\n"
+	    "      UNION\n"
 	    "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n"
 	    "    +--------+\n"
 	    "    | ?g     |\n"
@@ -663,7 +690,10 @@ int main(int ac, char* av[])
 	    if (vm.count("description")) {
 		sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
 		s.mediaType = "text/turtle";
-		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), &F); // !!! baseURI
+	    // TurtleParser.setGraph(Db.assureGraph(sw::DefaultGraph));
+	    // TurtleParser.setNamespaces(&NsRelay);
+	    // TurtleParser.parse(s);
+		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), &F, &NsRelay);
 	    }
 
 	    if (vm.count("desc-graph")) {
@@ -672,7 +702,7 @@ int main(int ac, char* av[])
 		     it != descs.end(); ++it) {
 		    sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
 		    s.mediaType = "text/turtle";
-		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), &F); // !!! baseURI
+		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), &F);
 		}
 	    }
 
@@ -757,17 +787,9 @@ int main(int ac, char* av[])
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
 				    &Agent, &DebugStream);
-		if (optr.mediaType == "text/turtle") {
-		    *optr << Db.assureGraph(NULL)->toString();
-		} else if (optr.mediaType == "text/trig") {
-		    *optr << Db.toString();
-		} else if (Query == NULL || 
-			   rs.resultType == sw::ResultSet::RESULT_Graphs) {
-		    *optr << dumpDB.toString();
-		} else {
-		    *optr << rs.toString();
-		}
+		*optr << rs.toString(optr.mediaType, &NsAccumulator, Query == NULL);
 	    }
+	    std::cerr << NsAccumulator.toString();
 	}
     } catch(std::exception& e) {
         std::cout << e.what() << "\n";
@@ -779,3 +801,4 @@ int main(int ac, char* av[])
 
     return ret;
 }
+
