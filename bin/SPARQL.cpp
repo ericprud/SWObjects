@@ -145,7 +145,7 @@ struct loadEntry {
 	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
     void loadGraph () {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
-	std::string nameStr = graphName->getLexicalValue();
+	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamPtr istr(nameStr, sw::StreamPtr::NONE, &Agent, &DebugStream);
 	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), &F);
     }
