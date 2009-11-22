@@ -1,0 +1,2 @@
+  <g0> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Description> .
+  <g0> <tag:eric@w3.org:2009/pim/basicAddress> <g1> .

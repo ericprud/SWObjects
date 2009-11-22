@@ -1,0 +1,9 @@
+<rdf:RDF xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:trans="tag:eric@w3.org:2009/tmo/translator#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:pim="tag:eric@w3.org:2009/pim/basic">
+   <rdf:Description rdf:about="g0">
+      <pim:Address rdf:resource="g1"/>
+   </rdf:Description>
+</rdf:RDF>
