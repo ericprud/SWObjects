@@ -12,6 +12,15 @@
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"
 
+#ifdef _MSC_VER
+  #define SET_Variable_CONSTIT_NE(L, R) set_Variable_constit_ne(L, R)
+  bool set_Variable_constit_ne (std::set<const w3c_sw::Variable*>::const_iterator l, 
+				std::set<const w3c_sw::Variable*>::const_iterator r)
+  { return l == r; }
+#else /* !_MSC_VER */
+  #define SET_Variable_CONSTIT_NE(L, R) L == R
+#endif /* !_MSC_VER */
+
 namespace w3c_sw {
 
     const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
@@ -222,7 +231,7 @@ IStreamPtr::IStreamPtr (std::string name, e_opts opts,
     malloced = true;
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
-    } else if (!opts & FILE && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+    } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
@@ -255,7 +264,7 @@ OStreamPtr::OStreamPtr (std::string name, e_opts opts,
     malloced = true;
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
-    } else if (!opts & FILE && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+    } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
@@ -1315,7 +1324,7 @@ compared against
 		    /* Build SELECT and FILTER strings from enountered Variables. */
 		    selectString = "SELECT ";
 		    for (std::set<const Variable*>::const_iterator it = vars.begin();
-			 it != vars.end(); ++it)
+			 SET_Variable_CONSTIT_NE(it, vars.end()); ++it)
 			selectString.append((*it)->toString()).append(" ");
 		    federationString = rs->buildFederationString(vars, lexicalCompare);
 
