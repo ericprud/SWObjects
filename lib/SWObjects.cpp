@@ -760,6 +760,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     const TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
+	if (s == NULL || p == NULL || o == NULL)
+	    throw
+		std::string("getTriple(")
+		+ (s == NULL ? "NULL" : s->toString()) + ", " 
+		+ (p == NULL ? "NULL" : p->toString()) + ", " 
+		+ (o == NULL ? "NULL" : o->toString()) + ")";
+
 	std::stringstream key;
 	key << s << p << o << weaklyBound;
 	TriplePatternMap::const_iterator vi = triples.find(key.str());
