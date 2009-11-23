@@ -39,6 +39,7 @@ namespace w3c_sw {
 	    POSFactory* posFactory;
 	    std::string baseURI;
 	    std::string chars;
+	    bool expectCharData;
 	    const URI* datatype;
 	    LANGTAG* langtag;
 	    std::stack<State> stack;
@@ -59,7 +60,7 @@ namespace w3c_sw {
 
 	public:
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
-		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars("") {
+		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars(""), expectCharData(false) {
 		State newState = {DOCUMENT, NULL, NULL};
 		stack.push(newState);
 	    }
@@ -146,7 +147,7 @@ namespace w3c_sw {
 		    }
 
 		    /* Add type arc for typed nodes. */
-		    if ( !(uri == NS_rdf && localName == "RDF") ) {
+		    if ( !(uri == NS_rdf && localName == "Description") ) {
 			const POS* p = posFactory->getURI(std::string(NS_rdf) + "type");
 			const POS* t = posFactory->getURI(uri + localName);
 			bgp->addTriplePattern(posFactory->getTriple(newState.s, p, t));
@@ -169,6 +170,8 @@ namespace w3c_sw {
 			newState.s = posFactory->getURI(t);
 		    else if ( !parseType.empty() )
 			newState.s = posFactory->createBNode();
+		    else
+			expectCharData = true;
 		    if (newState.s != NULL)
 			bgp->addTriplePattern(posFactory->getTriple(stack.top().s, 
 							    newState.p, newState.s));
@@ -213,6 +216,8 @@ namespace w3c_sw {
 			parseType == "Resource" ? PROPERTY : 
 			SUBJECT;
 
+		    if (newState.s == NULL)
+			newState.s = stack.top().s;
 		    break;
 		}
 		default:
@@ -234,7 +239,7 @@ namespace w3c_sw {
 		case DOCUMENT:
 		    break;
 		case SUBJECT:
-		    if (nestedState.p != NULL && nestedState.s == NULL) {
+		    if (nestedState.p != NULL && expectCharData == true) {
 			/* We were expecting a literal node. */
 			const POS* o = posFactory->getRDFLiteral(chars, datatype, langtag);
 			chars = "";
@@ -257,6 +262,7 @@ namespace w3c_sw {
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
 		    varError("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
 		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
+		expectCharData = false;
 	    }
 	    virtual void characters (const char ch[],
 				     int start,
