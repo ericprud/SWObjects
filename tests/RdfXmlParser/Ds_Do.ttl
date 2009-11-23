@@ -1,0 +1,6 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix trans: <tag:eric@w3.org:2009/tmo/translator#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix pim: <tag:eric@w3.org:2009/pim/basic> .
+   <g0> pim:Address <g1> .

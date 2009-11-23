@@ -40,35 +40,70 @@
  */
 #include <boost/test/unit_test.hpp>
 
-using namespace w3c_sw;
+namespace sw = w3c_sw;
 
-POSFactory F;
-TurtleSDriver turtleParser("", &F);
-RdfXmlParser GRdfXmlParser(&F, &P);
+sw::POSFactory F;
+sw::TurtleSDriver turtleParser("", &F);
+sw::RdfXmlParser GRdfXmlParser(&F, &P);
 
-BOOST_AUTO_TEST_CASE( Ds_po ) {
-    DefaultGraphPattern tested;
-    IStreamPtr rdfxml("RdfXmlParser/Ds_po.rdf");
+struct MeasuredGraph : public sw::DefaultGraphPattern {
+    
+};
+
+struct ReferenceGraph : public sw::DefaultGraphPattern {
+};
+
+BOOST_AUTO_TEST_CASE( SPARQLResult ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/SPARQLResult.rdf");
     GRdfXmlParser.parse(&tested, rdfxml);
 
-    DefaultGraphPattern expected;
+    sw::DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase("SPARQLResult.rdf");
+    sw::IStreamPtr reference("RdfXmlParser/SPARQLResult.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(reference);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+BOOST_AUTO_TEST_CASE( Ts_To ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/Ts_To.rdf");
+    GRdfXmlParser.parse(&tested, rdfxml);
+
+    sw::DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase("Ts_To.rdf");
+    sw::IStreamPtr reference("RdfXmlParser/Ts_To.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(reference);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+BOOST_AUTO_TEST_CASE( Ds_po ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/Ds_po.rdf");
+    GRdfXmlParser.parse(&tested, rdfxml);
+
+    sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Ds_po.rdf");
-    IStreamPtr reference("RdfXmlParser/Ds_po.ttl", StreamPtr::FILE);
+    sw::IStreamPtr reference("RdfXmlParser/Ds_po.ttl", sw::StreamPtr::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 }
 
 BOOST_AUTO_TEST_CASE( Ds_Do ) {
-    DefaultGraphPattern tested;
-    IStreamPtr rdfxml("RdfXmlParser/Ds_Do.rdf");
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/Ds_Do.rdf");
     GRdfXmlParser.parse(&tested, rdfxml);
 
-    DefaultGraphPattern expected;
+    sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Ds_Do.rdf");
-    IStreamPtr reference("RdfXmlParser/Ds_Do.ttl", StreamPtr::FILE);
+    sw::IStreamPtr reference("RdfXmlParser/Ds_Do.ttl", sw::StreamPtr::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -77,12 +112,12 @@ BOOST_AUTO_TEST_CASE( Ds_Do ) {
 /* invoke with e.g. -DHTTP_RdfXml_test=http://mouni.local/RdfXml-0.rdf */
 #if HTTP_CLIENT != SWOb_DISABLED && defined(HTTP_RdfXml_test)
 BOOST_AUTO_TEST_CASE( by_http ) {
-    DefaultGraphPattern tested;
+    sw::DefaultGraphPattern tested;
     std::string s(WebClient.get(HTTP_RdfXml_test));
     BOOST_CHECK_EQUAL(WebClient.getMediaType().substr(0, 9), "application/rdf+xml");
     GRdfXmlParser.parse(&tested, s.begin(), s.end(), HTTP_RdfXml_test);
 
-    DefaultGraphPattern expected;
+    sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase(F.getURI(HTTP_RdfXml_test));
     turtleParser.parse_file("RdfXml-0.ttl");
