@@ -308,8 +308,11 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
 	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
 	Output = loadEntry(NULL, abs, BaseURI);
-	if (Debug > 0)
-	    std::cout << "Replacing data from " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	if (Debug > 0) {
+	    std::cout << "Replacing data from " << abs->getLexicalValue();
+	    if (BaseURI != NULL)
+		std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	}
     }
 }
 
@@ -320,8 +323,11 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const std::string& s = po::validators::get_single_string(values);
     const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
-    if (Debug > 0)
-	std::cout << "reading default graph from " << abs->getLexicalValue() << " with base URI " << BaseURI->getLexicalValue() << "\n";
+    if (Debug > 0) {
+	std::cout << "reading default graph from " << abs->getLexicalValue();
+	if (BaseURI != NULL)
+	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+    }
 }
 
 /* Overload of relURI to validate --graph arguments. */
