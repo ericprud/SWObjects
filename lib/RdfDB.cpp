@@ -50,7 +50,7 @@ namespace w3c_sw {
 	    rdfaParser.parse(target, istr, nameStr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 8, "text/rdf") || 
-		   !istr.mediaType.compare(0, 12, "text/rdf+xml")) {
+		   !istr.mediaType.compare(0, 19, "application/rdf+xml")) {
 	    if (xmlParser == NULL)
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
