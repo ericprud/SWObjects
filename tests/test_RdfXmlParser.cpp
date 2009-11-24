@@ -53,7 +53,60 @@ struct MeasuredGraph : public sw::DefaultGraphPattern {
 struct ReferenceGraph : public sw::DefaultGraphPattern {
 };
 
-BOOST_AUTO_TEST_CASE( SPARQLResult ) {
+BOOST_AUTO_TEST_CASE( Db0_Db1 ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/Db0_Db1.rdf");
+    GRdfXmlParser.parse(&tested, rdfxml);
+
+    sw::DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase("Db0_Db1.rdf");
+    sw::IStreamPtr reference("RdfXmlParser/Db0_Db1.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(reference);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+
+#ifdef SOUND_GRAPH_COMPARE
+    sw::DefaultGraphPattern notExpected;
+    turtleParser.setGraph(&notExpected);
+    turtleParser.setBase("Db0_Db1.rdf");
+    sw::IStreamPtr ref2("RdfXmlParser/Db0_Db0.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(ref2);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    if (tested == notExpected)
+	BOOST_ERROR( "tested == notExpected" );
+#endif /* SOUND_GRAPH_COMPARE */
+}
+
+BOOST_AUTO_TEST_CASE( Db0_Db0 ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/Db0_Db0.rdf");
+    GRdfXmlParser.parse(&tested, rdfxml);
+
+    sw::DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase("Db0_Db0.rdf");
+    sw::IStreamPtr reference("RdfXmlParser/Db0_Db0.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(reference);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+BOOST_AUTO_TEST_CASE( result_sort_8 ) {
+    sw::DefaultGraphPattern tested;
+    sw::IStreamPtr rdfxml("RdfXmlParser/result-sort-8.rdf");
+    GRdfXmlParser.parse(&tested, rdfxml);
+
+    sw::DefaultGraphPattern expected;
+    turtleParser.setGraph(&expected);
+    turtleParser.setBase("result-sort-8.rdf");
+    sw::IStreamPtr reference("RdfXmlParser/result-sort-8.ttl", sw::StreamPtr::FILE);
+    turtleParser.parse(reference);
+    turtleParser.clear(""); // clear out namespaces and base URI.
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+BOOST_AUTO_TEST_CASE( SPARQLResultg ) {
     sw::DefaultGraphPattern tested;
     sw::IStreamPtr rdfxml("RdfXmlParser/SPARQLResult.rdf");
     GRdfXmlParser.parse(&tested, rdfxml);

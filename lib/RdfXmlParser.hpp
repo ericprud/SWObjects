@@ -43,6 +43,7 @@ namespace w3c_sw {
 	    const URI* datatype;
 	    LANGTAG* langtag;
 	    std::stack<State> stack;
+	    POS::String2BNode bnodeMap;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -158,6 +159,7 @@ namespace w3c_sw {
 		    std::string t; // used a couple times below
 		    newState.p = posFactory->getURI(uri + localName);
 		    std::string parseType = attrs->getValue(NS_rdf, "parseType");
+		    std::string nodeID = attrs->getValue(NS_rdf, "nodeID");
 
 		    /* rdf:parseType or rdf:resource attributes imply a new node.
 		     * Otherwise, may be a:
@@ -170,6 +172,8 @@ namespace w3c_sw {
 			newState.s = posFactory->getURI(t);
 		    else if ( !parseType.empty() )
 			newState.s = posFactory->createBNode();
+		    else if ( !nodeID.empty() )
+			newState.s = posFactory->getBNode(nodeID, bnodeMap);
 		    else
 			expectCharData = true;
 		    if (newState.s != NULL)
