@@ -19,9 +19,9 @@
 #include "SWObjects.hpp"
 
 #if HTTP_SERVER == SWOb_ASIO
- #include "interface/WEBserver_asio.hpp"
+ #include "../interface/WEBserver_asio.hpp"
 #elif HTTP_SERVER == SWOb_DLIB
- #include "interface/WEBserver_dlib.hpp"
+ #include "../interface/WEBserver_dlib.hpp"
 #else
  #error unknown HTTP_SERVER (neither ASIO or DLIB)
 #endif
