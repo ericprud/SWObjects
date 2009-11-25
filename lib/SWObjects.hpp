@@ -2445,7 +2445,7 @@ std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wante
 namespace w3c_sw {
 
 class SWWEBagent;
-struct StreamPtr {
+struct StreamContext {
     typedef enum {
 	NONE =		0,	/* don't do nuthin */
 	STRING =	1,	/* nameStr is the contents */
@@ -2457,7 +2457,7 @@ struct StreamPtr {
     std::string mediaType;
     bool malloced;
 
-    StreamPtr (std::string nameStr) : nameStr(nameStr) {  }
+    StreamContext (std::string nameStr) : nameStr(nameStr) {  }
 
     void guessMediaType () {
 	mediaType = 
@@ -2471,21 +2471,21 @@ struct StreamPtr {
     }
 };
 
-struct IStreamPtr : public StreamPtr {
+struct IStreamContext : public StreamContext {
     std::istream* p;
-    IStreamPtr(std::string nameStr, e_opts = NONE,
+    IStreamContext(std::string nameStr, e_opts = NONE,
 	       SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~IStreamPtr () { if (malloced) delete p; }
+    ~IStreamContext () { if (malloced) delete p; }
     std::istream& operator* () { return *p; }
 
 };
 
-struct OStreamPtr : public StreamPtr {
+struct OStreamContext : public StreamContext {
     std::ostream* p;
     bool malloced;
-    OStreamPtr(std::string nameStr, e_opts = NONE,
+    OStreamContext(std::string nameStr, e_opts = NONE,
 	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~OStreamPtr();
+    ~OStreamContext();
     std::ostream& operator* () { return *p; }
 };
 

@@ -2949,7 +2949,7 @@ namespace w3c_sw {
 {
 }
 
-bool MapSetDriver::parse(IStreamPtr& in)
+bool MapSetDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 

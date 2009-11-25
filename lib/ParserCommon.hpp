@@ -72,9 +72,9 @@ public:
     std::string streamname;
 
     /** Invoke the scanner and parser for a stream.
-     * @param in	IStreamPtr with input stream and name
+     * @param in	IStreamContext with input stream and name
      */
-    virtual bool parse(IStreamPtr& in) = 0;
+    virtual bool parse(IStreamContext& in) = 0;
 
     /** Error handling with associated line number. This can be modified to
      * output the error e.g. to a dialog box. */

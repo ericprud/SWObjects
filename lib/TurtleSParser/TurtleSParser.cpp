@@ -1585,7 +1585,7 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TurtleSDriver::parse(IStreamPtr& in)
+bool TurtleSDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 

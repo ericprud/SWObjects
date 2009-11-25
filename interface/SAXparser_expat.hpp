@@ -71,7 +71,7 @@ namespace w3c_sw {
  #define EXPAT_BUFFER_SIZE 8192
 #endif /* EXPAT_BUFFER_SIZE */
 
-	virtual void parse (IStreamPtr& istr, SWSAXhandler* saxHandler) {
+	virtual void parse (IStreamContext& istr, SWSAXhandler* saxHandler) {
 	    //toy(istr, saxHandler);
 	    SAXhandlerInsulator insulator(this, saxHandler);
 

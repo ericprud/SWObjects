@@ -146,7 +146,7 @@ struct loadEntry {
     void loadGraph () {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamPtr istr(nameStr, sw::StreamPtr::NONE, &Agent, &DebugStream);
+	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, &Agent, &DebugStream);
 	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), &F);
     }
 };
@@ -416,11 +416,11 @@ std::string adjustPath (std::string nameStr) {
 
 sw::Operation* parseQuery (const sw::POS* query) {
     std::string querySpec = query->getLexicalValue();
-    sw::IStreamPtr::e_opts opts = 
+    sw::IStreamContext::e_opts opts = 
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
-	sw::IStreamPtr::STRING : 
-	sw::IStreamPtr::STDIN;
-    sw::IStreamPtr iptr(querySpec, opts, &Agent, &DebugStream);
+	sw::IStreamContext::STRING : 
+	sw::IStreamContext::STDIN;
+    sw::IStreamContext iptr(querySpec, opts, &Agent, &DebugStream);
     if (SparqlParser.parse(iptr) != 0)
 	throw std::string("error when parsing query ").append(querySpec);
     return SparqlParser.root;
@@ -694,7 +694,7 @@ int main(int ac, char* av[])
             std::cout << "SPARQL version 1.0, revision: $Id$\n";
 	else if (NoExec == false) {
 	    if (vm.count("description")) {
-		sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
+		sw::IStreamContext s(appDescGraph, sw::StreamContext::STRING);
 		s.mediaType = "text/turtle";
 	    // TurtleParser.setGraph(Db.assureGraph(sw::DefaultGraph));
 	    // TurtleParser.setNamespaces(&NsRelay);
@@ -706,7 +706,7 @@ int main(int ac, char* av[])
 		std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
 		for (std::vector<std::string>::const_iterator it = descs.begin();
 		     it != descs.end(); ++it) {
-		    sw::IStreamPtr s(appDescGraph, sw::StreamPtr::STRING);
+		    sw::IStreamContext s(appDescGraph, sw::StreamContext::STRING);
 		    s.mediaType = "text/turtle";
 		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), &F);
 		}
@@ -755,8 +755,8 @@ int main(int ac, char* av[])
 		o->execute(&Db, &rs);
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
-		    sw::IStreamPtr iptr(cmp->getLexicalValue(), 
-					sw::IStreamPtr::NONE, 
+		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
+					sw::IStreamContext::NONE, 
 					&Agent, &DebugStream);
 
 		    sw::ResultSet* reference;
@@ -791,7 +791,7 @@ int main(int ac, char* av[])
 	    }
 	    if (Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamPtr optr(outres, sw::OStreamPtr::STDIN, 
+		sw::OStreamContext optr(outres, sw::OStreamContext::STDIN, 
 				    &Agent, &DebugStream);
 		*optr << rs.toString(optr.mediaType, &NsAccumulator, Query == NULL);
 	    }

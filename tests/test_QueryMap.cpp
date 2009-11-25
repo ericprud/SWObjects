@@ -32,7 +32,7 @@ struct EqualsTest {
     EqualsTest (const char* leftString, const char* rightString) {
 
 	/* Parse left. */
-	IStreamPtr lstream(leftString, StreamPtr::STRING);
+	IStreamContext lstream(leftString, StreamContext::STRING);
 	if (sparqlParser.parse(lstream)) {
 	    std::string msg = std::string("failed to parse left \"") + 
 		leftString + std::string("\".");
@@ -41,7 +41,7 @@ struct EqualsTest {
 	left = sparqlParser.root;
 
 	/* Parse right. */
-	IStreamPtr rstream(rightString, StreamPtr::STRING);
+	IStreamContext rstream(rightString, StreamContext::STRING);
 	if (sparqlParser.parse(rstream)) {
 	    std::string msg = std::string("failed to parse right \"") + 
 		rightString + std::string("\".");
@@ -270,7 +270,7 @@ struct RuleMapTest {
 	bgpCompareVars(BasicGraphPattern::CompareVars) {
 
 	/* Parse query. */
-	IStreamPtr qstr(queryFile, StreamPtr::FILE);
+	IStreamContext qstr(queryFile, StreamContext::FILE);
 	if (sparqlParser.parse(qstr)) {
 	    std::string msg = std::string("failed to parse query \"") + 
 		queryFile + std::string("\".");
@@ -279,7 +279,7 @@ struct RuleMapTest {
 	Operation* query = sparqlParser.root;
 
 	/* Parse map. */
-	IStreamPtr mstr(mapFile, StreamPtr::FILE);
+	IStreamContext mstr(mapFile, StreamContext::FILE);
 	if (sparqlParser.parse(mstr)) {
 	    std::string msg = std::string("failed to parse map \"") + 
 		mapFile + std::string("\".");
@@ -293,7 +293,7 @@ struct RuleMapTest {
 	delete query;
 
 	/* Parse map results. */
-	IStreamPtr rstr(mapResultsFile, StreamPtr::FILE);
+	IStreamContext rstr(mapResultsFile, StreamContext::FILE);
 	if (sparqlParser.parse(rstr)) {
 	    std::string msg = std::string("failed to parse map results \"") + 
 		mapResultsFile + std::string("\".");

@@ -1640,7 +1640,7 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TrigSDriver::parse(IStreamPtr& in)
+bool TrigSDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 

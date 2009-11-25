@@ -314,7 +314,7 @@ namespace w3c_sw {
 	    reinterpret_cast<_variant_t&>(vt) = bs;
 	}
 
-	virtual void parse (w3c_sw::IStreamPtr& istr, SWSAXhandler* saxHandler) {
+	virtual void parse (w3c_sw::IStreamContext& istr, SWSAXhandler* saxHandler) {
 	    SAXhandlerInsulator insulator(this, saxHandler);
 
 	    std::istreambuf_iterator<char> i(*istr.p), e;

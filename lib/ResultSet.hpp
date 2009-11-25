@@ -336,8 +336,8 @@ namespace w3c_sw {
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
-	    IStreamPtr boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", StreamPtr::STRING);
+	    IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", StreamContext::STRING);
 	    if (sparqlParser.parse(boolq))
 		throw std::string("failed to parse boolean ResultSet constructor query.");
 	    ResultSet booleanResult(posFactory);
@@ -358,8 +358,8 @@ namespace w3c_sw {
 		    results.insert(results.begin(), new Result(this));
 	    } else {
 		/* Get list of known variables. */
-		IStreamPtr variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-				      "SELECT ?var {?set rs:resultVariable ?var }\n", StreamPtr::STRING);
+		IStreamContext variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				      "SELECT ?var {?set rs:resultVariable ?var }\n", StreamContext::STRING);
 		if (sparqlParser.parse(variablesQ))
 		    throw std::string("failed to parse boolean ResultSet variables query.");
 		ResultSet listOfVariables(posFactory);
@@ -374,11 +374,11 @@ namespace w3c_sw {
 		}
 
 		/* Get list of bindings. */
-		IStreamPtr bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+		IStreamContext bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				     "SELECT * {?soln rs:binding [\n"
 				     "		 rs:variable ?var ;\n"
 				     "		 rs:value ?val\n"
-				     " ]} ORDER BY ?soln\n", StreamPtr::STRING);
+				     " ]} ORDER BY ?soln\n", StreamContext::STRING);
 		if (sparqlParser.parse(bindingsQ))
 		    throw std::string("failed to parse boolean ResultSet bindings query.");
 		ResultSet listOfResults(posFactory);
@@ -403,7 +403,7 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamPtr& sptr) : 
+	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamContext& sptr) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {

@@ -38,7 +38,7 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamPtr& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap) {
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap) {
 	if (!istr.mediaType.compare(0, 9, "text/html") || 
 	    !istr.mediaType.compare(0, 9, "application/xhtml")) {
 	    if (xmlParser == NULL)

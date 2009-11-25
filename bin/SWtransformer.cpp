@@ -126,7 +126,7 @@ int main(int argc,char** argv) {
 	/* Parse input query. */
 	{
 	    inputId = argv[iArg++];
-	    IStreamPtr istr(inputId);
+	    IStreamContext istr(inputId);
 	    if (inputId[0] == '-' && inputId[1] == '\0')
 		inputId = (char*)"- standard input -";
 	    result = sparqlParser.parse(istr);
@@ -137,7 +137,7 @@ int main(int argc,char** argv) {
 	for (; iArg < argc && !result; ++iArg) {
 	    if (option(argc, argv, &iArg))
 		continue;
-	    IStreamPtr istr(inputId = argv[iArg]);
+	    IStreamContext istr(inputId = argv[iArg]);
 	    result = sparqlParser.parse(istr);
 	    Operation* rule = sparqlParser.root;
 	    Construct* c;

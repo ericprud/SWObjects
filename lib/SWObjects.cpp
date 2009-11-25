@@ -224,9 +224,9 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-IStreamPtr::IStreamPtr (std::string name, e_opts opts, 
+IStreamContext::IStreamContext (std::string name, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
-    : StreamPtr(name), p(NULL)
+    : StreamContext(name), p(NULL)
 {
     malloced = true;
     if (opts & STRING) {
@@ -257,9 +257,9 @@ IStreamPtr::IStreamPtr (std::string name, e_opts opts,
 }
 
 /* @@ factor me */
-OStreamPtr::OStreamPtr (std::string name, e_opts opts, 
+OStreamContext::OStreamContext (std::string name, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
-    : StreamPtr(name), p(NULL)
+    : StreamContext(name), p(NULL)
 {
     malloced = true;
     if (opts & STRING) {
@@ -288,7 +288,7 @@ OStreamPtr::OStreamPtr (std::string name, e_opts opts,
 	    throw std::string("unable to open file \"").append(nameStr).append("\"");
     }
 }
-OStreamPtr::~OStreamPtr () {
+OStreamContext::~OStreamContext () {
     /* do the PUT if it's a webAgent (unless i can make the webagent::close do it) */
     if (malloced)
 	delete p;
@@ -1380,7 +1380,7 @@ compared against
 				    ));
 
 	/* Parse results into a ResultSet. */
-	IStreamPtr istr(s, StreamPtr::STRING);
+	IStreamContext istr(s, StreamContext::STRING);
 	ResultSet red(posFactory, db->xmlParser, istr);
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << " yielded\n" << red;

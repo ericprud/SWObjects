@@ -141,7 +141,7 @@ public:
     SPARQLfedDriver(std::string baseURI, POSFactory* posFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse(IStreamPtr& in);
+    virtual bool parse(IStreamContext& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */

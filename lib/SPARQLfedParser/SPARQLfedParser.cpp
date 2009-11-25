@@ -3303,7 +3303,7 @@ namespace w3c_sw {
 {
 }
 
-bool SPARQLfedDriver::parse(IStreamPtr& in)
+bool SPARQLfedDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 

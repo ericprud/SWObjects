@@ -78,7 +78,7 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse(IStreamPtr& in);
+    virtual bool parse(IStreamContext& in);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */

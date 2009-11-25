@@ -420,7 +420,7 @@ protected:
 
 		    Done = true;
 		} else {
-		    IStreamPtr istr(query, StreamPtr::STRING);
+		    IStreamContext istr(query, StreamContext::STRING);
 		    if (sparqlParser.parse(istr)) {
 			head(sout, "Query Error");
 
@@ -652,7 +652,7 @@ int main (int argc, char** argv) {
 	    }
 
 	    /* Remainder of file is a SPARQL query. */
-	    IStreamPtr istr(std::string(it, end), StreamPtr::STRING);
+	    IStreamContext istr(std::string(it, end), StreamContext::STRING);
 	    istr.nameStr = std::string(argv[iArg]) + " (post map:)";
 	    sparqlParser.parse(istr);
 	    dataStream.close();
