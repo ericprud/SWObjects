@@ -14,6 +14,15 @@ namespace w3c_sw {
 class SPARQLAlgebraSerializer : public ExpressorSerializer {
 public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
+    typedef enum {
+	ALGEBRA_simple = 0, 
+	/* options */
+	ALGEBRA_binaryOpts = 1, 
+	ALGEBRA_not_exists = 2, 
+	/* compatibility modes */
+	ALGEBRA_1_0 = 1, 
+	ALGEBRA_arq = 3
+    } e_ALGEBRA;
 protected:
     std::stringstream ret;
     const ProductionVector<const Expression*>* injectFilter;
@@ -29,6 +38,7 @@ protected:
     size_t depth;
     std::stack<e_PREC> precStack;
     const char* leadStr;
+    e_ALGEBRA algebra;
 
     /* Simulate SPARQL semantics serialization:
      *   Joins test members and express as leftjoins where 2nd is an optional.
@@ -60,8 +70,8 @@ protected:
 	    ret << tab;
     }
 public:
-    SPARQLAlgebraSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), optionalIsChildOfJoin(false)
+    SPARQLAlgebraSerializer (e_ALGEBRA algebra = ALGEBRA_simple, const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
+	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), algebra(algebra), optionalIsChildOfJoin(false)
     { precStack.push(PREC_High); }
     virtual std::string str () { return ret.str(); }
     virtual void str (std::string seed) { ret.str(seed); }
@@ -248,20 +258,40 @@ public:
     }
 
     virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
-	recursiveJoiner(p_TableOperations, std::vector<const TableOperation*>::const_reverse_iterator(p_TableOperations->end()));
+	if (algebra & ALGEBRA_binaryOpts)
+	    recursiveJoiner(p_TableOperations, std::vector<const TableOperation*>::const_reverse_iterator(p_TableOperations->end()));
+	else {
+	    lead(); ret << "(join" << std::endl;
+	    depth++;
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); ++it)
+		(*it)->express(this);
+	    depth--;
+	    lead(); ret << ")" << std::endl;
+	}
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
-	if (optionalIsChildOfJoin == false) {
-	    lead(); ret << "(leftjoin" << std::endl;
+	if (algebra & ALGEBRA_binaryOpts) {
+	    if (optionalIsChildOfJoin == false) {
+		lead(); ret << "(leftjoin" << std::endl;
+		depth++;
+		lead(); ret << "(table unit)" << std::endl;
+	    }
+	    p_GroupGraphPattern->express(this);
+	    if (p_Expressions->size() > 0) {
+		lead();
+		_exprlist(p_Expressions);
+	    }
+	    if (optionalIsChildOfJoin == false) {
+		depth--;
+		lead(); ret << ")" << std::endl;
+	    }
+	} else {
+	    lead(); ret << "(optional" << std::endl;
 	    depth++;
-	    lead(); ret << "(table unit)" << std::endl;
-	}
-	p_GroupGraphPattern->express(this);
-	if (p_Expressions->size() > 0) {
-	    lead();
-	    _exprlist(p_Expressions);
-	}
-	if (optionalIsChildOfJoin == false) {
+	    p_GroupGraphPattern->express(this);
+	    if (p_Expressions->size() > 0)
+		lead(), _exprlist(p_Expressions);
 	    depth--;
 	    lead(); ret << ")" << std::endl;
 	}
