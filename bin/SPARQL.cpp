@@ -21,6 +21,7 @@ namespace sw = w3c_sw;
 #include "XMLQueryExpressor.hpp"
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
+#include "SPARQLAlgebraSerializer.hpp"
 #include "SQLizer.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
@@ -99,7 +100,7 @@ sw::RdfDB Db(&Agent, &P, &DebugStream);
 sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::TrigSDriver TrigParser("", &F);
-sw::RdfXmlParser GRdfXmlParser(&F, &P);
+sw::RdfXmlParser GRdfXmlParser("", &F, &P);
 sw::RDFaParser GRDFaParser(&F, &P);
 sw::QueryMapper QueryMapper(&F, &DebugStream);
 sw::ParserDriver* Parsers[] = {
@@ -752,6 +753,12 @@ int main(int ac, char* av[])
 		} else
 		    o = query;
 
+		if (Debug > 0) {
+		    sw::SPARQLAlgebraSerializer s;
+		    o->express(&s);
+		    std::cout << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+		}
+
 		o->execute(&Db, &rs);
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
@@ -789,13 +796,13 @@ int main(int ac, char* av[])
 		    Output.resource = NULL; // No other output reqired.
 		}
 	    }
-	    if (Output.resource != NULL) {
+	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamContext optr(outres, sw::OStreamContext::STDIN, 
-				    &Agent, &DebugStream);
+		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT, 
+					&Agent, &DebugStream);
 		*optr << rs.toString(optr.mediaType, &NsAccumulator, Query == NULL);
 	    }
-	    std::cerr << NsAccumulator.toString();
+	    //std::cerr << NsAccumulator.toString(); // @@
 	}
     } catch(std::exception& e) {
         std::cout << e.what() << "\n";

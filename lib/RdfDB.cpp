@@ -54,7 +54,7 @@ namespace w3c_sw {
 	    if (xmlParser == NULL)
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
-	    RdfXmlParser p(posFactory, xmlParser);
+	    RdfXmlParser p("", posFactory, xmlParser);
 	    // if (nsMap != NULL)
 	    // 	p.setNamespaceMap(nsMap);
 	    p.parse(assureGraph(NULL), istr);

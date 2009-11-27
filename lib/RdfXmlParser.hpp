@@ -60,7 +60,7 @@ namespace w3c_sw {
 	    }
 
 	public:
-	    RdfXmlSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
+	    RdfXmlSaxHandler (BasicGraphPattern* bgp, std::string baseURI, POSFactory* posFactory) : 
 		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars(""), expectCharData(false) {
 		State newState = {DOCUMENT, NULL, NULL};
 		stack.push(newState);
@@ -95,7 +95,7 @@ namespace w3c_sw {
 			    else
 				newState.s = posFactory->getURI(baseURI + "#" + subject);
 			} else
-			    newState.s = posFactory->getURI(subject);
+			    newState.s = posFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
 		    }
 
 		    /* Subject elements nested inside a predicate element are
@@ -169,7 +169,7 @@ namespace w3c_sw {
 		     */
 		    t = attrs->getValue(NS_rdf, "resource");
 		    if ( !t.empty() )
-			newState.s = posFactory->getURI(t);
+			newState.s = posFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
 		    else if ( !parseType.empty() )
 			newState.s = posFactory->createBNode();
 		    else if ( !nodeID.empty() )
@@ -281,9 +281,9 @@ namespace w3c_sw {
 	SWSAXparser* saxParser;
 
     public:
-	RdfXmlParser (POSFactory* posFactory, SWSAXparser* saxParser) : ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
+	RdfXmlParser (std::string baseURI, POSFactory* posFactory, SWSAXparser* saxParser) : ParserDriver(baseURI), posFactory(posFactory), saxParser(saxParser) {  }
 	void parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
-	    RdfXmlSaxHandler handler(bgp, posFactory);
+	    RdfXmlSaxHandler handler(bgp, baseURI, posFactory);
 	    saxParser->parse(sptr, &handler);
 	}
 

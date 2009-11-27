@@ -44,7 +44,7 @@ namespace sw = w3c_sw;
 
 sw::POSFactory F;
 sw::TurtleSDriver turtleParser("", &F);
-sw::RdfXmlParser GRdfXmlParser(&F, &P);
+sw::RdfXmlParser GRdfXmlParser("", &F, &P);
 
 struct MeasuredGraph : public sw::DefaultGraphPattern {
     

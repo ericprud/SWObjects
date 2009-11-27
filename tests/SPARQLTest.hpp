@@ -52,7 +52,7 @@ POSFactory F;
 SPARQLfedDriver sparqlParser("", &F);
 TurtleSDriver turtleParser("", &F);
 TrigSDriver trigParser("", &F);
-RdfXmlParser GRdfXmlParser(&F, &P);
+RdfXmlParser GRdfXmlParser("", &F, &P);
 
 /* This is like a normal RdfDB except that it prepends file load paths with
  * directory in which the test is located.
