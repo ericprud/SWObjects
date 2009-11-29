@@ -303,7 +303,7 @@ namespace w3c_sw {
     std::string ResultSet::toString (NamespaceMap* namespaces) const {
 	std::stringstream s;
 	if (resultType == RESULT_Boolean)
-	    return size() > 0 ? "true" : "false" ;
+	    return size() > 0 ? "true\n" : "false\n" ;
 
 	else if (resultType == RESULT_Graphs)
 	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
