@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( Db0_Db1 ) {
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
 
-#ifdef SOUND_GRAPH_COMPARE
+#ifdef FIXED_SOUND_GRAPH_COMPARE // !!!
     sw::DefaultGraphPattern notExpected;
     turtleParser.setGraph(&notExpected);
     turtleParser.setBase("Db0_Db1.rdf");
