@@ -48,29 +48,20 @@
 
 using namespace w3c_sw;
 
+#define BASE_URI ""
+
 POSFactory F;
-SPARQLfedDriver sparqlParser("", &F);
-TurtleSDriver turtleParser("", &F);
-TrigSDriver trigParser("", &F);
-RdfXmlParser GRdfXmlParser("", &F, &P);
+SPARQLfedDriver sparqlParser(BASE_URI, &F);
+TurtleSDriver turtleParser(BASE_URI, &F);
+TrigSDriver trigParser(BASE_URI, &F);
+RdfXmlParser GRdfXmlParser(BASE_URI, &F, &P);
 
 /* This is like a normal RdfDB except that it prepends file load paths with
  * directory in which the test is located.
  * 
  */
-struct FakePathRdfDB : public RdfDB {
-    std::string pathPrefix; // prepend file paths with this to get to the subdirectory, e.g. data-r2/dataset/
-    virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
-	std::string nameStr = name->getLexicalValue();
-	nameStr = pathPrefix + nameStr;
-	IStreamContext iptr(nameStr, IStreamContext::NONE, webAgent, debugStream);
-	if (RdfDB::loadData(target, iptr, nameStr, posFactory))
-	    throw nameStr + ":0: error: unable to parse web document";
-    }
-};
-
 struct MeasuredRS : public ResultSet {
-    FakePathRdfDB d;
+    RdfDB d;
     RdfDB constructed;
 
     /* DAWG tests consist of:
@@ -83,17 +74,17 @@ struct MeasuredRS : public ResultSet {
 		const char* namedGraphs[], size_t namedCount, 
 		const URI* requires[], size_t reqsCount, 
 		const char* query) : ResultSet(&F, F.debugStream) {
- 
+
 	std::string baseURI(query);
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
-	d.pathPrefix = baseURI; // load files from ./baseURI
 
 	/* Parse query. */
 	{
 	    IStreamContext istr(query, StreamContext::FILE);
+	    sparqlParser.setBase(baseURI);
 	    if (sparqlParser.parse(istr))
 		throw std::string("failed to parse query file \"") + query + "\".";
-	    sparqlParser.clear(""); // clear out namespaces and base URI.
+	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
 	/* Parse data. */
@@ -102,16 +93,15 @@ struct MeasuredRS : public ResultSet {
 	    turtleParser.setBase(baseURI);
 	    IStreamContext istr(defGraph, StreamContext::FILE);
 	    turtleParser.parse(istr);
-	    turtleParser.clear(""); // clear out namespaces and base URI.
+	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
 	for (size_t i = 0; i < namedCount; ++i) {
-	    std::string graphName = std::string(namedGraphs[i]).substr(baseURI.size());
-	    turtleParser.setGraph(d.assureGraph(F.getURI(graphName.c_str())));
+	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
 	    turtleParser.setBase(baseURI);
 	    IStreamContext istr(namedGraphs[i], StreamContext::FILE);
 	    turtleParser.parse(istr);
-	    turtleParser.clear(""); // clear out namespaces and base URI.
+	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
 	for (size_t i = 0; i < reqsCount; ++i)
@@ -138,7 +128,7 @@ struct MeasuredRS : public ResultSet {
 	    IStreamContext istr(query, StreamContext::FILE);
 	    if (sparqlParser.parse(istr))
 		throw std::string("failed to parse query file \"") + query + "\".";
-	    sparqlParser.clear(""); // clear out namespaces and base URI.
+	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
 	/* Parse data. */
@@ -147,7 +137,7 @@ struct MeasuredRS : public ResultSet {
 	    trigParser.setBase(baseURI);
 	    IStreamContext istr(input, StreamContext::FILE);
 	    trigParser.parse(istr);
-	    trigParser.clear("");
+	    trigParser.clear(BASE_URI);
 	}
 	/* Copy db so we can show the original. */
 	constructed = d;
@@ -196,6 +186,12 @@ struct ReferenceRS {
     ReferenceRS (ResultSet& measured, const char* resultFile, 
 		POSFactory* posFactory, SWSAXparser* saxParser) : 
 	measured(measured) {
+	std::string baseURI;
+	if (resultFile != NULL) {
+	    baseURI = resultFile;
+	    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	}
+
 	if (resultFile == NULL) {	/* empty result graph */
 	    reference = new ResultSet(posFactory, &rdfDB);
 
@@ -209,15 +205,17 @@ struct ReferenceRS {
 		if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
 		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
 		    IStreamContext ttl(rfs.c_str(), StreamContext::FILE);
+		    if (resultFile != NULL)
+			turtleParser.setBase(baseURI);
 		    turtleParser.parse(ttl);
-		    turtleParser.clear("");
+		    turtleParser.clear(BASE_URI);
 		} else if (rfs.substr(rfs.size()-5, 5) == ".trig") {			       
-		    std::string baseURI = rfs.substr(0, rfs.find_last_of("/")+1);
-		    trigParser.setBase(baseURI);
+		    if (resultFile != NULL)
+			trigParser.setBase(baseURI);
 		    trigParser.setDB(&rdfDB);
 		    IStreamContext trig(rfs.c_str(), StreamContext::FILE);
 		    trigParser.parse(trig);			       
-		    trigParser.clear("");					       
+		    trigParser.clear(BASE_URI);					       
 		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
 		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), istr);
 		} else {
@@ -227,7 +225,7 @@ struct ReferenceRS {
 		/* if !RESULT_Graphs, graph is an RDF form of a ResultSet. */
 		reference = measured.resultType == ResultSet::RESULT_Graphs ?
 		    new ResultSet(posFactory, &rdfDB) :
-		    new ResultSet(posFactory, &rdfDB, "");
+		    new ResultSet(posFactory, &rdfDB, BASE_URI);
 	    }
 	}
 	if (measured.resultType == ResultSet::RESULT_Graphs)

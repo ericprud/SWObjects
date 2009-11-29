@@ -126,6 +126,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 }
 std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts wanted)
 {
+    // std::cerr << "HTParse(" << name << ", " << (rel ? *rel : std::string("NULL")) << ", " << wanted << ")";
     std::string result;
     //    std::string return_value = 0;
     size_t p;
@@ -217,6 +218,10 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 	}
 
     delete related;
+    // std::cerr << " => " << result;
+    // if (rel)
+    // 	std::cerr << " (rel: " << *rel << ")";
+    // std::cerr << "\n";
     return result;		/* exactly the right length */
 }
 
@@ -1027,11 +1032,17 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
+    void DatasetClause::loadGraph (RdfDB* db, const POS* name, BasicGraphPattern* target) const {
+	std::string nameStr = name->getLexicalValue();
+	IStreamContext iptr(nameStr, IStreamContext::NONE, db->webAgent, db->debugStream);
+	if (db->loadData(target, iptr, nameStr, "", m_posFactory))
+	    throw nameStr + ":0: error: unable to parse web document";
+    }
     void DefaultGraphClause::loadData (RdfDB* db) const {
-	db->loadData(m_IRIref, db->assureGraph(DefaultGraph), m_posFactory);
+	loadGraph(db, m_IRIref, db->assureGraph(DefaultGraph));
     }
     void NamedGraphClause::loadData (RdfDB* db) const {
-	db->loadData(m_IRIref, db->assureGraph(m_IRIref), m_posFactory);
+	loadGraph(db, m_IRIref, db->assureGraph(m_IRIref));
     }
 
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {

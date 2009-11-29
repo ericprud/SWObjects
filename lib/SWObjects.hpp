@@ -1482,6 +1482,7 @@ protected:
 public:
     DatasetClause (const POS* p_IRIref, POSFactory* p_posFactory) : Base(), m_IRIref(p_IRIref), m_posFactory(p_posFactory) {  }
     ~DatasetClause () { /* m_IRIref is centrally managed */ }
+    void loadGraph(RdfDB* db, const POS* name, BasicGraphPattern* target) const;
     virtual void loadData(RdfDB*) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
 };

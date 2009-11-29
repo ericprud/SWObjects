@@ -148,7 +148,7 @@ struct loadEntry {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, &Agent, &DebugStream);
-	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), &F);
+	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), UriString(baseURI), &F);
     }
 };
 typedef std::vector<loadEntry> loadList;
@@ -700,7 +700,7 @@ int main(int ac, char* av[])
 	    // TurtleParser.setGraph(Db.assureGraph(sw::DefaultGraph));
 	    // TurtleParser.setNamespaces(&NsRelay);
 	    // TurtleParser.parse(s);
-		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), &F, &NsRelay);
+		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
 	    }
 
 	    if (vm.count("desc-graph")) {
@@ -709,7 +709,7 @@ int main(int ac, char* av[])
 		     it != descs.end(); ++it) {
 		    sw::IStreamContext s(appDescGraph, sw::StreamContext::STRING);
 		    s.mediaType = "text/turtle";
-		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), &F);
+		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
 		}
 	    }
 

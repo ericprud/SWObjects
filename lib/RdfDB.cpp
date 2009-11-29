@@ -38,39 +38,47 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap) {
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
 	if (!istr.mediaType.compare(0, 9, "text/html") || 
 	    !istr.mediaType.compare(0, 9, "application/xhtml")) {
 	    if (xmlParser == NULL)
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
-	    RDFaParser rdfaParser(posFactory, xmlParser);
+	    RDFaParser parser(posFactory, xmlParser);
+	    if (baseURI != "")
+		parser.setBase(baseURI);
 	    // if (nsMap != NULL)
 	    // 	rdfaParser.setNamespaceMap(nsMap);
-	    rdfaParser.parse(target, istr, nameStr);
+	    parser.parse(target, istr, nameStr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 8, "text/rdf") || 
 		   !istr.mediaType.compare(0, 19, "application/rdf+xml")) {
 	    if (xmlParser == NULL)
 		throw std::string("no XML parser to parse ") + istr.mediaType + 
 		    " document " + nameStr;
-	    RdfXmlParser p("", posFactory, xmlParser);
+	    RdfXmlParser parser("", posFactory, xmlParser);
+	    if (baseURI != "")
+		parser.setBase(baseURI);
 	    // if (nsMap != NULL)
 	    // 	p.setNamespaceMap(nsMap);
-	    p.parse(assureGraph(NULL), istr);
+	    parser.parse(assureGraph(NULL), istr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 11, "text/turtle")) {
-	    TurtleSDriver turtleParser(nameStr, posFactory);
-	    turtleParser.setGraph(target);
+	    TurtleSDriver parser(nameStr, posFactory);
+	    parser.setGraph(target);
+	    if (baseURI != "")
+		parser.setBase(baseURI);
 	    if (nsMap != NULL)
-		turtleParser.setNamespaceMap(nsMap);
-	    return turtleParser.parse(istr);
+		parser.setNamespaceMap(nsMap);
+	    return parser.parse(istr);
 	} else {
-	    TrigSDriver trigParser(nameStr, posFactory);
-	    trigParser.setDB(this);
+	    TrigSDriver parser(nameStr, posFactory);
+	    parser.setDB(this);
+	    if (baseURI != "")
+		parser.setBase(baseURI);
 	    if (nsMap != NULL)
-		trigParser.setNamespaceMap(nsMap);
-	    return trigParser.parse(istr);
+		parser.setNamespaceMap(nsMap);
+	    return parser.parse(istr);
 	}
     }
 

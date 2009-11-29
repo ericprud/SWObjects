@@ -125,13 +125,7 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, POSFactory* posFactory, NamespaceMap* nsMap = NULL);
-	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
-	    std::string nameStr = name->getLexicalValue();
-	    IStreamContext iptr(nameStr, IStreamContext::NONE, webAgent, debugStream);
-	    if (loadData(target, iptr, nameStr, posFactory))
-		throw nameStr + ":0: error: unable to parse web document";
-	}
+	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap = NULL);
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
 	std::string toString (std::string mediaType = "text/trig", NamespaceMap* namespaces = NULL) const {
