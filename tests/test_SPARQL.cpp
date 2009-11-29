@@ -87,6 +87,7 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 
+#ifdef FIXED_SPARQL_ARGS_ORDER // !!!
 /* sensitivity to position of -b directive */
 BOOST_AUTO_TEST_CASE( Dbe ) {
     ExecResults tested("../bin/SPARQL -D -b http://foo.example/ -e \"SELECT * WHERE { <> a ?t}\"");
@@ -95,6 +96,7 @@ BOOST_AUTO_TEST_CASE( Dbe ) {
 		      "|\n"
 		      "+\n");
 }
+#endif
 
 /* make sure we fail mis-matches */
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
@@ -118,5 +120,23 @@ BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
     ExecResults tested("../bin/SPARQL -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-01.ttl");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "matched\n");
+}
+
+BOOST_AUTO_TEST_CASE( bool_no_base ) {
+    ExecResults tested("../bin/SPARQL -d SPARQL/rel.ttl SPARQL/rel.rq");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "true\n");
+}
+
+BOOST_AUTO_TEST_CASE( bool_base_0 ) {
+    ExecResults tested("../bin/SPARQL -b http://foo.example/ -d SPARQL/rel.ttl SPARQL/rel.rq");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "true\n");
+}
+
+BOOST_AUTO_TEST_CASE( bool_base_1 ) {
+    ExecResults tested("../bin/SPARQL -d SPARQL/rel.ttl -b http://foo.example/ SPARQL/rel.rq");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "false\n");
 }
 
