@@ -47,8 +47,8 @@ namespace w3c_sw {
 	    RDFaParser parser(posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
-	    // if (nsMap != NULL)
-	    // 	rdfaParser.setNamespaceMap(nsMap);
+	    if (nsMap != NULL)
+		parser.setNamespaceMap(nsMap);
 	    parser.parse(target, istr, nameStr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 8, "text/rdf") || 
@@ -59,8 +59,8 @@ namespace w3c_sw {
 	    RdfXmlParser parser("", posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
-	    // if (nsMap != NULL)
-	    // 	p.setNamespaceMap(nsMap);
+	    if (nsMap != NULL)
+		parser.setNamespaceMap(nsMap);
 	    parser.parse(assureGraph(NULL), istr);
 	    return false;
 	} else if (!istr.mediaType.compare(0, 11, "text/turtle")) {

@@ -10,24 +10,14 @@
 
 namespace w3c_sw {
 
-    /* Base class for all parsers. */
-    ParserDriver::ParserDriver ()
-	: baseURI("") {  }
-
-    ParserDriver::ParserDriver (std::string baseURI)
-	: baseURI(baseURI) {  }
-
-
     /* Base class for Yacc parsers. */
     YaccDriver::YaccDriver (POSFactory* posFactory)
 	: ParserDriver(), posFactory(posFactory),
-	  namespaces(new NamespaceMap()), freeNamespaces(true),
 	  ignorePrefixFlag(false),
 	  trace_scanning(false), trace_parsing(false) {  }
 
     YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
 	: ParserDriver(baseURI), posFactory(posFactory),
-	  namespaces(new NamespaceMap), freeNamespaces(true),
 	  ignorePrefixFlag(false),
 	  trace_scanning(false), trace_parsing(false) {  }
 

@@ -11,36 +11,31 @@ void stop(size_t line);
 
 namespace w3c_sw {
 
+/* Base class for all parsers. */
 class ParserDriver {
 protected:
     std::string		baseURI;
+    NamespaceMap*	namespaces;
+    bool		freeNamespaces;
+    POS::String2BNode	nodeMap;
     
-    ParserDriver();
-    ParserDriver(std::string baseURI);
+    ParserDriver ()
+	: baseURI(""), namespaces(new NamespaceMap()), 
+	  freeNamespaces(true) {  }
+
+    ParserDriver (std::string baseURI)
+	: baseURI(baseURI), namespaces(new NamespaceMap()), 
+	  freeNamespaces(true) {  }
+
+    virtual ~ParserDriver () {
+	if (freeNamespaces)
+	    delete namespaces;
+    }
 
 public:
 
     std::string getBase () const { return baseURI; }
     void setBase (std::string b) { baseURI = b; }
-};
-
-class YaccDriver : public ParserDriver {
-
-protected:
-    POSFactory * const posFactory;
-    NamespaceMap*	namespaces;
-    bool		freeNamespaces;
-    bool		ignorePrefixFlag;
-    POS::String2BNode	nodeMap;
-
-public:
-    /// construct a new parser driver context
-    YaccDriver(POSFactory* posFactory);
-    YaccDriver(std::string baseURI, POSFactory* posFactory);
-    virtual ~YaccDriver () {
-	if (freeNamespaces)
-	    delete namespaces;
-    }
 
     void clear () {
 	namespaces->clear();
@@ -61,6 +56,19 @@ public:
 	namespaces = newMap;
 	freeNamespaces = pFreeNamespaces;
     }
+};
+
+class YaccDriver : public ParserDriver {
+
+protected:
+    POSFactory * const posFactory;
+    bool		ignorePrefixFlag;
+
+public:
+    /// construct a new parser driver context
+    YaccDriver(POSFactory* posFactory);
+    YaccDriver(std::string baseURI, POSFactory* posFactory);
+    virtual ~YaccDriver () {  }
 
     /// enable debug output in the flex scanner
     bool trace_scanning;
