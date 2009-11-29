@@ -253,7 +253,7 @@ void validateBase(const std::vector<std::string>& values, const sw::POS** setMe,
 	    (s == ":") ? copySource : 
 	    htparseWrapper(s, *setMe);
 	if (Debug > 0)
-	    std::cout << "setting " << argName << " URI to " << (*setMe)->getLexicalValue() << "\n";
+	    std::cout << " setting " << argName << " URI to " << (*setMe)->getLexicalValue() << "\n";
     }
 }
 
