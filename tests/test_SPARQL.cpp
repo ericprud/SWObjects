@@ -87,4 +87,36 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 
+/* sensitivity to position of -b directive */
+BOOST_AUTO_TEST_CASE( Dbe ) {
+    ExecResults tested("../bin/SPARQL -D -b http://foo.example/ -e \"SELECT * WHERE { <> a ?t}\"");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "+\n"
+		      "|\n"
+		      "+\n");
+}
+
+/* make sure we fail mis-matches */
+BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
+    ExecResults tested("../bin/SPARQL -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-02.ttl");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "+-----------------------------+------------------------------+\n"
+		      "| ?p                          | ?q                           |\n"
+		      "| <http://example.org/data/p> | <http://example.org/data/v1> |\n"
+		      "| <http://example.org/data/p> | <http://example.org/data/v2> |\n"
+		      "+-----------------------------+------------------------------+\n"
+		      "!=\n"
+		      "+------------------------------+-----------------------------+\n"
+		      "| ?q                           | ?x                          |\n"
+		      "| <http://example.org/data/v2> | <http://example.org/data/x> |\n"
+		      "| <http://example.org/data/v1> | <http://example.org/data/x> |\n"
+		      "+------------------------------+-----------------------------+\n"
+		      "\n");
+}
+
+BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
+    ExecResults tested("../bin/SPARQL -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-01.ttl");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "matched\n");
+}
 
