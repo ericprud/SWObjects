@@ -1,0 +1,6 @@
++----------------------------------------+---------------------------------------------------+----+
+| ?O2                                     | ?P                                                | ?S |
+|         "a semantic web query toolbox2" |          <http://usefulinc.com/ns/doap#shortdesc> | <> |
+|           <http://swobj.org/SPARQL/v12> |           <http://usefulinc.com/ns/doap#homepage3> | <> |
+| <http://usefulinc.com/ns/doap#Project2> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <> |
++----------------------------------------+---------------------------------------------------+----+

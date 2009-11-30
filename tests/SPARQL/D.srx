@@ -1,0 +1,42 @@
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="O"/>
+    <variable name="P"/>
+    <variable name="S"/>
+  </head>
+  <results>
+    <result addr="0x9560160">
+      <binding name="S">
+        <uri></uri>
+      </binding>
+      <binding name="P">
+        <uri>http://usefulinc.com/ns/doap#homepage</uri>
+      </binding>
+      <binding name="O">
+        <uri>http://swobj.org/SPARQL/v1</uri>
+      </binding>
+    </result>
+    <result addr="0x9561a20">
+      <binding name="S">
+        <uri></uri>
+      </binding>
+      <binding name="P">
+        <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</uri>
+      </binding>
+      <binding name="O">
+        <uri>http://usefulinc.com/ns/doap#Project</uri>
+      </binding>
+    </result>
+    <result addr="0x9560c28">
+      <binding name="S">
+        <uri></uri>
+      </binding>
+      <binding name="P">
+        <uri>http://usefulinc.com/ns/doap#shortdesc</uri>
+      </binding>
+      <binding name="O">
+        <literal>a semantic web query toolbox</literal>
+      </binding>
+    </result>
+  </results>
+</sparql>
