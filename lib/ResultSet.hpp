@@ -133,6 +133,28 @@ namespace w3c_sw {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
+	ResultSet& operator= (const ResultSet& ref) {
+	    if (this == &ref)
+		return *this;
+
+	    selectOrder.clear();
+	    for (ResultSetIterator it = results.begin(); it != results.end(); it++)
+		delete *it;
+	    results.clear();
+
+	    posFactory = ref.posFactory;
+	    knownVars = ref.knownVars;
+	    ordered = ref.ordered;
+	    db = ref.db;
+	    selectOrder = ref.selectOrder;
+	    orderedSelect = ref.orderedSelect;
+	    resultType = ref.resultType;
+	    debugStream = ref.debugStream;
+	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
+		insert(this->end(), new Result(**row));
+
+	    return *this;
+	}
 	/* Parsed constructor, a la
 		ResultSet(&f, 
 			  "?n1  _:n2\n"
@@ -603,6 +625,12 @@ namespace w3c_sw {
 	}
 	std::string toString(NamespaceMap* namespaces = NULL) const;
 	std::string toString (std::string mediaType = "", NamespaceMap* namespaces = NULL, bool preferDb = false) {
+	    if (mediaType == "application/sparql-results+xml") {
+		XMLSerializer s;
+		toXml(&s);
+		std::string ret = s.str();
+		return ret;
+	    } else
 	    return
 		mediaType == "text/turtle" ||
 		mediaType == "text/trig" ||
