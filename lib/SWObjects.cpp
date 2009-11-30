@@ -1231,11 +1231,16 @@ compared against
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		bool rowMatched = false;
-		for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
-		     triple != m_TriplePatterns.end(); triple++) {
+		const POS* pToMatch = (*constraint)->getP();
+
+		idx_range range
+		    = dynamic_cast<const Bindable*>(pToMatch) 
+		    ? idx_range(idx.begin(), idx.end())
+		    : idx.equal_range (pToMatch);
+		for (idx_type::const_iterator triple = range.first; triple != range.second; ++triple) {
 		    Result* newRow = (*row)->duplicate(rs, row);
 		    /* @@@ move filter her */
-		    if ((*constraint)->bindVariables(*triple, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+		    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
 			rowMatched = true;
 			rs->insert(row, newRow);
 		    } else {

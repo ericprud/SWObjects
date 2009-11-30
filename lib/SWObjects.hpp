@@ -1233,15 +1233,19 @@ public:
     virtual TableOperation* getDNF() const;
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
+    typedef std::multimap<const POS*, const TriplePattern*> idx_type;
+    typedef std::pair<const POS*, const TriplePattern*> idx_pair;
+    typedef std::pair<idx_type::const_iterator, idx_type::const_iterator> idx_range;
 
 protected:
 
     // make sure we don't delete the TriplePatterns
     NoDelProductionVector<const TriplePattern*> m_TriplePatterns;
+    idx_type idx;
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
     BasicGraphPattern (const BasicGraphPattern& ref) :
-	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), 
+	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), // idx(ref.idx), 
 	allOpts(ref.allOpts) {  }
 
     /* Misc helper functions: */
@@ -1258,11 +1262,12 @@ public:
     static bool CompareVars;		// Whether ?x == ?y .
 
     void addTriplePattern (const TriplePattern* p) {
-	for (std::vector<const TriplePattern*>::iterator it = m_TriplePatterns.begin();
-	     it != m_TriplePatterns.end(); ++it)
-	    if (*it == p)
+	idx_range range = idx.equal_range (p->getP());
+	for ( ; range.first != range.second; ++range.first)
+	    if ((*range.first).second == p)
 		return;
 	m_TriplePatterns.push_back(p);
+	idx.insert(idx_pair(p->getP(), p));
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const;
