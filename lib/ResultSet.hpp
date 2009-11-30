@@ -145,7 +145,7 @@ namespace w3c_sw {
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\n)");
+	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\+|┌|├|└|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
 	    end = str.end(); 
@@ -154,20 +154,27 @@ namespace w3c_sw {
 	    bool firstRow = true;
 	    std::vector<const POS*> headers;
 	    int col = 0;
-	    Result* curRow;
+	    Result* curRow = NULL;
 	    while (regex_search(start, end, what, expression, flags)) {
 		std::string matched(what[1].first, what[1].second);
 		if (matched == "\n") {
 		    firstRow = false;
 		    col = 0;
-		    curRow = new Result(this);
-		    insert(this->end(), curRow);
+		    curRow = NULL;
+		} else if (matched == "+" || matched == "┌" || matched == "├" || matched == "└") {
+		    const boost::regex nl("[^\\n]*\\n");
+		    regex_search(start, end, what, nl, flags); // skip rest of line
 		} else {
 		    const POS* pos = posFactory->getPOS(matched, nodeMap);
 		    if (firstRow)
 			headers.push_back(pos);
-		    else
+		    else {
+			if (curRow == NULL) {
+			    curRow = new Result(this);
+			    insert(this->end(), curRow);
+			}
 			set(curRow, headers[col++], pos, false);
+		    }
 		}
 
 		start = what[0].second; 
