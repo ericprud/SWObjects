@@ -1,0 +1,3 @@
+# BASE <http://example.org/x/> 
+PREFIX : <#>
+ASK { :x :p <v> } 
