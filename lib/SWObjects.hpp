@@ -2472,7 +2472,8 @@ struct StreamContext {
 	    nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
 	    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
 	    nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
-	    nameStr.substr(nameStr.size()-5, 5) == ".srx" ? "application/sparql-results+xml" : 
+	    nameStr.substr(nameStr.size()-4, 4) == ".srx" ? "application/sparql-results+xml" : 
+	    nameStr.substr(nameStr.size()-4, 4) == ".srt" ? "text/sparql-results" : 
 	    "text/plain";
     }
 };
