@@ -5,10 +5,14 @@
 
 #include <iostream>
 #include <fstream>
+#include "SWObjects.hpp"
+#include "ResultSet.hpp"
 
 #define BOOST_TEST_MODULE SPARQL
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+
+w3c_sw::POSFactory F;
 
 struct ExecResults {
     std::string s;
@@ -43,47 +47,82 @@ BOOST_AUTO_TEST_CASE( D ) {
 		      "}\n");
 }
 BOOST_AUTO_TEST_CASE( D_spo ) {
-    ExecResults tested("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "+----+---------------------------------------------------+----------------------------------------+\n"
-		      "| ?s | ?p                                                | ?o                                     |\n"
-		      "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		      "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
-		      "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		      "+----+---------------------------------------------------+----------------------------------------+\n");
+    ExecResults invocation("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+----+---------------------------------------------------+----------------------------------------+\n"
+		 "| ?s | ?p                                                | ?o                                     |\n"
+		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		 "+----+---------------------------------------------------+----------------------------------------+\n",
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
+    ExecResults invocation("../bin/SPARQL -D -u -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+----+---------------------------------------------------+----------------------------------------+\n"
+		 "| ?s | ?p                                                | ?o                                     |\n"
+		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		 "+----+---------------------------------------------------+----------------------------------------+\n",
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( G_spo ) {
-    ExecResults tested("../bin/SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "+----+---------------------------------------------------+----------------------------------------+\n"
-		      "| ?s | ?p                                                | ?o                                     |\n"
-		      "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		      "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
-		      "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		      "+----+---------------------------------------------------+----------------------------------------+\n");
+    ExecResults invocation("../bin/SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+----+---------------------------------------------------+----------------------------------------+\n"
+		 "| ?s | ?p                                                | ?o                                     |\n"
+		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		 "+----+---------------------------------------------------+----------------------------------------+\n", 
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp ) {
-    ExecResults tested("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+    ExecResults invocation("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 		       "    GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "+--------+\n"
-		      "| ?g     |\n"
-		      "|  <foo> |\n"
-		      "| <foo2> |\n"
-		      "+--------+\n");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+--------+\n"
+		 "| ?g     |\n"
+		 "|  <foo> |\n"
+		 "| <foo2> |\n"
+		 "+--------+\n", 
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
-    ExecResults tested("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
-		       "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
-		       "    UNION\n"
-		       "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "+--------+\n"
-		      "| ?g     |\n"
-		      "|     -- |\n"
-		      "|  <foo> |\n"
-		      "| <foo2> |\n"
-		      "+--------+\n");
+    ExecResults invocation("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+			   "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
+			   "    UNION\n"
+			   "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+--------+\n"
+		 "| ?g     |\n"
+		 "|     -- |\n"
+		 "|  <foo> |\n"
+		 "| <foo2> |\n"
+		 "+--------+\n", 
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 
