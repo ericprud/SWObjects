@@ -14,6 +14,14 @@
 
 w3c_sw::POSFactory F;
 
+const char* Doutput =
+    "+----+---------------------------------------------------+----------------------------------------+\n"
+    "| ?S | ?P                                                | ?O                                     |\n"
+    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+    "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+    "+----+---------------------------------------------------+----------------------------------------+\n";
+
 struct ExecResults {
     std::string s;
     ExecResults (const char* cmd) {
@@ -177,5 +185,45 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
     ExecResults tested("../bin/SPARQL -d SPARQL/rel.ttl -b http://foo.example/ SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "false\n");
+}
+
+BOOST_AUTO_TEST_CASE( resultsFormat ) {
+    w3c_sw::POS::String2BNode bnodeMap; // share, not used for these tests.
+    {   /* Create an simple table dump. */
+	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/D.srt\n");
+	BOOST_CHECK_EQUAL(creation.s, "");
+
+	/* Check that table dump. */
+	ExecResults cat("../bin/SPARQL -d SPARQL/D.srt\n");
+	w3c_sw::ResultSet cat_measured(&F, cat.s, false, bnodeMap);
+	w3c_sw::ResultSet cat_expected(&F, Doutput, false, bnodeMap);
+	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+    }
+ 
+    {   /* Create an SRX (SPARQL Xml Results format) */
+	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/D.srx\n");
+	BOOST_CHECK_EQUAL(creation.s, "");
+
+	/* Check that SRX. */
+	ExecResults cat("../bin/SPARQL -d SPARQL/D.srx\n");
+	w3c_sw::ResultSet cat_measured(&F, cat.s, false, bnodeMap);
+	w3c_sw::ResultSet
+	    cat_expected(&F, Doutput, false, bnodeMap);
+	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+    }
+ 
+    {
+	ExecResults join("../bin/SPARQL -d SPARQL/D.srx -d SPARQL/E.srt\n");
+	w3c_sw::ResultSet join_measured(&F, join.s, false, bnodeMap);
+	w3c_sw::ResultSet
+	    join_expected(&F, 
+			  "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n"
+			  "| ?S | ?P                                                | ?O                                     | ?O2                                     |\n"
+			  "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> | <http://usefulinc.com/ns/doap#Project2> |\n"
+			  "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |         \"a semantic web query toolbox2\" |\n"
+			  "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n", 
+			  false, bnodeMap);
+	BOOST_CHECK_EQUAL(join_measured, join_expected);
+    }
 }
 

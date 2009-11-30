@@ -82,6 +82,7 @@ const sw::POS* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
 bool Quiet = false;
+bool ResultSetsLoaded = false;
 const sw::POS* NamedGraphName = NULL;
 const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
 typedef std::vector<const sw::POS*> mapList;
@@ -98,6 +99,8 @@ sw::RdfDB Db(&Agent, &P, &DebugStream);
 sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::QueryMapper QueryMapper(&F, &DebugStream);
+sw::ResultSet rs(&F);
+
 class NamespaceAccumulator : public sw::NamespaceMap {
 public:
     std::string toString (const char* mediaType = NULL) {
@@ -135,8 +138,23 @@ struct loadEntry {
     void loadGraph () {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, &Agent, &DebugStream);
-	Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), UriString(baseURI), &F);
+	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, 
+				&Agent, &DebugStream);
+	if (istr.mediaType == "application/sparql-results+xml") {
+	    sw::ResultSet loaded(&F, &P, istr);
+	    rs.joinIn(&loaded);
+	    ResultSetsLoaded = true;
+	} else if (istr.mediaType == "text/sparql-results") {
+	    std::istreambuf_iterator<char> i(*istr.p), e;
+	    std::string s(i, e);
+	    sw::POS::String2BNode bnodeMap;
+	    sw::ResultSet loaded(&F, s.c_str(), false, bnodeMap);
+	    rs.joinIn(&loaded);
+	    ResultSetsLoaded = true;
+	} else {
+	    Db.loadData(Db.assureGraph(graph), istr, 
+			UriString(baseURI), UriString(baseURI), &F);
+	}
     }
 };
 typedef std::vector<loadEntry> loadList;
@@ -706,7 +724,6 @@ int main(int ac, char* av[])
 
 	    sw::RdfDB constructed;
 	    sw::RdfDB& dumpDB(Query == NULL || InPlace ? Db : constructed);
-	    sw::ResultSet rs(&F); // !!! , &constructed overrides the query database
 	    rs.setRdfDB(&dumpDB);
 
 	    if (Query == NULL) {
@@ -784,7 +801,8 @@ int main(int ac, char* av[])
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT, 
 					&Agent, &DebugStream);
-		*optr << rs.toString(optr.mediaType, &NsAccumulator, Query == NULL);
+		*optr << rs.toString(optr.mediaType, &NsAccumulator, 
+				     Query == NULL && ResultSetsLoaded == false);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@
 	}
