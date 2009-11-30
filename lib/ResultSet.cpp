@@ -397,9 +397,10 @@ namespace w3c_sw {
 	xml->open("sparql");
 	xml->attribute("xmlns", "http://www.w3.org/2005/sparql-results#");
 	xml->open("head");
-	for (VariableVectorConstIterator it = getOrderedVars().begin() ; it != getOrderedVars().end(); it++) {
+	const VariableVector cols = getOrderedVars();
+	for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
 	    xml->empty("variable");
-	    xml->attribute("name", (*it)->getLexicalValue());
+	    xml->attribute("name", (*varIt)->getLexicalValue());
 	}
 	xml->close();
 	xml->open("results");
