@@ -2964,8 +2964,8 @@ typedef w3c_sw::MapSetParser::token_type token_type;
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
  * 333231 <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.  */
-#undef yywrap
-#define yywrap()	1
+// #undef yywrap	// ##flex2.5
+// #define yywrap() 1	// ##flex2.5
 
 /* By default yylex returns int, we use token_type. Unfortunately yyterminate
  * by default returns 0, which is not of token_type. */
