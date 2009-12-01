@@ -353,9 +353,9 @@ namespace w3c_sw {
 	    }
 	    if (*debugStream != NULL) {
 		if (res == NULL)
-		    **debugStream << "yielding no transformed query disjoint." << endl << endl;
+		    **debugStream << "yielding no transformed query disjoint." << std::endl << std::endl;
 		else
-		    **debugStream << "yielding transformed query disjoint:" << endl << *res << endl;
+		    **debugStream << "yielding transformed query disjoint:" << std::endl << *res << std::endl;
 	    }
 	    return opRS;
 	}
@@ -497,7 +497,7 @@ namespace w3c_sw {
 	    if (*debugStream != NULL) {
 		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		**debugStream << "product rule head (SPARQL):" << endl << sparqlizer.str() << endl;
+		**debugStream << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
 	    }
 	    p_SolutionModifier->express(this);
 
@@ -583,7 +583,7 @@ namespace w3c_sw {
 	    std::vector<std::string> ifaceComponents;
 
 	    {
-		string iriStr(ifaceName->getLexicalValue());
+		std::string iriStr(ifaceName->getLexicalValue());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		for (unsigned index = 1; it != nullIt; ++index) {
 		    ifaceComponents.push_back(*it++);
@@ -600,7 +600,7 @@ namespace w3c_sw {
 	    newMap.selector = toModify;
 
 	    {
-		string iriStr(localName->getLexicalValue());
+		std::string iriStr(localName->getLexicalValue());
 		boost::sregex_token_iterator it(iriStr.begin(), iriStr.end(), re, desiredMatches);
 		std::stringstream subPattern;
 		while (it != nullIt) {

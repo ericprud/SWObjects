@@ -7,38 +7,36 @@
 #include <cstdarg>
 #include "SWObjects.hpp"
 
-using namespace std;
-
-vector<string> journal;
+std::vector<std::string> journal;
 
 struct StackException : w3c_sw::StringException {
     StackException (char const* type, char const* file, size_t line, const char* fmt, va_list args) : 
 	w3c_sw::StringException(make(type, file, line, fmt, args)) {  }
 protected:
-    std::string make (char const* type, string file, size_t line, char const* fmt, va_list args) {
+    std::string make (char const* type, std::string file, size_t line, char const* fmt, va_list args) {
 	static char str[1024];
-	stringstream s;
+	std::stringstream s;
 	vsprintf(str, fmt, args);
-	s << type << ": " << endl << file << ":" << line << ": " << str << endl;
-	for (vector<string>::reverse_iterator it = journal.rbegin();
+	s << type << ": " << std::endl << file << ":" << line << ": " << str << std::endl;
+	for (std::vector<std::string>::reverse_iterator it = journal.rbegin();
 	     it != journal.rend(); ++it)
-	    s << *it << endl;
+	    s << *it << std::endl;
 	return s.str();
     }
 };
 
 class JournalState {
 public:
-    JournalState (string file, size_t line, string what) {
+    JournalState (std::string file, size_t line, std::string what) {
 	journal.push_back(format(file, line, what));
     }
     ~JournalState () { journal.pop_back(); }
-    static void now (string file, size_t line, string what) {
+    static void now (std::string file, size_t line, std::string what) {
 	journal.pop_back();
 	journal.push_back(format(file, line, what));
     }
-    static string format (string file, size_t line, string what) {
-	stringstream loc;
+    static std::string format (std::string file, size_t line, std::string what) {
+	std::stringstream loc;
 	loc << file << ":" << line << ": " << what;
 	return loc.str();
     }

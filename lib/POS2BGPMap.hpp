@@ -76,15 +76,15 @@ namespace w3c_sw {
 
 	/* Stuff for building a consequents list.
 	 */
-	static string _hex (_BindingStrength s) {
-	    stringstream ret;
+	static std::string _hex (_BindingStrength s) {
+	    std::stringstream ret;
 	    ret << (void*)s;
 	    return ret.str();
 	}
 
     public:
-	static string bindingStr (_BindingStrength s) {
-	    string ret;
+	static std::string bindingStr (_BindingStrength s) {
+	    std::string ret;
 	    if (s & _Binding_GRAPH)  ret.append("GRAPH " );
 	    if (s & _Binding_FILTER) ret.append("FILTER ");
 	    if (s & _Binding_SELECT) ret.append("SELECT ");
@@ -96,8 +96,8 @@ namespace w3c_sw {
 	    return ret;
 	}
 
-	string dump () {
-	    stringstream s;
+	std::string dump () {
+	    std::stringstream s;
 	    for (ConsequentMapList::iterator varIt = begin();
 		 varIt != end(); ++varIt)
 		for (ConsequentMap::iterator graphIt = varIt->second.begin();
@@ -105,7 +105,7 @@ namespace w3c_sw {
 		    s << "consequents[" << varIt->first->getLexicalValue() << "]["
 		      << graphIt->first << "] = "
 		      << bindingStr(operator[](varIt->first)[graphIt->first])
-		      << endl;
+		      << std::endl;
 	    return s.str();
 	}
     };
@@ -268,12 +268,12 @@ namespace w3c_sw {
 		_depends(p_URI, _Binding_FILTER);
 	    }
 
-	    string dumpConsequents () {
+	    std::string dumpConsequents () {
 		return consequents.dump();
 	    }
 
-	    string dumpOuterGraphs () {
-		stringstream s;
+	    std::string dumpOuterGraphs () {
+		std::stringstream s;
 		for (OuterGraphs::iterator innerGraphIt = outerGraphs.begin();
 		     innerGraphIt != outerGraphs.end(); ++innerGraphIt) {
 		    s << "outerGraphs[" << innerGraphIt->first << "]={";
@@ -283,7 +283,7 @@ namespace w3c_sw {
 			    s << ",";
 			s << *outerGraphIt;
 		    }
-		    s << "}" << endl;
+		    s << "}" << std::endl;
 		}
 		return s.str();
 	    }
@@ -348,7 +348,7 @@ namespace w3c_sw {
 		    ConsequentMap::reverse_iterator last = cons.rbegin();
 		    //		    ConsequentMap::iterator last = consequents[varIt->first].rbegin();
 		    if (last == cons.rend()) {
-			cerr << "no entry for " << varIt->first->toString() << endl; // !!! check with a FAIL
+			std::cerr << "no entry for " << varIt->first->toString() << std::endl; // !!! check with a FAIL
 			continue; // no entries for this whatever.
 		    }
 		    const TableOperation* lastTableOp = last->first;
@@ -370,7 +370,7 @@ namespace w3c_sw {
 				++graph2parents;
 // 				if (*graph1parents == *graph2parents &&
 // 				    graph1parents == outerGraphs[graph1It->first].end()) {
-// 				    std::cout << "while resolving " << varIt->first->getLexicalValue() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << endl;
+// 				    std::cout << "while resolving " << varIt->first->getLexicalValue() <<  ", got to " << *graph1parents << " == " << *graph2parents << " but at end of graph1. last was " << commonAncestor << std::endl;
 // 				    std::cout << dumpConsequents();
 // 				    std::cout << dumpOuterGraphs();
 // 				}
@@ -455,7 +455,7 @@ namespace w3c_sw {
 		const Bindable* v = dynamic_cast<const Bindable*>(maps->first);
 		if (v == NULL)
 		    break;
-		//cerr << "considering includedness of " << v->toString() << endl;
+		//std::cerr << "considering includedness of " << v->toString() << std::endl;
 		for (ConsequentMap::iterator bgpBindings = maps->second.begin();
 		     bgpBindings != maps->second.end(); ++bgpBindings) {
 		    /* 06a — If the variable is not weak in S or GA is not optional, tag GA as an included mandatory.
@@ -484,7 +484,7 @@ namespace w3c_sw {
 		    ret[op] = (_BindingStrength)(bgpBindings->second & ~_Binding_WEAK);
 		    if ((*row)->get(v) == false)
 			ret[op] = (_BindingStrength)(ret[op] | _Binding_WEAK);
-		    //cerr << "includedRequiredness[" << op << " = " << ConsequentMapList::bindingStr(ret[op]) << " for " << v->toString() << endl;
+		    //std::cerr << "includedRequiredness[" << op << " = " << ConsequentMapList::bindingStr(ret[op]) << " for " << v->toString() << std::endl;
 		}
 		    
 	    }

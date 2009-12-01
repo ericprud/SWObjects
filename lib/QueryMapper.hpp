@@ -63,16 +63,16 @@ namespace w3c_sw {
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
 	    if (*debugStream != NULL)
-		**debugStream << "User query disjoint " << endl << 
-		    *userQueryDisjoint << endl << 
-		    "(as DB):" << endl << 
-		    userQueryAsAssertions << endl;
+		**debugStream << "User query disjoint " << std::endl << 
+		    *userQueryDisjoint << std::endl << 
+		    "(as DB):" << std::endl << 
+		    userQueryAsAssertions << std::endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
 		if (*debugStream != NULL)
-		    **debugStream << "matched against rule head (expressed as a pattern)" << endl << 
-			*(*invertedRule)->getRuleBody() << endl;
+		    **debugStream << "matched against rule head (expressed as a pattern)" << std::endl << 
+			*(*invertedRule)->getRuleBody() << std::endl;
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */

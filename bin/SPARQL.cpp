@@ -760,7 +760,24 @@ int main(int ac, char* av[])
 		    std::cout << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 		}
 
-		o->execute(&Db, &rs);
+		if (vm.count("stem") == 0) {
+		    o->execute(&Db, &rs);
+		} else {
+		    std::string stemURI = vm["stem"].as<std::string>();
+		    char predicateDelims[]={'#',' ',' '};
+		    char nodeDelims[]={'/','.',' '};
+		    const char* PkAttr = "id";
+		    sw::SQLizer sql(stemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
+		    o->express(&sql);
+		    if (vm.count("sql-service") != 0) {
+		    } else if (vm.count("mapset") != 0) {
+		    } else {
+			if (Debug > 0)
+			    std::cout << "SQL'd query: " << std::endl;
+			std::cout << sql.getSQLstring() << std::endl;
+			Output.resource = NULL;
+		    }
+		}
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 

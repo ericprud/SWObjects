@@ -232,7 +232,7 @@ namespace w3c_sw {
 	    virtual std::string getRelationText (std::string pad = "") = 0;
 	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") {
 		std::stringstream s;
-		if (captureConstraints == NULL) s << endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		s << getRelationText(pad) << " AS " << alias;
 		std::stringstream on;
 		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
@@ -369,7 +369,7 @@ namespace w3c_sw {
 	    SQLQuery* parent;
 
 	    std::map<const POS*, std::map<std::string, Join*> > aliasMap;
-	    std::set<string> usedAliases;
+	    std::set<std::string> usedAliases;
 	    std::vector<Join*> joins;
 	public: Join* curJoin; protected:
 	    std::vector<WhereConstraint*> constraints;
@@ -397,7 +397,7 @@ namespace w3c_sw {
 		     iOrderBy != orderBy.end(); ++iOrderBy)
 		    delete *iOrderBy;
 
-		for (std::map<string, Attachment*>::iterator iAttachments = attachments.begin();
+		for (std::map<std::string, Attachment*>::iterator iAttachments = attachments.begin();
 		     iAttachments != attachments.end(); ++iAttachments)
 		    delete iAttachments->second;
 	    }
@@ -421,7 +421,7 @@ namespace w3c_sw {
 		for (std::vector<Join*>::iterator it = joins.begin();
 		     it != joins.end(); ++it)
 		    if (it == joins.begin())
-			s << endl << pad << "       FROM " << (*it)->toString(&where, pad);
+			s << std::endl << pad << "       FROM " << (*it)->toString(&where, pad);
 		    else
 			s << (*it)->toString(NULL, pad);
 
@@ -465,22 +465,22 @@ namespace w3c_sw {
 		    }
 		}
 
-		string aliasName = subject->getLexicalValue();
+		std::string aliasName = subject->getLexicalValue();
 		/* Try to get a good name for URIs.
 		 * e.g. http://bsbm.example/db/producttypeproduct/producttype.59
 		 *   => producttype_59
 		 */
 		size_t slash = aliasName.rfind('/');
-		if (slash != string::npos) {
+		if (slash != std::string::npos) {
 		    if (slash == aliasName.size()) {
 			size_t secondSlash = aliasName.rfind('/', slash);
-			if (secondSlash != string::npos)
+			if (secondSlash != std::string::npos)
 			    slash = secondSlash;
 		    }
 		    aliasName = aliasName.substr(slash+1);
 		    const std::string allowedChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 		    size_t badChar = aliasName.find_first_not_of(allowedChars);
-		    while (badChar != string::npos) {
+		    while (badChar != std::string::npos) {
 			aliasName.replace(badChar, 1, 1, '_');
 			badChar = aliasName.find_first_not_of(allowedChars, badChar+1);
 		    }
@@ -516,14 +516,14 @@ namespace w3c_sw {
 		return ret;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
-		std::map<string, Attachment*>::iterator it = attachments.find(lexicalValue);
+		std::map<std::string, Attachment*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
 		    attachments[lexicalValue] = new TightAttachment(aattr, lexicalValue);
 		else
 		    attachments[lexicalValue]->constrain(aattr, this);
 	    }
 	    AliasAttrConstraint* getVariableConstraint (std::string lexicalValue) {
-		std::map<string, Attachment*>::iterator it = attachments.find(lexicalValue);
+		std::map<std::string, Attachment*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
 		    FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
 		else
@@ -706,14 +706,14 @@ namespace w3c_sw {
 	char* predicateDelims;
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
-	string defaultPKAttr;
+	std::string defaultPKAttr;
 
 	std::ostream** debugStream;
 
     public:
 	//static std::ostream** ErrorStream;
 
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], string defaultPKAttr, std::ostream** debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
 	{  }
@@ -1045,7 +1045,7 @@ namespace w3c_sw {
 		    (*it)->express(this);
 		    curQuery->addConstraint(curConstraint);
 		} catch (nonLocalIdentifierException& e) {
-		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	}
 	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
@@ -1055,7 +1055,7 @@ namespace w3c_sw {
 		try {
 		    (*tripleIt)->express(this);
 		} catch (nonLocalIdentifierException& e) {
-		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
@@ -1104,7 +1104,7 @@ namespace w3c_sw {
 		    (*it)->express(this);
 		    curQuery->addConstraint(curConstraint);
 		} catch (nonLocalIdentifierException& e) {
-		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << endl;
+		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	    mode = oldMode;
 	    optional->attach();
