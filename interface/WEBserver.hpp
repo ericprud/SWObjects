@@ -415,7 +415,7 @@ namespace w3c_sw {
 	    rep.headers.resize(2);
 	    rep.headers[0].name = "Content-Length";
 	    char space[30];
-	    sprintf(space, "%d", rep.content.size());
+	    sprintf(space, "%d", (int)rep.content.size());
 	    rep.headers[0].value = std::string(space);
 	    rep.headers[1].name = "Content-Type";
 	    rep.headers[1].value = "text/html";

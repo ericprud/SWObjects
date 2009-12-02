@@ -93,14 +93,14 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
     /* Redundant triples don't change BGP size. */ {
 	data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
-	BOOST_CHECK_EQUAL(data.size(), 1);
+	BOOST_CHECK_EQUAL(data.size(), (size_t)1);
     }
 
     /* parseTriples */ {
 	f.parseTriples(&data, 
 		       "<n1> <p1> \"l1\" ."
 		       "<n2> <p1> <n3> .", bnodeMap);
-	BOOST_CHECK_EQUAL(data.size(), 3);
+	BOOST_CHECK_EQUAL(data.size(), (size_t)3);
 
 	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
