@@ -44,80 +44,80 @@ PWD ?= $(shell pwd -P)
 
 
 ifeq ($(XML_PARSER), LIBXML2)
-  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_LIBXML2 "\\n"
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_LIBXML2 "\n"
   INCLUDES += -I/usr/include/libxml2
   XML_PARSER_LIB?= -lxml2
 else ifeq ($(XML_PARSER), EXPAT1)
-  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\\n"
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\n"
   XML_PARSER_LIB?= -lexpat
 else ifeq ($(XML_PARSER), MSXML3)
-  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML3 "\\n"
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML3 "\n"
   XML_PARSER_LIB?= -lmsxml
 else
   ifneq ($(XML_PARSER), )
     $(warning $(XML_PARSER) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_DISABLED "\n"
 endif
 
 
 ifeq ($(CONSOLE_ENCODING), UTF8)
-  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_UTF8 "\\n"
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_UTF8 "\n"
 else
   ifneq ($(CONSOLE_ENCODING), )
     $(warning CONSOLE_ENCODING= $(CONSOLE_ENCODING) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_DISABLED "\n"
 endif
 
 
 ifeq ($(REGEX), BOOST)
-  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\\n"
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\n"
   REGEX_LIB?= -lboost_regex$(BOOST_VERSION)
 else
   ifneq ($(REGEX), )
     $(warning $(REGEX_LIB) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_DISABLED "\n"
 endif
 
 
 ifeq ($(HTTP_CLIENT), ASIO)
-  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\n"
   HTTP_CLIENT_LIB?= -lboost_system$(BOOST_VERSION)
 else ifeq ($(HTTP_CLIENT), DLIB)
-  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\n"
   $(warning DLIB HTTP client code not yet written)
 else
   ifneq ($(HTTP_CLIENT), )
     $(warning $(HTTP_CLIENT) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DISABLED "\n"
 endif
 
 
 ifeq ($(HTTP_SERVER), ASIO)
-  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\n"
   HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
 else ifeq ($(HTTP_SERVER), DLIB)
-  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
 else
   ifneq ($(HTTP_SERVER), )
     $(warning $(HTTP_SERVER) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DISABLED "\n"
 endif
 
 
 ifeq ($(SQL_CLIENT), MYSQL)
-  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\\n"
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\n"
   SQL_CLIENT_LIB?= -lmysqlclient
 else
   ifneq ($(SQL_CLIENT), )
     $(warning $(SQL_CLIENT) may not be supported)
   endif
-  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_DISABLED "\\n"
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_DISABLED "\n"
 endif
 
 
@@ -129,26 +129,26 @@ all:   lib test
 
 
 config.h: CONFIG
-	@$(ECHO) -e "/* Generated from CONFIG.\\n" \
-	"* In order to keep your link directives appropriate for the features enabled\\n" \
-	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\\n" \
-	"*/\\n" \
-	"#define SWOb_DISABLED		135\\n" \
-	"/* XML Parsers: */\\n" \
-	"#define SWOb_LIBXML2		137\\n" \
-	"#define SWOb_EXPAT1		138\\n" \
-	"#define SWOb_MSXML3		139\\n" \
-	"/* Character Encodings: */\\n" \
-	"#define SWOb_UTF8		143\\n" \
-	"/* Regexp Libs: */\\n" \
-	"#define SWOb_BOOST		144\\n" \
-	"/* HTTP Libs: */\\n" \
-	"#define SWOb_ASIO		145\\n" \
-	"#define SWOb_DLIB		146\\n" \
-	"/* SQL Libs: */\\n" \
-	"#define SWOb_MYSQL		148\\n" \
-	"\\n" $(CONFIG_DEFS) "\\n"\
-	"#define BOOST_ALL_DYN_LINK\\n" > config.h
+	@echo "/* Generated from CONFIG.\n" \
+	"* In order to keep your link directives appropriate for the features enabled\n" \
+	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\n" \
+	"*/\n" \
+	"#define SWOb_DISABLED		135\n" \
+	"/* XML Parsers: */\n" \
+	"#define SWOb_LIBXML2		137\n" \
+	"#define SWOb_EXPAT1		138\n" \
+	"#define SWOb_MSXML3		139\n" \
+	"/* Character Encodings: */\n" \
+	"#define SWOb_UTF8		143\n" \
+	"/* Regexp Libs: */\n" \
+	"#define SWOb_BOOST		144\n" \
+	"/* HTTP Libs: */\n" \
+	"#define SWOb_ASIO		145\n" \
+	"#define SWOb_DLIB		146\n" \
+	"/* SQL Libs: */\n" \
+	"#define SWOb_MYSQL		148\n" \
+	"\n" $(CONFIG_DEFS) "\n"\
+	"#define BOOST_ALL_DYN_LINK\n" > config.h
 	@$(ECHO) config.h updated.
 
 #the gcc commands to make deps used in .d rules
@@ -173,7 +173,7 @@ VER=0.1
 #LLVMLIBS= ` llvm-config --libs`
 # ... you get the idea...
 CFLAGS	+= $(LLVMCFLAGS)
-LIBINC	+= -L$(PWD)/lib
+LIBINC	+= $(LIBS) -L$(PWD)/lib
 
 ### dirt simple generic static module ###
 BISONOBJ :=  $(subst .ypp,.o,$(wildcard lib/*/*.ypp)) 
