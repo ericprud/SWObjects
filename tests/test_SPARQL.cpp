@@ -30,7 +30,10 @@ struct ExecResults {
 	BOOST_REQUIRE(p != NULL);
 	char buf[100];
 	s = "";
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p));)
+
+	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+	 */
+	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
 	    s += std::string(buf, buf + count);
 	pclose(p);
     }
