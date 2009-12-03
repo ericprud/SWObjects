@@ -70,5 +70,14 @@ SQL_CLIENT= MYSQL
 # or you may need to link to multi-threaded versions of boost libraries:
 BOOST_VERSION=-mt
 
+
+# LINK: STATIC | DYNAMIC - build executables requiring dynamic libraries . ####
+# Needed when building any executables.
+# Tested with:
+#   STATIC, DYNAMIC
+# but STATIC only works for bin/* 'cause of boost::unit_test challenges.
+LINK= STATIC
+
+
 #OSX: flex=/opt/local/bin/flex
 #OSX: bison=/opt/local/bin/bison

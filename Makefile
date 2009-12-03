@@ -124,6 +124,14 @@ endif
 TEST_LIB?= -lboost_unit_test_framework$(BOOST_VERSION)
 
 
+ifeq ($(LINK), DYNAMIC)
+  CONFIG_DEFS+= \\\#define BOOST_ALL_DYN_LINK "\\n"
+  STATICITY=
+else
+  STATICITY= -static
+endif
+
+
 .PHONY: all dep lib test
 all:   lib test
 
@@ -160,7 +168,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(STATICITY) -lpthread $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
 
@@ -224,7 +232,7 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 	$(CXX) -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
 
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -lpthread -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
+	$(CXX) -lnsl -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
