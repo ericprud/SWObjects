@@ -298,7 +298,7 @@ tests/test_%: tests/test_%.o $(LIB)
 	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
-	$(CXX) $(TEST_LIB) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
+	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS) -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
 
 t_%: tests/test_%
 	( cd tests && ./$(notdir $<) $(TEST_ARGS) )
