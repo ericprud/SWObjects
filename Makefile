@@ -155,8 +155,7 @@ config.h: CONFIG
 	"#define SWOb_DLIB		146\n" \
 	"/* SQL Libs: */\n" \
 	"#define SWOb_MYSQL		148\n" \
-	"\n" $(CONFIG_DEFS) "\n"\
-	"#define BOOST_ALL_DYN_LINK\n" > config.h
+	"\n" $(CONFIG_DEFS) "\n" > config.h
 	@$(ECHO) config.h updated.
 
 #the gcc commands to make deps used in .d rules
@@ -168,7 +167,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(STATICITY) -lpthread $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lpthread
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
 
@@ -303,10 +302,10 @@ tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 tests/test_%: tests/test_%.o $(LIB)
-	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS)
+	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
-	$(CXX) $(TEST_LIB) -o $@ $< $(LDFLAGS) -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
+	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
 t_%: tests/test_%
 	( cd tests && ./$(notdir $<) $(TEST_ARGS) )

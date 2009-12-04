@@ -9,7 +9,6 @@
 #include "ResultSet.hpp"
 
 #define BOOST_TEST_MODULE SPARQL
-#define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
 w3c_sw::POSFactory F;

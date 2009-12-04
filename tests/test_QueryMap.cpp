@@ -3,10 +3,7 @@
  * $Id: test_QueryMap.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-#define BOOST_TEST_DYN_LINK 1
 #define BOOST_TEST_MODULE QueryMap
-#include <boost/test/unit_test.hpp>
-//#include <boost/test/included/unit_test.hpp>
 
 #include <map>
 #include <vector>
@@ -18,6 +15,7 @@
 #include "QueryMapper.hpp"
 #include "SQLizer.hpp"
 
+#include <boost/test/unit_test.hpp>
 
 using namespace w3c_sw;
 
