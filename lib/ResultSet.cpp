@@ -42,7 +42,6 @@ namespace w3c_sw {
     XMLSerializer* Result::toXml (XMLSerializer* xml) {
 	XMLQueryExpressor xmlizer(xml);
 	xml->open("result");
-	xml->attribute("addr", this);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++) {
 	    xml->open("binding");
 	    xml->attribute(it->first->getBindingAttributeName(), it->first->getLexicalValue());
