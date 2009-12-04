@@ -5,7 +5,7 @@
     <variable name="S"/>
   </head>
   <results>
-    <result addr="0x9560160">
+    <result>
       <binding name="S">
         <uri></uri>
       </binding>
@@ -16,7 +16,7 @@
         <uri>http://swobj.org/SPARQL/v1</uri>
       </binding>
     </result>
-    <result addr="0x9561a20">
+    <result>
       <binding name="S">
         <uri></uri>
       </binding>
@@ -27,7 +27,7 @@
         <uri>http://usefulinc.com/ns/doap#Project</uri>
       </binding>
     </result>
-    <result addr="0x9560c28">
+    <result>
       <binding name="S">
         <uri></uri>
       </binding>
