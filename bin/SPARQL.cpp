@@ -173,6 +173,7 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
     int i;
     stream >> i;
     Debug = i;
+    DebugStream = (i > 0) ? &std::cerr : NULL;
     v = boost::any(debugLevel());
     if (Debug > 0)
 	std::cout << "debug level: " << Debug << "\n";
