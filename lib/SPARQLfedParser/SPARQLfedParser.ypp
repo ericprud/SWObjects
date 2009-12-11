@@ -994,13 +994,9 @@ ServiceGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
-      } VarOrIRIref {
-	  $<p_POS>$ = driver.curGraphName;
-	  driver.curGraphName = $4;
-      } GroupGraphPattern	{
+      } VarOrIRIref GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.posFactory, false));
-	  driver.curGraphName = $<p_POS>5;
       }
 ;
 
