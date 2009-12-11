@@ -16,9 +16,9 @@
   #define SET_Variable_CONSTIT_NE(L, R) set_Variable_constit_ne(L, R)
   bool set_Variable_constit_ne (std::set<const w3c_sw::Variable*>::const_iterator l, 
 				std::set<const w3c_sw::Variable*>::const_iterator r)
-  { return l == r; }
+  { return l != r; }
 #else /* !_MSC_VER */
-  #define SET_Variable_CONSTIT_NE(L, R) L == R
+  #define SET_Variable_CONSTIT_NE(L, R) L != R
 #endif /* !_MSC_VER */
 
 namespace w3c_sw {
@@ -1303,52 +1303,15 @@ compared against
     }
 
     void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	class GraphSerializer : public SPARQLSerializer {
-	    ResultSet* rs;
-	    bool expectOuterGraph;
-	    bool lexicalCompare;
+	/* The VarLister is a serializer which also records all variables.
+	 */
+	struct VarLister : public SPARQLSerializer {
 	    std::set<const Variable*> vars;
-	    std::string selectString;
-	    std::string federationString;
 
-	public:
-	    GraphSerializer (ResultSet* rs, bool lexicalCompare = false) : 
-		SPARQLSerializer(), rs(rs), expectOuterGraph(true), lexicalCompare(lexicalCompare)
-	    {  }
-	    std::string getSelectString () const { return selectString; }
-	    std::string getFederationString () const { return federationString; }
-
-	protected:
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		vars.insert(self);
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
-
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-		if (expectOuterGraph) {
-		    expectOuterGraph = false;
-		    lead();
-
-		    /* Serialize nested stuff. */
-		    depth++;
-		    ExprSet* filters = injectFilter; injectFilter = NULL;
-		    p_TriplePatterns->express(this);
-		    serializeFilter(filters);
-		    depth--;
-		    // _BasicGraphPattern(self, p_TriplePatterns, p_Filters, p_allOpts);
-
-		    /* Build SELECT and FILTER strings from enountered Variables. */
-		    selectString = "SELECT ";
-		    for (std::set<const Variable*>::const_iterator it = vars.begin();
-			 SET_Variable_CONSTIT_NE(it, vars.end()); ++it)
-			selectString.append((*it)->toString()).append(" ");
-		    federationString = rs->buildFederationString(vars, lexicalCompare);
-
-		    expectOuterGraph = true;
-		} else
-		    SPARQLSerializer::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns);
-	    }
-
 	};
 
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
@@ -1366,11 +1329,18 @@ compared against
 	      srvc.at(srvc.size()-1) == '&' ? "" : 
 	      "&");
 	u << "query=";
-	GraphSerializer ser(rs, lexicalCompare);
-	m_TableOperation->express(&ser);
-	std::string q = ser.getSelectString() + '{' + ser.str() + ser.getFederationString() + '}';
+
+	/* Build the remote query string (in SPARQL, not form-url-encoded). */
+	VarLister vars;
+	m_TableOperation->express(&vars);
+	std::string q = "SELECT ";
+	for (std::set<const Variable*>::const_iterator it = vars.vars.begin();
+	     SET_Variable_CONSTIT_NE(it, vars.vars.end()); ++it)
+	    q.append((*it)->toString()).append(" ");
+	q += '{' + vars.str() + rs->buildFederationString(vars.vars, lexicalCompare) + '}';
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << "Querying <" << srvc << "> for\n" << q;
+
 	for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
 	    if (*it == ' ')
 		u << '+';
@@ -1384,6 +1354,9 @@ compared against
 	    else
 		u << '%' << (unsigned)*it;
 	}
+
+	if (db->debugStream != NULL && *(db->debugStream) != NULL)
+	    **(db->debugStream) << "<" << u.str() << ">" << std::endl;
 
 	/* Do an HTTP GET. */
 	std::string s(db->webAgent->get(
