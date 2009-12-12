@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 BOOST_AUTO_TEST_CASE( resultsFormat ) {
     w3c_sw::POS::String2BNode bnodeMap; // share, not used for these tests.
     {   /* Create an simple table dump. */
-	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/D.srt\n");
+	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
 
 	/* Check that table dump. */
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
  
     {   /* Create an SRX (SPARQL Xml Results format) */
-	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/D.srx\n");
+	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srx\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
 
 	/* Check that SRX. */
