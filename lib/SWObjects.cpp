@@ -1307,11 +1307,14 @@ compared against
 	 */
 	struct VarLister : public SPARQLSerializer {
 	    std::set<const Variable*> vars;
-
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		vars.insert(self);
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
+	};
+
+	struct SerializerWithInjector : public SPARQLSerializer {
+	    SerializerWithInjector (ExprSet* injectFilter) { this->injectFilter = injectFilter; }
 	};
 
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
@@ -1330,14 +1333,30 @@ compared against
 	      "&");
 	u << "query=";
 
-	/* Build the remote query string (in SPARQL, not form-url-encoded). */
-	VarLister vars;
-	m_TableOperation->express(&vars);
 	std::string q = "SELECT ";
-	for (std::set<const Variable*>::const_iterator it = vars.vars.begin();
-	     SET_Variable_CONSTIT_NE(it, vars.vars.end()); ++it)
-	    q.append((*it)->toString()).append(" ");
-	q += '{' + vars.str() + rs->buildFederationString(vars.vars, lexicalCompare) + '}';
+	{   /* Build the remote query string (in SPARQL, not form-url-encoded). */
+	    VarLister vars;
+	    m_TableOperation->express(&vars);
+	    const Expression* exp = rs->getFederationExpression(vars.vars, lexicalCompare);
+	    std::string queryPattern;
+	    if (exp) {
+		/* Serialize the pattern with exp in the outer-most graph pattern. */
+		ExprSet rsFilters;
+		rsFilters.push_back(exp);
+		SerializerWithInjector ser(rsFilters.size() > 0 ? &rsFilters : NULL);
+		m_TableOperation->express(&ser);
+		queryPattern = ser.str();
+	    } else {
+		/* Just re-use the one from the vars traversal. */
+		queryPattern = vars.str();
+	    }
+
+	    for (std::set<const Variable*>::const_iterator it = vars.vars.begin();
+		 SET_Variable_CONSTIT_NE(it, vars.vars.end()); ++it)
+		q.append((*it)->toString()).append(" ");
+	    q += queryPattern;
+	}
+
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << "Querying <" << srvc << "> for\n" << q;
 

@@ -167,7 +167,7 @@ namespace w3c_sw {
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\+|┌|├|└|\\n)");
+	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\+|┌|├|└|┏|┠|┗|\\n)");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
 	    end = str.end(); 
@@ -650,39 +650,61 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
-	std::string buildFederationString (std::set<const Variable*> vars, bool lexicalCompare = false) {
-	    std::stringstream rsStr;
-	    bool noRowsYet = true;
+	const Expression* getFederationPattern (std::set<const Variable*> vars, bool lexicalCompare = false) {
+	    ExprSet disj;
 	    for (ResultSetConstIterator row = results.begin();
 		 row != results.end(); row++) {
 		std::stringstream rowStr;
-		bool noValuesYet = true;
+		ExprSet conj;
 		for (std::set<const Variable*>::const_iterator var = vars.begin();
 		     var != vars.end(); ++var) {
 		    const POS* value = (*row)->get(*var);
 		    if (value != NULL) {
-			if (noValuesYet)
-			    noValuesYet = false;
+
+			/* Hideous dynamic cast to find the appropriate expression for the value. */
+			const Expression* posExpression;
+			if (const Bindable* t = dynamic_cast<const Bindable*>(value))
+			    posExpression = new VarExpression(t);
+			else if (const BooleanRDFLiteral* t = dynamic_cast<const BooleanRDFLiteral*>(value))
+			    posExpression = new BooleanExpression(t);
+			else if (const RDFLiteral* t = dynamic_cast<const RDFLiteral*>(value))
+			    posExpression = new LiteralExpression(t);
+			else if (const URI* t = dynamic_cast<const URI*>(value))
+			    posExpression = new URIExpression(t);
 			else
-			    rowStr << " && ";
-			if (lexicalCompare == true)
-			    rowStr << "STR(" << (*var)->toString() << ")=\"" << value->getLexicalValue() << "\"";
-			else
-			    rowStr << (*var)->toString() << "=" << value->toString();
+			    throw std::string("what type of POS is ") + value->toString();
+
+			if (lexicalCompare == true) {
+			    conj.push_back
+				(new BooleanEQ
+				 (new FunctionCallExpression
+				  (new FunctionCall
+				   (getPOSFactory()->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"),
+				    new VarExpression(*var), NULL, NULL)), 
+				  posExpression));
+			} else {
+			    conj.push_back
+				(new BooleanEQ
+				 (new VarExpression(*var), posExpression));
+			}
 		    }
 		    
 		}
-		if (!noValuesYet) {
-		    if (noRowsYet)
-			noRowsYet = false;
-		    else
-			rsStr << " ||\n";
-		    rsStr << '(' << rowStr.str() << ')';
-		}
+		if (conj.size() == 0) {
+		} else if (conj.size() == 0) {
+		    disj.push_back(conj[0]);
+		} else 
+		    disj.push_back(new BooleanConjunction(&conj));
+		conj.clear();
+
 	    }
-	    if (noRowsYet)
-		return "";
-	    std::string ret = "FILTER (" + rsStr.str() + ")\n";
+	    const Expression* ret = NULL;
+	    if (disj.size() == 0) {
+	    } else if (disj.size() == 0)
+		ret = disj[0];
+	    else 
+		ret = new BooleanDisjunction(&disj);
+	    disj.clear();
 	    return ret;
 	}
     };

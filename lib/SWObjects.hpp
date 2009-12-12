@@ -1112,6 +1112,7 @@ public:
     virtual const POS* eval(const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const = 0;
     virtual bool operator==(const Expression&) const = 0;
 };
+typedef ProductionVector<const Expression*> ExprSet;
 
 inline bool POSFactory::eval (const Expression* expression, const Result* row) {
     bool ret;
@@ -1761,6 +1762,22 @@ public:
 };
 
 /* kinds of Expressions */
+// class POSExpression : public Expression {
+// private:
+//     const POS* m_POS;
+// public:
+//     POSExpression (const POS* p_POS) : Expression(), m_POS(p_POS) {  }
+//     ~POSExpression () { /* m_POS is centrally managed */ }
+//     const POS* getPOS () const { return m_POS; }
+//     virtual void express(Expressor* p_expressor) const;
+//     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
+// 	return m_POS->evalPOS(r, evaluator);
+//     }
+//     virtual bool operator== (const Expression& ref) const {
+// 	const POSExpression* pref = dynamic_cast<const POSExpression*>(&ref);
+// 	return pref == NULL ? false : m_POS == pref->m_POS;
+//     }
+// };
 class VarExpression : public Expression {
 private:
     const Bindable* m_Bindable;
@@ -2149,6 +2166,7 @@ protected:
     const Expression* right;
 public:
     BooleanComparator (const Expression* p_Expression) : Expression(), right(p_Expression) {  }
+    BooleanComparator (const Expression* left, const Expression* right) : Expression(), left(left), right(right) {  }
     ~BooleanComparator () { delete left; delete right; }
     virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 
@@ -2158,6 +2176,7 @@ public:
 class BooleanEQ : public BooleanComparator {
 public:
     BooleanEQ (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanEQ (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
