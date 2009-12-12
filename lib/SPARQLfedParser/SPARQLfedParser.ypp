@@ -790,7 +790,7 @@ _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C:
 _O_QConstraint_E_Or_QVar_E_C:
     Constraint	
   | Var	{
-	$$ = new VarExpression($1);
+	$$ = new POSExpression($1);
     }
 ;
 
@@ -1547,16 +1547,16 @@ PrimaryExpression:
   | BuiltInCall	
   | IRIrefOrFunction	
   | RDFLiteral	{
-	$$ = new LiteralExpression($1);
+	$$ = new POSExpression($1);
     }
   | NumericLiteral	{
-	$$ = new NumberExpression($1);
+	$$ = new POSExpression($1);
     }
   | BooleanLiteral	{
-	$$ = new BooleanExpression($1);
+	$$ = new POSExpression($1);
     }
   | Var	{
-	$$ = new VarExpression($1);
+	$$ = new POSExpression($1);
     }
 ;
 
@@ -1580,7 +1580,7 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype"), $3, NULL, NULL));
     }
   | IT_BOUND GT_LPAREN Var GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new VarExpression($3), NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new POSExpression($3), NULL, NULL));
     }
   | IT_sameTerm GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm"), $3, $5, NULL));
@@ -1620,7 +1620,7 @@ IRIrefOrFunction:
 	if ($2)
 	    $$ = new FunctionCallExpression(new FunctionCall($1, $2));
 	else
-	    $$ = new URIExpression($1);
+	    $$ = new POSExpression($1);
     }
 ;
 

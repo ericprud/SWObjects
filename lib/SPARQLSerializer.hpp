@@ -353,17 +353,8 @@ public:
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
-	p_Bindable->express(this);
-    }
-    virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
-	p_RDFLiteral->express(this);
-    }
-    virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
-	p_BooleanRDFLiteral->express(this);
-    }
-    virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
-	p_URI->express(this);
+    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+	p_POS->express(this);
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
 	expressions->express(this);

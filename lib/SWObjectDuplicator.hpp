@@ -336,21 +336,9 @@ namespace w3c_sw {
 	}
 
 	/* Expressions */
-	virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
-	    p_Bindable->express(this);
-	    last.expression = new VarExpression(last.posz.variable);
-	}
-	virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
-	    p_RDFLiteral->express(this);
-	    last.expression = new LiteralExpression(last.posz.rdfLiteral);
-	}
-	virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
-	    p_BooleanRDFLiteral->express(this);
-	    last.expression = new BooleanExpression(last.posz.booleanRDFLiteral);
-	}
-	virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
-	    p_URI->express(this);
-	    last.expression = new URIExpression(last.posz.uri);
+	virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+	    p_POS->express(this);
+	    last.expression = new POSExpression(last.posz.pos);
 	}
 	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();

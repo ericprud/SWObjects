@@ -1762,82 +1762,20 @@ public:
 };
 
 /* kinds of Expressions */
-// class POSExpression : public Expression {
-// private:
-//     const POS* m_POS;
-// public:
-//     POSExpression (const POS* p_POS) : Expression(), m_POS(p_POS) {  }
-//     ~POSExpression () { /* m_POS is centrally managed */ }
-//     const POS* getPOS () const { return m_POS; }
-//     virtual void express(Expressor* p_expressor) const;
-//     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
-// 	return m_POS->evalPOS(r, evaluator);
-//     }
-//     virtual bool operator== (const Expression& ref) const {
-// 	const POSExpression* pref = dynamic_cast<const POSExpression*>(&ref);
-// 	return pref == NULL ? false : m_POS == pref->m_POS;
-//     }
-// };
-class VarExpression : public Expression {
+class POSExpression : public Expression {
 private:
-    const Bindable* m_Bindable;
+    const POS* m_POS;
 public:
-    VarExpression (const Bindable* p_Bindable) : Expression(), m_Bindable(p_Bindable) {  }
-    ~VarExpression () { /* m_Bindable is centrally managed */ }
-    const Bindable* getBindable () const { return m_Bindable; }
+    POSExpression (const POS* p_POS) : Expression(), m_POS(p_POS) {  }
+    ~POSExpression () { /* m_POS is centrally managed */ }
+    const POS* getPOS () const { return m_POS; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
-	return m_Bindable->evalPOS(r, evaluator);
+	return m_POS->evalPOS(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
-	const VarExpression* pref = dynamic_cast<const VarExpression*>(&ref);
-	return pref == NULL ? false : m_Bindable == pref->m_Bindable;
-    }
-};
-class LiteralExpression : public Expression {
-private:
-    const RDFLiteral* m_RDFLiteral;
-public:
-    LiteralExpression (const RDFLiteral* p_RDFLiteral) : Expression(), m_RDFLiteral(p_RDFLiteral) {  }
-    ~LiteralExpression () { /* m_RDFLiteral is centrally managed */ }
-    const RDFLiteral* getLiteral () const { return m_RDFLiteral; }
-    virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
-	return m_RDFLiteral->evalPOS(r, evaluator);
-    }
-    virtual bool operator== (const Expression& ref) const {
-	const LiteralExpression* pref = dynamic_cast<const LiteralExpression*>(&ref);
-	return pref == NULL ? false : m_RDFLiteral == pref->m_RDFLiteral;
-    }
-};
-class BooleanExpression : public Expression {
-private:
-    const BooleanRDFLiteral* m_BooleanRDFLiteral;
-public:
-    BooleanExpression (const BooleanRDFLiteral* p_BooleanRDFLiteral) : Expression(), m_BooleanRDFLiteral(p_BooleanRDFLiteral) {  }
-    ~BooleanExpression () { /* m_BooleanRDFLiteral is centrally managed */ }
-    virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
-	return m_BooleanRDFLiteral->evalPOS(r, evaluator);
-    }
-    virtual bool operator== (const Expression& ref) const {
-	const BooleanExpression* pref = dynamic_cast<const BooleanExpression*>(&ref);
-	return pref == NULL ? false : m_BooleanRDFLiteral == pref->m_BooleanRDFLiteral;
-    }
-};
-class URIExpression : public Expression {
-private:
-    const URI* m_URI;
-public:
-    URIExpression (const URI* p_URI) : Expression(), m_URI(p_URI) {  }
-    ~URIExpression () { /* m_URI is centrally managed */ }
-    virtual void express(Expressor* p_expressor) const;
-    virtual const POS* eval (const Result* r, POSFactory* /* posFactory */, BNodeEvaluator* evaluator) const {
-	return m_URI->evalPOS(r, evaluator);
-    }
-    virtual bool operator== (const Expression& ref) const {
-	const URIExpression* pref = dynamic_cast<const URIExpression*>(&ref);
-	return pref == NULL ? false : m_URI == pref->m_URI;
+	const POSExpression* pref = dynamic_cast<const POSExpression*>(&ref);
+	return pref == NULL ? false : m_POS == pref->m_POS;
     }
 };
 
@@ -2603,10 +2541,7 @@ public:
     virtual void clear(const Clear* const self, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void drop(const Drop* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
-    virtual void varExpression(const VarExpression* const self, const Bindable* p_Bindable) = 0;
-    virtual void literalExpression(const LiteralExpression* const self, const RDFLiteral* p_RDFLiteral) = 0;
-    virtual void booleanExpression(const BooleanExpression* const self, const BooleanRDFLiteral* p_BooleanRDFLiteral) = 0;
-    virtual void uriExpression(const URIExpression* const self, const URI* p_URI) = 0;
+    virtual void posExpression(const POSExpression* const self, const POS* p_POS) = 0;
     virtual void argList(const ArgList* const self, ProductionVector<const Expression*>* expressions) = 0;
     virtual void functionCall(const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) = 0;
     virtual void functionCallExpression(const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) = 0;
@@ -2764,17 +2699,8 @@ public:
     virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
-    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
-	p_Bindable->express(this);
-    }
-    virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
-	p_RDFLiteral->express(this);
-    }
-    virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
-	p_BooleanRDFLiteral->express(this);
-    }
-    virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
-	p_URI->express(this);
+    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+	p_POS->express(this);
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
 	expressions->express(this);

@@ -255,17 +255,8 @@ namespace w3c_sw {
 		FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
-	    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
-		_depends(p_Bindable, _Binding_FILTER);
-	    }
-	    virtual void literalExpression (const LiteralExpression* const, RDFLiteral* p_RDFLiteral) {
-		_depends(p_RDFLiteral, _Binding_FILTER);
-	    }
-	    virtual void booleanExpression (const BooleanExpression* const, BooleanRDFLiteral* p_BooleanRDFLiteral) {
-		_depends(p_BooleanRDFLiteral, _Binding_FILTER);
-	    }
-	    virtual void uriExpression (const URIExpression* const, URI* p_URI) {
-		_depends(p_URI, _Binding_FILTER);
+	    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+		_depends(p_POS, _Binding_FILTER);
 	    }
 
 	    std::string dumpConsequents () {

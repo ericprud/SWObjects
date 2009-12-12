@@ -250,24 +250,9 @@ public:
 	p_GraphIRI->express(this);
 	xml->close();
     }
-    virtual void varExpression (const VarExpression* const, const Bindable* p_Bindable) {
-	xml->open("VarExpression");
-	p_Bindable->express(this);
-	xml->close();
-    }
-    virtual void literalExpression (const LiteralExpression* const, const RDFLiteral* p_RDFLiteral) {
-	xml->open("LiteralExpression");
-	p_RDFLiteral->express(this);
-	xml->close();
-    }
-    virtual void booleanExpression (const BooleanExpression* const, const BooleanRDFLiteral* p_BooleanRDFLiteral) {
-	xml->open("BooleanExpression");
-	p_BooleanRDFLiteral->express(this);
-	xml->close();
-    }
-    virtual void uriExpression (const URIExpression* const, const URI* p_URI) {
-	xml->open("URIExpression");
-	p_URI->express(this);
+    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+	xml->open("POSExpression");
+	p_POS->express(this);
 	xml->close();
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {

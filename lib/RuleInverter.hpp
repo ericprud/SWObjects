@@ -547,27 +547,28 @@ namespace w3c_sw {
 	    if (p_ArgList->size() != 3)
 		FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
 	    std::vector<const Expression*>::iterator it = p_ArgList->begin();
-	    const VarExpression* varExp = dynamic_cast<const VarExpression*>(*it);
-	    if (varExp == NULL)
+	    const POSExpression* exp;
+	    exp = dynamic_cast<const POSExpression*>(*it);
+	    const Bindable* toModify = exp ? dynamic_cast<const Bindable*>(exp->getPOS()) : NULL;
+	    if (toModify == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
-	    const Bindable* toModify = varExp->getBindable();
 	    ++it;
-	    const LiteralExpression* litExp = dynamic_cast<const LiteralExpression*>(*it);
-	    if (litExp == NULL)
+	    exp = dynamic_cast<const POSExpression*>(*it);
+	    const RDFLiteral* localName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
+	    if (localName == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
 	    /* localName
 	     * http://bsbm.example/db/productfeatureproduct/offer.nr=(?@offer=[0-9]+)&publisher=(?@pub=[0-9]+)
 	     */
-	    const RDFLiteral* localName = litExp->getLiteral();
 
 	    ++it;
-	    litExp = dynamic_cast<const LiteralExpression*>(*it);
-	    if (litExp == NULL)
+	    exp = dynamic_cast<const POSExpression*>(*it);
+	    const RDFLiteral* ifaceName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
+	    if (ifaceName == NULL)
 		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
 	    /* ifaceName
 	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
 	     */
-	    const RDFLiteral* ifaceName = litExp->getLiteral();
 	    last.expression = NULL;
 
 	    /* create a substitution regexp:

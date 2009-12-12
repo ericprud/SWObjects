@@ -418,17 +418,8 @@ void Create::express (Expressor* p_expressor) const {
 void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
 }
-void VarExpression::express (Expressor* p_expressor) const {
-    p_expressor->varExpression(this, m_Bindable);
-}
-void LiteralExpression::express (Expressor* p_expressor) const {
-    p_expressor->literalExpression(this, m_RDFLiteral);
-}
-void BooleanExpression::express (Expressor* p_expressor) const {
-    p_expressor->booleanExpression(this, m_BooleanRDFLiteral);
-}
-void URIExpression::express (Expressor* p_expressor) const {
-    p_expressor->uriExpression(this, m_URI);
+void POSExpression::express (Expressor* p_expressor) const {
+    p_expressor->posExpression(this, m_POS);
 }
 void ArgList::express (Expressor* p_expressor) const {
     p_expressor->argList(this, expressions);

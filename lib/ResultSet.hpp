@@ -650,7 +650,7 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
-	const Expression* getFederationPattern (std::set<const Variable*> vars, bool lexicalCompare = false) {
+	const Expression* getFederationExpression (std::set<const Variable*> vars, bool lexicalCompare = false) {
 	    ExprSet disj;
 	    for (ResultSetConstIterator row = results.begin();
 		 row != results.end(); row++) {
@@ -662,17 +662,7 @@ namespace w3c_sw {
 		    if (value != NULL) {
 
 			/* Hideous dynamic cast to find the appropriate expression for the value. */
-			const Expression* posExpression;
-			if (const Bindable* t = dynamic_cast<const Bindable*>(value))
-			    posExpression = new VarExpression(t);
-			else if (const BooleanRDFLiteral* t = dynamic_cast<const BooleanRDFLiteral*>(value))
-			    posExpression = new BooleanExpression(t);
-			else if (const RDFLiteral* t = dynamic_cast<const RDFLiteral*>(value))
-			    posExpression = new LiteralExpression(t);
-			else if (const URI* t = dynamic_cast<const URI*>(value))
-			    posExpression = new URIExpression(t);
-			else
-			    throw std::string("what type of POS is ") + value->toString();
+			const Expression* posExpression = new POSExpression(value);
 
 			if (lexicalCompare == true) {
 			    conj.push_back
@@ -680,12 +670,12 @@ namespace w3c_sw {
 				 (new FunctionCallExpression
 				  (new FunctionCall
 				   (getPOSFactory()->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"),
-				    new VarExpression(*var), NULL, NULL)), 
+				    new POSExpression(*var), NULL, NULL)), 
 				  posExpression));
 			} else {
 			    conj.push_back
 				(new BooleanEQ
-				 (new VarExpression(*var), posExpression));
+				 (new POSExpression(*var), posExpression));
 			}
 		    }
 		    

@@ -810,7 +810,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 616 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new VarExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
@@ -1730,7 +1730,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1326 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new LiteralExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
+	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
     }
     break;
 
@@ -1739,7 +1739,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1329 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
     break;
 
@@ -1748,7 +1748,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1332 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new BooleanExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
+	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     }
     break;
 
@@ -1757,7 +1757,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1335 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new VarExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
@@ -1811,7 +1811,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1359 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new VarExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new POSExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     }
     break;
 
@@ -1886,7 +1886,7 @@ namespace w3c_sw {
 	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
 	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
 	else
-	    (yyval.p_Expression) = new URIExpression((yysemantic_stack_[(2) - (1)].p_URI));
+	    (yyval.p_Expression) = new POSExpression((yysemantic_stack_[(2) - (1)].p_URI));
     }
     break;
 
