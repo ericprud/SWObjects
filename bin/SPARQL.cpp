@@ -141,10 +141,22 @@ struct loadEntry {
 	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, 
 				&Agent, &DebugStream);
 	if (istr.mediaType == "application/sparql-results+xml") {
+	    if (Debug > 0) {
+		std::cout << "reading SPARQL XML Result Set " << nameStr;
+		if (baseURI != NULL)
+		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		std::cout << " into result set." << std::endl;
+	    }
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else if (istr.mediaType == "text/sparql-results") {
+	    if (Debug > 0) {
+		std::cout << "reading data table " << nameStr;
+		if (baseURI != NULL)
+		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		std::cout << " into result set." << std::endl;
+	    }
 	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
 	    sw::POS::String2BNode bnodeMap;
@@ -152,6 +164,12 @@ struct loadEntry {
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
+	    if (Debug > 0) {
+		std::cout << "reading " << nameStr;
+		if (baseURI != NULL)
+		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		std::cout << " into graph <" << graph << ">." << std::endl;
+	    }
 	    Db.loadData(Db.assureGraph(graph), istr, 
 			UriString(baseURI), UriString(baseURI), &F);
 	}
@@ -331,7 +349,7 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0) {
-	std::cout << "reading default graph from " << abs->getLexicalValue();
+	std::cout << "queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
 	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
     }
