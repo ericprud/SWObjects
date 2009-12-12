@@ -13,10 +13,9 @@ namespace w3c_sw {
 class SPARQLSerializer : public ExpressorSerializer {
 public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
-    typedef const ProductionVector<const Expression*> ExprSet;
 protected:
     std::stringstream ret;
-    ExprSet* injectFilter;
+    const ExprSet* injectFilter;
     bool normalizing; // no constructor switch for this yet.
     typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		  PREC_And, 
@@ -117,12 +116,12 @@ public:
 	p_o->express(this);
 	ret << " ." << std::endl;
     }
-    virtual void filter (const Filter* const, const TableOperation* p_op, ExprSet* p_Constraints) {
+    virtual void filter (const Filter* const, const TableOperation* p_op, const ExprSet* p_Constraints) {
 	injectFilter = p_Constraints;
 	p_op->express(this);
 	ret << std::endl;
     }
-    void serializeFilter (ExprSet* exprs) {
+    void serializeFilter (const ExprSet* exprs) {
 	if (exprs != NULL) {
 	    for (std::vector<const Expression*>::const_iterator expr = exprs->begin();
 		 expr != exprs->end(); ++expr) {
@@ -138,7 +137,7 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
-	ExprSet* filters = injectFilter; injectFilter = NULL;
+	const ExprSet* filters = injectFilter; injectFilter = NULL;
 	if (p_allOpts)
 	    for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
 		 triple != p_TriplePatterns->end(); triple++) {
@@ -171,7 +170,7 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
-	ExprSet* filters = injectFilter; injectFilter = NULL;
+	const ExprSet* filters = injectFilter; injectFilter = NULL;
 	for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 	     it != p_TableOperations->end(); ++it) {
 	    if (it != p_TableOperations->begin()) {
@@ -191,14 +190,14 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
 	depth++;
-	ExprSet* filters = injectFilter; injectFilter = NULL;
+	const ExprSet* filters = injectFilter; injectFilter = NULL;
 	p_TableOperations->express(this);
 	serializeFilter(filters);
 	depth--;
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, ExprSet* p_Expressions) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ExprSet* p_Expressions) {
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
