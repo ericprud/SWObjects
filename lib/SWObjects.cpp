@@ -229,6 +229,8 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
+StreamContext::MediaTypeMap StreamContext::MediaTypes;
+
 IStreamContext::IStreamContext (std::string name, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
     : StreamContext(name), p(NULL)

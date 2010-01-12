@@ -2422,16 +2422,31 @@ struct StreamContext {
 
     StreamContext (std::string nameStr) : nameStr(nameStr) {  }
 
+    struct MediaTypeMap : public std::map<const std::string, const char*> {
+	typedef std::map<const std::string, const char*>::const_iterator const_iterator;
+	typedef std::pair<const std::string, const char*> pair;
+	MediaTypeMap () {
+	    insert(pair("html", "text/html"));
+	    insert(pair("rdf" , "text/rdf+xml"));
+	    insert(pair("xml" , "text/rdf+xml"));
+	    insert(pair("ttl" , "text/turtle"));
+	    insert(pair("trig", "text/trig"));
+	    insert(pair("srx" , "application/sparql-results+xml"));
+	    insert(pair("srt" , "text/sparql-results"));
+	    insert(pair("rq"  , "text/sparql-query"));
+	}
+    };
+
+    static MediaTypeMap MediaTypes;
+
     void guessMediaType () {
-	mediaType = 
-	    nameStr.substr(nameStr.size()-5, 5) == ".html" ? "text/html" : 
-	    nameStr.substr(nameStr.size()-4, 4) == ".rdf" ? "text/rdf+xml" : 
-	    nameStr.substr(nameStr.size()-4, 4) == ".xml" ? "text/rdf+xml" : 
-	    nameStr.substr(nameStr.size()-4, 4) == ".ttl" ? "text/turtle" : 
-	    nameStr.substr(nameStr.size()-5, 5) == ".trig" ? "text/trig" : 
-	    nameStr.substr(nameStr.size()-4, 4) == ".srx" ? "application/sparql-results+xml" : 
-	    nameStr.substr(nameStr.size()-4, 4) == ".srt" ? "text/sparql-results" : 
-	    "text/plain";
+	size_t dot = nameStr.find_last_of('.');
+	if (dot != std::string::npos) {
+	    const std::string sub(nameStr.substr(dot+1, nameStr.size()));
+	    MediaTypeMap::const_iterator it = MediaTypes.find(sub);
+	    if (it != MediaTypes.end())
+		mediaType = it->second;
+	}
     }
 };
 
