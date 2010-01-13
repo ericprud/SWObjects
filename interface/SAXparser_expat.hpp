@@ -129,7 +129,7 @@ namespace w3c_sw {
 		if (nsz.top().find(prefix) != nsz.top().end())
 		    *elNs = nsz.top()[prefix].c_str();
 		else
-		    insulator->error("namespace prefix \"%s\" not found", (char*)prefix.c_str());
+		    insulator->varError("namespace prefix \"%s\" not found", (char*)prefix.c_str());
 	    }
 	}
 	void __dumpNsz (const char* sit) {
@@ -184,7 +184,7 @@ namespace w3c_sw {
 			nss.namespaceURI = self.nsz.top()[nss.prefix].c_str();
 			attrs.byNS_localName[nss.namespaceURI][nss.localName] = nss.value;
 		    } else
-			self.insulator->error("namespace prefix \"%s\" not found", (char*)nss.prefix);
+			self.insulator->varError("namespace prefix \"%s\" not found", (char*)nss.prefix);
 		}
 	    }
 	    SimpleNsMap nsMap(self.nsz.top());
