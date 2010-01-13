@@ -24,7 +24,7 @@ YACC:=bison
 TEE:=tee
 SED:=sed
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
-ECHO:=`which echo`
+ECHO:=`which echo` # /bin/echo -e
 ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
@@ -137,7 +137,7 @@ all:   lib test
 
 
 config.h: CONFIG
-	@echo "/* Generated from CONFIG.\n" \
+	@$(ECHO) "/* Generated from CONFIG.\n" \
 	"* In order to keep your link directives appropriate for the features enabled\n" \
 	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\n" \
 	"*/\n" \
