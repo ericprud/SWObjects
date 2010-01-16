@@ -56,6 +56,22 @@ BOOST_AUTO_TEST_CASE( D ) {
 		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
 		      "}\n");
 }
+BOOST_AUTO_TEST_CASE( D_trig ) {
+    ExecResults tested("../bin/SPARQL -D -L text/trig");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "{\n"
+		      "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/SPARQL/v1> .\n"
+		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
+		      "}\n");
+}
+BOOST_AUTO_TEST_CASE( D_turtle ) {
+    ExecResults tested("../bin/SPARQL -D -L text/turtle");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+		      "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/SPARQL/v1> .\n"
+		      "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n");
+}
 BOOST_AUTO_TEST_CASE( D_spo ) {
     ExecResults invocation("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::POS::String2BNode bnodeMap;

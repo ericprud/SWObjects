@@ -57,6 +57,9 @@
   #include <boost/regex.hpp>
 #endif /* REGEX_LIB == SWOb_BOOST */
 
+#include <boost/optional.hpp>
+#include <boost/none.hpp>
+
 namespace w3c_sw {
 
     extern const char* NS_xml;
@@ -107,6 +110,49 @@ public:
     TypeError (std::string type, std::string context) : SafeEvaluationError(type + " not expected in " + context) {  }
     virtual ~TypeError () throw() {   }
     char const* what() const throw() { 	return msg.c_str(); }
+};
+
+class MediaType : public boost::optional<std::string> {
+public:
+    MediaType () {
+	this->assign(boost::none_t());
+    }
+    MediaType (const char* p_mediaType) {
+	if (p_mediaType == NULL)
+	    this->assign(boost::none_t());
+	else
+	    this->assign(p_mediaType);
+    }
+    void operator= (const char* p_mediaType) {
+	if (p_mediaType == NULL)
+	    this->assign(boost::none_t());
+	else
+	    this->assign(p_mediaType);
+    }
+    std::string toString () {
+	return this->is_initialized() ? this->get() : std::string("-no media type-");
+    }
+    const char* c_str () {
+	return this->is_initialized() ? this->get().c_str() : NULL;
+    }
+    bool match (const char* match) {
+	return (is_initialized() && !strncmp(c_str(), match, strlen(match)));
+    }
+};
+
+struct MediaTypeMap : public std::map<const std::string, const char*> {
+    typedef std::map<const std::string, const char*>::const_iterator const_iterator;
+    typedef std::pair<const std::string, const char*> pair;
+    MediaTypeMap () {
+	insert(pair("html", "text/html"));
+	insert(pair("rdf" , "text/rdf+xml"));
+	insert(pair("xml" , "text/rdf+xml"));
+	insert(pair("ttl" , "text/turtle"));
+	insert(pair("trig", "text/trig"));
+	insert(pair("srx" , "application/sparql-results+xml"));
+	insert(pair("srt" , "text/sparql-results"));
+	insert(pair("rq"  , "text/sparql-query"));
+    }
 };
 
 class Expressor;
@@ -540,6 +586,7 @@ public:
 };
 
 class BasicGraphPattern;
+class NamespaceMap;
 
 class TriplePattern : public Base {
     friend class POSFactory;
@@ -565,11 +612,7 @@ public:
 	if (l->m_o != r->m_o) return l->m_o > r->m_o;
 	return 0;
     }    
-    std::string toString () const {
-	std::stringstream s;
-	s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
-	return s.str();
-    }
+    std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const;
     std::string toString (Result* row) const {
 	std::stringstream s;
 	s << 
@@ -1152,8 +1195,6 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 
 */
 
-class NamespaceMap;
-
 class TableOperation : public Base {
 protected:
     TableOperation () : Base() {  }
@@ -1165,7 +1206,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
-    std::string toString(NamespaceMap* namespaces = NULL) const;
+    virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
 };
 class TableJunction : public TableOperation {
 protected:
@@ -1285,6 +1326,7 @@ public:
     void clearTriples () { m_TriplePatterns.clear(); }
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
+    virtual std::string toString(MediaType mediaType = MediaType((const char*)NULL), NamespaceMap* namespaces = NULL) const;
 };
 
 class NamedGraphPattern : public BasicGraphPattern {
@@ -2417,25 +2459,10 @@ struct StreamContext {
 	FILE =		4,	/* must be a file */
     } e_opts;
     std::string nameStr;
-    std::string mediaType;
+    MediaType mediaType;
     bool malloced;
 
     StreamContext (std::string nameStr) : nameStr(nameStr) {  }
-
-    struct MediaTypeMap : public std::map<const std::string, const char*> {
-	typedef std::map<const std::string, const char*>::const_iterator const_iterator;
-	typedef std::pair<const std::string, const char*> pair;
-	MediaTypeMap () {
-	    insert(pair("html", "text/html"));
-	    insert(pair("rdf" , "text/rdf+xml"));
-	    insert(pair("xml" , "text/rdf+xml"));
-	    insert(pair("ttl" , "text/turtle"));
-	    insert(pair("trig", "text/trig"));
-	    insert(pair("srx" , "application/sparql-results+xml"));
-	    insert(pair("srt" , "text/sparql-results"));
-	    insert(pair("rq"  , "text/sparql-query"));
-	}
-    };
 
     static MediaTypeMap MediaTypes;
 
@@ -2462,7 +2489,7 @@ struct IStreamContext : public StreamContext {
 struct OStreamContext : public StreamContext {
     std::ostream* p;
     bool malloced;
-    OStreamContext(std::string nameStr, e_opts = NONE,
+    OStreamContext(std::string nameStr, const char* p_mediaType = NULL, e_opts = NONE,
 	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
     ~OStreamContext();
     std::ostream& operator* () { return *p; }

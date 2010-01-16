@@ -140,7 +140,7 @@ struct loadEntry {
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, 
 				&Agent, &DebugStream);
-	if (istr.mediaType == "application/sparql-results+xml") {
+	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (Debug > 0) {
 		std::cout << "reading SPARQL XML Result Set " << nameStr;
 		if (baseURI != NULL)
@@ -150,7 +150,7 @@ struct loadEntry {
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
-	} else if (istr.mediaType == "text/sparql-results") {
+	} else if (istr.mediaType.match("text/sparql-results")) {
 	    if (Debug > 0) {
 		std::cout << "reading data table " << nameStr;
 		if (baseURI != NULL)
@@ -246,7 +246,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/turtle, text/trig, text/html, application/rdf:xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/turtle, text/trig, text/html, application/rdf+xml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -804,16 +804,16 @@ int main(int ac, char* av[])
 					&Agent, &DebugStream);
 
 		    sw::ResultSet* reference;
-		    if (iptr.mediaType == "application/sparql-results+xml") {
+		    if (iptr.mediaType.match("application/sparql-results+xml")) {
 			reference = new sw::ResultSet(&F, &P, iptr);
 		    } else {
 			sw::RdfDB resGraph;
-			if (iptr.mediaType == "text/turtle") {
+			if (iptr.mediaType.match("text/turtle")) {
 			    TurtleParser.setGraph(resGraph.assureGraph(NULL));
 			    TurtleParser.parse(iptr);
 			    TurtleParser.clear("");
 			} else {
-			    throw std::string("media-type \"").append(iptr.mediaType).append("\" unknown.");
+			    throw std::string("media-type \"").append(iptr.mediaType.toString()).append("\" unknown.");
 			}
 			reference = 
 			    rs.resultType == sw::ResultSet::RESULT_Graphs ?
@@ -835,9 +835,16 @@ int main(int ac, char* av[])
 	    }
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT, 
+		sw::OStreamContext optr(outres, 
+					DataMediaType.size() == 0 ?
+					NULL : DataMediaType.c_str(), 
+					sw::OStreamContext::STDOUT, 
 					&Agent, &DebugStream);
-		*optr << rs.toString(optr.mediaType, &NsAccumulator, 
+		if ((Query != NULL || ResultSetsLoaded == true) &&
+		    rs.resultType != sw::ResultSet::RESULT_Graphs && 
+		    DataMediaType.size() == 0)
+		    optr.mediaType = "text/sparql-results";
+		*optr << rs.toString(optr.mediaType.c_str(), &NsAccumulator, 
 				     Query == NULL && ResultSetsLoaded == false);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@

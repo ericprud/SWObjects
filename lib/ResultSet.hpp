@@ -624,19 +624,19 @@ namespace w3c_sw {
 	    return posFactory;
 	}
 	std::string toString(NamespaceMap* namespaces = NULL) const;
-	std::string toString (std::string mediaType = "", NamespaceMap* namespaces = NULL, bool preferDb = false) {
-	    if (mediaType == "application/sparql-results+xml") {
+	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) {
+	    if (preferDb || resultType == RESULT_Graphs) {
+		// text/turtle , text/trig
+		return db->toString(mediaType, namespaces);
+	    } else if (mediaType.match("text/sparql-results")) {
+		return toString(namespaces);
+	    } else {
+		// application/sparql-results+xml
 		XMLSerializer s;
 		toXml(&s);
 		std::string ret = s.str();
 		return ret;
-	    } else
-	    return
-		mediaType == "text/turtle" ||
-		mediaType == "text/trig" ||
-		preferDb ||
-		resultType == RESULT_Graphs ? db->toString(mediaType.empty() ? "text/trig" : mediaType, namespaces) :
-		toString(namespaces);
+	    }
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	ResultSetIterator begin () { return results.begin(); }

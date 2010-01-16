@@ -39,10 +39,10 @@ namespace w3c_sw {
     }
 
     bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
-	if (!istr.mediaType.compare(0, 9, "text/html") || 
-	    !istr.mediaType.compare(0, 9, "application/xhtml")) {
+	if (istr.mediaType.match("text/html") || 
+	    istr.mediaType.match("application/xhtml")) {
 	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ") + istr.mediaType + 
+		throw std::string("no XML parser to parse ") + istr.mediaType.toString() + 
 		    " document " + nameStr;
 	    RDFaParser parser(posFactory, xmlParser);
 	    if (baseURI != "")
@@ -51,10 +51,10 @@ namespace w3c_sw {
 		parser.setNamespaceMap(nsMap);
 	    parser.parse(target, istr, nameStr);
 	    return false;
-	} else if (!istr.mediaType.compare(0, 8, "text/rdf") || 
-		   !istr.mediaType.compare(0, 19, "application/rdf+xml")) {
+	} else if (istr.mediaType.match("text/rdf") || 
+		   istr.mediaType.match("application/rdf+xml")) {
 	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ") + istr.mediaType + 
+		throw std::string("no XML parser to parse ") + istr.mediaType.toString() + 
 		    " document " + nameStr;
 	    RdfXmlParser parser("", posFactory, xmlParser);
 	    if (baseURI != "")
@@ -63,7 +63,7 @@ namespace w3c_sw {
 		parser.setNamespaceMap(nsMap);
 	    parser.parse(assureGraph(NULL), istr);
 	    return false;
-	} else if (!istr.mediaType.compare(0, 11, "text/turtle")) {
+	} else if (istr.mediaType.match("text/turtle")) {
 	    TurtleSDriver parser(nameStr, posFactory);
 	    parser.setGraph(target);
 	    if (baseURI != "")

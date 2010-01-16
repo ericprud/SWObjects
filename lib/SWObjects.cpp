@@ -229,7 +229,7 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-StreamContext::MediaTypeMap StreamContext::MediaTypes;
+MediaTypeMap StreamContext::MediaTypes;
 
 IStreamContext::IStreamContext (std::string name, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
@@ -242,7 +242,7 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	mediaType = webAgent->getMediaType();
+	mediaType = webAgent->getMediaType().c_str();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDIN) && nameStr == "-") {
 	p = &std::cin;
@@ -264,7 +264,7 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 }
 
 /* @@ factor me */
-OStreamContext::OStreamContext (std::string name, e_opts opts, 
+OStreamContext::OStreamContext (std::string name, const char* p_mediaType, e_opts opts, 
 			SWWEBagent* webAgent, std::ostream** debugStream)
     : StreamContext(name), p(NULL)
 {
@@ -275,7 +275,7 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	mediaType = webAgent->getMediaType();
+	mediaType = webAgent->getMediaType().c_str();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDOUT) && nameStr == "-") {
 	p = &std::cout;
@@ -288,11 +288,16 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
 	}
 	if (debugStream != NULL && *debugStream != NULL)
 	    **debugStream << "reading file " << nameStr << std::endl;
-	guessMediaType();
 	std::ofstream* ofs = new std::ofstream(nameStr.c_str());
 	p = ofs;
 	if (!ofs->is_open())
 	    throw std::string("unable to open file \"").append(nameStr).append("\"");
+    }
+    if (!mediaType) {
+	if (p_mediaType == NULL)
+	    guessMediaType();
+	else
+	    mediaType = p_mediaType;
     }
 }
 OStreamContext::~OStreamContext () {
@@ -1507,10 +1512,32 @@ compared against
 	}
 #endif
     }
-    std::string TableOperation::toString (NamespaceMap* namespaces) const {
+    std::string TriplePattern::toString (MediaType mediaType, NamespaceMap* namespaces) const {
+	std::stringstream s;
+	if (mediaType.match("text/turtle")) {
+	    s << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << " ." << std::endl;
+	} else {
+	    s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
+	}
+	return s.str();
+    }
+    std::string TableOperation::toString (MediaType mediaType, NamespaceMap* namespaces) const {
 	SPARQLSerializer s("  ", SPARQLSerializer::DEBUG_none, "", namespaces);
 	express(&s);
 	return s.str();
+    }
+    std::string BasicGraphPattern::toString (MediaType mediaType, NamespaceMap* namespaces) const {
+	std::stringstream ret;
+	if (mediaType.match("text/trig")) {
+	    SPARQLSerializer s("  ", SPARQLSerializer::DEBUG_none, "", namespaces);
+	    express(&s);
+	    ret << s.str();
+	} else {
+	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
+		 triple != m_TriplePatterns.end(); triple++)
+		ret << (*triple)->toString(mediaType, namespaces);
+	}
+	return ret.str();
     }
     TableOperation* TableDisjunction::getDNF () const {
 	TableDisjunction* ret = new TableDisjunction();

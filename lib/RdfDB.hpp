@@ -128,15 +128,17 @@ namespace w3c_sw {
 	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap = NULL);
 	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
-	std::string toString (std::string mediaType = "text/trig", NamespaceMap* namespaces = NULL) const {
+	std::string toString (MediaType mediaType = MediaType("text/trig"), NamespaceMap* namespaces = NULL) const {
 	    /* simple unordered serializer -
 	       SPARQLSerializer s;
 	       express(&s);
 	       return s.str(); */
+	    if (!mediaType)
+		mediaType = MediaType("text/trig");
 
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;
-	    if (mediaType == "text/turtle" || mediaType == "application/rdf+xml")
+	    if (mediaType.match("text/turtle") || mediaType.match("application/rdf+xml"))
 		graphList.push_back(DefaultGraph);
 	    else
 		for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
@@ -145,8 +147,8 @@ namespace w3c_sw {
 	    POSsorter sorter;
 	    graphList.sort(sorter);
 	    std::stringstream s;
-	    for (std::list<const POS*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it)
-		s << graphs.find(*it)->second->toString(namespaces);
+	    for (std::list<const POS*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) 
+		s << graphs.find(*it)->second->toString(mediaType, namespaces);
 	    return s.str();
 	}
     };
