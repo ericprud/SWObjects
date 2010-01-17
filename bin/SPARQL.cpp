@@ -87,7 +87,7 @@ const sw::POS* NamedGraphName = NULL;
 const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
 typedef std::vector<const sw::POS*> mapList;
 mapList Maps;
-std::string DataMediaType;
+sw::MediaType DataMediaType;
 std::string UserName;
 std::string PassWord;
 std::map<std::string, std::string> HTTPHeaders;
@@ -216,12 +216,14 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, turtle, trig, rdfa, rdfxml";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
 	else if (!s.compare("guess"))
 	    DataMediaType = "text/plain";
+	else if (!s.compare("ntriples"))
+	    DataMediaType = "text/ntriples";
 	else if (!s.compare("turtle"))
 	    DataMediaType = "text/turtle";
 	else if (!s.compare("trig"))
@@ -234,10 +236,10 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
 	}
 	if (Debug > 0) {
-	    if (DataMediaType.size() == 0)
+	    if (!DataMediaType)
 		std::cout << "using no data language mediatype.\n";
 	    else
-		std::cout << "using data language mediatype " << DataMediaType << ".\n";
+		std::cout << "using data language mediatype " << *DataMediaType << ".\n";
 	}
     }
 }
@@ -246,12 +248,14 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/turtle, text/trig, text/html, application/rdf+xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
 	else if (!s.compare("text/plain"))
 	    DataMediaType = "text/plain";
+	else if (!s.compare("text/ntriples"))
+	    DataMediaType = "text/ntriples";
 	else if (!s.compare("text/turtle"))
 	    DataMediaType = "text/turtle";
 	else if (!s.compare("text/trig"))
@@ -264,10 +268,10 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
 	}
 	if (Debug > 0) {
-	    if (DataMediaType.size() == 0)
+	    if (!DataMediaType)
 		std::cout << "using no data mediatype mediatype.\n";
 	    else
-		std::cout << "using data mediatype mediatype " << DataMediaType << ".\n";
+		std::cout << "using data mediatype mediatype " << *DataMediaType << ".\n";
 	}
     }
 }
@@ -808,7 +812,8 @@ int main(int ac, char* av[])
 			reference = new sw::ResultSet(&F, &P, iptr);
 		    } else {
 			sw::RdfDB resGraph;
-			if (iptr.mediaType.match("text/turtle")) {
+			if (iptr.mediaType.match("text/ntriples") || 
+			    iptr.mediaType.match("text/turtle")) {
 			    TurtleParser.setGraph(resGraph.assureGraph(NULL));
 			    TurtleParser.parse(iptr);
 			    TurtleParser.clear("");
@@ -835,17 +840,15 @@ int main(int ac, char* av[])
 	    }
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamContext optr(outres, 
-					DataMediaType.size() == 0 ?
-					NULL : DataMediaType.c_str(), 
+		sw::OStreamContext optr(outres, DataMediaType.c_str(), 
 					sw::OStreamContext::STDOUT, 
 					&Agent, &DebugStream);
-		if ((Query != NULL || ResultSetsLoaded == true) &&
-		    rs.resultType != sw::ResultSet::RESULT_Graphs && 
-		    DataMediaType.size() == 0)
+		bool dumpDb = Query == NULL && ResultSetsLoaded == false;
+		if (!dumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
+		    !DataMediaType)
 		    optr.mediaType = "text/sparql-results";
-		*optr << rs.toString(optr.mediaType.c_str(), &NsAccumulator, 
-				     Query == NULL && ResultSetsLoaded == false);
+		*optr << rs.toString(optr.mediaType.c_str(),
+				     &NsAccumulator, dumpDb);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@
 	}

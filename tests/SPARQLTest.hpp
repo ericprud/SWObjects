@@ -202,7 +202,8 @@ struct ReferenceRS {
 		reference = new ResultSet(posFactory, saxParser, istr);
 
 	    } else {			/* retults in a graph */
-		if (rfs.substr(rfs.size()-4, 4) == ".ttl") {
+		if (rfs.substr(rfs.size()-4, 4) == ".nt" || 
+		    rfs.substr(rfs.size()-4, 4) == ".ttl") {
 		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
 		    IStreamContext ttl(rfs.c_str(), StreamContext::FILE);
 		    if (resultFile != NULL)

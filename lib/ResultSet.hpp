@@ -626,7 +626,7 @@ namespace w3c_sw {
 	std::string toString(NamespaceMap* namespaces = NULL) const;
 	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) {
 	    if (preferDb || resultType == RESULT_Graphs) {
-		// text/turtle , text/trig
+		// text/ntriples , text/turtle , text/trig
 		return db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results")) {
 		return toString(namespaces);

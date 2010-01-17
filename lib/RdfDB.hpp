@@ -138,7 +138,9 @@ namespace w3c_sw {
 
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;
-	    if (mediaType.match("text/turtle") || mediaType.match("application/rdf+xml"))
+	    if (mediaType.match("text/turtle") || 
+		mediaType.match("text/ntriples") || 
+		mediaType.match("application/rdf+xml"))
 		graphList.push_back(DefaultGraph);
 	    else
 		for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)

@@ -197,6 +197,7 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 	insert(pair("html", "text/html"));
 	insert(pair("rdf" , "text/rdf+xml"));
 	insert(pair("xml" , "text/rdf+xml"));
+	insert(pair("nt" ,  "text/ntriples"));
 	insert(pair("ttl" , "text/turtle"));
 	insert(pair("trig", "text/trig"));
 	insert(pair("srx" , "application/sparql-results+xml"));
