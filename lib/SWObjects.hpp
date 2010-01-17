@@ -57,8 +57,9 @@
   #include <boost/regex.hpp>
 #endif /* REGEX_LIB == SWOb_BOOST */
 
-#include <boost/optional.hpp>
-#include <boost/none.hpp>
+#if (!defined(_MSC_VER) || _MSC_VER >= 1500)
+  #include <boost/optional.hpp>
+#endif /* (!defined(_MSC_VER) || _MSC_VER >= 1500) */
 
 namespace w3c_sw {
 
@@ -184,9 +185,9 @@ public:
 	: OptString(std::string("-no media type-")) {  }
     MediaType (const char* p_str)
 	: OptString(p_str, std::string("-no media type-")) {  }
-    void operator= (const char* p_str) {
-	assign(p_str);
-    }
+//     void operator= (const char* p_str) {
+// 	assign(p_str);
+//     }
 };
 
 struct MediaTypeMap : public std::map<const std::string, const char*> {
