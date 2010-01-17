@@ -134,7 +134,7 @@ namespace w3c_sw {
 	       express(&s);
 	       return s.str(); */
 	    if (!mediaType)
-		mediaType = MediaType("text/trig");
+		mediaType = "text/trig";
 
 	    /* ordered serializer */
 	    std::list<const POS*> graphList;

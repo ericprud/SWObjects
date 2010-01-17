@@ -112,31 +112,80 @@ public:
     char const* what() const throw() { 	return msg.c_str(); }
 };
 
-class MediaType : public boost::optional<std::string> {
+#if (defined(_MSC_VER) && _MSC_VER < 1500)
+class OptString {
+    bool m_initialized;
+    std::string m_str;
+    std::string m_emptyString;
+
 public:
-    MediaType () {
-	this->assign(boost::none_t());
+    OptString (std::string p_emptyString = "")
+	: m_initialized(false), m_emptyString(p_emptyString) {  }
+    OptString (const char* p_str, std::string p_emptyString = "")
+	: m_initialized(false), m_emptyString(p_emptyString) {
+	assign(p_str);
     }
-    MediaType (const char* p_mediaType) {
-	if (p_mediaType == NULL)
-	    this->assign(boost::none_t());
-	else
-	    this->assign(p_mediaType);
+    void operator= (const char* p_str) {
+	assign(p_str);
     }
-    void operator= (const char* p_mediaType) {
-	if (p_mediaType == NULL)
-	    this->assign(boost::none_t());
-	else
-	    this->assign(p_mediaType);
+    void assign (const char* p_str) {
+	if (p_str == NULL) {
+	    m_initialized = false;
+	    m_str = "uninitialized OptString";
+	} else {
+	    m_initialized = true;
+	    m_str = p_str;
+	}
     }
     std::string toString () {
-	return this->is_initialized() ? this->get() : std::string("-no media type-");
+	return m_initialized ? m_str : m_emptyString;
     }
     const char* c_str () {
-	return this->is_initialized() ? this->get().c_str() : NULL;
+	return m_initialized ? m_str.c_str() : NULL;
+    }
+    bool match (const char* match) {
+	return (m_initialized && !strncmp(c_str(), match, strlen(match)));
+    }
+    std::string get() const { BOOST_ASSERT(m_initialized) ; return m_str; }
+    std::string operator *() const { return this->get() ; }
+    typedef bool (OptString::*unspecified_bool_type)() const;
+    bool is_initialized() const { return m_initialized ; }
+    operator unspecified_bool_type() const {
+	return m_initialized ? &OptString::is_initialized : 0 ;
+    }
+};
+#else /* !(defined(_MSC_VER) && _MSC_VER < 1500) */
+class OptString : public boost::optional<std::string> {
+    std::string m_emptyString;
+
+public:
+    OptString (std::string p_emptyString = "")
+	: boost::optional<std::string>(), m_emptyString(p_emptyString) {  }
+    OptString (const char* p_str, std::string p_emptyString = "")
+	: m_emptyString(p_emptyString) {
+	if (p_str != NULL)
+	    assign(p_str);
+    }
+    std::string toString () {
+	return is_initialized() ? get() : m_emptyString;
+    }
+    const char* c_str () {
+	return is_initialized() ? get().c_str() : NULL;
     }
     bool match (const char* match) {
 	return (is_initialized() && !strncmp(c_str(), match, strlen(match)));
+    }
+};
+#endif /* !(defined(_MSC_VER) && _MSC_VER < 1500) */
+
+class MediaType : public OptString {
+public:
+    MediaType ()
+	: OptString(std::string("-no media type-")) {  }
+    MediaType (const char* p_str)
+	: OptString(p_str, std::string("-no media type-")) {  }
+    void operator= (const char* p_str) {
+	assign(p_str);
     }
 };
 
