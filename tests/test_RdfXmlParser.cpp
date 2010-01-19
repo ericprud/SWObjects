@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( Db0_Db1 ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Db0_Db1.rdf");
-    sw::IStreamContext reference("RdfXmlParser/Db0_Db1.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/Db0_Db1.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( Db0_Db0 ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Db0_Db0.rdf");
-    sw::IStreamContext reference("RdfXmlParser/Db0_Db0.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/Db0_Db0.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( result_sort_8 ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("result-sort-8.rdf");
-    sw::IStreamContext reference("RdfXmlParser/result-sort-8.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/result-sort-8.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( SPARQLResultg ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("SPARQLResult.rdf");
-    sw::IStreamContext reference("RdfXmlParser/SPARQLResult.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/SPARQLResult.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE( Ts_To ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Ts_To.rdf");
-    sw::IStreamContext reference("RdfXmlParser/Ts_To.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/Ts_To.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( Ds_po ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Ds_po.rdf");
-    sw::IStreamContext reference("RdfXmlParser/Ds_po.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/Ds_po.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( Ds_Do ) {
     sw::DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("Ds_Do.rdf");
-    sw::IStreamContext reference("RdfXmlParser/Ds_Do.ttl", sw::StreamContext::FILE);
+    sw::IStreamContext reference("RdfXmlParser/Ds_Do.ttl", sw::IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);

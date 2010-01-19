@@ -2501,10 +2501,31 @@ std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wante
 namespace w3c_sw {
 
 class SWWEBagent;
-struct StreamContext {
+
+template<class T>
+struct EBase {
+    typedef enum {
+	NONE =		0,	/* don't do nuthin */
+    } e_opts;
+    EBase(T* def, e_opts = NONE);
+    virtual ~EBase();
+};
+
+struct IEBase : public EBase<std::istream> {
+    IEBase (e_opts opts = NONE)
+	: EBase<std::istream>(&std::cin, opts)
+    {  }
+};
+
+struct StreamContextMediaTypes {
+    static MediaTypeMap MediaTypes;
+};
+template<class T>
+struct StreamContext : public StreamContextMediaTypes {
     typedef enum {
 	NONE =		0,	/* don't do nuthin */
 	STRING =	1,	/* nameStr is the contents */
+	STDIO =		2,	/* '-' means stdin */
 	STDIN =		2,	/* '-' means stdin */
 	STDOUT =	2,	/* '-' also means stdout */
 	FILE =		4,	/* must be a file */
@@ -2513,9 +2534,12 @@ struct StreamContext {
     MediaType mediaType;
     bool malloced;
 
-    StreamContext (std::string nameStr) : nameStr(nameStr) {  }
-
-    static MediaTypeMap MediaTypes;
+    T* p;
+    StreamContext(std::string nameStr, T* def, e_opts,
+		  const char* p_mediaType, SWWEBagent* webAgent,
+		   std::ostream** debugStream);
+    virtual ~StreamContext () { if (malloced) delete p; }
+    T& operator* () { return *p; }
 
     void guessMediaType () {
 	size_t dot = nameStr.find_last_of('.');
@@ -2528,23 +2552,16 @@ struct StreamContext {
     }
 };
 
-struct IStreamContext : public StreamContext {
-    std::istream* p;
-    IStreamContext(std::string nameStr, e_opts = NONE,
-	       SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~IStreamContext () { if (malloced) delete p; }
-    std::istream& operator* () { return *p; }
-
+struct IStreamContext : public StreamContext<std::istream> {
+    IStreamContext(std::string name, e_opts opts = NONE,
+		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
+		   std::ostream** debugStream = NULL);
 };
-
-struct OStreamContext : public StreamContext {
-    std::ostream* p;
-    bool malloced;
-    OStreamContext(std::string nameStr, const char* p_mediaType = NULL, e_opts = NONE,
-	      SWWEBagent* webAgent = NULL, std::ostream** debugStream = NULL);
-    ~OStreamContext();
-    std::ostream& operator* () { return *p; }
-};
+struct OStreamContext : public StreamContext<std::ostream> {
+    OStreamContext(std::string name, e_opts opts = NONE,
+		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
+		   std::ostream** debugStream = NULL);
+}
 
 class NamespaceMap {
 protected:

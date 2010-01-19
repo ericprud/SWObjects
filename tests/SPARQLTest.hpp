@@ -80,7 +80,7 @@ struct MeasuredRS : public ResultSet {
 
 	/* Parse query. */
 	{
-	    IStreamContext istr(query, StreamContext::FILE);
+	    IStreamContext istr(query, IStreamContext::FILE);
 	    sparqlParser.setBase(baseURI);
 	    if (sparqlParser.parse(istr))
 		throw std::string("failed to parse query file \"") + query + "\".";
@@ -91,7 +91,7 @@ struct MeasuredRS : public ResultSet {
 	if (defGraph != NULL) {
 	    turtleParser.setGraph(d.assureGraph(NULL));
 	    turtleParser.setBase(baseURI);
-	    IStreamContext istr(defGraph, StreamContext::FILE);
+	    IStreamContext istr(defGraph, IStreamContext::FILE);
 	    turtleParser.parse(istr);
 	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
@@ -99,7 +99,7 @@ struct MeasuredRS : public ResultSet {
 	for (size_t i = 0; i < namedCount; ++i) {
 	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
 	    turtleParser.setBase(baseURI);
-	    IStreamContext istr(namedGraphs[i], StreamContext::FILE);
+	    IStreamContext istr(namedGraphs[i], IStreamContext::FILE);
 	    turtleParser.parse(istr);
 	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
@@ -125,7 +125,7 @@ struct MeasuredRS : public ResultSet {
 	/* Parse query. */
 	{
 	    sparqlParser.setBase(baseURI);
-	    IStreamContext istr(query, StreamContext::FILE);
+	    IStreamContext istr(query, IStreamContext::FILE);
 	    if (sparqlParser.parse(istr))
 		throw std::string("failed to parse query file \"") + query + "\".";
 	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
@@ -135,7 +135,7 @@ struct MeasuredRS : public ResultSet {
 	if (input != NULL) {
 	    trigParser.setDB(&d);
 	    trigParser.setBase(baseURI);
-	    IStreamContext istr(input, StreamContext::FILE);
+	    IStreamContext istr(input, IStreamContext::FILE);
 	    trigParser.parse(istr);
 	    trigParser.clear(BASE_URI);
 	}
@@ -197,7 +197,7 @@ struct ReferenceRS {
 
 	} else {
 	    std::string rfs(resultFile);
-	    IStreamContext istr(resultFile, StreamContext::FILE);
+	    IStreamContext istr(resultFile, IStreamContext::FILE);
 	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
 		reference = new ResultSet(posFactory, saxParser, istr);
 
@@ -205,7 +205,7 @@ struct ReferenceRS {
 		if (rfs.substr(rfs.size()-4, 4) == ".nt" || 
 		    rfs.substr(rfs.size()-4, 4) == ".ttl") {
 		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
-		    IStreamContext ttl(rfs.c_str(), StreamContext::FILE);
+		    IStreamContext ttl(rfs.c_str(), IStreamContext::FILE);
 		    if (resultFile != NULL)
 			turtleParser.setBase(baseURI);
 		    turtleParser.parse(ttl);
@@ -214,7 +214,7 @@ struct ReferenceRS {
 		    if (resultFile != NULL)
 			trigParser.setBase(baseURI);
 		    trigParser.setDB(&rdfDB);
-		    IStreamContext trig(rfs.c_str(), StreamContext::FILE);
+		    IStreamContext trig(rfs.c_str(), IStreamContext::FILE);
 		    trigParser.parse(trig);			       
 		    trigParser.clear(BASE_URI);					       
 		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {

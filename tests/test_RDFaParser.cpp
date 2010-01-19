@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE( APC ) {
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase("APC.html");
-    IStreamContext reference("RDFaParser/APC.ttl", StreamContext::FILE);
+    IStreamContext reference("RDFaParser/APC.ttl", IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( APC ) {
 BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern tested;
     const char* gabab = "http://hcls.deri.org/atag-data/gabab_example.html";
-    IStreamContext html("RDFaParser/gabab.html", StreamContext::FILE);
+    IStreamContext html("RDFaParser/gabab.html", IStreamContext::FILE);
     try {
 	GRDFaParser.parse(&tested, html, gabab);
     } catch (std::string e) {
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( gabab ) {
     DefaultGraphPattern expected;
     turtleParser.setGraph(&expected);
     turtleParser.setBase(gabab);
-    IStreamContext reference("RDFaParser/gabab.ttl", StreamContext::FILE);
+    IStreamContext reference("RDFaParser/gabab.ttl", IStreamContext::FILE);
     turtleParser.parse(reference);
     turtleParser.clear(""); // clear out namespaces and base URI.
     BOOST_CHECK_EQUAL(tested, expected);

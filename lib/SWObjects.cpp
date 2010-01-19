@@ -229,13 +229,14 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
-MediaTypeMap StreamContext::MediaTypes;
+MediaTypeMap StreamContextMediaTypes::MediaTypes;
 
-IStreamContext::IStreamContext (std::string name, e_opts opts, 
-			SWWEBagent* webAgent, std::ostream** debugStream)
-    : StreamContext(name), p(NULL)
+template<class T>
+StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
+				 const char* p_mediaType, SWWEBagent* webAgent,
+				 std::ostream** debugStream)
+    : nameStr(nameStr), malloced(true), p(NULL)
 {
-    malloced = true;
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
@@ -244,8 +245,8 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 	std::string s(webAgent->get(nameStr.c_str()));
 	mediaType = webAgent->getMediaType().c_str();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
-    } else if ((opts & STDIN) && nameStr == "-") {
-	p = &std::cin;
+    } else if ((opts & STDIO) && nameStr == "-") {
+	p = def;
 	malloced = false;
     } else {
 	/* Remove file://[^/]+ . */
@@ -253,45 +254,8 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 	    size_t slash = nameStr.find_first_of('/', 7);
 	    nameStr = nameStr.substr(slash);
 	}
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading file " << nameStr << std::endl;
-	guessMediaType();
-	std::ifstream* ifs = new std::ifstream(nameStr.c_str());
-	p = ifs;
-	if (!ifs->is_open())
-	    throw std::string("unable to open file \"").append(nameStr).append("\"");
-    }
-}
-
-/* @@ factor me */
-OStreamContext::OStreamContext (std::string name, const char* p_mediaType, e_opts opts, 
-			SWWEBagent* webAgent, std::ostream** debugStream)
-    : StreamContext(name), p(NULL)
-{
-    malloced = true;
-    if (opts & STRING) {
-	p = new std::stringstream(nameStr);
-    } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading web resource " << nameStr << std::endl;
-	std::string s(webAgent->get(nameStr.c_str()));
-	mediaType = webAgent->getMediaType().c_str();
-	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
-    } else if ((opts & STDOUT) && nameStr == "-") {
-	p = &std::cout;
+	p = NULL;
 	malloced = false;
-    } else {
-	/* Remove file://[^/]+ . */
-	if (nameStr.substr(0, 7) == "file://") {
-	    size_t slash = nameStr.find_first_of('/', 7);
-	    nameStr = nameStr.substr(slash);
-	}
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading file " << nameStr << std::endl;
-	std::ofstream* ofs = new std::ofstream(nameStr.c_str());
-	p = ofs;
-	if (!ofs->is_open())
-	    throw std::string("unable to open file \"").append(nameStr).append("\"");
     }
     if (!mediaType) {
 	if (p_mediaType == NULL)
@@ -300,10 +264,42 @@ OStreamContext::OStreamContext (std::string name, const char* p_mediaType, e_opt
 	    mediaType = p_mediaType;
     }
 }
-OStreamContext::~OStreamContext () {
-    /* do the PUT if it's a webAgent (unless i can make the webagent::close do it) */
-    if (malloced)
-	delete p;
+
+IStreamContext::IStreamContext (std::string name, e_opts opts,
+				const char* p_mediaType, SWWEBagent* webAgent,
+				std::ostream** debugStream)
+    : StreamContext<std::istream>(name, &std::cin, opts, 
+				  p_mediaType, webAgent, debugStream) {
+    if (p == NULL) {
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "reading file " << nameStr << std::endl;
+	std::ifstream* istr = new std::ifstream(nameStr.c_str());
+	malloced = true;
+	p = istr;
+	if (!istr->is_open())
+	    throw std::string("unable to open file \"").append(nameStr).append("\"");
+    }
+}
+OStreamContext::OStreamContext (std::string name, e_opts opts,
+				const char* p_mediaType, SWWEBagent* webAgent,
+				std::ostream** debugStream)
+    : StreamContext<std::ostream>(name, &std::cout, opts, 
+				  p_mediaType, webAgent, debugStream) {
+    if (p == NULL) {
+	if (debugStream != NULL && *debugStream != NULL)
+	    **debugStream << "writing file " << nameStr << std::endl;
+	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
+	malloced = true;
+	p = ostr;
+	if (!ostr->is_open())
+	    throw std::string("unable to open file \"").append(nameStr).append("\" for writing.");
+    }
+}
+
+/* Make sure this compilation unit includes ctor for StreamContext<std::{i,o}stream> */
+void __makeSureStreamContextsAreLinked () {
+    IStreamContext i("/dev/null"); i = i;
+    OStreamContext o("/dev/null"); o = o;
 }
 
 std::string NamespaceMap::unmap (std::string mapped) {
@@ -1032,7 +1028,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void DatasetClause::loadGraph (RdfDB* db, const POS* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
-	IStreamContext iptr(nameStr, IStreamContext::NONE, db->webAgent, db->debugStream);
+	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent, db->debugStream);
 	if (db->loadData(target, iptr, nameStr, "", m_posFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
@@ -1386,7 +1382,7 @@ compared against
 				    ));
 
 	/* Parse results into a ResultSet. */
-	IStreamContext istr(s, StreamContext::STRING);
+	IStreamContext istr(s, IStreamContext::STRING);
 	ResultSet red(posFactory, db->xmlParser, istr);
 	if (db->debugStream != NULL && *(db->debugStream) != NULL)
 	    **(db->debugStream) << " yielded\n" << red;

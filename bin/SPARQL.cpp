@@ -138,7 +138,7 @@ struct loadEntry {
     void loadGraph () {
 	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamContext istr(nameStr, sw::StreamContext::NONE, 
+	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
 				&Agent, &DebugStream);
 	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (Debug > 0) {
@@ -449,7 +449,7 @@ sw::Operation* parseQuery (const sw::POS* query) {
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
 	sw::IStreamContext::STRING : 
 	sw::IStreamContext::STDIN;
-    sw::IStreamContext iptr(querySpec, opts, &Agent, &DebugStream);
+    sw::IStreamContext iptr(querySpec, opts, NULL, &Agent, &DebugStream);
     if (SparqlParser.parse(iptr) != 0)
 	throw std::string("error when parsing query ").append(querySpec);
     return SparqlParser.root;
@@ -723,7 +723,7 @@ int main(int ac, char* av[])
             std::cout << "SPARQL version 1.0, revision: $Id$\n";
 	else if (NoExec == false) {
 	    if (vm.count("description")) {
-		sw::IStreamContext s(appDescGraph, sw::StreamContext::STRING);
+		sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		s.mediaType = "text/turtle";
 		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
 	    }
@@ -732,7 +732,7 @@ int main(int ac, char* av[])
 		std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
 		for (std::vector<std::string>::const_iterator it = descs.begin();
 		     it != descs.end(); ++it) {
-		    sw::IStreamContext s(appDescGraph, sw::StreamContext::STRING);
+		    sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		    s.mediaType = "text/turtle";
 		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
 		}
@@ -805,7 +805,7 @@ int main(int ac, char* av[])
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					sw::IStreamContext::NONE, 
-					&Agent, &DebugStream);
+					    NULL, &Agent, &DebugStream);
 
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml")) {
@@ -840,8 +840,8 @@ int main(int ac, char* av[])
 	    }
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
-		sw::OStreamContext optr(outres, DataMediaType.c_str(), 
-					sw::OStreamContext::STDOUT, 
+		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
+					DataMediaType.c_str(),
 					&Agent, &DebugStream);
 		bool dumpDb = Query == NULL && ResultSetsLoaded == false;
 		if (!dumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
