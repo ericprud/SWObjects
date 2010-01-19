@@ -2561,7 +2561,7 @@ struct OStreamContext : public StreamContext<std::ostream> {
     OStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
-}
+};
 
 class NamespaceMap {
 protected:
