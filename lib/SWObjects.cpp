@@ -1029,7 +1029,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     void DatasetClause::loadGraph (RdfDB* db, const POS* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
 	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent, db->debugStream);
-	if (db->loadData(target, iptr, nameStr, "", m_posFactory))
+	if (db->loadData(target, iptr, nameStr, nameStr, m_posFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
     void DefaultGraphClause::loadData (RdfDB* db) const {

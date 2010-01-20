@@ -49,7 +49,7 @@ namespace w3c_sw {
 		parser.setBase(baseURI);
 	    if (nsMap != NULL)
 		parser.setNamespaceMap(nsMap);
-	    parser.parse(target, istr, nameStr);
+	    parser.parse(target, istr);
 	    return false;
 	} else if (istr.mediaType.match("text/rdf") || 
 		   istr.mediaType.match("application/rdf+xml")) {

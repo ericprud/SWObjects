@@ -170,8 +170,8 @@ struct loadEntry {
 		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
 		std::cout << " into graph <" << graph << ">." << std::endl;
 	    }
-	    Db.loadData(Db.assureGraph(graph), istr, 
-			UriString(baseURI), UriString(baseURI), &F);
+	    Db.loadData(Db.assureGraph(graph), istr, UriString(baseURI), 
+			baseURI ? UriString(baseURI) : nameStr, &F);
 	}
     }
 };

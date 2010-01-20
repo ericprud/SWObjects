@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
 }
 
 BOOST_AUTO_TEST_CASE( bool_no_base ) {
-    ExecResults tested("../bin/SPARQL -d SPARQL/rel.ttl SPARQL/rel.rq");
+    ExecResults tested("../bin/SPARQL -b '' -d SPARQL/rel.ttl SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "true\n");
 }
