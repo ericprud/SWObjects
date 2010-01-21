@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( D_spo ) {
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
-    ExecResults invocation("../bin/SPARQL -D -u -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
+    ExecResults invocation("../bin/SPARQL -D -8 -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::POS::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet

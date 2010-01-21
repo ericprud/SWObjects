@@ -35,9 +35,29 @@ namespace sw = w3c_sw;
   #warning DAWG tests require an XML parser
 #endif
 
+std::string UserName;
+std::string PassWord;
 #if HTTP_CLIENT == SWOb_ASIO
   #include "../interface/WEBagent_boostASIO.hpp"
-  sw::WEBagent_boostASIO Agent;
+  std::string basicAuthHeader (std::string username, std::string password) {
+      return std::string("Authorization: Basic ")
+	  + sw::SWWEBagent::base64encode(username + ":" + password)
+	  + "\n";
+  }
+  sw::WEBagent_boostASIO::AuthHandler authHandler;
+  std::string authHandler (std::string url, std::string realm) {
+      std::cout << "GET " + url + " wants a stinkin' password for realm \"" + realm + "\"" << std::endl;
+      std::cout << "username: "; std::string username; std::cin >> username;
+      std::cout << "password: "; std::string password; std::cin >> password;
+      return basicAuthHeader(username, password);
+  }
+  sw::WEBagent_boostASIO::AuthPreempt authPreempt;
+  std::string authPreempt (std::string url) {
+      if (UserName.empty())
+	  return "";
+      return basicAuthHeader(UserName, PassWord);
+  }
+sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 #endif /* !TEST_CLI */
 
@@ -88,8 +108,6 @@ const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
 typedef std::vector<const sw::POS*> mapList;
 mapList Maps;
 sw::MediaType DataMediaType;
-std::string UserName;
-std::string PassWord;
 std::map<std::string, std::string> HTTPHeaders;
 
 #ifndef TEST_CLI
@@ -485,7 +503,7 @@ int main(int ac, char* av[])
         po::options_description resultsOpts("");
         resultsOpts.add_options()
             ("ascii,a", "output ASCII-only")
-            ("utf-8,u", "output utf-8")
+            ("utf-8,8", "output utf-8")
             ("bold", "output bold-bordered utf-8 boxes")
             ("nullterm,0", "terminate lines with \0")
             ("compare", po::value<std::string>(), 
@@ -525,7 +543,7 @@ int main(int ac, char* av[])
         httpOpts.add_options()
             ("username,u", po::value<userName>(), 
 	     "username for HTTP transactions")
-            ("password,u", po::value<passWord>(), 
+            ("password,p", po::value<passWord>(), 
 	     "password for HTTP transactions")
             ("header", po::value<headerAssign>(), 
 	     "assign a header value.\n"
