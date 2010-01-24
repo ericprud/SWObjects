@@ -88,6 +88,15 @@ namespace w3c_sw {
 
 		std::string t;
 
+		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation")
+		    bgp->addTriplePattern(posFactory->
+					  getTriple(posFactory->getURI(nested.baseURI), 
+						    posFactory->getURI(std::string(NS_dc) + "TRANS"), 
+						    posFactory->getRDFLiteral(attrs->getValue("", "href"), 
+									      NULL, 
+									      nested.langtag.empty() ? NULL : 
+									      new LANGTAG(nested.langtag))));
+
 		t = attrs->getValue("", "lang");
 		if (t.empty())
 		    t = attrs->getValue(NS_xml, "lang");
@@ -197,9 +206,9 @@ namespace w3c_sw {
 	RDFaParser (POSFactory* posFactory, SWSAXparser* saxParser) : 
 	    ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
 
-	void parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
+	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
 	    RDFaSaxHandler handler(bgp, posFactory, this->baseURI);
-	    saxParser->parse(sptr, &handler);
+	    return saxParser->parse(sptr, &handler);
 	}
 
     };

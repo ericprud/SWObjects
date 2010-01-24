@@ -42,27 +42,27 @@ namespace w3c_sw {
 	if (istr.mediaType.match("text/html") || 
 	    istr.mediaType.match("application/xhtml")) {
 	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ") + istr.mediaType.toString() + 
-		    " document " + nameStr;
+		throw std::string("no XML parser to parse ")
+		    + istr.mediaType.toString()
+		    + " document " + nameStr;
 	    RDFaParser parser(posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
 	    if (nsMap != NULL)
 		parser.setNamespaceMap(nsMap);
-	    parser.parse(target, istr);
-	    return false;
+	    return parser.parse(target, istr);
 	} else if (istr.mediaType.match("text/rdf") || 
 		   istr.mediaType.match("application/rdf+xml")) {
 	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ") + istr.mediaType.toString() + 
-		    " document " + nameStr;
-	    RdfXmlParser parser("", posFactory, xmlParser);
+		throw std::string("no XML parser to parse ")
+		    + istr.mediaType.toString()
+		    + " document " + nameStr;
+	    RdfXmlParser parser(posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
 	    if (nsMap != NULL)
 		parser.setNamespaceMap(nsMap);
-	    parser.parse(assureGraph(NULL), istr);
-	    return false;
+	    return parser.parse(assureGraph(NULL), istr);
 	} else if (istr.mediaType.match("text/turtle") || 
 		   istr.mediaType.match("text/ntriples")) {
 	    TurtleSDriver parser(nameStr, posFactory);

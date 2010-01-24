@@ -119,7 +119,7 @@ namespace w3c_sw {
 	/* I haven't found a stream-based libxml parse function so we have to
 	 * read all of the istr into a string. LIBXML2_BUFFER_SIZE would be
 	 * useful for a stream buffer. */
-	virtual void parse (IStream& istr, SWSAXhandler* saxHandler) {
+	virtual bool parse (IStream& istr, SWSAXhandler* saxHandler) {
 	    SAXhandlerInsulator insulator(this, saxHandler);
 
 	    std::istreambuf_iterator<char> i(*istr.p), e;
@@ -136,6 +136,7 @@ namespace w3c_sw {
 		    // XML_ErrorString(XML_GetErrorCode(parser)) + 
 		    " parsing document [[" + s.substr(0, 50) + "]].\n";
 	    }
+	    return false;
 	}
 
 	static void startElementNs (void * voidSelf, 

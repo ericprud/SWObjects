@@ -143,7 +143,7 @@ namespace w3c_sw {
     public:
 	SWSAXparser () {  }
 	virtual ~SWSAXparser () {  }
-	virtual void parse(IStreamContext& istr, SWSAXhandler* handler) = 0;
+	virtual bool parse(IStreamContext& istr, SWSAXhandler* handler) = 0;
 	void test (std::string testStr = "<root xmlns=\"http://ns.example/\"><el attr=\"value\"/>text</root>") {
 	    SAXserializer handler(std::cout);
 	    IStreamContext istr(testStr, IStreamContext::STRING);
