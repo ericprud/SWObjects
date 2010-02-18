@@ -24,7 +24,8 @@ YACC:=bison
 TEE:=tee
 SED:=sed
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
-ECHO:=`which echo` # /bin/echo -e
+//ECHO:=`which echo`
+//ECHO:= /bin/echo -e
 ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
@@ -361,10 +362,10 @@ tests/server_mouseToxicity_remote-all.results: \
 	      -x -q ToxicAssoc0.rq )
 
 
-tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SWtransformer tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
+tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SPARQL tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
 	( cd tests/7tm_receptors/flat/ && ../../../$< --once http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && ../../../bin/SWtransformer -x -q q.rq )
+	( cd tests/7tm_receptors/flat/ && ../../../bin/SPARQL q.rq )
 
 
 SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
