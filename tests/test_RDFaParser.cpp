@@ -44,7 +44,7 @@ using namespace w3c_sw;
 
 POSFactory F;
 TurtleSDriver turtleParser("", &F);
-RDFaParser GRDFaParser(&F, &P);
+RDFaParser GRDFaParser("", &F, &P);
 
 BOOST_AUTO_TEST_CASE( APC ) {
     DefaultGraphPattern tested;

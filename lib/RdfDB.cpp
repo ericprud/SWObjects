@@ -45,7 +45,7 @@ namespace w3c_sw {
 		throw std::string("no XML parser to parse ")
 		    + istr.mediaType.toString()
 		    + " document " + nameStr;
-	    RDFaParser parser(posFactory, xmlParser);
+	    RDFaParser parser(nameStr, posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
 	    if (nsMap != NULL)
@@ -57,7 +57,7 @@ namespace w3c_sw {
 		throw std::string("no XML parser to parse ")
 		    + istr.mediaType.toString()
 		    + " document " + nameStr;
-	    RdfXmlParser parser(posFactory, xmlParser);
+	    RdfXmlParser parser(nameStr, posFactory, xmlParser);
 	    if (baseURI != "")
 		parser.setBase(baseURI);
 	    if (nsMap != NULL)

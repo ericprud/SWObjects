@@ -203,8 +203,8 @@ namespace w3c_sw {
 	SWSAXparser* saxParser;
 
     public:
-	RDFaParser (POSFactory* posFactory, SWSAXparser* saxParser) : 
-	    ParserDriver(""), posFactory(posFactory), saxParser(saxParser) {  }
+	RDFaParser (std::string baseURI, POSFactory* posFactory, SWSAXparser* saxParser) : 
+	    ParserDriver(baseURI), posFactory(posFactory), saxParser(saxParser) {  }
 
 	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
 	    RDFaSaxHandler handler(bgp, posFactory, this->baseURI);
