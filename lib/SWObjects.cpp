@@ -358,6 +358,9 @@ void TableConjunction::express (Expressor* p_expressor) const {
 void OptionalGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->optionalGraphPattern(this, m_TableOperation, &m_Expressions);
 }
+void MinusGraphPattern::express (Expressor* p_expressor) const {
+    p_expressor->minusGraphPattern(this, m_TableOperation);
+}
 void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
@@ -1429,6 +1432,12 @@ compared against
 	ResultSet optRS(*rs); // no POSFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
+    }
+
+    void MinusGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet optRS(*rs); // no POSFactory
+	m_TableOperation->bindVariables(db, &optRS);
+	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {

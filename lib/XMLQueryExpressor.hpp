@@ -107,6 +107,11 @@ public:
 	p_Expressions->express(this);
 	xml->close();
     }
+    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	xml->open("MinusGraphPattern");
+	p_GroupGraphPattern->express(this);
+	xml->close();
+    }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	if (sparqlx) {
 	    xml->open("GraphGraphPattern");

@@ -239,7 +239,7 @@ public:
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_DESCRIBE IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
        IT_ENDS IT_ANY IT_UNORDERED GT_LCURLEY GT_RCURLEY IT_ASK IT_WHERE
-       GT_LPAREN GT_RPAREN IT_NULL GT_DOT IT_OPTIONAL IT_UNION IT_FILTER
+       GT_LPAREN GT_RPAREN IT_NULL GT_DOT IT_OPTIONAL IT_MINUS IT_UNION IT_FILTER
        GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_OR GT_AND GT_EQUAL
        GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
@@ -953,6 +953,7 @@ _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt:
 
 GraphPatternNotTriples:
     OptionalGraphPattern
+    | MinusGraphPattern
     | GroupOrUnionGraphPattern
     | GraphGraphPattern
     | ServiceGraphPattern
@@ -971,6 +972,17 @@ OptionalGraphPattern:
 	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
 	  driver.curFilter = $<p_ParserFilter>3;
+      }
+;
+
+MinusGraphPattern:
+    IT_MINUS {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
+      } GroupGraphPattern	{
+	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new MinusGraphPattern(driver.curOp));
       }
 ;
 

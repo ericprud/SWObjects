@@ -545,14 +545,17 @@ namespace w3c_sw {
 				 matched && expression != expressions->end(); expression++)
 				matched &= posFactory->eval(*expression, newRow);
 			if (matched) {
-			    insert(myRow, newRow);
+			    if (operation == OP_minus)
+				delete newRow;
+			    else
+				insert(myRow, newRow);
 			    matchedSomeRow = true;
 			} else {
 			    delete newRow;
 			}
 		    }
 		}
-		if (operation == OP_outer && !matchedSomeRow)
+		if ((operation == OP_outer || operation == OP_minus) && !matchedSomeRow)
 		    myRow++;
 		else {
 		    delete *myRow;

@@ -101,6 +101,7 @@ GT_RPAREN		")"
 IT_NULL		[Nn][Uu][Ll][Ll]
 GT_DOT		"."
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
+IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
 GT_COMMA		","
@@ -219,6 +220,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_NULL}		{return token::IT_NULL;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
+{IT_MINUS}		{return token::IT_MINUS;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
 {GT_COMMA}		{return token::GT_COMMA;}

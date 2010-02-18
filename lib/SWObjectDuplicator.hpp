@@ -174,6 +174,10 @@ namespace w3c_sw {
 	    }
 	    last.tableOperation = ret;
 	}
+	virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	    p_GroupGraphPattern->express(this);
+	    last.tableOperation = new MinusGraphPattern(last.tableOperation);
+	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    p_POS->express(this);
 	    const POS* name = last.posz.pos;

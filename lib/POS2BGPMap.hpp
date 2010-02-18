@@ -219,6 +219,17 @@ namespace w3c_sw {
 		optState = oldOptState;
 	    }
 
+	    virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+		const TableOperation* parent = currentBGP;
+		currentBGP = self;
+		_nestedIn(self, parent);
+
+		p_GroupGraphPattern->express(this);
+		// !!! m_Expressions
+
+		currentBGP = parent;
+	    }
+
 	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 		const POS* oldGraphName = graphName;
 		graphName = p_POS;

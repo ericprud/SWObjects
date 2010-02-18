@@ -206,6 +206,14 @@ public:
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
+    virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	lead();
+	ret << "MINUS ";
+	if (debug & DEBUG_graphs) ret << ' ' << self;
+	depth++;
+	p_GroupGraphPattern->express(this);
+	depth--;
+    }
     virtual void _nestedGraphPattern (const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);
 	ret << std::endl;

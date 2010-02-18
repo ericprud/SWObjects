@@ -55,6 +55,9 @@ namespace w3c_sw {
 	    p_Expressions->express(this);
 	    optState = oldOptState;
 	}
+	virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	    p_GroupGraphPattern->express(this);
+	}
     };
 
 } // namespace w3c_sw

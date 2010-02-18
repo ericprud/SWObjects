@@ -61,6 +61,8 @@
   #include <boost/optional.hpp>
 #endif /* (!defined(_MSC_VER) || _MSC_VER >= 1500) */
 
+#include <boost/iostreams/categories.hpp>  // source_tag
+
 namespace w3c_sw {
 
     extern const char* NS_xml;
@@ -1531,6 +1533,25 @@ public:
 	m_Expressions.push_back(expression);
     }
 };
+class MinusGraphPattern : public TableOperationOnOperation {
+public:
+    MinusGraphPattern (const TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern) {  }
+    virtual void express(Expressor* p_expressor) const;
+    virtual bool operator== (const TableOperation& ref) const {
+	const MinusGraphPattern* pref = dynamic_cast<const MinusGraphPattern*>(&ref);
+	return pref == NULL ? false : 
+	    *m_TableOperation == *pref->m_TableOperation;
+    }
+    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{MINUS{?s?p?o}}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("DELETEPATTERN{MINUS{?s?p?o}}");
+    }
+    virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new MinusGraphPattern(p_TableOperation); }
+
+};
 
 class VarSet : public Base {
 protected:
@@ -2563,6 +2584,95 @@ struct OStreamContext : public StreamContext<std::ostream> {
 		   std::ostream** debugStream = NULL);
 };
 
+class StreamRewinder {
+    friend class Device;
+
+protected:
+    typedef enum {STATE_copy, STATE_replay, STATE_pass} e_state;
+    std::string buffer;
+    std::string::size_type pos;
+    e_state state;
+
+public:
+    class Device {
+    protected:
+	std::istream& istr;
+	StreamRewinder& streamRewinder;
+
+    public:
+	typedef std::string::value_type  char_type;
+	typedef boost::iostreams::source_tag category;
+
+	Device(std::istream& istr, StreamRewinder& streamRewinder)
+	    : istr(istr), streamRewinder(streamRewinder)
+	{ LINE << "normal constructor: " << toString() << "\n"; }
+	Device(const Device& ref) 
+	    : istr(ref.istr), streamRewinder(ref.streamRewinder)
+	{ LINE << "copy constructor: " << toString() << "\n"; }
+
+	std::streamsize read(char_type* s, std::streamsize n) {
+	    switch (streamRewinder.state) {
+	    case STATE_replay: {
+		std::streamsize amt = static_cast<std::streamsize>(streamRewinder.buffer.size() - streamRewinder.pos);
+		std::streamsize result = (std::min)(n, amt);
+		if (result != 0) {
+		    std::copy( streamRewinder.buffer.begin() + streamRewinder.pos, 
+			       streamRewinder.buffer.begin() + streamRewinder.pos + result, 
+			       s );
+		    streamRewinder.pos += result;
+		    LINE << "replay: " << toString() << "\n";
+		    return result;
+		}
+		streamRewinder.buffer.clear();
+		streamRewinder.state = STATE_pass;
+		// fall through to STATE_pass
+	    }
+	    case STATE_copy:
+	    case STATE_pass: {
+		istr.read(s, n);
+		std::streamsize red = istr.gcount();
+		if (streamRewinder.state == STATE_copy)
+		    streamRewinder.buffer.append(s, red);
+		LINE << "read: " << toString() << "\n";
+		return red > 0 ? red : -1;
+	    }
+	    }
+	}
+
+	std::string toString () {
+	    std::stringstream ret;
+	    ret << "Device(" << istr << ")";
+	    return ret.str();
+	}
+    };
+    Device device;
+
+    StreamRewinder (std::istream& istr)
+	: buffer(""), pos(0), state(STATE_copy), device(istr, *this)
+    {  }
+    void pass () { state = STATE_pass; buffer.clear(); }
+    void replay () { state = STATE_replay; pos = 0; }
+    std::string toString () {
+	std::stringstream ret;
+	ret << "Device(" << device.toString() << ", \"" << buffer << "\", " << pos << ", " << state << ")";
+	return ret.str();
+    }
+};
+
+class LanguageChange : public std::exception {
+public:
+    std::string msg;
+    std::string mediaType;
+    typedef bool (Pipe)(std::istream& istr);
+    Pipe* pipe;
+    LanguageChange (std::string mediaType, Pipe* pipe)
+	: msg(std::string("need to execute ") + "some pipe" /*pipe*/ + " to handle " + mediaType), 
+	  mediaType(mediaType), pipe(pipe)
+    {  }
+    virtual ~LanguageChange () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
 class NamespaceMap {
 protected:
     std::map<std::string, const URI*> ns;
@@ -2630,6 +2740,7 @@ public:
     virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
     virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
     virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) = 0;
+    virtual void minusGraphPattern(const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) = 0;
     virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
@@ -2725,6 +2836,9 @@ public:
     virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	p_GroupGraphPattern->express(this);
 	p_Expressions->express(this);
+    }
+    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	p_GroupGraphPattern->express(this);
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	p_POS->express(this);

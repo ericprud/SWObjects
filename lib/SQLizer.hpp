@@ -1110,6 +1110,9 @@ namespace w3c_sw {
 	    optional->attach();
 	    curQuery = parent;
 	}
+	virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */) {
+	    throw(NotImplemented("SQLizer(minusGraphPattern)"));
+	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
 	    FAIL("don't do federation with GraphGraphPatterns yet");
 	    p_POS->express(this);
