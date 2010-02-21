@@ -172,25 +172,31 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			std::string nameStr, std::string baseURI,
 			sw::POSFactory* posFactory, sw::NamespaceMap* nsMap) {
     if (mediaType == "application/x-grddl") {
-	std::string filename = genTempFile(".", *istr);
+	std::string xmlFilename = genTempFile(".", *istr);
+
+	sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+				    &Agent, &DebugStream);
+	std::string xsltFilename = genTempFile(".", *xsltIstr);
 
 #ifdef BOOST_PROCESS
 	std::string exec = "/usr/bin/xsltproc"; // POSIX_cat;
 	std::vector<std::string> args;
-	args.push_back("cat");
-	args.push_back(filename);
+	args.push_back("xsltproc");
+	args.push_back(xmlFilename);
 
 	namespace bp = ::boost::process; 
 
 	bp::context ctx;
 	ctx.stdout_behavior = bp::capture_stream();
 	bp::child c = bp::launch(exec, args, ctx);
-	::unlink(filename.c_str());
+	::unlink(xmlFilename.c_str());
+	::unlink(xsltFilename.c_str());
 	bp::pistream &pis = c.get_stdout();
 #else /* !BOOST_PROCESS */
 	std::stringstream cmd;
-	cmd << "/usr/bin/xsltproc grokFOAF.xsl " << filename;
-	std::cout << "executing \"" << cmd.str().c_str() << "\"" << std::endl;
+	cmd << "/usr/bin/xsltproc " << xsltFilename << " " << xmlFilename;
+	if (DebugStream != NULL)
+	    *DebugStream << "executing \"" << cmd.str().c_str() << "\"" << std::endl;
 	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
 	assert(p != NULL);
 	char buf[100];
@@ -202,18 +208,14 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
 	    s += std::string(buf, buf + count);
 	POSIX_pclose(p);
-	if (::unlink(filename.c_str()) != 0)
-	    std::cout << "error unlinking " << filename << ": " << strerror(errno);
+	if (::unlink(xmlFilename.c_str()) != 0)
+	    std::cerr << "error unlinking " << xmlFilename << ": " << strerror(errno);
+	if (::unlink(xsltFilename.c_str()) != 0)
+	    std::cerr << "error unlinking " << xsltFilename << ": " << strerror(errno);
 	std::stringstream pis(s);
 #endif /* !BOOST_PROCESS */
-	// return consumer_read(pis); // consumer_iter(is2, rb, 'x', 'x'); istr
-
 	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
 	return Db.loadData(target, istr2, nameStr, baseURI, posFactory, nsMap);
-
-	std::istreambuf_iterator<char> i(pis), e;
-	std::string s2(i, e);
-	throw std::string("write grddl processor: " + s2);
     } else
 	return sw::RdfDB::HandlerSet::parse(mediaType, args,
 					    target, istr,
