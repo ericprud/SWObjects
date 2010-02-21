@@ -73,7 +73,7 @@ namespace w3c_sw {
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
 		    parser.setNamespaceMap(nsMap);
-		return parser.parse(assureGraph(NULL), istr);
+		return parser.parse(target, istr);
 	    } else if (istr.mediaType.match("text/turtle") || 
 		       istr.mediaType.match("text/ntriples")) {
 		TurtleSDriver parser(nameStr, posFactory);
