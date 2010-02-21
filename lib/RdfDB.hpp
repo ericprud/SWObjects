@@ -49,16 +49,35 @@ namespace w3c_sw {
 	graphmap_type graphs;
 
     public:
+	struct HandlerSet {
+	    virtual ~HandlerSet () {  }
+	    virtual bool parse (std::string mediaType, std::vector<std::string> args,
+				BasicGraphPattern* /* target */, IStreamContext& /* istr */,
+				std::string /* nameStr */, std::string /* baseURI */,
+				POSFactory* /* posFactory */, NamespaceMap* /* nsMap */) {
+		throw std::string("no handler for ") + mediaType + "(" + args[0] + ")";
+	    }
+	};
+
 	SWWEBagent* webAgent;
 	SWSAXparser* xmlParser;
 	std::ostream** debugStream;
+	HandlerSet* handler;
+	static HandlerSet defaultHandler;
 
-	RdfDB (SWSAXparser* xmlParser = NULL) : 
-	    graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL) {  }
-	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL) : 
-	    graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream) {  }
-	RdfDB (RdfDB const &) : graphs() { throw(std::runtime_error(FUNCTION_STRING)); }
-	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL) {
+	RdfDB (SWSAXparser* xmlParser = NULL)
+	    : graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL), handler(&defaultHandler)
+	{  }
+	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL)
+	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(&defaultHandler)
+	{  }
+	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
+	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(handler)
+	{  }
+	RdfDB (RdfDB const &)
+	    : graphs()
+	{ throw(std::runtime_error(FUNCTION_STRING)); }
+	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL), handler(&defaultHandler) {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
 		 it != graph->end(); it++)

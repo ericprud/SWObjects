@@ -52,7 +52,7 @@ std::string PassWord;
       return basicAuthHeader(username, password);
   }
   sw::WEBagent_boostASIO::AuthPreempt authPreempt;
-  std::string authPreempt (std::string url) {
+  std::string authPreempt (std::string /* url */) {
       if (UserName.empty())
 	  return "";
       return basicAuthHeader(UserName, PassWord);
@@ -68,6 +68,9 @@ namespace po = boost::program_options;
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include <boost/regex.hpp>
+#include <boost/iostreams/stream.hpp>
+namespace io = boost::iostreams;
+
 
 #if TEST_CLI
 /* Simulate HTParse interface (with bogus results, but good enough for testing CLI). */
@@ -113,7 +116,111 @@ std::map<std::string, std::string> HTTPHeaders;
 #ifndef TEST_CLI
 std::ostream* DebugStream = NULL;
 sw::POSFactory F;
-sw::RdfDB Db(&Agent, &P, &DebugStream);
+
+#include <fstream>
+#ifdef BOOST_PROCESS
+#include <boost/process.hpp>
+#endif /* BOOST_PROCESS */
+
+std::string genTempFile (std::string dir, std::istream& istr) {
+#ifdef _MSC_VER
+    TCHAR buffer[MAX_PATH+1];
+    DWORD len = ::GetTempPath(MAX_PATH, &buffer[0]);
+               
+    std::wstring directory(buffer, len);
+    TCHAR prefix[] = TEXT("SWObj");
+
+    if (!GetTempFileName(directory.c_str(), prefix, 0, buffer))
+	throw ::GetLastError();
+
+    size_t dlen(wcsnlen(directory.c_str(), MAX_PATH));
+    size_t flen(wcsnlen(buffer, MAX_PATH));
+    std::wstring file(buffer); // +dlen);
+
+    std::string filename;
+    for (std::wstring::const_iterator it = file.begin();
+	 it != file.end(); ++it)
+	filename += *it;
+    int fileHandle = POSIX_open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, POSIX_USER_RW);
+#else /* !_MSC_VER */
+    char buf[] = "SWObjXXXXXX";
+    int fileHandle = mkstemp(buf);
+    std::string filename(buf);
+#endif /* !_MSC_VER */
+    std::istreambuf_iterator<char> i(istr), e;
+    std::string input(i, e);
+    io::stream_buffer<w3c_sw::FileHandleDevice> ofs(fileHandle, filename);
+    std::ostream os(&ofs);
+    os << input;
+    os.flush();
+    ofs.close();
+    POSIX_close(fileHandle);
+
+    return filename;
+}
+
+class DBHandlers : public sw::RdfDB::HandlerSet {
+    virtual bool parse(std::string mediaType, std::vector<std::string> args,
+		       sw::BasicGraphPattern* target, sw::IStreamContext& istr,
+		       std::string nameStr, std::string baseURI,
+		       sw::POSFactory* posFactory, sw::NamespaceMap* nsMap);
+};
+DBHandlers  RdfDBHandlers;
+sw::RdfDB Db(&Agent, &P, &DebugStream, &RdfDBHandlers);
+bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
+			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
+			std::string nameStr, std::string baseURI,
+			sw::POSFactory* posFactory, sw::NamespaceMap* nsMap) {
+    if (mediaType == "application/x-grddl") {
+	std::string filename = genTempFile(".", *istr);
+
+#ifdef BOOST_PROCESS
+	std::string exec = "/usr/bin/xsltproc"; // POSIX_cat;
+	std::vector<std::string> args;
+	args.push_back("cat");
+	args.push_back(filename);
+
+	namespace bp = ::boost::process; 
+
+	bp::context ctx;
+	ctx.stdout_behavior = bp::capture_stream();
+	bp::child c = bp::launch(exec, args, ctx);
+	::unlink(filename.c_str());
+	bp::pistream &pis = c.get_stdout();
+#else /* !BOOST_PROCESS */
+	std::stringstream cmd;
+	cmd << "/usr/bin/xsltproc grokFOAF.xsl " << filename;
+	std::cout << "executing \"" << cmd.str().c_str() << "\"" << std::endl;
+	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
+	assert(p != NULL);
+	char buf[100];
+	std::string s  = "execution failure";
+	s = "";
+
+	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+	 */
+	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+	    s += std::string(buf, buf + count);
+	POSIX_pclose(p);
+	if (::unlink(filename.c_str()) != 0)
+	    std::cout << "error unlinking " << filename << ": " << strerror(errno);
+	std::stringstream pis(s);
+#endif /* !BOOST_PROCESS */
+	// return consumer_read(pis); // consumer_iter(is2, rb, 'x', 'x'); istr
+
+	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
+	return Db.loadData(target, istr2, nameStr, baseURI, posFactory, nsMap);
+
+	std::istreambuf_iterator<char> i(pis), e;
+	std::string s2(i, e);
+	throw std::string("write grddl processor: " + s2);
+    } else
+	return sw::RdfDB::HandlerSet::parse(mediaType, args,
+					    target, istr,
+					    nameStr, baseURI,
+					    posFactory, nsMap);
+}
+
 sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::QueryMapper QueryMapper(&F, &DebugStream);

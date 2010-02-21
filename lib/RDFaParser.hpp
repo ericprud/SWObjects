@@ -88,7 +88,10 @@ namespace w3c_sw {
 
 		std::string t;
 
-		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation")
+		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation") {
+		    std::vector<std::string> args;
+		    args.push_back(attrs->getValue("", "href"));
+		    throw ChangeMediaTypeException("application/x-grddl", args);
 		    bgp->addTriplePattern(posFactory->
 					  getTriple(posFactory->getURI(nested.baseURI), 
 						    posFactory->getURI(std::string(NS_dc) + "TRANS"), 
@@ -96,6 +99,7 @@ namespace w3c_sw {
 									      NULL, 
 									      nested.langtag.empty() ? NULL : 
 									      new LANGTAG(nested.langtag))));
+		}
 
 		t = attrs->getValue("", "lang");
 		if (t.empty())

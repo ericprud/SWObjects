@@ -6,8 +6,13 @@
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "TrigSParser/TrigSParser.hpp"
+#include <boost/iostreams/stream.hpp>
+
+namespace io = boost::iostreams;
 
 namespace w3c_sw {
+
+    RdfDB::HandlerSet RdfDB::defaultHandler;
 
     RdfDB::~RdfDB () {
 	for (graphmap_type::const_iterator it = graphs.begin();
@@ -38,48 +43,61 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
-	if (istr.mediaType.match("text/html") || 
-	    istr.mediaType.match("application/xhtml")) {
-	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ")
-		    + istr.mediaType.toString()
-		    + " document " + nameStr;
-	    RDFaParser parser(nameStr, posFactory, xmlParser);
-	    if (baseURI != "")
-		parser.setBase(baseURI);
-	    if (nsMap != NULL)
-		parser.setNamespaceMap(nsMap);
-	    return parser.parse(target, istr);
-	} else if (istr.mediaType.match("text/rdf") || 
-		   istr.mediaType.match("application/rdf+xml")) {
-	    if (xmlParser == NULL)
-		throw std::string("no XML parser to parse ")
-		    + istr.mediaType.toString()
-		    + " document " + nameStr;
-	    RdfXmlParser parser(nameStr, posFactory, xmlParser);
-	    if (baseURI != "")
-		parser.setBase(baseURI);
-	    if (nsMap != NULL)
-		parser.setNamespaceMap(nsMap);
-	    return parser.parse(assureGraph(NULL), istr);
-	} else if (istr.mediaType.match("text/turtle") || 
-		   istr.mediaType.match("text/ntriples")) {
-	    TurtleSDriver parser(nameStr, posFactory);
-	    parser.setGraph(target);
-	    if (baseURI != "")
-		parser.setBase(baseURI);
-	    if (nsMap != NULL)
-		parser.setNamespaceMap(nsMap);
-	    return parser.parse(istr);
-	} else {
-	    TrigSDriver parser(nameStr, posFactory);
-	    parser.setDB(this);
-	    if (baseURI != "")
-		parser.setBase(baseURI);
-	    if (nsMap != NULL)
-		parser.setNamespaceMap(nsMap);
-	    return parser.parse(istr);
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
+	w3c_sw::StreamRewinder rb(*istrP);
+	io::stream_buffer<w3c_sw::StreamRewinder::Device> srsb(rb.device); // ## debug with small buffer size, e.g. 4
+	std::istream is(&srsb);
+	IStreamContext istr(istrP.nameStr, is, 
+			    istrP.mediaType.is_initialized() ? istrP.mediaType.get().c_str() : NULL);
+	try {
+	    if (istr.mediaType.match("text/html") || 
+		istr.mediaType.match("application/xhtml")) {
+		if (xmlParser == NULL)
+		    throw std::string("no XML parser to parse ")
+			+ istr.mediaType.toString()
+			+ " document " + nameStr;
+		RDFaParser parser(nameStr, posFactory, xmlParser);
+		if (baseURI != "")
+		    parser.setBase(baseURI);
+		if (nsMap != NULL)
+		    parser.setNamespaceMap(nsMap);
+		return parser.parse(target, istr);
+	    } else if (istr.mediaType.match("text/rdf") || 
+		       istr.mediaType.match("application/rdf+xml")) {
+		if (xmlParser == NULL)
+		    throw std::string("no XML parser to parse ")
+			+ istr.mediaType.toString()
+			+ " document " + nameStr;
+		RdfXmlParser parser(nameStr, posFactory, xmlParser);
+		if (baseURI != "")
+		    parser.setBase(baseURI);
+		if (nsMap != NULL)
+		    parser.setNamespaceMap(nsMap);
+		return parser.parse(assureGraph(NULL), istr);
+	    } else if (istr.mediaType.match("text/turtle") || 
+		       istr.mediaType.match("text/ntriples")) {
+		TurtleSDriver parser(nameStr, posFactory);
+		parser.setGraph(target);
+		if (baseURI != "")
+		    parser.setBase(baseURI);
+		if (nsMap != NULL)
+		    parser.setNamespaceMap(nsMap);
+		return parser.parse(istr);
+	    } else {
+		TrigSDriver parser(nameStr, posFactory);
+		parser.setDB(this);
+		if (baseURI != "")
+		    parser.setBase(baseURI);
+		if (nsMap != NULL)
+		    parser.setNamespaceMap(nsMap);
+		return parser.parse(istr);
+	    }
+	} catch (ChangeMediaTypeException& e) {
+	    rb.replay();
+	    io::stream_buffer<w3c_sw::StreamRewinder::Device> sb2(rb.device);
+	    std::istream is2(&sb2);
+	    IStreamContext again(istrP.nameStr, is, e.mediaType.c_str());
+	    return handler->parse(e.mediaType, e.args, target, again, nameStr, baseURI, posFactory, nsMap);
 	}
     }
 

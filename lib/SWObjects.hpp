@@ -23,6 +23,33 @@
 /* defines for controlling includes from utils */
 #include "config.h"
 
+#ifdef _MSC_VER
+  #include <windows.h>
+  #include <io.h>
+  #include <sys/stat.h>
+
+  #define POSIX_USER_RW _S_IREAD | _S_IWRITE
+
+  #define POSIX_open ::_open
+  #define POSIX_write ::_write
+  #define POSIX_close ::_close
+  #define POSIX_popen ::_popen
+  #define POSIX_pclose ::_pclose
+  #define POSIX_unlink ::_unlink
+  #define POSIX_cat "c:/cygwin/bin/cat"
+#else /* !_MSC_VER */
+  #include <errno.h>
+  #define POSIX_USER_RW S_IRUSR | S_IWUSR
+
+  #define POSIX_open ::open
+  #define POSIX_write ::write
+  #define POSIX_close ::close
+  #define POSIX_popen ::popen
+  #define POSIX_pclose ::pclose
+  #define POSIX_unlink ::unlink
+  #define POSIX_cat "/bin/cat"
+#endif /* !_MSC_VER */
+
 /* non-portable debug messages */
 #ifdef _MSC_VER
 #define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
@@ -2556,6 +2583,9 @@ struct StreamContext : public StreamContextMediaTypes {
     bool malloced;
 
     T* p;
+    StreamContext(std::string nameStr, T* p, const char* mediaType)
+	: nameStr(nameStr), mediaType(mediaType), malloced(false), p(p)
+    {  }
     StreamContext(std::string nameStr, T* def, e_opts,
 		  const char* p_mediaType, SWWEBagent* webAgent,
 		   std::ostream** debugStream);
@@ -2574,6 +2604,9 @@ struct StreamContext : public StreamContextMediaTypes {
 };
 
 struct IStreamContext : public StreamContext<std::istream> {
+    IStreamContext(std::string name, std::istream& istr, const char* p_mediaType = NULL)
+	: StreamContext<std::istream>(name, &istr, p_mediaType)
+    {  }
     IStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
@@ -2605,10 +2638,10 @@ public:
 
 	Device(std::istream& istr, StreamRewinder& streamRewinder)
 	    : istr(istr), streamRewinder(streamRewinder)
-	{ LINE << "normal constructor: " << toString() << "\n"; }
+	{ /* LINE << "normal constructor: " << toString() << "\n"; */ }
 	Device(const Device& ref) 
 	    : istr(ref.istr), streamRewinder(ref.streamRewinder)
-	{ LINE << "copy constructor: " << toString() << "\n"; }
+	{ /* LINE << "copy constructor: " << toString() << "\n"; */ }
 
 	std::streamsize read(char_type* s, std::streamsize n) {
 	    switch (streamRewinder.state) {
@@ -2620,7 +2653,7 @@ public:
 			       streamRewinder.buffer.begin() + streamRewinder.pos + result, 
 			       s );
 		    streamRewinder.pos += result;
-		    LINE << "replay: " << toString() << "\n";
+		    // LINE << "replay: " << toString() << "\n";
 		    return result;
 		}
 		streamRewinder.buffer.clear();
@@ -2633,7 +2666,7 @@ public:
 		std::streamsize red = istr.gcount();
 		if (streamRewinder.state == STATE_copy)
 		    streamRewinder.buffer.append(s, red);
-		LINE << "read: " << toString() << "\n";
+		// LINE << "read: " << toString() << "\n";
 		return red > 0 ? red : -1;
 	    }
 	    }
@@ -2655,6 +2688,45 @@ public:
     std::string toString () {
 	std::stringstream ret;
 	ret << "Device(" << device.toString() << ", \"" << buffer << "\", " << pos << ", " << state << ")";
+	return ret.str();
+    }
+};
+
+class FileHandleDevice {
+protected:
+    int fileHandle;
+    std::string name;
+
+public:
+    typedef std::string::value_type  char_type;
+    typedef boost::iostreams::sink_tag category;
+
+    FileHandleDevice (int fileHandle, std::string name)
+	: fileHandle(fileHandle), name(name)
+    {  }
+    FileHandleDevice (const FileHandleDevice& ref) 
+	: fileHandle(ref.fileHandle), name(ref.name)
+    {  }
+    ~FileHandleDevice ()
+    {
+	//::unlink(name.c_str());
+	// @@ can't unlink 'cause this is copy-constructed willy nilly.
+	// CERR << "unlinked " << name.c_str() << "\n";
+    }
+
+    std::streamsize write (const char_type* s, std::streamsize n) {
+	std::string dbg(s, n);
+	POSIX_write(fileHandle, s, n);
+	return n;
+    }
+
+    // void close () { // never gets called.
+    //     POSIX_close(fileHandle);
+    // }
+
+    std::string toString () {
+	std::stringstream ret;
+	ret << "FileHandleDevice(" << fileHandle << ", " << name << ")";
 	return ret.str();
     }
 };
