@@ -245,3 +245,19 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
 }
 
+BOOST_AUTO_TEST_CASE( GRDDL0 ) {
+    ::setenv("XSLT", "/usr/bin/xsltproc %STYLESHEET %DATA", 1);
+    ExecResults invocation("../bin/SPARQL -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
+    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
+    w3c_sw::ResultSet
+	expected(&F, 
+		 "+-----------------+\n"
+		 "| ?fam            |\n"
+		 "| \"Prud'hommeaux\" |\n"
+		 "+-----------------+\n", 
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+    ::unsetenv("XSLT");
+}
+
