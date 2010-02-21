@@ -172,29 +172,53 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			std::string nameStr, std::string baseURI,
 			sw::POSFactory* posFactory, sw::NamespaceMap* nsMap) {
     if (mediaType == "application/x-grddl") {
-	std::string xmlFilename = genTempFile(".", *istr);
+	const char* env = ::getenv("XSLT");
+	if (env == NULL)
+	    return sw::RdfDB::HandlerSet::parse(mediaType, args,
+						target, istr,
+						nameStr, baseURI,
+						posFactory, nsMap);
 
-	sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-				    &Agent, &DebugStream);
-	std::string xsltFilename = genTempFile(".", *xsltIstr);
+	// break up $XSLT
+	std::vector<std::string> tokens;
+	{
+	    std::string buf;
+	    std::stringstream ss(env);
+	    while (ss >> buf)
+		tokens.push_back(buf);
+	}
+
+	std::vector<std::string> createdFiles;
+	for (std::vector<std::string>::iterator iToken = tokens.begin();
+	     iToken != tokens.end(); ++iToken) {
+	    if (*iToken == "%DATA") {
+		*iToken = genTempFile(".", *istr);
+		createdFiles.push_back(*iToken);
+	    } else if (*iToken == "%STYLESHEET") {
+		sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+					    &Agent, &DebugStream);
+		*iToken = genTempFile(".", *xsltIstr);
+		createdFiles.push_back(*iToken);
+	    }
+	}
 
 #ifdef BOOST_PROCESS
-	std::string exec = "/usr/bin/xsltproc"; // POSIX_cat;
-	std::vector<std::string> args;
-	args.push_back("xsltproc");
-	args.push_back(xmlFilename);
+	std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
 
 	namespace bp = ::boost::process; 
 
 	bp::context ctx;
 	ctx.stdout_behavior = bp::capture_stream();
-	bp::child c = bp::launch(exec, args, ctx);
-	::unlink(xmlFilename.c_str());
-	::unlink(xsltFilename.c_str());
+	bp::child c = bp::launch(exec, tokens, ctx);
 	bp::pistream &pis = c.get_stdout();
 #else /* !BOOST_PROCESS */
 	std::stringstream cmd;
-	cmd << "/usr/bin/xsltproc " << xsltFilename << " " << xmlFilename;
+	for (std::vector<std::string>::const_iterator iToken = tokens.begin();
+	     iToken != tokens.end(); ++iToken) {
+	    if (iToken != tokens.begin())
+		cmd << " ";
+	    cmd << *iToken;
+	}
 	if (DebugStream != NULL)
 	    *DebugStream << "executing \"" << cmd.str().c_str() << "\"" << std::endl;
 	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
@@ -208,12 +232,12 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
 	    s += std::string(buf, buf + count);
 	POSIX_pclose(p);
-	if (::unlink(xmlFilename.c_str()) != 0)
-	    std::cerr << "error unlinking " << xmlFilename << ": " << strerror(errno);
-	if (::unlink(xsltFilename.c_str()) != 0)
-	    std::cerr << "error unlinking " << xsltFilename << ": " << strerror(errno);
 	std::stringstream pis(s);
 #endif /* !BOOST_PROCESS */
+	for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
+	     iCreatedFile != createdFiles.end(); ++iCreatedFile)
+	    if (::unlink(iCreatedFile->c_str()) != 0)
+		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
 	return Db.loadData(target, istr2, nameStr, baseURI, posFactory, nsMap);
     } else
