@@ -324,10 +324,7 @@ namespace w3c_sw {
 	    _variant_t vt;
 	    to_variant(wstr, vt);
 	    HRESULT hr = pXMLReader->parse(vt);
-	    if (aborted) {
-		aborted = false;
-		throw std::string("SAXparser_msxml3: ") + exceptionString;
-	    }
+	    testAbort("SAXparser_msxml3");
 	    if(FAILED(hr)) {
 		std::stringstream str;
 		str << hr;
@@ -343,10 +340,7 @@ namespace w3c_sw {
 	//     SAXhandlerInsulator insulator(this, saxHandler);
 	//     // parse the document
 	//     HRESULT hr = pXMLReader->parseURL((unsigned short*)to16bit(file).c_str());
-	//     if (aborted) {
-	// 	aborted = false;
-	// 	throw std::string("SAXparser_msxml3: ") + exceptionString;
-	//     }
+	//     testAbort("SAXparser_msxml3");
 	//     if(FAILED(hr)) {
 	// 	std::stringstream s;
 	// 	s << hr;

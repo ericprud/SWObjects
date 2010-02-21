@@ -127,10 +127,7 @@ namespace w3c_sw {
 
 	    bool failed =
 		::xmlSAXUserParseMemory(&libXMLhandler, this, s.c_str(), s.size()) != 0;
-	    if (aborted) {
-		aborted = false;
-		throw std::string("SAXparser_libxml: ") + exceptionString;
-	    }
+	    testAbort("SAXparser_libxml");
 	    if (failed) {
 		throw locationStr(/* parser */) + "error " + 
 		    // XML_ErrorString(XML_GetErrorCode(parser)) + 

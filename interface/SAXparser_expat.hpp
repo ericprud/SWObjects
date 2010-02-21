@@ -92,11 +92,7 @@ namespace w3c_sw {
 #else /* !_MSC_VER */
 		    XML_ParseBuffer(parser, istr.p->gcount(), isFinal) == XML_STATUS_ERROR;
 #endif /* !_MSC_VER */
-		if (aborted) {
-		    aborted = false;
-		    throw locationStr(parser) + exceptionString;
-		}
-
+		testAbort(std::string("SAXparser_expat") + locationStr(parser));
 		if (failed) {
 		    buff[istr.p->gcount()] = 0;
 		    buff[100] = 0;

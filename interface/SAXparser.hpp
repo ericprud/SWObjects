@@ -154,31 +154,53 @@ namespace w3c_sw {
     };
 
 
+    struct ChangeMediaTypeException : public std::exception {
+	std::string mediaType;
+	std::vector<std::string> args;
+	ChangeMediaTypeException (std::string mediaType, std::vector<std::string> args)
+	    : mediaType(mediaType), args(args) {  }
+	~ChangeMediaTypeException() throw () {  }
+    };
     class SAXhandlerInsulator;
     class InsulatedSAXparser : public SWSAXparser {
 	friend class SAXhandlerInsulator;
     protected:
-	bool aborted; // hack until i work out how to call analog of ::xmlStopParser in all parsers
+	// hack until i work out how to call analog of ::xmlStopParser in all parsers
+	enum {ERROR_none, ERROR_string, ERROR_changeHandler} errorMode;
+	ChangeMediaTypeException exceptionChangeMediaType;
 	std::string exceptionString;
 	SAXhandlerInsulator* insulator;
 
 	/* SAXhandlerInsulator reports errors here.
 	 * feel free to overload with e.g. xmlStopParser.
 	 */
-	virtual void handleError (std::string& e) {
-	    /* For derivatives of InsulatedSAXparser where we don't
-	     *  know how to stop the parser, we may recieve
-	     *  e.g. encoding errors after the first error. We record
-	     *  only the first one.
-	     */
-	    if (!aborted) {
-		aborted = true;
-		exceptionString = e;
+
+	/* For derivatives of InsulatedSAXparser where we don't
+	 *  know how to stop the parser, we may recieve
+	 *  e.g. encoding errors after the first error. We record
+	 *  only the first one.
+	 */
+	virtual void exception_std_string (std::string& e) {
+	    if (errorMode == ERROR_none) { errorMode = ERROR_string; exceptionString = e; }
+	}
+	virtual void exception_ChangeMediaType (ChangeMediaTypeException& e) {
+	    if (errorMode == ERROR_none) { errorMode = ERROR_changeHandler; exceptionChangeMediaType = e; }
+	}
+	void testAbort(std::string locationStr) {
+	    switch (errorMode) {
+	    case ERROR_string:
+		throw locationStr + ": " + exceptionString;
+	    case ERROR_changeHandler:
+		throw exceptionChangeMediaType;
+	    case ERROR_none:
+		break;
 	    }
 	}
 
     public:
-	InsulatedSAXparser () : aborted(false) {  }
+	InsulatedSAXparser ()
+	    : errorMode(ERROR_none), exceptionChangeMediaType("no media type", std::vector<std::string>())
+	{  }
     };
 
     class SAXhandlerInsulator : public SWSAXhandler {
@@ -196,53 +218,48 @@ namespace w3c_sw {
 				   std::string qName,
 				   Attributes* attrs, 
 				   NSmap& nsz) {
-	    if (parser->aborted) return;
+	    if (parser->errorMode != InsulatedSAXparser::ERROR_none) return;
 	    try {
 		handler->startElement(uri, localName, qName, attrs, nsz);
 	    }
-	    catch (std::string& e) {
-		parser->handleError(e);
-	    }
+	    catch (std::string& e) { parser->exception_std_string(e); }
+	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
 	}
 	virtual void endElement (std::string uri,
 				 std::string localName,
 				 std::string qName, 
 				 NSmap& nsz) {
-	    if (parser->aborted) return;
+	    if (parser->errorMode != InsulatedSAXparser::ERROR_none) return;
 	    try {
 		handler->endElement(uri, localName, qName, nsz);
 	    }
-	    catch (std::string& e) {
-		parser->handleError(e);
-	    }
+	    catch (std::string& e) { parser->exception_std_string(e); }
+	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
 	}
 	virtual void characters (const char ch[],
 				 int start,
 				 int length, 
 				 NSmap& nsz) {
-	    if (parser->aborted) return;
+	    if (parser->errorMode != InsulatedSAXparser::ERROR_none) return;
 	    try {
 		handler->characters(ch, start, length, nsz);
 	    }
-	    catch (std::string& e) {
-		parser->handleError(e);
-	    }
+	    catch (std::string& e) { parser->exception_std_string(e); }
+	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
 	}
 	virtual void error(const char* msg, va_list args) {
 	    try {
 		handler->error(msg, args);
 	    }
-	    catch (std::string& e) {
-		parser->handleError(e);
-	    }
+	    catch (std::string& e) { parser->exception_std_string(e); }
+	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
 	}
 	virtual void warning(const char* msg, va_list args) {
 	    try {
 		handler->warning(msg, args);
 	    }
-	    catch (std::string& e) {
-		parser->handleError(e);
-	    }
+	    catch (std::string& e) { parser->exception_std_string(e); }
+	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
 	}
     };
 
