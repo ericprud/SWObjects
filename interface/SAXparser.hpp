@@ -189,8 +189,10 @@ namespace w3c_sw {
 	void testAbort(std::string locationStr) {
 	    switch (errorMode) {
 	    case ERROR_string:
+		errorMode = ERROR_none;
 		throw locationStr + ": " + exceptionString;
 	    case ERROR_changeHandler:
+		errorMode = ERROR_none;
 		throw exceptionChangeMediaType;
 	    case ERROR_none:
 		break;
