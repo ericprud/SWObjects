@@ -383,6 +383,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    DataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
 	    DataMediaType = "application/rdf+xml";
+	else if (!s.compare("sparqlx"))
+	    DataMediaType = "application/sparql-results+xml";
 	else {
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
 	}
@@ -415,6 +417,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    DataMediaType = "text/html";
 	else if (!s.compare("application/rdf+xml"))
 	    DataMediaType = "application/rdf+xml";
+	else if (!s.compare("application/sparql-results+xml"))
+	    DataMediaType = "application/sparql-results+xml";
 	else {
 	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
 	}
