@@ -618,8 +618,8 @@ int main(int ac, char* av[])
 	     "general, results, uri, query, data, http, sql, tutorial, all")
             ("debug", po::value<debugLevel>(), 
 	     "debugging level")
-            ("no-exec,n", "don't execute")
-            ("print,p", "print final query")
+            ("no-exec,n", "don't execute (or load data)")
+            ("pipe,p", "pipe query to output (print final query)")
             ("quiet,q", "quiet")
             ("version,v", "print version string")
 	    ;
@@ -865,29 +865,31 @@ int main(int ac, char* av[])
 
         if (vm.count("version"))
             std::cout << "SPARQL version 1.0, revision: $Id$\n";
-	else if (NoExec == false) {
-	    if (vm.count("description")) {
-		sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
-		s.mediaType = "text/turtle";
-		Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
-	    }
-
-	    if (vm.count("desc-graph")) {
-		std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
-		for (std::vector<std::string>::const_iterator it = descs.begin();
-		     it != descs.end(); ++it) {
+	else {
+	    if (NoExec == false) {
+		if (vm.count("description")) {
 		    sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		    s.mediaType = "text/turtle";
-		    Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
+		    Db.loadData(Db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
 		}
+
+		if (vm.count("desc-graph")) {
+		    std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
+		    for (std::vector<std::string>::const_iterator it = descs.begin();
+			 it != descs.end(); ++it) {
+			sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
+			s.mediaType = "text/turtle";
+			Db.loadData(Db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
+		    }
+		}
+
+		for (loadList::iterator it = LoadList.begin();
+		     it != LoadList.end(); ++it)
+		    it->loadGraph();
+
+		if (Debug > 0)
+		    std::cout << "<loadedData>\n" << Db << "</loadedData>\n";
 	    }
-
-	    for (loadList::iterator it = LoadList.begin();
-		 it != LoadList.end(); ++it)
-		it->loadGraph();
-
-	    if (Debug > 0)
-		std::cout << "<loadedData>\n" << Db << "</loadedData>\n";
 
 	    sw::RdfDB constructed;
 	    sw::RdfDB& dumpDB(Query == NULL || InPlace ? Db : constructed);
@@ -928,7 +930,14 @@ int main(int ac, char* av[])
 		}
 
 		if (vm.count("stem") == 0) {
-		    o->execute(&Db, &rs);
+		    if (NoExec == false || vm.count("pipe"))
+			o->execute(&Db, &rs);
+		    if (vm.count("pipe")) {
+			if (Debug > 0)
+			    std::cout << "final query: " << std::endl;
+			std::cout << o->toString() << std::endl;
+			Output.resource = NULL;
+		    }
 		} else {
 		    std::string stemURI = vm["stem"].as<std::string>();
 		    char predicateDelims[]={'#',' ',' '};
