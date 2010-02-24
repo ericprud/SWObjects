@@ -367,7 +367,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -401,27 +401,16 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml";
     } else {
-	if (!s.compare(""))
-	    DataMediaType = "";
-	else if (!s.compare("text/plain"))
-	    DataMediaType = "text/plain";
-	else if (!s.compare("text/ntriples"))
-	    DataMediaType = "text/ntriples";
-	else if (!s.compare("text/turtle"))
-	    DataMediaType = "text/turtle";
-	else if (!s.compare("text/trig"))
-	    DataMediaType = "text/trig";
-	else if (!s.compare("text/html"))
-	    DataMediaType = "text/html";
-	else if (!s.compare("application/rdf+xml"))
-	    DataMediaType = "application/rdf+xml";
-	else if (!s.compare("application/sparql-results+xml"))
-	    DataMediaType = "application/sparql-results+xml";
-	else {
-	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
-	}
+	if (!Quiet && s.compare("") && s.compare("text/plain")
+	    && s.compare("text/ntriples") && s.compare("text/turtle")
+	    && s.compare("text/trig") && s.compare("text/html")
+	    && s.compare("application/rdf+xml")
+	    && s.compare("application/sparql-results+xml"))
+	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
+	    // throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
+	DataMediaType = s;
 	if (Debug > 0) {
 	    if (!DataMediaType)
 		std::cout << "using no data mediatype mediatype.\n";
