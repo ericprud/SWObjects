@@ -196,6 +196,10 @@ public:
 	if (p_str != NULL)
 	    assign(p_str);
     }
+    OptString (std::string p_str, std::string p_emptyString = "")
+	: m_emptyString(p_emptyString) {
+	assign(p_str);
+    }
     std::string toString () {
 	return is_initialized() ? get() : m_emptyString;
     }
@@ -211,8 +215,10 @@ public:
 class MediaType : public OptString {
 public:
     MediaType ()
-	: OptString(std::string("-no media type-")) {  }
+	: OptString(NULL, std::string("-no media type-")) {  }
     MediaType (const char* p_str)
+	: OptString(p_str, std::string("-no media type-")) {  }
+    MediaType (std::string p_str)
 	: OptString(p_str, std::string("-no media type-")) {  }
 //     void operator= (const char* p_str) {
 // 	assign(p_str);
