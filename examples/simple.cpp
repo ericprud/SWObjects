@@ -1,5 +1,5 @@
 /*
- * g++ -o examples/simple bin/simple.cpp -I/tmp/swobjects-trunk -I/tmp/swobjects-trunk/lib -L/tmp/swobjects-trunk/lib -lSWObjects -lboost_regex-mt && ./bin/simple
+ g++ -o examples/simple examples/simple.cpp -I. -Ilib -Llib -lSWObjects -lboost_regex-mt && ./examples/simple
  */
 
 #include "SWObjects.hpp"
