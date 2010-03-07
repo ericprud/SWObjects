@@ -318,11 +318,11 @@ v_%: tests/test_%
 
 ### SWtransformer tests:
 
-tests/HealthCare1.results: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	$< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+tests/HealthCare1.results: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+	$< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
 
-tests/HealthCare1.valgrind: bin/SWtransformer tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	valgrind --leak-check=yes --xml=no $< -q -d tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+tests/HealthCare1.valgrind: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+	valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
 
 transformTESTS=tests/HealthCare1
 
