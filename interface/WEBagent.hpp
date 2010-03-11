@@ -36,7 +36,7 @@ namespace w3c_sw {
 		"0123456789+/";
 
 	    unsigned char const* bytes_to_encode = (const unsigned char*)encodeMe.c_str();
-	    unsigned int in_len = encodeMe.size();
+	    size_t in_len = encodeMe.size();
 	    std::string ret;
 	    int i = 0;
 	    int j = 0;
