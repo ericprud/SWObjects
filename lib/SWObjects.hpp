@@ -24,9 +24,15 @@
 #include "config.h"
 
 #ifdef _MSC_VER
+  #define _WINSOCKAPI_	// Don't let windows include winsock.h .
   #include <windows.h>
+  #undef _WINSOCKAPI_
+  #undef max		// Disable rediculous max macro.
+  #include <fcntl.h>
   #include <io.h>
   #include <sys/stat.h>
+
+  #define POSIX_trunkwrite _O_WRONLY | _O_CREAT | _O_TRUNC
 
   #define POSIX_USER_RW _S_IREAD | _S_IWRITE
 
@@ -39,6 +45,9 @@
   #define POSIX_cat "c:/cygwin/bin/cat"
 #else /* !_MSC_VER */
   #include <errno.h>
+
+  #define POSIX_trunkwrite O_WRONLY | O_CREAT | O_TRUNC
+
   #define POSIX_USER_RW S_IRUSR | S_IWUSR
 
   #define POSIX_open ::open
@@ -219,7 +228,7 @@ public:
     MediaType (const char* p_str)
 	: OptString(p_str, std::string("-no media type-")) {  }
     MediaType (std::string p_str)
-	: OptString(p_str, std::string("-no media type-")) {  }
+	: OptString(p_str.c_str(), std::string("-no media type-")) {  }
 //     void operator= (const char* p_str) {
 // 	assign(p_str);
 //     }
@@ -2655,9 +2664,12 @@ public:
 		std::streamsize amt = static_cast<std::streamsize>(streamRewinder.buffer.size() - streamRewinder.pos);
 		std::streamsize result = (std::min)(n, amt);
 		if (result != 0) {
+// #pragma warning(push) // technically should stifle MS's unilateral deprecation, but doesn't work in 2008.
+// #pragma warning(disable:4996)
 		    std::copy( streamRewinder.buffer.begin() + streamRewinder.pos, 
 			       streamRewinder.buffer.begin() + streamRewinder.pos + result, 
 			       s );
+// #pragma warning(pop)
 		    streamRewinder.pos += result;
 		    // LINE << "replay: " << toString() << "\n";
 		    return result;
@@ -2675,6 +2687,7 @@ public:
 		// LINE << "read: " << toString() << "\n";
 		return red > 0 ? red : -1;
 	    }
+	    default: throw "program flow exception";
 	    }
 	}
 

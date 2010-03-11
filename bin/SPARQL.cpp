@@ -141,7 +141,7 @@ std::string genTempFile (std::string dir, std::istream& istr) {
     for (std::wstring::const_iterator it = file.begin();
 	 it != file.end(); ++it)
 	filename += *it;
-    int fileHandle = POSIX_open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, POSIX_USER_RW);
+    int fileHandle = POSIX_open(filename.c_str(), POSIX_trunkwrite, POSIX_USER_RW);
 #else /* !_MSC_VER */
     char buf[] = "SWObjXXXXXX";
     int fileHandle = mkstemp(buf);
@@ -236,7 +236,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 #endif /* !BOOST_PROCESS */
 	for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
 	     iCreatedFile != createdFiles.end(); ++iCreatedFile)
-	    if (::unlink(iCreatedFile->c_str()) != 0)
+	    if (POSIX_unlink(iCreatedFile->c_str()) != 0)
 		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
 	return Db.loadData(target, istr2, nameStr, baseURI, posFactory, nsMap);
