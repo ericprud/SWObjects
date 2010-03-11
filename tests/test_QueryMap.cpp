@@ -15,7 +15,9 @@
 #include "QueryMapper.hpp"
 #include "SQLizer.hpp"
 
-#include <boost/test/unit_test.hpp>
+#ifndef MANUAL_TEST
+  #include <boost/test/unit_test.hpp>
+#endif
 
 using namespace w3c_sw;
 
