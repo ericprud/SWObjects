@@ -305,6 +305,16 @@ tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 tests/test_%: tests/test_%.o $(LIB)
 	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
 
+tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl
+	perl tests/makeMan.pl $< $@
+
+tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+tests/man_%: tests/man_%.o $(LIB)
+	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
+
+
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
 	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
@@ -314,6 +324,10 @@ t_%: tests/test_%
 v_%: tests/test_%
 	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp
+
+# "manual" (non-boost) tests, synthesized from the boost tests.
+m_%: tests/man_%
+	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
 
 
 ### SWtransformer tests:

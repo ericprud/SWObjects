@@ -15,12 +15,12 @@ namespace boost { namespace unit_test { namespace framework {
 	    Args master_test_suite () { return TheArgs; }
 	} } }
 #define MANUAL_TEST
-#include "tests/test_QueryMap.cpp"
+/* #include test file.cpp */
 
 int main (int argc, char** argv) {
     boost::unit_test::framework::TheArgs.argc = argc;
     boost::unit_test::framework::TheArgs.argv = argv;
-    healthCare::simple::sdtm_db();
+    /* tests(); */
     return 0;
 }
 
