@@ -183,26 +183,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<!-- File
-				RelativePath="..\..\lib\SPARQLfedScanner.lpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-			</File -->
 			<File
 				RelativePath="..\..\lib\TrigSParser\TrigSParser.ypp"
 				>
@@ -225,26 +205,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<!-- File
-				RelativePath="..\..\lib\TrigSScanner.lpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-			</File -->
 			<File
 				RelativePath="..\..\lib\TurtleSParser\TurtleSParser.ypp"
 				>
@@ -267,26 +227,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<!-- File
-				RelativePath="..\..\lib\TurtleSScanner.lpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="FlexGenerator"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-			</File -->
 		</Filter>
 		<Filter
 			Name="Source Files"
@@ -300,6 +240,14 @@
 			<File
 				RelativePath="..\..\lib\RdfDB.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						GeneratePreprocessedFile="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\RdfQueryDB.cpp"
