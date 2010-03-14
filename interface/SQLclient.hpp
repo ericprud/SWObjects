@@ -64,6 +64,42 @@ namespace w3c_sw {
 	PREFIX_SWO "_unknown", 
     };
 
+    class SqlResultSet : public ResultSet {
+    public:
+	SqlResultSet (POSFactory* posFactory, SQLclient::Result* res) : ResultSet(posFactory) {
+	    erase(begin());
+	    SQLclient::Result::ColumnSet cols = res->cols();
+	    std::vector<const POS*> vars;
+
+	    /* dump headers in <th/>s */
+	    for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
+		 it != cols.end(); ++it)
+		vars.push_back(posFactory->getVariable(it->name));
+
+	    knownVars.insert(vars.begin(), vars.end());
+
+	    SQLclient::Result::Row row;
+	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
+		Result* result = new Result(this);
+		for(size_t i = 0; i < cols.size(); i++)
+		    if (row[i].size() > 0) {
+			std::string dt = SQLclient::Result::Field::typeNames[cols[i].type];
+			std::string lexval(row[i]);
+			if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
+			    cols[i].type == SQLclient::Result::Field::TYPE__unknown)
+			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
+
+			if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
+			    const URI* dtpos = dt.size() > 0 ? posFactory->getURI(dt.c_str()) : NULL;
+			    const POS* val = posFactory->getRDFLiteral(lexval, dtpos, NULL);
+			    set(result, vars[i], val, false);
+			}
+		    }
+		insert(end(), result);
+	    }
+	}
+    };
+
 } // namespace w3c_sw
 
 #endif // !SQL_CLIENT_H
