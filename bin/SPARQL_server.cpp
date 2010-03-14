@@ -62,27 +62,8 @@
 
 #include "SPARQLSerializer.hpp"
 
-const char* SELECT_QUERY = "SELECT * FROM test";
-
-using namespace std;
+//using namespace std;
 using namespace w3c_sw;
-
-ostream* DebugStream = NULL;
-string ServerPath = "/SPARQL";
-int ServerPort = 8888;
-string ServiceURLstr;
-const char* ServerURI;
-std::string StemURI;
-POSFactory posFactory;
-SPARQLfedDriver sparqlParser("", &posFactory);
-QueryMapper queryMapper(&posFactory, &DebugStream);
-bool RunOnce = false;
-bool Done = false;
-int Served = 0;
-std::string Server;
-std::string User;
-std::string Database;
-std::string PkAttribute;
 
 unsigned char favicon[] = {
 0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
@@ -126,37 +107,253 @@ unsigned char favicon[] = {
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
 };
 
-void head (ostringstream& sout, string title) {
-    sout << 
-	"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
-	"          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
-	"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-	"  <head>\n"
-	"    <title>" << title << "</title>\n"
-	"  </head>\n"
-	"  <body>\n"
-	"    <h1>" << title << "</h1>\n";
-}
-void foot (ostringstream& sout) {
-    sout << "  </body>\n</html>\n";
-}
-
-struct SimpleMessageException : public StringException {
-    SimpleMessageException (string msg) : StringException(make(msg)) {  }
-    string make (string msg) {
-	ostringstream sout;
-
-	head(sout, "Q&amp;D SPARQL Server Error");
-	sout << 
-	    "    <pre>" << msg << "</pre>\n";
-	foot(sout);
-	return sout.str();
-    }
-};
-
 struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
+    class MyHandler : public WebHandler {
+	MyServer& server;
+
+    public:
+	MyHandler (MyServer& server) : 
+	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
+	    server(server)
+	{  }
+    protected:
+
+	void executeQuery (std::ostringstream& sout, Operation* query, std::string queryStr, bool htmlResults) {
+#if SQL_CLIENT == SWOb_DISABLED
+	    std::ostringstream ret;
+	    std::string finalQuery = queryStr;
+	    std::string language = "SPARQL";
+	    ResultSet rs(&posFactory);
+	    query->execute(&db, &rs);
+#else /* SQL_CLIENT != SWOb_DISABLED */
+
+	    SPARQLSerializer s;
+	    query->express(&s);
+	    std::cout << s.str() << std::endl;
+	    query->express(&server.queryMapper);
+	    const Operation* mapped = server.queryMapper.last.operation;
+	    delete query;
+
+	    char predicateDelims[]={'#',' ',' '};
+	    char nodeDelims[]={'/','.',' '};
+	    SQLizer sqlizer(server.stemURI, predicateDelims, nodeDelims, server.pkAttribute, server.debugStream);
+	    mapped->express(&sqlizer);
+
+	    std::string finalQuery = sqlizer.getSQLstring();
+	    std::string language = "SQL";
+
+	    SQLclient_MySQL MySQLclient;
+	    SQLclient* SQLclient(&MySQLclient);
+	    SQLclient::Result* res;
+	    try {
+		SQLclient->connect(server.SQLServer, server.SQLDatabase, server.SQLUser);
+		res = SQLclient->executeQuery(finalQuery);
+	    }
+	    catch (std::string ex) {
+		std::cerr << ex << std::endl;
+		throw SimpleMessageException(ex);
+	    }
+	    SqlResultSet rs(&server.posFactory, res);
+
+	    std::ostringstream ret;
+
+#endif /* SQL_CLIENT != SWOb_DISABLED */
+
+	    const VariableVector cols = rs.getOrderedVars();
+
+	    if (htmlResults) {
+		head(ret, "Query Results");
+
+		ret <<
+		    "<h1>SPARQL Query</h1>\n"
+		    "<pre>" << queryStr << "</pre>\n"
+		    "<h1>" << language << " Query</h1>\n"
+		    "<pre>" << finalQuery << "</pre>\n";
+		char space[1024];
+		sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
+		ret << space;
+
+		ret << 
+		    "    <table>\n"
+		    "      <tr>";
+
+		/* dump headers in <th/>s */
+		for (VariableVector::const_iterator col = cols.begin();
+		     col != cols.end(); ++col)
+		    ret << "<th>" << (*col)->toString() << "</th>";
+		ret << "</tr>\n";
+
+		/* dump data in <td/>s */
+		for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
+		    ret << "      <tr>";
+		    for (VariableVector::const_iterator col = cols.begin();
+			 col != cols.end(); ++col) {
+			const POS* val = (*row)->get(*col);
+			if (val != NULL)
+			    ret << "<td>" << val->toString() << "</td>";
+			else
+			    ret << "<td></td>";
+		    }
+		    ret << "</tr>";
+		}
+		ret << "    </table>";
+		foot(ret);
+	    } else { /* !htmlResults */
+		ret << 
+		    "<?xml version='1.0'?>\n"
+		    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
+		    "  <head>\n";
+
+		/* dump headers in <th/>s */
+		for (VariableVector::const_iterator col = cols.begin();
+		     col != cols.end(); ++col)
+		    ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
+		ret << "  </head>\n";
+		ret << "  <results>\n";
+
+		/* dump data in <td/>s */
+		POS::BNode2string nodeMap;
+		for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
+		    ret << "    <result>\n";
+		    for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
+			const POS* val = binding->second.pos;
+			std::string lexval(escapeHTML(val->getLexicalValue()));
+
+			ret << 
+			    "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
+			    "        " << val->toXMLResults(&nodeMap) << "\n"
+			    "      </binding>\n";
+		    }
+		    ret << "    </result>\n";
+		}
+		ret << 
+		    "  </results>\n"
+		    "</sparql>";
+	    } /* !htmlResults */
+
+	    sout << ret.str();
+	    std::cout << ret.str() << std::endl;
+	    ++server.served;
+	    if (server.runOnce)
+		server.done = true;
+	}
+
+	inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
+	    std::string query;
+	    try {
+		std::string path(req.getPath());
+		std::ostringstream sout;
+
+		if (path == server.path) {
+		    w3c_sw::webserver::request::parmmap::const_iterator it = req.parms.find("query");
+		    if (it != req.parms.end())
+			query = it->second;
+		    if (query == "stop") {
+			head(sout, "Done!");
+			sout << "    <p>Served " << server.served << " queries.</p>\n";
+			foot(sout);
+
+			server.done = true;
+		    } else {
+			IStreamContext istr(query, IStreamContext::STRING);
+			if (server.sparqlParser.parse(istr)) {
+			    head(sout, "Query Error");
+
+			    sout << "    <p>Query</p>\n"
+				"    <pre>" << escapeHTML(query) << "</pre>\n"
+				"    <p>is screwed up.</p>\n"
+				 << std::endl;
+			    std::cerr << "400: " << query << std::endl;
+			    rep.status = webserver::reply::bad_request;
+
+			    foot(sout);
+			} else {
+			    Operation* op = server.sparqlParser.root;
+			    executeQuery(sout, op, query, false);
+			    rep.status = webserver::reply::ok;
+			    rep.addHeader("Content-Type", 
+					  "application/sparql-results+xml; charset=UTF-8");
+			}
+		    }
+		} else if (path == "/") {
+		    rep.status = webserver::reply::ok;
+		    head(sout, "Q&amp;D SPARQL Server");
+		    sout << 
+			"    <form action='" << server.path << "' method='get'>\n"
+			"      Query: <textarea name='query' rows='25' cols='50'></textarea> <input type='submit' />\n"
+			"    </form>\n"
+			"    <form action='" << server.path << "' method='post'>\n"
+			"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
+			"    </form>\n"; 
+		    rep.addHeader("Content-Type", "text/html");
+		    foot(sout);
+		} else if (path == "/favicon.ico") {
+		    sout.write((char*)favicon, sizeof(favicon));
+		    rep.addHeader("Content-Type", "image/x-icon");
+		} else {
+		    head(sout, "Not Found");
+
+		    sout << 
+			"    <p>path: " << path << "</p>\n"
+			"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
+			 << std::endl;
+		    std::cerr << "404: " << path << std::endl;
+		    rep.status = webserver::reply::not_found;
+
+		    sout << "    <h2>Client Headers</h2>\n"
+			"    <ul>";
+		    // Why not dump the HTTP headers? Sure...
+		    for (w3c_sw::webserver::request::headerset::const_iterator it = req.headers.begin();
+			 it != req.headers.end(); ++it)
+			sout << "      <li>" << it->name 
+			     << ": " << it->value 
+			     << "</li>\n" << std::endl;
+		    sout << "    </ul>\n" << std::endl;
+
+		    foot(sout);
+		}
+		rep.content = sout.str();
+	    }
+	    catch (SimpleMessageException& e)
+		{
+		    rep.status = webserver::reply::bad_request;
+		    rep.addHeader("Content-Type", "text/html");
+		    rep.content = e.what();
+		}
+	    catch (std::exception& e)
+		{
+		    std::string what(e.what());
+		    std::ostringstream sout;
+
+		    rep.status = webserver::reply::bad_request;
+		    std::cerr << what << std::endl;
+		    head(sout, "Q&amp;D SPARQL Server Error");
+		    sout << 
+			"    <pre>" << query << "</pre>\n"
+			"    <p>yeilded</p>\n"
+			"    <pre>" << what << "</pre>\n"; 
+		    foot(sout);
+		    rep.content = sout.str();
+		}
+	}
+
+    };
+
     RdfDB db;
     bool runOnce;
+    bool done;
+    int served;
+    std::string path;
+    std::string stemURI;
+    SPARQLfedDriver& sparqlParser;
+    POSFactory& posFactory;
+    std::string pkAttribute;
+    QueryMapper queryMapper;
+    std::string SQLServer;
+    std::string SQLUser;
+    std::string SQLDatabase;
+    std::ostream**   debugStream;
+
 
 #if HTTP_CLIENT != SWOb_DISABLED
     WEBagent_boostASIO client;
@@ -171,390 +368,84 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
     #define pParser NULL
 #endif /* XML_PARSER == SWOb_DISABLED */
 
-    MyServer () : db(pClient, pParser) {  }
+    MyServer (POSFactory& posFactory, SPARQLfedDriver& sparqlParser, std::string pkAttribute, std::ostream** debugStream = NULL)
+	: db(pClient, pParser), runOnce(false), done(false), served(0), posFactory(posFactory), sparqlParser(sparqlParser), pkAttribute(pkAttribute), queryMapper(&posFactory, debugStream), debugStream(debugStream)
+    {  }
     BasicGraphPattern* assureGraph (const POS* name) {
 	return db.assureGraph(name);
     }
-};
+    void startServer (MyHandler& handler, const char* url, int serverPort) {
+	std::ostringstream s;
+	s << "http://localhost:" << serverPort << path;
 
-class MyHandler : public w3c_sw::webserver::request_handler {
-    MyServer& server;
+	const URI* serviceURI = posFactory.getURI(s.str());
+	BasicGraphPattern* serviceGraph = assureGraph(serviceURI);
+	const URI* rdfType = posFactory.
+	    getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
-public:
-    MyHandler (MyServer& server) : 
-	w3c_sw::webserver::request_handler("."), // @@ docroot is irrelevant -- create a docserver
-	server(server)
-    {  }
-protected:
-
-    /* wholesale import of stuff from dlib-17.11/dlib/server/server_http_1.h
-     * in order to provide control over the status message.
-     */
-        unsigned char to_hex (
-            unsigned char ch
-        ) const
-        {
-            if (ch <= '9' && ch >= '0')
-                ch -= '0';
-            else if (ch <= 'f' && ch >= 'a')
-                ch -= 'a' - 10;
-            else if (ch <= 'F' && ch >= 'A')
-                ch -= 'A' - 10;
-            else 
-                ch = 0;
-            return ch;
-        }
-        const std::string decode_query_string (
-            const std::string& str
-        ) const
-        {
-            using namespace std;
-            string result;
-            string::size_type i;
-            for (i = 0; i < str.size(); ++i)
-            {
-                if (str[i] == '+')
-                {
-                    result += ' ';
-                }
-                else if (str[i] == '%' && str.size() > i+2)
-                {
-                    const unsigned char ch1 = to_hex(str[i+1]);
-                    const unsigned char ch2 = to_hex(str[i+2]);
-                    const unsigned char ch = (ch1 << 4) | ch2;
-                    result += ch;
-                    i += 2;
-                }
-                else
-                {
-                    result += str[i];
-                }
-            }
-            return result;
-        }
-
-    static std::string escapeHTML (std::string escapeMe) {
-	std::string ret;
-	for (size_t p = ret.find_first_of("&<>"); 
-	     p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
-	    ret.replace(p, 1, 
-			   ret[p] == '&' ? "&amp;" : 
-			   ret[p] == '<' ? "&lt;" : 
-			   ret[p] == '>' ? "&gt;" : "huh??");
-	return ret;
-    }
-
-
-    void executeQuery (ostringstream& sout, Operation* query, string queryStr, bool htmlResults) {
-#if SQL_CLIENT == SWOb_DISABLED
-	ostringstream ret;
-	string finalQuery = queryStr;
-	string language = "SPARQL";
-	ResultSet rs(&posFactory);
-	query->execute(&db, &rs);
-#else /* SQL_CLIENT != SWOb_DISABLED */
-
-	SPARQLSerializer s;
-	query->express(&s);
-	cout << s.str() << endl;
-	query->express(&queryMapper);
-	const Operation* mapped = queryMapper.last.operation;
-	delete query;
-
-	char predicateDelims[]={'#',' ',' '};
-	char nodeDelims[]={'/','.',' '};
-	SQLizer sqlizer(StemURI, predicateDelims, nodeDelims, PkAttribute, &DebugStream);
-	mapped->express(&sqlizer);
-
-	string finalQuery = sqlizer.getSQLstring();
-	string language = "SQL";
-
-	SQLclient_MySQL MySQLclient;
-	SQLclient* SQLclient(&MySQLclient);
-	SQLclient::Result* res;
-	try {
-	    SQLclient->connect(Server, Database, User);
-	    res = SQLclient->executeQuery(finalQuery);
-	}
-	catch (std::string ex) {
-	    std::cerr << ex << std::endl;
-	    throw SimpleMessageException(ex);
-	}
-	SqlResultSet rs(&posFactory, res);
-
-	ostringstream ret;
-
-#endif /* SQL_CLIENT != SWOb_DISABLED */
-
-	const VariableVector cols = rs.getOrderedVars();
-
-	if (htmlResults) {
-	    head(ret, "Query Results");
-
-	    ret <<
-		"<h1>SPARQL Query</h1>\n"
-		"<pre>" << queryStr << "</pre>\n"
-		"<h1>" << language << " Query</h1>\n"
-		"<pre>" << finalQuery << "</pre>\n";
-	    char space[1024];
-	    sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
-	    ret << space;
-
-	    ret << 
-		"    <table>\n"
-		"      <tr>";
-
-	    /* dump headers in <th/>s */
-	    for (VariableVector::const_iterator col = cols.begin();
-		 col != cols.end(); ++col)
-		ret << "<th>" << (*col)->toString() << "</th>";
-	    ret << "</tr>\n";
-
-	    /* dump data in <td/>s */
-	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
-		ret << "      <tr>";
-		for (VariableVector::const_iterator col = cols.begin();
-		     col != cols.end(); ++col) {
-		    const POS* val = (*row)->get(*col);
-		    if (val != NULL)
-			ret << "<td>" << val->toString() << "</td>";
-		    else
-			ret << "<td></td>";
-		}
-		ret << "</tr>";
-	    }
-	    ret << "    </table>";
-	    foot(ret);
-	} else { /* !htmlResults */
-	    ret << 
-		"<?xml version='1.0'?>\n"
-		"<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
-		"  <head>\n";
-
-	    /* dump headers in <th/>s */
-	    for (VariableVector::const_iterator col = cols.begin();
-		 col != cols.end(); ++col)
-		ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
-	    ret << "  </head>\n";
-	    ret << "  <results>\n";
-
-	    /* dump data in <td/>s */
-	    POS::BNode2string nodeMap;
-	    for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
-		ret << "    <result>\n";
-		for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
-		    const POS* val = binding->second.pos;
-		    std::string lexval(escapeHTML(val->getLexicalValue()));
-
-		    ret << 
-			"      <binding name='" << binding->first->getLexicalValue() << "'>\n"
-			"        " << val->toXMLResults(&nodeMap) << "\n"
-			"      </binding>\n";
-		}
-		ret << "    </result>\n";
-	    }
-	    ret << 
-		"  </results>\n"
-		"</sparql>";
-	} /* !htmlResults */
-
-	sout << ret.str();
-	cout << ret.str() << endl;
-	++Served;
-	if (RunOnce)
-	    Done = true;
-    }
-
-    inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
-	string query;
-        try {
-	    std::string path(req.getPath());
-            ostringstream sout;
-
-	    if (path == ServerPath) {
-		w3c_sw::webserver::request::parmmap::const_iterator it = req.parms.find("query");
-		if (it != req.parms.end())
-		    query = it->second;
-		if (query == "stop") {
-		    head(sout, "Done!");
-		    sout << "    <p>Served " << Served << " queries.</p>\n";
-		    foot(sout);
-
-		    Done = true;
-		} else {
-		    IStreamContext istr(query, IStreamContext::STRING);
-		    if (sparqlParser.parse(istr)) {
-			head(sout, "Query Error");
-
-			sout << "    <p>Query</p>\n"
-			    "    <pre>" << escapeHTML(query) << "</pre>\n"
-			    "    <p>is screwed up.</p>\n"
-			     << endl;
-			cerr << "400: " << query << endl;
-			rep.status = webserver::reply::bad_request;
-
-			foot(sout);
-		    } else {
-			Operation* op = sparqlParser.root;
-			executeQuery(sout, op, query, false);
-			rep.status = webserver::reply::ok;
-			rep.addHeader("Content-Type", 
-				      "application/sparql-results+xml; charset=UTF-8");
-		    }
-		}
-	    } else if (path == "/") {
-		rep.status = webserver::reply::ok;
-		head(sout, "Q&amp;D SPARQL Server");
-		sout << 
-		    "    <form action='" << ServerPath << "' method='get'>\n"
-		    "      Query: <textarea name='query' rows='25' cols='50'></textarea> <input type='submit' />\n"
-		    "    </form>\n"
-		    "    <form action='" << ServerPath << "' method='post'>\n"
-		    "      server status: running, " << Served << " served. <input name='query' type='submit' value='stop'/>\n"
-		    "    </form>\n"; 
-		rep.addHeader("Content-Type", "text/html");
-		foot(sout);
-	    } else if (path == "/favicon.ico") {
-		sout.write((char*)favicon, sizeof(favicon));
-		rep.addHeader("Content-Type", "image/x-icon");
-	    } else {
-		head(sout, "Not Found");
-
-		sout << 
-		    "    <p>path: " << path << "</p>\n"
-		    "    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
-		     << endl;
-		cerr << "404: " << path << endl;
-		rep.status = webserver::reply::not_found;
-
-		sout << "    <h2>Client Headers</h2>\n"
-		    "    <ul>";
-		// Why not dump the HTTP headers? Sure...
-		for (w3c_sw::webserver::request::headerset::const_iterator it = req.headers.begin();
-		     it != req.headers.end(); ++it)
-		    sout << "      <li>" << it->name 
-			 << ": " << it->value 
-			 << "</li>\n" << endl;
-		sout << "    </ul>\n" << endl;
-
-		foot(sout);
-	    }
-            rep.content = sout.str();
-        }
-        catch (SimpleMessageException& e)
-        {
-	    rep.status = webserver::reply::bad_request;
-	    rep.addHeader("Content-Type", "text/html");
-	    rep.content = e.what();
-        }
-        catch (exception& e)
-        {
-	    string what(e.what());
-            ostringstream sout;
-
-	    rep.status = webserver::reply::bad_request;
-            cerr << what << endl;
-	    head(sout, "Q&amp;D SPARQL Server Error");
-	    sout << 
-		"    <pre>" << query << "</pre>\n"
-		"    <p>yeilded</p>\n"
-		"    <pre>" << what << "</pre>\n"; 
-	    foot(sout);
-            rep.content = sout.str();
-        }
-    }
-
-};
-
-MyServer TheServer;
-MyHandler TheHandler(TheServer);
-
-void startServer (const char* url) {
-#if REGEX_LIB == SWOb_BOOST
-    boost::regex re;
-    boost::cmatch matches;
-
-    re = "(ftp|http|https):\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
-    if (!boost::regex_match(url, matches, re)) {
-	cerr << "Address " << url << " is not a valid URL" << endl;
-	exit(1);
-    }
-
-#define PROT 1
-#define HOST 2
-#define PORT 3
-#define PATH 4
-    string ports(matches[PORT].first, matches[PORT].second);
-    istringstream portss(ports);
-    portss >> ServerPort;
-    ServerPath = string(matches[PATH].first, matches[PATH].second);
-#else /* !REGEX_LIB == SWOb_BOOST */
-#endif /* !REGEX_LIB == SWOb_BOOST */
-
-    ostringstream s;
-    s << "http://localhost:" << ServerPort << ServerPath;
-    ServiceURLstr = s.str();
-
-    const URI* serviceURI = posFactory.getURI(ServiceURLstr);
-    BasicGraphPattern* serviceGraph = TheServer.assureGraph(serviceURI);
-    const URI* rdfType = posFactory.
-	getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-
-    serviceGraph->addTriplePattern(posFactory.getTriple(
-			   serviceURI, 
-			   posFactory.getURI(std::string(NS_rdf)+"type"), 
-			   posFactory.getURI(std::string(NS_sadl)+"Service")));
-    {
-	char buf[1024];
-	buf[0] = 0;
+	serviceGraph->addTriplePattern(posFactory.getTriple(
+							    serviceURI, 
+							    posFactory.getURI(std::string(NS_rdf)+"type"), 
+							    posFactory.getURI(std::string(NS_sadl)+"Service")));
+	{
+	    char buf[1024];
+	    buf[0] = 0;
 #if _MSC_VER
-	TCHAR szDirectory[MAX_PATH];	
-	szDirectory[0] = 0;
-	if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
-	    std::wstring wstr(szDirectory);
-	    size_t len = (int)wstr.length();
-	    std::string str = "\\";
-	    unsigned int i = 0;
-	    for (std::wstring::iterator it = wstr.begin();
-		 i < len; ++it, ++i)
-		str += (char)*it;
-	    strncpy(buf, str.c_str(), sizeof(buf)-1);
-	}
+	    TCHAR szDirectory[MAX_PATH];	
+	    szDirectory[0] = 0;
+	    if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
+		std::wstring wstr(szDirectory);
+		size_t len = (int)wstr.length();
+		std::string str = "\\";
+		unsigned int i = 0;
+		for (std::wstring::iterator it = wstr.begin();
+		     i < len; ++it, ++i)
+		    str += (char)*it;
+		strncpy(buf, str.c_str(), sizeof(buf)-1);
+	    }
 #else /* !_MSV_VER */
-	getcwd(buf, sizeof(buf)-1);
+	    getcwd(buf, sizeof(buf)-1);
 #endif /* !_MSV_VER */
-	if (buf) {
-	    cout << "working directory: " << buf << endl;
-	    std::string base = std::string("file://localhost") + buf;
-	    serviceGraph->addTriplePattern(posFactory.getTriple(
-			   serviceURI, 
-			   posFactory.getURI(std::string(NS_sadl)+"base"), 
-			   posFactory.getURI(base)));
+	    if (buf) {
+		std::cout << "working directory: " << buf << std::endl;
+		std::string base = std::string("file://localhost") + buf;
+		serviceGraph->addTriplePattern(posFactory.getTriple(
+								    serviceURI, 
+								    posFactory.getURI(std::string(NS_sadl)+"base"), 
+								    posFactory.getURI(base)));
+	    }
 	}
+
+	std::stringstream tmpss;
+	tmpss << serverPort;
+	const char* bindMe = "0.0.0.0";
+	serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler);
     }
 
-    std::stringstream tmpss;
-    tmpss << ServerPort;
-    const char* bindMe = "0.0.0.0";
-    TheServer.serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, TheHandler);
-}
+};
 
 int main (int argc, char** argv) {
+    POSFactory posFactory;
+    SPARQLfedDriver sparqlParser("", &posFactory);
+    std::ostream* debugStream = NULL;
+    MyServer server(posFactory, sparqlParser, "ID", &debugStream);
+    MyServer::MyHandler handler(server);
 
     int iArg = 1;
     if (argc > 1 && !::strcmp(argv[iArg], "--once")) {
-	RunOnce = true;
+	server.runOnce = true;
 	++iArg;
     }
 
     if (argc - iArg < 1) {
-	cerr << "Usage: " << argv[0] << "[--once] serverURL ruleMap.rq+" << endl;
+	std::cerr << "Usage: " << argv[0] << "[--once] serverURL ruleMap.rq+" << std::endl;
 	return 1;
     }
 
-    ServerURI = argv[iArg++];
+    const char* serverURI = argv[iArg++];
 
     try {
+
 	/* Parse deduction rules. */
 	for ( ; iArg < argc; ++iArg) {
 
@@ -599,15 +490,15 @@ int main (int argc, char** argv) {
 
 		/* Pull out known parameters. */
 		if (parm == "server") {
-		    Server = value;
+		    server.SQLServer = value;
 		} else if (parm == "user") {
-		    User = value;
+		    server.SQLUser = value;
 		} else if (parm == "database") {
-		    Database = value;
+		    server.SQLDatabase = value;
 		} else if (parm == "stemURI") {
-		    StemURI = value;
+		    server.stemURI = value;
 		} else if (parm == "primaryKey") {
-		    PkAttribute = value;
+		    server.pkAttribute = value;
 		} else
 		    /* Whine about unknown parameters. */
 		    std::cout << "unknown parm: " << parm << " -- value: " << value << std::endl;
@@ -622,22 +513,46 @@ int main (int argc, char** argv) {
 	    Operation* rule = sparqlParser.root;
 	    Construct* c;
 	    if ((c = dynamic_cast<Construct*>(rule)) != NULL) {
-		queryMapper.addRule(c);
+		server.queryMapper.addRule(c);
 		delete rule;
 	    } else {
-		cerr << "Rule file " << (queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << endl;
+		std::cerr << "Rule file " << (server.queryMapper.getRuleCount() + 1) << ": " << argv[iArg] << " was not a SPARQL CONSTRUCT." << std::endl;
 		return 1;
 	    }
 	}
 
-	startServer(ServerURI);
+	int serverPort = 8888;
+
+#if REGEX_LIB == SWOb_BOOST
+	boost::regex re;
+	boost::cmatch matches;
+
+	re = "(ftp|http|https):\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
+	if (!boost::regex_match(serverURI, matches, re)) {
+	    std::cerr << "Address " << serverURI << " is not a valid URL" << std::endl;
+	    exit(1);
+	}
+
+#define PROT 1
+#define HOST 2
+#define PORT 3
+#define PATH 4
+	std::string ports(matches[PORT].first, matches[PORT].second);
+	std::istringstream portss(ports);
+	portss >> serverPort;
+	server.path = std::string(matches[PATH].first, matches[PATH].second);
+#else /* !REGEX_LIB == SWOb_BOOST */
+	server.path = "/SPARQL";
+#endif /* !REGEX_LIB == SWOb_BOOST */
+
+	server.startServer(handler, serverURI, serverPort);
 	return 0;
     }
-    catch (exception& e) {
-	cerr << e.what() << endl;
+    catch (std::exception& e) {
+	std::cerr << e.what() << std::endl;
     }
     catch (std::string& s) {
-	cerr << s << endl;
+	std::cerr << s << std::endl;
     }
     return 1;
 }

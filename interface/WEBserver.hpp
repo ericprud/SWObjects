@@ -491,6 +491,52 @@ namespace w3c_sw {
 	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler) = 0;
     };
 
+    class WebHandler : public w3c_sw::webserver::request_handler {
+    public:
+	WebHandler (const std::string& doc_root)
+	    : w3c_sw::webserver::request_handler(doc_root)
+	{  }
+	static std::string escapeHTML (std::string escapeMe) {
+	    std::string ret;
+	    for (size_t p = ret.find_first_of("&<>"); 
+		 p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
+		ret.replace(p, 1, 
+			    ret[p] == '&' ? "&amp;" : 
+			    ret[p] == '<' ? "&lt;" : 
+			    ret[p] == '>' ? "&gt;" : "huh??");
+	    return ret;
+	}
+
+	static void head (std::ostringstream& sout, std::string title) {
+	    sout << 
+		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+		"          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+		"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+		"  <head>\n"
+		"    <title>" << title << "</title>\n"
+		"  </head>\n"
+		"  <body>\n"
+		"    <h1>" << title << "</h1>\n";
+	}
+	static void foot (std::ostringstream& sout) {
+	    sout << "  </body>\n</html>\n";
+	}
+
+	struct SimpleMessageException : public StringException {
+	    SimpleMessageException (std::string msg) : StringException(make(msg)) {  }
+	    std::string make (std::string msg) {
+		std::ostringstream sout;
+
+		head(sout, "Q&amp;D SPARQL Server Error");
+		sout << 
+		    "    <pre>" << msg << "</pre>\n";
+		foot(sout);
+		return sout.str();
+	    }
+	};
+
+    };
+
 } // namespace w3c_sw
 
 #define NEEDDEF_WEBSERVER 1
