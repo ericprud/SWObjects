@@ -497,7 +497,7 @@ namespace w3c_sw {
 	    : w3c_sw::webserver::request_handler(doc_root)
 	{  }
 	static std::string escapeHTML (std::string escapeMe) {
-	    std::string ret;
+	    std::string ret = escapeMe;
 	    for (size_t p = ret.find_first_of("&<>"); 
 		 p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
 		ret.replace(p, 1, 
