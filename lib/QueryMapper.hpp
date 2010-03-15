@@ -48,7 +48,7 @@ namespace w3c_sw {
 	    invertedRules.clear();
 	}
 	int getRuleCount () { return ruleCount; }
-	MappingConstruct* addRule (Construct* rule) {
+	MappingConstruct* addRule (const Construct* rule) {
 	    RuleInverter inv(posFactory, debugStream);
 	    rule->express(&inv);
 	    MappingConstruct* c = inv.getConstruct();
@@ -62,15 +62,15 @@ namespace w3c_sw {
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
-	    if (*debugStream != NULL)
-		**debugStream << "User query disjoint " << std::endl << 
+	    if (debugStream != NULL && *debugStream != NULL)
+		**debugStream << "Firing " << invertedRules.size() << " rules againsts user query disjoint " << std::endl << 
 		    *userQueryDisjoint << std::endl << 
 		    "(as DB):" << std::endl << 
 		    userQueryAsAssertions << std::endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
-		if (*debugStream != NULL)
+		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "matched against rule head (expressed as a pattern)" << std::endl << 
 			*(*invertedRule)->getRuleBody() << std::endl;
 		/* # 03 — Treat C as a query, each triple being optional.
@@ -124,20 +124,22 @@ namespace w3c_sw {
 
     class MapSet : public Operation {
 	friend class MapSetParser;
-    protected:
+    public:
+	typedef std::vector<LabeledConstruct> ConstructList;
+
 	const RDFLiteral* server;
 	const RDFLiteral* user;
 	const RDFLiteral* password;
 	const RDFLiteral* database;
 	const URI* stemURI;
 	const RDFLiteral* primaryKey;
-	std::vector<LabeledConstruct> maps;
+	ConstructList maps;
 #if REGEX_LIB == SWOb_BOOST
 #endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
 	~MapSet () {
-	    for (std::vector<LabeledConstruct>::iterator it = maps.begin(); 
+	    for (ConstructList::iterator it = maps.begin(); 
 		 it != maps.end(); ++it) {
 		delete it->constr;
 	    }
@@ -167,7 +169,7 @@ namespace w3c_sw {
 	 */
 #if NotYet
 	void addRules (QueryMapper* queryMapper) {
-	    for (std::vector<LabeledConstruct>::iterator it = maps.begin(); 
+	    for (ConstructList::iterator it = maps.begin(); 
 		 it != maps.end(); ++it) {
 		queryMapper->addRule(*it);
 	    }
