@@ -17,6 +17,7 @@ namespace w3c_sw {
     public:
 	class Result {
 	public:
+	    virtual ~Result () {  }
 	    struct Field {
 		typedef enum {
 		    TYPE__err = 0, 
