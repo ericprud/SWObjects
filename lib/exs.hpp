@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EXS_HPP
+#define EXS_HPP
 
 #include <iostream>
 #include <vector>
@@ -7,7 +8,7 @@
 #include <cstdarg>
 #include "SWObjects.hpp"
 
-std::vector<std::string> journal;
+extern std::vector<std::string> journal;
 
 struct StackException : w3c_sw::StringException {
     StackException (char const* type, char const* file, size_t line, const char* fmt, va_list args) : 
@@ -42,13 +43,7 @@ public:
     }
 };
 
-StackException varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    StackException ret = StackException(type, file,  line, fmt, args);
-    va_end(args);
-    return ret;
-}
+StackException varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...);
 
 #define MARK JournalState _(__FILE__,  __LINE__, FUNCTION_STRING)
 #define START(X) JournalState _(__FILE__,  __LINE__, X)
@@ -59,3 +54,4 @@ StackException varBarfer (char const* type, char const* file, size_t line, char 
 #define FAIL3(X, a, b, c) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c))
 #define FAIL4(X, a, b, c, d) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c, d))
 
+#endif /* !EXS_HPP */
