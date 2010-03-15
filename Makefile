@@ -243,7 +243,7 @@ bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
-	$(CXX) -o $@ $< $(LDAPPFLAGS)
+	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 
 ##### apache #####
@@ -387,6 +387,10 @@ tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SPARQL tests/7tm_recepto
 	sleep 1
 	( cd tests/7tm_receptors/flat/ && ../../../bin/SPARQL q.rq )
 
+tests/7tm_receptors-flat.results2: bin/SPARQL bin/SPARQL tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
+	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
+	sleep 1
+	( cd tests/7tm_receptors/flat/ && ../../../$< q.rq )
 
 SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 
