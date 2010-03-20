@@ -410,6 +410,34 @@ namespace w3c_sw {
 	return xml;
     }
 
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, const char* tableClass) {
+	if (xml == NULL) xml = new XMLSerializer("  ");
+	xml->open("table");
+	if (tableClass != NULL)
+	    xml->attribute("class", "results");
+	{
+	    const VariableVector cols = getOrderedVars();
+	    xml->open("tr"); {
+		for (VariableVector::const_iterator col = cols.begin();
+		     col != cols.end(); ++col)
+		    xml->leaf("th", (*col)->toString());
+	    } xml->close();
+	    for (ResultSetConstIterator row = begin(); row != end(); ++row) {
+		xml->open("tr"); {
+		    for (VariableVector::const_iterator col = cols.begin();
+			 col != cols.end(); ++col) {
+			const POS* val = (*row)->get(*col);
+			if (val != NULL)
+			    xml->leaf("td", val->toString());
+			else
+			    xml->leaf("td", "");
+		    }
+		} xml->close();
+	    }
+	} xml->close();
+	return xml;
+    }
+
     std::ostream& operator<< (std::ostream& os, ResultSet const& my) {
 	return os << my.toString() ;
     }
