@@ -496,7 +496,7 @@ namespace w3c_sw {
 	WebHandler (const std::string& doc_root)
 	    : w3c_sw::webserver::request_handler(doc_root)
 	{  }
-	static std::string escapeHTML (std::string escapeMe) {
+	static std::string escapeHTML (std::string escapeMe) { // @@ same as lib/XMLSerializer::escapeCharData
 	    std::string ret = escapeMe;
 	    for (size_t p = ret.find_first_of("&<>"); 
 		 p != std::string::npos; p = ret.find_first_of("&<>", p + 1))

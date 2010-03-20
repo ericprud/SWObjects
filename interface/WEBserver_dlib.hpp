@@ -85,17 +85,6 @@ namespace w3c_sw {
 	}
 	webserver::request_handler* handler;
 
-	static std::string escapeHTML (std::string escapeMe) {
-	    std::string ret(escapeMe);
-	    for (size_t p = ret.find_first_of("&<>"); 
-		 p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
-		ret.replace(p, 1, 
-			    ret[p] == '&' ? "&amp;" : 
-			    ret[p] == '<' ? "&lt;" : 
-			    ret[p] == '>' ? "&gt;" : "huh??");
-	    return ret;
-	}
-
 	const std::string on_request (const incoming_things& incoming, outgoing_things& outgoing) {
 	    std::vector<webserver::header> headers;
             for (key_value_map::const_iterator ci = incoming.headers.begin(); 

@@ -8,6 +8,8 @@
 
 #include <stack>
 
+namespace w3c_sw {
+
 class XMLSerializer {
 protected:
     std::stringstream ret;
@@ -16,6 +18,17 @@ protected:
     std::stack<std::string> tags;
     std::string needs;
 public:
+    static std::string escapeCharData (std::string escapeMe) {
+	std::string ret = escapeMe;
+	for (size_t p = ret.find_first_of("&<>"); 
+	     p != std::string::npos; p = ret.find_first_of("&<>", p + 1))
+	    ret.replace(p, 1, 
+			ret[p] == '&' ? "&amp;" : 
+			ret[p] == '<' ? "&lt;" : 
+			ret[p] == '>' ? "&gt;" : "huh??");
+	return ret;
+    }
+
     void lead () {
 	if (needs.size())
 	    ret << needs << std::endl;
@@ -53,7 +66,7 @@ public:
     void leaf (std::string tag, std::string contents) {
 	lead();
 	ret << "<" << tag;
-	needs = ">" + contents + "</" + tag + ">";
+	needs = ">" + escapeCharData(contents) + "</" + tag + ">";
     }
     void leaf (std::string tag, int p_value) {
 	lead();
@@ -96,6 +109,8 @@ public:
     std::string str () { return ret.str(); }
     void str (std::string seed) { ret.str(seed); }
 };
+
+}
 
 #endif // XMLSerializer_H
 

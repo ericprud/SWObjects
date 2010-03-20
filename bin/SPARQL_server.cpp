@@ -217,7 +217,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 		    ret << "    <result>\n";
 		    for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
 			const POS* val = binding->second.pos;
-			std::string lexval(escapeHTML(val->getLexicalValue()));
+			std::string lexval(XMLSerializer::escapeCharData(val->getLexicalValue()));
 
 			ret << 
 			    "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
@@ -260,7 +260,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 			    head(sout, "Query Error");
 
 			    sout << "    <p>Query</p>\n"
-				"    <pre>" << escapeHTML(query) << "</pre>\n"
+				"    <pre>" << XMLSerializer::escapeCharData(query) << "</pre>\n"
 				"    <p>is screwed up.</p>\n"
 				 << std::endl;
 			    std::cerr << "400: " << query << std::endl;
