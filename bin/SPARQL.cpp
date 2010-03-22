@@ -21,6 +21,7 @@ namespace sw = w3c_sw;
 #include "QueryMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
+#include "XMLSerializer.hpp"
 #include "SQLizer.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
@@ -238,138 +239,6 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	{  }
     protected:
 
-	void executeQuery (std::ostringstream& sout, sw::Operation* query, std::string queryStr, bool htmlResults) {
-#if SQL_CLIENT == SWOb_DISABLED
-	    std::ostringstream ret;
-	    std::string finalQuery = queryStr;
-	    std::string language = "SPARQL";
-	    ResultSet rs(&posFactory);
-	    query->execute(&db, &rs);
-#else /* SQL_CLIENT != SWOb_DISABLED */
-
-	    
-	    
-	    if (server.debugStream != NULL && *server.debugStream != NULL) {
-		sw::SPARQLSerializer s;
-		query->express(&s);
-		**server.debugStream << "query: " << s.str() << std::endl;
-	    }
-	    query->express(&server.queryMapper);
-	    const sw::Operation* mapped = server.queryMapper.last.operation;
-	    if (server.debugStream != NULL && *server.debugStream != NULL) {
-		sw::SPARQLSerializer s;
-		query->express(&s);
-		**server.debugStream << "mapped: " << mapped->toString() << std::endl;
-	    }
-	    delete query;
-
-	    char predicateDelims[]={'#',' ',' '};
-	    char nodeDelims[]={'/','.',' '};
-	    sw::SQLizer sqlizer(server.stemURI, predicateDelims, nodeDelims, server.pkAttribute, server.debugStream);
-	    mapped->express(&sqlizer);
-
-	    std::string finalQuery = sqlizer.getSQLstring();
-	    if (server.debugStream != NULL && *server.debugStream != NULL)
-		**server.debugStream << "SQL: " << finalQuery << std::endl;
-	    std::string language = "SQL";
-
-	    sw::SQLclient_MySQL MySQLclient;
-	    sw::SQLclient* SQLclient(&MySQLclient);
-	    sw::SQLclient::Result* res;
-	    try {
-		SQLclient->connect(server.SQLServer, server.SQLDatabase, server.SQLUser);
-		res = SQLclient->executeQuery(finalQuery);
-	    }
-	    catch (std::string ex) {
-		std::cerr << ex << std::endl;
-		throw SimpleMessageException(ex);
-	    }
-	    sw::SqlResultSet rs(&server.posFactory, res);
-
-	    std::ostringstream ret;
-
-#endif /* SQL_CLIENT != SWOb_DISABLED */
-
-	    const sw::VariableVector cols = rs.getOrderedVars();
-
-	    if (htmlResults) {
-		head(ret, "Query Results");
-
-		ret <<
-		    "<h1>SPARQL Query</h1>\n"
-		    "<pre>" << queryStr << "</pre>\n"
-		    "<h1>" << language << " Query</h1>\n"
-		    "<pre>" << finalQuery << "</pre>\n";
-		char space[1024];
-		sprintf(space, "<p>number of fields: %d</p>\n", cols.size());
-		ret << space;
-
-		ret << 
-		    "    <table>\n"
-		    "      <tr>";
-
-		/* dump headers in <th/>s */
-		for (sw::VariableVector::const_iterator col = cols.begin();
-		     col != cols.end(); ++col)
-		    ret << "<th>" << (*col)->toString() << "</th>";
-		ret << "</tr>\n";
-
-		/* dump data in <td/>s */
-		for (sw::ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
-		    ret << "      <tr>";
-		    for (sw::VariableVector::const_iterator col = cols.begin();
-			 col != cols.end(); ++col) {
-			const sw::POS* val = (*row)->get(*col);
-			if (val != NULL)
-			    ret << "<td>" << val->toString() << "</td>";
-			else
-			    ret << "<td></td>";
-		    }
-		    ret << "</tr>";
-		}
-		ret << "    </table>";
-		foot(ret);
-	    } else { /* !htmlResults */
-		ret << 
-		    "<?xml version='1.0'?>\n"
-		    "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n"
-		    "  <head>\n";
-
-		/* dump headers in <th/>s */
-		for (sw::VariableVector::const_iterator col = cols.begin();
-		     col != cols.end(); ++col)
-		    ret << "    <variable name='" << (*col)->getLexicalValue() << "'/>\n";
-		ret << "  </head>\n";
-		ret << "  <results>\n";
-
-		/* dump data in <td/>s */
-		sw::POS::BNode2string nodeMap;
-		for (sw::ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
-		    ret << "    <result>\n";
-		    for (sw::BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
-			const sw::POS* val = binding->second.pos;
-			std::string lexval(escapeHTML(val->getLexicalValue()));
-
-			ret << 
-			    "      <binding name='" << binding->first->getLexicalValue() << "'>\n"
-			    "        " << val->toXMLResults(&nodeMap) << "\n"
-			    "      </binding>\n";
-		    }
-		    ret << "    </result>\n";
-		}
-		ret << 
-		    "  </results>\n"
-		    "</sparql>";
-	    } /* !htmlResults */
-
-	    sout << ret.str();
-	    if (server.debugStream != NULL && *server.debugStream != NULL)
-		**server.debugStream << ret.str() << std::endl;
-	    ++server.served;
-	    if (server.runOnce)
-		server.done = true;
-	}
-
 	inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
 	    std::string query;
 	    try {
@@ -392,7 +261,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			    head(sout, "Query Error");
 
 			    sout << "    <p>Query</p>\n"
-				"    <pre>" << escapeHTML(query) << "</pre>\n"
+				"    <pre>" << sw::XMLSerializer::escapeCharData(query) << "</pre>\n"
 				"    <p>is screwed up.</p>\n"
 				 << std::endl;
 			    std::cerr << "400: " << query << std::endl;
@@ -401,7 +270,48 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			    foot(sout);
 			} else {
 			    sw::Operation* op = server.sparqlParser.root;
-			    executeQuery(sout, op, query, false);
+			    sw::ResultSet rs(&server.posFactory);
+			    std::string language;
+			    std::string newQuery(query);
+
+			    try {
+				server.executeQuery(op, rs, language, newQuery);
+				delete op;
+			    } catch (std::string ex) {
+				delete op;
+				std::cerr << ex << std::endl;
+				throw sw::WebHandler::SimpleMessageException(ex);
+			    }
+			    const sw::VariableVector cols = rs.getOrderedVars();
+
+			    sw::XMLSerializer xml("  ");
+			    if (false) {
+				head(sout, "Query Results");
+
+				// cute lexical representation of xml nesting:
+				xml.leaf("h1", "SPARQL Query");
+				xml.leaf("pre", query);
+				xml.leaf("h1", language);
+				xml.leaf("pre", newQuery);
+				char space[1024];
+				sprintf(space, "number of fields: %d", cols.size());
+				xml.leaf("p", std::string(space));
+
+				rs.toHtmlTable(&xml, "results");
+				sout << xml.str();
+
+				foot(sout);
+			    } else { /* !htmlResults */
+				rs.toXml(&xml);
+				sout << xml.str();
+			    } /* !htmlResults */
+
+			    if (server.debugStream != NULL && *server.debugStream != NULL)
+				**server.debugStream << sout.str() << std::endl;
+			    ++server.served;
+			    if (server.runOnce)
+				server.done = true;
+
 			    rep.status = sw::webserver::reply::ok;
 			    rep.addHeader("Content-Type", 
 					  "application/sparql-results+xml; charset=UTF-8");
@@ -477,6 +387,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     int served;
     std::string path;
     std::string stemURI;
+    bool printQuery;
     sw::POSFactory& posFactory;
     sw::SPARQLfedDriver& sparqlParser;
     std::string pkAttribute;
@@ -490,7 +401,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     MyServer (sw::POSFactory& posFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute, std::ostream** debugStream = NULL)
 	: db(&Agent, &P, debugStream, &RdfDBHandlers),
-	  runOnce(false), done(false), served(0),
+	  runOnce(false), done(false), served(0), stemURI(""), printQuery(false), 
 	  posFactory(posFactory), sparqlParser(sparqlParser),
 	  pkAttribute(pkAttribute), mapSetParser("", &posFactory), 
 	  queryMapper(&posFactory, debugStream), debugStream(debugStream)
@@ -543,9 +454,81 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	std::stringstream tmpss;
 	tmpss << serverPort;
 	const char* bindMe = "0.0.0.0";
-	serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler);
+	try {
+	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler);
+	} catch (boost::system::system_error e) {
+	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
+	}
     }
 
+    bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
+	const sw::Operation* delMe(NULL);
+	language = "SPARQL";
+	if (queryMapper.getRuleCount() > 0) {
+	    if (DebugStream != NULL)
+		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
+	    query->express(&queryMapper);
+	    query = delMe = queryMapper.last.operation;
+	}
+
+	if (Debug > 0) {
+	    sw::SPARQLAlgebraSerializer s;
+	    query->express(&s);
+	    std::cout << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	}
+
+	bool executed = false;
+	if (stemURI.empty()) {
+	    if (NoExec == false || printQuery) {
+		query->execute(&db, &rs);
+		executed = true;
+	    }
+	    if (printQuery) {
+		if (Debug > 0)
+		    std::cout << "final query: " << std::endl;
+		std::cout << query->toString() << std::endl;
+	    }
+	} else {
+	    language = "SQL";
+	    char predicateDelims[]={'#',' ',' '};
+	    char nodeDelims[]={'/','.',' '};
+	    const char* PkAttr = "id";
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
+	    query->express(&sqlizer);
+	    finalQuery = sqlizer.getSQLstring();
+
+	    bool doSQLquery = !SQLServer.empty() || !SQLDatabase.empty() || !SQLUser.empty();
+	    if (Debug > 0)
+		std::cout << "SQL: " << std::endl;
+	    if (Debug > 0 || doSQLquery == false)
+		std::cout << finalQuery << std::endl;
+
+#if SQL_CLIENT != SWOb_DISABLED
+	    if (doSQLquery == true) {
+		sw::SQLclient_MySQL MySQLclient;
+		sw::SQLclient* SQLclient(&MySQLclient);
+		sw::SQLclient::Result* res;
+		try {
+		    SQLclient->connect(SQLServer, SQLDatabase, SQLUser);
+		}
+		catch (std::string ex) {
+		    throw std::string("unable to connect to ") + SQLUser + "@" + SQLServer + "/" + SQLDatabase + ": " + ex;
+		}
+		try {
+		    res = SQLclient->executeQuery(finalQuery);
+		}
+		catch (std::string ex) {
+		    throw SQLUser + "@" + SQLServer + "/" + SQLDatabase + " was unable to execute " + finalQuery;
+		}
+		sw::SqlResultSet rs2(&posFactory, res);
+		rs.joinIn(&rs2);
+	    }
+#endif /* SQL_CLIENT != SWOb_DISABLED */
+	}
+	if (delMe != NULL)
+	    delete delMe;
+	return executed;
+    }
 };
 
 sw::SPARQLfedDriver SparqlParser("", &F);
@@ -1298,6 +1281,8 @@ int main(int ac, char* av[])
 
 	    if (vm.count("stem"))
 		TheServer.stemURI = vm["stem"].as<std::string>();
+	    if (vm.count("pipe"))
+		TheServer.printQuery = true;
 
 	    if (vm.count("mapset")) {
 		std::string mapSpec = vm["mapset"].as<std::string>();
@@ -1366,46 +1351,12 @@ int main(int ac, char* av[])
 	    } else {
 		sw::Operation* query = parseQuery(Query);
 
-		const sw::Operation* o;
-		if (TheServer.queryMapper.getRuleCount() > 0) {
-		    if (DebugStream != NULL)
-			*DebugStream << "Transforming user query by applying " << TheServer.queryMapper.getRuleCount() << " rule maps." << std::endl;
-		    query->express(&TheServer.queryMapper);
-		    o = TheServer.queryMapper.last.operation;
-		    delete query;
-		} else
-		    o = query;
+		std::string language; // not used here
+		std::string finalQuery; // not used here
+		if (!TheServer.executeQuery(query, rs, language, finalQuery))
+		    Output.resource = NULL;
+		delete query;
 
-		if (Debug > 0) {
-		    sw::SPARQLAlgebraSerializer s;
-		    o->express(&s);
-		    std::cout << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
-		}
-
-		if (vm.count("stem") == 0) {
-		    if (NoExec == false || vm.count("pipe"))
-			o->execute(&TheServer.db, &rs);
-		    if (vm.count("pipe")) {
-			if (Debug > 0)
-			    std::cout << "final query: " << std::endl;
-			std::cout << o->toString() << std::endl;
-			Output.resource = NULL;
-		    }
-		} else {
-		    char predicateDelims[]={'#',' ',' '};
-		    char nodeDelims[]={'/','.',' '};
-		    const char* PkAttr = "id";
-		    sw::SQLizer sql(TheServer.stemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
-		    o->express(&sql);
-		    if (vm.count("sql-service") != 0) {
-		    } else if (vm.count("mapset") != 0) {
-		    } else {
-			if (Debug > 0)
-			    std::cout << "SQL'd query: " << std::endl;
-			std::cout << sql.getSQLstring() << std::endl;
-			Output.resource = NULL;
-		    }
-		}
 		if (vm.count("compare")) {
 		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
