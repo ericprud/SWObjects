@@ -900,7 +900,6 @@ public:
 	boost::match_flag_type flags = boost::match_default;
 	if (!regex_search(spo, what, expression, flags))
 	    return NULL;
-	std::string s(what[1].first, what[1].second);
 	return getTriple(getPOS(std::string(what[1].first, what[1].second), nodeMap), 
 			 getPOS(std::string(what[2].first, what[2].second), nodeMap), 
 			 getPOS(std::string(what[3].first, what[3].second), nodeMap), false);
