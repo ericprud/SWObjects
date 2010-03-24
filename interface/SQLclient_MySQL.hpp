@@ -25,7 +25,7 @@ namespace w3c_sw {
 	    this->server = server;
 	    this->database = database;
 	    this->user = user;
-	    if (!(sock = mysql_real_connect(&mysql, server.c_str(), user.c_str(), 0, database.c_str(), 0, password, 0)))
+	    if (!(sock = mysql_real_connect(&mysql, server.c_str(), user.c_str(), password, database.c_str(), 0, NULL, 0)))
 		throw std::string("couldn't connect to mysql://") + user + "@" + server + "/" + database;
 	}
 
