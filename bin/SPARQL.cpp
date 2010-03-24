@@ -393,8 +393,10 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string pkAttribute;
     sw::MapSetDriver mapSetParser;
     sw::QueryMapper queryMapper;
-    std::string SQLServer;
     std::string SQLUser;
+    std::string SQLPassword;
+    std::string SQLServer;
+    std::string SQLPort;
     std::string SQLDatabase;
     std::ostream**   debugStream;
 
@@ -461,6 +463,10 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	}
     }
 
+    std::string sqlConnectString () const {
+	return SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
+    }
+
     bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
 	const sw::Operation* delMe(NULL);
 	language = "SPARQL";
@@ -509,19 +515,23 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		sw::SQLclient* SQLclient(&MySQLclient);
 		sw::SQLclient::Result* res;
 		try {
-		    SQLclient->connect(SQLServer, SQLDatabase, SQLUser);
+		    if (SQLPassword.empty())
+			SQLclient->connect(SQLServer, SQLDatabase, SQLUser); // @@ wrap password with Optional to enable --password=''
+		    else
+			SQLclient->connect(SQLServer, SQLDatabase, SQLUser, SQLPassword);
 		}
 		catch (std::string ex) {
-		    throw std::string("unable to connect to ") + SQLUser + "@" + SQLServer + "/" + SQLDatabase + ": " + ex;
+		    throw std::string("unable to connect to ") + sqlConnectString() + ": " + ex;
 		}
 		try {
 		    res = SQLclient->executeQuery(finalQuery);
 		}
 		catch (std::string ex) {
-		    throw SQLUser + "@" + SQLServer + "/" + SQLDatabase + " was unable to execute " + finalQuery;
+		    throw sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		sw::SqlResultSet rs2(&posFactory, res);
 		rs.joinIn(&rs2);
+		executed = true;
 	    }
 #endif /* SQL_CLIENT != SWOb_DISABLED */
 	}
@@ -957,6 +967,39 @@ void validate (boost::any&, const std::vector<std::string>& values, headerAppend
     HTTPHeaders[pair.name].append(", ").append(pair.value);
 }
 
+#if REGEX_LIB != SWOb_DISABLED
+struct sqlService {};
+void validate (boost::any&, const std::vector<std::string>& values, sqlService*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    const boost::regex odbcPattern("^([^:]+)://"	// 1: protocol ://
+				   "(?:"		//    [
+				   "([^:]+)"		// 2:   user
+				   "(?::([^@]+))?"	// 3:   [ : password ]
+				   "@)?"		//    @ ]
+				   "([^:]+)"		// 4: host
+				   "(?::([0-9]+))?"	// 5: [ port ]
+				   "/(.+)$");		// 6: database
+    boost::cmatch matches;
+    if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
+	if (matches[1] != "mysql")
+	    throw std::string("only mysql SQL service is currently supported -- saw ") + matches[1];
+	if (matches[2].matched)
+	    TheServer.SQLUser = matches[2];
+	if (matches[3].matched)
+	    TheServer.SQLPassword = matches[3];
+	TheServer.SQLServer = matches[4];
+	if (matches[5].matched)
+	    TheServer.SQLPort = matches[5];
+	TheServer.SQLDatabase = matches[6];
+    } else { 
+	throw boost::program_options::validation_error(s + " did not match expression " + odbcPattern.str());
+    }
+
+}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+
 
 std::string adjustPath (std::string nameStr) {
     if (nameStr.substr(0, 7) == "file://") {
@@ -1064,8 +1107,10 @@ int main(int ac, char* av[])
         sqlOpts.add_options()
             ("stem,s", po::value<std::string>(), 
 	     "stem URL.")
-            ("sql-service,S", po::value<std::string>(), 
+#if REGEX_LIB != SWOb_DISABLED
+            ("sql-service,S", po::value<sqlService>(), 
 	     "odbc-style SQL database\n\tdriver://[username[:password]@]host[:port]/database\nmysql://localhost/orders")
+#endif /* REGEX_LIB != SWOb_DISABLED */
             ("mapset,m", po::value<std::string>(), 
 	     "mapset resource, which supplies above parameters.")
             ;
@@ -1205,7 +1250,7 @@ int main(int ac, char* av[])
         if (vm.count("help")) {
             std::cout << 
 		"Usage: SPARQL [opts] queryURI mapURI*\n"
-		"       SPARQL [opts] -e query mapURI*\n\n"
+		"       SPARQL [opts] -e query mapURI*\n"
 		"       SPARQL [opts] --server URL mapURI*\n\n"
 		"get started with: SPARQL --Help tutorial\n" << 
 		queryHelp << cursory;
@@ -1291,8 +1336,9 @@ int main(int ac, char* av[])
 		if (TheServer.mapSetParser.parse(iptr) != 0)
 		    throw std::string("error when parsing map ").append(mapSpec);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
-		if (ms->server) TheServer.SQLUser = ms->server->getLexicalValue();
+		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
 		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
+		if (ms->password) TheServer.SQLPassword = ms->password->getLexicalValue();
 		if (ms->database) TheServer.SQLDatabase = ms->database->getLexicalValue();
 		if (ms->stemURI) TheServer.stemURI = ms->stemURI->getLexicalValue();
 		for (sw::MapSet::ConstructList::const_iterator it = ms->maps.begin();
