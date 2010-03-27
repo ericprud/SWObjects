@@ -234,6 +234,9 @@ bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
 bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 	$(CXX) -lnsl -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
+bin/SPARQL-static : bin/SPARQL.o $(LIB)
+	g++ -o $@ -static $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB) -lpthread -lz
+
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
@@ -270,19 +273,19 @@ install-mod_sparul: apache/mod_sparul.so
 
 #notes for ericP
 # opts: tests/execute_HealthCare1
-# 	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq -s http://stem.example/
+# 	valgrind tests/execute_HealthCare1 tests/query_leadTrailOpts.rq tests/ruleMap_leadTrailOpts.rq --stem http://stem.example/
 
 # deep: tests/execute_HealthCare1
 # 	valgrind tests/execute_HealthCare1 tests/query_deepNesting.rq tests/ruleMap_deepNesting.rq
 
 # opt1: tests/execute_HealthCare1
-# 	valgrind tests/execute_HealthCare1 tests/query_spec-opt1.rq -s http://hr.example/DB/
+# 	valgrind tests/execute_HealthCare1 tests/query_spec-opt1.rq --stem http://hr.example/DB/
 
 # equivOpt1: tests/execute_HealthCare1
-# 	valgrind tests/execute_HealthCare1 tests/query_spec-equivOpt1.rq -s http://hr.example/DB/
+# 	valgrind tests/execute_HealthCare1 tests/query_spec-equivOpt1.rq --stem http://hr.example/DB/
 
 # optJoin1: tests/execute_HealthCare1
-#	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq -s http://hr.example/DB/
+#	valgrind tests/execute_HealthCare1 tests/query_spec-optJoin1.rq --stem http://hr.example/DB/
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 unitTESTexes := $(TESTNAMELIST)
@@ -339,10 +342,10 @@ m_%: tests/man_%
 ### SWtransformer tests:
 
 tests/HealthCare1.results: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	$< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+	$< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 tests/HealthCare1.valgrind: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq -s http://someClinic.exampe/DB/
+	valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 transformTESTS=tests/HealthCare1
 
