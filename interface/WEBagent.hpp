@@ -29,7 +29,43 @@ namespace w3c_sw {
 #endif /* !REGEX_LIB == SWOb_DISABLED */
 				) = 0;
 
-	static std::string base64encode(std::string encodeMe) {
+	struct Parameter {
+	    std::string attr;
+	    std::string value;
+	    Parameter (std::string attr, std::string value) : attr(attr), value(value) {  }
+	};
+	static std::string getURL (std::string service, const Parameter* start, size_t count) {
+	    std::stringstream s;
+	    s << service;
+	    s << (service.find_first_of("?") == std::string::npos ? "?" : 
+		  service.at(service.size()-1) == '&' ? "" : 
+		  "&");
+	    for (size_t i = 0; i < count; ++i)
+		s << start[i].attr << "=" << start[i].value;
+	    return s.str();
+	}
+
+	static std::string urlEncode (std::string encodeMe) {
+	    std::stringstream s;
+	    s.setf(std::ios::hex, std::ios::basefield);
+	    s.setf(std::ios::uppercase);
+	    for (std::string::const_iterator it = encodeMe.begin(); it != encodeMe.end(); ++it) {
+		if (*it == ' ')
+		    s << '+';
+		else if ((*it >= 'a' && *it <= 'z') || 
+			 (*it >= 'A' && *it <= 'Z') || 
+			 (*it >= '0' && *it <= '9') || 
+			 *it == '.' || *it == '-' || *it == '_')
+		    s << *it;
+		else if (*it < 0x10)
+		    s << "%0" << (unsigned)*it;
+		else
+		    s << '%' << (unsigned)*it;
+	    }
+	    return s.str();
+	}
+
+	static std::string base64encode (std::string encodeMe) {
 	    static const std::string base64_chars = 
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"abcdefghijklmnopqrstuvwxyz"

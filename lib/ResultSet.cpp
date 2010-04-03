@@ -4,6 +4,7 @@
 
 #include <set>
 #include "ResultSet.hpp"
+#include "SWObjectDuplicator.hpp"
 #include "XMLQueryExpressor.hpp"
 #include <iostream>
 
@@ -93,6 +94,56 @@ namespace w3c_sw {
 	for (ResultSetIterator it = begin() ; it != end(); it++)
 	    ret->insert(ret->begin(), (*it)->duplicate(ret, ret->end()));
 	return ret;
+    }
+
+    struct FilterInjector : public SWObjectDuplicator {
+	const ResultSet& rs;
+	FilterInjector (POSFactory* posFactory, const ResultSet& rs) : SWObjectDuplicator(posFactory), rs(rs) {  }
+	VariableList vars;
+	virtual void variable (const Variable* const self, std::string lexicalValue) {
+	    vars.insert(self);
+	    SWObjectDuplicator::variable(self, lexicalValue);
+	}
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	    ResultSet* joined(NULL);
+	    const ResultSet* working = &rs;
+	    if (p_BindingClause != NULL) {
+		working = joined = new ResultSet(rs);
+		p_BindingClause->bindVariables(NULL, joined);
+	    }
+
+	    vars.clear(); // probably got filled with e.g. select vars.
+	    p_GroupGraphPattern->express(this);
+	    const TableOperation* op = last.tableOperation;
+	    const VariableList* knownVars = working->getKnownVars();
+	    std::vector<const POS*> v(vars.size() + knownVars->size());
+	    std::vector<const POS*>::iterator needed =
+		std::set_intersection (vars.begin(), vars.end(), knownVars->begin(),
+				       knownVars->end(), v.begin());
+	    const std::set<const POS*> s(v.begin(), v.end());
+	    const Expression* filter = working->getFederationExpression(s, false);
+	    if (filter) {
+		Filter* f = new Filter(op);
+		f->addExpression(filter);
+		op = f;
+	    }
+
+	    if (joined)
+		delete joined;
+	    last.whereClause = new WhereClause(op, NULL);
+	}
+    };
+
+//     const TableOperation* ResultSet::getConstrainedTableOperation (const TableOperation* tableop) {
+//     }
+    const Operation* ResultSet::getConstrainedOperation (const Operation* op) const {
+	/* The VarLister is a serializer which also records all variables.
+	 */
+	if (size() == 1 && (*results.begin())->size() == 0)
+	    return NULL;
+	FilterInjector ij((POSFactory*)posFactory, *this); // this is const, but the factory isn't.
+	op->express(&ij);
+	return ij.last.operation;
     }
 
     void ResultSet::set (Result* r, const POS* variable, const POS* value, bool weaklyBound) {

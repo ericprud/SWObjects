@@ -387,6 +387,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     int served;
     std::string path;
     std::string stemURI;
+    std::string serviceURI;
     bool printQuery;
     sw::POSFactory& posFactory;
     sw::SPARQLfedDriver& sparqlParser;
@@ -403,8 +404,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     MyServer (sw::POSFactory& posFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute, std::ostream** debugStream = NULL)
 	: db(&Agent, &P, debugStream, &RdfDBHandlers),
-	  runOnce(false), done(false), served(0), stemURI(""), printQuery(false), 
-	  posFactory(posFactory), sparqlParser(sparqlParser),
+	  runOnce(false), done(false), served(0), stemURI(""), serviceURI(""),
+	  printQuery(false), posFactory(posFactory), sparqlParser(sparqlParser),
 	  pkAttribute(pkAttribute), mapSetParser("", &posFactory), 
 	  queryMapper(&posFactory, debugStream), debugStream(debugStream)
     {  }
@@ -417,9 +418,6 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 
 	const sw::URI* serviceURI = posFactory.getURI(s.str());
 	sw::BasicGraphPattern* serviceGraph = assureGraph(serviceURI);
-	const sw::URI* rdfType = posFactory.
-	    getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-
 	serviceGraph->addTriplePattern(posFactory.getTriple(
 							    serviceURI, 
 							    posFactory.getURI(std::string(sw::NS_rdf)+"type"), 
@@ -470,10 +468,16 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
 	const sw::Operation* delMe(NULL);
 	language = "SPARQL";
+	delMe = rs.getConstrainedOperation(query);
+	if (delMe != NULL)
+	    query = delMe;
+
 	if (queryMapper.getRuleCount() > 0) {
 	    if (DebugStream != NULL)
 		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
 	    query->express(&queryMapper);
+	    if (delMe != NULL)
+		delete delMe;
 	    query = delMe = queryMapper.last.operation;
 	}
 
@@ -484,17 +488,15 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	}
 
 	bool executed = false;
-	if (stemURI.empty()) {
-	    if (NoExec == false || printQuery) {
-		query->execute(&db, &rs);
-		executed = true;
-	    }
-	    if (printQuery) {
-		if (Debug > 0)
-		    std::cout << "final query: " << std::endl;
-		std::cout << query->toString() << std::endl;
-	    }
-	} else {
+// 	if (rs.size() > 0 && (!serviceURI.empty() || !stemURI.empty())) {
+// 	    const sw::Operation* t = rs.getConstrainedOperation (query);
+// 	    if (t != NULL) {
+// 		if (delMe != NULL)
+// 		    delete delMe;
+// 		query = delMe = t;
+// 	    }
+// 	}
+	if (!stemURI.empty()) {
 	    language = "SQL";
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
@@ -534,6 +536,37 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		executed = true;
 	    }
 #endif /* SQL_CLIENT != SWOb_DISABLED */
+	} else {
+	    if (!serviceURI.empty()) {
+		sw::SWWEBagent::Parameter p("query", sw::SWWEBagent::urlEncode(query->toString()));
+		std::string q(sw::SWWEBagent::getURL(serviceURI, &p, 1));
+		if (printQuery) {
+		    if (Debug > 0)
+			std::cout << "service query: " << std::endl;
+		    std::cout << q << std::endl;
+		}
+		if (NoExec == false) {
+		    std::string s(Agent.get(q.c_str()));
+		    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
+		    sw::ResultSet red(&F, &P, istr);
+		    if (Debug > 0)
+			std::cout << " yielded\n" << red;
+
+		    /* Join those results against our initial results. */
+		    rs.joinIn(&red);
+		    executed = true;
+		}
+	    } else {
+		if (printQuery) {
+		    if (Debug > 0)
+			std::cout << "final query: " << std::endl;
+		    std::cout << query->toString() << std::endl;
+		}
+		if (NoExec == false) {
+		    query->execute(&db, &rs);
+		    executed = true;
+		}
+	    }
 	}
 	if (delMe != NULL)
 	    delete delMe;
@@ -886,7 +919,7 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0) {
-	std::cout << "queued reading default data from " << abs->getLexicalValue();
+	std::cout << "queued reading default data from " << abs->getLexicalValue() << "\n";
 	if (BaseURI != NULL)
 	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
     }
@@ -1087,13 +1120,15 @@ int main(int ac, char* av[])
 	     "read application description graph (see section) into default graph.")
             ("desc-graph,G", po::value<std::vector <std::string> >(), 
 	     "read application description graph into graph arg.")
+            ("service", po::value<std::string>(), 
+	     "relay all queries to service URL.")
             ;
     
         po::options_description httpOpts("HTTP options");
         httpOpts.add_options()
             ("username,u", po::value<userName>(), 
 	     "username for HTTP transactions")
-            ("password,p", po::value<passWord>(), 
+            ("password", po::value<passWord>(), 
 	     "password for HTTP transactions")
             ("header", po::value<headerAssign>(), 
 	     "assign a header value.\n"
@@ -1105,7 +1140,7 @@ int main(int ac, char* av[])
 
         po::options_description sqlOpts("SQL options");
         sqlOpts.add_options()
-            ("stem,s", po::value<std::string>(), 
+            ("stem", po::value<std::string>(), 
 	     "stem URL.")
 #if REGEX_LIB != SWOb_DISABLED
             ("sql-service,S", po::value<sqlService>(), 
@@ -1326,6 +1361,8 @@ int main(int ac, char* av[])
 
 	    if (vm.count("stem"))
 		TheServer.stemURI = vm["stem"].as<std::string>();
+	    if (vm.count("service"))
+		TheServer.serviceURI = vm["service"].as<std::string>();
 	    if (vm.count("pipe"))
 		TheServer.printQuery = true;
 

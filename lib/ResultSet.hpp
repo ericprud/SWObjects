@@ -654,13 +654,13 @@ namespace w3c_sw {
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
-	const Expression* getFederationExpression (std::set<const Variable*> vars, bool lexicalCompare = false) {
+	const Expression* getFederationExpression (std::set<const POS*> vars, bool lexicalCompare = false) const {
 	    ExprSet disj;
 	    for (ResultSetConstIterator row = results.begin();
 		 row != results.end(); row++) {
 		std::stringstream rowStr;
 		ExprSet conj;
-		for (std::set<const Variable*>::const_iterator var = vars.begin();
+		for (std::set<const POS*>::const_iterator var = vars.begin();
 		     var != vars.end(); ++var) {
 		    const POS* value = (*row)->get(*var);
 		    if (value != NULL) {
@@ -701,6 +701,7 @@ namespace w3c_sw {
 	    disj.clear();
 	    return ret;
 	}
+	const Operation* getConstrainedOperation(const Operation* op) const;
     };
 
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);
