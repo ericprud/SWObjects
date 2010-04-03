@@ -17,8 +17,13 @@
   bool set_Variable_constit_ne (std::set<const w3c_sw::Variable*>::const_iterator l, 
 				std::set<const w3c_sw::Variable*>::const_iterator r)
   { return l != r; }
+  #define SET_POS_CONSTIT_NE(L, R) set_POS_constit_ne(L, R)
+  bool set_POS_constit_ne (std::set<const w3c_sw::POS*>::const_iterator l, 
+			   std::set<const w3c_sw::POS*>::const_iterator r)
+  { return l != r; }
 #else /* !_MSC_VER */
   #define SET_Variable_CONSTIT_NE(L, R) L != R
+  #define SET_POS_CONSTIT_NE(L, R) L != R
 #endif /* !_MSC_VER */
 
 namespace w3c_sw {
@@ -1303,7 +1308,7 @@ compared against
 	/* The VarLister is a serializer which also records all variables.
 	 */
 	struct VarLister : public SPARQLSerializer {
-	    std::set<const Variable*> vars;
+	    std::set<const POS*> vars;
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		vars.insert(self);
 		SPARQLSerializer::variable(self, lexicalValue);
@@ -1348,8 +1353,8 @@ compared against
 		queryPattern = vars.str();
 	    }
 
-	    for (std::set<const Variable*>::const_iterator it = vars.vars.begin();
-		 SET_Variable_CONSTIT_NE(it, vars.vars.end()); ++it)
+	    for (std::set<const POS*>::const_iterator it = vars.vars.begin();
+		 SET_POS_CONSTIT_NE(it, vars.vars.end()); ++it)
 		q.append((*it)->toString()).append(" ");
 	    q += queryPattern;
 	}
@@ -1574,8 +1579,9 @@ compared against
 	    TableDisjunction* disjoints;
 	    TableConjunction* conjoints;
 	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
-		/* A & ( B | C ) & ( D | E | F )
-		 *                 ^^^^^^^^^^^^^
+		/* If this conjoint is a disjunction
+                 * à la A & ( B | C ) & ( D | E | F )
+		 *                      ^^^^^^^^^^^^^
 		 * ret is already ( A & B ) | ( A & C ) so copy each ret and append disjoints.
 		 */
 		for (std::vector<const TableOperation*>::iterator disjoint = disjoints->begin();
@@ -1591,9 +1597,11 @@ compared against
 			    n->addTableOperation(*copyi, true);
 			/* Append the current disjoint. */
 			n->addTableOperation(*disjoint, true);
+			disjoint = disjoints->erase(disjoint);
 		    }
 		    disjoint = disjoints->erase(disjoint);
 		}
+		delete op;
 		
 	    } else if ((conjoints = dynamic_cast<TableConjunction*>(op)) != NULL) {
 		/* A & ( B & C ) i.e. tree was not simplified */
