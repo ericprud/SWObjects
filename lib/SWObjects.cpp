@@ -1304,99 +1304,81 @@ compared against
 	}
     }
 
-    void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, POSFactory* posFactory, SWSAXparser* xmlParser, SWWEBagent* agent, std::ostream** debugStream) {
 	/* The VarLister is a serializer which also records all variables.
 	 */
 	struct VarLister : public SPARQLSerializer {
 	    std::set<const POS*> vars;
+	    POSList* l;
+	    VarLister () : l(new POSList()) {  }
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
-		vars.insert(self);
+		if (vars.find(self) == vars.end()) {
+		    vars.insert(self);
+		    l->push_back(self);
+		}
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
 	};
 
-	struct SerializerWithInjector : public SPARQLSerializer {
-	    SerializerWithInjector (ExprSet* injectFilter) { this->injectFilter = injectFilter; }
-	};
+	VarLister vars;
+	op->express(&vars);
 
-	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
-	if (graph == NULL)
-	    throw std::string("@@haven't written the iterator for SERVICE calls to variables, specifically, SERVICE ").append(m_VarOrIRIref->toString());
+	/* Copy graph pattern for inclusion in a new Select. */
+	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+	op->express(&dup);
+	const Operation* query = new Select(DIST_distinct, vars.l,
+					    new ProductionVector<const DatasetClause*>(),
+					    new WhereClause(dup.last.tableOperation, NULL),
+					    new SolutionModifier(NULL, LIMIT_None, OFFSET_None));
 
-	/* Build the request URL in buffer u. */
-	std::stringstream u;
-	u.setf(std::ios::hex, std::ios::basefield);
-	u.setf(std::ios::uppercase);
+	/* Constrain query with any existing result bindings. */
+	const Operation* rsConstrained = rs->getConstrainedOperation(query);
+	SWWEBagent::Parameter p("query", SWWEBagent::urlEncode((rsConstrained ? rsConstrained : query)->toString()));
+	if (rsConstrained)
+	    delete rsConstrained;
+	delete query;
+	std::string q(SWWEBagent::getURL(service->getLexicalValue(), &p, 1));
 
-	std::string srvc = graph->getLexicalValue();
-	u << srvc;
-	u << (srvc.find_first_of("?") == std::string::npos ? "?" : 
-	      srvc.at(srvc.size()-1) == '&' ? "" : 
-	      "&");
-	u << "query=";
+	if (debugStream != NULL && *(debugStream) != NULL)
+	    **(debugStream) << "Querying <" << service->getLexicalValue() << "> for\n" << q;
 
-	std::string q = "SELECT ";
-	{   /* Build the remote query string (in SPARQL, not form-url-encoded). */
-	    VarLister vars;
-	    m_TableOperation->express(&vars);
-	    const Expression* exp = rs->getFederationExpression(vars.vars, lexicalCompare);
-	    std::string queryPattern;
-	    if (exp) {
-		/* Serialize the pattern with exp in the outer-most graph pattern. */
-		ExprSet rsFilters;
-		rsFilters.push_back(exp);
-		SerializerWithInjector ser(rsFilters.size() > 0 ? &rsFilters : NULL);
-		m_TableOperation->express(&ser);
-		queryPattern = ser.str();
-	    } else {
-		/* Just re-use the one from the vars traversal. */
-		queryPattern = vars.str();
-	    }
-
-	    for (std::set<const POS*>::const_iterator it = vars.vars.begin();
-		 SET_POS_CONSTIT_NE(it, vars.vars.end()); ++it)
-		q.append((*it)->toString()).append(" ");
-	    q += queryPattern;
-	}
-
-	if (db->debugStream != NULL && *(db->debugStream) != NULL)
-	    **(db->debugStream) << "Querying <" << srvc << "> for\n" << q;
-
-	for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
-	    if (*it == ' ')
-		u << '+';
-	    else if ((*it >= 'a' && *it <= 'z') || 
-		     (*it >= 'A' && *it <= 'Z') || 
-		     (*it >= '0' && *it <= '9') || 
-		     *it == '.' || *it == '-' || *it == '_')
-		u << *it;
-	    else if (*it < 0x10)
-		u << "%0" << (unsigned)*it;
-	    else
-		u << '%' << (unsigned)*it;
-	}
-
-	if (db->debugStream != NULL && *(db->debugStream) != NULL)
-	    **(db->debugStream) << "<" << u.str() << ">" << std::endl;
-
-	/* Do an HTTP GET. */
-	std::string s(db->webAgent->get(
-#if REGEX_LIB == SWOb_DISABLED
-#warning "Web agent needs REGEX to parse service URL -- defaulting to http://localhost:8888/sparql"
-				    "localhost", "8888", "/sparql"
-#else /* !REGEX_LIB == SWOb_DISABLED */
-				    u.str().c_str()
-#endif /* !REGEX_LIB == SWOb_DISABLED */
-				    ));
-
-	/* Parse results into a ResultSet. */
+	/* Do an HTTP GET and parse results into a ResultSet. */
+	std::string s(agent->get(q.c_str()));
 	IStreamContext istr(s, IStreamContext::STRING);
-	ResultSet red(posFactory, db->xmlParser, istr);
-	if (db->debugStream != NULL && *(db->debugStream) != NULL)
-	    **(db->debugStream) << " yielded\n" << red;
+	ResultSet red(posFactory, xmlParser, istr);
+	if (debugStream != NULL && *(debugStream) != NULL)
+	    **(debugStream) << " yielded\n" << red;
 
 	/* Join those results against our initial results. */
 	rs->joinIn(&red);
+    }
+    void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
+	if (graph != NULL)
+	    _constructQuery(graph, m_TableOperation, rs, posFactory, db->xmlParser, db->webAgent, db->debugStream);
+	else {
+	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
+	    if (graphVar != NULL) {
+		for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+		    BindingSetConstIterator binding;
+		    const URI* graph;
+		    if ((binding = (*outerRow)->find(graphVar)) != (*outerRow)->end()
+			&& (graph = dynamic_cast<const URI*>(m_VarOrIRIref)) != NULL) {
+			ResultSet* single = (*outerRow)->makeResultSet(posFactory);
+			_constructQuery(graph, m_TableOperation, single, posFactory, db->xmlParser, db->webAgent, db->debugStream);
+			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
+			    rs->insert(outerRow, *innerRow);
+			    single->erase(innerRow);
+			}
+		    } else {
+			// treat like a TypeError; no result
+		    }
+		    delete *outerRow;
+		    outerRow = rs->erase(outerRow);
+		}
+	    } else
+		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
+	}
     }
 
     void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
