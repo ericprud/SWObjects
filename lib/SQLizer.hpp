@@ -22,10 +22,16 @@ namespace w3c_sw {
     class SQLizer : public Expressor {
 
 	class SQLQueryGenerator;
-	class Attachment : public SQLSelect {
+	class Attachment : public AliasedSelect {
 	public:
-	    Attachment (std::string name) : SQLSelect(name) {  }
+	    Attachment (std::string name) : AliasedSelect(name) {  }
 	    virtual ~Attachment () {  }
+	    virtual std::string attachmentString() = 0;
+	    virtual std::string toString (std::string) {
+		std::string ret;
+		ret.append(attachmentString()); ret.append(" AS "); ret.append(name);
+		return ret;
+	    }
 	    virtual void constrain(AliasAttr aattr, SQLQueryGenerator* query) = 0;
 	    virtual AliasAttr getAliasAttr () { FAIL("unbound variable"); }
 	};
@@ -34,9 +40,9 @@ namespace w3c_sw {
 	    AliasAttr aattr;
 	public:
 	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(name), aattr(aattr) {  }
-	    virtual std::string toString (std::string) {
+	    virtual std::string attachmentString () {
 		std::string ret;
-		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr); ret.append(" AS "); ret.append(name);
+		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr);
 		return ret;
 	    }
 	    virtual void constrain (AliasAttr aattr, SQLQueryGenerator* query) {
@@ -48,10 +54,8 @@ namespace w3c_sw {
 	class NullAttachment : public Attachment {
 	public:
 	    NullAttachment (std::string name) : Attachment(name) {  }
-	    virtual std::string toString (std::string) {
-		std::string ret;
-		ret.append("NULL AS "); ret.append(name);
-		return ret;
+	    virtual std::string attachmentString () {
+		return "NULL";
 	    }
 	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
 		FAIL("trying to constrain against a NullAttachment");
@@ -61,9 +65,9 @@ namespace w3c_sw {
 	    int value;
 	public:
 	    IntAttachment (int value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string toString (std::string) {
+	    virtual std::string attachmentString () {
 		std::stringstream ret;
-		ret << value << " AS " << name;
+		ret << value;
 		return ret.str();
 	    }
 	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
@@ -74,9 +78,9 @@ namespace w3c_sw {
 	    float value;
 	public:
 	    FloatAttachment (float value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string toString (std::string) {
+	    virtual std::string attachmentString () {
 		std::stringstream ret;
-		ret << value << " AS " << name;
+		ret << value;
 		return ret.str();
 	    }
 	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
@@ -87,9 +91,9 @@ namespace w3c_sw {
 	    double value;
 	public:
 	    DoubleAttachment (double value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string toString (std::string) {
+	    virtual std::string attachmentString () {
 		std::stringstream ret;
-		ret << value << " AS " << name;
+		ret << value;
 		return ret.str();
 	    }
 	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
@@ -708,10 +712,10 @@ namespace w3c_sw {
 	    mode = MODE_outside;
 	    //curQuery->curJoin = NULL;
 	}
-	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const w3c_sw::Expression*>* p_Constraints) {
 	    p_op->express(this);
 	    mode = MODE_constraint;
-	    for (std::vector<const Expression*>::const_iterator it = p_Constraints->begin();
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Constraints->begin();
 		 it != p_Constraints->end(); ++it)
 		try {
 		    (*it)->express(this);
@@ -761,7 +765,7 @@ namespace w3c_sw {
 		curTableOperation->express(this);
 	    }
 	}
-	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    SQLQueryGenerator* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -771,7 +775,7 @@ namespace w3c_sw {
 	    curTableOperation->express(this);
 	    e_Mode oldMode = mode;
 	    mode = MODE_constraint;
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it)
 		try {
 		    (*it)->express(this);
@@ -911,7 +915,7 @@ namespace w3c_sw {
 	    MARK;
 	    p_POS->express(this);
 	}
-	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
+	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* expressions) {
 	    MARK;
 	    expressions->express(this);
 	}
@@ -929,57 +933,57 @@ namespace w3c_sw {
 	    p_FunctionCall->express(this);
 	}
 	/* Expressions */
-	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
+	virtual void booleanNegation (const BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	    curConstraint = new NegationConstraint(curConstraint);
 	}
-	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {
+	virtual void arithmeticNegation (const ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {
+	virtual void arithmeticInverse (const ArithmeticInverse* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		conj->addConstraint(curConstraint);
 	    }
 	    curConstraint = conj;
 	}
-	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    DisjunctionConstraint* disj = new DisjunctionConstraint();
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		disj->addConstraint(curConstraint);
 	    }
 	    curConstraint = disj;
 	}
-	void _arithOp (std::string sqlOperator, const ProductionVector<const Expression*>* p_Expressions, e_PREC prec) {
+	void _arithOp (std::string sqlOperator, const ProductionVector<const w3c_sw::Expression*>* p_Expressions, e_PREC prec) {
 	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
 		c->push_back(curConstraint);
 	    }
 	    curConstraint = c;
 	}
-	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    _arithOp("+", p_Expressions, PREC_Plus);
 	}
-	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    _arithOp("*", p_Expressions, PREC_Times);
 	}
-	void _boolConstraint (const Expression* p_left, std::string sqlOperator, const Expression* p_right, e_PREC prec) {
+	void _boolConstraint (const w3c_sw::Expression* p_left, std::string sqlOperator, const w3c_sw::Expression* p_right, e_PREC prec) {
 	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
 	    p_left->express(this);
 	    c->push_back(curConstraint);
@@ -987,27 +991,27 @@ namespace w3c_sw {
 	    c->push_back(curConstraint);
 	    curConstraint = c;
 	}
-	virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanEQ (const BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
 	}
-	virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanNE (const BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
 	}
-	virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanLT (const BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "<", p_right, PREC_LT);
 	}
-	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanGT (const BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, ">", p_right, PREC_GT);
 	}
-	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanLE (const BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
 	}
-	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
+	virtual void booleanGE (const BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
 	}

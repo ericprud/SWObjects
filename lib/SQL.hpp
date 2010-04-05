@@ -1,3 +1,6 @@
+#ifndef INCLUDE_SQL_HPP
+ #define INCLUDE_SQL_HPP
+
 namespace w3c_sw {
 
     namespace sql {
@@ -30,6 +33,7 @@ namespace w3c_sw {
 	    virtual ~WhereConstraint () {  }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) = 0;
 	};
+	typedef WhereConstraint Expression;
 	class JunctionConstraint : public WhereConstraint {
 	    std::vector<WhereConstraint*> constraints;
 	public:
@@ -254,12 +258,12 @@ namespace w3c_sw {
 	    virtual ~TableJoin () {  }
 	};
 
-	class SQLSelect {
+	class AliasedSelect {
 	protected:
 	    std::string name;
 	public:
-	    SQLSelect (std::string name) : name(name) {  }
-	    virtual ~SQLSelect () {  }
+	    AliasedSelect (std::string name) : name(name) {  }
+	    virtual ~AliasedSelect () {  }
 	    virtual std::string toString(std::string pad = "") = 0;
 	};
 
@@ -270,7 +274,7 @@ namespace w3c_sw {
 
 	    std::vector<WhereConstraint*> constraints;
 	    std::vector<WhereConstraint*> orderBy;
-	    std::vector<SQLSelect*> selects;
+	    std::vector<AliasedSelect*> selects;
 	    bool distinct;
 	    int limit, offset;
 
@@ -297,7 +301,7 @@ namespace w3c_sw {
 		if (distinct) s << "DISTINCT ";
 
 		/* SELECT attributes */
-		for (std::vector<SQLSelect*>::iterator it = selects.begin();
+		for (std::vector<AliasedSelect*>::iterator it = selects.begin();
 		     it != selects.end(); ++it) {
 		    if (it != selects.begin()) s << ", ";
 		    s << (*it)->toString(pad);
@@ -396,3 +400,4 @@ namespace w3c_sw {
     }
 }
 
+#endif /* !INCLUDE_SQL_HPP */
