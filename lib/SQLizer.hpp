@@ -21,86 +21,6 @@ namespace w3c_sw {
 
     class SQLizer : public Expressor {
 
-	class SQLQueryGenerator;
-	class Attachment : public AliasedSelect {
-	public:
-	    Attachment (std::string name) : AliasedSelect(name) {  }
-	    virtual ~Attachment () {  }
-	    virtual std::string attachmentString() = 0;
-	    virtual std::string toString (std::string) {
-		std::string ret;
-		ret.append(attachmentString()); ret.append(" AS "); ret.append(name);
-		return ret;
-	    }
-	    virtual void constrain(AliasAttr aattr, SQLQueryGenerator* query) = 0;
-	    virtual AliasAttr getAliasAttr () { FAIL("unbound variable"); }
-	};
-
-	class TightAttachment : public Attachment {
-	    AliasAttr aattr;
-	public:
-	    TightAttachment (AliasAttr aattr, std::string name) : Attachment(name), aattr(aattr) {  }
-	    virtual std::string attachmentString () {
-		std::string ret;
-		ret.append(aattr.alias); ret.append("."); ret.append(aattr.attr);
-		return ret;
-	    }
-	    virtual void constrain (AliasAttr aattr, SQLQueryGenerator* query) {
-		query->constrain(aattr, this->aattr);
-	    }
-	    virtual AliasAttr getAliasAttr () { return aattr; }
-	};
-
-	class NullAttachment : public Attachment {
-	public:
-	    NullAttachment (std::string name) : Attachment(name) {  }
-	    virtual std::string attachmentString () {
-		return "NULL";
-	    }
-	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
-		FAIL("trying to constrain against a NullAttachment");
-	    }
-	};
-	class IntAttachment : public Attachment {
-	    int value;
-	public:
-	    IntAttachment (int value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string attachmentString () {
-		std::stringstream ret;
-		ret << value;
-		return ret.str();
-	    }
-	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
-		FAIL1("trying to constrain against a IntAttachment %d", value);
-	    }
-	};
-	class FloatAttachment : public Attachment {
-	    float value;
-	public:
-	    FloatAttachment (float value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string attachmentString () {
-		std::stringstream ret;
-		ret << value;
-		return ret.str();
-	    }
-	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
-		FAIL1("trying to constrain against a FloatAttachment %f", value);
-	    }
-	};
-	class DoubleAttachment : public Attachment {
-	    double value;
-	public:
-	    DoubleAttachment (double value, std::string name) : Attachment(name), value(value) {  }
-	    virtual std::string attachmentString () {
-		std::stringstream ret;
-		ret << value;
-		return ret.str();
-	    }
-	    virtual void constrain (AliasAttr, SQLQueryGenerator*) {
-		FAIL1("trying to constrain against a DoubleAttachment %f", value);
-	    }
-	};
-
 	class SQLOptionalGenerator;
 	class SQLUnionGenerator;
 	class SQLQueryGenerator {
@@ -109,7 +29,7 @@ namespace w3c_sw {
 	protected:
 	    SQLQuery query;
 	    SQLQueryGenerator* parent;
-	    std::map<std::string, Attachment*> attachments;
+	    std::map<std::string, sql::Expression*> attachments;
 
 	    std::map<const POS*, std::map<std::string, Join*> > aliasMap;
 	    std::set<std::string> usedAliases;
@@ -120,47 +40,47 @@ namespace w3c_sw {
 	public:
 	    SQLQueryGenerator (SQLQueryGenerator* parent) : parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
 	    ~SQLQueryGenerator () {
-		for (std::map<std::string, Attachment*>::iterator iAttachments = attachments.begin();
-		     iAttachments != attachments.end(); ++iAttachments)
-		    delete iAttachments->second;
+		for (std::map<std::string, sql::Expression*>::iterator iExpressions = attachments.begin();
+		     iExpressions != attachments.end(); ++iExpressions)
+		    delete iExpressions->second;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
-		std::map<std::string, Attachment*>::iterator it = attachments.find(lexicalValue);
+		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    attachments[lexicalValue] = new TightAttachment(aattr, lexicalValue);
+		    attachments[lexicalValue] = new AliasAttrConstraint(aattr);
 		else
-		    attachments[lexicalValue]->constrain(aattr, this);
+		    constrain(aattr, dynamic_cast<AliasAttrConstraint*>(attachments[lexicalValue])->aattr);
 	    }
-	    AliasAttrConstraint* getVariableConstraint (std::string lexicalValue) {
-		std::map<std::string, Attachment*>::iterator it = attachments.find(lexicalValue);
+	    sql::Expression* getVariableConstraint (std::string lexicalValue) {
+		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
 		    FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
 		else
-		    return new AliasAttrConstraint(it->second->getAliasAttr());
+		    return it->second;
 	    }
 	    void selectVariable (std::string lexicalValue) {
 		if (attachments.find(lexicalValue) == attachments.end())
-		    attachments[lexicalValue] = new NullAttachment(lexicalValue);
+		    attachments[lexicalValue] = new ReallyNullConstraint();
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(attachments[lexicalValue]);
+		query.selects.push_back(new AliasedSelect(attachments[lexicalValue], lexicalValue));
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new IntAttachment(value, alias);
+		    attachments[alias] = new IntConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(attachments[alias]);
+		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    void selectConstant (float value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new FloatAttachment(value, alias);
+		    attachments[alias] = new FloatConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(attachments[alias]);
+		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    void selectConstant (double value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new DoubleAttachment(value, alias);
+		    attachments[alias] = new DoubleConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(attachments[alias]);
+		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {

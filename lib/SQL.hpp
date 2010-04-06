@@ -131,6 +131,13 @@ namespace w3c_sw {
 		return value ? "true" : "false";
 	    }
 	};
+	class ReallyNullConstraint : public WhereConstraint {
+	public:
+	    ReallyNullConstraint () : WhereConstraint() {  }
+	    virtual std::string toString (std::string, e_PREC) {
+		return "NULL";
+	    }
+	};
 	class NullConstraint : public WhereConstraint {
 	    WhereConstraint* pos;
 	public:
@@ -153,6 +160,7 @@ namespace w3c_sw {
 	    }
 	};
 	class AliasAttrConstraint : public WhereConstraint {
+	public: // !!!
 	    AliasAttr aattr;
 	public:
 	    AliasAttrConstraint (AliasAttr aattr) : WhereConstraint(), aattr(aattr) {  }
@@ -260,11 +268,14 @@ namespace w3c_sw {
 
 	class AliasedSelect {
 	protected:
-	    std::string name;
+	    Expression* exp;
+	    std::string alias;
 	public:
-	    AliasedSelect (std::string name) : name(name) {  }
+	    AliasedSelect (Expression* exp, std::string alias) : exp(exp), alias(alias) {  }
 	    virtual ~AliasedSelect () {  }
-	    virtual std::string toString(std::string pad = "") = 0;
+	    std::string toString (std::string pad = "") {
+		return exp->toString(pad) + " AS " + alias;
+	    }
 	};
 
 	class SQLQuery {
