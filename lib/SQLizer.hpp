@@ -866,7 +866,7 @@ namespace w3c_sw {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const w3c_sw::BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
@@ -911,35 +911,35 @@ namespace w3c_sw {
 	    c->push_back(curConstraint);
 	    curConstraint = c;
 	}
-	virtual void booleanEQ (const BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanEQ (const w3c_sw::BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
 	}
-	virtual void booleanNE (const BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanNE (const w3c_sw::BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
 	}
-	virtual void booleanLT (const BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanLT (const w3c_sw::BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "<", p_right, PREC_LT);
 	}
-	virtual void booleanGT (const BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanGT (const w3c_sw::BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, ">", p_right, PREC_GT);
 	}
-	virtual void booleanLE (const BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanLE (const w3c_sw::BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
 	}
-	virtual void booleanGE (const BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanGE (const w3c_sw::BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    MARK;
 	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
 	}
-	virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
+	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::BooleanComparator* p_BooleanComparator) {
 	    MARK;
 	    p_BooleanComparator->express(this);
 	}
-	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
+	virtual void numberExpression (const w3c_sw::NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    MARK;
 	    p_NumericRDFLiteral->express(this);
 	}
