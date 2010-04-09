@@ -598,7 +598,9 @@ namespace w3c_sw {
 	    std::string alias;
 	public:
 	    AliasedSelect (const Expression* exp, std::string alias) : exp(exp), alias(alias) {  }
-	    virtual ~AliasedSelect () {  }
+	    virtual ~AliasedSelect () {
+		delete exp;
+	    }
 	    std::string toString (std::string pad = "") {
 		return exp->toString(pad) + " AS " + alias;
 	    }
@@ -617,7 +619,13 @@ namespace w3c_sw {
 
 	public:
 	    SQLQuery () : distinct(false), limit(-1), offset(-1) {  }
+	    SQLQuery (std::vector<Join*>* joins) : joins(*joins), distinct(false), limit(-1), offset(-1) {  }
 	    virtual ~SQLQuery () {
+
+// 		for (std::vector<AliasedSelect*>::iterator iSelects = selects.begin();
+// 		     iSelects != selects.end(); ++iSelects) {
+// 		    delete *iSelects;
+// 		}
 
 // 		for (std::vector<Join*>::iterator iJoins = joins.begin();
 // 		     iJoins != joins.end(); ++iJoins) {
@@ -689,21 +697,26 @@ namespace w3c_sw {
 	    std::vector<SQLQuery*> disjoints;
 	public:
 	    SQLUnion () {  }
-	    virtual ~SQLUnion ();
-	    virtual std::string toString(std::string pad = "");
-	};
-
-	std::string SQLUnion::toString (std::string pad) {
-	    std::stringstream s;
-	    std::string newPad = pad + "    ";
-	    for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
-		 it != disjoints.end(); ++it) {
-		if (it != disjoints.begin())
-		    s << std::endl << pad << "  UNION" << std::endl;
-		s << (*it)->toString(newPad);
+	    virtual ~SQLUnion () {
+		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
+		     it != disjoints.end(); ++it)	
+		    delete *it;
 	    }
-	    return s.str();
-	}
+
+
+	    virtual std::string toString (std::string pad = "") {
+		std::stringstream s;
+		std::string newPad = pad + "    ";
+		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
+		     it != disjoints.end(); ++it) {
+		    if (it != disjoints.begin())
+			s << std::endl << pad << "  UNION" << std::endl;
+		    s << (*it)->toString(newPad);
+		}
+		return s.str();
+	    }
+
+	};
 
 	class SubqueryJoin : public Join {
 	    SQLQuery* subquery;
@@ -727,12 +740,6 @@ namespace w3c_sw {
 		return SQLQuery::toString(newPad);
 	    }
 	};
-
-	SQLUnion::~SQLUnion () {
-	    for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
-		 it != disjoints.end(); ++it)	
-	delete *it;
-	}
 
     }
 }
