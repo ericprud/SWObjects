@@ -82,6 +82,7 @@ namespace w3c_sw {
 			f.type = Field::TYPE_string;
 			break;
 		    case MYSQL_TYPE_VARCHAR:
+		    case MYSQL_TYPE_BLOB:
 		    case MYSQL_TYPE_VAR_STRING:
 			f.type = Field::TYPE__literal;
 			break;
