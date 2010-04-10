@@ -83,6 +83,7 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
  * (or include config.h manually) */
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
+#define VALIDATION_ERROR error
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include <boost/regex.hpp>
@@ -466,9 +467,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     }
 
     bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
-	const sw::Operation* delMe(NULL);
 	language = "SPARQL";
-	delMe = rs.getConstrainedOperation(query);
+	const sw::Operation* delMe = rs.getConstrainedOperation(query);
 	if (delMe != NULL)
 	    query = delMe;
 
@@ -763,7 +763,7 @@ void validate (boost::any&, const std::vector<std::string>& values, queryString*
     const std::string& s = po::validators::get_single_string(values);
     if (Query != NULL)
 	throw boost::program_options
-	    ::validation_error(std::string("query string: \"").
+	    ::VALIDATION_ERROR(std::string("query string: \"").
 			       append(s).append("\" is redundant against ").
 			       append(Query->getLexicalValue()));
     Query = F.getRDFLiteral(s);
@@ -777,7 +777,7 @@ void validate (boost::any&, const std::vector<std::string>& values, serveURI*, i
     const std::string& s = po::validators::get_single_string(values);
     if (!ServerURI.empty())
 	throw boost::program_options
-	    ::validation_error(std::string("unable to serve \"").
+	    ::VALIDATION_ERROR(std::string("unable to serve \"").
 			       append(s).append("\" and ").
 			       append(ServerURI));
     ServerURI = s;
@@ -808,7 +808,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	else if (!s.compare("sparqlx"))
 	    DataMediaType = "application/sparql-results+xml";
 	else {
-	    throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
+	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
 	if (Debug > 0) {
 	    if (!DataMediaType)
@@ -831,7 +831,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    && s.compare("application/rdf+xml")
 	    && s.compare("application/sparql-results+xml"))
 	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
-	    // throw boost::program_options::validation_error(std::string("invalid value: \"").append(s).append("\""));
+	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	DataMediaType = s;
 	if (Debug > 0) {
 	    if (!DataMediaType)
@@ -984,7 +984,7 @@ HeaderPair parseHeaderPair (const std::vector<std::string>& values)
     const std::string& s = po::validators::get_single_string(values);
     size_t pos = s.find_first_of(':');
     if (pos == std::string::npos)
-	throw boost::program_options::validation_error(std::string("no ':' found in HTTP header pair \"").append(s).append("\""));
+	throw boost::program_options::VALIDATION_ERROR(std::string("no ':' found in HTTP header pair \"").append(s).append("\""));
     return HeaderPair(s.substr(0, pos), s.substr(pos+2));
 }
 struct headerAssign {};
@@ -1026,7 +1026,7 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
 	    TheServer.SQLPort = matches[5];
 	TheServer.SQLDatabase = matches[6];
     } else { 
-	throw boost::program_options::validation_error(s + " did not match expression " + odbcPattern.str());
+	throw boost::program_options::VALIDATION_ERROR(s + " did not match expression " + odbcPattern.str());
     }
 
 }
