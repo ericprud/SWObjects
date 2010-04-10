@@ -1,6 +1,10 @@
 #ifndef INCLUDE_SQL_HPP
  #define INCLUDE_SQL_HPP
 
+#include <string>
+#include <sstream>
+#include <vector>
+
 namespace w3c_sw {
 
     namespace sql {
