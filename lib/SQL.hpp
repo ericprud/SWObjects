@@ -59,6 +59,7 @@ namespace w3c_sw {
 	public:
 	    WhereConstraint () {  }
 	    virtual ~WhereConstraint () {  }
+	    std::string str () const { return toString("", PREC_High); }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
@@ -93,6 +94,11 @@ namespace w3c_sw {
 	    JunctionConstraint (const Expression* l, const Expression* r) : WhereConstraint(), constraints() {
 		constraints.push_back(l);
 		constraints.push_back(r);
+	    }
+	    ~JunctionConstraint () {
+		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); it++)
+		    delete *it;
 	    }
 	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
@@ -461,6 +467,11 @@ namespace w3c_sw {
 	    std::vector<const Expression*> args;
 	public:
 	    ConcatConstraint (std::vector<const Expression*>* args) : WhereConstraint(), args(*args) {  }
+	    ~ConcatConstraint () {
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); ++it)
+		    delete *it;
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ConcatConstraint& l) const {
 		return l.args == args; // @@ does this compare by ref? by val?
@@ -611,8 +622,8 @@ namespace w3c_sw {
 
 	    std::vector<Join*> joins;
 
-	    std::vector<WhereConstraint*> constraints;
-	    std::vector<WhereConstraint*> orderBy;
+	    std::vector<const WhereConstraint*> constraints;
+	    std::vector<const WhereConstraint*> orderBy;
 	    std::vector<AliasedSelect*> selects;
 	    bool distinct;
 	    int limit, offset;
@@ -622,23 +633,23 @@ namespace w3c_sw {
 	    SQLQuery (std::vector<Join*>* joins) : joins(*joins), distinct(false), limit(-1), offset(-1) {  }
 	    virtual ~SQLQuery () {
 
-// 		for (std::vector<AliasedSelect*>::iterator iSelects = selects.begin();
-// 		     iSelects != selects.end(); ++iSelects) {
-// 		    delete *iSelects;
-// 		}
+		for (std::vector<AliasedSelect*>::iterator iSelects = selects.begin();
+		     iSelects != selects.end(); ++iSelects) {
+		    delete *iSelects;
+		}
 
-// 		for (std::vector<Join*>::iterator iJoins = joins.begin();
-// 		     iJoins != joins.end(); ++iJoins) {
-// 		    delete *iJoins;
-// 		}
+		for (std::vector<Join*>::iterator iJoins = joins.begin();
+		     iJoins != joins.end(); ++iJoins) {
+		    delete *iJoins;
+		}
 
-// 		for (std::vector<WhereConstraint*>::iterator iConstraints = constraints.begin();
-// 		     iConstraints != constraints.end(); ++iConstraints)
-// 		    delete *iConstraints;
+		for (std::vector<const WhereConstraint*>::iterator iConstraints = constraints.begin();
+		     iConstraints != constraints.end(); ++iConstraints)
+		    delete *iConstraints;
 
-// 		for (std::vector<WhereConstraint*>::iterator iOrderBy = orderBy.begin();
-// 		     iOrderBy != orderBy.end(); ++iOrderBy)
-// 		    delete *iOrderBy;
+		for (std::vector<const WhereConstraint*>::iterator iOrderBy = orderBy.begin();
+		     iOrderBy != orderBy.end(); ++iOrderBy)
+		    delete *iOrderBy;
 	    }
 	    virtual std::string toString (std::string pad = "") {
 		std::stringstream s;
@@ -663,7 +674,7 @@ namespace w3c_sw {
 			s << (*it)->toString(NULL, pad);
 
 		/* WHERE */
-		for (std::vector<WhereConstraint*>::iterator it = constraints.begin();
+		for (std::vector<const WhereConstraint*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (where.length() != 0)
 			where += " AND ";
@@ -676,7 +687,7 @@ namespace w3c_sw {
 		/* ORDER BY */
 		if (orderBy.begin() != orderBy.end()) {
 		    s << std::endl << pad << " ORDER BY ";
-		    for (std::vector<WhereConstraint*>::iterator it = orderBy.begin();
+		    for (std::vector<const WhereConstraint*>::iterator it = orderBy.begin();
 			 it != orderBy.end(); ++it) {
 			if (it != orderBy.begin())
 			    s << ", ";
