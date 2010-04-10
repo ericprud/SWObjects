@@ -39,11 +39,7 @@ namespace w3c_sw {
 
 	public:
 	    SQLQueryGenerator (SQLQueryGenerator* parent) : parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
-	    ~SQLQueryGenerator () {
-		for (std::map<std::string, sql::Expression*>::iterator iExpressions = attachments.begin();
-		     iExpressions != attachments.end(); ++iExpressions)
-		    delete iExpressions->second;
-	    }
+	    ~SQLQueryGenerator () {  }
 	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
@@ -313,7 +309,7 @@ namespace w3c_sw {
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
 	{  }
-	~SQLizer () { delete curQuery; }
+	~SQLizer () {  }
 
 	std::string getSQLstring () { return curQuery->query.toString(); }
 
