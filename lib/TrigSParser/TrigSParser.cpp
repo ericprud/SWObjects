@@ -60,7 +60,7 @@
  * object. it defines the yylex() function call to pull the next token from the
  * current lexer object of the driver context. */
 #undef yylex
-#define yylex driver.lexer->lex
+#define yylex driver.lexer->lexWrapper
 
 #include "RdfDB.hpp"
 

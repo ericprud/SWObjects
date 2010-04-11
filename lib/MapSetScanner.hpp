@@ -52,6 +52,18 @@ public:
 	MapSetParser::semantic_type* yylval,
 	MapSetParser::location_type* yylloc
 	);
+    MapSetParser::token_type lexWrapper(
+	   MapSetParser::semantic_type* yylval,
+	   MapSetParser::location_type* yylloc
+					   ) {
+	try {
+	    return lex(yylval, yylloc);
+	} catch (const char* e) {
+	    std::stringstream s;
+	    s << *yylloc << ": " << e;
+	    throw s.str();
+	}
+    }
 
     /** Enable debug output (via arg_yyout) if compiled into the scanner. */
     void set_debug(bool b);
