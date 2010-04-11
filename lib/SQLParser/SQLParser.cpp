@@ -33,7 +33,7 @@
    version 2.2 of Bison.  */
 
 // Take the name prefix into account.
-#define yylex   sql_parserlex
+#define yylex   w3c_swlex
 
 /* First part of user declarations.  */
 
@@ -47,12 +47,12 @@
 /* User implementation prologue.  */
 
 /* Line 317 of lalr1.cc  */
-#line 182 "lib/SQLParser/SQLParser.ypp"
+#line 172 "lib/SQLParser/SQLParser.ypp"
 
 #include "SQLScanner.hpp"
 
 /* Line 317 of lalr1.cc  */
-#line 242 "lib/SQLParser/SQLParser.ypp"
+#line 232 "lib/SQLParser/SQLParser.ypp"
 
 #include <stdarg.h>
 #include "SQL.hpp"
@@ -132,7 +132,7 @@ do {					\
 /* Line 380 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /* Line 380 of lalr1.cc  */
 #line 139 "lib/SQLParser/SQLParser.cpp"
@@ -178,7 +178,7 @@ namespace sql_parser {
 #endif
 
   /// Build a parser object.
-  sqlParser::sqlParser (class Driver& driver_yyarg)
+  sqlParser::sqlParser (class SQLDriver& driver_yyarg)
     :
 #if YYDEBUG
       yydebug_ (false),
@@ -438,7 +438,7 @@ namespace sql_parser {
 	  case 2:
 
 /* Line 678 of lalr1.cc  */
-#line 258 "lib/SQLParser/SQLParser.ypp"
+#line 248 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Selects)->size() > 0) {
 	    sql::SQLUnion* u = new sql::SQLUnion();
@@ -456,7 +456,7 @@ namespace sql_parser {
   case 3:
 
 /* Line 678 of lalr1.cc  */
-#line 273 "lib/SQLParser/SQLParser.ypp"
+#line 263 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Select) = (yysemantic_stack_[(2) - (2)].p_Select);
 }
@@ -465,7 +465,7 @@ namespace sql_parser {
   case 4:
 
 /* Line 678 of lalr1.cc  */
-#line 279 "lib/SQLParser/SQLParser.ypp"
+#line 269 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Selects) = new std::vector<sql::SQLQuery*>();
 }
@@ -474,7 +474,7 @@ namespace sql_parser {
   case 5:
 
 /* Line 678 of lalr1.cc  */
-#line 283 "lib/SQLParser/SQLParser.ypp"
+#line 273 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_Selects)->push_back((yysemantic_stack_[(2) - (2)].p_Select));
     (yyval.p_Selects) = (yysemantic_stack_[(2) - (1)].p_Selects);
@@ -484,7 +484,7 @@ namespace sql_parser {
   case 6:
 
 /* Line 678 of lalr1.cc  */
-#line 290 "lib/SQLParser/SQLParser.ypp"
+#line 280 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.root = (yyval.p_Select) = new sql::SQLQuery((yysemantic_stack_[(3) - (3)].p_TableList).joins);
 	delete (yysemantic_stack_[(3) - (3)].p_TableList).joins;
@@ -502,7 +502,7 @@ namespace sql_parser {
   case 7:
 
 /* Line 678 of lalr1.cc  */
-#line 305 "lib/SQLParser/SQLParser.ypp"
+#line 295 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -511,7 +511,7 @@ namespace sql_parser {
   case 8:
 
 /* Line 678 of lalr1.cc  */
-#line 311 "lib/SQLParser/SQLParser.ypp"
+#line 301 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = NULL;
 }
@@ -520,7 +520,7 @@ namespace sql_parser {
   case 10:
 
 /* Line 678 of lalr1.cc  */
-#line 319 "lib/SQLParser/SQLParser.ypp"
+#line 309 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = (yysemantic_stack_[(3) - (2)].p_TableList).joins;
 	(yyval.p_TableList).exprs = (yysemantic_stack_[(3) - (2)].p_TableList).exprs;
@@ -532,7 +532,7 @@ namespace sql_parser {
   case 11:
 
 /* Line 678 of lalr1.cc  */
-#line 328 "lib/SQLParser/SQLParser.ypp"
+#line 318 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_TableList).joins = new std::vector<sql::Join*>();;
     (yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();;
@@ -542,7 +542,7 @@ namespace sql_parser {
   case 13:
 
 /* Line 678 of lalr1.cc  */
-#line 337 "lib/SQLParser/SQLParser.ypp"
+#line 327 "lib/SQLParser/SQLParser.ypp"
     {
 	// no $2->push_front($1);
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
@@ -558,7 +558,7 @@ namespace sql_parser {
   case 14:
 
 /* Line 678 of lalr1.cc  */
-#line 348 "lib/SQLParser/SQLParser.ypp"
+#line 338 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
 }
@@ -567,7 +567,7 @@ namespace sql_parser {
   case 15:
 
 /* Line 678 of lalr1.cc  */
-#line 354 "lib/SQLParser/SQLParser.ypp"
+#line 344 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AliasedSelect) = (yysemantic_stack_[(2) - (2)].p_AliasedSelect);
 }
@@ -576,7 +576,7 @@ namespace sql_parser {
   case 16:
 
 /* Line 678 of lalr1.cc  */
-#line 360 "lib/SQLParser/SQLParser.ypp"
+#line 350 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
 }
@@ -585,7 +585,7 @@ namespace sql_parser {
   case 17:
 
 /* Line 678 of lalr1.cc  */
-#line 364 "lib/SQLParser/SQLParser.ypp"
+#line 354 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_AttributeList)->push_back((yysemantic_stack_[(2) - (2)].p_AliasedSelect));
     (yyval.p_AttributeList) = (yysemantic_stack_[(2) - (1)].p_AttributeList);
@@ -595,7 +595,7 @@ namespace sql_parser {
   case 18:
 
 /* Line 678 of lalr1.cc  */
-#line 371 "lib/SQLParser/SQLParser.ypp"
+#line 361 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AliasedSelect) = new sql::AliasedSelect((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_NAME) ? *(yysemantic_stack_[(2) - (2)].p_NAME) : (yysemantic_stack_[(2) - (1)].p_Expression)->toString());
 	delete (yysemantic_stack_[(2) - (2)].p_NAME);
@@ -605,7 +605,7 @@ namespace sql_parser {
   case 19:
 
 /* Line 678 of lalr1.cc  */
-#line 378 "lib/SQLParser/SQLParser.ypp"
+#line 368 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
 }
@@ -614,7 +614,7 @@ namespace sql_parser {
   case 20:
 
 /* Line 678 of lalr1.cc  */
-#line 384 "lib/SQLParser/SQLParser.ypp"
+#line 374 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = NULL;
 }
@@ -623,7 +623,7 @@ namespace sql_parser {
   case 21:
 
 /* Line 678 of lalr1.cc  */
-#line 388 "lib/SQLParser/SQLParser.ypp"
+#line 378 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
 }
@@ -632,7 +632,7 @@ namespace sql_parser {
   case 22:
 
 /* Line 678 of lalr1.cc  */
-#line 394 "lib/SQLParser/SQLParser.ypp"
+#line 384 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(*(yysemantic_stack_[(3) - (1)].p_NAME), *(yysemantic_stack_[(3) - (3)].p_NAME)));
 	delete (yysemantic_stack_[(3) - (1)].p_NAME);
@@ -643,7 +643,7 @@ namespace sql_parser {
   case 25:
 
 /* Line 678 of lalr1.cc  */
-#line 410 "lib/SQLParser/SQLParser.ypp"
+#line 400 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = new std::vector<sql::Join*>();
 	(yyval.p_TableList).joins->push_back((yysemantic_stack_[(2) - (1)].p_tableAlias).relation != NULL
@@ -662,7 +662,7 @@ namespace sql_parser {
   case 26:
 
 /* Line 678 of lalr1.cc  */
-#line 426 "lib/SQLParser/SQLParser.ypp"
+#line 416 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -671,7 +671,7 @@ namespace sql_parser {
   case 27:
 
 /* Line 678 of lalr1.cc  */
-#line 432 "lib/SQLParser/SQLParser.ypp"
+#line 422 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = NULL;
 }
@@ -680,7 +680,7 @@ namespace sql_parser {
   case 28:
 
 /* Line 678 of lalr1.cc  */
-#line 436 "lib/SQLParser/SQLParser.ypp"
+#line 426 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(1) - (1)].p_Expression);
 }
@@ -689,7 +689,7 @@ namespace sql_parser {
   case 29:
 
 /* Line 678 of lalr1.cc  */
-#line 442 "lib/SQLParser/SQLParser.ypp"
+#line 432 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (3)].p_tableAlias).relation != NULL) {
 	    (yyval.p_JoinExpression).join = new sql::TableJoin(*(yysemantic_stack_[(4) - (3)].p_tableAlias).relation, *(yysemantic_stack_[(4) - (3)].p_tableAlias).alias, false);
@@ -705,7 +705,7 @@ namespace sql_parser {
   case 30:
 
 /* Line 678 of lalr1.cc  */
-#line 455 "lib/SQLParser/SQLParser.ypp"
+#line 445 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = new std::vector<sql::Join*>();
 	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();
@@ -715,7 +715,7 @@ namespace sql_parser {
   case 31:
 
 /* Line 678 of lalr1.cc  */
-#line 460 "lib/SQLParser/SQLParser.ypp"
+#line 450 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_TableList).joins->push_back((yysemantic_stack_[(2) - (2)].p_JoinExpression).join);
     if ((yysemantic_stack_[(2) - (2)].p_JoinExpression).expr != NULL)
@@ -727,7 +727,7 @@ namespace sql_parser {
   case 32:
 
 /* Line 678 of lalr1.cc  */
-#line 469 "lib/SQLParser/SQLParser.ypp"
+#line 459 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = (yysemantic_stack_[(2) - (1)].p_NAME);
 	(yyval.p_tableAlias).subselect = NULL;
@@ -738,7 +738,7 @@ namespace sql_parser {
   case 33:
 
 /* Line 678 of lalr1.cc  */
-#line 474 "lib/SQLParser/SQLParser.ypp"
+#line 464 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = NULL;
 	(yyval.p_tableAlias).subselect = (yysemantic_stack_[(5) - (2)].p_Select);
@@ -749,7 +749,7 @@ namespace sql_parser {
   case 34:
 
 /* Line 678 of lalr1.cc  */
-#line 482 "lib/SQLParser/SQLParser.ypp"
+#line 472 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
 }
@@ -758,7 +758,7 @@ namespace sql_parser {
   case 35:
 
 /* Line 678 of lalr1.cc  */
-#line 488 "lib/SQLParser/SQLParser.ypp"
+#line 478 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = NULL;
 }
@@ -767,7 +767,7 @@ namespace sql_parser {
   case 36:
 
 /* Line 678 of lalr1.cc  */
-#line 492 "lib/SQLParser/SQLParser.ypp"
+#line 482 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
 }
@@ -776,7 +776,7 @@ namespace sql_parser {
   case 38:
 
 /* Line 678 of lalr1.cc  */
-#line 503 "lib/SQLParser/SQLParser.ypp"
+#line 493 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    sql::JunctionConstraint* t = new sql::DisjunctionConstraint();
@@ -794,7 +794,7 @@ namespace sql_parser {
   case 39:
 
 /* Line 678 of lalr1.cc  */
-#line 519 "lib/SQLParser/SQLParser.ypp"
+#line 509 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -803,7 +803,7 @@ namespace sql_parser {
   case 40:
 
 /* Line 678 of lalr1.cc  */
-#line 526 "lib/SQLParser/SQLParser.ypp"
+#line 516 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -812,7 +812,7 @@ namespace sql_parser {
   case 41:
 
 /* Line 678 of lalr1.cc  */
-#line 529 "lib/SQLParser/SQLParser.ypp"
+#line 519 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -822,7 +822,7 @@ namespace sql_parser {
   case 42:
 
 /* Line 678 of lalr1.cc  */
-#line 537 "lib/SQLParser/SQLParser.ypp"
+#line 527 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    sql::JunctionConstraint* t = new sql::ConjunctionConstraint();
@@ -840,7 +840,7 @@ namespace sql_parser {
   case 43:
 
 /* Line 678 of lalr1.cc  */
-#line 553 "lib/SQLParser/SQLParser.ypp"
+#line 543 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -849,7 +849,7 @@ namespace sql_parser {
   case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 560 "lib/SQLParser/SQLParser.ypp"
+#line 550 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -858,7 +858,7 @@ namespace sql_parser {
   case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 563 "lib/SQLParser/SQLParser.ypp"
+#line 553 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -868,7 +868,7 @@ namespace sql_parser {
   case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 575 "lib/SQLParser/SQLParser.ypp"
+#line 565 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) {
 	    (yysemantic_stack_[(2) - (2)].p_BooleanComparator)->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
@@ -881,7 +881,7 @@ namespace sql_parser {
   case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 586 "lib/SQLParser/SQLParser.ypp"
+#line 576 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -890,7 +890,7 @@ namespace sql_parser {
   case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 589 "lib/SQLParser/SQLParser.ypp"
+#line 579 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -899,7 +899,7 @@ namespace sql_parser {
   case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 592 "lib/SQLParser/SQLParser.ypp"
+#line 582 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -908,7 +908,7 @@ namespace sql_parser {
   case 51:
 
 /* Line 678 of lalr1.cc  */
-#line 595 "lib/SQLParser/SQLParser.ypp"
+#line 585 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -917,7 +917,7 @@ namespace sql_parser {
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 598 "lib/SQLParser/SQLParser.ypp"
+#line 588 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_BooleanComparator) = new sql::BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -926,7 +926,7 @@ namespace sql_parser {
   case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 601 "lib/SQLParser/SQLParser.ypp"
+#line 591 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -935,7 +935,7 @@ namespace sql_parser {
   case 54:
 
 /* Line 678 of lalr1.cc  */
-#line 608 "lib/SQLParser/SQLParser.ypp"
+#line 598 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = NULL;
     }
@@ -944,7 +944,7 @@ namespace sql_parser {
   case 57:
 
 /* Line 678 of lalr1.cc  */
-#line 621 "lib/SQLParser/SQLParser.ypp"
+#line 611 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0
 	    ? NULL // !!! new sql::ArithmeticSum($1, $2)
@@ -957,7 +957,7 @@ namespace sql_parser {
   case 58:
 
 /* Line 678 of lalr1.cc  */
-#line 632 "lib/SQLParser/SQLParser.ypp"
+#line 622 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -966,7 +966,7 @@ namespace sql_parser {
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 635 "lib/SQLParser/SQLParser.ypp"
+#line 625 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::ArithmeticNegation($2);
     }
@@ -975,7 +975,7 @@ namespace sql_parser {
   case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 638 "lib/SQLParser/SQLParser.ypp"
+#line 628 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::NumberExpression($1);
     }
@@ -984,7 +984,7 @@ namespace sql_parser {
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 641 "lib/SQLParser/SQLParser.ypp"
+#line 631 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::NumberExpression($1);
     }
@@ -993,7 +993,7 @@ namespace sql_parser {
   case 62:
 
 /* Line 678 of lalr1.cc  */
-#line 648 "lib/SQLParser/SQLParser.ypp"
+#line 638 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1002,7 +1002,7 @@ namespace sql_parser {
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 651 "lib/SQLParser/SQLParser.ypp"
+#line 641 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1012,7 +1012,7 @@ namespace sql_parser {
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 659 "lib/SQLParser/SQLParser.ypp"
+#line 649 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? NULL : (yysemantic_stack_[(2) - (1)].p_Expression); // !!! new sql::ArithmeticProduct($1, $2) : $1;
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -1023,7 +1023,7 @@ namespace sql_parser {
   case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 668 "lib/SQLParser/SQLParser.ypp"
+#line 658 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1032,7 +1032,7 @@ namespace sql_parser {
   case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 671 "lib/SQLParser/SQLParser.ypp"
+#line 661 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::ArithmeticInverse($2);
     }
@@ -1041,7 +1041,7 @@ namespace sql_parser {
   case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 678 "lib/SQLParser/SQLParser.ypp"
+#line 668 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1050,7 +1050,7 @@ namespace sql_parser {
   case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 681 "lib/SQLParser/SQLParser.ypp"
+#line 671 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1060,7 +1060,7 @@ namespace sql_parser {
   case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 688 "lib/SQLParser/SQLParser.ypp"
+#line 678 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::BooleanNegation($2);
     }
@@ -1069,7 +1069,7 @@ namespace sql_parser {
   case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 691 "lib/SQLParser/SQLParser.ypp"
+#line 681 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1078,7 +1078,7 @@ namespace sql_parser {
   case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 694 "lib/SQLParser/SQLParser.ypp"
+#line 684 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // !! new sql::ArithmeticNegation($2);
     }
@@ -1087,7 +1087,7 @@ namespace sql_parser {
   case 79:
 
 /* Line 678 of lalr1.cc  */
-#line 710 "lib/SQLParser/SQLParser.ypp"
+#line 700 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
 }
@@ -1096,7 +1096,7 @@ namespace sql_parser {
   case 80:
 
 /* Line 678 of lalr1.cc  */
-#line 716 "lib/SQLParser/SQLParser.ypp"
+#line 706 "lib/SQLParser/SQLParser.ypp"
     {
 	std::vector<const sql::Expression*> args;
 	args.push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1111,7 +1111,7 @@ namespace sql_parser {
   case 81:
 
 /* Line 678 of lalr1.cc  */
-#line 727 "lib/SQLParser/SQLParser.ypp"
+#line 717 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::RegexConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression));
     }
@@ -1120,7 +1120,7 @@ namespace sql_parser {
   case 82:
 
 /* Line 678 of lalr1.cc  */
-#line 733 "lib/SQLParser/SQLParser.ypp"
+#line 723 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -1129,7 +1129,7 @@ namespace sql_parser {
   case 83:
 
 /* Line 678 of lalr1.cc  */
-#line 739 "lib/SQLParser/SQLParser.ypp"
+#line 729 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
 }
@@ -1138,7 +1138,7 @@ namespace sql_parser {
   case 84:
 
 /* Line 678 of lalr1.cc  */
-#line 743 "lib/SQLParser/SQLParser.ypp"
+#line 733 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
     (yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1644,17 +1644,17 @@ namespace sql_parser {
   const unsigned short int
   sqlParser::yyrline_[] =
   {
-         0,   258,   258,   273,   279,   283,   290,   305,   311,   315,
-     319,   328,   333,   337,   348,   354,   360,   364,   371,   378,
-     384,   388,   394,   402,   406,   410,   426,   432,   436,   442,
-     455,   460,   469,   474,   482,   488,   492,   498,   503,   519,
-     526,   529,   537,   553,   560,   563,   570,   575,   586,   589,
-     592,   595,   598,   601,   608,   612,   616,   621,   632,   635,
-     638,   641,   648,   651,   659,   668,   671,   678,   681,   688,
-     691,   694,   697,   701,   702,   703,   704,   705,   706,   710,
-     716,   727,   733,   739,   743,   750,   751,   752,   756,   757,
-     758,   762,   763,   764,   768,   769,   770,   774,   775,   779,
-     780,   781,   782
+         0,   248,   248,   263,   269,   273,   280,   295,   301,   305,
+     309,   318,   323,   327,   338,   344,   350,   354,   361,   368,
+     374,   378,   384,   392,   396,   400,   416,   422,   426,   432,
+     445,   450,   459,   464,   472,   478,   482,   488,   493,   509,
+     516,   519,   527,   543,   550,   553,   560,   565,   576,   579,
+     582,   585,   588,   591,   598,   602,   606,   611,   622,   625,
+     628,   631,   638,   641,   649,   658,   661,   668,   671,   678,
+     681,   684,   687,   691,   692,   693,   694,   695,   696,   700,
+     706,   717,   723,   729,   733,   740,   741,   742,   746,   747,
+     748,   752,   753,   754,   758,   759,   760,   764,   765,   769,
+     770,   771,   772
   };
 
   // Print the state stack on the debug stream.
@@ -1748,34 +1748,34 @@ namespace sql_parser {
 /* Line 1054 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-} // sql_parser
+} // w3c_sw
 
 /* Line 1054 of lalr1.cc  */
 #line 1755 "lib/SQLParser/SQLParser.cpp"
 
 
 /* Line 1056 of lalr1.cc  */
-#line 787 "lib/SQLParser/SQLParser.ypp"
+#line 777 "lib/SQLParser/SQLParser.ypp"
  /*** Additional Code ***/
 
-void sql_parser::sqlParser::error(const sqlParser::location_type& l,
+void w3c_sw::sqlParser::error(const sqlParser::location_type& l,
 			    const std::string& m)
 {
     driver.error(l, m);
 }
 
-/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+/* START SQLDriver (@@ stand-alone would allow it to be shared with other parsers */
 
-namespace sql_parser {
+namespace w3c_sw {
 
-Driver::Driver(class sqlContext& _context)
+SQLDriver::SQLDriver(class sqlContext& _context)
     : trace_scanning(false),
       trace_parsing(false),
       context(_context)
 {
 }
 
-bool Driver::parse_stream(std::istream& in, const std::string& sname)
+bool SQLDriver::parse_stream(std::istream& in, const std::string& sname)
 {
     streamname = sname;
 
@@ -1788,19 +1788,7 @@ bool Driver::parse_stream(std::istream& in, const std::string& sname)
     return (parser.parse());
 }
 
-bool Driver::parse_file(const std::string &filename)
-{
-    std::ifstream in(filename.c_str());
-    return parse_stream(in, filename);
-}
-
-bool Driver::parse_string(const std::string &input, const std::string& sname)
-{
-    std::istringstream iss(input);
-    return parse_stream(iss, sname);
-}
-
-void Driver::error(const class location& l,
+void SQLDriver::error(const class location& l,
 		   const std::string& m)
 {
     std::stringstream s;
@@ -1808,12 +1796,12 @@ void Driver::error(const class location& l,
     throw s.str();
 }
 
-void Driver::error(const std::string& m)
+void SQLDriver::error(const std::string& m)
 {
     throw m;
 }
 
-} // namespace sql_parser
+} // namespace w3c_sw
 
-/* END Driver */
+/* END SQLDriver */
 

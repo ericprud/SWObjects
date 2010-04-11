@@ -42,13 +42,18 @@
 /* Line 35 of lalr1.cc  */
 #line 45 "lib/SQLParser/SQLParser.ypp"
  // ##bison2
+/* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
+ * which varies by parser_class_name . Overriding with define specific to
+ * this parser.
+ */
+#endif /* !PARSER_HEADER_H */
+#ifndef SQL_PARSER_HPP
+#define SQL_PARSER_HPP
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <exception>
-#include <cassert>
 #include <string.h>
 #include "SQL.hpp"
 
@@ -76,9 +81,9 @@ public:
 namespace sql = w3c_sw::sql;
 
 
-namespace sql_parser {
+namespace w3c_sw {
 
-/** The Driver class brings together all components. It creates an instance of
+/** The SQLDriver class brings together all components. It creates an instance of
  * the sqlParser and sqlScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
@@ -91,11 +96,11 @@ public:
     }
 };
 
-class Driver
+class SQLDriver
 {
 public:
     /// construct a new parser driver context
-    Driver(sqlContext& context);
+    SQLDriver(sqlContext& context);
 
     /// enable debug output in the flex scanner
     bool trace_scanning;
@@ -113,21 +118,6 @@ public:
      */
     bool parse_stream(std::istream& in,
 		      const std::string& sname = "stream input");
-
-    /** Invoke the scanner and parser on an input string.
-     * @param input	input string
-     * @param sname	stream name for error messages
-     * @return		true if successfully parsed
-     */
-    bool parse_string(const std::string& input,
-		      const std::string& sname = "string stream");
-
-    /** Invoke the scanner and parser on a file. Use parse_stream with a
-     * std::ifstream if detection of file reading errors is required.
-     * @param filename	input file name
-     * @return		true if successfully parsed
-     */
-    bool parse_file(const std::string& filename);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -153,14 +143,14 @@ public:
     typedef struct {sql::Join* join; const sql::Expression* expr;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
-} // namespace sql_parser
+} // namespace w3c_sw
 
 // %} // ##bison1
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 164 "lib/SQLParser/SQLParser.hpp"
+#line 154 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -171,20 +161,20 @@ public:
 /* Line 35 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 178 "lib/SQLParser/SQLParser.hpp"
+#line 168 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
 /* Line 35 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-} // sql_parser
+} // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 188 "lib/SQLParser/SQLParser.hpp"
+#line 178 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -229,10 +219,10 @@ do {							\
 /* Line 35 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 236 "lib/SQLParser/SQLParser.hpp"
+#line 226 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class sqlParser
@@ -244,7 +234,7 @@ namespace sql_parser {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 164 "lib/SQLParser/SQLParser.ypp"
+#line 154 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -265,7 +255,7 @@ namespace sql_parser {
 
 
 /* Line 35 of lalr1.cc  */
-#line 269 "lib/SQLParser/SQLParser.hpp"
+#line 259 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -328,7 +318,7 @@ namespace sql_parser {
     typedef token::yytokentype token_type;
 
     /// Build a parser object.
-    sqlParser (class Driver& driver_yyarg);
+    sqlParser (class SQLDriver& driver_yyarg);
     virtual ~sqlParser ();
 
     /// Parse.
@@ -488,16 +478,16 @@ namespace sql_parser {
     static const token_number_type yyundef_token_;
 
     /* User arguments.  */
-    class Driver& driver;
+    class SQLDriver& driver;
   };
 
 /* Line 35 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-} // sql_parser
+} // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 501 "lib/SQLParser/SQLParser.hpp"
+#line 491 "lib/SQLParser/SQLParser.hpp"
 
 
 

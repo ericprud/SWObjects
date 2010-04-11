@@ -1,26 +1,28 @@
+/* test_SQL.hpp -- 
+ *
+ * Test a SPARQL Parser and algebra serializer against references like
+ *   http://www.sparql.org/validator.html
+ *
+ * $Id: test_SQL.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ */
+
+#define BOOST_TEST_MODULE SQL
+
+#include <iostream>
+#include "config.h"
 #include "SQL.hpp"
 #include "SQLParser/SQLParser.hpp"
 
-int main(int , char** ) {
-    sql_parser::sqlContext context;
-    sql_parser::Driver driver(context);
-//     driver.trace_scanning = true;
-//     driver.trace_parsing = true;
+/* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
+ * (or define BOOST_*_DYN_LINK manually).
+ */
+#include <boost/test/unit_test.hpp>
 
-    // std::stringstream s("SELECT relvar.attr1 AS relvar1Attr1 FROM rel1 AS relvar1");
-    // std::stringstream s("SELECT relvar.attr1 AS relvar1Attr1 FROM rel1 AS relvar1 INNER JOIN rel2 AS relvar2 ON relvar2.attr2=relvar1.attr1");
-//     std::stringstream s("SELECT relvar.attr1 AS relvar1Attr1"
-// 			" FROM rel1 AS relvar1"
-// 			" WHERE relvar1.attr2<relvar1.attr1 AND relvar1.attr2=relvar1.attr1");
-//     std::stringstream s("SELECT CONCAT(\"a\", 1, relvar.attr1) AS relvar1Attr1, \"a\" AS x"
-// 			" FROM rel1 AS relvar1"
-// 			" INNER JOIN rel2 AS relvar2 ON relvar2.attr2=relvar1.attr1"
-// 			" INNER JOIN rel3 AS relvar3 ON relvar3.attr3=relvar2.attr2"
-// 			"            AND (relvar3.attr1!=relvar1.attr1 OR relvar3.attr1=relvar1.attr1)"
-// 			//"LIMIT 3 ORDER BY relvar1Attr1"
-// 			);
-//     std::stringstream s("SELECT 7 8 9");
-//    std::stringstream s(" SELECT _union1.somePerson AS somePerson FROM (  SELECT 1 AS _DISJOINT_) AS _union1");
+using namespace w3c_sw;
+
+BOOST_AUTO_TEST_CASE( SQL1 ) {
+    sqlContext context;
+    SQLDriver driver(context);
     std::stringstream s("SELECT union1.somePerson AS somePerson\n"
 			"       FROM (\n"
 			"    SELECT 1 AS _DISJOINT_, HAS_attr1_gen0.attr1 AS somePerson\n"
@@ -35,18 +37,9 @@ int main(int , char** ) {
 			"                INNER JOIN Names AS PATIENT_name_gen2 ON PATIENT_name_gen2.id=ADMINISTRATION_gen4.name\n"
 			"                INNER JOIN bar AS somePerson ON somePerson.id=PATIENT_name_gen2.patient\n"
 			"             ) AS union1");
-    int result;
-    try {
-	result = driver.parse_stream(s, std::string("-internal string-"));
-	std::cout << "final: " << driver.root->toString() << std::endl;
-	delete driver.root;
-    } catch (std::string msg) {
-	std::cerr << "SQL parser error: " << msg << std::endl;
-	result = -1;
-    } catch (char const* msg) {
-	std::cerr << "ERROR: " << msg << std::endl;
-	result = -1;
-    }
-    return result;
+    int result = driver.parse_stream(s, std::string("-internal string-"));
+    std::cout << "final: " << driver.root->toString() << std::endl;
+    delete driver.root;
+    BOOST_CHECK_EQUAL(result, 0);
 }
 

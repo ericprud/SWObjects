@@ -33,7 +33,7 @@
 
 /**
  ** \file location.hh
- ** Define the sql_parser::location class.
+ ** Define the w3c_sw::location class.
  */
 
 #ifndef BISON_LOCATION_HH
@@ -47,7 +47,7 @@
 /* Line 162 of location.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /* Line 162 of location.cc  */
 #line 54 "lib/SQLParser/location.hh"
@@ -163,7 +163,7 @@ namespace sql_parser {
 /* Line 271 of location.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-} // sql_parser
+} // w3c_sw
 
 /* Line 271 of location.cc  */
 #line 170 "lib/SQLParser/location.hh"

@@ -20,7 +20,7 @@
 %skeleton "lalr1.cc"
 
 /* namespace to enclose parser in */
-%name-prefix="sql_parser"
+%name-prefix="w3c_sw"
 
 /* set the parser's class identifier */
 %define "parser_class_name" "sqlParser"
@@ -36,20 +36,25 @@
 /* The driver is passed by reference to the parser and to the scanner. This
  * provides a simple but effective pure interface, not relying on global
  * variables. */
-%parse-param { class Driver& driver }
+%parse-param { class SQLDriver& driver }
 
 /* verbose error messages */
 %error-verbose
 
 // %{ //  ##bison1
 %code requires { // ##bison2
+/* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
+ * which varies by parser_class_name . Overriding with define specific to
+ * this parser.
+ */
+#endif /* !PARSER_HEADER_H */
+#ifndef SQL_PARSER_HPP
+#define SQL_PARSER_HPP
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <exception>
-#include <cassert>
 #include <string.h>
 #include "SQL.hpp"
 
@@ -77,9 +82,9 @@ public:
 namespace sql = w3c_sw::sql;
 
 
-namespace sql_parser {
+namespace w3c_sw {
 
-/** The Driver class brings together all components. It creates an instance of
+/** The SQLDriver class brings together all components. It creates an instance of
  * the sqlParser and sqlScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
@@ -92,11 +97,11 @@ public:
     }
 };
 
-class Driver
+class SQLDriver
 {
 public:
     /// construct a new parser driver context
-    Driver(sqlContext& context);
+    SQLDriver(sqlContext& context);
 
     /// enable debug output in the flex scanner
     bool trace_scanning;
@@ -114,21 +119,6 @@ public:
      */
     bool parse_stream(std::istream& in,
 		      const std::string& sname = "stream input");
-
-    /** Invoke the scanner and parser on an input string.
-     * @param input	input string
-     * @param sname	stream name for error messages
-     * @return		true if successfully parsed
-     */
-    bool parse_string(const std::string& input,
-		      const std::string& sname = "string stream");
-
-    /** Invoke the scanner and parser on a file. Use parse_stream with a
-     * std::ifstream if detection of file reading errors is required.
-     * @param filename	input file name
-     * @return		true if successfully parsed
-     */
-    bool parse_file(const std::string& filename);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -154,7 +144,7 @@ public:
     typedef struct {sql::Join* join; const sql::Expression* expr;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
-} // namespace sql_parser
+} // namespace w3c_sw
 
 // %} // ##bison1
 } // ##bison2
@@ -786,24 +776,24 @@ String:
 
 %% /*** Additional Code ***/
 
-void sql_parser::sqlParser::error(const sqlParser::location_type& l,
+void w3c_sw::sqlParser::error(const sqlParser::location_type& l,
 			    const std::string& m)
 {
     driver.error(l, m);
 }
 
-/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+/* START SQLDriver (@@ stand-alone would allow it to be shared with other parsers */
 
-namespace sql_parser {
+namespace w3c_sw {
 
-Driver::Driver(class sqlContext& _context)
+SQLDriver::SQLDriver(class sqlContext& _context)
     : trace_scanning(false),
       trace_parsing(false),
       context(_context)
 {
 }
 
-bool Driver::parse_stream(std::istream& in, const std::string& sname)
+bool SQLDriver::parse_stream(std::istream& in, const std::string& sname)
 {
     streamname = sname;
 
@@ -816,19 +806,7 @@ bool Driver::parse_stream(std::istream& in, const std::string& sname)
     return (parser.parse());
 }
 
-bool Driver::parse_file(const std::string &filename)
-{
-    std::ifstream in(filename.c_str());
-    return parse_stream(in, filename);
-}
-
-bool Driver::parse_string(const std::string &input, const std::string& sname)
-{
-    std::istringstream iss(input);
-    return parse_stream(iss, sname);
-}
-
-void Driver::error(const class location& l,
+void SQLDriver::error(const class location& l,
 		   const std::string& m)
 {
     std::stringstream s;
@@ -836,11 +814,11 @@ void Driver::error(const class location& l,
     throw s.str();
 }
 
-void Driver::error(const std::string& m)
+void SQLDriver::error(const std::string& m)
 {
     throw m;
 }
 
-} // namespace sql_parser
+} // namespace w3c_sw
 
-/* END Driver */
+/* END SQLDriver */

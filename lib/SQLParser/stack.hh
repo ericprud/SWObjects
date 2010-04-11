@@ -41,7 +41,7 @@
 /* Line 1067 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /* Line 1067 of lalr1.cc  */
 #line 48 "lib/SQLParser/stack.hh"
@@ -134,7 +134,7 @@ namespace sql_parser {
 /* Line 1153 of lalr1.cc  */
 #line 1 "[Bison:b4_percent_define_default]"
 
-} // sql_parser
+} // w3c_sw
 
 /* Line 1153 of lalr1.cc  */
 #line 141 "lib/SQLParser/stack.hh"

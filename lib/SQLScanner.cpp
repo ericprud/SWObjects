@@ -789,8 +789,8 @@ static yyconst flex_int16_t yy_rule_linenum[46] =
 #include "SQLScanner.hpp"
 
 /* import the parser's token type into a local typedef */
-typedef sql_parser::sqlParser::token token;
-typedef sql_parser::sqlParser::token_type token_type;
+typedef w3c_sw::sqlParser::token token;
+typedef w3c_sw::sqlParser::token_type token_type;
 
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
@@ -2392,7 +2392,7 @@ void sqlfree (void * ptr )
 /* END semantic actions for sql terminals */
 
 /* START sqlScanner */
-namespace sql_parser {
+namespace w3c_sw {
 
 sqlScanner::sqlScanner(std::istream* in,
 		 std::ostream* out)
@@ -2433,7 +2433,7 @@ sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylva
     }
 }
 
-    sqlParser::token_type sqlScanner::unescape (sqlParser::semantic_type*& yylval, sql_parser::location* yylloc, size_t skip, sqlParser::token_type tok){
+    sqlParser::token_type sqlScanner::unescape (sqlParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, sqlParser::token_type tok){
     std::string space;
     for (size_t i = skip; i < yyleng-skip; i++) {
 	if (yytext[i] == '\\') {

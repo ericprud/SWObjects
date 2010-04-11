@@ -9,10 +9,10 @@
 #ifndef YY_DECL
 
 #define	YY_DECL						\
-    sql_parser::sqlParser::token_type				\
-    sql_parser::sqlScanner::lex(				\
-	sql_parser::sqlParser::semantic_type* yylval,		\
-	sql_parser::sqlParser::location_type* yylloc		\
+    w3c_sw::sqlParser::token_type				\
+    w3c_sw::sqlScanner::lex(				\
+	w3c_sw::sqlParser::semantic_type* yylval,		\
+	w3c_sw::sqlParser::location_type* yylloc		\
     )
 #endif
 
@@ -24,7 +24,7 @@
 
 #include "SQLParser/SQLParser.hpp"
 
-namespace sql_parser {
+namespace w3c_sw {
 
 /** sqlScanner is a derived class to add some extra function to the scanner
  * class. Flex itself creates a class named yyFlexLexer, which is renamed using
@@ -55,9 +55,9 @@ public:
     void set_debug(bool b);
 
     sqlParser::token_type typedLiteral(sqlParser::semantic_type*&, sqlParser::token_type tok);
-    sqlParser::token_type unescape(sqlParser::semantic_type*&, sql_parser::location* yylloc, size_t skip, sqlParser::token_type tok);
+    sqlParser::token_type unescape(sqlParser::semantic_type*&, w3c_sw::location* yylloc, size_t skip, sqlParser::token_type tok);
 };
 
-} // namespace sql_parser
+} // namespace w3c_sw
 
 #endif // sqlScanner_H
