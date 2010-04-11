@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE SQL
 
 #include <iostream>
-#include "config.h"
+#include "SWObjects.hpp"
 #include "SQL.hpp"
 #include "SQLParser/SQLParser.hpp"
 
@@ -23,7 +23,7 @@ using namespace w3c_sw;
 BOOST_AUTO_TEST_CASE( SQL1 ) {
     sqlContext context;
     SQLDriver driver(context);
-    std::stringstream s("SELECT union1.somePerson AS somePerson\n"
+    IStreamContext istr("SELECT union1.somePerson AS somePerson\n"
 			"       FROM (\n"
 			"    SELECT 1 AS _DISJOINT_, HAS_attr1_gen0.attr1 AS somePerson\n"
 			"           FROM Patient AS ADMINISTRATION_gen3\n"
@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE( SQL1 ) {
 			"           FROM Patient AS ADMINISTRATION_gen4\n"
 			"                INNER JOIN Names AS PATIENT_name_gen2 ON PATIENT_name_gen2.id=ADMINISTRATION_gen4.name\n"
 			"                INNER JOIN bar AS somePerson ON somePerson.id=PATIENT_name_gen2.patient\n"
-			"             ) AS union1");
-    int result = driver.parse_stream(s, std::string("-internal string-"));
+			"             ) AS union1", IStreamContext::STRING);
+    int result = driver.parse(istr);
     std::cout << "final: " << driver.root->toString() << std::endl;
     delete driver.root;
     BOOST_CHECK_EQUAL(result, 0);

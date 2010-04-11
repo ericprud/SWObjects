@@ -151,7 +151,7 @@ public:
     char const* what() const throw() { 	return msg.c_str(); }
 };
 
-#if (defined(_MSC_VER) && _MSC_VER < 1500)
+#if (defined(_MSC_VER) && _MSC_VER < 15000)
 class OptString {
     bool m_initialized;
     std::string m_str;

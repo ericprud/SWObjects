@@ -1,5 +1,5 @@
-/* $Id: Langname_Scanner.ll,v 1.1 2008/04/06 17:10:46 eric Exp sqlScanner.ll 28 2007-08-20 10:27:39Z tb $ -*- mode: c++ -*- */
-/** \file sqlScanner.ll Define the Flex lexical scanner */
+/* $Id: Langname_Scanner.ll,v 1.1 2008/04/06 17:10:46 eric Exp SQLScanner.ll 28 2007-08-20 10:27:39Z tb $ -*- mode: c++ -*- */
+/** \file SQLScanner.ll Define the Flex lexical scanner */
 
 %{ /*** C/C++ Declarations ***/
 
@@ -12,8 +12,8 @@
 #include "SQLScanner.hpp"
 
 /* import the parser's token type into a local typedef */
-typedef w3c_sw::sqlParser::token token;
-typedef w3c_sw::sqlParser::token_type token_type;
+typedef w3c_sw::SQLParser::token token;
+typedef w3c_sw::SQLParser::token_type token_type;
 
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
@@ -36,8 +36,12 @@ typedef w3c_sw::sqlParser::token_type token_type;
 /* enable c++ scanner class generation */
 %option c++
 
-/* change the name of the scanner class. results in "sqlFlexLexer" */
-%option prefix="sql"
+/* change the name of the scanner class. results in "SQLFlexLexer" */
+%option prefix="SQL"
+/* consider using class instead
+ * %option yyclass="SQLScanner"
+ * void SQLFlexLexer::LexerError( yyconst char msg[] )
+ */
 
 /* the manual says "somewhat more optimized" */
 %option batch
@@ -50,7 +54,7 @@ typedef w3c_sw::sqlParser::token_type token_type;
 %option warn
 
 /* no support for include files is planned */
-%option noyywrap nounput 
+%option noyywrap nounput
 
 /* enables the use of start condition stacks */
 %option stack
@@ -64,7 +68,7 @@ typedef w3c_sw::sqlParser::token_type token_type;
 } while(0)
 %}
 
-/* START patterns for sql terminals */
+/* START patterns for SQL terminals */
 IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
@@ -113,9 +117,9 @@ STRING_LITERAL1		"'"(((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\x
 PASSED_TOKENS		([\t ])+
 LINEFEED		(\r\n|\r|\n)
 
-/* END patterns for sql terminals */
+/* END patterns for SQL terminals */
 
-/* START semantic actions for sql terminals */
+/* START semantic actions for SQL terminals */
 %%
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
@@ -170,22 +174,22 @@ LINEFEED		(\r\n|\r|\n)
 }
 
 %%
-/* END semantic actions for sql terminals */
+/* END semantic actions for SQL terminals */
 
-/* START sqlScanner */
+/* START SQLScanner */
 namespace w3c_sw {
 
-sqlScanner::sqlScanner(std::istream* in,
+SQLScanner::SQLScanner(SQLDriver* driver, std::istream* in,
 		 std::ostream* out)
-    : sqlFlexLexer(in, out)
+    : SQLFlexLexer(in, out), driver(driver)
 {
 }
 
-sqlScanner::~sqlScanner()
+SQLScanner::~SQLScanner()
 {
 }
 
-sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylval, sqlParser::token_type tok) {
+SQLParser::token_type SQLScanner::typedLiteral (SQLParser::semantic_type*& yylval, SQLParser::token_type tok) {
     std::istringstream is(yytext);
 
     switch (tok) {
@@ -214,7 +218,7 @@ sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylva
     }
 }
 
-    sqlParser::token_type sqlScanner::unescape (sqlParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, sqlParser::token_type tok){
+    SQLParser::token_type SQLScanner::unescape (SQLParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, SQLParser::token_type tok){
     std::string space;
     for (size_t i = skip; i < yyleng-skip; i++) {
 	if (yytext[i] == '\\') {
@@ -243,24 +247,24 @@ sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylva
 }
 
 
-void sqlScanner::set_debug(bool b)
+void SQLScanner::set_debug(bool b)
 {
     yy_flex_debug = b;
 }
 
-} /* END sqlScanner */
+} /* END SQLScanner */
 
-/* This implementation of sqlFlexLexer::yylex() is required to fill the
- * vtable of the class sqlFlexLexer. We define the scanner's main yylex
- * function via YY_DECL to reside in the sqlScanner class instead. */
+/* This implementation of SQLFlexLexer::yylex() is required to fill the
+ * vtable of the class SQLFlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the SQLScanner class instead. */
 
 #ifdef yylex
 #undef yylex
 #endif
 
-int sqlFlexLexer::yylex()
+int SQLFlexLexer::yylex()
 {
-    std::cerr << "in sqlFlexLexer::yylex() !" << std::endl;
+    std::cerr << "in SQLFlexLexer::yylex() !" << std::endl;
     return 0;
 }
 

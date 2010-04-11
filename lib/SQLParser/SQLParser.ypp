@@ -1,5 +1,5 @@
-/* $Id: Langname_Parser.yy,v 1.8 2008/04/21 01:46:20 eric Exp sqlParser.yy 19 2007-08-19 20:36:24Z tb $ -*- mode: c++ -*- */
-/** \file sqlParser.yy Contains the Bison parser source */
+/* $Id: Langname_Parser.yy,v 1.8 2008/04/21 01:46:20 eric Exp SQLParser.yy 19 2007-08-19 20:36:24Z tb $ -*- mode: c++ -*- */
+/** \file SQLParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
 
@@ -23,7 +23,7 @@
 %name-prefix="w3c_sw"
 
 /* set the parser's class identifier */
-%define "parser_class_name" "sqlParser"
+%define "parser_class_name" "SQLParser"
 
 /* keep track of the current position within the input */
 %locations
@@ -56,6 +56,7 @@
 #include <sstream>
 #include <vector>
 #include <string.h>
+#include "SWObjects.hpp" // for IStreamContext
 #include "SQL.hpp"
 
 #define STRINGIFY(x) #x
@@ -85,7 +86,7 @@ namespace sql = w3c_sw::sql;
 namespace w3c_sw {
 
 /** The SQLDriver class brings together all components. It creates an instance of
- * the sqlParser and sqlScanner classes and connects them. Then the input stream is
+ * the SQLParser and SQLScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
  * a parameter. Therefore the driver class contains a reference to the
@@ -114,11 +115,9 @@ public:
 
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
-     * @param sname	stream name for error messages
      * @return		true if successfully parsed
      */
-    bool parse_stream(std::istream& in,
-		      const std::string& sname = "stream input");
+    bool parse(IStreamContext& in);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -134,7 +133,7 @@ public:
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
-    class sqlScanner* lexer;
+    class SQLScanner* lexer;
 
     /** Reference to the context filled during parsing of the expressions. */
     sqlContext& context;
@@ -776,7 +775,7 @@ String:
 
 %% /*** Additional Code ***/
 
-void w3c_sw::sqlParser::error(const sqlParser::location_type& l,
+void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
 			    const std::string& m)
 {
     driver.error(l, m);
@@ -793,20 +792,20 @@ SQLDriver::SQLDriver(class sqlContext& _context)
 {
 }
 
-bool SQLDriver::parse_stream(std::istream& in, const std::string& sname)
+bool SQLDriver::parse (IStreamContext& in)
 {
-    streamname = sname;
+    streamname = in.nameStr;
 
-    sqlScanner scanner(&in);
+    SQLScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
-    this->lexer = &scanner;
+    lexer = &scanner;
 
-    sqlParser parser(*this);
+    SQLParser parser(*this);
     parser.set_debug_level(trace_parsing);
     return (parser.parse());
 }
 
-void SQLDriver::error(const class location& l,
+void SQLDriver::error (const class location& l,
 		   const std::string& m)
 {
     std::stringstream s;
@@ -814,7 +813,7 @@ void SQLDriver::error(const class location& l,
     throw s.str();
 }
 
-void SQLDriver::error(const std::string& m)
+void SQLDriver::error (const std::string& m)
 {
     throw m;
 }

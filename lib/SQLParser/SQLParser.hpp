@@ -55,6 +55,7 @@
 #include <sstream>
 #include <vector>
 #include <string.h>
+#include "SWObjects.hpp" // for IStreamContext
 #include "SQL.hpp"
 
 #define STRINGIFY(x) #x
@@ -84,7 +85,7 @@ namespace sql = w3c_sw::sql;
 namespace w3c_sw {
 
 /** The SQLDriver class brings together all components. It creates an instance of
- * the sqlParser and sqlScanner classes and connects them. Then the input stream is
+ * the SQLParser and SQLScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
  * sequence. Furthermore the driver object is available in the grammar rules as
  * a parameter. Therefore the driver class contains a reference to the
@@ -113,11 +114,9 @@ public:
 
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
-     * @param sname	stream name for error messages
      * @return		true if successfully parsed
      */
-    bool parse_stream(std::istream& in,
-		      const std::string& sname = "stream input");
+    bool parse(IStreamContext& in);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -133,7 +132,7 @@ public:
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
-    class sqlScanner* lexer;
+    class SQLScanner* lexer;
 
     /** Reference to the context filled during parsing of the expressions. */
     sqlContext& context;
@@ -150,7 +149,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 154 "lib/SQLParser/SQLParser.hpp"
+#line 153 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -164,7 +163,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 168 "lib/SQLParser/SQLParser.hpp"
+#line 167 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -174,7 +173,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 178 "lib/SQLParser/SQLParser.hpp"
+#line 177 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -222,10 +221,10 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 226 "lib/SQLParser/SQLParser.hpp"
+#line 225 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
-  class sqlParser
+  class SQLParser
   {
   public:
     /// Symbol semantic values.
@@ -234,7 +233,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 154 "lib/SQLParser/SQLParser.ypp"
+#line 153 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -255,7 +254,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 259 "lib/SQLParser/SQLParser.hpp"
+#line 258 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -318,8 +317,8 @@ namespace w3c_sw {
     typedef token::yytokentype token_type;
 
     /// Build a parser object.
-    sqlParser (class SQLDriver& driver_yyarg);
-    virtual ~sqlParser ();
+    SQLParser (class SQLDriver& driver_yyarg);
+    virtual ~SQLParser ();
 
     /// Parse.
     /// \returns  0 iff parsing succeeded.
@@ -487,7 +486,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 491 "lib/SQLParser/SQLParser.hpp"
+#line 490 "lib/SQLParser/SQLParser.hpp"
 
 
 

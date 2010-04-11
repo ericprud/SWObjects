@@ -29,7 +29,7 @@
      * We will address this in a future release of flex, or omit the C++ scanner
      * altogether.
      */
-    #define yyFlexLexer sqlFlexLexer
+    #define yyFlexLexer SQLFlexLexer
 /* %endif */
 
 /* %if-c-only */
@@ -351,9 +351,9 @@ struct yy_buffer_state
 /* %endif */
 /* %endif */
 
-void *sqlalloc (yy_size_t  );
-void *sqlrealloc (void *,yy_size_t  );
-void sqlfree (void *  );
+void *SQLalloc (yy_size_t  );
+void *SQLrealloc (void *,yy_size_t  );
+void SQLfree (void *  );
 
 #define yy_new_buffer yy_create_buffer
 
@@ -761,11 +761,11 @@ static yyconst flex_int16_t yy_chk[893] =
 
 static yyconst flex_int16_t yy_rule_linenum[46] =
     {   0,
-      120,  121,  122,  123,  124,  125,  126,  127,  128,  129,
-      130,  131,  132,  133,  134,  135,  136,  137,  138,  139,
-      140,  141,  142,  143,  144,  145,  146,  147,  148,  149,
-      150,  151,  152,  153,  154,  155,  156,  157,  158,  159,
-      160,  161,  162,  163,  166
+      124,  125,  126,  127,  128,  129,  130,  131,  132,  133,
+      134,  135,  136,  137,  138,  139,  140,  141,  142,  143,
+      144,  145,  146,  147,  148,  149,  150,  151,  152,  153,
+      154,  155,  156,  157,  158,  159,  160,  161,  162,  163,
+      164,  165,  166,  167,  170
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -776,8 +776,8 @@ static yyconst flex_int16_t yy_rule_linenum[46] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "lib/SQLScanner.lpp"
-/* $Id: Langname_Scanner.ll,v 1.1 2008/04/06 17:10:46 eric Exp sqlScanner.ll 28 2007-08-20 10:27:39Z tb $ -*- mode: c++ -*- */
-/** \file sqlScanner.ll Define the Flex lexical scanner */
+/* $Id: Langname_Scanner.ll,v 1.1 2008/04/06 17:10:46 eric Exp SQLScanner.ll 28 2007-08-20 10:27:39Z tb $ -*- mode: c++ -*- */
+/** \file SQLScanner.ll Define the Flex lexical scanner */
 #line 5 "lib/SQLScanner.lpp"
 
 #include <vector>
@@ -789,8 +789,8 @@ static yyconst flex_int16_t yy_rule_linenum[46] =
 #include "SQLScanner.hpp"
 
 /* import the parser's token type into a local typedef */
-typedef w3c_sw::sqlParser::token token;
-typedef w3c_sw::sqlParser::token_type token_type;
+typedef w3c_sw::SQLParser::token token;
+typedef w3c_sw::SQLParser::token_type token_type;
 
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
@@ -808,7 +808,11 @@ typedef w3c_sw::sqlParser::token_type token_type;
 
 /*** Flex Declarations and Options ***/
 /* enable c++ scanner class generation */
-/* change the name of the scanner class. results in "sqlFlexLexer" */
+/* change the name of the scanner class. results in "SQLFlexLexer" */
+/* consider using class instead
+ * %option yyclass="SQLScanner"
+ * void SQLFlexLexer::LexerError( yyconst char msg[] )
+ */
 /* the manual says "somewhat more optimized" */
 /* enable scanner to generate debug output. disable this for release
  * versions. */
@@ -816,16 +820,16 @@ typedef w3c_sw::sqlParser::token_type token_type;
 /* enables the use of start condition stacks */
 /* The following paragraph suffices to track locations accurately. Each time
  * yylex is invoked, the begin position is moved onto the end position. */
-#line 61 "lib/SQLScanner.lpp"
+#line 65 "lib/SQLScanner.lpp"
 #define YY_USER_ACTION  yylloc->columns(yyleng);
 #define YY_FATAL_ERROR(msg) do {		\
     throw msg;   \
 } while(0)
-/* START patterns for sql terminals */
+/* START patterns for SQL terminals */
 /*" for syntax hilighting */
-/* END patterns for sql terminals */
-/* START semantic actions for sql terminals */
-#line 829 "lib/SQLScanner.cpp"
+/* END patterns for SQL terminals */
+/* START semantic actions for SQL terminals */
+#line 833 "lib/SQLScanner.cpp"
 
 #define INITIAL 0
 
@@ -987,9 +991,9 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 119 "lib/SQLScanner.lpp"
+#line 123 "lib/SQLScanner.lpp"
 
-#line 993 "lib/SQLScanner.cpp"
+#line 997 "lib/SQLScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -1101,233 +1105,233 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 120 "lib/SQLScanner.lpp"
+#line 124 "lib/SQLScanner.lpp"
 { yylloc->end.lines(1); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 121 "lib/SQLScanner.lpp"
+#line 125 "lib/SQLScanner.lpp"
 { yylloc->step(); /* @@ needed? useful? */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 122 "lib/SQLScanner.lpp"
+#line 126 "lib/SQLScanner.lpp"
 {return token::IT_SELECT;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 123 "lib/SQLScanner.lpp"
+#line 127 "lib/SQLScanner.lpp"
 {return token::IT_UNION;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 124 "lib/SQLScanner.lpp"
+#line 128 "lib/SQLScanner.lpp"
 {return token::IT_WHERE;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 125 "lib/SQLScanner.lpp"
+#line 129 "lib/SQLScanner.lpp"
 {return token::IT_FROM;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 126 "lib/SQLScanner.lpp"
+#line 130 "lib/SQLScanner.lpp"
 {return token::GT_TIMES;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 127 "lib/SQLScanner.lpp"
+#line 131 "lib/SQLScanner.lpp"
 {return token::GT_COMMA;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 128 "lib/SQLScanner.lpp"
+#line 132 "lib/SQLScanner.lpp"
 {return token::IT_AS;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 129 "lib/SQLScanner.lpp"
+#line 133 "lib/SQLScanner.lpp"
 {return token::GT_DOT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 130 "lib/SQLScanner.lpp"
+#line 134 "lib/SQLScanner.lpp"
 {return token::IT_INNER;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 131 "lib/SQLScanner.lpp"
+#line 135 "lib/SQLScanner.lpp"
 {return token::IT_JOIN;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 132 "lib/SQLScanner.lpp"
+#line 136 "lib/SQLScanner.lpp"
 {return token::IT_ON;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 133 "lib/SQLScanner.lpp"
+#line 137 "lib/SQLScanner.lpp"
 {return token::GT_OR;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 134 "lib/SQLScanner.lpp"
+#line 138 "lib/SQLScanner.lpp"
 {return token::GT_AND;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 135 "lib/SQLScanner.lpp"
+#line 139 "lib/SQLScanner.lpp"
 {return token::GT_EQUAL;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 136 "lib/SQLScanner.lpp"
+#line 140 "lib/SQLScanner.lpp"
 {return token::GT_NEQUAL;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 137 "lib/SQLScanner.lpp"
+#line 141 "lib/SQLScanner.lpp"
 {return token::GT_LT;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 138 "lib/SQLScanner.lpp"
+#line 142 "lib/SQLScanner.lpp"
 {return token::GT_GT;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 139 "lib/SQLScanner.lpp"
+#line 143 "lib/SQLScanner.lpp"
 {return token::GT_LE;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 140 "lib/SQLScanner.lpp"
+#line 144 "lib/SQLScanner.lpp"
 {return token::GT_GE;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 141 "lib/SQLScanner.lpp"
+#line 145 "lib/SQLScanner.lpp"
 {return token::GT_PLUS;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 142 "lib/SQLScanner.lpp"
+#line 146 "lib/SQLScanner.lpp"
 {return token::GT_MINUS;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 143 "lib/SQLScanner.lpp"
+#line 147 "lib/SQLScanner.lpp"
 {return token::GT_DIVIDE;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 144 "lib/SQLScanner.lpp"
+#line 148 "lib/SQLScanner.lpp"
 {return token::GT_NOT;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 145 "lib/SQLScanner.lpp"
+#line 149 "lib/SQLScanner.lpp"
 {return token::GT_LPAREN;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 146 "lib/SQLScanner.lpp"
+#line 150 "lib/SQLScanner.lpp"
 {return token::GT_RPAREN;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 147 "lib/SQLScanner.lpp"
+#line 151 "lib/SQLScanner.lpp"
 {return token::IT_CONCAT;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 148 "lib/SQLScanner.lpp"
+#line 152 "lib/SQLScanner.lpp"
 {return token::IT_true;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 149 "lib/SQLScanner.lpp"
+#line 153 "lib/SQLScanner.lpp"
 {return token::IT_false;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 150 "lib/SQLScanner.lpp"
+#line 154 "lib/SQLScanner.lpp"
 {yylval->p_NAME = new std::string(yytext); return token::NAME;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 151 "lib/SQLScanner.lpp"
+#line 155 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER);}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 152 "lib/SQLScanner.lpp"
+#line 156 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 153 "lib/SQLScanner.lpp"
+#line 157 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE);}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 154 "lib/SQLScanner.lpp"
+#line 158 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_POSITIVE);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 155 "lib/SQLScanner.lpp"
+#line 159 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 156 "lib/SQLScanner.lpp"
+#line 160 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 157 "lib/SQLScanner.lpp"
+#line 161 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 158 "lib/SQLScanner.lpp"
+#line 162 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 159 "lib/SQLScanner.lpp"
+#line 163 "lib/SQLScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 160 "lib/SQLScanner.lpp"
+#line 164 "lib/SQLScanner.lpp"
 {return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 161 "lib/SQLScanner.lpp"
+#line 165 "lib/SQLScanner.lpp"
 {return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 162 "lib/SQLScanner.lpp"
+#line 166 "lib/SQLScanner.lpp"
 {return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 44:
 /* rule 44 can match eol */
 YY_RULE_SETUP
-#line 163 "lib/SQLScanner.lpp"
+#line 167 "lib/SQLScanner.lpp"
 {return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 165 "lib/SQLScanner.lpp"
+#line 169 "lib/SQLScanner.lpp"
 { yyterminate();}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 166 "lib/SQLScanner.lpp"
+#line 170 "lib/SQLScanner.lpp"
 {
     std::stringstream s;
     s << "unexpected input '" << yytext << "' at " << *yylloc;
@@ -1336,10 +1340,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 172 "lib/SQLScanner.lpp"
+#line 176 "lib/SQLScanner.lpp"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1343 "lib/SQLScanner.cpp"
+#line 1347 "lib/SQLScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1511,9 +1515,9 @@ yyFlexLexer::yyFlexLexer( std::istream* arg_yyin, std::ostream* arg_yyout )
 yyFlexLexer::~yyFlexLexer()
 {
 	delete [] yy_state_buf;
-	sqlfree(yy_start_stack  );
+	SQLfree(yy_start_stack  );
 	yy_delete_buffer( YY_CURRENT_BUFFER );
-	sqlfree(yy_buffer_stack  );
+	SQLfree(yy_buffer_stack  );
 }
 
 /* The contents of this function are C++ specific, so the () macro is not used.
@@ -1648,7 +1652,7 @@ int yyFlexLexer::yy_get_next_buffer()
 
 				b->yy_ch_buf = (char *)
 					/* Include room in for 2 EOB chars. */
-					sqlrealloc((void *) b->yy_ch_buf,b->yy_buf_size + 2  );
+					SQLrealloc((void *) b->yy_ch_buf,b->yy_buf_size + 2  );
 				}
 			else
 				/* Can't grow it, we don't own it. */
@@ -1697,7 +1701,7 @@ int yyFlexLexer::yy_get_next_buffer()
 	if ((yy_size_t) ((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
 		/* Extend the array by 50%, plus the number we really need. */
 		yy_size_t new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
-		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) sqlrealloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
+		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) SQLrealloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
 		if ( ! YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
 			YY_FATAL_ERROR( "out of dynamic memory in yy_get_next_buffer()" );
 	}
@@ -1988,7 +1992,7 @@ int yyFlexLexer::yy_get_next_buffer()
 {
 	YY_BUFFER_STATE b;
     
-	b = (YY_BUFFER_STATE) sqlalloc(sizeof( struct yy_buffer_state )  );
+	b = (YY_BUFFER_STATE) SQLalloc(sizeof( struct yy_buffer_state )  );
 	if ( ! b )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
@@ -1997,7 +2001,7 @@ int yyFlexLexer::yy_get_next_buffer()
 	/* yy_ch_buf has to be 2 characters longer than the size given because
 	 * we need to put in 2 end-of-buffer characters.
 	 */
-	b->yy_ch_buf = (char *) sqlalloc(b->yy_buf_size + 2  );
+	b->yy_ch_buf = (char *) SQLalloc(b->yy_buf_size + 2  );
 	if ( ! b->yy_ch_buf )
 		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
@@ -2026,9 +2030,9 @@ int yyFlexLexer::yy_get_next_buffer()
 		YY_CURRENT_BUFFER_LVALUE = (YY_BUFFER_STATE) 0;
 
 	if ( b->yy_is_our_buffer )
-		sqlfree((void *) b->yy_ch_buf  );
+		SQLfree((void *) b->yy_ch_buf  );
 
-	sqlfree((void *) b  );
+	SQLfree((void *) b  );
 }
 
 /* %if-c-only */
@@ -2189,7 +2193,7 @@ void yyFlexLexer::yyensure_buffer_stack(void)
 		 * immediate realloc on the next call.
          */
 		num_to_alloc = 1;
-		(yy_buffer_stack) = (struct yy_buffer_state**)sqlalloc
+		(yy_buffer_stack) = (struct yy_buffer_state**)SQLalloc
 								(num_to_alloc * sizeof(struct yy_buffer_state*)
 								);
 		if ( ! (yy_buffer_stack) )
@@ -2208,7 +2212,7 @@ void yyFlexLexer::yyensure_buffer_stack(void)
 		int grow_size = 8 /* arbitrary grow size */;
 
 		num_to_alloc = (yy_buffer_stack_max) + grow_size;
-		(yy_buffer_stack) = (struct yy_buffer_state**)sqlrealloc
+		(yy_buffer_stack) = (struct yy_buffer_state**)SQLrealloc
 								((yy_buffer_stack),
 								num_to_alloc * sizeof(struct yy_buffer_state*)
 								);
@@ -2245,10 +2249,10 @@ void yyFlexLexer::yyensure_buffer_stack(void)
 		new_size = (yy_start_stack_depth) * sizeof( int );
 
 		if ( ! (yy_start_stack) )
-			(yy_start_stack) = (int *) sqlalloc(new_size  );
+			(yy_start_stack) = (int *) SQLalloc(new_size  );
 
 		else
-			(yy_start_stack) = (int *) sqlrealloc((void *) (yy_start_stack),new_size  );
+			(yy_start_stack) = (int *) SQLrealloc((void *) (yy_start_stack),new_size  );
 
 		if ( ! (yy_start_stack) )
 			YY_FATAL_ERROR( "out of memory expanding start-condition stack" );
@@ -2357,12 +2361,12 @@ static int yy_flex_strlen (yyconst char * s )
 }
 #endif
 
-void *sqlalloc (yy_size_t  size )
+void *SQLalloc (yy_size_t  size )
 {
 	return (void *) malloc( size );
 }
 
-void *sqlrealloc  (void * ptr, yy_size_t  size )
+void *SQLrealloc  (void * ptr, yy_size_t  size )
 {
 	/* The cast to (char *) in the following accommodates both
 	 * implementations that use char* generic pointers, and those
@@ -2374,9 +2378,9 @@ void *sqlrealloc  (void * ptr, yy_size_t  size )
 	return (void *) realloc( (char *) ptr, size );
 }
 
-void sqlfree (void * ptr )
+void SQLfree (void * ptr )
 {
-	free( (char *) ptr );	/* see sqlrealloc() for (char *) cast */
+	free( (char *) ptr );	/* see SQLrealloc() for (char *) cast */
 }
 
 /* %if-tables-serialization definitions */
@@ -2386,25 +2390,25 @@ void sqlfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 172 "lib/SQLScanner.lpp"
+#line 176 "lib/SQLScanner.lpp"
 
 
-/* END semantic actions for sql terminals */
+/* END semantic actions for SQL terminals */
 
-/* START sqlScanner */
+/* START SQLScanner */
 namespace w3c_sw {
 
-sqlScanner::sqlScanner(std::istream* in,
+SQLScanner::SQLScanner(SQLDriver* driver, std::istream* in,
 		 std::ostream* out)
-    : sqlFlexLexer(in, out)
+    : SQLFlexLexer(in, out), driver(driver)
 {
 }
 
-sqlScanner::~sqlScanner()
+SQLScanner::~SQLScanner()
 {
 }
 
-sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylval, sqlParser::token_type tok) {
+SQLParser::token_type SQLScanner::typedLiteral (SQLParser::semantic_type*& yylval, SQLParser::token_type tok) {
     std::istringstream is(yytext);
 
     switch (tok) {
@@ -2433,7 +2437,7 @@ sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylva
     }
 }
 
-    sqlParser::token_type sqlScanner::unescape (sqlParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, sqlParser::token_type tok){
+    SQLParser::token_type SQLScanner::unescape (SQLParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, SQLParser::token_type tok){
     std::string space;
     for (size_t i = skip; i < yyleng-skip; i++) {
 	if (yytext[i] == '\\') {
@@ -2462,24 +2466,24 @@ sqlParser::token_type sqlScanner::typedLiteral (sqlParser::semantic_type*& yylva
 }
 
 
-void sqlScanner::set_debug(bool b)
+void SQLScanner::set_debug(bool b)
 {
     yy_flex_debug = b;
 }
 
-} /* END sqlScanner */
+} /* END SQLScanner */
 
-/* This implementation of sqlFlexLexer::yylex() is required to fill the
- * vtable of the class sqlFlexLexer. We define the scanner's main yylex
- * function via YY_DECL to reside in the sqlScanner class instead. */
+/* This implementation of SQLFlexLexer::yylex() is required to fill the
+ * vtable of the class SQLFlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the SQLScanner class instead. */
 
 #ifdef yylex
 #undef yylex
 #endif
 
-int sqlFlexLexer::yylex()
+int SQLFlexLexer::yylex()
 {
-    std::cerr << "in sqlFlexLexer::yylex() !" << std::endl;
+    std::cerr << "in SQLFlexLexer::yylex() !" << std::endl;
     return 0;
 }
 
