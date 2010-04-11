@@ -80,9 +80,6 @@ public:
 };
 /* END ClassBlock */
 
-namespace sql = w3c_sw::sql;
-
-
 namespace w3c_sw {
 
 /** The SQLDriver class brings together all components. It creates an instance of

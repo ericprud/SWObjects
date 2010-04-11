@@ -79,9 +79,6 @@ public:
 };
 /* END ClassBlock */
 
-namespace sql = w3c_sw::sql;
-
-
 namespace w3c_sw {
 
 /** The SQLDriver class brings together all components. It creates an instance of
@@ -149,7 +146,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 153 "lib/SQLParser/SQLParser.hpp"
+#line 150 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -163,7 +160,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 167 "lib/SQLParser/SQLParser.hpp"
+#line 164 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -173,7 +170,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 177 "lib/SQLParser/SQLParser.hpp"
+#line 174 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -221,7 +218,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 225 "lib/SQLParser/SQLParser.hpp"
+#line 222 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -233,7 +230,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 153 "lib/SQLParser/SQLParser.ypp"
+#line 150 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -254,7 +251,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 258 "lib/SQLParser/SQLParser.hpp"
+#line 255 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -486,7 +483,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 490 "lib/SQLParser/SQLParser.hpp"
+#line 487 "lib/SQLParser/SQLParser.hpp"
 
 
 
