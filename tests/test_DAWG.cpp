@@ -738,8 +738,8 @@ BOOST_AUTO_TEST_CASE( i18n__normalization_1 ) {
      */
     const char* defaultGraph( "data-r2/i18n/normalization-01.ttl" );
     const char** namedGraphs = NULL;
-    const URI** requires = NULL; /* SPARQLfedParser sends 0x301 to stdout; TurtleSParser sends two. */
-    DAWG_TEST("data-r2/i18n/normalization-01.rq", "data-r2/i18n/normalization-01-results.ttl", 0, 0); std::cout << "<-- uglies" << std::endl;
+    const URI** requires = NULL;
+    DAWG_TEST("data-r2/i18n/normalization-01.rq", "data-r2/i18n/normalization-01-results.ttl", 0, 0);
 }
 BOOST_AUTO_TEST_CASE( i18n__normalization_2 ) {
     /* name: normalization-02
