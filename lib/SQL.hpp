@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "SWObjects.hpp"
 
 namespace w3c_sw {
 
@@ -26,6 +27,8 @@ namespace w3c_sw {
 	    virtual bool operator== (const AliasAttr& ref) const {
 		return alias == ref.alias && attr == ref.attr;
 	    }
+	    std::string str () { return toString(); } // for debugger invocation
+	    virtual std::string toString () { return alias + "." + attr; }
 	};
 
 	class Constraint {
@@ -63,7 +66,7 @@ namespace w3c_sw {
 	public:
 	    WhereConstraint () {  }
 	    virtual ~WhereConstraint () {  }
-	    std::string str () const { return toString("", PREC_High); }
+	    std::string str () const { return toString(); }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
@@ -246,8 +249,8 @@ namespace w3c_sw {
 	    BooleanEQ (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_EQ; }
 	    virtual bool finalEq (const BooleanEQ& l) const {
-		return (l.left == left && l.right == right) // unordered
-		    || (l.left == right && l.right == left);
+		return (*l.left == *left  && *l.right == *right) // unordered
+		    || (*l.left == *right && *l.right == *left);
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -259,8 +262,8 @@ namespace w3c_sw {
 	    BooleanNE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_NE; }
 	    virtual bool finalEq (const BooleanNE& l) const {
-		return (l.left == left && l.right == right) // unordered
-		    || (l.left == right && l.right == left);
+		return (*l.left == *left  && *l.right == *right) // unordered
+		    || (*l.left == *right && *l.right == *left);
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -272,7 +275,7 @@ namespace w3c_sw {
 	    BooleanLT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
 	    virtual bool finalEq (const BooleanLT& l) const {
-		return l.left == left && l.right == right;
+		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -284,7 +287,7 @@ namespace w3c_sw {
 	    BooleanGT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGT& l) const {
-		return l.left == left && l.right == right;
+		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -296,7 +299,7 @@ namespace w3c_sw {
 	    BooleanLE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
 	    virtual bool finalEq (const BooleanLE& l) const {
-		return l.left == left && l.right == right;
+		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -308,7 +311,7 @@ namespace w3c_sw {
 	    BooleanGE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE& l) const {
-		return l.left == left && l.right == right;
+		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -514,13 +517,25 @@ namespace w3c_sw {
 	    }
 	};
 
+	class TableJoin;
+	class SubqueryJoin;
 	class Join {
+	    class ForeignKeyJoinConstraint;
+	    class IntegerJoinConstraint;
+	    class StringJoinConstraint;
 	    class JoinConstraint : public Constraint {
 	    protected:
 		std::string myAttr;
 	    public:
 		JoinConstraint (std::string myAttr) : Constraint(), myAttr(myAttr) {  }
 		virtual ~JoinConstraint () {  }
+		bool baseEq (const JoinConstraint& r) const {
+		    return myAttr == r.myAttr;
+		}
+		virtual bool finalEq (const ForeignKeyJoinConstraint&) const { return false; }
+		virtual bool finalEq (const IntegerJoinConstraint&) const { return false; }
+		virtual bool finalEq (const StringJoinConstraint&) const { return false; }
+		virtual bool operator==(const JoinConstraint&) const = 0;
 		virtual std::string toString(std::string alias, std::string pad = "") = 0;
 	    };
 	    class ForeignKeyJoinConstraint : public JoinConstraint {
@@ -528,6 +543,12 @@ namespace w3c_sw {
 		std::string otherAttr;
 	    public:
 		ForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : JoinConstraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
+		virtual bool finalEq (const ForeignKeyJoinConstraint& l) const {
+		    return l.otherAlias == otherAlias && l.otherAttr == otherAttr;
+		}	    
+		virtual bool operator== (const JoinConstraint& r) const {
+		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
+		}
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
@@ -538,6 +559,12 @@ namespace w3c_sw {
 		int value;
 	    public:
 		IntegerJoinConstraint (std::string myAttr, int value) : JoinConstraint(myAttr), value(value) {  }
+		virtual bool finalEq (const IntegerJoinConstraint& l) const {
+		    return l.value == value;
+		}	    
+		virtual bool operator== (const JoinConstraint& r) const {
+		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
+		}
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << value;
@@ -548,6 +575,12 @@ namespace w3c_sw {
 		std::string value;
 	    public:
 		StringJoinConstraint (std::string myAttr, std::string value) : JoinConstraint(myAttr), value(value) {  }
+		virtual bool finalEq (const StringJoinConstraint& l) const {
+		    return l.value == value;
+		}	    
+		virtual bool operator== (const JoinConstraint& r) const {
+		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
+		}
 		virtual std::string toString (std::string alias, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=\"" << value << "\"";
@@ -565,13 +598,22 @@ namespace w3c_sw {
 		    delete *it;
 	    }
 	    std::string debug_getAlias () { return alias; }
-	    virtual std::string getRelationText (std::string pad = "") = 0;
-	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") {
+	    virtual std::string getRelationText (std::string pad = "") const = 0;
+	    bool baseEq (const Join& ref) const {
+		return alias == ref.alias
+		    && optional == ref.optional
+		    && ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin());
+	    }
+	    virtual bool finalEq (const TableJoin&) const { return false; }
+	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
+	    virtual bool operator==(const Join& ref) const = 0;
+	    std::string str () const { return toString(); } // for debugger invocation
+	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		s << getRelationText(pad) << " AS " << alias;
 		std::stringstream on;
-		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
+		for (std::vector<JoinConstraint*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			on << " AND ";
@@ -601,9 +643,15 @@ namespace w3c_sw {
 	class TableJoin : public Join {
 	    std::string relation;
 	protected:
-	    virtual std::string getRelationText (std::string) { return relation; }
+	    virtual std::string getRelationText (std::string) const { return relation; }
 	public:
 	    TableJoin (std::string relation, std::string alias, bool optional) : Join(alias, optional), relation(relation) {  }
+	    virtual bool finalEq (const TableJoin& l) const {
+		return l.relation == relation;
+	    }	    
+	    virtual bool operator== (const Join& r) const {
+		return Join::baseEq(r) && r.finalEq(*this);
+	    }
 	    virtual ~TableJoin () {  }
 	};
 
@@ -616,12 +664,18 @@ namespace w3c_sw {
 	    virtual ~AliasedSelect () {
 		delete exp;
 	    }
-	    std::string toString (std::string pad = "") {
+	    virtual bool operator== (const AliasedSelect& ref) const { // virt in case of subclassing
+		return *exp == *ref.exp && alias == ref.alias;
+	    }
+	    std::string str () const { return toString(); } // for debugger invocation
+	    virtual std::string toString (std::string pad = "") const {
 		return exp->toString(pad) + " AS " + alias;
 	    }
 	};
 
-	class SQLQuery {
+	class SQLUnion;
+	class SQLOptional;
+	class SQLQuery { // !!! public SQLQueryBase
 	public:
 
 	    std::vector<Join*> joins;
@@ -655,13 +709,33 @@ namespace w3c_sw {
 		     iOrderBy != orderBy.end(); ++iOrderBy)
 		    delete *iOrderBy;
 	    }
-	    virtual std::string toString (std::string pad = "") {
+	    bool finalEq (const SQLQuery& ref) const { // not needed in SQLQueryBase
+		return
+		    distinct == ref.distinct
+		    && limit == ref.limit
+		    && offset == ref.offset
+		    && ptrequal(selects.begin(), selects.end(), ref.selects.begin())
+		    && ptrequal(joins.begin(), joins.end(), ref.joins.begin())
+		    && ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())
+		    && ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin());
+	    }
+	    virtual bool finalEq (const SQLUnion&) const { return false; }
+	    virtual bool finalEq (const SQLOptional&) const { return false; }
+	    // virtual bool operator==(const Join& ref) const = 0; //!!! for SQLQueryBase
+	    virtual bool operator== (const SQLQuery& ref) const {
+		return ref.finalEq(*this);
+	    }
+
+	    std::string str () const { // easy to call from debugger.
+		return toString("");
+	    }
+	    virtual std::string toString (std::string pad = "") const {
 		std::stringstream s;
 		s << pad << "SELECT ";
 		if (distinct) s << "DISTINCT ";
 
 		/* SELECT attributes */
-		for (std::vector<AliasedSelect*>::iterator it = selects.begin();
+		for (std::vector<AliasedSelect*>::const_iterator it = selects.begin();
 		     it != selects.end(); ++it) {
 		    if (it != selects.begin()) s << ", ";
 		    s << (*it)->toString(pad);
@@ -670,7 +744,7 @@ namespace w3c_sw {
 
 		/* JOINs */
 		std::string where;
-		for (std::vector<Join*>::iterator it = joins.begin();
+		for (std::vector<Join*>::const_iterator it = joins.begin();
 		     it != joins.end(); ++it)
 		    if (it == joins.begin())
 			s << std::endl << pad << "       FROM " << (*it)->toString(&where, pad);
@@ -678,7 +752,7 @@ namespace w3c_sw {
 			s << (*it)->toString(NULL, pad);
 
 		/* WHERE */
-		for (std::vector<const WhereConstraint*>::iterator it = constraints.begin();
+		for (std::vector<const WhereConstraint*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (where.length() != 0)
 			where += " AND ";
@@ -691,7 +765,7 @@ namespace w3c_sw {
 		/* ORDER BY */
 		if (orderBy.begin() != orderBy.end()) {
 		    s << std::endl << pad << " ORDER BY ";
-		    for (std::vector<const WhereConstraint*>::iterator it = orderBy.begin();
+		    for (std::vector<const WhereConstraint*>::const_iterator it = orderBy.begin();
 			 it != orderBy.end(); ++it) {
 			if (it != orderBy.begin())
 			    s << ", ";
@@ -706,6 +780,10 @@ namespace w3c_sw {
 	    }
 	};
 
+	inline std::ostream& operator<< (std::ostream& os, SQLQuery const& my) {
+	    return os << my.str();
+	}
+
 	class SQLDisjoint;
 	class SQLUnion : public SQLQuery {
 	public:
@@ -717,12 +795,16 @@ namespace w3c_sw {
 		     it != disjoints.end(); ++it)	
 		    delete *it;
 	    }
-
-
-	    virtual std::string toString (std::string pad = "") {
+	    virtual bool finalEq (const SQLUnion& l) const {
+		return ptrequal(l.disjoints.begin(), l.disjoints.end(), disjoints.begin());
+	    }	    
+	    virtual bool operator== (const SQLQuery& r) const {
+		return r.finalEq(*this); // !!! no Join::baseEq(r) && 
+	    }
+	    virtual std::string toString (std::string pad = "") const {
 		std::stringstream s;
 		std::string newPad = pad + "    ";
-		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
+		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it) {
 		    if (it != disjoints.begin())
 			s << std::endl << pad << "  UNION" << std::endl;
@@ -736,13 +818,19 @@ namespace w3c_sw {
 	class SubqueryJoin : public Join {
 	    SQLQuery* subquery;
 	protected:
-	    virtual std::string getRelationText (std::string pad = "") {
+	    virtual std::string getRelationText (std::string pad = "") const {
 		std::stringstream s;
 		s << "(" << std::endl << subquery->toString(pad) << std::endl << pad << "             )";
 		return s.str();
 	    }
 	public:
 	    SubqueryJoin (SQLQuery* subquery, std::string alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
+	    virtual bool finalEq (const SubqueryJoin& l) const {
+		return *l.subquery == *subquery;
+	    }	    
+	    virtual bool operator== (const Join& r) const {
+		return Join::baseEq(r) && r.finalEq(*this);
+	    }
 	    virtual ~SubqueryJoin () { delete subquery; }
 	};
 
@@ -750,13 +838,19 @@ namespace w3c_sw {
 	public:
 	    SQLOptional () {  }
 	    virtual ~SQLOptional () {  }
-	    virtual std::string toString (std::string pad = "") {
+	    virtual bool finalEq (const SQLUnion& l) const { // !!! contains a what?
+		return true;
+	    }	    
+	    virtual bool operator== (const SQLQuery& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual std::string toString (std::string pad = "") const {
 		std::string newPad = pad + "    ";
 		return SQLQuery::toString(newPad);
 	    }
 	};
 
-    }
-}
+    } // namespace sql
+} // namespace w3c_sw
 
 #endif /* !INCLUDE_SQL_HPP */
