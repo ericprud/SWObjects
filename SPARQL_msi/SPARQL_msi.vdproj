@@ -3,7 +3,7 @@
 "VSVersion" = "3:800"
 "ProjectType" = "8:{978C614F-708E-4E1A-B201-565925725DBA}"
 "IsWebType" = "8:FALSE"
-"ProjectName" = "8:SPARQL"
+"ProjectName" = "8:SPARQL_msi"
 "LanguageId" = "3:1033"
 "CodePage" = "3:1252"
 "UILanguageId" = "3:1033"
@@ -34,6 +34,12 @@
         "Entry"
         {
         "MsmKey" = "8:_4D5F48B2E5B240ACB4DCD42C6E90BBC6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_60B6719C7F4A43AB9FB4CAB1EA3C7C79"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -79,6 +85,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -95,6 +109,27 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -180,6 +215,26 @@
             {
             "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_system-vc90-mt-1_42.dll"
             "TargetName" = "8:boost_system-vc90-mt-1_42.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60B6719C7F4A43AB9FB4CAB1EA3C7C79"
+            {
+            "SourcePath" = "8:C:\\Program Files\\MySQL\\MySQL Server 5.1\\lib\\opt\\libmysql.dll"
+            "TargetName" = "8:libmysql.dll"
             "Tag" = "8:"
             "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
             "Condition" = "8:"
@@ -344,7 +399,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SPARQL"
         "ProductCode" = "8:{7666DBFE-6AB6-4EAD-ADE8-529B362C7323}"
-        "PackageCode" = "8:{8C81AA67-7169-44DE-BC90-5CE313CC7514}"
+        "PackageCode" = "8:{1BD5D602-2B6B-4F42-9D17-A2BB1869AF3B}"
         "UpgradeCode" = "8:{9CF3093F-3D4E-4812-9846-94445FCA3D8A}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -357,9 +412,9 @@
         "Title" = "8:SPARQL"
         "Subject" = "8:"
         "ARPCONTACT" = "8:W3C"
-        "Keywords" = "8:"
+        "Keywords" = "8:SPARQL Semantic Web Relational Databases"
         "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:"
+        "ARPURLINFOABOUT" = "8:http://www.w3.org/"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
