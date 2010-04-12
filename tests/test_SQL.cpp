@@ -52,7 +52,55 @@ bool w3c_sw::sql::SQLQuery::finalEq (const SQLQuery& ref) const {
 }
 #endif
 
-const char* qs0 = "SELECT 1=1\n";
+struct EqTest {
+    sqlContext context;
+    SQLDriver driver;
+    IStreamContext str1;
+    IStreamContext str2;
+    sql::SQLQuery* q1;
+    sql::SQLQuery* q2;
+    EqTest (const char* q) : context(), driver(context), str1(q, IStreamContext::STRING), str2(q, IStreamContext::STRING) {
+	BOOST_CHECK_EQUAL(0, driver.parse(str1));
+	q1 = driver.root;
+	BOOST_CHECK_EQUAL(0, driver.parse(str2));
+	q2 = driver.root;
+    }
+};
+
+#define EQTEST(NAME,STR) BOOST_AUTO_TEST_CASE(NAME) {	\
+	EqTest t(STR);					\
+	BOOST_CHECK_EQUAL(*t.q1, *t.q2);		\
+    }
+EQTEST(SelExprEq11, "SELECT 1=1");
+EQTEST(SelExprNe11, "SELECT 1!=1");
+EQTEST(SelExprLt11, "SELECT 1<1");
+EQTEST(SelExprGt11, "SELECT 1>1");
+EQTEST(SelExprLe11, "SELECT 1<=1");
+EQTEST(SelExprGe11, "SELECT 1>=1");
+EQTEST(SqlExprEq12, "SELECT 1=2");
+EQTEST(ConstAsAttr, "SELECT 1 AS attr");
+EQTEST(From, "SELECT rel.attr FROM rel");
+EQTEST(AttrAsAttr, "SELECT rel.attr AS attr FROM rel");
+EQTEST(FromAs, "SELECT relvar.attr FROM rel AS relvar");
+EQTEST(FromWhereEq11, "SELECT rel.attr FROM rel WHERE 1=2");
+EQTEST(FromWhereEqAttr1, "SELECT rel.attr FROM rel WHERE rel.attr=2");
+EQTEST(FromWhereEq1Attr, "SELECT rel.attr FROM rel WHERE 2=rel.attr");
+EQTEST(FromWherePlus11, "SELECT rel.attr FROM rel WHERE 1+2");
+EQTEST(FromWhereMinus11, "SELECT rel.attr FROM rel WHERE 1-2");
+EQTEST(FromWhereNegation, "SELECT rel.attr FROM rel WHERE -1+-2");
+EQTEST(FromWhereSumation, "SELECT rel.attr FROM rel WHERE 1+2=3");
+EQTEST(FromWhereArith, "SELECT rel.attr FROM rel WHERE 1*2+3*4/5-6-(7*8)");
+EQTEST(AttrAsAttrFromAsWhere, "SELECT relvar.attr FROM rel AS relvar WHERE 1=2");
+EQTEST(AttrAsAttrFromAsOn, "SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar1.attr=relvar2.attr");
+EQTEST(Union, "SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1");
+EQTEST(JoinUnion, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1");
+EQTEST(JoinUnionOn, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 ON union1.attr=relvar1.attr");
+EQTEST(UnionJoin, "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1");
+EQTEST(UnionJoinOn, "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1 ON relvar1.attr=union1.attr");
+
+
+/* test != */
+
 const char* qs1 =
 	"SELECT union1.somePerson AS somePerson\n"
 	"       FROM (\n"
@@ -83,22 +131,6 @@ const char* qs2 =
 	"                INNER JOIN Names AS PATIENT_name_gen2 ON PATIENT_name_gen2.id=ADMINISTRATION_gen4.name\n"
 	"                INNER JOIN bar AS somePerson ON somePerson.id=PATIENT_name_gen2.patient\n"
 	"             ) AS union1";
-BOOST_AUTO_TEST_CASE( SQL0 ) {
-    sqlContext context;
-    SQLDriver driver(context);
-
-    IStreamContext str1(qs0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, driver.parse(str1));
-    sql::SQLQuery* q1 = driver.root;
-
-    IStreamContext str2(qs0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, driver.parse(str2));
-    sql::SQLQuery* q2 = driver.root;
-
-    BOOST_CHECK_EQUAL(*q1, *q2);
-    delete q2;
-    delete q1;
-}
 
 BOOST_AUTO_TEST_CASE( SQL1 ) {
     sqlContext context;
