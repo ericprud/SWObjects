@@ -605,11 +605,15 @@ NumericExpression:
 AdditiveExpression:
     // MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | NumericLiteralPositive | NumericLiteralNegative )*
     MultiplicativeExpression _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star	{
-	$$ = $2->size() > 0
-	    ? NULL // !!! new sql::ArithmeticSum($1, $2)
-	    : $1;
-	$2->clear();
-	delete $2;
+	if ($2->size() > 0) {
+	    std::vector<const sql::Expression*> v;
+	    v.push_back($1);
+	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
+		 it != $2->end(); ++it)
+		v.push_back(*it);
+	    $$ = new sql::ArithmeticSum(&v);
+	} else
+	    $$ = $1;
     }
 ;
 
@@ -619,14 +623,10 @@ _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpr
 	$$ = $2;
     }
   | GT_MINUS MultiplicativeExpression	{
-	$$ = NULL; // !! new sql::ArithmeticNegation($2);
+	$$ = new sql::ArithmeticNegation($2);
     }
-  | NumericLiteralPositive	{
-	$$ = NULL; // !! new sql::NumberExpression($1);
-    }
-  | NumericLiteralNegative	{
-	$$ = NULL; // !! new sql::NumberExpression($1);
-    }
+  | NumericLiteralPositive
+  | NumericLiteralNegative
 ;
 
 // ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | NumericLiteralPositive | NumericLiteralNegative )*
@@ -643,8 +643,15 @@ _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeEx
 MultiplicativeExpression:
     // UnaryExpression ( '*' UnaryExpression | '/' UnaryExpression )*
     UnaryExpression _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star	{
-	$$ = $2->size() > 0 ? NULL : $1; // !!! new sql::ArithmeticProduct($1, $2) : $1;
-	$2->clear();
+	if ($2->size() > 0) {
+	    std::vector<const sql::Expression*> v;
+	    v.push_back($1);
+	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
+		 it != $2->end(); ++it)
+		v.push_back(*it);
+	    $$ = new sql::ArithmeticProduct(&v);
+	} else
+	    $$ = $1;
 	delete $2;
     }
 ;
@@ -655,7 +662,7 @@ _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C:
 	$$ = $2;
     }
   | GT_DIVIDE UnaryExpression	{
-	$$ = NULL; // !! new sql::ArithmeticInverse($2);
+	$$ = new sql::ArithmeticInverse($2);
     }
 ;
 
@@ -672,13 +679,13 @@ _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_S
 
 UnaryExpression:
     GT_NOT PrimaryExpression	{
-	$$ = NULL; // !! new sql::BooleanNegation($2);
+	$$ = new sql::BooleanNegation($2);
     }
   | GT_PLUS PrimaryExpression	{
 	$$ = $2;
     }
   | GT_MINUS PrimaryExpression	{
-	$$ = NULL; // !! new sql::ArithmeticNegation($2);
+	$$ = new sql::ArithmeticNegation($2);
     }
   | PrimaryExpression	
 ;

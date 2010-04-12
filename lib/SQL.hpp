@@ -58,6 +58,11 @@ namespace w3c_sw {
 	class BooleanGT;
 	class BooleanLE;
 	class BooleanGE;
+	class BooleanNegation;
+	class ArithmeticProduct;
+	class ArithmeticInverse;
+	class ArithmeticSum;
+	class ArithmeticNegation;
 	class ConcatConstraint;
 	class RegexConstraint;
 
@@ -88,6 +93,11 @@ namespace w3c_sw {
 	    virtual bool finalEq (const BooleanGT&) const { return false; }
 	    virtual bool finalEq (const BooleanLE&) const { return false; }
 	    virtual bool finalEq (const BooleanGE&) const { return false; }
+	    virtual bool finalEq (const BooleanNegation&) const { return false; }
+	    virtual bool finalEq (const ArithmeticProduct&) const { return false; }
+	    virtual bool finalEq (const ArithmeticInverse&) const { return false; }
+	    virtual bool finalEq (const ArithmeticSum&) const { return false; }
+	    virtual bool finalEq (const ArithmeticNegation&) const { return false; }
 	    virtual bool finalEq (const ConcatConstraint&) const { return false; }
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
 	    virtual bool operator==(const WhereConstraint&) const = 0;
@@ -318,6 +328,118 @@ namespace w3c_sw {
 	    }
 	    virtual const char* getComparisonNotation () const { return ">="; };
 	};
+	class UnaryExpression : public Expression {
+	protected:
+	    const Expression* arg;
+	public:
+	    UnaryExpression (const Expression* arg) : Expression(), arg(arg) {  }
+	    ~UnaryExpression () {
+		delete arg;
+	    }
+	    bool baseEq (const UnaryExpression& r) const {
+		return *arg == *r.arg;
+	    }
+	    virtual const char* getPrefixOperator() const = 0;
+	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High) const {
+		std::stringstream s;
+		if (getPrecedence() < parentPrec) s << "(";
+		s << getPrefixOperator();
+		s << arg->toString();
+		if (getPrecedence() < parentPrec) s << ")";
+		return s.str();
+	    }
+	};
+	class NaryExpression : public Expression {
+	protected:
+	    std::vector<const Expression*> args;
+	public:
+	    NaryExpression (std::vector<const Expression*>* args) : Expression(), args(*args) {  }
+	    ~NaryExpression () {
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); ++it)
+		    delete *it;
+	    }
+	    bool baseEq (const NaryExpression& r) const {
+		return ptrequal(args.begin(), args.end(), r.args.begin());
+	    }
+	    virtual const char* getInfixOperator() const = 0;
+	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High) const {
+		std::stringstream s;
+		if (getPrecedence() < parentPrec) s << "(";
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); ++it) {
+		    if (it != args.begin())
+			s << getInfixOperator();
+		    s << (*it)->toString();
+		}
+		if (getPrecedence() < parentPrec) s << ")";
+		return s.str();
+	    }
+	};
+	class BooleanNegation : public UnaryExpression {
+	public:
+	    BooleanNegation (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalEq (const BooleanNegation& l) const {
+		return l.UnaryExpression::baseEq(*this);
+	    }	    
+	    virtual bool operator== (const WhereConstraint& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual const char* getPrefixOperator () const { return "!"; }
+	    virtual std::string toString (std::string, e_PREC) const {
+		return std::string("CONCAT")
+		    + UnaryExpression::toString("", PREC_Low);
+	    }
+	};
+	class ArithmeticProduct : public NaryExpression {
+	public:
+	    ArithmeticProduct (std::vector<const Expression*>* args) : NaryExpression(args) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalEq (const ArithmeticProduct& l) const {
+		return l.NaryExpression::baseEq(*this);
+	    }	    
+	    virtual bool operator== (const WhereConstraint& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual const char* getInfixOperator () const { return " * "; }
+	};
+	class ArithmeticInverse : public UnaryExpression {
+	public:
+	    ArithmeticInverse (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalEq (const ArithmeticInverse& l) const {
+		return l.UnaryExpression::baseEq(*this);
+	    }	    
+	    virtual bool operator== (const WhereConstraint& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual const char* getPrefixOperator () const { return "1/"; }
+	};
+	class ArithmeticSum : public NaryExpression {
+	public:
+	    ArithmeticSum (std::vector<const Expression*>* args) : NaryExpression(args) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalEq (const ArithmeticSum& l) const {
+		return l.NaryExpression::baseEq(*this);
+	    }	    
+	    virtual bool operator== (const WhereConstraint& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual const char* getInfixOperator () const { return " + "; }
+	};
+	class ArithmeticNegation : public UnaryExpression {
+	public:
+	    ArithmeticNegation (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalEq (const ArithmeticNegation& l) const {
+		return l.UnaryExpression::baseEq(*this);
+	    }	    
+	    virtual bool operator== (const WhereConstraint& r) const {
+		return r.finalEq(*this);
+	    }
+	    virtual const char* getPrefixOperator () const { return "-"; }
+	};
 	class LiteralConstraint : public WhereConstraint {
 	    std::string value;
 	public:
@@ -470,33 +592,20 @@ namespace w3c_sw {
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_Pos; }
 	};
-	class ConcatConstraint : public WhereConstraint {
-	    std::vector<const Expression*> args;
+	class ConcatConstraint : public NaryExpression {
 	public:
-	    ConcatConstraint (std::vector<const Expression*>* args) : WhereConstraint(), args(*args) {  }
-	    ~ConcatConstraint () {
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
-		     it != args.end(); ++it)
-		    delete *it;
-	    }
+	    ConcatConstraint (std::vector<const Expression*>* args) : NaryExpression(args) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ConcatConstraint& l) const {
-		return l.args == args; // @@ does this compare by ref? by val?
+		return l.NaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
 	    }
+	    virtual const char* getInfixOperator () const { return ", "; }
 	    virtual std::string toString (std::string, e_PREC) const {
-		std::stringstream s;
-		s << "CONCAT(";
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
-		     it != args.end(); ++it) {
-		    if (it != args.begin())
-			s << ", ";
-		    s << (*it)->toString();
-		}
-		s << ")";
-		return s.str();
+		return std::string("CONCAT")
+		    + NaryExpression::toString("", PREC_Low);
 	    }
 	};
 
