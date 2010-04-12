@@ -260,6 +260,17 @@ public:
     virtual void express(Expressor* p_expressor) const;
 };
 
+
+/* ptrequal == algorithm to test equivalence of ptr iteratables. */
+template<typename LEFT, typename RIGHT>
+inline bool ptrequal(LEFT lit, LEFT end, RIGHT rit) {
+    for (; lit != end; ++lit, ++rit)
+	if (!(**lit == **rit))
+	    return false;
+    return true;
+}
+
+/* Vector implementing Base. */
 template <typename T> class ProductionVector : public Base {
 protected:
     std::vector<T> data;
