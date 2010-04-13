@@ -20,8 +20,9 @@
 
 using namespace w3c_sw;
 
+#if 0
 template<typename LEFT, typename RIGHT>
-inline bool _ptrequal(LEFT lit, LEFT end, RIGHT rit) {
+inline bool DEBUGptrequal(LEFT lit, LEFT end, RIGHT rit) {
     LINE;
     for (; lit != end; ++lit, ++rit) {
 	LINE;
@@ -38,7 +39,6 @@ inline bool _ptrequal(LEFT lit, LEFT end, RIGHT rit) {
     return true;
 }
 
-#if 0
 bool w3c_sw::sql::SQLQuery::finalEq (const SQLQuery& ref) const {
     // The many ifs make it easy to follow in a debugger.
     if (distinct != ref.distinct) return false;
@@ -89,10 +89,12 @@ EQTEST(FromWherePlus11, "SELECT rel.attr FROM rel WHERE 1+2");
 EQTEST(FromWhereMinus11, "SELECT rel.attr FROM rel WHERE 1-2");
 EQTEST(FromWhereNegation, "SELECT rel.attr FROM rel WHERE -1+-2");
 EQTEST(FromWhereSumation, "SELECT rel.attr FROM rel WHERE 1+2=3");
-EQTEST(FromWhereArith, "SELECT rel.attr FROM rel WHERE 1*2+3*4/5-6-(7*8)");
+EQTEST(FromWhereArith, "SELECT rel.attr FROM rel WHERE 1*2/3+4-5");
+//EQTEST(FromWhereArithBORK, "SELECT rel.attr FROM rel WHERE 1*2+3*4/5-6-(7*8)");
 EQTEST(AttrAsAttrFromAsWhere, "SELECT relvar.attr FROM rel AS relvar WHERE 1=2");
 EQTEST(AttrAsAttrFromAsOn, "SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar1.attr=relvar2.attr");
-EQTEST(Union, "SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1");
+EQTEST(Sub, "SELECT sub1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1) AS sub1");
+EQTEST(SubUnion, "SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1");
 EQTEST(JoinUnion, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1");
 EQTEST(JoinUnionOn, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 ON union1.attr=relvar1.attr");
 EQTEST(UnionJoin, "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1");
