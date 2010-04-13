@@ -849,16 +849,16 @@ namespace w3c_sw {
 	    p_FunctionCall->express(this);
 	}
 	/* Expressions */
-	virtual void booleanNegation (const BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
+	virtual void booleanNegation (const w3c_sw::BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	    curConstraint = new NegationConstraint(curConstraint);
 	}
-	virtual void arithmeticNegation (const ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
+	virtual void arithmeticNegation (const w3c_sw::ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
-	virtual void arithmeticInverse (const ArithmeticInverse* const, const w3c_sw::Expression* p_Expression) {
+	virtual void arithmeticInverse (const w3c_sw::ArithmeticInverse* const, const w3c_sw::Expression* p_Expression) {
 	    MARK;
 	    p_Expression->express(this);
 	}
@@ -891,11 +891,11 @@ namespace w3c_sw {
 	    }
 	    curConstraint = c;
 	}
-	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	virtual void arithmeticSum (const w3c_sw::ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    _arithOp("+", p_Expressions, PREC_Plus);
 	}
-	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	virtual void arithmeticProduct (const w3c_sw::ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    MARK;
 	    _arithOp("*", p_Expressions, PREC_Times);
 	}
