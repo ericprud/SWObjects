@@ -258,9 +258,9 @@ public:
 %token <p_NIL> NIL
 
 /* Productions */
-%type <p_Operation> _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C
+%type <p_Operation> _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C
 		    Query Select Construct Describe Ask  // SPARQL 1
-		    Update Manage Replace Delete Insert Load Clear Create Drop // SPARUL
+		    Update Replace Delete Insert Load Clear Create Drop // SPARUL
 
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
 		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
@@ -333,9 +333,9 @@ public:
 %type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C
 			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
 
-%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName GraphIRI
-	      _QGraphIRI_E_Opt _Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt
-	      _O_QIT_INTO_E_S_QIRIref_E_C
+%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName GraphRef
+	      _QGraphRef_E_Opt _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt
+	      _O_QIT_INTO_E_S_QGraphRef_E_C
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C
 			 _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
 
@@ -360,27 +360,9 @@ public:
  /*** BEGIN SPARQLfed language structure. ***/
 Query:
     // Prologue ( Select | Construct | Describe | Ask | Replace | Update | Magage )
-    Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C	{
+    Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C	{
 	driver.root = $$ = $2;
     }
-;
-
-// Select | Construct | Describe | Ask | Replace | Update | Magage
-_O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_Or_QManage_E_C:
-    Select	
-  | Construct	
-  | Describe	
-  | Ask	
-  | Replace	
-  | Update	
-  | Manage	
-;
-
-Update:
-    Insert	
-  | Delete	
-  | Load	
-  | Clear	
 ;
 
 Replace:
@@ -390,99 +372,14 @@ Replace:
     }
 ;
 
-Insert:
-    IT_INSERT GraphTemplate {
-	$<p_TableOperation>$ = driver.curOp;
-	driver.curOp = NULL;
-      } _QWhereClause_E_Opt	{
-	$$ = new Insert($<p_TableOperation>3, $4);
-      }
-;
-
-Delete:
-    IT_DELETE GraphTemplate {
-	$<p_TableOperation>$ = driver.curOp;
-	driver.curOp = NULL;
-      } _QWhereClause_E_Opt	{
-	$$ = new Delete($<p_TableOperation>3, $4);
-      }
-;
-
-Load:
-    IT_LOAD _QIRIref_E_Plus _Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt	{
-	$$ = new Load($2, $3);
-    }
-;
-
-Clear:
-    IT_CLEAR _QGraphIRI_E_Opt	{
-	$$ = new Clear($2);
-    }
-;
-
-// IRIref+
-_QIRIref_E_Plus:
-    IRIref	{
-	$$ = new ProductionVector<const URI*>($1);
-    }
-  | _QIRIref_E_Plus IRIref	{
-	$1->push_back($2);
-	$$ = $1;
-    }
-;
-
-// 'INTO' IRIref
-_O_QIT_INTO_E_S_QIRIref_E_C:
-    IT_INTO IRIref	{
-	$$ = $2;
-    }
-;
-
-// ( 'INTO' IRIref )?
-_Q_O_QIT_INTO_E_S_QIRIref_E_C_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | _O_QIT_INTO_E_S_QIRIref_E_C	
-;
-
-GraphIRI:
-    IT_GRAPH IRIref	{
-	$$ = $2;
-    }
-;
-
-_QGraphIRI_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | GraphIRI	
-;
-
-Manage:
-    Create	
-  | Drop	
-;
-
-Create:
-    IT_CREATE _QIT_SILENT_E_Opt GraphIRI	{
-	$$ = new Create($2, $3);
-    }
-;
-
-_QIT_SILENT_E_Opt:
-    {
-	$$ = SILENT_No;
-    }
-  | IT_SILENT	{
-	$$ = SILENT_Yes;
-}
-;
-
-Drop:
-    IT_DROP _QIT_SILENT_E_Opt GraphIRI	{
-	$$ = new Drop($2, $3);
-}
+// Select | Construct | Describe | Ask | Replace | Update | Magage
+_O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C:
+    Select	
+  | Construct	
+  | Describe	
+  | Ask	
+  | Replace	
+  | Update	
 ;
 
 Prologue:
@@ -803,6 +700,105 @@ LimitClause:
 OffsetClause:
     IT_OFFSET INTEGER	{
 	$$.offset = ((IntegerRDFLiteral*)$2)->getValue();
+    }
+;
+
+Update:
+    Insert	
+  | Delete	
+  | Load	
+  | Clear	
+  | Drop	
+  | Create	
+;
+
+Insert:
+    IT_INSERT GraphTemplate {
+	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
+      } _QWhereClause_E_Opt	{
+	$$ = new Insert($<p_TableOperation>3, $4);
+      }
+;
+
+Delete:
+    IT_DELETE GraphTemplate {
+	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
+      } _QWhereClause_E_Opt	{
+	$$ = new Delete($<p_TableOperation>3, $4);
+      }
+;
+
+Clear:
+    IT_CLEAR _QGraphRef_E_Opt	{
+	$$ = new Clear($2);
+    }
+;
+
+Load:
+    IT_LOAD _QIRIref_E_Plus _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt	{
+	$$ = new Load($2, $3);
+    }
+;
+
+// IRIref+
+_QIRIref_E_Plus:
+    IRIref	{
+	$$ = new ProductionVector<const URI*>($1);
+    }
+  | _QIRIref_E_Plus IRIref	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
+// 'INTO' IRIref
+_O_QIT_INTO_E_S_QGraphRef_E_C:
+    IT_INTO GraphRef	{
+	$$ = $2;
+    }
+;
+
+// ( 'INTO' IRIref )?
+_Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | _O_QIT_INTO_E_S_QGraphRef_E_C	
+;
+
+_QGraphRef_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | GraphRef	
+;
+
+_QIT_SILENT_E_Opt:
+    {
+	$$ = SILENT_No;
+    }
+  | IT_SILENT	{
+	$$ = SILENT_Yes;
+}
+;
+
+Drop:
+    IT_DROP _QIT_SILENT_E_Opt IRIref	{
+	$$ = new Drop($2, $3);
+}
+;
+
+Create:
+    IT_CREATE _QIT_SILENT_E_Opt IRIref	{
+	$$ = new Create($2, $3);
+    }
+;
+
+GraphRef:
+    IT_GRAPH IRIref	{
+	$$ = $2;
     }
 ;
 
