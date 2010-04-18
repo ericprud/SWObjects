@@ -251,6 +251,7 @@ namespace w3c_sw {
     struct {int limit; int offset;} p_LimitOffsetPair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
     struct {Operation* operation; WhereClause* whereClause;} p_OperationWhereClausePair;
+    struct {e_distinctness distinctness; VarSet* varSet;} p_Project;
     s_OrderConditionPair p_OrderConditionPair;
     std::vector<s_OrderConditionPair>* p_OrderConditions;
     TableConjunction* p_TableConjunction;
@@ -308,7 +309,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 312 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 313 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -596,7 +597,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 600 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 601 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

@@ -173,6 +173,7 @@ public:
     struct {int limit; int offset;} p_LimitOffsetPair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
     struct {Operation* operation; WhereClause* whereClause;} p_OperationWhereClausePair;
+    struct {e_distinctness distinctness; VarSet* varSet;} p_Project;
     s_OrderConditionPair p_OrderConditionPair;
     std::vector<s_OrderConditionPair>* p_OrderConditions;
     TableConjunction* p_TableConjunction;
@@ -262,6 +263,7 @@ public:
 		    Query Select Construct Describe Ask  // SPARQL 1
 		    Update Replace Delete Insert Load Clear Create Drop // SPARUL
 
+%type <p_Project> Project
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
 		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
@@ -417,9 +419,17 @@ PrefixDecl:
 ;
 
 Select:
-    // 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( Var+ | '*' ) DatasetClause* WhereClause SolutionModifier
-    IT_SELECT _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Plus_Or_QGT_TIMES_E_C _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	$$ = new Select($2, $3, $4, $5, $6);
+    // Project DatasetClause* WhereClause SolutionModifier
+    IT_SELECT Project _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	$$ = new Select($2.distinctness, $2.varSet, $3, $4, $5);
+    }
+;
+
+Project:
+    // 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( Var+ | '*' )
+    _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Plus_Or_QGT_TIMES_E_C	{
+	$$.distinctness = $1;
+	$$.varSet = $2;
     }
 ;
 
@@ -602,11 +612,6 @@ _QLimitOffsetClauses_E_Opt:
   | LimitOffsetClauses
 ;
 
-LimitOffsetClauses:
-    // LimitClause OffsetClause? | OffsetClause LimitClause?
-    _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt
-;
-
 // OffsetClause?
 _QOffsetClause_E_Opt:
     {
@@ -621,18 +626,6 @@ _QLimitClause_E_Opt:
 	$$.limit = LIMIT_None;
     }
   | LimitClause	
-;
-
-// LimitClause OffsetClause? | OffsetClause LimitClause?
-_QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt:
-    LimitClause _QOffsetClause_E_Opt	{
-	$$.limit = $1.limit;
-	$$.offset = $2.offset;
-    }
-  | OffsetClause _QLimitClause_E_Opt	{
-	$$.limit = $2.limit;
-	$$.offset = $1.offset;
-    }
 ;
 
 OrderClause:
@@ -691,6 +684,23 @@ _O_QConstraint_E_Or_QVar_E_C:
     }
 ;
 
+LimitOffsetClauses:
+    // LimitClause OffsetClause? | OffsetClause LimitClause?
+    _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt
+;
+
+// LimitClause OffsetClause? | OffsetClause LimitClause?
+_QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt:
+    LimitClause _QOffsetClause_E_Opt	{
+	$$.limit = $1.limit;
+	$$.offset = $2.offset;
+    }
+  | OffsetClause _QLimitClause_E_Opt	{
+	$$.limit = $2.limit;
+	$$.offset = $1.offset;
+    }
+;
+
 LimitClause:
     IT_LIMIT INTEGER	{
 	$$.limit = ((IntegerRDFLiteral*)$2)->getValue();
@@ -704,12 +714,16 @@ OffsetClause:
 ;
 
 Update:
-    Insert	
-  | Delete	
+    Modify	
   | Load	
   | Clear	
   | Drop	
   | Create	
+;
+
+Modify:
+    Insert	
+  | Delete	
 ;
 
 Insert:
