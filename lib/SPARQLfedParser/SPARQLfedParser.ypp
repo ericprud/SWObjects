@@ -259,9 +259,9 @@ public:
 %token <p_NIL> NIL
 
 /* Productions */
-%type <p_Operation> _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C
-		    Query Select Construct Describe Ask  // SPARQL 1
-		    Update Replace Delete Insert Load Clear Create Drop // SPARUL
+%type <p_Operation> _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_Or_QReplace_E_Or_QUpdate_E_C
+		    Query SelectQuery SubSelect ConstructQuery DescribeQuery AskQuery  // SPARQL 1
+		    Update Modify Replace Delete Insert Load Clear Create Drop // SPARUL
 
 %type <p_Project> Project
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
@@ -279,8 +279,8 @@ public:
 			DefaultGraphClause NamedGraphClause
 %type <p_WhereClause> _QWhereClause_E_Opt WhereClause
 %type <p_SolutionModifier> SolutionModifier
+ //%type <p_TODO> GroupClause GroupCondition HavingClause HavingCondition
 %type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt
-			  _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt
 			  LimitClause _QLimitClause_E_Opt
 			  OffsetClause _QOffsetClause_E_Opt
 %type <p_OrderConditions> _QOrderClause_E_Opt OrderClause
@@ -295,8 +295,7 @@ public:
 %type <p_BasicGraphPattern> ConstructTemplate
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
-%type <p_Expressions> _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C
-		      _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
+%type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
 		      _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star
 		      _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star
 		      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
@@ -307,8 +306,7 @@ public:
 	      BlankNodePropertyList
 	      Verb VarOrIRIref VarOrTerm GraphNode
 	      GraphTerm BlankNode TriplesNode Generator
-%type <p_POSs> _QGraphNode_E_Star _O_QGraphNode_E_S_QGraphNode_E_Star_C
-	       _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt
+%type <p_POSs> _QGraphNode_E_Plus
 	       _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
@@ -361,10 +359,20 @@ public:
 
  /*** BEGIN SPARQLfed language structure. ***/
 Query:
-    // Prologue ( Select | Construct | Describe | Ask | Replace | Update | Magage )
-    Prologue _O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C	{
+    // Prologue ( SelectQuery | Construct | Describe | Ask | Replace | Update )
+    Prologue _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_Or_QReplace_E_Or_QUpdate_E_C	{
 	driver.root = $$ = $2;
     }
+;
+
+// SelectQuery | ConstructQuery | DescribeQuery | AskQuery | Replace | Update
+_O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_Or_QReplace_E_Or_QUpdate_E_C:
+    SelectQuery	
+  | ConstructQuery	
+  | DescribeQuery	
+  | AskQuery	
+  | Replace	
+  | Update	
 ;
 
 Replace:
@@ -372,16 +380,6 @@ Replace:
 	$$ = new Replace($2, driver.curOp);
 	driver.curOp = NULL;
     }
-;
-
-// Select | Construct | Describe | Ask | Replace | Update | Magage
-_O_QSelect_E_Or_QConstruct_E_Or_QDescribe_E_Or_QAsk_E_Or_QReplace_E_Or_QUpdate_E_C:
-    Select	
-  | Construct	
-  | Describe	
-  | Ask	
-  | Replace	
-  | Update	
 ;
 
 Prologue:
@@ -418,18 +416,38 @@ PrefixDecl:
       }
 ;
 
-Select:
+SelectQuery:
     // Project DatasetClause* WhereClause SolutionModifier
-    IT_SELECT Project _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	$$ = new Select($2.distinctness, $2.varSet, $3, $4, $5);
+    Project _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	$$ = new Select($1.distinctness, $1.varSet, $2, $3, $4);
+    }
+;
+
+// DatasetClause*
+_QDatasetClause_E_Star:
+    {
+	$$ = new ProductionVector<const DatasetClause*>();
+    }
+  | _QDatasetClause_E_Star DatasetClause	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
+/* @@ SubSelect needs to set curOP with the result of Select's ResultSet*/
+
+SubSelect:
+    // Project WhereClause SolutionModifier
+    Project WhereClause SolutionModifier	{
+	$$ = new Select($1.distinctness, $1.varSet, NULL, $2, $3);
     }
 ;
 
 Project:
     // 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( Var+ | '*' )
-    _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Plus_Or_QGT_TIMES_E_C	{
-	$$.distinctness = $1;
-	$$.varSet = $2;
+    IT_SELECT _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Plus_Or_QGT_TIMES_E_C	{
+	$$.distinctness = $2;
+	$$.varSet = $3;
     }
 ;
 
@@ -473,18 +491,7 @@ _O_QVar_E_Plus_Or_QGT_TIMES_E_C:
     }
 ;
 
-// DatasetClause*
-_QDatasetClause_E_Star:
-    {
-	$$ = new ProductionVector<const DatasetClause*>();
-    }
-  | _QDatasetClause_E_Star DatasetClause	{
-	$1->push_back($2);
-	$$ = $1;
-    }
-;
-
-Construct:
+ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
     IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
@@ -492,7 +499,7 @@ Construct:
     }
 ;
 
-Describe:
+DescribeQuery:
     // 'DESCRIBE' ( VarOrIRIref+ | '*' ) DatasetClause* WhereClause? SolutionModifier
     IT_DESCRIBE _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C _QDatasetClause_E_Star _QWhereClause_E_Opt SolutionModifier	{
 	$$ = new Describe($2, $3, $4, $5);
@@ -529,7 +536,7 @@ _QWhereClause_E_Opt:
   | WhereClause	
 ;
 
-Ask:
+AskQuery:
     // 'ASK' DatasetClause* WhereClause
     IT_ASK _QDatasetClause_E_Star WhereClause	{
 	$$ = new Ask($2, $3);
@@ -609,23 +616,7 @@ _QLimitOffsetClauses_E_Opt:
 	$$.limit = LIMIT_None;
 	$$.offset = OFFSET_None;
     }
-  | LimitOffsetClauses
-;
-
-// OffsetClause?
-_QOffsetClause_E_Opt:
-    {
-	$$.offset = OFFSET_None;
-    }
-  | OffsetClause	
-;
-
-// LimitClause?
-_QLimitClause_E_Opt:
-    {
-	$$.limit = LIMIT_None;
-    }
-  | LimitClause	
+  | LimitOffsetClauses	
 ;
 
 OrderClause:
@@ -649,7 +640,7 @@ _QOrderCondition_E_Plus:
 
 OrderCondition:
     // ( 'ASC' | 'DESC' ) BrackettedExpression
-    _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
+    _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C	
   | // Constraint | Var
     _O_QConstraint_E_Or_QVar_E_C	{
 	$$.ascOrDesc = ORDER_Asc;
@@ -686,11 +677,6 @@ _O_QConstraint_E_Or_QVar_E_C:
 
 LimitOffsetClauses:
     // LimitClause OffsetClause? | OffsetClause LimitClause?
-    _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt
-;
-
-// LimitClause OffsetClause? | OffsetClause LimitClause?
-_QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt:
     LimitClause _QOffsetClause_E_Opt	{
 	$$.limit = $1.limit;
 	$$.offset = $2.offset;
@@ -699,6 +685,22 @@ _QLimitClause_E_S_QOffsetClause_E_Opt_Or_QOffsetClause_E_S_QLimitClause_E_Opt:
 	$$.limit = $2.limit;
 	$$.offset = $1.offset;
     }
+;
+
+// OffsetClause?
+_QOffsetClause_E_Opt:
+    {
+	$$.offset = OFFSET_None;
+    }
+  | OffsetClause	
+;
+
+// LimitClause?
+_QLimitClause_E_Opt:
+    {
+	$$.limit = LIMIT_None;
+    }
+  | LimitClause	
 ;
 
 LimitClause:
@@ -750,6 +752,13 @@ Clear:
     }
 ;
 
+_QGraphRef_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | GraphRef	
+;
+
 Load:
     IT_LOAD _QIRIref_E_Plus _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt	{
 	$$ = new Load($2, $3);
@@ -782,11 +791,10 @@ _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt:
   | _O_QIT_INTO_E_S_QGraphRef_E_C	
 ;
 
-_QGraphRef_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | GraphRef	
+Drop:
+    IT_DROP _QIT_SILENT_E_Opt IRIref	{
+	$$ = new Drop($2, $3);
+}
 ;
 
 _QIT_SILENT_E_Opt:
@@ -795,12 +803,6 @@ _QIT_SILENT_E_Opt:
     }
   | IT_SILENT	{
 	$$ = SILENT_Yes;
-}
-;
-
-Drop:
-    IT_DROP _QIT_SILENT_E_Opt IRIref	{
-	$$ = new Drop($2, $3);
 }
 ;
 
@@ -868,15 +870,26 @@ _Q_O_QVarOrTerm_E_Or_QIT_NULL_E_C_E_Plus:
 ;
 
 GroupGraphPattern:
-    // '{' TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )* '}'
+    // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
 	driver.curOp = NULL;
 	driver.curBGP = NULL;
-      } _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star GT_RCURLEY	{
+      } _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C GT_RCURLEY	{
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
 	  driver.curBGP = NULL;
       }
+;
+
+// SbSelect | GroupGraphPatternSub
+_O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
+    SubSelect	
+  | GroupGraphPatternSub	
+;
+
+GroupGraphPatternSub:
+    // TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
+    _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star 
 ;
 
 // TriplesBlock?
@@ -1053,7 +1066,7 @@ _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
 // ( 'UNION' GroupGraphPattern )*
 _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
     
-  | _O_QIT_UNION_E_S_QGroupGraphPattern_E_C _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	
+  | _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star _O_QIT_UNION_E_S_QGroupGraphPattern_E_C	
 ;
 
 Filter:
@@ -1080,10 +1093,17 @@ FunctionCall:
 ;
 
 ArgList:
-    // ( NIL | '(' Expression ( ',' Expression )* ')' )
-    _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C	{
-	$$ = new ArgList($1);
+    // NIL | '(' Expression ( ',' Expression )* ')'
+    NIL	{
+	$$ = NULL;
     }
+  | // '(' Expression ( ',' Expression )* ')'
+    GT_LPAREN Expression {
+	driver.curExprList = new ProductionVector<const Expression*>($2);
+      } _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RPAREN	{
+	  $$ = new ArgList(driver.curExprList);
+	  driver.curExprList = NULL;
+      }
 ;
 
 // ',' Expression
@@ -1099,20 +1119,6 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star:
   | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _O_QGT_COMMA_E_S_QExpression_E_C	{
 	driver.curExprList->push_back($2);
     }
-;
-
-// ( NIL | '(' Expression ( ',' Expression )* ')' )
-_O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C:
-    NIL	{
-	$$ = NULL;
-    }
-  | // '(' Expression ( ',' Expression )* ')'
-    GT_LPAREN Expression {
-	driver.curExprList = new ProductionVector<const Expression*>($2);
-      } _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RPAREN	{
-	  $$ = driver.curExprList;
-	  driver.curExprList = NULL;
-      }
 ;
 
 ConstructTemplate:
@@ -1157,7 +1163,7 @@ TriplesSameSubject:
 
 PropertyListNotEmpty:
     // Verb ObjectList ( ';' ( Verb ObjectList )? )*
-    Verb ObjectList _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star
+    Verb ObjectList _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star	
 ;
 
 // Verb ObjectList
@@ -1195,7 +1201,7 @@ _QPropertyListNotEmpty_E_Opt:
 
 ObjectList:
     // Object ( ',' Object )*
-    Object _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star
+    Object _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star	
 ;
 
 // ',' Object
@@ -1246,7 +1252,7 @@ BlankNodePropertyList:
 
 Generator:
     // ('members' | 'starts' | 'ends' | 'any' | 'unordered')? '(' ( GraphNode GraphNode* )? ')' ;
-    _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt GT_RPAREN	{
+    _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
 	if ($1 == LIST_exact) {
 	    $$ = driver.createBNode();
 	    const POS* tail = $$;
@@ -1270,7 +1276,7 @@ Generator:
 ;
 
 _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C:
-    // 'members' | 'starts' | 'ends' | 'any' | 'unordered'
+    // 'MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED'
     IT_MEMBERS	{
 	$$ = LIST_members;
     }
@@ -1289,47 +1295,24 @@ _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 ;
 
 _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt:
-    // ('members' | 'starts' | 'ends' | 'any' | 'unordered')?
+    // ('MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED')?
     {
 	$$ = LIST_exact;
     }
   | _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C	
 ;
 
-// GraphNode*
-_QGraphNode_E_Star:
-    {
+// GraphNode+
+_QGraphNode_E_Plus:
+    GraphNode	{
 	$$ = new ProductionVector<const POS*>();
+	$$->push_back($1);
     }
-  | _QGraphNode_E_Star GraphNode	{
+
+    | _QGraphNode_E_Plus GraphNode	{
 	$1->push_back($2);
 	$$ = $1;
     }
-;
-
-// GraphNode GraphNode*
-_O_QGraphNode_E_S_QGraphNode_E_Star_C:
-    GraphNode _QGraphNode_E_Star	{
-	/* no push_front
-	   $2->push_front($1);
-	   $$ = $2;
-	   so copy the vector. */
-	$$ = new ProductionVector<const POS*>();
-	$$->push_back($1);
-	for (std::vector<const POS*>::iterator it = $2->begin();
-	     it != $2->end(); ++it)
-	    $$->push_back(*it);
-	$2->clear();
-	delete $2;
-    }
-;
-
-// ( GraphNode GraphNode* )?
-_Q_O_QGraphNode_E_S_QGraphNode_E_Star_C_E_Opt:
-    {
-	$$ = new ProductionVector<const POS*>();
-    }
-    | _O_QGraphNode_E_S_QGraphNode_E_Star_C	
 ;
 
 GraphNode:
