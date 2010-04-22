@@ -322,9 +322,9 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern(p_POS, p_GroupGraphPattern);
     }
-    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
-	     it != p_POSs->end(); ++it) {
+    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
+	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	     it != p_Expressions->end(); ++it) {
 	    (*it)->express(this);
 	    ret << ' ';
 	}

@@ -274,6 +274,7 @@ namespace w3c_sw {
     e_listModifier p_listModifier;
     e_Silence p_Silence;
     POSList* p_POSList;
+    ExprList* p_ExprList;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
     Construct* p_Construct;
@@ -309,7 +310,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 313 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 314 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -397,30 +398,41 @@ namespace w3c_sw {
      IT_isLITERAL = 330,
      IT_REGEX = 331,
      GT_DTYPE = 332,
-     IT_true = 333,
-     IT_false = 334,
-     INTEGER = 335,
-     DECIMAL = 336,
-     DOUBLE = 337,
-     INTEGER_POSITIVE = 338,
-     DECIMAL_POSITIVE = 339,
-     DOUBLE_POSITIVE = 340,
-     INTEGER_NEGATIVE = 341,
-     DECIMAL_NEGATIVE = 342,
-     DOUBLE_NEGATIVE = 343,
-     STRING_LITERAL1 = 344,
-     STRING_LITERAL_LONG1 = 345,
-     STRING_LITERAL2 = 346,
-     STRING_LITERAL_LONG2 = 347,
-     IRI_REF = 348,
-     PNAME_NS = 349,
-     PNAME_LN = 350,
-     BLANK_NODE_LABEL = 351,
-     ANON = 352,
-     VAR1 = 353,
-     VAR2 = 354,
-     LANGTAG = 355,
-     NIL = 356
+     IT_AS = 333,
+     GT_RPAREN_SPACECHAR = 334,
+     IT_GROUP = 335,
+     IT_HAVING = 336,
+     IT_COUNT = 337,
+     IT_SUM = 338,
+     IT_MIN = 339,
+     IT_MAX = 340,
+     IT_AVG = 341,
+     IT_GROUP_CONCAT = 342,
+     IT_SAMPLE = 343,
+     IT_true = 344,
+     IT_false = 345,
+     INTEGER = 346,
+     DECIMAL = 347,
+     DOUBLE = 348,
+     INTEGER_POSITIVE = 349,
+     DECIMAL_POSITIVE = 350,
+     DOUBLE_POSITIVE = 351,
+     INTEGER_NEGATIVE = 352,
+     DECIMAL_NEGATIVE = 353,
+     DOUBLE_NEGATIVE = 354,
+     STRING_LITERAL1 = 355,
+     STRING_LITERAL_LONG1 = 356,
+     STRING_LITERAL2 = 357,
+     STRING_LITERAL_LONG2 = 358,
+     IRI_REF = 359,
+     PNAME_NS = 360,
+     PNAME_LN = 361,
+     BLANK_NODE_LABEL = 362,
+     ANON = 363,
+     VAR1 = 364,
+     VAR2 = 365,
+     LANGTAG = 366,
+     NIL = 367
    };
 
     };
@@ -597,7 +609,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 601 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 613 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

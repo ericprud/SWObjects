@@ -372,8 +372,8 @@ void GraphGraphPattern::express (Expressor* p_expressor) const {
 void ServiceGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, posFactory, lexicalCompare);
 }
-void POSList::express (Expressor* p_expressor) const {
-    p_expressor->posList(this, &m_POSs);
+void ExprList::express (Expressor* p_expressor) const {
+    p_expressor->exprList(this, &m_Expressions);
 }
 void StarVarSet::express (Expressor* p_expressor) const {
     p_expressor->starVarSet(this);
@@ -1052,8 +1052,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
-    void POSList::project (ResultSet* rs) const {
-	rs->project(&m_POSs);
+    void ExprList::project (ResultSet* rs) const {
+	rs->project(&m_Expressions);
     }
 
     void StarVarSet::project (ResultSet* /* rs */) const {
@@ -1309,12 +1309,12 @@ compared against
 	 */
 	struct VarLister : public SPARQLSerializer {
 	    std::set<const POS*> vars;
-	    POSList* l;
-	    VarLister () : l(new POSList()) {  }
+	    ExprList* l;
+	    VarLister () : l(new ExprList()) {  }
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		if (vars.find(self) == vars.end()) {
 		    vars.insert(self);
-		    l->push_back(self);
+		    l->push_back(new POSExpression(self));
 		}
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }

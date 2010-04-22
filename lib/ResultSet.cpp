@@ -206,8 +206,20 @@ namespace w3c_sw {
 	}
     };
 
-    void ResultSet::project (ProductionVector<const POS*> const * varsV) {
-	std::set<const POS*> vars(varsV->begin(), varsV->end());
+    void ResultSet::project (ProductionVector<const Expression*> const * exprs) {
+	ProductionVector<const POS*> varsV; // !!! still thinking in vars.
+	for (std::vector<const Expression*>::const_iterator varExpr = exprs->begin();
+	     varExpr != exprs->end(); ++varExpr) {
+	    const POSExpression* ex = dynamic_cast<const POSExpression*>(*varExpr);
+	    if (ex == NULL) {
+		SPARQLSerializer s;
+		(*varExpr)->express(&s);
+		throw NotImplemented(std::string("project ") + s.str() + " (non-variable projectsion)");
+	    }
+	    varsV.push_back(ex->getPOS());
+	}
+
+	std::set<const POS*> vars(varsV.begin(), varsV.end());
 
 	/* List of vars to delete.
 	 * This is cheaper than walking all the bindings in a row, but assumes
@@ -232,8 +244,9 @@ namespace w3c_sw {
 	     var != toDel.end(); ++var)
 	    knownVars.erase(*var);
 
-	selectOrder = *varsV;
+	selectOrder = varsV; // elt's copied to selectOrder
 	orderedSelect = true;
+	varsV.clear(); // avoid destructor deleting bindings.
 
     }
 

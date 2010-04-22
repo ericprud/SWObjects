@@ -34,7 +34,7 @@ namespace w3c_sw {
 	    const Expression* expression;
 	    const Filter* filter;
 	    TableOperation* tableOperation;
-	    struct { VarSet* varSet; POSList* posList; } varSets;
+	    struct { VarSet* varSet; ExprList* exprList; } varSets;
 	    const DatasetClause* datasetClause;
 	    //ProductionVector<DatasetClause*> datasetClauses;
 	    SolutionModifier* solutionModifier;
@@ -190,17 +190,17 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new ServiceGraphPattern(name, last.tableOperation, posFactory, lexicalCompare);
 	}
-	void _POSs (const ProductionVector<const POS*>* p_POSs, POSList* p) { // !!! single use
-	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
-		 it != p_POSs->end(); it++) {
+	void _Expressions (const ProductionVector<const Expression*>* p_Expressions, ExprList* p) { // !!! single use
+	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); it++) {
 		(*it)->express(this);
-		p->push_back(last.posz.pos);
+		p->push_back(last.expression);
 	    }
 	}
-	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    POSList* ret = new POSList();
-	    _POSs(p_POSs, ret);
-	    last.varSets.varSet = last.varSets.posList = ret;
+	virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
+	    ExprList* ret = new ExprList();
+	    _Expressions(p_Expressions, ret);
+	    last.varSets.varSet = last.varSets.exprList = ret;
 	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    last.varSets.varSet = new StarVarSet();
@@ -239,8 +239,8 @@ namespace w3c_sw {
 	    last.binding = ret;
 	}
 	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	    p_Vars->express(this);
-	    BindingClause* ret = new BindingClause(last.varSets.posList);
+	    p_Vars->express(this); throw NotImplemented("SWObjectDuplicator::bindingClause");
+	    BindingClause* ret = new BindingClause(NULL); // last.varSets.posList);
 	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
 		 it != p_Bindings->end(); it++) {
 		(*it)->express(this);

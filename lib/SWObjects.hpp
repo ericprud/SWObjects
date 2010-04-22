@@ -271,6 +271,15 @@ inline bool ptrequal(LEFT lit, LEFT end, RIGHT rit) {
 }
 
 /* Vector implementing Base. */
+template <typename T> struct VectorOps {
+  template<typename U> 
+  static bool cmp(U a, U b) { return *a == *b; }
+};
+template <typename T> struct VectorOps<T*> {
+  template<typename U> 
+  static bool cmp(U a, U b) { return **a == **b; }
+};
+
 template <typename T> class ProductionVector : public Base {
 protected:
     std::vector<T> data;
@@ -314,6 +323,17 @@ public:
     bool operator== (const ProductionVector<T>& ref) const {
 	if (size() != ref.size())
 	    return false;
+	typename std::vector<T>::const_iterator mit = begin();
+	typename std::vector<T>::const_iterator rit = ref.begin();
+	for ( ; mit != end(); ++mit, ++rit)
+	    if ( !(VectorOps<T>::cmp(mit, rit)) )
+		return false;
+	return true;
+    }
+#if 0
+    bool operator== (const ProductionVector<T>& ref) const {
+	if (size() != ref.size())
+	    return false;
 
 	/* Compare unordered; sort of a cheat. */
 	std::set<T> mine(begin(), end());
@@ -325,6 +345,7 @@ public:
 	    return false;
 	return true;
     }
+#endif
 #if 0
     class iterator;
     iterator begin() { return iterator(data.begin(), this); }
@@ -417,6 +438,7 @@ protected:
     POS (std::string matched, bool gensym) : Terminal(matched, gensym) { }
     //    virtual int compareType (POS* to) = 0;
 public:
+    bool operator== (const POS& r) const { return this==&r; }
     virtual bool isConstant () const { return true; } // Override for variable types.
     static bool orderByType (const POS*, const POS*) { throw(std::runtime_error(FUNCTION_STRING)); }
     virtual int compare (POS* to, Result*) const {
@@ -1320,14 +1342,7 @@ public:
     TableJunction () : TableOperation(), m_TableOperations() {  }
 
     bool operator== (const TableJunction& ref) const {
-	if (m_TableOperations.size() != ref.m_TableOperations.size())
-	    return false;
-	std::vector<const TableOperation*>::const_iterator mit = begin();
-	std::vector<const TableOperation*>::const_iterator rit = ref.begin();
-	for ( ; mit != end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
+	return m_TableOperations == ref.m_TableOperations;
     }
     virtual void addTableOperation(const TableOperation* tableOp, bool flatten);
     std::vector<const TableOperation*>::iterator begin () { return m_TableOperations.begin(); }
@@ -1499,18 +1514,12 @@ public:
     }
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const Filter& ref) const {
-	if ( !(*m_TableOperation == *ref.m_TableOperation) )
-	    return false;
-	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
-	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
-	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
+	return *m_TableOperation == *ref.m_TableOperation
+	    && m_Expressions == ref.m_Expressions;
     }
     bool operator== (const TableOperation& ref) const {
 	const Filter* pref = dynamic_cast<const Filter*>(&ref);
-	return pref == NULL ? false : operator==(*pref);
+	return pref == NULL ? false : operator==(*pref); // calls Filter-specific operator==
     }
     virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const;
 };
@@ -1614,21 +1623,23 @@ public:
     virtual void project(ResultSet* rs) const = 0;
 };
 
-class POSList : public VarSet {
+class ExprList : public VarSet {
 private:
-    ProductionVector<const POS*> m_POSs;
+    ProductionVector<const Expression*> m_Expressions;
 public:
-    POSList () : VarSet(), m_POSs() {  }
-    ~POSList () { m_POSs.clear(); }
-    void push_back(const POS* v) { m_POSs.push_back(v); }
+    ExprList () : VarSet(), m_Expressions() {  }
+    // ExprList (ProductionVector<const Expression*> p_Expressions) : VarSet(), m_Expressions(p_Expressions) {  }
+    ExprList (const Expression* expr) : VarSet(), m_Expressions(expr) {  }
+    ~ExprList () { m_Expressions.clear(); }
+    void push_back(const Expression* v) { m_Expressions.push_back(v); }
     virtual void express(Expressor* p_expressor) const;
-    std::vector<const POS*>::iterator begin () { return m_POSs.begin(); }
-    std::vector<const POS*>::const_iterator begin () const { return m_POSs.begin(); }
-    std::vector<const POS*>::iterator end () { return m_POSs.end(); }
-    std::vector<const POS*>::const_iterator end () const { return m_POSs.end(); }
+    std::vector<const Expression*>::iterator begin () { return m_Expressions.begin(); }
+    std::vector<const Expression*>::const_iterator begin () const { return m_Expressions.begin(); }
+    std::vector<const Expression*>::iterator end () { return m_Expressions.end(); }
+    std::vector<const Expression*>::const_iterator end () const { return m_Expressions.end(); }
     virtual bool operator== (const VarSet& ref) const {
-	const POSList* pref = dynamic_cast<const POSList*>(&ref);
-	return pref == NULL ? false : m_POSs == pref->m_POSs;
+	const ExprList* pref = dynamic_cast<const ExprList*>(&ref);
+	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
     virtual void project (ResultSet* rs) const;
 };
@@ -1654,6 +1665,10 @@ protected:
 public:
     DatasetClause (const POS* p_IRIref, POSFactory* p_posFactory) : Base(), m_IRIref(p_IRIref), m_posFactory(p_posFactory) {  }
     ~DatasetClause () { /* m_IRIref is centrally managed */ }
+    bool operator== (const DatasetClause& ref) const {
+	const DatasetClause* pref = dynamic_cast<const DatasetClause*>(&ref);
+	return pref == NULL ? false : m_IRIref == ref.m_IRIref && m_posFactory == ref.m_posFactory;
+    }
     void loadGraph(RdfDB* db, const POS* name, BasicGraphPattern* target) const;
     virtual void loadData(RdfDB*) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
@@ -1708,8 +1723,36 @@ public:
 		    return false;
 	}
 	return m_OrderConditions == ref.m_OrderConditions;
+
+#if I_MAKE_m_OrderConditions_A_ProductionVector
+	return m_limit == ref.m_limit
+	    && m_offset == ref.m_offset
+	    && ( (m_OrderConditions != NULL
+		  && ref.m_OrderConditions != NULL
+		  && *m_OrderConditions == *ref.m_OrderConditions)
+		 || m_OrderConditions == ref.m_OrderConditions);
+#endif
     }
 };
+class POSList {
+private:
+    ProductionVector<const POS*> m_POSs;
+public:
+    POSList () : m_POSs() {  }
+    virtual ~POSList () { m_POSs.clear(); }
+    void push_back(const POS* v) { m_POSs.push_back(v); }
+    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("POSList::express"); }
+    std::vector<const POS*>::iterator begin () { return m_POSs.begin(); }
+    std::vector<const POS*>::const_iterator begin () const { return m_POSs.begin(); }
+    std::vector<const POS*>::iterator end () { return m_POSs.end(); }
+    std::vector<const POS*>::const_iterator end () const { return m_POSs.end(); }
+    bool operator== (const VarSet& ref) const {
+	const POSList* pref = dynamic_cast<const POSList*>(&ref);
+	return pref == NULL ? false : m_POSs == pref->m_POSs;
+    }
+    // virtual void project (ResultSet* rs) const;
+};
+
 class Binding : public ProductionVector<const POS*> {
 private:
 public:
@@ -1944,6 +1987,23 @@ public:
 	return pref == NULL ? false : m_POS == pref->m_POS;
     }
 };
+class AliasedExpression : public Expression {
+private:
+    const Expression* expr;
+    const Bindable* label;
+public:
+    AliasedExpression (const Expression* expr, const Bindable* label) : Expression(), expr(expr), label(label) {  }
+    ~AliasedExpression () { delete expr; }
+    // const Bindable* getLabel () const { return label; }
+    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("AliasedExpression::express"); }
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	return expr->eval(r, posFactory, evaluator);
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const AliasedExpression* pref = dynamic_cast<const AliasedExpression*>(&ref);
+	return pref == NULL ? false : label == pref->label && *expr == *pref->expr;
+    }
+};
 
 class ArgList : public Base {
 private:
@@ -1953,18 +2013,21 @@ public:
     typedef Args::iterator ArgIterator;
     ArgList (ProductionVector<const Expression*>* expressions) : Base(), expressions(expressions) {  }
     ~ArgList () { delete expressions; }
+    bool operator== (const ArgList& ref) const {
+	return *expressions == *ref.expressions;
+    }
     ArgIterator begin () const { return expressions->begin(); }
     ArgIterator end () const { return expressions->end(); }
     size_t size () const { return expressions->size(); }
     virtual void express(Expressor* p_expressor) const;
 };
 class FunctionCall : public Base {
-private:
+protected:
     const URI* m_IRIref;
     const ArgList* m_ArgList;
 public:
     FunctionCall (const URI* p_IRIref, const ArgList* p_ArgList) : Base(), m_IRIref(p_IRIref), m_ArgList(p_ArgList) {  }
-    FunctionCall (const URI* p_IRIref, Expression* arg1, Expression* arg2, Expression* arg3) : Base() {
+    FunctionCall (const URI* p_IRIref, const Expression* arg1, const Expression* arg2, const Expression* arg3) : Base() {
 	m_IRIref = p_IRIref;
 	ProductionVector<const Expression*>* args = new ProductionVector<const Expression*>();
 	if (arg1) args->push_back(arg1);
@@ -2141,16 +2204,41 @@ public:
 	throw NotImplemented(s.str());
     }
     bool operator== (const FunctionCall& ref) const {
-	if (m_IRIref != ref.m_IRIref)
+	return m_IRIref == ref.m_IRIref && *m_ArgList == *ref.m_ArgList;
 	    return false;
-	if (m_ArgList->size() != ref.m_ArgList->size())
+    }
+};
+class AggregateCall : public FunctionCall {
+private:
+    e_distinctness distinctness;
+public:
+    AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1)
+	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness) {  }
+    ~AggregateCall () {  }
+    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("AggregateCall::express"); }
+    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	if (distinctness == DIST_all)
+	    return FunctionCall::eval(r, posFactory, evaluator);
+	std::stringstream s;
+	s << m_IRIref->toString() << " DISTINCT " << '(';
+	std::vector<const POS*> subd;
+	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
+	    subd.push_back((*it)->eval(r, posFactory, evaluator));
+	for (std::vector<const POS*>::iterator it = subd.begin(); it != subd.end(); ++it) {
+	    if (it != subd.begin())
+		s << ", ";
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
+	}
+	s << ')';
+	throw NotImplemented(s.str());
+    }
+    bool operator== (const AggregateCall& ref) const {
+	if (distinctness != ref.distinctness)
 	    return false;
-	ArgList::ArgIterator mit = m_ArgList->begin();
-	ArgList::ArgIterator rit = ref.m_ArgList->begin();
-	for ( ; mit != m_ArgList->end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
+	return this->FunctionCall::operator==(ref);
     }
 };
 class FunctionCallExpression : public Expression {
@@ -2191,14 +2279,7 @@ public:
 	    m_Expressions.push_back(*it);
     }
     bool operator== (const NaryExpression& ref) const {
-	if (m_Expressions.size() != ref.m_Expressions.size())
-	    return false;
-	std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
-	std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
-	for ( ; mit != m_Expressions.end(); ++mit, ++rit)
-	    if ( !(**mit == **rit) )
-		return false;
-	return true;
+	return m_Expressions == ref.m_Expressions;
     }
     virtual const char* getInfixNotation() = 0;
 };
@@ -2844,7 +2925,8 @@ public:
     virtual void minusGraphPattern(const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) = 0;
-    virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
+    virtual void exprList(const ExprList* const self, const ProductionVector<const Expression*>* p_Expressions) = 0;
+    // virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const POS* p_IRIref) = 0;
     virtual void namedGraphClause(const NamedGraphClause* const self, const POS* p_IRIref) = 0;
@@ -2949,9 +3031,12 @@ public:
 	p_POS->express(this);
 	p_GroupGraphPattern->express(this);
     }
-    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	p_POSs->express(this);
+    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
+	p_Expressions->express(this);
     }
+//     virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+// 	p_POSs->express(this);
+//     }
     virtual void starVarSet (const StarVarSet* const) {  }
     virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	p_IRIref->express(this);

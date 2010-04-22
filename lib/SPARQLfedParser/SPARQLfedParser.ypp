@@ -196,6 +196,7 @@ public:
     e_listModifier p_listModifier;
     e_Silence p_Silence;
     POSList* p_POSList;
+    ExprList* p_ExprList;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
     Construct* p_Construct;
@@ -245,6 +246,8 @@ public:
        GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
+       IT_AS GT_RPAREN_SPACECHAR IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
+
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
 %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE
@@ -265,14 +268,18 @@ public:
 
 %type <p_Project> Project
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
-		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt
+		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _QIT_DISTINCT_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 %type <p_Silence> _QIT_SILENT_E_Opt
 
+%type <p_POSList> _QVar_E_Plus
 %type <p_URIs> _QIRIref_E_Plus
-%type <p_POSList> _QVar_E_Plus _QVarOrIRIref_E_Plus
-%type <p_VarSet> _O_QVar_E_Plus_Or_QGT_TIMES_E_C _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C
+%type <p_VarSet>  _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C
+                  _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_Plus_Or_QGT_TIMES_E_C
+%type <p_ExprList> _QVarOrIRIref_E_Plus
+                   _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C_E_Plus
+
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_DatasetClause> DatasetClause
 			_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C
@@ -299,6 +306,8 @@ public:
 		      _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star
 		      _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star
 		      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
+                      GroupClause HavingClause _QGroupCondition_E_Plus _QHavingCondition_E_Plus _QHavingClause_E_Opt ParamList _QParamList_E_Opt  _QGroupClause_E_Opt
+ // !!!  _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star
 
  /* Parts Of Speach */
 %type <p_POS> SourceSelector
@@ -313,7 +322,7 @@ public:
 			    NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
-%type <p_Variable> Var
+%type <p_Variable> Var _O_QIT_AS_E_S_QVar_E_C _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt
 
 /* Expressions */
 %type <p_Expression> Expression Constraint _O_QConstraint_E_Or_QVar_E_C
@@ -329,6 +338,9 @@ public:
 		     UnaryExpression PrimaryExpression RegexExpression
 		     _O_QGT_COMMA_E_S_QExpression_E_C
 		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
+                     _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C
+                     _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C
+                     GroupCondition HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
 
 %type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C
 			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
@@ -445,7 +457,7 @@ SubSelect:
 
 Project:
     // 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( Var+ | '*' )
-    IT_SELECT _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Plus_Or_QGT_TIMES_E_C	{
+    IT_SELECT _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_Plus_Or_QGT_TIMES_E_C	{
 	$$.distinctness = $2;
 	$$.varSet = $3;
     }
@@ -469,22 +481,63 @@ _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt:
   | _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C	
 ;
 
-// Var+
-_QVar_E_Plus:
-    Var	{
-	$$ = new POSList;
-	$$->push_back($1);
-    }
-  | _QVar_E_Plus Var	{
-	$1->push_back($2);
-	$$ = $1;
+// "AS" Var
+_O_QIT_AS_E_S_QVar_E_C:
+    IT_AS Var	{
+	$$ = $2;
     }
 ;
 
-// Var+ | '*'
-_O_QVar_E_Plus_Or_QGT_TIMES_E_C:
-    _QVar_E_Plus	{
-	$$ = $1;
+// ( "AS" Var )?
+_Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | _O_QIT_AS_E_S_QVar_E_C	
+;
+
+// "(" Expression ( "AS" Var )? ")"
+_O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C:
+    GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{ // _SPACECHAR ?
+	$$ = $3 ? new AliasedExpression($2, $3) : $2;
+    }
+;
+
+// ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( "(" Expression ( "AS" Var )? ") " ) )+
+_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C:
+    Var	{
+	$$ = new POSExpression($1);
+    }
+  | Aggregate	
+  | BuiltInCall	
+  | FunctionCall	
+  | RDFLiteral	{
+	$$ = new POSExpression($1);
+    }
+  | NumericLiteral	{
+	$$ = new POSExpression($1);
+    }
+  | BooleanLiteral	{
+	$$ = new POSExpression($1);
+    }
+  | // "(" Expression ( "AS" Var )? ")"
+    _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C	
+;
+
+// ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( "(" Expression ( "AS" Var )? ") " ) )+
+_Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C_E_Plus:
+    _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C	{
+	$$ = new ExprList($1);
+    }
+  | _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C_E_Plus _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C	{
+    $1->push_back($2);
+    $$ = $1;
+}
+;
+
+_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_Plus_Or_QGT_TIMES_E_C:
+    _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_SPACECHAR_E_C_E_Plus	{
+	$$ = $1; // Grammar action needed for implicit upcast.
     }
   | GT_TIMES	{
 	$$ = new StarVarSet();
@@ -509,11 +562,11 @@ DescribeQuery:
 // VarOrIRIref+
 _QVarOrIRIref_E_Plus:
     VarOrIRIref	{
-	$$ = new POSList;
-	$$->push_back($1);
+	$$ = new ExprList();
+	$$->push_back(new POSExpression($1));
     }
   | _QVarOrIRIref_E_Plus VarOrIRIref	{
-	$1->push_back($2);
+      $1->push_back(new POSExpression($2));
 	$$ = $1;
     }
 ;
@@ -596,10 +649,26 @@ _QBindingClause_E_Opt:
 ;
 
 SolutionModifier:
-    // OrderClause? LimitOffsetClauses?
-    _QOrderClause_E_Opt _QLimitOffsetClauses_E_Opt	{
-	$$ = new SolutionModifier($1, $2.limit, $2.offset);
+    // GroupClause? HavingClauses? OrderClause? LimitOffsetClauses?
+    _QGroupClause_E_Opt _QHavingClause_E_Opt _QOrderClause_E_Opt _QLimitOffsetClauses_E_Opt	{
+	$$ = new SolutionModifier($3, $4.limit, $4.offset); // !!!
     }
+;
+
+// GroupClause?
+_QGroupClause_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | GroupClause	
+;
+
+// HavingClause?
+_QHavingClause_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | HavingClause	
 ;
 
 // OrderClause?
@@ -617,6 +686,54 @@ _QLimitOffsetClauses_E_Opt:
 	$$.offset = OFFSET_None;
     }
   | LimitOffsetClauses	
+;
+
+GroupClause:
+    IT_GROUP IT_BY _QGroupCondition_E_Plus	{
+	$$ = $3;
+    }
+;
+
+// GroupCondition+
+_QGroupCondition_E_Plus:
+    GroupCondition	{
+	$$ = new ProductionVector<const Expression*>($1);
+    }
+  | _QGroupCondition_E_Plus GroupCondition	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
+GroupCondition:
+    BuiltInCall	
+  | FunctionCall	
+  | GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
+	$$ = $3 ? new AliasedExpression($2, $3) : $2;
+    }
+  | Var	{
+	$$ = new POSExpression($1);
+    }
+;
+
+HavingClause:
+    IT_HAVING _QHavingCondition_E_Plus	{
+	$$ = $2;
+}
+;
+
+_QHavingCondition_E_Plus:
+    HavingCondition	{
+	$$ = new ProductionVector<const Expression*>($1);
+    }
+  | _QHavingCondition_E_Plus HavingCondition	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
+HavingCondition:
+    Constraint	
 ;
 
 OrderClause:
@@ -826,6 +943,18 @@ BindingClause:
 	  $$ = driver.curBindingClause;
 	  driver.curBindingClause = NULL;
       }
+;
+
+// Var+
+_QVar_E_Plus:
+    Var	{
+	$$ = new POSList;
+	$$->push_back($1);
+    }
+  | _QVar_E_Plus Var	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 // Binding*
@@ -1115,9 +1244,19 @@ _O_QGT_COMMA_E_S_QExpression_E_C:
 
 // ( ',' Expression )*
 _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star:
-
+    
   | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _O_QGT_COMMA_E_S_QExpression_E_C	{
 	driver.curExprList->push_back($2);
+    }
+;
+
+ParamList:
+    // '[' Expression ( ',' Expression )* ']'
+    GT_LBRACKET Expression {
+	driver.curExprList = new ProductionVector<const Expression*>($2);
+      } _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RBRACKET	{
+	  $$ = driver.curExprList;
+	  driver.curExprList = NULL;
     }
 ;
 
@@ -1618,6 +1757,54 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 	$$ = NULL;
     }
   | _O_QGT_COMMA_E_S_QExpression_E_C	
+;
+
+Aggregate:
+    IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-count"), $3, $4));
+    }
+  | IT_SUM GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sum"), $3, $4));
+    }
+  | IT_MIN GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-min"), $3, $4));
+    }
+  | IT_MAX GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-max"), $3, $4));
+    }
+  | IT_AVG GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-avg"), $3, $4));
+    }
+  | IT_GROUP_CONCAT _QParamList_E_Opt GT_LPAREN _QIT_DISTINCT_E_Opt ArgList GT_RPAREN	{
+	throw NotImplemented("CONCAT");
+	// $$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-group-concat"), $4, $2));
+    }
+  | IT_SAMPLE GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sample"), $3, $4));
+    }
+;
+
+_QIT_DISTINCT_E_Opt:
+    {
+	$$ = DIST_all;
+    }
+  | IT_DISTINCT	{
+	$$ = DIST_distinct;
+    }
+;
+
+_O_QGT_TIMES_E_Or_QExpression_E_C:
+    GT_TIMES	{
+	$$ = NULL;
+    }
+  | Expression	
+;
+
+_QParamList_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | ParamList	
 ;
 
 IRIrefOrFunction:

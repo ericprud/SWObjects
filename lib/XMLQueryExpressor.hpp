@@ -130,9 +130,9 @@ public:
 	} else
 	    p_GroupGraphPattern->express(this);
     }
-    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	xml->open("POSList");
-	p_POSs->express(this);
+    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
+	xml->open("ExprList");
+	p_Expressions->express(this);
 	xml->close();
     }
     virtual void starVarSet (const StarVarSet* const) {

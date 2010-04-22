@@ -612,7 +612,7 @@ namespace w3c_sw {
 	    return true;
 	}
 
-	void project(ProductionVector<const POS*> const * varsV);
+	void project(ProductionVector<const Expression*> const * varsV);
 	void restrict(const Expression* expression);
 	void order(std::vector<s_OrderConditionPair>* orderConditions);
 	void order();

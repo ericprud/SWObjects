@@ -718,9 +718,9 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
-	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
-		 it != p_POSs->end(); ++it)
+	virtual void exprList (const ExprList* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
+		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
 	virtual void starVarSet (const StarVarSet* const) {
