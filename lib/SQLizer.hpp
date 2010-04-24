@@ -775,6 +775,9 @@ namespace w3c_sw {
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
 	}
+	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	    throw NotImplemented("SQLizer(subselect)");
+	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    FAIL("CONSTRUCT");
 	    p_ConstructTemplate->express(this);

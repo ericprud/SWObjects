@@ -192,6 +192,11 @@ public:
 	p_SolutionModifier->express(this);
 	xml->close();
     }
+    virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	xml->open("SubSelect");
+	p_Select->express(this);
+	xml->close();
+    }
     virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	xml->open("Construct");
 	p_ConstructTemplate->express(this);

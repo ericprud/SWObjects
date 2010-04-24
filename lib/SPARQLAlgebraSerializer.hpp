@@ -383,6 +383,15 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
+    virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	lead();
+	ret << "subselect(" << std::endl;
+	++depth;
+	p_Select->express(this);
+	--depth;
+	ret << ")" << std::endl;
+    }
+
     virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "CONSTRUCT ";

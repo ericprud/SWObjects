@@ -399,6 +399,9 @@ void WhereClause::express (Expressor* p_expressor) const {
 void Select::express (Expressor* p_expressor) const {
     p_expressor->select(this, m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
+void SubSelect::express (Expressor* p_expressor) const {
+    p_expressor->subSelect(this, m_Select);
+}
 void Construct::express (Expressor* p_expressor) const {
     p_expressor->construct(this, m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
@@ -1134,6 +1137,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		row = disjoint.erase(row);
 	    }
 	}
+	rs->joinIn(&island, false);
+    }
+
+    void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
+	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	m_Select->execute(db, &island);
 	rs->joinIn(&island, false);
     }
 

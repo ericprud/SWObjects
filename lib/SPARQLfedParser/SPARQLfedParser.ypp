@@ -450,9 +450,14 @@ _QDatasetClause_E_Star:
 
 SubSelect:
     // Project WhereClause SolutionModifier
-    Project WhereClause SolutionModifier	{
-	$$ = new Select($1.distinctness, $1.varSet, NULL, $2, $3);
-    }
+    Project {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
+      } WhereClause SolutionModifier	{
+	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+      }
 ;
 
 Project:

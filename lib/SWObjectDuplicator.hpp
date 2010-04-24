@@ -274,6 +274,10 @@ namespace w3c_sw {
 	    p_SolutionModifier->express(this);
 	    last.operation = new Select(p_distinctness, varSet, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier);
 	}
+	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	    p_Select->express(this);
+	    last.tableOperation = new SubSelect((const Select*)last.operation);
+	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_ConstructTemplate->express(this);
 	    TableOperation* construct = last.tableOperation;

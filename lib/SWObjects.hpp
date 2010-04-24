@@ -1614,6 +1614,7 @@ public:
 
 };
 
+
 class VarSet : public Base {
 protected:
     VarSet () : Base() { }
@@ -1817,6 +1818,31 @@ public:
 	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
 	    *m_WhereClause == *pSel->m_WhereClause && 
 	    *m_SolutionModifier == *pSel->m_SolutionModifier;
+    }
+};
+class SubSelect : public TableOperation {
+protected:
+    const Select* m_Select;
+public:
+    SubSelect (const Select* p_Select) : TableOperation(), m_Select(p_Select) {  }
+    ~SubSelect() { delete m_Select; }
+    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual TableOperation* getDNF () const {
+	throw NotImplemented("getDNF{SUBSELECT(...)}");
+    }
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("CONSTRUCT{SUBSELECT(...)}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	throw NotImplemented("DELETEPATTERN{SUBSELECT(...)}");
+    }
+    virtual void express(Expressor* /* p_expressor */) const;
+    bool operator== (const SubSelect& ref) const {
+	return *m_Select == *ref.m_Select;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const SubSelect* pref = dynamic_cast<const SubSelect*>(&ref);
+	return pref == NULL ? false : operator==(*pref); // calls SubSelect-specific operator==
     }
 };
 class Construct : public Operation {
@@ -2935,6 +2961,7 @@ public:
     virtual void bindingClause(const BindingClause* const self, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) = 0;
     virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) = 0;
     virtual void select(const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
+    virtual void subSelect(const SubSelect* const self, const Select* p_Select) = 0;
     virtual void construct(const Construct* const self, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
@@ -3067,6 +3094,9 @@ public:
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
+    }
+    virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	p_Select->express(this);
     }
     virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_ConstructTemplate->express(this);
