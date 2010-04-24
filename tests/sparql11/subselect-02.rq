@@ -1,0 +1,13 @@
+# subselect-01 - simple subselect
+
+# $Id$
+
+PREFIX : <http://example.org/data/>
+
+SELECT ?match
+WHERE {
+  ?hit ?p ?match
+  { SELECT ?hit WHERE {
+    ?hit :p :match }
+  }
+}

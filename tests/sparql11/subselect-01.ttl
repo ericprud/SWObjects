@@ -1,0 +1,8 @@
+# subselect-01 - simple subselect
+
+# $Id$
+
+@prefix : <http://example.org/data/> .
+
+:hit  :p :match .
+:miss :p :nomatch .
