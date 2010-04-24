@@ -69,10 +69,10 @@ BOOST_AUTO_TEST_CASE( question_dollar_vars ) {
 		 "SELECT ?s ?p $o { ?s ?p ?o}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( ignore_select_order ) {
+BOOST_AUTO_TEST_CASE( respect_select_order ) {
     EqualsTest t("SELECT ?p ?s ?o { ?s ?p ?o }", 
 		 "SELECT ?s ?p ?o { ?s ?p ?o}");
-    BOOST_CHECK_EQUAL(*t.left, *t.right);
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_CASE( observe_triple_order ) {
     EqualsTest t("SELECT ?s ?p ?o { ?s ?p ?o }", 
@@ -103,10 +103,10 @@ BOOST_AUTO_TEST_CASE( nested_question_dollar_vars ) {
 		 "SELECT ?s ?p $o {{ ?s ?p ?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( nested_ignore_select_order ) {
+BOOST_AUTO_TEST_CASE( nested_respect_select_order ) {
     EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o }}", 
 		 "SELECT ?s ?p ?o {{ ?s ?p ?o}}");
-    BOOST_CHECK_EQUAL(*t.left, *t.right);
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_CASE( nested_observe_triple_order ) {
     EqualsTest t("SELECT ?s ?p ?o {{ ?s ?p ?o }}", 
@@ -137,10 +137,10 @@ BOOST_AUTO_TEST_CASE( named_question_dollar_vars ) {
 		 "SELECT ?s ?p $o {GRAPH<x>{ ?s ?p ?o}}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
-BOOST_AUTO_TEST_CASE( named_ignore_select_order ) {
+BOOST_AUTO_TEST_CASE( named_respect_select_order ) {
     EqualsTest t("SELECT ?p ?s ?o {GRAPH<x>{ ?s ?p ?o }}", 
 		 "SELECT ?s ?p ?o {GRAPH<x>{ ?s ?p ?o}}");
-    BOOST_CHECK_EQUAL(*t.left, *t.right);
+    BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_CASE( named_observe_triple_order ) {
     EqualsTest t("SELECT ?s ?p ?o {GRAPH<x>{ ?s ?p ?o }}", 
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( conjuncts )
 BOOST_AUTO_TEST_CASE( conjunct_positive ) {
-    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } { ?s ?p ?o }}", 
-		 "SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o }}");
+    EqualsTest t("SELECT ?s ?p ?o ?o2 {{ ?s ?p ?o } { ?s ?p ?o2 }}", 
+		 "SELECT ?s ?p ?o ?o2 {{ ?s ?p ?o } { ?s ?p ?o2 }}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
 BOOST_AUTO_TEST_CASE( conjunct_negative ) {
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE( conjunct_negative ) {
     BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_CASE( conjunct_equiv_filter ) {
-    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+    EqualsTest t("SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
 		 "SELECT ?s ?p ?o {{ ?s ?p ?o } { ?s ?p ?o } FILTER(1*(2+3)=?x)}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( unions )
 BOOST_AUTO_TEST_CASE( union_positive ) {
-    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } UNION { ?s ?p ?o }}", 
+    EqualsTest t("SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o }}", 
 		 "SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o }}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( union_negative ) {
     BOOST_CHECK_MESSAGE( !(*t.left == *t.right), *t.left << " == " << *t.right );
 }
 BOOST_AUTO_TEST_CASE( union_equiv_filter ) {
-    EqualsTest t("SELECT ?p ?s ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
+    EqualsTest t("SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
 		 "SELECT ?s ?p ?o {{ ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}");
     BOOST_CHECK_EQUAL(*t.left, *t.right);
 }
