@@ -196,7 +196,8 @@ public:
     e_listModifier p_listModifier;
     e_Silence p_Silence;
     POSList* p_POSList;
-    ExprList* p_ExprList;
+    ExpressionAliasList* p_ExpressionAliaseList;
+    ExpressionAlias* p_ExpressionAlias;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
     Construct* p_Construct;
@@ -277,8 +278,7 @@ public:
 %type <p_URIs> _QIRIref_E_Plus
 %type <p_VarSet>  _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C
                   _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C
-%type <p_ExprList> _QVarOrIRIref_E_Plus
-                   _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
+%type <p_ExpressionAliaseList> _QVarOrIRIref_E_Plus GroupClause _QGroupClause_E_Opt _QGroupCondition_E_Plus
 
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_DatasetClause> DatasetClause
@@ -306,7 +306,7 @@ public:
 		      _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star
 		      _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star
 		      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
-                      GroupClause HavingClause _QGroupCondition_E_Plus _QHavingCondition_E_Plus _QHavingClause_E_Opt ParamList _QParamList_E_Opt  _QGroupClause_E_Opt
+                      HavingClause _QHavingCondition_E_Plus _QHavingClause_E_Opt ParamList _QParamList_E_Opt
  // !!!  _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star
 
  /* Parts Of Speach */
@@ -338,9 +338,13 @@ public:
 		     UnaryExpression PrimaryExpression RegexExpression
 		     _O_QGT_COMMA_E_S_QExpression_E_C
 		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
-                     _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
-                     _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
-                     GroupCondition HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
+                     HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
+
+%type <p_ExpressionAlias>  GroupCondition
+                           _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
+                           _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
+%type <p_ExpressionAliaseList> _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
+
 
 %type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C
 			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
@@ -504,26 +508,32 @@ _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
 // "(" Expression ( "AS" Var )? ")"
 _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
-	$$ = $3 ? new AliasedExpression($2, $3) : $2;
+	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
 ;
 
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
 _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     Var	{
-	$$ = new POSExpression($1);
+	$$ = new ExpressionAlias(new POSExpression($1));
     }
-  | Aggregate	
-  | BuiltInCall	
-  | FunctionCall	
+  | Aggregate	{
+	$$ = new ExpressionAlias($1);
+    }
+  | BuiltInCall	{
+	$$ = new ExpressionAlias($1);
+    }
+  | FunctionCall	{
+	$$ = new ExpressionAlias($1);
+    }
   | RDFLiteral	{
-	$$ = new POSExpression($1);
+	$$ = new ExpressionAlias(new POSExpression($1));
     }
   | NumericLiteral	{
-	$$ = new POSExpression($1);
+	$$ = new ExpressionAlias(new POSExpression($1));
     }
   | BooleanLiteral	{
-	$$ = new POSExpression($1);
+	$$ = new ExpressionAlias(new POSExpression($1));
     }
   | // "(" Expression ( "AS" Var )? ")"
     _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	
@@ -532,7 +542,7 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
 _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus:
     _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	{
-	$$ = new ExprList($1);
+	$$ = new ExpressionAliasList($1);
     }
   | _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	{
     $1->push_back($2);
@@ -568,11 +578,10 @@ DescribeQuery:
 // VarOrIRIref+
 _QVarOrIRIref_E_Plus:
     VarOrIRIref	{
-	$$ = new ExprList();
-	$$->push_back(new POSExpression($1));
+	$$ = new ExpressionAliasList(new ExpressionAlias(new POSExpression($1)));
     }
   | _QVarOrIRIref_E_Plus VarOrIRIref	{
-      $1->push_back(new POSExpression($2));
+	$1->push_back(new ExpressionAlias(new POSExpression($2)));
 	$$ = $1;
     }
 ;
@@ -703,7 +712,7 @@ GroupClause:
 // GroupCondition+
 _QGroupCondition_E_Plus:
     GroupCondition	{
-	$$ = new ProductionVector<const Expression*>($1);
+	$$ = new ExpressionAliasList($1);
     }
   | _QGroupCondition_E_Plus GroupCondition	{
 	$1->push_back($2);
@@ -712,13 +721,17 @@ _QGroupCondition_E_Plus:
 ;
 
 GroupCondition:
-    BuiltInCall	
-  | FunctionCall	
+    BuiltInCall	{
+	$$ = new ExpressionAlias($1);
+    }
+  | FunctionCall	{
+	$$ = new ExpressionAlias($1);
+    }
   | GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
-	$$ = $3 ? new AliasedExpression($2, $3) : $2;
+	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
   | Var	{
-	$$ = new POSExpression($1);
+	$$ = new ExpressionAlias(new POSExpression($1));
     }
 ;
 

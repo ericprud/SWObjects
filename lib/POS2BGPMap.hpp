@@ -257,12 +257,12 @@ namespace w3c_sw {
 	    }
 
 	    /* Add _Binding_SELECT where necessary. */
-	    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
-		for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+	    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+		for (std::vector<const ExpressionAlias*>::const_iterator it = p_Expressions->begin();
 		     it != p_Expressions->end(); it++) {
-		    const POSExpression* posExpr = dynamic_cast<const POSExpression *>(*it);
+		    const POSExpression* posExpr = dynamic_cast<const POSExpression *>((*it)->expr);
 		    if (!posExpr)
-			throw NotImplemented("exprList !POSExpression");
+			NEED_IMPL("expressionAliasList !POSExpression");
 		    _depends(posExpr->getPOS(), _Binding_SELECT);
 		}
 	    }

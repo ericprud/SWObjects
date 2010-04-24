@@ -318,12 +318,26 @@ public:
     }
     virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
 	lead();
-	ret << "SERVICE ";
+	ret << "service(";
+	p_POS->express(this);
+	ret << ", ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern(p_POS, p_GroupGraphPattern);
+	ret << ")";
     }
-    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
-	for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
+    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	if (label != NULL) {
+	    lead();
+	    ret << "alias(";
+	    expr->express(this);
+	    ret << ", ";
+	    label->express(this);
+	    ret << ")";
+	} else
+	    expr->express(this);
+    }
+    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+	for (std::vector<const ExpressionAlias*>::const_iterator it = p_Expressions->begin();
 	     it != p_Expressions->end(); ++it) {
 	    (*it)->express(this);
 	    ret << ' ';

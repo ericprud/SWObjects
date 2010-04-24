@@ -130,8 +130,17 @@ public:
 	} else
 	    p_GroupGraphPattern->express(this);
     }
-    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
-	xml->open("ExprList");
+    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	if (label != NULL) {
+	    xml->open("ExpressionAlias");
+	    expr->express(this);
+	    label->express(this);
+	    xml->close();
+	} else
+	    expr->express(this);
+    }
+    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+	xml->open("ExpressionAliasList");
 	p_Expressions->express(this);
 	xml->close();
     }

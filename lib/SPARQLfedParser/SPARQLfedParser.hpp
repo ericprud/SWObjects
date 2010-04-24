@@ -35,7 +35,7 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-#pragma once
+# define PARSER_HEADER_H
 
 /* "%code requires" blocks.  */
 
@@ -274,7 +274,8 @@ namespace w3c_sw {
     e_listModifier p_listModifier;
     e_Silence p_Silence;
     POSList* p_POSList;
-    ExprList* p_ExprList;
+    ExpressionAliasList* p_ExpressionAliaseList;
+    ExpressionAlias* p_ExpressionAlias;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
     Construct* p_Construct;
@@ -310,7 +311,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 314 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 315 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -608,7 +609,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 612 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 613 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

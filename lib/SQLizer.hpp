@@ -718,8 +718,14 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
-	virtual void exprList (const ExprList* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
+	virtual void expressionAlias (const ExpressionAlias* const, const w3c_sw::Expression* expr, const Bindable* label) {
+	    if (label != NULL) {
+		throw NotImplemented("SQLizer(ExpressionAliase)");
+	    } else
+		expr->express(this);
+	}
+	virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const w3c_sw::ExpressionAlias*>* p_Expressions) {
+	    for (std::vector<const w3c_sw::ExpressionAlias*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}

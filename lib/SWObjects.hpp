@@ -19,6 +19,7 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define LINE std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning LINE\n"
+#define NEED_IMPL(x) throw NotImplemented(__FILE__, TOSTRING(__LINE__), x);
 
 /* defines for controlling includes from utils */
 #include "config.h"
@@ -139,9 +140,12 @@ public:
 
 class NotImplemented : public SafeEvaluationError {
 public:
-    NotImplemented (std::string msg) : SafeEvaluationError(msg + " not implemented") {  }
+    NotImplemented (std::string msg)
+	: SafeEvaluationError(msg + " not implemented") {  }
+    NotImplemented (std::string file, std::string line, std::string msg)
+	: SafeEvaluationError(file + "(" + line + "): error " + msg + " not implemented") {  }
     virtual ~NotImplemented () throw() {   }
-    char const* what() const throw() { 	return msg.c_str(); }
+    char const* what() const throw() { return msg.c_str(); }
 };
 
 class TypeError : public SafeEvaluationError {
@@ -1624,22 +1628,36 @@ public:
     virtual void project(ResultSet* rs) const = 0;
 };
 
-class ExprList : public VarSet {
-private:
-    ProductionVector<const Expression*> m_Expressions;
+class ExpressionAlias : public Base {
 public:
-    ExprList () : VarSet(), m_Expressions() {  }
-    // ExprList (ProductionVector<const Expression*> p_Expressions) : VarSet(), m_Expressions(p_Expressions) {  }
-    ExprList (const Expression* expr) : VarSet(), m_Expressions(expr) {  }
-    ~ExprList () { m_Expressions.clear(); }
-    void push_back(const Expression* v) { m_Expressions.push_back(v); }
+    const Expression* expr;
+    const Bindable* label;
+public:
+    ExpressionAlias (const Expression* expr) : expr(expr), label(NULL) {  }
+    ExpressionAlias (const Expression* expr, const Bindable* label) : expr(expr), label(label) {  }
+    ~ExpressionAlias () { delete expr; }
+    // const Bindable* getLabel () const { return label; }
+    virtual void express (Expressor* /* p_expressor */) const;
+    virtual bool operator== (const ExpressionAlias& ref) const {
+	return label == ref.label && *expr == *ref.expr;
+    }
+};
+class ExpressionAliasList : public VarSet {
+private:
+    ProductionVector<const ExpressionAlias*> m_Expressions;
+public:
+    ExpressionAliasList () : VarSet(), m_Expressions() {  }
+    // ExpressionAliasList (ProductionVector<const ExpressionAlias*> p_Expressions) : VarSet(), m_Expressions(p_Expressions) {  }
+    ExpressionAliasList (const ExpressionAlias* expr) : VarSet(), m_Expressions(expr) {  }
+    ~ExpressionAliasList () { m_Expressions.clear(); }
+    void push_back(const ExpressionAlias* v) { m_Expressions.push_back(v); }
     virtual void express(Expressor* p_expressor) const;
-    std::vector<const Expression*>::iterator begin () { return m_Expressions.begin(); }
-    std::vector<const Expression*>::const_iterator begin () const { return m_Expressions.begin(); }
-    std::vector<const Expression*>::iterator end () { return m_Expressions.end(); }
-    std::vector<const Expression*>::const_iterator end () const { return m_Expressions.end(); }
+    std::vector<const ExpressionAlias*>::iterator begin () { return m_Expressions.begin(); }
+    std::vector<const ExpressionAlias*>::const_iterator begin () const { return m_Expressions.begin(); }
+    std::vector<const ExpressionAlias*>::iterator end () { return m_Expressions.end(); }
+    std::vector<const ExpressionAlias*>::const_iterator end () const { return m_Expressions.end(); }
     virtual bool operator== (const VarSet& ref) const {
-	const ExprList* pref = dynamic_cast<const ExprList*>(&ref);
+	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
     virtual void project (ResultSet* rs) const;
@@ -2011,23 +2029,6 @@ public:
     virtual bool operator== (const Expression& ref) const {
 	const POSExpression* pref = dynamic_cast<const POSExpression*>(&ref);
 	return pref == NULL ? false : m_POS == pref->m_POS;
-    }
-};
-class AliasedExpression : public Expression {
-private:
-    const Expression* expr;
-    const Bindable* label;
-public:
-    AliasedExpression (const Expression* expr, const Bindable* label) : Expression(), expr(expr), label(label) {  }
-    ~AliasedExpression () { delete expr; }
-    // const Bindable* getLabel () const { return label; }
-    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("AliasedExpression::express"); }
-    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	return expr->eval(r, posFactory, evaluator);
-    }
-    virtual bool operator== (const Expression& ref) const {
-	const AliasedExpression* pref = dynamic_cast<const AliasedExpression*>(&ref);
-	return pref == NULL ? false : label == pref->label && *expr == *pref->expr;
     }
 };
 
@@ -2951,7 +2952,8 @@ public:
     virtual void minusGraphPattern(const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) = 0;
-    virtual void exprList(const ExprList* const self, const ProductionVector<const Expression*>* p_Expressions) = 0;
+    virtual void expressionAlias(const ExpressionAlias* const, const Expression* expr, const Bindable* label) = 0;
+    virtual void expressionAliasList(const ExpressionAliasList* const self, const ProductionVector<const ExpressionAlias*>* p_Expressions) = 0;
     // virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const POS* p_IRIref) = 0;
@@ -3058,7 +3060,11 @@ public:
 	p_POS->express(this);
 	p_GroupGraphPattern->express(this);
     }
-    virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
+    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	expr->express(this);
+	label->express(this);
+    }
+    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
 	p_Expressions->express(this);
     }
 //     virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {

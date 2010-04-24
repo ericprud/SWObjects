@@ -29,12 +29,20 @@ namespace w3c_sw {
 	POS::String2BNode nodeMap;
 
 	union {
-	    struct { const POS* pos; const URI* uri; const Variable* variable; const RDFLiteral* rdfLiteral; const BooleanRDFLiteral* booleanRDFLiteral; const NumericRDFLiteral* numericRDFLiteral; } posz;
+	    struct {
+		const POS* pos;
+		const URI* uri;
+		const Variable* variable;
+		const RDFLiteral* rdfLiteral;
+		const BooleanRDFLiteral* booleanRDFLiteral;
+		const NumericRDFLiteral* numericRDFLiteral;
+	    } posz;
 	    const TriplePattern* triplePattern;
 	    const Expression* expression;
+	    const ExpressionAlias* expressionAlias;
 	    const Filter* filter;
 	    TableOperation* tableOperation;
-	    struct { VarSet* varSet; ExprList* exprList; } varSets;
+	    struct { VarSet* varSet; const ProductionVector<const ExpressionAlias*>* exprList; } varSets;
 	    const DatasetClause* datasetClause;
 	    //ProductionVector<DatasetClause*> datasetClauses;
 	    SolutionModifier* solutionModifier;
@@ -190,17 +198,24 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new ServiceGraphPattern(name, last.tableOperation, posFactory, lexicalCompare);
 	}
-	void _Expressions (const ProductionVector<const Expression*>* p_Expressions, ExprList* p) { // !!! single use
-	    for (std::vector<const Expression*>::const_iterator it = p_Expressions->begin();
-		 it != p_Expressions->end(); it++) {
-		(*it)->express(this);
-		p->push_back(last.expression);
+	virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	    expr->express(this);
+	    const Expression* ex = last.expression;
+	    if (label) {
+		label->express(this);
+		last.expressionAlias = new ExpressionAlias(ex, (const Bindable*)last.posz.pos); // @@ downcast -- could create separate posz
+	    } else {
+		last.expressionAlias = new ExpressionAlias(ex);
 	    }
 	}
-	virtual void exprList (const ExprList* const, const ProductionVector<const Expression*>* p_Expressions) {
-	    ExprList* ret = new ExprList();
-	    _Expressions(p_Expressions, ret);
-	    last.varSets.varSet = last.varSets.exprList = ret;
+	virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_ExpressionAliases) {
+	    ExpressionAliasList* ret = new ExpressionAliasList();
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = p_ExpressionAliases->begin();
+		 it != p_ExpressionAliases->end(); it++) {
+		(*it)->express(this);
+		ret->push_back(last.expressionAlias);
+	    }
+	    last.varSets.varSet = /* last.varSets.exprList = */ ret;
 	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    last.varSets.varSet = new StarVarSet();
