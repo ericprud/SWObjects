@@ -720,7 +720,7 @@ namespace w3c_sw {
 	}
 	virtual void expressionAlias (const ExpressionAlias* const, const w3c_sw::Expression* expr, const Bindable* label) {
 	    if (label != NULL) {
-		throw NotImplemented("SQLizer(ExpressionAliase)");
+		NEED_IMPL("SQLizer(ExpressionAliase)");
 	    } else
 		expr->express(this);
 	}
@@ -782,7 +782,7 @@ namespace w3c_sw {
 	    p_VarSet->express(this);
 	}
 	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
-	    throw NotImplemented("SQLizer(subselect)");
+	    NEED_IMPL("SQLizer(subselect)");
 	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    FAIL("CONSTRUCT");

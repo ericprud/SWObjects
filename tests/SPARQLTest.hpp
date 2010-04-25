@@ -279,6 +279,9 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
 	    ReferenceRS expected(measured, RESULT_FILE, &F, &P);	       \
 	    BOOST_CHECK_EQUAL(measured, expected);			       \
 	}								       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
     } catch (std::exception& s) {					       \
@@ -290,6 +293,9 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
 	MeasuredRS measured(DATA_FILE, QUERY_FILE);			       \
 	ReferenceRS expected(measured, RESULT_FILE, &F, &P);		       \
 	BOOST_CHECK_EQUAL(measured, expected);				       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
     } catch (std::string& s) {						       \
 	BOOST_ERROR ( s );						       \
     } catch (std::exception& s) {					       \

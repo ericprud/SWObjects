@@ -388,6 +388,7 @@ void NamedGraphClause::express (Expressor* p_expressor) const {
     p_expressor->namedGraphClause(this, m_IRIref);
 }
 void SolutionModifier::express (Expressor* p_expressor) const {
+    IF_IMPL(groupBy != NULL || having != NULL, "SPARQL 1.1 SolutionModifier (groupBy, having)");
     p_expressor->solutionModifier(this, m_OrderConditions, m_limit,m_offset);
 }
 void Binding::express (Expressor* p_expressor) const {
@@ -968,9 +969,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	if (m_SolutionModifier != NULL)
-	    m_SolutionModifier->order(rs);
-	m_VarSet->project(rs);
+	if (m_SolutionModifier != NULL) {
+	    m_SolutionModifier->order(rs); // @@ need to do two passes if order by can reference ?x AS ?y
+	    m_VarSet->project(rs, m_SolutionModifier->groupBy, m_SolutionModifier->having);
+	} else
+	    m_VarSet->project(rs, NULL, NULL);
 	if (m_SolutionModifier == NULL)
 	    rs->trim(m_distinctness, -1, -1);
 	else
@@ -1058,11 +1061,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
-    void ExpressionAliasList::project (ResultSet* rs) const {
-	rs->project(&m_Expressions);
+    void ExpressionAliasList::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const {
+	rs->project(&m_Expressions, groupBy, having);
     }
 
-    void StarVarSet::project (ResultSet* /* rs */) const {
+    void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */) const {
     }
 
     void SolutionModifier::order (ResultSet* rs) {
@@ -1341,7 +1344,7 @@ compared against
 	const Operation* query = new Select(DIST_distinct, vars.l,
 					    new ProductionVector<const DatasetClause*>(),
 					    new WhereClause(dup.last.tableOperation, NULL),
-					    new SolutionModifier(NULL, LIMIT_None, OFFSET_None));
+					    new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
 
 	/* Constrain query with any existing result bindings. */
 	const Operation* rsConstrained = rs->getConstrainedOperation(query);

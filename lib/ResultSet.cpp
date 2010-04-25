@@ -206,20 +206,20 @@ namespace w3c_sw {
 	}
     };
 
-    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs) {
+    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) {
 	ProductionVector<const POS*> varsV; // !!! still thinking in vars.
 	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
 	     varExpr != exprs->end(); ++varExpr) {
 	    if ((*varExpr)->label != NULL) {
 		SPARQLSerializer s;
 		(*varExpr)->express(&s);
-		throw NotImplemented(std::string("project ") + s.str() + " (non-variable projectsion)");
+		NEED_IMPL(std::string("project ") + s.str() + " (renaming projection)");
 	    }
 	    const POSExpression* ex = dynamic_cast<const POSExpression*>((*varExpr)->expr);
 	    if (ex == NULL) {
 		SPARQLSerializer s;
 		(*varExpr)->express(&s);
-		throw NotImplemented(std::string("project ") + s.str() + " (non-variable projectsion)");
+		NEED_IMPL(std::string("project ") + s.str() + " (non-variable projection)");
 	    }
 	    varsV.push_back(ex->getPOS());
 	}

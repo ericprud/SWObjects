@@ -508,7 +508,7 @@ _QBindingClause_E_Opt:
 SolutionModifier:
     // OrderClause? LimitOffsetClauses?
     _QOrderClause_E_Opt _QLimitOffsetClauses_E_Opt	{
-	$$ = new SolutionModifier($1, $2.limit, $2.offset);
+	$$ = new SolutionModifier(NULL, NULL, $1, $2.limit, $2.offset);
     }
 ;
 

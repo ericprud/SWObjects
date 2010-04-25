@@ -239,9 +239,9 @@ namespace w3c_sw {
 		    pair.expression = last.expression;
 		    l_s_OrderConditionPairs->push_back(pair);
 		}
-		last.solutionModifier = new SolutionModifier(l_s_OrderConditionPairs, p_limit, p_offset);
+		last.solutionModifier = new SolutionModifier(NULL, NULL, l_s_OrderConditionPairs, p_limit, p_offset);
 	    } else {
-		last.solutionModifier = new SolutionModifier(NULL, p_limit, p_offset);
+		last.solutionModifier = new SolutionModifier(NULL, NULL, NULL, p_limit, p_offset);
 	    }
 	}
 	virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
@@ -254,7 +254,7 @@ namespace w3c_sw {
 	    last.binding = ret;
 	}
 	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	    p_Vars->express(this); throw NotImplemented("SWObjectDuplicator::bindingClause");
+	    p_Vars->express(this); NEED_IMPL("SWObjectDuplicator::bindingClause");
 	    BindingClause* ret = new BindingClause(NULL); // last.varSets.posList);
 	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
 		 it != p_Bindings->end(); it++) {

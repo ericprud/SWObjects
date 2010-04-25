@@ -35,12 +35,12 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-#pragma once
+# define PARSER_HEADER_H
 
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 45 "lib/MapSetParser/MapSetParser.ypp"
+#line 45 "..\\..\\lib\\MapSetParser\\MapSetParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -150,7 +150,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 154 "lib/MapSetParser/MapSetParser.hpp"
+#line 154 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
 
 
 #include <string>
@@ -164,7 +164,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 168 "lib/MapSetParser/MapSetParser.hpp"
+#line 168 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
   class position;
   class location;
 
@@ -174,7 +174,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 178 "lib/MapSetParser/MapSetParser.hpp"
+#line 178 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -222,7 +222,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 226 "lib/MapSetParser/MapSetParser.hpp"
+#line 226 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -234,7 +234,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 154 "lib/MapSetParser/MapSetParser.ypp"
+#line 154 "..\\..\\lib\\MapSetParser\\MapSetParser.ypp"
 
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -296,7 +296,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 300 "lib/MapSetParser/MapSetParser.hpp"
+#line 300 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -590,7 +590,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 594 "lib/MapSetParser/MapSetParser.hpp"
+#line 594 "z:\\lib\\MapSetParser\\MapSetParser.hpp"
 
 
 

@@ -19,7 +19,8 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define LINE std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning LINE\n"
-#define NEED_IMPL(x) throw NotImplemented(__FILE__, TOSTRING(__LINE__), x);
+#define NEED_IMPL(x) throw NotImplemented(__FILE__, TOSTRING(__LINE__), x)
+#define IF_IMPL(t, x) if (t) {throw NotImplemented(__FILE__, TOSTRING(__LINE__), x);}
 
 /* defines for controlling includes from utils */
 #include "config.h"
@@ -140,10 +141,13 @@ public:
 
 class NotImplemented : public SafeEvaluationError {
 public:
+    std::string brief;
     NotImplemented (std::string msg)
-	: SafeEvaluationError(msg + " not implemented") {  }
+	: SafeEvaluationError(msg + " not implemented"), brief(msg)
+    {  }
     NotImplemented (std::string file, std::string line, std::string msg)
-	: SafeEvaluationError(file + "(" + line + "): error " + msg + " not implemented") {  }
+	: SafeEvaluationError(file + "(" + line + "): error " + msg + " not implemented"), brief(msg)
+    {  }
     virtual ~NotImplemented () throw() {   }
     char const* what() const throw() { return msg.c_str(); }
 };
@@ -1391,10 +1395,10 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
+	NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{{?s?p?o}UNION{?s?p?o}}");
+	NEED_IMPL("DELETEPATTERN{{?s?p?o}UNION{?s?p?o}}");
     }
     virtual TableOperation* getDNF() const;
 };
@@ -1511,10 +1515,10 @@ public:
 
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{FILTER(...)}");
+	NEED_IMPL("CONSTRUCT{FILTER(...)}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{FILTER(...)}");
+	NEED_IMPL("DELETEPATTERN{FILTER(...)}");
     }
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const Filter& ref) const {
@@ -1587,10 +1591,10 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{OPTIONAL{?s?p?o}}");
+	NEED_IMPL("CONSTRUCT{OPTIONAL{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{OPTIONAL{?s?p?o}}");
+	NEED_IMPL("DELETEPATTERN{OPTIONAL{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new OptionalGraphPattern(p_TableOperation); }
 
@@ -1609,23 +1613,23 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{MINUS{?s?p?o}}");
+	NEED_IMPL("CONSTRUCT{MINUS{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{MINUS{?s?p?o}}");
+	NEED_IMPL("DELETEPATTERN{MINUS{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new MinusGraphPattern(p_TableOperation); }
 
 };
 
-
+class ExpressionAliasList;
 class VarSet : public Base {
 protected:
     VarSet () : Base() { }
 public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
-    virtual void project(ResultSet* rs) const = 0;
+    virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const = 0;
 };
 
 class ExpressionAlias : public Base {
@@ -1660,7 +1664,7 @@ public:
 	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
-    virtual void project (ResultSet* rs) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -1674,7 +1678,7 @@ public:
 	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
 	return pref == NULL ? false : true;
     }
-    virtual void project (ResultSet* rs) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const;
 };
 
 class DatasetClause : public Base {
@@ -1710,13 +1714,19 @@ public:
 };
 
     /* SolutionModifiers */
+class Select;
 class SolutionModifier : public Base {
+    friend class Select;
 private:
+    w3c_sw::ExpressionAliasList* groupBy;
+    w3c_sw::ProductionVector<const w3c_sw::Expression*>* having;
     std::vector<s_OrderConditionPair>* m_OrderConditions;
 public:
     int m_limit;
     int m_offset;
-    SolutionModifier (std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) : Base(), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset) {  }
+    SolutionModifier (w3c_sw::ExpressionAliasList* groupBy, w3c_sw::ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset)
+	: Base(), groupBy(groupBy), having(having), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset)
+    {  }
     ~SolutionModifier () {
 	if (m_OrderConditions != NULL)
 	    for (size_t i = 0; i < m_OrderConditions->size(); i++)
@@ -1760,7 +1770,7 @@ public:
     POSList () : m_POSs() {  }
     virtual ~POSList () { m_POSs.clear(); }
     void push_back(const POS* v) { m_POSs.push_back(v); }
-    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("POSList::express"); }
+    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("POSList::express"); }
     std::vector<const POS*>::iterator begin () { return m_POSs.begin(); }
     std::vector<const POS*>::const_iterator begin () const { return m_POSs.begin(); }
     std::vector<const POS*>::iterator end () { return m_POSs.end(); }
@@ -1846,13 +1856,13 @@ public:
     ~SubSelect() { delete m_Select; }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual TableOperation* getDNF () const {
-	throw NotImplemented("getDNF{SUBSELECT(...)}");
+	NEED_IMPL("getDNF{SUBSELECT(...)}");
     }
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("CONSTRUCT{SUBSELECT(...)}");
+	NEED_IMPL("CONSTRUCT{SUBSELECT(...)}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	throw NotImplemented("DELETEPATTERN{SUBSELECT(...)}");
+	NEED_IMPL("DELETEPATTERN{SUBSELECT(...)}");
     }
     virtual void express(Expressor* /* p_expressor */) const;
     bool operator== (const SubSelect& ref) const {
@@ -2228,7 +2238,7 @@ public:
 		s << "NULL";
 	}
 	s << ')';
-	throw NotImplemented(s.str());
+	NEED_IMPL(s.str());
     }
     bool operator== (const FunctionCall& ref) const {
 	return m_IRIref == ref.m_IRIref && *m_ArgList == *ref.m_ArgList;
@@ -2242,7 +2252,7 @@ public:
     AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1)
 	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness) {  }
     ~AggregateCall () {  }
-    virtual void express (Expressor* /* p_expressor */) const { throw NotImplemented("AggregateCall::express"); }
+    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("AggregateCall::express"); }
     virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	if (distinctness == DIST_all)
 	    return FunctionCall::eval(r, posFactory, evaluator);
@@ -2260,7 +2270,7 @@ public:
 		s << "NULL";
 	}
 	s << ')';
-	throw NotImplemented(s.str());
+	NEED_IMPL(s.str());
     }
     bool operator== (const AggregateCall& ref) const {
 	if (distinctness != ref.distinctness)

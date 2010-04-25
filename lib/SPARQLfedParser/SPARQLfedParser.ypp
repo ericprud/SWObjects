@@ -666,7 +666,7 @@ _QBindingClause_E_Opt:
 SolutionModifier:
     // GroupClause? HavingClauses? OrderClause? LimitOffsetClauses?
     _QGroupClause_E_Opt _QHavingClause_E_Opt _QOrderClause_E_Opt _QLimitOffsetClauses_E_Opt	{
-	$$ = new SolutionModifier($3, $4.limit, $4.offset); // !!!
+	$$ = new SolutionModifier($1, $2, $3, $4.limit, $4.offset); // !!!
     }
 ;
 
@@ -1721,6 +1721,7 @@ PrimaryExpression:
   | Var	{
 	$$ = new POSExpression($1);
     }
+  | Aggregate	
 ;
 
 BrackettedExpression:
@@ -1795,7 +1796,7 @@ Aggregate:
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-avg"), $3, $4));
     }
   | IT_GROUP_CONCAT _QParamList_E_Opt GT_LPAREN _QIT_DISTINCT_E_Opt ArgList GT_RPAREN	{
-	throw NotImplemented("CONCAT");
+	NEED_IMPL("GROUP_CONCAT");
 	// $$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-group-concat"), $4, $2));
     }
   | IT_SAMPLE GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{

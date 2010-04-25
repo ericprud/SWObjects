@@ -612,7 +612,7 @@ namespace w3c_sw {
 	    return true;
 	}
 
-	void project(ProductionVector<const ExpressionAlias*> const * varsV);
+	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having);
 	void restrict(const Expression* expression);
 	void order(std::vector<s_OrderConditionPair>* orderConditions);
 	void order();
