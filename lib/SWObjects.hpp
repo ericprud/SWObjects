@@ -1660,6 +1660,7 @@ public:
     std::vector<const ExpressionAlias*>::const_iterator begin () const { return m_Expressions.begin(); }
     std::vector<const ExpressionAlias*>::iterator end () { return m_Expressions.end(); }
     std::vector<const ExpressionAlias*>::const_iterator end () const { return m_Expressions.end(); }
+    size_t size () const { return m_Expressions.size(); }
     virtual bool operator== (const VarSet& ref) const {
 	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
@@ -2252,7 +2253,6 @@ public:
     AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1)
 	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness) {  }
     ~AggregateCall () {  }
-    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("AggregateCall::express"); }
     virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	if (distinctness == DIST_all)
 	    return FunctionCall::eval(r, posFactory, evaluator);
