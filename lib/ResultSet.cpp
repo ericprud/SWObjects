@@ -206,53 +206,154 @@ namespace w3c_sw {
 	}
     };
 
-    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) {
-	ProductionVector<const POS*> varsV; // !!! still thinking in vars.
-	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
-	     varExpr != exprs->end(); ++varExpr) {
-	    if ((*varExpr)->label != NULL) {
-		SPARQLSerializer s;
-		(*varExpr)->express(&s);
-		NEED_IMPL(std::string("project ") + s.str() + " (renaming projection)");
-	    }
-	    const POSExpression* ex = dynamic_cast<const POSExpression*>((*varExpr)->expr);
+    const POS* _getLabel (const ExpressionAlias* exprAlias, POSFactory* posFactory) {
+	if (exprAlias->label == NULL) {
+	    const POSExpression* ex = dynamic_cast<const POSExpression*>(exprAlias->expr);
 	    if (ex == NULL) {
 		SPARQLSerializer s;
-		(*varExpr)->express(&s);
-		NEED_IMPL(std::string("project ") + s.str() + " (non-variable projection)");
-	    }
-	    varsV.push_back(ex->getPOS());
-	}
+		exprAlias->express(&s);
+		return posFactory->getRDFLiteral(s.str());
+	    } else
+		return ex->getPOS();
+	} else
+	    return exprAlias->label;
+    }
 
-	std::set<const POS*> vars(varsV.begin(), varsV.end());
-
-	/* List of vars to delete.
+    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) {
+	/* List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
 	 * that the row has no bindings which fail to appear in knownVars.
 	 */
-	std::set<const POS*> toDel;
-	for (std::set<const POS*>::const_iterator knownVar = knownVars.begin();
-	     knownVar != knownVars.end(); ++knownVar)
-	    if (vars.find(*knownVar) == vars.end())
-		toDel.insert(*knownVar);
-
-	/* Delete those vars from each row, and from knowVars. */
-	for (ResultSetIterator row = results.begin();
-	     row != results.end(); ++row)
-	    for (std::set<const POS*>::const_iterator var = toDel.begin();
-		 var != toDel.end(); ++var)
-		if ((*row)->find(*var) != (*row)->end())
-		    (*row)->erase((*row)->find(*var));
-
-	/* Delete those vars from knowVars. */
-	for (std::set<const POS*>::const_iterator var = toDel.begin();
-	     var != toDel.end(); ++var)
-	    knownVars.erase(*var);
-
-	selectOrder = varsV; // elt's copied to selectOrder
+	std::set<const POS*> delMes(knownVars.begin(), knownVars.end());
+	if (groupBy != NULL && groupBy->size() > 0)
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		 it != groupBy->end(); ++it)
+		delMes.insert(_getLabel(*it, posFactory));
+	knownVars.clear();
+	selectOrder.clear();
 	orderedSelect = true;
-	varsV.clear(); // avoid destructor deleting bindings.
 
+	/* Map selected variables to expressions. */
+	typedef std::map<const POS*,const Expression*> Pos2Expr;
+	Pos2Expr pos2expr;
+
+	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
+	     varExpr != exprs->end(); ++varExpr) {
+	    const POS* label(_getLabel(*varExpr, posFactory));
+	    /* Add new alias name. */
+	    knownVars.insert(label);
+	    selectOrder.push_back(label);
+	    if (delMes.find(label) != delMes.end())
+		delMes.erase(delMes.find(label));
+
+	    /* Duplicate projected expressions, adding state to aggregates. */
+	    struct AggregateStateInjector : public SWObjectDuplicator {
+		struct FunctionState : public FunctionCall { // FunctionCall for virtual eval
+		protected:
+		public:
+		    FunctionState () : FunctionCall (NULL, NULL) {  }
+		    ~FunctionState () {  }
+		    virtual const POS* eval(const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const = 0; // @@ needed?
+		    static std::string mitoa (int i) {
+			std::stringstream s;
+			s << i;
+			return s.str();
+		    }
+		};
+		struct CountState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    int count;
+		public:
+		    CountState () : FunctionState (), count(0) {  }
+		    ~CountState () {  }
+		    virtual const POS* eval (const Result* /* r */, POSFactory* posFactory, BNodeEvaluator* /* evaluator */) const {
+			return posFactory->getNumericRDFLiteral(mitoa(count), ((CountState*)this)->count++);
+		    }
+		};
+		struct SumState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const Expression* expr;
+		    const POS* val;
+		public:
+		    SumState (const Expression* expr, POSFactory* posFactory) : FunctionState (), expr(expr), val(posFactory->getNumericRDFLiteral("0", 0)) {  }
+		    ~SumState () {  }
+		    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+			ArithmeticSum::NaryAdder f(r, posFactory, evaluator);
+			std::vector<const Expression*> addends;
+			POSExpression valExpr(val);
+			addends.push_back(&valExpr);
+			addends.push_back(expr);
+			((SumState*)this)->val = posFactory->applyCommonNumeric(addends, &f);
+			return val;
+		    }
+		};
+		AggregateStateInjector (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
+		virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
+		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
+		    if (p_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-count")) {
+			last.functionCall = new CountState();
+		    } else if (p_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sum")) {
+			(*it)->express(this);
+			last.functionCall = new SumState(last.expression, posFactory);
+		    } else {
+			NEED_IMPL(std::string("functionCall(") + p_IRIref->toString());
+		    }
+		}
+	    };
+	    AggregateStateInjector inj(posFactory);
+	    (*varExpr)->expr->express(&inj);
+	    pos2expr[label] = inj.last.expression;
+	}
+
+	typedef std::map<std::string, ResultSetIterator> Group2Row;
+	Group2Row group2row;
+
+	for (ResultSetIterator row = begin() ; row != end(); ) {
+
+	    ResultSetIterator aggregateRow;
+	    if (groupBy != NULL && groupBy->size() > 0) {
+		/* eval groupIndex args, add to result */
+		std::string groupIndex;
+		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		     it != groupBy->end(); ++it) {
+		    const POS* val = (*it)->expr->eval(*row, posFactory, NULL);
+		    groupIndex += val->toString() + "~";
+		    (*row)->set((*it)->label, val, false, true); // !! WG decision on overwrite
+		}
+
+		Group2Row::iterator curAgg(group2row.find(groupIndex));
+		if (curAgg == group2row.end()) {
+		    group2row[groupIndex] = aggregateRow = row;
+		    row++;
+		} else {
+		    aggregateRow = curAgg->second;
+		    delete *row;
+		    row = erase(row);
+		}
+	    } else {
+		aggregateRow = row;
+		row++;
+	    }
+
+	    /* calc project, update idx */
+	    for (std::set<const POS*>::const_iterator knownVar = knownVars.begin();
+		 knownVar != knownVars.end(); ++knownVar) {
+		const POS* val = pos2expr[*knownVar]->eval(*aggregateRow, posFactory, NULL);
+		if (val != NULL)
+		    (*aggregateRow)->set(*knownVar, val, false, true); // !! WG decision on overwrite
+	    }
+
+	    for (std::set<const POS*>::const_iterator delMe = delMes.begin();
+		 delMe != delMes.end(); ++delMe)
+		if ((*aggregateRow)->find(*delMe) != (*aggregateRow)->end())
+		    (*aggregateRow)->erase((*aggregateRow)->find(*delMe));
+
+	}
+
+	for (Pos2Expr::iterator it = pos2expr.begin(); it != pos2expr.end(); ++it) {
+	    const Expression* exp = it->second;
+	    delete exp;
+	}
     }
 
     void ResultSet::restrict (const Expression* expression) {
