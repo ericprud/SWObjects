@@ -646,7 +646,7 @@ WhereClause:
     // 'WHERE'? GroupGraphPattern BindingClause?
     _QIT_WHERE_E_Opt  GroupGraphPattern _QBindingClause_E_Opt	{
 	driver.restoreFilter(NULL);
-	$$ = new WhereClause(driver.curOp, $3);
+	$$ = new WhereClause(driver.curOp ? driver.curOp : new DefaultGraphPattern(), $3);
 	driver.curOp = NULL;
     }
 ;
@@ -1783,16 +1783,16 @@ Aggregate:
     IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-count"), $3, $4));
     }
-  | IT_SUM GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+  | IT_SUM GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sum"), $3, $4));
     }
-  | IT_MIN GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+  | IT_MIN GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-min"), $3, $4));
     }
-  | IT_MAX GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+  | IT_MAX GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-max"), $3, $4));
     }
-  | IT_AVG GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN GT_RPAREN	{
+  | IT_AVG GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-avg"), $3, $4));
     }
   | IT_GROUP_CONCAT _QParamList_E_Opt GT_LPAREN _QIT_DISTINCT_E_Opt ArgList GT_RPAREN	{
