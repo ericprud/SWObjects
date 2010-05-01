@@ -1,0 +1,18 @@
+# subselect-04 - GROUP BY, HAVING
+
+# $Id$
+
+SELECT ?bPlusC (SUM(?bPlusC) AS ?sumBPlusC) (1 - COUNT(*) AS ?oneMinusCount)
+{
+    {
+      SELECT * {}
+      BINDINGS
+?a ?b  ?c {
+(1 10 2)
+(1  9 3)
+(1 11 4)
+          }
+    }
+}
+GROUP BY (?a AS ?x) ((?b+?c) AS ?bPlusC)
+

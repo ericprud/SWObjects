@@ -27,6 +27,46 @@ BOOST_AUTO_TEST_CASE( subselect_02 ) {
     const URI** requires = NULL;
     DAWG_TEST("sparql11/subselect-02.rq", "sparql11/subselect-02.srx", 0, 0);
 }
+BOOST_AUTO_TEST_CASE( subselect_03 ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++---------+------------+----------------+
+| ?bPlusC | ?sumBPlusC | ?oneMinusCount |
+|      12 |         24 |             -1 |
+|      15 |         15 |              0 |
++---------+------------+----------------+
+     */
+    const char* defaultGraph( "sparql11/subselect-01.ttl" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("sparql11/subselect-03.rq", "sparql11/subselect-03.srx", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( subselect_04 ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++---------+------------+----------------+
+| ?bPlusC | ?sumBPlusC | ?oneMinusCount |
+|      12 |         24 |             -1 |
++---------+------------+----------------+
+     */
+    GRAPH_TEST(NULL, "sparql11/subselect-04.rq", "sparql11/subselect-04.srx");
+}
 BOOST_AUTO_TEST_SUITE_END(/* subselect */)
 
 

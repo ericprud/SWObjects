@@ -220,6 +220,7 @@ namespace w3c_sw {
     }
 
     void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) {
+	// std::cerr << "start\n" << *this;
 	/* List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
 	 * that the row has no bindings which fail to appear in knownVars.
@@ -237,6 +238,7 @@ namespace w3c_sw {
 	typedef std::map<const POS*,const Expression*> Pos2Expr;
 	Pos2Expr pos2expr;
 
+	std::string groupIndex;
 	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
 	     varExpr != exprs->end(); ++varExpr) {
 	    const POS* label(_getLabel(*varExpr, posFactory));
@@ -248,10 +250,12 @@ namespace w3c_sw {
 
 	    /* Duplicate projected expressions, adding state to aggregates. */
 	    struct AggregateStateInjector : public SWObjectDuplicator {
+		std::string& groupIndexRef;
 		struct FunctionState : public FunctionCall { // FunctionCall for virtual eval
 		protected:
+		    std::string& groupIndexRef;
 		public:
-		    FunctionState () : FunctionCall (NULL, NULL) {  }
+		    FunctionState (std::string& groupIndexRef) : FunctionCall (NULL, NULL), groupIndexRef(groupIndexRef) {  }
 		    ~FunctionState () {  }
 		    virtual const POS* eval(const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const = 0; // @@ needed?
 		    static std::string mitoa (int i) {
@@ -262,45 +266,51 @@ namespace w3c_sw {
 		};
 		struct CountState : public FunctionState { // FunctionCall for virtual eval
 		protected:
-		    int count;
+		    std::map<std::string, int> counts;
 		public:
-		    CountState () : FunctionState (), count(0) {  }
+		    CountState (std::string& groupIndexRef)
+			: FunctionState (groupIndexRef) {  }
 		    ~CountState () {  }
 		    virtual const POS* eval (const Result* /* r */, POSFactory* posFactory, BNodeEvaluator* /* evaluator */) const {
-			return posFactory->getNumericRDFLiteral(mitoa(count), ((CountState*)this)->count++);
+			return posFactory->getNumericRDFLiteral(mitoa(++(((CountState*)this)->counts[groupIndexRef])), ((CountState*)this)->counts[groupIndexRef]);
 		    }
 		};
 		struct SumState : public FunctionState { // FunctionCall for virtual eval
 		protected:
 		    const Expression* expr;
-		    const POS* val;
+		    std::map<std::string, const POS*> vals;
 		public:
-		    SumState (const Expression* expr, POSFactory* posFactory) : FunctionState (), expr(expr), val(posFactory->getNumericRDFLiteral("0", 0)) {  }
+		    SumState (const Expression* expr, std::string& groupIndexRef)
+			: FunctionState (groupIndexRef), expr(expr) {  }
 		    ~SumState () {  }
 		    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-			ArithmeticSum::NaryAdder f(r, posFactory, evaluator);
-			std::vector<const Expression*> addends;
-			POSExpression valExpr(val);
-			addends.push_back(&valExpr);
-			addends.push_back(expr);
-			((SumState*)this)->val = posFactory->applyCommonNumeric(addends, &f);
-			return val;
+			if (vals.find(groupIndexRef) == vals.end()) {
+			    ((SumState*)this)->vals[groupIndexRef] = expr->eval(r, posFactory, evaluator);
+			} else {
+			    ArithmeticSum::NaryAdder f(r, posFactory, evaluator);
+			    std::vector<const Expression*> addends;
+			    POSExpression valExpr(((SumState*)this)->vals[groupIndexRef]);
+			    addends.push_back(&valExpr);
+			    addends.push_back(expr);
+			    ((SumState*)this)->vals[groupIndexRef] = posFactory->applyCommonNumeric(addends, &f);
+			}
+			return ((SumState*)this)->vals[groupIndexRef];
 		    }
 		};
-		AggregateStateInjector (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
+		AggregateStateInjector (POSFactory* posFactory, std::string& groupIndexRef) : SWObjectDuplicator(posFactory), groupIndexRef(groupIndexRef) {  }
 		virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
 		    if (p_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-count")) {
-			last.functionCall = new CountState();
+			last.functionCall = new CountState(groupIndexRef);
 		    } else if (p_IRIref == posFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sum")) {
 			(*it)->express(this);
-			last.functionCall = new SumState(last.expression, posFactory);
+			last.functionCall = new SumState(last.expression, groupIndexRef);
 		    } else {
 			NEED_IMPL(std::string("functionCall(") + p_IRIref->toString());
 		    }
 		}
 	    };
-	    AggregateStateInjector inj(posFactory);
+	    AggregateStateInjector inj(posFactory, groupIndex);
 	    (*varExpr)->expr->express(&inj);
 	    pos2expr[label] = inj.last.expression;
 	}
@@ -313,7 +323,7 @@ namespace w3c_sw {
 	    ResultSetIterator aggregateRow;
 	    if (groupBy != NULL && groupBy->size() > 0) {
 		/* eval groupIndex args, add to result */
-		std::string groupIndex;
+		groupIndex = "";
 		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		     it != groupBy->end(); ++it) {
 		    const POS* val = (*it)->expr->eval(*row, posFactory, NULL);
@@ -348,12 +358,19 @@ namespace w3c_sw {
 		if ((*aggregateRow)->find(*delMe) != (*aggregateRow)->end())
 		    (*aggregateRow)->erase((*aggregateRow)->find(*delMe));
 
+	    if (having != NULL) {
+		for (std::vector<const w3c_sw::Expression*>::const_iterator it = having->begin();
+		     it != having->end(); ++it)
+		    if (posFactory->eval(*it, *aggregateRow) != true)
+			row = erase(aggregateRow);
+	    }
 	}
 
 	for (Pos2Expr::iterator it = pos2expr.begin(); it != pos2expr.end(); ++it) {
 	    const Expression* exp = it->second;
 	    delete exp;
 	}
+	// std::cerr << "end\n" << *this;
     }
 
     void ResultSet::restrict (const Expression* expression) {
