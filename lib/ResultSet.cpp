@@ -223,32 +223,42 @@ namespace w3c_sw {
 	// std::cerr << "start\n" << *this;
 	/* List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
-	 * that the row has no bindings which fail to appear in knownVars.
+	 * that the variables for all rows appear in knownVars.
 	 */
 	std::set<const POS*> delMes(knownVars.begin(), knownVars.end());
 	if (groupBy != NULL && groupBy->size() > 0)
 	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		 it != groupBy->end(); ++it)
 		delMes.insert(_getLabel(*it, posFactory));
+
+	/* Replace the known vars and the select order. */
 	knownVars.clear();
 	selectOrder.clear();
 	orderedSelect = true;
 
-	/* Map selected variables to expressions. */
+	/* Each groupBy will be toString()'d and appended to groupIndex.
+	 * example: <a>~1~11~"Bob"@en~
+	 */
+	std::string groupIndex;
+
+	/* Map select variables to the expressions bound to them. */
 	typedef std::map<const POS*,const Expression*> Pos2Expr;
 	Pos2Expr pos2expr;
 
-	std::string groupIndex;
+	/* Walk the select list to populate pos2expr. */
 	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
 	     varExpr != exprs->end(); ++varExpr) {
 	    const POS* label(_getLabel(*varExpr, posFactory));
+
 	    /* Add new alias name. */
 	    knownVars.insert(label);
 	    selectOrder.push_back(label);
 	    if (delMes.find(label) != delMes.end())
 		delMes.erase(delMes.find(label));
 
-	    /* Duplicate projected expressions, adding state to aggregates. */
+	    /* Duplicate projected expressions, simulated expressions
+	     * for the aggregates.
+	     */
 	    struct AggregateStateInjector : public SWObjectDuplicator {
 		std::string& groupIndexRef;
 		struct FunctionState : public FunctionCall { // FunctionCall for virtual eval
@@ -315,6 +325,7 @@ namespace w3c_sw {
 	    pos2expr[label] = inj.last.expression;
 	}
 
+	/* Map groupIndex to sole row with that GROUP BY pattern. */
 	typedef std::map<std::string, ResultSetIterator> Group2Row;
 	Group2Row group2row;
 
@@ -331,6 +342,9 @@ namespace w3c_sw {
 		    (*row)->set((*it)->label, val, false, true); // !! WG decision on overwrite
 		}
 
+		/* This working row may be redundant against an older row (with same
+		 * groupIndex).
+		 */
 		Group2Row::iterator curAgg(group2row.find(groupIndex));
 		if (curAgg == group2row.end()) {
 		    group2row[groupIndex] = aggregateRow = row;
@@ -353,11 +367,13 @@ namespace w3c_sw {
 		    (*aggregateRow)->set(*knownVar, val, false, true); // !! WG decision on overwrite
 	    }
 
+	    /* Eliminate unselect attributes */
 	    for (std::set<const POS*>::const_iterator delMe = delMes.begin();
 		 delMe != delMes.end(); ++delMe)
 		if ((*aggregateRow)->find(*delMe) != (*aggregateRow)->end())
 		    (*aggregateRow)->erase((*aggregateRow)->find(*delMe));
 
+	    /* Test against HAVING constraints */
 	    if (having != NULL) {
 		for (std::vector<const w3c_sw::Expression*>::const_iterator it = having->begin();
 		     it != having->end(); ++it)
@@ -366,6 +382,7 @@ namespace w3c_sw {
 	    }
 	}
 
+	/* Clean up new'd expressions. */
 	for (Pos2Expr::iterator it = pos2expr.begin(); it != pos2expr.end(); ++it) {
 	    const Expression* exp = it->second;
 	    delete exp;
