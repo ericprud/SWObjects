@@ -1773,7 +1773,7 @@ public:
     POSList () : m_POSs() {  }
     virtual ~POSList () { m_POSs.clear(); }
     void push_back(const POS* v) { m_POSs.push_back(v); }
-    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("POSList::express"); }
+    virtual void express(Expressor* p_expressor) const;
     std::vector<const POS*>::iterator begin () { return m_POSs.begin(); }
     std::vector<const POS*>::const_iterator begin () const { return m_POSs.begin(); }
     std::vector<const POS*>::iterator end () { return m_POSs.end(); }
@@ -2966,7 +2966,7 @@ public:
     virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) = 0;
     virtual void expressionAlias(const ExpressionAlias* const, const Expression* expr, const Bindable* label) = 0;
     virtual void expressionAliasList(const ExpressionAliasList* const self, const ProductionVector<const ExpressionAlias*>* p_Expressions) = 0;
-    // virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
+    virtual void posList(const POSList* const self, const ProductionVector<const POS*>* p_POSs) = 0;
     virtual void starVarSet(const StarVarSet* const self) = 0;
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const POS* p_IRIref) = 0;
     virtual void namedGraphClause(const NamedGraphClause* const self, const POS* p_IRIref) = 0;
@@ -3079,9 +3079,9 @@ public:
     virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
 	p_Expressions->express(this);
     }
-//     virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-// 	p_POSs->express(this);
-//     }
+    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	p_POSs->express(this);
+    }
     virtual void starVarSet (const StarVarSet* const) {  }
     virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	p_IRIref->express(this);

@@ -729,6 +729,9 @@ namespace w3c_sw {
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
+	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	    FAIL("no SQL for POSList");
+	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    FAIL("need to select all pertinent vars");
 	}

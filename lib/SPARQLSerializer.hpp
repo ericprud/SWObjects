@@ -251,6 +251,10 @@ public:
 	    ret << ' ';
 	}
     }
+    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	p_POSs->express(this);
+	ret << std::endl;
+    }
     virtual void starVarSet (const StarVarSet* const) {
 	ret << "* ";
     }
@@ -410,6 +414,18 @@ public:
 	    ret << "isBlank";
 	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral"))
 	    ret << "isLiteral";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-count"))
+	    ret << "count";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-sum"))
+	    ret << "sum";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-min"))
+	    ret << "min";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-max"))
+	    ret << "max";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-avg"))
+	    ret << "avg";
+	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-group_concat"))
+	    ret << "group_concat";
 	else
 	    p_IRIref->express(this);
 	ret << "(";

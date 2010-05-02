@@ -343,6 +343,14 @@ public:
 	    ret << ' ';
 	}
     }
+    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
+	     it != p_POSs->end(); ++it) {
+	    if (it != p_POSs->begin())
+		ret << ' ';
+	    (*it)->express(this);
+	}
+    }
     virtual void starVarSet (const StarVarSet* const) {
 	ret << "* ";
     }

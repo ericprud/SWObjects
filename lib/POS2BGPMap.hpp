@@ -266,6 +266,9 @@ namespace w3c_sw {
 		    _depends(posExpr->getPOS(), _Binding_SELECT);
 		}
 	    }
+	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+		FAIL("need to impl POS2BGPMap::posList");
+	    }
 	    virtual void starVarSet (const StarVarSet* const) {
 		FAIL("umm, I'm not really up to handling SELECT *.");
 	    }

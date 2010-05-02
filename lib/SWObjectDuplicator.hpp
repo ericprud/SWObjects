@@ -47,6 +47,7 @@ namespace w3c_sw {
 	    //ProductionVector<DatasetClause*> datasetClauses;
 	    SolutionModifier* solutionModifier;
 	    const Binding* binding;
+	    POSList* posList;
 	    const BindingClause* bindingClause;
 	    WhereClause* whereClause;
 	    const Operation* operation;
@@ -217,6 +218,13 @@ namespace w3c_sw {
 	    }
 	    last.varSets.varSet = /* last.varSets.exprList = */ ret;
 	}
+	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	    POSList* ret = new POSList();
+	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
+		 it != p_POSs->end(); ++it)
+		ret->push_back(*it);
+	    last.posList = ret;
+	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    last.varSets.varSet = new StarVarSet();
 	}
@@ -254,8 +262,8 @@ namespace w3c_sw {
 	    last.binding = ret;
 	}
 	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	    p_Vars->express(this); NEED_IMPL("SWObjectDuplicator::bindingClause");
-	    BindingClause* ret = new BindingClause(NULL); // last.varSets.posList);
+	    p_Vars->express(this);
+	    BindingClause* ret = new BindingClause(last.posList); // last.varSets.posList);
 	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
 		 it != p_Bindings->end(); it++) {
 		(*it)->express(this);

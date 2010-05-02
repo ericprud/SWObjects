@@ -144,6 +144,11 @@ public:
 	p_Expressions->express(this);
 	xml->close();
     }
+    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	xml->open("POSList");
+	p_POSs->express(this);
+	xml->close();
+    }
     virtual void starVarSet (const StarVarSet* const) {
 	xml->empty("StarVarSet");
     }

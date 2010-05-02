@@ -378,6 +378,9 @@ void ExpressionAlias::express (Expressor* p_expressor) const {
 void ExpressionAliasList::express (Expressor* p_expressor) const {
     p_expressor->expressionAliasList(this, &m_Expressions);
 }
+void POSList::express (Expressor* p_expressor) const {
+    p_expressor->posList(this, &m_POSs);
+}
 void StarVarSet::express (Expressor* p_expressor) const {
     p_expressor->starVarSet(this);
 }
