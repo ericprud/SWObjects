@@ -67,6 +67,24 @@ end
      */
     GRAPH_TEST(NULL, "sparql11/subselect-04.rq", "sparql11/subselect-04.srx");
 }
+BOOST_AUTO_TEST_CASE( ext_select_expr_01 ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++---------+--------------+----------------+
+| ?bPlusC | "SUM(?b+?c)" | ?oneMinusCount |
+|      12 |           24 |             -1 |
++---------+--------------+----------------+
+     */
+    GRAPH_TEST(NULL, "sparql11/ext_select_expr-01.rq", "sparql11/ext_select_expr-01.srt");
+}
 BOOST_AUTO_TEST_SUITE_END(/* subselect */)
 
 
