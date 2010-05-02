@@ -580,6 +580,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return getRDFLiteral(posStr.substr(1, posStr.size()-2), NULL, NULL);
 	if (posStr[0] == '?')
 	    return getVariable(posStr.substr(1, posStr.size()-1));
+	if (posStr[0] == '-' || (posStr[0] >= '0' && posStr[0] <= '9')) {
+	    std::istringstream is(posStr);
+	    int i;
+	    is >> i;
+	    return getNumericRDFLiteral(posStr, i);
+	}
 	throw(std::runtime_error("unable to getPOS("+posStr+")"));
     }
 
