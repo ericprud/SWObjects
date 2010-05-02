@@ -292,7 +292,7 @@ namespace w3c_sw {
 		public:
 		    SumState (const Expression* expr, std::string& groupIndexRef)
 			: FunctionState (groupIndexRef), expr(expr) {  }
-		    ~SumState () {  }
+		    ~SumState () { delete expr; }
 		    virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 			if (vals.find(groupIndexRef) == vals.end()) {
 			    ((SumState*)this)->vals[groupIndexRef] = expr->eval(r, posFactory, evaluator);
@@ -377,8 +377,10 @@ namespace w3c_sw {
 	    if (having != NULL) {
 		for (std::vector<const w3c_sw::Expression*>::const_iterator it = having->begin();
 		     it != having->end(); ++it)
-		    if (posFactory->eval(*it, *aggregateRow) != true)
+		    if (posFactory->eval(*it, *aggregateRow) != true) {
+			delete *aggregateRow;
 			row = erase(aggregateRow);
+		    }
 	    }
 	}
 

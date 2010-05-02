@@ -1629,7 +1629,7 @@ protected:
 public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
-    virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const = 0;
+    virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const = 0;
 };
 
 class ExpressionAlias : public Base {
@@ -1653,7 +1653,7 @@ public:
     ExpressionAliasList () : VarSet(), m_Expressions() {  }
     // ExpressionAliasList (ProductionVector<const ExpressionAlias*> p_Expressions) : VarSet(), m_Expressions(p_Expressions) {  }
     ExpressionAliasList (const ExpressionAlias* expr) : VarSet(), m_Expressions(expr) {  }
-    ~ExpressionAliasList () { m_Expressions.clear(); }
+    ~ExpressionAliasList () {  }
     void push_back(const ExpressionAlias* v) { m_Expressions.push_back(v); }
     virtual void express(Expressor* p_expressor) const;
     std::vector<const ExpressionAlias*>::iterator begin () { return m_Expressions.begin(); }
@@ -1665,7 +1665,7 @@ public:
 	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
-    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -1679,7 +1679,7 @@ public:
 	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
 	return pref == NULL ? false : true;
     }
-    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const;
 };
 
 class DatasetClause : public Base {
@@ -1719,13 +1719,13 @@ class Select;
 class SolutionModifier : public Base {
     friend class Select;
 private:
-    w3c_sw::ExpressionAliasList* groupBy;
-    w3c_sw::ProductionVector<const w3c_sw::Expression*>* having;
+    ExpressionAliasList* groupBy;
+    ProductionVector<const Expression*>* having;
     std::vector<s_OrderConditionPair>* m_OrderConditions;
 public:
     int m_limit;
     int m_offset;
-    SolutionModifier (w3c_sw::ExpressionAliasList* groupBy, w3c_sw::ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset)
+    SolutionModifier (ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset)
 	: Base(), groupBy(groupBy), having(having), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset)
     {  }
     ~SolutionModifier () {
@@ -1733,6 +1733,8 @@ public:
 	    for (size_t i = 0; i < m_OrderConditions->size(); i++)
 		delete m_OrderConditions->at(i).expression;
 	delete m_OrderConditions;
+	delete groupBy;
+	delete having;
     }
     void order(ResultSet* rs);
     virtual void express(Expressor* p_expressor) const;
