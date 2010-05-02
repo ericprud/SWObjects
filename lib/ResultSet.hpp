@@ -167,7 +167,14 @@ namespace w3c_sw {
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    const boost::regex expression("[ \\t]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\")|\\+|┌|├|└|┏|┠|┗|\\n)");
+	    const boost::regex expression("[ \\t]*"
+					  "((?:<[^>]*>)"		// IRI
+					   "|(?:_:[^[:space:]]+)"	// bnode
+					   "|(?:[?$][^[:space:]]+)"	// variable
+					   "|(?:\\\"[^\\\"]+\\\")"	// literal
+					   "|(?:-?[0-9\\.]+)"		// integer
+					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
+					  ")");
 	    std::string::const_iterator start, end; 
 	    start = str.begin(); 
 	    end = str.end(); 
