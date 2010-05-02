@@ -391,8 +391,7 @@ void NamedGraphClause::express (Expressor* p_expressor) const {
     p_expressor->namedGraphClause(this, m_IRIref);
 }
 void SolutionModifier::express (Expressor* p_expressor) const {
-    IF_IMPL(groupBy != NULL || having != NULL, "SPARQL 1.1 SolutionModifier (groupBy, having)");
-    p_expressor->solutionModifier(this, m_OrderConditions, m_limit,m_offset);
+    p_expressor->solutionModifier(this, groupBy, having, m_OrderConditions, m_limit, m_offset);
 }
 void Binding::express (Expressor* p_expressor) const {
     p_expressor->binding(this, this);

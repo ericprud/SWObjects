@@ -266,8 +266,26 @@ public:
 	ret << "FROM NAMED ";
 	p_IRIref->express(this);
     }
-    virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	lead();
+	if (groupBy) {
+	    ret << "GROUP BY";
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		 it != groupBy->end(); ++it) {
+		ret << ' ';
+		(*it)->express(this);
+	    }
+	    ret << std::endl;
+	}
+	if (having) {
+	    ret << "HAVING ";
+	    for (std::vector<const Expression*>::const_iterator it = having->begin();
+		 it != having->end(); ++it) {
+		ret << ' ';
+		(*it)->express(this);
+	    }
+	    ret << std::endl;
+	}
 	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit << std::endl;
 	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset << std::endl;
 	if (p_OrderConditions) {

@@ -162,8 +162,24 @@ public:
 	p_IRIref->express(this);
 	xml->close();
     }
-    virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
 	xml->open("SolutionModifier");
+	if (groupBy) {
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		 it != groupBy->end(); ++it) {
+		xml->open("GroupBy");
+		(*it)->express(this);
+		xml->close();
+	    }
+	}
+	if (having) {
+	    for (std::vector<const Expression*>::const_iterator it = having->begin();
+		 it != having->end(); ++it) {
+		xml->open("HAVING");
+		(*it)->express(this);
+		xml->close();
+	    }
+	}
 	if (p_limit != LIMIT_None) xml->attribute("limit", p_limit);
 	if (p_offset != OFFSET_None) xml->attribute("offset", p_offset);
 	if (p_OrderConditions)

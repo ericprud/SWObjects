@@ -2970,7 +2970,7 @@ public:
     virtual void starVarSet(const StarVarSet* const self) = 0;
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const POS* p_IRIref) = 0;
     virtual void namedGraphClause(const NamedGraphClause* const self, const POS* p_IRIref) = 0;
-    virtual void solutionModifier(const SolutionModifier* const self, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
+    virtual void solutionModifier(const SolutionModifier* const self, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
     virtual void binding(const Binding* const self, const ProductionVector<const POS*>* values) = 0;
     virtual void bindingClause(const BindingClause* const self, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) = 0;
     virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) = 0;
@@ -3089,7 +3089,17 @@ public:
     virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
 	p_IRIref->express(this);
     }
-    virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
+    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
+	if (groupBy) {
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		 it != groupBy->end(); ++it)
+		(*it)->express(this);
+	}
+	if (having) {
+	    for (std::vector<const Expression*>::const_iterator it = having->begin();
+		 it != having->end(); ++it)
+		(*it)->express(this);
+	}
 	if (p_OrderConditions)
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++)
 		p_OrderConditions->at(i).expression->express(this);

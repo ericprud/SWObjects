@@ -236,7 +236,25 @@ namespace w3c_sw {
 	    p_IRIref->express(this);
 	    last.datasetClause = new NamedGraphClause(last.posz.pos, posFactory);
 	}
-	virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditionPairs, int p_limit, int p_offset) {
+	virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditionPairs, int p_limit, int p_offset) {
+	    ExpressionAliasList* n_groupBy = NULL;
+	    if (groupBy) {
+		n_groupBy = new ExpressionAliasList();
+		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
+		     it != groupBy->end(); ++it) {
+		    (*it)->express(this);
+		    n_groupBy->push_back(last.expressionAlias);
+		}
+	    }
+	    ProductionVector<const Expression*>* n_having = NULL;
+	    if (having) {
+		n_having = new ProductionVector<const Expression*>();
+		for (std::vector<const Expression*>::const_iterator it = having->begin();
+		     it != having->end(); ++it) {
+		    (*it)->express(this);
+		    n_having->push_back(last.expression);
+		}
+	    }
 	    if (p_OrderConditionPairs) {
 		std::vector<s_OrderConditionPair>* l_s_OrderConditionPairs = new std::vector<s_OrderConditionPair>();
 		for (std::vector<s_OrderConditionPair>::iterator it = p_OrderConditionPairs->begin();
@@ -247,7 +265,7 @@ namespace w3c_sw {
 		    pair.expression = last.expression;
 		    l_s_OrderConditionPairs->push_back(pair);
 		}
-		last.solutionModifier = new SolutionModifier(NULL, NULL, l_s_OrderConditionPairs, p_limit, p_offset);
+		last.solutionModifier = new SolutionModifier(n_groupBy, n_having, l_s_OrderConditionPairs, p_limit, p_offset);
 	    } else {
 		last.solutionModifier = new SolutionModifier(NULL, NULL, NULL, p_limit, p_offset);
 	    }

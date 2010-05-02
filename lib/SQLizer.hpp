@@ -741,7 +741,8 @@ namespace w3c_sw {
 	virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
 	    p_IRIref->express(this);
 	}
-	virtual void solutionModifier (const SolutionModifier* const, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+	virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
+	    IF_IMPL(groupBy != NULL || having != NULL, "SPARQL 1.1 SolutionModifier (groupBy, having)");
 	    if (p_limit != LIMIT_None) curQuery->setLimit(p_limit);
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions)
