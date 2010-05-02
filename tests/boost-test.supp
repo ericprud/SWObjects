@@ -61,3 +61,11 @@
    fun:exit
    fun:(below main)
 }
+{
+   deregister_test_unit
+   Memcheck:Addr4
+   fun:_ZN5boost9unit_test14framework_implD1Ev
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
