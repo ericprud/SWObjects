@@ -67,16 +67,16 @@ namespace w3c_sw {
 
 	RdfDB (SWSAXparser* xmlParser = NULL)
 	    : graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL), handler(&defaultHandler)
-	{  }
+	{ assureGraph(DefaultGraph); }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(&defaultHandler)
-	{  }
+	{ assureGraph(DefaultGraph); }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(handler)
-	{  }
+	{ assureGraph(DefaultGraph); }
 	RdfDB (RdfDB const &)
 	    : graphs()
-	{ throw(std::runtime_error(FUNCTION_STRING)); }
+	{ throw(std::runtime_error(FUNCTION_STRING)); assureGraph(DefaultGraph); }
 	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL), handler(&defaultHandler) {
 	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
@@ -100,6 +100,7 @@ namespace w3c_sw {
 	    for (graphmap_type::const_iterator it = graphs.begin(); // @@@ same as ~RdfDB()
 		 it != graphs.end(); it++)
 		delete it->second;
+	    graphs.clear();
 
 	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it) {
 		BasicGraphPattern* to = assureGraph(it->first);
