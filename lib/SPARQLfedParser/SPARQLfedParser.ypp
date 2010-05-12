@@ -578,7 +578,7 @@ WhereClause:
     // 'WHERE'? GroupGraphPattern BindingClause?
     _QIT_WHERE_E_Opt  GroupGraphPattern _QBindingClause_E_Opt	{
 	driver.restoreFilter(NULL);
-	$$ = new WhereClause(driver.curOp, $3);
+	$$ = new WhereClause(driver.curOp ? driver.curOp : new DefaultGraphPattern(), $3);
 	driver.curOp = NULL;
     }
 ;
