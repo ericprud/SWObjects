@@ -74,7 +74,7 @@ endif
 
 ifeq ($(REGEX), BOOST)
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\n"
-  REGEX_LIB?= -lboost_regex$(BOOST_VERSION)
+  REGEX_LIB?= -lboost_regex$(BOOST_VERSION) -lpthread
 else
   ifneq ($(REGEX), )
     $(warning $(REGEX_LIB) may not be supported)
@@ -99,7 +99,7 @@ endif
 
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\n"
-  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION)
+  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) -lpthread
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
@@ -113,7 +113,7 @@ endif
 
 ifeq ($(SQL_CLIENT), MYSQL)
   CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\n"
-  SQL_CLIENT_LIB?= -lmysqlclient
+  SQL_CLIENT_LIB?= -lmysqlclient -lz
 else
   ifneq ($(SQL_CLIENT), )
     $(warning $(SQL_CLIENT) may not be supported)
@@ -168,7 +168,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lpthread
+LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
 
