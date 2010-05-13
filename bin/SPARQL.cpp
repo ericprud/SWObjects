@@ -529,7 +529,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    res = SQLclient->executeQuery(finalQuery);
 		}
 		catch (std::string ex) {
-		    throw sqlConnectString() + " was unable to execute " + finalQuery;
+		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		sw::SqlResultSet rs2(&posFactory, res);
 		rs.joinIn(&rs2);
