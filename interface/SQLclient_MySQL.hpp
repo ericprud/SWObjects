@@ -72,6 +72,7 @@ namespace w3c_sw {
 		    case MYSQL_TYPE_NULL:
 			f.type = Field::TYPE__null;
 			break;
+		    case MYSQL_TYPE_DATETIME:
 		    case MYSQL_TYPE_TIMESTAMP:
 			f.type = Field::TYPE_dateTime;
 			break;
@@ -87,6 +88,11 @@ namespace w3c_sw {
 			f.type = Field::TYPE__literal;
 			break;
 		    default:
+			if (true) { // do want a switch to allow unknown datatypes?
+			    std::stringstream s;
+			    s << "fields[" << i << "] " << fields[i].name << " of unknown type " << fields[i].type;
+			    throw s.str();
+			}
 			f.type = Field::TYPE__unknown;
 		    }
 		    colSet.push_back(f);
@@ -101,6 +107,9 @@ namespace w3c_sw {
 		for(int i = 0; i < num_fields; i++) {
 		    std::string lexval(row[i] ? row[i] : "SQL NULL");
 		    switch (fields[i].type) {
+		    case MYSQL_TYPE_DATETIME:
+			lexval.replace(lexval.find_first_of(' '), 1, "T");
+			break;
 		    case MYSQL_TYPE_TIMESTAMP:
 			lexval = "0-0-0T" + lexval;
 			break;
