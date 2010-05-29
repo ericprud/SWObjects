@@ -68,11 +68,12 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #elif HTTP_SERVER == SWOb_DLIB
  #include "../interface/WEBserver_dlib.hpp"
 #else
-  #ifdef _MSC_VER
-    #pragma message ("unable to serve HTTP without an HTTP server.")
-  #else /* !_MSC_VER */
-    #warning unable to serve HTTP without an HTTP server.
-  #endif /* !_MSC_VER */
+ #ifdef _MSC_VER
+  #pragma message ("unable to serve HTTP without an HTTP server.")
+ #else /* !_MSC_VER */
+  #warning unable to serve HTTP without an HTTP server.
+ #endif /* !_MSC_VER */
+ #include "../interface/WEBserver_dummy.hpp"
 #endif
 
 #if SQL_CLIENT == SWOb_MYSQL
@@ -229,7 +230,7 @@ unsigned char favicon[] = {
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
 };
 
-struct MyServer : WEBSERVER { // sw::WEBserver_asio
+struct MyServer : WEBSERVER {
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
 

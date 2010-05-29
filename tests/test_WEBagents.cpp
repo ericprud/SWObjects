@@ -23,7 +23,12 @@
 #elif HTTP_SERVER == SWOb_DLIB
  #include "../interface/WEBserver_dlib.hpp"
 #else
- #error unknown HTTP_SERVER (neither ASIO or DLIB)
+ #ifdef _MSC_VER
+  #pragma message ("unable to test HTTP server.")
+ #else /* !_MSC_VER */
+  #warning unable to test HTTP server.
+ #endif /* !_MSC_VER */
+ #include "../interface/WEBserver_dummy.hpp"
 #endif
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp

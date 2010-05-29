@@ -38,12 +38,12 @@ REGEX= BOOST
 # @@TODO= add DLIB client code.
 HTTP_CLIENT= ASIO
 
-# HTTP_SERVER: DLIB |  - what library provies HTTP server support. #####
+# HTTP_SERVER: ASIO | DLIB |  - what library provies HTTP server support. #####
 # Needed for SPARQL_server.
 # Tested with:
 #   DLIB v?.??
 #   http://dclib.sourceforge.net/
-# @@TODO= add ASIO server code.
+# @@TODO= bring up to day with recent ASIO.
 HTTP_SERVER= ASIO
 
 # SQL_CLIENT: MYSQL |  - what library provies HTTP server support. #####
@@ -76,7 +76,7 @@ BOOST_VERSION=-mt
 # Tested with:
 #   STATIC, DYNAMIC
 # but STATIC only works for bin/* 'cause of boost::unit_test challenges.
-LINK= STATIC
+LINK= DYNAMIC
 
 
 #OSX: flex=/opt/local/bin/flex
