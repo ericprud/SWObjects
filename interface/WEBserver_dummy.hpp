@@ -12,7 +12,7 @@ namespace w3c_sw {
 
     public:
 	WEBserver_dummy () {  }
-// 	void stop () {  }
+	void stop () {  }
 	void serve (const char*, const char*, std::size_t, webserver::request_handler&) {  }
     };
 

@@ -460,7 +460,9 @@ namespace w3c_sw {
 
     namespace webserver {
 	class request_handler
-	    : private boost::noncopyable
+#if HTTP_SERVER == SWOb_ASIO
+	    : private boost::noncopyable // copied from boost http server demo
+#endif
 	{
 	public:
 	    /// Construct with a directory containing files to be served.
