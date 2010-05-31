@@ -2710,7 +2710,13 @@ public:
     Device device;
 
     StreamRewinder (std::istream& istr)
+	// The reference we pass to device is not used before we're constructed.
+#ifdef _MSC_VER
+#pragma warning(suppress:4355)
 	: buffer(""), pos(0), state(STATE_copy), device(istr, *this)
+#else
+	: buffer(""), pos(0), state(STATE_copy), device(istr, *this)
+#endif
     {  }
     void pass () { state = STATE_pass; buffer.clear(); }
     void replay () { state = STATE_replay; pos = 0; }
