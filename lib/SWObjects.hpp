@@ -2751,7 +2751,9 @@ public:
 
     std::streamsize write (const char_type* s, std::streamsize n) {
 	std::string dbg(s, n);
-	POSIX_write(fileHandle, s, n);
+	size_t ret = POSIX_write(fileHandle, s, n);
+	if (ret == 0 && n != 0)
+	    throw std::string("write returned 0.");
 	return n;
     }
 
