@@ -409,10 +409,8 @@ swig/SWObjects_wrap.cpp: swig/SWObjects_setup.py
 	swig -c++ -o swig/SWObjects_wrap.cpp -python swig/SWObjects.i
 
 swig/_SWObjects.so: swig/SWObjects_wrap.cpp lib/SWObjects.cpp lib/ResultSet.cpp lib/RdfDB.cpp lib/ParserCommon.cpp lib/TurtleSParser/TurtleSParser.cpp lib/TurtleSScanner.cpp lib/TrigSParser/TrigSParser.cpp lib/TrigSScanner.cpp
-	@echo you will have to add  -lboost_regex-mt
 	python swig/SWObjects_setup.py build_ext --inplace -I.:lib:interface
-	rm swig/_SWObjects.so
-	g++ -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions build/temp.linux-i686-2.6/swig/SWObjects_wrap.o build/temp.linux-i686-2.6/lib/SWObjects.o build/temp.linux-i686-2.6/lib/ResultSet.o build/temp.linux-i686-2.6/lib/RdfDB.o build/temp.linux-i686-2.6/lib/ParserCommon.o build/temp.linux-i686-2.6/lib/TurtleSParser/TurtleSParser.o build/temp.linux-i686-2.6/lib/TurtleSScanner.o build/temp.linux-i686-2.6/lib/TrigSParser/TrigSParser.o build/temp.linux-i686-2.6/lib/TrigSScanner.o -o swig/_SWObjects.so -lboost_regex-mt
+	mv _SWObjects.so swig/
 
 .PHONY: test valgrind tests/7tm_receptors-flat.results
 test: lib $(unitTESTS) $(transformTEST_RESULTS)
