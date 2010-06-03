@@ -198,7 +198,7 @@ LIBINC	+=	 -l$(LIBNAME)
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
 
-.PHONY: lib
+.PHONY: lib NOGEN
 lib: dep $(LIB)
 
 .SECONDARY:
@@ -214,6 +214,11 @@ lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
 lib/TrigSParser/%.dep: lib/TrigSParser/%.cpp config.h
 	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
+GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
+
+# don't run flex and bison
+NOGEN:
+	touch $(GENERATED)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
