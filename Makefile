@@ -26,7 +26,7 @@ SED:=sed
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
 //ECHO:=`which echo`
 //ECHO:= /bin/echo -e
-ECHO ?= echo
+ECHO ?= echo -e
 #LIBS
 DEBUG:=-g -O0
 OPT=-fPIC
