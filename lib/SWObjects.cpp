@@ -1572,74 +1572,173 @@ compared against
 	}
 	return ret;
     }
+
+
+    /**
+     * DisjointList - compile structure for a disjunctive normal form.
+     * @method join takes TableOperations and sorts them into the DisjointList.
+     */
+    struct ConjointList;
+    struct DisjointList;
+    std::ostream& operator <<(std::ostream& os, const ConjointList& cl);
+    std::ostream& operator <<(std::ostream& os, DisjointList& top);
+
+    TableOperation* _copyTableOperation (const TableOperation& ref) {
+	SWObjectDuplicator dup(NULL);
+	ref.express(&dup);
+	return dup.last.tableOperation;
+    }
+
+    struct ConjointList : public std::vector<const TableOperation*> {
+
+	ConjointList () : std::vector<const TableOperation*>() {  }
+	void copy (const ConjointList& ref) {
+	    const BasicGraphPattern* bgp;
+	    for (std::vector<const TableOperation*>::const_iterator in = ref.begin();
+		 in != ref.end(); ++in) {
+		if ((bgp = dynamic_cast<const BasicGraphPattern*>(*in)) != NULL)
+		    push_back(_copyTableOperation(*bgp));
+		else
+		    throw std::string("unknown type");
+	    }
+	}
+
+	void free () {
+	    for (std::vector<const TableOperation*>::const_iterator in = begin();
+		 in != end(); ++in)
+		delete *in;
+	}
+
+	TableOperation* toTableOperation () const {
+	    if (size() == 0)
+		throw std::string("empty ConjointList");
+	    if (size() == 1)
+		return (TableOperation*)at(0); // !!! Lies
+	    TableConjunction* ret = new TableConjunction();
+	    for (ConjointList::const_iterator con = begin();
+		 con != end(); ++con)
+		ret->addTableOperation(*con, false);
+	    return ret;
+	}
+
+    };
+
+    struct DisjointList;
+    std::ostream& operator <<(std::ostream& os, DisjointList& top);
+    struct DisjointList : public std::vector<ConjointList> {
+
+	DisjointList () {
+	    push_back(ConjointList());
+	}
+
+	void free () {
+	    for (std::vector<ConjointList>::iterator in = begin();
+		 in != end(); ++in)
+		in->free();
+	}
+
+	void disjoin (const TableDisjunction* ins) {
+	    for (DisjointList::iterator dis = begin();
+		 dis != end(); ) {
+		for (std::vector<const TableOperation*>::const_iterator in = ins->begin();
+		     in != ins->end(); ++in) {
+		    ConjointList copy;
+		    copy.copy(*dis);
+		    dis = insert(dis, copy);
+		    const TableConjunction* conjoints;
+		    const BasicGraphPattern* bgp;
+		    if ((conjoints = dynamic_cast<const TableConjunction*>(*in)) != NULL)
+			for (std::vector<const TableOperation*>::const_iterator in2 = conjoints->begin();
+			     in2 != conjoints->end(); ++in2) {
+			    if ((bgp = dynamic_cast<const BasicGraphPattern*>(*in2)) != NULL)
+				dis->push_back(_copyTableOperation(*bgp));
+			    else
+				throw std::string("unknown type");
+			}
+		    else if ((bgp = dynamic_cast<const BasicGraphPattern*>(*in)) != NULL)
+			dis->push_back(_copyTableOperation(*bgp));
+		    else
+			throw std::string("unknown type");
+		    ++dis;
+		}
+		dis->free();
+		dis = erase(dis);
+	    }
+	}
+
+	void conjoin (const TableConjunction* ins) {
+	    for (std::vector<const TableOperation*>::const_iterator in = ins->begin();
+		 in != ins->end(); ++in)
+		join(*in);
+	}
+
+	void add (const BasicGraphPattern* ins) {
+	    for (DisjointList::iterator dis = begin();
+		 dis != end(); ++dis) {
+		dis->push_back(_copyTableOperation(*ins));
+	    }
+	}
+
+	void join (const TableOperation* ins) {
+	    const TableDisjunction* disjoints;
+	    const TableConjunction* conjoints;
+	    const BasicGraphPattern* bgp;
+	    if ((disjoints = dynamic_cast<const TableDisjunction*>(ins)) != NULL)
+		disjoin(disjoints);
+	    else if ((conjoints = dynamic_cast<const TableConjunction*>(ins)) != NULL)
+		conjoin(conjoints);
+	    else if ((bgp = dynamic_cast<const BasicGraphPattern*>(ins)) != NULL)
+		add(bgp);
+	    else
+		throw std::string("unknown type");
+	}
+
+	TableOperation* toTableOperation () const {
+	    if (size() == 1)
+		return at(0).size() == 0
+		    ? NULL
+		    : at(0).toTableOperation();
+	    TableDisjunction* ret = new TableDisjunction();
+	    for (DisjointList::const_iterator dis = begin();
+		 dis != end(); ++dis)
+		ret->addTableOperation(dis->toTableOperation(), false);
+	    return ret;
+	}
+
+    };
+
+    std::ostream& operator << (std::ostream& os, const ConjointList& cl) {
+	for (ConjointList::const_iterator con = cl.begin();
+	     con != cl.end(); ++con) {
+	    if (con != cl.begin())
+		os << "·";
+	    os << (*con)->toString();
+	}
+	return os;
+    }
+
+    std::ostream& operator << (std::ostream& os, DisjointList& dl) {
+	for (DisjointList::const_iterator dis = dl.begin();
+	     dis != dl.end(); ++dis) {
+	    if (dis != dl.begin())
+		os << " | ";
+	    os << *dis;
+	}
+	return os;
+    }
+
     TableOperation* TableConjunction::getDNF () const {
 	/* Create a disjunction of conjunctions: (A & B) | (C & D) */
-	TableDisjunction* ret = new TableDisjunction();
-	ret->addTableOperation(new TableConjunction(), true);
+	DisjointList dl;
 
 	/* for each of our elements... */
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); ++it) {
 	    TableOperation* op = (*it)->getDNF();
-	    TableDisjunction* disjoints;
-	    TableConjunction* conjoints;
-	    if ((disjoints = dynamic_cast<TableDisjunction*>(op)) != NULL) {
-		/* If this conjoint is a disjunction
-                 * à la A & ( B | C ) & ( D | E | F )
-		 *                      ^^^^^^^^^^^^^
-		 * ret is already ( A & B ) | ( A & C ) so copy each ret and append disjoints.
-		 */
-		for (std::vector<const TableOperation*>::iterator disjoint = disjoints->begin();
-		     disjoint != disjoints->end(); ) {
-		    /* for each ret conjunction */
-		    for (std::vector<const TableOperation*>::iterator reti = ret->begin();
-			 reti != ret->end(); reti++) {
-			const TableConjunction* o = dynamic_cast<const TableConjunction*>(*reti);
-			TableConjunction* n = new TableConjunction();
-			/* Copy the conjunction. */
-			for (std::vector<const TableOperation*>::const_iterator copyi = o->begin();
-			     copyi != o->end(); copyi++)
-			    n->addTableOperation(*copyi, true);
-			/* Append the current disjoint. */
-			n->addTableOperation(*disjoint, true);
-			disjoint = disjoints->erase(disjoint);
-		    }
-		    disjoint = disjoints->erase(disjoint);
-		}
-		delete op;
-		
-	    } else if ((conjoints = dynamic_cast<TableConjunction*>(op)) != NULL) {
-		/* A & ( B & C ) i.e. tree was not simplified */
-		for (std::vector<const TableOperation*>::iterator conjoint = conjoints->begin();
-		     conjoint != conjoints->end(); ) {
-		    /* for each ret */
-		    for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
-			 reti != ret->end(); reti++) {
-			const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
-			((TableConjunction*)c)->addTableOperation(*conjoint, true); /* !!! LIES !!! */
-		    }
-		    conjoint = conjoints->erase(conjoint);
-		}
-		delete conjoints;
-	    } else {
-		/* for each ret */
-		for (std::vector<const TableOperation*>::const_iterator reti = ret->begin();
-		     reti != ret->end(); reti++) {
-		    const TableConjunction* c = (dynamic_cast<const TableConjunction*>(*reti));
-		    ((TableConjunction*)c)->addTableOperation(op, true); /* !!! LIES !!! */
-		}
-	    }
+	    dl.join(op);
+	    delete op;
 	}
-
-	/* If there's only one disjoint, return it. */
-	if (ret->size() == 1) {
-	    std::vector<const TableOperation*>::iterator it = ret->begin();
-	    TableOperation* r = (TableOperation*)*it; /* !!! LIES !!! */
-	    ret->erase(it);
-	    delete ret;
-	    return r;
-	}
-	return ret;
+	return dl.toTableOperation();
     }
 
     TableOperationOnOperation* Filter::makeANewThis (const TableOperation* p_TableOperation) const {
