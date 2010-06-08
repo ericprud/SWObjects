@@ -12,7 +12,7 @@
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
-#include "QueryMapper.hpp"
+#include "ChainingMapper.hpp"
 #include "SQLizer.hpp"
 
 #ifndef MANUAL_TEST
@@ -24,7 +24,7 @@ using namespace w3c_sw;
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
 std::ostream* DebugStream = NULL; // &std::cerr;
-QueryMapper queryMapper(&f, &DebugStream);
+ChainingMapper queryMapper(&f, &DebugStream);
 
 
 struct EqualsTest {
@@ -243,7 +243,12 @@ BOOST_AUTO_TEST_CASE( A_or_B ) {
 BOOST_AUTO_TEST_CASE( A_or_B_and_C ) {
     DNFtest t("ASK { { { ?s1 ?p1 ?o1 } UNION { ?s2 ?p2 ?o2 } } { ?s3 ?p3 ?o3 } }", 
 	      "ASK { { { ?s1 ?p1 ?o1 } { ?s3 ?p3 ?o3 } } UNION { { ?s2 ?p2 ?o2 } { ?s3 ?p3 ?o3 } } }");
-    BOOST_CHECK_MESSAGE( !(*t.dnf == *t.ref), *t.dnf << " == " << *t.ref );
+    BOOST_CHECK_EQUAL(*t.dnf, *t.ref);
+}
+BOOST_AUTO_TEST_CASE( A_and_B_or_C ) {
+    DNFtest t("ASK { { ?s1 ?p1 ?o1 } { { ?s2 ?p2 ?o2 } UNION { ?s3 ?p3 ?o3 } } }", 
+	      "ASK { { { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } } UNION  { { ?s1 ?p1 ?o1 } { ?s3 ?p3 ?o3 } } }");
+    BOOST_CHECK_EQUAL(*t.dnf, *t.ref);
 }
 BOOST_AUTO_TEST_CASE( union_equiv_filter_positive ) {
     DNFtest t("ASK { { ?s ?p ?o } UNION { ?s ?p ?o } FILTER(1*(2+3)=?x)}", 
@@ -266,11 +271,12 @@ struct RuleMapTest {
     Operation* mapResults;
 
     RuleMapTest (const char* queryFile, const char* mapFile, 
-		 const char* mapResultsFile) :
+		 const char* mapResultsFile,
+		 IStreamContext::e_opts type = IStreamContext::FILE) :
 	bgpCompareVars(BasicGraphPattern::CompareVars) {
 
 	/* Parse query. */
-	IStreamContext qstr(queryFile, IStreamContext::FILE);
+	IStreamContext qstr(queryFile, type);
 	if (sparqlParser.parse(qstr)) {
 	    std::string msg = std::string("failed to parse query \"") + 
 		queryFile + std::string("\".");
@@ -279,7 +285,7 @@ struct RuleMapTest {
 	Operation* query = sparqlParser.root;
 
 	/* Parse map. */
-	IStreamContext mstr(mapFile, IStreamContext::FILE);
+	IStreamContext mstr(mapFile, type);
 	if (sparqlParser.parse(mstr)) {
 	    std::string msg = std::string("failed to parse map \"") + 
 		mapFile + std::string("\".");
@@ -288,12 +294,16 @@ struct RuleMapTest {
 	queryMapper.addRule(dynamic_cast<Construct*>(sparqlParser.root));
 	delete sparqlParser.root;
 
-	query->express(&queryMapper);
-	transformed = queryMapper.last.operation;
+	try {
+	    transformed = queryMapper.map(query);
+	} catch (RuleMatchingException e) { // !! should catch whatever
+	    delete query;
+	    throw e;
+	}
 	delete query;
 
 	/* Parse map results. */
-	IStreamContext rstr(mapResultsFile, IStreamContext::FILE);
+	IStreamContext rstr(mapResultsFile, type);
 	if (sparqlParser.parse(rstr)) {
 	    std::string msg = std::string("failed to parse map results \"") + 
 		mapResultsFile + std::string("\".");
@@ -346,11 +356,37 @@ struct SQLizerTest {
 
 BOOST_AUTO_TEST_SUITE( healthCare )
 BOOST_AUTO_TEST_SUITE( simple )
+#if 0
+BOOST_AUTO_TEST_CASE( r ) {
+    RuleMapTest t("/home/eric/twoWayBGQuery.rq", "/home/eric/twoWayHL7-BGMap.rq", "res.rq");
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
+#endif
+#if 1
+BOOST_AUTO_TEST_CASE( p1_p2 ) {
+    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+		  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
+		  "SELECT * { ?qs <p1> ?qo }",
+		  IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
+BOOST_AUTO_TEST_CASE( p3 ) {
+    BOOST_CHECK_THROW
+	(RuleMapTest("SELECT * { ?qs <p3> ?qo }",
+		     "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
+		     "",
+		     IStreamContext::STRING),
+	 RuleMatchingException);
+}
+#endif
+#if 1
 BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
     RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
-BOOST_AUTO_TEST_CASE( sdtm_db ) {
+#endif
+#if 0
+BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
     RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
     if (boost::unit_test::framework::master_test_suite().argc > 1 && 
 	std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
@@ -358,13 +394,16 @@ BOOST_AUTO_TEST_CASE( sdtm_db ) {
     SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/simple/db.sql");
     BOOST_CHECK_EQUAL(s.transformed, s.ref);
 }
+#endif
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
+#if 0
 BOOST_AUTO_TEST_CASE( bsbm_1 ) {
     RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
     if (boost::unit_test::framework::master_test_suite().argc > 1 && 
 	std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
 	BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
+#endif
 
