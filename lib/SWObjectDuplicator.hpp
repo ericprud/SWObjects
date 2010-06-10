@@ -490,9 +490,9 @@ namespace w3c_sw {
 	    ret->setLeftParm(last.expression);
 	    last.expression = ret;
 	}
-	virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
-	    p_BooleanComparator->express(this);
-	    last.expression = new ComparatorExpression(dynamic_cast<const BooleanComparator*>(last.expression));
+	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
+	    p_GeneralComparator->express(this);
+	    last.expression = new ComparatorExpression(dynamic_cast<const GeneralComparator*>(last.expression));
 	}
 	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    p_NumericRDFLiteral->express(this);

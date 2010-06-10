@@ -491,7 +491,7 @@ void BooleanGE::express (Expressor* p_expressor) const {
     p_expressor->booleanGE(this, left,right);
 }
 void ComparatorExpression::express (Expressor* p_expressor) const {
-    p_expressor->comparatorExpression(this, m_BooleanComparator);
+    p_expressor->comparatorExpression(this, m_GeneralComparator);
 }
 void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
@@ -969,6 +969,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete j;
 	} else
 	    m_TableOperations.push_back(tableOp);
+    }
+
+    ResultSet* OperationSet::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	for (std::vector<const Operation*>::const_iterator it = operations.begin();
+	     it != operations.end(); ++it)
+	    (*it)->execute(db, rs);
+	return rs;
     }
 
     ResultSet* Select::execute (RdfDB* db, ResultSet* rs) const {

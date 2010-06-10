@@ -388,9 +388,9 @@ public:
 	p_right->express(this);
 	xml->close();
     }
-    virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
+    virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
 	xml->open("ComparatorExpression");
-	p_BooleanComparator->express(this);
+	p_GeneralComparator->express(this);
 	xml->close();
     }
     virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {

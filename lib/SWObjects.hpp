@@ -429,9 +429,34 @@ protected:
     Operation () : Base() {  }
 public:
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
     std::string toString() const;
+};
+
+class OperationSet : public Operation {
+protected:
+    ProductionVector<const Operation*> operations;
+public:
+    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("OperationSet::express"); };
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs) const;
+    virtual bool operator== (const Operation& ref) const {
+	const OperationSet* pref = dynamic_cast<const OperationSet*>(&ref);
+	return pref == NULL ? false : operations == pref->operations;
+    }
+    std::string toString() const {
+	std::stringstream ss;
+	for (std::vector<const Operation*>::const_iterator it = operations.begin();
+	     it != operations.end(); ++it) {
+	    if (it != operations.begin())
+		ss << " ;\n";
+	    ss << (*it)->toString();
+	}
+	return ss.str();
+    }
+    void push_back(const Operation* op) {
+	operations.push_back(op);
+    }
 };
 
 class BNode;
@@ -2384,17 +2409,34 @@ public:
     }
 };
 
-class BooleanComparator : public Expression {
+class GeneralComparator : public Expression {
 protected:
     const Expression* left;
-    const Expression* right;
 public:
-    BooleanComparator (const Expression* p_Expression) : Expression(), right(p_Expression) {  }
-    BooleanComparator (const Expression* left, const Expression* right) : Expression(), left(left), right(right) {  }
-    ~BooleanComparator () { delete left; delete right; }
+    GeneralComparator () : Expression() {  }
+    GeneralComparator (const Expression* left) : Expression(), left(left) {  }
+    ~GeneralComparator () { delete left; }
     virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 
     virtual const char* getComparisonNotation() = 0;
+    virtual void express(Expressor* p_expressor) const = 0;
+};
+class BooleanComparator : public GeneralComparator {
+protected:
+    const Expression* right;
+public:
+    BooleanComparator (const Expression* p_Expression) : GeneralComparator(), right(p_Expression) {  }
+    BooleanComparator (const Expression* left, const Expression* right) : GeneralComparator(left), right(right) {  }
+    ~BooleanComparator () { delete right; }
+    virtual void express(Expressor* p_expressor) const = 0;
+};
+class NaryComparator : public GeneralComparator {
+protected:
+    ProductionVector<const Expression*>* right;
+public:
+    NaryComparator (ProductionVector<const Expression*>* p_Expressions) : GeneralComparator(), right(p_Expressions) {  }
+    NaryComparator (const Expression* left, ProductionVector<const Expression*>* right) : GeneralComparator(left), right(right) {  }
+    ~NaryComparator () { delete right; }
     virtual void express(Expressor* p_expressor) const = 0;
 };
 class BooleanEQ : public BooleanComparator {
@@ -2488,19 +2530,63 @@ public:
 	return pref == NULL ? false : *left == *pref->left && *right == *pref->right;
     }
 };
+class NaryIn : public NaryComparator {
+protected:
+public:
+    NaryIn (ProductionVector<const Expression*>* p_Expressions) : NaryComparator(p_Expressions) {  }
+    virtual const char* getComparisonNotation () { return "IN"; };
+    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("NaryIn::express"); }
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	for (std::vector<const Expression*>::const_iterator exp = right->begin();
+	     exp != right->end(); ++exp) {
+	    const POS* r = (*exp)->eval(res, posFactory, evaluator);
+	    if (l == r)
+	    // if (posFactory->cmp(l, r) == 0)
+		return posFactory->getTrue();
+	}
+	return posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const NaryIn* pref = dynamic_cast<const NaryIn*>(&ref);
+	return pref == NULL ? false : *right == *pref->right;
+    }
+};
+class NaryNotIn : public NaryIn {
+protected:
+public:
+    NaryNotIn (ProductionVector<const Expression*>* p_Expressions) : NaryIn(p_Expressions) {  }
+    virtual const char* getComparisonNotation () { return "NOT IN"; };
+    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("NaryNotIn::express"); }
+    virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+	const POS* l = left->eval(res, posFactory, evaluator);
+	for (std::vector<const Expression*>::const_iterator exp = right->begin();
+	     exp != right->end(); ++exp) {
+	    const POS* r = (*exp)->eval(res, posFactory, evaluator);
+	    if (l != r)
+	    // if (posFactory->cmp(l, r) != 0)
+		return posFactory->getTrue();
+	}
+	return posFactory->getFalse();
+    }
+    virtual bool operator== (const Expression& ref) const {
+	const NaryNotIn* pref = dynamic_cast<const NaryNotIn*>(&ref);
+	return pref == NULL ? false : *right == *pref->right;
+    }
+};
 class ComparatorExpression : public Expression {
 private:
-    const BooleanComparator* m_BooleanComparator;
+    const GeneralComparator* m_GeneralComparator;
 public:
-    ComparatorExpression (const BooleanComparator* p_BooleanComparator) : Expression(), m_BooleanComparator(p_BooleanComparator) {  }
-    ~ComparatorExpression () { delete m_BooleanComparator; }
+    ComparatorExpression (const GeneralComparator* p_GeneralComparator) : Expression(), m_GeneralComparator(p_GeneralComparator) {  }
+    ~ComparatorExpression () { delete m_GeneralComparator; }
     virtual void express(Expressor* p_expressor) const;
     virtual const POS* eval (const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
-	return m_BooleanComparator->eval(r, posFactory, evaluator);
+	return m_GeneralComparator->eval(r, posFactory, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
-	return pref == NULL ? false : *m_BooleanComparator == *pref->m_BooleanComparator;
+	return pref == NULL ? false : *m_GeneralComparator == *pref->m_GeneralComparator;
     }
 };
 class BooleanNegation : public UnaryExpression {
@@ -2830,7 +2916,13 @@ public:
     Device device;
 
     StreamRewinder (std::istream& istr)
+	// The reference we pass to device is not used before we're constructed.
+#ifdef _MSC_VER
+#pragma warning(suppress:4355)
 	: buffer(""), pos(0), state(STATE_copy), device(istr, *this)
+#else
+	: buffer(""), pos(0), state(STATE_copy), device(istr, *this)
+#endif
     {  }
     void pass () { state = STATE_pass; buffer.clear(); }
     void replay () { state = STATE_replay; pos = 0; }
@@ -3004,7 +3096,7 @@ public:
     virtual void booleanGT(const BooleanGT* const self, const Expression* p_left, const Expression* p_right) = 0;
     virtual void booleanLE(const BooleanLE* const self, const Expression* p_left, const Expression* p_right) = 0;
     virtual void booleanGE(const BooleanGE* const self, const Expression* p_left, const Expression* p_right) = 0;
-    virtual void comparatorExpression(const ComparatorExpression* const self, const BooleanComparator* p_BooleanComparator) = 0;
+    virtual void comparatorExpression(const ComparatorExpression* const self, const GeneralComparator* p_GeneralComparator) = 0;
     virtual void numberExpression(const NumberExpression* const self, const NumericRDFLiteral* p_NumericRDFLiteral) = 0;
 };
 
@@ -3229,8 +3321,8 @@ public:
 	p_left->express(this);
 	p_right->express(this);
     }
-    virtual void comparatorExpression (const ComparatorExpression* const, const BooleanComparator* p_BooleanComparator) {
-	p_BooleanComparator->express(this);
+    virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
+	p_GeneralComparator->express(this);
     }
     virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	p_NumericRDFLiteral->express(this);

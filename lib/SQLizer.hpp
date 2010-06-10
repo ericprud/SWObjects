@@ -952,9 +952,9 @@ namespace w3c_sw {
 	    MARK;
 	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
 	}
-	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::BooleanComparator* p_BooleanComparator) {
+	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {
 	    MARK;
-	    p_BooleanComparator->express(this);
+	    p_GeneralComparator->express(this);
 	}
 	virtual void numberExpression (const w3c_sw::NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    MARK;

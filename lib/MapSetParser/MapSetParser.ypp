@@ -1,5 +1,11 @@
 /* $Id: MapSetParser.ypp,v 1.3 2008-11-13 19:18:01 eric Exp $ -*- mode: c++ -*- */
-/** \file MapSetParser.yy Contains the Bison parser source */
+
+/* Bison parser for SWObjects MapSets encapsulating SPARQL CONSTRUCTs
+ * conventions:
+ *   generated production names are composed of their constituents.
+ *   { $$ = $1; } elided.
+ *   driver has extra state for hard-to-generate tries like  Foo Bar* => ((Foo Bar) Bar)
+ */
 
 /*** yacc/bison Declarations ***/
 
