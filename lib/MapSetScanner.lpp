@@ -73,34 +73,47 @@ IT_STEMURI		[Ss][Tt][Ee][Mm][Uu][Rr][Ii]
 IT_PRIMARYKEY		[Pp][Rr][Ii][Mm][Aa][Rr][Yy][Kk][Ee][Yy]
 IT_LABEL		[Ll][Aa][Bb][Ee][Ll]
 
-IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_BASE		[Bb][Aa][Ss][Ee]
 IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
+IT_DISTINCT		[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+IT_REDUCED		[Rr][Ee][Dd][Uu][Cc][Ee][Dd]
+IT_AS		[Aa][Ss]
+GT_LPAREN		"("
+GT_RPAREN		")"
 GT_TIMES		"*"
 IT_CONSTRUCT		[Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt]
 IT_FROM		[Ff][Rr][Oo][Mm]
 IT_NAMED		[Nn][Aa][Mm][Ee][Dd]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
+IT_GROUP		[Gg][Rr][Oo][Uu][Pp]
+IT_BY		[Bb][Yy]
+IT_HAVING		[Hh][Aa][Vv][Ii][Nn][Gg]
+IT_ORDER		[Oo][Rr][Dd][Ee][Rr]
+IT_ASC		[Aa][Ss][Cc]
+IT_DESC		[Dd][Ee][Ss][Cc]
+IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
+IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 IT_BINDINGS		[Bb][Ii][Nn][Dd][Ii][Nn][Gg][Ss]
+GT_LCURLEY		"{"
+GT_RCURLEY		"}"
+IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
+GT_SEMI		";"
+IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
+GT_DOT		"."
+IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
+IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
+IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
+IT_UNION		[Uu][Nn][Ii][Oo][Nn]
+IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
+GT_COMMA		","
+IT_a		"a"
+GT_LBRACKET		"\["
+GT_RBRACKET		"\]"
 IT_MEMBERS		[Mm][Ee][Mm][Bb][Ee][Rr][Ss]
 IT_STARTS		[Ss][Tt][Aa][Rr][Tt][Ss]
 IT_ENDS		[Ee][Nn][Dd][Ss]
 IT_ANY		[Aa][Nn][Yy]
 IT_UNORDERED		[Uu][Nn][Oo][Rr][Dd][Ee][Rr][Ee][Dd]
-GT_LCURLEY		"{"
-GT_RCURLEY		"}"
-GT_LPAREN		"("
-GT_RPAREN		")"
-IT_NULL		[Nn][Uu][Ll][Ll]
-GT_DOT		"."
-IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
-IT_UNION		[Uu][Nn][Ii][Oo][Nn]
-IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
-GT_COMMA		","
-GT_SEMI		";"
-IT_a		"a"
-GT_LBRACKET		"\["
-GT_RBRACKET		"\]"
 GT_OR		"||"
 GT_AND		"&&"
 GT_EQUAL		"="
@@ -109,24 +122,43 @@ GT_LT		"<"
 GT_GT		">"
 GT_LE		"<="
 GT_GE		">="
+IT_IN		[Ii][Nn]
+GT_NOT_SPACECHAR_IN		"NOT IN"
+GT_DIVIDE		"/"
 GT_PLUS		"+"
 GT_MINUS		"-"
-GT_DIVIDE		"/"
 GT_NOT		"!"
 IT_STR		[Ss][Tt][Rr]
 IT_LANG		[Ll][Aa][Nn][Gg]
 IT_LANGMATCHES		[Ll][Aa][Nn][Gg][Mm][Aa][Tt][Cc][Hh][Ee][Ss]
 IT_DATATYPE		[Dd][Aa][Tt][Aa][Tt][Yy][Pp][Ee]
 IT_BOUND		[Bb][Oo][Uu][Nn][Dd]
+IT_IRI		[Ii][Rr][Ii]
+IT_URI		[Uu][Rr][Ii]
+IT_BNODE		[Bb][Nn][Oo][Dd][Ee]
+IT_COALESCE		[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]
+IT_IF		[Ii][Ff]
+IT_STRLANG		[Ss][Tt][Rr][Ll][Aa][Nn][Gg]
+IT_STRDT		[Ss][Tt][Rr][Dd][Tt]
 IT_sameTerm		[Ss][Aa][Mm][Ee][Tt][Ee][Rr][Mm]
 IT_isIRI		[Ii][Ss][Ii][Rr][Ii]
 IT_isURI		[Ii][Ss][Uu][Rr][Ii]
 IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
+IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
+GT_NOT_SPACECHAR_EXISTS		"NOT EXISTS"
+IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
+IT_SUM		[Ss][Uu][Mm]
+IT_MIN		[Mm][Ii][Nn]
+IT_MAX		[Mm][Aa][Xx]
+IT_AVG		[Aa][Vv][Gg]
+IT_SAMPLE		[Ss][Aa][Mm][Pp][Ll][Ee]
+IT_GROUP_CONCAT		"GROUP_CONCAT"
+IT_SEPARATOR		[Ss][Ee][Pp][Aa][Rr][Aa][Tt][Oo][Rr]
 GT_DTYPE		"^^"
-IT_true		[Tt][Rr][Uu][Ee]
-IT_false		[Ff][Aa][Ll][Ss][Ee]
+IT_true		"true"
+IT_false		"false"
 
 /* <IRI_REF> ::= "<" (( [^<>\"{}|^`\\] - [#0000- ] ))* ">" */
 IRI_REF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
@@ -195,15 +227,16 @@ LINEFEED		(\r\n|\r|\n)
 {IT_UNORDERED}		{return token::IT_UNORDERED;}
 {GT_LCURLEY}		{return token::GT_LCURLEY;}
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
+{IT_UNDEF}		{return token::IT_UNDEF;}
+{GT_SEMI}		{return token::GT_SEMI;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
-{IT_NULL}		{return token::IT_NULL;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
+{IT_SERVICE}		{return token::IT_SERVICE;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
 {GT_COMMA}		{return token::GT_COMMA;}
-{GT_SEMI}		{return token::GT_SEMI;}
 {IT_a}		{return token::IT_a;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
 {GT_RBRACKET}		{return token::GT_RBRACKET;}
