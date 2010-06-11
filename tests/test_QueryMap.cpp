@@ -10,6 +10,7 @@
 #include <fstream>
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "MapSetParser/MapSetParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "ChainingMapper.hpp"
@@ -23,6 +24,7 @@ using namespace w3c_sw;
 
 POSFactory f;
 SPARQLfedDriver sparqlParser("", &f);
+MapSetDriver mapSetParser("", &f);
 std::ostream* DebugStream = NULL; // &std::cerr;
 ChainingMapper queryMapper(&f, &DebugStream);
 
@@ -286,18 +288,22 @@ struct RuleMapTest {
 
 	/* Parse map. */
 	IStreamContext mstr(mapFile, type);
-	if (sparqlParser.parse(mstr)) {
+	if (mapSetParser.parse(mstr)) {
 	    std::string msg = std::string("failed to parse map \"") + 
 		mapFile + std::string("\".");
 	    throw msg;
 	}
-	queryMapper.addRule(dynamic_cast<Construct*>(sparqlParser.root));
-	delete sparqlParser.root;
+	MapSet* ms = mapSetParser.root;
+	for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
+	     it != ms->maps.end(); ++it)
+	    queryMapper.addRule(it->constr);
+	delete mapSetParser.root;
 
 	try {
 	    transformed = queryMapper.map(query);
 	} catch (RuleMatchingException e) { // !! should catch whatever
 	    delete query;
+	    queryMapper.clear();
 	    throw e;
 	}
 	delete query;
@@ -363,10 +369,26 @@ BOOST_AUTO_TEST_CASE( r ) {
 }
 #endif
 #if 1
+BOOST_AUTO_TEST_CASE( order ) {
+    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+		  "label 'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+		  "label 'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+		  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+		  "           SERVICE <S3> { ?qs <p3> ?qo } }",
+		  IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
 BOOST_AUTO_TEST_CASE( p1_p2 ) {
     RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
 		  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
 		  "SELECT * { ?qs <p1> ?qo }",
+		  IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
+BOOST_AUTO_TEST_CASE( p01_p2 ) {
+    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+		  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro ; <p0> 'x' }",
+		  "SELECT * { ?qs <p1> ?qo ; <p0> 'x' }",
 		  IStreamContext::STRING);
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
@@ -378,14 +400,32 @@ BOOST_AUTO_TEST_CASE( p3 ) {
 		     IStreamContext::STRING),
 	 RuleMatchingException);
 }
-#endif
 #if 1
+BOOST_AUTO_TEST_CASE( p1_S1_p2 ) {
+    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+		  "label 'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
+		  "SELECT * { SERVICE <S1> { ?qs <p1> ?qo } }",
+		  IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
+BOOST_AUTO_TEST_CASE( p1_S2_p2_S3_p3 ) {
+    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+		  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+		  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+		  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+		  "           SERVICE <S3> { ?qs <p3> ?qo } }",
+		  IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+}
+#endif
+#endif
+#if 0
 BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
     RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
 #endif
-#if 0
+#if 1
 BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
     RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
     if (boost::unit_test::framework::master_test_suite().argc > 1 && 
