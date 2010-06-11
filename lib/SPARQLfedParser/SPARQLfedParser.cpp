@@ -2313,7 +2313,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1745 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expression) != NULL)
+	if ((yysemantic_stack_[(2) - (2)].p_Expression) == NULL)
 	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
 	else {
 	    ProductionVector<const Expression*>* v = new ProductionVector<const Expression*>();

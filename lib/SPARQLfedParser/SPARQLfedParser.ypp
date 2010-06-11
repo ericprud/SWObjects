@@ -1743,7 +1743,7 @@ _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpr
     }
   | // ( NumericLiteralPositive | NumericLiteralNegative ) ( ( '*' UnaryExpression  ) | ( '/' UnaryExpression  ) )?
     _O_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Opt	{
-	if ($2 != NULL)
+	if ($2 == NULL)
 	    $$ = $1;
 	else {
 	    ProductionVector<const Expression*>* v = new ProductionVector<const Expression*>();
