@@ -164,7 +164,7 @@ namespace w3c_sw {
 				rule2rs.insert(std::pair<const w3c_sw::Rule, w3c_sw::ResultSet>(*rule, empty));
 			    } else {
 				ResultSet& rs(boundRule->second);
-				rs.insert(rs.end(), *empty.begin());
+				rs.insert(rs.end(), (*empty.begin())->duplicate(&rs, rs.end()));
 			    }
 			}
 		    }
