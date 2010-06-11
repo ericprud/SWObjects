@@ -18,6 +18,11 @@ namespace w3c_sw {
 	const RDFLiteral* label;
 	const Construct* constr;
 	LabeledConstruct (const RDFLiteral* label, const Construct* constr) : label(label), constr(constr) {  }
+	virtual ~LabeledConstruct () {  }
+	virtual void express (Expressor* p_expressor) const {
+	    if (label != NULL) label->express(p_expressor);
+	    constr->express(p_expressor);
+	}
     };
     inline bool operator== (const LabeledConstruct& l, const LabeledConstruct& r) {
 	return l.label == r.label && *(l.constr) == *(r.constr);
@@ -27,8 +32,8 @@ namespace w3c_sw {
 	    l.label->getLexicalValue() < r.label->getLexicalValue() : // !!! should be POSFactory::cmp
 	    l.constr < r.constr; // compare addrs. really needs Construct::operator<(Construct&).
     }
-    inline std::ostream& operator<< (std::ostream& os, LabeledConstruct const& labeledConstruct) {
-	os << "    rule " << labeledConstruct.label->toString();
+    inline std::ostream& operator<< (std::ostream& os, LabeledConstruct const& lc) {
+	os << "    rule " << (lc.label == NULL ? lc.constr->toString() : lc.label->toString());
 	return os;
     }
 
@@ -144,7 +149,18 @@ namespace w3c_sw {
 		delete it->constr;
 	    }
 	}
-	virtual void express(Expressor* p_expressor) const;
+	virtual void express (Expressor* p_expressor) const {
+	    if (server != NULL) server->express(p_expressor);
+	    if (user != NULL) user->express(p_expressor);
+	    if (password != NULL) password->express(p_expressor);
+	    if (database != NULL) database->express(p_expressor);
+	    if (stemURI != NULL) stemURI->express(p_expressor);
+	    if (primaryKey != NULL) primaryKey->express(p_expressor);
+	    for (ConstructList::const_iterator it = maps.begin();
+		 it != maps.end(); ++it)
+		it->express(p_expressor);
+	}
+
 	virtual bool operator== (const Operation& ref) const {
 	    const MapSet* pMapSet = dynamic_cast<const MapSet*>(&ref);
 	    if (pMapSet == NULL)
@@ -183,10 +199,30 @@ namespace w3c_sw {
 	    delete this;
 	}
 #endif /* NotYet */
+
+	std::string toString () const {
+	    std::stringstream ss;
+	    if (server != NULL) ss << "server: " << server->toString() << std::endl;
+	    if (user != NULL) ss << "user: " << user->toString() << std::endl;
+	    if (password != NULL) ss << "password: " << password->toString() << std::endl;
+	    if (database != NULL) ss << "database: " << database->toString() << std::endl;
+	    if (stemURI != NULL) ss << "stemURI: " << stemURI->toString() << std::endl;
+	    if (primaryKey != NULL) ss << "primaryKey: " << primaryKey->toString() << std::endl;
+	    size_t i = 0;
+	    for (ConstructList::const_iterator it = maps.begin();
+		 it != maps.end(); ++it, ++i) {
+		ss << "[" << i << "]: ";
+		SPARQLSerializer ser;
+		it->express(&ser);
+		ss << ser.str();
+	    }
+	    return ss.str();
+	}
+
     };
 
-    inline void MapSet::express (Expressor* /* p_expressor */) const {
-	// p_expressor->construct(this, m_ConstructTemplate, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
+    inline std::ostream& operator<< (std::ostream& os, MapSet const& my) {
+	return os << my.toString();
     }
 
 } // namespace w3c_sw
