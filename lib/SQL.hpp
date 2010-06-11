@@ -901,7 +901,7 @@ namespace w3c_sw {
 	    SQLUnion () {  }
 	    virtual ~SQLUnion () {
 		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
-		     it != disjoints.end(); ++it)	
+		     it != disjoints.end(); ++it)
 		    delete *it;
 	    }
 	    virtual bool finalEq (const SQLUnion& l) const {
