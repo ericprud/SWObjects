@@ -111,7 +111,7 @@ namespace w3c_sw {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnionGenerator* ret = new SQLUnionGenerator(this, corefs, s.str());
-		curJoin = new SubqueryJoin(&ret->onion, s.str(), false);
+		curJoin = new SubqueryJoin(ret->onion, s.str(), false);
 		query.joins.push_back(curJoin);
 		return ret;
 	    }
@@ -209,7 +209,7 @@ namespace w3c_sw {
 	    friend class SQLizer;
             friend class SQLQueryGenerator;
 	protected:
-	    SQLUnion onion;
+	    SQLUnion* onion;
 	    // SQLQueryGenerator* parent;
 	    std::vector<const POS*> corefs;
 	    std::string name;
@@ -217,7 +217,9 @@ namespace w3c_sw {
 	public:
 	    SQLUnionGenerator (SQLQueryGenerator* parent, std::vector<const POS*> corefs, std::string name) : 
 		SQLQueryGenerator(parent), corefs(corefs), name(name)
-	    {  }
+	    {
+		onion = new SQLUnion();
+	    }
             // std::string toString () {
             //     std::stringstream ss;
             //     ss << "Union " << name << " corefs: " << corefs;
@@ -245,7 +247,7 @@ namespace w3c_sw {
 	    SQLDisjointGenerator* makeDisjoint () {
 		SQLDisjointGenerator* ret = new SQLDisjointGenerator(this);
 		disjointGenerators.push_back(ret);
-		onion.disjoints.push_back(&ret->query);
+		onion->disjoints.push_back(&ret->query);
 		return ret;
 	    }
 
