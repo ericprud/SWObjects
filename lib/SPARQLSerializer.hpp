@@ -564,13 +564,13 @@ public:
 
     inline std::ostream& operator<< (std::ostream& os, DefaultGraphPattern const& my) {
 	SPARQLSerializer s;
-	((DefaultGraphPattern&)my).express(&s);
+	my.express(&s);
 	return os << s.str();
     }
 
     inline std::ostream& operator<< (std::ostream& os, Operation const& my) {
 	SPARQLSerializer s;
-	((Operation&)my).express(&s);
+	my.express(&s);
 	return os << s.str();
     }
 
