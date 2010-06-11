@@ -19,10 +19,11 @@ namespace w3c_sw {
     struct Rule {
 	DefaultGraphPattern* head;
 	const TableOperation* body;
+	size_t index;
 	Rule (DefaultGraphPattern* head, const TableOperation* body) :
-	    head(head), body(body) {  }
+	    head(head), body(body), index(0) {  }
     };
-    inline bool operator< (const Rule& l, const Rule& r) { return l.head < r.head; }
+    inline bool operator< (const Rule& l, const Rule& r) { return l.index < r.index; }
     std::ostream& operator<< (std::ostream& os, const Rule& rule) {
 	SPARQLSerializer body, head;
 	rule.body->express(&body);
@@ -194,6 +195,7 @@ namespace w3c_sw {
 	};
 
 	TableOperation* instantiate () {
+	    // std::cerr << "instantiate " << str();
 	    std::vector<TableOperation*> conjoints;
 	    for (Rule2rs::const_iterator rule = rule2rs.begin();
 		 rule != rule2rs.end(); ++rule) {
@@ -313,7 +315,9 @@ namespace w3c_sw {
 	}
 	int getRuleCount () { return rules.size(); }
 	void addRule (const Construct* rule) {
-	    rules.push_back(RuleParser().parseConstruct(rule));
+	    Rule r = RuleParser().parseConstruct(rule);
+	    r.index = rules.size();
+	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
 	    return QueryWalker(rules, posFactory).mapQuery(query);
