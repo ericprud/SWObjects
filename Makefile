@@ -138,7 +138,7 @@ all:   lib test
 
 
 config.h: CONFIG
-	@$(ECHO) "/* Generated from CONFIG.\n" \
+	echo "/* Generated from CONFIG.\n" \
 	"* In order to keep your link directives appropriate for the features enabled\n" \
 	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\n" \
 	"*/\n" \
@@ -204,7 +204,7 @@ lib: dep $(LIB)
 .SECONDARY:
 
 lib/%.dep: lib/%.cpp config.h
-	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/\\; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
 	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
@@ -245,7 +245,7 @@ bin/SPARQL-static : bin/SPARQL.o $(LIB)
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/\\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -305,7 +305,7 @@ TEST_ARGS ?= ""
 t_SPARQL: bin/SPARQL
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/\\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
