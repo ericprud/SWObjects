@@ -14,6 +14,9 @@
  #error unknown HTTP_SERVER (neither ASIO or DLIB)
 #endif
 
+#include "SWObjects.hpp"
+#include "ParserCommon.hpp"
+
 namespace w3c_sw {
 
     namespace webserver {
@@ -38,7 +41,7 @@ namespace w3c_sw {
 	    virtual ~request () {  }
 	    void url_decode();
 	    std::string request_path;
-	    typedef std::map<std::string, std::string> parmmap;
+	    typedef std::multimap<std::string, std::string> parmmap;
 	    parmmap parms;
 	};
 
@@ -146,8 +149,7 @@ namespace w3c_sw {
 			++i;
 		    break;
 		case IN_value:
-		    parms[parm] = value;
-		    std::cerr << "parms[" << parm << "] = " << value << "\n";
+		    parms.insert(std::pair<std::string, std::string>(parm, value));
 		    if (end == uri.size())
 		        goto done;
 		    nowIn = IN_parm;
@@ -532,6 +534,59 @@ namespace w3c_sw {
 		    "    <pre>" << msg << "</pre>\n";
 		foot(sout);
 		return sout.str();
+	    }
+	    
+	    SimpleMessageException (ParserException& ex) : StringException(make(ex)) {  }
+	    std::string make (ParserException& ex) {
+		std::ostringstream ss;
+		head(ss, "Q&amp;D SPARQL Server Paring Error");
+		ss << "<h1>Parsing Error</h1>\n<pre>";
+		std::string& str(*ex.begin.filename);
+		size_t begin = 0;
+		size_t end = 0;
+		size_t line = 0;
+		bool overrun = false;
+		for (; !overrun && line < ex.begin.line; ++line) {
+		    size_t pos = str.find_first_of('\n', begin);
+		    if (pos == std::string::npos) {
+			end = str.size();
+			overrun = true;
+		    } else {
+			begin = pos;
+		    }
+		}
+		if (!overrun) {
+		    if (begin + ex.begin.column > str.size()) {
+			end = str.size();
+			overrun = true;
+		    } else {
+			begin += ex.begin.column;
+			end = begin;
+			for (; !overrun && line < ex.end.line; ++line) {
+			    size_t pos = str.find_first_of('\n', end);
+			    if (pos == std::string::npos) {
+				end = str.size();
+				overrun = true;
+			    } else {
+				end = pos;
+			    }
+			}
+		    }
+		    if (!overrun) {
+			if (end + ex.end.column > str.size()) {
+			    end = str.size();
+			    overrun = true;
+			} else {
+			    end += ex.end.column;
+			}
+		    }
+		}
+		std::cerr << "begin: " << begin << "\nend: " << end << std::endl;
+		ss << str.substr(0, begin);
+		ss << "<span style='color: #f00;'>" << str.substr(begin, end) << "</span>";
+		ss << str.substr(end, str.size());
+		ss << "</pre>";
+		return ss.str();
 	    }
 	};
 
