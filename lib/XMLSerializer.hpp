@@ -106,8 +106,14 @@ public:
 public:
     XMLSerializer (const char* p_tab = "  ") : 
 	tab(p_tab), depth(0), needs("") {  }
-    std::string str () { return ret.str(); }
-    void str (std::string seed) { ret.str(seed); }
+    std::string str () {
+	ret << needs;
+	return ret.str();
+    }
+    void str (std::string seed) {
+	ret << needs;
+	ret.str(seed);
+    }
 };
 
 }
