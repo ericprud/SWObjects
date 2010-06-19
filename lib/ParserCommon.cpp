@@ -23,11 +23,14 @@ namespace w3c_sw {
 
     void YaccDriver::error (const class location& l,
 			const std::string& m) {
-	std::cerr << l << ": " << m << std::endl;
+	std::stringstream ss;
+	ss << l << ": " << m;
+	throw ParserException(ParserLocation(l.begin.filename, l.begin.line, l.begin.column),
+			      ParserLocation(l.end.filename, l.end.line, l.end.column), ss.str());
     }
 
     void YaccDriver::error (const std::string& m) {
-	std::cerr << m << std::endl;
+	throw m;
     }
 
     const URI* YaccDriver::getAbsoluteURI (std::string name) {

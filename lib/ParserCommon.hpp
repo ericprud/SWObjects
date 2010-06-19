@@ -11,6 +11,21 @@ void stop(size_t line);
 
 namespace w3c_sw {
 
+/* Exactly emulate Bison c++ template's location structure for minimum impedance
+ * mismatch between them.  It's hard to use the bison one 'cause each parser
+ * generates its own. */
+struct ParserLocation {
+    std::string *filename;
+    size_t line;
+    size_t column;
+    ParserLocation (std::string *filename, size_t line, size_t column) : filename(filename), line(line-1), column(column-1) {  }
+};
+
+struct ParserException : public StringException {
+    ParserLocation begin, end;
+    ParserException (ParserLocation begin, ParserLocation end, std::string str) : StringException(str), begin(begin), end(end) {  }
+};
+
 /* Base class for all parsers. */
 class ParserDriver {
 protected:
