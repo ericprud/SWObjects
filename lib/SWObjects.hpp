@@ -44,7 +44,9 @@
   #define POSIX_popen ::_popen
   #define POSIX_pclose ::_pclose
   #define POSIX_unlink ::_unlink
-  #define POSIX_cat "c:/cygwin/bin/cat"
+  #ifndef SWIG
+    #define POSIX_cat "c:/cygwin/bin/cat"
+  #endif
 #else /* !_MSC_VER */
   #include <errno.h>
 
@@ -58,21 +60,27 @@
   #define POSIX_popen ::popen
   #define POSIX_pclose ::pclose
   #define POSIX_unlink ::unlink
-  #define POSIX_cat "/bin/cat"
+  #ifndef SWIG
+    #define POSIX_cat "/bin/cat"
+  #endif
 #endif /* !_MSC_VER */
 
 /* non-portable debug messages */
 #ifdef _MSC_VER
-#define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
+  #define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
 
 #else /* !_MSC_VER */
-#ifdef __GNUC__
-#define FUNCTION_STRING __PRETTY_FUNCTION__
-
-#else /* !__GNUC__ */
-#define FUNCTION_STRING "define a function name macro"
-
-#endif /* !__GNUC__ */
+  #ifdef __GNUC__
+    #ifndef SWIG
+      #define FUNCTION_STRING __PRETTY_FUNCTION__
+    #endif
+  
+  #else /* !__GNUC__ */
+    #ifndef SWIG
+      #define FUNCTION_STRING "define a function name macro"
+    #endif
+  
+  #endif /* !__GNUC__ */
 #endif /* !_MSC_VER */
 
 #include <ctype.h>
@@ -159,7 +167,8 @@ public:
     char const* what() const throw() { 	return msg.c_str(); }
 };
 
-#if (defined(_MSC_VER) && _MSC_VER < 15000)
+#if defined SWIG
+#elif (defined(_MSC_VER) && _MSC_VER < 15000)
 class OptString {
     bool m_initialized;
     std::string m_str;
@@ -278,6 +287,7 @@ inline bool ptrequal(LEFT lit, LEFT end, RIGHT rit) {
     return true;
 }
 
+#if !defined SWIG999
 /* Vector implementing Base. */
 template <typename T> struct VectorOps {
   template<typename U> 
@@ -394,6 +404,7 @@ public:
     T operator*() { return *i; }
 };
 #endif
+#endif /* SWIG999 */
 
 class Terminal : public Base {
 protected:
@@ -411,15 +422,11 @@ public:
     std::string getLexicalValue () const { return terminal; }
 };
 
-} // namespace w3c_sw
-
-namespace w3c_sw {
-
 class ResultSet;
 class Result;
 class RdfDB;
 
-    class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
+class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
 public:
     LANGTAG(std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
 };
@@ -483,7 +490,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     struct BNode2string : public std::map<const BNode*, std::string> {
-	std::string get(const BNode* bnode);
+	std::string getString(const BNode* bnode);
     };
     struct String2BNode : public std::map<std::string, const BNode*> {
 	const BNode* get(std::string bnode);
@@ -551,7 +558,7 @@ private:
     BNode () : Bindable("b", true) {  }
 public:
     virtual std::string toXMLResults (POS::BNode2string* map) const {
-	return std::string("<bnode>") + map->get(this) + "</bnode>";
+	return std::string("<bnode>") + map->getString(this) + "</bnode>";
     }
     virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
@@ -559,7 +566,7 @@ public:
     virtual const POS* evalPOS(const Result* r, BNodeEvaluator* evaluator) const;
     virtual std::string getBindingAttributeName () const { return "bnode"; }
 };
-inline std::string POS::BNode2string::get (const BNode* bnode) {
+inline std::string POS::BNode2string::getString (const BNode* bnode) {
     BNode2string::const_iterator it = find(bnode);
     if (it == end()) {
 	std::stringstream s;
@@ -2781,21 +2788,6 @@ namespace w3c_sw {
 
 class SWWEBagent;
 
-template<class T>
-struct EBase {
-    typedef enum {
-	NONE =		0,	/* don't do nuthin */
-    } e_opts;
-    EBase(T* def, e_opts = NONE);
-    virtual ~EBase();
-};
-
-struct IEBase : public EBase<std::istream> {
-    IEBase (e_opts opts = NONE)
-	: EBase<std::istream>(&std::cin, opts)
-    {  }
-};
-
 struct StreamContextMediaTypes {
     static MediaTypeMap MediaTypes;
 };
@@ -2841,13 +2833,24 @@ struct IStreamContext : public StreamContext<std::istream> {
     IStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
+#if defined SWIG_INTERFACE
+    IStreamContext (std::string name, ::e_opts opts,
+		    const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
+		    std::ostream** debugStream = NULL);
+#endif /* defined SWIG_INTERFACE */
 };
 struct OStreamContext : public StreamContext<std::ostream> {
     OStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
+#if defined SWIG_INTERFACE
+    OStreamContext(std::string name, ::e_opts opts,
+		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
+		   std::ostream** debugStream = NULL);
+#endif /* defined SWIG_INTERFACE */
 };
 
+#if !defined SWIG
 class StreamRewinder {
     friend class Device;
 
@@ -2985,6 +2988,7 @@ public:
     virtual ~LanguageChange () throw() {   }
     char const* what() const throw() { 	return msg.c_str(); }
 };
+#endif /* !defined SWIG */
 
 class NamespaceMap {
 protected:
