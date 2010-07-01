@@ -412,7 +412,7 @@ swig/python/SWObjects_wrap.cxx: swig/SWObjects.i /home/eric/checkouts/swobjects/
 	mv swig/SWObjects_wrap.cxx swig/python/
 
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.cxx swig/python/SWObjects_setup.py
-	python swig/python/SWObjects_setup.py build_ext --inplace -I../../checkouts/swobjects/:../../checkouts/swobjects/lib/:../../checkouts/swobjects/interface/
+	python swig/python/SWObjects_setup.py build_ext --inplace -I.:lib/:interface/
 	mv _SWObjects.so swig/python/
 	mv swig/SWObjects.py swig/python/
 
@@ -421,13 +421,13 @@ test2: swig/python/_SWObjects.so
 
 # alternate compilation strategies for _SWObjects.so
 # _SWObjects.so: SWObjects_wrap.cxx
-# 	g++ $(PREPROC) -DSWIG_INTERFACE -I../../checkouts/swobjects/ -I../../checkouts/swobjects/lib/ -I../../checkouts/swobjects/interface/ -shared -o _SWObjects.so -fpic SWObjects_wrap.cxx ../../checkouts/swobjects/lib/TrigSParser/TrigSParser.o ../../checkouts/swobjects/lib/TrigSScanner.o -lboost_regex-mt -I/usr/include/python2.6 -I/usr/lib/python2.6/config
+# 	g++ $(PREPROC) -DSWIG_INTERFACE -I. -Ilib/ -Iinterface/ -shared -o _SWObjects.so -fpic SWObjects_wrap.cxx lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o -lboost_regex-mt -I/usr/include/python2.6 -I/usr/lib/python2.6/config
 
 # SWObjects_wrap.o: SWObjects_wrap.cxx
-# 	g++ -DSWIG_INTERFACE -I../../checkouts/swobjects/ -I../../checkouts/swobjects/lib/ -I../../checkouts/swobjects/interface/ -fPIC -c -o SWObjects_wrap.o SWObjects_wrap.cxx -I/usr/include/python2.6 -I/usr/lib/python2.6/config
+# 	g++ -DSWIG_INTERFACE -I. -Ilib/ -Iinterface/ -fPIC -c -o SWObjects_wrap.o SWObjects_wrap.cxx -I/usr/include/python2.6 -I/usr/lib/python2.6/config
 
 # _SWObjects.so: SWObjects_wrap.o
-# 	g++ -shared -o _SWObjects.so SWObjects_wrap.o ../../checkouts/swobjects/lib/ParserCommon.o ../../checkouts/swobjects/lib/TrigSParser/TrigSParser.o ../../checkouts/swobjects/lib/TrigSScanner.o -lboost_regex-mt
+# 	g++ -shared -o _SWObjects.so SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o -lboost_regex-mt
 
 
 # Distributions
