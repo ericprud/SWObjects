@@ -152,6 +152,12 @@ public:
 
     /** Control attributes. */
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
+
+    static Operation* parseString (const char* queryString, POSFactory* posFactory) {
+	SPARQLfedDriver d("", posFactory);
+	IStreamContext qstr(queryString, IStreamContext::STRING);
+	return d.parse(qstr) ? NULL : d.root;
+    }
 };
 
 } // namespace w3c_sw
@@ -161,7 +167,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 165 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 171 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -175,7 +181,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 179 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 185 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -185,7 +191,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 189 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 195 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -233,7 +239,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 237 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 243 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -245,7 +251,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 171 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 177 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -313,7 +319,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 317 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 323 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -621,7 +627,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 625 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 631 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 
