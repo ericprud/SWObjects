@@ -11,7 +11,9 @@ SWObjects_module = Extension('_SWObjects',
                              sources=['swig/python/SWObjects_wrap.cxx',
                                       'lib/ParserCommon.cpp',
                                       'lib/TrigSParser/TrigSParser.cpp',
-                                      'lib/TrigSScanner.cpp'
+                                      'lib/TrigSScanner.cpp',
+                                      'lib/SPARQLfedParser/SPARQLfedParser.cpp',
+                                      'lib/SPARQLfedScanner.cpp'
                                       ],
                              libraries=['boost_regex-mt'],
                              )

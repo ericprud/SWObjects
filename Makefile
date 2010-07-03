@@ -406,13 +406,18 @@ valgrind: lib $(transformVALGRIND)
 SWIG = swig # /home/eric/checkouts/swig/swig
 SUBSTSWOB = perl -pi -e "s/const const/const/g" swig/SWObjects_wrap.cxx
 
-swig/python/SWObjects_wrap.cxx: swig/SWObjects.i /home/eric/checkouts/swobjects/lib/SWObjects.hpp  /home/eric/checkouts/swobjects/lib/SWObjects.cpp
-	$(SWIG) -c++ -python -DSWIG_INTERFACE -I../../checkouts/swobjects/ -I../../checkouts/swobjects/lib/ -I../../checkouts/swobjects/interface/ swig/SWObjects.i
+swig/python/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
+	$(SWIG) -c++ -python -DSWIG_INTERFACE -DSWIGGY -I. -Ilib -Iinterface swig/SWObjects.i
 	$(SUBSTSWOB)
 	mv swig/SWObjects_wrap.cxx swig/python/
 
+# swig/python/SPARQLParser_wrap.cxx: swig/SPARQLParser.i lib/SPARQLfedParser/SPARQLfedParser.hpp lib/SPARQLfedParser/SPARQLfedParser.cpp lib/SPARQLfedScanner.cpp
+# 	$(SWIG) -c++ -python -DSWIG_INTERFACE -I. -Ilib -Iinterface swig/SPARQLParser.i
+# 	$(SUBSTSWOB)
+# 	mv swig/SPARQLParser_wrap.cxx swig/python/
+
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.cxx swig/python/SWObjects_setup.py
-	python swig/python/SWObjects_setup.py build_ext --inplace -I.:lib/:interface/
+	python swig/python/SWObjects_setup.py build_ext -DSWIGGY --inplace -I.:lib/:interface/
 	mv _SWObjects.so swig/python/
 	mv swig/SWObjects.py swig/python/
 
