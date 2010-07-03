@@ -493,7 +493,7 @@ public:
 	std::string getString(const BNode* bnode);
     };
     struct String2BNode : public std::map<std::string, const BNode*> {
-	const BNode* get(std::string bnode);
+	const BNode* getBNode(std::string bnode);
     };
     virtual std::string toXMLResults(BNode2string*) const = 0;
     virtual std::string toString() const = 0;
@@ -575,6 +575,16 @@ inline std::string POS::BNode2string::getString (const BNode* bnode) {
     }
     return it->second;
 }
+inline const BNode* POS::String2BNode::getBNode (std::string str) {
+    String2BNode::const_iterator it = find(str);
+    if (it == end()) {
+	return NULL;
+	// std::stringstream s;
+	// s << size();
+	// it = insert(std::pair<std::string, const BNode*>(std::string("r") + s.str(), bnode)).first;
+    }
+    return it->second;
+};
 
 class RDFLiteral : public POS {
     friend class POSFactory;
