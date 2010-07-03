@@ -450,7 +450,7 @@ namespace w3c_sw {
 	    }
 	}
     }
-
+#if !defined SWIG
     BoxChars BoxChars::AsciiBoxChars(false, // instraRow
 			   "--", // null
 			   "O", // ordered
@@ -485,6 +485,7 @@ namespace w3c_sw {
 			   /* s. */ "┠", "─", "┼", "┨", 
 			   /* l. */ "┗", "━", "┷", "┛"
 			   );
+#endif /* !defined SWIG */
 
     BoxChars* BoxChars::GBoxChars = &BoxChars::AsciiBoxChars;
 
