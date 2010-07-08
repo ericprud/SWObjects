@@ -1,7 +1,7 @@
 %module SWObjects
 %include <std_map.i>
 %include <std_set.i>
-%include <std/std_string.i>
+%include <std_string.i>
 
 namespace std {
     class exception {
@@ -20,40 +20,45 @@ namespace w3c_sw {
 %{
     namespace w3c_sw {
 	class POS;
+	class BNode;
     }
 %}
 
 namespace std {
+    %template(mapBNodestarstring) map<const w3c_sw::BNode*, std::string>;
+    %template(mapstringBNodestar) map<std::string, const w3c_sw::BNode*>;
     %template(mapstrcharstar) map<const std::string, const char*>;
     %template(setPOSstar) set<const w3c_sw::POS*>;
 };
 
 %{
 namespace swig {
-    template <>  struct traits<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > {
-	typedef pointer_category category;
-	static const char* type_name() { return"std::basic_string<char, std::char_traits<char>, std::allocator<char> > *"; }
-    };
     template <>  struct traits<w3c_sw::POS> {
 	typedef pointer_category category;
-	static const char* type_name() { return"POS *"; }
+	static const char* type_name() { return"w3c_sw::POS *"; }
+    };
+    template <>  struct traits<w3c_sw::BNode> {
+	typedef pointer_category category;
+	static const char* type_name() { return"w3c_sw::BNode *"; }
+    };
+    template <>  struct traits<char> {
+	typedef pointer_category category;
+	static const char* type_name() { return"std::basic_string<char> *"; }
     };
 }
 %}
 
 
-class BNode2string {
+class BNode2string : public std::map<const w3c_sw::BNode*, std::string> {
 public:
     std::string getString(const w3c_sw::BNode* bnode);
 };
-
-class String2BNode {
+class String2BNode : public std::map<std::string, const w3c_sw::BNode*> {
 public:
-    const w3c_sw::BNode* getBNode(std::string bnode);
+    const w3c_sw::BNode* getBNode(std::string str);
 };
-
-%nestedworkaround POS::BNode2string;
-%nestedworkaround POS::String2BNode;
+%nestedworkaround w3c_sw::POS::BNode2string;
+%nestedworkaround w3c_sw::POS::String2BNode;
 
 %{
     #define SWIG_INTERFACE
@@ -73,7 +78,7 @@ public:
 
 
 %{
-class BNode;
+//class BNode;
 %}
 
 %{
@@ -85,7 +90,10 @@ class BNode;
 #include "TurtleSScanner.cpp"
 #include "TurtleSParser/TurtleSParser.cpp"
 #include "SPARQLSerializer.hpp"
+    typedef w3c_sw::POS::BNode2string BNode2string;
+    typedef w3c_sw::POS::String2BNode String2BNode;
 %}
+%include "config.h"
 %include "SWObjects.hpp"
 %include "SAXparser.hpp"
 %include "XMLSerializer.hpp"
@@ -103,10 +111,6 @@ namespace w3c_sw {
 };
 
 %{
-typedef w3c_sw::POS::BNode2string BNode2string;
-typedef w3c_sw::POS::String2BNode String2BNode;
-// typedef w3c_sw::StreamContext<std::istream>::e_opts StreamContextOpts;
-// typedef w3c_sw::StreamContext<std::ostream>::e_opts StreamContextOpts;
 w3c_sw::SWSAXparser* w3c_sw::SWSAXparser::makeSAXparser () { return NULL; }
 typedef w3c_sw::TurtleSScanner TurtleSScanner;
 %}

@@ -20,33 +20,34 @@ class TestSWObjects(unittest.TestCase):
         DB = SWObjects.RdfDB()
         default = DB.assureGraph(SWObjects.cvar.DefaultGraph)
         default.addTriplePattern(F.getTriple(
-                F.getURI(SWObjects.string("s", 1)), 
-                F.getURI(SWObjects.string("p1", 2)), 
-                F.getURI(SWObjects.string("o1", 2))
+                F.getURI("s" ), 
+                F.getURI("p1"), 
+                F.getURI("o1")
                 ))
         default.addTriplePattern(F.getTriple(
-                F.getURI(SWObjects.string("s", 1)), 
-                F.getURI(SWObjects.string("p2", 2)), 
-                F.getURI(SWObjects.string("o2", 2))
+                F.getURI("s" ), 
+                F.getURI("p2"), 
+                F.getURI("o2")
                 ))
         # print "DB: ", DB.toString().c_str()
-        sparser = SWObjects.SPARQLfedDriver(SWObjects.string("", 1), F)
+        sparser = SWObjects.SPARQLfedDriver("", F)
         query = SWObjects.SPARQLfedDriver.parseString("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", F)
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str().c_str()
         rs = SWObjects.ResultSet(F)
         query.execute(DB, rs)
+        bnodereps = SWObjects.BNode2string()
         bnodeMap = SWObjects.String2BNode()
-        s = SWObjects.string("", 0)
-        print type(F), ",", type(s), ",", type(bnodeMap)
-        reference = SWObjects.ResultSet(F, SWObjects.string("""+------+------+-----+
+        reference = SWObjects.ResultSet(F, """
+# Results for T1.
++------+------+-----+
 | ?o1  | ?o2  | ?s  |
 | <o1> | <o2> | <s> |
 +------+------+-----+
-""", 89), False);
+""", False, bnodeMap);
         self.assertEqual(reference, rs)
-
+        # self.assertRaises(TypeError, reference.classString2BNode, bnodeMap)
         # self.assertRaises(TypeError, random.shuffle, (1,2,3))
         # self.assertTrue(element in self.seq)
 
@@ -63,7 +64,7 @@ print "e, ", type(e)
 istr = SWObjects.IStreamContext(qstr, e)
 print "=> ", sparser.parse(istr)
 
-turtleParser = SWObjects.TurtleSDriver(SWObjects.string("http://example.org/", 19), F)
-baseURI = SWObjects.string("", 1)
+turtleParser = SWObjects.TurtleSDriver("http://example.org/", F)
+baseURI = ""
 turtleParser.setBase(baseURI)
 

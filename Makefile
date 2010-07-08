@@ -404,12 +404,11 @@ valgrind: lib $(transformVALGRIND)
 # SWIG Interfaces
 
 SWIG = swig # /home/eric/checkouts/swig/swig
-SUBSTSWOB = perl -pi -e "s/const const/const/g" swig/SWObjects_wrap.cxx
+SUBSTSWOB = perl -pi -e "s/const const/const/g"
 
 swig/python/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
-	$(SWIG) -c++ -python -DSWIG_INTERFACE -DSWIGGY -I. -Ilib -Iinterface swig/SWObjects.i
-	$(SUBSTSWOB)
-	mv swig/SWObjects_wrap.cxx swig/python/
+	$(SWIG) -o $@ -c++ -python -DSWIG_INTERFACE -DSWIGGY -I. -Ilib -Iinterface swig/SWObjects.i
+	$(SUBSTSWOB) $@
 
 # swig/python/SPARQLParser_wrap.cxx: swig/SPARQLParser.i lib/SPARQLfedParser/SPARQLfedParser.hpp lib/SPARQLfedParser/SPARQLfedParser.cpp lib/SPARQLfedScanner.cpp
 # 	$(SWIG) -c++ -python -DSWIG_INTERFACE -I. -Ilib -Iinterface swig/SPARQLParser.i
@@ -419,9 +418,14 @@ swig/python/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.cxx swig/python/SWObjects_setup.py
 	python swig/python/SWObjects_setup.py build_ext -DSWIGGY --inplace -I.:lib/:interface/
 	mv _SWObjects.so swig/python/
-	mv swig/SWObjects.py swig/python/
 
-test2: swig/python/_SWObjects.so
+pytest: swig/python/_SWObjects.so
+	(cd swig/python/ && python t_SWObjects.py)
+
+test2-O0:
+	cd ~/checkouts/swobjects/
+	gcc -pthread -fno-strict-aliasing -DDEBUG -g -fwrapv -O0 -Wall -Wstrict-prototypes -fPIC -DSWIGGY=1 -I. -Ilib/ -Iinterface/ -I/usr/include/python2.6 -c swig/python/SWObjects_wrap.cxx -o build/temp.linux-i686-2.6/swig/python/SWObjects_wrap.o
+	g++ -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions build/temp.linux-i686-2.6/swig/python/SWObjects_wrap.o build/temp.linux-i686-2.6/lib/ParserCommon.o build/temp.linux-i686-2.6/lib/TrigSParser/TrigSParser.o build/temp.linux-i686-2.6/lib/TrigSScanner.o build/temp.linux-i686-2.6/lib/SPARQLfedParser/SPARQLfedParser.o build/temp.linux-i686-2.6/lib/SPARQLfedScanner.o -lboost_regex-mt -o /home/eric/checkouts/swobjects/swig/python/_SWObjects.so
 	(cd swig/python/ && python t_SWObjects.py)
 
 # alternate compilation strategies for _SWObjects.so
@@ -433,6 +437,25 @@ test2: swig/python/_SWObjects.so
 
 # _SWObjects.so: SWObjects_wrap.o
 # 	g++ -shared -o _SWObjects.so SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o -lboost_regex-mt
+
+swig/java/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
+	$(SWIG) -o $@ -c++ -java -DSWIG_INTERFACE -DSWIGGY -I. -Ilib -Iinterface swig/SWObjects.i
+	$(SUBSTSWOB) $@
+
+# swig/java/SPARQLParser_wrap.cxx: swig/SPARQLParser.i lib/SPARQLfedParser/SPARQLfedParser.hpp lib/SPARQLfedParser/SPARQLfedParser.cpp lib/SPARQLfedScanner.cpp
+# 	$(SWIG) -c++ -java -DSWIG_INTERFACE -I. -Ilib -Iinterface swig/SPARQLParser.i
+# 	$(SUBSTSWOB)
+# 	mv swig/SPARQLParser_wrap.cxx swig/java/
+
+swig/java/SWObjects_wrap.o: swig/java/SWObjects_wrap.cxx
+	g++ -DSWIG_INTERFACE -I. -Ilib/ -Iinterface/ -fPIC -c -o swig/java/SWObjects_wrap.o swig/java/SWObjects_wrap.cxx -I/usr/java/include -I/usr/java/include/solaris
+
+swig/java/_SWObjects.so: swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
+	# g++ -shared -o swig/java/_SWObjects.so swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+	ld -o swig/java/_SWObjects.so -G swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+
+jatest: swig/java/_SWObjects.so
+	(cd swig/java/ && java t_SWObjects.py)
 
 
 # Distributions

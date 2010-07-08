@@ -162,65 +162,33 @@ namespace w3c_sw {
 			  "<n4> \"l1\"" )
 	 * A \n on the last line creates a row with no bindings.
 	 */
-#ifdef SWIGGY
-      //ResultSet::ResultSet (POSFactory* posFactory, std::string str, bool ordered, POS::String2BNode& nodeMap) : 
-	ResultSet (POSFactory* posFactory, /*const char* strP*/ std::string str, bool ordered) : 
-	    posFactory(posFactory), knownVars(), 
-	    results(), ordered(ordered), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    POS::String2BNode nodeMap;
-	    const boost::regex expression("[ \\t]*"
-					  "((?:<[^>]*>)"		// IRI
-					   "|(?:_:[^[:space:]]+)"	// bnode
-					   "|(?:[?$][^[:space:]]+)"	// variable
-					   "|(?:\\\"[^\\\"]+\\\")"	// literal
-					   "|(?:-?[0-9\\.]+)"		// integer
-					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
-					  ")");
-	    std::string::const_iterator start, end; 
-	    start = str.begin(); 
-	    end = str.end(); 
-	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    bool firstRow = true;
-	    std::vector<const POS*> headers;
-	    int col = 0;
-	    Result* curRow = NULL;
-	    while (regex_search(start, end, what, expression, flags)) {
-		std::string matched(what[1].first, what[1].second);
-		if (matched == "\n") {
-		    firstRow = false;
-		    col = 0;
-		    curRow = NULL;
-		} else if (matched == "+" || matched == "┌" || matched == "├" || matched == "└") {
-		    const boost::regex nl("[^\\n]*\\n");
-		    regex_search(start, end, what, nl, flags); // skip rest of line
-		} else {
-		    const POS* pos = posFactory->getPOS(matched, nodeMap);
-		    if (firstRow)
-			headers.push_back(pos);
-		    else {
-			if (curRow == NULL) {
-			    curRow = new Result(this);
-			    insert(this->end(), curRow);
-			}
-			set(curRow, headers[col++], pos, false);
-		    }
-		}
-
-		start = what[0].second; 
-		// update flags: 
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
-	    }
-	}
-#endif
 #if REGEX_LIB != SWOb_DISABLED
 	ResultSet (POSFactory* posFactory, std::string str, bool ordered, POS::String2BNode& nodeMap) : 
 	    posFactory(posFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    const boost::regex expression("[ \\t]*"
+
+	    /* Iterate through the input string. */
+	    std::string::const_iterator start, end; 
+	    start = str.begin(); 
+	    end = str.end(); 
+
+	    /* Ignore leading whitespace and comments. */
+	    boost::match_results<std::string::const_iterator> what;
+	    boost::match_flag_type flags = boost::match_default;
+	    while (regex_search(start, end, what, boost::regex("^[ \\t]*(#[^\\n]*)?\\n"), flags)) {
+		start = what[0].second; 
+		flags |= boost::match_prev_avail; 
+		flags |= boost::match_not_bob; 
+	    }
+
+	    /* Populate <headers> from the first row ... */
+	    bool firstRow = true;
+	    std::vector<const POS*> headers;
+	    /* ... and generate Results for each remaining row. */
+	    int col = 0;
+	    Result* curRow = NULL;
+	    const boost::regex expression("[ \\t]*"			// ignore leading whitespace
 					  "((?:<[^>]*>)"		// IRI
 					   "|(?:_:[^[:space:]]+)"	// bnode
 					   "|(?:[?$][^[:space:]]+)"	// variable
@@ -228,15 +196,6 @@ namespace w3c_sw {
 					   "|(?:-?[0-9\\.]+)"		// integer
 					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
 					  ")");
-	    std::string::const_iterator start, end; 
-	    start = str.begin(); 
-	    end = str.end(); 
-	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    bool firstRow = true;
-	    std::vector<const POS*> headers;
-	    int col = 0;
-	    Result* curRow = NULL;
 	    while (regex_search(start, end, what, expression, flags)) {
 		std::string matched(what[1].first, what[1].second);
 		if (matched == "\n") {
@@ -259,8 +218,9 @@ namespace w3c_sw {
 		    }
 		}
 
+		/* Start after the end of the stuff we just parsed. */
 		start = what[0].second; 
-		// update flags: 
+		/* Re-assert the flags. */
 		flags |= boost::match_prev_avail; 
 		flags |= boost::match_not_bob; 
 	    }
