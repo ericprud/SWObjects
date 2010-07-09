@@ -285,23 +285,6 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 	    throw std::string("unable to open file \"").append(nameStr).append("\"");
     }
 }
-#if defined SWIG_INTERFACE
-IStreamContext::IStreamContext (std::string name, ::e_opts opts,
-				const char* p_mediaType, SWWEBagent* webAgent,
-				std::ostream** debugStream)
-    : StreamContext<std::istream>(name, &std::cin, (StreamContext<std::istream>::e_opts)opts, 
-				  p_mediaType, webAgent, debugStream) {
-    if (p == NULL) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading file " << nameStr << std::endl;
-	std::ifstream* istr = new std::ifstream(nameStr.c_str());
-	malloced = true;
-	p = istr;
-	if (!istr->is_open())
-	    throw std::string("unable to open file \"").append(nameStr).append("\"");
-    }
-}
-#endif /* defined SWIG_INTERFACE */
 
 OStreamContext::OStreamContext (std::string name, e_opts opts,
 				const char* p_mediaType, SWWEBagent* webAgent,
@@ -318,23 +301,6 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
 	    throw std::string("unable to open file \"").append(nameStr).append("\" for writing.");
     }
 }
-#if defined SWIG_INTERFACE
-OStreamContext::OStreamContext (std::string name, ::e_opts opts,
-				const char* p_mediaType, SWWEBagent* webAgent,
-				std::ostream** debugStream)
-    : StreamContext<std::ostream>(name, &std::cout, (StreamContext<std::ostream>::e_opts)opts, 
-				  p_mediaType, webAgent, debugStream) {
-    if (p == NULL) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "writing file " << nameStr << std::endl;
-	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
-	malloced = true;
-	p = ostr;
-	if (!ostr->is_open())
-	    throw std::string("unable to open file \"").append(nameStr).append("\" for writing.");
-    }
-}
-#endif /* defined SWIG_INTERFACE */
 
 /* Make sure this compilation unit includes ctor for StreamContext<std::{i,o}stream> */
 void __makeSureStreamContextsAreLinked () {

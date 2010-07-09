@@ -13,10 +13,6 @@ namespace std {
     };
 }
 
-namespace w3c_sw {
-    class OptString {};
-}
-
 %{
     namespace w3c_sw {
 	class POS;
@@ -61,29 +57,9 @@ public:
 %nestedworkaround w3c_sw::POS::String2BNode;
 
 %{
-    #define SWIG_INTERFACE
-    typedef enum {
-	NONE =		0,	/* don't do nuthin */
-	STRING =	1,	/* nameStr is the contents */
-	STDIO =		2,	/* '-' means stdin */
-	STDIN =		2,	/* '-' means stdin */
-	STDOUT =	2,	/* '-' also means stdout */
-	FILESTREAM =		4,	/* must be a file */
-    } e_opts;
-%}
-
-%nestedworkaround StreamContext<std::istream>::e_opts;
-%nestedworkaround StreamContext<std::ostream>::e_opts;
-%rename IStreamContext::FILE FILESTREAM;
-
-
-%{
-//class BNode;
-%}
-
-%{
 #include "SWObjects.cpp"
 #include "ResultSet.cpp"
+#include "ParserCommon.hpp"
 #include "SAXparser.hpp"
 #include "XMLSerializer.hpp"
 #include "RdfDB.cpp"
@@ -95,6 +71,7 @@ public:
 %}
 %include "config.h"
 %include "SWObjects.hpp"
+%include "ParserCommon.hpp"
 %include "SAXparser.hpp"
 %include "XMLSerializer.hpp"
 %include "ResultSet.hpp"
@@ -113,6 +90,7 @@ namespace w3c_sw {
 %{
 w3c_sw::SWSAXparser* w3c_sw::SWSAXparser::makeSAXparser () { return NULL; }
 typedef w3c_sw::TurtleSScanner TurtleSScanner;
+typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__SWIG_0 references ::location.
 %}
 
 namespace w3c_sw {
@@ -120,11 +98,7 @@ namespace w3c_sw {
     public:
 	SPARQLfedDriver(std::string baseURI, POSFactory* posFactory) {  }
 	virtual bool parse(IStreamContext& in) { return false; }
-	static Operation* parseString (const char* queryString, POSFactory* posFactory) {
-	    SPARQLfedDriver d("", posFactory);
-	    IStreamContext qstr(queryString, IStreamContext::STRING);
-	    return d.parse(qstr) ? NULL : d.root;
-	}
+	Operation* root;
     };
 }
 

@@ -159,12 +159,6 @@ public:
 
     /** Control attributes. */
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
-
-    static Operation* parseString (const char* queryString, POSFactory* posFactory) {
-	SPARQLfedDriver d("", posFactory);
-	IStreamContext qstr(queryString, IStreamContext::STRING);
-	return d.parse(qstr) ? NULL : d.root;
-    }
 };
 
 } // namespace w3c_sw

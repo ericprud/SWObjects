@@ -168,6 +168,7 @@ public:
 };
 
 #if defined SWIG
+class OptString {  };
 #elif (defined(_MSC_VER) && _MSC_VER < 15000)
 class OptString {
     bool m_initialized;
@@ -268,7 +269,6 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 };
 
 class Expressor;
-class RecursiveExpressor;
 
 class Base {
 public:
@@ -2836,6 +2836,11 @@ struct StreamContext : public StreamContextMediaTypes {
     }
 };
 
+#if defined(SWIG)
+    %template(StreamContextIstream) StreamContext<std::istream>;
+    %template(StreamContextOstream) StreamContext<std::ostream>;
+#endif
+
 struct IStreamContext : public StreamContext<std::istream> {
     IStreamContext(std::string name, std::istream& istr, const char* p_mediaType = NULL)
 	: StreamContext<std::istream>(name, &istr, p_mediaType)
@@ -2843,21 +2848,11 @@ struct IStreamContext : public StreamContext<std::istream> {
     IStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
-#if defined SWIG_INTERFACE
-    IStreamContext (std::string name, ::e_opts opts,
-		    const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
-		    std::ostream** debugStream = NULL);
-#endif /* defined SWIG_INTERFACE */
 };
 struct OStreamContext : public StreamContext<std::ostream> {
     OStreamContext(std::string name, e_opts opts = NONE,
 		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
 		   std::ostream** debugStream = NULL);
-#if defined SWIG_INTERFACE
-    OStreamContext(std::string name, ::e_opts opts,
-		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
-		   std::ostream** debugStream = NULL);
-#endif /* defined SWIG_INTERFACE */
 };
 
 #if !defined SWIG

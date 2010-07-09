@@ -14,24 +14,55 @@ class TestSWObjects(unittest.TestCase):
         # Test access to constants.
         self.assertEqual(SWObjects.cvar.NS_xml, "http://www.w3.org/XML/1998/namespace")
 
-    def test_s_p1_o1_p2_o2(self):
+    def test_type_integrity(self):
+        DB = SWObjects.RdfDB()
+        self.assertRaises(TypeError, DB.assureGraph, "blah")
+
+    def test_turtleParser(self):
         # Test a query.
         F = SWObjects.POSFactory()
-        DB = SWObjects.RdfDB()
-        default = DB.assureGraph(SWObjects.cvar.DefaultGraph)
-        default.addTriplePattern(F.getTriple(
+        manualDB = SWObjects.RdfDB()
+        manDefault = manualDB.assureGraph(SWObjects.cvar.DefaultGraph)
+        manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
                 F.getURI("o1")
                 ))
-        default.addTriplePattern(F.getTriple(
+        manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p2"), 
                 F.getURI("o2")
                 ))
+        # print "manualDB: ", manualDB.toString().c_str()
+        parsedDB = SWObjects.RdfDB()
+        tparser = SWObjects.TurtleSDriver("", F)
+        tparser.setGraph(parsedDB.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
+                                               SWObjects.StreamContextIstream.STRING))
+        # print "parsedDB: ", parsedDB.toString().c_str()
+        self.assertEqual(manualDB, parsedDB)
+
+        different = SWObjects.RdfDB()
+        tparser.setGraph(different.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.parse(SWObjects.IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
+                                               SWObjects.StreamContextIstream.STRING))
+        # print "different: ", different.toString().c_str()
+        self.assertNotEqual(parsedDB, different)
+
+
+    def test_s_p1_o1_p2_o2(self):
+        # Test a query.
+        F = SWObjects.POSFactory()
+        DB = SWObjects.RdfDB()
+        tparser = SWObjects.TurtleSDriver("", F)
+        tparser.setGraph(DB.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
+                                               SWObjects.StreamContextIstream.STRING))
         # print "DB: ", DB.toString().c_str()
         sparser = SWObjects.SPARQLfedDriver("", F)
-        query = SWObjects.SPARQLfedDriver.parseString("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", F)
+        sparser.parse(SWObjects.IStreamContext("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
+                                               SWObjects.StreamContextIstream.STRING))
+        query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str().c_str()
@@ -47,24 +78,17 @@ class TestSWObjects(unittest.TestCase):
 +------+------+-----+
 """, False, bnodeMap);
         self.assertEqual(reference, rs)
-        # self.assertRaises(TypeError, reference.classString2BNode, bnodeMap)
-        # self.assertRaises(TypeError, random.shuffle, (1,2,3))
-        # self.assertTrue(element in self.seq)
+
+        different = SWObjects.ResultSet(F, """
+# Results for T1.
++------+------+------+
+| ?o1  | ?o2  | ?s   |
+| <o1> | <o2> | <s2> |
++------+------+------+
+""", False, bnodeMap);
+        self.assertNotEqual(different, rs)
+
 
 if __name__ == '__main__':
     unittest.main()
-
-# TODO:
-
-# turtleParser.setGraph(x)
-qstr = SWObjects.string("ASK {}", 1)
-print "qstr, ", type(qstr)
-e = SWObjects.StreamContextIstream.STRING
-print "e, ", type(e)
-istr = SWObjects.IStreamContext(qstr, e)
-print "=> ", sparser.parse(istr)
-
-turtleParser = SWObjects.TurtleSDriver("http://example.org/", F)
-baseURI = ""
-turtleParser.setBase(baseURI)
 
