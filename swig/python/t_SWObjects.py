@@ -19,7 +19,7 @@ class TestSWObjects(unittest.TestCase):
         self.assertRaises(TypeError, DB.assureGraph, "blah")
 
     def test_turtleParser(self):
-        # Test a query.
+        # Test Turtle parser .
         F = SWObjects.POSFactory()
         manualDB = SWObjects.RdfDB()
         manDefault = manualDB.assureGraph(SWObjects.cvar.DefaultGraph)
@@ -33,20 +33,20 @@ class TestSWObjects(unittest.TestCase):
                 F.getURI("p2"), 
                 F.getURI("o2")
                 ))
-        # print "manualDB: ", manualDB.toString().c_str()
+        # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
         tparser.setGraph(parsedDB.assureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
-        # print "parsedDB: ", parsedDB.toString().c_str()
+        # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
         tparser.setGraph(different.assureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
-        # print "different: ", different.toString().c_str()
+        # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
 
 
@@ -58,14 +58,14 @@ class TestSWObjects(unittest.TestCase):
         tparser.setGraph(DB.assureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
-        # print "DB: ", DB.toString().c_str()
+        # print "DB: ", DB.toString()
         sparser = SWObjects.SPARQLfedDriver("", F)
         sparser.parse(SWObjects.IStreamContext("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
                                                SWObjects.StreamContextIstream.STRING))
         query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
-        # print "parsed: ", s.str().c_str()
+        # print "parsed: ", s.str()
         rs = SWObjects.ResultSet(F)
         query.execute(DB, rs)
         bnodereps = SWObjects.BNode2string()
