@@ -1851,7 +1851,7 @@ BuiltInCall:
     }
   | IT_COALESCE ExpressionList	{
 	$$ = NULL; // new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-coalesce"), $2, NULL, NULL));
-	NEED_IMPL("COALESCE");
+	w3c_sw_NEED_IMPL("COALESCE");
     }
   | IT_IF GT_LPAREN Expression GT_COMMA Expression GT_COMMA Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-if"), $3, $5, $7));
@@ -1911,14 +1911,14 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 ExistsFunc:
     IT_EXISTS GroupGraphPattern	{
 	$$ = NULL; // new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-exists"), driver.curOp, NULL, NULL));
-	NEED_IMPL("EXISTS");
+	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;
 
 NotExistsFunc:
     GT_NOT_SPACECHAR_EXISTS GroupGraphPattern	{
 	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-exists"), driver.curOp, NULL, NULL)));
-	NEED_IMPL("EXISTS");
+	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;
 
@@ -1948,7 +1948,7 @@ Aggregate:
 	  // x = new ArgList($2, driver.curExprList);
 	  delete driver.curExprList;
 	  driver.curExprList = NULL;
-	  NEED_IMPL("GROUP_CONCAT"); // !!!
+	  w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
 	  // $$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-group-concat"), $3, $4.p_Expression, $4.separator));
     }
 ;

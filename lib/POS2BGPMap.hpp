@@ -262,7 +262,7 @@ namespace w3c_sw {
 		     it != p_Expressions->end(); it++) {
 		    const POSExpression* posExpr = dynamic_cast<const POSExpression *>((*it)->expr);
 		    if (!posExpr)
-			NEED_IMPL("expressionAliasList !POSExpression");
+			w3c_sw_NEED_IMPL("expressionAliasList !POSExpression");
 		    _depends(posExpr->getPOS(), _Binding_SELECT);
 		}
 	    }

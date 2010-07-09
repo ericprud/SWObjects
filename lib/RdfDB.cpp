@@ -8,8 +8,6 @@
 #include "TrigSParser/TrigSParser.hpp"
 #include <boost/iostreams/stream.hpp>
 
-namespace io = boost::iostreams;
-
 namespace w3c_sw {
 
     RdfDB::HandlerSet RdfDB::defaultHandler;
@@ -45,7 +43,7 @@ namespace w3c_sw {
 
     bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
 	w3c_sw::StreamRewinder rb(*istrP);
-	io::stream_buffer<w3c_sw::StreamRewinder::Device> srsb(rb.device); // ## debug with small buffer size, e.g. 4
+	boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> srsb(rb.device); // ## debug with small buffer size, e.g. 4
 	std::istream is(&srsb);
 	IStreamContext istr(istrP.nameStr, is, 
 			    istrP.mediaType.is_initialized() ? istrP.mediaType.get().c_str() : NULL);
@@ -94,7 +92,7 @@ namespace w3c_sw {
 	    }
 	} catch (ChangeMediaTypeException& e) {
 	    rb.replay();
-	    io::stream_buffer<w3c_sw::StreamRewinder::Device> sb2(rb.device);
+	    boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> sb2(rb.device);
 	    std::istream is2(&sb2);
 	    IStreamContext again(istrP.nameStr, is, e.mediaType.c_str());
 	    return handler->parse(e.mediaType, e.args, target, again, nameStr, baseURI, posFactory, nsMap);

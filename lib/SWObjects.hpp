@@ -13,14 +13,14 @@
 
  * debugging tips:
  *   echo filename(lineno):
- *     LINE;
- *     LINE << "about to foo the bar." << std::endl; // outputs your text.
+ *     w3c_sw_LINE;
+ *     w3c_sw_LINE << "about to foo the bar." << std::endl; // outputs your text.
  */
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define LINE std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning LINE\n"
-#define NEED_IMPL(x) throw NotImplemented(__FILE__, TOSTRING(__LINE__), x)
-#define IF_IMPL(t, x) if (t) {throw NotImplemented(__FILE__, TOSTRING(__LINE__), x);}
+#define w3c_sw_STRINGIFY(x) #x
+#define w3c_sw_TOSTRING(x) w3c_sw_STRINGIFY(x)
+#define w3c_sw_LINE std::cerr << __FILE__ "(" w3c_sw_TOSTRING(__LINE__) "): warning LINE\n"
+#define w3c_sw_NEED_IMPL(x) throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x)
+#define w3c_sw_IF_IMPL(t, x) if (t) {throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x);}
 
 /* defines for controlling includes from utils */
 #include "config.h"
@@ -445,7 +445,7 @@ class OperationSet : public Operation {
 protected:
     ProductionVector<const Operation*> operations;
 public:
-    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("OperationSet::express"); };
+    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("OperationSet::express"); };
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const Operation& ref) const {
 	const OperationSet* pref = dynamic_cast<const OperationSet*>(&ref);
@@ -1437,10 +1437,10 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("DELETEPATTERN{{?s?p?o}UNION{?s?p?o}}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{{?s?p?o}UNION{?s?p?o}}");
     }
     virtual TableOperation* getDNF() const;
 };
@@ -1557,10 +1557,10 @@ public:
 
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("CONSTRUCT{FILTER(...)}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{FILTER(...)}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("DELETEPATTERN{FILTER(...)}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{FILTER(...)}");
     }
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const Filter& ref) const {
@@ -1633,10 +1633,10 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("CONSTRUCT{OPTIONAL{?s?p?o}}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{OPTIONAL{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("DELETEPATTERN{OPTIONAL{?s?p?o}}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{OPTIONAL{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new OptionalGraphPattern(p_TableOperation); }
 
@@ -1655,10 +1655,10 @@ public:
     }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("CONSTRUCT{MINUS{?s?p?o}}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{MINUS{?s?p?o}}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("DELETEPATTERN{MINUS{?s?p?o}}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{MINUS{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new MinusGraphPattern(p_TableOperation); }
 
@@ -1901,13 +1901,13 @@ public:
     ~SubSelect() { delete m_Select; }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual TableOperation* getDNF () const {
-	NEED_IMPL("getDNF{SUBSELECT(...)}");
+	w3c_sw_NEED_IMPL("getDNF{SUBSELECT(...)}");
     }
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("CONSTRUCT{SUBSELECT(...)}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{SUBSELECT(...)}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	NEED_IMPL("DELETEPATTERN{SUBSELECT(...)}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{SUBSELECT(...)}");
     }
     virtual void express(Expressor* /* p_expressor */) const;
     bool operator== (const SubSelect& ref) const {
@@ -2283,7 +2283,7 @@ public:
 		s << "NULL";
 	}
 	s << ')';
-	NEED_IMPL(s.str());
+	w3c_sw_NEED_IMPL(s.str());
     }
     bool operator== (const FunctionCall& ref) const {
 	return m_IRIref == ref.m_IRIref && *m_ArgList == *ref.m_ArgList;
@@ -2314,7 +2314,7 @@ public:
 		s << "NULL";
 	}
 	s << ')';
-	NEED_IMPL(s.str());
+	w3c_sw_NEED_IMPL(s.str());
     }
     bool operator== (const AggregateCall& ref) const {
 	if (distinctness != ref.distinctness)
@@ -2552,7 +2552,7 @@ protected:
 public:
     NaryIn (ProductionVector<const Expression*>* p_Expressions) : NaryComparator(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "IN"; };
-    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("NaryIn::express"); }
+    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryIn::express"); }
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	const POS* l = left->eval(res, posFactory, evaluator);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
@@ -2574,7 +2574,7 @@ protected:
 public:
     NaryNotIn (ProductionVector<const Expression*>* p_Expressions) : NaryIn(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "NOT IN"; };
-    virtual void express (Expressor* /* p_expressor */) const { NEED_IMPL("NaryNotIn::express"); }
+    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryNotIn::express"); }
     virtual const POS* eval (const Result* res, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
 	const POS* l = left->eval(res, posFactory, evaluator);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
@@ -2877,10 +2877,10 @@ public:
 
 	Device(std::istream& istr, StreamRewinder& streamRewinder)
 	    : istr(istr), streamRewinder(streamRewinder)
-	{ /* LINE << "normal constructor: " << toString() << "\n"; */ }
+	{ /* w3c_sw_LINE << "normal constructor: " << toString() << "\n"; */ }
 	Device(const Device& ref) 
 	    : istr(ref.istr), streamRewinder(ref.streamRewinder)
-	{ /* LINE << "copy constructor: " << toString() << "\n"; */ }
+	{ /* w3c_sw_LINE << "copy constructor: " << toString() << "\n"; */ }
 
 	std::streamsize read(char_type* s, std::streamsize n) {
 	    switch (streamRewinder.state) {
@@ -2895,7 +2895,7 @@ public:
 			       s );
 // #pragma warning(pop)
 		    streamRewinder.pos += result;
-		    // LINE << "replay: " << toString() << "\n";
+		    // w3c_sw_LINE << "replay: " << toString() << "\n";
 		    return result;
 		}
 		streamRewinder.buffer.clear();
@@ -2908,7 +2908,7 @@ public:
 		std::streamsize red = istr.gcount();
 		if (streamRewinder.state == STATE_copy)
 		    streamRewinder.buffer.append(s, red);
-		// LINE << "read: " << toString() << "\n";
+		// w3c_sw_LINE << "read: " << toString() << "\n";
 		return red > 0 ? red : -1;
 	    }
 	    default: throw "program flow exception";
@@ -2965,8 +2965,10 @@ public:
 
     std::streamsize write (const char_type* s, std::streamsize n) {
 	std::string dbg(s, n);
-	POSIX_write(fileHandle, s, n);
-	return n;
+	size_t ret = POSIX_write(fileHandle, s, n);
+	if (ret == 0 && n != 0)
+	    throw std::string("write returned 0.");
+	return ret;
     }
 
     // void close () { // never gets called.

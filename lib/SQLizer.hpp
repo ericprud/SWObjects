@@ -730,7 +730,7 @@ namespace w3c_sw {
 	}
 	virtual void expressionAlias (const ExpressionAlias* const, const w3c_sw::Expression* expr, const Bindable* label) {
 	    if (label != NULL) {
-		NEED_IMPL("SQLizer(ExpressionAliase)");
+		w3c_sw_NEED_IMPL("SQLizer(ExpressionAliase)");
 	    } else
 		expr->express(this);
 	}
@@ -752,7 +752,7 @@ namespace w3c_sw {
 	    p_IRIref->express(this);
 	}
 	virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
-	    IF_IMPL(groupBy != NULL || having != NULL, "SPARQL 1.1 SolutionModifier (groupBy, having)");
+	    w3c_sw_IF_IMPL(groupBy != NULL || having != NULL, "SPARQL 1.1 SolutionModifier (groupBy, having)");
 	    if (p_limit != LIMIT_None) curQuery->setLimit(p_limit);
 	    if (p_offset != OFFSET_None) curQuery->setOffset(p_offset);
 	    if (p_OrderConditions)
@@ -796,7 +796,7 @@ namespace w3c_sw {
 	    p_VarSet->express(this);
 	}
 	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
-	    NEED_IMPL("SQLizer(subselect)");
+	    w3c_sw_NEED_IMPL("SQLizer(subselect)");
 	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    FAIL("CONSTRUCT");

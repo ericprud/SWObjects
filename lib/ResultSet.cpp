@@ -316,7 +316,7 @@ namespace w3c_sw {
 			(*it)->express(this);
 			last.functionCall = new SumState(last.expression, groupIndexRef);
 		    } else {
-			NEED_IMPL(std::string("functionCall(") + p_IRIref->toString());
+			w3c_sw_NEED_IMPL(std::string("functionCall(") + p_IRIref->toString());
 		    }
 		}
 	    };
