@@ -1,6 +1,13 @@
 %module SWObjects
+%{
+#if defined(SWIGJAVA) || defined(SWIGPERL)
+    struct pointer_category { };
+    namespace swig {
+	template <class Type> struct traits { };
+    }
+#endif /* defined(SWIGJAVA) || defined(SWIGPERL) */
+%}
 %include <std_map.i>
-%include <std_set.i>
 %include <std_string.i>
 
 namespace std {
@@ -24,7 +31,6 @@ namespace std {
     %template(mapBNodestarstring) map<const w3c_sw::BNode*, std::string>;
     %template(mapstringBNodestar) map<std::string, const w3c_sw::BNode*>;
     %template(mapstrcharstar) map<const std::string, const char*>;
-    %template(setPOSstar) set<const w3c_sw::POS*>;
 };
 
 %{
