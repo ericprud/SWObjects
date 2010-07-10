@@ -43,7 +43,7 @@ HTTP_CLIENT= ASIO
 # Tested with:
 #   DLIB v?.??
 #   http://dclib.sourceforge.net/
-# @@TODO= add ASIO server code.
+# @@TODO= bring up to day with recent ASIO.
 HTTP_SERVER= ASIO
 
 # SQL_CLIENT: MYSQL |  - what library provies HTTP server support. #####

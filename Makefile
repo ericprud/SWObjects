@@ -26,7 +26,7 @@ SED:=sed
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
 //ECHO:=`which echo`
 //ECHO:= /bin/echo -e
-ECHO ?= echo
+ECHO ?= echo -e
 #LIBS
 DEBUG:=-g -O0
 OPT=-fPIC
@@ -138,7 +138,7 @@ all:   lib test
 
 
 config.h: CONFIG
-	@$(ECHO) "/* Generated from CONFIG.\n" \
+	echo "/* Generated from CONFIG.\n" \
 	"* In order to keep your link directives appropriate for the features enabled\n" \
 	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\n" \
 	"*/\n" \
@@ -198,13 +198,13 @@ LIBINC	+=	 -l$(LIBNAME)
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
 
-.PHONY: lib
+.PHONY: lib NOGEN
 lib: dep $(LIB)
 
 .SECONDARY:
 
 lib/%.dep: lib/%.cpp config.h
-	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/\\; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
 	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
@@ -214,6 +214,12 @@ lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
 lib/TrigSParser/%.dep: lib/TrigSParser/%.cpp config.h
 	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
+GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
+
+# don't run flex and bison
+NOGEN:
+	touch $(GENERATED)
+	ln -s win/FlexLexer.h
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
@@ -236,7 +242,7 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/\\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -296,7 +302,7 @@ TEST_ARGS ?= ""
 t_SPARQL: bin/SPARQL
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/\\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
@@ -396,6 +402,12 @@ SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 
 SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)
 
+swig/SWObjects_wrap.cpp: swig/SWObjects_setup.py
+	swig -c++ -o swig/SWObjects_wrap.cpp -python swig/SWObjects.i
+
+swig/_SWObjects.so: swig/SWObjects_wrap.cpp lib/SWObjects.cpp lib/ResultSet.cpp lib/RdfDB.cpp lib/ParserCommon.cpp lib/TurtleSParser/TurtleSParser.cpp lib/TurtleSScanner.cpp lib/TrigSParser/TrigSParser.cpp lib/TrigSScanner.cpp
+	python swig/SWObjects_setup.py build_ext --inplace -I.:lib:interface
+	mv _SWObjects.so swig/
 
 .PHONY: test valgrind tests/7tm_receptors-flat.results
 test: lib $(unitTESTS) $(transformTEST_RESULTS)

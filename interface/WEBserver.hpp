@@ -6,12 +6,12 @@
  #define MUTABLE_BUFFER boost::asio::buffer
  #include <boost/algorithm/string.hpp>
  #define HEADER_EQUALS(A, B) boost::iequals(A, B)
-#elif HTTP_SERVER == SWOb_DLIB
+#elif HTTP_SERVER == SWOb_DLIB || HTTP_SERVER == SWOb_DISABLED
  #define CONST_BUFFER std::string
  #define MUTABLE_BUFFER std::string
  #define HEADER_EQUALS(A, B) A.compare(B)
 #else
- #error unknown HTTP_SERVER (neither ASIO or DLIB)
+ #error unknown HTTP_SERVER (neither ASIO, DLIB)
 #endif
 
 #include "SWObjects.hpp"
@@ -462,7 +462,9 @@ namespace w3c_sw {
 
     namespace webserver {
 	class request_handler
-	    : private boost::noncopyable
+#if HTTP_SERVER == SWOb_ASIO
+	    : private boost::noncopyable // copied from boost http server demo
+#endif
 	{
 	public:
 	    /// Construct with a directory containing files to be served.

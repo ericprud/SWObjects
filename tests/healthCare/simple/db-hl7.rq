@@ -51,4 +51,4 @@ CONSTRUCT {
   ?indicCode  NDCcodes:NDC         ?indicNDC ;
               NDCcodes:ingredient  ?ingred .
   }
-} LIMIT 30
+}

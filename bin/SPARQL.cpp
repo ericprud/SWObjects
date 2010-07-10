@@ -68,11 +68,12 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #elif HTTP_SERVER == SWOb_DLIB
  #include "../interface/WEBserver_dlib.hpp"
 #else
-  #ifdef _MSC_VER
-    #pragma message ("unable to serve HTTP without an HTTP server.")
-  #else /* !_MSC_VER */
-    #warning unable to serve HTTP without an HTTP server.
-  #endif /* !_MSC_VER */
+ #ifdef _MSC_VER
+  #pragma message ("unable to serve HTTP without an HTTP server.")
+ #else /* !_MSC_VER */
+  #warning unable to serve HTTP without an HTTP server.
+ #endif /* !_MSC_VER */
+ #include "../interface/WEBserver_dummy.hpp"
 #endif
 
 #if SQL_CLIENT == SWOb_MYSQL
@@ -228,10 +229,6 @@ unsigned char favicon[] = {
 0x19,0xd6,0x8f,0x2a,0x7f,0xa2,0xfd,0x07,0xe6,0xae,0x7f,0xba,0xfb,0xc4,0x19,0x2f,
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
 };
-
-sw::SPARQLfedDriver SparqlParser("", &F);
-sw::TurtleSDriver TurtleParser("", &F);
-sw::ResultSet rs(&F);
 
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
@@ -407,7 +404,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    res = SQLclient->executeQuery(finalQuery);
 		}
 		catch (std::string ex) {
-		    throw sqlConnectString() + " was unable to execute " + finalQuery;
+		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		sw::SqlResultSet rs2(&posFactory, res);
 		rs.joinIn(&rs2);
@@ -451,6 +448,10 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	return executed;
     }
 };
+
+sw::SPARQLfedDriver SparqlParser("", &F);
+sw::TurtleSDriver TurtleParser("", &F);
+sw::ResultSet rs(&F);
 
 MyServer TheServer(F, SparqlParser, "ID", &DebugStream);
 

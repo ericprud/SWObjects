@@ -2158,7 +2158,7 @@ namespace w3c_sw {
 #line 1564 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-coalesce"), $2, NULL, NULL));
-	NEED_IMPL("COALESCE");
+	w3c_sw_NEED_IMPL("COALESCE");
     }
     break;
 
@@ -2276,7 +2276,7 @@ namespace w3c_sw {
 #line 1624 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-exists"), driver.curOp, NULL, NULL));
-	NEED_IMPL("EXISTS");
+	w3c_sw_NEED_IMPL("EXISTS");
     }
     break;
 
@@ -2286,7 +2286,7 @@ namespace w3c_sw {
 #line 1631 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-exists"), driver.curOp, NULL, NULL)));
-	NEED_IMPL("EXISTS");
+	w3c_sw_NEED_IMPL("EXISTS");
     }
     break;
 
@@ -2361,7 +2361,7 @@ namespace w3c_sw {
 	  // x = new ArgList($2, driver.curExprList);
 	  delete driver.curExprList;
 	  driver.curExprList = NULL;
-	  NEED_IMPL("GROUP_CONCAT"); // !!!
+	  w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
 	  // $$ = new FunctionCallExpression(new AggregateCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-group-concat"), $3, $4.p_Expression, $4.separator));
     }
     break;
