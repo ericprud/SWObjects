@@ -111,6 +111,9 @@
 
 namespace w3c_sw {
 
+#if defined(SWIG)
+    %immutable;
+#endif /* defined(SWIG) */
     extern const char* NS_xml;
     extern const char* NS_xsd;
     extern const char* NS_rdf;
@@ -118,10 +121,19 @@ namespace w3c_sw {
     extern const char* NS_srx;
     extern const char* NS_dc;
     extern const char* NS_sadl;
+#if defined(SWIG)
+    %mutable;
+#endif /* defined(SWIG) */
 
 class StringException : public std::exception {
 public:
+#if defined(SWIG)
+    %immutable;
+#endif /* defined(SWIG) */
     char const* str;
+#if defined(SWIG)
+    %mutable;
+#endif /* defined(SWIG) */
     static std::map<StringException*, std::string> strs;
 
     StringException (std::string m) : str(m.c_str()) {
@@ -1827,6 +1839,9 @@ public:
     // virtual void project (ResultSet* rs) const;
 };
 
+#if defined(SWIG)
+    %template(ProductionVector_POSstar) ProductionVector<POS const *>;
+#endif /* defined(SWIG) */
 class Binding : public ProductionVector<const POS*> {
 private:
 public:
@@ -1835,6 +1850,9 @@ public:
     virtual void express(Expressor* p_expressor) const;
     void bindVariables(RdfDB* db, ResultSet* rs, Result* r, POSList* p_Vars) const;
 };
+#if defined(SWIG)
+    %template(ProductionVector_Bindingstar) ProductionVector<Binding const *>;
+#endif /* defined(SWIG) */
 class BindingClause : public ProductionVector<const Binding*> {
 private:
     POSList* m_Vars;

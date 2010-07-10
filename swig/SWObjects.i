@@ -7,8 +7,9 @@
     }
 #endif /* defined(SWIGJAVA) || defined(SWIGPERL) */
 %}
-%include <std_map.i>
 %include <std_string.i>
+%include <std_map.i>
+%include <std_vector.i>
 
 namespace std {
     class exception {
@@ -24,6 +25,9 @@ namespace std {
     namespace w3c_sw {
 	class POS;
 	class BNode;
+	class BasicGraphPattern;
+	class Binding;
+	class TableOperation;
     }
 %}
 
@@ -62,8 +66,70 @@ public:
 %nestedworkaround w3c_sw::POS::BNode2string;
 %nestedworkaround w3c_sw::POS::String2BNode;
 
+    struct UnknownPrefixException : w3c_sw::StringException {
+	std::string prefix;
+	UnknownPrefixException (std::string prefix) : 
+	    StringException(make(prefix)), prefix(prefix) {  }
+	virtual ~UnknownPrefixException () throw() {  }
+    protected:
+	std::string make (std::string prefix) {
+	    std::stringstream s;
+	    s << "unknown prefix \"" << prefix << "\"";
+	    return s.str();
+	}
+    };
+%nestedworkaround w3c_sw::NamespaceMap::UnknownPrefixException;
+
+	class NSmap {
+	public:
+	    virtual ~NSmap () {  }
+	    virtual std::string operator[](std::string prefix) = 0;
+	};
+	class Attributes {
+	public:
+	    Attributes () {  }
+	    virtual ~Attributes () {  }
+	    virtual size_t getLength() = 0;
+	    virtual std::string getLocalName(size_t i) = 0;
+	    virtual std::string getURI(size_t i) = 0;
+	    virtual std::string getQName(size_t i) = 0;
+	    virtual std::string getValue(std::string uri, std::string localName) = 0;
+	    std::string toString (std::string luri = "", std::string llname = "") {
+		std::stringstream s;
+		for (size_t i = 0; i < getLength(); ++i) {
+		    std::string uri = getURI(i);
+		    std::string lname = getLocalName(i);
+		    std::string qn = getQName(i);
+		    std::string val = getValue(uri, lname);
+		    s << (uri == luri && lname == llname ? '!' : ' ') << 
+			qn << "(" << uri << ")=\"" << val << "\"";
+		}
+		s << ">\ncheck: |name: " << getValue("", "name") << "\n";
+		return s.str();
+	    }
+	};
+%nestedworkaround w3c_sw::SWSAXhandler::NSmap;
+%nestedworkaround w3c_sw::SWSAXhandler::Attributes;
+
+	struct HandlerSet {
+	    virtual ~HandlerSet () {  }
+	    virtual bool parse (std::string mediaType, std::vector<std::string> args,
+				w3c_sw::BasicGraphPattern* /* target */, w3c_sw::IStreamContext& /* istr */,
+				std::string /* nameStr */, std::string /* baseURI */,
+				w3c_sw::POSFactory* /* posFactory */, w3c_sw::NamespaceMap* /* nsMap */) {
+		throw std::string("no handler for ") + mediaType + "(" + args[0] + ")";
+	    }
+	};
+%nestedworkaround w3c_sw::RdfDB::HandlerSet;
+
+/* %typemap(varin) const char * { */
+/*     SWIG_Error(SWIG_AttributeError,"Variable $symname is read-only."); */
+/*     SWIG_fail; */
+/* } */
+
 %{
 #include "SWObjects.cpp"
+#include "SWObjectDuplicator.hpp"
 #include "ResultSet.cpp"
 #include "ParserCommon.hpp"
 #include "SAXparser.hpp"
@@ -74,9 +140,17 @@ public:
 #include "SPARQLSerializer.hpp"
     typedef w3c_sw::POS::BNode2string BNode2string;
     typedef w3c_sw::POS::String2BNode String2BNode;
+
+    typedef w3c_sw::NamespaceMap::UnknownPrefixException UnknownPrefixException;
+
+    typedef w3c_sw::SWSAXhandler::NSmap NSmap;
+    typedef w3c_sw::SWSAXhandler::Attributes Attributes;
+
+    typedef w3c_sw::RdfDB::HandlerSet HandlerSet;
 %}
 %include "config.h"
 %include "SWObjects.hpp"
+%include "SWObjectDuplicator.hpp"
 %include "ParserCommon.hpp"
 %include "SAXparser.hpp"
 %include "XMLSerializer.hpp"

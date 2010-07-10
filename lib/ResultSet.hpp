@@ -119,8 +119,14 @@ namespace w3c_sw {
 	bool orderedSelect;
 
     public:
+#if defined(SWIG)
+	%immutable;
+#endif /* defined(SWIG) */
 	static const char* NS_srx;
 	static const char* NS_xml;
+#if defined(SWIG)
+	%mutable;
+#endif /* defined(SWIG) */
 	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
 	ResultType resultType;
 	std::ostream** debugStream;
@@ -227,6 +233,7 @@ namespace w3c_sw {
 	}
 #endif /* REGEX_LIB != SWOb_DISABLED */
 
+#if !defined(SWIG)
 	class RSsax : public SWSAXhandler {
 	protected:
 	    ResultSet* rs;
@@ -374,6 +381,7 @@ namespace w3c_sw {
 		chars += std::string(ch + start, length);
 	    }
 	};
+#endif /* !defined(SWIG) */
 
 	ResultSet (POSFactory* posFactory, RdfDB* db) : 
 	    posFactory(posFactory), knownVars(), 
@@ -734,11 +742,17 @@ namespace w3c_sw {
 
     struct BoxChars {
 	bool intraRowSeparators;
+#if defined(SWIG)
+    %immutable;
+#endif /* defined(SWIG) */
 	const char* null; const char* ordered; const char* unlistedVar;
 	const char* ul; const char* ub; const char* us; const char* ur;
 	const char* rl; const char* rb; const char* rs; const char* rr;
 	const char* sl; const char* sb; const char* ss; const char* sr;
 	const char* ll; const char* lb; const char* ls; const char* lr;
+#if defined(SWIG)
+    %mutable;
+#endif /* defined(SWIG) */
 	BoxChars (bool intraRowSeparators, 
 		  const char* null, const char* ordered, const char* unlistedVar,
 		  const char* ul, const char* ub, const char* us, const char* ur, 

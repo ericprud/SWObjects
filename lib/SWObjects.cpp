@@ -8,6 +8,7 @@
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include <string.h>
+#include <vector>
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"
@@ -40,7 +41,13 @@ void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
 
+#if defined(SWIG)
+    %immutable;
+#endif /* defined(SWIG) */
 char const * yit = "yacker:implicit-terminal";
+#if defined(SWIG)
+    %mutable;
+#endif /* defined(SWIG) */
 std::map<StringException*, std::string> StringException::strs;
 
 } // namespace w3c_sw
@@ -1598,6 +1605,11 @@ compared against
 	return dup.last.tableOperation;
     }
 
+#if defined(SWIG)
+} /* namespace w3c_sw */
+namespace std {%template(vector_TableOperationstar) vector<const w3c_sw::TableOperation*>;}
+namespace w3c_sw {
+#endif /* defined(SWIG) */
     struct ConjointList : public std::vector<const TableOperation*> {
 
 	ConjointList () : std::vector<const TableOperation*>() {  }
@@ -1634,6 +1646,11 @@ compared against
 
     struct DisjointList;
     std::ostream& operator <<(std::ostream& os, DisjointList& top);
+#if defined(SWIG)
+} /* namespace w3c_sw */
+namespace std {%template(vector_ConjointList) vector<w3c_sw::ConjointList>;}
+namespace w3c_sw {
+#endif /* defined(SWIG) */
     struct DisjointList : public std::vector<ConjointList> {
 
 	DisjointList () {
