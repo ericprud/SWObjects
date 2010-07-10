@@ -23,6 +23,7 @@ FLEX:=flex
 YACC:=bison
 TEE:=tee
 SED:=sed
+JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
 //ECHO:=`which echo`
 //ECHO:= /bin/echo -e
@@ -462,14 +463,16 @@ swig/java/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.c
 # 	mv swig/SPARQLParser_wrap.cxx swig/java/
 
 swig/java/SWObjects_wrap.o: swig/java/SWObjects_wrap.cxx
-	g++ -I. -Ilib/ -Iinterface/ -fPIC -c -o swig/java/SWObjects_wrap.o swig/java/SWObjects_wrap.cxx -I/usr/java/include -I/usr/java/include/solaris
+	g++ -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/java/SWObjects_wrap.o swig/java/SWObjects_wrap.cxx -I$(JAVA_HOME)/include
 
-swig/java/_SWObjects.so: swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
-	# g++ -shared -o swig/java/_SWObjects.so swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
-	ld -o swig/java/_SWObjects.so -G swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+swig/java/libSWObjects.so: swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
+	g++ -shared -o $@ $< lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
 
-java_test: swig/java/_SWObjects.so
-	(cd swig/java/ && java t_SWObjects.class)
+swig/java/t_SWObjects.class: swig/java/t_SWObjects.java
+	(cd swig/java/ && javac -d . -classpath .:/usr/share/java/junit4-4.8.1.jar *.java)
+
+java_test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
+	(cd swig/java/ && LD_LIBRARY_PATH=. java -classpath .:/usr/share/java/junit4-4.8.1.jar org.junit.runner.JUnitCore t_SWObjects)
 
  # Perl
 swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
