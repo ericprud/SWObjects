@@ -745,7 +745,7 @@ namespace w3c_sw {
 #if defined(SWIG)
     %immutable;
 #endif /* defined(SWIG) */
-	const char* null; const char* ordered; const char* unlistedVar;
+	const char* unbound; const char* ordered; const char* unlistedVar;
 	const char* ul; const char* ub; const char* us; const char* ur;
 	const char* rl; const char* rb; const char* rs; const char* rr;
 	const char* sl; const char* sb; const char* ss; const char* sr;
@@ -754,13 +754,13 @@ namespace w3c_sw {
     %mutable;
 #endif /* defined(SWIG) */
 	BoxChars (bool intraRowSeparators, 
-		  const char* null, const char* ordered, const char* unlistedVar,
+		  const char* unbound, const char* ordered, const char* unlistedVar,
 		  const char* ul, const char* ub, const char* us, const char* ur, 
 		  const char* rl, const char* rb, const char* rs, const char* rr, 
 		  const char* sl, const char* sb, const char* ss, const char* sr,
 		  const char* ll, const char* lb, const char* ls, const char* lr)
 	    : intraRowSeparators(intraRowSeparators), 
-	      null(null), ordered(ordered), unlistedVar(unlistedVar), 
+	      unbound(unbound), ordered(ordered), unlistedVar(unlistedVar), 
 	      ul(ul), ub(ub), us(us), ur(ur), 
 	      rl(rl), rb(rb), rs(rs), rr(rr), 
 	      sl(sl), sb(sb), ss(ss), sr(sr),

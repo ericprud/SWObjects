@@ -452,7 +452,7 @@ namespace w3c_sw {
     }
 #if !defined SWIG
     BoxChars BoxChars::AsciiBoxChars(false, // instraRow
-			   "--", // null
+			   "--", // unbound
 			   "O", // ordered
 			   "!", // unlistedVar
 			   /*        .l   .b   .s   .r */
@@ -462,7 +462,7 @@ namespace w3c_sw {
 			   /* l. */ "+", "-", "+", "+"
 			   );
     BoxChars BoxChars::Utf8BoxChars (false, // instraRow
-			   "--", // null
+			   "--", // unbound
 			   "O", // ordered
 			   "!", // unlistedVar
 			   /* Fancy rounded box chars not supported in many fonts: */
@@ -476,7 +476,7 @@ namespace w3c_sw {
 
     /* Fancy rounded box chars not supported in many fonts: */
     BoxChars BoxChars::Utf8BldChars (false, // instraRow
-			   "--", // null
+			   "--", // unbound
 			   "O", // ordered
 			   "!", // unlistedVar
 			   /*        .l   .b   .s   .r */
@@ -500,7 +500,7 @@ namespace w3c_sw {
     std::string render (const POS* p, NamespaceMap* namespaces) {
 	return
 	    p == NULL
-	    ? BoxChars::GBoxChars->null
+	    ? BoxChars::GBoxChars->unbound
 	    : (namespaces == NULL || dynamic_cast<const URI*>(p) == NULL)
 	    ? p->toString()
 	    : namespaces->unmap(p->getLexicalValue());
