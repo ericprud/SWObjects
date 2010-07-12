@@ -318,7 +318,7 @@ tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/ ; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/\\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
