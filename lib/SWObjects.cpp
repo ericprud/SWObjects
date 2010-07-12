@@ -1050,7 +1050,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	};
 	MakeNewBNode makeNewBNode(rs->getPOSFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
-	m_GraphTemplate->construct(rs->getRdfDB(), rs, &makeNewBNode, NULL);
+	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
 	return rs;
     }
 
