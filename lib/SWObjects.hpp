@@ -299,7 +299,6 @@ inline bool ptrequal(LEFT lit, LEFT end, RIGHT rit) {
     return true;
 }
 
-#if !defined SWIG999
 /* Vector implementing Base. */
 template <typename T> struct VectorOps {
   template<typename U> 
@@ -416,7 +415,6 @@ public:
     T operator*() { return *i; }
 };
 #endif
-#endif /* SWIG999 */
 
 class Terminal : public Base {
 protected:
@@ -2825,8 +2823,10 @@ struct StreamContext : public StreamContextMediaTypes {
 	NONE =		0,	/* don't do nuthin */
 	STRING =	1,	/* nameStr is the contents */
 	STDIO =		2,	/* '-' means stdin */
+#if !defined(SWIGPERL) // triggers a SWIG PERL SEGV
 	STDIN =		2,	/* '-' means stdin */
 	STDOUT =	2,	/* '-' also means stdout */
+#endif /* !defined(SWIGPERL) */
 	FILE =		4,	/* must be a file */
     } e_opts;
     std::string nameStr;
