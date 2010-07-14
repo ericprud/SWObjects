@@ -419,19 +419,21 @@ valgrind: lib $(transformVALGRIND)
 
 # SWIG Interfaces
 
-SWIG = swig # /home/eric/checkouts/swig/swig
-SUBSTSWOB = perl -pi -e "s/const const/const/g"
+SWIG = swig
+SWIG_SUBST = perl -pi -e "s/const const/const/g"
+SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
+SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp
 
  # Python
-swig/python/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
+swig/python/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -python -I. -Ilib -Iinterface $<
-	$(SUBSTSWOB) $@
+	$(SWIG_SUBST) $@
 
 swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx -I$(PYTHON_HOME)
 
-swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
-	g++ -shared -o $@ $< lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) -lboost_regex-mt
 
 # The _SWObjects.so target can be built with the python distutils package,
 # but it's noisier and doesn't re-use the object files in lib:
@@ -446,15 +448,15 @@ python-test: swig/python/_SWObjects.so
 SWIG-TEST += python-test
 
  # Java
-swig/java/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
+swig/java/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
-	$(SUBSTSWOB) $@
+	$(SWIG_SUBST) $@
 
 swig/java/SWObjects_wrap.o: swig/java/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/java/SWObjects_wrap.o swig/java/SWObjects_wrap.cxx -I$(JAVA_HOME)/include
 
-swig/java/libSWObjects.so: swig/java/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
-	g++ -shared -o $@ $< lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+swig/java/libSWObjects.so: swig/java/SWObjects_wrap.o $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) -lboost_regex-mt
 
 swig/java/t_SWObjects.class: swig/java/t_SWObjects.java
 	(cd swig/java/ && javac -d . -classpath .:/usr/share/java/junit4-4.8.1.jar *.java)
@@ -465,15 +467,15 @@ java-test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
 SWIG-TEST += java-test
 
  # Perl
-swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/TurtleSParser/TurtleSParser.hpp lib/TurtleSParser/TurtleSParser.cpp lib/SPARQLSerializer.hpp
+swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -perl5 -I. -Ilib -Iinterface $<
-	$(SUBSTSWOB) $@
+	$(SWIG_SUBST) $@
 
 swig/perl/SWObjects_wrap.o: swig/perl/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(PERL_HOME)/CORE
 
-swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o
-	g++ -shared -o $@ $< lib/ParserCommon.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o -lboost_regex-mt
+swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) -lboost_regex-mt
 
 perl-test: swig/perl/libSWObjects.so
 	(cd swig/perl/ && perl t_SWObjects.t)

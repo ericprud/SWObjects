@@ -45,11 +45,45 @@ public class t_SWObjects extends TestCase {
         tparser.parse(new IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
 					 StreamContextIstream.e_opts.STRING));
         // print "parsedDB: ", parsedDB.toString();
-        assertEquals(manualDB, parsedDB);
+        assertTrue(manualDB.equals(parsedDB));
 
         RdfDB different = new RdfDB();
         tparser.setGraph(different.assureGraph(SWObjects.getDefaultGraph()));
         tparser.parse(new IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
+					 StreamContextIstream.e_opts.STRING));
+        // print "different: ", different.toString();
+	assertFalse(different.equals(parsedDB));
+    }
+
+
+    public void test_trigParser () {
+        // Test Trig parser .
+        POSFactory F = new POSFactory();
+        RdfDB manualDB = new RdfDB();
+        BasicGraphPattern manDefault = manualDB.assureGraph(SWObjects.getDefaultGraph());
+        manDefault.addTriplePattern(F.getTriple(
+                F.getURI("s" ), 
+                F.getURI("p1"), 
+                F.getURI("o1")
+                ));
+        BasicGraphPattern manG = manualDB.assureGraph(F.getURI("g"));
+        manG.addTriplePattern(F.getTriple(
+                F.getURI("s" ), 
+                F.getURI("p2"), 
+                F.getURI("o2")
+                ));
+        // print "manualDB: ", manualDB.toString();
+        RdfDB parsedDB = new RdfDB();
+        TrigSDriver tparser = new TrigSDriver("", F);
+        tparser.setDB(parsedDB);
+        tparser.parse(new IStreamContext("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
+					 StreamContextIstream.e_opts.STRING));
+        // print "parsedDB: ", parsedDB.toString();
+        assertTrue(manualDB.equals(parsedDB));
+
+        RdfDB different = new RdfDB();
+        tparser.setDB(different);
+        tparser.parse(new IStreamContext("<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
 					 StreamContextIstream.e_opts.STRING));
         // print "different: ", different.toString();
 	assertFalse(different.equals(parsedDB));
@@ -83,7 +117,7 @@ public class t_SWObjects extends TestCase {
 						  "| <o1> | <o2> | <s> |\n" +
 						  "+------+------+-----+\n",
 						  false, bnodeMap);
-        assertEquals(reference, rs);
+        assertTrue(reference.equals(rs));
 
         ResultSet different = new ResultSet(F,
 						  "# Results for T1.\n" +
@@ -93,6 +127,30 @@ public class t_SWObjects extends TestCase {
 						  "+------+------+------+\n",
 						  false, bnodeMap);
 	assertFalse(different.equals(rs));
+    }
+
+    public void test_update () {
+        // Test update .
+	POSFactory F = new POSFactory();
+
+        RdfDB updatedDB = new RdfDB();
+        SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
+        sparser.parse(new IStreamContext("INSERT { <s> <p1> <o1> ; <p2> <o2> }",
+					 StreamContextIstream.e_opts.STRING));
+        Operation query = sparser.getRoot();
+        // SPARQLSerializer s = SPARQLSerializer();
+        // query.express(s);
+        // print "parsed: ", s.str();
+        ResultSet rs = new ResultSet(F);
+        //rs.setRdfDB(updatedDB);
+        query.execute(updatedDB, rs);
+
+        RdfDB referenceDB = new RdfDB();
+        TurtleSDriver tparser = new TurtleSDriver("", F);
+        tparser.setGraph(referenceDB.assureGraph(SWObjects.getDefaultGraph()));
+        tparser.parse(new IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
+					 StreamContextIstream.e_opts.STRING));
+        assertTrue(referenceDB.equals(updatedDB));
     }
 
 }

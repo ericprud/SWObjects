@@ -11,6 +11,10 @@
 %include <std_map.i>
 %include <std_vector.i>
 
+#if defined(SWIGJAVA)
+    %rename(equals)		     *::operator==;
+#endif /* defined(SWIGJAVA) */
+
 namespace std {
     class exception {
     public:
@@ -135,9 +139,10 @@ public:
 #include "SAXparser.hpp"
 #include "XMLSerializer.hpp"
 #include "RdfDB.cpp"
-#include "TurtleSScanner.cpp"
-#include "TurtleSParser/TurtleSParser.cpp"
 #include "SPARQLSerializer.hpp"
+#include "RuleInverter.hpp"
+#include "QueryMapper.hpp"
+#include "MapSetParser/MapSetParser.hpp"
     typedef w3c_sw::POS::BNode2string BNode2string;
     typedef w3c_sw::POS::String2BNode String2BNode;
 
@@ -158,9 +163,19 @@ public:
 %include "ResultSet.cpp"
 %include "RdfDB.hpp"
 %include "SWObjects.cpp"
-%include "TurtleSParser/TurtleSParser.hpp"
-%include "TurtleSParser/TurtleSParser.cpp"
 %include "SPARQLSerializer.hpp"
+%include "RuleInverter.hpp"
+%include "QueryMapper.hpp"
+namespace w3c_sw {
+    class SPARQLfedScanner;
+    class MapSetScanner;
+    class TurtleSScanner;
+    class TrigSScanner;
+}
+%include "SPARQLfedParser/SPARQLfedParser.hpp"
+%include "MapSetParser/MapSetParser.hpp"
+%include "TurtleSParser/TurtleSParser.hpp"
+%include "TrigSParser/TrigSParser.hpp"
 
 namespace w3c_sw {
     %template(StreamContextIstream) StreamContext<std::istream>;
@@ -169,16 +184,6 @@ namespace w3c_sw {
 
 %{
 w3c_sw::SWSAXparser* w3c_sw::SWSAXparser::makeSAXparser () { return NULL; }
-typedef w3c_sw::TurtleSScanner TurtleSScanner;
 typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__SWIG_0 references ::location.
 %}
-
-namespace w3c_sw {
-    class SPARQLfedDriver : public YaccDriver {
-    public:
-	SPARQLfedDriver(std::string baseURI, POSFactory* posFactory) {  }
-	virtual bool parse(IStreamContext& in) { return false; }
-	Operation* root;
-    };
-}
 
