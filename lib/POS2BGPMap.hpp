@@ -153,7 +153,7 @@ namespace w3c_sw {
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
-		START("POS2BGPMap::triplePattern");
+		w3c_sw_START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
 		_depends(p_o, optState);
@@ -169,7 +169,7 @@ namespace w3c_sw {
 	    }
 
 	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-		START("POS2BGPMap::namedGraphPattern");
+		w3c_sw_START("POS2BGPMap::namedGraphPattern");
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -179,7 +179,7 @@ namespace w3c_sw {
 	    }
 
 	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-		START("POS2BGPMap::defaultGraphPattern");
+		w3c_sw_START("POS2BGPMap::defaultGraphPattern");
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -267,10 +267,10 @@ namespace w3c_sw {
 		}
 	    }
 	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-		FAIL("need to impl POS2BGPMap::posList");
+		w3c_sw_FAIL("need to impl POS2BGPMap::posList");
 	    }
 	    virtual void starVarSet (const StarVarSet* const) {
-		FAIL("umm, I'm not really up to handling SELECT *.");
+		w3c_sw_FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
 	    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
@@ -357,7 +357,7 @@ namespace w3c_sw {
 		    ConsequentMap::reverse_iterator last = cons.rbegin();
 		    //		    ConsequentMap::iterator last = consequents[varIt->first].rbegin();
 		    if (last == cons.rend()) {
-			std::cerr << "no entry for " << varIt->first->toString() << std::endl; // !!! check with a FAIL
+			std::cerr << "no entry for " << varIt->first->toString() << std::endl; // !!! check with a w3c_sw_FAIL
 			continue; // no entries for this whatever.
 		    }
 		    const TableOperation* lastTableOp = last->first;
@@ -430,13 +430,13 @@ namespace w3c_sw {
 
     public:
 	Consequents (const TableOperation* op, VarSet* p_VarSet = NULL, std::ostream** debugStream = NULL) {
-	    START("POS2BGPMap Consequents constructor");
+	    w3c_sw_START("POS2BGPMap Consequents constructor");
 	    ConsequentsConstructor ctor(&consequents, op);
-	    NOW("traversing TableOperation");
+	    w3c_sw_NOW("traversing TableOperation");
 	    op->express(&ctor);
-	    NOW("storing select vars");
+	    w3c_sw_NOW("storing select vars");
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
-	    NOW("finding corefs");
+	    w3c_sw_NOW("finding corefs");
 	    ctor.findCorefs(op);
 	    if (*debugStream != NULL) {
 		**debugStream << "Consequents:" << std::endl << consequents.dump();

@@ -261,10 +261,10 @@ namespace w3c_sw {
 		}
 	    }
 	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
-		FAIL("don't know how to deal with a graphGraphPattern in a stem query");
+		w3c_sw_FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
 	    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
-		FAIL("don't know how to deal with a serviceGraphPattern in a stem query");
+		w3c_sw_FAIL("don't know how to deal with a serviceGraphPattern in a stem query");
 	    }
 	};
 
@@ -545,18 +545,18 @@ namespace w3c_sw {
 	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
-		FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
+		w3c_sw_FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
 	    std::vector<const Expression*>::iterator it = p_ArgList->begin();
 	    const POSExpression* exp;
 	    exp = dynamic_cast<const POSExpression*>(*it);
 	    const Bindable* toModify = exp ? dynamic_cast<const Bindable*>(exp->getPOS()) : NULL;
 	    if (toModify == NULL)
-		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
+		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
 	    ++it;
 	    exp = dynamic_cast<const POSExpression*>(*it);
 	    const RDFLiteral* localName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
 	    if (localName == NULL)
-		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
+		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
 	    /* localName
 	     * http://bsbm.example/db/productfeatureproduct/offer.nr=(?@offer=[0-9]+)&publisher=(?@pub=[0-9]+)
 	     */
@@ -565,7 +565,7 @@ namespace w3c_sw {
 	    exp = dynamic_cast<const POSExpression*>(*it);
 	    const RDFLiteral* ifaceName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
 	    if (ifaceName == NULL)
-		FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
+		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
 	    /* ifaceName
 	     * http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor(?@pub=[0-9]+)/Offer(?@offer=[0-9]+)
 	     */
@@ -609,7 +609,7 @@ namespace w3c_sw {
 		    if (it != nullIt) {
 			std::string var = *it++;
 			if (patternVars[var].i == 0)
-			    FAIL1("unknown var: %s", var.c_str());
+			    w3c_sw_FAIL1("unknown var: %s", var.c_str());
 
 			subPattern << '\\' << patternVars[var].i;
 			std::string pattern = *it++;
@@ -617,7 +617,7 @@ namespace w3c_sw {
 			    if (patternVars[var].pattern.size() == 0)
 				patternVars[var].pattern = pattern;
 			    else if (patternVars[var].pattern != pattern)
-				FAIL3("local pattern for var %s: %s doesn't match iface pattern %s", 
+				w3c_sw_FAIL3("local pattern for var %s: %s doesn't match iface pattern %s", 
 				      var.c_str(), pattern.c_str(), patternVars[var].pattern.c_str());
 			}
 		    }

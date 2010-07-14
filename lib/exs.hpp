@@ -45,13 +45,13 @@ public:
 
 StackException varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...);
 
-#define MARK JournalState _(__FILE__,  __LINE__, FUNCTION_STRING)
-#define START(X) JournalState _(__FILE__,  __LINE__, X)
-#define NOW(X) JournalState::now(__FILE__,  __LINE__, X)
-#define FAIL(X) throw(varBarfer("FAIL", __FILE__,  __LINE__, X))
-#define FAIL1(X, a) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a))
-#define FAIL2(X, a, b) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b))
-#define FAIL3(X, a, b, c) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c))
-#define FAIL4(X, a, b, c, d) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c, d))
+#define w3c_sw_MARK JournalState(__FILE__,  __LINE__, FUNCTION_STRING)
+#define w3c_sw_START(X) JournalState(__FILE__,  __LINE__, X)
+#define w3c_sw_NOW(X) JournalState::now(__FILE__,  __LINE__, X)
+#define w3c_sw_FAIL(X) throw(varBarfer("FAIL", __FILE__,  __LINE__, X))
+#define w3c_sw_FAIL1(X, a) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a))
+#define w3c_sw_FAIL2(X, a, b) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b))
+#define w3c_sw_FAIL3(X, a, b, c) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c))
+#define w3c_sw_FAIL4(X, a, b, c, d) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b, c, d))
 
 #endif /* !EXS_HPP */
