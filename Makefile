@@ -445,26 +445,38 @@ swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
 python-test: swig/python/_SWObjects.so
 	(cd swig/python/ && python t_SWObjects.py)
 
+python-clean:
+	$(RM) -f swig/python/SWObjects.* swig/python/SWObjects_wrap.* swig/python/_SWObjects.so
+
 SWIG-TEST += python-test
+SWIG-CLEAN += python-clean
 
  # Java
-swig/java/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
-	$(SWIG) -o $@ -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
-	$(SWIG_SUBST) $@
+swig/java/src/POSFactory.java swig/java/src/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
+	$(SWIG) -o swig/java/src/SWObjects_wrap.cxx -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
+	$(SWIG_SUBST) swig/java/src/SWObjects_wrap.cxx
 
-swig/java/SWObjects_wrap.o: swig/java/SWObjects_wrap.cxx
-	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/java/SWObjects_wrap.o swig/java/SWObjects_wrap.cxx -I$(JAVA_HOME)/include
+swig/java/src/SWObjects_wrap.o: swig/java/src/SWObjects_wrap.cxx
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o $@ $< -I$(JAVA_HOME)/include
 
-swig/java/libSWObjects.so: swig/java/SWObjects_wrap.o $(SWIG_OBJS)
+swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS)
 	g++ -shared -o $@ $< $(SWIG_OBJS) -lboost_regex-mt
 
-swig/java/t_SWObjects.class: swig/java/t_SWObjects.java
-	(cd swig/java/ && javac -d . -classpath .:/usr/share/java/junit4-4.8.1.jar *.java)
+swig/java/SWObjects.jar: swig/java/src/POSFactory.java # there are zillions of class files
+	javac -d swig/java/class swig/java/src/*.java
+	jar cf $@ -C swig/java/class .
+
+swig/java/t_SWObjects.class: swig/java/t_SWObjects.java swig/java/SWObjects.jar
+	javac -d swig/java -classpath .:/usr/share/java/junit4-4.8.1.jar:swig/java/SWObjects.jar $<
 
 java-test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
-	(cd swig/java/ && LD_LIBRARY_PATH=. java -classpath .:/usr/share/java/junit4-4.8.1.jar org.junit.runner.JUnitCore t_SWObjects)
+	LD_LIBRARY_PATH=swig/java java -classpath .:/usr/share/java/junit4-4.8.1.jar:swig/java org.junit.runner.JUnitCore t_SWObjects
+
+java-clean:
+	$(RM) -f swig/java/libSWObjects.so swig/java/class/* swig/java/java/* swig/java/t_SWObjects.class
 
 SWIG-TEST += java-test
+SWIG-CLEAN += java-clean
 
  # Perl
 swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
@@ -480,10 +492,15 @@ swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(SWIG_OBJS)
 perl-test: swig/perl/libSWObjects.so
 	(cd swig/perl/ && perl t_SWObjects.t)
 
+perl-clean:
+	$(RM) -f swig/perl/SWObjects.* swig/perl/SWObjects_wrap.* swig/perl/libSWObjects.so
+
 SWIG-TEST += perl-test
+SWIG-CLEAN += perl-clean
 
 
 swig-test: $(SWIG-TEST)
+swig-clean: $(SWIG-CLEAN)
 
 # Distributions
 
@@ -508,7 +525,8 @@ cleaner: clean
 	$(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
 	$(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
 	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
-	$(BISONHH:%=*/%)
+	$(BISONHH:%=*/%) \
+	swig-clean
 
 dep: $(DEPEND)
 
