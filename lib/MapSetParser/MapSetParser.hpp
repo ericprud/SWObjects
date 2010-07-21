@@ -268,7 +268,6 @@ namespace w3c_sw {
     ExpressionAlias* p_ExpressionAlias;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
-    Construct* p_Construct;
     MapSet* p_MapSet;
     Ask* p_Ask;
     DatasetClause* p_DatasetClause;
@@ -301,7 +300,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 305 "lib/MapSetParser/MapSetParser.hpp"
+#line 304 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -606,7 +605,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 610 "lib/MapSetParser/MapSetParser.hpp"
+#line 609 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

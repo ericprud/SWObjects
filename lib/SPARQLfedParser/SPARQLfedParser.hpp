@@ -57,18 +57,6 @@ namespace w3c_sw {
 
 class SPARQLfedScanner;
 
-    class ParserFilter : public Filter {
-    public:
-	ParserFilter () : Filter(NULL) {  }
-	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
-	void copyExpressionsTo (OptionalGraphPattern* target) {
-	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-		 it != m_Expressions.end(); ++it)
-		target->addExpression(*it);
-	    m_Expressions.clear();
-	}
-    };
-
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -161,7 +149,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 165 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 153 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -175,7 +163,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 179 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 167 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -185,7 +173,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 189 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 177 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -233,7 +221,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 237 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 225 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -245,7 +233,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 171 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 159 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -313,7 +301,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 317 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 305 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -621,7 +609,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 625 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 613 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

@@ -64,18 +64,6 @@ namespace w3c_sw {
 
 class SPARQLfedScanner;
 
-    class ParserFilter : public Filter {
-    public:
-	ParserFilter () : Filter(NULL) {  }
-	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
-	void copyExpressionsTo (OptionalGraphPattern* target) {
-	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-		 it != m_Expressions.end(); ++it)
-		target->addExpression(*it);
-	    m_Expressions.clear();
-	}
-    };
-
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token

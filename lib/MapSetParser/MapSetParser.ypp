@@ -190,7 +190,6 @@ public:
     ExpressionAlias* p_ExpressionAlias;
     VarSet* p_VarSet;
     ProductionVector<const DatasetClause*>* p_DatasetClauses;
-    Construct* p_Construct;
     MapSet* p_MapSet;
     Ask* p_Ask;
     DatasetClause* p_DatasetClause;
@@ -302,9 +301,9 @@ public:
 	      BlankNodePropertyList
 	      Verb VarOrIRIref VarOrTerm GraphNode
 	      GraphTerm BlankNode TriplesNode Generator
-              BindingValue
+              BindingValue _QLabel_E_Opt
 %type <p_POSs> _QGraphNode_E_Plus
-%type <p_RDFLiteral> RDFLiteral _QLabel_E_Opt _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
+%type <p_RDFLiteral> RDFLiteral _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
 			    NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
@@ -407,7 +406,7 @@ _QLabel_E_Opt:
     {
 	$$ = NULL;
     }
-  | IT_LABEL RDFLiteral	{
+  | IT_LABEL GraphTerm	{
 	$$ = $2;
     }
 ;

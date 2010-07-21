@@ -150,6 +150,18 @@ public:
     void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }
 };
 
+    class ParserFilter : public Filter {
+    public:
+	ParserFilter () : Filter(NULL) {  }
+	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
+	void copyExpressionsTo (OptionalGraphPattern* target) {
+	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+		 it != m_Expressions.end(); ++it)
+		target->addExpression(*it);
+	    m_Expressions.clear();
+	}
+    };
+
 } //namespace w3c_sw
 
 #endif /* ! defined PARSER_COMMON_HH */
