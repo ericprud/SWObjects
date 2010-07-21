@@ -1325,9 +1325,10 @@ public:
 	const std::string rt = typeid(*rhs).name();
 	const int li = typeOrder[lt];
 	const int ri = typeOrder[rt];
-	if (li < ri)
-	    return true;
-	return lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
+	return
+	    li < ri ? true : 
+	    li > ri ? false : 
+	    lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
     }
 };
 
@@ -2986,7 +2987,7 @@ public:
 	size_t ret = POSIX_write(fileHandle, s, n);
 	if (ret == 0 && n != 0)
 	    throw std::string("write returned 0.");
-	return ret;
+	return (std::streamsize)ret; // n is a streamsize so we won't have written more than that.
     }
 
     // void close () { // never gets called.
