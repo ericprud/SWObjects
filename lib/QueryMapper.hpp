@@ -15,9 +15,9 @@
 namespace w3c_sw {
 
     struct LabeledConstruct {
-	const RDFLiteral* label;
+	const POS* label;
 	const Construct* constr;
-	LabeledConstruct (const RDFLiteral* label, const Construct* constr) : label(label), constr(constr) {  }
+	LabeledConstruct (const POS* label, const Construct* constr) : label(label), constr(constr) {  }
 	virtual ~LabeledConstruct () {  }
 	virtual void express (Expressor* p_expressor) const {
 	    if (label != NULL) label->express(p_expressor);

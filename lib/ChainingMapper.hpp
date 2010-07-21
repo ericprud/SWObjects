@@ -20,15 +20,19 @@ namespace w3c_sw {
 	DefaultGraphPattern* head;
 	const TableOperation* body;
 	size_t index;
-	Rule (DefaultGraphPattern* head, const TableOperation* body) :
-	    head(head), body(body), index(0) {  }
+	const POS* label;
+	Rule (DefaultGraphPattern* head, const TableOperation* body, const POS* label) :
+	    head(head), body(body), label(label), index(0) {  }
     };
     inline bool operator< (const Rule& l, const Rule& r) { return l.index < r.index; }
     std::ostream& operator<< (std::ostream& os, const Rule& rule) {
-	SPARQLSerializer body, head;
-	rule.body->express(&body);
-	rule.head->express(&head);
-	return os << body.str() << " => " << std::endl << head.str();
+	if (rule.label == NULL) {
+	    SPARQLSerializer body, head;
+	    rule.body->express(&body);
+	    rule.head->express(&head);
+	    return os << body.str() << " => " << std::endl << head.str();
+	} else
+	    return os << rule.label->toString();
     }
 
     struct Bindings {
@@ -143,7 +147,7 @@ namespace w3c_sw {
 			Rule2rs::iterator boundRule = rule2rs.find(*rule);
 			if (boundRule != rule2rs.end()) {
 			    ResultSet& rs(boundRule->second);
-			    for (ResultSetIterator row = rs.begin() ; !rowMatched && row != rs.end(); ++row) {
+			    for (ResultSetIterator row = rs.begin() ; !rowMatched && row != rs.end();) {
 				Result* newRow = (*row)->duplicate(&rs, row);
 				if ((*constraint)->bindVariables(triple, false, &rs, DefaultGraph, newRow, NULL)) {
 				    /** Replace the current row with one reflecting the new bindings. */
@@ -154,6 +158,7 @@ namespace w3c_sw {
 				    rowMatched = true;
 				} else {
 				    delete newRow;
+				    ++row;
 				}
 			    }
 			}
@@ -290,9 +295,9 @@ namespace w3c_sw {
 	    head = dynamic_cast<DefaultGraphPattern*>(d.last.tableOperation);
 	    p_WhereClause->express(this);
 	}
-	Rule parseConstruct (const Construct* c) {
+	Rule parseConstruct (const Construct* c, const POS* name) {
 	    c->express(this);
-	    return Rule(head, body);
+	    return Rule(head, body, name);
 	}
     };
 
@@ -313,9 +318,9 @@ namespace w3c_sw {
 		rule = rules.erase(rule);
 	    }
 	}
-	int getRuleCount () { return rules.size(); }
-	void addRule (const Construct* rule) {
-	    Rule r = RuleParser().parseConstruct(rule);
+	size_t getRuleCount () { return rules.size(); }
+	void addRule (const Construct* rule, const POS* name) {
+	    Rule r = RuleParser().parseConstruct(rule, name);
 	    r.index = rules.size();
 	    rules.push_back(r);
 	}
