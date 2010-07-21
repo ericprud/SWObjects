@@ -296,7 +296,7 @@ struct RuleMapTest {
 	MapSet* ms = mapSetParser.root;
 	for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
 	     it != ms->maps.end(); ++it)
-	    queryMapper.addRule(it->constr);
+	    queryMapper.addRule(it->constr, it->label);
 	delete mapSetParser.root;
 
 	try {
@@ -362,9 +362,9 @@ struct SQLizerTest {
 
 BOOST_AUTO_TEST_SUITE( healthCare )
 BOOST_AUTO_TEST_SUITE( simple )
-#if 0
+#if 1
 BOOST_AUTO_TEST_CASE( r ) {
-    RuleMapTest t("/home/eric/twoWayBGQuery.rq", "/home/eric/twoWayHL7-BGMap.rq", "res.rq");
+    RuleMapTest t("twoWayBGQuery.rq", "twoWayHL7-BGMap.rq", "res.rq");
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 }
 #endif

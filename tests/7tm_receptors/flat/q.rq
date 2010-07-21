@@ -25,9 +25,10 @@ SERVICE <http://localhost:8888/7tm_receptors> {
   ?human	iface:entrezGene	?humanEntrez .
   }
 SERVICE <http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&should-sponge=&>
-  {_:gene dbp:entrezgene ?humanEntrez ;
+  {_:gene dbp:entrezgene ?humanEntrezStr ;
           rdfs:label     ?label ;
 	  FILTER (lang(?label) = "en")
+	  FILTER (STR(?humanEntrezStr) = ?humanEntrez)
   }
 GRAPH <http://hcls.deri.org/atag/data/gabab_example.html> {
       ?topic rdfs:label ?label .
