@@ -56,7 +56,7 @@ namespace w3c_sw {
 	    sql::Expression* getVariableConstraint (std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
+		    w3c_sw_FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
 		else
 		    return it->second;
 	    }
@@ -88,23 +88,23 @@ namespace w3c_sw {
 	    void constrain (AliasAttr x, AliasAttr y) {
 		//std::cerr << "SQLQueryGenerator " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (curJoin->debug_getAlias() != x.alias)
-		    FAIL2("constraint on %s is not for last join %s", x.alias.c_str(), curJoin->debug_getAlias().c_str());
+		    w3c_sw_FAIL2("constraint on %s is not for last join %s", x.alias.c_str(), curJoin->debug_getAlias().c_str());
 		curJoin->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
 	    }
 	    void constrain (AliasAttr aattr, std::string value) {
-		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
 	    void constrain (AliasAttr aattr, int value) {
-		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (int)value);
 	    }
 	    void constrain (AliasAttr aattr, float value) {
-		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (float)value);
 	    }
 	    void constrain (AliasAttr aattr, double value) {
-		if (curJoin->debug_getAlias() != aattr.alias) FAIL("constraint is not for last join");
+		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (double)value);
 	    }
 	    SQLUnionGenerator* makeUnion (std::vector<const POS*> corefs) {
@@ -326,31 +326,31 @@ namespace w3c_sw {
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual void uri (const URI* const, std::string lexicalValue) {
-	    MARK;
+	    w3c_sw_MARK;
 	    std::string relation, attribute;
 	    int value;
 
 	    switch (mode) {
 
 	    case MODE_predicate:
-		NOW("URI as predicate");
-		if (resolve(lexicalValue, &relation, &attribute) != 2) FAIL2("malformed predicate \"%s\" didn't match \"%s\"", lexicalValue.c_str(), stem.c_str());
+		w3c_sw_NOW("URI as predicate");
+		if (resolve(lexicalValue, &relation, &attribute) != 2) w3c_sw_FAIL2("malformed predicate \"%s\" didn't match \"%s\"", lexicalValue.c_str(), stem.c_str());
 		curAliasAttr.alias = curQuery->attachTuple(curSubject, relation);
 		curAliasAttr.attr = attribute;
 		predicateRelation = relation;
 		break;
 
 	    case MODE_subject:
-		NOW("URI as subject");
-		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) FAIL("incomplete key");
+		w3c_sw_NOW("URI as subject");
+		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) w3c_sw_FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
 		curQuery->constrain(AliasAttr(curAliasAttr.alias, attribute), value);
 		break;
 
 	    case MODE_object:
-		NOW("URI as object");
-		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) FAIL("incomplete key");
+		w3c_sw_NOW("URI as object");
+		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) w3c_sw_FAIL("incomplete key");
 		curQuery->constrain(curAliasAttr, value);
 		break;
 
@@ -360,77 +360,79 @@ namespace w3c_sw {
 		    lexicalValue == "http://www.w3.org/2001/XMLSchema#float" || 
 		    lexicalValue == "http://www.w3.org/2001/XMLSchema#double"  ) {
 		} else {
-		    FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
+		    w3c_sw_FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
 		}
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void variable (const Variable* const, std::string lexicalValue) {
+	    w3c_sw_MARK;
 
 	    // enforce coreferences
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("Variable as subject");
+		w3c_sw_NOW("Variable as subject");
 		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), lexicalValue);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No variable predicates, please.");
+		w3c_sw_FAIL("No variable predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("Variable as object");
+		w3c_sw_NOW("Variable as object");
 		curQuery->attachVariable(curAliasAttr, lexicalValue);
 		break;
 
 	    case MODE_selectVar:
-		NOW("URI as selectVar");
+		w3c_sw_NOW("URI as selectVar");
 		curQuery->selectVariable(lexicalValue);
 		break;
 
 	    case MODE_constraint:
-		NOW("Variable as constraint");
+		w3c_sw_NOW("Variable as constraint");
 		curConstraint = curQuery->getVariableConstraint(lexicalValue);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void bnode (const BNode* const, std::string lexicalValue) {
+	    w3c_sw_MARK;
 
 	    // enforce coreferences
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("Variable as subject");
+		w3c_sw_NOW("Variable as subject");
 		curQuery->attachVariable(getPKAttr(curAliasAttr.alias), lexicalValue);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No variable predicates, please.");
+		w3c_sw_FAIL("No variable predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("Variable as object");
+		w3c_sw_NOW("Variable as object");
 		curQuery->attachVariable(curAliasAttr, lexicalValue);
 		break;
 
 	    case MODE_selectVar:
-		FAIL("no told bnodes");
+		w3c_sw_FAIL("no told bnodes");
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	/* Literal Map -- http://www.w3.org/2008/07/MappingRules/#litMap !!! not done */
 	virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
-	    MARK;
+	    w3c_sw_MARK;
 	    std::string value = lexicalValue;
 	    if (datatype != NULL) {
 		if (datatype->getLexicalValue() == "http://www.w3.org/2001/XMLSchema#dateTime")
@@ -454,184 +456,184 @@ namespace w3c_sw {
 			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedShort" && 
 			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedByte" && 
 			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#positiveInteger" )
-		    FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
+		    w3c_sw_FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
-		FAIL("how do we literalMap langtags?");
+		w3c_sw_FAIL("how do we literalMap langtags?");
 	    }
 
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("Literal as subject -- odd, but why not?");
+		w3c_sw_NOW("Literal as subject -- odd, but why not?");
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), value);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No literal predicates, please.");
+		w3c_sw_FAIL("No literal predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("Literal as object");
+		w3c_sw_NOW("Literal as object");
 		curQuery->constrain(curAliasAttr, value);
 		break;
 
 	    case MODE_selectVar:
-		NOW("Literal as selectVar");
+		w3c_sw_NOW("Literal as selectVar");
 		curQuery->selectVariable(value);
 		break;
 
 	    case MODE_constraint:
-		NOW("Literal as constraint");
+		w3c_sw_NOW("Literal as constraint");
 		curConstraint = new LiteralConstraint(value);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
-	    MARK;
+	    w3c_sw_MARK;
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("int as subject -- odd, but why not?");
+		w3c_sw_NOW("int as subject -- odd, but why not?");
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No literal predicates, please.");
+		w3c_sw_FAIL("No literal predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("int as object");
+		w3c_sw_NOW("int as object");
 		curQuery->constrain(curAliasAttr, p_value);
 		break;
 
 	    case MODE_selectVar:
-		NOW("int as selectVar");
+		w3c_sw_NOW("int as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_INT__");
 		break;
 
 	    case MODE_constraint:
-		NOW("int as constraint");
+		w3c_sw_NOW("int as constraint");
 		curConstraint = new IntConstraint(p_value);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
-	    MARK;
+	    w3c_sw_MARK;
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("float as subject -- odd, but why not?");
+		w3c_sw_NOW("float as subject -- odd, but why not?");
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No literal predicates, please.");
+		w3c_sw_FAIL("No literal predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("float as object");
+		w3c_sw_NOW("float as object");
 		curQuery->constrain(curAliasAttr, p_value);
 		break;
 
 	    case MODE_selectVar:
-		NOW("float as selectVar");
+		w3c_sw_NOW("float as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_FLOAT__");
 		break;
 
 	    case MODE_constraint:
-		NOW("float as constraint");
+		w3c_sw_NOW("float as constraint");
 		curConstraint = new FloatConstraint(p_value);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
-	    MARK;
+	    w3c_sw_MARK;
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("double as subject -- odd, but why not?");
+		w3c_sw_NOW("double as subject -- odd, but why not?");
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No literal predicates, please.");
+		w3c_sw_FAIL("No literal predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("double as object");
+		w3c_sw_NOW("double as object");
 		curQuery->constrain(curAliasAttr, p_value);
 		break;
 
 	    case MODE_selectVar:
-		NOW("double as selectVar");
+		w3c_sw_NOW("double as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_DOUBLE__");
 		break;
 
 	    case MODE_constraint:
-		NOW("double as constraint");
+		w3c_sw_NOW("double as constraint");
 		curConstraint = new DoubleConstraint(p_value);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void rdfLiteral (const BooleanRDFLiteral* const, bool p_value) {
-	    MARK;
+	    w3c_sw_MARK;
 	    switch (mode) {
 
 	    case MODE_subject:
-		NOW("bool as subject -- odd, but why not?");
+		w3c_sw_NOW("bool as subject -- odd, but why not?");
 		curQuery->constrain(getPKAttr(curAliasAttr.alias), p_value);
 		break;
 
 	    case MODE_predicate:
-		FAIL("No literal predicates, please.");
+		w3c_sw_FAIL("No literal predicates, please.");
 		break;
 
 	    case MODE_object:
-		NOW("bool as object");
+		w3c_sw_NOW("bool as object");
 		curQuery->constrain(curAliasAttr, p_value);
 		break;
 
 	    case MODE_selectVar:
-		NOW("bool as selectVar");
+		w3c_sw_NOW("bool as selectVar");
 		curQuery->selectConstant(p_value, "__CONSTANT_BOOL__");
 		break;
 
 	    case MODE_constraint:
-		NOW("bool as constraint");
+		w3c_sw_NOW("bool as constraint");
 		curConstraint = new BoolConstraint(p_value);
 		break;
 
 	    default:
-		FAIL("wierd state");
+		w3c_sw_FAIL("wierd state");
 	    }
 	}
 	virtual void nullpos (const NULLpos* const) {  }
 	virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
 	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
-	    START("checking predicate");
+	    w3c_sw_START("checking predicate");
 	    mode = MODE_predicate;
 	    p_p->express(this);
 
-	    NOW("checking subject");
+	    w3c_sw_NOW("checking subject");
 	    mode = MODE_subject;
 	    p_s->express(this);
 
 
-	    NOW("checking object");
+	    w3c_sw_NOW("checking object");
 	    mode = MODE_object;
 	    p_o->express(this);
 
@@ -651,7 +653,7 @@ namespace w3c_sw {
 		}
 	}
 	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    MARK;
+	    w3c_sw_MARK;
 	    for (std::vector<const TriplePattern*>::const_iterator tripleIt = p_TriplePatterns->begin();
 		 tripleIt != p_TriplePatterns->end(); ++tripleIt)
 		try {
@@ -661,11 +663,11 @@ namespace w3c_sw {
 		}
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _BasicGraphPattern(p_TriplePatterns);
 	}
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _BasicGraphPattern(p_TriplePatterns);
 	}
 	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
@@ -674,7 +676,7 @@ namespace w3c_sw {
             // std::cout << disjunction->toString();
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
-		MARK;
+		w3c_sw_MARK;
 		curQuery = disjunction->makeDisjoint();
 		curTableOperation = *it;
 		curTableOperation->express(this);
@@ -683,16 +685,16 @@ namespace w3c_sw {
 	    curQuery = parent;
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
-	    MARK;
+	    w3c_sw_MARK;
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it) {
-		MARK;
+		w3c_sw_MARK;
 		curTableOperation = *it;
 		curTableOperation->express(this);
 	    }
 	}
 	virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    SQLQueryGenerator* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
 	    SQLOptionalGenerator* optional = parent->makeOptional(consequentsP->entriesFor(curTableOperation));
@@ -717,13 +719,13 @@ namespace w3c_sw {
 	    throw(NotImplemented("SQLizer(minusGraphPattern)"));
 	}
 	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-	    FAIL("don't do federation with GraphGraphPatterns yet");
+	    w3c_sw_FAIL("don't do federation with GraphGraphPatterns yet");
 	    p_POS->express(this);
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
 	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
-	    FAIL("don't do federation with ServiceGraphPatterns yet");
+	    w3c_sw_FAIL("don't do federation with ServiceGraphPatterns yet");
 	    p_POS->express(this);
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
@@ -740,10 +742,10 @@ namespace w3c_sw {
 		(*it)->express(this);
 	}
 	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    FAIL("no SQL for POSList");
+	    w3c_sw_FAIL("no SQL for POSList");
 	}
 	virtual void starVarSet (const StarVarSet* const) {
-	    FAIL("need to select all pertinent vars");
+	    w3c_sw_FAIL("need to select all pertinent vars");
 	}
 	virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
 	    p_IRIref->express(this);
@@ -775,7 +777,7 @@ namespace w3c_sw {
 	    p_Bindings->ProductionVector<const Binding*>::express(this);
 	}
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
-	    START("p_GroupGraphPattern");
+	    w3c_sw_START("p_GroupGraphPattern");
 	    Consequents consequents(p_GroupGraphPattern, selectVars, debugStream);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
@@ -783,13 +785,13 @@ namespace w3c_sw {
 	    if (p_BindingClause) p_BindingClause->express(this);
 	}
 	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
-	    START("cracking select clause");
+	    w3c_sw_START("cracking select clause");
 	    curQuery = new SQLQueryGenerator(NULL);
 	    selectVars = p_VarSet;
 	    if (p_distinctness == DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == DIST_reduced) ...
-	    if (p_DatasetClauses->size() > 0) FAIL("don't know what to do with DatasetClauses");
-	    NOW("p_WhereClause");
+	    if (p_DatasetClauses->size() > 0) w3c_sw_FAIL("don't know what to do with DatasetClauses");
+	    w3c_sw_NOW("p_WhereClause");
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	    mode = MODE_selectVar;
@@ -799,50 +801,50 @@ namespace w3c_sw {
 	    w3c_sw_NEED_IMPL("SQLizer(subselect)");
 	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
-	    FAIL("CONSTRUCT");
+	    w3c_sw_FAIL("CONSTRUCT");
 	    p_ConstructTemplate->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
 	virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
-	    FAIL("DESCRIBE");
+	    w3c_sw_FAIL("DESCRIBE");
 	    p_VarSet->express(this);
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
 	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
-	    FAIL("ASK");
+	    w3c_sw_FAIL("ASK");
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	}
 	virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
-	    FAIL("REPLACE");
+	    w3c_sw_FAIL("REPLACE");
 	    p_WhereClause->express(this);
 	    p_GraphTemplate->express(this);
 	}
 	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
-	    FAIL("INSERT {");
+	    w3c_sw_FAIL("INSERT {");
 	    p_GraphTemplate->express(this);
 	    if (p_WhereClause) p_WhereClause->express(this);
 	}
 	virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
-	    FAIL("DELET");
+	    w3c_sw_FAIL("DELET");
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	}
 	virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
-	    FAIL("LOAD");
+	    w3c_sw_FAIL("LOAD");
 	    p_IRIrefs->express(this);
 	    p_into->express(this);
 	}
 	virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
-	    FAIL("CLEAR");
+	    w3c_sw_FAIL("CLEAR");
 	    p__QGraphIRI_E_Opt->express(this);
 	}
 	virtual void create (const Create* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
-	    FAIL("CREATE");
+	    w3c_sw_FAIL("CREATE");
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
@@ -851,16 +853,16 @@ namespace w3c_sw {
 	    p_GraphIRI->express(this);
 	}
 	virtual void posExpression (const POSExpression* const, const POS* p_POS) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_POS->express(this);
 	}
 	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    expressions->express(this);
 	}
 	// !!!
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
-	    MARK;
+	    w3c_sw_MARK;
 	    args->express(this);
 	    if (iri->getLexicalValue() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
 		curConstraint = new NullConstraint(curConstraint);
@@ -868,25 +870,25 @@ namespace w3c_sw {
 		iri->express(this);
 	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_FunctionCall->express(this);
 	}
 	/* Expressions */
 	virtual void booleanNegation (const w3c_sw::BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_Expression->express(this);
 	    curConstraint = new NegationConstraint(curConstraint);
 	}
 	virtual void arithmeticNegation (const w3c_sw::ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_Expression->express(this);
 	}
 	virtual void arithmeticInverse (const w3c_sw::ArithmeticInverse* const, const w3c_sw::Expression* p_Expression) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_Expression->express(this);
 	}
 	virtual void booleanConjunction (const w3c_sw::BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    ConjunctionConstraint* conj = new ConjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
@@ -896,7 +898,7 @@ namespace w3c_sw {
 	    curConstraint = conj;
 	}
 	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    DisjunctionConstraint* disj = new DisjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
@@ -915,11 +917,11 @@ namespace w3c_sw {
 	    curConstraint = c;
 	}
 	virtual void arithmeticSum (const w3c_sw::ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _arithOp("+", p_Expressions, PREC_Plus);
 	}
 	virtual void arithmeticProduct (const w3c_sw::ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _arithOp("*", p_Expressions, PREC_Times);
 	}
 	void _boolConstraint (const w3c_sw::Expression* p_left, std::string sqlOperator, const w3c_sw::Expression* p_right, e_PREC prec) {
@@ -931,35 +933,35 @@ namespace w3c_sw {
 	    curConstraint = c;
 	}
 	virtual void booleanEQ (const w3c_sw::BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
 	}
 	virtual void booleanNE (const w3c_sw::BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
 	}
 	virtual void booleanLT (const w3c_sw::BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, "<", p_right, PREC_LT);
 	}
 	virtual void booleanGT (const w3c_sw::BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, ">", p_right, PREC_GT);
 	}
 	virtual void booleanLE (const w3c_sw::BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
 	}
 	virtual void booleanGE (const w3c_sw::BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    MARK;
+	    w3c_sw_MARK;
 	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
 	}
 	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_GeneralComparator->express(this);
 	}
 	virtual void numberExpression (const w3c_sw::NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
-	    MARK;
+	    w3c_sw_MARK;
 	    p_NumericRDFLiteral->express(this);
 	}
     };

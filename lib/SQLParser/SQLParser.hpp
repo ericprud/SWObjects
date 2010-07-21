@@ -58,9 +58,9 @@
 #include "SWObjects.hpp" // for IStreamContext
 #include "SQL.hpp"
 
-#define w3c_sw_STRINGIFY(x) #x
-#define w3c_sw_TOSTRING(x) w3c_sw_STRINGIFY(x)
-#define w3c_sw_LINE std::cerr << __FILE__ "(" w3c_sw_TOSTRING(__LINE__) "): warning LINE\n"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define LINE std::cerr << __FILE__ "(" TOSTRING(__LINE__) "): warning LINE\n"
 
 extern std::ostream* _Trace;
 
