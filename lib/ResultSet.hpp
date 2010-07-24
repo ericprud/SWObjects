@@ -105,6 +105,7 @@ namespace w3c_sw {
 	Result* duplicate(ResultSet* rs, ResultSetIterator row);
 
 	ResultSet* makeResultSet(POSFactory* posFactory);
+	bool isCompatibleWith(Result* from);
 	void assumeNewBindings(Result* from);
     };
 

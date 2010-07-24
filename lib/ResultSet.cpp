@@ -80,6 +80,15 @@ namespace w3c_sw {
 	ret->insert(ret->begin(), duplicate(ret, ret->begin()));
 	return ret;
     }
+    bool Result::isCompatibleWith (Result* with) {
+	for (BindingSetIterator it = with->bindings.begin();
+	     it != with->bindings.end(); it++) {
+	    const POS* val = get(it->first);
+	    if (val != NULL && val != it->second.pos)
+		return false;
+	}
+	return true;
+    }
     void Result::assumeNewBindings (Result* from) {
 	for (BindingSetIterator it = from->bindings.begin(); it != from->bindings.end(); it++)
 	    bindings[it->first] = it->second;
