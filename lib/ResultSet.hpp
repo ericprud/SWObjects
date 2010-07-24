@@ -102,11 +102,11 @@ namespace w3c_sw {
 	   header consistent.
 	 */
 	void set(const POS* variable, const POS* value, bool weaklyBound, bool replace = false);
-	Result* duplicate(ResultSet* rs, ResultSetIterator row);
+	Result* duplicate(ResultSet* rs, ResultSetConstIterator row) const;
 
 	ResultSet* makeResultSet(POSFactory* posFactory);
-	bool isCompatibleWith(Result* from);
-	void assumeNewBindings(Result* from);
+	bool isCompatibleWith(const Result* from) const;
+	void assumeNewBindings(const Result* from);
     };
 
     class ResultSet {

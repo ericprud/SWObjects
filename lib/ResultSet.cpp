@@ -54,9 +54,9 @@ namespace w3c_sw {
 	return xml;
     }
 
-    Result* Result::duplicate (ResultSet* rs, ResultSetIterator /* row */) {
+    Result* Result::duplicate (ResultSet* rs, ResultSetConstIterator /* row */) const {
 	Result* ret = new Result(rs);
-	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++)
+	for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); it++)
 	    ret->set(it->first, it->second.pos, it->second.weaklyBound);
 	return ret;
     }
@@ -80,8 +80,8 @@ namespace w3c_sw {
 	ret->insert(ret->begin(), duplicate(ret, ret->begin()));
 	return ret;
     }
-    bool Result::isCompatibleWith (Result* with) {
-	for (BindingSetIterator it = with->bindings.begin();
+    bool Result::isCompatibleWith (const Result* with) const {
+	for (BindingSetConstIterator it = with->bindings.begin();
 	     it != with->bindings.end(); it++) {
 	    const POS* val = get(it->first);
 	    if (val != NULL && val != it->second.pos)
@@ -89,8 +89,8 @@ namespace w3c_sw {
 	}
 	return true;
     }
-    void Result::assumeNewBindings (Result* from) {
-	for (BindingSetIterator it = from->bindings.begin(); it != from->bindings.end(); it++)
+    void Result::assumeNewBindings (const Result* from) {
+	for (BindingSetConstIterator it = from->bindings.begin(); it != from->bindings.end(); it++)
 	    bindings[it->first] = it->second;
 	//	    set(it->first, it->second);	
     }
