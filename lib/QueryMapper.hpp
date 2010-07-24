@@ -138,6 +138,7 @@ namespace w3c_sw {
 	const RDFLiteral* database;
 	const URI* stemURI;
 	const RDFLiteral* primaryKey;
+	bool sharedVars;
 	ConstructList maps;
 #if REGEX_LIB == SWOb_BOOST
 #endif /* REGEX_LIB == SWOb_BOOST */

@@ -226,7 +226,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_LABEL
+%token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS IT_LABEL
        IT_GRAPH IT_SERVICE IT_BASE IT_PREFIX IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
@@ -393,6 +393,9 @@ AccessParms_Star:
   | AccessParms_Star IT_PRIMARYKEY RDFLiteral	{
 	static_cast<MapSet*>(driver.root)->primaryKey = $3;
     }
+  | AccessParms_Star IT_SHAREDVARS BooleanLiteral	{
+      static_cast<MapSet*>(driver.root)->sharedVars = $3->getValue();
+    }
 ;
 
 // ConstructQuery*
@@ -443,18 +446,6 @@ PrefixDecl:
 	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
       }
-;
-
-// Var+
-_QVar_E_Plus:
-    Var	{
-	$$ = new POSList;
-	$$->push_back($1);
-    }
-  | _QVar_E_Plus Var	{
-	$1->push_back($2);
-	$$ = $1;
-    }
 ;
 
 // DatasetClause*

@@ -71,6 +71,7 @@ IT_PASSWORD		[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]
 IT_DATABASE		[Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]
 IT_STEMURI		[Ss][Tt][Ee][Mm][Uu][Rr][Ii]
 IT_PRIMARYKEY		[Pp][Rr][Ii][Mm][Aa][Rr][Yy][Kk][Ee][Yy]
+IT_SHAREDVARS		[Ss][Hh][Aa][Rr][Ee][Dd][Vv][Aa][Rr][Ss]
 IT_LABEL		[Ll][Aa][Bb][Ee][Ll]
 
 IT_BASE		[Bb][Aa][Ss][Ee]
@@ -210,6 +211,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_DATABASE}		{return token::IT_DATABASE;}
 {IT_STEMURI}		{return token::IT_STEMURI;}
 {IT_PRIMARYKEY}		{return token::IT_PRIMARYKEY;}
+{IT_SHAREDVARS}		{return token::IT_SHAREDVARS;}
 {IT_LABEL}		{return token::IT_LABEL;}
 {IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_BASE}		{return token::IT_BASE;}
