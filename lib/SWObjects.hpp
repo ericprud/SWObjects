@@ -314,6 +314,9 @@ protected:
     std::vector<T> data;
 public:
     ProductionVector () {  }
+    ProductionVector (typename std::vector<T>::const_iterator start,
+		      typename std::vector<T>::const_iterator finish)
+	: data(start, finish) {  }
     ProductionVector (T v) { push_back(v); }
     virtual ~ProductionVector () {
 	for (typename std::vector<T>::iterator it = ProductionVector<T>::begin(); 
@@ -1401,6 +1404,9 @@ protected:
     ProductionVector<const TableOperation*> m_TableOperations;
 public:
     TableJunction () : TableOperation(), m_TableOperations() {  }
+    TableJunction (std::vector<const TableOperation*>::const_iterator start,
+		   std::vector<const TableOperation*>::const_iterator finish)
+	: TableOperation(), m_TableOperations(start, finish) {  }
 
     bool operator== (const TableJunction& ref) const {
 	return m_TableOperations == ref.m_TableOperations;
@@ -1428,6 +1434,10 @@ public:
 class TableConjunction : public TableJunction { // ⊍
 public:
     TableConjunction () : TableJunction() {  }
+    TableConjunction (std::vector<const TableOperation*>::const_iterator start,
+		      std::vector<const TableOperation*>::const_iterator finish)
+	: TableJunction(start, finish) {  }
+
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const TableConjunction* pref = dynamic_cast<const TableConjunction*>(&ref);
@@ -1441,6 +1451,10 @@ public:
 class TableDisjunction : public TableJunction { // ⊎
 public:
     TableDisjunction () : TableJunction() {  }
+    TableDisjunction (std::vector<const TableOperation*>::const_iterator start,
+		      std::vector<const TableOperation*>::const_iterator finish)
+	: TableJunction(start, finish) {  }
+
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const TableDisjunction* pref = dynamic_cast<const TableDisjunction*>(&ref);
