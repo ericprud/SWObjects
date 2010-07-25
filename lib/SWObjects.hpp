@@ -1526,9 +1526,9 @@ public:
 
 class NamedGraphPattern : public BasicGraphPattern {
 private:
+public:
     const POS* m_name;
 
-public:
     NamedGraphPattern (const POS* p_name, bool allOpts = false) : BasicGraphPattern(allOpts), m_name(p_name) {  }
     NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
     virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
