@@ -500,6 +500,107 @@ namespace w3c_sw {
 	}
     };
 
+    struct BGPSimplifier : public SWObjectDuplicator {
+	bool inConj;
+	BasicGraphPattern* lastBGP;
+	TableConjunction* nestingConj;
+	BGPSimplifier (POSFactory* posFactory)
+	    : SWObjectDuplicator(posFactory), inConj(false), lastBGP(NULL), nestingConj(NULL) {  }
+
+	struct NonConjunctionState {
+	    bool inConj;
+	    TableConjunction* nestingConj;
+	    NonConjunctionState (bool inConj, TableConjunction* nestingConj)
+		: inConj(inConj), nestingConj(nestingConj) {  }
+	};
+
+	NonConjunctionState flushConjunction () {
+	    NonConjunctionState ret = NonConjunctionState(inConj, nestingConj);
+	    if (inConj) {
+		if (ret.nestingConj == NULL)
+		    ret.nestingConj = new TableConjunction();
+		if (lastBGP) {
+		    ret.nestingConj->addTableOperation(lastBGP, false); // @@@ try true?
+		    lastBGP = NULL;
+		}
+		inConj = false;
+	    }
+	    nestingConj = NULL;
+	    return ret;
+	}
+	void pendingConjunction (NonConjunctionState outer) {
+	    inConj = outer.inConj;
+	    nestingConj = outer.nestingConj;
+	    if (nestingConj != NULL) {
+		nestingConj->addTableOperation(last.tableOperation, false);
+		last.tableOperation = nestingConj;
+	    }
+	    lastBGP = NULL;
+	}
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    NamedGraphPattern* ret = dynamic_cast<NamedGraphPattern*>(lastBGP);
+	    if (ret == NULL || ret->m_name != p_name) {
+		p_name->express(this);
+		ret = new NamedGraphPattern(last.posz.pos);
+		lastBGP = ret;
+	    }
+	    _TriplePatterns(p_TriplePatterns, ret);
+	    last.tableOperation = ret;
+	}
+	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    BasicGraphPattern* ret = dynamic_cast<DefaultGraphPattern*>(lastBGP);
+	    if (ret == NULL) {
+		ret = new DefaultGraphPattern();
+		lastBGP = ret;
+	    }
+	    _TriplePatterns(p_TriplePatterns, ret);
+	    last.tableOperation = ret;
+	}
+	virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::tableDisjunction (self, p_TableOperations);
+	    pendingConjunction(outer);
+	}
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    bool wasInConj = inConj;
+	    inConj = true;
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); it++) {
+		(*it)->express(this);
+	    }
+	    /*
+	      ⋈({A}{B})	  => {A⋅B}:		last.tableOperation = lastBGP
+	      ⋈({A}⋈({B}{C}))	  => {A⋅B⋅C}:		last.tableOperation = lastBGP
+	      ⊎({A}{B})	  => ⊎({A}{B}):	last.tableOperation ← tableDisjunction()
+	      ⋈{{A}¬{B}}	  => ⋈{{A}¬{B}}:	last.tableOperation = nestingConj
+	      ⋈({A}⋈({B}¬{C}))	  => ⋈({A⋅B}¬{C}):	last.tableOperation = lastBGP
+	      ⋈{{A}{B}¬{C}{D}{E}} => ⋈{{A⋅B}¬{C}{D⋅E}}: last.tableOperation = nestingConj       
+	     */
+	    inConj = wasInConj;
+	    lastBGP = NULL;
+	}
+	virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::optionalGraphPattern (self, p_GroupGraphPattern, p_Expressions);
+	    pendingConjunction(outer);
+	}
+	virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::minusGraphPattern(self, p_GroupGraphPattern);
+	    pendingConjunction(outer);
+	}
+	virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::graphGraphPattern(self, p_POS, p_GroupGraphPattern);
+	    pendingConjunction(outer);
+	}
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::serviceGraphPattern(self, p_POS, p_GroupGraphPattern, posFactory, lexicalCompare);
+	    pendingConjunction(outer);
+	}
+    };
+
 } // namespace w3c_sw
 
 #endif // SWObjectDuplicator_H

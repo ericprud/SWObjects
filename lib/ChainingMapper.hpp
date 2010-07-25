@@ -494,9 +494,13 @@ namespace w3c_sw {
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
-	    return QueryWalker(rules, posFactory, sharedVars).mapQuery(query);
+	    const Operation* op = QueryWalker(rules, posFactory, sharedVars).mapQuery(query);
+	    BGPSimplifier dup(posFactory);
+	    op->express(&dup);
+	    delete op;
+	    return dup.last.operation;
 	}
-    };
+    }; // class ChainingMapper
 
 } // namespace w3c_sw
 
