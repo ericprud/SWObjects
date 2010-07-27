@@ -502,10 +502,11 @@ namespace w3c_sw {
 
     struct BGPSimplifier : public SWObjectDuplicator {
 	bool inConj;
+	bool lastInConj;
 	BasicGraphPattern* lastBGP;
 	TableConjunction* nestingConj;
 	BGPSimplifier (POSFactory* posFactory)
-	    : SWObjectDuplicator(posFactory), inConj(false), lastBGP(NULL), nestingConj(NULL) {  }
+	    : SWObjectDuplicator(posFactory), inConj(false), lastInConj(false), lastBGP(NULL), nestingConj(NULL) {  }
 
 	struct NonConjunctionState {
 	    bool inConj;
@@ -526,6 +527,7 @@ namespace w3c_sw {
 		inConj = false;
 	    }
 	    nestingConj = NULL;
+	    lastInConj = false;
 	    return ret;
 	}
 	void pendingConjunction (NonConjunctionState outer) {
@@ -536,13 +538,15 @@ namespace w3c_sw {
 		last.tableOperation = nestingConj;
 	    }
 	    lastBGP = NULL;
+	    lastInConj = false;
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    NamedGraphPattern* ret = dynamic_cast<NamedGraphPattern*>(lastBGP);
 	    if (ret == NULL || ret->m_name != p_name) {
 		p_name->express(this);
-		ret = new NamedGraphPattern(last.posz.pos);
-		lastBGP = ret;
+		lastBGP = ret = new NamedGraphPattern(last.posz.pos);
+		if (nestingConj != NULL)
+		    nestingConj->addTableOperation(ret, false);
 	    }
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    last.tableOperation = ret;
@@ -550,23 +554,43 @@ namespace w3c_sw {
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    BasicGraphPattern* ret = dynamic_cast<DefaultGraphPattern*>(lastBGP);
 	    if (ret == NULL) {
-		ret = new DefaultGraphPattern();
-		lastBGP = ret;
+		lastBGP = ret = new DefaultGraphPattern();
+		if (nestingConj != NULL)
+		    nestingConj->addTableOperation(ret, false);
 	    }
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    last.tableOperation = ret;
 	}
-	virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
-	    NonConjunctionState outer = flushConjunction();
-	    SWObjectDuplicator::tableDisjunction (self, p_TableOperations);
-	    pendingConjunction(outer);
+	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    TableDisjunction* ret = new TableDisjunction();
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); it++) {
+		NonConjunctionState outer = flushConjunction();
+		(*it)->express(this);
+		ret->addTableOperation(last.tableOperation, true);
+		pendingConjunction(outer);
+	    }
+	    last.tableOperation = ret;
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    bool wasInConj = inConj;
 	    inConj = true;
+	    TableConjunction* autoAdd = NULL;
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); it++) {
 		(*it)->express(this);
+		if (lastInConj) {
+		    autoAdd = nestingConj;
+		    if (nestingConj)
+			last.tableOperation = nestingConj;
+		} else {
+		    if (autoAdd != NULL) {
+			if (autoAdd != last.tableOperation && lastBGP == NULL)
+			    autoAdd->addTableOperation(last.tableOperation, false);
+			last.tableOperation = autoAdd;
+		    }
+		    autoAdd = lastBGP == NULL || lastInConj ? nestingConj : NULL;
+		}
 	    }
 	    /*
 	      ⋈({A}{B})	  => {A⋅B}:		last.tableOperation = lastBGP
@@ -577,7 +601,7 @@ namespace w3c_sw {
 	      ⋈{{A}{B}¬{C}{D}{E}} => ⋈{{A⋅B}¬{C}{D⋅E}}: last.tableOperation = nestingConj       
 	     */
 	    inConj = wasInConj;
-	    lastBGP = NULL;
+	    lastInConj = true;
 	}
 	virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
 	    NonConjunctionState outer = flushConjunction();

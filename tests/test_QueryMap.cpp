@@ -267,6 +267,68 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 
+struct SimplifiedBGPtest : public EqualsTest {
+    SimplifiedBGPtest (const char* leftString, const char* rightString) : 
+	EqualsTest (leftString, rightString) {
+	BGPSimplifier s(&f);
+	left->express(&s);
+	delete left;
+	left = const_cast<Operation*>(s.last.operation);
+    }
+};
+
+BOOST_AUTO_TEST_SUITE( SimplifiedBGPtests )
+
+BOOST_AUTO_TEST_SUITE( unions )
+BOOST_AUTO_TEST_CASE( A_and_B ) {
+    SimplifiedBGPtest t("ASK { { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } }", 
+			"ASK { ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( Y_and_Y ) {
+    SimplifiedBGPtest t("SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+			"           SERVICE <S3> { ?qs <p3> ?qo } }",
+			"SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+			"           SERVICE <S3> { ?qs <p3> ?qo } }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+
+BOOST_AUTO_TEST_CASE( A_and_C_or_B_and_C ) {
+    SimplifiedBGPtest t("ASK { { { ?s1 ?p1 ?o1 } { ?s3 ?p3 ?o3 } } UNION { { ?s2 ?p2 ?o2 } { ?s3 ?p3 ?o3 } } }", 
+			"ASK { {   ?s1 ?p1 ?o1  .  ?s3 ?p3 ?o3 }   UNION {   ?s2 ?p2 ?o2  .  ?s3 ?p3 ?o3 }   }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( A_and__B_and_C ) {
+    SimplifiedBGPtest t("ASK { { ?s1 ?p1 ?o1 } { { ?s2 ?p2 ?o2 } { ?s3 ?p3 ?o3 } } }", 
+			"ASK { ?s1 ?p1 ?o1    .    ?s2 ?p2 ?o2  .  ?s3 ?p3 ?o3 }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( A_and__B_minus_C ) {
+    SimplifiedBGPtest t("ASK { { ?s1 ?p1 ?o1 } { { ?s2 ?p2 ?o2 } MINUS { ?s3 ?p3 ?o3 } } }", 
+			"ASK { { ?s1 ?p1 ?o1  .    ?s2 ?p2 ?o2 } MINUS { ?s3 ?p3 ?o3 } }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( optional_A_B ) {
+    SimplifiedBGPtest t("ASK { OPTIONAL { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } }", 
+			"ASK { OPTIONAL { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+BOOST_AUTO_TEST_CASE( optional_A_B_C ) {
+    SimplifiedBGPtest t("ASK { OPTIONAL { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } { ?s3 ?p3 ?o3 } }", 
+			"ASK { OPTIONAL { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2  .  ?s3 ?p3 ?o3 } }");
+    BOOST_CHECK_EQUAL(*t.left, *t.right);
+}
+// BOOST_AUTO_TEST_CASE( A_B_minus_C_D_E ) {
+//     SimplifiedBGPtest t("ASK { { ?s1 ?p1 ?o1 } { ?s2 ?p2 ?o2 } MINUS { ?s3 ?p3 ?o3 } { ?s4 ?p4 ?o4 } { ?s5 ?p5 ?o5 } }", 
+// 			"ASK { { ?s1 ?p1 ?o1  .  ?s2 ?p2 ?o2 } MINUS { ?s3 ?p3 ?o3 } { ?s4 ?p4 ?o4  .  ?s5 ?p5 ?o5 } }");
+//     BOOST_CHECK_EQUAL(*t.left, *t.right);
+// }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 struct RuleMapTest {
     bool bgpCompareVars;
     const Operation* transformed;
@@ -294,6 +356,7 @@ struct RuleMapTest {
 	    throw msg;
 	}
 	MapSet* ms = mapSetParser.root;
+	queryMapper.sharedVars = ms->sharedVars;
 	for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
 	     it != ms->maps.end(); ++it)
 	    queryMapper.addRule(it->constr, it->label);
