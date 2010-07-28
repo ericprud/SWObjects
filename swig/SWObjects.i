@@ -126,6 +126,16 @@ public:
 	};
 %nestedworkaround w3c_sw::RdfDB::HandlerSet;
 
+
+ 	struct NonConjunctionState {
+	    bool inConj;
+	    w3c_sw::TableConjunction* nestingConj;
+	    NonConjunctionState (bool inConj, w3c_sw::TableConjunction* nestingConj)
+		: inConj(inConj), nestingConj(nestingConj) {  }
+	};
+
+%nestedworkaround w3c_sw::BGPSimplifier::NonConjunctionState;
+
 /* %typemap(varin) const char * { */
 /*     SWIG_Error(SWIG_AttributeError,"Variable $symname is read-only."); */
 /*     SWIG_fail; */
@@ -152,6 +162,7 @@ public:
     typedef w3c_sw::SWSAXhandler::Attributes Attributes;
 
     typedef w3c_sw::RdfDB::HandlerSet HandlerSet;
+    typedef w3c_sw::BGPSimplifier::NonConjunctionState NonConjunctionState;
 %}
 %include "config.h"
 %include "SWObjects.hpp"
