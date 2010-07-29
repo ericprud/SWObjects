@@ -228,10 +228,13 @@ namespace w3c_sw {
 			    Add add = *it_add++;
 			    if (alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare)) {
 				// Inconsistent solution.
-				alt = erase(alt);
+				// If this is not the last add, erase the alternative,
+				// otherwise leave it for later adds.
+				if (it_add == adds.end())
+				    alt = erase(alt);
 			    } else {
-				// If this is the last add, overwrite the alternative,
-				// otherwise copy and insert before.
+				// If this is not the last add, copy and insert before,
+				// otherwise overwrite the alternative.
 				if (it_add != adds.end())
 				    alt = insert(alt, *alt);
 				alt->add(add.rule, add.rs);
