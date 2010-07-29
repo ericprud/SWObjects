@@ -360,6 +360,7 @@ struct RuleMapTest {
 	for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
 	     it != ms->maps.end(); ++it)
 	    queryMapper.addRule(it->constr, it->label);
+	queryMapper.nodeShare = ms->nodeShare;
 	delete mapSetParser.root;
 
 	try {
@@ -367,6 +368,8 @@ struct RuleMapTest {
 	} catch (RuleMatchingException e) { // !! should catch whatever
 	    delete query;
 	    queryMapper.clear();
+	    //std::string m(e.what());
+	    //throw m;
 	    throw e;
 	}
 	delete query;
@@ -434,8 +437,8 @@ BOOST_AUTO_TEST_CASE( r ) {
 #if 1
 BOOST_AUTO_TEST_CASE( order ) {
     RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
-		  "label 'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
-		  "label 'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+		  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+		  "'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
 		  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
 		  "           SERVICE <S3> { ?qs <p3> ?qo } }",
 		  IStreamContext::STRING);
@@ -466,7 +469,7 @@ BOOST_AUTO_TEST_CASE( p3 ) {
 #if 1
 BOOST_AUTO_TEST_CASE( p1_S1_p2 ) {
     RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
-		  "label 'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
+		  "'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
 		  "SELECT * { SERVICE <S1> { ?qs <p1> ?qo } }",
 		  IStreamContext::STRING);
     BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);

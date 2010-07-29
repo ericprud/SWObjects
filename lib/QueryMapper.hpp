@@ -127,6 +127,105 @@ namespace w3c_sw {
 	}
     };
 
+    struct Rule {
+	DefaultGraphPattern* head;
+	const TableOperation* body;
+	const POS* label;
+
+	/* It's not necessary to know all of the variables in a rule head
+	   (bodyVars); just handy for explanation/debugging. */
+	VariableList bodyVars;
+
+	Rule (DefaultGraphPattern* head, const TableOperation* body, const POS* label, VariableList bodyVars)
+	    : head(head), body(body), label(label), bodyVars(bodyVars) {  }
+	Rule (const Rule& ref)
+	    : head(ref.head), body(ref.body), label(ref.label), bodyVars(ref.bodyVars) {  }
+
+	std::string str () const {
+	    if (label == NULL) {
+		SPARQLSerializer bodySer, headSer;
+		body->express(&bodySer);
+		head->express(&headSer);
+		return bodySer.str() + " => \n" + headSer.str();
+	    } else
+		return label->toString();
+	}
+
+	bool operator== (const Rule& ref) const {
+	    return label == ref.label && head == ref.head && body == ref.body;
+	}
+    };
+    inline bool operator< (const Rule& l, const Rule& r) { return l.label < r.label; }
+    inline std::ostream& operator<< (std::ostream& os, const Rule& rule) {
+	return os << rule.str();
+    }
+
+    struct RuleTerm {
+	const POS* rule;
+	const POS* term;
+	RuleTerm (const POS* rule, const POS* term) : rule(rule), term(term) {  }
+	RuleTerm (const RuleTerm& ref) : rule(ref.rule), term(ref.term) {  }
+	std::string str () {
+	    return rule->toString() + "." + term->toString();
+	}
+	void operator= (const RuleTerm& ref) { // @@ needed?
+	    rule = ref.rule;
+	    term = ref.term;
+	}
+
+	inline bool operator< (const RuleTerm& ref) const {
+	    return rule == ref.rule ? term < ref.term : rule < ref.rule;
+	}
+
+    };
+
+    /* A NodeShare asserts which RuleTerms connect to which other RuleTerms.
+     */
+    struct NodeShare {
+
+	/* ConnectSet - Set of connected RuleTerm.
+	 */
+	struct ConnectSet : std::set<RuleTerm> {
+	};
+	std::vector<ConnectSet> allConnections;
+
+	/* Map from RuleTerm to it's containing ConnectSet as stored in
+	   allConnections.
+	*/
+	typedef std::map<RuleTerm, ConnectSet*> Index;
+	Index index;
+
+	void operator= (const NodeShare& ref) {
+	    for (std::vector<ConnectSet>::const_iterator cs = ref.allConnections.begin();
+		 cs != ref.allConnections.end(); ++cs) {
+		std::vector<ConnectSet>::iterator x = allConnections.insert(allConnections.end(), *cs);
+		ConnectSet* newSet = &*x;
+		for (ConnectSet::const_iterator rt = cs->begin();
+		     rt != cs->end(); ++rt)
+		    index[*rt] = newSet;
+	    }
+	}
+
+	void addIntersection (RuleTerm l, RuleTerm r) {
+	    Index::const_iterator it = index.find(l);
+	    if (it == index.end())
+		it = index.find(r);
+	    if (it == index.end()) {
+		std::vector<ConnectSet>::iterator newCon = allConnections.insert(allConnections.end(), ConnectSet());
+		it = index.insert(std::pair<RuleTerm, ConnectSet*>(l, &*newCon)).first;
+	    }
+	    it->second->insert(l);
+	    it->second->insert(r);
+	    index[l] = it->second;
+	    index[r] = it->second;
+	}
+
+	bool connects (const RuleTerm l, const RuleTerm r) const {
+	    Index::const_iterator it = index.find(l);
+	    return it != index.end() && it->second->find(r) != it->second->end();
+	}
+    };
+
     class MapSet : public Operation {
 	friend class MapSetParser;
     public:
@@ -138,7 +237,9 @@ namespace w3c_sw {
 	const RDFLiteral* database;
 	const URI* stemURI;
 	const RDFLiteral* primaryKey;
-	bool sharedVars;
+	typedef enum { e_PROMISCUOUS, e_VARNAMES, e_DRACONIAN } e_sharedVars;
+	e_sharedVars sharedVars;
+	NodeShare nodeShare;
 	ConstructList maps;
 #if REGEX_LIB == SWOb_BOOST
 #endif /* REGEX_LIB == SWOb_BOOST */

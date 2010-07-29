@@ -141,6 +141,9 @@ public:
 
     /** Control attributes. */
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
+    RuleTerm lastRuleTerm;
+    bool lastRuleTermSet;
+    bool sharedVarsSet;
 };
 
 } // namespace w3c_sw
@@ -150,7 +153,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 154 "lib/MapSetParser/MapSetParser.hpp"
+#line 157 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -164,7 +167,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 168 "lib/MapSetParser/MapSetParser.hpp"
+#line 171 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -174,7 +177,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 178 "lib/MapSetParser/MapSetParser.hpp"
+#line 181 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -222,7 +225,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 226 "lib/MapSetParser/MapSetParser.hpp"
+#line 229 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -234,7 +237,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 160 "lib/MapSetParser/MapSetParser.ypp"
+#line 163 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -300,7 +303,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 304 "lib/MapSetParser/MapSetParser.hpp"
+#line 307 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -321,115 +324,119 @@ namespace w3c_sw {
      IT_STEMURI = 263,
      IT_PRIMARYKEY = 264,
      IT_SHAREDVARS = 265,
-     IT_LABEL = 266,
-     IT_GRAPH = 267,
-     IT_SERVICE = 268,
-     IT_BASE = 269,
-     IT_PREFIX = 270,
-     IT_DISTINCT = 271,
-     IT_REDUCED = 272,
-     GT_TIMES = 273,
-     IT_CONSTRUCT = 274,
-     IT_FROM = 275,
-     IT_NAMED = 276,
-     IT_ORDER = 277,
-     IT_BY = 278,
-     IT_ASC = 279,
-     IT_DESC = 280,
-     IT_LIMIT = 281,
-     IT_OFFSET = 282,
-     IT_BINDINGS = 283,
-     IT_MEMBERS = 284,
-     IT_STARTS = 285,
-     IT_ENDS = 286,
-     IT_ANY = 287,
-     IT_UNORDERED = 288,
-     GT_LCURLEY = 289,
-     GT_RCURLEY = 290,
-     IT_WHERE = 291,
-     GT_LPAREN = 292,
-     GT_RPAREN = 293,
-     IT_UNDEF = 294,
-     GT_DOT = 295,
-     IT_OPTIONAL = 296,
-     IT_MINUS = 297,
-     IT_UNION = 298,
-     IT_FILTER = 299,
-     GT_COMMA = 300,
-     GT_SEMI = 301,
-     IT_a = 302,
-     GT_LBRACKET = 303,
-     GT_RBRACKET = 304,
-     GT_OR = 305,
-     GT_AND = 306,
-     GT_EQUAL = 307,
-     GT_NEQUAL = 308,
-     GT_LT = 309,
-     GT_GT = 310,
-     GT_LE = 311,
-     GT_GE = 312,
-     GT_PLUS = 313,
-     GT_MINUS = 314,
-     GT_DIVIDE = 315,
-     GT_NOT = 316,
-     IT_IN = 317,
-     GT_NOT_SPACECHAR_IN = 318,
-     IT_IRI = 319,
-     IT_URI = 320,
-     IT_BNODE = 321,
-     IT_COALESCE = 322,
-     IT_IF = 323,
-     IT_STRLANG = 324,
-     IT_STRDT = 325,
-     IT_EXISTS = 326,
-     GT_NOT_SPACECHAR_EXISTS = 327,
-     IT_SEPARATOR = 328,
-     IT_STR = 329,
-     IT_LANG = 330,
-     IT_LANGMATCHES = 331,
-     IT_DATATYPE = 332,
-     IT_BOUND = 333,
-     IT_sameTerm = 334,
-     IT_isIRI = 335,
-     IT_isURI = 336,
-     IT_isBLANK = 337,
-     IT_isLITERAL = 338,
-     IT_REGEX = 339,
-     GT_DTYPE = 340,
-     IT_AS = 341,
-     IT_GROUP = 342,
-     IT_HAVING = 343,
-     IT_COUNT = 344,
-     IT_SUM = 345,
-     IT_MIN = 346,
-     IT_MAX = 347,
-     IT_AVG = 348,
-     IT_GROUP_CONCAT = 349,
-     IT_SAMPLE = 350,
-     IT_true = 351,
-     IT_false = 352,
-     INTEGER = 353,
-     DECIMAL = 354,
-     DOUBLE = 355,
-     INTEGER_POSITIVE = 356,
-     DECIMAL_POSITIVE = 357,
-     DOUBLE_POSITIVE = 358,
-     INTEGER_NEGATIVE = 359,
-     DECIMAL_NEGATIVE = 360,
-     DOUBLE_NEGATIVE = 361,
-     STRING_LITERAL1 = 362,
-     STRING_LITERAL_LONG1 = 363,
-     STRING_LITERAL2 = 364,
-     STRING_LITERAL_LONG2 = 365,
-     IRI_REF = 366,
-     PNAME_NS = 367,
-     PNAME_LN = 368,
-     BLANK_NODE_LABEL = 369,
-     ANON = 370,
-     VAR1 = 371,
-     VAR2 = 372,
-     LANGTAG = 373,
-     NIL = 374
+     IT_PROMISCUOUS = 266,
+     IT_INTERSECTION = 267,
+     IT_DRACONIAN = 268,
+     IT_VARNAMES = 269,
+     IT_GRAPH = 270,
+     IT_SERVICE = 271,
+     IT_BASE = 272,
+     IT_PREFIX = 273,
+     IT_DISTINCT = 274,
+     IT_REDUCED = 275,
+     GT_TIMES = 276,
+     IT_CONSTRUCT = 277,
+     IT_SELECT = 278,
+     IT_FROM = 279,
+     IT_NAMED = 280,
+     IT_ORDER = 281,
+     IT_BY = 282,
+     IT_ASC = 283,
+     IT_DESC = 284,
+     IT_LIMIT = 285,
+     IT_OFFSET = 286,
+     IT_BINDINGS = 287,
+     IT_MEMBERS = 288,
+     IT_STARTS = 289,
+     IT_ENDS = 290,
+     IT_ANY = 291,
+     IT_UNORDERED = 292,
+     GT_LCURLEY = 293,
+     GT_RCURLEY = 294,
+     IT_WHERE = 295,
+     GT_LPAREN = 296,
+     GT_RPAREN = 297,
+     IT_UNDEF = 298,
+     GT_DOT = 299,
+     IT_OPTIONAL = 300,
+     IT_MINUS = 301,
+     IT_UNION = 302,
+     IT_FILTER = 303,
+     GT_COMMA = 304,
+     GT_SEMI = 305,
+     IT_a = 306,
+     GT_LBRACKET = 307,
+     GT_RBRACKET = 308,
+     GT_OR = 309,
+     GT_AND = 310,
+     GT_EQUAL = 311,
+     GT_NEQUAL = 312,
+     GT_LT = 313,
+     GT_GT = 314,
+     GT_LE = 315,
+     GT_GE = 316,
+     GT_PLUS = 317,
+     GT_MINUS = 318,
+     GT_DIVIDE = 319,
+     GT_NOT = 320,
+     IT_IN = 321,
+     GT_NOT_SPACECHAR_IN = 322,
+     IT_IRI = 323,
+     IT_URI = 324,
+     IT_BNODE = 325,
+     IT_COALESCE = 326,
+     IT_IF = 327,
+     IT_STRLANG = 328,
+     IT_STRDT = 329,
+     IT_EXISTS = 330,
+     GT_NOT_SPACECHAR_EXISTS = 331,
+     IT_SEPARATOR = 332,
+     IT_STR = 333,
+     IT_LANG = 334,
+     IT_LANGMATCHES = 335,
+     IT_DATATYPE = 336,
+     IT_BOUND = 337,
+     IT_sameTerm = 338,
+     IT_isIRI = 339,
+     IT_isURI = 340,
+     IT_isBLANK = 341,
+     IT_isLITERAL = 342,
+     IT_REGEX = 343,
+     GT_DTYPE = 344,
+     IT_AS = 345,
+     IT_GROUP = 346,
+     IT_HAVING = 347,
+     IT_COUNT = 348,
+     IT_SUM = 349,
+     IT_MIN = 350,
+     IT_MAX = 351,
+     IT_AVG = 352,
+     IT_GROUP_CONCAT = 353,
+     IT_SAMPLE = 354,
+     IT_true = 355,
+     IT_false = 356,
+     INTEGER = 357,
+     DECIMAL = 358,
+     DOUBLE = 359,
+     INTEGER_POSITIVE = 360,
+     DECIMAL_POSITIVE = 361,
+     DOUBLE_POSITIVE = 362,
+     INTEGER_NEGATIVE = 363,
+     DECIMAL_NEGATIVE = 364,
+     DOUBLE_NEGATIVE = 365,
+     STRING_LITERAL1 = 366,
+     STRING_LITERAL_LONG1 = 367,
+     STRING_LITERAL2 = 368,
+     STRING_LITERAL_LONG2 = 369,
+     IRI_REF = 370,
+     PNAME_NS = 371,
+     PNAME_LN = 372,
+     BLANK_NODE_LABEL = 373,
+     ANON = 374,
+     VAR1 = 375,
+     VAR2 = 376,
+     LANGTAG = 377,
+     NIL = 378
    };
 
     };
@@ -606,7 +613,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 610 "lib/MapSetParser/MapSetParser.hpp"
+#line 617 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

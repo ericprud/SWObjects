@@ -7,6 +7,8 @@
 #define ChainingMapper_H
 
 #include <map>
+#include <set>
+#include <vector>
 
 #include "SWObjectDuplicator.hpp"
 #include "SPARQLSerializer.hpp"
@@ -15,37 +17,6 @@
 namespace w3c_sw {
 
     class ChainingMapper;
-
-    struct Rule {
-	DefaultGraphPattern* head;
-	const TableOperation* body;
-	const POS* label;
-
-	/* It's not necessary to know all of the variables in a rule head
-	   (bodyVars); just handy for explanation/debugging. */
-	VariableList bodyVars;
-
-	Rule (DefaultGraphPattern* head, const TableOperation* body, const POS* label, VariableList bodyVars) :
-	    head(head), body(body), label(label), bodyVars(bodyVars) {  }
-
-	std::string str () const {
-	    if (label == NULL) {
-		SPARQLSerializer bodySer, headSer;
-		body->express(&bodySer);
-		head->express(&headSer);
-		return bodySer.str() + " => \n" + headSer.str();
-	    } else
-		return label->toString();
-	}
-
-	bool operator== (const Rule& ref) const {
-	    return label == ref.label && head == ref.head && body == ref.body;
-	}
-    };
-    inline bool operator< (const Rule& l, const Rule& r) { return l.label < r.label; }
-    std::ostream& operator<< (std::ostream& os, const Rule& rule) {
-	return os << rule.str();
-    }
 
     struct Bindings {
 	struct Failures {
@@ -125,7 +96,6 @@ namespace w3c_sw {
 	POSFactory* posFactory;
 	std::vector<Rule>& rules;
 
-
 	/* Mapping from a Rule to a set of instantiations of that Rule.<br/>
 
 	   Example: Query { ?a foaf:knows ?b . ?b foaf:knows ?c } requires two
@@ -140,21 +110,6 @@ namespace w3c_sw {
 	 */
 	struct Rule2rs : public std::map<const Rule, ResultSet> {
 
-	    struct RuleTerm {
-		Rule rule;
-		const POS* term;
-		RuleTerm (Rule rule, const POS* term) : rule(rule), term(term) {  }
-		std::string str () {
-		    return rule.str() + "." + term->toString();
-		}
-		// void operator= (const RuleTerm& ref) {
-		// }
-
-		inline bool operator< (const RuleTerm& ref) const {
-		    return rule == ref.rule ? term < ref.term : rule < ref.rule;
-		}
-
-	    };
 	    /* Map query terms to their uses in RuleTerms. Insertion of
 	       incompatible RuleTerm into this map indicates an inconsistent
 	       solution. (e.g. ?name used as People.?name and Places.?name.)
@@ -163,10 +118,13 @@ namespace w3c_sw {
 		// void operator= (const QueryTermUsage& ref) {
 		// }
 	    };
-
 	    QueryTermUsage termUsage;
 
-	    bool inconsistentWith (const Rule& rule, const ResultSet& testRS) {
+	    /* Find out any term bound in testRS with by rule is inconsistent
+	       with existing term usage. e.g. can product.producer be the same
+	       as product.publisher (In BSBM, both reference producer.producer.
+	     */
+	    bool inconsistentWith (const Rule& rule, const ResultSet& testRS, MapSet::e_sharedVars sharedVars, const NodeShare& nodeShare) {
 		const Result* testRow = *testRS.begin();
 		{
 		    for (BindingSetConstIterator var = testRow->begin(); var != testRow->end(); ++var) {
@@ -176,7 +134,15 @@ namespace w3c_sw {
 			if (it != termUsage.end()) {
 			    for (std::set<RuleTerm>::const_iterator existingRuleTerm = it->second.begin();
 				 existingRuleTerm != it->second.end(); ++existingRuleTerm)
-				if (ruleVar != existingRuleTerm->term)
+				if (rule.label == existingRuleTerm->rule && ruleVar == existingRuleTerm->term) // @@ try rule == existingRuleTerm.rule
+				    ; // Used for the same node in the same rule.
+				else if (sharedVars == MapSet::e_PROMISCUOUS)
+				    ;
+				else if (sharedVars == MapSet::e_VARNAMES && ruleVar == existingRuleTerm->term)
+				    ; // sharedVars flag says same-named vars are the same object.
+				else if (nodeShare.connects(RuleTerm(rule.label, ruleVar), *existingRuleTerm))
+				    ; // sharedVars flag says same-named vars are the same object.
+				else 
 				    return true;
 			}
 		    }
@@ -197,7 +163,7 @@ namespace w3c_sw {
 			    std::pair<const POS*, std::set<RuleTerm> > pt(queryTerm, s);
 			    it = termUsage.insert(pt).first;
 			}
-			it->second.insert(RuleTerm(rule, ruleVar));
+			it->second.insert(RuleTerm(rule.label, ruleVar));
 		    }
 		}
 
@@ -238,9 +204,15 @@ namespace w3c_sw {
 	    }
 	};
 	struct Alternatives : public std::vector<Rule2rs> {
-	    bool sharedVars;
+	    MapSet::e_sharedVars sharedVars;
+	    NodeShare& nodeShare;
 
-	    Alternatives (bool sharedVars) : std::vector<Rule2rs>(1), sharedVars(sharedVars) {  }
+	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+		: std::vector<Rule2rs>(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
+	    void operator= (const Alternatives& ref) {
+		sharedVars = ref. sharedVars;
+		nodeShare = ref.nodeShare;
+	    }
 
 	    /** cross: create a cross product with the vector of added rule
 	       bindings. Enforce all integrity constraints and return the count
@@ -254,7 +226,7 @@ namespace w3c_sw {
 			for (std::vector<Add>::const_iterator it_add = adds.begin();
 			     it_add != adds.end(); ) {
 			    Add add = *it_add++;
-			    if (sharedVars && alt->inconsistentWith(add.rule, add.rs)) {
+			    if (alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare)) {
 				// Inconsistent solution.
 				alt = erase(alt);
 			    } else {
@@ -279,8 +251,8 @@ namespace w3c_sw {
 	Alternatives alternatives;
 	Failures failed;
 
-	Bindings (POSFactory* posFactory, std::vector<Rule>& rules, bool sharedVars)
-	    : posFactory(posFactory), rules(rules), alternatives(sharedVars) {  }
+	Bindings (POSFactory* posFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : posFactory(posFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
 	void operator= (const Bindings& ref) {
 	    posFactory = ref.posFactory;
 	    rules = ref.rules;
@@ -405,10 +377,11 @@ namespace w3c_sw {
     class QueryWalker : public SWObjectDuplicator {
     protected:
 	Bindings bindings;
-	bool sharedVars;
+	MapSet::e_sharedVars sharedVars;
+
     public:
-	QueryWalker (std::vector<Rule>& rules, POSFactory* posFactory, bool sharedVars)
-	    : SWObjectDuplicator(posFactory), bindings(posFactory, rules, sharedVars) {  }
+	QueryWalker (std::vector<Rule>& rules, POSFactory* posFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : SWObjectDuplicator(posFactory), bindings(posFactory, rules, sharedVars, nodeShare) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
@@ -473,7 +446,8 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
-	bool sharedVars;
+	MapSet::e_sharedVars sharedVars;
+	NodeShare nodeShare;
 
 	ChainingMapper (POSFactory* posFactory, std::ostream** debugStream) : SWObjectDuplicator(posFactory), debugStream(debugStream) {  }
 	~ChainingMapper () { clear(); }
@@ -494,7 +468,7 @@ namespace w3c_sw {
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
-	    const Operation* op = QueryWalker(rules, posFactory, sharedVars).mapQuery(query);
+	    const Operation* op = QueryWalker(rules, posFactory, sharedVars, nodeShare).mapQuery(query);
 	    BGPSimplifier dup(posFactory);
 	    op->express(&dup);
 	    delete op;

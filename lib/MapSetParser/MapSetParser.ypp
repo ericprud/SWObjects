@@ -148,6 +148,9 @@ public:
 
     /** Control attributes. */
     bool unnestTree;	/* conj(conj(A, B), C) => conj(A, B, C) */
+    RuleTerm lastRuleTerm;
+    bool lastRuleTermSet;
+    bool sharedVarsSet;
 };
 
 } // namespace w3c_sw
@@ -226,9 +229,10 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS IT_LABEL
+%token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS
+       IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES
        IT_GRAPH IT_SERVICE IT_BASE IT_PREFIX IT_DISTINCT
-       IT_REDUCED GT_TIMES IT_CONSTRUCT IT_FROM IT_NAMED IT_ORDER
+       IT_REDUCED GT_TIMES IT_CONSTRUCT IT_SELECT IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
        IT_ENDS IT_ANY IT_UNORDERED GT_LCURLEY GT_RCURLEY IT_WHERE
        GT_LPAREN GT_RPAREN IT_UNDEF GT_DOT IT_OPTIONAL IT_MINUS IT_UNION IT_FILTER
@@ -255,15 +259,18 @@ public:
 %token <p_NIL> NIL
 
 /* Productions */
-%type <p_Operation> ConstructQuery  // SPARQL 1
+%type <p_Operation> ConstructQuery SubSelect // SPARQL 1
+%type <p_Project> SelectClause
 
-%type <p_distinctness> _QIT_DISTINCT_E_Opt
+%type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
+		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _QIT_DISTINCT_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 
 %type <p_POSList> _QVar_E_Plus
+%type <p_VarSet>  _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C
 %type <p_ExpressionAliaseList> GroupClause _QGroupClause_E_Opt _QGroupCondition_E_Plus
-
+                               _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_DatasetClause> DatasetClause
 			_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C
@@ -300,8 +307,8 @@ public:
 %type <p_POS> SourceSelector
 	      BlankNodePropertyList
 	      Verb VarOrIRIref VarOrTerm GraphNode
-	      GraphTerm BlankNode TriplesNode Generator
-              BindingValue _QLabel_E_Opt
+	      GraphTerm _QGraphTerm_E_Opt BlankNode TriplesNode Generator
+              BindingValue
 %type <p_POSs> _QGraphNode_E_Plus
 %type <p_RDFLiteral> RDFLiteral _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
@@ -331,6 +338,8 @@ public:
                      _O_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C
 
 %type <p_ExpressionAlias>  GroupCondition
+                           _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
+                           _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
 %type <p_GeneralComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C
 			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt
 
@@ -358,60 +367,94 @@ public:
 
  /*** BEGIN MapSet - Change the grammar rules below ***/
 MapSet:
-    // Prologue ConstructQuery*
+    // Prologue AccessParm* ConstructQuery*
     {
 	driver.root = new MapSet();
-      }	Prologue AccessParms_Star Map_Star	
+	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
+      }	Prologue _QAccessParm_E_Star _QConstructQuery_E_Star	
 ;
 
-AccessParms_Star:
+_QAccessParm_E_Star:
     
-  | AccessParms_Star IT_REWRITEVAR Var RDFLiteral RDFLiteral	{
-#if REGEX_LIB == SWOb_DISABLED
-      throw std::string("not compiled with REGEX_LIB: can't map ") + $3->toString() + " from " + $4->toString() + " to " + $5->toString() + ".";
-#else /* ! REGEX_LIB == SWOb_DISABLED */
-#if NotYet
-      driver.root->rewriteVars.push_back(POSmap($3, $4->getLexicalValue(), $5->getLexicalValue()));
-#endif /* NotYet */
-#endif /* ! REGEX_LIB == SWOb_DISABLED */
-    }
-  | AccessParms_Star IT_SERVER RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->server = $3;
-    }
-  | AccessParms_Star IT_USER RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->user = $3;
-    }
-  | AccessParms_Star IT_PASSWORD RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->password = $3;
-    }
-  | AccessParms_Star IT_DATABASE RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->database = $3;
-    }
-  | AccessParms_Star IT_STEMURI IRIref	{
-	static_cast<MapSet*>(driver.root)->stemURI = $3;
-    }
-  | AccessParms_Star IT_PRIMARYKEY RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->primaryKey = $3;
-    }
-  | AccessParms_Star IT_SHAREDVARS BooleanLiteral	{
-      static_cast<MapSet*>(driver.root)->sharedVars = $3->getValue();
-    }
+  | _QAccessParm_E_Star AccessParm	
 ;
 
 // ConstructQuery*
-Map_Star:
+_QConstructQuery_E_Star:
     
-  | Map_Star ConstructQuery	
+  | _QConstructQuery_E_Star ConstructQuery	
 ;
 
-// Label?
-_QLabel_E_Opt:
+AccessParm:
+    IT_REWRITEVAR Var RDFLiteral RDFLiteral	{
+#if REGEX_LIB == SWOb_DISABLED
+      throw std::string("not compiled with REGEX_LIB: can't map ") + $2->toString() + " from " + $3->toString() + " to " + $4->toString() + ".";
+#else /* ! REGEX_LIB == SWOb_DISABLED */
+#if NotYet // @@
+      driver.root->rewriteVars.push_back(POSmap($2, $3->getLexicalValue(), $4->getLexicalValue()));
+#endif /* NotYet */
+#endif /* ! REGEX_LIB == SWOb_DISABLED */
+    }
+  | IT_SERVER RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->server = $2;
+    }
+  | IT_USER RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->user = $2;
+    }
+  | IT_PASSWORD RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->password = $2;
+    }
+  | IT_DATABASE RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->database = $2;
+    }
+  | IT_STEMURI IRIref	{
+	static_cast<MapSet*>(driver.root)->stemURI = $2;
+    }
+  | IT_PRIMARYKEY RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->primaryKey = $2;
+    }
+  | IT_SHAREDVARS _O_QIT_PROMISCUOUS_E_Or_QIT_VARNAMES_E_Or_QIT_DRACONIAN_E_C	{
+	driver.sharedVarsSet = true;
+    }
+  | IT_INTERSECTION _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus	{
+	driver.lastRuleTermSet = false;
+    }
+;
+
+_O_QIT_PROMISCUOUS_E_Or_QIT_VARNAMES_E_Or_QIT_DRACONIAN_E_C:
+    IT_PROMISCUOUS	{
+	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
+    }
+  | IT_VARNAMES	{
+	driver.root->sharedVars = MapSet::e_VARNAMES;
+    }
+  | IT_DRACONIAN	{
+	driver.root->sharedVars = MapSet::e_DRACONIAN;
+    }
+;
+
+_QGraphTerm_E_Opt:
     {
 	$$ = NULL;
     }
-  | IT_LABEL GraphTerm	{
-	$$ = $2;
+  | GraphTerm	
+;
+
+_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C:
+    GT_LCURLEY _QGraphTerm_E_Opt GT_RCURLEY VarOrTerm	{
+	RuleTerm nextRuleTerm = RuleTerm($2, $4);
+	if (driver.lastRuleTermSet)
+	    static_cast<MapSet*>(driver.root)->nodeShare.addIntersection(driver.lastRuleTerm, nextRuleTerm);
+	driver.lastRuleTerm = nextRuleTerm;
+	driver.lastRuleTermSet = true;
+	if (!driver.sharedVarsSet)
+	    driver.root->sharedVars = MapSet::e_DRACONIAN;
     }
+;
+
+_Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus:
+    _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
+  | _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
 ;
 
 Prologue:
@@ -421,14 +464,14 @@ Prologue:
 
 // BaseDecl?
 _QBaseDecl_E_Opt:
-
-    | BaseDecl
+    
+  | BaseDecl	
 ;
 
 // PrefixDecl*
 _QPrefixDecl_E_Star:
-
-    | _QPrefixDecl_E_Star PrefixDecl
+    
+  | _QPrefixDecl_E_Star PrefixDecl
 ;
 
 BaseDecl:
@@ -448,15 +491,42 @@ PrefixDecl:
       }
 ;
 
-// DatasetClause*
-_QDatasetClause_E_Star:
+SubSelect:
+    // SelectClause WhereClause SolutionModifier
+    SelectClause {
+	$<p_TableOperation>$ = driver.curOp;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
+      } WhereClause SolutionModifier	{
+	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+      }
+;
+
+SelectClause:
+    // 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*'
+    IT_SELECT _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C	{
+	$$.distinctness = $2;
+	$$.varSet = $3;
+    }
+;
+
+// 'DISTINCT' | 'REDUCED'
+_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C:
+    IT_DISTINCT	{
+	$$ = DIST_distinct;
+    }
+  | IT_REDUCED	{
+	$$ = DIST_reduced;
+    }
+;
+
+// ( 'DISTINCT' | 'REDUCED' )?
+_Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt:
     {
-	$$ = new ProductionVector<const DatasetClause*>();
+	$$ = DIST_all;
     }
-  | _QDatasetClause_E_Star DatasetClause	{
-	$1->push_back($2);
-	$$ = $1;
-    }
+  | _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C	
 ;
 
 // "AS" Var
@@ -474,12 +544,78 @@ _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
   | _O_QIT_AS_E_S_QVar_E_C	
 ;
 
+// "(" Expression ( "AS" Var )? ")"
+_O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
+    GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
+	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
+    }
+;
+
+// ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
+_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
+    Var	{
+	$$ = new ExpressionAlias(new POSExpression($1));
+    }
+  | Aggregate	{
+	$$ = new ExpressionAlias($1);
+    }
+  | BuiltInCall	{
+	$$ = new ExpressionAlias($1);
+    }
+  | FunctionCall	{
+	$$ = new ExpressionAlias($1);
+    }
+  | RDFLiteral	{
+	$$ = new ExpressionAlias(new POSExpression($1));
+    }
+  | NumericLiteral	{
+	$$ = new ExpressionAlias(new POSExpression($1));
+    }
+  | BooleanLiteral	{
+	$$ = new ExpressionAlias(new POSExpression($1));
+    }
+  | // "(" Expression ( "AS" Var )? ")"
+    _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	
+;
+
+// ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
+_Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus:
+    _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	{
+	$$ = new ExpressionAliasList($1);
+    }
+  | _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C	{
+    $1->push_back($2);
+    $$ = $1;
+}
+;
+
+// ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*'
+_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C:
+    _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus	{
+	$$ = $1; // Grammar action needed for implicit upcast.
+    }
+  | GT_TIMES	{
+	$$ = new StarVarSet();
+    }
+;
+
 ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    _QLabel_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
+    _QGraphTerm_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	Construct* constr = new Construct((DefaultGraphPattern*)$3, $4, $5, $6);
 	driver.root->maps.push_back(LabeledConstruct($1, constr));
+    }
+;
+
+// DatasetClause*
+_QDatasetClause_E_Star:
+    {
+	$$ = new ProductionVector<const DatasetClause*>();
+    }
+  | _QDatasetClause_E_Star DatasetClause	{
+	$1->push_back($2);
+	$$ = $1;
     }
 ;
 
@@ -762,7 +898,7 @@ _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star:
 ;
 
 _O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C:
-    IT_BINDINGS _QVar_E_Plus GT_LCURLEY {
+    IT_BINDINGS _QVar_E_Plus GT_LCURLEY	{
 	driver.curBindingsClause = new BindingClause($2);
       } _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star GT_RCURLEY	{
 	  $$ = driver.curBindingsClause;
@@ -775,6 +911,7 @@ _Q_O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue
 	$$ = NULL;
     }
   | _O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C	
+;
 
 BindingValue:
     IRIref	{
@@ -811,7 +948,8 @@ GroupGraphPattern:
 
 // GroupGraphPatternSub
 _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
-    GroupGraphPatternSub	
+    SubSelect
+  | GroupGraphPatternSub	
 ;
 
 GroupGraphPatternSub:
@@ -1798,7 +1936,8 @@ namespace w3c_sw {
 	YaccDriver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
-	root(NULL)
+	root(NULL), lastRuleTerm(posFactory->getNULL(), posFactory->getNULL()),
+	lastRuleTermSet(false), sharedVarsSet(false)
 {
 }
 
