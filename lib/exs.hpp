@@ -32,7 +32,7 @@ public:
 	journal.push_back(format(file, line, what));
     }
     ~JournalState () { journal.pop_back(); }
-    static void now (std::string file, size_t line, std::string what) {
+    void now (std::string file, size_t line, std::string what) {
 	journal.pop_back();
 	journal.push_back(format(file, line, what));
     }
@@ -45,9 +45,9 @@ public:
 
 StackException varBarfer (char const* type, char const* file, size_t line, char const* fmt, ...);
 
-#define w3c_sw_MARK JournalState(__FILE__,  __LINE__, FUNCTION_STRING)
-#define w3c_sw_START(X) JournalState(__FILE__,  __LINE__, X)
-#define w3c_sw_NOW(X) JournalState::now(__FILE__,  __LINE__, X)
+#define w3c_sw_MARK JournalState __JournalState(__FILE__,  __LINE__, FUNCTION_STRING)
+#define w3c_sw_START(X) JournalState __JournalState(__FILE__,  __LINE__, X)
+#define w3c_sw_NOW(X) __JournalState.now(__FILE__,  __LINE__, X)
 #define w3c_sw_FAIL(X) throw(varBarfer("FAIL", __FILE__,  __LINE__, X))
 #define w3c_sw_FAIL1(X, a) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a))
 #define w3c_sw_FAIL2(X, a, b) throw(varBarfer("FAIL", __FILE__,  __LINE__, X, a, b))
