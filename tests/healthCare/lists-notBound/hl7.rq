@@ -1,32 +1,41 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
 SELECT ?patient ?dob ?sex ?takes ?indicDate 
 WHERE
 {
   {
-    ?patient <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#Person> .
-    ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#entityName> ?middleName .
-    ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#livingSubjectBirthTime> ?dob .
-    ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#administrativeGenderCodePrintName> ?sex .
-    ?b0x8ea18a8_gen3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#SubstanceAdministration> .
-    ?b0x8ea1a58_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#displayName> ?takes .
-    ?b0x8ea1f30_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#classCode> ?code .
-    ?b0x8ea1a58_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#activeIngredient> ?b0x8ea1f30_gen1 .
-    ?b0x8ea18a8_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#consumable> ?b0x8ea1a58_gen0 .
-    ?b0x8ea17f0_gen2 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#start> ?indicDate .
-    ?b0x8ea18a8_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#effectiveTime> ?b0x8ea17f0_gen2 .
-    ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#substanceAdministration> ?b0x8ea18a8_gen3 .
+    ?patient a hl7:Person ;
+	     hl7:entityName ?middleName ;
+	     hl7:livingSubjectBirthTime ?dob ;
+	     hl7:administrativeGenderCodePrintName ?sex ;
+	     hl7:substanceAdministration ?indicAdm .
+    ?indicAdm a hl7:SubstanceAdministration ;
+	      hl7:displayName ?takes ;
+	      hl7:consumable ?indicMed .
+
+    ?indicMed hl7:activeIngredient ?indicIngred .
+    ?indicIngred hl7:classCode ?code .
+
+    ?indicAdm hl7:effectiveTime ?indicDuration .
+    ?indicDuration hl7:start ?indicDate .
+
     FILTER ( ?code = 6809  || ?code = 6810 )
   }
-#  OPTIONAL {
-#    ?b0x8ea18a8_gen4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#SubstanceAdministration> .
-#    ?b0x8ea1a58_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#displayName> ?takes_gen1 .
-#    ?b0x8ea1f30_gen2 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#classCode> ?contCode .
-#    ?b0x8ea1a58_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#activeIngredient> ?b0x8ea1f30_gen2 .
-#    ?b0x8ea18a8_gen4 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#consumable> ?b0x8ea1a58_gen1 .
-#    ?b0x8ea17f0_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#start> ?indicDate .
-#    ?b0x8ea18a8_gen4 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#effectiveTime> ?b0x8ea17f0_gen3 .
-#    ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#substanceAdministration> ?b0x8ea18a8_gen4 .
-#    FILTER ( ?contCode = 11289  || ?contCode = 11290 )
-#  }
-#  FILTER ( !bound(?contCode))
+  OPTIONAL {
+    ?patient hl7:substanceAdministration ?contraAdm .
+    ?contraAdm a hl7:SubstanceAdministration ;
+	       hl7:displayName ?takes_gen1 ;
+	       hl7:consumable ?contraMed .
+
+    ?contraMed hl7:activeIngredient ?contraIngred .
+    ?contraIngred hl7:classCode ?contCode .
+
+    ?contraAdm hl7:effectiveTime ?contraDuration .
+    ?contraDuration hl7:start ?indicDate .
+
+    FILTER ( ?contCode = 11289  || ?contCode = 11290 )
+  }
+  FILTER ( !bound(?contCode))
 }
 LIMIT 30
