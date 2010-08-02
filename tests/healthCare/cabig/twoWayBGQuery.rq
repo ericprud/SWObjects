@@ -1,0 +1,17 @@
+PREFIX bg: <http://www.bridgmodel.org/ontology/poc1#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dt: <http://www.hl7.org/r2/datatypes/ontology/poc1#>
+PREFIX math: <http://www.w3.org/2000/10/swap/math#> 
+
+SELECT ?pat ?midName ?bd ?sex
+WHERE
+{
+  ?pat        bg:name [ dt:part [ dt:value     ?midName ] ] .
+  ?pat        bg:birthDate [ dt:value    ?bd ] .
+  FILTER (?bd > "1999-01-01T00:00"^^xsd:dateTime)
+  ?pat        bg:administrativeGenderCode [ dt:code ?sex ] .
+  ?pat        bg:isParticitpatedInBy ?med .
+  ?med        bg:nameCode [ a dt:CD; dt:code ?takes ] ;
+              bg:instantiatedBy [ bg:actualDateRange [ dt:IVL.LOW ?indicDate ] ]
+  FILTER (?indicDate < "2010-01-01T00:00"^^xsd:dateTime)
+}

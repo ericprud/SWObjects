@@ -9,6 +9,8 @@ PREFIX NDCcodes: <http://hospital.example/DB/NDCcodes#>
 PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
 PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
 
+STEMURI <http://hospital.example/DB/>
+
 <name> CONSTRUCT { ?person a hl7:Person ; hl7:entityName                        ?middleName }
            WHERE { ?person Person:MiddleName  ?middleName }
 <dob>  CONSTRUCT { ?person a hl7:Person ; hl7:livingSubjectBirthTime		?dob        }

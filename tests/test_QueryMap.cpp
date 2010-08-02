@@ -448,11 +448,6 @@ struct SQLizerTest {
 
 BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE( simple )
-	BOOST_AUTO_TEST_CASE( r ) {
-	    RuleMapTest t("twoWayBGQuery.rq", "twoWayHL7-BGMap.rq", "res.rq");
-	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-	}
-
 	BOOST_AUTO_TEST_CASE( order ) {
 	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
 			  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
@@ -524,8 +519,18 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 	    BOOST_CHECK_EQUAL(s.transformed, s.ref);
         }
     BOOST_AUTO_TEST_SUITE_END()
+
+    BOOST_AUTO_TEST_SUITE( cabig )
+	BOOST_AUTO_TEST_CASE( bg_hl7 ) {
+	    RuleMapTest t("healthCare/cabig/twoWayBGQuery.rq", "healthCare/cabig/twoWayHL7-BGMap.rq", "healthCare/cabig/twoWayHL7Query.rq");
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+    BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
+#if 0
 BOOST_AUTO_TEST_CASE( refree ) { // !! leaky
     namespace tst = boost::unit_test::framework;
     std::string stem = "http://someClinic.exampe/DB/";
@@ -538,7 +543,6 @@ BOOST_AUTO_TEST_CASE( refree ) { // !! leaky
     BOOST_CHECK_EQUAL(s.transformed, s.ref);
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( bsbm_1 ) {
     RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
     if (boost::unit_test::framework::master_test_suite().argc > 1 && 

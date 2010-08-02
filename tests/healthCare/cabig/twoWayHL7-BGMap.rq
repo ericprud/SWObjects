@@ -1,0 +1,44 @@
+PREFIX bg: <http://www.bridgmodel.org/ontology/poc1#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dt: <http://www.hl7.org/r2/datatypes/ontology/poc1#>
+
+PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
+#SHAREDVARS varnames
+INTERSECTION {<name>}?patient {<dob>}?patient {<sex>}?patient {<med>}?patient
+
+<name> CONSTRUCT
+{ ?patient a bg:Person;
+           bg:name
+    [ a dt:EN ;
+      dt:part
+        [ a dt:ENXP;
+          dt:type "GIV"^^xsd:string;
+          dt:value ?middleName ] ] } WHERE { ?patient hl7:entityName       ?middleName }
+
+<dob> CONSTRUCT
+{ ?patient bg:birthDate [
+    a dt:TS.DATETIME;
+    dt:value     ?birthDate ] } WHERE { ?patient hl7:livingSubjectBirthTime ?birthDate }
+
+<sex> CONSTRUCT
+{ ?patient bg:administrativeGenderCode
+    [ a dt:CD;
+      dt:code ?sexCode ] } WHERE { ?patient hl7:administrativeGenderCodePrintName ?sexCode }
+
+<med> CONSTRUCT
+{ ?patient bg:isParticitpatedInBy ?medication .
+  ?medication a bg:DefinedSubstanceAdministration;
+              bg:nameCode [ a dt:CD; dt:code ?medName ] ;
+              bg:instantiatedBy 
+    [ a bg:PerformedSubstanceAdministration;
+      bg:actualDateRange
+    [ a dt:IVL ;
+      dt:IVL.LOW ?indicDate ;
+      a dt:TS.DateTime ] ] } WHERE { ?patient hl7:substanceAdministration		  
+                                       [ a hl7:SubstanceAdministration ;
+                                         hl7:consumable 
+                                           [ hl7:displayName	 ?medName ;
+                                             spl:activeIngredient [ spl:classCode ?ingred ] ] ;
+                                         hl7:effectiveTime [ hl7:start ?indicDate ] ] }
