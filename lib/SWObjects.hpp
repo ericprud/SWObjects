@@ -18,9 +18,22 @@
  */
 #define w3c_sw_STRINGIFY(x) #x
 #define w3c_sw_TOSTRING(x) w3c_sw_STRINGIFY(x)
-#define w3c_sw_LINE std::cerr << __FILE__ "(" w3c_sw_TOSTRING(__LINE__) "): warning LINE\n"
+#define w3c_sw_LINE w3c_sw_LINEN << "LINE\n"
+#define w3c_sw_LINEN std::cerr << __FILE__ "(" w3c_sw_TOSTRING(__LINE__) "): warning "
 #define w3c_sw_NEED_IMPL(x) throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x)
 #define w3c_sw_IF_IMPL(t, x) if (t) {throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x);}
+
+#if NEED_iterStr
+template<typename Iterated, class InputIterator>
+std::string iterStr (InputIterator first, InputIterator last) {
+    std::stringstream ss;
+    std::ostream_iterator<Iterated> oi(ss, ", ");
+    std::copy(first, last, oi);
+    std::string ret(ss.str());
+    return first == last ? ret : ret.substr(0, ret.size() - 2);
+}
+#endif /* NEED_iterStr */
+
 
 /* defines for controlling includes from utils */
 #include "config.h"
@@ -2452,7 +2465,7 @@ public:
 	return posFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
-	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
+	const BooleanDisjunction* pref = dynamic_cast<const BooleanDisjunction*>(&ref);
 	return pref == NULL ? false : NaryExpression::operator==(*pref);
     }
 };
