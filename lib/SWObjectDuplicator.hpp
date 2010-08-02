@@ -540,6 +540,11 @@ namespace w3c_sw {
 	    lastBGP = NULL;
 	    lastInConj = false;
 	}
+	virtual void filter (const Filter* const self, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::filter (self, p_op, p_Constraints);
+	    pendingConjunction(outer);
+	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    NamedGraphPattern* ret = dynamic_cast<NamedGraphPattern*>(lastBGP);
 	    if (ret == NULL || ret->m_name != p_name) {
