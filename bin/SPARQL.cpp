@@ -18,7 +18,7 @@ namespace sw = w3c_sw;
 #include "ResultSet.hpp"
 
 #include "XMLQueryExpressor.hpp"
-#include "QueryMapper.hpp"
+#include "ChainingMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
 #include "XMLSerializer.hpp"
@@ -268,8 +268,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     sw::POSFactory& posFactory;
     sw::SPARQLfedDriver& sparqlParser;
     std::string pkAttribute;
+    sw::KeyMap keyMap;
     sw::MapSetDriver mapSetParser;
-    sw::QueryMapper queryMapper;
+    sw::ChainingMapper queryMapper;
     std::string SQLUser;
     std::string SQLPassword;
     std::string SQLServer;
@@ -350,10 +351,10 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	if (queryMapper.getRuleCount() > 0) {
 	    if (DebugStream != NULL)
 		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
-	    query->express(&queryMapper);
+	    const sw::Operation* transformed(queryMapper.map(query));
 	    if (delMe != NULL)
 		delete delMe;
-	    query = delMe = queryMapper.last.operation;
+	    query = delMe = transformed;
 	}
 
 	if (Debug > 0) {
@@ -375,8 +376,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    language = "SQL";
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
-	    const char* PkAttr = "id";
-	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, PkAttr, &DebugStream);
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, &DebugStream);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
@@ -792,6 +792,7 @@ NamespaceAccumulator NsAccumulator;
 NamespaceRelay NsRelay(NsAccumulator);
 
 loadList LoadList;
+loadList MapList;
 loadEntry Output(NULL, F.getURI("-"), NULL);
 bool InPlace = false;
 
@@ -971,6 +972,20 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0) {
 	std::cout << "queued reading default data from " << abs->getLexicalValue() << "\n";
+	if (BaseURI != NULL)
+	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+    }
+}
+
+/* Overload of relURI to validate --mapset arguments. */
+struct mapURI : public relURI {};
+void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    MapList.push_back(loadEntry(NULL, abs, BaseURI));
+    if (Debug > 0) {
+	std::cout << "queued reading default map from " << abs->getLexicalValue() << "\n";
 	if (BaseURI != NULL)
 	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
     }
@@ -1207,7 +1222,7 @@ int main(int ac, char* av[])
             ("sql-service,S", po::value<sqlService>(), 
 	     "odbc-style SQL database\n\tdriver://[username[:password]@]host[:port]/database\nmysql://localhost/orders")
 #endif /* REGEX_LIB != SWOb_DISABLED */
-            ("mapset,m", po::value<std::string>(), 
+            ("mapset,m", po::value<mapURI>(), 
 	     "mapset resource, which supplies above parameters.")
             ;
 
@@ -1427,23 +1442,27 @@ int main(int ac, char* av[])
 	    if (vm.count("pipe"))
 		TheServer.printQuery = true;
 
-	    if (vm.count("mapset")) {
-		std::string mapSpec = vm["mapset"].as<std::string>();
-		sw::IStreamContext::e_opts opts = sw::IStreamContext::STDIN;
-		sw::IStreamContext iptr(mapSpec, opts, NULL, &Agent, &DebugStream);
-		if (TheServer.mapSetParser.parse(iptr) != 0)
-		    throw std::string("error when parsing map ").append(mapSpec);
+	    for (loadList::iterator it = MapList.begin();
+		 it != MapList.end(); ++it) {
+		std::string nameStr = it->resource->getLexicalValue();
+		sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
+					&Agent, &DebugStream);
+		if (TheServer.mapSetParser.parse(istr) != 0)
+		    throw std::string("error when parsing map ").append(nameStr);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
 		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
 		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
 		if (ms->password) TheServer.SQLPassword = ms->password->getLexicalValue();
 		if (ms->database) TheServer.SQLDatabase = ms->database->getLexicalValue();
 		if (ms->stemURI) TheServer.stemURI = ms->stemURI->getLexicalValue();
+		TheServer.queryMapper.sharedVars = ms->sharedVars;
 		for (sw::MapSet::ConstructList::const_iterator it = ms->maps.begin();
 		     it != ms->maps.end(); ++it)
-		    TheServer.queryMapper.addRule(it->constr);
+		    TheServer.queryMapper.addRule(it->constr, it->label);
+		TheServer.queryMapper.nodeShare = ms->nodeShare;
 
 		if (ms->primaryKey) TheServer.pkAttribute = ms->primaryKey->getLexicalValue();
+		TheServer.keyMap = ms->keyMap;
 		delete ms;
 	    }
 
@@ -1454,7 +1473,7 @@ int main(int ac, char* av[])
 		    throw std::string("Rule file ").append(": ").
 			append((*it)->getLexicalValue()).
 			append(" was not a SPARQL CONSTRUCT");
-		TheServer.queryMapper.addRule(c);
+		TheServer.queryMapper.addRule(c, *it);
 		delete rule;
 	    }
 
