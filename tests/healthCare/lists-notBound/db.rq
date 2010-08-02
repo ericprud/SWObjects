@@ -1,33 +1,43 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Person: <http://hospital.example/DB/Person#>
+PREFIX Sex_DE: <http://hospital.example/DB/Sex_DE#>
+PREFIX Item_Medication: <http://hospital.example/DB/Item_Medication#>
+PREFIX Medication: <http://hospital.example/DB/Medication#>
+PREFIX Medication_DE: <http://hospital.example/DB/Medication_DE#>
+PREFIX NDCcodes: <http://hospital.example/DB/NDCcodes#>
+
 SELECT ?patient ?dob ?sex ?takes ?indicDate 
 WHERE
 {
   {
-    ?patient <http://hospital.example/DB/Person#MiddleName> ?middleName .
-    ?patient <http://hospital.example/DB/Person#DateOfBirth> ?dob .
-    ?patient <http://hospital.example/DB/Person#SexDE> ?sexEntry_gen0 .
-    ?sexEntry_gen0 <http://hospital.example/DB/Sex_DE#EntryName> ?sex .
-    ?indicItem_gen2 <http://hospital.example/DB/Item_Medication#PatientID> ?patient .
-    ?indicItem_gen2 <http://hospital.example/DB/Item_Medication#PerformedDTTM> ?indicDate .
-    ?indicItem_gen2 <http://hospital.example/DB/Item_Medication#EntryName> ?takes .
-    ?indicMed_gen3 <http://hospital.example/DB/Medication#ItemID> ?indicItem_gen2 .
-    ?indicMed_gen3 <http://hospital.example/DB/Medication#DaysToTake> ?indicDuration_gen4 .
-    ?indicMed_gen3 <http://hospital.example/DB/Medication#MedDictDE> ?indicDE_gen5 .
-    ?indicDE_gen5 <http://hospital.example/DB/Medication_DE#NDC> ?indicNDC_gen6 .
-    ?indicCode_gen1 <http://hospital.example/DB/NDCcodes#NDC> ?indicNDC_gen6 .
-    ?indicCode_gen1 <http://hospital.example/DB/NDCcodes#ingredient> ?code .
-    FILTER ( ?code = 6809  || ?code = 6810 )
+    ?patient Person:MiddleName ?middleName ;
+             Person:DateOfBirth ?dob ;
+             Person:SexDE ?_sex_0_sexEntry .
+    ?_sex_0_sexEntry Sex_DE:EntryName ?sex .
+    ?_person2drug_0_itemMed Item_Medication:PatientID ?patient ;
+                            Item_Medication:PerformedDTTM ?indicDate ;
+                            Item_Medication:EntryName ?takes .
+    ?_person2drug_0_medication Medication:ItemID ?_person2drug_0_itemMed ;
+                               Medication:DaysToTake ?_person2drug_0_medDuration ;
+                               Medication:MedDictDE ?_person2drug_0_medDE .
+    ?_person2drug_0_medDE Medication_DE:NDC ?_person2drug_0_medNDC .
+    ?_person2drug_0_medCodes NDCcodes:NDC ?_person2drug_0_medNDC ;
+                             NDCcodes:ingredient ?indicCode .
+      FILTER ( ?indicCode = 6809  || ?indicCode = 6810 )
   }
-  OPTIONAL {
-        ?indicItem_gen3 <http://hospital.example/DB/Item_Medication#PatientID> ?patient .
-        ?indicItem_gen3 <http://hospital.example/DB/Item_Medication#PerformedDTTM> ?indicDate .
-        ?indicMed_gen4 <http://hospital.example/DB/Medication#ItemID> ?indicItem_gen3 .
-        ?indicMed_gen4 <http://hospital.example/DB/Medication#DaysToTake> ?indicDuration_gen5 .
-        ?indicMed_gen4 <http://hospital.example/DB/Medication#MedDictDE> ?indicDE_gen6 .
-        ?indicDE_gen6 <http://hospital.example/DB/Medication_DE#NDC> ?indicNDC_gen7 .
-        ?indicCode_gen2 <http://hospital.example/DB/NDCcodes#NDC> ?indicNDC_gen7 .
-        ?indicCode_gen2 <http://hospital.example/DB/NDCcodes#ingredient> ?contCode .
-        FILTER ( ?contCode = 11289  || ?contCode = 11290 )
-  }
-  FILTER ( !bound(?contCode))
+  OPTIONAL     {
+      ?_person2drug_1_itemMed Item_Medication:PatientID ?patient ;
+                              Item_Medication:PerformedDTTM ?indicDate ;
+                              Item_Medication:EntryName ?takes_gen1 .
+      ?_person2drug_1_medication Medication:ItemID ?_person2drug_1_itemMed ;
+                                 Medication:DaysToTake ?_person2drug_1_medDuration ;
+                                 Medication:MedDictDE ?_person2drug_1_medDE .
+      ?_person2drug_1_medDE Medication_DE:NDC ?_person2drug_1_medNDC .
+      ?_person2drug_1_medCodes NDCcodes:NDC ?_person2drug_1_medNDC ;
+                               NDCcodes:ingredient ?contraCode .
+      FILTER ( ?contraCode = 11289  || ?contraCode = 11290 )
+    }
+  FILTER ( !bound(?contraCode) )
 }
+
 LIMIT 30

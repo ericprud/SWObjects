@@ -5,37 +5,37 @@ SELECT ?patient ?dob ?sex ?takes ?indicDate
 WHERE
 {
   {
-    ?patient a hl7:Person ;
+    ?patient # a hl7:Person ;
 	     hl7:entityName ?middleName ;
 	     hl7:livingSubjectBirthTime ?dob ;
 	     hl7:administrativeGenderCodePrintName ?sex ;
 	     hl7:substanceAdministration ?indicAdm .
-    ?indicAdm a hl7:SubstanceAdministration ;
-	      hl7:displayName ?takes ;
+    ?indicAdm # a hl7:SubstanceAdministration ;
 	      hl7:consumable ?indicMed .
 
-    ?indicMed hl7:activeIngredient ?indicIngred .
-    ?indicIngred hl7:classCode ?code .
+    ?indicMed hl7:displayName ?takes ;
+	      hl7:activeIngredient ?indicIngred .
+    ?indicIngred hl7:classCode ?indicCode .
 
     ?indicAdm hl7:effectiveTime ?indicDuration .
     ?indicDuration hl7:start ?indicDate .
 
-    FILTER ( ?code = 6809  || ?code = 6810 )
+    FILTER ( ?indicCode = 6809  || ?indicCode = 6810 )
   }
   OPTIONAL {
     ?patient hl7:substanceAdministration ?contraAdm .
     ?contraAdm a hl7:SubstanceAdministration ;
-	       hl7:displayName ?takes_gen1 ;
 	       hl7:consumable ?contraMed .
 
-    ?contraMed hl7:activeIngredient ?contraIngred .
-    ?contraIngred hl7:classCode ?contCode .
+    ?contraMed hl7:displayName ?takes_gen1 ;
+	       hl7:activeIngredient ?contraIngred .
+    ?contraIngred hl7:classCode ?contraCode .
 
     ?contraAdm hl7:effectiveTime ?contraDuration .
     ?contraDuration hl7:start ?indicDate .
 
-    FILTER ( ?contCode = 11289  || ?contCode = 11290 )
+    FILTER ( ?contraCode = 11289  || ?contraCode = 11290 )
   }
-  FILTER ( !bound(?contCode))
+  FILTER ( !bound(?contraCode))
 }
 LIMIT 30

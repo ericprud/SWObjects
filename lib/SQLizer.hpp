@@ -27,18 +27,18 @@ namespace w3c_sw {
 	    friend class SQLizer;
             friend class SQLUnionGenerator;
 	protected:
-	    SQLQuery query;
+	    SQLQuery* query;
 	    SQLQueryGenerator* parent;
 	    std::map<std::string, sql::Expression*> attachments;
 
 	    std::map<const POS*, std::map<std::string, Join*> > aliasMap;
-	    std::set<std::string> usedAliases;
+	    std::map<std::string, std::string> usedAliases;
 	    Join* curJoin;
 	    int nextUnionAlias;
 	    int nextOptAlias;
 
 	public:
-	    SQLQueryGenerator (SQLQueryGenerator* parent) : parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
+	    SQLQueryGenerator (SQLQueryGenerator* parent) : query(new SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
 	    ~SQLQueryGenerator () {
 // 		for (std::map<std::string, sql::Expression*>::iterator it = attachments.begin();
 // 		     it != attachments.end(); ++it)
@@ -64,25 +64,25 @@ namespace w3c_sw {
 		if (attachments.find(lexicalValue) == attachments.end())
 		    attachments[lexicalValue] = new ReallyNullConstraint();
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(new AliasedSelect(attachments[lexicalValue], lexicalValue));
+		query->selects.push_back(new AliasedSelect(attachments[lexicalValue], lexicalValue));
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new IntConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    void selectConstant (float value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new FloatConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    void selectConstant (double value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
 		    attachments[alias] = new DoubleConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query.selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
 	    void constrain (AliasAttr x, AliasAttr y) {
@@ -112,15 +112,15 @@ namespace w3c_sw {
 		s << "union" << ++nextUnionAlias;
 		SQLUnionGenerator* ret = new SQLUnionGenerator(this, corefs, s.str());
 		curJoin = new SubqueryJoin(ret->onion, s.str(), false);
-		query.joins.push_back(curJoin);
+		query->add(curJoin);
 		return ret;
 	    }
 	    SQLOptionalGenerator* makeOptional (std::vector<const POS*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptionalGenerator* ret = new SQLOptionalGenerator(this, corefs, s.str());
-		curJoin = new SubqueryJoin(&ret->query, s.str(), true);
-		query.joins.push_back(curJoin);
+		curJoin = new SubqueryJoin(ret->query, s.str(), true);
+		query->add(curJoin);
 		return ret;
 	    }
 	    std::string attachTuple (const POS* subject, std::string toRelation) {
@@ -161,17 +161,17 @@ namespace w3c_sw {
 		    aliasName = s.str();
 		}
 		curJoin = new TableJoin(toRelation, aliasName, false);
-		query.joins.push_back(curJoin);
-		usedAliases.insert(aliasName);
-		//std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getLexicalValue() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
+		query->add(curJoin);
+		usedAliases.insert(std::pair<std::string, std::string>(aliasName, toRelation));
+		// std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getLexicalValue() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
-	    void addConstraint (WhereConstraint* constraint) { query.constraints.push_back(constraint); }
-	    void addOrderClause (WhereConstraint* constraint) { query.orderBy.push_back(constraint); }
-	    void setDistinct (bool state = true) { query.distinct = state; }
-	    void setLimit (int limit) { query.limit = limit; }
-	    void setOffset (int offset) { query.offset = offset; }
+	    void addConstraint (WhereConstraint* constraint) { query->constraints.push_back(constraint); }
+	    void addOrderClause (WhereConstraint* constraint) { query->orderBy.push_back(constraint); }
+	    void setDistinct (bool state = true) { query->distinct = state; }
+	    void setLimit (int limit) { query->limit = limit; }
+	    void setOffset (int offset) { query->offset = offset; }
 	};
 
 	class SQLOptionalGenerator : public SQLQueryGenerator {
@@ -247,7 +247,7 @@ namespace w3c_sw {
 	    SQLDisjointGenerator* makeDisjoint () {
 		SQLDisjointGenerator* ret = new SQLDisjointGenerator(this);
 		disjointGenerators.push_back(ret);
-		onion->disjoints.push_back(&ret->query);
+		onion->disjoints.push_back(ret->query);
 		return ret;
 	    }
 
@@ -290,7 +290,10 @@ namespace w3c_sw {
 
 	    return pos+1;
 	}
-	AliasAttr getPKAttr (std::string alias) { return AliasAttr(alias, defaultPKAttr); }
+	AliasAttr getPKAttr (std::string alias) {
+	    std::string relation(curQuery->usedAliases[alias]);
+	    return AliasAttr(alias, keyMap.find(relation) == keyMap.end() ? defaultPKAttr : keyMap[relation]);
+	}
 
 	std::string stem;
 	/*	AliasContext* curAliases; */
@@ -307,21 +310,22 @@ namespace w3c_sw {
 	char* nodeDelims;
 	WhereConstraint* curConstraint;
 	std::string defaultPKAttr;
+	KeyMap keyMap;
 
 	std::ostream** debugStream;
 
     public:
 	//static std::ostream** ErrorStream;
 
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, std::ostream** debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
-	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), debugStream(debugStream)
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap), debugStream(debugStream)
 	{  }
 	~SQLizer () {
 	    delete curQuery;
 	}
 
-	std::string getSQLstring () { return curQuery->query.toString(); }
+	std::string getSQLstring () { return curQuery->query->toString(); }
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 

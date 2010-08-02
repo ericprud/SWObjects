@@ -799,6 +799,9 @@ namespace w3c_sw {
 	    SQLQuery () : distinct(false), limit(-1), offset(-1) {  }
 	    SQLQuery (std::vector<Join*>* joins) : joins(*joins), distinct(false), limit(-1), offset(-1) {  }
 	    virtual ~SQLQuery () {
+		// w3c_sw_LINEN << "~TableJoin: " << this
+		// 	     << ": " << iterStr<Join*>(joins.begin(), joins.end())
+		// 	     << "\n";
 
 		for (std::vector<AliasedSelect*>::iterator iSelects = selects.begin();
 		     iSelects != selects.end(); ++iSelects) {
@@ -887,6 +890,8 @@ namespace w3c_sw {
 
 		return s.str();
 	    }
+
+	    void add (Join* join) { joins.push_back(join); }
 	};
 
 	inline std::ostream& operator<< (std::ostream& os, SQLQuery const& my) {

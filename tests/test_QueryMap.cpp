@@ -396,16 +396,36 @@ struct RuleMapTest {
 struct SQLizerTest {
     //std::iostream* sqlErrorStream;
     std::string transformed, ref;
+    Operation* deleteOperation;
+    SQLizerTest (const char* queryFile, 
+		 const char* stemURI, const char* sqlResultsFile)
+	: deleteOperation(NULL)
+	//: sqlErrorStream(SQLizer::ErrorStream)
+    {
+	//SQLizer::ErrorStream = &std::cerr;
+	IStreamContext qstr(queryFile, IStreamContext::FILE);
+	if (sparqlParser.parse(qstr)) {
+	    std::string msg = std::string("failed to parse query \"") + 
+		queryFile + std::string("\".");
+	    throw msg;
+	}
+	deleteOperation = sparqlParser.root;
+	_init(deleteOperation, stemURI, sqlResultsFile);
+    }
     SQLizerTest (const Operation* sparqlQuery, 
 		 const char* stemURI, const char* sqlResultsFile)
+	: deleteOperation(NULL)
 	//: sqlErrorStream(SQLizer::ErrorStream)
+    { _init(sparqlQuery, stemURI, sqlResultsFile); }
+    void _init (const Operation* sparqlQuery, 
+		const char* stemURI, const char* sqlResultsFile)
     {
 	//SQLizer::ErrorStream = &std::cerr;
 
 	/* map SPARQLquery to SQL. */
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", &DebugStream);
+	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", KeyMap(), &DebugStream);
 	sparqlQuery->express(&s);
 	transformed = s.getSQLstring() + "\n";
 	//std::cout << s.getSQLstring() << endl;
@@ -427,82 +447,96 @@ struct SQLizerTest {
 };
 
 BOOST_AUTO_TEST_SUITE( healthCare )
-BOOST_AUTO_TEST_SUITE( simple )
-#if 1
-BOOST_AUTO_TEST_CASE( r ) {
-    RuleMapTest t("twoWayBGQuery.rq", "twoWayHL7-BGMap.rq", "res.rq");
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-#endif
-#if 1
-BOOST_AUTO_TEST_CASE( order ) {
-    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
-		  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
-		  "'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
-		  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
-		  "           SERVICE <S3> { ?qs <p3> ?qo } }",
-		  IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-BOOST_AUTO_TEST_CASE( p1_p2 ) {
-    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
-		  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
-		  "SELECT * { ?qs <p1> ?qo }",
-		  IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-BOOST_AUTO_TEST_CASE( p01_p2 ) {
-    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
-		  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro ; <p0> 'x' }",
-		  "SELECT * { ?qs <p1> ?qo ; <p0> 'x' }",
-		  IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-BOOST_AUTO_TEST_CASE( p3 ) {
-    BOOST_CHECK_THROW
-	(RuleMapTest("SELECT * { ?qs <p3> ?qo }",
-		     "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
-		     "",
-		     IStreamContext::STRING),
-	 RuleMatchingException);
-}
-#if 1
-BOOST_AUTO_TEST_CASE( p1_S1_p2 ) {
-    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
-		  "'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
-		  "SELECT * { SERVICE <S1> { ?qs <p1> ?qo } }",
-		  IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-BOOST_AUTO_TEST_CASE( p1_S2_p2_S3_p3 ) {
-    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
-		  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
-		  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
-		  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
-		  "           SERVICE <S3> { ?qs <p3> ?qo } }",
-		  IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-#endif
-#endif
-#if 0
-BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
-    RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
-    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-}
-#endif
-#if 1
-BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
-    RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
-    if (boost::unit_test::framework::master_test_suite().argc > 1 && 
-	std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
-	BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
-    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/simple/db.sql");
+    BOOST_AUTO_TEST_SUITE( simple )
+	BOOST_AUTO_TEST_CASE( r ) {
+	    RuleMapTest t("twoWayBGQuery.rq", "twoWayHL7-BGMap.rq", "res.rq");
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+
+	BOOST_AUTO_TEST_CASE( order ) {
+	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+			  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+			  "'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+			  "           SERVICE <S3> { ?qs <p3> ?qo } }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+
+	BOOST_AUTO_TEST_CASE( p1_p2 ) {
+	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
+			  "SELECT * { ?qs <p1> ?qo }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+	BOOST_AUTO_TEST_CASE( p01_p2 ) {
+	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro ; <p0> 'x' }",
+			  "SELECT * { ?qs <p1> ?qo ; <p0> 'x' }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+	BOOST_AUTO_TEST_CASE( p3 ) {
+	    BOOST_CHECK_THROW
+		(RuleMapTest("SELECT * { ?qs <p3> ?qo }",
+			     "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
+			     "",
+			     IStreamContext::STRING),
+		 RuleMatchingException);
+	}
+	BOOST_AUTO_TEST_CASE( p1_S1_p2 ) {
+	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+			  "'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
+			  "SELECT * { SERVICE <S1> { ?qs <p1> ?qo } }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+	BOOST_AUTO_TEST_CASE( p1_S2_p2_S3_p3 ) {
+	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+			  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+			  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+			  "           SERVICE <S3> { ?qs <p3> ?qo } }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+	BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
+	    RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+	BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
+	    RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
+	    if (boost::unit_test::framework::master_test_suite().argc > 1 && 
+		std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
+		BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/simple/db.sql");
+	    BOOST_CHECK_EQUAL(s.transformed, s.ref);
+	}
+    BOOST_AUTO_TEST_SUITE_END()
+
+
+    BOOST_AUTO_TEST_SUITE( notBound )
+	BOOST_AUTO_TEST_CASE( lists_notBound ) {
+	    RuleMapTest t("healthCare/lists-notBound/hl7.rq", "healthCare/lists-notBound/db-hl7.rq", "healthCare/lists-notBound/db.rq");
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/lists-notBound/db.sql");
+	    BOOST_CHECK_EQUAL(s.transformed, s.ref);
+        }
+    BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE( refree ) { // !! leaky
+    namespace tst = boost::unit_test::framework;
+    std::string stem = "http://someClinic.exampe/DB/";
+    for (int i = 1; i < tst::master_test_suite().argc; ++i) {
+	std::string s = tst::master_test_suite().argv[i];
+	if (s.find_first_of("stem=") == 0)
+	    stem = s.substr(5, s.size()-5);
+    }
+    SQLizerTest s("toy.rq", stem.c_str(), "healthCare/simple/db.sql");
     BOOST_CHECK_EQUAL(s.transformed, s.ref);
 }
-#endif
-BOOST_AUTO_TEST_SUITE_END()
-BOOST_AUTO_TEST_SUITE_END()
 
 #if 0
 BOOST_AUTO_TEST_CASE( bsbm_1 ) {

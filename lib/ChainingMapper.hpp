@@ -26,70 +26,84 @@ namespace w3c_sw {
 	    size_t size () const { return bgp2triples.size(); }
 
 	    /**
-	     * Single interface function to create and return the error string.
+	     * SPARQLSerializer to create and return the error string.
 	     */
-	    std::string toString (const Operation* op) {
-		struct FailureSerializer : public SPARQLSerializer {
-		    const Bgp2Triples& bgp2triples;
-		    FailureSerializer (const Bgp2Triples& bgp2triples, 
-				       const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "", NamespaceMap* namespaces = NULL) : 
-			SPARQLSerializer(p_tab, debug, leadStr, namespaces), bgp2triples(bgp2triples)
-		    {  }
-		    void markError (const BasicGraphPattern* bgp, const TriplePattern* triple) {
-			Bgp2Triples::const_iterator b = bgp2triples.find(bgp);
-			if (b != bgp2triples.end() && b->second.find(triple) != b->second.end())
-			    ret << "!";
-			else
-			    ret << " ";
-		    }
-		    void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
-			ret << '{';
-			if (debug & DEBUG_graphs) ret << ' ' << self;
-			ret << std::endl;
-			depth++;
-			const ExprSet* filters = injectFilter; injectFilter = NULL;
-			if (p_allOpts)
-			    for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
-				 triple != p_TriplePatterns->end(); triple++) {
-				lead(); ret << "optional {" << std::endl << "  ";
-				depth++;
-				markError(self, *triple); (*triple)->express(this);
-				depth--;
-				lead(); ret << "}" << std::endl;;
-			    }
-			else
-			    for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
-				 triple != p_TriplePatterns->end(); triple++) {
-				depth++;
-				markError(self, *triple); (*triple)->express(this);
-				depth--;
-			    }
-			serializeFilter(filters);
-			depth--;
-			lead();
-			ret << '}' << std::endl;
-		    }
-		    /** _BasicGraphPattern isn't virtual, so overload its invokers. */
-		    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-			lead();
-			p_name->express(this);
-			ret << ' ';
-			_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
-		    }
-		    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-			lead();
-			_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
-		    }
+	    struct FailureSerializer : public SPARQLSerializer {
+		const Bgp2Triples& bgp2triples;
+		FailureSerializer (const Bgp2Triples& bgp2triples, 
+				   const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "", NamespaceMap* namespaces = NULL) : 
+		    SPARQLSerializer(p_tab, debug, leadStr, namespaces), bgp2triples(bgp2triples)
+		{  }
+		void markError (const BasicGraphPattern* bgp, const TriplePattern* triple) {
+		    Bgp2Triples::const_iterator b = bgp2triples.find(bgp);
+		    if (b != bgp2triples.end() && b->second.find(triple) != b->second.end())
+			ret << "!";
+		    else
+			ret << " ";
+		}
+		void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
+		    ret << '{';
+		    if (debug & DEBUG_graphs) ret << ' ' << self;
+		    ret << std::endl;
+		    depth++;
+		    const ExprSet* filters = injectFilter; injectFilter = NULL;
+		    if (p_allOpts)
+			for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
+			     triple != p_TriplePatterns->end(); triple++) {
+			    lead(); ret << "optional {" << std::endl << "  ";
+			    depth++;
+			    markError(self, *triple); (*triple)->express(this);
+			    depth--;
+			    lead(); ret << "}" << std::endl;;
+			}
+		    else
+			for (std::vector<const TriplePattern*>::const_iterator triple = p_TriplePatterns->begin();
+			     triple != p_TriplePatterns->end(); triple++) {
+			    depth++;
+			    markError(self, *triple); (*triple)->express(this);
+			    depth--;
+			}
+		    serializeFilter(filters);
+		    depth--;
+		    lead();
+		    ret << '}' << std::endl;
+		}
+		/** _BasicGraphPattern isn't virtual, so overload its invokers. */
+		virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    lead();
+		    p_name->express(this);
+		    ret << ' ';
+		    _BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
+		}
+		virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    lead();
+		    _BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
+		}
 
-		    /**
-		     * Single interface function to create and return the error string.
-		     */
-		    std::string toString (const Operation* op) {
-			op->express(this);
-			return ret.str();
-		    }
-		};
+		/**
+		 * Single interface function to create and return the error string.
+		 */
+		std::string toString (const Operation* op) {
+		    op->express(this);
+		    return ret.str();
+		}
+		std::string toString (const TableOperation* op) {
+		    op->express(this);
+		    return ret.str();
+		}
+	    };
+	    std::string toString (const Operation* op) const {
 		return FailureSerializer(bgp2triples).toString(op);
+	    }
+	    std::string toString (const TableOperation* op) const {
+		return FailureSerializer(bgp2triples).toString(op);
+	    }
+	    std::string str () const {
+		std::stringstream ss;
+		for (Bgp2Triples::const_iterator optriples = bgp2triples.begin();
+		     optriples != bgp2triples.end(); ++optriples)
+		    ss << "Match failure: " << toString(optriples->first);
+		return ss.str();
 	    }
 	};
 
@@ -119,6 +133,15 @@ namespace w3c_sw {
 		// }
 	    };
 	    QueryTermUsage termUsage;
+
+	    std::string str () const {
+		std::stringstream ss;
+		for (Rule2rs::const_iterator rule = begin();
+		     rule != end(); ++rule) {
+		    ss << rule->first << std::endl << rule->second;
+		}
+		return ss.str();
+	    }
 
 	    /* Find out any term bound in testRS with by rule is inconsistent
 	       with existing term usage. e.g. can product.producer be the same
@@ -203,15 +226,28 @@ namespace w3c_sw {
 		rs = ref.rs;
 	    }
 	};
-	struct Alternatives : public std::vector<Rule2rs> {
+	struct Alternatives {
+	    typedef std::vector<Rule2rs> Opts;
+	    Opts opts;
 	    MapSet::e_sharedVars sharedVars;
 	    NodeShare& nodeShare;
 
 	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-		: std::vector<Rule2rs>(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
+		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
 	    void operator= (const Alternatives& ref) {
 		sharedVars = ref. sharedVars;
 		nodeShare = ref.nodeShare;
+	    }
+
+	    std::string str () const {
+		std::stringstream ss;
+		for (Alternatives::Opts::const_iterator disjoint = opts.begin();
+		     disjoint != opts.end(); ++disjoint) {
+		    if (disjoint != opts.begin())
+			ss << "UNION\n";
+		    ss << disjoint->str();
+		}
+		return ss.str();
 	    }
 
 	    /** cross: create a cross product with the vector of added rule
@@ -220,31 +256,92 @@ namespace w3c_sw {
 	     */
 	    size_t cross (const std::vector<Add> adds) {
 		if (adds.size() == 0)
-		    clear();
+		    opts.clear();
 		else {
-		    for (Alternatives::iterator alt = begin(); alt != end(); ) {
+		    Opts newOpts;
+		    for (Opts::iterator alt = opts.begin(); alt != opts.end(); ++alt) {
 			for (std::vector<Add>::const_iterator it_add = adds.begin();
-			     it_add != adds.end(); ) {
-			    Add add = *it_add++;
-			    if (alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare)) {
-				// Inconsistent solution.
-				// If this is not the last add, erase the alternative,
-				// otherwise leave it for later adds.
-				if (it_add == adds.end())
-				    alt = erase(alt);
-			    } else {
-				// If this is not the last add, copy and insert before,
-				// otherwise overwrite the alternative.
-				if (it_add != adds.end())
-				    alt = insert(alt, *alt);
-				alt->add(add.rule, add.rs);
-				++alt;
+			     it_add != adds.end(); ++it_add) {
+			    Add add = *it_add;
+			    if (!alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare)) {
+				Rule2rs merge(*alt);
+				merge.add(add.rule, add.rs);
+				newOpts.insert(newOpts.end(), merge);
 			    }
 			}
 		    }
+		    opts = newOpts;
 		}
-		return size(); // 0 indicates we've run out of viable solutions.
+		return opts.size(); // 0 indicates we've run out of viable solutions.
 	    }
+
+	    struct Instantiator : public SWObjectDuplicator {
+		const TableOperation* pattern;
+		const Result* res;
+		std::string uniquePrefix;
+		Instantiator (const TableOperation* pattern, const Result* res, POSFactory* posFactory, std::string uniquePrefix)
+		    : SWObjectDuplicator(posFactory), pattern(pattern), res(res), uniquePrefix(uniquePrefix) {  }
+		virtual void variable (const Variable* const self, std::string label) {
+		    if ((last.posz.pos = res->get(self)) == NULL)
+			last.posz.pos = posFactory->getVariable(uniquePrefix+self->getLexicalValue());
+		    //throw "no unique binding for variable " + label;
+		}
+		virtual void bnode (const BNode* const self, std::string label) {
+		    if ((last.posz.pos = res->get(self)) == NULL)
+			last.posz.pos = posFactory->getVariable(uniquePrefix+self->getLexicalValue());
+		    //throw "no unique binding for bnode " + label;
+		}
+		TableOperation* apply () {
+		    pattern->express(this);
+		    return last.tableOperation;
+		}
+	    };
+
+	    struct VarUniquifier {
+		typedef std::map<std::string, int> UniqueVars;
+		typedef std::pair<std::string, int> UniquePair;
+		UniqueVars uniqueVars;
+		std::string uniquePrefix (const POS* label) {
+		    std::string key = label == NULL ? "" : label->getLexicalValue();
+		    if (key.size() > 10)
+			key = key.substr(0, 32);
+		    key = std::string("_") + key + "_";
+		    UniqueVars::iterator cur = uniqueVars.find(key);
+		    if (cur == uniqueVars.end())
+			cur = uniqueVars.insert(UniquePair(key, 0)).first;
+		    std::stringstream ss;
+		    ss << key << cur->second++ << "_";
+		    return ss.str();
+		}
+	    };
+
+	    const TableOperation* instantiate (POSFactory* posFactory, VarUniquifier& varUniquifier) const {
+		// std::cerr << "instantiate " << str();
+		TableDisjunction* ret = NULL;
+		if (opts.size() > 1)
+		    ret = new TableDisjunction();
+		for (Opts::const_iterator alternative = opts.begin();
+		     alternative != opts.end(); ++alternative) {
+		    std::vector<const TableOperation*> conjoints;
+		    for (Rule2rs::const_iterator rule = alternative->begin();
+			 rule != alternative->end(); ++rule)
+			for (ResultSetConstIterator res = rule->second.begin();
+			     res != rule->second.end(); ++res)
+			    conjoints.push_back(Instantiator(rule->first.body, *res, posFactory, varUniquifier.uniquePrefix(rule->first.label)).apply());
+
+		    const TableOperation* op = 
+			conjoints.size() == 0 ? NULL :
+			conjoints.size() == 1 ? conjoints[0] :
+			new TableConjunction(conjoints.begin(), conjoints.end());
+
+		    if (opts.size() > 1 && op != NULL)
+			ret->addTableOperation(op, false);
+		    else
+			return op; // ret = op loses const-ness.
+		}
+		return ret;
+	    }
+
 	};
 
 	// std::ostream& operator<< (std::ostream& os, const Alternatives& alt) {
@@ -299,64 +396,12 @@ namespace w3c_sw {
 	    return adds.size() > 0;
 	}
 
-	struct Instantiator : public SWObjectDuplicator {
-	    const TableOperation* pattern;
-	    const Result* res;
-	    Instantiator (const TableOperation* pattern, const Result* res, POSFactory* posFactory)
-		: SWObjectDuplicator(posFactory), pattern(pattern), res(res) {  }
-	    virtual void variable (const Variable* const self, std::string lexicalValue) {
-		last.posz.pos = res->get(self) == NULL ? self : res->get(self);
-		/* @@ doesn't set e.g. last.posz.variable */
-	    }
-	    virtual void bnode (const BNode* const self, std::string lexicalValue) {
-		last.posz.pos = res->get(self) == NULL ? self : res->get(self);
-		/* @@ doesn't set e.g. last.posz.variable */
-	    }
-	    TableOperation* apply () {
-		pattern->express(this);
-		return last.tableOperation;
-	    }
-	};
-
-	const TableOperation* instantiate () {
-	    // std::cerr << "instantiate " << str();
-	    TableDisjunction* ret = NULL;
-	    if (alternatives.size() > 1)
-		ret = new TableDisjunction();
-	    for (std::vector<Rule2rs>::const_iterator alternative = alternatives.begin();
-		 alternative != alternatives.end(); ++alternative) {
-		std::vector<const TableOperation*> conjoints;
-		for (Rule2rs::const_iterator rule = alternative->begin();
-		     rule != alternative->end(); ++rule)
-		    for (ResultSetConstIterator res = rule->second.begin();
-			 res != rule->second.end(); ++res)
-			conjoints.push_back(Instantiator(rule->first.body, *res, posFactory).apply());
-
-		const TableOperation* op = 
-		    conjoints.size() == 0 ? NULL :
-		    conjoints.size() == 1 ? conjoints[0] :
-		    new TableConjunction(conjoints.begin(), conjoints.end());
-
-		if (alternatives.size() > 1 && op != NULL)
-		    ret->addTableOperation(op, false);
-		else
-		    return op; // ret = op loses const-ness.
-	    }
-	    return ret;
+	const TableOperation* instantiate (Alternatives::VarUniquifier& varUniquifier) {
+	    return alternatives.instantiate(posFactory, varUniquifier);
 	}
 
 	std::string str () const {
-	    std::stringstream ss;
-	    for (std::vector<Rule2rs>::const_iterator disjoint = alternatives.begin();
-		 disjoint != alternatives.end(); ++disjoint) {
-		if (disjoint != alternatives.begin())
-		    ss << "UNION\n";
-		for (Rule2rs::const_iterator rule = disjoint->begin();
-		     rule != disjoint->end(); ++rule) {
-		    ss << rule->first << std::endl << rule->second;
-		}
-	    }
-	    return ss.str();
+	    return alternatives.str() + failed.str();
 	}
     };
 
@@ -381,16 +426,19 @@ namespace w3c_sw {
     protected:
 	Bindings bindings;
 	MapSet::e_sharedVars sharedVars;
+	Bindings::Alternatives::VarUniquifier varUniquifier;
 
     public:
 	QueryWalker (std::vector<Rule>& rules, POSFactory* posFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
 	    : SWObjectDuplicator(posFactory), bindings(posFactory, rules, sharedVars, nodeShare) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    bindings.alternatives.opts.clear();
+	    bindings.alternatives.opts.push_back(Bindings::Rule2rs());
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
 		bindings.match(bgp, *it);
-	    last.tableOperation = (TableOperation*)bindings.instantiate(); // @@ LIES
+	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);

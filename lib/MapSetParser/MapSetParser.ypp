@@ -410,9 +410,7 @@ AccessParm:
   | IT_STEMURI IRIref	{
 	static_cast<MapSet*>(driver.root)->stemURI = $2;
     }
-  | IT_PRIMARYKEY RDFLiteral	{
-	static_cast<MapSet*>(driver.root)->primaryKey = $2;
-    }
+  | IT_PRIMARYKEY PrimaryKeySpec	
   | IT_SHAREDVARS _O_QIT_PROMISCUOUS_E_Or_QIT_VARNAMES_E_Or_QIT_DRACONIAN_E_C	{
 	driver.sharedVarsSet = true;
     }
@@ -455,6 +453,42 @@ _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C:
 _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus:
     _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
   | _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
+;
+
+
+PrimaryKeySpec:
+    _QDefaultPrimaryKey_E_Opt _QPrimaryKeySet_E_Opt	
+;
+
+_QDefaultPrimaryKey_E_Opt:
+    
+  | DefaultPrimaryKey	
+;
+
+_QPrimaryKeySet_E_Opt:
+    
+  | PrimaryKeySet	
+;
+
+PrimaryKeySet:
+    GT_LCURLEY _Q_O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C_E_Star GT_RCURLEY	
+;
+
+_O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C:
+    RDFLiteral GT_DOT RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->keyMap[$1->getLexicalValue()] = $3->getLexicalValue();
+    }
+;
+
+_Q_O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C_E_Star:
+    
+  | _Q_O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C_E_Star _O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C	
+;
+
+DefaultPrimaryKey:
+    GT_LBRACKET RDFLiteral GT_RBRACKET	{
+	static_cast<MapSet*>(driver.root)->primaryKey = $2;
+    }
 ;
 
 Prologue:

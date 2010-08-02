@@ -226,6 +226,11 @@ namespace w3c_sw {
 	}
     };
 
+    /* A KeyMap asserts which RuleTerms connect to which other RuleTerms.
+     */
+    struct KeyMap : public std::map<std::string, std::string> {
+    };
+
     class MapSet : public Operation {
 	friend class MapSetParser;
     public:
@@ -240,6 +245,7 @@ namespace w3c_sw {
 	typedef enum { e_PROMISCUOUS, e_VARNAMES, e_DRACONIAN } e_sharedVars;
 	e_sharedVars sharedVars;
 	NodeShare nodeShare;
+	KeyMap keyMap;
 	ConstructList maps;
 #if REGEX_LIB == SWOb_BOOST
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -251,7 +257,7 @@ namespace w3c_sw {
 		delete it->constr;
 	    }
 	}
-	virtual void express (Expressor* p_expressor) const {
+	virtual void express (Expressor* p_expressor) const { // ???
 	    if (server != NULL) server->express(p_expressor);
 	    if (user != NULL) user->express(p_expressor);
 	    if (password != NULL) password->express(p_expressor);
