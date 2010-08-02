@@ -9,79 +9,6 @@ PREFIX NDCcodes: <http://hospital.example/DB/NDCcodes#>
 PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
 PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
 
-#CONSTRUCT {
-#?person
-#    a					  hl7:Person ;
-#    hl7:entityName			  ?middleName ;
-#    hl7:livingSubjectBirthTime		  ?dob ;
-#    hl7:administrativeGenderCodePrintName ?sex ;
-#    hl7:substanceAdministration		  [
-#	a	       hl7:SubstanceAdministration ;
-# 	hl7:consumable [
-#	    hl7:displayName	 ?takes ;
-#	    spl:activeIngredient [
-#		spl:classCode ?ingred
-#	    ]
-#	] ;
-#	hl7:effectiveTime [
-#	    hl7:start ?medInterval
-#	    # hl7:end   (?medInterval + ?medDuration)
-#	]
-#    ] .
-#} WHERE {
-#  ?person     Person:MiddleName		     ?middleName ;
-#              Person:DateOfBirth	     ?dob ;
-#              Person:SexDE		     ?sexEntry   .
-#
-#              ?sexEntry   Sex_DE:EntryName   ?sex .
-#
-#  ?itemMed  Item_Medication:PatientID	     ?person ;
-#              Item_Medication:PerformedDTTM  ?medInterval ;
-#              Item_Medication:EntryName	     ?takes .
-#  ?medication Medication:ItemID		     ?itemMed ;
-#              Medication:DaysToTake	     ?medDuration ;
-#              Medication:MedDictDE	     ?medDE .
-#  ?medDE      Medication_DE:NDC	     ?medNDC .
-#
-#  ?medCodes   NDCcodes:NDC         ?medNDC ;
-#              NDCcodes:ingredient  ?ingred .
-#}
-
-# <name> CONSTRUCT { ?person a hl7:Person ; hl7:entityName                        ?middleName }
-#            WHERE { ?person Person:MiddleName  ?middleName }
-# <dob>  CONSTRUCT { ?person a hl7:Person ; hl7:livingSubjectBirthTime		?dob        }
-#            WHERE { ?person Person:DateOfBirth ?dob }
-# <sex>  CONSTRUCT { ?person a hl7:Person ; hl7:administrativeGenderCodePrintName ?sex        }
-#            WHERE { ?person Person:SexDE       ?sexEntry .
-# 		   ?sexEntry Sex_DE:EntryName   ?sex }
-# <person2drug> CONSTRUCT {
-# ?person a hl7:Person ;
-# 	hl7:substanceAdministration		  [
-# 	a	       hl7:SubstanceAdministration ;
-#  	hl7:consumable [
-# 	    hl7:displayName	 ?takes ;
-# 	    spl:activeIngredient [
-# 		spl:classCode ?ingred
-# 	    ]
-# 	] ;
-# 	hl7:effectiveTime [
-# 	    hl7:start ?medInterval
-# 	    # hl7:end   (?medInterval + ?medDuration)
-# 	]
-#     ] .
-# } WHERE {
-#   ?itemMed    Item_Medication:PatientID	     ?person ;
-#               Item_Medication:PerformedDTTM  ?medInterval ;
-#               Item_Medication:EntryName	     ?takes .
-#   ?medication Medication:ItemID		     ?itemMed ;
-#               Medication:DaysToTake	     ?medDuration ;
-#               Medication:MedDictDE	     ?medDE .
-#   ?medDE      Medication_DE:NDC		     ?medNDC .
-# 
-#   ?medCodes   NDCcodes:NDC         ?medNDC ;
-#               NDCcodes:ingredient  ?ingred .
-# }
-
 <name> CONSTRUCT { ?person a hl7:Person ; hl7:entityName                        ?middleName }
            WHERE { ?person Person:MiddleName  ?middleName }
 <dob>  CONSTRUCT { ?person a hl7:Person ; hl7:livingSubjectBirthTime		?dob        }
@@ -91,20 +18,17 @@ PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabular
 		   ?sexEntry Sex_DE:EntryName   ?sex }
 <person2drug> CONSTRUCT {
 ?person a hl7:Person ;
-	hl7:substanceAdministration		  ?administration .
-?administration
-	a	       hl7:SubstanceAdministration ;
- 	hl7:consumable ?consumable .
-?consumable
-	    hl7:displayName	 ?takes ;
-	    spl:activeIngredient ?ingredient .
-	    ?ingredient
-		spl:classCode ?ingred .
-?administration
-	hl7:effectiveTime ?timespan .
-        ?timespan
-	    hl7:start ?medInterval .
-	    # hl7:end   (?medInterval + ?medDuration)
+    hl7:substanceAdministration [
+            a hl7:SubstanceAdministration ;
+            hl7:consumable [
+                hl7:displayName ?takes ;
+                spl:activeIngredient [ spl:classCode ?ingred ] 
+        ] ;
+        hl7:effectiveTime [
+           hl7:start ?medInterval
+            # hl7:end   (?medInterval + ?medDuration)
+        ]
+    ]
 } WHERE {
   ?itemMed    Item_Medication:PatientID	     ?person ;
               Item_Medication:PerformedDTTM  ?medInterval ;
