@@ -251,6 +251,11 @@ namespace w3c_sw {
 #endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
+	MapSet ()
+	    : server(NULL), user(NULL), password(NULL), database(NULL),
+	      stemURI(NULL), primaryKey(NULL), sharedVars(e_PROMISCUOUS),
+	      nodeShare(), keyMap(), maps()
+	{  }
 	~MapSet () {
 	    for (ConstructList::iterator it = maps.begin(); 
 		 it != maps.end(); ++it) {
