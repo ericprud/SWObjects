@@ -1,17 +1,17 @@
-SELECT patient.id AS patient, patient.DateOfBirth AS dob, sexEntry_gen0.EntryName AS sex, indicItem_gen2.EntryName AS takes, indicItem_gen2.PerformedDTTM AS indicDate
+SELECT patient.id AS patient, patient.DateOfBirth AS dob, _sex_0_sexEntry.EntryName AS sex, _person2drug_0_itemMed.EntryName AS takes, _person2drug_0_itemMed.PerformedDTTM AS indicDate
        FROM Person AS patient
-            INNER JOIN Sex_DE AS sexEntry_gen0 ON sexEntry_gen0.id=patient.SexDE
-            INNER JOIN Item_Medication AS indicItem_gen2 ON indicItem_gen2.PatientID=patient.id
-            INNER JOIN Medication AS indicMed_gen3 ON indicMed_gen3.ItemID=indicItem_gen2.id
-            INNER JOIN Medication_DE AS indicDE_gen5 ON indicDE_gen5.id=indicMed_gen3.MedDictDE
-            INNER JOIN NDCcodes AS indicCode_gen1 ON indicCode_gen1.NDC=indicDE_gen5.NDC
+            INNER JOIN Sex_DE AS _sex_0_sexEntry ON _sex_0_sexEntry.id=patient.SexDE
+            INNER JOIN Item_Medication AS _person2drug_0_itemMed ON _person2drug_0_itemMed.PatientID=patient.id
+            INNER JOIN Medication AS _person2drug_0_medication ON _person2drug_0_medication.ItemID=_person2drug_0_itemMed.id
+            INNER JOIN Medication_DE AS _person2drug_0_medDE ON _person2drug_0_medDE.id=_person2drug_0_medication.MedDictDE
+            INNER JOIN NDCcodes AS _person2drug_0_medCodes ON _person2drug_0_medCodes.NDC=_person2drug_0_medDE.NDC
             LEFT OUTER JOIN (
-    SELECT indicItem_gen3.PerformedDTTM AS indicDate, indicItem_gen3.PatientID AS patient, indicCode_gen2.ingredient AS contCode
-           FROM Item_Medication AS indicItem_gen3
-                INNER JOIN Medication AS indicMed_gen4 ON indicMed_gen4.ItemID=indicItem_gen3.id
-                INNER JOIN Medication_DE AS indicDE_gen6 ON indicDE_gen6.id=indicMed_gen4.MedDictDE
-                INNER JOIN NDCcodes AS indicCode_gen2 ON indicCode_gen2.NDC=indicDE_gen6.NDC
-     WHERE (indicCode_gen2.ingredient = 11289 OR indicCode_gen2.ingredient = 11290)
-             ) AS opt1 ON opt1.indicDate=indicItem_gen2.PerformedDTTM AND opt1.patient=patient.id
- WHERE (indicCode_gen1.ingredient = 6809 OR indicCode_gen1.ingredient = 6810) AND !(opt1.contCode IS NOT NULL)
- LIMIT 30;
+SELECT _person2drug_1_itemMed.PatientID AS patient, _person2drug_1_itemMed.PerformedDTTM AS indicDate, _person2drug_1_medCodes.ingredient AS contraCode
+       FROM Item_Medication AS _person2drug_1_itemMed
+            INNER JOIN Medication AS _person2drug_1_medication ON _person2drug_1_medication.ItemID=_person2drug_1_itemMed.id
+            INNER JOIN Medication_DE AS _person2drug_1_medDE ON _person2drug_1_medDE.id=_person2drug_1_medication.MedDictDE
+            INNER JOIN NDCcodes AS _person2drug_1_medCodes ON _person2drug_1_medCodes.NDC=_person2drug_1_medDE.NDC
+ WHERE (_person2drug_1_medCodes.ingredient = 11289 OR _person2drug_1_medCodes.ingredient = 11290)
+             ) AS opt1 ON opt1.patient=patient.id AND opt1.indicDate=_person2drug_0_itemMed.PerformedDTTM
+ WHERE (_person2drug_0_medCodes.ingredient = 6809 OR _person2drug_0_medCodes.ingredient = 6810) AND !(opt1.contraCode IS NOT NULL)
+ LIMIT 30
