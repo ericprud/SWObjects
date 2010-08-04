@@ -170,6 +170,7 @@ struct ConnectSet : std::set<RuleTerm> {
 
     typedef w3c_sw::RdfDB::HandlerSet HandlerSet;
     typedef w3c_sw::BGPSimplifier::NonConjunctionState NonConjunctionState;
+    typedef w3c_sw::NodeShare::ConnectSet ConnectSet;
 %}
 %include "config.h"
 %include "SWObjects.hpp"
