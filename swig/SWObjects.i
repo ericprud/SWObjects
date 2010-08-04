@@ -136,6 +136,11 @@ public:
 
 %nestedworkaround w3c_sw::BGPSimplifier::NonConjunctionState;
 
+struct ConnectSet : std::set<RuleTerm> {
+	};
+
+%nestedworkaround w3c_sw::NodeShare::ConnectSet;
+
 /* %typemap(varin) const char * { */
 /*     SWIG_Error(SWIG_AttributeError,"Variable $symname is read-only."); */
 /*     SWIG_fail; */
@@ -187,6 +192,10 @@ namespace w3c_sw {
 %include "MapSetParser/MapSetParser.hpp"
 %include "TurtleSParser/TurtleSParser.hpp"
 %include "TrigSParser/TrigSParser.hpp"
+%include "interface/WEBagent.hpp"
+%include "interface/WEBagent_boostASIO.hpp"
+%include "interface/SAXparser.hpp"
+%include "interface/SAXparser_expat.hpp"
 
 namespace w3c_sw {
     %template(StreamContextIstream) StreamContext<std::istream>;
