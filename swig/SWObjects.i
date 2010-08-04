@@ -158,6 +158,8 @@ struct ConnectSet : std::set<RuleTerm> {
 #include "RuleInverter.hpp"
 #include "QueryMapper.hpp"
 #include "MapSetParser/MapSetParser.hpp"
+#include "interface/WEBagent_boostASIO.hpp"
+#include "interface/SAXparser_expat.hpp"
     typedef w3c_sw::POS::BNode2string BNode2string;
     typedef w3c_sw::POS::String2BNode String2BNode;
 
@@ -196,6 +198,7 @@ namespace w3c_sw {
 %include "interface/WEBagent_boostASIO.hpp"
 %include "interface/SAXparser.hpp"
 %include "interface/SAXparser_expat.hpp"
+
 
 namespace w3c_sw {
     %template(StreamContextIstream) StreamContext<std::istream>;

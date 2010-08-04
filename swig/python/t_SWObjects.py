@@ -51,7 +51,7 @@ class TestSWObjects(unittest.TestCase):
 
 
     def test_trigParser (self):
-        # Test Turtle parser .
+        # Test Trig parser .
         F = SWObjects.POSFactory()
         manualDB = SWObjects.RdfDB()
         manDefault = manualDB.assureGraph(SWObjects.cvar.DefaultGraph)
@@ -120,6 +120,43 @@ class TestSWObjects(unittest.TestCase):
 +------+------+------+
 """, False, bnodeMap);
         self.assertNotEqual(different, rs)
+
+
+    def test_remote (self):
+        # Test a query.
+        F = SWObjects.POSFactory()
+
+        agent = SWObjects.WEBagent_boostASIO()
+        xmlParser = SWObjects.SAXparser_expat()
+        DB = SWObjects.RdfDB(agent, xmlParser)
+        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser.parse(SWObjects.IStreamContext("""
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?craft ?homepate
+ WHERE {
+  SERVICE <http://api.talis.com/stores/space/services/sparql> {
+    ?craft foaf:name "Apollo 8" .
+    ?craft foaf:homepage ?homepage
+  }
+}""",
+                                               SWObjects.StreamContextIstream.STRING))
+        query = sparser.root
+        # s = SWObjects.SPARQLSerializer()
+        # query.express(s)
+        # print "parsed: ", s.str()
+        rs = SWObjects.ResultSet(F)
+        query.execute(DB, rs)
+        bnodeMap = SWObjects.String2BNode()
+        different = SWObjects.ResultSet(F, """
+# name and homepage of Apollo 8
++------------------------------------------------------+------------------------------------------------------------------+
+| ?craft                                               | ?homepage                                                        |
+| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
+| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
++------------------------------------------------------+------------------------------------------------------------------+
+""", False, bnodeMap);
+        self.assertNotEqual(different, rs)
+
 
     def test_update (self):
         # Test update .
