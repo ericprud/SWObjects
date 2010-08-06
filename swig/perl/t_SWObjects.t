@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use SWObjects;
-use Test::Simple tests => 10;
+use Test::Simple tests => 11;
 
 ok( 1,     'test test'    );
 
@@ -125,6 +125,37 @@ sub test_s_p1_o1_p2_o2 {
     ok($different != $rs, 'result difference');
 }
 
+sub test_remote {
+    # Test a query.
+    my $F = new SWObjects::POSFactory();
+
+    my $agent = new SWObjects::WEBagent_boostASIO();
+    my $xmlParser = new SWObjects::SAXparser_expat();
+    my $DB = new SWObjects::RdfDB($agent, $xmlParser);
+    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    $sparser->parse(new SWObjects::IStreamContext("
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?craft ?homepage
+ WHERE {
+  SERVICE <http://api.talis.com/stores/space/services/sparql> {
+    ?craft foaf:name \"Apollo 8\" .
+    ?craft foaf:homepage ?homepage
+  }
+}", $SWObjects::StreamContextIstream::STRING));
+    my $query = $sparser->{'root'};
+    my $rs = new SWObjects::ResultSet($F);
+    $query->execute($DB, $rs);
+    my $bnodeMap = new SWObjects::String2BNode();
+    my $reference = new SWObjects::ResultSet($F, "
+# name and homepage of Apollo 8
++------------------------------------------------------+------------------------------------------------------------------+
+| ?craft                                               | ?homepage                                                        |
+| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
++------------------------------------------------------+------------------------------------------------------------------+
+", 0, $bnodeMap);
+    ok($reference == $rs, 'remote query');
+}
+
 sub test_update {
     # Test update .
     my $F = new SWObjects::POSFactory();
@@ -155,5 +186,6 @@ sub test_update {
 &test_turtleParser   ();
 &test_trigParser     ();
 &test_s_p1_o1_p2_o2  ();
+&test_remote         ();
 &test_update         ();
 
