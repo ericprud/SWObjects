@@ -491,8 +491,8 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
 			  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
 			  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
-			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
-			  "           SERVICE <S3> { ?qs <p3> ?qo } }",
+			  "SELECT * { SERVICE <S3> { ?qs <p3> ?qo }\n"
+			  "           SERVICE <S2> { ?qs <p2> ?qo } }",
 			  IStreamContext::STRING);
 	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 	}

@@ -30,7 +30,7 @@ INTERSECTION {<name>}?patient {<dob>}?patient {<sex>}?patient {<med>}?patient
 <med> CONSTRUCT
 { ?patient bg:isParticitpatedInBy ?medication .
   ?medication a bg:DefinedSubstanceAdministration;
-              bg:nameCode [ a dt:CD; dt:code ?medName ] ;
+              bg:nameCode [ a dt:CD; dt:code ?medName ; spl:activeIngredient [ spl:classCode ?ingred ] ] ;
               bg:instantiatedBy 
     [ a bg:PerformedSubstanceAdministration;
       bg:actualDateRange

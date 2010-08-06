@@ -279,6 +279,7 @@ namespace w3c_sw {
 		const TableOperation* pattern;
 		const Result* res;
 		std::string uniquePrefix;
+		POS::String2BNode nodeMap;
 		Instantiator (const TableOperation* pattern, const Result* res, POSFactory* posFactory, std::string uniquePrefix)
 		    : SWObjectDuplicator(posFactory), pattern(pattern), res(res), uniquePrefix(uniquePrefix) {  }
 		virtual void variable (const Variable* const self, std::string label) {
@@ -288,7 +289,7 @@ namespace w3c_sw {
 		}
 		virtual void bnode (const BNode* const self, std::string label) {
 		    if ((last.posz.pos = res->get(self)) == NULL)
-			last.posz.pos = posFactory->getVariable(uniquePrefix+self->getLexicalValue());
+			last.posz.pos = posFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
 		    //throw "no unique binding for bnode " + label;
 		}
 		TableOperation* apply () {

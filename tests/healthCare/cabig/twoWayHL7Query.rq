@@ -1,17 +1,19 @@
-SELECT ?patient ?dob ?sex ?takes ?indicDate 
+PREFIX hl7: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#>
+
+SELECT ?pat ?midName ?bd ?sex ?takes
 WHERE
 {
-  ?patient <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#Person> .
-  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#entityName> ?middleName .
-  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#livingSubjectBirthTime> ?dob .
-  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#administrativeGenderCodePrintName> ?sex .
-  ?b0x8265cb8_gen1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#SubstanceAdministration> .
-  ?b0x8265bc0_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#displayName> ?takes .
-  ?b0x8265db0_gen2 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#classCode> 6809  .
-  ?b0x8265bc0_gen0 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#activeIngredient> ?b0x8265db0_gen2 .
-  ?b0x8265cb8_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#consumable> ?b0x8265bc0_gen0 .
-  ?b0x82657c0_gen3 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#start> ?indicDate .
-  ?b0x8265cb8_gen1 <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#effectiveTime> ?b0x82657c0_gen3 .
-  ?patient <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabulary#substanceAdministration> ?b0x8265cb8_gen1 .
+  ?pat hl7:entityName ?midName ;
+       hl7:livingSubjectBirthTime ?bd ;
+       hl7:administrativeGenderCodePrintName ?sex ;
+       hl7:substanceAdministration [
+      a hl7:SubstanceAdministration ;
+      hl7:consumable [
+          hl7:displayName ?takes ;
+          hl7:activeIngredient [ hl7:classCode 6809 ]
+      ] ;
+      hl7:effectiveTime [ hl7:start ?indicDate ]
+  ]
+  FILTER ( ?bd > "1999-01-01T00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> )
+  FILTER ( ?indicDate < "2010-01-01T00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> )
 }
-LIMIT 30
