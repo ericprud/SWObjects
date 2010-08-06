@@ -1059,7 +1059,7 @@ GroupGraphPattern:
       }
 ;
 
-// SbSelect | GroupGraphPatternSub
+// SubSelect | GroupGraphPatternSub
 _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
     SubSelect	
   | GroupGraphPatternSub	
@@ -1170,6 +1170,7 @@ OptionalGraphPattern:
 	  if (driver.curFilter) {
 	      driver.curFilter->copyExpressionsTo(ret);
 	      delete driver.curFilter;
+	      driver.curFilter = NULL;
 	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
 	  driver.curFilter = $<p_ParserFilter>3;
