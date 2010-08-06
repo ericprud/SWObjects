@@ -132,7 +132,7 @@ class TestSWObjects(unittest.TestCase):
         sparser = SWObjects.SPARQLfedDriver("", F)
         sparser.parse(SWObjects.IStreamContext("""
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-SELECT ?craft ?homepate
+SELECT ?craft ?homepage
  WHERE {
   SERVICE <http://api.talis.com/stores/space/services/sparql> {
     ?craft foaf:name "Apollo 8" .
@@ -147,15 +147,14 @@ SELECT ?craft ?homepate
         rs = SWObjects.ResultSet(F)
         query.execute(DB, rs)
         bnodeMap = SWObjects.String2BNode()
-        different = SWObjects.ResultSet(F, """
+        reference = SWObjects.ResultSet(F, """
 # name and homepage of Apollo 8
 +------------------------------------------------------+------------------------------------------------------------------+
 | ?craft                                               | ?homepage                                                        |
 | <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
-| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
 +------------------------------------------------------+------------------------------------------------------------------+
 """, False, bnodeMap);
-        self.assertNotEqual(different, rs)
+        self.assertEqual(reference, rs)
 
 
     def test_update (self):
