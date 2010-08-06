@@ -409,10 +409,16 @@ SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)
 test: lib $(unitTESTS) $(transformTEST_RESULTS)
 valgrind: lib $(transformVALGRIND)
 
-# SWIG Interfaces
+### Generate SWIG Interfaces ###
 
-SWIG = swig
-SWIG_SUBST = perl -pi -e "s/const const/const/g"
+SWIG ?= swig
+# SWIG output fixups:
+#   1. const const => const
+#   2. in  va_list * temp = reinterpret_cast< va_list * >(argp3);
+#          arg3 = *temp;
+#      arg3 = *temp => va_copy(arg3, *temp)
+SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}'
+
 SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
 SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp interface/WEBagent_boostASIO.hpp
 SWIG_LIBS =  $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
@@ -456,6 +462,7 @@ swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS)
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
 
 swig/java/SWObjects.jar: swig/java/src/POSFactory.java # there are zillions of class files
+	rm $@
 	javac -d swig/java/class swig/java/src/*.java
 	jar cf $@ -C swig/java/class .
 
@@ -466,7 +473,7 @@ java-test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
 	LD_LIBRARY_PATH=swig/java java -classpath .:/usr/share/java/junit4-4.8.1.jar:swig/java org.junit.runner.JUnitCore t_SWObjects
 
 java-clean:
-	$(RM) -f swig/java/libSWObjects.so swig/java/class/* swig/java/java/* swig/java/t_SWObjects.class
+	$(RM) -f swig/java/libSWObjects.so swig/java/class/* swig/java/src/* swig/java/t_SWObjects.class
 
 SWIG-TEST += java-test
 SWIG-CLEAN += java-clean
