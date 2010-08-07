@@ -417,7 +417,7 @@ SWIG ?= swig
 #   2. in  va_list * temp = reinterpret_cast< va_list * >(argp3);
 #          arg3 = *temp;
 #      arg3 = *temp => va_copy(arg3, *temp)
-SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}'
+SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g'
 
 SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
 SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp interface/WEBagent_boostASIO.hpp
