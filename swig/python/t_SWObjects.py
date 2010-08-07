@@ -16,13 +16,13 @@ class TestSWObjects(unittest.TestCase):
 
     def test_type_integrity (self):
         DB = SWObjects.RdfDB()
-        self.assertRaises(TypeError, DB.assureGraph, "blah")
+        self.assertRaises(TypeError, DB.ensureGraph, "blah")
 
     def test_turtleParser (self):
         # Test Turtle parser .
-        F = SWObjects.POSFactory()
+        F = SWObjects.AtomFactory()
         manualDB = SWObjects.RdfDB()
-        manDefault = manualDB.assureGraph(SWObjects.cvar.DefaultGraph)
+        manDefault = manualDB.ensureGraph(SWObjects.cvar.DefaultGraph)
         manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
@@ -36,14 +36,14 @@ class TestSWObjects(unittest.TestCase):
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(parsedDB.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.setGraph(parsedDB.ensureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
         # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
-        tparser.setGraph(different.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.setGraph(different.ensureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
         # print "different: ", different.toString()
@@ -52,15 +52,15 @@ class TestSWObjects(unittest.TestCase):
 
     def test_trigParser (self):
         # Test Trig parser .
-        F = SWObjects.POSFactory()
+        F = SWObjects.AtomFactory()
         manualDB = SWObjects.RdfDB()
-        manDefault = manualDB.assureGraph(SWObjects.cvar.DefaultGraph)
+        manDefault = manualDB.ensureGraph(SWObjects.cvar.DefaultGraph)
         manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
                 F.getURI("o1")
                 ))
-        manG = manualDB.assureGraph(F.getURI("g"))
+        manG = manualDB.ensureGraph(F.getURI("g"))
         manG.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p2"), 
@@ -85,10 +85,10 @@ class TestSWObjects(unittest.TestCase):
 
     def test_s_p1_o1_p2_o2 (self):
         # Test a query.
-        F = SWObjects.POSFactory()
+        F = SWObjects.AtomFactory()
         DB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(DB.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.setGraph(DB.ensureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
         # print "DB: ", DB.toString()
@@ -124,7 +124,7 @@ class TestSWObjects(unittest.TestCase):
 
     def test_remote (self):
         # Test a query.
-        F = SWObjects.POSFactory()
+        F = SWObjects.AtomFactory()
 
         agent = SWObjects.WEBagent_boostASIO()
         xmlParser = SWObjects.SAXparser_expat()
@@ -159,7 +159,7 @@ SELECT ?craft ?homepage
 
     def test_update (self):
         # Test update .
-        F = SWObjects.POSFactory()
+        F = SWObjects.AtomFactory()
 
         updatedDB = SWObjects.RdfDB()
         sparser = SWObjects.SPARQLfedDriver("", F)
@@ -175,7 +175,7 @@ SELECT ?craft ?homepage
 
         referenceDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(referenceDB.assureGraph(SWObjects.cvar.DefaultGraph))
+        tparser.setGraph(referenceDB.ensureGraph(SWObjects.cvar.DefaultGraph))
         tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                SWObjects.StreamContextIstream.STRING))
         self.assertEqual(referenceDB, updatedDB)

@@ -15,7 +15,7 @@ public class t_SWObjects extends TestCase {
     public void test_type_integrity () {
         RdfDB DB = new RdfDB();
 	// try {
-	//     DB.assureGraph("blah");
+	//     DB.ensureGraph("blah");
 	// }
 	// catch (NullPointerException npe) {
 	//     return;
@@ -25,9 +25,9 @@ public class t_SWObjects extends TestCase {
 
     public void test_turtleParser () {
         // Test Turtle parser .
-        POSFactory F = new POSFactory();
+        AtomFactory F = new AtomFactory();
         RdfDB manualDB = new RdfDB();
-        BasicGraphPattern manDefault = manualDB.assureGraph(SWObjects.getDefaultGraph());
+        BasicGraphPattern manDefault = manualDB.ensureGraph(SWObjects.getDefaultGraph());
         manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
@@ -41,14 +41,14 @@ public class t_SWObjects extends TestCase {
         // print "manualDB: ", manualDB.toString();
         RdfDB parsedDB = new RdfDB();
         TurtleSDriver tparser = new TurtleSDriver("", F);
-        tparser.setGraph(parsedDB.assureGraph(SWObjects.getDefaultGraph()));
+        tparser.setGraph(parsedDB.ensureGraph(SWObjects.getDefaultGraph()));
         tparser.parse(new IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
 					 StreamContextIstream.e_opts.STRING));
         // print "parsedDB: ", parsedDB.toString();
         assertTrue(manualDB.equals(parsedDB));
 
         RdfDB different = new RdfDB();
-        tparser.setGraph(different.assureGraph(SWObjects.getDefaultGraph()));
+        tparser.setGraph(different.ensureGraph(SWObjects.getDefaultGraph()));
         tparser.parse(new IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
 					 StreamContextIstream.e_opts.STRING));
         // print "different: ", different.toString();
@@ -58,15 +58,15 @@ public class t_SWObjects extends TestCase {
 
     public void test_trigParser () {
         // Test Trig parser .
-        POSFactory F = new POSFactory();
+        AtomFactory F = new AtomFactory();
         RdfDB manualDB = new RdfDB();
-        BasicGraphPattern manDefault = manualDB.assureGraph(SWObjects.getDefaultGraph());
+        BasicGraphPattern manDefault = manualDB.ensureGraph(SWObjects.getDefaultGraph());
         manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
                 F.getURI("o1")
                 ));
-        BasicGraphPattern manG = manualDB.assureGraph(F.getURI("g"));
+        BasicGraphPattern manG = manualDB.ensureGraph(F.getURI("g"));
         manG.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p2"), 
@@ -92,10 +92,10 @@ public class t_SWObjects extends TestCase {
 
     public void test_s_p1_o1_p2_o2 () {
         // Test a query.
-        POSFactory F = new POSFactory();
+        AtomFactory F = new AtomFactory();
         RdfDB DB = new RdfDB();
         TurtleSDriver tparser = new TurtleSDriver("", F);
-        tparser.setGraph(DB.assureGraph(SWObjects.getDefaultGraph()));
+        tparser.setGraph(DB.ensureGraph(SWObjects.getDefaultGraph()));
         tparser.parse(new IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
                                                StreamContextIstream.e_opts.STRING));
         // print "DB: ", DB.toString();
@@ -131,7 +131,7 @@ public class t_SWObjects extends TestCase {
 
     public void test_update () {
         // Test update .
-	POSFactory F = new POSFactory();
+	AtomFactory F = new AtomFactory();
 
         RdfDB updatedDB = new RdfDB();
         SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
@@ -147,7 +147,7 @@ public class t_SWObjects extends TestCase {
 
         RdfDB referenceDB = new RdfDB();
         TurtleSDriver tparser = new TurtleSDriver("", F);
-        tparser.setGraph(referenceDB.assureGraph(SWObjects.getDefaultGraph()));
+        tparser.setGraph(referenceDB.ensureGraph(SWObjects.getDefaultGraph()));
         tparser.parse(new IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
 					 StreamContextIstream.e_opts.STRING));
         assertTrue(referenceDB.equals(updatedDB));

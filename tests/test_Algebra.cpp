@@ -23,7 +23,7 @@
 
 using namespace w3c_sw;
 
-POSFactory F;
+AtomFactory F;
 SPARQLfedDriver sparqlParser("", &F);
 
 std::string algebrize (std::string sparql, SPARQLAlgebraSerializer::e_ALGEBRA algebra) {

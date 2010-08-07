@@ -60,11 +60,11 @@ public:
             //printf("filename: %s\n", r->filename);
 
             // execute query
-            POSFactory f;
+            AtomFactory f;
             RdfDB db;
 
             TurtleSDriver tp(req_uri, &f);
-            tp.setGraph(db.assureGraph(NULL));
+            tp.setGraph(db.ensureGraph(NULL));
             tp.parse_file(r->filename);
 
             ResultSet rs(&f);
@@ -74,10 +74,10 @@ public:
             sp.parse_string(query);
             sp.root->execute(&db, &rs);
 
-            //std::string out = db.assureGraph(NULL)->toString();
+            //std::string out = db.ensureGraph(NULL)->toString();
             //std::ofstream of(r->filename);
             //delete tp.root;
-            cout << db.assureGraph(NULL)->toString();
+            cout << db.ensureGraph(NULL)->toString();
 
             return OK;
         }

@@ -2157,7 +2157,7 @@ case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
 #line 149 "lib/TrigSScanner.lpp"
-{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
@@ -2172,7 +2172,7 @@ YY_RULE_SETUP
 case 38:
 YY_RULE_SETUP
 #line 152 "lib/TrigSScanner.lpp"
-{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 154 "lib/TrigSScanner.lpp"

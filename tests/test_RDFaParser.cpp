@@ -42,7 +42,7 @@
 
 using namespace w3c_sw;
 
-POSFactory F;
+AtomFactory F;
 TurtleSDriver turtleParser("", &F);
 RDFaParser GRDFaParser("", &F, &P);
 

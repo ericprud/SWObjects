@@ -69,7 +69,7 @@ namespace w3c_sw {
 		    ret << '}' << std::endl;
 		}
 		/** _BasicGraphPattern isn't virtual, so overload its invokers. */
-		virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		    lead();
 		    p_name->express(this);
 		    ret << ' ';
@@ -107,7 +107,7 @@ namespace w3c_sw {
 	    }
 	};
 
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 	std::vector<Rule>& rules;
 
 	/* Mapping from a Rule to a set of instantiations of that Rule.<br/>
@@ -128,7 +128,7 @@ namespace w3c_sw {
 	       incompatible RuleTerm into this map indicates an inconsistent
 	       solution. (e.g. ?name used as People.?name and Places.?name.)
 	    */
-	    struct QueryTermUsage : std::map<const POS*, std::set<RuleTerm> > {
+	    struct QueryTermUsage : std::map<const TTerm*, std::set<RuleTerm> > {
 		// void operator= (const QueryTermUsage& ref) {
 		// }
 	    };
@@ -151,8 +151,8 @@ namespace w3c_sw {
 		const Result* testRow = *testRS.begin();
 		{
 		    for (BindingSetConstIterator var = testRow->begin(); var != testRow->end(); ++var) {
-			const POS* ruleVar = var->first;
-			const POS* queryTerm = var->second.pos;
+			const TTerm* ruleVar = var->first;
+			const TTerm* queryTerm = var->second.tterm;
 			QueryTermUsage::iterator it = termUsage.find(queryTerm);
 			if (it != termUsage.end()) {
 			    for (std::set<RuleTerm>::const_iterator existingRuleTerm = it->second.begin();
@@ -177,13 +177,13 @@ namespace w3c_sw {
 		const Result* testRow = *testRS.begin();
 		{
 		    for (BindingSetConstIterator var = testRow->begin(); var != testRow->end(); ++var) {
-			const POS* ruleVar = var->first;
-			const POS* queryTerm = var->second.pos;
+			const TTerm* ruleVar = var->first;
+			const TTerm* queryTerm = var->second.tterm;
 			// termUsage[queryTerm].insert(RuleTerm(rule, ruleVar));
 			QueryTermUsage::iterator it = termUsage.find(queryTerm);
 			if (it == termUsage.end()) {
 			    std::set<RuleTerm> s;
-			    std::pair<const POS*, std::set<RuleTerm> > pt(queryTerm, s);
+			    std::pair<const TTerm*, std::set<RuleTerm> > pt(queryTerm, s);
 			    it = termUsage.insert(pt).first;
 			}
 			it->second.insert(RuleTerm(rule.label, ruleVar));
@@ -279,17 +279,17 @@ namespace w3c_sw {
 		const TableOperation* pattern;
 		const Result* res;
 		std::string uniquePrefix;
-		POS::String2BNode nodeMap;
-		Instantiator (const TableOperation* pattern, const Result* res, POSFactory* posFactory, std::string uniquePrefix)
-		    : SWObjectDuplicator(posFactory), pattern(pattern), res(res), uniquePrefix(uniquePrefix) {  }
+		TTerm::String2BNode nodeMap;
+		Instantiator (const TableOperation* pattern, const Result* res, AtomFactory* atomFactory, std::string uniquePrefix)
+		    : SWObjectDuplicator(atomFactory), pattern(pattern), res(res), uniquePrefix(uniquePrefix) {  }
 		virtual void variable (const Variable* const self, std::string label) {
-		    if ((last.posz.pos = res->get(self)) == NULL)
-			last.posz.pos = posFactory->getVariable(uniquePrefix+self->getLexicalValue());
+		    if ((last.tterms.tterm = res->get(self)) == NULL)
+			last.tterms.tterm = atomFactory->getVariable(uniquePrefix+self->getLexicalValue());
 		    //throw "no unique binding for variable " + label;
 		}
 		virtual void bnode (const BNode* const self, std::string label) {
-		    if ((last.posz.pos = res->get(self)) == NULL)
-			last.posz.pos = posFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
+		    if ((last.tterms.tterm = res->get(self)) == NULL)
+			last.tterms.tterm = atomFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
 		    //throw "no unique binding for bnode " + label;
 		}
 		TableOperation* apply () {
@@ -302,7 +302,7 @@ namespace w3c_sw {
 		typedef std::map<std::string, int> UniqueVars;
 		typedef std::pair<std::string, int> UniquePair;
 		UniqueVars uniqueVars;
-		std::string uniquePrefix (const POS* label) {
+		std::string uniquePrefix (const TTerm* label) {
 		    std::string key = label == NULL ? "" : label->getLexicalValue();
 		    if (key.size() > 10)
 			key = key.substr(0, 32);
@@ -316,7 +316,7 @@ namespace w3c_sw {
 		}
 	    };
 
-	    const TableOperation* instantiate (POSFactory* posFactory, VarUniquifier& varUniquifier) const {
+	    const TableOperation* instantiate (AtomFactory* atomFactory, VarUniquifier& varUniquifier) const {
 		// std::cerr << "instantiate " << str();
 		TableDisjunction* ret = NULL;
 		if (opts.size() > 1)
@@ -328,7 +328,7 @@ namespace w3c_sw {
 			 rule != alternative->end(); ++rule)
 			for (ResultSetConstIterator res = rule->second.begin();
 			     res != rule->second.end(); ++res)
-			    conjoints.push_back(Instantiator(rule->first.body, *res, posFactory, varUniquifier.uniquePrefix(rule->first.label)).apply());
+			    conjoints.push_back(Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply());
 
 		    const TableOperation* op = 
 			conjoints.size() == 0 ? NULL :
@@ -352,10 +352,10 @@ namespace w3c_sw {
 	Alternatives alternatives;
 	Failures failed;
 
-	Bindings (POSFactory* posFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-	    : posFactory(posFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
+	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
 	void operator= (const Bindings& ref) {
-	    posFactory = ref.posFactory;
+	    atomFactory = ref.atomFactory;
 	    rules = ref.rules;
 	    alternatives = ref.alternatives;
 	    failed = ref.failed;
@@ -380,7 +380,7 @@ namespace w3c_sw {
 		for (std::vector<const TriplePattern*>::const_iterator constraint = rule->head->begin();
 		     constraint != rule->head->end(); constraint++) {
 
-		    ResultSet testRS(posFactory);
+		    ResultSet testRS(atomFactory);
 		    for (VariableListConstIterator it = rule->bodyVars.begin();
 			 it != rule->bodyVars.end(); ++it)
 			testRS.addKnownVar(*it);
@@ -398,7 +398,7 @@ namespace w3c_sw {
 	}
 
 	const TableOperation* instantiate (Alternatives::VarUniquifier& varUniquifier) {
-	    return alternatives.instantiate(posFactory, varUniquifier);
+	    return alternatives.instantiate(atomFactory, varUniquifier);
 	}
 
 	std::string str () const {
@@ -430,8 +430,8 @@ namespace w3c_sw {
 	Bindings::Alternatives::VarUniquifier varUniquifier;
 
     public:
-	QueryWalker (std::vector<Rule>& rules, POSFactory* posFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-	    : SWObjectDuplicator(posFactory), bindings(posFactory, rules, sharedVars, nodeShare) {  }
+	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    bindings.alternatives.opts.clear();
@@ -441,7 +441,7 @@ namespace w3c_sw {
 		bindings.match(bgp, *it);
 	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
 	    _TriplePatterns(self, p_TriplePatterns);
 	}
@@ -486,7 +486,7 @@ namespace w3c_sw {
 	    head = dynamic_cast<DefaultGraphPattern*>(d.last.tableOperation);
 	    p_WhereClause->express(this);
 	}
-	Rule parseConstruct (const Construct* c, const POS* name) {
+	Rule parseConstruct (const Construct* c, const TTerm* name) {
 	    c->express(this);
 	    return Rule(head, body, name, bodyVars);
 	}
@@ -501,7 +501,7 @@ namespace w3c_sw {
 	MapSet::e_sharedVars sharedVars;
 	NodeShare nodeShare;
 
-	ChainingMapper (POSFactory* posFactory, std::ostream** debugStream) : SWObjectDuplicator(posFactory), debugStream(debugStream) {  }
+	ChainingMapper (AtomFactory* atomFactory, std::ostream** debugStream) : SWObjectDuplicator(atomFactory), debugStream(debugStream) {  }
 	~ChainingMapper () { clear(); }
 	void clear () {
 	    /* clear rules -- called twice for some reason, needs the erase to guard against double delete. */
@@ -513,15 +513,15 @@ namespace w3c_sw {
 	    }
 	}
 	size_t getRuleCount () { return rules.size(); }
-	void addRule (const Construct* rule, const POS* name) {
+	void addRule (const Construct* rule, const TTerm* name) {
 	    if (name == NULL)
-		name = posFactory->getRDFLiteral(rule->toString());
+		name = atomFactory->getRDFLiteral(rule->toString());
 	    Rule r = RuleParser().parseConstruct(rule, name);
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
-	    const Operation* op = QueryWalker(rules, posFactory, sharedVars, nodeShare).mapQuery(query);
-	    BGPSimplifier dup(posFactory);
+	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
+	    BGPSimplifier dup(atomFactory);
 	    op->express(&dup);
 	    delete op;
 	    return dup.last.operation;

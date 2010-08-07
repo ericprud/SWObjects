@@ -50,7 +50,7 @@ using namespace w3c_sw;
 
 #define BASE_URI ""
 
-POSFactory F;
+AtomFactory F;
 SPARQLfedDriver sparqlParser(BASE_URI, &F);
 TurtleSDriver turtleParser(BASE_URI, &F);
 TrigSDriver trigParser(BASE_URI, &F);
@@ -89,7 +89,7 @@ struct MeasuredRS : public ResultSet {
 
 	/* Parse data. */
 	if (defGraph != NULL) {
-	    turtleParser.setGraph(d.assureGraph(NULL));
+	    turtleParser.setGraph(d.ensureGraph(NULL));
 	    turtleParser.setBase(baseURI);
 	    IStreamContext istr(defGraph, IStreamContext::FILE);
 	    turtleParser.parse(istr);
@@ -97,7 +97,7 @@ struct MeasuredRS : public ResultSet {
 	}
 
 	for (size_t i = 0; i < namedCount; ++i) {
-	    turtleParser.setGraph(d.assureGraph(F.getURI(namedGraphs[i])));
+	    turtleParser.setGraph(d.ensureGraph(F.getURI(namedGraphs[i])));
 	    turtleParser.setBase(baseURI);
 	    IStreamContext istr(namedGraphs[i], IStreamContext::FILE);
 	    turtleParser.parse(istr);
@@ -184,7 +184,7 @@ struct ReferenceRS {
     RdfDB rdfDB;
 
     ReferenceRS (ResultSet& measured, const char* resultFile, 
-		POSFactory* posFactory, SWSAXparser* saxParser) : 
+		AtomFactory* atomFactory, SWSAXparser* saxParser) : 
 	measured(measured) {
 	std::string baseURI;
 	if (resultFile != NULL) {
@@ -193,13 +193,13 @@ struct ReferenceRS {
 	}
 
 	if (resultFile == NULL) {	/* empty result graph */
-	    reference = new ResultSet(posFactory, &rdfDB);
+	    reference = new ResultSet(atomFactory, &rdfDB);
 
 	} else {
 	    std::string rfs(resultFile);
 	    IStreamContext istr(resultFile, IStreamContext::FILE);
 	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
-		reference = new ResultSet(posFactory, saxParser, istr);
+		reference = new ResultSet(atomFactory, saxParser, istr);
 	    } else if (rfs.substr(rfs.size()-4, 4) == ".srt") {
 		std::ifstream istr(rfs.c_str());
 		if (!istr.is_open())
@@ -207,12 +207,12 @@ struct ReferenceRS {
 
 		std::istreambuf_iterator<char> i(istr), e;
 		std::string s(i, e);
-		POS::String2BNode bnodeMap;
+		TTerm::String2BNode bnodeMap;
 		reference = new ResultSet(&F, s.c_str(), false, bnodeMap);
 	    } else {			/* retults in a graph */
 		if (rfs.substr(rfs.size()-4, 4) == ".nt" || 
 		    rfs.substr(rfs.size()-4, 4) == ".ttl") {
-		    turtleParser.setGraph(rdfDB.assureGraph(NULL));
+		    turtleParser.setGraph(rdfDB.ensureGraph(NULL));
 		    IStreamContext ttl(rfs.c_str(), IStreamContext::FILE);
 		    if (resultFile != NULL)
 			turtleParser.setBase(baseURI);
@@ -226,19 +226,19 @@ struct ReferenceRS {
 		    trigParser.parse(trig);			       
 		    trigParser.clear(BASE_URI);					       
 		} else if (rfs.substr(rfs.size()-4, 4) == ".rdf") {
-		    GRdfXmlParser.parse(rdfDB.assureGraph(NULL), istr);
+		    GRdfXmlParser.parse(rdfDB.ensureGraph(NULL), istr);
 		} else {
 		    throw std::string("unable to parse results file ") + rfs.c_str();
 		}
 
 		/* if !RESULT_Graphs, graph is an RDF form of a ResultSet. */
 		reference = measured.resultType == ResultSet::RESULT_Graphs ?
-		    new ResultSet(posFactory, &rdfDB) :
-		    new ResultSet(posFactory, &rdfDB, BASE_URI);
+		    new ResultSet(atomFactory, &rdfDB) :
+		    new ResultSet(atomFactory, &rdfDB, BASE_URI);
 	    }
 	}
 	if (measured.resultType == ResultSet::RESULT_Graphs)
-	    rdfDB.assureGraphs(measured.getRdfDB()->getGraphNames());
+	    rdfDB.ensureGraphs(measured.getRdfDB()->getGraphNames());
     }
     ~ReferenceRS () { delete reference; }
 };

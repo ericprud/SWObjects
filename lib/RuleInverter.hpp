@@ -27,7 +27,7 @@ namespace w3c_sw {
 
 #if REGEX_LIB == SWOb_BOOST
     struct POSmap {
-	const POS* selector;
+	const TTerm* selector;
 	boost::regex ifacePattern;
 	std::string localPattern;
 	std::string mapString (const std::string tweak) const {
@@ -50,7 +50,7 @@ namespace w3c_sw {
 	    class FilterDuplicator : public SWObjectDuplicator {
 
 	    public:
-		FilterDuplicator (POSFactory* posFactory) : SWObjectDuplicator(posFactory) {  }
+		FilterDuplicator (AtomFactory* atomFactory) : SWObjectDuplicator(atomFactory) {  }
 		const Filter* getFilter () { return last.filter; }
 	    };
 	    
@@ -63,11 +63,11 @@ namespace w3c_sw {
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	    virtual void filter (const Filter* const self, const ProductionVector<const Expression*>*) {
-		FilterDuplicator fd(NULL); // requires the same POSFactory.
+		FilterDuplicator fd(NULL); // requires the same AtomFactory.
 		self->express(&fd);
 		// dest->addFilter(fd.getFilter()); // !!!
 	    }
-	    // virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/) {
+	    // virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* /*p_name*/, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/) {
 	    // 	p_Filters->express(this);
 	    // }
 	    // virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /*p_TriplePatterns*/) {
@@ -81,8 +81,8 @@ namespace w3c_sw {
 	const TableOperation* userQueryDisjoint;
 
     public:
-	OperationResultSet (POSFactory* posFactory, TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
-	    ResultSet(posFactory), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
+	OperationResultSet (AtomFactory* atomFactory, TableDisjunction* constructed, const TableOperation* userQueryDisjoint) : 
+	    ResultSet(atomFactory), constructed(constructed), userQueryDisjoint(userQueryDisjoint) {  }
 	void addTableOperation (const TableOperation* op) { constructed->addTableOperation(op, true); }
 	void copyFiltersTo (TableOperation* dest) {
 	    /* Copy the FILTER patterns across.
@@ -100,12 +100,12 @@ namespace w3c_sw {
 		     map != maps.end(); ++map) {
 		    BindingSetIterator binding = (*row)->find(map->selector);
 		    if (binding != (*row)->end()) {
-			const URI* u = dynamic_cast<const URI*>(binding->second.pos);
+			const URI* u = dynamic_cast<const URI*>(binding->second.tterm);
 			if ((u) != NULL) {
 			    std::string changed = map->mapString(u->getLexicalValue());
 			    if (changed.size() == 0)
 				throw std::string("URI map ") + map->ifacePattern.str() + " failed to match " + u->getLexicalValue();
-			    (*row)->set(map->selector, posFactory->getURI(changed), false, true);
+			    (*row)->set(map->selector, atomFactory->getURI(changed), false, true);
 			    ++matches;
 			}
 		    }
@@ -139,12 +139,12 @@ namespace w3c_sw {
 	    std::vector<POSmap> uriMaps;
 #endif /* REGEX_LIB == SWOb_BOOST */
 	public:
-	    MappedDuplicator (POSFactory* posFactory, Result* row, ConsequentMap* includeRequiredness
+	    MappedDuplicator (AtomFactory* atomFactory, Result* row, ConsequentMap* includeRequiredness
 #if REGEX_LIB == SWOb_BOOST
 			      , std::vector<POSmap> uriMaps
 #endif /* REGEX_LIB == SWOb_BOOST */
 			      ) :
-		SWObjectDuplicator(posFactory), includeRequiredness(includeRequiredness), row(row)
+		SWObjectDuplicator(atomFactory), includeRequiredness(includeRequiredness), row(row)
 #if REGEX_LIB == SWOb_BOOST
 		, uriMaps(uriMaps)
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -158,13 +158,13 @@ namespace w3c_sw {
 #ifdef APPLY_VARMAPS_INDISCRIMINATELY
 		    {
 			/* Copy TriplePattern::construct functionality and inject transformation. */
-			const POS *s, *p, *o;
-			if ((s = (*triple)->getS()->evalPOS(row, &treatAsVar)) != NULL && 
-			    (p = (*triple)->getP()->evalPOS(row, &treatAsVar)) != NULL && 
-			    (o = (*triple)->getO()->evalPOS(row, &treatAsVar)) != NULL) {
+			const TTerm *s, *p, *o;
+			if ((s = (*triple)->getS()->evalTTerm(row, &treatAsVar)) != NULL && 
+			    (p = (*triple)->getP()->evalTTerm(row, &treatAsVar)) != NULL && 
+			    (o = (*triple)->getO()->evalTTerm(row, &treatAsVar)) != NULL) {
 			    /* inject transformations */
 #if REGEX_LIB == SWOb_BOOST
-			    const POS** uris[3] = {&s, &p, &o};
+			    const TTerm** uris[3] = {&s, &p, &o};
 			    for (unsigned i = 0; i < 3; ++i) {
 				const URI* u = dynamic_cast<const URI*>(*uris[i]);
 				if (u != NULL) {
@@ -172,24 +172,24 @@ namespace w3c_sw {
 					 map != uriMaps.end(); ++map) {
 					std::string changed = map->mapString(u->getLexicalValue());
 					if (changed.size() != 0) {
-					    *uris[i] = posFactory->getURI(changed.c_str());
+					    *uris[i] = atomFactory->getURI(changed.c_str());
 					    break;
 					}
 				    }
 				}
 			    }
 #endif /* REGEX_LIB == SWOb_BOOST */
-			    if (posFactory == NULL) {
+			    if (atomFactory == NULL) {
 				if (s == (*triple)->getS() && p == (*triple)->getP() && o == (*triple)->getO()) // lost:  && !weaklyBound
 				    bgp->addTriplePattern(*triple);
 				else
-				    throw(std::runtime_error("TriplePattern::construct requires POSFactory when constructing new triples."));
+				    throw(std::runtime_error("TriplePattern::construct requires AtomFactory when constructing new triples."));
 			    } else
-				bgp->addTriplePattern(posFactory->getTriple(s, p, o));
+				bgp->addTriplePattern(atomFactory->getTriple(s, p, o));
 			}
 		    }
 #else /* !APPLY_VARMAPS_INDISCRIMINATELY */
-		    (*triple)->construct(bgp, row, posFactory, false);
+		    (*triple)->construct(bgp, row, atomFactory, false);
 #endif /* !APPLY_VARMAPS_INDISCRIMINATELY */
 	    }
 
@@ -204,7 +204,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		if (WatchOptsOnly) {
 		    SWObjectDuplicator::namedGraphPattern(self, p_name, p_allOpts, p_TriplePatterns);
 		    return;
@@ -260,10 +260,10 @@ namespace w3c_sw {
 			SWObjectDuplicator::optionalGraphPattern(self, p_GroupGraphPattern, p_Expressions);
 		}
 	    }
-	    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */) {
+	    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */) {
 		w3c_sw_FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
-	    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* /* p_POS */, const TableOperation* /* p_GroupGraphPattern */, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 		w3c_sw_FAIL("don't know how to deal with a serviceGraphPattern in a stem query");
 	    }
 	};
@@ -272,7 +272,7 @@ namespace w3c_sw {
     private:
 	TableOperation* constructRuleBodyAsConsequent;
 	Consequents consequents;
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 #if REGEX_LIB == SWOb_BOOST
 	std::vector<POSmap> uriMaps;
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -280,7 +280,7 @@ namespace w3c_sw {
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, POSFactory* posFactory, 
+			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, AtomFactory* atomFactory, 
 #if REGEX_LIB == SWOb_BOOST
 			  std::vector<POSmap> uriMaps, 
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -288,7 +288,7 @@ namespace w3c_sw {
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
 	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
-	    posFactory(posFactory), 
+	    atomFactory(atomFactory), 
 #if REGEX_LIB == SWOb_BOOST
 	    uriMaps(uriMaps), 
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -328,13 +328,13 @@ namespace w3c_sw {
 		 * http://www.w3.org/2008/07/MappingRules/#_06
 		 */
 		/* Set of { BGP => optional } associations to indicate if the BGP is optional. */
-		ConsequentMap includeRequiredness = consequents.getIncludeRequiredness(opRS, row, posFactory);
+		ConsequentMap includeRequiredness = consequents.getIncludeRequiredness(opRS, row, atomFactory);
 
 		/* 07 — Substitute the values in S for the variables in A.
 		 * 08 — Create a stem query disjoint DQS which is a reproduction of the mapping rule antecedent A
 		 * http://www.w3.org/2008/07/MappingRules/#_07
 		 */
-		MappedDuplicator e(posFactory, *row, &includeRequiredness
+		MappedDuplicator e(atomFactory, *row, &includeRequiredness
 #if REGEX_LIB == SWOb_BOOST
 				   , uriMaps
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -370,7 +370,7 @@ namespace w3c_sw {
 	MappingConstruct* m_Construct;
 	std::ostream** debugStream;
 	bool inUserRuleHead;
-	std::map<const POS*, size_t> variablesInLexicalOrder;
+	std::map<const TTerm*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
 
 #if REGEX_LIB == SWOb_BOOST
@@ -378,15 +378,15 @@ namespace w3c_sw {
 #endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
-	RuleInverter (POSFactory* posFactory, std::ostream** debugStream = NULL) : 
-	    SWObjectDuplicator(posFactory), debugStream(debugStream), inUserRuleHead(false), nextVariableIndex(0) {  }
+	RuleInverter (AtomFactory* atomFactory, std::ostream** debugStream = NULL) : 
+	    SWObjectDuplicator(atomFactory), debugStream(debugStream), inUserRuleHead(false), nextVariableIndex(0) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
 
 	/* duplicate triples and note the order of POSs.
 	 * This is called from _TriplePatters call in _graphPatterns.
 	 */
-	virtual void triplePattern (TriplePattern* self, POS* s, POS* p, POS* o) {
+	virtual void triplePattern (TriplePattern* self, TTerm* s, TTerm* p, TTerm* o) {
 	    this->SWObjectDuplicator::triplePattern(self, s, p, o);
 	    if (!inUserRuleHead) {
 		/* We're in the UserRuleBody so note the order of introduced
@@ -402,9 +402,9 @@ namespace w3c_sw {
 	 * userRuleBody.
 	 */
 	struct MapOrder {
-	    std::map<const POS*, size_t>& v;
-	    MapOrder (std::map<const POS*, size_t>& v) : v(v) {  }
-	    int _orderAtoms (const POS* l, const POS* r) {
+	    std::map<const TTerm*, size_t>& v;
+	    MapOrder (std::map<const TTerm*, size_t>& v) : v(v) {  }
+	    int _orderAtoms (const TTerm* l, const TTerm* r) {
 		if (v.find(l) == v.end())
 		    v[l] = v.size();
 		if (v.find(r) == v.end())
@@ -445,9 +445,9 @@ namespace w3c_sw {
 	 * indicating the special semantics of all triples being
 	 * optional (03).
 	 */
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
-	    _graphPattern(new NamedGraphPattern(last.posz.pos, inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
+	    _graphPattern(new NamedGraphPattern(last.tterms.tterm, inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
 	}
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
@@ -505,7 +505,7 @@ namespace w3c_sw {
 					       _DatasetClauses(p_DatasetClauses),//
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
-					       posFactory, 
+					       atomFactory, 
 #if REGEX_LIB == SWOb_BOOST
 					       uriMaps, 
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -542,19 +542,19 @@ namespace w3c_sw {
 
 	virtual void functionCall (const FunctionCall* const me, const URI* p_IRIref, const ArgList* p_ArgList) {
 #if REGEX_LIB == SWOb_BOOST
-	    if (p_IRIref != posFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
+	    if (p_IRIref != atomFactory->getURI("http://www.w3.org/2008/04/SPARQLfed/#rewriteVar"))
 		SWObjectDuplicator::functionCall(me, p_IRIref, p_ArgList);
 	    if (p_ArgList->size() != 3)
 		w3c_sw_FAIL("wrong number of arguments to sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\")");
 	    std::vector<const Expression*>::iterator it = p_ArgList->begin();
-	    const POSExpression* exp;
-	    exp = dynamic_cast<const POSExpression*>(*it);
-	    const Bindable* toModify = exp ? dynamic_cast<const Bindable*>(exp->getPOS()) : NULL;
+	    const TTermExpression* exp;
+	    exp = dynamic_cast<const TTermExpression*>(*it);
+	    const Bindable* toModify = exp ? dynamic_cast<const Bindable*>(exp->getTTerm()) : NULL;
 	    if (toModify == NULL)
 		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 1 not a variable");
 	    ++it;
-	    exp = dynamic_cast<const POSExpression*>(*it);
-	    const RDFLiteral* localName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
+	    exp = dynamic_cast<const TTermExpression*>(*it);
+	    const RDFLiteral* localName = exp ? dynamic_cast<const RDFLiteral*>(exp->getTTerm()) : NULL;
 	    if (localName == NULL)
 		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 2 not a literal");
 	    /* localName
@@ -562,8 +562,8 @@ namespace w3c_sw {
 	     */
 
 	    ++it;
-	    exp = dynamic_cast<const POSExpression*>(*it);
-	    const RDFLiteral* ifaceName = exp ? dynamic_cast<const RDFLiteral*>(exp->getPOS()) : NULL;
+	    exp = dynamic_cast<const TTermExpression*>(*it);
+	    const RDFLiteral* ifaceName = exp ? dynamic_cast<const RDFLiteral*>(exp->getTTerm()) : NULL;
 	    if (ifaceName == NULL)
 		w3c_sw_FAIL("sp:rewriteVar(?var, \"localPattern\", \"ifacePattern\"): parm 3 not a literal");
 	    /* ifaceName

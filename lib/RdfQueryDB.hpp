@@ -15,16 +15,16 @@ namespace w3c_sw {
 	const TableOperation* top;
 
     public:
-	RdfQueryDB (const TableOperation* p_op, POSFactory* posFactory);
+	RdfQueryDB (const TableOperation* p_op, AtomFactory* atomFactory);
     };
     class DBExpressor : public RecursiveExpressor {
     protected:
 	RdfQueryDB* db;
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 	bool optState;
 
     public:
-	DBExpressor (RdfQueryDB* p_db, POSFactory* posFactory) : db(p_db), posFactory(posFactory), optState(false) {  }
+	DBExpressor (RdfQueryDB* p_db, AtomFactory* atomFactory) : db(p_db), atomFactory(atomFactory), optState(false) {  }
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
@@ -34,13 +34,13 @@ namespace w3c_sw {
 	void _absorbGraphPattern (BasicGraphPattern* g, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
-		g->addTriplePattern(posFactory->getTriple(*it, optState));
+		g->addTriplePattern(atomFactory->getTriple(*it, optState));
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_IRIref, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    _absorbGraphPattern(db->assureGraph(p_IRIref), p_TriplePatterns);
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_IRIref, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    _absorbGraphPattern(db->ensureGraph(p_IRIref), p_TriplePatterns);
 	}
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    _absorbGraphPattern(db->assureGraph(DefaultGraph), p_TriplePatterns);
+	    _absorbGraphPattern(db->ensureGraph(DefaultGraph), p_TriplePatterns);
 	}
 	virtual void tableDisjunction (TableDisjunction*, const ProductionVector<const TableOperation*>*, const ProductionVector<const Filter*>*) { // p_TableOperations p_Filters
 	    throw(std::runtime_error(FUNCTION_STRING)); // query should already be DNF'd, ergo no disjunctions.

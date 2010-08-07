@@ -292,10 +292,10 @@ LINEFEED		(\r\n|\r|\n)
 {STRING_LITERAL1}		{return unescape(yylval, 1, token::STRING_LITERAL1);}
 {STRING_LITERAL2}		{return unescape(yylval, 1, token::STRING_LITERAL2);}
 {NIL}		{return token::NIL;}
-{ANON}		{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 {PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
-{BLANK_NODE_LABEL}		{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{BLANK_NODE_LABEL}		{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 {VAR1}		{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
 {VAR2}		{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
 

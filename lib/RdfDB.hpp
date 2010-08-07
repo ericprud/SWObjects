@@ -17,34 +17,34 @@ namespace w3c_sw {
 #if 0
     class Triple {
     protected:
-	POS* subject;
-	POS* predicate;
-	POS* object;
+	TTerm* subject;
+	TTerm* predicate;
+	TTerm* object;
     public:
-	Triple (POS* s, POS* p, POS* o) : subject(s), predicate(p), object(o) {  }
+	Triple (TTerm* s, TTerm* p, TTerm* o) : subject(s), predicate(p), object(o) {  }
     };
     //class cls { protected: char* name; std::vector<char*> names; cls () : names(), name() {  } };
     class Graph {
     protected:
-	POS* name;
+	TTerm* name;
 	std::vector<TriplePattern*> triples;
     public:
-	Graph (POS* p_name) : name(p_name), triples() {  }
+	Graph (TTerm* p_name) : name(p_name), triples() {  }
     };
 #endif
 
-    class DefaultGraphClass : public POS {
+    class DefaultGraphClass : public TTerm {
     public:
-	DefaultGraphClass () : POS("::DefaultGraphClass::") {  }
-	virtual std::string toXMLResults (POS::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
+	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
+	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual std::string toString () const { return "::DefaultGraphClass::"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual void express (Expressor*) const { throw(std::runtime_error(FUNCTION_STRING)); };
     };
-    extern POS* DefaultGraph;
+    extern TTerm* DefaultGraph;
 
     class RdfDB {
-	typedef std::map<const POS*, BasicGraphPattern*> graphmap_type;
+	typedef std::map<const TTerm*, BasicGraphPattern*> graphmap_type;
     protected:
 	graphmap_type graphs;
 
@@ -54,7 +54,7 @@ namespace w3c_sw {
 	    virtual bool parse (std::string mediaType, std::vector<std::string> args,
 				BasicGraphPattern* /* target */, IStreamContext& /* istr */,
 				std::string /* nameStr */, std::string /* baseURI */,
-				POSFactory* /* posFactory */, NamespaceMap* /* nsMap */) {
+				AtomFactory* /* atomFactory */, NamespaceMap* /* nsMap */) {
 		throw std::string("no handler for ") + mediaType + "(" + args[0] + ")";
 	    }
 	};
@@ -67,34 +67,34 @@ namespace w3c_sw {
 
 	RdfDB (SWSAXparser* xmlParser = NULL)
 	    : graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL), handler(&defaultHandler)
-	{ assureGraph(DefaultGraph); }
+	{ ensureGraph(DefaultGraph); }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(&defaultHandler)
-	{ assureGraph(DefaultGraph); }
+	{ ensureGraph(DefaultGraph); }
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(handler)
-	{ assureGraph(DefaultGraph); }
+	{ ensureGraph(DefaultGraph); }
 	RdfDB (RdfDB const &)
 	    : graphs()
-	{ throw(std::runtime_error(FUNCTION_STRING)); assureGraph(DefaultGraph); }
+	{ throw(std::runtime_error(FUNCTION_STRING)); ensureGraph(DefaultGraph); }
 	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL), handler(&defaultHandler) {
-	    BasicGraphPattern* bgp = assureGraph(DefaultGraph);
+	    BasicGraphPattern* bgp = ensureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
 		 it != graph->end(); it++)
 		bgp->addTriplePattern(*it);
 	}
 	virtual ~RdfDB();
-	std::set<const POS*> getGraphNames () {
-	    std::set<const POS*> names;
+	std::set<const TTerm*> getGraphNames () {
+	    std::set<const TTerm*> names;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
 		names.insert(it->first);
 	    return names;
 		    
 	}
-	BasicGraphPattern* assureGraph(const POS* name);
-	void assureGraphs(std::set<const POS*> names) {
-	    for (std::set<const POS*>::const_iterator it = names.begin(); it != names.end(); ++it)
-		assureGraph(*it);
+	BasicGraphPattern* ensureGraph(const TTerm* name);
+	void ensureGraphs(std::set<const TTerm*> names) {
+	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)
+		ensureGraph(*it);
 	}
 	RdfDB& operator= (const RdfDB &ref) {
 	    for (graphmap_type::const_iterator it = graphs.begin(); // @@@ same as ~RdfDB()
@@ -103,7 +103,7 @@ namespace w3c_sw {
 	    graphs.clear();
 
 	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it) {
-		BasicGraphPattern* to = assureGraph(it->first);
+		BasicGraphPattern* to = ensureGraph(it->first);
 		const BasicGraphPattern* from = it->second;
 		for (std::vector<const TriplePattern*>::const_iterator it = from->begin(); 
 		     it != from->end(); ++it)
@@ -117,12 +117,12 @@ namespace w3c_sw {
 	    return *this;
 	}
 	bool operator== (const RdfDB& ref) const {
-	    std::set<const POS*> thisGraphs;
+	    std::set<const TTerm*> thisGraphs;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
 		// if (it->second->size() > 0)
 		    thisGraphs.insert(it->first);
 
-	    std::set<const POS*> refGraphs;
+	    std::set<const TTerm*> refGraphs;
 	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it)
 		// if (it->second->size() > 0)
 		    refGraphs.insert(it->first);
@@ -132,7 +132,7 @@ namespace w3c_sw {
 
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it) {
 		// compare BasicGraphPatterns *it->second and *ref.graphs.find(it->first)->second;
-		const POS* label = it->first;
+		const TTerm* label = it->first;
 		BasicGraphPattern* l = it->second;
 		graphmap_type::const_iterator rit = ref.graphs.find(label);
 		if (rit == ref.graphs.end())
@@ -145,8 +145,8 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap = NULL);
-	virtual void bindVariables(ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch);
+	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, AtomFactory* atomFactory, NamespaceMap* nsMap = NULL);
+	virtual void bindVariables(ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
 	std::string toString (MediaType mediaType = MediaType("text/trig"), NamespaceMap* namespaces = NULL) const {
 	    /* simple unordered serializer -
@@ -157,7 +157,7 @@ namespace w3c_sw {
 		mediaType = "text/trig";
 
 	    /* ordered serializer */
-	    std::list<const POS*> graphList;
+	    std::list<const TTerm*> graphList;
 	    if (mediaType.match("text/turtle") || 
 		mediaType.match("text/ntriples") || 
 		mediaType.match("application/rdf+xml"))
@@ -169,7 +169,7 @@ namespace w3c_sw {
 	    POSsorter sorter;
 	    graphList.sort(sorter);
 	    std::stringstream s;
-	    for (std::list<const POS*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) 
+	    for (std::list<const TTerm*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) 
 		s << graphs.find(*it)->second->toString(mediaType, namespaces);
 	    return s.str();
 	}

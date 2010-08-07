@@ -68,15 +68,15 @@ class MapSetScanner;
 class MapSetDriver : public YaccDriver {
     friend class MapSetParser;
 protected:
-    const POS* curSubject;
-    const POS* curPredicate;
+    const TTerm* curSubject;
+    const TTerm* curPredicate;
     BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
     TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     BindingClause* curBindingsClause;
     Binding* curBinding;
     ProductionVector<const Expression*>* curExprList;
-    const POS* curGraphName;
+    const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
 
     void ensureBasicGraphPattern ( ) {
@@ -127,7 +127,7 @@ protected:
     }
 
 public:
-    MapSetDriver(std::string baseURI, POSFactory* posFactory);
+    MapSetDriver(std::string baseURI, AtomFactory* atomFactory);
     ~MapSetDriver();
 
     virtual bool parse(IStreamContext& in);
@@ -239,7 +239,7 @@ namespace w3c_sw {
 /* Line 35 of lalr1.cc  */
 #line 163 "lib/MapSetParser/MapSetParser.ypp"
 
-    struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
+    struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
     struct {Operation* operation; WhereClause* whereClause;} p_OperationWhereClausePair;
@@ -266,7 +266,7 @@ namespace w3c_sw {
     e_distinctness p_distinctness;
     e_listModifier p_listModifier;
     e_Silence p_Silence;
-    POSList* p_POSList;
+    TTermList* p_TTermList;
     ExpressionAliasList* p_ExpressionAliaseList;
     ExpressionAlias* p_ExpressionAlias;
     VarSet* p_VarSet;
@@ -289,8 +289,8 @@ namespace w3c_sw {
     ParserFilter* p_ParserFilter;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
-    const POS* p_POS;
-    ProductionVector<const POS*>* p_POSs;
+    const TTerm* p_TTerm;
+    ProductionVector<const TTerm*>* p_TTerms;
     Expression* p_Expression;
     ProductionVector<const Expression*>* p_Expressions;
     GeneralComparator* p_GeneralComparator;

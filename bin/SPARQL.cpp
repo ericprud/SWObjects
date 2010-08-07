@@ -108,34 +108,34 @@ namespace sw {
 };
 #endif
 
-const sw::POS* CwdURI;
-const sw::POS* BaseURI;
+const sw::TTerm* CwdURI;
+const sw::TTerm* BaseURI;
 std::string BaseUriMessage () {
     return (BaseURI == NULL)
 	? std::string(" with no base URI")
 	: std::string(" with base URI ") + BaseURI->getLexicalValue();
 }
-std::string UriString (const sw::POS* uri) {
+std::string UriString (const sw::TTerm* uri) {
     return (uri == NULL)
 	? ""
 	: std::string(uri->getLexicalValue());
 }
 
-const sw::POS* ArgBaseURI;
+const sw::TTerm* ArgBaseURI;
 bool NoExec = false;
 int Debug = 0;
 bool Quiet = false;
 bool ResultSetsLoaded = false;
-const sw::POS* NamedGraphName = NULL;
-const sw::POS* Query; // URI is a guery ref; RDFLiteral is a query string.
-typedef std::vector<const sw::POS*> mapList;
+const sw::TTerm* NamedGraphName = NULL;
+const sw::TTerm* Query; // URI is a guery ref; RDFLiteral is a query string.
+typedef std::vector<const sw::TTerm*> mapList;
 mapList Maps;
 sw::MediaType DataMediaType;
 std::map<std::string, std::string> HTTPHeaders;
 
 #ifndef TEST_CLI
 std::ostream* DebugStream = NULL;
-sw::POSFactory F;
+sw::AtomFactory F;
 
 #include <fstream>
 #ifdef BOOST_PROCESS
@@ -183,7 +183,7 @@ class DBHandlers : public sw::RdfDB::HandlerSet {
     virtual bool parse(std::string mediaType, std::vector<std::string> args,
 		       sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 		       std::string nameStr, std::string baseURI,
-		       sw::POSFactory* posFactory, sw::NamespaceMap* nsMap);
+		       sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap);
 };
 
 DBHandlers  RdfDBHandlers;
@@ -265,7 +265,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string stemURI;
     std::string serviceURI;
     bool printQuery;
-    sw::POSFactory& posFactory;
+    sw::AtomFactory& atomFactory;
     sw::SPARQLfedDriver& sparqlParser;
     std::string pkAttribute;
     sw::KeyMap keyMap;
@@ -278,27 +278,27 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string SQLDatabase;
     std::ostream**   debugStream;
 
-    MyServer (sw::POSFactory& posFactory, sw::SPARQLfedDriver& sparqlParser,
+    MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute, std::ostream** debugStream = NULL)
 	: db(&Agent, &P, debugStream, &RdfDBHandlers),
 	  runOnce(false), done(false), served(0), stemURI(""), serviceURI(""),
-	  printQuery(false), posFactory(posFactory), sparqlParser(sparqlParser),
-	  pkAttribute(pkAttribute), mapSetParser("", &posFactory), 
-	  queryMapper(&posFactory, debugStream), debugStream(debugStream)
+	  printQuery(false), atomFactory(atomFactory), sparqlParser(sparqlParser),
+	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
+	  queryMapper(&atomFactory, debugStream), debugStream(debugStream)
     {  }
-    sw::BasicGraphPattern* assureGraph (const sw::POS* name) {
-	return db.assureGraph(name);
+    sw::BasicGraphPattern* ensureGraph (const sw::TTerm* name) {
+	return db.ensureGraph(name);
     }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	std::ostringstream s;
 	s << "http://localhost:" << serverPort << path;
 
-	const sw::URI* serviceURI = posFactory.getURI(s.str());
-	sw::BasicGraphPattern* serviceGraph = assureGraph(serviceURI);
-	serviceGraph->addTriplePattern(posFactory.getTriple(
+	const sw::URI* serviceURI = atomFactory.getURI(s.str());
+	sw::BasicGraphPattern* serviceGraph = ensureGraph(serviceURI);
+	serviceGraph->addTriplePattern(atomFactory.getTriple(
 							    serviceURI, 
-							    posFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-							    posFactory.getURI(std::string(sw::NS_sadl)+"Service")));
+							    atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
+							    atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
 	{
 	    char buf[1024];
 	    buf[0] = 0;
@@ -321,10 +321,10 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    if (buf[0]) {
 		std::cout << "working directory: " << buf << std::endl;
 		std::string base = std::string("file://localhost") + buf;
-		serviceGraph->addTriplePattern(posFactory.getTriple(
+		serviceGraph->addTriplePattern(atomFactory.getTriple(
 								    serviceURI, 
-								    posFactory.getURI(std::string(sw::NS_sadl)+"base"), 
-								    posFactory.getURI(base)));
+								    atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
+								    atomFactory.getURI(base)));
 	    }
 	}
 
@@ -406,7 +406,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		catch (std::string ex) {
 		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
 		}
-		sw::SqlResultSet rs2(&posFactory, res);
+		sw::SqlResultSet rs2(&atomFactory, res);
 		rs.joinIn(&rs2);
 		executed = true;
 	    }
@@ -456,13 +456,13 @@ sw::ResultSet rs(&F);
 MyServer TheServer(F, SparqlParser, "ID", &DebugStream);
 
 struct loadEntry {
-    const sw::POS* graphName;
-    const sw::POS* resource;
-    const sw::POS* baseURI;
-    loadEntry (const sw::POS* graphName, const sw::POS* resource, const sw::POS* baseURI)
+    const sw::TTerm* graphName;
+    const sw::TTerm* resource;
+    const sw::TTerm* baseURI;
+    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI)
 	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
     void loadGraph () {
-	const sw::POS* graph = graphName ? graphName : sw::DefaultGraph;
+	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
 				&Agent, &DebugStream);
@@ -485,7 +485,7 @@ struct loadEntry {
 	    }
 	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
-	    sw::POS::String2BNode bnodeMap;
+	    sw::TTerm::String2BNode bnodeMap;
 	    sw::ResultSet loaded(&F, s.c_str(), false, bnodeMap);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
@@ -496,14 +496,14 @@ struct loadEntry {
 		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
 		std::cout << " into graph <" << graph << ">." << std::endl;
 	    }
-	    TheServer.db.loadData(TheServer.db.assureGraph(graph), istr, UriString(baseURI), 
+	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
 			baseURI ? UriString(baseURI) : nameStr, &F);
 	}
     }
 };
 typedef std::vector<loadEntry> loadList;
 
-const sw::POS* htparseWrapper(std::string s, const sw::POS* base) {
+const sw::TTerm* htparseWrapper(std::string s, const sw::TTerm* base) {
     std::string baseURIstring = base ? base->getLexicalValue() : "";
     std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
     return F.getURI(t.c_str());
@@ -520,13 +520,13 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	    w3c_sw::webserver::request::parmmap::const_iterator parm;
 	    parm = req.parms.find("default-graph-uri");
 	    if (parm != req.parms.end() && parm->second != "") {
-		const sw::POS* abs(htparseWrapper(parm->second, ArgBaseURI));
+		const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
 		queryLoadList.push_back(loadEntry(NULL, abs, BaseURI));
 		std::cerr << "default graph: " << parm->second << std::endl;
 	    }
 	    parm = req.parms.find("named-graph-uri");
 	    while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
-		const sw::POS* abs(htparseWrapper(parm->second, ArgBaseURI));
+		const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
 		queryLoadList.push_back(loadEntry(abs, abs, BaseURI));
 		std::cerr << "named graph: " << parm->second << std::endl;
 		++parm;
@@ -556,7 +556,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 			foot(sout);
 		    } else {
 			sw::Operation* op = server.sparqlParser.root;
-			sw::ResultSet rs(&server.posFactory);
+			sw::ResultSet rs(&server.atomFactory);
 			std::string language;
 			std::string newQuery(query);
 
@@ -686,14 +686,14 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 			std::string nameStr, std::string baseURI,
-			sw::POSFactory* posFactory, sw::NamespaceMap* nsMap) {
+			sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
     if (mediaType == "application/x-grddl") {
 	const char* env = ::getenv("XSLT");
 	if (env == NULL)
 	    return sw::RdfDB::HandlerSet::parse(mediaType, args,
 						target, istr,
 						nameStr, baseURI,
-						posFactory, nsMap);
+						atomFactory, nsMap);
 
 	// break up $XSLT
 	std::vector<std::string> tokens;
@@ -755,12 +755,12 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 	    if (POSIX_unlink(iCreatedFile->c_str()) != 0)
 		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
-	return TheServer.db.loadData(target, istr2, nameStr, baseURI, posFactory, nsMap);
+	return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
     } else
 	return sw::RdfDB::HandlerSet::parse(mediaType, args,
 					    target, istr,
 					    nameStr, baseURI,
-					    posFactory, nsMap);
+					    atomFactory, nsMap);
 }
 
 class NamespaceAccumulator : public sw::NamespaceMap {
@@ -899,7 +899,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
     }
 }
 
-void validateBase(const std::vector<std::string>& values, const sw::POS** setMe, const sw::POS* copySource, const char* argName) {
+void validateBase(const std::vector<std::string>& values, const sw::TTerm** setMe, const sw::TTerm* copySource, const char* argName) {
     const std::string& s = po::validators::get_single_string(values);
     if (s == "?") {
 	std::cout << argName << "URI: " << (*setMe ? (*setMe)->getLexicalValue() : "\"\"") << "\n";
@@ -936,7 +936,7 @@ struct outPut : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, outPut*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     Output = loadEntry(NULL, abs, BaseURI);
     if (Debug > 0)
 	std::cout << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << "\n";
@@ -952,7 +952,7 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	if (Debug > 0)
 	    std::cout << "Manipulating other input data.\n";
     } else {
-	const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
 	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
 	Output = loadEntry(NULL, abs, BaseURI);
 	if (Debug > 0) {
@@ -968,7 +968,7 @@ struct dataURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, dataURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0) {
 	std::cout << "queued reading default data from " << abs->getLexicalValue() << "\n";
@@ -982,7 +982,7 @@ struct mapURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::POS* abs(htparseWrapper(s, ArgBaseURI));
+    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     MapList.push_back(loadEntry(NULL, abs, BaseURI));
     if (Debug > 0) {
 	std::cout << "queued reading default map from " << abs->getLexicalValue() << "\n";
@@ -1004,7 +1004,7 @@ struct orderedURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, orderedURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::POS* vald = htparseWrapper(s, ArgBaseURI);
+    const sw::TTerm* vald = htparseWrapper(s, ArgBaseURI);
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
@@ -1108,7 +1108,7 @@ std::string adjustPath (std::string nameStr) {
     return nameStr;
 }
 
-sw::Operation* parseQuery (const sw::POS* query) {
+sw::Operation* parseQuery (const sw::TTerm* query) {
     std::string querySpec = query->getLexicalValue();
     sw::IStreamContext::e_opts opts = 
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
@@ -1410,7 +1410,7 @@ int main(int ac, char* av[])
 		if (vm.count("description")) {
 		    sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		    s.mediaType = "text/turtle";
-		    TheServer.db.loadData(TheServer.db.assureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
+		    TheServer.db.loadData(TheServer.db.ensureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
 		}
 
 		if (vm.count("desc-graph")) {
@@ -1419,7 +1419,7 @@ int main(int ac, char* av[])
 			 it != descs.end(); ++it) {
 			sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 			s.mediaType = "text/turtle";
-			TheServer.db.loadData(TheServer.db.assureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
+			TheServer.db.loadData(TheServer.db.ensureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
 		    }
 		}
 
@@ -1521,7 +1521,7 @@ int main(int ac, char* av[])
 		delete query;
 
 		if (vm.count("compare")) {
-		    const sw::POS* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
+		    const sw::TTerm* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
 					    NULL, &Agent, &DebugStream);
@@ -1533,7 +1533,7 @@ int main(int ac, char* av[])
 			sw::RdfDB resGraph;
 			if (iptr.mediaType.match("text/ntriples") || 
 			    iptr.mediaType.match("text/turtle")) {
-			    TurtleParser.setGraph(resGraph.assureGraph(NULL));
+			    TurtleParser.setGraph(resGraph.ensureGraph(NULL));
 			    TurtleParser.parse(iptr);
 			    TurtleParser.clear("");
 			} else {

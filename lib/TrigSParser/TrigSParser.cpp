@@ -502,7 +502,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 239 "lib/TrigSParser/TrigSParser.ypp"
     {
-	driver.curBGP = driver.db->assureGraph((yysemantic_stack_[(2) - (1)].p_URI));
+	driver.curBGP = driver.db->ensureGraph((yysemantic_stack_[(2) - (1)].p_URI));
 	driver.neededBGP = NULL;
       }
     break;
@@ -572,7 +572,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 284 "lib/TrigSParser/TrigSParser.ypp"
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -592,8 +592,8 @@ namespace w3c_sw {
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
-	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_POS)));
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -602,8 +602,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 356 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-	driver.curPredicate = (yyval.p_POS);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
@@ -612,8 +612,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 360 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	driver.curPredicate = (yyval.p_POS);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
@@ -663,17 +663,17 @@ namespace w3c_sw {
 #line 389 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
-	const POS* tail = (yyval.p_BNode);
-	ProductionVector<const POS*>* members = (yysemantic_stack_[(3) - (2)].p_POSs);
+	const TTerm* tail = (yyval.p_BNode);
+	ProductionVector<const TTerm*>* members = (yysemantic_stack_[(3) - (2)].p_TTerms);
 	const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	for (unsigned i = 0; i < members->size(); i++) {
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-	    const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
+	    const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
 	    tail = nextTail;
 	}
 	members->clear();
@@ -686,7 +686,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 411 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POSs) = new ProductionVector<const POS*>((yysemantic_stack_[(1) - (1)].p_POS));
+	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
@@ -695,8 +695,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 414 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_POSs)->push_back((yysemantic_stack_[(2) - (2)].p_POS));
-	(yyval.p_POSs) = (yysemantic_stack_[(2) - (1)].p_POSs);
+	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
+	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
     }
     break;
 
@@ -705,7 +705,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 421 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -714,7 +714,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 424 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
@@ -723,7 +723,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 430 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -732,7 +732,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 436 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -741,7 +741,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 442 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -750,7 +750,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 445 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
     break;
 
@@ -759,7 +759,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 448 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
@@ -768,7 +768,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 451 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
@@ -777,7 +777,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 454 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -786,7 +786,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 457 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
     break;
 
@@ -1051,7 +1051,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 591 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
@@ -1060,7 +1060,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 594 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BNode);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 

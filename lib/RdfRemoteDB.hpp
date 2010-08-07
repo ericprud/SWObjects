@@ -32,7 +32,7 @@ namespace w3c_sw {
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		if (expectOuterGraph) {
 		    expectOuterGraph = false;
 		    lead();
@@ -60,8 +60,8 @@ namespace w3c_sw {
 	};
     protected:
 	std::vector<const char*> endpointPatterns;
-	std::set<const POS*> loadedEndpoints;
-	POSFactory* posFactory;
+	std::set<const TTerm*> loadedEndpoints;
+	AtomFactory* atomFactory;
 	bool lexicalCompare;
 
     public:
@@ -70,22 +70,22 @@ namespace w3c_sw {
 		     bool lexicalCompare = false, std::ostream** debugStream = NULL) : 
 	    RdfDB(webAgent, xmlParser, debugStream), endpointPatterns(endpointPatterns), lexicalCompare(lexicalCompare) {  }
 #if REGEX_LIB == SWOb_BOOST
-	virtual void loadData (const POS* name, BasicGraphPattern* target, POSFactory* posFactory) {
+	virtual void loadData (const TTerm* name, BasicGraphPattern* target, AtomFactory* atomFactory) {
 	    for (std::vector<const char*>::const_iterator it = endpointPatterns.begin();
 		 it != endpointPatterns.end(); ++it) {
 		boost::regex re(*it);
 		boost::cmatch matches;
 		if (boost::regex_match(name->getLexicalValue().c_str(), matches, re)) {
 		    loadedEndpoints.insert(name);
-		    this->posFactory = posFactory;
+		    this->atomFactory = atomFactory;
 		    return;
 		}
 	    }
-	    RdfDB::loadData(name, target, posFactory);
+	    RdfDB::loadData(name, target, atomFactory);
 	}
 #endif /* REGEX_LIB == SWOb_BOOST */
 
-	virtual void bindVariables (ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch) {
+	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
 #if REGEX_LIB == SWOb_BOOST
 	    if (loadedEndpoints.find(graph) == loadedEndpoints.end())
 #endif /* REGEX_LIB == SWOb_BOOST */
@@ -133,7 +133,7 @@ namespace w3c_sw {
 					    ));
 
 		/* Parse results into a ResultSet. */
-		ResultSet red(posFactory, xmlParser, s.begin(), s.end());
+		ResultSet red(atomFactory, xmlParser, s.begin(), s.end());
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << " yielded\n" << red;
 

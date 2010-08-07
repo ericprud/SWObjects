@@ -32,7 +32,7 @@ protected:
     std::string		baseURI;
     NamespaceMap*	namespaces;
     bool		freeNamespaces;
-    POS::String2BNode	nodeMap;
+    TTerm::String2BNode	nodeMap;
     
     ParserDriver ()
 	: baseURI(""), namespaces(new NamespaceMap()), 
@@ -76,13 +76,13 @@ public:
 class YaccDriver : public ParserDriver {
 
 protected:
-    POSFactory * const posFactory;
+    AtomFactory * const atomFactory;
     bool		ignorePrefixFlag;
 
 public:
     /// construct a new parser driver context
-    YaccDriver(POSFactory* posFactory);
-    YaccDriver(std::string baseURI, POSFactory* posFactory);
+    YaccDriver(AtomFactory* atomFactory);
+    YaccDriver(std::string baseURI, AtomFactory* atomFactory);
     virtual ~YaccDriver () {  }
 
     /// enable debug output in the flex scanner
@@ -121,30 +121,30 @@ public:
     }
 
 
-    /* POSFactory relay. */
-    const Variable* getVariable (std::string name) { return posFactory->getVariable(name); }
-    const URI* getURI (std::string name) { return posFactory->getURI(name); }
+    /* AtomFactory relay. */
+    const Variable* getVariable (std::string name) { return atomFactory->getVariable(name); }
+    const URI* getURI (std::string name) { return atomFactory->getURI(name); }
     const URI* getAbsoluteURI(std::string name);
-    const BNode* createBNode () { return posFactory->createBNode(); }
-    const BNode* getBNode (std::string name) { return posFactory->getBNode(name, nodeMap); }
+    const BNode* createBNode () { return atomFactory->createBNode(); }
+    const BNode* getBNode (std::string name) { return atomFactory->getBNode(name, nodeMap); }
     const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
-	return posFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
+	return atomFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
 
-    const IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    const DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
-    const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return posFactory->getNumericRDFLiteral(p_String, p_value); }
+    const IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
+    const DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
+    const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
 
-    const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return posFactory->getBooleanRDFLiteral(p_String, p_value); }
-    const NULLpos* getNULL  () { return posFactory->getNULL(); }
+    const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return atomFactory->getBooleanRDFLiteral(p_String, p_value); }
+    const NULLtterm* getNULL  () { return atomFactory->getNULL(); }
 
 };
 
 class YaccDataDriver : public YaccDriver {
 protected:
     BasicGraphPattern* curBGP;
-    YaccDataDriver (POSFactory* posFactory) : YaccDriver(posFactory) {  }
-    YaccDataDriver (std::string baseURI, POSFactory* posFactory) : YaccDriver (baseURI, posFactory) {  }
+    YaccDataDriver (AtomFactory* atomFactory) : YaccDriver(atomFactory) {  }
+    YaccDataDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDriver (baseURI, atomFactory) {  }
 
 public:
     void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }

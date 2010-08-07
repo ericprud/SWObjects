@@ -11,13 +11,13 @@
 namespace w3c_sw {
 
     /* Base class for Yacc parsers. */
-    YaccDriver::YaccDriver (POSFactory* posFactory)
-	: ParserDriver(), posFactory(posFactory),
+    YaccDriver::YaccDriver (AtomFactory* atomFactory)
+	: ParserDriver(), atomFactory(atomFactory),
 	  ignorePrefixFlag(false),
 	  trace_scanning(false), trace_parsing(false) {  }
 
-    YaccDriver::YaccDriver (std::string baseURI, POSFactory* posFactory)
-	: ParserDriver(baseURI), posFactory(posFactory),
+    YaccDriver::YaccDriver (std::string baseURI, AtomFactory* atomFactory)
+	: ParserDriver(baseURI), atomFactory(atomFactory),
 	  ignorePrefixFlag(false),
 	  trace_scanning(false), trace_parsing(false) {  }
 
@@ -35,7 +35,7 @@ namespace w3c_sw {
 
     const URI* YaccDriver::getAbsoluteURI (std::string name) {
 	std::string abs(libwww::HTParse(name, &baseURI, libwww::PARSE_all));
-	return posFactory->getURI(abs.c_str());
+	return atomFactory->getURI(abs.c_str());
     }
 
 } //namespace w3c_sw

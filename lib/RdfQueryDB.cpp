@@ -7,8 +7,8 @@
 
 namespace w3c_sw {
 
-    RdfQueryDB::RdfQueryDB (const TableOperation* p_op, POSFactory* posFactory) : RdfDB(), top(p_op) {
-	DBExpressor ex(this, posFactory);
+    RdfQueryDB::RdfQueryDB (const TableOperation* p_op, AtomFactory* atomFactory) : RdfDB(), top(p_op) {
+	DBExpressor ex(this, atomFactory);
 	p_op->express(&ex);
     }
 

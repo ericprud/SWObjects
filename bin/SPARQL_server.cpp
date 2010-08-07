@@ -123,7 +123,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 	    std::ostringstream ret;
 	    std::string finalQuery = queryStr;
 	    std::string language = "SPARQL";
-	    ResultSet rs(&posFactory);
+	    ResultSet rs(&atomFactory);
 	    query->execute(&db, &rs);
 #else /* SQL_CLIENT != SWOb_DISABLED */
 
@@ -153,7 +153,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 		std::cerr << ex << std::endl;
 		throw SimpleMessageException(ex);
 	    }
-	    SqlResultSet rs(&server.posFactory, res);
+	    SqlResultSet rs(&server.atomFactory, res);
 
 	    std::ostringstream ret;
 
@@ -188,7 +188,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 		    ret << "      <tr>";
 		    for (VariableVector::const_iterator col = cols.begin();
 			 col != cols.end(); ++col) {
-			const POS* val = (*row)->get(*col);
+			const TTerm* val = (*row)->get(*col);
 			if (val != NULL)
 			    ret << "<td>" << val->toString() << "</td>";
 			else
@@ -212,11 +212,11 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 		ret << "  <results>\n";
 
 		/* dump data in <td/>s */
-		POS::BNode2string nodeMap;
+		TTerm::BNode2string nodeMap;
 		for (ResultSetConstIterator row = rs.begin(); row != rs.end(); ++row) { // !!! use iterator
 		    ret << "    <result>\n";
 		    for (BindingSetConstIterator binding = (*row)->begin(); binding != (*row)->end(); ++binding) {
-			const POS* val = binding->second.pos;
+			const TTerm* val = binding->second.pos;
 			std::string lexval(XMLSerializer::escapeCharData(val->getLexicalValue()));
 
 			ret << 
@@ -346,7 +346,7 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
     std::string path;
     std::string stemURI;
     SPARQLfedDriver& sparqlParser;
-    POSFactory& posFactory;
+    AtomFactory& atomFactory;
     std::string pkAttribute;
     QueryMapper queryMapper;
     std::string SQLServer;
@@ -368,25 +368,25 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
     #define pParser NULL
 #endif /* XML_PARSER == SWOb_DISABLED */
 
-    MyServer (POSFactory& posFactory, SPARQLfedDriver& sparqlParser, std::string pkAttribute, std::ostream** debugStream = NULL)
-	: db(pClient, pParser), runOnce(false), done(false), served(0), posFactory(posFactory), sparqlParser(sparqlParser), pkAttribute(pkAttribute), queryMapper(&posFactory, debugStream), debugStream(debugStream)
+    MyServer (AtomFactory& atomFactory, SPARQLfedDriver& sparqlParser, std::string pkAttribute, std::ostream** debugStream = NULL)
+	: db(pClient, pParser), runOnce(false), done(false), served(0), atomFactory(atomFactory), sparqlParser(sparqlParser), pkAttribute(pkAttribute), queryMapper(&atomFactory, debugStream), debugStream(debugStream)
     {  }
-    BasicGraphPattern* assureGraph (const POS* name) {
-	return db.assureGraph(name);
+    BasicGraphPattern* ensureGraph (const TTerm* name) {
+	return db.ensureGraph(name);
     }
     void startServer (MyHandler& handler, const char* url, int serverPort) {
 	std::ostringstream s;
 	s << "http://localhost:" << serverPort << path;
 
-	const URI* serviceURI = posFactory.getURI(s.str());
-	BasicGraphPattern* serviceGraph = assureGraph(serviceURI);
-	const URI* rdfType = posFactory.
+	const URI* serviceURI = atomFactory.getURI(s.str());
+	BasicGraphPattern* serviceGraph = ensureGraph(serviceURI);
+	const URI* rdfType = atomFactory.
 	    getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
-	serviceGraph->addTriplePattern(posFactory.getTriple(
+	serviceGraph->addTriplePattern(atomFactory.getTriple(
 							    serviceURI, 
-							    posFactory.getURI(std::string(NS_rdf)+"type"), 
-							    posFactory.getURI(std::string(NS_sadl)+"Service")));
+							    atomFactory.getURI(std::string(NS_rdf)+"type"), 
+							    atomFactory.getURI(std::string(NS_sadl)+"Service")));
 	{
 	    char buf[1024];
 	    buf[0] = 0;
@@ -409,10 +409,10 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 	    if (buf) {
 		std::cout << "working directory: " << buf << std::endl;
 		std::string base = std::string("file://localhost") + buf;
-		serviceGraph->addTriplePattern(posFactory.getTriple(
+		serviceGraph->addTriplePattern(atomFactory.getTriple(
 								    serviceURI, 
-								    posFactory.getURI(std::string(NS_sadl)+"base"), 
-								    posFactory.getURI(base)));
+								    atomFactory.getURI(std::string(NS_sadl)+"base"), 
+								    atomFactory.getURI(base)));
 	    }
 	}
 
@@ -425,10 +425,10 @@ struct MyServer : WEBSERVER { // w3c_sw::WEBserver_asio
 };
 
 int main (int argc, char** argv) {
-    POSFactory posFactory;
-    SPARQLfedDriver sparqlParser("", &posFactory);
+    AtomFactory atomFactory;
+    SPARQLfedDriver sparqlParser("", &atomFactory);
     std::ostream* debugStream = NULL;
-    MyServer server(posFactory, sparqlParser, "ID", &debugStream);
+    MyServer server(atomFactory, sparqlParser, "ID", &debugStream);
     MyServer::MyHandler handler(server);
 
     int iArg = 1;

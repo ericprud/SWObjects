@@ -17,8 +17,8 @@ namespace w3c_sw {
 	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
 	    struct State {
 		enum Expect expect;
-		const POS* s;
-		const POS* p;
+		const TTerm* s;
+		const TTerm* p;
 		const char* stateStr () const {
 		    static const char* stateStrs[] =
 			{"document", "subject", "property", "collection", "huh?"};
@@ -36,14 +36,14 @@ namespace w3c_sw {
 	    };
 
 	    BasicGraphPattern* bgp;
-	    POSFactory* posFactory;
+	    AtomFactory* atomFactory;
 	    std::string baseURI;
 	    std::string chars;
 	    bool expectCharData;
 	    const URI* datatype;
 	    LANGTAG* langtag;
 	    std::stack<State> stack;
-	    POS::String2BNode bnodeMap;
+	    TTerm::String2BNode bnodeMap;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -60,8 +60,8 @@ namespace w3c_sw {
 	    }
 
 	public:
-	    RdfXmlSaxHandler (BasicGraphPattern* bgp, std::string baseURI, POSFactory* posFactory) : 
-		bgp(bgp), posFactory(posFactory), baseURI(baseURI), chars(""), expectCharData(false) {
+	    RdfXmlSaxHandler (BasicGraphPattern* bgp, std::string baseURI, AtomFactory* atomFactory) : 
+		bgp(bgp), atomFactory(atomFactory), baseURI(baseURI), chars(""), expectCharData(false) {
 		State newState = {DOCUMENT, NULL, NULL};
 		stack.push(newState);
 	    }
@@ -91,27 +91,27 @@ namespace w3c_sw {
 			if (subject.empty()) {
 			    subject = attrs->getValue(NS_rdf, "ID");
 			    if (subject.empty())
-				newState.s = posFactory->createBNode();
+				newState.s = atomFactory->createBNode();
 			    else
-				newState.s = posFactory->getURI(baseURI + "#" + subject);
+				newState.s = atomFactory->getURI(baseURI + "#" + subject);
 			} else
-			    newState.s = posFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
+			    newState.s = atomFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
 		    }
 
 		    /* Subject elements nested inside a predicate element are
 		     * objects of that predicate.
 		     */
-		    const POS* p = stack.top().p;
+		    const TTerm* p = stack.top().p;
 		    if (p != NULL) {
 			State parentState = stack.top();
-			const POS* s = parentState.s;
+			const TTerm* s = parentState.s;
 
 			stack.pop(); // we will re-push with a new predicate.
 			if (stack.top().expect == COLLECTION) {
-			    const POS* b = posFactory->createBNode();
+			    const TTerm* b = atomFactory->createBNode();
 
 			    /* Subsequent entries will be rests. */
-			    parentState.p = posFactory->getURI( std::string(NS_rdf) + "rest");
+			    parentState.p = atomFactory->getURI( std::string(NS_rdf) + "rest");
 			    /* Subsequent entries will append the tail of the list. */
 			    parentState.s = b;
 			    stack.push(parentState);
@@ -126,12 +126,12 @@ namespace w3c_sw {
 			     *	    /	  \
 			     *	 node      [another list or rdf:Nil]
 			     */
-			    const POS* f = posFactory->getURI(std::string(NS_rdf) + "first");
-			    const POS* t = posFactory->getURI(std::string(NS_rdf) + "type");
-			    const POS* c = posFactory->getURI(std::string(NS_rdf) + "Collection");
-			    bgp->addTriplePattern(posFactory->getTriple(s, p, b));
-			    bgp->addTriplePattern(posFactory->getTriple(b, t, c));
-			    bgp->addTriplePattern(posFactory->getTriple(b, f, newState.s));
+			    const TTerm* f = atomFactory->getURI(std::string(NS_rdf) + "first");
+			    const TTerm* t = atomFactory->getURI(std::string(NS_rdf) + "type");
+			    const TTerm* c = atomFactory->getURI(std::string(NS_rdf) + "Collection");
+			    bgp->addTriplePattern(atomFactory->getTriple(s, p, b));
+			    bgp->addTriplePattern(atomFactory->getTriple(b, t, c));
+			    bgp->addTriplePattern(atomFactory->getTriple(b, f, newState.s));
 			} else {
 			    /* Only one nested subject allowed. */
 			    parentState.p = NULL;
@@ -143,21 +143,21 @@ namespace w3c_sw {
 			     *	      \
 			     *	      node
 			     */
-			    bgp->addTriplePattern(posFactory->getTriple(s, p, newState.s));
+			    bgp->addTriplePattern(atomFactory->getTriple(s, p, newState.s));
 			}
 		    }
 
 		    /* Add type arc for typed nodes. */
 		    if ( !(uri == NS_rdf && localName == "Description") ) {
-			const POS* p = posFactory->getURI(std::string(NS_rdf) + "type");
-			const POS* t = posFactory->getURI(uri + localName);
-			bgp->addTriplePattern(posFactory->getTriple(newState.s, p, t));
+			const TTerm* p = atomFactory->getURI(std::string(NS_rdf) + "type");
+			const TTerm* t = atomFactory->getURI(uri + localName);
+			bgp->addTriplePattern(atomFactory->getTriple(newState.s, p, t));
 		    }
 		    break;
 		}
 		case PROPERTY: {
 		    std::string t; // used a couple times below
-		    newState.p = posFactory->getURI(uri + localName);
+		    newState.p = atomFactory->getURI(uri + localName);
 		    std::string parseType = attrs->getValue(NS_rdf, "parseType");
 		    std::string nodeID = attrs->getValue(NS_rdf, "nodeID");
 
@@ -169,15 +169,15 @@ namespace w3c_sw {
 		     */
 		    t = attrs->getValue(NS_rdf, "resource");
 		    if ( !t.empty() )
-			newState.s = posFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
+			newState.s = atomFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
 		    else if ( !parseType.empty() )
-			newState.s = posFactory->createBNode();
+			newState.s = atomFactory->createBNode();
 		    else if ( !nodeID.empty() )
-			newState.s = posFactory->getBNode(nodeID, bnodeMap);
+			newState.s = atomFactory->getBNode(nodeID, bnodeMap);
 		    else
 			expectCharData = true;
 		    if (newState.s != NULL)
-			bgp->addTriplePattern(posFactory->getTriple(stack.top().s, 
+			bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, 
 							    newState.p, newState.s));
 
 		    /* Grab xsd:datatype and xml:lang.
@@ -186,7 +186,7 @@ namespace w3c_sw {
 		     * stack state.
 		     */
 		    t = attrs->getValue(NS_rdf, "datatype");
-		    datatype = t.empty() ? NULL : posFactory->getURI(t);
+		    datatype = t.empty() ? NULL : atomFactory->getURI(t);
 		    t = attrs->getValue(NS_xml, "lang");
 		    langtag = t.empty() ? NULL : new LANGTAG(t.c_str());
 
@@ -201,16 +201,16 @@ namespace w3c_sw {
 
 			    /* We must have a current node. */
 			    if (newState.s == NULL) {
-				newState.s = posFactory->createBNode();
-				bgp->addTriplePattern(posFactory->getTriple(stack.top().s, 
+				newState.s = atomFactory->createBNode();
+				bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, 
 									    newState.p, newState.s));
 			    }
 
 			    /* newState.s -[attribute]-> [value] . */
-			    const POS* predicate = posFactory->getURI(attrURI + attrLName);
+			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
 			    std::string value = attrs->getValue(attrURI, attrLName);
-			    const POS* object = posFactory->getRDFLiteral(value, NULL, NULL);
-			    bgp->addTriplePattern(posFactory->getTriple(newState.s, predicate, object));
+			    const TTerm* object = atomFactory->getRDFLiteral(value, NULL, NULL);
+			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
 			}
 		    }
 
@@ -245,17 +245,17 @@ namespace w3c_sw {
 		case SUBJECT:
 		    if (nestedState.p != NULL && expectCharData == true) {
 			/* We were expecting a literal node. */
-			const POS* o = posFactory->getRDFLiteral(chars, datatype, langtag);
+			const TTerm* o = atomFactory->getRDFLiteral(chars, datatype, langtag);
 			chars = "";
-			bgp->addTriplePattern(posFactory->getTriple(stack.top().s, nestedState.p, o));
+			bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, nestedState.p, o));
 		    }
 		    break;
 		case COLLECTION: {
 		    /* Tack on trailing nil to current predicate (rdf:rest,
 		     * except when parsing an empty Collection).
 		     */
-		    const POS* n = posFactory->getURI(std::string(NS_rdf) + "nil");
-		    bgp->addTriplePattern(posFactory->getTriple(stack.top().s, stack.top().p, n));
+		    const TTerm* n = atomFactory->getURI(std::string(NS_rdf) + "nil");
+		    bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, stack.top().p, n));
 		}
 		    break;
 		case PROPERTY:
@@ -277,14 +277,14 @@ namespace w3c_sw {
 	};
 
     protected:
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 	SWSAXparser* saxParser;
 
     public:
-	RdfXmlParser (std::string baseURI, POSFactory* posFactory, SWSAXparser* saxParser)
-	    : ParserDriver(baseURI), posFactory(posFactory), saxParser(saxParser) {  }
+	RdfXmlParser (std::string baseURI, AtomFactory* atomFactory, SWSAXparser* saxParser)
+	    : ParserDriver(baseURI), atomFactory(atomFactory), saxParser(saxParser) {  }
 	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
-	    RdfXmlSaxHandler handler(bgp, baseURI, posFactory);
+	    RdfXmlSaxHandler handler(bgp, baseURI, atomFactory);
 	    return saxParser->parse(sptr, &handler);
 	}
 

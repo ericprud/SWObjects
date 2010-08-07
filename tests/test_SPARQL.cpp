@@ -11,7 +11,7 @@
 #define BOOST_TEST_MODULE SPARQL
 #include <boost/test/unit_test.hpp>
 
-w3c_sw::POSFactory F;
+w3c_sw::AtomFactory F;
 
 const char* Doutput =
     "+----+---------------------------------------------------+----------------------------------------+\n"
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( D_turtle ) {
 }
 BOOST_AUTO_TEST_CASE( D_spo ) {
     ExecResults invocation("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( D_spo ) {
 }
 BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
     ExecResults invocation("../bin/SPARQL -D -8 -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
 }
 BOOST_AUTO_TEST_CASE( G_spo ) {
     ExecResults invocation("../bin/SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( G_spo ) {
 BOOST_AUTO_TEST_CASE( DG_sp ) {
     ExecResults invocation("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 		       "    GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 			   "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
 			   "    UNION\n"
 			   "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 }
 
 BOOST_AUTO_TEST_CASE( resultsFormat ) {
-    w3c_sw::POS::String2BNode bnodeMap; // share, not used for these tests.
+    w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
     {   /* Create an simple table dump. */
 	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
 BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::setenv("XSLT", "/usr/bin/xsltproc %STYLESHEET %DATA", 1);
     ExecResults invocation("../bin/SPARQL -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
-    w3c_sw::POS::String2BNode bnodeMap;
+    w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
 	expected(&F, 

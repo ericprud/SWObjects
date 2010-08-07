@@ -16,9 +16,9 @@ namespace w3c_sw {
 	    struct State {
 		bool inHead;
 		std::string baseURI;
-		const POS* about;
-		const POS* rel;
-		const POS* property;
+		const TTerm* about;
+		const TTerm* rel;
+		const TTerm* property;
 		const URI* datatype;
 		std::string langtag;
 		State () : inHead(false), baseURI(""), about(NULL), rel(NULL), property(NULL), datatype(NULL), langtag("") {  }
@@ -38,7 +38,7 @@ namespace w3c_sw {
 	    };
 
 	    BasicGraphPattern* bgp;
-	    POSFactory* posFactory;
+	    AtomFactory* atomFactory;
 	    std::string chars;
 	    std::stack<State> stack;
 
@@ -58,19 +58,19 @@ namespace w3c_sw {
 
 	    const URI* _relativeURI (std::string rel, std::string base) {
 		std::string abs(libwww::HTParse(rel, base.empty() ? NULL : &base, libwww::PARSE_all));
-		return posFactory->getURI(abs.c_str());
+		return atomFactory->getURI(abs.c_str());
 	    }
 
 	    const URI* _QnameToURI (std::string qname, NSmap& map) {
 		size_t f = qname.find_first_of(":");
 		std::string prefix = f == std::string::npos ? "" : qname.substr(0, f);
 		std::string local = f == std::string::npos ? qname : qname.substr(f + 1);
-		return posFactory->getURI(map[prefix] + local);
+		return atomFactory->getURI(map[prefix] + local);
 	    }
 
 	public:
-	    RDFaSaxHandler (BasicGraphPattern* bgp, POSFactory* posFactory, std::string baseURI = "") : 
-		bgp(bgp), posFactory(posFactory), chars("") {
+	    RDFaSaxHandler (BasicGraphPattern* bgp, AtomFactory* atomFactory, std::string baseURI = "") : 
+		bgp(bgp), atomFactory(atomFactory), chars("") {
 		State topState;
 		topState.baseURI = baseURI;
 		stack.push(topState);
@@ -92,10 +92,10 @@ namespace w3c_sw {
 		    std::vector<std::string> args;
 		    args.push_back(attrs->getValue("", "href"));
 		    throw ChangeMediaTypeException("application/x-grddl", args);
-		    bgp->addTriplePattern(posFactory->
-					  getTriple(posFactory->getURI(nested.baseURI), 
-						    posFactory->getURI(std::string(NS_dc) + "TRANS"), 
-						    posFactory->getRDFLiteral(attrs->getValue("", "href"), 
+		    bgp->addTriplePattern(atomFactory->
+					  getTriple(atomFactory->getURI(nested.baseURI), 
+						    atomFactory->getURI(std::string(NS_dc) + "TRANS"), 
+						    atomFactory->getRDFLiteral(attrs->getValue("", "href"), 
 									      NULL, 
 									      nested.langtag.empty() ? NULL : 
 									      new LANGTAG(nested.langtag))));
@@ -123,9 +123,9 @@ namespace w3c_sw {
 		t = attrs->getValue("", "typeof");
 		if (!t.empty()) {
 		    if (nested.about == NULL)
-			nested.about = posFactory->createBNode();
-		    bgp->addTriplePattern(posFactory->getTriple(nested.about, 
-				posFactory->getURI(std::string(NS_rdf) + "type"), 
+			nested.about = atomFactory->createBNode();
+		    bgp->addTriplePattern(atomFactory->getTriple(nested.about, 
+				atomFactory->getURI(std::string(NS_rdf) + "type"), 
 								_QnameToURI(t, nsz)));
 		}
 
@@ -135,7 +135,7 @@ namespace w3c_sw {
 		    t = attrs->getValue("", "href");
 		    if (!t.empty()) {
 			if (parent.about)
-			    bgp->addTriplePattern(posFactory->getTriple(parent.about, 
+			    bgp->addTriplePattern(atomFactory->getTriple(parent.about, 
 									nested.rel, 
 									_relativeURI(t, nested.baseURI)));
 			nested.rel = NULL;
@@ -146,7 +146,7 @@ namespace w3c_sw {
 		    nested.about = parent.about;
 		else if (parent.about != NULL && 
 			 parent.rel != NULL)
-		    bgp->addTriplePattern(posFactory->getTriple(parent.about, 
+		    bgp->addTriplePattern(atomFactory->getTriple(parent.about, 
 								parent.rel, 
 								nested.about));
 
@@ -155,10 +155,10 @@ namespace w3c_sw {
 		    nested.property = _QnameToURI(t, nsz);
 		    t = attrs->getValue("", "content");
 		    if (!t.empty()) {
-			bgp->addTriplePattern(posFactory->
+			bgp->addTriplePattern(atomFactory->
 				getTriple(parent.about, 
 					  nested.property, 
-					  posFactory->getRDFLiteral(t, 
+					  atomFactory->getRDFLiteral(t, 
 					    nested.datatype, 
 					    nested.langtag.empty() ? NULL : 
 					    new LANGTAG(nested.langtag))));
@@ -177,20 +177,20 @@ namespace w3c_sw {
 		State nested = stack.top();
 		stack.pop();
 		if (stack.top().inHead && localName == "title")
-		    bgp->addTriplePattern(posFactory->
-				getTriple(posFactory->getURI(nested.baseURI), 
-					  posFactory->getURI(std::string(NS_dc) + "title"), 
-					  posFactory->getRDFLiteral(chars, 
+		    bgp->addTriplePattern(atomFactory->
+				getTriple(atomFactory->getURI(nested.baseURI), 
+					  atomFactory->getURI(std::string(NS_dc) + "title"), 
+					  atomFactory->getRDFLiteral(chars, 
 					    NULL, 
 					    nested.langtag.empty() ? NULL : 
 					    new LANGTAG(nested.langtag))));
 
 		else if (nested.property) {
-		    const POS* o = posFactory->getRDFLiteral(chars, 
+		    const TTerm* o = atomFactory->getRDFLiteral(chars, 
 							     nested.datatype, 
 							     nested.langtag.empty() ? NULL : new LANGTAG(nested.langtag));
 		    chars = "";
-		    bgp->addTriplePattern(posFactory->getTriple(nested.about, nested.property, o));
+		    bgp->addTriplePattern(atomFactory->getTriple(nested.about, nested.property, o));
 		}
 		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
@@ -203,15 +203,15 @@ namespace w3c_sw {
 	};
 
     protected:
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 	SWSAXparser* saxParser;
 
     public:
-	RDFaParser (std::string baseURI, POSFactory* posFactory, SWSAXparser* saxParser) : 
-	    ParserDriver(baseURI), posFactory(posFactory), saxParser(saxParser) {  }
+	RDFaParser (std::string baseURI, AtomFactory* atomFactory, SWSAXparser* saxParser) : 
+	    ParserDriver(baseURI), atomFactory(atomFactory), saxParser(saxParser) {  }
 
 	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
-	    RDFaSaxHandler handler(bgp, posFactory, this->baseURI);
+	    RDFaSaxHandler handler(bgp, atomFactory, this->baseURI);
 	    return saxParser->parse(sptr, &handler);
 	}
 

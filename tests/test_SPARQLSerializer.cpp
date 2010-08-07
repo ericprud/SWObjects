@@ -25,7 +25,7 @@
 
 using namespace w3c_sw;
 
-POSFactory F;
+AtomFactory F;
 SPARQLfedDriver sparqlParser("", &F);
 
 struct OpWrap {

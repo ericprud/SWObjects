@@ -8,7 +8,7 @@
  *   queries, which have a single namespace for all veriables, to SQL, which
  *   requires subqueries with different table alias namespaces to express
  *   certain OPTIONALs and all UNIONs.
- * vector<const POS*> entriesFor(TableOperation*)
+ * vector<const TTerm*> entriesFor(TableOperation*)
  *
  * • For RuleMap query translation, POS2BGP keeps track of which OPTIONALs in
  *   the rule antecedent are needed to produce the data for a given query, and
@@ -17,14 +17,14 @@
  *   graph pattern must also be included. <antecedents> maps graph patterns to
  *   the graph patterns that may affect them.
  *
- * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, POSFactory*)
+ * ConsequentMap getIncludeRequiredness(ResultSet*, ResultSetIterator, AtomFactory*)
  *   called by: MappingConstruct::execute
  *   returns: a ConsequentMap of the constructRuleBodyAsConsequent (see below).
  *
- * std::vector<const POS*> entriesFor (TableOperation* op)
+ * std::vector<const TTerm*> entriesFor (TableOperation* op)
  *   called by: SQLizer::tableDisjunction
  *              SQLizer::optionalGraphPattern
- *   returns: all the POS entries referenced in a particular TableOperation.
+ *   returns: all the TTerm entries referenced in a particular TableOperation.
  *   Used to determine which fields in an SQL subquery are referenced outside
  *   that query.
  *
@@ -68,11 +68,11 @@ namespace w3c_sw {
 	    return it->second & _Binding_GRAPH ? GraphInclusion_STRONG : GraphInclusion_WEAK;
 	}
     };
-    class ConsequentMapList : public std::map<const POS*, ConsequentMap> {
+    class ConsequentMapList : public std::map<const TTerm*, ConsequentMap> {
 	friend class Consequents;
 	friend class ConsequentMap;
 
-	//ConsequentMap& operator[] (POS*& subscript) { return std::map<POS*, ConsequentMap>::operator[](subscript); }
+	//ConsequentMap& operator[] (TTerm*& subscript) { return std::map<TTerm*, ConsequentMap>::operator[](subscript); }
 
 	/* Stuff for building a consequents list.
 	 */
@@ -115,7 +115,7 @@ namespace w3c_sw {
 	typedef std::set< const TableOperation* >			OuterGraphList;
 	typedef std::map< const TableOperation*, OuterGraphList >	OuterGraphs;
 
-	typedef std::pair< const POS*, const TableOperation* >		IQEnt;
+	typedef std::pair< const TTerm*, const TableOperation* >		IQEnt;
 	typedef std::vector< IQEnt >				InsertQueue;
 
 	/* ConsequentsConstructor — helper class to compile ConsequentMapLists.
@@ -124,18 +124,18 @@ namespace w3c_sw {
 	protected:
 	    ConsequentMapList& consequents;  // hate refs, but like the [foo][bar] syntax
 	    _BindingStrength optState;
-	    const POS* graphName;
+	    const TTerm* graphName;
 	    const TableOperation* currentBGP;
 	    OuterGraphs outerGraphs;
 
-	    void _depends (const POS* pos, _BindingStrength strength) {
+	    void _depends (const TTerm* tterm, _BindingStrength strength) {
 		/* The dependencies algorithm works fine with literals and URIs,
 		   but we don't need them (yet?). */
-		if (!dynamic_cast<const Variable*>(pos) &&
-		    !dynamic_cast<const BNode*>(pos))
+		if (!dynamic_cast<const Variable*>(tterm) &&
+		    !dynamic_cast<const BNode*>(tterm))
 		    return;
 
-		consequents[pos][currentBGP] = strength;
+		consequents[tterm][currentBGP] = strength;
 	    }
 
 	public:
@@ -152,7 +152,7 @@ namespace w3c_sw {
 	     */
 	    virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
+	    virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 		w3c_sw_START("POS2BGPMap::triplePattern");
 		_depends(p_s, optState);
 		_depends(p_p, optState);
@@ -168,7 +168,7 @@ namespace w3c_sw {
 		    outerGraphs[inner].insert(*it);
 	    }
 
-	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 		w3c_sw_START("POS2BGPMap::namedGraphPattern");
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
@@ -230,9 +230,9 @@ namespace w3c_sw {
 		currentBGP = parent;
 	    }
 
-	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-		const POS* oldGraphName = graphName;
-		graphName = p_POS;
+	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+		const TTerm* oldGraphName = graphName;
+		graphName = p_TTerm;
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -243,9 +243,9 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
-	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
-		const POS* oldGraphName = graphName;
-		graphName = p_POS;
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+		const TTerm* oldGraphName = graphName;
+		graphName = p_TTerm;
 		const TableOperation* parent = currentBGP;
 		currentBGP = self;
 		_nestedIn(self, parent);
@@ -260,21 +260,21 @@ namespace w3c_sw {
 	    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
 		for (std::vector<const ExpressionAlias*>::const_iterator it = p_Expressions->begin();
 		     it != p_Expressions->end(); it++) {
-		    const POSExpression* posExpr = dynamic_cast<const POSExpression *>((*it)->expr);
+		    const TTermExpression* posExpr = dynamic_cast<const TTermExpression *>((*it)->expr);
 		    if (!posExpr)
-			w3c_sw_NEED_IMPL("expressionAliasList !POSExpression");
-		    _depends(posExpr->getPOS(), _Binding_SELECT);
+			w3c_sw_NEED_IMPL("expressionAliasList !TTermExpression");
+		    _depends(posExpr->getTTerm(), _Binding_SELECT);
 		}
 	    }
-	    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
+	    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
 		w3c_sw_FAIL("need to impl POS2BGPMap::posList");
 	    }
 	    virtual void starVarSet (const StarVarSet* const) {
 		w3c_sw_FAIL("umm, I'm not really up to handling SELECT *.");
 	    }
 
-	    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
-		_depends(p_POS, _Binding_FILTER);
+	    virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
+		_depends(p_TTerm, _Binding_FILTER);
 	    }
 
 	    std::string dumpConsequents () {
@@ -352,8 +352,8 @@ namespace w3c_sw {
 					5	6
 					5	10
 					6	10 */
-		    const POS* pos = varIt->first;
-		    ConsequentMap cons = consequents[pos];
+		    const TTerm* tterm = varIt->first;
+		    ConsequentMap cons = consequents[tterm];
 		    ConsequentMap::reverse_iterator last = cons.rbegin();
 		    //		    ConsequentMap::iterator last = consequents[varIt->first].rbegin();
 		    if (last == cons.rend()) {
@@ -415,13 +415,13 @@ namespace w3c_sw {
 
     protected:
 	ConsequentMapList consequents;
-	std::set<const POS*> gendVars; // @@@ could be a re-use map outside
-	const Bindable* _genVar (const Bindable* base, int index, Result* row, POSFactory* posFactory) {
+	std::set<const TTerm*> gendVars; // @@@ could be a re-use map outside
+	const Bindable* _genVar (const Bindable* base, int index, Result* row, AtomFactory* atomFactory) {
 	    const Bindable* ret = NULL;
 	    do {
 		std::stringstream name;
 		name << base->getLexicalValue() << "_gen" << index;
-		ret = posFactory->getVariable(name.str().c_str());
+		ret = atomFactory->getVariable(name.str().c_str());
 		++index;
 	    } while (row->get(ret) != NULL || gendVars.find(ret) != gendVars.end());
 	    gendVars.insert(ret);
@@ -451,7 +451,7 @@ namespace w3c_sw {
 	    consequents.clear();
 	}
 
-	ConsequentMap getIncludeRequiredness (ResultSet* rs, ResultSetIterator row, POSFactory* posFactory) {
+	ConsequentMap getIncludeRequiredness (ResultSet* rs, ResultSetIterator row, AtomFactory* atomFactory) {
 	    ConsequentMap ret;
 	    std::set<const Bindable*> neededVars;
 
@@ -500,17 +500,17 @@ namespace w3c_sw {
 
 	    for (std::set<const Bindable*>::iterator v = neededVars.begin();
 		 v != neededVars.end(); ++v)
-		rs->set(*row, *v, _genVar(*v, genNo++, *row, posFactory), true);
+		rs->set(*row, *v, _genVar(*v, genNo++, *row, atomFactory), true);
 	    neededVars.clear();
 	    return ret;
 	}
 
-	/* Collect all the POS entries referenced in a particular TableOperation
+	/* Collect all the TTerm entries referenced in a particular TableOperation
 	 * so that SQL subqueries know which variables to propagate up in the
 	 * select.
 	 */
-	std::vector<const POS*> entriesFor (const TableOperation* op) {
-	    std::vector<const POS*> ret;
+	std::vector<const TTerm*> entriesFor (const TableOperation* op) {
+	    std::vector<const TTerm*> ret;
 	    for (ConsequentMapList::iterator varIt = consequents.begin();
 		 varIt != consequents.end(); ++varIt)
 		if (varIt->second.find(op) != varIt->second.end())

@@ -15,7 +15,7 @@ namespace w3c_sw {
 		      PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
 		      PREC_Plus, PREC_Minus, 
 		      PREC_Times, PREC_Divide, 
-		      PREC_Not, PREC_Pos, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
+		      PREC_Not, PREC_TTerm, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
 
 	class AliasAttr {
 	public:
@@ -538,9 +538,9 @@ namespace w3c_sw {
 	    }
 	};
 	class NullConstraint : public WhereConstraint {
-	    WhereConstraint* pos;
+	    WhereConstraint* tterm;
 	public:
-	    NullConstraint (WhereConstraint* pos) : WhereConstraint(), pos(pos) {  }
+	    NullConstraint (WhereConstraint* tterm) : WhereConstraint(), tterm(tterm) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const NullConstraint&) const {
 		return true;
@@ -550,7 +550,7 @@ namespace w3c_sw {
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
 		std::stringstream s;
-		s << pos->toString();
+		s << tterm->toString();
 		s << " IS NOT NULL";
 		return s.str();
 	    }
@@ -590,7 +590,7 @@ namespace w3c_sw {
 		s << aattr.attr;
 		return s.str();
 	    }
-	    virtual e_PREC getPrecedence () const { return PREC_Pos; }
+	    virtual e_PREC getPrecedence () const { return PREC_TTerm; }
 	};
 	class ConcatConstraint : public NaryExpression {
 	public:

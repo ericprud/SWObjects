@@ -55,10 +55,10 @@ public:
 	xml->leaf("literal", p_value);
 	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#boolean");
     }
-    virtual void nullpos (const NULLpos* const) {
+    virtual void nulltterm (const NULLtterm* const) {
 	xml->empty("NULL");
     }
-    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
+    virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	xml->open("TriplePattern");
 	p_s->express(this);
 	p_p->express(this);
@@ -71,7 +71,7 @@ public:
 	p_Constraints->express(this);
 	xml->close();
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
 	else {
@@ -112,19 +112,19 @@ public:
 	p_GroupGraphPattern->express(this);
 	xml->close();
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 	if (sparqlx) {
 	    xml->open("GraphGraphPattern");
-	    p_POS->express(this);
+	    p_TTerm->express(this);
 	    p_GroupGraphPattern->express(this);
 	    xml->close();
 	} else
 	    p_GroupGraphPattern->express(this);
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	if (sparqlx) {
 	    xml->open("ServiceGraphPattern");
-	    p_POS->express(this);
+	    p_TTerm->express(this);
 	    p_GroupGraphPattern->express(this);
 	    xml->close();
 	} else
@@ -144,20 +144,20 @@ public:
 	p_Expressions->express(this);
 	xml->close();
     }
-    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	xml->open("POSList");
-	p_POSs->express(this);
+    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	xml->open("TTermList");
+	p_TTerms->express(this);
 	xml->close();
     }
     virtual void starVarSet (const StarVarSet* const) {
 	xml->empty("StarVarSet");
     }
-    virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
+    virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
 	xml->open("DefaultGraphClause");
 	p_IRIref->express(this);
 	xml->close();
     }
-    virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
+    virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
 	xml->open("NamedGraphClause");
 	p_IRIref->express(this);
 	xml->close();
@@ -191,14 +191,14 @@ public:
 	    }
 	xml->close();
     }
-    virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
+    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
 	xml->open("BindingClause");
-	for (std::vector<const POS*>::const_iterator it = values->begin();
+	for (std::vector<const TTerm*>::const_iterator it = values->begin();
 	     it != values->end(); ++it)
 	    (*it)->express(this);
 	xml->close();
     }
-    virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	xml->open("BindingClause");
 	p_Vars->express(this);
 	p_Bindings->ProductionVector<const Binding*>::express(this);
@@ -290,9 +290,9 @@ public:
 	p_GraphIRI->express(this);
 	xml->close();
     }
-    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
-	xml->open("POSExpression");
-	p_POS->express(this);
+    virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
+	xml->open("TTermExpression");
+	p_TTerm->express(this);
 	xml->close();
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {

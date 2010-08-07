@@ -22,7 +22,7 @@ protected:
 		  PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
 		  PREC_Plus, PREC_Minus, 
 		  PREC_Times, PREC_Divide, 
-		  PREC_Not, PREC_Pos, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
+		  PREC_Not, PREC_TTerm, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
     const char* tab;
     e_DEBUG debug;
     size_t depth;
@@ -104,10 +104,10 @@ public:
 	else
 	    ret << self->toString() << ' ';
     }
-    virtual void nullpos (const NULLpos* const) {
+    virtual void nulltterm (const NULLtterm* const) {
 	ret << "NULL ";
     }
-    virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
+    virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	lead();
 	p_s->express(this);
 	ret << ' ';
@@ -154,7 +154,7 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const self, const POS* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	lead();
 	p_name->express(this);
 	ret << ' ';
@@ -214,24 +214,24 @@ public:
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
-    virtual void _nestedGraphPattern (const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-	p_POS->express(this);
+    virtual void _nestedGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	p_TTerm->express(this);
 	ret << std::endl;
 	depth++;
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 	lead();
 	ret << "GRAPH ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
-	_nestedGraphPattern (p_POS, p_GroupGraphPattern);
+	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	lead();
 	ret << "SERVICE ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
-	_nestedGraphPattern (p_POS, p_GroupGraphPattern);
+	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
     }
     virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
 	if (label != NULL) {
@@ -251,18 +251,18 @@ public:
 	    ret << ' ';
 	}
     }
-    virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	p_POSs->express(this);
+    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	p_TTerms->express(this);
 	ret << std::endl;
     }
     virtual void starVarSet (const StarVarSet* const) {
 	ret << "* ";
     }
-    virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
+    virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
 	ret << "FROM ";
 	p_IRIref->express(this);
     }
-    virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
+    virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
 	ret << "FROM NAMED ";
 	p_IRIref->express(this);
     }
@@ -297,14 +297,14 @@ public:
 	    ret << std::endl;
 	}
     }
-    virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
+    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
 	ret << "  { ";
-	for (std::vector<const POS*>::const_iterator it = values->begin();
+	for (std::vector<const TTerm*>::const_iterator it = values->begin();
 	     it != values->end(); ++it)
 	    (*it)->express(this);
 	ret << ')' << std::endl;
     }
-    virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	ret << "BINDINGS ";
 	p_Vars->express(this);
 	ret << '{' << std::endl; //!!!
@@ -404,8 +404,8 @@ public:
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
     }
-    virtual void posExpression (const POSExpression* const, const POS* p_POS) {
-	p_POS->express(this);
+    virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
+	p_TTerm->express(this);
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
 	expressions->express(this);

@@ -2129,7 +2129,7 @@ case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
 #line 145 "lib/TurtleSScanner.lpp"
-{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
@@ -2144,7 +2144,7 @@ YY_RULE_SETUP
 case 36:
 YY_RULE_SETUP
 #line 148 "lib/TurtleSScanner.lpp"
-{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 150 "lib/TurtleSScanner.lpp"

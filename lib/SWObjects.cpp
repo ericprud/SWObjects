@@ -19,8 +19,8 @@
 				std::set<const w3c_sw::Variable*>::const_iterator r)
   { return l != r; }
   #define SET_POS_CONSTIT_NE(L, R) set_POS_constit_ne(L, R)
-  bool set_POS_constit_ne (std::set<const w3c_sw::POS*>::const_iterator l, 
-			   std::set<const w3c_sw::POS*>::const_iterator r)
+  bool set_POS_constit_ne (std::set<const w3c_sw::TTerm*>::const_iterator l, 
+			   std::set<const w3c_sw::TTerm*>::const_iterator r)
   { return l != r; }
 #else /* !_MSC_VER */
   #define SET_Variable_CONSTIT_NE(L, R) L != R
@@ -347,8 +347,8 @@ void DoubleRDFLiteral::express (Expressor* p_expressor) const {
 void BooleanRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
-void NULLpos::express (Expressor* p_expressor) const {
-    p_expressor->nullpos(this);
+void NULLtterm::express (Expressor* p_expressor) const {
+    p_expressor->nulltterm(this);
 }
 void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
@@ -378,7 +378,7 @@ void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
 void ServiceGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, posFactory, lexicalCompare);
+    p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, atomFactory, lexicalCompare);
 }
 void ExpressionAlias::express (Expressor* p_expressor) const {
     p_expressor->expressionAlias(this, expr, label);
@@ -386,8 +386,8 @@ void ExpressionAlias::express (Expressor* p_expressor) const {
 void ExpressionAliasList::express (Expressor* p_expressor) const {
     p_expressor->expressionAliasList(this, &m_Expressions);
 }
-void POSList::express (Expressor* p_expressor) const {
-    p_expressor->posList(this, &m_POSs);
+void TTermList::express (Expressor* p_expressor) const {
+    p_expressor->posList(this, &m_TTerms);
 }
 void StarVarSet::express (Expressor* p_expressor) const {
     p_expressor->starVarSet(this);
@@ -446,8 +446,8 @@ void Create::express (Expressor* p_expressor) const {
 void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
 }
-void POSExpression::express (Expressor* p_expressor) const {
-    p_expressor->posExpression(this, m_POS);
+void TTermExpression::express (Expressor* p_expressor) const {
+    p_expressor->posExpression(this, m_TTerm);
 }
 void ArgList::express (Expressor* p_expressor) const {
     p_expressor->argList(this, expressions);
@@ -508,8 +508,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     POSsorter* ThePOSsorter;
 
-    /* <POSFactory> */
-    POSFactory::~POSFactory () {
+    /* <AtomFactory> */
+    AtomFactory::~AtomFactory () {
 
 	std::map<std::string, const TriplePattern*>::iterator iTriples;
 	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
@@ -537,7 +537,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	rdfLiterals.clear();
     }
 
-    const Variable* POSFactory::getVariable (std::string name) {
+    const Variable* AtomFactory::getVariable (std::string name) {
 	std::string key(name);
 	VariableMap::const_iterator vi = variables.find(key);
 	if (vi == variables.end()) {
@@ -548,7 +548,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    const BNode* POSFactory::createBNode () {
+    const BNode* AtomFactory::createBNode () {
 	BNode* ret = new BNode();
 	std::stringstream name;
 	name << ret; // addr
@@ -556,9 +556,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    const BNode* POSFactory::getBNode (std::string name, POS::String2BNode& nodeMap) {
+    const BNode* AtomFactory::getBNode (std::string name, TTerm::String2BNode& nodeMap) {
 	std::string key(name);
-	POS::String2BNode::const_iterator vi = nodeMap.find(key);
+	TTerm::String2BNode::const_iterator vi = nodeMap.find(key);
 	if (vi == nodeMap.end()) {
 	    BNode* ret = new BNode(name);
 	    nodeMap[key] = ret;
@@ -568,7 +568,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    const URI* POSFactory::getURI (std::string name) {
+    const URI* AtomFactory::getURI (std::string name) {
 	std::string key(name);
 	URIMap::const_iterator vi = uris.find(key);
 	if (vi == uris.end()) {
@@ -579,7 +579,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return vi->second;
     }
 
-    const POS* POSFactory::getPOS (std::string posStr, POS::String2BNode& nodeMap) {
+    const TTerm* AtomFactory::getTTerm (std::string posStr, TTerm::String2BNode& nodeMap) {
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
@@ -594,10 +594,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    is >> i;
 	    return getNumericRDFLiteral(posStr, i);
 	}
-	throw(std::runtime_error("unable to getPOS("+posStr+")"));
+	throw(std::runtime_error("unable to getTTerm("+posStr+")"));
     }
 
-     void POSFactory::validate (std::string value, std::string datatype) {
+     void AtomFactory::validate (std::string value, std::string datatype) {
 #if REGEX_LIB == SWOb_BOOST
 	 ValidatorSet::const_iterator it = validators.find(datatype);
 	 if (it == validators.end())
@@ -631,7 +631,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 #endif /* REGEX_LIB != SWOb_BOOST */
     }
 
-    const RDFLiteral* POSFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool needsValidation) {
+    const RDFLiteral* AtomFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool needsValidation) {
 	std::istringstream is(p_String);
 
 	if (p_URI != NULL && needsValidation == true)
@@ -712,7 +712,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 #define XSD "http://www.w3.org/2001/XMLSchema#"
 #define LEN_XSD sizeof(XSD)
-    const IntegerRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
+    const IntegerRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
@@ -725,7 +725,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    const DecimalRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
+    const DecimalRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
@@ -738,7 +738,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    const FloatRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
+    const FloatRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
 	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
@@ -751,7 +751,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    const DoubleRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
+    const DoubleRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
@@ -764,7 +764,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    const BooleanRDFLiteral* POSFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
+    const BooleanRDFLiteral* AtomFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
 	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>"; // p_String
 	std::string key(buf.str());
@@ -777,7 +777,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return (BooleanRDFLiteral*)vi->second; // shameful downcast
     }
 
-    const NumericRDFLiteral* POSFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
+    const NumericRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
 
 	std::string str;
 	str += XSD;
@@ -798,7 +798,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return (const NumericRDFLiteral*)vi->second; // shameful downcast
     }
 
-    const TriplePattern* POSFactory::getTriple (const POS* s, const POS* p, const POS* o, bool weaklyBound) {
+    const TriplePattern* AtomFactory::getTriple (const TTerm* s, const TTerm* p, const TTerm* o, bool weaklyBound) {
 	if (s == NULL || p == NULL || o == NULL)
 	    throw
 		std::string("getTriple(")
@@ -820,7 +820,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
 #if REGEX_LIB == SWOb_BOOST
-    void POSFactory::parseTriples (BasicGraphPattern* g, std::string spo, POS::String2BNode& nodeMap) {
+    void AtomFactory::parseTriples (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
@@ -830,9 +830,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	boost::match_results<std::string::const_iterator> what;
 	boost::match_flag_type flags = boost::match_default;
 	while (regex_search(start, end, what, expression, flags)) {
-	    g->addTriplePattern(getTriple(getPOS(std::string(what[1].first, what[1].second), nodeMap), 
-					  getPOS(std::string(what[2].first, what[2].second), nodeMap), 
-					  getPOS(std::string(what[3].first, what[3].second), nodeMap), false));
+	    g->addTriplePattern(getTriple(getTTerm(std::string(what[1].first, what[1].second), nodeMap), 
+					  getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
+					  getTTerm(std::string(what[3].first, what[3].second), nodeMap), false));
 	    start = what[0].second; 
 	    // update flags: 
 	    flags |= boost::match_prev_avail; 
@@ -841,8 +841,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
 
-    const POS* POSFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
-	const POS* v = arg->eval(func->res, this, func->evaluator);
+    const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
+	const TTerm* v = arg->eval(func->res, this, func->evaluator);
 	const std::string lt = typeid(*v).name();
 	TypeOrder::const_iterator dtp = typeOrder.find(lt);
 	if (dtp == typeOrder.end())
@@ -876,9 +876,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
 	return v;
     }
-    const POS* POSFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func) {
+    const TTerm* AtomFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func) {
 	std::vector<const Expression*>::const_iterator it = args.begin();
-	const POS* l = (*it)->eval(func->res, this, func->evaluator);
+	const TTerm* l = (*it)->eval(func->res, this, func->evaluator);
 	const std::string lt = typeid(*l).name();
 	TypeOrder::const_iterator dtp = typeOrder.find(lt);
 	if (dtp == typeOrder.end())
@@ -886,7 +886,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	DT_Numeric dt = dtp->second;
 	++it;
 	while (it != args.end()) {
-	    const POS* r = (*it)->eval(func->res, this, func->evaluator);
+	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator);
 	    const std::string rt = typeid(*r).name();
 	    dtp = typeOrder.find(rt);
 	    if (dtp == typeOrder.end())
@@ -928,23 +928,23 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     /* EBV (Better place for this?) */
-    const POS* POSFactory::ebv (const POS* pos) {
-	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(pos);
+    const TTerm* AtomFactory::ebv (const TTerm* tterm) {
+	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(tterm);
 	if (b != NULL)
 	    return b->getValue() ? getTrue() : getFalse();
-	const IntegerRDFLiteral* i = dynamic_cast<const IntegerRDFLiteral*>(pos);
+	const IntegerRDFLiteral* i = dynamic_cast<const IntegerRDFLiteral*>(tterm);
 	if (i != NULL)
 	    return i->getValue() == 0 ? getFalse() : getTrue();
-	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(pos);
+	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(tterm);
 	if (f != NULL)
 	    return f->getValue() == 0.0 ? getFalse() : getTrue();
-	const FloatRDFLiteral* fl = dynamic_cast<const FloatRDFLiteral*>(pos);
+	const FloatRDFLiteral* fl = dynamic_cast<const FloatRDFLiteral*>(tterm);
 	if (fl != NULL)
 	    return fl->getValue() == 0.0 ? getFalse() : getTrue();
-	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(pos);
+	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(tterm);
 	if (d != NULL)
 	    return d->getValue() == 0.0 ? getFalse() : getTrue();
-	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(pos);
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(tterm);
 	const URI* dt = l == NULL ? NULL : l->getDatatype();
 	if (l != NULL && 
 	    (dt == NULL || dt == getURI("http://www.w3.org/2001/XMLSchema#string")))
@@ -952,12 +952,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	throw TypeError("beats me", "EBV");
     }
 
-    /* </POSFactory> */
+    /* </AtomFactory> */
 
-    const POS* BNode::evalPOS (const Result* r, BNodeEvaluator* evaluator) const {
+    const TTerm* BNode::evalTTerm (const Result* r, BNodeEvaluator* evaluator) const {
 	return evaluator->evaluate(this, r);
     }
-    const POS* Variable::evalPOS (const Result* r, BNodeEvaluator*) const {
+    const TTerm* Variable::evalTTerm (const Result* r, BNodeEvaluator*) const {
 	return r->get(this);
     }
 
@@ -980,7 +980,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* OperationSet::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const Operation*>::const_iterator it = operations.begin();
 	     it != operations.end(); ++it)
 	    (*it)->execute(db, rs);
@@ -988,7 +988,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Select::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
@@ -1006,28 +1006,28 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	struct MakeNewBNode : public BNodeEvaluator {
-	    POSFactory* posFactory;
-	    virtual const POS* evaluate (const BNode* /* node */, const Result* /* r */) {
-		return posFactory->createBNode();
+	    AtomFactory* atomFactory;
+	    virtual const TTerm* evaluate (const BNode* /* node */, const Result* /* r */) {
+		return atomFactory->createBNode();
 	    }
 	public:
-	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
+	    MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
 	};
-	MakeNewBNode makeNewBNode(rs->getPOSFactory());
+	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
-	m_ConstructTemplate->construct(rs->getRdfDB()->assureGraph(DefaultGraph), rs, &makeNewBNode);
+	m_ConstructTemplate->construct(rs->getRdfDB()->ensureGraph(DefaultGraph), rs, &makeNewBNode);
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
 
     ResultSet* Ask::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
@@ -1037,18 +1037,18 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     ResultSet* Insert::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getPOSFactory());
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	struct MakeNewBNode : public BNodeEvaluator {
-	    POSFactory* posFactory;
-	    virtual const POS* evaluate (const BNode* /* node */, const Result* /* r */) {
-		return posFactory->createBNode();
+	    AtomFactory* atomFactory;
+	    virtual const TTerm* evaluate (const BNode* /* node */, const Result* /* r */) {
+		return atomFactory->createBNode();
 	    }
 	public:
-	    MakeNewBNode (POSFactory* posFactory) : posFactory(posFactory) {  }
+	    MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
 	};
-	MakeNewBNode makeNewBNode(rs->getPOSFactory());
+	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
 	return rs;
@@ -1056,7 +1056,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     ResultSet* Delete::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) {
-	    rs = new ResultSet(rs->getPOSFactory());
+	    rs = new ResultSet(rs->getAtomFactory());
 	    *rs->getRdfDB() = *db;
 	}
 	if (m_WhereClause != NULL)
@@ -1067,17 +1067,17 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
-    void DatasetClause::loadGraph (RdfDB* db, const POS* name, BasicGraphPattern* target) const {
+    void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
 	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent, db->debugStream);
-	if (db->loadData(target, iptr, nameStr, nameStr, m_posFactory))
+	if (db->loadData(target, iptr, nameStr, nameStr, m_atomFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
     void DefaultGraphClause::loadData (RdfDB* db) const {
-	loadGraph(db, m_IRIref, db->assureGraph(DefaultGraph));
+	loadGraph(db, m_IRIref, db->ensureGraph(DefaultGraph));
     }
     void NamedGraphClause::loadData (RdfDB* db) const {
-	loadGraph(db, m_IRIref, db->assureGraph(m_IRIref));
+	loadGraph(db, m_IRIref, db->ensureGraph(m_IRIref));
     }
 
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -1109,9 +1109,9 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
-    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, POSList* p_Vars) const {
-	std::vector<const POS*>::const_iterator variable = p_Vars->begin();
-	std::vector<const POS*>::const_iterator value = begin();
+    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
+	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
+	std::vector<const TTerm*>::const_iterator value = begin();
 	while (value != end()) {
 	    rs->set(r, *variable, *value, false);
 	    variable++;
@@ -1120,7 +1120,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory(), rs->debugStream);
 	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
@@ -1129,7 +1129,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory(), rs->debugStream);
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
@@ -1149,12 +1149,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory(), rs->debugStream);
 	delete *(island.begin());
 	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet disjoint(rs->getPOSFactory(), rs->debugStream);
+	    ResultSet disjoint(rs->getAtomFactory(), rs->debugStream);
 	    (*it)->bindVariables(db, &disjoint);
 #if 0
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
@@ -1171,13 +1171,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getPOSFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory(), rs->debugStream);
 	m_Select->execute(db, &island);
 	rs->joinIn(&island, false);
     }
 
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */
-    void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const POS* p_name) const {
+    void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const TTerm* p_name) const {
 	db->bindVariables(rs, p_name, this);
 
 	/*
@@ -1190,7 +1190,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 - "bound__dawg_bound_query_001": 		check measured == ResultSet(&F, &rdfDB, "")!
 
 compared against
-	ResultSet island(rs->getPOSFactory());
+	ResultSet island(rs->getAtomFactory());
 	db->bindVariables(&island, p_name, this);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
@@ -1205,18 +1205,18 @@ compared against
     bool BasicGraphPattern::CompareVars = false;
 
     /* constOrNull helper function for cheesy operator== below */
-    const POS* BasicGraphPattern::_cOrN (const POS* pos, const NULLpos* n) {
+    const TTerm* BasicGraphPattern::_cOrN (const TTerm* tterm, const NULLtterm* n) {
 	if (CompareVars)
-	    return dynamic_cast<const Bindable*>(pos) ? n : pos;
+	    return dynamic_cast<const Bindable*>(tterm) ? n : tterm;
 	else
-	    return dynamic_cast<const BNode*>(pos) ? n : pos;
+	    return dynamic_cast<const BNode*>(tterm) ? n : tterm;
     }
 
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
 	unsigned errorCount = 0; // Only used if there's a DiffStream.
 	std::map<const TriplePattern*, std::vector<const TriplePattern*> >mine;
-	POSFactory f; // temp to hold trimmed triples.
-	const NULLpos* n = f.getNULL();
+	AtomFactory f; // temp to hold trimmed triples.
+	const NULLtterm* n = f.getNULL();
 	for (std::vector<const TriplePattern*>::const_iterator mit = 
 		 m_TriplePatterns.begin();
 	     mit != m_TriplePatterns.end(); ++mit)
@@ -1265,14 +1265,14 @@ compared against
 	return true;
     }
 
-    void BasicGraphPattern::bindVariables (ResultSet* rs, const POS* graphVar, const BasicGraphPattern* toMatch, const POS* graphName) const {
+    void BasicGraphPattern::bindVariables (ResultSet* rs, const TTerm* graphVar, const BasicGraphPattern* toMatch, const TTerm* graphName) const {
 	if (rs->debugStream != NULL && *rs->debugStream != NULL)
 	    **rs->debugStream << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		bool rowMatched = false;
-		const POS* pToMatch = (*constraint)->getP();
+		const TTerm* pToMatch = (*constraint)->getP();
 
 		idx_range range
 		    = dynamic_cast<const Bindable*>(pToMatch) 
@@ -1299,11 +1299,11 @@ compared against
 	if (rs->debugStream != NULL && *rs->debugStream != NULL)
 	    **rs->debugStream << "produced\n" << *rs;
     }
-    bool POS::bindVariable (const POS* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+    bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == NULL || constant == NULL)
 	    return true;
 	TreatAsVar treatAsVar;
-	const POS* curVal = evalPOS(provisional, &treatAsVar); // doesn't need to generate symbols
+	const TTerm* curVal = evalTTerm(provisional, &treatAsVar); // doesn't need to generate symbols
 	if (curVal == NULL) {
 	    rs->set(provisional, this, constant, weaklyBound);
 	    return true;
@@ -1315,13 +1315,13 @@ compared against
 	const URI* graphName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graphName != NULL) {
 	    /* GRAPH <x> { ?s ?p ?o } */
-	    BasicGraphPattern* bgp = target->assureGraph(graphName);
+	    BasicGraphPattern* bgp = target->ensureGraph(graphName);
 	    m_TableOperation->construct(target, rs, evaluator, bgp);
 	} else {
 	    /* GRAPH ?g { ?s ?p ?o } */
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
-		const POS* evaldGraphName = m_VarOrIRIref->evalPOS(*result, evaluator);
-		BasicGraphPattern* bgp = target->assureGraph(evaldGraphName);
+		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
+		BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
 		m_TableOperation->construct(target, rs, evaluator, bgp);
 	    }
 	}
@@ -1331,29 +1331,29 @@ compared against
 	const URI* graphName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graphName != NULL) {
 	    /* GRAPH <x> { ?s ?p ?o } */
-	    BasicGraphPattern* bgp = target->assureGraph(graphName);
+	    BasicGraphPattern* bgp = target->ensureGraph(graphName);
 	    m_TableOperation->deletePattern(target, rs, evaluator, bgp);
 	} else {
 	    /* GRAPH ?g { ?s ?p ?o } */
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
-		const POS* evaldGraphName = m_VarOrIRIref->evalPOS(*result, evaluator);
-		BasicGraphPattern* bgp = target->assureGraph(evaldGraphName);
+		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
+		BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
 		m_TableOperation->deletePattern(target, rs, evaluator, bgp);
 	    }
 	}
     }
 
-    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, POSFactory* posFactory, SWSAXparser* xmlParser, SWWEBagent* agent, std::ostream** debugStream) {
+    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, AtomFactory* atomFactory, SWSAXparser* xmlParser, SWWEBagent* agent, std::ostream** debugStream) {
 	/* The VarLister is a serializer which also records all variables.
 	 */
 	struct VarLister : public SPARQLSerializer {
-	    std::set<const POS*> vars;
+	    std::set<const TTerm*> vars;
 	    ExpressionAliasList* l;
 	    VarLister () : l(new ExpressionAliasList()) {  }
 	    virtual void variable (const Variable* const self, std::string lexicalValue) {
 		if (vars.find(self) == vars.end()) {
 		    vars.insert(self);
-		    l->push_back(new ExpressionAlias(new POSExpression(self)));
+		    l->push_back(new ExpressionAlias(new TTermExpression(self)));
 		}
 		SPARQLSerializer::variable(self, lexicalValue);
 	    }
@@ -1384,7 +1384,7 @@ compared against
 	/* Do an HTTP GET and parse results into a ResultSet. */
 	std::string s(agent->get(q.c_str()));
 	IStreamContext istr(s, IStreamContext::STRING);
-	ResultSet red(posFactory, xmlParser, istr);
+	ResultSet red(atomFactory, xmlParser, istr);
 	if (debugStream != NULL && *(debugStream) != NULL)
 	    **(debugStream) << " yielded\n" << red;
 
@@ -1394,7 +1394,7 @@ compared against
     void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
-	    _constructQuery(graph, m_TableOperation, rs, posFactory, db->xmlParser, db->webAgent, db->debugStream);
+	    _constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
 	else {
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
 	    if (graphVar != NULL) {
@@ -1403,8 +1403,8 @@ compared against
 		    const URI* graph;
 		    if ((binding = (*outerRow)->find(graphVar)) != (*outerRow)->end()
 			&& (graph = dynamic_cast<const URI*>(m_VarOrIRIref)) != NULL) {
-			ResultSet* single = (*outerRow)->makeResultSet(posFactory);
-			_constructQuery(graph, m_TableOperation, single, posFactory, db->xmlParser, db->webAgent, db->debugStream);
+			ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
+			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
 			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
 			    rs->insert(outerRow, *innerRow);
 			    single->erase(innerRow);
@@ -1425,13 +1425,13 @@ compared against
 	// const URI* serviceName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	// if (serviceName != NULL) {
 	//     /* GRAPH <x> { ?s ?p ?o } */
-	//     BasicGraphPattern* bgp = target->assureGraph(graphName);
+	//     BasicGraphPattern* bgp = target->ensureGraph(graphName);
 	//     m_TableOperation->construct(target, rs, evaluator, bgp);
 	// } else {
 	//     /* SERVICE ?g { ?s ?p ?o } */
 	//     for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
-	// 	const POS* evaldServiceName = m_VarOrIRIref->evalPOS(*result, evaluator);
-	// 	BasicGraphPattern* bgp = target->assureGraph(evaldServiceName);
+	// 	const TTerm* evaldServiceName = m_VarOrIRIref->evalTTerm(*result, evaluator);
+	// 	BasicGraphPattern* bgp = target->ensureGraph(evaldServiceName);
 	// 	m_TableOperation->construct(target, rs, evaluator, bgp);
 	//     }
 	// }
@@ -1442,26 +1442,26 @@ compared against
 	// const URI* serviceName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	// if (serviceName != NULL) {
 	//     /* GRAPH <x> { ?s ?p ?o } */
-	//     BasicGraphPattern* bgp = target->assureGraph(graphName);
+	//     BasicGraphPattern* bgp = target->ensureGraph(graphName);
 	//     m_TableOperation->deletePattern(target, rs, evaluator, bgp);
 	// } else {
 	//     /* SERVICE ?g { ?s ?p ?o } */
 	//     for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
-	// 	const POS* evaldServiceName = m_VarOrIRIref->evalPOS(*result, evaluator);
-	// 	BasicGraphPattern* bgp = target->assureGraph(evaldServiceName);
+	// 	const TTerm* evaldServiceName = m_VarOrIRIref->evalTTerm(*result, evaluator);
+	// 	BasicGraphPattern* bgp = target->ensureGraph(evaldServiceName);
 	// 	m_TableOperation->deletePattern(target, rs, evaluator, bgp);
 	//     }
 	// }
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(*rs); // no POSFactory
+	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
     }
 
     void MinusGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(*rs); // no POSFactory
+	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
     }
@@ -1470,24 +1470,24 @@ compared against
 	for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++)
 	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
-		(*triple)->construct(target, *result, rs->getPOSFactory(), evaluator);
+		(*triple)->construct(target, *result, rs->getAtomFactory(), evaluator);
     }
 
     void BasicGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	if (bgp == NULL)
-	    bgp = target->assureGraph(NULL);
+	    bgp = target->ensureGraph(NULL);
 	construct(bgp, rs, evaluator);
     }
 
     void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* /* evaluator */, BasicGraphPattern* bgp) const {
 	if (bgp == NULL)
-	    bgp = target->assureGraph(NULL);
+	    bgp = target->ensureGraph(NULL);
 	for (std::vector<const TriplePattern*>::const_iterator constraint = m_TriplePatterns.begin();
 	     constraint != m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetConstIterator row = rs->begin() ; row != rs->end(); ++row) {
 		for (std::vector<const TriplePattern*>::iterator triple = bgp->m_TriplePatterns.begin();
 		     triple != bgp->m_TriplePatterns.end(); ) {
-		    ResultSet* island = (*row)->makeResultSet(rs->getPOSFactory());
+		    ResultSet* island = (*row)->makeResultSet(rs->getAtomFactory());
 		    if ((*constraint)->bindVariables(*triple, false, island, NULL, *island->begin(), NULL))
 			triple = bgp->m_TriplePatterns.erase(triple);
 		    else
@@ -1498,19 +1498,19 @@ compared against
 	}
     }
 
-    bool TriplePattern::construct (BasicGraphPattern* target, const Result* r, POSFactory* posFactory, BNodeEvaluator* evaluator) const {
+    bool TriplePattern::construct (BasicGraphPattern* target, const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	bool ret = false;
-	const POS *s, *p, *o;
-	if ((s = m_s->evalPOS(r, evaluator)) != NULL && 
-	    (p = m_p->evalPOS(r, evaluator)) != NULL && 
-	    (o = m_o->evalPOS(r, evaluator)) != NULL) {
-	    if (posFactory == NULL) {
+	const TTerm *s, *p, *o;
+	if ((s = m_s->evalTTerm(r, evaluator)) != NULL && 
+	    (p = m_p->evalTTerm(r, evaluator)) != NULL && 
+	    (o = m_o->evalTTerm(r, evaluator)) != NULL) {
+	    if (atomFactory == NULL) {
 		if (s == m_s && p == m_p && o == m_o && !weaklyBound)
 		    target->addTriplePattern(this);
 		else
-		    throw(std::runtime_error("TriplePattern::construct requires POSFactory when constructing new triples."));
+		    throw(std::runtime_error("TriplePattern::construct requires AtomFactory when constructing new triples."));
 	    } else
-		  target->addTriplePattern(posFactory->getTriple(s, p, o));
+		  target->addTriplePattern(atomFactory->getTriple(s, p, o));
 	}
 	return ret;
     }

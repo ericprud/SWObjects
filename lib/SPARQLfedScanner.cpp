@@ -4419,7 +4419,7 @@ YY_RULE_SETUP
 case 103:
 YY_RULE_SETUP
 #line 308 "lib/SPARQLfedScanner.lpp"
-{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
@@ -4513,7 +4513,7 @@ case 121:
 /* rule 121 can match eol */
 YY_RULE_SETUP
 #line 326 "lib/SPARQLfedScanner.lpp"
-{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 328 "lib/SPARQLfedScanner.lpp"

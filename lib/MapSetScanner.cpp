@@ -3793,7 +3793,7 @@ case 87:
 /* rule 87 can match eol */
 YY_RULE_SETUP
 #line 295 "lib/MapSetScanner.lpp"
-{yylval->p_POS = driver->createBNode(); return token::ANON;}
+{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
@@ -3808,7 +3808,7 @@ YY_RULE_SETUP
 case 90:
 YY_RULE_SETUP
 #line 298 "lib/MapSetScanner.lpp"
-{yylval->p_POS = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP

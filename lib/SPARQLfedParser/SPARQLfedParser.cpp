@@ -604,7 +604,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 509 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
     }
     break;
 
@@ -640,7 +640,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 521 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
     }
     break;
 
@@ -649,7 +649,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 524 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
     }
     break;
 
@@ -658,7 +658,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 527 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
     }
     break;
 
@@ -723,7 +723,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 572 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList(new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_POS))));
+	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm))));
     }
     break;
 
@@ -732,7 +732,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 575 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new POSExpression((yysemantic_stack_[(2) - (2)].p_POS))));
+	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(2) - (2)].p_TTerm))));
 	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
     }
     break;
@@ -787,7 +787,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 620 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_POS), driver.posFactory);
+	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
     }
     break;
 
@@ -796,7 +796,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 626 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_POS), driver.posFactory);
+	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
     }
     break;
 
@@ -805,7 +805,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 632 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -926,7 +926,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 717 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
     }
     break;
 
@@ -1030,7 +1030,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 793 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
@@ -1095,8 +1095,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 846 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POSList) = new POSList;
-	(yyval.p_POSList)->push_back((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yyval.p_TTermList) = new TTermList;
+	(yyval.p_TTermList)->push_back((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
@@ -1105,8 +1105,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 850 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_POSList)->push_back((yysemantic_stack_[(2) - (2)].p_Variable));
-	(yyval.p_POSList) = (yysemantic_stack_[(2) - (1)].p_POSList);
+	(yysemantic_stack_[(2) - (1)].p_TTermList)->push_back((yysemantic_stack_[(2) - (2)].p_Variable));
+	(yyval.p_TTermList) = (yysemantic_stack_[(2) - (1)].p_TTermList);
     }
     break;
 
@@ -1115,7 +1115,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 857 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	driver.curBinding->push_back((yysemantic_stack_[(1) - (1)].p_POS));
+	driver.curBinding->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
@@ -1124,7 +1124,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 860 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	driver.curBinding->push_back((yysemantic_stack_[(2) - (2)].p_POS));
+	driver.curBinding->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
     }
     break;
 
@@ -1171,7 +1171,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 885 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	driver.curBindingsClause = new BindingClause((yysemantic_stack_[(3) - (2)].p_POSList));
+	driver.curBindingsClause = new BindingClause((yysemantic_stack_[(3) - (2)].p_TTermList));
       }
     break;
 
@@ -1199,7 +1199,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 900 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -1208,7 +1208,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 903 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
     break;
 
@@ -1217,7 +1217,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 906 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
@@ -1226,7 +1226,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 909 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
@@ -1235,7 +1235,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 912 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = driver.getNULL();
+	(yyval.p_TTerm) = driver.getNULL();
     }
     break;
 
@@ -1244,7 +1244,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 915 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
@@ -1480,8 +1480,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1118 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	  (yyval.p_POS) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_POS);
+	  (yyval.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
       }
     break;
 
@@ -1490,8 +1490,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1121 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (1)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(5) - (3)].p_POS), driver.curOp));
-	  driver.curGraphName = (yysemantic_stack_[(5) - (4)].p_POS);
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (1)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(5) - (3)].p_TTerm), driver.curOp));
+	  driver.curGraphName = (yysemantic_stack_[(5) - (4)].p_TTerm);
       }
     break;
 
@@ -1552,8 +1552,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1185 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	  (yyval.p_POS) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_POS);
+	  (yyval.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
       }
     break;
 
@@ -1563,8 +1563,8 @@ namespace w3c_sw {
 #line 1188 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_POS), driver.curOp));
-	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_POS);
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.curOp));
+	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_TTerm);
       }
     break;
 
@@ -1592,7 +1592,7 @@ namespace w3c_sw {
 #line 1200 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(5) - (3)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(5) - (4)].p_POS), driver.curOp, driver.posFactory, false));
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(5) - (4)].p_TTerm), driver.curOp, driver.atomFactory, false));
       }
     break;
 
@@ -1825,7 +1825,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1369 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -1834,7 +1834,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1372 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_POS);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
@@ -1844,7 +1844,7 @@ namespace w3c_sw {
 #line 1432 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_POS)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
     break;
 
@@ -1853,8 +1853,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1439 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_POS);
-	driver.curPredicate = (yyval.p_POS);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
@@ -1863,8 +1863,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1443 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	driver.curPredicate = (yyval.p_POS);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
@@ -1884,7 +1884,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1459 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	  (yyval.p_POS) = driver.curSubject; // could store w/ type in ctx..
+	  (yyval.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
       }
@@ -1896,17 +1896,17 @@ namespace w3c_sw {
 #line 1468 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
-	    (yyval.p_POS) = driver.createBNode();
-	    const POS* tail = (yyval.p_POS);
-	    ProductionVector<const POS*>* members = (yysemantic_stack_[(4) - (3)].p_POSs);
+	    (yyval.p_TTerm) = driver.createBNode();
+	    const TTerm* tail = (yyval.p_TTerm);
+	    ProductionVector<const TTerm*>* members = (yysemantic_stack_[(4) - (3)].p_TTerms);
 	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	    const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	    const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
-		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-		const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-		driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
+		const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -1976,8 +1976,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1520 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POSs) = new ProductionVector<const POS*>();
-	(yyval.p_POSs)->push_back((yysemantic_stack_[(1) - (1)].p_POS));
+	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
+	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
@@ -1986,8 +1986,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1524 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_POSs)->push_back((yysemantic_stack_[(2) - (2)].p_POS));
-	(yyval.p_POSs) = (yysemantic_stack_[(2) - (1)].p_POSs);
+	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
+	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
     }
     break;
 
@@ -1996,7 +1996,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1536 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
@@ -2005,7 +2005,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1543 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
@@ -2014,7 +2014,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1546 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -2023,7 +2023,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1557 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
@@ -2032,7 +2032,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1560 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
     break;
 
@@ -2041,7 +2041,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1563 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
@@ -2050,7 +2050,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1566 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
@@ -2059,7 +2059,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1570 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_POS) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
     break;
 
@@ -2406,7 +2406,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1794 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
     }
     break;
 
@@ -2415,7 +2415,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1797 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
     break;
 
@@ -2424,7 +2424,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1800 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     }
     break;
 
@@ -2433,7 +2433,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1803 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new POSExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
@@ -2487,7 +2487,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1828 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new POSExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(driver.getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound"), new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     }
     break;
 
@@ -2767,7 +2767,7 @@ namespace w3c_sw {
 	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
 	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
 	else
-	    (yyval.p_Expression) = new POSExpression((yysemantic_stack_[(2) - (1)].p_URI));
+	    (yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(2) - (1)].p_URI));
     }
     break;
 
@@ -4160,8 +4160,8 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 
 namespace w3c_sw {
 
-    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, POSFactory* posFactory) : 
-	YaccDriver(baseURI, posFactory), curSubject(NULL), curPredicate(NULL), 
+    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory) : 
+	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
 	curGraphName(NULL), root(NULL),  unnestTree(false)

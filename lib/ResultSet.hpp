@@ -23,24 +23,24 @@
 
 namespace w3c_sw {
 
-    typedef struct { bool weaklyBound; const POS* pos; } BindingInfo;
-    typedef std::map<const POS*, BindingInfo> BindingSet;
-    typedef std::map<const POS*, BindingInfo>::iterator BindingSetIterator;
-    typedef std::map<const POS*, BindingInfo>::const_iterator BindingSetConstIterator;
-    //typedef std::pair<std::map<POS*,POS*>::iterator, bool> InsertRet;
-    typedef std::set<const POS*> VariableList;
-    typedef std::set<const POS*>::iterator VariableListIterator;
-    typedef std::set<const POS*>::const_iterator VariableListConstIterator;
-    typedef std::vector<const POS*> VariableVector;
-    typedef std::vector<const POS*>::iterator VariableVectorIterator;
-    typedef std::vector<const POS*>::const_iterator VariableVectorConstIterator;
+    typedef struct { bool weaklyBound; const TTerm* tterm; } BindingInfo;
+    typedef std::map<const TTerm*, BindingInfo> BindingSet;
+    typedef std::map<const TTerm*, BindingInfo>::iterator BindingSetIterator;
+    typedef std::map<const TTerm*, BindingInfo>::const_iterator BindingSetConstIterator;
+    //typedef std::pair<std::map<TTerm*,TTerm*>::iterator, bool> InsertRet;
+    typedef std::set<const TTerm*> VariableList;
+    typedef std::set<const TTerm*>::iterator VariableListIterator;
+    typedef std::set<const TTerm*>::const_iterator VariableListConstIterator;
+    typedef std::vector<const TTerm*> VariableVector;
+    typedef std::vector<const TTerm*>::iterator VariableVectorIterator;
+    typedef std::vector<const TTerm*>::const_iterator VariableVectorConstIterator;
 
     typedef std::list<Result*> ResultList;
     typedef std::list<Result*>::iterator ResultSetIterator;
     typedef std::list<Result*>::const_iterator ResultSetConstIterator;
 
     inline bool operator== (const BindingInfo& l, const BindingInfo& r) {
-	return l.pos == r.pos;
+	return l.tterm == r.tterm;
     }
 
     class Result {
@@ -50,14 +50,14 @@ namespace w3c_sw {
 	Result (ResultSet*) : bindings() {  }
 	Result (const Result& ref) : bindings() {
 	    for (BindingSetConstIterator it = ref.begin(); it != ref.end(); ++it) {
-		const POS* var = it->first;
+		const TTerm* var = it->first;
 		BindingInfo bi(it->second);
 		bindings[var] = bi;
 	    }
 	}
 	~Result () {  }
 	bool operator== (const Result& ref) const {
-	    std::set<const POS*> boundInFirst;
+	    std::set<const TTerm*> boundInFirst;
 	    for (BindingSetConstIterator it = begin(); it != end(); ++it)
 		boundInFirst.insert(it->first);
 
@@ -82,7 +82,7 @@ namespace w3c_sw {
 	    for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); ++it)
 		s << (it == bindings.begin() ? "" : ", ")
 		  << it->first->toString() << "="
-		  << it->second.pos->toString();
+		  << it->second.tterm->toString();
 	    s << "}";
 	    return s.str();
 	}
@@ -93,30 +93,30 @@ namespace w3c_sw {
 	BindingSetIterator end () { return bindings.end(); }
 	BindingSetConstIterator end () const { return bindings.end(); }
 	size_t size () const { return bindings.size(); }
-	BindingSetIterator find (const POS* pos) { return bindings.find(pos); }
-	BindingSetConstIterator find (const POS* pos) const { return bindings.find(pos); }
+	BindingSetIterator find (const TTerm* tterm) { return bindings.find(tterm); }
+	BindingSetConstIterator find (const TTerm* tterm) const { return bindings.find(tterm); }
 	void erase (BindingSetIterator it) { bindings.erase(it); }
 
-	const POS* get(const POS* variable) const;
+	const TTerm* get(const TTerm* variable) const;
 	/* set should only be used by ResultSet::set if you want to keep the
 	   header consistent.
 	 */
-	void set(const POS* variable, const POS* value, bool weaklyBound, bool replace = false);
+	void set(const TTerm* variable, const TTerm* value, bool weaklyBound, bool replace = false);
 	Result* duplicate(ResultSet* rs, ResultSetConstIterator row) const;
 
-	ResultSet* makeResultSet(POSFactory* posFactory);
+	ResultSet* makeResultSet(AtomFactory* atomFactory);
 	bool isCompatibleWith(const Result* from) const;
 	void assumeNewBindings(const Result* from);
     };
 
     class ResultSet {
     protected:
-	POSFactory* posFactory;
+	AtomFactory* atomFactory;
 	VariableList knownVars;
 	ResultList results;
 	bool ordered;
 	RdfDB* db;
-	ProductionVector<const POS*> selectOrder;
+	ProductionVector<const TTerm*> selectOrder;
 	bool orderedSelect;
 
     public:
@@ -132,9 +132,9 @@ namespace w3c_sw {
 	ResultType resultType;
 	std::ostream** debugStream;
 
-	ResultSet(POSFactory* posFactory, std::ostream** debugStream = NULL);
+	ResultSet(AtomFactory* atomFactory, std::ostream** debugStream = NULL);
 	ResultSet (const ResultSet& ref) : 
-	    posFactory(ref.posFactory), knownVars(ref.knownVars), 
+	    atomFactory(ref.atomFactory), knownVars(ref.knownVars), 
 	    results(), ordered(ref.ordered), db(ref.db), selectOrder(ref.selectOrder), 
 	    orderedSelect(ref.orderedSelect), resultType(ref.resultType), debugStream(NULL) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
@@ -149,7 +149,7 @@ namespace w3c_sw {
 		delete *it;
 	    results.clear();
 
-	    posFactory = ref.posFactory;
+	    atomFactory = ref.atomFactory;
 	    knownVars = ref.knownVars;
 	    ordered = ref.ordered;
 	    db = ref.db;
@@ -170,8 +170,8 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (POSFactory* posFactory, std::string str, bool ordered, POS::String2BNode& nodeMap) : 
-	    posFactory(posFactory), knownVars(), 
+	ResultSet (AtomFactory* atomFactory, std::string str, bool ordered, TTerm::String2BNode& nodeMap) : 
+	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
 
@@ -191,7 +191,7 @@ namespace w3c_sw {
 
 	    /* Populate <headers> from the first row ... */
 	    bool firstRow = true;
-	    std::vector<const POS*> headers;
+	    std::vector<const TTerm*> headers;
 	    /* ... and generate Results for each remaining row. */
 	    int col = 0;
 	    Result* curRow = NULL;
@@ -213,15 +213,15 @@ namespace w3c_sw {
 		    const boost::regex nl("[^\\n]*\\n");
 		    regex_search(start, end, what, nl, flags); // skip rest of line
 		} else {
-		    const POS* pos = posFactory->getPOS(matched, nodeMap);
+		    const TTerm* tterm = atomFactory->getTTerm(matched, nodeMap);
 		    if (firstRow)
-			headers.push_back(pos);
+			headers.push_back(tterm);
 		    else {
 			if (curRow == NULL) {
 			    curRow = new Result(this);
 			    insert(this->end(), curRow);
 			}
-			set(curRow, headers[col++], pos, false);
+			set(curRow, headers[col++], tterm, false);
 		    }
 		}
 
@@ -238,15 +238,15 @@ namespace w3c_sw {
 	class RSsax : public SWSAXhandler {
 	protected:
 	    ResultSet* rs;
-	    POSFactory* posFactory;
-	    POS::String2BNode	nodeMap;
+	    AtomFactory* atomFactory;
+	    TTerm::String2BNode	nodeMap;
 
 	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
 			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, 
 			 s_ERROR};
 	    std::stack<enum STATES> stateStack;
 	    Result* result;
-	    const POS* variable;
+	    const TTerm* variable;
 	    const URI* datatype;
 	    std::string lang;
 	    std::string chars;
@@ -259,8 +259,8 @@ namespace w3c_sw {
 	    }
 
 	public:
-	    RSsax (ResultSet* rs, POSFactory* posFactory) : 
-		rs(rs), posFactory(posFactory), result(NULL), variable(NULL), datatype(NULL), chars("") {
+	    RSsax (ResultSet* rs, AtomFactory* atomFactory) : 
+		rs(rs), atomFactory(atomFactory), result(NULL), variable(NULL), datatype(NULL), chars("") {
 		stateStack.push(DOCUMENT);
 	    }
 
@@ -290,7 +290,7 @@ namespace w3c_sw {
 			newState = LINK;
 		    else if (localName == "variable") {
 			newState = VARIABLE;
-			rs->addKnownVar(posFactory->getVariable(attrs->getValue("", "name")));
+			rs->addKnownVar(atomFactory->getVariable(attrs->getValue("", "name")));
 		    }
 		    break;
 		case LINK:
@@ -308,7 +308,7 @@ namespace w3c_sw {
 		case RESULT:
 		    if (localName == "binding") {
 			newState = BINDING;
-			variable = posFactory->getVariable(attrs->getValue("", "name"));
+			variable = atomFactory->getVariable(attrs->getValue("", "name"));
 		    } break;
 		case BINDING:
 		    if (localName == "uri")
@@ -318,7 +318,7 @@ namespace w3c_sw {
 		    else if (localName == "literal") {
 			newState = LITERAL;
 			std::string s = attrs->getValue("", "datatype");
-			datatype = s.size() == 0 ? NULL : posFactory->getURI(s.c_str());
+			datatype = s.size() == 0 ? NULL : atomFactory->getURI(s.c_str());
 			lang = attrs->getValue(NS_xml, "lang");
 		    }
 		    break;
@@ -351,11 +351,11 @@ namespace w3c_sw {
 		case BINDING: //@@
 		    break;
 		case _URI:
-		    result->set(variable, posFactory->getURI(chars), false);
+		    result->set(variable, atomFactory->getURI(chars), false);
 		    chars = "";
 		    break;
 		case BNODE:
-		    result->set(variable, posFactory->getBNode(chars, nodeMap), false);
+		    result->set(variable, atomFactory->getBNode(chars, nodeMap), false);
 		    chars = "";
 		    break;
 		case LITERAL:
@@ -363,7 +363,7 @@ namespace w3c_sw {
 			LANGTAG* l = NULL;
 			if (lang.size() > 0)
 			    l = new LANGTAG(lang); /* del'd by RDFLiteral. */
-			result->set(variable, posFactory->getRDFLiteral(chars, datatype, l), false);
+			result->set(variable, atomFactory->getRDFLiteral(chars, datatype, l), false);
 			datatype = NULL;
 		    }
 		    chars = "";
@@ -384,28 +384,28 @@ namespace w3c_sw {
 	};
 #endif /* !defined(SWIG) */
 
-	ResultSet (POSFactory* posFactory, RdfDB* db) : 
-	    posFactory(posFactory), knownVars(), 
+	ResultSet (AtomFactory* atomFactory, RdfDB* db) : 
+	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(db), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Graphs), debugStream(NULL) {  }
 
-	ResultSet (POSFactory* posFactory, RdfDB* db, const char* baseURI) : 
-	    posFactory(posFactory), knownVars(), 
+	ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
+	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    SPARQLfedDriver sparqlParser(baseURI, posFactory);
+	    SPARQLfedDriver sparqlParser(baseURI, atomFactory);
 	    IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				 "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
 	    if (sparqlParser.parse(boolq))
 		throw std::string("failed to parse boolean ResultSet constructor query.");
-	    ResultSet booleanResult(posFactory);
+	    ResultSet booleanResult(atomFactory);
 	    sparqlParser.root->execute(db, &booleanResult);
 	    delete sparqlParser.root;
 	    sparqlParser.clear(""); // clear out namespaces and base URI.
 	    if (booleanResult.size() > 0) {
 		ResultSetIterator booleanRecord = booleanResult.begin();
-		const POS* bpos = (*booleanRecord)->get(posFactory->getVariable("bool"));
-		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(bpos);
+		const TTerm* btterm = (*booleanRecord)->get(atomFactory->getVariable("bool"));
+		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(btterm);
 		if (blit == NULL /* !!! || ++booleanRecord != end() */)
 		    throw std::string("database:\n") + 
 			db->toString() + 
@@ -420,14 +420,14 @@ namespace w3c_sw {
 				      "SELECT ?var {?set rs:resultVariable ?var }\n", IStreamContext::STRING);
 		if (sparqlParser.parse(variablesQ))
 		    throw std::string("failed to parse boolean ResultSet variables query.");
-		ResultSet listOfVariables(posFactory);
+		ResultSet listOfVariables(atomFactory);
 		sparqlParser.root->execute(db, &listOfVariables);
 		delete sparqlParser.root;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		for (ResultSetIterator resultRecord = listOfVariables.begin(); 
 		     resultRecord != listOfVariables.end(); ++resultRecord) {
-		    const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
-		    const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
+		    const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
+		    const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
 		    knownVars.insert(var);
 		}
 
@@ -439,18 +439,18 @@ namespace w3c_sw {
 				     " ]} ORDER BY ?soln\n", IStreamContext::STRING);
 		if (sparqlParser.parse(bindingsQ))
 		    throw std::string("failed to parse boolean ResultSet bindings query.");
-		ResultSet listOfResults(posFactory);
+		ResultSet listOfResults(atomFactory);
 		sparqlParser.root->execute(db, &listOfResults);
 		delete sparqlParser.root;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
-		const POS* lastSoln = NULL;
+		const TTerm* lastSoln = NULL;
 		Result* r = NULL;
 		for (ResultSetIterator resultRecord = listOfResults.begin(); 
 		     resultRecord != listOfResults.end(); ++resultRecord) {
-		    const POS* soln = (*resultRecord)->get(posFactory->getVariable("soln"));
-		    const POS* varStr = (*resultRecord)->get(posFactory->getVariable("var" ));
-		    const POS* var  = posFactory->getVariable(varStr->getLexicalValue());
-		    const POS* val  = (*resultRecord)->get(posFactory->getVariable("val" ));
+		    const TTerm* soln = (*resultRecord)->get(atomFactory->getVariable("soln"));
+		    const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
+		    const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
+		    const TTerm* val  = (*resultRecord)->get(atomFactory->getVariable("val" ));
 		    if (lastSoln != soln) {
 			r = new Result(this);
 			insert(end(), r);
@@ -461,11 +461,11 @@ namespace w3c_sw {
 	    }
 	}
 
-	ResultSet (POSFactory* posFactory, SWSAXparser* parser, IStreamContext& sptr) : 
-	    posFactory(posFactory), knownVars(), 
+	ResultSet (AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr) : 
+	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
-	    RSsax handler(this, posFactory);
+	    RSsax handler(this, atomFactory);
 	    parser->parse(sptr, &handler);
 	}
 
@@ -502,11 +502,11 @@ namespace w3c_sw {
 	    }
 	}
 	const VariableList* getKnownVars () const { return &knownVars; }
-	void addKnownVar (const POS* var) { knownVars.insert(var); }
+	void addKnownVar (const TTerm* var) { knownVars.insert(var); }
 	VariableVector getOrderedVars () const {
 	    VariableVector ret;
 	    if (orderedSelect)
-		for (std::vector<const POS*>::const_iterator it = selectOrder.begin() ; it != selectOrder.end(); ++it)
+		for (std::vector<const TTerm*>::const_iterator it = selectOrder.begin() ; it != selectOrder.end(); ++it)
 		    ret.push_back(*it);
 	    else {
 		for (VariableListConstIterator it = knownVars.begin() ; it != knownVars.end(); ++it)
@@ -521,8 +521,8 @@ namespace w3c_sw {
 	    VariableVector target;
 	    VariableVector curOrder = getOrderedVars();
 	    selectOrder.clear();
-	    std::set<const POS*> curVars(curOrder.begin(), curOrder.end());
-	    std::set<const POS*> newVars;
+	    std::set<const TTerm*> curVars(curOrder.begin(), curOrder.end());
+	    std::set<const TTerm*> newVars;
 
 	    for (VariableVectorConstIterator it = copyMe.begin(); it != copyMe.end(); ++it)
 		if (curVars.find(*it) == curVars.end())
@@ -549,12 +549,12 @@ namespace w3c_sw {
 		for (ResultSetConstIterator yourRow = ref->results.begin();
 		     yourRow != ref->results.end(); ++yourRow) {
 		    bool matched = true;
-		    std::set<const POS*>copy;
+		    std::set<const TTerm*>copy;
 		    for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 			 yourBinding != (*yourRow)->end(); ++yourBinding) {
-			const POS* var = yourBinding->first;
-			const POS* yourVal = yourBinding->second.pos;
-			const POS* myVal = (*myRow)->get(var);
+			const TTerm* var = yourBinding->first;
+			const TTerm* yourVal = yourBinding->second.tterm;
+			const TTerm* myVal = (*myRow)->get(var);
 			if (myVal == NULL) {
 			    knownVars.insert(var); // means we can bypass ResultSet::set(...).
 			    if (yourVal != NULL)
@@ -566,13 +566,13 @@ namespace w3c_sw {
 		    }
 		    if (matched) {
 			Result* newRow = (*myRow)->duplicate(this, myRow);
-			for (std::set<const POS*>::iterator vars = copy.begin();
+			for (std::set<const TTerm*>::iterator vars = copy.begin();
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
 			if (expressions != NULL)
 			    for (std::vector<const Expression*>::const_iterator expression = expressions->begin();
 				 matched && expression != expressions->end(); expression++)
-				matched &= posFactory->eval(*expression, newRow);
+				matched &= atomFactory->eval(*expression, newRow);
 			if (matched) {
 			    if (operation == OP_minus)
 				delete newRow;
@@ -597,27 +597,27 @@ namespace w3c_sw {
 		return false;
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
-	    std::map<const POS*, const POS*> refBNodes2myBNodes;
+	    std::map<const TTerm*, const TTerm*> refBNodes2myBNodes;
 	    while (myRow != results.end()) {
 		if ((*yourRow)->size() != (*myRow)->size()) {
 		    if (debugStream != NULL && *debugStream != NULL)
 			**debugStream << "l->size: " << (*myRow)->size() << " != r->size: " << (*yourRow)->size() << std::endl;
 		    return false;
 		}
-		std::set<const POS*> yourVars;
+		std::set<const TTerm*> yourVars;
 		for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 		     yourBinding != (*yourRow)->end(); ++yourBinding)
 		    yourVars.insert(yourBinding->first);
 		for (BindingSetConstIterator myBinding = (*myRow)->begin();
 		     myBinding != (*myRow)->end(); ++myBinding) {
-		    const POS* var = myBinding->first;
+		    const TTerm* var = myBinding->first;
 		    if (yourVars.erase(var) == 0) {
 			if (debugStream != NULL && *debugStream != NULL)
 			    **debugStream << "r missing: " << var->toString() << std::endl;
 			return false;
 		    }
-		    const POS* yours = (*yourRow)->find(var)->second.pos;
-		    const POS* mine = myBinding->second.pos;
+		    const TTerm* yours = (*yourRow)->find(var)->second.tterm;
+		    const TTerm* mine = myBinding->second.tterm;
 		    if (dynamic_cast<const Bindable*>(yours) && 
 			dynamic_cast<const Bindable*>(mine)) {
 			if (refBNodes2myBNodes.find(yours) == refBNodes2myBNodes.end())
@@ -626,7 +626,7 @@ namespace w3c_sw {
 		    }
 		    if (yours != mine) {
 			if (debugStream != NULL && *debugStream != NULL)
-			    **debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.pos->toString() << std::endl;
+			    **debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
 			return false;
 		    }
 		}
@@ -650,10 +650,10 @@ namespace w3c_sw {
 	void setRdfDB (RdfDB* db) { this->db = db; }
 	RdfDB* getRdfDB () { return db; }
 
-	POSFactory* getPOSFactory () const {
-	    if (posFactory == NULL)
-		throw(std::runtime_error("ConstructResultSet has no POSFactory."));
-	    return posFactory;
+	AtomFactory* getAtomFactory () const {
+	    if (atomFactory == NULL)
+		throw(std::runtime_error("ConstructResultSet has no AtomFactory."));
+	    return atomFactory;
 	}
 	std::string toString(NamespaceMap* namespaces = NULL) const;
 	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) {
@@ -678,37 +678,37 @@ namespace w3c_sw {
 	ResultSetConstIterator end () const { return results.end(); }
 	size_t size () const { return results.size(); }
 	ResultSetIterator erase (ResultSetIterator it) { return results.erase(it); }
-	void set(Result* r, const POS* variable, const POS* value, bool weaklyBound);
+	void set(Result* r, const TTerm* variable, const TTerm* value, bool weaklyBound);
 	ResultSetIterator insert (ResultSetIterator at, Result* elem) { return results.insert(at, elem); }
 	ResultSet* clone();
 	void remove (ResultSetIterator it, const Result* r) { results.erase(it); delete r; }
 	void containsAtLeast (ResultSet*) { throw(std::runtime_error(FUNCTION_STRING)); }
-	const Expression* getFederationExpression (std::set<const POS*> vars, bool lexicalCompare = false) const {
+	const Expression* getFederationExpression (std::set<const TTerm*> vars, bool lexicalCompare = false) const {
 	    ExprSet disj;
 	    for (ResultSetConstIterator row = results.begin();
 		 row != results.end(); row++) {
 		std::stringstream rowStr;
 		ExprSet conj;
-		for (std::set<const POS*>::const_iterator var = vars.begin();
+		for (std::set<const TTerm*>::const_iterator var = vars.begin();
 		     var != vars.end(); ++var) {
-		    const POS* value = (*row)->get(*var);
+		    const TTerm* value = (*row)->get(*var);
 		    if (value != NULL) {
 
 			/* Hideous dynamic cast to find the appropriate expression for the value. */
-			const Expression* posExpression = new POSExpression(value);
+			const Expression* posExpression = new TTermExpression(value);
 
 			if (lexicalCompare == true) {
 			    conj.push_back
 				(new BooleanEQ
 				 (new FunctionCallExpression
 				  (new FunctionCall
-				   (getPOSFactory()->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"),
-				    new POSExpression(*var), NULL, NULL)), 
+				   (getAtomFactory()->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"),
+				    new TTermExpression(*var), NULL, NULL)), 
 				  posExpression));
 			} else {
 			    conj.push_back
 				(new BooleanEQ
-				 (new POSExpression(*var), posExpression));
+				 (new TTermExpression(*var), posExpression));
 			}
 		    }
 		    
@@ -736,7 +736,7 @@ namespace w3c_sw {
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);
 
     struct TreatAsVar : public BNodeEvaluator {
-	virtual const POS* evaluate (const BNode* node, const Result* r) {
+	virtual const TTerm* evaluate (const BNode* node, const Result* r) {
 	    return r->get(node);
 	}
     };

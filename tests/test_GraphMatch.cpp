@@ -17,7 +17,7 @@
 
 using namespace w3c_sw;
 
-POSFactory f;
+AtomFactory f;
 
 /* Intermediate structures to make it easier to create ResultSets.
  * usage:
@@ -42,7 +42,7 @@ struct R {
 #define row(X) R(X, sizeof(X)/sizeof(X[0]))
 #define RS(X, M) makeResultSet(X, sizeof(X)/sizeof(X[0]), M)
 
-ResultSet makeResultSet (R rows[], int count, POS::String2BNode& bnodeMap) {
+ResultSet makeResultSet (R rows[], int count, TTerm::String2BNode& bnodeMap) {
     ResultSet rs(&f);
     delete *(rs.begin());
     rs.erase(rs.begin());
@@ -51,8 +51,8 @@ ResultSet makeResultSet (R rows[], int count, POS::String2BNode& bnodeMap) {
 	rs.insert(rs.end(), r);
 	B* bindings = rows[i].bindings;
 	for (int j = 0; j < rows[i].count; ++j)
-	    rs.set(r, f.getPOS(bindings[j].bound, bnodeMap), 
-		   f.getPOS(bindings[j].to, bnodeMap), false);
+	    rs.set(r, f.getTTerm(bindings[j].bound, bnodeMap), 
+		   f.getTTerm(bindings[j].to, bnodeMap), false);
     }
     return rs;
 }
@@ -63,7 +63,7 @@ ResultSet makeResultSet (R rows[], int count, POS::String2BNode& bnodeMap) {
 
 BOOST_AUTO_TEST_CASE( bgp ) {
     DefaultGraphPattern data, pattern;
-    POS::String2BNode bnodeMap;
+    TTerm::String2BNode bnodeMap;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
 
     /* Verify NTriples input, which will be used in remaining tests. */ {

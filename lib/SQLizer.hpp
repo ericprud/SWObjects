@@ -31,7 +31,7 @@ namespace w3c_sw {
 	    SQLQueryGenerator* parent;
 	    std::map<std::string, sql::Expression*> attachments;
 
-	    std::map<const POS*, std::map<std::string, Join*> > aliasMap;
+	    std::map<const TTerm*, std::map<std::string, Join*> > aliasMap;
 	    std::map<std::string, std::string> usedAliases;
 	    Join* curJoin;
 	    int nextUnionAlias;
@@ -107,7 +107,7 @@ namespace w3c_sw {
 		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (double)value);
 	    }
-	    SQLUnionGenerator* makeUnion (std::vector<const POS*> corefs) {
+	    SQLUnionGenerator* makeUnion (std::vector<const TTerm*> corefs) {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnionGenerator* ret = new SQLUnionGenerator(this, corefs, s.str());
@@ -115,7 +115,7 @@ namespace w3c_sw {
 		query->add(curJoin);
 		return ret;
 	    }
-	    SQLOptionalGenerator* makeOptional (std::vector<const POS*> corefs) {
+	    SQLOptionalGenerator* makeOptional (std::vector<const TTerm*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptionalGenerator* ret = new SQLOptionalGenerator(this, corefs, s.str());
@@ -123,9 +123,9 @@ namespace w3c_sw {
 		query->add(curJoin);
 		return ret;
 	    }
-	    std::string attachTuple (const POS* subject, std::string toRelation) {
-		std::map<const POS*, std::map<std::string, Join*> >::iterator byPOS = aliasMap.find(subject);
-		if (byPOS != aliasMap.end()) {
+	    std::string attachTuple (const TTerm* subject, std::string toRelation) {
+		std::map<const TTerm*, std::map<std::string, Join*> >::iterator byTTerm = aliasMap.find(subject);
+		if (byTTerm != aliasMap.end()) {
 		    std::map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end()) {
 			curJoin = aliasMap[subject][toRelation];
@@ -175,15 +175,15 @@ namespace w3c_sw {
 	};
 
 	class SQLOptionalGenerator : public SQLQueryGenerator {
-	    std::vector<const POS*> corefs;
+	    std::vector<const TTerm*> corefs;
 	    std::string name;
 	public:
-	    SQLOptionalGenerator (SQLQueryGenerator* parent, std::vector<const POS*> corefs, std::string name) : 
+	    SQLOptionalGenerator (SQLQueryGenerator* parent, std::vector<const TTerm*> corefs, std::string name) : 
 		SQLQueryGenerator(parent), corefs(corefs), name(name)
 	    {  }
 	    virtual ~SQLOptionalGenerator () {  }
 	    void attach () {
-		for (std::vector<const POS*>::iterator coref = corefs.begin();
+		for (std::vector<const TTerm*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    // SELECT <field for coref> AS <coref name>
 		    selectVariable((*coref)->getLexicalValue());
@@ -211,11 +211,11 @@ namespace w3c_sw {
 	protected:
 	    SQLUnion* onion;
 	    // SQLQueryGenerator* parent;
-	    std::vector<const POS*> corefs;
+	    std::vector<const TTerm*> corefs;
 	    std::string name;
 	    std::vector<SQLDisjointGenerator*> disjointGenerators;
 	public:
-	    SQLUnionGenerator (SQLQueryGenerator* parent, std::vector<const POS*> corefs, std::string name) : 
+	    SQLUnionGenerator (SQLQueryGenerator* parent, std::vector<const TTerm*> corefs, std::string name) : 
 		SQLQueryGenerator(parent), corefs(corefs), name(name)
 	    {
 		onion = new SQLUnion();
@@ -233,7 +233,7 @@ namespace w3c_sw {
                     // SQLQueryGenerator* qg = dynamic_cast<SQLQueryGenerator*>(*dis);
 		    (*dis)->selectConstant((int)nextDisjointCardinal++, "_DISJOINT_"); // cast to int to select selectConstant(int...)
                 }
-		for (std::vector<const POS*>::iterator coref = corefs.begin();
+		for (std::vector<const TTerm*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
 		    for (std::vector<SQLDisjointGenerator*>::iterator dis = disjointGenerators.begin();
 			 dis != disjointGenerators.end(); ++dis)
@@ -300,7 +300,7 @@ namespace w3c_sw {
 	typedef enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} e_Mode;
 	e_Mode mode;
 	SQLQueryGenerator* curQuery;
-	const POS* curSubject;
+	const TTerm* curSubject;
 	AliasAttr curAliasAttr; // established by predicate
 	const TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
@@ -624,8 +624,8 @@ namespace w3c_sw {
 		w3c_sw_FAIL("wierd state");
 	    }
 	}
-	virtual void nullpos (const NULLpos* const) {  }
-	virtual void triplePattern (const TriplePattern* const, const POS* p_s, const POS* p_p, const POS* p_o) {
+	virtual void nulltterm (const NULLtterm* const) {  }
+	virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	    // std::cerr << "triplePattern: " << self->toString() << std::endl;
 	    curSubject = p_s;
 	    w3c_sw_START("checking predicate");
@@ -666,7 +666,7 @@ namespace w3c_sw {
 		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    w3c_sw_MARK;
 	    _BasicGraphPattern(p_TriplePatterns);
 	}
@@ -722,15 +722,15 @@ namespace w3c_sw {
 	virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */) {
 	    throw(NotImplemented("SQLizer(minusGraphPattern)"));
 	}
-	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 	    w3c_sw_FAIL("don't do federation with GraphGraphPatterns yet");
-	    p_POS->express(this);
+	    p_TTerm->express(this);
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
-	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* /* posFactory */, bool /* lexicalCompare */) {
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	    w3c_sw_FAIL("don't do federation with ServiceGraphPatterns yet");
-	    p_POS->express(this);
+	    p_TTerm->express(this);
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
@@ -745,16 +745,16 @@ namespace w3c_sw {
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    w3c_sw_FAIL("no SQL for POSList");
+	virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	    w3c_sw_FAIL("no SQL for TTermList");
 	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    w3c_sw_FAIL("need to select all pertinent vars");
 	}
-	virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
+	virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
 	    p_IRIref->express(this);
 	}
-	virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
+	virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
 	    p_IRIref->express(this);
 	}
 	virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
@@ -770,13 +770,13 @@ namespace w3c_sw {
 		    curQuery->addOrderClause(curConstraint);
 		}
 	}
-	virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
+	virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
 	    // !!!
-	    for (std::vector<const POS*>::const_iterator it = values->begin();
+	    for (std::vector<const TTerm*>::const_iterator it = values->begin();
 		 it != values->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+	virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	    p_Vars->express(this);
 	    p_Bindings->ProductionVector<const Binding*>::express(this);
 	}
@@ -856,9 +856,9 @@ namespace w3c_sw {
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
-	virtual void posExpression (const POSExpression* const, const POS* p_POS) {
+	virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
 	    w3c_sw_MARK;
-	    p_POS->express(this);
+	    p_TTerm->express(this);
 	}
 	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* expressions) {
 	    w3c_sw_MARK;

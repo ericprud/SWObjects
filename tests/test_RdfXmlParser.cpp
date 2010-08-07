@@ -42,7 +42,7 @@
 
 namespace sw = w3c_sw;
 
-sw::POSFactory F;
+sw::AtomFactory F;
 sw::TurtleSDriver turtleParser("", &F);
 sw::RdfXmlParser GRdfXmlParser("", &F, &P);
 

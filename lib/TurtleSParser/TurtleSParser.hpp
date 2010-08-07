@@ -67,11 +67,11 @@ namespace w3c_sw {
 class TurtleSDriver : public YaccDataDriver {
     friend class TurtleSParser;
 protected:
-    const POS* curSubject;
-    const POS* curPredicate;
+    const TTerm* curSubject;
+    const TTerm* curPredicate;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
-    TurtleSDriver (std::string baseURI, POSFactory* posFactory) : YaccDataDriver(baseURI, posFactory) {
+    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
@@ -178,7 +178,7 @@ namespace w3c_sw {
 #line 95 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
-    struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
+    struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
     /* Terminals */
@@ -191,8 +191,8 @@ namespace w3c_sw {
 
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
-    const POS* p_POS;
-    ProductionVector<const POS*>* p_POSs;
+    const TTerm* p_TTerm;
+    ProductionVector<const TTerm*>* p_TTerms;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;

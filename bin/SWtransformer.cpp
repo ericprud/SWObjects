@@ -104,10 +104,10 @@ int main(int argc,char** argv) {
     }
 
     /* Tools we'll need for this demo: */
-    w3c_sw::POSFactory posFactory;
-    w3c_sw::SPARQLfedDriver sparqlParser("", &posFactory);
-    //w3c_sw::TurtleSDriver turtleParser(BaseURI, &posFactory);
-    w3c_sw::QueryMapper queryMapper(&posFactory, &DebugStream);
+    w3c_sw::AtomFactory atomFactory;
+    w3c_sw::SPARQLfedDriver sparqlParser("", &atomFactory);
+    //w3c_sw::TurtleSDriver turtleParser(BaseURI, &atomFactory);
+    w3c_sw::QueryMapper queryMapper(&atomFactory, &DebugStream);
 
     int result;
     w3c_sw::Operation* query = NULL;
@@ -195,7 +195,7 @@ int main(int argc,char** argv) {
 	    SAXPARSER p;
 	    WEBagent_boostASIO client;
 	    RdfDB db(&client, &p, &DebugStream);
-	    ResultSet rs(&posFactory);
+	    ResultSet rs(&atomFactory);
 	    o->execute(&db, &rs);
 	    std::cout << rs; // show results
 	}

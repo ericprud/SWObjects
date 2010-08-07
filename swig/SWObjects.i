@@ -27,7 +27,7 @@ namespace std {
 
 %{
     namespace w3c_sw {
-	class POS;
+	class TTerm;
 	class BNode;
 	class BasicGraphPattern;
 	class Binding;
@@ -43,9 +43,9 @@ namespace std {
 
 %{
 namespace swig {
-    template <>  struct traits<w3c_sw::POS> {
+    template <>  struct traits<w3c_sw::TTerm> {
 	typedef pointer_category category;
-	static const char* type_name() { return"w3c_sw::POS *"; }
+	static const char* type_name() { return"w3c_sw::TTerm *"; }
     };
     template <>  struct traits<w3c_sw::BNode> {
 	typedef pointer_category category;
@@ -67,8 +67,8 @@ class String2BNode : public std::map<std::string, const w3c_sw::BNode*> {
 public:
     const w3c_sw::BNode* getBNode(std::string str);
 };
-%nestedworkaround w3c_sw::POS::BNode2string;
-%nestedworkaround w3c_sw::POS::String2BNode;
+%nestedworkaround w3c_sw::TTerm::BNode2string;
+%nestedworkaround w3c_sw::TTerm::String2BNode;
 
     struct UnknownPrefixException : w3c_sw::StringException {
 	std::string prefix;
@@ -120,7 +120,7 @@ public:
 	    virtual bool parse (std::string mediaType, std::vector<std::string> args,
 				w3c_sw::BasicGraphPattern* /* target */, w3c_sw::IStreamContext& /* istr */,
 				std::string /* nameStr */, std::string /* baseURI */,
-				w3c_sw::POSFactory* /* posFactory */, w3c_sw::NamespaceMap* /* nsMap */) {
+				w3c_sw::AtomFactory* /* atomFactory */, w3c_sw::NamespaceMap* /* nsMap */) {
 		throw std::string("no handler for ") + mediaType + "(" + args[0] + ")";
 	    }
 	};
@@ -160,8 +160,8 @@ struct ConnectSet : std::set<RuleTerm> {
 #include "MapSetParser/MapSetParser.hpp"
 #include "interface/WEBagent_boostASIO.hpp"
 #include "interface/SAXparser_expat.hpp"
-    typedef w3c_sw::POS::BNode2string BNode2string;
-    typedef w3c_sw::POS::String2BNode String2BNode;
+    typedef w3c_sw::TTerm::BNode2string BNode2string;
+    typedef w3c_sw::TTerm::String2BNode String2BNode;
 
     typedef w3c_sw::NamespaceMap::UnknownPrefixException UnknownPrefixException;
 

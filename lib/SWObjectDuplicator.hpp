@@ -25,18 +25,18 @@
 namespace w3c_sw {
 
     struct SWObjectDuplicator : public Expressor {
-	POSFactory* posFactory; /* Can be used to create SWObjects in a different atom space. */
-	POS::String2BNode nodeMap;
+	AtomFactory* atomFactory; /* Can be used to create SWObjects in a different atom space. */
+	TTerm::String2BNode nodeMap;
 
 	union {
 	    struct {
-		const POS* pos;
+		const TTerm* tterm;
 		const URI* uri;
 		const Variable* variable;
 		const RDFLiteral* rdfLiteral;
 		const BooleanRDFLiteral* booleanRDFLiteral;
 		const NumericRDFLiteral* numericRDFLiteral;
-	    } posz;
+	    } tterms;
 	    const TriplePattern* triplePattern;
 	    const Expression* expression;
 	    const ExpressionAlias* expressionAlias;
@@ -47,7 +47,7 @@ namespace w3c_sw {
 	    //ProductionVector<DatasetClause*> datasetClauses;
 	    SolutionModifier* solutionModifier;
 	    const Binding* binding;
-	    POSList* posList;
+	    TTermList* posList;
 	    const BindingClause* bindingClause;
 	    WhereClause* whereClause;
 	    const Operation* operation;
@@ -55,51 +55,51 @@ namespace w3c_sw {
 	    FunctionCall* functionCall;
 	} last;
 
-	SWObjectDuplicator (POSFactory* posFactory) : posFactory(posFactory) {  }
+	SWObjectDuplicator (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
 	virtual void uri (const URI* const self, std::string lexicalValue) {
-	    last.posz.pos = last.posz.uri = posFactory ? posFactory->getURI(lexicalValue.c_str()) : self;
+	    last.tterms.tterm = last.tterms.uri = atomFactory ? atomFactory->getURI(lexicalValue.c_str()) : self;
 	}
 	virtual void variable (const Variable* const self, std::string lexicalValue) {
-	    last.posz.pos = last.posz.variable = posFactory ? posFactory->getVariable(lexicalValue.c_str()) : self;
+	    last.tterms.tterm = last.tterms.variable = atomFactory ? atomFactory->getVariable(lexicalValue.c_str()) : self;
 	}
 	virtual void bnode (const BNode* const self, std::string lexicalValue) {
-	    last.posz.pos = posFactory ? posFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
+	    last.tterms.tterm = atomFactory ? atomFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
 	}
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
-	    last.posz.pos = last.posz.rdfLiteral = posFactory ? posFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
+	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.posz.pos = last.posz.numericRDFLiteral = posFactory ? posFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
 	}
 	virtual void rdfLiteral (const BooleanRDFLiteral* const self, bool p_value) {
-	    last.posz.pos = last.posz.booleanRDFLiteral = posFactory ? posFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;
+	    last.tterms.tterm = last.tterms.booleanRDFLiteral = atomFactory ? atomFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;
 	}
-	virtual void nullpos (const NULLpos* const self) {
-	    last.posz.pos = posFactory ? posFactory->getNULL() : self;
+	virtual void nulltterm (const NULLtterm* const self) {
+	    last.tterms.tterm = atomFactory ? atomFactory->getNULL() : self;
 	}
-	virtual void triplePattern (const TriplePattern* const self, const POS* p_s, const POS* p_p, const POS* p_o) {
+	virtual void triplePattern (const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	    p_s->express(this);
-	    const POS* s = last.posz.pos;
+	    const TTerm* s = last.tterms.tterm;
 	    p_p->express(this);
-	    const POS* p = last.posz.pos;
+	    const TTerm* p = last.tterms.tterm;
 	    p_o->express(this);
-	    const POS* o = last.posz.pos;
-	    last.triplePattern = posFactory ? posFactory->getTriple(s, p, o) : self;
+	    const TTerm* o = last.tterms.tterm;
+	    last.triplePattern = atomFactory ? atomFactory->getTriple(s, p, o) : self;
 	}
 	virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
 	    Filter* lastFilter = NULL;
@@ -144,9 +144,9 @@ namespace w3c_sw {
 		p->addTriplePattern(last.triplePattern);
 	    }
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
-	    NamedGraphPattern* ret = new NamedGraphPattern(last.posz.pos);
+	    NamedGraphPattern* ret = new NamedGraphPattern(last.tterms.tterm);
 	    _TriplePatterns(p_TriplePatterns, ret);
 	    last.tableOperation = ret;
 	}
@@ -187,24 +187,24 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new MinusGraphPattern(last.tableOperation);
 	}
-	virtual void graphGraphPattern (const GraphGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
-	    p_POS->express(this);
-	    const POS* name = last.posz.pos;
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	    p_TTerm->express(this);
+	    const TTerm* name = last.tterms.tterm;
 	    p_GroupGraphPattern->express(this);
 	    last.tableOperation = new GraphGraphPattern(name, last.tableOperation);
 	}
-	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) {
-	    p_POS->express(this);
-	    const POS* name = last.posz.pos;
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) {
+	    p_TTerm->express(this);
+	    const TTerm* name = last.tterms.tterm;
 	    p_GroupGraphPattern->express(this);
-	    last.tableOperation = new ServiceGraphPattern(name, last.tableOperation, posFactory, lexicalCompare);
+	    last.tableOperation = new ServiceGraphPattern(name, last.tableOperation, atomFactory, lexicalCompare);
 	}
 	virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
 	    expr->express(this);
 	    const Expression* ex = last.expression;
 	    if (label) {
 		label->express(this);
-		last.expressionAlias = new ExpressionAlias(ex, (const Bindable*)last.posz.pos); // @@ downcast -- could create separate posz
+		last.expressionAlias = new ExpressionAlias(ex, (const Bindable*)last.tterms.tterm); // @@ downcast -- could create separate tterms
 	    } else {
 		last.expressionAlias = new ExpressionAlias(ex);
 	    }
@@ -218,23 +218,23 @@ namespace w3c_sw {
 	    }
 	    last.varSets.varSet = /* last.varSets.exprList = */ ret;
 	}
-	virtual void posList (const POSList* const, const ProductionVector<const POS*>* p_POSs) {
-	    POSList* ret = new POSList();
-	    for (std::vector<const POS*>::const_iterator it = p_POSs->begin();
-		 it != p_POSs->end(); ++it)
+	virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	    TTermList* ret = new TTermList();
+	    for (std::vector<const TTerm*>::const_iterator it = p_TTerms->begin();
+		 it != p_TTerms->end(); ++it)
 		ret->push_back(*it);
 	    last.posList = ret;
 	}
 	virtual void starVarSet (const StarVarSet* const) {
 	    last.varSets.varSet = new StarVarSet();
 	}
-	virtual void defaultGraphClause (const DefaultGraphClause* const, const POS* p_IRIref) {
+	virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
 	    p_IRIref->express(this);
-	    last.datasetClause = new DefaultGraphClause(last.posz.pos, posFactory);
+	    last.datasetClause = new DefaultGraphClause(last.tterms.tterm, atomFactory);
 	}
-	virtual void namedGraphClause (const NamedGraphClause* const, const POS* p_IRIref) {
+	virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
 	    p_IRIref->express(this);
-	    last.datasetClause = new NamedGraphClause(last.posz.pos, posFactory);
+	    last.datasetClause = new NamedGraphClause(last.tterms.tterm, atomFactory);
 	}
 	virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditionPairs, int p_limit, int p_offset) {
 	    ExpressionAliasList* n_groupBy = NULL;
@@ -270,16 +270,16 @@ namespace w3c_sw {
 		last.solutionModifier = new SolutionModifier(NULL, NULL, NULL, p_limit, p_offset);
 	    }
 	}
-	virtual void binding (const Binding* const, const ProductionVector<const POS*>* values) {//!!!
+	virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
 	    Binding* ret = new Binding();
-	    for (std::vector<const POS*>::const_iterator it = values->begin();
+	    for (std::vector<const TTerm*>::const_iterator it = values->begin();
 		 it != values->end(); it++) {
 		(*it)->express(this);
-		ret->push_back(last.posz.pos);
+		ret->push_back(last.tterms.tterm);
 	    }
 	    last.binding = ret;
 	}
-	virtual void bindingClause (const BindingClause* const, POSList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+	virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
 	    p_Vars->express(this);
 	    BindingClause* ret = new BindingClause(last.posList); // last.varSets.posList);
 	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
@@ -364,30 +364,30 @@ namespace w3c_sw {
 	    for (std::vector<const URI*>::iterator it = p_IRIrefs->begin();
 		 it != p_IRIrefs->end(); it++) {
 		(*it)->express(this);
-		l_URIs->push_back(last.posz.uri);
+		l_URIs->push_back(last.tterms.uri);
 	    }
 	    p_into->express(this);
-	    last.operation = new Load(l_URIs, last.posz.uri);
+	    last.operation = new Load(l_URIs, last.tterms.uri);
 	}
 	virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
-	    last.posz.pos = NULL;
+	    last.tterms.tterm = NULL;
 	    if (p__QGraphIRI_E_Opt != NULL)
 		p__QGraphIRI_E_Opt->express(this);
-	    last.operation = new Clear(last.posz.uri);
+	    last.operation = new Clear(last.tterms.uri);
 	}
 	virtual void create (const Create* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	    p_GraphIRI->express(this);
-	    last.operation = new Create(p_Silence, last.posz.uri);
+	    last.operation = new Create(p_Silence, last.tterms.uri);
 	}
 	virtual void drop (const Drop* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	    p_GraphIRI->express(this);
-	    last.operation = new Drop(p_Silence, last.posz.uri);
+	    last.operation = new Drop(p_Silence, last.tterms.uri);
 	}
 
 	/* Expressions */
-	virtual void posExpression (const POSExpression* const, const POS* p_POS) {
-	    p_POS->express(this);
-	    last.expression = new POSExpression(last.posz.pos);
+	virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
+	    p_TTerm->express(this);
+	    last.expression = new TTermExpression(last.tterms.tterm);
 	}
 	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();
@@ -405,7 +405,7 @@ namespace w3c_sw {
 	    p_ArgList->express(this);
 	    const ArgList* argList = last.argList;
 	    p_IRIref->express(this);
-	    last.functionCall = new FunctionCall(last.posz.uri, argList);
+	    last.functionCall = new FunctionCall(last.tterms.uri, argList);
 	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
@@ -496,7 +496,7 @@ namespace w3c_sw {
 	}
 	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    p_NumericRDFLiteral->express(this);
-	    last.expression = new NumberExpression(last.posz.numericRDFLiteral);
+	    last.expression = new NumberExpression(last.tterms.numericRDFLiteral);
 	}
     };
 
@@ -505,8 +505,8 @@ namespace w3c_sw {
 	bool lastInConj;
 	BasicGraphPattern* lastBGP;
 	TableConjunction* nestingConj;
-	BGPSimplifier (POSFactory* posFactory)
-	    : SWObjectDuplicator(posFactory), inConj(false), lastInConj(false), lastBGP(NULL), nestingConj(NULL) {  }
+	BGPSimplifier (AtomFactory* atomFactory)
+	    : SWObjectDuplicator(atomFactory), inConj(false), lastInConj(false), lastBGP(NULL), nestingConj(NULL) {  }
 
 	struct NonConjunctionState {
 	    bool inConj;
@@ -545,11 +545,11 @@ namespace w3c_sw {
 	    SWObjectDuplicator::filter (self, p_op, p_Constraints);
 	    pendingConjunction(outer);
 	}
-	virtual void namedGraphPattern (const NamedGraphPattern* const, const POS* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    NamedGraphPattern* ret = dynamic_cast<NamedGraphPattern*>(lastBGP);
 	    if (ret == NULL || ret->m_name != p_name) {
 		p_name->express(this);
-		lastBGP = ret = new NamedGraphPattern(last.posz.pos);
+		lastBGP = ret = new NamedGraphPattern(last.tterms.tterm);
 		if (nestingConj != NULL)
 		    nestingConj->addTableOperation(ret, false);
 	    }
@@ -618,14 +618,14 @@ namespace w3c_sw {
 	    SWObjectDuplicator::minusGraphPattern(self, p_GroupGraphPattern);
 	    pendingConjunction(outer);
 	}
-	virtual void graphGraphPattern (const GraphGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern) {
+	virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 	    NonConjunctionState outer = flushConjunction();
-	    SWObjectDuplicator::graphGraphPattern(self, p_POS, p_GroupGraphPattern);
+	    SWObjectDuplicator::graphGraphPattern(self, p_TTerm, p_GroupGraphPattern);
 	    pendingConjunction(outer);
 	}
-	virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const POS* p_POS, const TableOperation* p_GroupGraphPattern, POSFactory* posFactory, bool lexicalCompare) {
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) {
 	    NonConjunctionState outer = flushConjunction();
-	    SWObjectDuplicator::serviceGraphPattern(self, p_POS, p_GroupGraphPattern, posFactory, lexicalCompare);
+	    SWObjectDuplicator::serviceGraphPattern(self, p_TTerm, p_GroupGraphPattern, atomFactory, lexicalCompare);
 	    pendingConjunction(outer);
 	}
     };

@@ -15,9 +15,9 @@
 namespace w3c_sw {
 
     struct LabeledConstruct {
-	const POS* label;
+	const TTerm* label;
 	const Construct* constr;
-	LabeledConstruct (const POS* label, const Construct* constr) : label(label), constr(constr) {  }
+	LabeledConstruct (const TTerm* label, const Construct* constr) : label(label), constr(constr) {  }
 	virtual ~LabeledConstruct () {  }
 	virtual void express (Expressor* p_expressor) const {
 	    if (label != NULL) label->express(p_expressor);
@@ -29,7 +29,7 @@ namespace w3c_sw {
     }
     inline bool operator< (const LabeledConstruct& l, const LabeledConstruct& r) {
 	return l.label != r.label ? 
-	    l.label->getLexicalValue() < r.label->getLexicalValue() : // !!! should be POSFactory::cmp
+	    l.label->getLexicalValue() < r.label->getLexicalValue() : // !!! should be AtomFactory::cmp
 	    l.constr < r.constr; // compare addrs. really needs Construct::operator<(Construct&).
     }
     inline std::ostream& operator<< (std::ostream& os, LabeledConstruct const& lc) {
@@ -44,7 +44,7 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 
     public:
-	QueryMapper (POSFactory* posFactory, std::ostream** debugStream) : SWObjectDuplicator(posFactory), ruleCount(0), debugStream(debugStream) {  }
+	QueryMapper (AtomFactory* atomFactory, std::ostream** debugStream) : SWObjectDuplicator(atomFactory), ruleCount(0), debugStream(debugStream) {  }
 	~QueryMapper () { clear(); }
 	void clear () {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
@@ -54,7 +54,7 @@ namespace w3c_sw {
 	}
 	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (const Construct* rule) {
-	    RuleInverter inv(posFactory, debugStream);
+	    RuleInverter inv(atomFactory, debugStream);
 	    rule->express(&inv);
 	    MappingConstruct* c = inv.getConstruct();
 	    invertedRules.push_back(c);
@@ -62,7 +62,7 @@ namespace w3c_sw {
 	    return c;
 	}
 	void _map (const TableOperation* userQueryDisjoint, TableDisjunction* constructed) {
-	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint, posFactory);
+	    RdfQueryDB userQueryAsAssertions(userQueryDisjoint, atomFactory);
 
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
@@ -81,7 +81,7 @@ namespace w3c_sw {
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */
-		OperationResultSet opRS(posFactory, constructed, userQueryDisjoint);
+		OperationResultSet opRS(atomFactory, constructed, userQueryDisjoint);
 		(*invertedRule)->executeMapping(&userQueryAsAssertions, &opRS);
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
@@ -130,13 +130,13 @@ namespace w3c_sw {
     struct Rule {
 	DefaultGraphPattern* head;
 	const TableOperation* body;
-	const POS* label;
+	const TTerm* label;
 
 	/* It's not necessary to know all of the variables in a rule head
 	   (bodyVars); just handy for explanation/debugging. */
 	VariableList bodyVars;
 
-	Rule (DefaultGraphPattern* head, const TableOperation* body, const POS* label, VariableList bodyVars)
+	Rule (DefaultGraphPattern* head, const TableOperation* body, const TTerm* label, VariableList bodyVars)
 	    : head(head), body(body), label(label), bodyVars(bodyVars) {  }
 	Rule (const Rule& ref)
 	    : head(ref.head), body(ref.body), label(ref.label), bodyVars(ref.bodyVars) {  }
@@ -161,9 +161,9 @@ namespace w3c_sw {
     }
 
     struct RuleTerm {
-	const POS* rule;
-	const POS* term;
-	RuleTerm (const POS* rule, const POS* term) : rule(rule), term(term) {  }
+	const TTerm* rule;
+	const TTerm* term;
+	RuleTerm (const TTerm* rule, const TTerm* term) : rule(rule), term(term) {  }
 	RuleTerm (const RuleTerm& ref) : rule(ref.rule), term(ref.term) {  }
 	std::string str () {
 	    return rule->toString() + "." + term->toString();

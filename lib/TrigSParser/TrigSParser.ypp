@@ -68,12 +68,12 @@ namespace w3c_sw {
 class TrigSDriver : public YaccDataDriver {
     friend class TrigSParser;
 protected:
-    const POS* curSubject;
-    const POS* curPredicate;
+    const TTerm* curSubject;
+    const TTerm* curPredicate;
     RdfDB* db;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
-    TrigSDriver (std::string baseURI, POSFactory* posFactory) : YaccDataDriver(baseURI, posFactory) {
+    TrigSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
@@ -96,7 +96,7 @@ public:
 
 %union {
     void* p_void;
-    struct {const POS* subject; const POS* predicate;} p_SubjectPredicatePair;
+    struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
     /* Terminals */
@@ -109,8 +109,8 @@ public:
 
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
-    const POS* p_POS;
-    ProductionVector<const POS*>* p_POSs;
+    const TTerm* p_TTerm;
+    ProductionVector<const TTerm*>* p_TTerms;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
@@ -150,11 +150,11 @@ public:
 /* Productions */
 %type <p_Query> Query
 
-%type <p_POSs> _QGraphNode_E_Plus
+%type <p_TTerms> _QGraphNode_E_Plus
 
 %type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate _QTrigTemplate_E_Star
 
-%type <p_POS> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
+%type <p_TTerm> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
@@ -237,7 +237,7 @@ _QTrigTemplate_E_Star:
 TrigTemplate:
     // '{' ConstructTriples? '}'
     GraphName_Opt GT_LCURLEY {
-	driver.curBGP = driver.db->assureGraph($1);
+	driver.curBGP = driver.db->ensureGraph($1);
 	driver.neededBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
 	  $$ = $4;
@@ -347,7 +347,7 @@ Object:
     GraphNode	{
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
-	driver.curBGP->addTriplePattern(driver.posFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
 	$$ = $1;
     }
 ;
@@ -388,17 +388,17 @@ Collection:
     // '(' GraphNode+ ')'
     GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
 	$$ = driver.createBNode();
-	const POS* tail = $$;
-	ProductionVector<const POS*>* members = $2;
+	const TTerm* tail = $$;
+	ProductionVector<const TTerm*>* members = $2;
 	const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	const POS* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	for (unsigned i = 0; i < members->size(); i++) {
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, first, members->at(i)));
-	    const POS* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-	    driver.curBGP->addTriplePattern(driver.posFactory->getTriple(tail, rest, nextTail));
+	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
+	    const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
 	    tail = nextTail;
 	}
 	members->clear();
@@ -409,7 +409,7 @@ Collection:
 // GraphNode+
 _QGraphNode_E_Plus:
     GraphNode	{
-	$$ = new ProductionVector<const POS*>($1);
+	$$ = new ProductionVector<const TTerm*>($1);
     }
   | _QGraphNode_E_Plus GraphNode	{
 	$1->push_back($2);

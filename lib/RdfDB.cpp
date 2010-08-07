@@ -24,7 +24,7 @@ namespace w3c_sw {
 	    it->second->clearTriples();
     }
 
-    BasicGraphPattern* RdfDB::assureGraph (const POS* name) {
+    BasicGraphPattern* RdfDB::ensureGraph (const TTerm* name) {
 	if (name == NULL)
 	    name = DefaultGraph;
 	graphmap_type::const_iterator vi = graphs.find(name);
@@ -41,7 +41,7 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP, std::string nameStr, std::string baseURI, POSFactory* posFactory, NamespaceMap* nsMap) {
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP, std::string nameStr, std::string baseURI, AtomFactory* atomFactory, NamespaceMap* nsMap) {
 	w3c_sw::StreamRewinder rb(*istrP);
 	boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> srsb(rb.device); // ## debug with small buffer size, e.g. 4
 	std::istream is(&srsb);
@@ -54,7 +54,7 @@ namespace w3c_sw {
 		    throw std::string("no XML parser to parse ")
 			+ istr.mediaType.toString()
 			+ " document " + nameStr;
-		RDFaParser parser(nameStr, posFactory, xmlParser);
+		RDFaParser parser(nameStr, atomFactory, xmlParser);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -66,7 +66,7 @@ namespace w3c_sw {
 		    throw std::string("no XML parser to parse ")
 			+ istr.mediaType.toString()
 			+ " document " + nameStr;
-		RdfXmlParser parser(nameStr, posFactory, xmlParser);
+		RdfXmlParser parser(nameStr, atomFactory, xmlParser);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -74,7 +74,7 @@ namespace w3c_sw {
 		return parser.parse(target, istr);
 	    } else if (istr.mediaType.match("text/turtle") || 
 		       istr.mediaType.match("text/ntriples")) {
-		TurtleSDriver parser(nameStr, posFactory);
+		TurtleSDriver parser(nameStr, atomFactory);
 		parser.setGraph(target);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
@@ -82,7 +82,7 @@ namespace w3c_sw {
 		    parser.setNamespaceMap(nsMap);
 		return parser.parse(istr);
 	    } else {
-		TrigSDriver parser(nameStr, posFactory);
+		TrigSDriver parser(nameStr, atomFactory);
 		parser.setDB(this);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
@@ -95,14 +95,14 @@ namespace w3c_sw {
 	    boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> sb2(rb.device);
 	    std::istream is2(&sb2);
 	    IStreamContext again(istrP.nameStr, is, e.mediaType.c_str());
-	    return handler->parse(e.mediaType, e.args, target, again, nameStr, baseURI, posFactory, nsMap);
+	    return handler->parse(e.mediaType, e.args, target, again, nameStr, baseURI, atomFactory, nsMap);
 	}
     }
 
     DefaultGraphClass defaultGraphInst;
-    POS* DefaultGraph = &defaultGraphInst;
+    TTerm* DefaultGraph = &defaultGraphInst;
 
-    void RdfDB::bindVariables (ResultSet* rs, const POS* graph, const BasicGraphPattern* toMatch) {
+    void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
 	if (graph == NULL) graph = DefaultGraph;
 	graphmap_type::const_iterator vi;
 	size_t matched = 0;
@@ -114,12 +114,12 @@ namespace w3c_sw {
 		++matched;
 	    }
 	} else {
-	    ResultSet island(rs->getPOSFactory());
+	    ResultSet island(rs->getAtomFactory());
 	    delete *(island.begin());
 	    island.erase(island.begin());
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
 		if (vi->first != DefaultGraph) {
-		    ResultSet disjoint(rs->getPOSFactory());
+		    ResultSet disjoint(rs->getAtomFactory());
 		    vi->second->bindVariables(&disjoint, graph, toMatch, vi->first);
 		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 			island.insert(island.end(), (*row)->duplicate(&island, island.end()));

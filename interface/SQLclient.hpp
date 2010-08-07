@@ -67,15 +67,15 @@ namespace w3c_sw {
 
     class SqlResultSet : public ResultSet {
     public:
-	SqlResultSet (POSFactory* posFactory, SQLclient::Result* res) : ResultSet(posFactory) {
+	SqlResultSet (AtomFactory* atomFactory, SQLclient::Result* res) : ResultSet(atomFactory) {
 	    erase(begin());
 	    SQLclient::Result::ColumnSet cols = res->cols();
-	    std::vector<const POS*> vars;
+	    std::vector<const TTerm*> vars;
 
 	    /* dump headers in <th/>s */
 	    for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
 		 it != cols.end(); ++it)
-		vars.push_back(posFactory->getVariable(it->name));
+		vars.push_back(atomFactory->getVariable(it->name));
 
 	    knownVars.insert(vars.begin(), vars.end());
 
@@ -91,8 +91,8 @@ namespace w3c_sw {
 			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
 
 			if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
-			    const URI* dtpos = dt.size() > 0 ? posFactory->getURI(dt.c_str()) : NULL;
-			    const POS* val = posFactory->getRDFLiteral(lexval, dtpos, NULL);
+			    const URI* dtpos = dt.size() > 0 ? atomFactory->getURI(dt.c_str()) : NULL;
+			    const TTerm* val = atomFactory->getRDFLiteral(lexval, dtpos, NULL);
 			    set(result, vars[i], val, false);
 			}
 		    }
