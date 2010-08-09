@@ -1,0 +1,5 @@
+# insert0
+# $Id$
+
+DELETE { ?x <y> 2 }
+WHERE  { ?x <y> 1 }

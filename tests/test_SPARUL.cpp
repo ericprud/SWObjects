@@ -34,9 +34,31 @@ BOOST_AUTO_TEST_SUITE_END(/* insert */)
 
 
 BOOST_AUTO_TEST_SUITE( _delete )
-BOOST_AUTO_TEST_CASE( g_0_delete_g_1 ) {
-    GRAPH_TEST(NULL, "sparul/delete_g_1.rq", NULL);
+BOOST_AUTO_TEST_CASE( _0_delete_1 ) {
+    GRAPH_TEST(NULL, "sparul/delete_1.rq", NULL);
 }
+BOOST_AUTO_TEST_CASE( _1_delete_1 ) {
+    GRAPH_TEST("sparul/_1.trig", "sparul/delete_1.rq", NULL);
+}
+BOOST_AUTO_TEST_CASE( _0_delete_g_1 ) {
+    GRAPH_TEST(NULL, "sparul/delete_1.rq", NULL);
+}
+BOOST_AUTO_TEST_CASE( _1_delete_12 ) {
+    GRAPH_TEST("sparul/_1.trig", "sparul/delete_12.rq", NULL);
+}
+BOOST_AUTO_TEST_CASE( _12_delete_12 ) {
+    GRAPH_TEST("sparul/_12.trig", "sparul/delete_12.rq", NULL);
+}
+BOOST_AUTO_TEST_CASE( _1_delete_2_where_1 ) {
+    GRAPH_TEST("sparul/_12.trig", "sparul/delete_2_where_1.rq", "sparul/_1.trig");
+}
+BOOST_AUTO_TEST_CASE( _1_delete_v_2_where_v_1 ) {
+    GRAPH_TEST("sparul/_12.trig", "sparul/delete_v_2_where_v_1.rq", "sparul/_1.trig");
+}
+BOOST_AUTO_TEST_CASE( _12_h_12_delete_vpo_where_v_spo ) {
+    GRAPH_TEST("sparul/g_12_12.trig", "sparul/delete_vpo_where_g_v_spo.rq", "sparul/g_12.trig");
+}
+
 BOOST_AUTO_TEST_CASE( g_1_delete_g_1 ) {
     GRAPH_TEST("sparul/g_1.trig", "sparul/delete_g_1.rq", NULL);
 }
@@ -52,11 +74,11 @@ BOOST_AUTO_TEST_CASE( g_12_delete_g_12 ) {
 BOOST_AUTO_TEST_CASE( g_1_delete_g_2_where_g_1 ) {
     GRAPH_TEST("sparul/g_12.trig", "sparul/delete_g_2_where_g_1.rq", "sparul/g_1.trig");
 }
-BOOST_AUTO_TEST_CASE( g_1_delete_v_2_where_v_1 ) {
-    GRAPH_TEST("sparul/g_12.trig", "sparul/delete_v_2_where_v_1.rq", "sparul/g_1.trig");
+BOOST_AUTO_TEST_CASE( g_1_delete_g_v_2_where_g_v_1 ) {
+    GRAPH_TEST("sparul/g_12.trig", "sparul/delete_g_v_2_where_g_v_1.rq", "sparul/g_1.trig");
 }
-BOOST_AUTO_TEST_CASE( g_12_h_12_delete_h_vpo_where_v_spo ) {
-    GRAPH_TEST("sparul/g_12_h_12.trig", "sparul/delete_h_vpo_where_v_spo.rq", "sparul/g_12.trig");
+BOOST_AUTO_TEST_CASE( g_12_h_12_delete_h_vpo_where_g_v_spo ) {
+    GRAPH_TEST("sparul/g_12_h_12.trig", "sparul/delete_h_vpo_where_g_v_spo.rq", "sparul/g_12.trig");
 }
 BOOST_AUTO_TEST_SUITE_END(/* _delete */)
 

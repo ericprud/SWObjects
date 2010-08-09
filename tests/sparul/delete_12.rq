@@ -1,0 +1,4 @@
+# delete0
+# $Id$
+
+DELETE { <x> <y> 1, 2 }

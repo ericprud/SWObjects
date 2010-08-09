@@ -1,0 +1,5 @@
+# insert0
+# $Id$
+
+DELETE { ?g ?y ?z }
+WHERE  { GRAPH ?g  { ?x ?y ?z } }
