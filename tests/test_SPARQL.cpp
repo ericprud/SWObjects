@@ -187,6 +187,28 @@ BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
 		      "matched\n");
 }
 
+BOOST_AUTO_TEST_CASE( insert ) {
+    ExecResults tested("../bin/SPARQL -d sparul/g_12_12.trig -e \"INSERT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "{\n"
+		      "  <sparul/g> <sparul/y> 1  .\n"
+		      "  <sparul/g> <sparul/y> 2  .\n"
+		      "  <sparul/g> <sparul/y> 3  .\n"
+		      "}\n"
+		      "<sparul/g> {\n"
+		      "  <sparul/x> <sparul/y> 1  .\n"
+		      "  <sparul/x> <sparul/y> 2  .\n"
+		      "}\n");
+}
+
+BOOST_AUTO_TEST_CASE( construct ) {
+    ExecResults tested("../bin/SPARQL -d sparul/g_12_12.trig -e \"CONSTRUCT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "{\n"
+		      "  <sparul/g> <sparul/y> 3  .\n"
+		      "}\n");
+}
+
 BOOST_AUTO_TEST_CASE( bool_no_base ) {
     ExecResults tested("../bin/SPARQL -b '' -d SPARQL/rel.ttl SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 

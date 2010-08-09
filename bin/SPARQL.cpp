@@ -1431,10 +1431,6 @@ int main(int ac, char* av[])
 		    std::cout << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
 	    }
 
-	    sw::RdfDB constructed;
-	    sw::RdfDB& dumpDB(Query == NULL || InPlace ? TheServer.db : constructed);
-	    rs.setRdfDB(&dumpDB);
-
 	    if (vm.count("stem"))
 		TheServer.stemURI = vm["stem"].as<std::string>();
 	    if (vm.count("service"))
@@ -1508,11 +1504,15 @@ int main(int ac, char* av[])
 		TheServer.startServer(handler, ServerURI, serverPort);
 	    }
 
+	    sw::RdfDB constructed; // For operations which create a new database.
+
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
 		    throw std::string("Mapping rules found with no query to map.");
+		rs.setRdfDB(&TheServer.db);
 	    } else {
 		sw::Operation* query = parseQuery(Query);
+		rs.setRdfDB(dynamic_cast<sw::Construct*>(query) != NULL && !InPlace ? &constructed : &TheServer.db);
 
 		std::string language; // not used here
 		std::string finalQuery; // not used here
@@ -1562,12 +1562,12 @@ int main(int ac, char* av[])
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
 					DataMediaType.c_str(),
 					&Agent, &DebugStream);
-		bool dumpDb = Query == NULL && ResultSetsLoaded == false;
-		if (!dumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
+		bool mustDumpDb = Query == NULL && ResultSetsLoaded == false;
+		if (!mustDumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
 		    !DataMediaType)
 		    optr.mediaType = "text/sparql-results";
 		*optr << rs.toString(optr.mediaType.c_str(),
-				     &NsAccumulator, dumpDb);
+				     &NsAccumulator, mustDumpDb);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@
 	}
