@@ -307,6 +307,15 @@ namespace w3c_sw {
 	    return l_DatasetClauses;
 	}
 	/* Operations */
+	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	    OperationSet* ret = new OperationSet();
+	    for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
+		 it != p_Operations->end(); ++it) {
+		(*it)->express(this);
+		ret->push_back(last.operation);
+	    }
+	    last.operation = ret;
+	}
 	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_VarSet->express(this);
 	    VarSet* varSet = last.varSets.varSet;

@@ -210,6 +210,14 @@ public:
 	if (p_BindingClause) p_BindingClause->express(this);
 	xml->close();
     }
+    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	xml->open("OperationSet");
+	for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
+	     it != p_Operations->end(); ++it) {
+	    (*it)->express(this);
+	}
+	xml->close();
+    }
     virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	xml->open("Select");
 	xml->attribute("cardinality", 

@@ -471,7 +471,7 @@ class OperationSet : public Operation {
 protected:
     ProductionVector<const Operation*> operations;
 public:
-    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("OperationSet::express"); };
+    virtual void express(Expressor* /* p_expressor */) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const Operation& ref) const {
 	const OperationSet* pref = dynamic_cast<const OperationSet*>(&ref);
@@ -3123,6 +3123,7 @@ public:
     virtual void binding(const Binding* const self, const ProductionVector<const TTerm*>* values) = 0;
     virtual void bindingClause(const BindingClause* const self, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) = 0;
     virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) = 0;
+    virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) = 0;
     virtual void select(const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void subSelect(const SubSelect* const self, const Select* p_Select) = 0;
     virtual void construct(const Construct* const self, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
@@ -3265,6 +3266,11 @@ public:
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
+    }
+    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
+	     it != p_Operations->end(); ++it)
+	    (*it)->express(this);
     }
     virtual void select (const Select* const, e_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_VarSet->express(this);

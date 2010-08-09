@@ -410,6 +410,9 @@ void BindingClause::express (Expressor* p_expressor) const {
 void WhereClause::express (Expressor* p_expressor) const {
     p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
 }
+void OperationSet::express (Expressor* p_expressor) const {
+    p_expressor->operationSet(this, &operations);
+}
 void Select::express (Expressor* p_expressor) const {
     p_expressor->select(this, m_distinctness, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
@@ -1021,7 +1024,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	};
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
-	m_ConstructTemplate->construct(rs->getRdfDB()->ensureGraph(DefaultGraph), rs, &makeNewBNode);
+	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
+	m_ConstructTemplate->construct(workingDB->ensureGraph(DefaultGraph), rs, &makeNewBNode);
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
@@ -1063,7 +1067,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    m_WhereClause->bindVariables(db, rs);
 	TreatAsVar treatAsVar;
 	rs->resultType = ResultSet::RESULT_Graphs;
-	m_GraphTemplate->deletePattern(rs->getRdfDB(), rs, &treatAsVar, NULL);
+	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
 	return rs;
     }
 

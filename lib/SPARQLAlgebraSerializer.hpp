@@ -411,6 +411,19 @@ public:
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
     }
+    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	lead();
+	ret << "OPERATIONSET (";
+	++depth;
+	for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
+	     it != p_Operations->end(); ++it) {
+	    if (it != p_Operations->begin())
+		ret << ";";
+	    (*it)->express(this);
+	}
+	--depth;
+	ret << ")";
+    }
     virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "SELECT ";

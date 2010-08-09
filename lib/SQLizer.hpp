@@ -788,6 +788,9 @@ namespace w3c_sw {
 	    curTableOperation->express(this);
 	    if (p_BindingClause) p_BindingClause->express(this);
 	}
+	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	    w3c_sw_NEED_IMPL("SQLizer(operationSet)");
+	}
 	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    w3c_sw_START("cracking select clause");
 	    curQuery = new SQLQueryGenerator(NULL);
