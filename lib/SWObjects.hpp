@@ -655,7 +655,27 @@ public:
     virtual std::string toString () const {
 	std::stringstream s;
 	/* Could just print terminal here. */
-	s << '"' << terminal << '"';
+	// s << '"' << terminal << '"';
+	s << '"';
+	for (std::string::const_iterator it = terminal.begin();
+	     it != terminal.end(); ++it)
+	    if (*it == '\t')
+		s << "\\t";
+	    else if (*it == '\n')
+		s << "\\n";
+	    else if (*it == '\r')
+		s << "\\r";
+	    else if (*it == '\b')
+		s << "\\b";
+	    else if (*it == '\f')
+		s << "\\f";
+	    else if (*it == '\\')
+		s << "\\\\";
+	    else if (*it == '"')
+		s << "\\\"";
+	    else
+		s << *it;
+	s << '"';
 	if (datatype) s << "^^" << datatype->toString();
 	if (m_LANGTAG) s << "@" << m_LANGTAG->getLexicalValue();
 	return s.str();

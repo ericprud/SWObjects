@@ -75,7 +75,27 @@ public:
 	ret << "_:" << lexicalValue; // rewrite when combining named BNodes from multiple docs?
     }
     virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
-	ret << '"' << lexicalValue << '"';
+	// ret << '"' << lexicalValue << '"';
+	ret << '"';
+	for (std::string::const_iterator it = lexicalValue.begin();
+	     it != lexicalValue.end(); ++it)
+	    if (*it == '\t')
+		ret << "\\t";
+	    else if (*it == '\n')
+		ret << "\\n";
+	    else if (*it == '\r')
+		ret << "\\r";
+	    else if (*it == '\b')
+		ret << "\\b";
+	    else if (*it == '\f')
+		ret << "\\f";
+	    else if (*it == '\\')
+		ret << "\\\\";
+	    else if (*it == '"')
+		ret << "\\\"";
+	    else
+		ret << *it;
+	ret << '"';
 	if (datatype != NULL) { ret << "^^<" << datatype->getLexicalValue() << '>'; }
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
 	ret << ' ';
