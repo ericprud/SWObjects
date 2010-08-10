@@ -461,9 +461,11 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
+    typedef enum {UNKNOWN, OPERATIONSET, SELECT, CONSTRUCT, DESCRIBE, ASK, REPLACE, INSERT, DELETE, LOAD, CLEAR, CREATE, DROP} e_OperationType;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
+    virtual e_OperationType getOperationType() const = 0;
     std::string toString() const;
 };
 
@@ -477,6 +479,7 @@ public:
 	const OperationSet* pref = dynamic_cast<const OperationSet*>(&ref);
 	return pref == NULL ? false : operations == pref->operations;
     }
+    virtual e_OperationType getOperationType () const { return OPERATIONSET; }
     std::string toString() const {
 	std::stringstream ss;
 	for (std::vector<const Operation*>::const_iterator it = operations.begin();
@@ -497,6 +500,8 @@ class BNodeEvaluator;
 class AtomFactory;
 
 /* START Parts Of Speach */
+/** TTerm: the terms in a Triple.
+ */
 class TTerm : public Terminal {
     friend struct POSsorter;
 protected:
@@ -1034,7 +1039,7 @@ public:
 			 getTTerm(std::string(what[3].first, what[3].second), nodeMap), false);
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
-    void parseTriples (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
+    void parseNTriples (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
 
     /* EBV (Better place for this?) */
     const TTerm* ebv(const TTerm* tterm);
@@ -1956,6 +1961,7 @@ public:
 	    *m_WhereClause == *pSel->m_WhereClause && 
 	    *m_SolutionModifier == *pSel->m_SolutionModifier;
     }
+    virtual e_OperationType getOperationType () const { return SELECT; }
 };
 class SubSelect : public TableOperation {
 protected:
@@ -2006,6 +2012,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return CONSTRUCT; }
 };
 class Describe : public Operation {
 private:
@@ -2025,6 +2032,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return DESCRIBE; }
 };
 class Ask : public Operation {
 private:
@@ -2046,6 +2054,7 @@ public:
 	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
 	    *m_WhereClause == *pSel->m_WhereClause;
     }
+    virtual e_OperationType getOperationType () const { return ASK; }
 };
 class Replace : public Operation {
 private:
@@ -2058,6 +2067,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return REPLACE; }
 };
 class Insert : public Operation {
 private:
@@ -2071,6 +2081,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return INSERT; }
 };
 class Delete : public Operation {
 private:
@@ -2084,6 +2095,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return DELETE; }
 };
 class Load : public Operation {
 private:
@@ -2096,6 +2108,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return LOAD; }
 };
 class Clear : public Operation {
 private:
@@ -2107,6 +2120,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return CLEAR; }
 };
 class Create : public Operation {
 private:
@@ -2119,6 +2133,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return CREATE; }
 };
 class Drop : public Operation {
 private:
@@ -2131,6 +2146,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
+    virtual e_OperationType getOperationType () const { return DROP; }
 };
 
 /* kinds of Expressions */

@@ -28,24 +28,25 @@ class TestSWObjects(unittest.TestCase):
                 F.getURI("p1"), 
                 F.getURI("o1")
                 ))
-        manDefault.addTriplePattern(F.getTriple(
-                F.getURI("s" ), 
-                F.getURI("p2"), 
-                F.getURI("o2")
-                ))
+        bnodeMap = SWObjects.String2BNode()
+        F.parseNTriples(manDefault, 
+                        "<s> <p2> <o2> ."
+                        "<s> <p2> <o3> .", bnodeMap);
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(parsedDB.ensureGraph(SWObjects.cvar.DefaultGraph))
-        tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.setGraph(parsedDB.ensureGraph(None)) # None = SWObjects.cvar.DefaultGraph
+        tparser.parse(SWObjects.IStreamContext(
+                "<s> <p1> <o1> ; <p2> <o2> ; <p2> <o3> .",
+                SWObjects.StreamContextIstream.STRING))
         # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
-        tparser.setGraph(different.ensureGraph(SWObjects.cvar.DefaultGraph))
-        tparser.parse(SWObjects.IStreamContext("<s2> <p1> <o1> ; <p2> <o2> .",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.setGraph(different.ensureGraph(None))
+        tparser.parse(SWObjects.IStreamContext(
+                "<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .",
+                SWObjects.StreamContextIstream.STRING))
         # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
 
@@ -54,31 +55,26 @@ class TestSWObjects(unittest.TestCase):
         # Test Trig parser .
         F = SWObjects.AtomFactory()
         manualDB = SWObjects.RdfDB()
-        manDefault = manualDB.ensureGraph(SWObjects.cvar.DefaultGraph)
-        manDefault.addTriplePattern(F.getTriple(
-                F.getURI("s" ), 
-                F.getURI("p1"), 
-                F.getURI("o1")
-                ))
+        manDefault = manualDB.ensureGraph(None)
+        bnodeMap = SWObjects.String2BNode()
+        F.parseNTriples(manDefault, "<s> <p1> <o1> .", bnodeMap);
         manG = manualDB.ensureGraph(F.getURI("g"))
-        manG.addTriplePattern(F.getTriple(
-                F.getURI("s" ), 
-                F.getURI("p2"), 
-                F.getURI("o2")
-                ))
+        F.parseNTriples(manG, "<s> <p2> <o2> .", bnodeMap);
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TrigSDriver("", F)
         tparser.setDB(parsedDB)
-        tparser.parse(SWObjects.IStreamContext("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.parse(SWObjects.IStreamContext(
+                "{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
+                SWObjects.StreamContextIstream.STRING))
         # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
         tparser.setDB(different)
-        tparser.parse(SWObjects.IStreamContext("<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.parse(SWObjects.IStreamContext(
+                "<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
+                SWObjects.StreamContextIstream.STRING))
         # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
 
@@ -88,13 +84,15 @@ class TestSWObjects(unittest.TestCase):
         F = SWObjects.AtomFactory()
         DB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(DB.ensureGraph(SWObjects.cvar.DefaultGraph))
-        tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.setGraph(DB.ensureGraph(None))
+        tparser.parse(SWObjects.IStreamContext(
+                "<s> <p1> <o1> ; <p2> <o2> .",
+                SWObjects.StreamContextIstream.STRING))
         # print "DB: ", DB.toString()
         sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
-                                               SWObjects.StreamContextIstream.STRING))
+        sparser.parse(SWObjects.IStreamContext(
+                "SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
+                SWObjects.StreamContextIstream.STRING))
         query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
@@ -138,8 +136,7 @@ SELECT ?craft ?homepage
     ?craft foaf:name "Apollo 8" .
     ?craft foaf:homepage ?homepage
   }
-}""",
-                                               SWObjects.StreamContextIstream.STRING))
+}""", SWObjects.StreamContextIstream.STRING))
         query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
@@ -163,8 +160,9 @@ SELECT ?craft ?homepage
 
         updatedDB = SWObjects.RdfDB()
         sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext("INSERT { <s> <p1> <o1> ; <p2> <o2> }",
-                                               SWObjects.StreamContextIstream.STRING))
+        sparser.parse(SWObjects.IStreamContext(
+                "INSERT { <s> <p1> <o1> ; <p2> <o2> }",
+                SWObjects.StreamContextIstream.STRING))
         query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
@@ -175,10 +173,44 @@ SELECT ?craft ?homepage
 
         referenceDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(referenceDB.ensureGraph(SWObjects.cvar.DefaultGraph))
-        tparser.parse(SWObjects.IStreamContext("<s> <p1> <o1> ; <p2> <o2> .",
-                                               SWObjects.StreamContextIstream.STRING))
+        tparser.setGraph(referenceDB.ensureGraph(None))
+        tparser.parse(SWObjects.IStreamContext(
+                "<s> <p1> <o1> ; <p2> <o2> .",
+                SWObjects.StreamContextIstream.STRING))
         self.assertEqual(referenceDB, updatedDB)
+
+    def test_construct (self):
+        # Test update .
+        F = SWObjects.AtomFactory()
+
+        sourceDB = SWObjects.RdfDB()
+        manDefault = sourceDB.ensureGraph(None)
+        bnodeMap = SWObjects.String2BNode()
+        F.parseNTriples(manDefault, "<s> <p1> <o1> .", bnodeMap);
+        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser.parse(SWObjects.IStreamContext(
+                "CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
+                SWObjects.StreamContextIstream.STRING))
+        query = sparser.root
+        # s = SWObjects.SPARQLSerializer()
+        # query.express(s)
+        # print "parsed: ", s.str()
+        rs = SWObjects.ResultSet(F)
+
+        # We're expecting a CONSTRUCT, so give the ResultSet a fresh database
+        # for storing the constructed triples.
+        self.assertEqual(query.getOperationType(), SWObjects.Operation.CONSTRUCT)
+        constructDB = SWObjects.RdfDB()
+        rs.setRdfDB(constructDB)
+
+        query.execute(sourceDB, rs)
+
+        # Expected results:
+        expectedDB = SWObjects.RdfDB()
+        F.parseNTriples(expectedDB.ensureGraph(None),
+                        "<s> <p1> <o2> ."
+                        "<s> <p2> <o3> .", bnodeMap);
+        self.assertEqual(expectedDB, constructDB)
 
 
 if __name__ == '__main__':
