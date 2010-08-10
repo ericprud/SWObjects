@@ -29,9 +29,9 @@ class TestSWObjects(unittest.TestCase):
                 F.getURI("o1")
                 ))
         bnodeMap = SWObjects.String2BNode()
-        F.parseNTriples(manDefault, 
-                        "<s> <p2> <o2> ."
-                        "<s> <p2> <o3> .", bnodeMap);
+        F.parseNTPatterns(manDefault, 
+                          "<s> <p2> <o2> ."
+                          "<s> <p2> <o3> .", bnodeMap);
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
@@ -57,9 +57,9 @@ class TestSWObjects(unittest.TestCase):
         manualDB = SWObjects.RdfDB()
         manDefault = manualDB.ensureGraph(None)
         bnodeMap = SWObjects.String2BNode()
-        F.parseNTriples(manDefault, "<s> <p1> <o1> .", bnodeMap);
+        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap);
         manG = manualDB.ensureGraph(F.getURI("g"))
-        F.parseNTriples(manG, "<s> <p2> <o2> .", bnodeMap);
+        F.parseNTPatterns(manG, "<s> <p2> <o2> .", bnodeMap);
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TrigSDriver("", F)
@@ -186,7 +186,7 @@ SELECT ?craft ?homepage
         sourceDB = SWObjects.RdfDB()
         manDefault = sourceDB.ensureGraph(None)
         bnodeMap = SWObjects.String2BNode()
-        F.parseNTriples(manDefault, "<s> <p1> <o1> .", bnodeMap);
+        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap);
         sparser = SWObjects.SPARQLfedDriver("", F)
         sparser.parse(SWObjects.IStreamContext(
                 "CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
@@ -207,9 +207,9 @@ SELECT ?craft ?homepage
 
         # Expected results:
         expectedDB = SWObjects.RdfDB()
-        F.parseNTriples(expectedDB.ensureGraph(None),
-                        "<s> <p1> <o2> ."
-                        "<s> <p2> <o3> .", bnodeMap);
+        F.parseNTPatterns(expectedDB.ensureGraph(None),
+                          "<s> <p1> <o2> ."
+                          "<s> <p2> <o3> .", bnodeMap);
         self.assertEqual(expectedDB, constructDB)
 
 

@@ -1039,7 +1039,7 @@ public:
 			 getTTerm(std::string(what[3].first, what[3].second), nodeMap), false);
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
-    void parseNTriples (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
+    void parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
 
     /* EBV (Better place for this?) */
     const TTerm* ebv(const TTerm* tterm);

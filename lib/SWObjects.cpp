@@ -823,7 +823,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
 #if REGEX_LIB == SWOb_BOOST
-    void AtomFactory::parseNTriples (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap) {
+    void AtomFactory::parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");

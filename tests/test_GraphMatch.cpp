@@ -97,9 +97,9 @@ BOOST_AUTO_TEST_CASE( bgp ) {
     }
 
     /* parseTriples */ {
-	f.parseTriples(&data, 
-		       "<n1> <p1> \"l1\" ."
-		       "<n2> <p1> <n3> .", bnodeMap);
+	f.parseNTPatterns(&data, 
+			  "<n1> <p1> \"l1\" ."
+			  "<n2> <p1> <n3> .", bnodeMap);
 	BOOST_CHECK_EQUAL(data.size(), (size_t)3);
 
 	ResultSet r(&f);
@@ -137,14 +137,14 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
     /* Test a subset of BSBM q1. */ {
 	DefaultGraphPattern d;
-	f.parseTriples(&d, 
-		       "?product     <label>   ?label ."
- 		       "?product     <feature> <feature1> ."
- 		       "?product     <feature> \"feature2\" .", bnodeMap);
+	f.parseNTPatterns(&d, 
+			  "?product     <label>   ?label ."
+			  "?product     <feature> <feature1> ."
+			  "?product     <feature> \"feature2\" .", bnodeMap);
 	DefaultGraphPattern p;
-	f.parseTriples(&p, 
-		       "?ruleProduct <label>   ?ruleLabel ."
-		       "?ruleProduct <feature> ?ruleFeature .", bnodeMap);
+	f.parseNTPatterns(&p, 
+			  "?ruleProduct <label>   ?ruleLabel ."
+			  "?ruleProduct <feature> ?ruleFeature .", bnodeMap);
 	ResultSet tested(&f);
 	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
 	ResultSet expected(&f, 
