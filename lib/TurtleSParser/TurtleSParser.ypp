@@ -205,7 +205,7 @@ _QPrefixDecl_E_Star:
 ;
 
 BaseDecl:
-    IT_BASE IRI_REF	{
+    IT_BASE IRI_REF GT_DOT	{
 	driver.setBase($2->getLexicalValue());
     }
 ;

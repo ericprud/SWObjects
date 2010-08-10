@@ -61,6 +61,7 @@ typedef w3c_sw::TrigSParser::token_type token_type;
 
 /* START patterns for SPARQLfed terminals */
 IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
+IT_BASE		"@"[Bb][Aa][Ss][Ee]
 GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 GT_LPAREN		"("
@@ -115,6 +116,7 @@ LINEFEED		(\r\n|\r|\n)
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
 {IT_PREFIX}		{return token::IT_PREFIX;}
+{IT_BASE}		{return token::IT_BASE;}
 {GT_LCURLEY}		{return token::GT_LCURLEY;}
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
