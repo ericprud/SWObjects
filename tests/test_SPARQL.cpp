@@ -283,3 +283,10 @@ BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::unsetenv("XSLT");
 }
 
+BOOST_AUTO_TEST_CASE( escapes ) {
+    ExecResults tested("../bin/SPARQL -d SPARQL/escape.trig");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "{\n"
+		      "  <SPARQL/s> <SPARQL/p> \"as\\r\\n\\b\\t\\\"'\\\\df\"  .\n"
+		      "}\n");
+}
