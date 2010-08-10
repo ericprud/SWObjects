@@ -22,20 +22,24 @@ class TestSWObjects(unittest.TestCase):
         # Test Turtle parser .
         F = SWObjects.AtomFactory()
         manualDB = SWObjects.RdfDB()
+        # Get the default graph from the database.
         manDefault = manualDB.ensureGraph(SWObjects.cvar.DefaultGraph)
+        # You can create a Triple from specific terms which you get from the AtomFactory.
         manDefault.addTriplePattern(F.getTriple(
                 F.getURI("s" ), 
                 F.getURI("p1"), 
                 F.getURI("o1")
                 ))
         bnodeMap = SWObjects.String2BNode()
+        # or you can parse NTriplePatterns:
         F.parseNTPatterns(manDefault, 
                           "<s> <p2> <o2> ."
-                          "<s> <p2> <o3> .", bnodeMap);
+                          "<s> <p2> <o3> .", bnodeMap)
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(parsedDB.ensureGraph(None)) # None = SWObjects.cvar.DefaultGraph
+        # Shortcut: None = SWObjects.cvar.DefaultGraph
+        tparser.setGraph(parsedDB.ensureGraph(None))
         tparser.parse(SWObjects.IStreamContext(
                 "<s> <p1> <o1> ; <p2> <o2> ; <p2> <o3> .",
                 SWObjects.StreamContextIstream.STRING))
@@ -57,9 +61,9 @@ class TestSWObjects(unittest.TestCase):
         manualDB = SWObjects.RdfDB()
         manDefault = manualDB.ensureGraph(None)
         bnodeMap = SWObjects.String2BNode()
-        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap);
+        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap)
         manG = manualDB.ensureGraph(F.getURI("g"))
-        F.parseNTPatterns(manG, "<s> <p2> <o2> .", bnodeMap);
+        F.parseNTPatterns(manG, "<s> <p2> <o2> .", bnodeMap)
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TrigSDriver("", F)
@@ -107,7 +111,7 @@ class TestSWObjects(unittest.TestCase):
 | ?o1  | ?o2  | ?s  |
 | <o1> | <o2> | <s> |
 +------+------+-----+
-""", False, bnodeMap);
+""", False, bnodeMap)
         self.assertEqual(reference, rs)
 
         different = SWObjects.ResultSet(F, """
@@ -116,7 +120,7 @@ class TestSWObjects(unittest.TestCase):
 | ?o1  | ?o2  | ?s   |
 | <o1> | <o2> | <s2> |
 +------+------+------+
-""", False, bnodeMap);
+""", False, bnodeMap)
         self.assertNotEqual(different, rs)
 
 
@@ -150,7 +154,7 @@ SELECT ?craft ?homepage
 | ?craft                                               | ?homepage                                                        |
 | <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
 +------------------------------------------------------+------------------------------------------------------------------+
-""", False, bnodeMap);
+""", False, bnodeMap)
         self.assertEqual(reference, rs)
 
 
@@ -180,13 +184,13 @@ SELECT ?craft ?homepage
         self.assertEqual(referenceDB, updatedDB)
 
     def test_construct (self):
-        # Test update .
+        # Test CONSTRUCT .
         F = SWObjects.AtomFactory()
 
         sourceDB = SWObjects.RdfDB()
         manDefault = sourceDB.ensureGraph(None)
         bnodeMap = SWObjects.String2BNode()
-        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap);
+        F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap)
         sparser = SWObjects.SPARQLfedDriver("", F)
         sparser.parse(SWObjects.IStreamContext(
                 "CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
@@ -209,7 +213,7 @@ SELECT ?craft ?homepage
         expectedDB = SWObjects.RdfDB()
         F.parseNTPatterns(expectedDB.ensureGraph(None),
                           "<s> <p1> <o2> ."
-                          "<s> <p2> <o3> .", bnodeMap);
+                          "<s> <p2> <o3> .", bnodeMap)
         self.assertEqual(expectedDB, constructDB)
 
 
