@@ -10,10 +10,23 @@
 %include <std_string.i>
 %include <std_map.i>
 %include <std_vector.i>
+%include <exception.i>
 
 #if defined(SWIGJAVA)
     %rename(equals)		     *::operator==;
 #endif /* defined(SWIGJAVA) */
+
+%exception {
+    try {
+	$action
+    } catch(std::string e) {
+	SWIG_exception(SWIG_ValueError, e.c_str());
+    } catch(const char* e) {
+	SWIG_exception(SWIG_ValueError, e);
+    } catch(...) {
+	SWIG_exception(SWIG_RuntimeError, "Unknown exception");
+    }
+}
 
 namespace std {
     class exception {

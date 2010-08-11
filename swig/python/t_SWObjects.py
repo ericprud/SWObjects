@@ -216,6 +216,15 @@ SELECT ?craft ?homepage
                           "<s> <p2> <o3> .", bnodeMap)
         self.assertEqual(expectedDB, constructDB)
 
+    def test_parser_exception (self):
+        # Test SPARQL parser exception .
+        F = SWObjects.AtomFactory()
+        sparser = SWObjects.SPARQLfedDriver("", F)
+        istr = SWObjects.IStreamContext(
+                "SELECT * WHERE missing open curley brace",
+                SWObjects.StreamContextIstream.STRING)
+        self.assertRaises(ValueError, sparser.parse, istr) # "unexpected input 'm' at SELECT * WHERE missing open curley brace:1.16"
+
 
 if __name__ == '__main__':
     unittest.main()
