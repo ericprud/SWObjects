@@ -3,7 +3,28 @@
 use SWObjects;
 use Test::Simple tests => 14;
 
+my $SKIP = \ "SKIP";
+
 ok( 1,     'test test'    );
+
+sub timeout {
+    my ($f, $timeout, $failure) = @_;
+    eval {
+        local $SIG{ALRM} = sub { die $failure };
+        alarm $timeout;
+	# `sleep $timeout`; # force timeout for testing
+	$f->();
+        alarm 0;
+    };
+    if ($@) {
+	if ($@ =~ m/^$failure/) {
+	    ok(1, $failure);
+	    die $SKIP;
+	} else {
+	    die $@;
+	}
+    }
+}
 
 sub test_constants {
     # Test access to constants.
@@ -136,18 +157,23 @@ sub test_remote {
     my $xmlParser = new SWObjects::SAXparser_expat();
     my $DB = new SWObjects::RdfDB($agent, $xmlParser);
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $srvc = 'http://api.talis.com/stores/space/services/sparql';
     $sparser->parse(new SWObjects::IStreamContext("
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?craft ?homepage
  WHERE {
-  SERVICE <http://api.talis.com/stores/space/services/sparql> {
+  SERVICE <$srvc> {
     ?craft foaf:name \"Apollo 8\" .
     ?craft foaf:homepage ?homepage
   }
 }", $SWObjects::StreamContextIstream::STRING));
     my $query = $sparser->{'root'};
     my $rs = new SWObjects::ResultSet($F);
-    $query->execute($DB, $rs);
+
+    # Try remote query with a timeout of 1s.
+    &timeout(sub { $query->execute($DB, $rs) }, 1,
+	     "timeout querying remote SPARQL service");
+
     my $bnodeMap = new SWObjects::String2BNode();
     my $reference = new SWObjects::ResultSet($F, "
 # name and homepage of Apollo 8
@@ -249,8 +275,9 @@ my @T = (
 foreach (@T) {
     eval {
 	&{$_}();
-    }; if ($@) {
+    }; if ($@ && $@ != $SKIP) {
 	ok(0, "error running $_");
 	$@ = undef;
     }
 }
+
