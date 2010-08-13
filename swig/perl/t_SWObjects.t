@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use SWObjects;
-use Test::Simple tests => 13;
+use Test::Simple tests => 14;
 
 ok( 1,     'test test'    );
 
@@ -220,11 +220,37 @@ sub test_construct {
     ok($expectedDB == $constructDB, 'CONSTRUCT results');
 }
 
-&test_constants      ();
-&test_type_integrity ();
-&test_turtleParser   ();
-&test_trigParser     ();
-&test_s_p1_o1_p2_o2  ();
-&test_remote         ();
-&test_update         ();
-&test_construct      ();
+sub test_parser_exception {
+    # Test SPARQL parser exception .
+    my $F = new SWObjects::AtomFactory();
+    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $istr = new SWObjects::IStreamContext(
+	    "SELECT * WHERE missing open curley brace",
+	    $SWObjects::StreamContextIstream::STRING);
+    eval {
+	$sparser->parse($istr);
+	ok(0, 'no error parsing bogus SPARQL query');
+    };
+    ok($@ eq "ValueError unexpected input 'm' at SELECT * WHERE missing open curley brace:1.16\n", "parser exceptions");
+}
+
+my @T = (
+    "test_constants"       ,
+    "test_type_integrity"  ,
+    "test_turtleParser"    ,
+    "test_trigParser"      ,
+    "test_s_p1_o1_p2_o2"   ,
+    "test_remote"          ,
+    "test_update"          ,
+    "test_construct"       ,
+    "test_parser_exception"
+);
+
+foreach (@T) {
+    eval {
+	&{$_}();
+    }; if ($@) {
+	ok(0, "error running $_");
+	$@ = undef;
+    }
+}
