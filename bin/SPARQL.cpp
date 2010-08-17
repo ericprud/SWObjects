@@ -991,6 +991,19 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
     }
 }
 
+/* Overload of relURI to validate --mapstring arguments. */
+struct mapString {};
+void validate (boost::any&, const std::vector<std::string>& values, mapString*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
+    if (Debug > 0) {
+	std::cout << "queued reading default map from command line\n";
+	if (BaseURI != NULL)
+	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+    }
+}
+
 /* Overload of relURI to validate --graph arguments. */
 struct graphURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, graphURI*, int)
@@ -1224,6 +1237,8 @@ int main(int ac, char* av[])
 #endif /* REGEX_LIB != SWOb_DISABLED */
             ("mapset,m", po::value<mapURI>(), 
 	     "mapset resource, which supplies above parameters.")
+            ("mapstring,M", po::value<mapString>(), 
+	     "mapset, which supplies above parameters.")
             ;
 
         /* Ordered options -- not shown with --help.
@@ -1293,7 +1308,8 @@ int main(int ac, char* av[])
 	static const char* queryHelp = "Queries and maps:\n"
 	    "  <queryURI>            read and execute a query from <queryURI>.\n"
 	    "  -e <query>            execute <query>.\n"
-	    "  <mapURI>              map query through <mapURI> before executing.\n";
+	    "  <mapURI>              map query through a map at <mapURI> before executing.\n";
+	    "  <mapString>           map query through <mapString> before executing.\n";
 	static const char* appDescGraph = 
 	    "    @prefix doap: <http://usefulinc.com/ns/doap#> .\n"
 	    "    <> a doap:Project ;\n"
@@ -1441,8 +1457,11 @@ int main(int ac, char* av[])
 	    for (loadList::iterator it = MapList.begin();
 		 it != MapList.end(); ++it) {
 		std::string nameStr = it->resource->getLexicalValue();
-		sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
-					&Agent, &DebugStream);
+		sw::IStreamContext::e_opts opts = 
+		    (dynamic_cast<const sw::RDFLiteral*>(it->resource) != NULL) ? 
+		    sw::IStreamContext::STRING : 
+		    sw::IStreamContext::STDIN;
+		sw::IStreamContext istr(nameStr, opts, NULL, &Agent, &DebugStream);
 		if (TheServer.mapSetParser.parse(istr) != 0)
 		    throw std::string("error when parsing map ").append(nameStr);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
