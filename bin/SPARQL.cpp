@@ -1308,7 +1308,7 @@ int main(int ac, char* av[])
 	static const char* queryHelp = "Queries and maps:\n"
 	    "  <queryURI>            read and execute a query from <queryURI>.\n"
 	    "  -e <query>            execute <query>.\n"
-	    "  <mapURI>              map query through a map at <mapURI> before executing.\n";
+	    "  <mapURI>              map query through a map at <mapURI> before executing.\n"
 	    "  <mapString>           map query through <mapString> before executing.\n";
 	static const char* appDescGraph = 
 	    "    @prefix doap: <http://usefulinc.com/ns/doap#> .\n"
