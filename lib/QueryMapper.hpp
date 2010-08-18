@@ -141,27 +141,14 @@ namespace w3c_sw {
 	Rule (const Rule& ref)
 	    : head(ref.head), body(ref.body), label(ref.label), bodyVars(ref.bodyVars) {  }
 
-	/** str - minimum string representation of a rule.
-	 */
 	std::string str () const {
-	    return label == NULL ? toString() : label->toString();
-	}
-
-	/** toString - elaborate string representation of a rule.
-	 */
-	std::string toString (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
-	    std::string l;
 	    if (label == NULL) {
-		std::stringstream ss;
-		ss << "?_" << this;
-		l = ss.str();
+		SPARQLSerializer bodySer, headSer;
+		body->express(&bodySer);
+		head->express(&headSer);
+		return bodySer.str() + " => \n" + headSer.str();
 	    } else
-		l = label->toString() + " ";
-
-	    SPARQLSerializer bodySer(mediaType, namespaces), headSer(mediaType, namespaces);
-	    body->express(&bodySer);
-	    head->express(&headSer);
-	    return l + bodySer.str() + " => " + headSer.str();
+		return label->toString();
 	}
 
 	bool operator== (const Rule& ref) const {
