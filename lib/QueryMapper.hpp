@@ -313,7 +313,7 @@ namespace w3c_sw {
 	}
 #endif /* NotYet */
 
-	virtual e_OPTYPE getOperationType () const { return OPTYPE_unknown; } // @@ could try to unify with OPTYPE_operationSet
+	virtual Operation::e_OperationType getOperationType () const { return UNKNOWN; } // @@ could try to unify with OPTYPE_operationSet
 	std::string toString () const {
 	    std::stringstream ss;
 	    if (server != NULL) ss << "server: " << server->toString() << std::endl;
