@@ -141,14 +141,27 @@ namespace w3c_sw {
 	Rule (const Rule& ref)
 	    : head(ref.head), body(ref.body), label(ref.label), bodyVars(ref.bodyVars) {  }
 
+	/** str - minimum string representation of a rule.
+	 */
 	std::string str () const {
+	    return label == NULL ? toString() : label->toString();
+	}
+
+	/** toString - elaborate string representation of a rule.
+	 */
+	std::string toString (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
+	    std::string l;
 	    if (label == NULL) {
-		SPARQLSerializer bodySer, headSer;
-		body->express(&bodySer);
-		head->express(&headSer);
-		return bodySer.str() + " => \n" + headSer.str();
+		std::stringstream ss;
+		ss << "?_" << this;
+		l = ss.str();
 	    } else
-		return label->toString();
+		l = label->toString() + " ";
+
+	    SPARQLSerializer bodySer(mediaType, namespaces), headSer(mediaType, namespaces);
+	    body->express(&bodySer);
+	    head->express(&headSer);
+	    return l + bodySer.str() + " => " + headSer.str();
 	}
 
 	bool operator== (const Rule& ref) const {
@@ -313,6 +326,7 @@ namespace w3c_sw {
 	}
 #endif /* NotYet */
 
+	virtual e_OPTYPE getOperationType () const { return OPTYPE_unknown; } // @@ could try to unify with OPTYPE_operationSet
 	std::string toString () const {
 	    std::stringstream ss;
 	    if (server != NULL) ss << "server: " << server->toString() << std::endl;
