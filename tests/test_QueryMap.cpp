@@ -329,6 +329,20 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 
+    struct SWObjectCanonicalizer : public SWObjectDuplicator {
+	SWObjectCanonicalizer (AtomFactory* atomFactory)
+	    : SWObjectDuplicator(atomFactory) {  }
+
+	/* _TableOperations factored out supporter function; virtual for MappedDuplicator. */
+	virtual void _TableOperations (const ProductionVector<const TableOperation*>* p_TableOperations, TableJunction* j) {
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); it++) {
+		(*it)->express(this);
+		j->addTableOperation(last.tableOperation, true);
+	    }
+	}
+    };
+
 struct RuleMapTest {
     bool bgpCompareVars;
     const Operation* transformed;
@@ -373,6 +387,10 @@ struct RuleMapTest {
 	    throw e;
 	}
 	delete query;
+	SWObjectCanonicalizer canon(&f);
+	transformed->express(&canon);
+	delete transformed;
+	transformed = canon.last.operation;
 
 	/* Parse map results. */
 	IStreamContext rstr(mapResultsFile, type);
@@ -449,7 +467,7 @@ struct SQLizerTest {
 BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE( simple )
 	BOOST_AUTO_TEST_CASE( order ) {
-	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3 }",
 			  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
 			  "'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
 			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
@@ -457,6 +475,47 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 			  IStreamContext::STRING);
 	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
 	}
+
+#if PARSER_BUG && SERVICE_MERGING
+	BOOST_AUTO_TEST_CASE( by_P_by_S ) {
+	    RuleMapTest t("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
+			  "'presidents' CONSTRUCT { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } { SERVICE <presidents> { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } }\n"
+			  "'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
+			  "SELECT * { { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech }\n"
+			  "             SERVICE <nixonzpage> { <nixon> <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "           { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?_presidents_1_inpech }\n"
+			  "             SERVICE <nixonzpage> { <nixon> <impeachment> ?impech ; <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "           { SERVICE <presidents> { <nixon> <inauguration> ?_presidents_2_inaug ; <impeachment> ?impech }\n"
+			  "             SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "           { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town } } }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+#endif /* PARSER_BUG && SERVICE_MERGING */
+
+#if PARSER_BUG && SERVICE_MERGING
+	BOOST_AUTO_TEST_CASE( by_P_by_S_msr ) {
+	    RuleMapTest t("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
+			  "'inaug'      CONSTRUCT { ?pres <inauguration> ?inaug } { SERVICE <presidents> { ?pres <inauguration> ?inaug } }\n"
+			  "'impeach'    CONSTRUCT { ?pres <impeachment> ?inpech } { SERVICE <presidents> { ?pres <impeachment> ?inpech } }\n"
+			  "'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
+			  "SELECT * { { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech }\n"
+			  "               SERVICE <nixonzpage> { <nixon> <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "             { SERVICE <presidents> { <nixon> <inauguration> ?inaug }\n"
+			  "               SERVICE <nixonzpage> { <nixon> <impeachment> ?impech ; <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "             { SERVICE <presidents> { <nixon> <impeachment> ?impech }\n"
+			  "               SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <hometown> ?town } }\n"
+			  "           UNION\n"
+			  "             { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town } } }",
+			  IStreamContext::STRING);
+	    BOOST_CHECK_EQUAL(*t.transformed, *t.mapResults);
+	}
+#endif /* PARSER_BUG && SERVICE_MERGING */
 
 	BOOST_AUTO_TEST_CASE( p1_p2 ) {
 	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
