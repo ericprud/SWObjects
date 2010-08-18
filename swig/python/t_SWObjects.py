@@ -203,7 +203,7 @@ SELECT ?craft ?homepage
 
         # We're expecting a CONSTRUCT, so give the ResultSet a fresh database
         # for storing the constructed triples.
-        self.assertEqual(query.getOperationType(), SWObjects.Operation.CONSTRUCT)
+        self.assertEqual(query.getOperationType(), SWObjects.Operation.OPTYPE_construct)
         constructDB = SWObjects.RdfDB()
         rs.setRdfDB(constructDB)
 

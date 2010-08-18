@@ -14,6 +14,8 @@ class SPARQLSerializer : public ExpressorSerializer {
 public:
     typedef enum { DEBUG_none, DEBUG_graphs } e_DEBUG;
 protected:
+    MediaType mediaType;
+    NamespaceMap* namespaces;
     std::stringstream ret;
     const ExprSet* injectFilter;
     bool normalizing; // no constructor switch for this yet.
@@ -28,7 +30,6 @@ protected:
     size_t depth;
     std::stack<e_PREC> precStack;
     const char* leadStr;
-    NamespaceMap* namespaces;
 
     void start (e_PREC prec) {
 	if (prec < precStack.top())
@@ -52,8 +53,8 @@ protected:
 	    ret << tab;
     }
 public:
-    SPARQLSerializer (const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "", NamespaceMap* namespaces = NULL) : 
-	injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), namespaces(namespaces)
+    SPARQLSerializer (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
+	mediaType(mediaType), namespaces(namespaces), injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
     { precStack.push(PREC_High); }
     virtual std::string str () { return ret.str(); }
     virtual void str (std::string seed) { ret.str(seed); }

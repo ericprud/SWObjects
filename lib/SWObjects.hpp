@@ -461,11 +461,11 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
-    typedef enum {UNKNOWN, OPERATIONSET, SELECT, CONSTRUCT, DESCRIBE, ASK, REPLACE, INSERT, DELETE, LOAD, CLEAR, CREATE, DROP} e_OperationType;
+    typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_replace, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop} e_OPTYPE;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
-    virtual e_OperationType getOperationType() const = 0;
+    virtual e_OPTYPE getOperationType() const = 0;
     std::string toString() const;
 };
 
@@ -479,7 +479,7 @@ public:
 	const OperationSet* pref = dynamic_cast<const OperationSet*>(&ref);
 	return pref == NULL ? false : operations == pref->operations;
     }
-    virtual e_OperationType getOperationType () const { return OPERATIONSET; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_operationSet; }
     std::string toString() const {
 	std::stringstream ss;
 	for (std::vector<const Operation*>::const_iterator it = operations.begin();
@@ -1961,7 +1961,7 @@ public:
 	    *m_WhereClause == *pSel->m_WhereClause && 
 	    *m_SolutionModifier == *pSel->m_SolutionModifier;
     }
-    virtual e_OperationType getOperationType () const { return SELECT; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_select; }
 };
 class SubSelect : public TableOperation {
 protected:
@@ -2012,7 +2012,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return CONSTRUCT; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_construct; }
 };
 class Describe : public Operation {
 private:
@@ -2032,7 +2032,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return DESCRIBE; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_describe; }
 };
 class Ask : public Operation {
 private:
@@ -2054,7 +2054,7 @@ public:
 	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
 	    *m_WhereClause == *pSel->m_WhereClause;
     }
-    virtual e_OperationType getOperationType () const { return ASK; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_ask; }
 };
 class Replace : public Operation {
 private:
@@ -2067,7 +2067,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return REPLACE; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_replace; }
 };
 class Insert : public Operation {
 private:
@@ -2081,7 +2081,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return INSERT; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_insert; }
 };
 class Delete : public Operation {
 private:
@@ -2095,7 +2095,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return DELETE; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_delete; }
 };
 class Load : public Operation {
 private:
@@ -2108,7 +2108,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return LOAD; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_load; }
 };
 class Clear : public Operation {
 private:
@@ -2120,7 +2120,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return CLEAR; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_clear; }
 };
 class Create : public Operation {
 private:
@@ -2133,7 +2133,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return CREATE; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_create; }
 };
 class Drop : public Operation {
 private:
@@ -2146,7 +2146,7 @@ public:
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OperationType getOperationType () const { return DROP; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_drop; }
 };
 
 /* kinds of Expressions */

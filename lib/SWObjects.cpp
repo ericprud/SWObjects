@@ -1557,14 +1557,14 @@ compared against
 	return s.str();
     }
     std::string TableOperation::toString (MediaType mediaType, NamespaceMap* namespaces) const {
-	SPARQLSerializer s("  ", SPARQLSerializer::DEBUG_none, "", namespaces);
+	SPARQLSerializer s(mediaType, namespaces, "  ", SPARQLSerializer::DEBUG_none, "");
 	express(&s);
 	return s.str();
     }
     std::string BasicGraphPattern::toString (MediaType mediaType, NamespaceMap* namespaces) const {
 	std::stringstream ret;
 	if (mediaType.match("text/trig")) {
-	    SPARQLSerializer s("  ", SPARQLSerializer::DEBUG_none, "", namespaces);
+	    SPARQLSerializer s(mediaType, namespaces, "  ", SPARQLSerializer::DEBUG_none, "");
 	    express(&s);
 	    ret << s.str();
 	} else {

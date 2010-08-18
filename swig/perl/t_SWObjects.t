@@ -232,7 +232,7 @@ sub test_construct {
 
     # We're expecting a CONSTRUCT, so give the ResultSet a fresh database
     # for storing the constructed triples.
-    ok($query->getOperationType() == $SWObjects::Operation::CONSTRUCT, 'query enums');
+    ok($query->getOperationType() == $SWObjects::Operation::OPTYPE_construct, 'query enums');
     my $constructDB = new SWObjects::RdfDB();
     $rs->setRdfDB($constructDB);
 

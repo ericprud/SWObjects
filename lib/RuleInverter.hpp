@@ -495,7 +495,7 @@ namespace w3c_sw {
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
 	    if (*debugStream != NULL) {
-		SPARQLSerializer sparqlizer("  ", SPARQLSerializer::DEBUG_graphs);
+		SPARQLSerializer sparqlizer(MediaType(), NULL, "  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
 		**debugStream << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
 	    }

@@ -30,9 +30,9 @@ namespace w3c_sw {
 	     */
 	    struct FailureSerializer : public SPARQLSerializer {
 		const Bgp2Triples& bgp2triples;
-		FailureSerializer (const Bgp2Triples& bgp2triples, 
-				   const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "", NamespaceMap* namespaces = NULL) : 
-		    SPARQLSerializer(p_tab, debug, leadStr, namespaces), bgp2triples(bgp2triples)
+		FailureSerializer (const Bgp2Triples& bgp2triples, MediaType mediaType, NamespaceMap* namespaces, 
+				   const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
+		    SPARQLSerializer(mediaType, namespaces, p_tab, debug, leadStr), bgp2triples(bgp2triples)
 		{  }
 		void markError (const BasicGraphPattern* bgp, const TriplePattern* triple) {
 		    Bgp2Triples::const_iterator b = bgp2triples.find(bgp);
@@ -92,11 +92,11 @@ namespace w3c_sw {
 		    return ret.str();
 		}
 	    };
-	    std::string toString (const Operation* op) const {
-		return FailureSerializer(bgp2triples).toString(op);
+	    std::string toString (const Operation* op, MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
+		return FailureSerializer(bgp2triples, mediaType, namespaces).toString(op);
 	    }
-	    std::string toString (const TableOperation* op) const {
-		return FailureSerializer(bgp2triples).toString(op);
+	    std::string toString (const TableOperation* op, MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
+		return FailureSerializer(bgp2triples, mediaType, namespaces).toString(op);
 	    }
 	    std::string str () const {
 		std::stringstream ss;
@@ -514,9 +514,14 @@ namespace w3c_sw {
 	}
 	size_t getRuleCount () { return rules.size(); }
 	void addRule (const Construct* rule, const TTerm* name) {
-	    if (name == NULL)
-		name = atomFactory->getRDFLiteral(rule->toString());
+	    if (name == NULL) {
+		std::stringstream ss;
+		ss << rule;
+		name = atomFactory->getRDFLiteral(ss.str());
+	    }
 	    Rule r = RuleParser().parseConstruct(rule, name);
+	    if (*debugStream != NULL)
+		**debugStream << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
