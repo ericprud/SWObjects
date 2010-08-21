@@ -8,7 +8,7 @@ import SWObjects
 class TestSWObjects(unittest.TestCase):
 
     def setUp (self):
-        11
+        pass
 
     def test_constants (self):
         # Test access to constants.
