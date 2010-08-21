@@ -65,13 +65,15 @@ public:
 
             TurtleSDriver tp(req_uri, &f);
             tp.setGraph(db.ensureGraph(NULL));
-            tp.parse_file(r->filename);
+            IStreamContext istr(r->filename, IStreamContext::FILE);
+            tp.parse(istr);
 
             ResultSet rs(&f);
             rs.setRdfDB(&db);
 
             SPARQLfedDriver sp(req_uri, &f);
-            sp.parse_string(query);
+            IStreamContext qstr(query, IStreamContext::STRING);
+            sp.parse(qstr);
             sp.root->execute(&db, &rs);
 
             //std::string out = db.ensureGraph(NULL)->toString();

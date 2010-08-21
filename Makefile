@@ -260,10 +260,10 @@ bin/% : bin/%.o $(LIB) #lib
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
-	($(ECHO) $@ \\; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) $@ \\; $(CXX) -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 
 apache/mod_sparul.so: $(LIB) apache/mod_sparul.dep
-	cd bin; \
+	cd apache; \
 	gcc -fPIC -Wall `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(INCLUDES) -c mod_sparul.cpp -o mod_sparul.o; \
 	apxs -c mod_sparul.o /usr/local/src/codea/codea_hooks.o ../lib/libSWObjects.a $(LDFLAGS)
 
@@ -450,7 +450,7 @@ python-clean:
 SWIG-TEST += python-test
 SWIG-CLEAN += python-clean
 
- # Java
+# Java
 swig/java/src/POSFactory.java swig/java/src/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o swig/java/src/SWObjects_wrap.cxx -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
 	$(SWIG_SUBST) swig/java/src/SWObjects_wrap.cxx
@@ -478,7 +478,7 @@ java-clean:
 SWIG-TEST += java-test
 SWIG-CLEAN += java-clean
 
- # Perl
+# Perl
 swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -perl5 -I. -Ilib -Iinterface $<
 	$(SWIG_SUBST) $@
@@ -501,16 +501,6 @@ SWIG-CLEAN += perl-clean
 
 swig-test: $(SWIG-TEST)
 swig-clean: $(SWIG-CLEAN)
-
-# Distributions
-
-release:
-	$(RM) -f SWObjects_$(VER).tar.gz README.html
-	lynx -dump -source http://www.w3.org/2008/04/SPARQLfed/ | perl -pe 's{href="\.\./\.\./\.\.}{href="http://www.w3.org}g;s{href="\.\./\.\.}{href="http://www.w3.org/2008}g'> README.html
-	@$(echo) "Generating the inclusion from the manifest (HEADER.html)"
-	@($(echo) "README.html" && perl -ne 'print join("\n", m/class="tar" href="([a-zA-Z]{2}[a-zA-Z0-9._\/]+)"/g, undef)' HEADER.html) | xargs tar czf SWObjects_$(VER).tar.gz --transform s,,SWObjects_$(VER)/,1
-	$(RM) README.html
-
 
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
