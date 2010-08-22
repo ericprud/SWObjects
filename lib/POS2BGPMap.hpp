@@ -266,7 +266,7 @@ namespace w3c_sw {
 		    _depends(posExpr->getTTerm(), _Binding_SELECT);
 		}
 	    }
-	    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* ) {
 		w3c_sw_FAIL("need to impl POS2BGPMap::posList");
 	    }
 	    virtual void starVarSet (const StarVarSet* const) {
