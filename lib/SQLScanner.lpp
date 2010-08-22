@@ -73,21 +73,28 @@ IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
 IT_FROM		[Ff][Rr][Oo][Mm]
+IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
+IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 GT_TIMES		"*"
 GT_COMMA		","
 IT_AS		[Aa][Ss]
 GT_DOT		"."
 IT_INNER		[Ii][Nn][Nn][Ee][Rr]
-IT_JOIN		[Jj][Oo][Ii][Nn]
+IT_LEFT		[Ll][Ee][Ff][Tt]
+IT_OUTER		[Oo][Uu][Tt][Ee][Rr]
 IT_ON		[Oo][Nn]
-GT_OR		"OR"
-GT_AND		"AND"
+IT_JOIN		[Jj][Oo][Ii][Nn]
+IT_OR		[Oo][Rr]
+IT_AND		[Aa][Nn][Dd]
 GT_EQUAL		"="
 GT_NEQUAL		"!="
 GT_LT		"<"
 GT_GT		">"
 GT_LE		"<="
 GT_GE		">="
+IT_IS		[Ii][Ss]
+IT_NULL		[Nn][Uu][Ll][Ll]
+IT_NOT		[Nn][Oo][Tt]
 GT_PLUS		"+"
 GT_MINUS		"-"
 GT_DIVIDE		"/"
@@ -127,21 +134,28 @@ LINEFEED		(\r\n|\r|\n)
 {IT_UNION}		{return token::IT_UNION;}
 {IT_WHERE}		{return token::IT_WHERE;}
 {IT_FROM}		{return token::IT_FROM;}
+{IT_LIMIT}		{return token::IT_LIMIT;}
+{IT_OFFSET}		{return token::IT_OFFSET;}
 {GT_TIMES}		{return token::GT_TIMES;}
 {GT_COMMA}		{return token::GT_COMMA;}
 {IT_AS}		{return token::IT_AS;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_INNER}		{return token::IT_INNER;}
-{IT_JOIN}		{return token::IT_JOIN;}
+{IT_LEFT}		{return token::IT_LEFT;}
+{IT_OUTER}		{return token::IT_OUTER;}
 {IT_ON}		{return token::IT_ON;}
-{GT_OR}		{return token::GT_OR;}
-{GT_AND}		{return token::GT_AND;}
+{IT_JOIN}		{return token::IT_JOIN;}
+{IT_OR}		{return token::IT_OR;}
+{IT_AND}		{return token::IT_AND;}
 {GT_EQUAL}		{return token::GT_EQUAL;}
 {GT_NEQUAL}		{return token::GT_NEQUAL;}
 {GT_LT}		{return token::GT_LT;}
 {GT_GT}		{return token::GT_GT;}
 {GT_LE}		{return token::GT_LE;}
 {GT_GE}		{return token::GT_GE;}
+{IT_IS}		{return token::IT_IS;}
+{IT_NULL}		{return token::IT_NULL;}
+{IT_NOT}		{return token::IT_NOT;}
 {GT_PLUS}		{return token::GT_PLUS;}
 {GT_MINUS}		{return token::GT_MINUS;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}

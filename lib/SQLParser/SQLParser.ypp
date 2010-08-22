@@ -1,4 +1,5 @@
 /* $Id: Langname_Parser.yy,v 1.8 2008/04/21 01:46:20 eric Exp SQLParser.yy 19 2007-08-19 20:36:24Z tb $ -*- mode: c++ -*- */
+/* from yacker grammar http://www.w3.org/2005/01/yacker?name=sql */
 /** \file SQLParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
@@ -82,6 +83,25 @@ public:
 
 namespace w3c_sw {
 
+    namespace sql {
+
+	class IsNullProxy : public BooleanComparator {
+	public:
+	    IsNullProxy () : BooleanComparator(NULL) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool finalEq (const BooleanGE&) const {
+		throw "ProgramFlowException";
+	    }	    
+	    virtual bool operator== (const WhereConstraint&) const {
+		throw "ProgramFlowException";
+	    }
+	    virtual const char* getComparisonNotation () const {
+		throw "ProgramFlowException";
+	    };
+	};
+	class IsNotNullProxy : public IsNullProxy {
+	};
+    }
 /** The SQLDriver class brings together all components. It creates an instance of
  * the SQLParser and SQLScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -136,8 +156,8 @@ public:
     sqlContext& context;
     sql::SQLQuery* root;
 };
-    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias;} l_TableAlias;
-    typedef struct {sql::Join* join; const sql::Expression* expr;} l_JoinExpression;
+    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
 } // namespace w3c_sw
@@ -153,6 +173,8 @@ public:
     sql::SQLQuery* p_Select;
     std::vector<sql::SQLQuery*>* p_Selects;
     // struct {std::vector<sql::Join*>* joins; sql::WhereConstraint* where;} p_fromWhere;
+    int p_int;
+    bool p_bool;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
     sql::AliasedSelect* p_AliasedSelect;
     sql::AliasAttr* p_AliasAttr;
@@ -172,7 +194,7 @@ public:
 /* START TokenBlock */
 /* Terminals */
 %token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES GT_COMMA IT_AS GT_DOT
-       IT_INNER IT_JOIN IT_ON GT_OR GT_AND
+       IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT GT_LPAREN GT_RPAREN IT_CONCAT IT_REGEX
 
@@ -190,17 +212,17 @@ public:
 %type <p_Selects> _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star
 %type <p_Expression> _O_QIT_WHERE_E_S_QExpression_E_C _Q_O_QIT_WHERE_E_S_QExpression_E_C_E_Opt
 	_O_QIT_ON_E_S_QExpression_E_C _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt
-%type <p_TableList> TableList _Q_O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star
+%type <p_TableList> TableList _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star
 	_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C
 	_Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt
 %type <p_AttributeList> AttributeList  _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star
 %type <p_AliasedSelect> _O_QGT_COMMA_E_S_QNamedAttribute_E_C NamedAttribute
 %type <p_Expression> FQAttribute
 %type <p_tableAlias> TableAlias
-%type <p_JoinExpression> _O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C
-%type <p_Expression> Expression ConditionalAndExpression ConditionalOrExpression _O_QGT_OR_E_S_QConditionalAndExpression_E_C _O_QGT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression
-%type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star
-%type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt
+%type <p_JoinExpression> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C
+%type <p_Expression> Expression ConditionalAndExpression ConditionalOrExpression _O_QIT_OR_E_S_QConditionalAndExpression_E_C _O_QIT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression
+%type <p_Expressions> _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star
+%type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt
 %type <p_Expression> NumericExpression
 %type <p_Expression> AdditiveExpression
 %type <p_Expression> _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C _O_QGT_COMMA_E_S_QExpression_E_C
@@ -218,6 +240,8 @@ public:
 %type <p_Expression> NumericLiteralNegative
 %type <p_Expression> BooleanLiteral
 %type <p_Expression> String
+%type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
+%type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
 
 /* END TokenBlock */
 
@@ -273,7 +297,7 @@ _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star:
 ;
 
 Select:
-    IT_SELECT AttributeList _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt	{
+    IT_SELECT AttributeList _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt	{
 	driver.root = $$ = new sql::SQLQuery($3.joins);
 	delete $3.joins;
 	for (std::vector<sql::AliasedSelect*>::const_iterator it = $2->begin(); it != $2->end(); ++it)
@@ -284,6 +308,8 @@ Select:
 	    driver.root->constraints.push_back(*it);
 	    // LINE << "exprs: " << (*it)->toString();
 	delete $3.exprs;
+	driver.root->limit = $4;
+	driver.root->offset = $5;
 }
 ;
 
@@ -317,6 +343,38 @@ _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt:
 }
 
     | _O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C
+;
+
+_O_QIT_LIMIT_E_S_QINTEGER_E_C:
+    IT_LIMIT INTEGER	{
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
+	$$ = i->getValue();
+	delete $2;
+}
+;
+
+_Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt:
+    {
+    $$ = -1;
+}
+
+    | _O_QIT_LIMIT_E_S_QINTEGER_E_C	
+;
+
+_O_QIT_OFFSET_E_S_QINTEGER_E_C:
+    IT_OFFSET INTEGER	{
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
+	$$ = i->getValue();
+	delete $2;
+}
+;
+
+_Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt:
+    {
+    $$ = -1;
+}
+
+    | _O_QIT_OFFSET_E_S_QINTEGER_E_C	
 ;
 
 AttributeList:
@@ -393,11 +451,11 @@ Relation:
 ;
 
 TableList:
-    TableAlias _Q_O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star	{
+    TableAlias _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star	{
 	$$.joins = new std::vector<sql::Join*>();
 	$$.joins->push_back($1.relation != NULL
-			    ? (sql::Join*)new sql::TableJoin(*$1.relation, *$1.alias, false)
-			    : (sql::Join*)new sql::SubqueryJoin($1.subselect, *$1.alias, false));
+			    ? (sql::Join*)new sql::TableJoin(*$1.relation, *$1.alias, $1.optional)
+			    : (sql::Join*)new sql::SubqueryJoin($1.subselect, *$1.alias, $1.optional));
 	delete $1.relation;
 	delete $1.alias;
 	for (std::vector<sql::Join*>::iterator it = $2.joins->begin();
@@ -405,6 +463,20 @@ TableList:
 	    $$.joins->push_back(*it);
 	$$.exprs = $2.exprs;
 	delete $2.joins;
+}
+;
+
+_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C:
+    IT_INNER	{
+    $$ = false;
+}
+
+    | GT_COMMA	{
+    $$ = false;
+}
+
+    | IT_LEFT IT_OUTER	{
+    $$ = true;
 }
 ;
 
@@ -424,26 +496,26 @@ _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt:
 }
 ;
 
-_O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C:
-    IT_INNER IT_JOIN TableAlias _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt	{
+_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C:
+    _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C IT_JOIN TableAlias _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt	{
 	if ($3.relation != NULL) {
-	    $$.join = new sql::TableJoin(*$3.relation, *$3.alias, false);
+	    $$.join = new sql::TableJoin(*$3.relation, *$3.alias, $1);
 	    delete $3.relation;
 	} else {
-	    $$.join = new sql::SubqueryJoin($3.subselect, *$3.alias, false);
+	    $$.join = new sql::SubqueryJoin($3.subselect, *$3.alias, $1);
 	}
 	delete $3.alias;
 	$$.expr = $4;
 }
 ;
 
-_Q_O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star:
+_Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star:
     {
 	$$.joins = new std::vector<sql::Join*>();
 	$$.exprs = new std::vector<const sql::Expression*>();
 }
 
-    | _Q_O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star _O_QIT_INNER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C	{
+    | _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C	{
     $1.joins->push_back($2.join);
     if ($2.expr != NULL)
 	$1.exprs->push_back($2.expr);
@@ -486,7 +558,7 @@ Expression:
 
 ConditionalOrExpression:
     // ConditionalAndExpression ( '||' ConditionalAndExpression )*
-    ConditionalAndExpression _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star	{
+    ConditionalAndExpression _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star	{
 	if ($2->size() > 0) {
 	    sql::JunctionConstraint* t = new sql::DisjunctionConstraint();
 	    t->constraints.push_back($1);
@@ -501,18 +573,18 @@ ConditionalOrExpression:
 ;
 
 // '||' ConditionalAndExpression
-_O_QGT_OR_E_S_QConditionalAndExpression_E_C:
-    GT_OR ConditionalAndExpression	{
+_O_QIT_OR_E_S_QConditionalAndExpression_E_C:
+    IT_OR ConditionalAndExpression	{
 	$$ = $2;
     }
 ;
 
 // ( '||' ConditionalAndExpression )*
-_Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star:
+_Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star:
     {
 	$$ = new std::vector<const sql::Expression*>();
     }
-  | _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star _O_QGT_OR_E_S_QConditionalAndExpression_E_C	{
+  | _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star _O_QIT_OR_E_S_QConditionalAndExpression_E_C	{
 	$1->push_back($2);
 	$$ = $1;
     }
@@ -520,7 +592,7 @@ _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star:
 
 ConditionalAndExpression:
     // ValueLogical ( '&&' ValueLogical )*
-    ValueLogical _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star	{
+    ValueLogical _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star	{
 	if ($2->size() > 0) {
 	    sql::JunctionConstraint* t = new sql::ConjunctionConstraint();
 	    t->constraints.push_back($1);
@@ -535,18 +607,18 @@ ConditionalAndExpression:
 ;
 
 // '&&' ValueLogical
-_O_QGT_AND_E_S_QValueLogical_E_C:
-    GT_AND ValueLogical	{
+_O_QIT_AND_E_S_QValueLogical_E_C:
+    IT_AND ValueLogical	{
 	$$ = $2;
     }
 ;
 
 // ( '&&' ValueLogical )*
-_Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star:
+_Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star:
     {
 	$$ = new std::vector<const sql::Expression*>();
     }
-  | _Q_O_QGT_AND_E_S_QValueLogical_E_C_E_Star _O_QGT_AND_E_S_QValueLogical_E_C	{
+  | _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star _O_QIT_AND_E_S_QValueLogical_E_C	{
 	$1->push_back($2);
 	$$ = $1;
     }
@@ -558,17 +630,23 @@ ValueLogical:
 
 RelationalExpression:
     // NumericExpression ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
-    NumericExpression _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt	{
+    NumericExpression _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt	{
 	if ($2) {
-	    $2->setLeftParm($1);
-	    $$ = $2; // !!!
+	    if (dynamic_cast<sql::IsNotNullProxy*>($2) != NULL) {
+		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1))); // new sql::ReallyNullConstraint();
+	    } else if (dynamic_cast<sql::IsNullProxy*>($2) != NULL) {
+		$$ = new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1));
+	    } else {
+		$2->setLeftParm($1);
+		$$ = $2; // !!!
+	    }
 	} else
 	    $$ = $1;
     }
 ;
 
 // '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression
-_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C:
+_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C:
     GT_EQUAL NumericExpression	{
 	$$ = new sql::BooleanEQ($2);
     }
@@ -582,20 +660,26 @@ _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_
 	$$ = new sql::BooleanGT($2);
     }
   | GT_LE NumericExpression	{
-    $$ = new sql::BooleanLE($2);
+        $$ = new sql::BooleanLE($2);
     }
   | GT_GE NumericExpression	{
 	$$ = new sql::BooleanGE($2);
     }
+  | IT_IS IT_NULL	{
+      $$ = new sql::IsNullProxy;
+}
+  | IT_IS IT_NOT IT_NULL	{
+      $$ = new sql::IsNotNullProxy;
+}
 ;
 
 // ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
-_Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C_E_Opt:
+_Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt:
     {
 	$$ = NULL;
     }
 
-  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_C	
+  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C	
 ;
 
 NumericExpression:

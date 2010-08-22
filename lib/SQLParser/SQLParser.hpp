@@ -35,12 +35,12 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-#pragma once
+# define PARSER_HEADER_H
 
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 45 "lib/SQLParser/SQLParser.ypp"
+#line 46 "lib/SQLParser/SQLParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -81,6 +81,25 @@ public:
 
 namespace w3c_sw {
 
+    namespace sql {
+
+	class IsNullProxy : public BooleanComparator {
+	public:
+	    IsNullProxy () : BooleanComparator(NULL) {  }
+	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool finalEq (const BooleanGE&) const {
+		throw "ProgramFlowException";
+	    }	    
+	    virtual bool operator== (const WhereConstraint&) const {
+		throw "ProgramFlowException";
+	    }
+	    virtual const char* getComparisonNotation () const {
+		throw "ProgramFlowException";
+	    };
+	};
+	class IsNotNullProxy : public IsNullProxy {
+	};
+    }
 /** The SQLDriver class brings together all components. It creates an instance of
  * the SQLParser and SQLScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -135,8 +154,8 @@ public:
     sqlContext& context;
     sql::SQLQuery* root;
 };
-    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias;} l_TableAlias;
-    typedef struct {sql::Join* join; const sql::Expression* expr;} l_JoinExpression;
+    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
 } // namespace w3c_sw
@@ -146,7 +165,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 150 "lib/SQLParser/SQLParser.hpp"
+#line 169 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -160,7 +179,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 164 "lib/SQLParser/SQLParser.hpp"
+#line 183 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -170,7 +189,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 174 "lib/SQLParser/SQLParser.hpp"
+#line 193 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -218,7 +237,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 222 "lib/SQLParser/SQLParser.hpp"
+#line 241 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -230,13 +249,15 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 150 "lib/SQLParser/SQLParser.ypp"
+#line 170 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
     sql::SQLQuery* p_Select;
     std::vector<sql::SQLQuery*>* p_Selects;
     // struct {std::vector<sql::Join*>* joins; sql::WhereConstraint* where;} p_fromWhere;
+    int p_int;
+    bool p_bool;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
     sql::AliasedSelect* p_AliasedSelect;
     sql::AliasAttr* p_AliasAttr;
@@ -251,7 +272,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 255 "lib/SQLParser/SQLParser.hpp"
+#line 276 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -273,40 +294,47 @@ namespace w3c_sw {
      IT_AS = 264,
      GT_DOT = 265,
      IT_INNER = 266,
-     IT_JOIN = 267,
-     IT_ON = 268,
-     GT_OR = 269,
-     GT_AND = 270,
-     GT_EQUAL = 271,
-     GT_NEQUAL = 272,
-     GT_LT = 273,
-     GT_GT = 274,
-     GT_LE = 275,
-     GT_GE = 276,
-     GT_PLUS = 277,
-     GT_MINUS = 278,
-     GT_DIVIDE = 279,
-     GT_NOT = 280,
-     GT_LPAREN = 281,
-     GT_RPAREN = 282,
-     IT_CONCAT = 283,
-     IT_REGEX = 284,
-     NAME = 285,
-     INTEGER = 286,
-     INTEGER_POSITIVE = 287,
-     INTEGER_NEGATIVE = 288,
-     DECIMAL = 289,
-     DECIMAL_POSITIVE = 290,
-     DECIMAL_NEGATIVE = 291,
-     DOUBLE = 292,
-     DOUBLE_POSITIVE = 293,
-     DOUBLE_NEGATIVE = 294,
-     STRING_LITERAL1 = 295,
-     STRING_LITERAL2 = 296,
-     STRING_LITERAL_LONG1 = 297,
-     STRING_LITERAL_LONG2 = 298,
-     IT_true = 299,
-     IT_false = 300
+     IT_LEFT = 267,
+     IT_OUTER = 268,
+     IT_ON = 269,
+     IT_JOIN = 270,
+     IT_OR = 271,
+     IT_AND = 272,
+     IT_LIMIT = 273,
+     IT_OFFSET = 274,
+     IT_IS = 275,
+     IT_NOT = 276,
+     IT_NULL = 277,
+     GT_EQUAL = 278,
+     GT_NEQUAL = 279,
+     GT_LT = 280,
+     GT_GT = 281,
+     GT_LE = 282,
+     GT_GE = 283,
+     GT_PLUS = 284,
+     GT_MINUS = 285,
+     GT_DIVIDE = 286,
+     GT_NOT = 287,
+     GT_LPAREN = 288,
+     GT_RPAREN = 289,
+     IT_CONCAT = 290,
+     IT_REGEX = 291,
+     NAME = 292,
+     INTEGER = 293,
+     INTEGER_POSITIVE = 294,
+     INTEGER_NEGATIVE = 295,
+     DECIMAL = 296,
+     DECIMAL_POSITIVE = 297,
+     DECIMAL_NEGATIVE = 298,
+     DOUBLE = 299,
+     DOUBLE_POSITIVE = 300,
+     DOUBLE_NEGATIVE = 301,
+     STRING_LITERAL1 = 302,
+     STRING_LITERAL2 = 303,
+     STRING_LITERAL_LONG1 = 304,
+     STRING_LITERAL_LONG2 = 305,
+     IT_true = 306,
+     IT_false = 307
    };
 
     };
@@ -403,7 +431,7 @@ namespace w3c_sw {
     static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const short int yycheck_[];
+    static const unsigned char yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];
@@ -429,7 +457,7 @@ namespace w3c_sw {
     /// A `-1'-separated list of the rules' RHS.
     static const rhs_number_type yyrhs_[];
     /// For each rule, the index of the first RHS symbol in \a yyrhs_.
-    static const unsigned char yyprhs_[];
+    static const unsigned short int yyprhs_[];
     /// For each rule, its source line number.
     static const unsigned short int yyrline_[];
     /// For each scanner token number, its symbol number.
@@ -483,7 +511,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 487 "lib/SQLParser/SQLParser.hpp"
+#line 515 "lib/SQLParser/SQLParser.hpp"
 
 
 
