@@ -177,7 +177,7 @@ public class t_SWObjects extends TestCase {
 
         // We're expecting a CONSTRUCT, so give the ResultSet a fresh database
         // for storing the constructed triples.
-        assertTrue(query.getOperationType().equals(Operation.e_OperationType.OPTYPE_construct));
+        assertTrue(query.getOperationType().equals(Operation.e_OPTYPE.OPTYPE_construct));
         RdfDB constructDB = new RdfDB();
         rs.setRdfDB(constructDB);
 
