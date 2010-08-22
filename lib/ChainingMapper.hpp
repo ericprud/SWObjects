@@ -282,12 +282,12 @@ namespace w3c_sw {
 		TTerm::String2BNode nodeMap;
 		Instantiator (const TableOperation* pattern, const Result* res, AtomFactory* atomFactory, std::string uniquePrefix)
 		    : SWObjectDuplicator(atomFactory), pattern(pattern), res(res), uniquePrefix(uniquePrefix) {  }
-		virtual void variable (const Variable* const self, std::string label) {
+		virtual void variable (const Variable* const self, std::string) {
 		    if ((last.tterms.tterm = res->get(self)) == NULL)
 			last.tterms.tterm = atomFactory->getVariable(uniquePrefix+self->getLexicalValue());
 		    //throw "no unique binding for variable " + label;
 		}
-		virtual void bnode (const BNode* const self, std::string label) {
+		virtual void bnode (const BNode* const self, std::string) {
 		    if ((last.tterms.tterm = res->get(self)) == NULL)
 			last.tterms.tterm = atomFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
 		    //throw "no unique binding for bnode " + label;
