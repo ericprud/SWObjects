@@ -179,7 +179,7 @@ namespace w3c_sw {
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
 		if (l != r)
-		    return pair.ascOrDesc == ORDER_Desc ? atomFactory->lessThan(r, l) : atomFactory->lessThan(l, r);
+		    return pair.ascOrDesc == ORDER_Desc ? atomFactory->safeCmp(r, l) == AtomFactory::SORT_lt : atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
 	    }
 	    return false;
 	}
@@ -209,7 +209,7 @@ namespace w3c_sw {
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
 		if (l != r)
-		    return atomFactory->lessThan(l, r);
+		    return atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
 	    }
 	    return false;
 	}

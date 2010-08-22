@@ -512,7 +512,7 @@ public:
     bool operator== (const TTerm& r) const { return this==&r; }
     virtual bool isConstant () const { return true; } // Override for variable types.
     static bool orderByType (const TTerm*, const TTerm*) { throw(std::runtime_error(FUNCTION_STRING)); }
-    virtual int compare (TTerm* to, Result*) const {
+    virtual int compare (TTerm* to, Result*) const { // @@ AtomFactory::e_SORT
 	bool same = typeid(*to) == typeid(*this);
 	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
     }
@@ -1165,12 +1165,19 @@ public:
 	if (*ptr)
 	    throw TypeError(s, "xsd:datetime (garbage at end)");
     }
-    int cmp (const TTerm* ltterm, const TTerm* rtterm) {
+
+    typedef enum { SORT_error, SORT_lt, SORT_eq, SORT_gt } e_SORT;
+    static e_SORT _int2e_SORT(int i) {
+	return i < 0  ? SORT_lt
+	    : i > 0 ? SORT_gt
+	    : SORT_eq;
+    };
+    e_SORT cmp (const TTerm* ltterm, const TTerm* rtterm) {
 	/* Compare URIs lexically */
 	const URI* luri = dynamic_cast<const URI*> (ltterm);
 	const URI* ruri = dynamic_cast<const URI*> (rtterm);
 	if (luri != NULL && ruri != NULL)
-	    return luri->getLexicalValue().compare(ruri->getLexicalValue());
+	    return _int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
 
 	/* Compare literals. */
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (ltterm);
@@ -1199,9 +1206,9 @@ public:
 		_validateNumeric(l->getLexicalValue());
 		_validateNumeric(r->getLexicalValue());
 		return
-		    dl < dr ? -1 : 
-		    dl > dr ?  1 : 
-		    0;
+		    dl < dr ? SORT_lt : 
+		    dl > dr ?  SORT_gt : 
+		    SORT_eq;
 	    } else if (dynamic_cast<const FloatRDFLiteral*>(l) || 
 		       dynamic_cast<const FloatRDFLiteral*>(r)) {
 		float dl = 
@@ -1215,9 +1222,9 @@ public:
 		_validateNumeric(l->getLexicalValue());
 		_validateNumeric(r->getLexicalValue());
 		return
-		    dl < dr ? -1 : 
-		    dl > dr ?  1 : 
-		    0;
+		    dl < dr ? SORT_lt : 
+		    dl > dr ?  SORT_gt : 
+		    SORT_eq;
 	    } else if (dynamic_cast<const DecimalRDFLiteral*>(l) || 
 		       dynamic_cast<const DecimalRDFLiteral*>(r)) {
 		float dl = 
@@ -1231,9 +1238,9 @@ public:
 		_validateNumeric(l->getLexicalValue());
 		_validateNumeric(r->getLexicalValue());
 		return
-		    dl < dr ? -1 : 
-		    dl > dr ?  1 : 
-		    0;
+		    dl < dr ? SORT_lt : 
+		    dl > dr ?  SORT_gt : 
+		    SORT_eq;
 	    } else if (dynamic_cast<const IntegerRDFLiteral*>(l) || 
 		       dynamic_cast<const IntegerRDFLiteral*>(r)) {
 		int dl = 
@@ -1245,18 +1252,18 @@ public:
 		_validateNumeric(l->getLexicalValue());
 		_validateNumeric(r->getLexicalValue());
 		return
-		    dl < dr ? -1 : 
-		    dl > dr ?  1 : 
-		    0;
+		    dl < dr ? SORT_lt : 
+		    dl > dr ?  SORT_gt : 
+		    SORT_eq;
 	    } else {
 		throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
 	    }
 	} else if (ldt == NULL && 
 		   rdt == NULL) {
-	    return l->getLexicalValue().compare(r->getLexicalValue());
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
 	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#string") && 
 		   rdt == getURI("http://www.w3.org/2001/XMLSchema#string")) {
-	    return l->getLexicalValue().compare(r->getLexicalValue());
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
 	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
 		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
 	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
@@ -1264,28 +1271,28 @@ public:
 	    _validateBoolean(l->getLexicalValue());
 	    _validateBoolean(r->getLexicalValue());
 	    return 
-		!bl && br ? -1 : 
-		bl && !br ?  1 : 
-		0;
+		!bl && br ? SORT_lt : 
+		bl && !br ?  SORT_gt : 
+		SORT_eq;
 	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#dateTime") && 
 		   rdt == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
 	    _validateDateTime(l->getLexicalValue());
 	    _validateDateTime(r->getLexicalValue());
-	    return l->getLexicalValue().compare(r->getLexicalValue()); // luv dem isodates
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
 	} else {
 	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
 	}
     }
 
-    bool lessThan (const TTerm* lhs, const TTerm* rhs) {
+    e_SORT safeCmp (const TTerm* lhs, const TTerm* rhs) {
 	if (rhs == NULL)
-	    return false;
+	    return lhs == NULL ? SORT_eq : SORT_gt;
 	if (lhs == NULL)
-	    return true;
+	    return SORT_lt;
 	try {
-	    int ret = cmp(lhs, rhs);
-	    if (ret != 0)
-		return ret < 0;
+	    e_SORT ret = cmp(lhs, rhs);
+	    if (ret != SORT_eq)
+		return ret;
 	} catch (SafeEvaluationError&) {
 	}
 
@@ -1297,9 +1304,9 @@ public:
 		const int li = typeOrder[lt];
 		const int ri = typeOrder[rt];
 		if (li < ri)
-		    return true;
+		    return SORT_lt;
 		if (li > ri)
-		    return false;
+		    return SORT_gt;
 	    }
 	}
 	const RDFLiteral* llit = dynamic_cast<const RDFLiteral*>(lhs);
@@ -1312,13 +1319,13 @@ public:
 		    const std::string rt = rlit->getDatatype()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return lex < 0;
+			return _int2e_SORT(lex);
 		} else {
-		    return false; // "5"^^my:int > "5"
+		    return SORT_gt; // "5"^^my:int > "5"
 		}
 	    } else {
 		if (rlit->getDatatype() != NULL) {
-		    return true; // "5" < "5"^^my:int
+		    return SORT_lt; // "5" < "5"^^my:int
 		}
 	    }
 
@@ -1329,20 +1336,41 @@ public:
 		    const std::string rt = rlit->getLangtag()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return lex < 0;
+			return _int2e_SORT(lex);
 		} else {
-		    return false; // "5"@en > "5"
+		    return SORT_gt; // "5"@en > "5"
 		}
 	    } else {
 		if (rlit->getLangtag() != NULL) {
-		    return true; // "5" < "5"@en
+		    return SORT_lt; // "5" < "5"@en
 		}
 	    }
 	}
 	int lex = lhs->getLexicalValue().compare(rhs->getLexicalValue());
 	if (lex != 0)
-	    return lex < 0;
+	    return _int2e_SORT(lex);
 	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
+    }
+    e_SORT cmp (const TriplePattern* lhs, const TriplePattern* rhs) {
+	if (lhs->getS() != rhs->getS() &&
+	    dynamic_cast<const BNode*>(lhs->getS()) != NULL &&
+	    dynamic_cast<const BNode*>(rhs->getS()) != NULL)
+	    return safeCmp(lhs->getS(), rhs->getS());
+	if (lhs->getP() != rhs->getP() &&
+	    dynamic_cast<const BNode*>(lhs->getP()) != NULL &&
+	    dynamic_cast<const BNode*>(rhs->getP()) != NULL)
+	    return safeCmp(lhs->getP(), rhs->getP());
+	if (lhs->getO() != rhs->getO() &&
+	    dynamic_cast<const BNode*>(lhs->getO()) != NULL &&
+	    dynamic_cast<const BNode*>(rhs->getO()) != NULL)
+	    return safeCmp(lhs->getO(), rhs->getO());
+	if (lhs->getS() != rhs->getS())
+	    return safeCmp(lhs->getS(), rhs->getS());
+	if (lhs->getP() != rhs->getP())
+	    return safeCmp(lhs->getP(), rhs->getP());
+	if (lhs->getO() != rhs->getO())
+	    return safeCmp(lhs->getO(), rhs->getO());
+	return SORT_eq;
     }
     bool eval(const Expression* expression, const Result* row);
 };
@@ -1409,9 +1437,9 @@ TableOperation class hierarchy:               Base
                                                |
                              ___________TableOperation_____________
             ________________/                  |                   \__________________
-     TableJunction                    BasicGraphPattern                     TableOperationOnOperation
-        /        \                       /          \                           /               \
-T*Conjunction T*Disjunction   NamedGraphPattern  DefaultGraphPattern  GraphGraphPattern  OptionalGraphPattern
+       TableJunction                  BasicGraphPattern                     _TableOperationOnOperation__
+        /        \                       /          \                      /     /        |       \     \
+T*Conjunction T*Disjunction   NamedGraphPattern  DefaultGraphPattern  Filter ServiceGP GraphGP OptionalGP MinusGP
 
 
 related Expressor operations:   base(Base* self, std::string productionName)
@@ -2545,7 +2573,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == 0 ? atomFactory->getTrue() : atomFactory->getFalse();
+	return l == r || atomFactory->cmp(l, r) == AtomFactory::SORT_eq ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -2560,7 +2588,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == 0 ? atomFactory->getFalse() : atomFactory->getTrue();
+	return l == r || atomFactory->cmp(l, r) == AtomFactory::SORT_eq ? atomFactory->getFalse() : atomFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -2575,7 +2603,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) < 0 ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == AtomFactory::SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -2590,7 +2618,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) > 0 ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == AtomFactory::SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -2605,7 +2633,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) <= 0 ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != AtomFactory::SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -2620,7 +2648,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) >= 0 ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != AtomFactory::SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
