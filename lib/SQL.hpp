@@ -66,6 +66,7 @@ namespace w3c_sw {
 	class ConcatConstraint;
 	class RegexConstraint;
 
+	struct EquivSet;
 	class WhereConstraint : public Constraint {
 	protected:
 	public:
@@ -74,6 +75,7 @@ namespace w3c_sw {
 	    std::string str () const { return toString(); }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
+	    virtual void getEquivs (struct EquivSet&) const {  }
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
 	    virtual bool finalEq (const ConjunctionConstraint&) const { return false; }
 	    virtual bool finalEq (const ReallyNullConstraint&) const { return false; }
@@ -153,6 +155,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
 	    }
+	    virtual void getEquivs(struct EquivSet&) const;
 	};
 	class DisjunctionConstraint : public JunctionConstraint {
 	    // DisjunctionConstraint (const Expression* l, const Expression* r) : JunctionConstraint(l, r) {  }
@@ -266,6 +269,7 @@ namespace w3c_sw {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return "="; };
+	    void getEquivs(struct EquivSet& equivs) const;
 	};
 	class BooleanNE : public BooleanComparator {
 	public:
@@ -473,6 +477,7 @@ namespace w3c_sw {
 		s << value;
 		return s.str();
 	    }
+	    int getValue () const { return value; }
 	};
 	class FloatConstraint : public WhereConstraint {
 	    float value;
@@ -538,9 +543,9 @@ namespace w3c_sw {
 	    }
 	};
 	class NullConstraint : public WhereConstraint {
-	    WhereConstraint* tterm;
+	    const WhereConstraint* tterm;
 	public:
-	    NullConstraint (WhereConstraint* tterm) : WhereConstraint(), tterm(tterm) {  }
+	    NullConstraint (const WhereConstraint* tterm) : WhereConstraint(), tterm(tterm) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const NullConstraint&) const {
 		return true;
@@ -561,7 +566,7 @@ namespace w3c_sw {
 	    NegationConstraint (WhereConstraint* negated) : WhereConstraint(), negated(negated) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_Neg; }
 	    virtual bool finalEq (const NegationConstraint& l) const {
-		return l.negated == negated;
+		return *l.negated == *negated;
 	    }	    
 	    virtual bool operator== (const WhereConstraint& r) const {
 		return r.finalEq(*this);
@@ -765,6 +770,7 @@ namespace w3c_sw {
 	};
 
 	class AliasedSelect {
+	    friend struct EquivSet;
 	protected:
 	    const Expression* exp;
 	    std::string alias;
@@ -821,16 +827,8 @@ namespace w3c_sw {
 		     iOrderBy != orderBy.end(); ++iOrderBy)
 		    delete *iOrderBy;
 	    }
-	    bool finalEq (const SQLQuery& ref) const { // not needed in SQLQueryBase
-		return
-		    distinct == ref.distinct
-		    && limit == ref.limit
-		    && offset == ref.offset
-		    && ptrequal(selects.begin(), selects.end(), ref.selects.begin())
-		    && ptrequal(joins.begin(), joins.end(), ref.joins.begin())
-		    && ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())
-		    && ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin());
-	    }
+
+	    bool finalEq(const SQLQuery& ref) const;
 	    virtual bool finalEq (const SQLUnion&) const { return false; }
 	    virtual bool finalEq (const SQLOptional&) const { return false; }
 	    // virtual bool operator==(const Join& ref) const = 0; //!!! for SQLQueryBase
@@ -893,6 +891,66 @@ namespace w3c_sw {
 
 	    void add (Join* join) { joins.push_back(join); }
 	};
+
+	struct EquivSet {
+	    std::map<std::string, std::set<std::string> > equivs;
+	    EquivSet (const std::vector<const WhereConstraint*> constraints) {
+		for (std::vector<const WhereConstraint*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); ++it) {
+		    (*it)->getEquivs(*this);
+		}
+	    }
+	    void _insert (std::string k1, std::string k2) {
+		equivs[k1].insert(k2);
+		equivs[k2].insert(k1);
+	    }
+	    struct AliasedSelectSorter {
+		bool operator() (const AliasedSelect*l, const AliasedSelect*r) {
+		    return l->alias.compare(r->alias) < 0;
+		}
+	    };
+	    bool sameValues (const std::vector<AliasedSelect*> lvec, const std::vector<AliasedSelect*> rvec) {
+		AliasedSelectSorter sorter;
+		std::vector<AliasedSelect*> lsort(lvec.begin(), lvec.end());
+		std::vector<AliasedSelect*> rsort(rvec.begin(), rvec.end());
+		std::sort(lsort.begin(), lsort.end(), sorter);
+		std::sort(rsort.begin(), rsort.end(), sorter);
+
+		std::vector<AliasedSelect*>::const_iterator l = lsort.begin();
+		std::vector<AliasedSelect*>::const_iterator r = rsort.begin();
+		while (l != lsort.end() && r != rsort.end()) {
+		    if (!(**l == **r) && ((*l)->alias != (*r)->alias
+					  || equivs[(*l)->exp->toString()].find((*r)->exp->toString()) == equivs[(*l)->exp->toString()].end()))
+			return false;
+		    ++l;
+		    ++r;
+		}
+		return true;
+	    }
+	};
+
+	inline void ConjunctionConstraint::getEquivs (struct EquivSet& equivs) const {
+	    for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		 it != constraints.end(); ++it)
+		(*it)->getEquivs(equivs);
+	}
+	inline void BooleanEQ::getEquivs (struct EquivSet& equivs) const {
+	    if (dynamic_cast<const AliasAttrConstraint*>(left) != NULL
+		&& dynamic_cast<const AliasAttrConstraint*>(right) != NULL)
+		equivs._insert(left->toString(), right->toString());
+	}
+
+	inline bool SQLQuery::finalEq (const SQLQuery& ref) const { // not needed in SQLQueryBase
+	    return
+		distinct == ref.distinct
+		&& limit == ref.limit
+		&& offset == ref.offset
+		// && ptrequal(selects.begin(), selects.end(), ref.selects.begin())
+		&& EquivSet(constraints).sameValues(selects, ref.selects)
+		&& ptrequal(joins.begin(), joins.end(), ref.joins.begin())
+		&& ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())
+		&& ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin());
+	}
 
 	inline std::ostream& operator<< (std::ostream& os, SQLQuery const& my) {
 	    return os << my.str();
