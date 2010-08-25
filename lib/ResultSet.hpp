@@ -443,20 +443,20 @@ namespace w3c_sw {
 		sparqlParser.root->execute(db, &listOfResults);
 		delete sparqlParser.root;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
-		const TTerm* lastSoln = NULL;
-		Result* r = NULL;
+		std::map<const TTerm*, Result*> tterm2r;
 		for (ResultSetIterator resultRecord = listOfResults.begin(); 
 		     resultRecord != listOfResults.end(); ++resultRecord) {
 		    const TTerm* soln = (*resultRecord)->get(atomFactory->getVariable("soln"));
 		    const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
 		    const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
 		    const TTerm* val  = (*resultRecord)->get(atomFactory->getVariable("val" ));
-		    if (lastSoln != soln) {
-			r = new Result(this);
+		    std::map<const TTerm*, Result*>::iterator ttr = tterm2r.find(soln);
+		    if (ttr == tterm2r.end()) {
+			Result* r = new Result(this);
 			insert(end(), r);
-			lastSoln = soln;
+			tterm2r[soln] = r;
 		    }
-		    set(r, var, val, false);
+		    set(tterm2r[soln], var, val, false);
 		}
 	    }
 	}

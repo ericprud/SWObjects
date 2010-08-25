@@ -1536,19 +1536,45 @@ public:
     virtual TableOperation* getDNF() const;
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
-    typedef std::multimap<const TTerm*, const TriplePattern*> idx_type;
-    typedef std::pair<const TTerm*, const TriplePattern*> idx_pair;
-    typedef std::pair<idx_type::const_iterator, idx_type::const_iterator> idx_range;
+    typedef std::multimap<const TTerm*, const TriplePattern*> TTerm2Triple_type;
+    typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
+    typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
+
+    struct TTerm2TTerm2Triple_type : public std::map<const TTerm*, TTerm2Triple_type> {
+	typedef std::pair<TTerm2TTerm2Triple_type::const_iterator, TTerm2TTerm2Triple_type::const_iterator> range;
+	TTerm2Triple_range get(const TTerm* outer, const TTerm* inner, bool* failed) const {
+	    TTerm2TTerm2Triple_type::const_iterator oit = find(outer);
+	    if (oit == end()) {
+		*failed = true;
+		return TTerm2Triple_range();
+	    } else
+		return oit->second.equal_range(inner);
+	}
+	range get (const TTerm* outer, bool* failed) const {
+	    TTerm2TTerm2Triple_type::const_iterator oit = find(outer);
+	    if (oit == end()) {
+		*failed = true;
+		return range(end(), end());
+	    } else {
+		TTerm2TTerm2Triple_type::const_iterator next(oit);
+		++next;
+		return range(oit, next);
+	    }
+	}
+    };
+    typedef std::pair<const TTerm*, TTerm2Triple_type> TTerm2TTerm2Triple_pair;
 
 protected:
 
     // make sure we don't delete the TriplePatterns
     NoDelProductionVector<const TriplePattern*> m_TriplePatterns;
-    idx_type idx;
+    TTerm2TTerm2Triple_type SP;
+    TTerm2TTerm2Triple_type PO;
+    TTerm2TTerm2Triple_type OS;
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
     BasicGraphPattern (const BasicGraphPattern& ref) :
-	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), // idx(ref.idx), 
+	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), // TTerm2TTerm2Triple(ref.TTerm2TTerm2Triple), 
 	allOpts(ref.allOpts) {  }
 
     /* Misc helper functions: */
@@ -1564,13 +1590,17 @@ public:
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
     static bool CompareVars;		// Whether ?x == ?y .
 
-    void addTriplePattern (const TriplePattern* p) {
-	idx_range range = idx.equal_range (p->getP());
-	for ( ; range.first != range.second; ++range.first)
-	    if ((*range.first).second == p)
-		return;
-	m_TriplePatterns.push_back(p);
-	idx.insert(idx_pair(p->getP(), p));
+    void addTriplePattern (const TriplePattern* t) {
+	if (OS.find(t->getO()) != OS.end()) {
+	    TTerm2Triple_range range = OS[t->getO()].equal_range(t->getS());
+	    for ( ; range.first != range.second; ++range.first)
+		if ((*range.first).second == t)
+		    return;
+	}
+	m_TriplePatterns.push_back(t);
+	SP[t->getS()].insert(TTerm2Triple_pair(t->getP(), t));
+	PO[t->getP()].insert(TTerm2Triple_pair(t->getO(), t));
+	OS[t->getO()].insert(TTerm2Triple_pair(t->getS(), t));
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const TTerm* graphVar, const BasicGraphPattern* toMatch, const TTerm* graphName) const;

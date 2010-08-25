@@ -1276,22 +1276,76 @@ compared against
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		bool rowMatched = false;
-		const TTerm* pToMatch = (*constraint)->getP();
+		const TTerm* s = (*constraint)->getS();
+		if (dynamic_cast<const Bindable*>(s))
+		    s = (*row)->get(s);
+		const TTerm* p = (*constraint)->getP();
+		if (dynamic_cast<const Bindable*>(p))
+		    p = (*row)->get(p);
+		const TTerm* o = (*constraint)->getO();
+		if (dynamic_cast<const Bindable*>(o))
+		    o = (*row)->get(o);
 
-		idx_range range
-		    = dynamic_cast<const Bindable*>(pToMatch) 
-		    ? idx_range(idx.begin(), idx.end())
-		    : idx.equal_range (pToMatch);
-		for (idx_type::const_iterator triple = range.first; triple != range.second; ++triple) {
-		    Result* newRow = (*row)->duplicate(rs, row);
-		    /* @@@ move filter her */
-		    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
-			rowMatched = true;
-			rs->insert(row, newRow);
-		    } else {
-			delete newRow;
+		TTerm2TTerm2Triple_type::range outer;
+		TTerm2Triple_type::const_iterator e;
+		TTerm2Triple_range inner(e, e);
+		bool useOuter = false;
+		bool matchFail = false;
+		if (s)
+		    if (p)
+			inner = SP.get(s, p, &matchFail);
+		    else if (o)
+			inner = OS.get(o, s, &matchFail);
+		    else {
+			outer = SP.get(s, &matchFail);
+			useOuter = true;
 		    }
+		else if (p)
+		    if (o)
+			inner = PO.get(p, o, &matchFail);
+		    else {
+			outer = PO.get(p, &matchFail);
+			useOuter = true;
+		    }
+		else if (o) {
+		    outer = OS.get(o, &matchFail);
+		    useOuter = true;
+		} else {
+		    outer = TTerm2TTerm2Triple_type::range(SP.begin(), SP.end());
+		    useOuter = true;
 		}
+		    
+		// TTerm2Triple_range inner
+		//     = dynamic_cast<const Bindable*>(pToMatch) 
+		//     ? TTerm2Triple_range(TTerm2Triple.begin(), TTerm2Triple.end())
+		//     : TTerm2Triple.equal_range (pToMatch);
+
+		if (!matchFail)
+		    if (!useOuter)
+			for (TTerm2Triple_type::const_iterator triple = inner.first; triple != inner.second; ++triple) {
+			    Result* newRow = (*row)->duplicate(rs, row);
+			    /* @@@ move filter her */
+			    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+				rowMatched = true;
+				rs->insert(row, newRow);
+			    } else {
+				delete newRow;
+			    }
+			}
+		    else
+			for (TTerm2TTerm2Triple_type::const_iterator tterm2triple = outer.first; tterm2triple != outer.second; ++tterm2triple) {
+			    inner = TTerm2Triple_range(tterm2triple->second.begin(), tterm2triple->second.end());
+			    for (TTerm2Triple_type::const_iterator triple = inner.first; triple != inner.second; ++triple) {
+				Result* newRow = (*row)->duplicate(rs, row);
+				/* @@@ move filter her */
+				if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+				    rowMatched = true;
+				    rs->insert(row, newRow);
+				} else {
+				    delete newRow;
+				}
+			    }
+			}
 		if (rowMatched || !toMatch->allOpts) {
 		    delete *row;
 		    row = rs->erase(row);
