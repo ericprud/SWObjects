@@ -79,7 +79,6 @@ typedef int flex_int32_t;
 typedef unsigned char flex_uint8_t; 
 typedef unsigned short int flex_uint16_t;
 typedef unsigned int flex_uint32_t;
-#endif /* ! C99 */
 
 /* Limits of integral types. */
 #ifndef INT8_MIN
@@ -110,6 +109,8 @@ typedef unsigned int flex_uint32_t;
 #define UINT32_MAX             (4294967295U)
 #endif
 
+#endif /* ! C99 */
+
 #endif /* ! FLEXINT_H */
 
 /* %endif */
@@ -118,8 +119,8 @@ typedef unsigned int flex_uint32_t;
 /* begin standard C++ headers. */
 #include <iostream> 
 #include <errno.h>
-#include <cstdio>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 /* end standard C++ headers. */
 /* %endif */
@@ -191,7 +192,15 @@ typedef unsigned int flex_uint32_t;
 
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k.
+ * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+ * Ditto for the __ia64__ case accordingly.
+ */
+#define YY_BUF_SIZE 32768
+#else
 #define YY_BUF_SIZE 16384
+#endif /* __ia64__ */
 #endif
 
 /* The state buf must be large enough to hold one state per character in the main buffer.
@@ -3073,7 +3082,7 @@ typedef w3c_sw::MapSetParser::token_type token_type;
 /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
 /* END patterns for MapSet terminals */
 /* START semantic actions for MapSet terminals */
-#line 3077 "lib/MapSetScanner.cpp"
+#line 3086 "lib/MapSetScanner.cpp"
 
 #define INITIAL 0
 
@@ -3130,7 +3139,12 @@ static int yy_flex_strlen (yyconst char * );
 
 /* Amount of stuff to slurp up with each read. */
 #ifndef YY_READ_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k */
+#define YY_READ_BUF_SIZE 16384
+#else
 #define YY_READ_BUF_SIZE 8192
+#endif /* __ia64__ */
 #endif
 
 /* Copy whatever the last rule matched to the standard output. */
@@ -3232,7 +3246,7 @@ YY_DECL
 /* %% [7.0] user's declarations go here */
 #line 208 "lib/MapSetScanner.lpp"
 
-#line 3236 "lib/MapSetScanner.cpp"
+#line 3250 "lib/MapSetScanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -3824,7 +3838,7 @@ YY_RULE_SETUP
 #line 309 "lib/MapSetScanner.lpp"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 3828 "lib/MapSetScanner.cpp"
+#line 3842 "lib/MapSetScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{

@@ -3336,7 +3336,7 @@ const URI* TrigSScanner::resolvePrefix (const char* yytext){
     const URI* nspace = driver->getNamespace(ret.substr(0, index));
     if (nspace == NULL) {
 	std::stringstream err;
-	err << "Unknown prefix: \"" << ret.substr(0, index) << " asdf";
+	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
 	throw(std::runtime_error(err.str()));
     }
     ret.replace(0, index+1, nspace->getLexicalValue());
