@@ -26,12 +26,13 @@ namespace w3c_sw {
 	    : SWWEBagent(), authHandler(authHandler), authPreempt(authPreempt)
 	{  }
 	~WEBagent_boostASIO () {  }
-	virtual std::string get (
+	virtual std::string _execute (std::string method,
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
 #else /* !REGEX_LIB == SWOb_BOOST */
-				 const char* url
+				 std::string url
 #endif /* !REGEX_LIB == SWOb_BOOST */
+				 , std::string urlParms, std::string reqBody
 				 ) {
 #if REGEX_LIB == SWOb_BOOST
 	    // !!! duplicate of SPARQL_server.cpp
@@ -39,7 +40,7 @@ namespace w3c_sw {
 	    boost::cmatch matches;
 
 	    re = "(ftp|http|https):\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
-	    if (!boost::regex_match(url, matches, re))
+	    if (!boost::regex_match(url.c_str(), matches, re))
 		throw std::string("Address ") + url + " is not a valid URL\n";
 
 #define PROT 1
@@ -70,12 +71,22 @@ namespace w3c_sw {
 		// allow us to treat all data up until the EOF as the content.
 		boost::asio::streambuf request;
 		std::ostream request_stream(&request);
-		request_stream << "GET " << path << " HTTP/1.0\r\n";
+		request_stream << method << " " << path;
+		if (urlParms.size() != 0)
+		    request_stream << (path.find_first_of("?") == std::string::npos ? "?" : 
+				       path.at(path.size()-1) == '&' ? "" : 
+				       "&") << urlParms;
+		request_stream << " HTTP/1.0\r\n";
 		request_stream << "Host: " << host << "\r\n";
 		request_stream << "Accept: */*\r\n";
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
+		if (reqBody.size() != 0) {
+		    request_stream << "Content-Type: application/x-www-form-urlencoded\r\n";
+		    request_stream << "Content-Length: " << reqBody.size() << "\r\n";
+		}
 		request_stream << "Connection: close\r\n\r\n";
+		request_stream << reqBody;
 
 		// Get a list of endpoints corresponding to the server name.
 		tcp::resolver resolver(io_service);
@@ -166,6 +177,7 @@ namespace w3c_sw {
 
 	    return body.str();
 	}
+
     };
 
 } /* namespace w3c_sw */

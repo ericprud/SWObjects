@@ -630,8 +630,11 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	} else if (path == "/") {
 	    rep.status = sw::webserver::reply::ok;
 	    head(sout, "Q&amp;D SPARQL Server");
+	    const char* method =
+		sw::ServiceGraphPattern::defaultServiceProtocol == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
+		"post";
 	    sout << 
-		"    <form action='" << server.path << "' method='get'>\n"
+		"    <form action='" << server.path << "' method='" << method << "'>\n"
 		"      Query: <textarea name='query' rows='25' cols='80'></textarea> <input type='submit' /><br />\n"
 		"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
 		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
@@ -1225,6 +1228,7 @@ int main(int ac, char* av[])
             ("header+", po::value<headerAppend>(), 
 	     "append earlier value of header.")
             ("once", "SPARQL server handles one request.")
+            ("post", "use POST (while GET is obviously superior) for SPARQL services.")
             ;
 
         po::options_description sqlOpts("SQL options");
@@ -1497,6 +1501,8 @@ int main(int ac, char* av[])
 		/* Act as a SPARQL server. */
 		if (vm.count("once"))
 		    TheServer.runOnce = true;
+		if (vm.count("post"))
+		    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
 		int serverPort = 8888;
 
 #if REGEX_LIB == SWOb_BOOST

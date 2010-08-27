@@ -1207,6 +1207,7 @@ compared against
     CanonicalRDFLiteral::e_CANON CanonicalRDFLiteral::format = CANON_brief;
     std::ostream* BasicGraphPattern::DiffStream = NULL;
     bool BasicGraphPattern::CompareVars = false;
+    ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultServiceProtocol = ServiceGraphPattern::HTTP_METHOD_GET;
 
     /* constOrNull helper function for cheesy operator== below */
     const TTerm* BasicGraphPattern::_cOrN (const TTerm* tterm, const NULLtterm* n) {
@@ -1320,7 +1321,7 @@ compared against
 		//     ? TTerm2Triple_range(TTerm2Triple.begin(), TTerm2Triple.end())
 		//     : TTerm2Triple.equal_range (pToMatch);
 
-		if (!matchFail)
+		if (!matchFail) {
 		    if (!useOuter)
 			for (TTerm2Triple_type::const_iterator triple = inner.first; triple != inner.second; ++triple) {
 			    Result* newRow = (*row)->duplicate(rs, row);
@@ -1346,6 +1347,7 @@ compared against
 				}
 			    }
 			}
+		}
 		if (rowMatched || !toMatch->allOpts) {
 		    delete *row;
 		    row = rs->erase(row);
@@ -1430,17 +1432,27 @@ compared against
 
 	/* Constrain query with any existing result bindings. */
 	const Operation* rsConstrained = rs->getConstrainedOperation(query);
-	SWWEBagent::Parameter p("query", SWWEBagent::urlEncode((rsConstrained ? rsConstrained : query)->toString()));
+	SWWEBagent::ParameterList p;
+	p.set("query", (rsConstrained ? rsConstrained : query)->toString());
 	if (rsConstrained)
 	    delete rsConstrained;
 	delete query;
-	std::string q(SWWEBagent::getURL(service->getLexicalValue(), &p, 1));
 
 	if (debugStream != NULL && *(debugStream) != NULL)
-	    **(debugStream) << "Querying <" << service->getLexicalValue() << "> for\n" << q;
+	    **(debugStream) << "Querying <" << service->getLexicalValue() << "> for\n" << p;
 
 	/* Do an HTTP GET and parse results into a ResultSet. */
-	std::string s(agent->get(q.c_str()));
+	std::string s;
+	switch (ServiceGraphPattern::defaultServiceProtocol) {
+	case ServiceGraphPattern::HTTP_METHOD_GET:
+	    s = agent->get(service->getLexicalValue().c_str(), p);
+	    break;
+	case ServiceGraphPattern::HTTP_METHOD_POST:
+	    s = agent->post(service->getLexicalValue().c_str(), p);
+	    break;
+	default:
+	    throw "program flow exception -- unknown defaultServiceProtocol";
+	}
 	IStreamContext istr(s, IStreamContext::STRING);
 	ResultSet red(atomFactory, xmlParser, istr);
 	if (debugStream != NULL && *(debugStream) != NULL)

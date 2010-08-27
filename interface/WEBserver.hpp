@@ -37,12 +37,14 @@ namespace w3c_sw {
 	    int http_version_minor;
 	    typedef std::vector<header> headerset;
 	    headerset headers;
+	    std::string body;
 	    virtual std::string getPath() const = 0;
 	    virtual ~request () {  }
 	    void url_decode();
 	    std::string request_path;
 	    typedef std::multimap<std::string, std::string> parmmap;
 	    parmmap parms;
+	    size_t content_length;
 	};
 
 	struct reply
@@ -87,8 +89,11 @@ namespace w3c_sw {
 	    static reply stock_reply(status_type status);
 	};
 
+	// inline void request::url_decode ()
 	inline void request::url_decode ()
 	{
+	    if (method != "GET" && method != "POST")
+		throw "not implemented error: url_decode only supports GET and POST.";
 	    request_path.clear();
 	    request_path.reserve(uri.size());
 	    std::string& in = uri;
@@ -125,14 +130,20 @@ namespace w3c_sw {
 		}
 		switch (nowIn) {
 		case IN_path:
-		    if (end == uri.size())
-		        goto done;
-		    if (in[end] == '?') {
+		    if (method == "GET" && end == uri.size())
+			goto done;
+		    if ((method == "GET" && in[end] == '?') || 
+			(method == "POST" && end == uri.size())) {
+			if (method == "POST") {
+			    in = body;
+			    i = -1;
+			    end = 0;
+			}
 			nowIn = IN_parm;
 			out = &parm;
 			++i;
-			if (++end != uri.size()) {
-			    end = uri.find_first_of("=", end);
+			if (++end != in.size()) {
+			    end = in.find_first_of("=", end);
 			    if (end == std::string::npos)
 				throw w3c_sw::webserver::reply::
 				    stock_reply(w3c_sw::webserver::reply::bad_request);
@@ -142,21 +153,21 @@ namespace w3c_sw {
 		case IN_parm:
 		    nowIn = IN_value;
 		    out = &value;
-		    end = uri.find_first_of("&", end);
+		    end = in.find_first_of("&", end);
 		    if (end == std::string::npos)
-			end = uri.size();
-		    if (i < uri.size())
+			end = in.size();
+		    if (i < in.size())
 			++i;
 		    break;
 		case IN_value:
 		    parms.insert(std::pair<std::string, std::string>(parm, value));
-		    if (end == uri.size())
+		    if (end == in.size())
 		        goto done;
 		    nowIn = IN_parm;
 		    parm.clear();
 		    value.clear();
 		    out = &parm;
-		    end = uri.find_first_of("=", end);
+		    end = in.find_first_of("=", end);
 		    if (end == std::string::npos)
 			throw w3c_sw::webserver::reply::
 			    stock_reply(w3c_sw::webserver::reply::bad_request);

@@ -95,8 +95,11 @@ namespace w3c_sw {
 		space_before_header_value,
 		header_value,
 		expecting_newline_2,
-		expecting_newline_3
+		expecting_newline_3,
+		expecting_body
 	    } state_;
+
+	    size_t body_size;
 	};
 
 	inline request_parser::request_parser()
@@ -110,6 +113,7 @@ namespace w3c_sw {
 
 	inline boost::tribool request_parser::consume(request& req, char input)
 	{
+	    req.content_length = 0;
 	    switch (state_)
 		{
 		case method_start:
@@ -266,6 +270,11 @@ namespace w3c_sw {
 		    }
 		case header_lws:
 		    if (input == '\r') {
+			if (req.headers.back().name == "Content-Length") {
+			    std::istringstream is(req.headers.back().value);
+			    is >> body_size;
+			    req.content_length = body_size;
+			}
 			state_ = expecting_newline_2;
 			return boost::indeterminate;
 		    }
@@ -302,6 +311,11 @@ namespace w3c_sw {
 		    }
 		case header_value:
 		    if (input == '\r') {
+			if (req.headers.back().name == "Content-Length") {
+			    std::istringstream is(req.headers.back().value);
+			    is >> body_size;
+			    req.content_length = body_size;
+			}
 			state_ = expecting_newline_2;
 			return boost::indeterminate;
 		    }
@@ -321,7 +335,23 @@ namespace w3c_sw {
 			return false;
 		    }
 		case expecting_newline_3:
-		    return (input == '\n');
+		    if (input == '\n') {
+			if (body_size == 0)
+			    return true;
+			else {
+			    state_ = expecting_body;
+			    return boost::indeterminate;
+			}
+		    }
+		    else {
+			return false;
+		    }
+		case expecting_body:
+		    req.body.append(1, input);
+		    if (--body_size > 0)
+			return boost::indeterminate;
+		    else
+			return true;
 		default:
 		    return false;
 		}
@@ -366,6 +396,7 @@ namespace w3c_sw {
 	    
 	}
 	inline std::string asioRequest::getPath () const {
+	    // I can't decide whether const-ness should reflect internals (initialization) or just API.
 	    if (!initialized)
 		(const_cast<asioRequest*>(this))->url_decode();
 	    return request_path;

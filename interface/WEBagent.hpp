@@ -21,19 +21,69 @@ namespace w3c_sw {
 	SWWEBagent () {  }
 	virtual ~SWWEBagent () {  }
 	std::string getMediaType () { return mediaType; }
-	virtual std::string get(
+	struct ParameterList : public std::multimap<std::string, std::string> {
+	    ParameterList::iterator set(std::string key, std::string value) {
+		return insert(std::pair<std::string, std::string>(key, value));
+	    }
+	    std::string str () const {
+		std::stringstream ss;
+		for (ParameterList::const_iterator it = begin();
+		     it != end(); ++it) {
+		    if (it != begin())
+			ss << "&";
+		    ss << urlEncode(it->first) << "=" << urlEncode(it->second);
+		}
+		return ss.str();
+	    }
+	};
+	virtual std::string _execute(std::string method,
 #if REGEX_LIB == SWOb_DISABLED
-				std::string host, std::string port, std::string path
-#else /* !REGEX_LIB == SWOb_DISABLED */
-				const char* url
-#endif /* !REGEX_LIB == SWOb_DISABLED */
-				) = 0;
+				 std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 std::string url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				     , std::string urlParms, std::string body
+				     ) = 0;
+
+	virtual std::string get (
+#if REGEX_LIB == SWOb_DISABLED
+				 std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 const char* url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 , const ParameterList p = ParameterList()
+				 ) {
+	    return _execute ("GET",
+#if REGEX_LIB == SWOb_DISABLED
+				 host, port, path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 , p.str().c_str(), "");
+	}
+	virtual std::string post (
+#if REGEX_LIB == SWOb_DISABLED
+				 std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 const char* url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 , const ParameterList p
+				 ) {
+	    return _execute("POST",
+#if REGEX_LIB == SWOb_DISABLED
+				 host, port, path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 , "", p.str().c_str());
+	}
 
 	struct Parameter {
 	    std::string attr;
 	    std::string value;
 	    Parameter (std::string attr, std::string value) : attr(attr), value(value) {  }
 	};
+
 	static std::string getURL (std::string service, const Parameter* start, size_t count) {
 	    std::stringstream s;
 	    s << service;
@@ -118,6 +168,11 @@ namespace w3c_sw {
 
 
     };
+
+    inline std::ostream& operator<< (std::ostream& os, const SWWEBagent::ParameterList& p) {
+	os << p.str();
+	return os;
+    }
 
 } // namespace w3c_sw
 
