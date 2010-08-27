@@ -134,11 +134,23 @@ namespace w3c_sw {
 	    bool finalEq (const JunctionConstraint& ref) const {
 		if (constraints.size() != ref.constraints.size())
 		    return false;
-		std::vector<const Expression*>::const_iterator mit = constraints.begin();
-		std::vector<const Expression*>::const_iterator rit = ref.constraints.begin();
-		for ( ; mit != constraints.end(); ++mit, ++rit)
-		    if ( !(**mit == **rit) )
-			return false;
+
+		// for ( ; mit != constraints.end(); ++mit, ++rit)
+		//     if ( !(**mit == **rit) )
+		// 	return false;
+
+		std::vector<const Expression*> copy(ref.constraints.begin(), ref.constraints.end());
+		std::vector<const Expression*>::const_iterator mit;
+		std::vector<const Expression*>::iterator rit;
+		for (mit = constraints.begin(), rit = copy.begin(); mit != constraints.end(); ) {
+		    while (!(**mit == **rit) && rit != copy.end())
+			++rit;
+		    if (rit == copy.end())
+			return false; // didn't find it in our copy.
+		    copy.erase(rit);
+		    rit = copy.begin();
+		    ++mit;
+		}
 		return true;
 	    }
 	    virtual std::string getJunctionString() const = 0;
