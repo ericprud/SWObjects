@@ -645,8 +645,11 @@ namespace w3c_sw {
 			const TTerm* val = (*row)->get(*col);
 			if (val != NULL)
 			    xml->leaf("td", val->toString());
-			else
-			    xml->leaf("td", "");
+			else {
+			    xml->open("td");
+			    xml->leaf("em", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
+			    xml->close();
+			}
 		    }
 		} xml->close();
 	    }
