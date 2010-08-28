@@ -1089,6 +1089,8 @@ public:
 	    s != "true"  || s != "1")
 	    throw TypeError(s, "validate boolean");
     }
+    /** valdiate per http://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
+     */
     void _validateDateTime (std::string s) {
 	/* '-'? yyyy '-' mm '-' dd 'T' hh ':' mm ':' ss ('.' s+)? (zzzzzz)?
 	 * per <http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#dateTime-lexical-representation>
@@ -1159,8 +1161,9 @@ public:
 	    if (l < 0 || l > 59 || end != ptr+2)
 		throw TypeError(s, "xsd:datetime timezone minute");
 	    ptr += 2;
-	} else if (*ptr != 'Z')
-	    throw TypeError(s, "xsd:datetime timezone");
+	} else if (*ptr == 'Z') {
+	    ptr++;
+	}
 
 	if (*ptr)
 	    throw TypeError(s, "xsd:datetime (garbage at end)");
