@@ -1469,10 +1469,8 @@ compared against
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
 	    if (graphVar != NULL) {
 		for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
-		    BindingSetConstIterator binding;
-		    const URI* graph;
-		    if ((binding = (*outerRow)->find(graphVar)) != (*outerRow)->end()
-			&& (graph = dynamic_cast<const URI*>(m_VarOrIRIref)) != NULL) {
+		    const URI* graph = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
+		    if (graph != NULL) {
 			ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
 			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
 			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
