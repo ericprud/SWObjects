@@ -284,7 +284,7 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 				  p_mediaType, webAgent, debugStream) {
     if (p == NULL) {
 	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading file " << nameStr << std::endl;
+	    **debugStream << "+ Stream constructed to read file " << nameStr << ".\n";
 	std::ifstream* istr = new std::ifstream(nameStr.c_str());
 	malloced = true;
 	p = istr;
@@ -300,7 +300,7 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
 				  p_mediaType, webAgent, debugStream) {
     if (p == NULL) {
 	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "writing file " << nameStr << std::endl;
+	    **debugStream << "+ Stream constructed to write file " << nameStr << ".\n";
 	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
 	malloced = true;
 	p = ostr;
@@ -1454,12 +1454,24 @@ compared against
 	    throw "program flow exception -- unknown defaultServiceProtocol";
 	}
 	IStreamContext istr(s, IStreamContext::STRING);
-	ResultSet red(atomFactory, xmlParser, istr);
-	if (debugStream != NULL && *(debugStream) != NULL)
-	    **(debugStream) << " yielded\n" << red;
+	try {
+	    ResultSet red(atomFactory, xmlParser, istr);
+	    if (debugStream != NULL && *(debugStream) != NULL) {
+		**(debugStream) << " yielded";
+		size_t size = red.size();
+		if (size > ResultSet::DebugEnumerateLimit)
+		    **debugStream << " " << size
+				  << " result" << (size == 1 ? "" : "s")
+				  << ".\n";
+		else
+		    **debugStream << "\n" << red;
+	    }
 
-	/* Join those results against our initial results. */
-	rs->joinIn(&red);
+	    /* Join those results against our initial results. */
+	    rs->joinIn(&red);
+	} catch (std::string e) {
+	    throw e + "\nerror parsing response from service " + service->toString() + ".";
+	}
     }
     void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
