@@ -80,7 +80,7 @@ namespace w3c_sw {
 	    va_start(args, msg);
 	    error( msg, args );
 	    va_end(args);
-	    throw("program flow exception");
+	    // throw("program flow exception");
 	}
 
 	virtual void error(const char* msg, va_list args) {
