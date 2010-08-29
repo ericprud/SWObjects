@@ -10,6 +10,8 @@
 
 namespace w3c_sw {
 
+    size_t RdfDB::DebugEnumerateLimit = 50;
+
     RdfDB::HandlerSet RdfDB::defaultHandler;
 
     RdfDB::~RdfDB () {

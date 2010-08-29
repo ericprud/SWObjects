@@ -37,7 +37,7 @@ namespace w3c_sw {
     public:
 	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
 	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
-	virtual std::string toString () const { return "::DefaultGraphClass::"; }
+	virtual std::string toString () const { return "Default Graph"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual void express (Expressor*) const { throw(std::runtime_error(FUNCTION_STRING)); };
     };
@@ -64,6 +64,7 @@ namespace w3c_sw {
 	std::ostream** debugStream;
 	HandlerSet* handler;
 	static HandlerSet defaultHandler;
+	static size_t DebugEnumerateLimit;
 
 	RdfDB (SWSAXparser* xmlParser = NULL)
 	    : graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL), handler(&defaultHandler)
@@ -84,6 +85,12 @@ namespace w3c_sw {
 		bgp->addTriplePattern(*it);
 	}
 	virtual ~RdfDB();
+	size_t size () {
+	    size_t ret = 0;
+	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
+		ret += it->second->size();
+	    return ret;
+	}
 	std::set<const TTerm*> getGraphNames () {
 	    std::set<const TTerm*> names;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)

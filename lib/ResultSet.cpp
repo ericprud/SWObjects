@@ -12,6 +12,7 @@ namespace w3c_sw {
 
     const char* ResultSet::NS_srx = "http://www.w3.org/2005/sparql-results#";
     const char* ResultSet::NS_xml = "http://www.w3.org/XML/1998/namespace";
+    size_t ResultSet::DebugEnumerateLimit = 50;
 
     void Result::set (const TTerm* variable, const TTerm* value, bool weaklyBound, bool replace) {
 	if (variable->toString() == "?") {
@@ -43,6 +44,7 @@ namespace w3c_sw {
     XMLSerializer* Result::toXml (XMLSerializer* xml) {
 	XMLQueryExpressor xmlizer(xml);
 	xml->open("result");
+	xml->attribute("xmlns:xsd", NS_xsd);
 	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++) {
 	    xml->open("binding");
 	    xml->attribute(it->first->getBindingAttributeName(), it->first->getLexicalValue());

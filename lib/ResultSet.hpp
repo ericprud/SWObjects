@@ -131,6 +131,7 @@ namespace w3c_sw {
 	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
 	ResultType resultType;
 	std::ostream** debugStream;
+	static size_t DebugEnumerateLimit;
 
 	ResultSet(AtomFactory* atomFactory, std::ostream** debugStream = NULL);
 	ResultSet (const ResultSet& ref) : 
