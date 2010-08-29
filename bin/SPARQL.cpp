@@ -350,17 +350,17 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 
 	if (queryMapper.getRuleCount() > 0) {
 	    if (DebugStream != NULL)
-		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps." << std::endl;
+		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
 	    const sw::Operation* transformed(queryMapper.map(query));
 	    if (delMe != NULL)
 		delete delMe;
 	    query = delMe = transformed;
 	}
 
-	if (Debug > 0) {
+	if (DebugStream != NULL) {
 	    sw::SPARQLAlgebraSerializer s;
 	    query->express(&s);
-	    std::cout << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	    *DebugStream << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 	}
 
 	bool executed = false;
@@ -381,10 +381,12 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    finalQuery = sqlizer.getSQLstring();
 
 	    bool doSQLquery = !SQLServer.empty() || !SQLDatabase.empty() || !SQLUser.empty();
-	    if (Debug > 0)
-		std::cout << "SQL: " << std::endl;
-	    if (Debug > 0 || doSQLquery == false)
+	    if (DebugStream != NULL)
+		*DebugStream << "SQL: " << std::endl;
+	    if (doSQLquery == false)
 		std::cout << finalQuery << std::endl;
+	    else if (DebugStream != NULL)
+		*DebugStream << "SQL Query: " << finalQuery << std::endl;
 
 #if SQL_CLIENT != SWOb_DISABLED
 	    if (doSQLquery == true) {
@@ -416,16 +418,16 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		sw::SWWEBagent::Parameter p("query", sw::SWWEBagent::urlEncode(query->toString()));
 		std::string q(sw::SWWEBagent::getURL(serviceURI, &p, 1));
 		if (printQuery) {
-		    if (Debug > 0)
-			std::cout << "service query: " << std::endl;
+		    if (DebugStream != NULL)
+			*DebugStream << "Service query: " << std::endl;
 		    std::cout << q << std::endl;
 		}
 		if (NoExec == false) {
 		    std::string s(Agent.get(q.c_str()));
 		    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
 		    sw::ResultSet red(&F, &P, istr);
-		    if (Debug > 0)
-			std::cout << " yielded\n" << red;
+		    if (DebugStream != NULL)
+			*DebugStream << " yielded\n" << red;
 
 		    /* Join those results against our initial results. */
 		    rs.joinIn(&red);
@@ -433,8 +435,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		}
 	    } else {
 		if (printQuery) {
-		    if (Debug > 0)
-			std::cout << "final query: " << std::endl;
+		    if (DebugStream != NULL)
+			*DebugStream << "Final query: " << ".\n";
 		    std::cout << query->toString() << std::endl;
 		}
 		if (NoExec == false) {
@@ -467,21 +469,21 @@ struct loadEntry {
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
 				&Agent, &DebugStream);
 	if (istr.mediaType.match("application/sparql-results+xml")) {
-	    if (Debug > 0) {
-		std::cout << "reading SPARQL XML Result Set " << nameStr;
+	    if (DebugStream != NULL) {
+		*DebugStream << "Reading SPARQL XML Result Set " << nameStr;
 		if (baseURI != NULL)
-		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		std::cout << " into result set." << std::endl;
+		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		*DebugStream << " into result set.\n";
 	    }
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else if (istr.mediaType.match("text/sparql-results")) {
-	    if (Debug > 0) {
-		std::cout << "reading data table " << nameStr;
+	    if (DebugStream != NULL) {
+		*DebugStream << "Reading data table " << nameStr;
 		if (baseURI != NULL)
-		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		std::cout << " into result set." << std::endl;
+		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		*DebugStream << " into result set.\n";
 	    }
 	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
@@ -490,11 +492,11 @@ struct loadEntry {
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
-	    if (Debug > 0) {
-		std::cout << "reading " << nameStr;
+	    if (DebugStream != NULL) {
+		*DebugStream << "Reading " << nameStr;
 		if (baseURI != NULL)
-		    std::cout << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		std::cout << " into graph <" << graph << ">." << std::endl;
+		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		*DebugStream << " into " << graph->toString() << ".\n";
 	    }
 	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
 			baseURI ? UriString(baseURI) : nameStr, &F);
@@ -574,7 +576,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 			} catch (std::string ex) {
 			    delete op;
 			    std::cerr << ex << std::endl;
-			    throw sw::WebHandler::SimpleMessageException(ex);
+			    throw sw::WebHandler::SimpleMessageException(sw::XMLSerializer::escapeCharData(ex));
 			}
 			const sw::VariableVector cols = rs.getOrderedVars();
 
@@ -739,7 +741,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 	    cmd << *iToken;
 	}
 	if (DebugStream != NULL)
-	    *DebugStream << "executing \"" << cmd.str().c_str() << "\"" << std::endl;
+	    *DebugStream << "Executing \"" << cmd.str().c_str() << "\".\n";
 	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
 	assert(p != NULL);
 	char buf[100];
@@ -812,8 +814,8 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
     Debug = i;
     DebugStream = (i > 0) ? &std::cerr : NULL;
     v = boost::any(debugLevel());
-    if (Debug > 0)
-	std::cout << "debug level: " << Debug << "\n";
+    if (DebugStream != NULL)
+	*DebugStream << "Debug level: " << Debug << ".\n";
 }
 
 /* Set Query to an RDFLiteral when parsed. */
@@ -870,11 +872,11 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
-	if (Debug > 0) {
+	if (DebugStream != NULL) {
 	    if (!DataMediaType)
-		std::cout << "using no data language mediatype.\n";
+		*DebugStream << "Using no data language mediatype.\n";
 	    else
-		std::cout << "using data language mediatype " << *DataMediaType << ".\n";
+		*DebugStream << "Using data language mediatype " << *DataMediaType << ".\n";
 	}
     }
 }
@@ -893,11 +895,11 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
 	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	DataMediaType = s;
-	if (Debug > 0) {
+	if (DebugStream != NULL) {
 	    if (!DataMediaType)
-		std::cout << "using no data mediatype mediatype.\n";
+		*DebugStream << "Using no data mediatype mediatype.\n";
 	    else
-		std::cout << "using data mediatype mediatype " << *DataMediaType << ".\n";
+		*DebugStream << "Using data mediatype mediatype " << *DataMediaType << ".\n";
 	}
     }
 }
@@ -911,8 +913,8 @@ void validateBase(const std::vector<std::string>& values, const sw::TTerm** setM
 	    (s == ".") ? CwdURI : 
 	    (s == ":") ? copySource : 
 	    htparseWrapper(s, *setMe);
-	if (Debug > 0)
-	    std::cout << " setting " << argName << " URI to " << (*setMe)->getLexicalValue() << "\n";
+	if (DebugStream != NULL)
+	    *DebugStream << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
     }
 }
 
@@ -941,8 +943,8 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     Output = loadEntry(NULL, abs, BaseURI);
-    if (Debug > 0)
-	std::cout << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << "\n";
+    if (DebugStream != NULL)
+	*DebugStream << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -952,16 +954,16 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
     const std::string& s = po::validators::get_single_string(values);
     if (s == ".") {
 	InPlace = true;
-	if (Debug > 0)
-	    std::cout << "Manipulating other input data.\n";
+	if (DebugStream != NULL)
+	    *DebugStream << "Manipulating other input data.\n";
     } else {
 	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
 	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
 	Output = loadEntry(NULL, abs, BaseURI);
-	if (Debug > 0) {
-	    std::cout << "Replacing data from " << abs->getLexicalValue();
+	if (DebugStream != NULL) {
+	    *DebugStream << "Replacing data from " << abs->getLexicalValue();
 	    if (BaseURI != NULL)
-		std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+		*DebugStream << " with base URI " << BaseURI->getLexicalValue() << ".\n";
 	}
     }
 }
@@ -973,10 +975,11 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
-    if (Debug > 0) {
-	std::cout << "queued reading default data from " << abs->getLexicalValue() << "\n";
+    if (DebugStream != NULL) {
+	*DebugStream << "Queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
+	*DebugStream << ".\n";
     }
 }
 
@@ -987,10 +990,11 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     MapList.push_back(loadEntry(NULL, abs, BaseURI));
-    if (Debug > 0) {
-	std::cout << "queued reading default map from " << abs->getLexicalValue() << "\n";
+    if (DebugStream != NULL) {
+	*DebugStream << "Queued reading default map from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
+	*DebugStream << ".\n";
     }
 }
 
@@ -1000,10 +1004,11 @@ void validate (boost::any&, const std::vector<std::string>& values, mapString*, 
 {
     const std::string& s = po::validators::get_single_string(values);
     MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
-    if (Debug > 0) {
-	std::cout << "queued reading default map from command line\n";
+    if (DebugStream != NULL) {
+	*DebugStream << "Queued reading default map from command line";
 	if (BaseURI != NULL)
-	    std::cout << " with base URI " << BaseURI->getLexicalValue() << "\n";
+	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
+	*DebugStream << ".\n";
     }
 }
 
@@ -1025,18 +1030,18 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
 	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI));
-	if (Debug > 0)
-	    std::cout << "reading named graph " << NamedGraphName->getLexicalValue()
+	if (DebugStream != NULL)
+	    *DebugStream << "Reading named graph " << NamedGraphName->toString()
 		      << " from " << vald->getLexicalValue()
-		      << BaseUriMessage() << "\n";
+		      << BaseUriMessage() << ".\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL && ServerURI.empty()) {
-	if (Debug > 0)
-	    std::cout << "query resource: " << vald->getLexicalValue() << "\n";
+	if (DebugStream != NULL)
+	    *DebugStream << "Query resource: " << vald->getLexicalValue() << ".\n";
 	Query = vald;
     } else {
-	if (Debug > 0)
-	    std::cout << "view: " << vald->getLexicalValue() << "\n";
+	if (DebugStream != NULL)
+	    *DebugStream << "View: " << vald->getLexicalValue() << ".\n";
 	Maps.push_back(vald);
     }
 }
@@ -1167,6 +1172,10 @@ int main(int ac, char* av[])
 	     "general, results, uri, query, data, http, sql, tutorial, all")
             ("debug", po::value<debugLevel>(), 
 	     "debugging level")
+            ("DbDebugEnumerateLimit", po::value<size_t>(),
+	     "max number of triples to serialize in debug stream")
+            ("ResultSetDebugEnumerateLimit", po::value<size_t>(),
+	     "max number of results to serialize in debug stream")
             ("no-exec,n", "don't execute (or load data)")
             ("pipe,p", "pipe query to output (print final query)")
             ("quiet,q", "quiet")
@@ -1280,32 +1289,32 @@ int main(int ac, char* av[])
 	po::notify(vm);
     
         if (vm.count("utf-8")) {
-	    if (Debug > 0)
-		std::cout << "Switching to utf-8.\n";
+	    if (DebugStream != NULL)
+		*DebugStream << "Switching to utf-8.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
         }
 
         if (vm.count("ascii")) {
-	    if (Debug > 0)
-		std::cout << "Switching to ASCII.\n";
+	    if (DebugStream != NULL)
+		*DebugStream << "Switching to ASCII.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
         }
 
         if (vm.count("bold")) {
-	    if (Debug > 0)
-		std::cout << "Switching to bold-bordered boxes.\n";
+	    if (DebugStream != NULL)
+		*DebugStream << "Switching to bold-bordered boxes.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BldChars;
         }
 
         if (vm.count("no-exec")) {
-	    if (Debug > 0)
-		std::cout << "Execution suppressed.\n";
+	    if (DebugStream != NULL)
+		*DebugStream << "Execution suppressed.\n";
             NoExec = true;
         }
 
         if (vm.count("quiet")) {
-	    if (Debug > 0)
-		std::cout << "Non-debug messages supressed.\n";
+	    if (DebugStream != NULL)
+		*DebugStream << "Non-debug messages supressed.\n";
             Quiet = true;
         }
 
@@ -1448,8 +1457,23 @@ int main(int ac, char* av[])
 		     it != LoadList.end(); ++it)
 		    it->loadGraph();
 
-		if (Debug > 0)
-		    std::cout << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
+		if (vm.count("DbDebugEnumerateLimit"))
+		    sw::RdfDB::DebugEnumerateLimit = vm["DbDebugEnumerateLimit"].as<size_t>();
+		if (vm.count("ResultSetDebugEnumerateLimit"))
+		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
+
+		if (DebugStream != NULL) {
+		    size_t size = TheServer.db.size();
+		    if (size > sw::RdfDB::DebugEnumerateLimit) {
+			size_t graphCount = TheServer.db.getGraphNames().size();
+			*DebugStream << "Loaded " << size
+				     << " triple" << (size == 1 ? "" : "s")
+				     << " into "
+				     << graphCount << " graph" << (graphCount == 1 ? "" : "s")
+				     << ".\n";
+		    } else
+			*DebugStream << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
+		}
 	    }
 
 	    if (vm.count("stem"))
@@ -1509,7 +1533,7 @@ int main(int ac, char* av[])
 		boost::regex re;
 		boost::cmatch matches;
 
-		re = "(ftp|http|https):\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
+		re = "(?:(ftp|http|https):)?\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
 		if (!boost::regex_match(ServerURI.c_str(), matches, re)) {
 		    std::cerr << "Address " << ServerURI << " is not a valid URL" << std::endl;
 		    exit(1);
