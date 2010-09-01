@@ -39,6 +39,7 @@ namespace w3c_sw {
 	    headerset headers;
 	    std::string body;
 	    virtual std::string getPath() const = 0;
+	    request () : content_length(0) {  };
 	    virtual ~request () {  }
 	    void url_decode();
 	    std::string request_path;

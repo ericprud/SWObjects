@@ -103,7 +103,7 @@ namespace w3c_sw {
 	};
 
 	inline request_parser::request_parser()
-	    : state_(method_start)
+	    : state_(method_start), body_size(0)
 	{  }
 
 	inline void request_parser::reset()
@@ -113,7 +113,6 @@ namespace w3c_sw {
 
 	inline boost::tribool request_parser::consume(request& req, char input)
 	{
-	    req.content_length = 0;
 	    switch (state_)
 		{
 		case method_start:
