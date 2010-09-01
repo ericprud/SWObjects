@@ -77,9 +77,8 @@ namespace w3c_sw {
 
     ResultSet* Result::makeResultSet (AtomFactory* atomFactory) {
 	ResultSet* ret = new ResultSet(atomFactory);
-	delete *ret->begin();
-	ret->erase(ret->begin());
-	ret->insert(ret->begin(), duplicate(ret, ret->begin()));
+	for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); it++)
+	    ret->set(*ret->begin(), it->first, it->second.tterm, it->second.weaklyBound);
 	return ret;
     }
     bool Result::isCompatibleWith (const Result* with) const {
