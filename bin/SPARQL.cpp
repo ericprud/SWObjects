@@ -230,6 +230,58 @@ unsigned char favicon[] = {
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
 };
 
+std::string QueryHeadElements =
+"    <style type=\"text/css\" media=\"screen\">\n"
+"/*<![CDATA[*/\n"
+"code {\n"
+"  font-weight: bold;\n"
+"  }\n"
+"\n"
+"#query { \n"
+"  border:1px solid #000;\n"
+"  padding-left: 1em;\n"
+"  background-color: #eee;\n"
+"  font-size: smaller;\n"
+"  }\n"
+"\n"
+"#results {\n"
+"  font-family:\"Trebuchet MS\", Arial, Helvetica, sans-serif;\n"
+"  width:100%;\n"
+"  border-collapse:collapse;\n"
+"  }\n"
+"#results td, #results th {\n"
+"  font-size:1.2em;\n"
+"  border:1px solid #98bf21;\n"
+"  padding:3px 7px 2px 7px;\n"
+"  }\n"
+"#results th {\n"
+"  font-size:1.4em;\n"
+"  text-align:left;\n"
+"  padding-top:5px;\n"
+"  padding-bottom:4px;\n"
+"  background-color:#A7C942;\n"
+"  color:#fff;\n"
+"  }\n"
+"#results tr.even td {\n"
+"  color:#000;\n"
+"  background-color:#EAF2D3;\n"
+"  }\n"
+"/*]]>*/\n"
+"    </style>\n"
+"\n"
+"    <script language=\"javascript\" type=\"text/javascript\">\n"
+"<!--\n"
+"function toggleDisplay(element){\n"
+"  s = document.getElementById(element).style\n"
+"  if(s.display == 'none')\n"
+"    s.display = 'block';\n"
+"  else\n"
+"    s.display = 'none';\n"
+"}\n"
+"-->\n"
+"    </script>\n"
+	  ;
+
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
@@ -319,7 +371,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    getcwd(buf, sizeof(buf)-1);
 #endif /* !_MSV_VER */
 	    if (buf[0]) {
-		std::cout << "working directory: " << buf << std::endl;
+		std::cout << "Working directory: " << buf << " ." << std::endl;
 		std::string base = std::string("file://localhost") + buf;
 		serviceGraph->addTriplePattern(atomFactory.getTriple(
 								    serviceURI, 
@@ -583,10 +635,23 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 			sw::XMLSerializer xml("  ");
 			parm = req.parms.find("media");
 			if (parm != req.parms.end() && parm->second == "html") {
-			    head(sout, "Query Results");
+			    head(sout, "SPARQL Query Results", QueryHeadElements);
 
 			    // cute lexical representation of xml nesting:
-			    xml.leaf("pre", newQuery);
+			    xml.open("p"); {
+				sw::XMLSerializer::Attributes a;
+				a["type"] = "checkbox";
+				a["onclick"] = "toggleDisplay('query')";
+				xml.empty("input", a);
+				xml.charData(" display query");
+				xml.close();
+			    }
+			    {
+				sw::XMLSerializer::Attributes a;
+				a["id"] = "query";
+				a["style"] = "display:none;";
+				xml.leaf("pre", newQuery, a);
+			    }
 			    rep.status = sw::webserver::reply::ok;
 			    rep.addHeader("Content-Type", 
 					  "text/html; charset=UTF-8");
@@ -595,7 +660,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 
 			    foot(sout);
 			} else if (parm != req.parms.end() && parm->second == "textplain") {
-			    head(sout, "Query Results");
+			    head(sout, "SPARQL Query Results");
 
 			    // cute lexical representation of xml nesting:
 			    xml.leaf("pre", newQuery);

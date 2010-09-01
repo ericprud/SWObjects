@@ -523,13 +523,14 @@ namespace w3c_sw {
 	    return ret;
 	}
 
-	static void head (std::ostringstream& sout, std::string title) {
+	static void head (std::ostringstream& sout, std::string title, std::string head = "") {
 	    sout << 
 		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
 		"          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
 		"  <head>\n"
-		"    <title>" << title << "</title>\n"
+		"    <title>" << title << "</title>\n" <<
+		head <<
 		"  </head>\n"
 		"  <body>\n"
 		"    <h1>" << title << "</h1>\n";

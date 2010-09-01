@@ -627,11 +627,11 @@ namespace w3c_sw {
 	return xml;
     }
 
-    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, const char* tableClass) {
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, const char* tableId) {
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("table");
-	if (tableClass != NULL)
-	    xml->attribute("class", "results");
+	if (tableId != NULL)
+	    xml->attribute("id", "results");
 	{
 	    const VariableVector cols = getOrderedVars();
 	    xml->open("tr"); {
@@ -639,8 +639,11 @@ namespace w3c_sw {
 		     col != cols.end(); ++col)
 		    xml->leaf("th", (*col)->toString());
 	    } xml->close();
+	    bool even = true; // 0 is even.
 	    for (ResultSetConstIterator row = begin(); row != end(); ++row) {
 		xml->open("tr"); {
+		    if ((even ^= 1) == true)
+			xml->attribute("class", "even");
 		    for (VariableVector::const_iterator col = cols.begin();
 			 col != cols.end(); ++col) {
 			const TTerm* val = (*row)->get(*col);
@@ -648,7 +651,7 @@ namespace w3c_sw {
 			    xml->leaf("td", val->toString());
 			else {
 			    xml->open("td");
-			    xml->leaf("em", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
+			    xml->leaf("code", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
 			    xml->close();
 			}
 		    }
