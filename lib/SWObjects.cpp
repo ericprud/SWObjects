@@ -1487,7 +1487,7 @@ compared against
 			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
 			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
 			    rs->insert(outerRow, *innerRow);
-			    single->erase(innerRow);
+			    innerRow = single->erase(innerRow);
 			}
 		    } else {
 			// treat like a TypeError; no result
