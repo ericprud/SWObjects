@@ -53,7 +53,11 @@ public:
 	    throw(std::runtime_error("no open tag to recieve attribute"));
 	ret << " " << attr << "=\"" << val << "\"";
     }
-    void attribute (std::string attr, void* ptr) {
+    /** attributePtr - for debug messages.
+     * Calling this attribute(string, void*) cause MSVC to call the void*
+     * variant with strings and ints (the declarations above).
+     */
+    void attributePtr (std::string attr, void* ptr) {
 	if (!needs.size())
 	    throw(std::runtime_error("no open tag to recieve attribute"));
 	ret << " " << attr << "=\"" << ptr << "\"";
