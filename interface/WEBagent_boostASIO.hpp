@@ -150,7 +150,7 @@ namespace w3c_sw {
 			authString = (*authHandler)(url, realm);
 			redo = true;
 		    } else
-			throw std::string("GET ") + url + " requires auth in " + realm + " realm";
+			throw method + " " + url + " requires auth in " + realm + " realm";
 		}
 		case 200: {
 		    // Write whatever content we already have to output.
@@ -169,7 +169,7 @@ namespace w3c_sw {
 		    //std::cout << "\n";
 		    std::stringstream s;
 		    s << status_code;
-		    throw std::string("GET ") + url + " returned with status code " + s.str();
+		    throw method + " " + url + " returned with status code " + s.str();
 		}
 
 		}

@@ -78,23 +78,6 @@ namespace w3c_sw {
 				 , "", p.str().c_str());
 	}
 
-	struct Parameter {
-	    std::string attr;
-	    std::string value;
-	    Parameter (std::string attr, std::string value) : attr(attr), value(value) {  }
-	};
-
-	static std::string getURL (std::string service, const Parameter* start, size_t count) {
-	    std::stringstream s;
-	    s << service;
-	    s << (service.find_first_of("?") == std::string::npos ? "?" : 
-		  service.at(service.size()-1) == '&' ? "" : 
-		  "&");
-	    for (size_t i = 0; i < count; ++i)
-		s << start[i].attr << "=" << start[i].value;
-	    return s.str();
-	}
-
 	static std::string urlEncode (std::string encodeMe) {
 	    std::stringstream s;
 	    s.setf(std::ios::hex, std::ios::basefield);

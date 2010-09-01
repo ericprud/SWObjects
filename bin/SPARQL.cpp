@@ -316,6 +316,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string path;
     std::string stemURI;
     std::string serviceURI;
+    std::string defaultGraphURI;
     bool printQuery;
     sw::AtomFactory& atomFactory;
     sw::SPARQLfedDriver& sparqlParser;
@@ -333,7 +334,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute, std::ostream** debugStream = NULL)
 	: db(&Agent, &P, debugStream, &RdfDBHandlers),
-	  runOnce(false), done(false), served(0), stemURI(""), serviceURI(""),
+	  runOnce(false), done(false), served(0), stemURI(""),
+	  serviceURI(""), defaultGraphURI(""),
 	  printQuery(false), atomFactory(atomFactory), sparqlParser(sparqlParser),
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory, debugStream), debugStream(debugStream)
@@ -348,9 +350,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	const sw::URI* serviceURI = atomFactory.getURI(s.str());
 	sw::BasicGraphPattern* serviceGraph = ensureGraph(serviceURI);
 	serviceGraph->addTriplePattern(atomFactory.getTriple(
-							    serviceURI, 
-							    atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-							    atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
+		    serviceURI, 
+		    atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
+		    atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
 	{
 	    char buf[1024];
 	    buf[0] = 0;
@@ -374,9 +376,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		std::cout << "Working directory: " << buf << " ." << std::endl;
 		std::string base = std::string("file://localhost") + buf;
 		serviceGraph->addTriplePattern(atomFactory.getTriple(
-								    serviceURI, 
-								    atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
-								    atomFactory.getURI(base)));
+		    serviceURI, 
+		    atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
+		    atomFactory.getURI(base)));
 	    }
 	}
 
@@ -467,15 +469,27 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 #endif /* SQL_CLIENT != SWOb_DISABLED */
 	} else {
 	    if (!serviceURI.empty()) {
-		sw::SWWEBagent::Parameter p("query", sw::SWWEBagent::urlEncode(query->toString()));
-		std::string q(sw::SWWEBagent::getURL(serviceURI, &p, 1));
+		sw::SWWEBagent::ParameterList p;
+		p.set("query", query->toString());
+		if (!defaultGraphURI.empty())
+		    p.set("default-graph-uri", defaultGraphURI);
 		if (printQuery) {
 		    if (DebugStream != NULL)
 			*DebugStream << "Service query: " << std::endl;
-		    std::cout << q << std::endl;
+		    std::cout << serviceURI << " " << p << std::endl;
 		}
 		if (NoExec == false) {
-		    std::string s(Agent.get(q.c_str()));
+		    std::string s;
+		    switch (sw::ServiceGraphPattern::defaultServiceProtocol) {
+		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
+			s = Agent.get(serviceURI.c_str(), p);
+			break;
+		    case sw::ServiceGraphPattern::HTTP_METHOD_POST:
+			s = Agent.post(serviceURI.c_str(), p);
+			break;
+		    default:
+			throw "program flow exception -- unknown defaultServiceProtocol";
+		    }
 		    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
 		    sw::ResultSet red(&F, &P, istr);
 		    if (DebugStream != NULL)
@@ -706,8 +720,8 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
 		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
 		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
-		"      <input type='radio' name='media' value='xmlres' checked='checked' />SPARQL XML Results\n"
-		"      <input type='radio' name='media' value='html' />HTML Results\n"
+		"      <input type='radio' name='media' value='xmlres' />SPARQL XML Results\n"
+		"      <input type='radio' name='media' value='html' checked='checked' />HTML Results\n"
 		"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
 		"    </form>\n"
 		"    <form action='" << server.path << "' method='post'>\n"
@@ -1288,6 +1302,8 @@ int main(int ac, char* av[])
 	     "read application description graph into graph arg.")
             ("service", po::value<std::string>(), 
 	     "relay all queries to service URL.")
+            ("default-graph-uri", po::value<std::string>(), 
+	     "default-graph-uri for calls to <service>.")
             ;
     
         po::options_description httpOpts("HTTP options");
@@ -1545,6 +1561,8 @@ int main(int ac, char* av[])
 		TheServer.stemURI = vm["stem"].as<std::string>();
 	    if (vm.count("service"))
 		TheServer.serviceURI = vm["service"].as<std::string>();
+	    if (vm.count("default-graph-uri"))
+		TheServer.defaultGraphURI = vm["default-graph-uri"].as<std::string>();
 	    if (vm.count("pipe"))
 		TheServer.printQuery = true;
 
