@@ -69,6 +69,21 @@ typedef w3c_sw::SQLParser::token_type token_type;
 %}
 
 /* START patterns for SQL terminals */
+GT_SEMI		";"
+IT_CREATE		[Cc][Rr][Ee][Aa][Tt][Ee]
+IT_TABLE		[Tt][Aa][Bb][Ll][Ee]
+GT_LPAREN		"("
+GT_RPAREN		")"
+GT_COMMA		","
+IT_FOREIGN		[Ff][Oo][Rr][Ee][Ii][Gg][Nn]
+IT_KEY		[Kk][Ee][Yy]
+IT_REFERENCES		[Rr][Ee][Ff][Ee][Rr][Ee][Nn][Cc][Ee][Ss]
+IT_PRIMARY		[Pp][Rr][Ii][Mm][Aa][Rr][Yy]
+IT_INT		[Ii][Nn][Tt]
+IT_DOUBLE		[Dd][Oo][Uu][Bb][Ll][Ee]
+IT_DATE		[Dd][Aa][Tt][Ee]
+IT_DATETIME		[Dd][Aa][Tt][Ee][Tt][Ii][Mm][Ee]
+IT_STRING		[Ss][Tt][Rr][Ii][Nn][Gg]
 IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
@@ -76,7 +91,6 @@ IT_FROM		[Ff][Rr][Oo][Mm]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 GT_TIMES		"*"
-GT_COMMA		","
 IT_AS		[Aa][Ss]
 GT_DOT		"."
 IT_INNER		[Ii][Nn][Nn][Ee][Rr]
@@ -99,8 +113,6 @@ GT_PLUS		"+"
 GT_MINUS		"-"
 GT_DIVIDE		"/"
 GT_NOT		"!"
-GT_LPAREN		"("
-GT_RPAREN		")"
 IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_true		"true"
 IT_false		"false"
@@ -130,6 +142,21 @@ LINEFEED		(\r\n|\r|\n)
 %%
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
+{GT_SEMI}		{return token::GT_SEMI;}
+{IT_CREATE}		{return token::IT_CREATE;}
+{IT_TABLE}		{return token::IT_TABLE;}
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
+{GT_COMMA}		{return token::GT_COMMA;}
+{IT_FOREIGN}		{return token::IT_FOREIGN;}
+{IT_KEY}		{return token::IT_KEY;}
+{IT_REFERENCES}		{return token::IT_REFERENCES;}
+{IT_PRIMARY}		{return token::IT_PRIMARY;}
+{IT_INT}		{return token::IT_INT;}
+{IT_DOUBLE}		{return token::IT_DOUBLE;}
+{IT_DATE}		{return token::IT_DATE;}
+{IT_DATETIME}		{return token::IT_DATETIME;}
+{IT_STRING}		{return token::IT_STRING;}
 {IT_SELECT}		{return token::IT_SELECT;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_WHERE}		{return token::IT_WHERE;}
@@ -137,7 +164,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {GT_TIMES}		{return token::GT_TIMES;}
-{GT_COMMA}		{return token::GT_COMMA;}
 {IT_AS}		{return token::IT_AS;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_INNER}		{return token::IT_INNER;}
@@ -160,8 +186,6 @@ LINEFEED		(\r\n|\r|\n)
 {GT_MINUS}		{return token::GT_MINUS;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}
 {GT_NOT}		{return token::GT_NOT;}
-{GT_LPAREN}		{return token::GT_LPAREN;}
-{GT_RPAREN}		{return token::GT_RPAREN;}
 {IT_CONCAT}		{return token::IT_CONCAT;}
 {IT_true}		{return token::IT_true;}
 {IT_false}		{return token::IT_false;}

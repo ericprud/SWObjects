@@ -1034,6 +1034,104 @@ namespace w3c_sw {
 	    }
 	};
 
+
+	/**
+	 * SQL Schema (derived from DDL)
+	 */
+	namespace schema {
+
+	    typedef enum {TYPE_error, TYPE_int, TYPE_double, TYPE_date, TYPE_datetime, TYPE_string} e_TYPE;
+
+	    struct FieldOrKey {
+	    };
+
+	    struct Field : public FieldOrKey {
+		std::string name;
+		e_TYPE type;
+		Field (std::string name, e_TYPE type) : name(name), type(type)
+		{  }
+	    };
+
+	    struct Key : public FieldOrKey {
+		std::vector<std::string>* attrs;
+		Key (std::vector<std::string>* attrs) : attrs(attrs)
+		{  }
+	    };
+
+	    struct PrimaryKey : public Key {
+		PrimaryKey (std::vector<std::string>* attrs) : Key(attrs)
+		{  }
+	    };
+
+	    struct ForeignKey : public Key {
+		std::string targetRel;
+		std::vector<std::string>* relAttrs;
+		ForeignKey (std::vector<std::string>* myAttrs,
+			    std::string targetRel,
+			    std::vector<std::string>* relAttrs)
+		    : Key(myAttrs), targetRel(targetRel), relAttrs(relAttrs)
+		{  }
+	    };
+
+	    struct Relation {
+
+		struct FieldInfo {
+
+		    struct PKParticipation {
+			const PrimaryKey* key;
+			size_t position;
+		    };
+
+		    struct FKParticipation {
+			const ForeignKey* key;
+			size_t position;
+		    };
+
+		    std::string name;
+		    e_TYPE type;
+		    PKParticipation pk;
+		    std::map<const ForeignKey*, FKParticipation> fks;
+		};
+
+		std::string name;
+		std::vector<const FieldOrKey*> ordered;
+		std::map<std::string, FieldInfo> fields;
+
+		Relation (std::string name) : name(name)
+		{  }
+
+		void addField (const Field* field) {
+		    ordered.push_back(field);
+		    fields[field->name].name = field->name;
+		    fields[field->name].name = field->type;
+		}
+
+		void addPrimaryKey (PrimaryKey* primaryKey) {
+		    ordered.push_back(primaryKey);
+		    size_t posn = 0;
+		    for (std::vector<std::string>::const_iterator attr = primaryKey->attrs->begin();
+			 attr != primaryKey->attrs->end(); ++attr, ++posn) {
+			// fields[*attr].name = primaryKey->name;
+			fields[*attr].pk.key = primaryKey;
+			fields[*attr].pk.position = posn;
+		    }
+		}
+
+		void addForeignKey (ForeignKey* foreignKey) {
+		    ordered.push_back(foreignKey);
+		    size_t posn = 0;
+		    for (std::vector<std::string>::const_iterator attr = foreignKey->attrs->begin();
+			 attr != foreignKey->attrs->end(); ++attr, ++posn) {
+			// fields[*attr].name = foreignKey->name;
+			fields[*attr].fks[foreignKey].key = foreignKey;
+			fields[*attr].fks[foreignKey].position = posn;
+		    }
+		}
+
+	    };
+
+	} // namespace schema
+
     } // namespace sql
 } // namespace w3c_sw
 

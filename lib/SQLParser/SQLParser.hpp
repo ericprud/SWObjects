@@ -153,6 +153,9 @@ public:
     /** Reference to the context filled during parsing of the expressions. */
     sqlContext& context;
     sql::SQLQuery* root;
+
+    sql::schema::Relation* curCreate;
+    std::map<std::string, sql::schema::Relation*> tables;
 };
     typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
@@ -165,7 +168,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 169 "lib/SQLParser/SQLParser.hpp"
+#line 172 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -179,7 +182,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 183 "lib/SQLParser/SQLParser.hpp"
+#line 186 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -189,7 +192,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 193 "lib/SQLParser/SQLParser.hpp"
+#line 196 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -237,7 +240,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 241 "lib/SQLParser/SQLParser.hpp"
+#line 244 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -249,7 +252,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 170 "lib/SQLParser/SQLParser.ypp"
+#line 173 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -268,11 +271,13 @@ namespace w3c_sw {
     const sql::Expression* p_Expression;
     std::vector<const sql::Expression*>* p_Expressions;
 
+    std::vector<std::string>* p_Attributes;
+    sql::schema::e_TYPE p_SchemaDatatype;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 276 "lib/SQLParser/SQLParser.hpp"
+#line 281 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -290,51 +295,63 @@ namespace w3c_sw {
      IT_WHERE = 260,
      IT_FROM = 261,
      GT_TIMES = 262,
-     GT_COMMA = 263,
-     IT_AS = 264,
-     GT_DOT = 265,
-     IT_INNER = 266,
-     IT_LEFT = 267,
-     IT_OUTER = 268,
-     IT_ON = 269,
-     IT_JOIN = 270,
-     IT_OR = 271,
-     IT_AND = 272,
-     IT_LIMIT = 273,
-     IT_OFFSET = 274,
-     IT_IS = 275,
-     IT_NOT = 276,
-     IT_NULL = 277,
-     GT_EQUAL = 278,
-     GT_NEQUAL = 279,
-     GT_LT = 280,
-     GT_GT = 281,
-     GT_LE = 282,
-     GT_GE = 283,
-     GT_PLUS = 284,
-     GT_MINUS = 285,
-     GT_DIVIDE = 286,
-     GT_NOT = 287,
-     GT_LPAREN = 288,
-     GT_RPAREN = 289,
-     IT_CONCAT = 290,
-     IT_REGEX = 291,
-     NAME = 292,
-     INTEGER = 293,
-     INTEGER_POSITIVE = 294,
-     INTEGER_NEGATIVE = 295,
-     DECIMAL = 296,
-     DECIMAL_POSITIVE = 297,
-     DECIMAL_NEGATIVE = 298,
-     DOUBLE = 299,
-     DOUBLE_POSITIVE = 300,
-     DOUBLE_NEGATIVE = 301,
-     STRING_LITERAL1 = 302,
-     STRING_LITERAL2 = 303,
-     STRING_LITERAL_LONG1 = 304,
-     STRING_LITERAL_LONG2 = 305,
-     IT_true = 306,
-     IT_false = 307
+     IT_AS = 263,
+     GT_DOT = 264,
+     IT_INNER = 265,
+     IT_LEFT = 266,
+     IT_OUTER = 267,
+     IT_ON = 268,
+     IT_JOIN = 269,
+     IT_OR = 270,
+     IT_AND = 271,
+     IT_LIMIT = 272,
+     IT_OFFSET = 273,
+     IT_IS = 274,
+     IT_NOT = 275,
+     IT_NULL = 276,
+     GT_EQUAL = 277,
+     GT_NEQUAL = 278,
+     GT_LT = 279,
+     GT_GT = 280,
+     GT_LE = 281,
+     GT_GE = 282,
+     GT_PLUS = 283,
+     GT_MINUS = 284,
+     GT_DIVIDE = 285,
+     GT_NOT = 286,
+     IT_CONCAT = 287,
+     IT_REGEX = 288,
+     GT_SEMI = 289,
+     IT_CREATE = 290,
+     IT_TABLE = 291,
+     GT_LPAREN = 292,
+     GT_RPAREN = 293,
+     GT_COMMA = 294,
+     IT_FOREIGN = 295,
+     IT_KEY = 296,
+     IT_REFERENCES = 297,
+     IT_PRIMARY = 298,
+     IT_INT = 299,
+     IT_DOUBLE = 300,
+     IT_DATE = 301,
+     IT_DATETIME = 302,
+     IT_STRING = 303,
+     NAME = 304,
+     INTEGER = 305,
+     INTEGER_POSITIVE = 306,
+     INTEGER_NEGATIVE = 307,
+     DECIMAL = 308,
+     DECIMAL_POSITIVE = 309,
+     DECIMAL_NEGATIVE = 310,
+     DOUBLE = 311,
+     DOUBLE_POSITIVE = 312,
+     DOUBLE_NEGATIVE = 313,
+     STRING_LITERAL1 = 314,
+     STRING_LITERAL2 = 315,
+     STRING_LITERAL_LONG1 = 316,
+     STRING_LITERAL_LONG2 = 317,
+     IT_true = 318,
+     IT_false = 319
    };
 
     };
@@ -412,15 +429,15 @@ namespace w3c_sw {
     typedef unsigned char token_number_type;
     /* Tables.  */
     /// For a state, the index in \a yytable_ of its portion.
-    static const signed char yypact_[];
-    static const signed char yypact_ninf_;
+    static const short int yypact_[];
+    static const short int yypact_ninf_;
 
     /// For a state, default rule to reduce.
     /// Unless\a  yytable_ specifies something else to do.
     /// Zero means the default is an error.
     static const unsigned char yydefact_[];
 
-    static const signed char yypgoto_[];
+    static const short int yypgoto_[];
     static const short int yydefgoto_[];
 
     /// What to do in a state.
@@ -453,7 +470,7 @@ namespace w3c_sw {
 
 #if YYDEBUG
     /// A type to store symbol numbers and -1.
-    typedef signed char rhs_number_type;
+    typedef short int rhs_number_type;
     /// A `-1'-separated list of the rules' RHS.
     static const rhs_number_type yyrhs_[];
     /// For each rule, the index of the first RHS symbol in \a yyrhs_.
@@ -511,7 +528,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 515 "lib/SQLParser/SQLParser.hpp"
+#line 532 "lib/SQLParser/SQLParser.hpp"
 
 
 

@@ -12,7 +12,7 @@
 %debug
 
 /* start symbol is named "start" */
-%start SelectUnion
+%start Statement
 
 /* write out a header file containing the token defines */
 %defines
@@ -155,6 +155,9 @@ public:
     /** Reference to the context filled during parsing of the expressions. */
     sqlContext& context;
     sql::SQLQuery* root;
+
+    sql::schema::Relation* curCreate;
+    std::map<std::string, sql::schema::Relation*> tables;
 };
     typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
@@ -185,6 +188,8 @@ public:
     const sql::Expression* p_Expression;
     std::vector<const sql::Expression*>* p_Expressions;
 
+    std::vector<std::string>* p_Attributes;
+    sql::schema::e_TYPE p_SchemaDatatype;
 }
 
 %{
@@ -193,10 +198,12 @@ public:
 %token			__EOF__	     0	"end of file"
 /* START TokenBlock */
 /* Terminals */
-%token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES GT_COMMA IT_AS GT_DOT
+%token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES IT_AS GT_DOT
        IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
-       GT_NOT GT_LPAREN GT_RPAREN IT_CONCAT IT_REGEX
+       GT_NOT IT_CONCAT IT_REGEX
+
+%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_STRING
 
 %token <p_NAME> NAME
 
@@ -222,7 +229,7 @@ public:
 %type <p_JoinExpression> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C
 %type <p_Expression> Expression ConditionalAndExpression ConditionalOrExpression _O_QIT_OR_E_S_QConditionalAndExpression_E_C _O_QIT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression
 %type <p_Expressions> _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star
-%type <p_BooleanComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt
+%type <p_BooleanComparator> RightRelationalExpression _QRightRelationalExpression_E_Opt
 %type <p_Expression> NumericExpression
 %type <p_Expression> AdditiveExpression
 %type <p_Expression> _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C _O_QGT_COMMA_E_S_QExpression_E_C
@@ -242,6 +249,10 @@ public:
 %type <p_Expression> String
 %type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
 %type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
+
+%type <p_NAME> _O_QGT_COMMA_E_S_QAttribute_E_C
+%type <p_Attributes> AttrList _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
+%type <p_SchemaDatatype> _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C
 
 /* END TokenBlock */
 
@@ -264,6 +275,106 @@ public:
 %% /*** Grammar Rules ***/
 
  /*** BEGIN sql - Change the grammar rules below ***/
+Statement:
+    SelectUnion _QGT_SEMI_E_Opt	{
+    driver.root = $1;
+}
+
+    | Create _Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star _QGT_SEMI_E_Opt	
+;
+
+_QGT_SEMI_E_Opt:
+    
+    | GT_SEMI	
+;
+
+_O_QGT_SEMI_E_S_QCreate_E_C:
+    GT_SEMI Create	
+;
+
+_Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star:
+    
+    | _Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star _O_QGT_SEMI_E_S_QCreate_E_C	
+;
+
+Create:
+    IT_CREATE IT_TABLE Relation	{
+    driver.curCreate = new sql::schema::Relation(*$3);
+      } GT_LPAREN FieldOrKey _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star GT_RPAREN	{
+      driver.tables[*$3] = driver.curCreate;
+      driver.curCreate = NULL;
+}
+;
+
+_O_QGT_COMMA_E_S_QFieldOrKey_E_C:
+    GT_COMMA FieldOrKey	
+;
+
+_Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star:
+    
+    | _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star _O_QGT_COMMA_E_S_QFieldOrKey_E_C	
+;
+
+FieldOrKey:
+    Attribute _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C	{
+    driver.curCreate->addField(new sql::schema::Field(*$1, $2));
+}
+
+    | IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
+    driver.curCreate->addForeignKey(new sql::schema::ForeignKey($3, *$5, $6));
+}
+
+    | IT_PRIMARY IT_KEY AttrList	{
+    driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey($3));
+}
+;
+
+_O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C:
+    IT_INT	{
+    $$ = sql::schema::TYPE_int;
+}
+
+    | IT_DOUBLE	{
+    $$ = sql::schema::TYPE_double;
+}
+
+    | IT_DATE	{
+    $$ = sql::schema::TYPE_date;
+}
+
+    | IT_DATETIME	{
+    $$ = sql::schema::TYPE_datetime;
+}
+
+    | IT_STRING	{
+    $$ = sql::schema::TYPE_string;
+}
+;
+
+AttrList:
+    GT_LPAREN Attribute _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star GT_RPAREN	{
+    $3->insert($3->begin(), *$2);
+    $$ = $3;
+}
+;
+
+_O_QGT_COMMA_E_S_QAttribute_E_C:
+    GT_COMMA Attribute	{
+    $$ = $2;
+}
+;
+
+_Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
+    {
+    $$ = new std::vector<std::string>();
+}
+
+    | _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QAttribute_E_C	{
+    $1->push_back(*$2);
+    $$ = $1;
+}
+;
+
 SelectUnion:
     Select _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star	{
 	if ($2->size() > 0) {
@@ -630,7 +741,7 @@ ValueLogical:
 
 RelationalExpression:
     // NumericExpression ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
-    NumericExpression _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt	{
+    NumericExpression _QRightRelationalExpression_E_Opt	{
 	if ($2) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>($2) != NULL) {
 		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1))); // new sql::ReallyNullConstraint();
@@ -646,7 +757,7 @@ RelationalExpression:
 ;
 
 // '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression
-_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C:
+RightRelationalExpression:
     GT_EQUAL NumericExpression	{
 	$$ = new sql::BooleanEQ($2);
     }
@@ -674,12 +785,12 @@ _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_
 ;
 
 // ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
-_Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C_E_Opt:
+_QRightRelationalExpression_E_Opt:
     {
 	$$ = NULL;
     }
 
-  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IS_E_S_QIT_NULL_E_Or_QIT_IS_E_S_QIT_NOT_E_S_QIT_NULL_E_C	
+  | RightRelationalExpression	
 ;
 
 NumericExpression:
