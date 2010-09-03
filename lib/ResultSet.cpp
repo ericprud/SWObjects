@@ -627,34 +627,37 @@ namespace w3c_sw {
 	return xml;
     }
 
-    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, const char* tableId) {
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes) {
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("table");
-	if (tableId != NULL)
-	    xml->attribute("id", "results");
+	xml->attributes(attributes);
 	{
 	    const VariableVector cols = getOrderedVars();
-	    xml->open("tr"); {
-		for (VariableVector::const_iterator col = cols.begin();
-		     col != cols.end(); ++col)
-		    xml->leaf("th", (*col)->toString());
-	    } xml->close();
-	    bool even = true; // 0 is even.
-	    for (ResultSetConstIterator row = begin(); row != end(); ++row) {
+	    xml->open("thead"); {
 		xml->open("tr"); {
-		    if ((even ^= 1) == true)
-			xml->attribute("class", "even");
 		    for (VariableVector::const_iterator col = cols.begin();
-			 col != cols.end(); ++col) {
-			const TTerm* val = (*row)->get(*col);
-			if (val != NULL)
-			    xml->leaf("td", val->toString());
-			else {
-			    xml->open("td");
-			    xml->leaf("code", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
-			    xml->close();
+			 col != cols.end(); ++col)
+			xml->leaf("th", (*col)->toString());
+		} xml->close();
+	    } xml->close();
+	    xml->open("tbody"); {
+		bool even = true; // 0 is even.
+		for (ResultSetConstIterator row = begin(); row != end(); ++row) {
+		    xml->open("tr"); {
+			if ((even ^= 1) == true)
+			    xml->attribute("class", "even");
+			for (VariableVector::const_iterator col = cols.begin();
+			     col != cols.end(); ++col) {
+			    const TTerm* val = (*row)->get(*col);
+			    if (val != NULL)
+				xml->leaf("td", val->toString());
+			    else {
+				xml->open("td");
+				xml->leaf("code", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
+				xml->close();
+			    }
 			}
-		    }
+		    } xml->close();
 		} xml->close();
 	    }
 	} xml->close();

@@ -188,7 +188,7 @@ class DBHandlers : public sw::RdfDB::HandlerSet {
 
 DBHandlers  RdfDBHandlers;
 
-unsigned char favicon[] = {
+	unsigned char favicon[] = {
 0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
 0x00,0x00,0x00,0x10,0x00,0x00,0x00,0x10,0x08,0x06,0x00,0x00,0x00,0x1f,0xf3,0xff,
 0x61,0x00,0x00,0x00,0x01,0x73,0x52,0x47,0x42,0x00,0xae,0xce,0x1c,0xe9,0x00,0x00,
@@ -228,11 +228,9 @@ unsigned char favicon[] = {
 0x52,0xfe,0x1c,0xb1,0xad,0x7b,0x89,0xef,0x05,0xd8,0x80,0xe0,0x30,0xb4,0x39,0xeb,
 0x19,0xd6,0x8f,0x2a,0x7f,0xa2,0xfd,0x07,0xe6,0xae,0x7f,0xba,0xfb,0xc4,0x19,0x2f,
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
-};
+	};
 
-std::string QueryHeadElements =
-"    <style type=\"text/css\" media=\"screen\">\n"
-"/*<![CDATA[*/\n"
+	std::string CSS_common =
 "code {\n"
 "  font-weight: bold;\n"
 "  }\n"
@@ -244,6 +242,8 @@ std::string QueryHeadElements =
 "  font-size: smaller;\n"
 "  }\n"
 "\n"
+	    ;
+	std::string CSS_Results =
 "#results {\n"
 "  font-family:\"Trebuchet MS\", Arial, Helvetica, sans-serif;\n"
 "  width:100%;\n"
@@ -266,21 +266,35 @@ std::string QueryHeadElements =
 "  color:#000;\n"
 "  background-color:#EAF2D3;\n"
 "  }\n"
-"/*]]>*/\n"
-"    </style>\n"
-"\n"
-"    <script language=\"javascript\" type=\"text/javascript\">\n"
-"<!--\n"
-"function toggleDisplay(element){\n"
-"  s = document.getElementById(element).style\n"
-"  if(s.display == 'none')\n"
-"    s.display = 'block';\n"
-"  else\n"
-"    s.display = 'none';\n"
-"}\n"
-"-->\n"
-"    </script>\n"
+	    ;
+	std::string Javascript_TableSorter_remote =
+"    <link rel=\"stylesheet\" href=\"http://tablesorter.com/themes/blue/style.css\" type=\"text/css\" media=\"print, projection, screen\" />\n"
+"    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery-latest.js\"></script>\n"
+"    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery.tablesorter.js\"></script>\n"
+	    ;
+	std::string Javascript_ToggleDisplay_init =
+"	toggleDisplay('query');\n"
+"	var query = document.getElementById('query');\n"
+"	var p = document.createElement('p');\n"
+"	document.body.insertBefore(p, query);\n"
+"	var input = document.createElement('input');\n"
+"	input.setAttribute('type', 'checkbox');\n"
+"	input.setAttribute('onclick', 'toggleDisplay(\"query\")');\n"
+"	p.appendChild(input);\n"
+"	p.appendChild(document.createTextNode(\" display query\"));\n"
 	  ;
+	std::string Javascript_TableSorter_init =
+"	$(\"#results\").tablesorter({widgets: ['zebra']});\n"
+	  ;
+	std::string Javascript_ToggleDisplay_defn =
+"    function toggleDisplay(element){\n"
+"	s = document.getElementById(element).style\n"
+"	if(s.display == 'none')\n"
+"	    s.display = 'block';\n"
+"	else\n"
+"	    s.display = 'none';\n"
+"    }\n"
+	    ;
 
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
@@ -648,31 +662,70 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 
 			sw::XMLSerializer xml("  ");
 			parm = req.parms.find("media");
-			if (parm != req.parms.end() && parm->second == "html") {
-			    head(sout, "SPARQL Query Results", QueryHeadElements);
+			if (parm != req.parms.end()
+			    && (parm->second == "html"
+				|| parm->second == "tablesorter")) {
+			    std::string headStr =
+"    <style type=\"text/css\" media=\"screen\">\n"
+"/*<![CDATA[*/\n" + CSS_common
+				;
+			    if (parm->second == "html")
+				headStr += CSS_Results;
+			    headStr +=
+"/*]]>*/\n"
+"    </style>\n"
+"\n"
+				;
+			    if (parm->second == "tablesorter")
+				headStr += Javascript_TableSorter_remote;
+			    headStr +=
+"    <script language=\"javascript\" type=\"text/javascript\">\n"
+"<!--\n"
+				;
+			    if (parm->second == "tablesorter")
+				headStr +=
+"    $(function() {\n"
+				    ;
+			    else
+				headStr +=
+"    window.onload=function(){\n"
+				    ;
+			    headStr += Javascript_ToggleDisplay_init;
+				
+			    if (parm->second == "tablesorter")
+				headStr += Javascript_TableSorter_init;
+			    if (parm->second == "tablesorter")
+				headStr +=
+"    });\n"
+				    ;
+			    else
+				headStr +=
+"    };\n"
+				    ;
+			    headStr += Javascript_ToggleDisplay_defn +
+"-->\n"
+"    </script>\n"
+				;
+			    head(sout, "SPARQL Query Results", headStr);
 
-			    // cute lexical representation of xml nesting:
-			    xml.open("p"); {
-				sw::XMLSerializer::Attributes a;
-				a["type"] = "checkbox";
-				a["onclick"] = "toggleDisplay('query')";
-				xml.empty("input", a);
-				xml.charData(" display query");
-				xml.close();
-			    }
-			    {
-				sw::XMLSerializer::Attributes a;
-				a["id"] = "query";
-				a["style"] = "display:none;";
-				xml.leaf("pre", newQuery, a);
-			    }
+			    /** construct XHTML body with query and results. */
+			    sw::XMLSerializer::Attributes queryAttrs;
+			    queryAttrs["id"] = "query";
+			    queryAttrs["style"] = "display:block;";
+			    xml.leaf("pre", newQuery, queryAttrs);
+
+			    sw::XMLSerializer::Attributes resultsAttrs;
+			    resultsAttrs["id"] = "results";
+			    resultsAttrs["class"] = "tablesorter";
+			    rs.toHtmlTable(&xml, resultsAttrs);
+
+			    /** construct reply from headers and XHTML body */
 			    rep.status = sw::webserver::reply::ok;
 			    rep.addHeader("Content-Type", 
 					  "text/html; charset=UTF-8");
-			    rs.toHtmlTable(&xml, "results");
 			    sout << xml.str();
-
 			    foot(sout);
+
 			} else if (parm != req.parms.end() && parm->second == "textplain") {
 			    head(sout, "SPARQL Query Results");
 
@@ -722,6 +775,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
 		"      <input type='radio' name='media' value='xmlres' />SPARQL XML Results\n"
 		"      <input type='radio' name='media' value='html' checked='checked' />HTML Results\n"
+		"      <input type='radio' name='media' value='tablesorter' />JQuery Tablesorter\n"
 		"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
 		"    </form>\n"
 		"    <form action='" << server.path << "' method='post'>\n"

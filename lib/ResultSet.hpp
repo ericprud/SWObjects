@@ -672,7 +672,7 @@ namespace w3c_sw {
 	    }
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
-	XMLSerializer* toHtmlTable(XMLSerializer* xml, const char* tableId);
+	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes);
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
