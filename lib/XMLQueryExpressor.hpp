@@ -408,7 +408,7 @@ public:
     }
 };
 
-}; // namespace w3c_sw
+} // namespace w3c_sw
 
 #endif // XMLQueryExpressor_H
 

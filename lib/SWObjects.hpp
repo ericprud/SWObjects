@@ -615,7 +615,7 @@ inline const BNode* TTerm::String2BNode::getBNode (std::string str) {
 	// it = insert(std::pair<std::string, const BNode*>(std::string("r") + s.str(), bnode)).first;
     }
     return it->second;
-};
+}
 
 class RDFLiteral : public TTerm {
     friend class AtomFactory;
@@ -901,14 +901,14 @@ protected:
     enum {RANGE_unlimited = -2} Range;
     struct Validator {
 	boost::regex pattern;
-	long long intmin, intmax; // could be bignums from http://gmplib.org/
+	long intmin, intmax; // could be bignums from http://gmplib.org/
 	long double floatmin, floatmax;
 	Validator(const char* pattern) : 
 	    pattern(pattern), 
 	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
 	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
 	{  }
-	Validator(const char* pattern, long long min, long long max) : 
+	Validator(const char* pattern, long min, long max) : 
 	    pattern(pattern), 
 	    intmin(min), intmax(max), 
 	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
@@ -943,12 +943,12 @@ public:
 #if REGEX_LIB == SWOb_BOOST
 	using std::numeric_limits;
   #define _VAL1(T, P) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P)))
-  #define _VALL(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long long)L, (long long)U)))
+  #define _VALL(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long)L, (long)U)))
   #define _VALD(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long double)L, (long double)U)))
   #define _MIND RANGE_unlimited /* -numeric_limits<long double>::max() */
   #define _MAXD RANGE_unlimited /* numeric_limits<long double>::max() */
-  #define _MINL RANGE_unlimited /* numeric_limits<long long>::min() */
-  #define _MAXL RANGE_unlimited /* numeric_limits<long long>::max() */
+  #define _MINL RANGE_unlimited /* numeric_limits<long>::min() */
+  #define _MAXL RANGE_unlimited /* numeric_limits<long>::max() */
 
 	const char* longPattern =    "^[-+]?[0-9]+$";
 	const char* decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
@@ -2955,7 +2955,7 @@ struct StreamContext : public StreamContextMediaTypes {
 	STDIN =		2,	/* '-' means stdin */
 	STDOUT =	2,	/* '-' also means stdout */
 #endif /* !defined(SWIGPERL) */
-	FILE =		4,	/* must be a file */
+	FILE =		4	/* must be a file */
     } e_opts;
     std::string nameStr;
     MediaType mediaType;

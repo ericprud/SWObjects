@@ -31,7 +31,7 @@ namespace w3c_sw {
 		    TYPE_string, 
 		    TYPE__literal, 
 		    TYPE__null, 
-		    TYPE__unknown, 
+		    TYPE__unknown
 		} Type;
 		Type type;
 		std::string name;
