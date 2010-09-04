@@ -28,8 +28,8 @@ PYTHON_HOME:=/usr/include/python2.6
 PERL_HOME:=/usr/lib/perl/5.10.1
 JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
-//ECHO:=`which echo`
-//ECHO:= /bin/echo -e
+#ECHO:=`which echo`
+#ECHO:= /bin/echo -e
 ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
@@ -167,7 +167,9 @@ config.h: CONFIG
 #if -M[M]D is also in the build-clause without -E it update .d's as needed
 TOONOISEY=-ansi
 #for macports
-CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe
+
+# -std=c++0x -- can't count on 0x on all platforms
+CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -pedantic-errors -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128 -fno-merge-constants
 CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
@@ -231,8 +233,7 @@ lib/%.cpp  lib/%.hpp : lib/%.ypp
 
 lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
-
-#	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
 
 
 ##### bin dirs ####
@@ -314,7 +315,7 @@ tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 tests/test_%: tests/test_%.o $(LIB)
 	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
 
-tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl
+tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
