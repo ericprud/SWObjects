@@ -157,6 +157,51 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
 }
 
+BOOST_AUTO_TEST_CASE( RSNoCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSNoCoRefsReversedL ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1 _:b1 _:c1\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSNoCoRefsReversedR ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1 _:b1 _:c1\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
 BOOST_AUTO_TEST_CASE( RSCoRefInLeft ) {
     TTerm::String2BNode bnodeMap;
     ResultSet l(&f, 
@@ -182,6 +227,270 @@ BOOST_AUTO_TEST_CASE( RSCoRefInRight ) {
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:b2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSCoRefInBoth ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:a2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:b2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSConstsNoCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2   2  _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1 _:c1\n"
+		"_:a2   2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedL ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2   2  _:c2\n"
+		"_:a1   1  _:c1\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1 _:c1\n"
+		"_:a2   2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedR ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2   2  _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2   2 _:c2\n"
+		"_:a1   1 _:c1\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedLR ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2   2  _:c2\n"
+		"_:a1   1  _:c1\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2   2 _:c2\n"
+		"_:a1   1 _:c1\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSConstCoRef ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:a2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:a2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedL ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1   1  _:c1\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedR ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b    ?c\n"
+		"_:a1   1   _:c1\n"
+		"_:a2 _:b2  _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1   1  _:c1\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedLR ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2  _:c2\n"
+		"_:a1   1   _:c1\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1   1  _:c1\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSOneConstOneCoRef ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2   1  _:a2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSDifferentConstCoRef ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1   1  _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2   2  _:a2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSLongOrderedNoCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"  1 \"two\" <thr>\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
+		"_:a2 _:b2 _:c2\n"
+		"  7 \"ate\" <nyn>\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"  1 \"two\" <thr>\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
+		"_:a2 _:b2 _:c2\n"
+		"  7 \"ate\" <nyn>\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSLongUnorderedNoCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
+		"  1 \"two\" <thr>\n"
+		"  7 \"ate\" <nyn>\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"  7 \"ate\" <nyn>\n"
+		"  1 \"two\" <thr>\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSLongUnorderedCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1 _:b1 _:a1\n"
+		"  4 \"fve\" <six>\n"
+		"  1 \"two\" <thr>\n"
+		"  7 \"ate\" <nyn>\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"  7 \"ate\" <nyn>\n"
+		"  1 \"two\" <thr>\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
+		"_:a2 _:b2 _:a2\n",
+		false, bnodeMap);
+    BOOST_CHECK_EQUAL(l, r);
+}
+
+BOOST_AUTO_TEST_CASE( RSLongUnorderedMisCoRefs ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a2 _:b2 _:c2\n"
+		"_:a1 _:b1 _:a1\n"
+		"  4 \"fve\" <six>\n"
+		"  1 \"two\" <thr>\n"
+		"  7 \"ate\" <nyn>\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"  7 \"ate\" <nyn>\n"
+		"  1 \"two\" <thr>\n"
+		"_:a1 _:b1 _:c1\n"
+		"  4 \"fve\" <six>\n"
 		"_:a2 _:b2 _:b2\n",
 		false, bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());

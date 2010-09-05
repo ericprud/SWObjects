@@ -43,6 +43,23 @@ namespace w3c_sw {
 	return l.tterm == r.tterm;
     }
 
+    struct BiDiBNodeMap {
+	std::map<const TTerm*, const TTerm*> forward;
+	std::map<const TTerm*, const TTerm*> reverse;
+	bool mappable (const TTerm* from, const TTerm* to) {
+	    const TTerm* atFrom = forward.find(from) == forward.end() ? NULL : forward[from];
+	    const TTerm* atTo = reverse.find(to) == reverse.end() ? NULL : reverse[to];
+
+	    if (atFrom == NULL && atTo == NULL) {
+		forward[from] = to;
+		reverse[to] = from;
+		return true;
+	    }
+
+	    return atFrom == to && atTo == from;
+	}
+    };
+
     class Result {
     protected:
 	BindingSet bindings;
@@ -78,7 +95,7 @@ namespace w3c_sw {
 	    return true;	    
 	}
 	/** mappedBNodesEquals -- test that Results are identical after a BNode mapping */
-	bool mappedBNodesEquals (const Result& ref, std::map<const TTerm*, const TTerm*>& refBNodes2myBNodes, std::ostream** debugStream) const {
+	bool mappedBNodesEquals (const Result& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const {
 	    if (size() != ref.size()) {
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << "l->size: " << ref.size() << " != r->size: " << size() << std::endl;
@@ -100,9 +117,9 @@ namespace w3c_sw {
 		const TTerm* mine = myBinding->second.tterm;
 		if (dynamic_cast<const Bindable*>(yours) && 
 		    dynamic_cast<const Bindable*>(mine)) {
-		    if (refBNodes2myBNodes.find(yours) == refBNodes2myBNodes.end())
-			refBNodes2myBNodes[yours] = mine;
-		    yours = refBNodes2myBNodes[yours];
+		    if (!refBNodes2myBNodes.mappable(yours, mine))
+			return false;
+		    yours = mine;
 		}
 		if (yours != mine) {
 		    if (debugStream != NULL && *debugStream != NULL)
@@ -690,7 +707,7 @@ namespace w3c_sw {
 
 	/** Test an unorderable vector of Results against another vector. */
 	static bool _mapsTo (std::vector<const Result*> lv, std::vector<const Result*> rv,
-		      std::map<const TTerm*, const TTerm*>& refBNodes2myBNodes,
+		      BiDiBNodeMap& refBNodes2myBNodes,
 		      std::ostream** debugStream) {
 	    for (std::vector<const Result*>::iterator lit = lv.begin(); lit != lv.end(); ++lit) {
 		const Result* l = *lit;
@@ -717,14 +734,14 @@ namespace w3c_sw {
 		return false;
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
-	    std::map<const TTerm*, const TTerm*> refBNodes2myBNodes;
+	    BiDiBNodeMap refBNodes2myBNodes;
 
 	    while (myRow != results.end() && yourRow != ref.results.end()) {
 		// skip any results that were unordered.
-		while (lUnordered.find(*myRow) != lUnordered.end())
-		    ++myRow;
-		while (rUnordered.find(*yourRow) != rUnordered.end())
-		    ++yourRow;
+		while (lUnordered.find(*myRow) != lUnordered.end() &&
+		       ++myRow != results.end());
+		while (rUnordered.find(*yourRow) != rUnordered.end() &&
+		       ++yourRow != ref.results.end());
 		if (myRow == results.end() || yourRow == ref.results.end()) {
 		    // reached the end of at least one ResultSet.
 		    if (myRow == results.end() && yourRow == ref.results.end())
