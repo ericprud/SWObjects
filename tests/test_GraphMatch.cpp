@@ -157,5 +157,36 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
 }
 
+BOOST_AUTO_TEST_CASE( RSCoRefInLeft ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:b2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+BOOST_AUTO_TEST_CASE( RSCoRefInRight ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:c2\n",
+		false, bnodeMap);
+    ResultSet r(&f, 
+		" ?a   ?b   ?c\n"
+		"_:a1 _:b1 _:c1\n"
+		"_:a2 _:b2 _:b2\n",
+		false, bnodeMap);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+
+
 #endif /* ! REGEX_LIB != SWOb_DISABLED */
 

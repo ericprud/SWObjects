@@ -56,6 +56,7 @@ namespace w3c_sw {
 	    }
 	}
 	~Result () {  }
+	/** operator== -- test that Results are identical.  */
 	bool operator== (const Result& ref) const {
 	    std::set<const TTerm*> boundInFirst;
 	    for (BindingSetConstIterator it = begin(); it != end(); ++it)
@@ -76,6 +77,47 @@ namespace w3c_sw {
 
 	    return true;	    
 	}
+	/** mappedBNodesEquals -- test that Results are identical after a BNode mapping */
+	bool mappedBNodesEquals (const Result& ref, std::map<const TTerm*, const TTerm*>& refBNodes2myBNodes, std::ostream** debugStream) const {
+	    if (size() != ref.size()) {
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << "l->size: " << ref.size() << " != r->size: " << size() << std::endl;
+		return false;
+	    }
+	    std::set<const TTerm*> yourVars;
+	    for (BindingSetConstIterator yourBinding = begin();
+		 yourBinding != end(); ++yourBinding)
+		yourVars.insert(yourBinding->first);
+	    for (BindingSetConstIterator myBinding = ref.begin();
+		 myBinding != ref.end(); ++myBinding) {
+		const TTerm* var = myBinding->first;
+		if (yourVars.erase(var) == 0) {
+		    if (debugStream != NULL && *debugStream != NULL)
+			**debugStream << "r missing: " << var->toString() << std::endl;
+		    return false;
+		}
+		const TTerm* yours = find(var)->second.tterm;
+		const TTerm* mine = myBinding->second.tterm;
+		if (dynamic_cast<const Bindable*>(yours) && 
+		    dynamic_cast<const Bindable*>(mine)) {
+		    if (refBNodes2myBNodes.find(yours) == refBNodes2myBNodes.end())
+			refBNodes2myBNodes[yours] = mine;
+		    yours = refBNodes2myBNodes[yours];
+		}
+		if (yours != mine) {
+		    if (debugStream != NULL && *debugStream != NULL)
+			**debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
+		    return false;
+		}
+	    }
+	    if (yourVars.size() != 0) {
+		if (debugStream != NULL && *debugStream != NULL)
+		    **debugStream << "l missing: " << (*yourVars.begin())->toString() << std::endl;
+		return false;
+	    }
+	    return true;
+	}
+
 	std::string toString () const {
 	    std::stringstream s;
 	    s << "{";
@@ -108,6 +150,8 @@ namespace w3c_sw {
 	bool isCompatibleWith(const Result* from) const;
 	void assumeNewBindings(const Result* from);
     };
+
+    std::ostream& operator<<(std::ostream& os, Result const& my);
 
     class ResultSet {
     protected:
@@ -471,6 +515,47 @@ namespace w3c_sw {
 	}
 
 	virtual ~ResultSet();
+
+	struct AscendingOrder {
+	    const VariableVector vars;
+	    AtomFactory* atomFactory;
+	    std::set<const Result*>* incomparables;
+	    AscendingOrder (const VariableVector vars, AtomFactory* atomFactory,
+			    std::set<const Result*>* incomparables) : 
+		vars(vars), atomFactory(atomFactory), incomparables(incomparables)
+	    {  }
+	    bool operator() (const Result* lhs, const Result* rhs) {
+		bool incomparable = true;
+		for (VariableVectorConstIterator it = vars.begin();
+		     it != vars.end(); ++it) {
+		    // 			SPARQLSerializer s;
+		    // 			pair.expression->express(&s);
+		    const TTerm* l = lhs->get(*it);
+		    const TTerm* r = rhs->get(*it);
+		    if (r == NULL) {
+			if (l == NULL)
+			    continue;
+			else
+			    return false;
+		    }
+		    if (l == NULL)
+			return true;
+		    if (dynamic_cast<const Bindable*>(l) && 
+			dynamic_cast<const Bindable*>(r))
+			continue;
+		    if (l != r)
+			return atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
+		    else
+			incomparable = false;
+		}
+		if (incomparable && incomparables != NULL) {
+		    incomparables->insert(lhs);
+		    incomparables->insert(rhs);
+		}
+		return false;
+	    }
+	};
+
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.isOrdered() != isOrdered() || 
 		ref.resultType != resultType)
@@ -492,14 +577,23 @@ namespace w3c_sw {
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << self.toString() << newRef.toString();
 
-		/* Sort according to variables in this ResultSet. */
-		self.order();
+		/* Sort according to variables in this ResultSet. Record the
+		   rows we couldn't sort so compareOrdered can handle them
+		   exhaustively. */
+
+		std::set<const Result*> lUnordered;
+		AscendingOrder lComp(getOrderedVars(), atomFactory, &lUnordered);
+		self.results.sort(lComp);
+
 		newRef.leadWithColumns(self.getOrderedVars());
-		newRef.order();
+
+		std::set<const Result*> rUnordered;
+		AscendingOrder rComp(newRef.getOrderedVars(), atomFactory, &rUnordered);
+		newRef.results.sort(rComp);
 
 		if (debugStream != NULL && *debugStream != NULL)
 		    **debugStream << self.toString() << newRef.toString();
-		return self.compareOrdered(newRef);
+		return self.compareOrdered(newRef, lUnordered, rUnordered);
 	    }
 	}
 	const VariableList* getKnownVars () const { return &knownVars; }
@@ -593,54 +687,74 @@ namespace w3c_sw {
 		}
 	    }
 	}
-	bool compareOrdered (const ResultSet & ref) const {
-	    if (ref.size() != size())
+
+	/** Test an unorderable vector of Results against another vector. */
+	static bool _mapsTo (std::vector<const Result*> lv, std::vector<const Result*> rv,
+		      std::map<const TTerm*, const TTerm*>& refBNodes2myBNodes,
+		      std::ostream** debugStream) {
+	    for (std::vector<const Result*>::iterator lit = lv.begin(); lit != lv.end(); ++lit) {
+		const Result* l = *lit;
+		lit = lv.erase(lit);
+		for (std::vector<const Result*>::iterator rit = rv.begin(); rit != rv.end(); ++rit) {
+		    const Result* r = *rit;
+		    rit = rv.erase(rit);
+		    if (l->mappedBNodesEquals(*r, refBNodes2myBNodes, debugStream) &&
+			(lv.size() == 0 ||
+			 _mapsTo(std::vector<const Result*>(lv),
+				 std::vector<const Result*>(rv), refBNodes2myBNodes, debugStream)))
+			return true;
+		    rit = rv.insert(rit, r);
+		}
+		lit = lv.insert(lit, l);
+	    }
+	    return false;
+	}
+
+	bool compareOrdered (const ResultSet & ref,
+			     std::set<const Result*> lUnordered = std::set<const Result*>(),
+			     std::set<const Result*> rUnordered = std::set<const Result*>()) const {
+	    if (ref.size() != size() || lUnordered.size() != rUnordered.size())
 		return false;
 	    ResultSetConstIterator myRow = results.begin();
 	    ResultSetConstIterator yourRow = ref.results.begin();
 	    std::map<const TTerm*, const TTerm*> refBNodes2myBNodes;
-	    while (myRow != results.end()) {
-		if ((*yourRow)->size() != (*myRow)->size()) {
-		    if (debugStream != NULL && *debugStream != NULL)
-			**debugStream << "l->size: " << (*myRow)->size() << " != r->size: " << (*yourRow)->size() << std::endl;
+
+	    while (myRow != results.end() && yourRow != ref.results.end()) {
+		// skip any results that were unordered.
+		while (lUnordered.find(*myRow) != lUnordered.end())
+		    ++myRow;
+		while (rUnordered.find(*yourRow) != rUnordered.end())
+		    ++yourRow;
+		if (myRow == results.end() || yourRow == ref.results.end()) {
+		    // reached the end of at least one ResultSet.
+		    if (myRow == results.end() && yourRow == ref.results.end())
+			// fall through to unordered compare.
+			break;
+		    if (debugStream != NULL && *debugStream != NULL) {
+			while (myRow != results.end())
+			    **debugStream << "r missing result: " << **myRow++ << std::endl;
+			while (yourRow != ref.results.end())
+			    **debugStream << "l missing result: " << **yourRow++ << std::endl;
+		    }
 		    return false;
 		}
-		std::set<const TTerm*> yourVars;
-		for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
-		     yourBinding != (*yourRow)->end(); ++yourBinding)
-		    yourVars.insert(yourBinding->first);
-		for (BindingSetConstIterator myBinding = (*myRow)->begin();
-		     myBinding != (*myRow)->end(); ++myBinding) {
-		    const TTerm* var = myBinding->first;
-		    if (yourVars.erase(var) == 0) {
-			if (debugStream != NULL && *debugStream != NULL)
-			    **debugStream << "r missing: " << var->toString() << std::endl;
-			return false;
-		    }
-		    const TTerm* yours = (*yourRow)->find(var)->second.tterm;
-		    const TTerm* mine = myBinding->second.tterm;
-		    if (dynamic_cast<const Bindable*>(yours) && 
-			dynamic_cast<const Bindable*>(mine)) {
-			if (refBNodes2myBNodes.find(yours) == refBNodes2myBNodes.end())
-			    refBNodes2myBNodes[yours] = mine;
-			yours = refBNodes2myBNodes[yours];
-		    }
-		    if (yours != mine) {
-			if (debugStream != NULL && *debugStream != NULL)
-			    **debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
-			return false;
-		    }
-		}
-		if (yourVars.size() != 0) {
-		    if (debugStream != NULL && *debugStream != NULL)
-			**debugStream << "l missing: " << (*yourVars.begin())->toString() << std::endl;
+
+		// carry on to compare these (ordered) results.
+		if (!(*myRow)->mappedBNodesEquals(**yourRow, refBNodes2myBNodes, debugStream))
 		    return false;
-		}
 		++myRow;
 		++yourRow;
 	    }
-	    return true;
+	    assert(lUnordered.size() == rUnordered.size()); // I *think* that's always true...
+
+	    if (lUnordered.size() == 0)
+		return true;
+	    // explore every combination of bnode mappings.
+	    return _mapsTo(std::vector<const Result*>(lUnordered.begin(), lUnordered.end()),
+			   std::vector<const Result*>(rUnordered.begin(), rUnordered.end()),
+			   refBNodes2myBNodes, debugStream);
 	}
+
 
 	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having);
 	void restrict(const Expression* expression);

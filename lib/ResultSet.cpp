@@ -96,6 +96,10 @@ namespace w3c_sw {
 	//	    set(it->first, it->second);	
     }
 
+    std::ostream& operator<< (std::ostream& os, Result const& my) {
+	return os << my.toString() ;
+    }
+
 
     ResultSet* ResultSet::clone () {
 	ResultSet* ret = new ResultSet(atomFactory);
@@ -181,36 +185,6 @@ namespace w3c_sw {
 		    continue;
 		if (l != r)
 		    return pair.ascOrDesc == ORDER_Desc ? atomFactory->safeCmp(r, l) == AtomFactory::SORT_lt : atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
-	    }
-	    return false;
-	}
-    };
-
-    struct AscendingOrder {
-	const VariableVector vars;
-	AtomFactory* atomFactory;
-	AscendingOrder (const VariableVector vars, AtomFactory* atomFactory) : 
-	    vars(vars), atomFactory(atomFactory) {  }
-	bool operator() (const Result* lhs, const Result* rhs) {
-	    for (VariableVectorConstIterator it = vars.begin();
-		 it != vars.end(); ++it) {
-		// 			SPARQLSerializer s;
-		// 			pair.expression->express(&s);
-		const TTerm* l = lhs->get(*it);
-		const TTerm* r = rhs->get(*it);
-		if (r == NULL) {
-		    if (l == NULL)
-			continue;
-		    else
-			return false;
-		}
-		if (l == NULL)
-		    return true;
-		if (dynamic_cast<const Bindable*>(l) && 
-		    dynamic_cast<const Bindable*>(r))
-		    continue;
-		if (l != r)
-		    return atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
 	    }
 	    return false;
 	}
@@ -421,7 +395,8 @@ namespace w3c_sw {
 
 
     void ResultSet::order () {
-	AscendingOrder resultComp(getOrderedVars(), atomFactory);
+	std::set<const Result*> unordered;
+	AscendingOrder resultComp(getOrderedVars(), atomFactory, &unordered);
 	results.sort(resultComp);
     }
 
