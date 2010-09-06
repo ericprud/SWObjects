@@ -211,14 +211,22 @@ lib: dep $(LIB)
 
 lib/%.dep: lib/%.cpp config.h
 	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
-lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
+
+# The following doesn't fire, so I have to create the specialied rules below:
+# lib/%/%.dep: lib/%/%.cpp config.h
+# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+
+lib/SPARQLfedParser/SPARQLfedParser.dep: lib/SPARQLfedParser/SPARQLfedParser.cpp config.h
 	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
-lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
+lib/MapSetParser/MapSetParser.dep: lib/MapSetParser/MapSetParser.cpp config.h
 	($(ECHO) -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
-lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
+lib/TurtleSParser/TurtleSParser.dep: lib/TurtleSParser/TurtleSParser.cpp config.h
 	($(ECHO) -n $@ lib/TurtleSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
-lib/TrigSParser/%.dep: lib/TrigSParser/%.cpp config.h
+lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
 	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
+	($(ECHO) -n $@ lib/SQLParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
 
