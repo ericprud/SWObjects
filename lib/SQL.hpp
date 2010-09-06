@@ -27,8 +27,8 @@ namespace w3c_sw {
 	    virtual bool operator== (const AliasAttr& ref) const {
 		return alias == ref.alias && attr == ref.attr;
 	    }
-	    std::string str () { return toString(); } // for debugger invocation
-	    virtual std::string toString () { return alias + "." + attr; }
+	    std::string str () const { return toString(); } // for debugger invocation
+	    virtual std::string toString () const { return alias + "." + attr; }
 	};
 
 	class Constraint {
@@ -110,10 +110,10 @@ namespace w3c_sw {
 	    std::vector<const Expression*> constraints;
 	public:
 	    JunctionConstraint () : WhereConstraint(), constraints() {  }
-	    JunctionConstraint (const Expression* l, const Expression* r) : WhereConstraint(), constraints() {
-		constraints.push_back(l);
-		constraints.push_back(r);
-	    }
+	    JunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
+				std::vector<const sql::Expression*>::const_iterator end)
+		: constraints(start, end)
+	    {  }
 	    ~JunctionConstraint () {
 		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++)
@@ -158,7 +158,10 @@ namespace w3c_sw {
 	class ConjunctionConstraint : public JunctionConstraint {
 	public:
 	    ConjunctionConstraint () : JunctionConstraint() {  }
-	    ConjunctionConstraint (const Expression* l, const Expression* r) : JunctionConstraint(l, r) {  }
+	    ConjunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
+				   std::vector<const sql::Expression*>::const_iterator end)
+		: JunctionConstraint(start, end)
+	    {  }
 	    virtual std::string getJunctionString () const { return " AND "; }
 	    virtual e_PREC getPrecedence () const { return PREC_And; }
 	    virtual bool finalEq (const ConjunctionConstraint& l) const {
@@ -170,7 +173,12 @@ namespace w3c_sw {
 	    virtual void getEquivs(struct EquivSet&) const;
 	};
 	class DisjunctionConstraint : public JunctionConstraint {
-	    // DisjunctionConstraint (const Expression* l, const Expression* r) : JunctionConstraint(l, r) {  }
+	public:
+	    DisjunctionConstraint () {  }
+	    DisjunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
+				   std::vector<const sql::Expression*>::const_iterator end)
+		: JunctionConstraint(start, end)
+	    {  }
 	    virtual std::string getJunctionString () const { return " OR "; }
 	    virtual e_PREC getPrecedence () const { return PREC_Or; }
 	    virtual bool finalEq (const DisjunctionConstraint& l) const {
@@ -369,6 +377,10 @@ namespace w3c_sw {
 	protected:
 	    std::vector<const Expression*> args;
 	public:
+	    NaryExpression (std::vector<const sql::Expression*>::const_iterator start,
+			    std::vector<const sql::Expression*>::const_iterator end)
+		: args(start, end)
+	    {  }
 	    NaryExpression (std::vector<const Expression*>* args) : Expression(), args(*args) {  }
 	    ~NaryExpression () {
 		for (std::vector<const Expression*>::const_iterator it = args.begin();
@@ -410,7 +422,10 @@ namespace w3c_sw {
 	};
 	class ArithmeticProduct : public NaryExpression {
 	public:
-	    ArithmeticProduct (std::vector<const Expression*>* args) : NaryExpression(args) {  }
+	    ArithmeticProduct (std::vector<const sql::Expression*>::const_iterator start,
+			       std::vector<const sql::Expression*>::const_iterator end)
+		: NaryExpression(start, end)
+	    {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticProduct& l) const {
 		return l.NaryExpression::baseEq(*this);
@@ -434,7 +449,10 @@ namespace w3c_sw {
 	};
 	class ArithmeticSum : public NaryExpression {
 	public:
-	    ArithmeticSum (std::vector<const Expression*>* args) : NaryExpression(args) {  }
+	    ArithmeticSum (std::vector<const sql::Expression*>::const_iterator start,
+			   std::vector<const sql::Expression*>::const_iterator end)
+		: NaryExpression(start, end)
+	    {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticSum& l) const {
 		return l.NaryExpression::baseEq(*this);
@@ -611,7 +629,10 @@ namespace w3c_sw {
 	};
 	class ConcatConstraint : public NaryExpression {
 	public:
-	    ConcatConstraint (std::vector<const Expression*>* args) : NaryExpression(args) {  }
+	    ConcatConstraint (std::vector<const sql::Expression*>::const_iterator start,
+			      std::vector<const sql::Expression*>::const_iterator end)
+		: NaryExpression(start, end)
+	    {  }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ConcatConstraint& l) const {
 		return l.NaryExpression::baseEq(*this);
@@ -974,6 +995,9 @@ namespace w3c_sw {
 	    std::vector<SQLQuery*> disjoints;
 	public:
 	    SQLUnion () {  }
+	    SQLUnion (std::vector<sql::SQLQuery*>::const_iterator start,
+		      std::vector<sql::SQLQuery*>::const_iterator end) : disjoints(start, end)
+	    {  }
 	    virtual ~SQLUnion () {
 		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it)
@@ -1043,24 +1067,80 @@ namespace w3c_sw {
 	    typedef enum {TYPE_error, TYPE_int, TYPE_double, TYPE_date, TYPE_datetime, TYPE_string} e_TYPE;
 
 	    struct FieldOrKey {
+		int i;
+		FieldOrKey () : i(7) {  }
+		virtual bool operator==(const FieldOrKey& ref) const = 0;
+		virtual std::string str() const = 0;
 	    };
+
+//	    I don't know what the prob was, but calling this got oddly circular:
+// 	    inline std::ostream& operator<< (std::ostream& ostr, FieldOrKey const& ref) {
+// 		std::cerr << ref << ".i = " << ref.i << "\n";
+// 		return ostr << ref.str();
+// 	    }
 
 	    struct Field : public FieldOrKey {
 		std::string name;
 		e_TYPE type;
 		Field (std::string name, e_TYPE type) : name(name), type(type)
 		{  }
+		virtual bool operator== (const FieldOrKey& ref) const {
+		    const Field* refp = dynamic_cast<const Field*>(&ref);
+		    if (refp == NULL)
+			return false;
+		    return name == refp->name
+			&& type == refp->type;
+		}
+
+		virtual std::string str () const {
+		    return name + " " + (type == TYPE_error ? "ERROR" :
+					 type == TYPE_int ? "INT" :
+					 type == TYPE_double ? "DOUBLE" :
+					 type == TYPE_date ? "DATE" :
+					 type == TYPE_datetime ? "DATETIME" :
+					 type == TYPE_string ? "STRING" :
+					 "???" ) + "";
+		}
 	    };
 
 	    struct Key : public FieldOrKey {
 		std::vector<std::string>* attrs;
 		Key (std::vector<std::string>* attrs) : attrs(attrs)
 		{  }
+		bool Key_equals (const FieldOrKey& ref) const {
+		    const Key* refp = dynamic_cast<const Key*>(&ref);
+		    if (refp == NULL
+			|| attrs->size() != refp->attrs->size())
+			return false;
+		    std::vector<std::string>::const_iterator left = attrs->begin();
+		    std::vector<std::string>::const_iterator right = refp->attrs->begin();
+		    for (;
+			 left != attrs->end(); ++left, ++right)
+			if (*left != *right)
+			    return false;
+		    return true;
+		}
 	    };
 
 	    struct PrimaryKey : public Key {
 		PrimaryKey (std::vector<std::string>* attrs) : Key(attrs)
 		{  }
+		virtual bool operator== (const FieldOrKey& ref) const {
+		    const PrimaryKey* refp = dynamic_cast<const PrimaryKey*>(&ref);
+		    return (refp != NULL && Key_equals(ref));
+		}
+		virtual std::string str () const {
+		    std::stringstream ss;
+		    ss << "PRIMARY KEY (";
+		    for (std::vector<std::string>::const_iterator it = attrs->begin();
+			 it != attrs->end(); ++it) {
+			if (it != attrs->begin())
+			    ss << ", ";
+			ss << *it;
+		    }
+		    ss << ")";
+		    return ss.str();
+		}
 	    };
 
 	    struct ForeignKey : public Key {
@@ -1071,6 +1151,39 @@ namespace w3c_sw {
 			    std::vector<std::string>* relAttrs)
 		    : Key(myAttrs), targetRel(targetRel), relAttrs(relAttrs)
 		{  }
+		virtual bool operator== (const FieldOrKey& ref) const {
+		    const ForeignKey* refp = dynamic_cast<const ForeignKey*>(&ref);
+		    if (refp == NULL
+			|| targetRel != refp->targetRel
+			|| !Key_equals(ref))
+			return false;
+		    std::vector<std::string>::const_iterator left = relAttrs->begin();
+		    std::vector<std::string>::const_iterator right = refp->relAttrs->begin();
+		    for (;
+			 left != relAttrs->end(); ++left, ++right)
+			if (*left != *right)
+			    return false;
+		    return true;
+		}
+		virtual std::string str () const {
+		    std::stringstream ss;
+		    ss << "FOREIGN KEY (";
+		    for (std::vector<std::string>::const_iterator it = attrs->begin();
+			 it != attrs->end(); ++it) {
+			if (it != attrs->begin())
+			    ss << ", ";
+			ss << *it;
+		    }
+		    ss << ") REFERENCES " << targetRel << "(";
+		    for (std::vector<std::string>::const_iterator it = relAttrs->begin();
+			 it != relAttrs->end(); ++it) {
+			if (it != relAttrs->begin())
+			    ss << ", ";
+			ss << *it;
+		    }
+		    ss << ")";
+		    return ss.str();
+		}
 	    };
 
 	    struct Relation {
@@ -1099,6 +1212,39 @@ namespace w3c_sw {
 
 		Relation (std::string name) : name(name)
 		{  }
+
+		~Relation () {
+		    for (std::vector<const FieldOrKey*>::iterator it = ordered.begin();
+			 it != ordered.end(); ++it)
+			delete *it;
+		    ordered.clear();
+		    fields.clear();
+		}
+
+		bool operator== (const Relation& ref) const {
+		    if (name != ref.name
+			|| ordered.size() != ref.ordered.size()
+			|| fields.size() != ref.fields.size())
+			return false;
+		    std::vector<const FieldOrKey*>::const_iterator left = ordered.begin();
+		    std::vector<const FieldOrKey*>::const_iterator right = ref.ordered.begin();
+		    for (;
+			 left != ordered.end(); ++left, ++right)
+			if (!(**left == **right))
+			    return false;
+		    return true;
+		}
+
+		std::string str () const {
+		    std::stringstream ss;
+		    for (std::vector<const FieldOrKey*>::const_iterator it = ordered.begin();
+			 it != ordered.end(); ++it) {
+			if (it != ordered.begin())
+			    ss << ",\n";
+			ss << "  " << (*it)->str();
+		    }
+		    return ss.str();
+		}
 
 		void addField (const Field* field) {
 		    ordered.push_back(field);
@@ -1129,6 +1275,48 @@ namespace w3c_sw {
 		}
 
 	    };
+
+	    inline std::ostream& operator<< (std::ostream& ostr, Relation const& ref) {
+		return ostr << ref.str();
+	    }
+
+	    struct Database : public std::map<std::string, Relation*> {
+
+		void clear () {
+		    for (std::map<std::string, Relation*>::iterator it = begin();
+			 it != end(); ++it)
+			delete it->second;
+		    std::map<std::string, Relation*>::clear();
+		}
+
+		bool operator== (const Database& ref) const {
+		    if (size() != ref.size())
+			return false;
+		    std::map<std::string, Relation*>::const_iterator left = begin();
+		    std::map<std::string, Relation*>::const_iterator right = ref.begin();
+		    for (;
+			 left != end(); ++left, ++right)
+			if (left->first != right->first
+			    || !(*left->second == *right->second))
+			    return false;
+		    return true;
+		}
+
+		std::string str () const {
+		    std::stringstream ss;
+		    for (std::map<std::string, Relation*>::const_iterator it = begin();
+			 it != end(); ++it) {
+			std::string s = it->first;
+			const Relation& r = *it->second;
+			ss << "CREATE TABLE " << s << " (\n" << r << "\n);\n";
+		    }
+		    return ss.str();
+		}
+	    };
+
+	    inline std::ostream& operator<< (std::ostream& ostr, Database const& ref) {
+		return ostr << ref.str();
+	    }
 
 	} // namespace schema
 

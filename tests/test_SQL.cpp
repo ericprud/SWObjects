@@ -288,3 +288,76 @@ BOOST_AUTO_TEST_CASE( SQL1 ) {
     delete q1;
 }
 
+std::string Rel0("CREATE TABLE rel (\n"
+		 "  id0 INT,\n"
+		 "  id1 INT,\n"
+		 "  str STRING,\n"
+		 "  dt DATETIME,\n"
+		 "  FOREIGN KEY (id1, str) REFERENCES rel2(candkey1, candkey2),\n"
+		 "  PRIMARY KEY (id0, id1)\n"
+		 ");\n"
+		 );
+
+std::string Rel1("CREATE TABLE rel (\n"
+		 "  id0 INT,\n"
+		 "  id1 INT,\n"
+		 "  str STRING,\n"
+		 "  dt DATETIME,\n"
+		 "  FOREIGN KEY (id1, str) REFERENCES rel2(candkey2, candkey1),\n"
+		 "  PRIMARY KEY (id0, id1)\n"
+		 ");\n"
+		 );
+
+BOOST_AUTO_TEST_CASE( DDL0 ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+    ddl1Driver.tables.clear();
+}
+
+BOOST_AUTO_TEST_CASE( DDL1 ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+
+    SQLDriver ddl2Driver(context);
+    IStreamContext ddl2Str(Rel0, IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+
+    BOOST_CHECK_EQUAL(ddl1Driver.tables, ddl2Driver.tables);
+    ddl2Driver.tables.clear();
+    ddl1Driver.tables.clear();
+}
+
+BOOST_AUTO_TEST_CASE( DDL2 ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+
+    SQLDriver ddl2Driver(context);
+    IStreamContext ddl2Str(Rel1, IStreamContext::STRING);
+    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+
+    BOOST_CHECK_MESSAGE( !(ddl1Driver.tables == ddl2Driver.tables), ddl1Driver.tables << " == " << ddl2Driver.tables );
+    ddl2Driver.tables.clear();
+    ddl1Driver.tables.clear();
+}
+
+BOOST_AUTO_TEST_CASE( bsbm_ddl ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str("bsbm/ddl.sql", IStreamContext::FILE);
+    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+
+    SQLDriver ddl2Driver(context);
+    IStreamContext ddl2Str("bsbm/ddl.sql", IStreamContext::FILE);
+    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+
+    BOOST_CHECK_EQUAL(ddl1Driver.tables, ddl2Driver.tables);
+    ddl2Driver.tables.clear();
+    ddl1Driver.tables.clear();
+}
+

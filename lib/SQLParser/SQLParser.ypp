@@ -157,7 +157,7 @@ public:
     sql::SQLQuery* root;
 
     sql::schema::Relation* curCreate;
-    std::map<std::string, sql::schema::Relation*> tables;
+    sql::schema::Database tables;
 };
     typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
@@ -317,7 +317,9 @@ _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star:
 
 FieldOrKey:
     Attribute _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C	{
-    driver.curCreate->addField(new sql::schema::Field(*$1, $2));
+    std::string s = *$1;
+    sql::schema::Field* f = new sql::schema::Field(s, $2);
+    driver.curCreate->addField(f);
 }
 
     | IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
@@ -354,6 +356,7 @@ _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C:
 AttrList:
     GT_LPAREN Attribute _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star GT_RPAREN	{
     $3->insert($3->begin(), *$2);
+    delete $2;
     $$ = $3;
 }
 ;
@@ -378,11 +381,8 @@ _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
 SelectUnion:
     Select _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star	{
 	if ($2->size() > 0) {
-	    sql::SQLUnion* u = new sql::SQLUnion();
-	    u->disjoints.push_back($1);
-	    for (std::vector<sql::SQLQuery*>::const_iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		u->disjoints.push_back(*it);
+	    $2->insert($2->begin(), $1);
+	    sql::SQLUnion* u = new sql::SQLUnion($2->begin(), $2->end());
 	    $$ = driver.root = u;
 	} else
 	    $$ = driver.root = $1;
@@ -490,13 +490,8 @@ _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt:
 
 AttributeList:
     NamedAttribute _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star	{
-	// no $2->push_front($1);
-	$$ = new std::vector<sql::AliasedSelect*>();
-	$$->push_back($1);
-	for (std::vector<sql::AliasedSelect*>::iterator it = $2->begin();
-	     it != $2->end(); ++it)
-	    $$->push_back(*it);
-	$2->clear();
+	$2->insert($2->begin(), $1);
+	$$ = new std::vector<sql::AliasedSelect*>($2->begin(), $2->end());
 	delete $2;
 }
 
@@ -563,15 +558,12 @@ Relation:
 
 TableList:
     TableAlias _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star	{
-	$$.joins = new std::vector<sql::Join*>();
-	$$.joins->push_back($1.relation != NULL
-			    ? (sql::Join*)new sql::TableJoin(*$1.relation, *$1.alias, $1.optional)
-			    : (sql::Join*)new sql::SubqueryJoin($1.subselect, *$1.alias, $1.optional));
+	$2.joins->insert($2.joins->begin(), $1.relation != NULL
+		   ? (sql::Join*)new sql::TableJoin(*$1.relation, *$1.alias, false)
+		   : (sql::Join*)new sql::SubqueryJoin($1.subselect, *$1.alias, false));
 	delete $1.relation;
 	delete $1.alias;
-	for (std::vector<sql::Join*>::iterator it = $2.joins->begin();
-	     it != $2.joins->end(); ++it)
-	    $$.joins->push_back(*it);
+	$$.joins = new std::vector<sql::Join*>($2.joins->begin(), $2.joins->end());
 	$$.exprs = $2.exprs;
 	delete $2.joins;
 }
@@ -671,12 +663,8 @@ ConditionalOrExpression:
     // ConditionalAndExpression ( '||' ConditionalAndExpression )*
     ConditionalAndExpression _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star	{
 	if ($2->size() > 0) {
-	    sql::JunctionConstraint* t = new sql::DisjunctionConstraint();
-	    t->constraints.push_back($1);
-	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		t->constraints.push_back(*it);
-	    $$ = t;
+	    $2->insert($2->begin(), $1);
+	    $$ = new sql::DisjunctionConstraint($2->begin(), $2->end());
 	} else
 	    $$ = $1;
 	delete $2;
@@ -705,12 +693,8 @@ ConditionalAndExpression:
     // ValueLogical ( '&&' ValueLogical )*
     ValueLogical _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star	{
 	if ($2->size() > 0) {
-	    sql::JunctionConstraint* t = new sql::ConjunctionConstraint();
-	    t->constraints.push_back($1);
-	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		t->constraints.push_back(*it);
-	    $$ = t;
+	    $2->insert($2->begin(), $1);
+	    $$ = new sql::DisjunctionConstraint($2->begin(), $2->end());
 	} else
 	    $$ = $1;
 	delete $2;
@@ -801,14 +785,11 @@ AdditiveExpression:
     // MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | NumericLiteralPositive | NumericLiteralNegative )*
     MultiplicativeExpression _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C_E_Star	{
 	if ($2->size() > 0) {
-	    std::vector<const sql::Expression*> v;
-	    v.push_back($1);
-	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		v.push_back(*it);
-	    $$ = new sql::ArithmeticSum(&v);
+	    $2->insert($2->begin(), $1);
+	    $$ = new sql::ArithmeticSum($2->begin(), $2->end());
 	} else
 	    $$ = $1;
+	delete $2;
     }
 ;
 
@@ -839,12 +820,8 @@ MultiplicativeExpression:
     // UnaryExpression ( '*' UnaryExpression | '/' UnaryExpression )*
     UnaryExpression _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star	{
 	if ($2->size() > 0) {
-	    std::vector<const sql::Expression*> v;
-	    v.push_back($1);
-	    for (std::vector<const sql::Expression*>::const_iterator it = $2->begin();
-		 it != $2->end(); ++it)
-		v.push_back(*it);
-	    $$ = new sql::ArithmeticProduct(&v);
+	    $2->insert($2->begin(), $1);
+	    $$ = new sql::ArithmeticProduct($2->begin(), $2->end());
 	} else
 	    $$ = $1;
 	delete $2;
@@ -902,12 +879,8 @@ BrackettedExpression:
 
 BuiltInCall:
     IT_CONCAT GT_LPAREN Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RPAREN	{
-	std::vector<const sql::Expression*> args;
-	args.push_back($3);
-	for (std::vector<const sql::Expression*>::const_iterator it = $4->begin();
-	     it != $4->end(); ++it)
-	    args.push_back(*it);
-	$$ = new sql::ConcatConstraint(&args);
+	$4->insert($4->begin(), $3);
+	$$ = new sql::ConcatConstraint($4->begin(), $4->end());
 	delete $4;
 }
   |
