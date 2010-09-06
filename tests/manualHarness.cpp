@@ -8,7 +8,9 @@
 #define BOOST_AUTO_TEST_SUITE_END() }
 #define BOOST_CHECK_EQUAL(l, r) assert(l == r)
 #define BOOST_TEST_CHECKPOINT(s) std::cout << s << std::endl
+#define BOOST_CHECK(test) assert (test)
 #define BOOST_CHECK_MESSAGE(test, message) if (test) std::cout << message
+#define BOOST_CHECK_THROW(code, ex) { bool caught = false; try { code; } catch (ex x) { caught = true; } assert (caught == true); }
 namespace boost { namespace unit_test { namespace framework {
 	    struct Args { int argc; char** argv; };
 	    Args TheArgs;

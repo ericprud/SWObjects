@@ -10,13 +10,27 @@ while(<JIG>) {
 	print OUT "#include \"$ARGV[0]\"\n";
     } elsif ($Mode eq "BODY" && m/tests/) {
 	$Mode = "TAIL";
-	while (<TEST>) {
-	    if (m/BOOST_AUTO_TEST_SUITE\(\s*(\S*)\s*/) {
+	my @ifdefs = ();
+	for (my $line = 0; <TEST>; ++$line) {
+	    if (@ifdefs > 0) {
+		if (m/\*#if(.*)/) {
+		    push(@ifdefs, $1);
+		} elsif (m/\*#endif(.*)/) {
+		    pop(@ifdefs);
+		}
+	    } elsif (m/\s*\/\//) {
+		;
+	    } elsif (m/\s*#if(.*)/) {
+		push(@ifdefs, $1);
+	    } elsif (m/\s*#endif(.*)/) {
+		die "unexpected endif $1 at line $line";
+	    } elsif (m/BOOST_AUTO_TEST_SUITE\(\s*(\S*)\s*/) {
 		push (@S, $1);
 	    } elsif (m/BOOST_AUTO_TEST_SUITE_END\(\s*/) {
 		pop (@S);
 	    } elsif (m/BOOST_AUTO_TEST_CASE\(\s*(\S*)\s*/) {
-		print OUT "    ",join("::", @S,$1), "();\n";}
+		print OUT "    ",join("::", @S,$1), "();\n";
+	    }
 	}
     } else {
 	print OUT;

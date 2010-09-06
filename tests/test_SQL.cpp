@@ -16,7 +16,9 @@
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).
  */
-#include <boost/test/unit_test.hpp>
+#ifndef MANUAL_TEST
+  #include <boost/test/unit_test.hpp>
+#endif
 
 using namespace w3c_sw;
 
@@ -55,50 +57,178 @@ bool w3c_sw::sql::SQLQuery::finalEq (const SQLQuery& ref) const {
 struct EqTest {
     sqlContext context;
     SQLDriver driver;
-    IStreamContext str1;
-    IStreamContext str2;
     sql::SQLQuery* q1;
     sql::SQLQuery* q2;
-    EqTest (const char* q) : context(), driver(context), str1(q, IStreamContext::STRING), str2(q, IStreamContext::STRING) {
+    EqTest (const char* s1, const char* s2)
+	: context(), driver(context)
+    {
+	IStreamContext str1(s1, IStreamContext::STRING);
 	BOOST_CHECK_EQUAL(0, driver.parse(str1));
 	q1 = driver.root;
+	IStreamContext str2(s2, IStreamContext::STRING);
 	BOOST_CHECK_EQUAL(0, driver.parse(str2));
 	q2 = driver.root;
     }
 };
 
-#define EQTEST(NAME,STR) BOOST_AUTO_TEST_CASE(NAME) {	\
-	EqTest t(STR);					\
-	BOOST_CHECK_EQUAL(*t.q1, *t.q2);		\
-    }
-EQTEST(SelExprEq11, "SELECT 1=1");
-EQTEST(SelExprNe11, "SELECT 1!=1");
-EQTEST(SelExprLt11, "SELECT 1<1");
-EQTEST(SelExprGt11, "SELECT 1>1");
-EQTEST(SelExprLe11, "SELECT 1<=1");
-EQTEST(SelExprGe11, "SELECT 1>=1");
-EQTEST(SqlExprEq12, "SELECT 1=2");
-EQTEST(ConstAsAttr, "SELECT 1 AS attr");
-EQTEST(From, "SELECT rel.attr FROM rel");
-EQTEST(AttrAsAttr, "SELECT rel.attr AS attr FROM rel");
-EQTEST(FromAs, "SELECT relvar.attr FROM rel AS relvar");
-EQTEST(FromWhereEq11, "SELECT rel.attr FROM rel WHERE 1=2");
-EQTEST(FromWhereEqAttr1, "SELECT rel.attr FROM rel WHERE rel.attr=2");
-EQTEST(FromWhereEq1Attr, "SELECT rel.attr FROM rel WHERE 2=rel.attr");
-EQTEST(FromWherePlus11, "SELECT rel.attr FROM rel WHERE 1+2");
-EQTEST(FromWhereMinus11, "SELECT rel.attr FROM rel WHERE 1-2");
-EQTEST(FromWhereNegation, "SELECT rel.attr FROM rel WHERE -1+-2");
-EQTEST(FromWhereSumation, "SELECT rel.attr FROM rel WHERE 1+2=3");
-EQTEST(FromWhereArith, "SELECT rel.attr FROM rel WHERE 1*2/3+4-5");
+BOOST_AUTO_TEST_SUITE( op_equals )
+BOOST_AUTO_TEST_CASE( SelExprEq11 ) {
+    EqTest t("SELECT 1=1",
+	     " sElEcT 1 = 1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprEq11X ) {
+    EqTest t("SELECT 1=1",
+	     "SELECT 1=2");
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprNe11 ) {
+    EqTest t("SELECT 1!=1",
+	     "SELECT 1!= 1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprLt11 ) {
+    EqTest t("SELECT 1<1",
+	     "SELECT 1<1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprGt11 ) {
+    EqTest t("SELECT 1>1",
+	     "SELECT 1>1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprLe11 ) {
+    EqTest t("SELECT 1<=1",
+	     "SELECT 1<=1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprGe11 ) {
+    EqTest t("SELECT 1>=1",
+	     "SELECT 1>=1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SqlExprEq12 ) {
+    EqTest t("SELECT 1=2",
+	     "SELECT 1=2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( ConstAsAttr ) {
+    EqTest t("SELECT 1 AS attr",
+	     "SELECT 1 AS attr ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( From ) {
+    EqTest t("SELECT rel.attr FROM rel",
+	     "SELECT rel.attr FROM rel ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( AttrAsAttr ) {
+    EqTest t("SELECT rel.attr AS attr FROM rel",
+	     "SELECT rel.attr AS attr FROM rel ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromAs ) {
+    EqTest t("SELECT relvar.attr FROM rel AS relvar",
+	     "SELECT relvar . attr FROM rel AS relvar ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereEq11 ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 1=2",
+	     "SELECT rel.attr FROM rel WHERE 2=1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereEqAttr1 ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE rel.attr=2",
+	     "SELECT rel.attr FROM rel WHERE rel.attr=2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereEq1Attr ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 2=rel.attr",
+	     "SELECT rel.attr FROM rel WHERE 2=rel.attr ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereEqAttr2 ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE rel.attr=2", 
+	     "SELECT rel.attr FROM rel WHERE 2=rel.attr");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWherePlus11 ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 1+2",
+	     "SELECT rel.attr FROM rel WHERE 1+2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereMinus11 ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 1-2",
+	     "SELECT rel.attr FROM rel WHERE 1-2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereNegation ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE -1+-2",
+	     "SELECT rel.attr FROM rel WHERE -1+-2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereSumation ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 1+2=3",
+	     "SELECT rel.attr FROM rel WHERE 1+2=3 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( FromWhereArith ) {
+    EqTest t("SELECT rel.attr FROM rel WHERE 1*2/3+4-5",
+	     "SELECT rel.attr FROM rel WHERE 1*2/3+4-5 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
 //EQTEST(FromWhereArithBORK, "SELECT rel.attr FROM rel WHERE 1*2+3*4/5-6-(7*8)");
-EQTEST(AttrAsAttrFromAsWhere, "SELECT relvar.attr FROM rel AS relvar WHERE 1=2");
-EQTEST(AttrAsAttrFromAsOn, "SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar1.attr=relvar2.attr");
-EQTEST(Sub, "SELECT sub1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1) AS sub1");
-EQTEST(SubUnion, "SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1");
-EQTEST(JoinUnion, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1");
-EQTEST(JoinUnionOn, "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 ON union1.attr=relvar1.attr");
-EQTEST(UnionJoin, "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1");
-EQTEST(UnionJoinOn, "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1 ON relvar1.attr=union1.attr");
+BOOST_AUTO_TEST_CASE( AttrAsAttrFromAsWhere ) {
+    EqTest t("SELECT relvar.attr FROM rel AS relvar WHERE 1=2",
+	     "SELECT relvar.attr FROM rel AS relvar WHERE 1=2 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( AttrAsAttrFromAsWhere2 ) {
+    EqTest t("SELECT relvar.attr FROM rel AS relvar WHERE 1=2",
+	     "SELECT relvar.attr FROM rel AS relvar WHERE 2=1 ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( AttrAsAttrFromAsOn ) {
+    EqTest t("SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar1.attr=relvar2.attr",
+	     "SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar2.attr=relvar1.attr ");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( AttrAsAttrFromAsOnX ) {
+    EqTest t("SELECT relvar1.attr FROM rel AS relvar1 INNER JOIN rel AS relvar2 ON relvar1.attr=relvar2.attr",
+	     "SELECT relvar1.attr FROM rel AS relvar1 LEFT OUTER JOIN rel AS relvar2 ON relvar2.attr=relvar1.attr ");
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( Sub ) {
+    EqTest t("SELECT sub1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1) AS sub1",
+	     "SELECT sub1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1) AS sub1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SubUnion ) {
+    EqTest t("SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1",
+	     "SELECT union1.attr FROM (SELECT relvar1.attr FROM rel AS relvar1 UNION SELECT relvar2.attr FROM rel AS relvar2) AS union1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( JoinUnion ) {
+    EqTest t("SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1",
+	     "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( JoinUnionOn ) {
+    EqTest t("SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 ON union1.attr=relvar1.attr",
+	     "SELECT union1.attr FROM rel AS relvar1 INNER JOIN (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 ON union1.attr=relvar1.attr");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( UnionJoin ) {
+    EqTest t("SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1",
+	     "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( UnionJoinOn ) {
+    EqTest t("SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1 ON relvar1.attr=union1.attr",
+	     "SELECT union1.attr FROM (SELECT relvar2.attr FROM rel AS relvar2 UNION SELECT relvar3.attr FROM rel AS relvar3) AS union1 INNER JOIN rel AS relvar1 ON relvar1.attr=union1.attr");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_SUITE_END()
 
 
 /* test != */
