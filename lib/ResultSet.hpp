@@ -715,11 +715,14 @@ namespace w3c_sw {
 		for (std::vector<const Result*>::iterator rit = rv.begin(); rit != rv.end(); ++rit) {
 		    const Result* r = *rit;
 		    rit = rv.erase(rit);
-		    if (l->mappedBNodesEquals(*r, refBNodes2myBNodes, debugStream) &&
+		    BiDiBNodeMap provisional(refBNodes2myBNodes);
+		    if (l->mappedBNodesEquals(*r, provisional, debugStream) &&
 			(lv.size() == 0 ||
 			 _mapsTo(std::vector<const Result*>(lv),
-				 std::vector<const Result*>(rv), refBNodes2myBNodes, debugStream)))
+				 std::vector<const Result*>(rv), provisional, debugStream))) {
+			refBNodes2myBNodes = provisional;
 			return true;
+		    }
 		    rit = rv.insert(rit, r);
 		}
 		lit = lv.insert(lit, l);
