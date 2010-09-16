@@ -61,7 +61,80 @@ ResultSet makeResultSet (R rows[], int count, TTerm::String2BNode& bnodeMap) {
 #warning REGEX needed for bgp tests.
 #else /* ! REGEX_LIB != SWOb_DISABLED */
 
-BOOST_AUTO_TEST_CASE( bgp ) {
+
+BOOST_AUTO_TEST_SUITE( graph_patterns )
+BOOST_AUTO_TEST_CASE( simple_eq ) {
+    DefaultGraphPattern l("<n1> <p1> 'l1' ."
+			  "<n2> <p1> <n3> .", &f);
+    DefaultGraphPattern r("<n2> <p1> <n3> ."
+			  "<n1> <p1> 'l1' .", &f);
+    BOOST_CHECK_EQUAL(l, r);
+}
+BOOST_AUTO_TEST_CASE( simple_ne ) {
+    DefaultGraphPattern l("<n1> <p1> 'l1' ."
+			  "<n2> <p1> <n3> .", &f);
+    DefaultGraphPattern r("<n1> <p2> 'l1' ."
+			  "<n2> <p2> <n3> .", &f);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+BOOST_AUTO_TEST_CASE( bnode_abc_eq ) {
+    DefaultGraphPattern l("_:a _:b _:c .", &f);
+    DefaultGraphPattern r("_:A _:B _:C .", &f);
+    BOOST_CHECK_EQUAL(l, r);
+}
+BOOST_AUTO_TEST_CASE( bnode_abc_ne ) {
+    DefaultGraphPattern l("_:a _:b _:c .", &f);
+    DefaultGraphPattern r("_:A _:B _:A .", &f);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+BOOST_AUTO_TEST_CASE( bnode_const_eq ) {
+    DefaultGraphPattern l("<n1> <p1> _:o1 ."
+			  "<n2> _:p2 _:o2 .", &f);
+    DefaultGraphPattern r("<n1> <p1> _:n1 ."
+			  "<n2> _:q2 _:n2 .", &f);
+    BOOST_CHECK_EQUAL(l, r);
+}
+BOOST_AUTO_TEST_CASE( bnode_const_p_ne ) {
+    DefaultGraphPattern l("<n1> <p1> _:o1 ."
+			  "<n2> _:p2 _:o2 .", &f);
+    DefaultGraphPattern r("<n1> <p2> _:n1 ."
+			  "<n2> _:q2 _:n2 .", &f);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+BOOST_AUTO_TEST_CASE( bnode_const_o2_ne ) {
+    DefaultGraphPattern l("<n1> <p1> _:o1 ."
+			  "<n2> _:p2 _:o1 .", &f);
+    DefaultGraphPattern r("<n1> <p1> _:n1 ."
+			  "<n2> _:q2 _:n2 .", &f);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+BOOST_AUTO_TEST_CASE( bnode_const_o2_ref_ne ) {
+    DefaultGraphPattern l("<n1> <p1> _:o1 ."
+			  "<n2> _:p2 _:o2 .", &f);
+    DefaultGraphPattern r("<n1> <p1> _:n1 ."
+			  "<n2> _:q2 _:n1 .", &f);
+    BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
+}
+#if 0 // uncomment if you want to equiv a couple NTriplePatterns files
+BOOST_AUTO_TEST_CASE( bnode_file ) {
+
+    std::ifstream xis("x.ttl"); assert (xis.is_open());
+    std::istreambuf_iterator<char> xi(xis), xe;
+    std::string x(xi, xe);
+
+    std::ifstream yis("y.ttl"); assert (yis.is_open());
+    std::istreambuf_iterator<char> yi(yis), ye;
+    std::string y(yi, ye);
+
+    DefaultGraphPattern l(x, &f);
+    DefaultGraphPattern r(y, &f);
+    BOOST_CHECK_EQUAL(l, r);
+}
+#endif
+BOOST_AUTO_TEST_SUITE_END(/* graph_patterns */)
+
+
+BOOST_AUTO_TEST_CASE( queries ) {
     DefaultGraphPattern data, pattern;
     TTerm::String2BNode bnodeMap;
     data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
@@ -98,7 +171,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 
     /* parseTriples */ {
 	f.parseNTPatterns(&data, 
-			  "<n1> <p1> \"l1\" ."
+			  "<n1> <p1> 'l1' ."
 			  "<n2> <p1> <n3> .", bnodeMap);
 	BOOST_CHECK_EQUAL(data.size(), (size_t)3);
 
@@ -107,9 +180,9 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2\n"
 				       "<n1> <n2>\n"
-				       "<n1> \"l1\"\n"
+				       "<n1> 'l1'\n"
 				       "<n2> <n3>",
-				       false, bnodeMap));
+				        false, bnodeMap));
     }
 
     pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 .", bnodeMap));
@@ -140,7 +213,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	f.parseNTPatterns(&d, 
 			  "?product     <label>   ?label ."
 			  "?product     <feature> <feature1> ."
-			  "?product     <feature> \"feature2\" .", bnodeMap);
+			  "?product     <feature> 'feature2' .", bnodeMap);
 	DefaultGraphPattern p;
 	f.parseNTPatterns(&p, 
 			  "?ruleProduct <label>   ?ruleLabel ."
@@ -150,7 +223,7 @@ BOOST_AUTO_TEST_CASE( bgp ) {
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
 			   "?product     ?label     <feature1> \n"
-			   "?product     ?label     \"feature2\"",
+			   "?product     ?label     'feature2'",
 			   false, bnodeMap);
 	BOOST_CHECK_EQUAL(tested, expected);
     }
@@ -416,19 +489,19 @@ BOOST_AUTO_TEST_CASE( RSLongOrderedNoCoRefs ) {
     TTerm::String2BNode bnodeMap;
     ResultSet l(&f, 
 		" ?a   ?b   ?c\n"
-		"  1 \"two\" <thr>\n"
+		"  1 'two' <thr>\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
+		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n"
-		"  7 \"ate\" <nyn>\n",
+		"  7 'ate' <nyn>\n",
 		false, bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
-		"  1 \"two\" <thr>\n"
+		"  1 'two' <thr>\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
+		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n"
-		"  7 \"ate\" <nyn>\n",
+		"  7 'ate' <nyn>\n",
 		false, bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
@@ -439,16 +512,16 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedNoCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
-		"  1 \"two\" <thr>\n"
-		"  7 \"ate\" <nyn>\n",
+		"  4 'fve' <six>\n"
+		"  1 'two' <thr>\n"
+		"  7 'ate' <nyn>\n",
 		false, bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
-		"  7 \"ate\" <nyn>\n"
-		"  1 \"two\" <thr>\n"
+		"  7 'ate' <nyn>\n"
+		"  1 'two' <thr>\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
+		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n",
 		false, bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
@@ -460,16 +533,16 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1 _:b1 _:a1\n"
-		"  4 \"fve\" <six>\n"
-		"  1 \"two\" <thr>\n"
-		"  7 \"ate\" <nyn>\n",
+		"  4 'fve' <six>\n"
+		"  1 'two' <thr>\n"
+		"  7 'ate' <nyn>\n",
 		false, bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
-		"  7 \"ate\" <nyn>\n"
-		"  1 \"two\" <thr>\n"
+		"  7 'ate' <nyn>\n"
+		"  1 'two' <thr>\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
+		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:a2\n",
 		false, bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
@@ -481,16 +554,16 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedMisCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1 _:b1 _:a1\n"
-		"  4 \"fve\" <six>\n"
-		"  1 \"two\" <thr>\n"
-		"  7 \"ate\" <nyn>\n",
+		"  4 'fve' <six>\n"
+		"  1 'two' <thr>\n"
+		"  7 'ate' <nyn>\n",
 		false, bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
-		"  7 \"ate\" <nyn>\n"
-		"  1 \"two\" <thr>\n"
+		"  7 'ate' <nyn>\n"
+		"  1 'two' <thr>\n"
 		"_:a1 _:b1 _:c1\n"
-		"  4 \"fve\" <six>\n"
+		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:b2\n",
 		false, bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
