@@ -34,8 +34,11 @@ namespace w3c_sw {
 #endif
 
     class DefaultGraphClass : public TTerm {
+    protected:
+	virtual DT_TypeOrder getTypeOrder () { return DT_Err; }
     public:
 	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
+	virtual DT_TypeOrder getTypeOrder () const { return DT_Err; }
 	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual std::string toString () const { return "Default Graph"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }

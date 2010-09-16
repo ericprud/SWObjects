@@ -499,6 +499,8 @@ class BNode;
 class BNodeEvaluator;
 class AtomFactory;
 
+typedef enum { SORT_error, SORT_lt, SORT_eq, SORT_gt } e_SORT;
+
 /* START Parts Of Speach */
 /** TTerm: the terms in a Triple.
  */
@@ -507,14 +509,25 @@ class TTerm : public Terminal {
 protected:
     TTerm (std::string matched) : Terminal(matched) {  }
     TTerm (std::string matched, bool gensym) : Terminal(matched, gensym) { }
-    //    virtual int compareType (TTerm* to) = 0;
 public:
+    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, 
+		   DT_Integer, DT_Decimal, DT_Float, DT_Double, 
+		   DT_Boolean} DT_TypeOrder;
+    static e_SORT _int2e_SORT(int i) {
+	return i < 0  ? SORT_lt
+	    : i > 0 ? SORT_gt
+	    : SORT_eq;
+    };
+    virtual DT_TypeOrder getTypeOrder() const = 0;
+
     bool operator== (const TTerm& r) const { return this==&r; }
     virtual bool isConstant () const { return true; } // Override for variable types.
     static bool orderByType (const TTerm*, const TTerm*) { throw(std::runtime_error(FUNCTION_STRING)); }
-    virtual int compare (TTerm* to, Result*) const { // @@ AtomFactory::e_SORT
-	bool same = typeid(*to) == typeid(*this);
-	return same ? getLexicalValue() != to->getLexicalValue() : orderByType(this, to);
+    virtual e_SORT compare (TTerm* to) const {
+	if (typeid(*to) == typeid(*this))
+	    return _int2e_SORT(getLexicalValue().compare(to->getLexicalValue()));
+	throw(std::runtime_error(FUNCTION_STRING));
+	
     }
     virtual const TTerm* evalTTerm (const Result*, BNodeEvaluator* /* evaluator */) const { return this; }
     bool bindVariable (const TTerm* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
@@ -544,6 +557,7 @@ private:
     URI (std::string str) : TTerm(str) {  }
 public:
     ~URI () { }
+    virtual DT_TypeOrder getTypeOrder () const { return DT_URI; }
     virtual const char * getToken () { return "-TTerm-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toXMLResults (BNode2string*) const { return std::string("<uri>") + terminal + "</uri>";  }
@@ -557,6 +571,7 @@ protected:
     Bindable (std::string str) : TTerm(str) {  }
     Bindable (std::string str, bool gensym) : TTerm(str, gensym) {  }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_BNode; }
     virtual bool isConstant () const { return false; }
 };
 
@@ -633,6 +648,7 @@ protected:
 	delete m_LANGTAG;
     }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Literal; }
     const URI* getDatatype () const { return datatype; }
     const LANGTAG* getLangtag () const { return m_LANGTAG; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const {
@@ -720,6 +736,7 @@ protected:
     IntegerRDFLiteral (std::string p_String, const URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Integer; }
     int getValue () const { return m_value; }
     virtual int getInt () const { return m_value; }
     virtual float getFloat () const { return (float)m_value; }
@@ -741,6 +758,7 @@ protected:
     FloatRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~FloatRDFLiteral () {  }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Float; }
     float getValue () const { return m_value; }
     virtual int getInt () const { throw TypeError(std::string("(float)") + toString(), "getInt()"); }
     virtual float getFloat () const { return m_value; }
@@ -760,6 +778,7 @@ class DecimalRDFLiteral : public FloatRDFLiteral {
 protected:
     DecimalRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Decimal; }
     virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
     virtual void express(Expressor* p_expressor) const;
 };
@@ -770,6 +789,7 @@ protected:
     DoubleRDFLiteral (std::string p_String, const URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
 public:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Double; }
     double getValue () const { return m_value; }
     virtual int getInt () const { throw TypeError(std::string("(double)") + toString(), "getInt()"); }
     virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
@@ -789,6 +809,7 @@ class BooleanRDFLiteral : public CanonicalRDFLiteral {
 protected:
     bool m_value;
     BooleanRDFLiteral (std::string p_String, const URI* p_URI, bool p_value) : CanonicalRDFLiteral(p_String, p_URI), m_value(p_value) {  }
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Boolean; }
 public:
     bool getValue () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
@@ -806,6 +827,8 @@ class NULLtterm : public TTerm {
 private:
     NULLtterm () : TTerm("NULL", "") {  }
     ~NULLtterm () {  }
+protected:
+    virtual DT_TypeOrder getTypeOrder () const { return DT_Err; }
 public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
@@ -813,6 +836,30 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
+
+struct BiDiBNodeMap {
+    std::map<const TTerm*, const TTerm*> forward;
+    std::map<const TTerm*, const TTerm*> reverse;
+    bool mappable (const TTerm* from, const TTerm* to) {
+	const TTerm* atFrom = forward.find(from) == forward.end() ? NULL : forward[from];
+	const TTerm* atTo = reverse.find(to) == reverse.end() ? NULL : reverse[to];
+
+	if (atFrom == NULL && atTo == NULL) {
+	    forward[from] = to;
+	    reverse[to] = from;
+	    return true;
+	}
+
+	return atFrom == to && atTo == from;
+    }
+};
+
+inline std::ostream& operator<< (std::ostream& os, BiDiBNodeMap& ref) {
+    for (std::map<const TTerm*, const TTerm*>::const_iterator it = ref.forward.begin();
+	 it != ref.forward.end(); ++it)
+	os << it->first->toString() << " -> " << it->second->toString() << std::endl;
+    return os;
+}
 
 class BasicGraphPattern;
 class NamespaceMap;
@@ -829,6 +876,9 @@ public:
     const TTerm* getS () const { return m_s; }
     const TTerm* getP () const { return m_p; }
     const TTerm* getO () const { return m_o; }
+
+    bool mappedBNodesEquals(const TriplePattern& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const;
+
     static bool lt (TriplePattern* l, TriplePattern* r) {
 	if (l->m_s != r->m_s) return l->m_s < r->m_s;
 	if (l->m_p != r->m_p) return l->m_p < r->m_p;
@@ -889,13 +939,10 @@ protected:
     const BooleanRDFLiteral* litFalse;
     const BooleanRDFLiteral* litTrue;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
-public:
-    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, 
-		  DT_Integer, DT_Decimal, DT_Float, DT_Double, 
-		  DT_Boolean} DT_Numeric;
+
 protected:
-    typedef std::map<const std::string, DT_Numeric> TypeOrder;
-    TypeOrder typeOrder;
+    static const URI DT_string;
+    static const URI DT_dateTime;
 
 #if REGEX_LIB == SWOb_BOOST
     enum {RANGE_unlimited = -2} Range;
@@ -928,17 +975,12 @@ protected:
 public:
     std::ostream** debugStream;
     AtomFactory () :
-	litFalse(getBooleanRDFLiteral("false", false)), 
-	litTrue(getBooleanRDFLiteral("true", true)) {
-
-	typeOrder[typeid(BNode).name()] = DT_BNode;
-	typeOrder[typeid(URI).name()] = DT_URI;
-	typeOrder[typeid(RDFLiteral).name()] = DT_Literal;
-	typeOrder[typeid(IntegerRDFLiteral).name()] = DT_Integer;
-	typeOrder[typeid(DecimalRDFLiteral).name()] = DT_Decimal;
-	typeOrder[typeid(FloatRDFLiteral).name()] = DT_Float;
-	typeOrder[typeid(DoubleRDFLiteral).name()] = DT_Double;
-	typeOrder[typeid(BooleanRDFLiteral).name()] = DT_Boolean;
+	litFalse(getBooleanRDFLiteral("false", false)),
+	litTrue(getBooleanRDFLiteral("true", true))
+    {
+	// inject static entries:
+	uris[DT_string.getLexicalValue()] = &DT_string;
+	uris[DT_dateTime.getLexicalValue()] = &DT_dateTime;
 
 #if REGEX_LIB == SWOb_BOOST
 	using std::numeric_limits;
@@ -1072,7 +1114,7 @@ public:
     const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
     const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
 
-    void _validateNumeric (std::string str) {
+    static void _validateNumeric (std::string str) {
 #ifdef HAVE_STRTOLD
 	const char* s = str.c_str();
 	char* end;
@@ -1084,14 +1126,14 @@ public:
 	    throw TypeError(str, "validate numeric");
 #endif
     }
-    void _validateBoolean (std::string s) {
+    static void _validateBoolean (std::string s) {
 	if (s != "false" || s != "0" || 
 	    s != "true"  || s != "1")
 	    throw TypeError(s, "validate boolean");
     }
     /** valdiate per http://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
      */
-    void _validateDateTime (std::string s) {
+    static void _validateDateTime (std::string s) {
 	/* '-'? yyyy '-' mm '-' dd 'T' hh ':' mm ':' ss ('.' s+)? (zzzzzz)?
 	 * per <http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#dateTime-lexical-representation>
 	 */
@@ -1169,18 +1211,12 @@ public:
 	    throw TypeError(s, "xsd:datetime (garbage at end)");
     }
 
-    typedef enum { SORT_error, SORT_lt, SORT_eq, SORT_gt } e_SORT;
-    static e_SORT _int2e_SORT(int i) {
-	return i < 0  ? SORT_lt
-	    : i > 0 ? SORT_gt
-	    : SORT_eq;
-    };
-    e_SORT cmp (const TTerm* ltterm, const TTerm* rtterm) {
+    static e_SORT cmp (const TTerm* ltterm, const TTerm* rtterm) {
 	/* Compare URIs lexically */
 	const URI* luri = dynamic_cast<const URI*> (ltterm);
 	const URI* ruri = dynamic_cast<const URI*> (rtterm);
 	if (luri != NULL && ruri != NULL)
-	    return _int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
+	    return TTerm::_int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
 
 	/* Compare literals. */
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (ltterm);
@@ -1256,17 +1292,17 @@ public:
 		_validateNumeric(r->getLexicalValue());
 		return
 		    dl < dr ? SORT_lt : 
-		    dl > dr ?  SORT_gt : 
+		    dl > dr ? SORT_gt : 
 		    SORT_eq;
 	    } else {
 		throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
 	    }
 	} else if (ldt == NULL && 
 		   rdt == NULL) {
-	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
-	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#string") && 
-		   rdt == getURI("http://www.w3.org/2001/XMLSchema#string")) {
-	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
+	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
+	} else if (ldt == &DT_string && 
+		   rdt == &DT_string) {
+	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
 	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
 		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
 	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
@@ -1277,17 +1313,17 @@ public:
 		!bl && br ? SORT_lt : 
 		bl && !br ?  SORT_gt : 
 		SORT_eq;
-	} else if (ldt == getURI("http://www.w3.org/2001/XMLSchema#dateTime") && 
-		   rdt == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
+	} else if (ldt == &DT_dateTime && 
+		   rdt == &DT_dateTime) {
 	    _validateDateTime(l->getLexicalValue());
 	    _validateDateTime(r->getLexicalValue());
-	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
+	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
 	} else {
 	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
 	}
     }
 
-    e_SORT safeCmp (const TTerm* lhs, const TTerm* rhs) {
+    static e_SORT safeCmp (const TTerm* lhs, const TTerm* rhs) {
 	if (rhs == NULL)
 	    return lhs == NULL ? SORT_eq : SORT_gt;
 	if (lhs == NULL)
@@ -1299,13 +1335,11 @@ public:
 	} catch (SafeEvaluationError&) {
 	}
 
-	const std::string lt = typeid(*lhs).name();
-	const std::string rt = typeid(*rhs).name();
-	if (lt != rt) {
-	    if (typeOrder.find(lt) != typeOrder.end() && 
-		typeOrder.find(rt) != typeOrder.end()) {
-		const int li = typeOrder[lt];
-		const int ri = typeOrder[rt];
+	const int li = lhs->getTypeOrder();
+	const int ri = rhs->getTypeOrder();
+	if (li != ri) {
+	    if (li != TTerm::DT_Err && 
+		ri != TTerm::DT_Err) {
 		if (li < ri)
 		    return SORT_lt;
 		if (li > ri)
@@ -1322,7 +1356,7 @@ public:
 		    const std::string rt = rlit->getDatatype()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return _int2e_SORT(lex);
+			return TTerm::_int2e_SORT(lex);
 		} else {
 		    return SORT_gt; // "5"^^my:int > "5"
 		}
@@ -1339,7 +1373,7 @@ public:
 		    const std::string rt = rlit->getLangtag()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return _int2e_SORT(lex);
+			return TTerm::_int2e_SORT(lex);
 		} else {
 		    return SORT_gt; // "5"@en > "5"
 		}
@@ -1351,7 +1385,7 @@ public:
 	}
 	int lex = lhs->getLexicalValue().compare(rhs->getLexicalValue());
 	if (lex != 0)
-	    return _int2e_SORT(lex);
+	    return TTerm::_int2e_SORT(lex);
 	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
     }
     e_SORT cmp (const TriplePattern* lhs, const TriplePattern* rhs) {
@@ -1539,6 +1573,7 @@ public:
     virtual TableOperation* getDNF() const;
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
+public:
     typedef std::multimap<const TTerm*, const TriplePattern*> TTerm2Triple_type;
     typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
     typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
@@ -1567,6 +1602,9 @@ class BasicGraphPattern : public TableOperation { // ⊌⊍
     };
     typedef std::pair<const TTerm*, TTerm2Triple_type> TTerm2TTerm2Triple_pair;
 
+    friend std::ostream& operator<<(std::ostream& os, const TTerm2Triple_range range);
+    friend std::ostream& operator<<(std::ostream& os, const TTerm2TTerm2Triple_type::range range);
+
 protected:
 
     // make sure we don't delete the TriplePatterns
@@ -1576,22 +1614,33 @@ protected:
     TTerm2TTerm2Triple_type OS;
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
+#if REGEX_LIB != SWOb_DISABLED
+    BasicGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode bnodeMap)
+	: allOpts(false) {
+	TTerm::String2BNode nodeMap;
+	atomFactory->parseNTPatterns(this, ntp, nodeMap);
+    }
+#endif /* REGEX_LIB != SWOb_DISABLED */
     BasicGraphPattern (const BasicGraphPattern& ref) :
 	TableOperation(ref), m_TriplePatterns(ref.m_TriplePatterns), // TTerm2TTerm2Triple(ref.TTerm2TTerm2Triple), 
-	allOpts(ref.allOpts) {  }
+	SP(ref.SP), PO(ref.PO), OS(ref.OS), allOpts(ref.allOpts) {  }
 
     /* Misc helper functions: */
-    static const TTerm* _cOrN(const TTerm* tterm, const NULLtterm* n);
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */
     void _bindVariables(RdfDB* db, ResultSet* rs, const TTerm* p_name) const;
 
 public:
 
     bool operator==(const BasicGraphPattern& ref) const;
+    bool compareOrdered(const BasicGraphPattern& ref,
+			std::set<const TriplePattern*> lUnordered = std::set<const TriplePattern*>(),
+			std::set<const TriplePattern*> rUnordered = std::set<const TriplePattern*>()) const;
     /* Controls for operator==(BasicGraphPatter&)
      */
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
-    static bool CompareVars;		// Whether ?x == ?y .
+    static bool (*MappableTerm)(const TTerm*);		// Whether ?x == ?y .
+    static bool MapBNodes(const TTerm* t) { return dynamic_cast<const BNode*>(t) != NULL; }
+    static bool MapVarsAndBNodes(const TTerm* t) { return dynamic_cast<const Bindable*>(t) != NULL; }
 
     void addTriplePattern (const TriplePattern* t) {
 	if (OS.find(t->getO()) != OS.end()) {
@@ -1623,6 +1672,18 @@ public:
     virtual std::string toString(MediaType mediaType = MediaType((const char*)NULL), NamespaceMap* namespaces = NULL) const;
 };
 
+inline std::ostream& operator<< (std::ostream& os, const BasicGraphPattern::TTerm2Triple_range range) {
+    for (BasicGraphPattern::TTerm2Triple_type::const_iterator it = range.first; it != range.second; ++it)
+	os << it->first->toString() << "->" << it->second->toString() << "\n";
+    return os;
+}
+
+inline std::ostream& operator<< (std::ostream& os, const BasicGraphPattern::TTerm2TTerm2Triple_type::range range) {
+    for (BasicGraphPattern::TTerm2TTerm2Triple_type::const_iterator it = range.first; it != range.second; ++it)
+	os << it->first->toString() << "-> vvvv\n" << BasicGraphPattern::TTerm2Triple_range(it->second.begin(), it->second.end()) << "\n^^^^\n";
+    return os;
+}
+
 class NamedGraphPattern : public BasicGraphPattern {
 private:
 public:
@@ -1645,7 +1706,11 @@ public:
 class DefaultGraphPattern : public BasicGraphPattern {
 public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
-    DefaultGraphPattern (const DefaultGraphPattern& ref) : BasicGraphPattern(ref) {  }
+#if REGEX_LIB != SWOb_DISABLED
+    DefaultGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode bnodeMap = TTerm::String2BNode())
+	: BasicGraphPattern(ntp, atomFactory, bnodeMap) {  }
+#endif /* REGEX_LIB != SWOb_DISABLED */
+    DefaultGraphPattern (const BasicGraphPattern& ref) : BasicGraphPattern(ref) {  }
     virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
     virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -2609,7 +2674,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == AtomFactory::SORT_eq ? atomFactory->getTrue() : atomFactory->getFalse();
+	return l == r || atomFactory->cmp(l, r) == SORT_eq ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -2624,7 +2689,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == AtomFactory::SORT_eq ? atomFactory->getFalse() : atomFactory->getTrue();
+	return l == r || atomFactory->cmp(l, r) == SORT_eq ? atomFactory->getFalse() : atomFactory->getTrue();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -2639,7 +2704,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == AtomFactory::SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -2654,7 +2719,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == AtomFactory::SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -2669,7 +2734,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != AtomFactory::SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -2684,7 +2749,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != AtomFactory::SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);

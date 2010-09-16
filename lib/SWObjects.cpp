@@ -9,6 +9,7 @@
 #include "ResultSet.hpp"
 #include <string.h>
 #include <vector>
+#include <set>
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"
@@ -36,6 +37,9 @@ namespace w3c_sw {
     const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
     const char* NS_dc  = "http://purl.org/dc/terms/"			;
     const char* NS_sadl= "http://www.w3.org/2005/03/saddle/#"		;
+
+    const URI AtomFactory::DT_string("http://www.w3.org/2001/XMLSchema#string");
+    const URI AtomFactory::DT_dateTime("http://www.w3.org/2001/XMLSchema#dateTime");
 
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
@@ -514,6 +518,10 @@ void NumberExpression::express (Expressor* p_expressor) const {
     /* <AtomFactory> */
     AtomFactory::~AtomFactory () {
 
+	// remove static entries:
+	uris.erase(DT_string.getLexicalValue());
+	uris.erase(DT_dateTime.getLexicalValue());
+
 	std::map<std::string, const TriplePattern*>::iterator iTriples;
 	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
 	    delete iTriples->second;
@@ -587,7 +595,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
 	    return getBNode(posStr.substr(2, posStr.size()-2), nodeMap);
-	if (posStr[0] == '"' && posStr[posStr.size()-1] == '"')
+	if ((posStr[0] == '"' && posStr[posStr.size()-1] == '"') ||
+	    (posStr[0] == '\'' && posStr[posStr.size()-1] == '\''))
 	    return getRDFLiteral(posStr.substr(1, posStr.size()-2), NULL, NULL);
 	if (posStr[0] == '?')
 	    return getVariable(posStr.substr(1, posStr.size()-1));
@@ -823,19 +832,35 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
 #if REGEX_LIB == SWOb_BOOST
+    /** parseNTPatterns - parse forms like   _:a <p2> 's2' .\n
+     */
     void AtomFactory::parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap) {
-	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
-				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
-				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
+	const boost::regex expression("\\G(?:"	// anchor at start
+				      "[ \\t]*#([^\n]+)\n?"	// Comment
+				      "|"			// or Triple
+				      "[ \\t]*((?:<[^>]*>)|(?:_:[^ \\t]+)|(?:[?$][^ \\t]+)|(?:\"[^\"]+\")|(?:'[^']+'))"	// S
+				      "[ \\t]*((?:<[^>]*>)|(?:_:[^ \\t]+)|(?:[?$][^ \\t]+)|(?:\"[^\"]+\")|(?:'[^']+'))"	// P
+				      "[ \\t]*((?:<[^>]*>)|(?:_:[^ \\t]+)|(?:[?$][^ \\t]+)|(?:\"[^\"]+\")|(?:'[^']+'))"	// O
+				      "[ \\t]*\\.[ \\t]*\\n?"								// EOL
+				      "|"			// or Empty line
+				      "\n"
+				      "|"			// or Junk
+				      "([^\n]+)\n?"
+				      ")");
 	std::string::const_iterator start, end; 
 	start = spo.begin(); 
 	end = spo.end(); 
 	boost::match_results<std::string::const_iterator> what;
 	boost::match_flag_type flags = boost::match_default;
 	while (regex_search(start, end, what, expression, flags)) {
-	    g->addTriplePattern(getTriple(getTTerm(std::string(what[1].first, what[1].second), nodeMap), 
-					  getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
-					  getTTerm(std::string(what[3].first, what[3].second), nodeMap), false));
+	    if (what[5].first != what[5].second)
+		throw std::string("unparsable input: ") + std::string(what[5].first, what[5].second);
+	    else if (what[1].first != what[1].second)
+		; // std::cerr << "comment(" << std::string(what[1].first, what[1].second) << ")\n";
+	    else if (*what[0].first != '\n')
+		g->addTriplePattern(getTriple(getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
+					      getTTerm(std::string(what[3].first, what[3].second), nodeMap), 
+					      getTTerm(std::string(what[4].first, what[4].second), nodeMap), false));
 	    start = what[0].second; 
 	    // update flags: 
 	    flags |= boost::match_prev_avail; 
@@ -846,28 +871,26 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
 	const TTerm* v = arg->eval(func->res, this, func->evaluator);
-	const std::string lt = typeid(*v).name();
-	TypeOrder::const_iterator dtp = typeOrder.find(lt);
-	if (dtp == typeOrder.end())
-	    throw lt + " is not a known datatype.";
-	DT_Numeric dt = dtp->second;
+	TTerm::DT_TypeOrder dt = v->getTypeOrder();
+	if (dt == TTerm::DT_Err)
+	    throw std::string(typeid(*v).name()) + " is not a known datatype.";
 	switch (dt) {
-	case DT_Integer: {
+	case TTerm::DT_Integer: {
 	    int i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getInt());
 	    std::stringstream s;
 	    s << i;
 	    v = getNumericRDFLiteral(s.str(), i);
 	     break;
 	 }
-	 case DT_Float:
-	     case DT_Decimal: {
+	case TTerm::DT_Float:
+	     case TTerm::DT_Decimal: {
 		 float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
 		 std::stringstream s;
 		 s << i;
 		 v = getNumericRDFLiteral(s.str(), i);
 		 break;
 	     }
-	     case DT_Double: {
+	     case TTerm::DT_Double: {
 		 double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
 		 std::stringstream s;
 		 s << i;
@@ -875,29 +898,27 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 break;
 	     }
 	     default:
-		 throw lt + " is not a numeric datatype: " + v->toString();
+		 throw std::string(typeid(*v).name()) + " is not a numeric datatype: " + v->toString();
 	}
 	return v;
     }
     const TTerm* AtomFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func) {
 	std::vector<const Expression*>::const_iterator it = args.begin();
 	const TTerm* l = (*it)->eval(func->res, this, func->evaluator);
-	const std::string lt = typeid(*l).name();
-	TypeOrder::const_iterator dtp = typeOrder.find(lt);
-	if (dtp == typeOrder.end())
-	    throw lt + " is not a known datatype.";
-	DT_Numeric dt = dtp->second;
+
+	TTerm::DT_TypeOrder dt = l->getTypeOrder();
+	if (dt == TTerm::DT_Err)
+	    throw std::string(typeid(*l).name()) + " is not a known datatype.";
 	++it;
 	while (it != args.end()) {
 	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator);
-	    const std::string rt = typeid(*r).name();
-	    dtp = typeOrder.find(rt);
-	    if (dtp == typeOrder.end())
-		throw rt + " is not a known datatype.";
-	    if (dtp->second > dt)
-		dt = dtp->second;
+	    TTerm::DT_TypeOrder dtr = r->getTypeOrder();
+	    if (dtr == TTerm::DT_Err)
+		throw std::string(typeid(*r).name()) + " is not a known datatype.";
+	    if (dtr > dt)
+		dt = dtr;
 	    switch (dt) {
-	    case DT_Integer: {
+	    case TTerm::DT_Integer: {
 		int i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getInt(), 
 				   static_cast<const NumericRDFLiteral*>(r)->getInt());
 		std::stringstream s;
@@ -905,16 +926,16 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		l = getNumericRDFLiteral(s.str(), i);
 		break;
 	    }
-	    case DT_Float:
-	    case DT_Decimal: {
+	    case TTerm::DT_Float:
+	    case TTerm::DT_Decimal: {
 		float i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getFloat(), 
 				     static_cast<const NumericRDFLiteral*>(r)->getFloat());
 		std::stringstream s;
 		s << i;
-		l = dt == DT_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
+		l = dt == TTerm::DT_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
 		break;
 	    }
-	    case DT_Double: {
+	    case TTerm::DT_Double: {
 		double i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getDouble(), 
 				      static_cast<const NumericRDFLiteral*>(r)->getDouble());
 		std::stringstream s;
@@ -923,7 +944,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		break;
 	    }
 	    default:
-		throw rt + " is not a numeric datatype: " + r->toString();
+		throw std::string(typeid(*r).name()) + " is not a numeric datatype: " + r->toString();
 	    }
 	    ++it;
 	}
@@ -1008,20 +1029,35 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
+    struct MakeNewBNode : public BNodeEvaluator {
+	struct _Pair {
+	    const BNode* node;
+	    const Result* r;
+	    _Pair (const BNode* node, const Result* r) : node(node), r(r) {  }
+	    bool operator< (const _Pair& ref) const {
+		if (node != ref.node)
+		    return node < ref.node;
+		return r < ref.r;
+	    }
+	};
+	AtomFactory* atomFactory;
+	std::map<_Pair, const BNode*> map;
+	virtual const TTerm* evaluate (const BNode* node, const Result* r) {
+	    _Pair p(node, r);
+	    if (map.find(p) == map.end())
+		map[p] = atomFactory->createBNode();
+	    return map[p];
+	}
+    public:
+	MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
+    };
+
     ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
-	struct MakeNewBNode : public BNodeEvaluator {
-	    AtomFactory* atomFactory;
-	    virtual const TTerm* evaluate (const BNode* /* node */, const Result* /* r */) {
-		return atomFactory->createBNode();
-	    }
-	public:
-	    MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
-	};
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
@@ -1044,14 +1080,6 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
-	struct MakeNewBNode : public BNodeEvaluator {
-	    AtomFactory* atomFactory;
-	    virtual const TTerm* evaluate (const BNode* /* node */, const Result* /* r */) {
-		return atomFactory->createBNode();
-	    }
-	public:
-	    MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
-	};
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
@@ -1206,85 +1234,43 @@ compared against
 
     CanonicalRDFLiteral::e_CANON CanonicalRDFLiteral::format = CANON_brief;
     std::ostream* BasicGraphPattern::DiffStream = NULL;
-    bool BasicGraphPattern::CompareVars = false;
+    bool (*BasicGraphPattern::MappableTerm)(const TTerm*) = &BasicGraphPattern::MapVarsAndBNodes;
     ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultServiceProtocol = ServiceGraphPattern::HTTP_METHOD_GET;
 
-    /* constOrNull helper function for cheesy operator== below */
-    const TTerm* BasicGraphPattern::_cOrN (const TTerm* tterm, const NULLtterm* n) {
-	if (CompareVars)
-	    return dynamic_cast<const Bindable*>(tterm) ? n : tterm;
-	else
-	    return dynamic_cast<const BNode*>(tterm) ? n : tterm;
-    }
-
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
-	unsigned errorCount = 0; // Only used if there's a DiffStream.
-	std::map<const TriplePattern*, std::vector<const TriplePattern*> >mine;
-	AtomFactory f; // temp to hold trimmed triples.
-	const NULLtterm* n = f.getNULL();
-	for (std::vector<const TriplePattern*>::const_iterator mit = 
-		 m_TriplePatterns.begin();
-	     mit != m_TriplePatterns.end(); ++mit)
-	    mine[f.getTriple(_cOrN((*mit)->getS(), n), 
-			     _cOrN((*mit)->getP(), n), 
-			     _cOrN((*mit)->getO(), n))].push_back(*mit);
 
-	for (std::vector<const TriplePattern*>::const_iterator rit = 
-		 ref.m_TriplePatterns.begin();
-	     rit != ref.m_TriplePatterns.end(); ++rit) {
-	    const TriplePattern* r = 
-		f.getTriple(_cOrN((*rit)->getS(), n), 
-			    _cOrN((*rit)->getP(), n), 
-			    _cOrN((*rit)->getO(), n));
-	    if (mine.find(r) == mine.end()) {
-		if (DiffStream != NULL) {
-		    *DiffStream << "- " << (*rit)->toString() << std::endl;
-		    ++errorCount;
-		} else
-		    return false;
-	    } else {
-		// Pick one at random.
-		mine[r].erase(mine[r].begin());
-		if (mine[r].size() == 0)
-		    mine.erase(r);
-	    }
-	}
-	if (mine.size() != 0) {
-	    if (DiffStream != NULL) {
-		for (std::map<const TriplePattern*, 
-			 std::vector<const TriplePattern*> >::iterator mit = 
-			 mine.begin(); mit != mine.end(); ++mit)
-		    for (std::vector<const TriplePattern*>::iterator tpit = 
-			     mit->second.begin();
-			 tpit != mit->second.end(); ++ tpit) {
-			*DiffStream << "+ " << (*tpit)->toString() << std::endl;
-			++errorCount;
-		    }
-	    } else
-		return false;
-	}
-	if (errorCount > 0) {
-	    *DiffStream << errorCount << " errors" << std::endl;
+	ResultSet rs(NULL);
+	bindVariables(&rs, NULL, &ref, NULL);
+	if (rs.size() == 0)
 	    return false;
+	// make sure the solution is 1:1 for mappables.
+	for (ResultSetIterator row = rs.begin(); row != rs.end(); ++row) {
+	    std::set<const TTerm*> seen;
+	    for (BindingSetConstIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
+		if (seen.find(b->second.tterm) != seen.end())
+		    // std::cerr << rs; // see the mapping
+		    return false; // break and see if next row is 1:1?
+		seen.insert(b->second.tterm);
+	    }
 	}
 	return true;
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const TTerm* graphVar, const BasicGraphPattern* toMatch, const TTerm* graphName) const {
-	if (rs->debugStream != NULL && *rs->debugStream != NULL)
+ 	if (rs->debugStream != NULL && *rs->debugStream != NULL)
 	    **rs->debugStream << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
 		bool rowMatched = false;
 		const TTerm* s = (*constraint)->getS();
-		if (dynamic_cast<const Bindable*>(s))
+		if ((*BasicGraphPattern::MappableTerm)(s))
 		    s = (*row)->get(s);
 		const TTerm* p = (*constraint)->getP();
-		if (dynamic_cast<const Bindable*>(p))
+		if ((*BasicGraphPattern::MappableTerm)(p))
 		    p = (*row)->get(p);
 		const TTerm* o = (*constraint)->getO();
-		if (dynamic_cast<const Bindable*>(o))
+		if ((*BasicGraphPattern::MappableTerm)(o))
 		    o = (*row)->get(o);
 
 		TTerm2TTerm2Triple_type::range outer;
@@ -1315,7 +1301,7 @@ compared against
 		    outer = TTerm2TTerm2Triple_type::range(SP.begin(), SP.end());
 		    useOuter = true;
 		}
-		    
+
 		// TTerm2Triple_range inner
 		//     = dynamic_cast<const Bindable*>(pToMatch) 
 		//     ? TTerm2Triple_range(TTerm2Triple.begin(), TTerm2Triple.end())

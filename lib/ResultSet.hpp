@@ -43,23 +43,6 @@ namespace w3c_sw {
 	return l.tterm == r.tterm;
     }
 
-    struct BiDiBNodeMap {
-	std::map<const TTerm*, const TTerm*> forward;
-	std::map<const TTerm*, const TTerm*> reverse;
-	bool mappable (const TTerm* from, const TTerm* to) {
-	    const TTerm* atFrom = forward.find(from) == forward.end() ? NULL : forward[from];
-	    const TTerm* atTo = reverse.find(to) == reverse.end() ? NULL : reverse[to];
-
-	    if (atFrom == NULL && atTo == NULL) {
-		forward[from] = to;
-		reverse[to] = from;
-		return true;
-	    }
-
-	    return atFrom == to && atTo == from;
-	}
-    };
-
     class Result {
     protected:
 	BindingSet bindings;
@@ -262,6 +245,7 @@ namespace w3c_sw {
 					   "|(?:_:[^[:space:]]+)"	// bnode
 					   "|(?:[?$][^[:space:]]+)"	// variable
 					   "|(?:\\\"[^\\\"]+\\\")"	// literal
+					   "|(?:'[^']+')"		// literal
 					   "|(?:-?[0-9\\.]+)"		// integer
 					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
 					  ")");
@@ -535,11 +519,10 @@ namespace w3c_sw {
 
 	struct AscendingOrder {
 	    const VariableVector vars;
-	    AtomFactory* atomFactory;
 	    std::set<const Result*>* incomparables;
-	    AscendingOrder (const VariableVector vars, AtomFactory* atomFactory,
+	    AscendingOrder (const VariableVector vars,
 			    std::set<const Result*>* incomparables) : 
-		vars(vars), atomFactory(atomFactory), incomparables(incomparables)
+		vars(vars), incomparables(incomparables)
 	    {  }
 	    bool operator() (const Result* lhs, const Result* rhs) {
 		bool incomparable = true;
@@ -561,7 +544,7 @@ namespace w3c_sw {
 			dynamic_cast<const Bindable*>(r))
 			continue;
 		    if (l != r)
-			return atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
+			return AtomFactory::safeCmp(l, r) == SORT_lt;
 		    else
 			incomparable = false;
 		}
@@ -599,13 +582,13 @@ namespace w3c_sw {
 		   exhaustively. */
 
 		std::set<const Result*> lUnordered;
-		AscendingOrder lComp(getOrderedVars(), atomFactory, &lUnordered);
+		AscendingOrder lComp(getOrderedVars(), &lUnordered);
 		self.results.sort(lComp);
 
 		newRef.leadWithColumns(self.getOrderedVars());
 
 		std::set<const Result*> rUnordered;
-		AscendingOrder rComp(newRef.getOrderedVars(), atomFactory, &rUnordered);
+		AscendingOrder rComp(newRef.getOrderedVars(), &rUnordered);
 		newRef.results.sort(rComp);
 
 		if (debugStream != NULL && *debugStream != NULL)

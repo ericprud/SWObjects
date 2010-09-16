@@ -184,7 +184,7 @@ namespace w3c_sw {
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
 		if (l != r)
-		    return pair.ascOrDesc == ORDER_Desc ? atomFactory->safeCmp(r, l) == AtomFactory::SORT_lt : atomFactory->safeCmp(l, r) == AtomFactory::SORT_lt;
+		    return pair.ascOrDesc == ORDER_Desc ? atomFactory->safeCmp(r, l) == SORT_lt : atomFactory->safeCmp(l, r) == SORT_lt;
 	    }
 	    return false;
 	}
@@ -396,7 +396,7 @@ namespace w3c_sw {
 
     void ResultSet::order () {
 	std::set<const Result*> unordered;
-	AscendingOrder resultComp(getOrderedVars(), atomFactory, &unordered);
+	AscendingOrder resultComp(getOrderedVars(), &unordered);
 	results.sort(resultComp);
     }
 
