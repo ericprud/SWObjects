@@ -90,9 +90,13 @@ namespace w3c_sw {
 			subject = attrs->getValue(NS_rdf, "about");
 			if (subject.empty()) {
 			    subject = attrs->getValue(NS_rdf, "ID");
-			    if (subject.empty())
-				newState.s = atomFactory->createBNode();
-			    else
+			    if (subject.empty()) {
+				subject = attrs->getValue(NS_rdf, "nodeID");
+				if (subject.empty())
+				    newState.s = atomFactory->createBNode();
+				else
+				    newState.s = atomFactory->getBNode(subject, bnodeMap);
+			    } else
 				newState.s = atomFactory->getURI(baseURI + "#" + subject);
 			} else
 			    newState.s = atomFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
