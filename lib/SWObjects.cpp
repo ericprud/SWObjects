@@ -348,6 +348,10 @@ void FloatRDFLiteral::express (Expressor* p_expressor) const {
 void DoubleRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
+void DateTimeRDFLiteral::express (Expressor* p_expressor) const {
+    p_expressor->rdfLiteral(this, terminal, &AtomFactory::DT_dateTime, NULL);
+    // w3c_sw_NEED_IMPL("DateTimeRDFLiteral non-existent in expressor");
+}
 void BooleanRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
@@ -684,6 +688,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 // 	    canonical << std::scientific << d;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
+	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
+	    return getDateTimeRDFLiteral(p_String.c_str());
 	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
@@ -774,6 +780,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	MakeDoubleRDFLiteral maker(p_value);
 	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(p_String, "double", &maker);
 	return ret;
+    }
+
+    const DateTimeRDFLiteral* AtomFactory::getDateTimeRDFLiteral (std::string p_String) {
+	std::stringstream buf;
+	buf << "\"" << p_String << "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>";
+	std::string key(buf.str());
+	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
+	if (vi == rdfLiterals.end()) {
+	    DateTimeRDFLiteral* ret = new DateTimeRDFLiteral(p_String, getURI("http://www.w3.org/2001/XMLSchema#dateTime"));
+	    rdfLiterals[key] = ret;
+	    return ret;
+	} else
+	    return (DateTimeRDFLiteral*)vi->second; // shameful downcast
     }
 
     const BooleanRDFLiteral* AtomFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {

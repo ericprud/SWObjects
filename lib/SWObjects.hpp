@@ -510,7 +510,7 @@ protected:
     TTerm (std::string matched) : Terminal(matched) {  }
     TTerm (std::string matched, bool gensym) : Terminal(matched, gensym) { }
 public:
-    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, 
+    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, DT_DateTime, 
 		   DT_Integer, DT_Decimal, DT_Float, DT_Double, 
 		   DT_Boolean} DT_TypeOrder;
     static e_SORT _int2e_SORT(int i) {
@@ -651,6 +651,7 @@ public:
     virtual DT_TypeOrder getTypeOrder () const { return DT_Literal; }
     const URI* getDatatype () const { return datatype; }
     const LANGTAG* getLangtag () const { return m_LANGTAG; }
+    virtual void validate () const {  } // default to valid unless a constrained subtype
     virtual std::string toXMLResults (TTerm::BNode2string*) const {
 	std::stringstream s;
 	s << "<literal";
@@ -727,6 +728,19 @@ public:
     virtual int getInt() const = 0;
     virtual float getFloat() const = 0;
     virtual double getDouble() const = 0;
+    virtual void validate () const {
+	std::string str = getLexicalValue();
+#ifdef HAVE_STRTOLD
+	const char* s = str.c_str();
+	char* end;
+	::strtold(s, &end);
+	if (*end)
+	    throw TypeError(s, "validate numeric");
+#else
+	if (str.find_first_not_of("0123456789+-Ee.") != str.npos)
+	    throw TypeError(str, "validate numeric");
+#endif
+    }
     virtual void express(Expressor* p_expressor) const = 0;
 };
 class IntegerRDFLiteral : public NumericRDFLiteral {
@@ -812,12 +826,118 @@ protected:
     virtual DT_TypeOrder getTypeOrder () const { return DT_Boolean; }
 public:
     bool getValue () const { return m_value; }
+    virtual void validate () const {
+	if (getLexicalValue() != "false" || getLexicalValue() != "0" || 
+	    getLexicalValue() != "true"  || getLexicalValue() != "1")
+	    throw TypeError(getLexicalValue(), "validate boolean");
+    }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const {
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
 	    canonical << std::boolalpha << m_value;
 	    return canonical.str();
+	}
+	return CanonicalRDFLiteral::nonCanonicalString();
+    }
+};
+class DateTimeRDFLiteral : public CanonicalRDFLiteral {
+    friend class AtomFactory;
+protected:
+    // long m_value;
+    DateTimeRDFLiteral (std::string p_String, const URI* p_URI) : CanonicalRDFLiteral(p_String, p_URI)/*, m_value(p_value) */ {  }
+    virtual DT_TypeOrder getTypeOrder () const { return DT_DateTime; }
+public:
+    // bool getValue () const { return m_value; }
+    /** valdiate per http://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
+     */
+    virtual void validate () const {
+	std::string s = getLexicalValue();
+	/* '-'? yyyy '-' mm '-' dd 'T' hh ':' mm ':' ss ('.' s+)? (zzzzzz)?
+	 * per <http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#dateTime-lexical-representation>
+	 */
+	const char* ptr = s.c_str();
+	char* end;
+	long int l;
+	if (*ptr == '-')
+	    ++ptr;
+
+	l = strtol(ptr, &end, 10);
+	if (l == 0 || end != ptr+4)
+		throw TypeError(s, "xsd:datetime year");
+	ptr += 4;
+	if (*ptr++ != '-')
+	    throw TypeError(s, "xsd:datetime year-month separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 1 || l > 12 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime month");
+	ptr += 2;
+	if (*ptr++ != '-')
+	    throw TypeError(s, "xsd:datetime year-month separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 1 || l > 31 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime date");
+	ptr += 2;
+	if (*ptr++ != 'T')
+	    throw TypeError(s, "xsd:datetime date-hour separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 23 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime hour");
+	ptr += 2;
+	if (*ptr++ != ':')
+	    throw TypeError(s, "xsd:datetime hour-minute separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime minute");
+	ptr += 2;
+	if (*ptr++ != ':')
+	    throw TypeError(s, "xsd:datetime minute-second separator");
+
+	l = strtol(ptr, &end, 10);
+	if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime second");
+	ptr += 2;
+
+	if (*ptr == '.') {
+	    ++ptr;
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || end == ptr)
+		throw TypeError(s, "xsd:datetime decimal seconds");
+	    ptr = end;
+	}
+
+	if (*ptr == '+' || *ptr == '-') {
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || l > 23 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime timezone hour");
+	    ptr += 2;
+	    if (*ptr++ != ':')
+		throw TypeError(s, "xsd:datetime timezone hour-minute separator");
+
+	    l = strtol(ptr, &end, 10);
+	    if (l < 0 || l > 59 || end != ptr+2)
+		throw TypeError(s, "xsd:datetime timezone minute");
+	    ptr += 2;
+	} else if (*ptr == 'Z') {
+	    ptr++;
+	}
+
+	if (*ptr)
+	    throw TypeError(s, "xsd:datetime (garbage at end)");
+    }
+
+    virtual void express(Expressor* p_expressor) const;
+    virtual std::string toString () const {
+	if (CanonicalRDFLiteral::format == CANON_icalize) {
+	    w3c_sw_NEED_IMPL("DateTimeRDFLiteral canonical form");
+	    // !!! not implemented
+	    // std::stringstream canonical;
+	    // canonical << std::boolalpha << m_value;
+	    // return canonical.str();
 	}
 	return CanonicalRDFLiteral::nonCanonicalString();
     }
@@ -940,10 +1060,6 @@ protected:
     const BooleanRDFLiteral* litTrue;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
 
-protected:
-    static const URI DT_string;
-    static const URI DT_dateTime;
-
 #if REGEX_LIB == SWOb_BOOST
     enum {RANGE_unlimited = -2} Range;
     struct Validator {
@@ -973,6 +1089,9 @@ protected:
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 public:
+    static const URI DT_string;
+    static const URI DT_dateTime;
+
     std::ostream** debugStream;
     AtomFactory () :
 	litFalse(getBooleanRDFLiteral("false", false)),
@@ -1052,6 +1171,8 @@ public:
     const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
     const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
 
+    const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
+
     const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
     const BooleanRDFLiteral* getFalse () { return litFalse; }
     const BooleanRDFLiteral* getTrue () { return litTrue; }
@@ -1114,103 +1235,6 @@ public:
     const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
     const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
 
-    static void _validateNumeric (std::string str) {
-#ifdef HAVE_STRTOLD
-	const char* s = str.c_str();
-	char* end;
-	::strtold(s, &end);
-	if (*end)
-	    throw TypeError(s, "validate numeric");
-#else
-	if (str.find_first_not_of("0123456789+-Ee.") != str.npos)
-	    throw TypeError(str, "validate numeric");
-#endif
-    }
-    static void _validateBoolean (std::string s) {
-	if (s != "false" || s != "0" || 
-	    s != "true"  || s != "1")
-	    throw TypeError(s, "validate boolean");
-    }
-    /** valdiate per http://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
-     */
-    static void _validateDateTime (std::string s) {
-	/* '-'? yyyy '-' mm '-' dd 'T' hh ':' mm ':' ss ('.' s+)? (zzzzzz)?
-	 * per <http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#dateTime-lexical-representation>
-	 */
-	const char* ptr = s.c_str();
-	char* end;
-	long int l;
-	if (*ptr == '-')
-	    ++ptr;
-
-	l = strtol(ptr, &end, 10);
-	if (l == 0 || end != ptr+4)
-		throw TypeError(s, "xsd:datetime year");
-	ptr += 4;
-	if (*ptr++ != '-')
-	    throw TypeError(s, "xsd:datetime year-month separator");
-
-	l = strtol(ptr, &end, 10);
-	if (l < 1 || l > 12 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime month");
-	ptr += 2;
-	if (*ptr++ != '-')
-	    throw TypeError(s, "xsd:datetime year-month separator");
-
-	l = strtol(ptr, &end, 10);
-	if (l < 1 || l > 31 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime date");
-	ptr += 2;
-	if (*ptr++ != 'T')
-	    throw TypeError(s, "xsd:datetime date-hour separator");
-
-	l = strtol(ptr, &end, 10);
-	if (l < 0 || l > 23 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime hour");
-	ptr += 2;
-	if (*ptr++ != ':')
-	    throw TypeError(s, "xsd:datetime hour-minute separator");
-
-	l = strtol(ptr, &end, 10);
-	if (l < 0 || l > 59 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime minute");
-	ptr += 2;
-	if (*ptr++ != ':')
-	    throw TypeError(s, "xsd:datetime minute-second separator");
-
-	l = strtol(ptr, &end, 10);
-	if (l < 0 || l > 59 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime second");
-	ptr += 2;
-
-	if (*ptr == '.') {
-	    ++ptr;
-	    l = strtol(ptr, &end, 10);
-	    if (l < 0 || end == ptr)
-		throw TypeError(s, "xsd:datetime decimal seconds");
-	    ptr = end;
-	}
-
-	if (*ptr == '+' || *ptr == '-') {
-	    l = strtol(ptr, &end, 10);
-	    if (l < 0 || l > 23 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime timezone hour");
-	    ptr += 2;
-	    if (*ptr++ != ':')
-		throw TypeError(s, "xsd:datetime timezone hour-minute separator");
-
-	    l = strtol(ptr, &end, 10);
-	    if (l < 0 || l > 59 || end != ptr+2)
-		throw TypeError(s, "xsd:datetime timezone minute");
-	    ptr += 2;
-	} else if (*ptr == 'Z') {
-	    ptr++;
-	}
-
-	if (*ptr)
-	    throw TypeError(s, "xsd:datetime (garbage at end)");
-    }
-
     static e_SORT cmp (const TTerm* ltterm, const TTerm* rtterm) {
 	/* Compare URIs lexically */
 	const URI* luri = dynamic_cast<const URI*> (ltterm);
@@ -1242,8 +1266,8 @@ public:
 		    dynamic_cast<const FloatRDFLiteral*>  (r) ? (double)dynamic_cast<const FloatRDFLiteral*>  (r)->getValue() : 
 		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (double)dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
-		_validateNumeric(l->getLexicalValue());
-		_validateNumeric(r->getLexicalValue());
+		l->validate();
+		r->validate();
 		return
 		    dl < dr ? SORT_lt : 
 		    dl > dr ?  SORT_gt : 
@@ -1258,8 +1282,8 @@ public:
 		    dynamic_cast<const FloatRDFLiteral*>  (r) ? (float) dynamic_cast<const FloatRDFLiteral*>  (r)->getValue() : 
 		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (float) dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
-		_validateNumeric(l->getLexicalValue());
-		_validateNumeric(r->getLexicalValue());
+		l->validate();
+		r->validate();
 		return
 		    dl < dr ? SORT_lt : 
 		    dl > dr ?  SORT_gt : 
@@ -1274,8 +1298,8 @@ public:
 		    dynamic_cast<const DecimalRDFLiteral*>(r) ? (float) dynamic_cast<const DecimalRDFLiteral*>(r)->getValue() : 
 		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (float) dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
-		_validateNumeric(l->getLexicalValue());
-		_validateNumeric(r->getLexicalValue());
+		l->validate();
+		r->validate();
 		return
 		    dl < dr ? SORT_lt : 
 		    dl > dr ?  SORT_gt : 
@@ -1288,8 +1312,8 @@ public:
 		int dr = 
 		    dynamic_cast<const IntegerRDFLiteral*>(r) ? (int)   dynamic_cast<const IntegerRDFLiteral*>(r)->getValue() : 
 		    throw TypeError(ldt->getLexicalValue(), rdt->getLexicalValue());
-		_validateNumeric(l->getLexicalValue());
-		_validateNumeric(r->getLexicalValue());
+		l->validate();
+		r->validate();
 		return
 		    dl < dr ? SORT_lt : 
 		    dl > dr ? SORT_gt : 
@@ -1307,16 +1331,16 @@ public:
 		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
 	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
 	    bool br = dynamic_cast<const BooleanRDFLiteral*>(r)->getValue();
-	    _validateBoolean(l->getLexicalValue());
-	    _validateBoolean(r->getLexicalValue());
+	    l->validate();
+	    r->validate();
 	    return 
 		!bl && br ? SORT_lt : 
 		bl && !br ?  SORT_gt : 
 		SORT_eq;
 	} else if (ldt == &DT_dateTime && 
 		   rdt == &DT_dateTime) {
-	    _validateDateTime(l->getLexicalValue());
-	    _validateDateTime(r->getLexicalValue());
+	    l->validate();
+	    r->validate();
 	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
 	} else {
 	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
