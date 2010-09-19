@@ -495,6 +495,9 @@ public:
     }
 };
 
+class URI;
+class RDFLiteral;
+class BooleanRDFLiteral;
 class BNode;
 class BNodeEvaluator;
 class AtomFactory;
@@ -549,6 +552,64 @@ public:
 	s << '[' << toString() << ']';
 	return s.str();
     }
+
+    static e_SORT cmp(const TTerm* ltterm, const TTerm* rtterm);
+    static e_SORT safeCmp(const TTerm* lhs, const TTerm* rhs);
+
+    /* TTerm Constants: */
+    static const URI _ConstantURIs[];
+    static const BooleanRDFLiteral _ConstantBooleans[];
+
+    static const URI* URI_xsd_integer;
+    static const URI* URI_xsd_decimal;
+    static const URI* URI_xsd_float;
+    static const URI* URI_xsd_double;
+    static const URI* URI_xsd_string;
+    static const URI* URI_xsd_boolean;
+    static const URI* URI_xsd_nonPositiveInteger;
+    static const URI* URI_xsd_negativeInteger;
+    static const URI* URI_xsd_long;
+    static const URI* URI_xsd_int;
+    static const URI* URI_xsd_short;
+    static const URI* URI_xsd_byte;
+    static const URI* URI_xsd_nonNegativeInteger;
+    static const URI* URI_xsd_unsignedLong;
+    static const URI* URI_xsd_unsignedInt;
+    static const URI* URI_xsd_unsignedShort;
+    static const URI* URI_xsd_unsignedByte;
+    static const URI* URI_xsd_positiveInteger;
+    static const URI* URI_xsd_dateTime;
+
+    static const URI* FUNC_str;
+    static const URI* FUNC_lang;
+    static const URI* FUNC_langMatches;
+    static const URI* FUNC_datatype;
+    static const URI* FUNC_bound;
+    static const URI* FUNC_sameTerm;
+    static const URI* FUNC_isIRI;
+    static const URI* FUNC_isURI;
+    static const URI* FUNC_isBlank;
+    static const URI* FUNC_isLiteral;
+    static const URI* FUNC_count;
+    static const URI* FUNC_sum;
+    static const URI* FUNC_min;
+    static const URI* FUNC_max;
+    static const URI* FUNC_avg;
+    static const URI* FUNC_group;
+    static const URI* FUNC_regex;
+    static const URI* FUNC_concat;
+    static const URI* FUNC_group_concat;
+    static const URI* FUNC_if;
+    static const URI* FUNC_strlang;
+    static const URI* FUNC_strdt;
+    static const URI* FUNC_sample;
+    static const URI* FUNC_iri;
+    static const URI* FUNC_uri;
+    static const URI* FUNC_blank;
+
+    static const BooleanRDFLiteral* BOOL_true;
+    static const BooleanRDFLiteral* BOOL_false;
+
 };
 
 inline bool operator< (const TTerm& left, const TTerm& right) {
@@ -566,6 +627,7 @@ struct TTermSorter {
 };
 
 class URI : public TTerm {
+    friend class TTerm; // for constructing constants
     friend class AtomFactory;
 private:
     URI (std::string str) : TTerm(str) {  }
@@ -833,6 +895,7 @@ public:
     }
 };
 class BooleanRDFLiteral : public CanonicalRDFLiteral {
+    friend class TTerm; // for constructing constants
     friend class AtomFactory;
 protected:
     bool m_value;
@@ -971,272 +1034,16 @@ public:
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
 
-struct BiDiBNodeMap {
-    std::map<const TTerm*, const TTerm*> forward;
-    std::map<const TTerm*, const TTerm*> reverse;
-    bool mappable (const TTerm* from, const TTerm* to) {
-	const TTerm* atFrom = forward.find(from) == forward.end() ? NULL : forward[from];
-	const TTerm* atTo = reverse.find(to) == reverse.end() ? NULL : reverse[to];
 
-	if (atFrom == NULL && atTo == NULL) {
-	    forward[from] = to;
-	    reverse[to] = from;
-	    return true;
-	}
-
-	return atFrom == to && atTo == from;
-    }
-};
-
-inline std::ostream& operator<< (std::ostream& os, BiDiBNodeMap& ref) {
-    for (std::map<const TTerm*, const TTerm*>::const_iterator it = ref.forward.begin();
-	 it != ref.forward.end(); ++it)
-	os << it->first->toString() << " -> " << it->second->toString() << std::endl;
-    return os;
-}
-
-class BasicGraphPattern;
-class NamespaceMap;
-
-class TriplePattern : public Base {
-    friend class AtomFactory;
-private:
-    const TTerm* m_s; const TTerm* m_p; const TTerm* m_o;
-    bool weaklyBound;
-    TriplePattern (const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
-    TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
-public:
-    ~TriplePattern () {  }
-    const TTerm* getS () const { return m_s; }
-    const TTerm* getP () const { return m_p; }
-    const TTerm* getO () const { return m_o; }
-
-    bool mappedBNodesEquals(const TriplePattern& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const;
-
-    static bool lt (TriplePattern* l, TriplePattern* r) {
-	if (l->m_s != r->m_s) return l->m_s < r->m_s;
-	if (l->m_p != r->m_p) return l->m_p < r->m_p;
-	if (l->m_o != r->m_o) return l->m_o < r->m_o;
-	return 0;
-    }    
-    static bool gt (TriplePattern* l, TriplePattern* r) {
-	if (l->m_s != r->m_s) return l->m_s > r->m_s;
-	if (l->m_p != r->m_p) return l->m_p > r->m_p;
-	if (l->m_o != r->m_o) return l->m_o > r->m_o;
-	return 0;
-    }    
-    std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const;
-    std::string toString (Result* row) const {
-	std::stringstream s;
-	s << 
-	    "{" << m_s->substitutedString(row, false) << 
-	    " " << m_p->substitutedString(row, false) << 
-	    " " << m_o->substitutedString(row, false) << "}";
-	return s.str();
-    }
-    virtual void express(Expressor* p_expressor) const;
-    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const TTerm* graphVar, Result* provisional, const TTerm* graphName) const {
-	return
-	    (graphVar == NULL || graphVar->bindVariable(graphName, rs, provisional, weaklyBound)) &&
-	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
-	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
-	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
-    }
-    bool construct(BasicGraphPattern* target, const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const;
-};
-
-class DefaultGraphPattern;
-class Expression;
-class AtomFactory {
-
-protected:
-    typedef std::set<const BNode*> BNodeSet;
-    typedef std::map<std::string, const Variable*> VariableMap;
-    typedef std::map<std::string, const URI*> URIMap;
-    typedef std::map<std::string, const RDFLiteral*> RDFLiteralMap;
-    typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
-    class MakeNumericRDFLiteral {
-    public:
-	virtual ~MakeNumericRDFLiteral () {  }
-	virtual const NumericRDFLiteral* makeIt(std::string p_String, const URI* p_URI) = 0;
-    };
-
-protected:
-    VariableMap		variables;
-    BNodeSet		bnodes;
-    URIMap		uris;
-    RDFLiteralMap	rdfLiterals;
-    TriplePatternMap	triples;
-    NULLtterm		nullTTerm;
-    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
-
-#if REGEX_LIB == SWOb_BOOST
-    enum {RANGE_unlimited = -2} Range;
-    struct Validator {
-	boost::regex pattern;
-	long intmin, intmax; // could be bignums from http://gmplib.org/
-	long double floatmin, floatmax;
-	Validator(const char* pattern) : 
-	    pattern(pattern), 
-	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
-	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
-	{  }
-	Validator(const char* pattern, long min, long max) : 
-	    pattern(pattern), 
-	    intmin(min), intmax(max), 
-	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
-	{  }
-	Validator(const char* pattern, long double min, long double max) : 
-	    pattern(pattern), 
-	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
-	    floatmin(min), floatmax(max)
-	{  }
-    };
-    typedef std::map<std::string, Validator> ValidatorSet;
-    typedef std::pair<std::string, Validator> ValidatorElt;
-    ValidatorSet validators;
-    void validate(std::string value, std::string datatype);
-#endif /* REGEX_LIB == SWOb_BOOST */
-
-public:
-
-    static const URI URI_xsd_integer;
-    static const URI URI_xsd_decimal;
-    static const URI URI_xsd_float;
-    static const URI URI_xsd_double;
-    static const URI URI_xsd_string;
-    static const URI URI_xsd_boolean;
-    static const URI URI_xsd_nonPositiveInteger;
-    static const URI URI_xsd_negativeInteger;
-    static const URI URI_xsd_long;
-    static const URI URI_xsd_int;
-    static const URI URI_xsd_short;
-    static const URI URI_xsd_byte;
-    static const URI URI_xsd_nonNegativeInteger;
-    static const URI URI_xsd_unsignedLong;
-    static const URI URI_xsd_unsignedInt;
-    static const URI URI_xsd_unsignedShort;
-    static const URI URI_xsd_unsignedByte;
-    static const URI URI_xsd_positiveInteger;
-    static const URI URI_xsd_dateTime;
-
-    static const URI FUNC_str;
-    static const URI FUNC_lang;
-    static const URI FUNC_langMatches;
-    static const URI FUNC_datatype;
-    static const URI FUNC_bound;
-    static const URI FUNC_sameTerm;
-    static const URI FUNC_isIRI;
-    static const URI FUNC_isURI;
-    static const URI FUNC_isBlank;
-    static const URI FUNC_isLiteral;
-    static const URI FUNC_count;
-    static const URI FUNC_sum;
-    static const URI FUNC_min;
-    static const URI FUNC_max;
-    static const URI FUNC_avg;
-    static const URI FUNC_group;
-    static const URI FUNC_regex;
-    static const URI FUNC_concat;
-    static const URI FUNC_group_concat;
-    static const URI FUNC_if;
-    static const URI FUNC_strlang;
-    static const URI FUNC_strdt;
-    static const URI FUNC_sample;
-    static const URI FUNC_iri;
-    static const URI FUNC_uri;
-    static const URI FUNC_blank;
-
-    static const URI* _ConstantURIs[];
-
-    static const BooleanRDFLiteral BOOL_true;
-    static const BooleanRDFLiteral BOOL_false;
-
-    static const RDFLiteral* _ConstantLiterals[];
-
-    std::ostream** debugStream;
-    AtomFactory();
-    ~AtomFactory();
-    const Variable* getVariable(std::string name);
-    const BNode* createBNode();
-    const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
-    const URI* getURI(std::string name);
-    const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
-    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL, bool validate = false);
-
-    const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
-    const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
-    const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
-    const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
-
-    const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
-
-    const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
-    const NULLtterm* getNULL () { return &nullTTerm; }
-
-    /* getTriple(s) interface: */
-    const TriplePattern* getTriple (const TriplePattern* p, bool weaklyBound) {
-	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
-    }
-    const TriplePattern* getTriple(const TTerm* s, const TTerm* p, const TTerm* o, bool weaklyBound = false);
-    const TriplePattern* getTriple (std::string s, std::string p, std::string o, TTerm::String2BNode& nodeMap) {
-	return getTriple(getTTerm(s, nodeMap), 
-			 getTTerm(p, nodeMap), 
-			 getTTerm(o, nodeMap), false);
-    }
-#if REGEX_LIB == SWOb_BOOST
-    const TriplePattern* getTriple (std::string spo, TTerm::String2BNode& nodeMap) {
-	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
-				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
-				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
-	boost::match_results<std::string::const_iterator> what;
-	boost::match_flag_type flags = boost::match_default;
-	if (!regex_search(spo, what, expression, flags))
-	    return NULL;
-	return getTriple(getTTerm(std::string(what[1].first, what[1].second), nodeMap), 
-			 getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
-			 getTTerm(std::string(what[3].first, what[3].second), nodeMap), false);
-    }
-#endif /* REGEX_LIB == SWOb_BOOST */
-    void parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
-
-    /* EBV (Better place for this?) */
-    const TTerm* ebv(const TTerm* tterm);
-
-    struct Functor {
-	const Result* res;
-	AtomFactory* atomFactory;
-	BNodeEvaluator* evaluator;
-
-	Functor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    res(res), atomFactory(atomFactory), evaluator(evaluator) {  }
-	virtual ~Functor () {  }
-    };
-    struct UnaryFunctor : public Functor {
-
-	UnaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    Functor(res, atomFactory, evaluator) {  }
-	virtual int eval(int v) = 0;
-	virtual float eval(float v) = 0;
-	virtual double eval(double v) = 0;
-    };
-    struct NaryFunctor : public Functor {
-
-	NaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    Functor(res, atomFactory, evaluator) {  }
-	virtual int eval(int l, int r) = 0;
-	virtual float eval(float l, float r) = 0;
-	virtual double eval(double l, double r) = 0;
-    };
-    const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
-    const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
-
-    static e_SORT cmp (const TTerm* ltterm, const TTerm* rtterm) {
+    /** cmp -- implement XML Schema numeric type promotion and inter-type
+	comparisons.
+     */
+    inline e_SORT TTerm::cmp (const TTerm* ltterm, const TTerm* rtterm) {
 	/* Compare URIs lexically */
 	const URI* luri = dynamic_cast<const URI*> (ltterm);
 	const URI* ruri = dynamic_cast<const URI*> (rtterm);
 	if (luri != NULL && ruri != NULL)
-	    return TTerm::_int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
+	    return _int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
 
 	/* Compare literals. */
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (ltterm);
@@ -1319,10 +1126,10 @@ public:
 	    }
 	} else if (ldt == NULL && 
 		   rdt == NULL) {
-	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
-	} else if (ldt == &URI_xsd_string && 
-		   rdt == &URI_xsd_string) {
-	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
+	} else if (ldt == URI_xsd_string && 
+		   rdt == URI_xsd_string) {
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
 	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
 		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
 	    bool bl = dynamic_cast<const BooleanRDFLiteral*>(l)->getValue();
@@ -1333,17 +1140,20 @@ public:
 		!bl && br ? SORT_lt : 
 		bl && !br ?  SORT_gt : 
 		SORT_eq;
-	} else if (ldt == &URI_xsd_dateTime && 
-		   rdt == &URI_xsd_dateTime) {
+	} else if (ldt == URI_xsd_dateTime && 
+		   rdt == URI_xsd_dateTime) {
 	    l->validate();
 	    r->validate();
-	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
+	    return _int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
 	} else {
 	    throw TypeError(ldt ? ldt->getLexicalValue() : "simple literal", rdt ? rdt->getLexicalValue() : "simple literal");
 	}
     }
 
-    static e_SORT safeCmp (const TTerm* lhs, const TTerm* rhs) {
+    /** safeCmp -- try the XML Schema-sensitive comparisons but fall back to
+	lexical comparison if there is an e.g. type error.
+     */
+    inline e_SORT TTerm::safeCmp (const TTerm* lhs, const TTerm* rhs) {
 	if (rhs == NULL)
 	    return lhs == NULL ? SORT_eq : SORT_gt;
 	if (lhs == NULL)
@@ -1358,8 +1168,8 @@ public:
 	const int li = lhs->getTypeOrder();
 	const int ri = rhs->getTypeOrder();
 	if (li != ri) {
-	    if (li != TTerm::TYPE_Err && 
-		ri != TTerm::TYPE_Err) {
+	    if (li != TYPE_Err && 
+		ri != TYPE_Err) {
 		if (li < ri)
 		    return SORT_lt;
 		if (li > ri)
@@ -1376,7 +1186,7 @@ public:
 		    const std::string rt = rlit->getDatatype()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return TTerm::_int2e_SORT(lex);
+			return _int2e_SORT(lex);
 		} else {
 		    return SORT_gt; // "5"^^my:int > "5"
 		}
@@ -1393,7 +1203,7 @@ public:
 		    const std::string rt = rlit->getLangtag()->getLexicalValue();
 		    int lex = lt.compare(rt);
 		    if (lex != 0)
-			return TTerm::_int2e_SORT(lex);
+			return _int2e_SORT(lex);
 		} else {
 		    return SORT_gt; // "5"@en > "5"
 		}
@@ -1405,30 +1215,240 @@ public:
 	}
 	int lex = lhs->getLexicalValue().compare(rhs->getLexicalValue());
 	if (lex != 0)
-	    return TTerm::_int2e_SORT(lex);
+	    return _int2e_SORT(lex);
 	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
     }
-    e_SORT cmp (const TriplePattern* lhs, const TriplePattern* rhs) {
-	if (lhs->getS() != rhs->getS() &&
-	    dynamic_cast<const BNode*>(lhs->getS()) != NULL &&
-	    dynamic_cast<const BNode*>(rhs->getS()) != NULL)
-	    return safeCmp(lhs->getS(), rhs->getS());
-	if (lhs->getP() != rhs->getP() &&
-	    dynamic_cast<const BNode*>(lhs->getP()) != NULL &&
-	    dynamic_cast<const BNode*>(rhs->getP()) != NULL)
-	    return safeCmp(lhs->getP(), rhs->getP());
-	if (lhs->getO() != rhs->getO() &&
-	    dynamic_cast<const BNode*>(lhs->getO()) != NULL &&
-	    dynamic_cast<const BNode*>(rhs->getO()) != NULL)
-	    return safeCmp(lhs->getO(), rhs->getO());
-	if (lhs->getS() != rhs->getS())
-	    return safeCmp(lhs->getS(), rhs->getS());
-	if (lhs->getP() != rhs->getP())
-	    return safeCmp(lhs->getP(), rhs->getP());
-	if (lhs->getO() != rhs->getO())
-	    return safeCmp(lhs->getO(), rhs->getO());
+
+struct BiDiBNodeMap {
+    std::map<const TTerm*, const TTerm*> forward;
+    std::map<const TTerm*, const TTerm*> reverse;
+    bool mappable (const TTerm* from, const TTerm* to) {
+	const TTerm* atFrom = forward.find(from) == forward.end() ? NULL : forward[from];
+	const TTerm* atTo = reverse.find(to) == reverse.end() ? NULL : reverse[to];
+
+	if (atFrom == NULL && atTo == NULL) {
+	    forward[from] = to;
+	    reverse[to] = from;
+	    return true;
+	}
+
+	return atFrom == to && atTo == from;
+    }
+};
+
+inline std::ostream& operator<< (std::ostream& os, BiDiBNodeMap& ref) {
+    for (std::map<const TTerm*, const TTerm*>::const_iterator it = ref.forward.begin();
+	 it != ref.forward.end(); ++it)
+	os << it->first->toString() << " -> " << it->second->toString() << std::endl;
+    return os;
+}
+
+class BasicGraphPattern;
+class NamespaceMap;
+
+class TriplePattern : public Base {
+    friend class AtomFactory;
+private:
+    const TTerm* m_s; const TTerm* m_p; const TTerm* m_o;
+    bool weaklyBound;
+    TriplePattern (const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) : Base(), m_s(p_s), m_p(p_p), m_o(p_o), weaklyBound(false) {  }
+    TriplePattern (TriplePattern const& copy, bool weaklyBound) : Base(), m_s(copy.m_s), m_p(copy.m_p), m_o(copy.m_o), weaklyBound(weaklyBound) {  }
+public:
+    ~TriplePattern () {  }
+    const TTerm* getS () const { return m_s; }
+    const TTerm* getP () const { return m_p; }
+    const TTerm* getO () const { return m_o; }
+
+    bool mappedBNodesEquals(const TriplePattern& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const;
+
+    static bool lt (TriplePattern* l, TriplePattern* r) {
+	if (l->m_s != r->m_s) return l->m_s < r->m_s;
+	if (l->m_p != r->m_p) return l->m_p < r->m_p;
+	if (l->m_o != r->m_o) return l->m_o < r->m_o;
+	return 0;
+    }    
+    static bool gt (TriplePattern* l, TriplePattern* r) {
+	if (l->m_s != r->m_s) return l->m_s > r->m_s;
+	if (l->m_p != r->m_p) return l->m_p > r->m_p;
+	if (l->m_o != r->m_o) return l->m_o > r->m_o;
+	return 0;
+    }    
+    std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const;
+    std::string toString (Result* row) const {
+	std::stringstream s;
+	s << 
+	    "{" << m_s->substitutedString(row, false) << 
+	    " " << m_p->substitutedString(row, false) << 
+	    " " << m_o->substitutedString(row, false) << "}";
+	return s.str();
+    }
+    virtual void express(Expressor* p_expressor) const;
+    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const TTerm* graphVar, Result* provisional, const TTerm* graphName) const {
+	return
+	    (graphVar == NULL || graphVar->bindVariable(graphName, rs, provisional, weaklyBound)) &&
+	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
+	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
+	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
+    }
+    bool construct(BasicGraphPattern* target, const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const;
+
+    /** safeCmp -- try the XML Schema-sensitive comparisons but fall back to
+	lexical comparison if there is an e.g. type error.
+     */
+    e_SORT safeCmp (const TriplePattern& ref) const {
+	if (getS() != ref.getS() &&
+	    dynamic_cast<const BNode*>(getS()) != NULL &&
+	    dynamic_cast<const BNode*>(ref.getS()) != NULL)
+	    return TTerm::TTerm::safeCmp(getS(), ref.getS());
+	if (getP() != ref.getP() &&
+	    dynamic_cast<const BNode*>(getP()) != NULL &&
+	    dynamic_cast<const BNode*>(ref.getP()) != NULL)
+	    return TTerm::safeCmp(getP(), ref.getP());
+	if (getO() != ref.getO() &&
+	    dynamic_cast<const BNode*>(getO()) != NULL &&
+	    dynamic_cast<const BNode*>(ref.getO()) != NULL)
+	    return TTerm::safeCmp(getO(), ref.getO());
+	if (getS() != ref.getS())
+	    return TTerm::safeCmp(getS(), ref.getS());
+	if (getP() != ref.getP())
+	    return TTerm::safeCmp(getP(), ref.getP());
+	if (getO() != ref.getO())
+	    return TTerm::safeCmp(getO(), ref.getO());
 	return SORT_eq;
     }
+};
+
+class DefaultGraphPattern;
+class Expression;
+class AtomFactory {
+
+protected:
+    typedef std::set<const BNode*> BNodeSet;
+    typedef std::map<std::string, const Variable*> VariableMap;
+    typedef std::map<std::string, const URI*> URIMap;
+    typedef std::map<std::string, const RDFLiteral*> RDFLiteralMap;
+    typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
+    class MakeNumericRDFLiteral {
+    public:
+	virtual ~MakeNumericRDFLiteral () {  }
+	virtual const NumericRDFLiteral* makeIt(std::string p_String, const URI* p_URI) = 0;
+    };
+
+protected:
+    VariableMap		variables;
+    BNodeSet		bnodes;
+    URIMap		uris;
+    RDFLiteralMap	rdfLiterals;
+    TriplePatternMap	triples;
+    NULLtterm		nullTTerm;
+    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+
+#if REGEX_LIB == SWOb_BOOST
+    enum {RANGE_unlimited = -2} Range;
+    struct Validator {
+	boost::regex pattern;
+	long intmin, intmax; // could be bignums from http://gmplib.org/
+	long double floatmin, floatmax;
+	Validator(const char* pattern) : 
+	    pattern(pattern), 
+	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
+	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
+	{  }
+	Validator(const char* pattern, long min, long max) : 
+	    pattern(pattern), 
+	    intmin(min), intmax(max), 
+	    floatmin(RANGE_unlimited), floatmax(RANGE_unlimited)
+	{  }
+	Validator(const char* pattern, long double min, long double max) : 
+	    pattern(pattern), 
+	    intmin(RANGE_unlimited), intmax(RANGE_unlimited), 
+	    floatmin(min), floatmax(max)
+	{  }
+    };
+    typedef std::map<std::string, Validator> ValidatorSet;
+    typedef std::pair<std::string, Validator> ValidatorElt;
+    ValidatorSet validators;
+    void validate(std::string value, std::string datatype);
+#endif /* REGEX_LIB == SWOb_BOOST */
+
+public:
+
+    std::ostream** debugStream;
+    AtomFactory();
+    ~AtomFactory();
+    const Variable* getVariable(std::string name);
+    const BNode* createBNode();
+    const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
+    const URI* getURI(std::string name);
+    const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
+    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL, bool validate = false);
+
+    const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
+    const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+
+    const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
+
+    const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
+    const NULLtterm* getNULL () { return &nullTTerm; }
+
+    /* getTriple(s) interface: */
+    const TriplePattern* getTriple (const TriplePattern* p, bool weaklyBound) {
+	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
+    }
+    const TriplePattern* getTriple(const TTerm* s, const TTerm* p, const TTerm* o, bool weaklyBound = false);
+    const TriplePattern* getTriple (std::string s, std::string p, std::string o, TTerm::String2BNode& nodeMap) {
+	return getTriple(getTTerm(s, nodeMap), 
+			 getTTerm(p, nodeMap), 
+			 getTTerm(o, nodeMap), false);
+    }
+#if REGEX_LIB == SWOb_BOOST
+    const TriplePattern* getTriple (std::string spo, TTerm::String2BNode& nodeMap) {
+	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
+				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
+	boost::match_results<std::string::const_iterator> what;
+	boost::match_flag_type flags = boost::match_default;
+	if (!regex_search(spo, what, expression, flags))
+	    return NULL;
+	return getTriple(getTTerm(std::string(what[1].first, what[1].second), nodeMap), 
+			 getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
+			 getTTerm(std::string(what[3].first, what[3].second), nodeMap), false);
+    }
+#endif /* REGEX_LIB == SWOb_BOOST */
+    void parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
+
+    /* EBV (Better place for this?) */
+    const TTerm* ebv(const TTerm* tterm);
+
+    struct Functor {
+	const Result* res;
+	AtomFactory* atomFactory;
+	BNodeEvaluator* evaluator;
+
+	Functor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
+	    res(res), atomFactory(atomFactory), evaluator(evaluator) {  }
+	virtual ~Functor () {  }
+    };
+    struct UnaryFunctor : public Functor {
+
+	UnaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
+	    Functor(res, atomFactory, evaluator) {  }
+	virtual int eval(int v) = 0;
+	virtual float eval(float v) = 0;
+	virtual double eval(double v) = 0;
+    };
+    struct NaryFunctor : public Functor {
+
+	NaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
+	    Functor(res, atomFactory, evaluator) {  }
+	virtual int eval(int l, int r) = 0;
+	virtual float eval(float l, float r) = 0;
+	virtual double eval(double l, double r) = 0;
+    };
+    const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
+    const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
     bool eval(const Expression* expression, const Result* row);
 };
 
@@ -1448,7 +1468,7 @@ typedef ProductionVector<const Expression*> ExprSet;
 inline bool AtomFactory::eval (const Expression* expression, const Result* row) {
     bool ret;
     try {
-	ret = ebv(expression->eval(row, this, NULL)) == &BOOL_true;
+	ret = ebv(expression->eval(row, this, NULL)) == TTerm::BOOL_true;
     } catch (SafeEvaluationError&) {
 	ret = false;
     }
@@ -2330,7 +2350,7 @@ public:
 
 	/* nary predicates: */
 	// concat
-	if (m_IRIref == &AtomFactory::FUNC_concat) {
+	if (m_IRIref == TTerm::FUNC_concat) {
 	    std::stringstream ss;
 	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
 		 sub != subd.end(); ++sub) {
@@ -2348,105 +2368,105 @@ public:
 	const TTerm* first = it == subd.end() ? NULL : *it++;
 
 	/* casts */
-	if (m_IRIref == &AtomFactory::URI_xsd_float    || 
-	    m_IRIref == &AtomFactory::URI_xsd_double   || 
-	    m_IRIref == &AtomFactory::URI_xsd_decimal  || 
-	    m_IRIref == &AtomFactory::URI_xsd_integer  || 
-	    m_IRIref == &AtomFactory::URI_xsd_boolean    ) {
+	if (m_IRIref == TTerm::URI_xsd_float    || 
+	    m_IRIref == TTerm::URI_xsd_double   || 
+	    m_IRIref == TTerm::URI_xsd_decimal  || 
+	    m_IRIref == TTerm::URI_xsd_integer  || 
+	    m_IRIref == TTerm::URI_xsd_boolean    ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
 		if (dt == NULL || 
-		    dt == &AtomFactory::URI_xsd_string  || 
-		    dt == &AtomFactory::URI_xsd_float   || 
-		    dt == &AtomFactory::URI_xsd_double  || 
-		    dt == &AtomFactory::URI_xsd_decimal || // check
-		    dt == &AtomFactory::URI_xsd_integer || // check
-		    dt == &AtomFactory::URI_xsd_boolean   )// adjust
+		    dt == TTerm::URI_xsd_string  || 
+		    dt == TTerm::URI_xsd_float   || 
+		    dt == TTerm::URI_xsd_double  || 
+		    dt == TTerm::URI_xsd_decimal || // check
+		    dt == TTerm::URI_xsd_integer || // check
+		    dt == TTerm::URI_xsd_boolean   )// adjust
 		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
 	}
 
-	if (m_IRIref == &AtomFactory::URI_xsd_dateTime   ) {
+	if (m_IRIref == TTerm::URI_xsd_dateTime   ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
 		if (dt == NULL || 
-		    dt == &AtomFactory::URI_xsd_dateTime  )// adjust
+		    dt == TTerm::URI_xsd_dateTime  )// adjust
 		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
 	}
 
-	if (m_IRIref == &AtomFactory::URI_xsd_string) {
+	if (m_IRIref == TTerm::URI_xsd_string) {
 	    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	}
 
 	/* operators */
-	if (m_IRIref == &AtomFactory::FUNC_bound && 
+	if (m_IRIref == TTerm::FUNC_bound && 
 	    subd.size() == 1)
-	    return first == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	    return first == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 
-	if ((m_IRIref == &AtomFactory::FUNC_isIRI || m_IRIref == &AtomFactory::FUNC_isURI) && 
+	if ((m_IRIref == TTerm::FUNC_isIRI || m_IRIref == TTerm::FUNC_isURI) && 
 	    subd.size() == 1)
-	    return dynamic_cast<const URI*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	    return dynamic_cast<const URI*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 
-	if (m_IRIref == &AtomFactory::FUNC_isBlank && 
+	if (m_IRIref == TTerm::FUNC_isBlank && 
 	    subd.size() == 1)
-	    return dynamic_cast<const BNode*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	    return dynamic_cast<const BNode*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 
-	if (m_IRIref == &AtomFactory::FUNC_isLiteral && 
+	if (m_IRIref == TTerm::FUNC_isLiteral && 
 	    subd.size() == 1)
-	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 
-	if (m_IRIref == &AtomFactory::FUNC_str && // STR(RDFLiteral)
+	if (m_IRIref == TTerm::FUNC_str && // STR(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    return atomFactory->getRDFLiteral(first->getLexicalValue());
 
-	if (m_IRIref == &AtomFactory::FUNC_str && // STR(URI)
+	if (m_IRIref == TTerm::FUNC_str && // STR(URI)
 	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
 	    return atomFactory->getRDFLiteral(first->getLexicalValue());
 
-	if (m_IRIref == &AtomFactory::FUNC_lang && 
+	if (m_IRIref == TTerm::FUNC_lang && 
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
 	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
 	    return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
 	}
 
-	if ((m_IRIref == &AtomFactory::FUNC_iri || m_IRIref == &AtomFactory::FUNC_uri) && // IRI(RDFLiteral)
+	if ((m_IRIref == TTerm::FUNC_iri || m_IRIref == TTerm::FUNC_uri) && // IRI(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    return atomFactory->getURI(first->getLexicalValue());
 
-	if (m_IRIref == &AtomFactory::FUNC_blank && // blank(RDFLiteral)
+	if (m_IRIref == TTerm::FUNC_blank && // blank(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    //return atomFactory->getBNode(first->getLexicalValue());
 	    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
 
-	if (m_IRIref == &AtomFactory::FUNC_datatype && 
+	if (m_IRIref == TTerm::FUNC_datatype && 
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL && 
 	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
 	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
-	    return dt ? dt : &AtomFactory::URI_xsd_string;
+	    return dt ? dt : TTerm::URI_xsd_string;
 	}
 
 	const TTerm* second = it == subd.end() ? NULL : *it++;
 
-	if (m_IRIref == &AtomFactory::FUNC_sameTerm && 
+	if (m_IRIref == TTerm::FUNC_sameTerm && 
 	    subd.size() == 2) {
-	    return first == second && first != NULL ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	    return first == second && first != NULL ? TTerm::BOOL_true : TTerm::BOOL_false;
 	}
 
-	if (m_IRIref == &AtomFactory::FUNC_langMatches && 
+	if (m_IRIref == TTerm::FUNC_langMatches && 
 	    subd.size() == 2 && 
 	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
 	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
 
 	    /* knock off the easy ones... */
 	    if (first == second)
-		return &AtomFactory::BOOL_true;
+		return TTerm::BOOL_true;
 	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
 	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
 	    if (range == "*")
-		return tag.empty() ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+		return tag.empty() ? TTerm::BOOL_false : TTerm::BOOL_true;
 
 	    std::string::iterator t = tag.begin();
 	    std::string::iterator te = tag.end();
@@ -2455,13 +2475,13 @@ public:
 
 	    while (t != te && r != re)
 		if (::tolower(*t++) != ::tolower(*r++))
-		    return &AtomFactory::BOOL_false;
+		    return TTerm::BOOL_false;
 
 	    if (r == re && 
 		(t == te || *t == '-'))
-		return &AtomFactory::BOOL_true;
+		return TTerm::BOOL_true;
 
-	    return &AtomFactory::BOOL_false;
+	    return TTerm::BOOL_false;
 	}
 
 	const TTerm* third = it == subd.end() ? NULL : *it++;
@@ -2469,7 +2489,7 @@ public:
 	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
 	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
 
-	if (m_IRIref == &AtomFactory::FUNC_regex && 
+	if (m_IRIref == TTerm::FUNC_regex && 
 	    ( subd.size() == 2 || subd.size() == 3 ) && 
 	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
 	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
@@ -2493,7 +2513,7 @@ public:
 		    l_flags |= boost::regex::mod_x;
 	    }
 	    const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
-	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
 #endif
 	}
 
@@ -2606,7 +2626,7 @@ public:
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
 		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
-		if (ret != &AtomFactory::BOOL_true)
+		if (ret != TTerm::BOOL_true)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
 		lastError = e;
@@ -2615,7 +2635,7 @@ public:
 	}
 	if (errorCount > 0)
 	    throw lastError;
-	return &AtomFactory::BOOL_true;
+	return TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
@@ -2634,7 +2654,7 @@ public:
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
 		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
-		if (ret != &AtomFactory::BOOL_false)
+		if (ret != TTerm::BOOL_false)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
 		lastError = e;
@@ -2643,7 +2663,7 @@ public:
 	}
 	if (errorCount > 0)
 	    throw lastError;
-	return &AtomFactory::BOOL_false;
+	return TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanDisjunction* pref = dynamic_cast<const BooleanDisjunction*>(&ref);
@@ -2690,7 +2710,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == SORT_eq ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	return l == r || TTerm::cmp(l, r) == SORT_eq ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -2705,7 +2725,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == SORT_eq ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	return l == r || TTerm::cmp(l, r) == SORT_eq ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -2720,7 +2740,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == SORT_lt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	return TTerm::cmp(l, r) == SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -2735,7 +2755,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == SORT_gt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	return TTerm::cmp(l, r) == SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -2750,7 +2770,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != SORT_gt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	return TTerm::cmp(l, r) != SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -2765,7 +2785,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != SORT_lt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
+	return TTerm::cmp(l, r) != SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
@@ -2785,9 +2805,9 @@ public:
 	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
 	    if (l == r)
 	    // if (atomFactory->cmp(l, r) == 0)
-		return &AtomFactory::BOOL_true;
+		return TTerm::BOOL_true;
 	}
-	return &AtomFactory::BOOL_false;
+	return TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const NaryIn* pref = dynamic_cast<const NaryIn*>(&ref);
@@ -2807,9 +2827,9 @@ public:
 	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
 	    if (l != r)
 	    // if (atomFactory->cmp(l, r) != 0)
-		return &AtomFactory::BOOL_true;
+		return TTerm::BOOL_true;
 	}
-	return &AtomFactory::BOOL_false;
+	return TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const NaryNotIn* pref = dynamic_cast<const NaryNotIn*>(&ref);
@@ -2839,7 +2859,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator));
-	return v == &AtomFactory::BOOL_true ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
+	return v == TTerm::BOOL_true ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNegation* pref = dynamic_cast<const BooleanNegation*>(&ref);

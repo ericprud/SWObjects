@@ -359,10 +359,10 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		if (self == &AtomFactory::URI_xsd_integer || 
-		    self == &AtomFactory::URI_xsd_decimal || 
-		    self == &AtomFactory::URI_xsd_float   || 
-		    self == &AtomFactory::URI_xsd_double    ) {
+		if (self == TTerm::URI_xsd_integer || 
+		    self == TTerm::URI_xsd_decimal || 
+		    self == TTerm::URI_xsd_float   || 
+		    self == TTerm::URI_xsd_double    ) {
 		} else {
 		    w3c_sw_FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
 		}
@@ -439,27 +439,27 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    std::string value = lexicalValue;
 	    if (datatype != NULL) {
-		if (datatype != &AtomFactory::URI_xsd_dateTime)
+		if (datatype != TTerm::URI_xsd_dateTime)
 		    value.replace(value.find("T"), 1, " ");
 		/* These have the same lexical value in SQL as in RDF. */
-		else if (datatype != &AtomFactory::URI_xsd_integer && 
-			 datatype != &AtomFactory::URI_xsd_decimal && 
-			 datatype != &AtomFactory::URI_xsd_float && 
-			 datatype != &AtomFactory::URI_xsd_double && 
-			 datatype != &AtomFactory::URI_xsd_string && 
-			 datatype != &AtomFactory::URI_xsd_boolean && 
-			 datatype != &AtomFactory::URI_xsd_nonPositiveInteger && 
-			 datatype != &AtomFactory::URI_xsd_negativeInteger && 
-			 datatype != &AtomFactory::URI_xsd_long && 
-			 datatype != &AtomFactory::URI_xsd_int && 
-			 datatype != &AtomFactory::URI_xsd_short && 
-			 datatype != &AtomFactory::URI_xsd_byte && 
-			 datatype != &AtomFactory::URI_xsd_nonNegativeInteger && 
-			 datatype != &AtomFactory::URI_xsd_unsignedLong && 
-			 datatype != &AtomFactory::URI_xsd_unsignedInt && 
-			 datatype != &AtomFactory::URI_xsd_unsignedShort && 
-			 datatype != &AtomFactory::URI_xsd_unsignedByte && 
-			 datatype != &AtomFactory::URI_xsd_positiveInteger)
+		else if (datatype != TTerm::URI_xsd_integer && 
+			 datatype != TTerm::URI_xsd_decimal && 
+			 datatype != TTerm::URI_xsd_float && 
+			 datatype != TTerm::URI_xsd_double && 
+			 datatype != TTerm::URI_xsd_string && 
+			 datatype != TTerm::URI_xsd_boolean && 
+			 datatype != TTerm::URI_xsd_nonPositiveInteger && 
+			 datatype != TTerm::URI_xsd_negativeInteger && 
+			 datatype != TTerm::URI_xsd_long && 
+			 datatype != TTerm::URI_xsd_int && 
+			 datatype != TTerm::URI_xsd_short && 
+			 datatype != TTerm::URI_xsd_byte && 
+			 datatype != TTerm::URI_xsd_nonNegativeInteger && 
+			 datatype != TTerm::URI_xsd_unsignedLong && 
+			 datatype != TTerm::URI_xsd_unsignedInt && 
+			 datatype != TTerm::URI_xsd_unsignedShort && 
+			 datatype != TTerm::URI_xsd_unsignedByte && 
+			 datatype != TTerm::URI_xsd_positiveInteger)
 		    w3c_sw_FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
@@ -871,7 +871,7 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    w3c_sw_MARK;
 	    args->express(this);
-	    if (iri == &AtomFactory::FUNC_bound)
+	    if (iri == TTerm::FUNC_bound)
 		curConstraint = new NullConstraint(curConstraint);
 	    else
 		iri->express(this);

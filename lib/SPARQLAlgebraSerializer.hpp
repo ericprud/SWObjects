@@ -522,25 +522,25 @@ public:
     }
     virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 
-	if (p_IRIref == &AtomFactory::FUNC_str)
+	if (p_IRIref == TTerm::FUNC_str)
 	    ret << "str";
-	else if (p_IRIref == &AtomFactory::FUNC_lang)
+	else if (p_IRIref == TTerm::FUNC_lang)
 	    ret << "lang";
-	else if (p_IRIref == &AtomFactory::FUNC_langMatches)
+	else if (p_IRIref == TTerm::FUNC_langMatches)
 	    ret << "langMatches";
-	else if (p_IRIref == &AtomFactory::FUNC_datatype)
+	else if (p_IRIref == TTerm::FUNC_datatype)
 	    ret << "datatype";
-	else if (p_IRIref == &AtomFactory::FUNC_bound)
+	else if (p_IRIref == TTerm::FUNC_bound)
 	    ret << "bound";
-	else if (p_IRIref == &AtomFactory::FUNC_sameTerm)
+	else if (p_IRIref == TTerm::FUNC_sameTerm)
 	    ret << "sameTerm";
-	else if (p_IRIref == &AtomFactory::FUNC_isIRI)
+	else if (p_IRIref == TTerm::FUNC_isIRI)
 	    ret << "isIRI";
-	else if (p_IRIref == &AtomFactory::FUNC_isIRI)
+	else if (p_IRIref == TTerm::FUNC_isIRI)
 	    ret << "isIRI";
-	else if (p_IRIref == &AtomFactory::FUNC_isBlank)
+	else if (p_IRIref == TTerm::FUNC_isBlank)
 	    ret << "isBlank";
-	else if (p_IRIref == &AtomFactory::FUNC_isLiteral)
+	else if (p_IRIref == TTerm::FUNC_isLiteral)
 	    ret << "isLiteral";
 	else
 	    p_IRIref->express(this);

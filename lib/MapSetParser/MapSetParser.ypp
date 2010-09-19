@@ -1699,57 +1699,57 @@ BrackettedExpression:
 
 BuiltInCall:
     IT_STR GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_str, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, $3, NULL, NULL));
     }
   | IT_LANG GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_lang, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, $3, NULL, NULL));
     }
   | IT_LANGMATCHES GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_langMatches, $3, $5, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, $3, $5, NULL));
     }
   | IT_DATATYPE GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_datatype, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, $3, NULL, NULL));
     }
   | IT_BOUND GT_LPAREN Var GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_bound, new TTermExpression($3), NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression($3), NULL, NULL));
     }
   | IT_IRI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_iri, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, NULL, NULL));
     }
   | IT_URI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_uri, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uri, $3, NULL, NULL));
     }
   | // 'BNODE' ( '(' Expression  ')' | NIL )
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_blank, $2, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_blank, $2, NULL, NULL));
     }
   | IT_COALESCE ExpressionList	{
-	$$ = NULL; // new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_coalesce, $2, NULL, NULL));
+	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
 	w3c_sw_NEED_IMPL("COALESCE");
     }
   | IT_IF GT_LPAREN Expression GT_COMMA Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_if, $3, $5, $7));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, $3, $5, $7));
     }
   | IT_STRLANG GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_strlang, $3, $5, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, $3, $5, NULL));
     }
   | IT_STRDT GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_strdt, $3, $5, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, $3, $5, NULL));
     }
   | IT_sameTerm GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_sameTerm, $3, $5, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, $3, $5, NULL));
     }
   | IT_isIRI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_isIRI, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, $3, NULL, NULL));
     }
   | IT_isURI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_isIRI, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, $3, NULL, NULL));
     }
   | IT_isBLANK GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_isBlank, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, $3, NULL, NULL));
     }
   | IT_isLITERAL GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_isLiteral, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, $3, NULL, NULL));
     }
   | RegexExpression	
   | ExistsFunc	
@@ -1770,7 +1770,7 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C:
 RegexExpression:
     // 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
     IT_REGEX GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_regex, $3, $5, $6));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_regex, $3, $5, $6));
     }
 ;
 
@@ -1784,36 +1784,36 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 
 ExistsFunc:
     IT_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new FunctionCall(&AtomFactory::FUNC_exists, driver.curOp, NULL, NULL));
+	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;
 
 NotExistsFunc:
     GT_NOT_SPACECHAR_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(&AtomFactory::FUNC_exists, driver.curOp, NULL, NULL)));
+	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL)));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;
 
 Aggregate:
     IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_count, $3, $4));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4));
     }
   | IT_SUM ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_sum, $2.distinctness, $2.p_Expression));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_sum, $2.distinctness, $2.p_Expression));
     }
   | IT_MIN ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_min, $2.distinctness, $2.p_Expression));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_min, $2.distinctness, $2.p_Expression));
     }
   | IT_MAX ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_max, $2.distinctness, $2.p_Expression));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_max, $2.distinctness, $2.p_Expression));
     }
   | IT_AVG ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_avg, $2.distinctness, $2.p_Expression));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_avg, $2.distinctness, $2.p_Expression));
     }
   | IT_SAMPLE ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_sample, $2.distinctness, $2.p_Expression));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_sample, $2.distinctness, $2.p_Expression));
     }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
     IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression	{
@@ -1823,7 +1823,7 @@ Aggregate:
 	  delete driver.curExprList;
 	  driver.curExprList = NULL;
 	  w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
-	  // $$ = new FunctionCallExpression(new AggregateCall(&AtomFactory::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
+	  // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
     }
 ;
 

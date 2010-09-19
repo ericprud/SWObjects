@@ -544,7 +544,7 @@ namespace w3c_sw {
 			dynamic_cast<const Bindable*>(r))
 			continue;
 		    if (l != r)
-			return AtomFactory::safeCmp(l, r) == SORT_lt;
+			return TTerm::safeCmp(l, r) == SORT_lt;
 		    else
 			incomparable = false;
 		}
@@ -819,7 +819,7 @@ namespace w3c_sw {
 				(new BooleanEQ
 				 (new FunctionCallExpression
 				  (new FunctionCall
-				   (&AtomFactory::FUNC_str,
+				   (TTerm::FUNC_str,
 				    new TTermExpression(*var), NULL, NULL)), 
 				  posExpression));
 			} else {

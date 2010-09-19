@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_SUITE_END()
 	    bool operator< (const DepthTriple& ref) const {
 		if (depth != ref.depth)
 		    return depth < ref.depth;
-		return atomFactory->cmp(triple, ref.triple) == SORT_lt;
+		return triple < ref.triple;
 	    }
 	};
 
@@ -576,7 +576,7 @@ BOOST_AUTO_TEST_SUITE_END()
 			std::vector<const TriplePattern*>::const_iterator rtriple = p_TriplePatterns->begin();
 			while (ltriple != lhs->end() && rtriple != p_TriplePatterns->end()) {
 			    if (*ltriple != *rtriple)
-				return atomFactory->cmp(*ltriple, *rtriple);
+				return (*ltriple)->safeCmp(**rtriple);
 			    ++ltriple;
 			    ++rtriple;
 			}
@@ -607,7 +607,7 @@ BOOST_AUTO_TEST_SUITE_END()
 			: _BasicGraphPattern(atomFactory, l_TriplePatterns), l_name(l_name), l_allOpts(l_allOpts) {  }
 		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
 		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-			ret = l_name != p_name ? atomFactory->cmp(l_name, p_name) : _basicGraphPattern(p_TriplePatterns);
+			ret = l_name != p_name ? TTerm::cmp(l_name, p_name) : _basicGraphPattern(p_TriplePatterns);
 		    }
 		};
 
@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_SUITE_END()
 		    RHS_graphGraphPattern (AtomFactory* atomFactory, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern)
 			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_TTerm(p_TTerm) {  }
 		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
-			ret = l_TTerm != p_TTerm ? atomFactory->cmp(l_TTerm, p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
+			ret = l_TTerm != p_TTerm ? TTerm::cmp(l_TTerm, p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
 		    }
 		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_lt; }
 		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
@@ -643,7 +643,7 @@ BOOST_AUTO_TEST_SUITE_END()
 			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_TTerm(p_TTerm) {  }
 		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
 		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory*, bool) {
-			ret = l_TTerm != p_TTerm ? atomFactory->cmp(l_TTerm, p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
+			ret = l_TTerm != p_TTerm ? TTerm::cmp(l_TTerm, p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
 		    }
 		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
 		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_lt; }
