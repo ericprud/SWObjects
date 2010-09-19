@@ -505,20 +505,20 @@ typedef enum { SORT_error, SORT_lt, SORT_eq, SORT_gt } e_SORT;
 /** TTerm: the terms in a Triple.
  */
 class TTerm : public Terminal {
-    friend struct POSsorter;
+    //    friend struct POSsorter;
 protected:
     TTerm (std::string matched) : Terminal(matched) {  }
     TTerm (std::string matched, bool gensym) : Terminal(matched, gensym) { }
 public:
-    typedef enum { DT_Err, DT_BNode, DT_URI, DT_Literal, DT_DateTime, 
-		   DT_Integer, DT_Decimal, DT_Float, DT_Double, 
-		   DT_Boolean} DT_TypeOrder;
+    typedef enum { TYPE_Err, TYPE_BNode, TYPE_URI, TYPE_Literal, TYPE_DateTime, 
+		   TYPE_Integer, TYPE_Decimal, TYPE_Float, TYPE_Double, 
+		   TYPE_Boolean} e_TYPE;
     static e_SORT _int2e_SORT(int i) {
 	return i < 0  ? SORT_lt
 	    : i > 0 ? SORT_gt
 	    : SORT_eq;
     };
-    virtual DT_TypeOrder getTypeOrder() const = 0;
+    virtual e_TYPE getTypeOrder() const = 0;
 
     bool operator== (const TTerm& r) const { return this==&r; }
     virtual bool isConstant () const { return true; } // Override for variable types.
@@ -551,19 +551,33 @@ public:
     }
 };
 
+inline bool operator< (const TTerm& left, const TTerm& right) {
+    if (&left == &right)
+	return false;
+    if (left.getTypeOrder() != right.getTypeOrder())
+	return left.getTypeOrder() < right.getTypeOrder();
+    return left.getLexicalValue().compare(right.getLexicalValue()) < 0;
+}
+
+struct TTermSorter {
+    bool operator() (const TTerm* lhs, const TTerm* rhs) {
+	return *lhs < *rhs;
+    }
+};
+
 class URI : public TTerm {
     friend class AtomFactory;
 private:
     URI (std::string str) : TTerm(str) {  }
 public:
     ~URI () { }
-    virtual DT_TypeOrder getTypeOrder () const { return DT_URI; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_URI; }
     virtual const char * getToken () { return "-TTerm-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toXMLResults (BNode2string*) const { return std::string("<uri>") + terminal + "</uri>";  }
     virtual std::string toString () const { return std::string("<") + terminal + ">"; }
     virtual std::string getBindingAttributeName () const { return "uri"; }
-    bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
+    //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
 };
 
 class Bindable : public TTerm {
@@ -571,7 +585,7 @@ protected:
     Bindable (std::string str) : TTerm(str) {  }
     Bindable (std::string str, bool gensym) : TTerm(str, gensym) {  }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_BNode; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_BNode; }
     virtual bool isConstant () const { return false; }
 };
 
@@ -648,7 +662,7 @@ protected:
 	delete m_LANGTAG;
     }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Literal; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Literal; }
     const URI* getDatatype () const { return datatype; }
     const LANGTAG* getLangtag () const { return m_LANGTAG; }
     virtual void validate () const {  } // default to valid unless a constrained subtype
@@ -750,7 +764,7 @@ protected:
     IntegerRDFLiteral (std::string p_String, const URI* p_URI, int p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~IntegerRDFLiteral () {  }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Integer; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Integer; }
     int getValue () const { return m_value; }
     virtual int getInt () const { return m_value; }
     virtual float getFloat () const { return (float)m_value; }
@@ -772,7 +786,7 @@ protected:
     FloatRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~FloatRDFLiteral () {  }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Float; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Float; }
     float getValue () const { return m_value; }
     virtual int getInt () const { throw TypeError(std::string("(float)") + toString(), "getInt()"); }
     virtual float getFloat () const { return m_value; }
@@ -792,7 +806,7 @@ class DecimalRDFLiteral : public FloatRDFLiteral {
 protected:
     DecimalRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Decimal; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Decimal; }
     virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
     virtual void express(Expressor* p_expressor) const;
 };
@@ -803,7 +817,7 @@ protected:
     DoubleRDFLiteral (std::string p_String, const URI* p_URI, double p_value) : NumericRDFLiteral(p_String, p_URI), m_value(p_value) {  }
     ~DoubleRDFLiteral () {  }
 public:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Double; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Double; }
     double getValue () const { return m_value; }
     virtual int getInt () const { throw TypeError(std::string("(double)") + toString(), "getInt()"); }
     virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
@@ -823,7 +837,7 @@ class BooleanRDFLiteral : public CanonicalRDFLiteral {
 protected:
     bool m_value;
     BooleanRDFLiteral (std::string p_String, const URI* p_URI, bool p_value) : CanonicalRDFLiteral(p_String, p_URI), m_value(p_value) {  }
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Boolean; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Boolean; }
 public:
     bool getValue () const { return m_value; }
     virtual void validate () const {
@@ -846,7 +860,7 @@ class DateTimeRDFLiteral : public CanonicalRDFLiteral {
 protected:
     // long m_value;
     DateTimeRDFLiteral (std::string p_String, const URI* p_URI) : CanonicalRDFLiteral(p_String, p_URI)/*, m_value(p_value) */ {  }
-    virtual DT_TypeOrder getTypeOrder () const { return DT_DateTime; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_DateTime; }
 public:
     // bool getValue () const { return m_value; }
     /** valdiate per http://www.w3.org/TR/xmlschema-2/#dateTime-lexical-representation
@@ -948,7 +962,7 @@ private:
     NULLtterm () : TTerm("NULL", "") {  }
     ~NULLtterm () {  }
 protected:
-    virtual DT_TypeOrder getTypeOrder () const { return DT_Err; }
+    virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
@@ -1034,9 +1048,7 @@ public:
 class DefaultGraphPattern;
 class Expression;
 class AtomFactory {
-public:
-//     typedef std::map<const BNode*, std::string> BNode2string;
-//     typedef std::map<std::string, const BNode*> String2BNode;
+
 protected:
     typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
@@ -1056,8 +1068,6 @@ protected:
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
     NULLtterm		nullTTerm;
-    const BooleanRDFLiteral* litFalse;
-    const BooleanRDFLiteral* litTrue;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
 
 #if REGEX_LIB == SWOb_BOOST
@@ -1089,75 +1099,63 @@ protected:
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 public:
-    static const URI DT_string;
-    static const URI DT_dateTime;
+
+    static const URI URI_xsd_integer;
+    static const URI URI_xsd_decimal;
+    static const URI URI_xsd_float;
+    static const URI URI_xsd_double;
+    static const URI URI_xsd_string;
+    static const URI URI_xsd_boolean;
+    static const URI URI_xsd_nonPositiveInteger;
+    static const URI URI_xsd_negativeInteger;
+    static const URI URI_xsd_long;
+    static const URI URI_xsd_int;
+    static const URI URI_xsd_short;
+    static const URI URI_xsd_byte;
+    static const URI URI_xsd_nonNegativeInteger;
+    static const URI URI_xsd_unsignedLong;
+    static const URI URI_xsd_unsignedInt;
+    static const URI URI_xsd_unsignedShort;
+    static const URI URI_xsd_unsignedByte;
+    static const URI URI_xsd_positiveInteger;
+    static const URI URI_xsd_dateTime;
+
+    static const URI FUNC_str;
+    static const URI FUNC_lang;
+    static const URI FUNC_langMatches;
+    static const URI FUNC_datatype;
+    static const URI FUNC_bound;
+    static const URI FUNC_sameTerm;
+    static const URI FUNC_isIRI;
+    static const URI FUNC_isURI;
+    static const URI FUNC_isBlank;
+    static const URI FUNC_isLiteral;
+    static const URI FUNC_count;
+    static const URI FUNC_sum;
+    static const URI FUNC_min;
+    static const URI FUNC_max;
+    static const URI FUNC_avg;
+    static const URI FUNC_group;
+    static const URI FUNC_regex;
+    static const URI FUNC_concat;
+    static const URI FUNC_group_concat;
+    static const URI FUNC_if;
+    static const URI FUNC_strlang;
+    static const URI FUNC_strdt;
+    static const URI FUNC_sample;
+    static const URI FUNC_iri;
+    static const URI FUNC_uri;
+    static const URI FUNC_blank;
+
+    static const URI* _ConstantURIs[];
+
+    static const BooleanRDFLiteral BOOL_true;
+    static const BooleanRDFLiteral BOOL_false;
+
+    static const RDFLiteral* _ConstantLiterals[];
 
     std::ostream** debugStream;
-    AtomFactory () :
-	litFalse(getBooleanRDFLiteral("false", false)),
-	litTrue(getBooleanRDFLiteral("true", true))
-    {
-	// inject static entries:
-	uris[DT_string.getLexicalValue()] = &DT_string;
-	uris[DT_dateTime.getLexicalValue()] = &DT_dateTime;
-
-#if REGEX_LIB == SWOb_BOOST
-	using std::numeric_limits;
-  #define _VAL1(T, P) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P)))
-  #define _VALL(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long)L, (long)U)))
-  #define _VALD(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long double)L, (long double)U)))
-  #define _MIND RANGE_unlimited /* -numeric_limits<long double>::max() */
-  #define _MAXD RANGE_unlimited /* numeric_limits<long double>::max() */
-  #define _MINL RANGE_unlimited /* numeric_limits<long>::min() */
-  #define _MAXL RANGE_unlimited /* numeric_limits<long>::max() */
-
-	const char* longPattern =    "^[-+]?[0-9]+$";
-	const char* decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
-	const char* floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
-	_VAL1("integer", 	    longPattern);
-	_VAL1("decimal", 	    decimalPattern);
-	_VALD("float", 		    floatPattern, _MIND, _MAXD); // -149E16777216, 104E16777216);
-	_VALL("double", 	    floatPattern, _MIND, _MAXD); // -1075E2251799813685248, 970E2251799813685248);
-	_VAL1("string", 	    ".*");
-	_VAL1("boolean", 	    "^(true|false|1|0)$");
-	_VAL1("dateTime", "^("
-	      "([\\-+]?)"	// optional sign @@ perhaps not supported by time(2)
-	      "(\\d{4,})"	// 2004
-	      "-(\\d{2})"	//     -12
-	      "-(\\d{2})"	//        -31
-	      "T(\\d{2})"	//           T19
-	      ":(\\d{2})"	//              :01
-	      "(?::(\\d{2}))?"	//                 :00
-	      "(?:Z|"		//                    Z
-	       "(?:([+\\-])"	//                    -
-	        "(\\d{2})"	//                     05
-	        ":(\\d{2})"	//                       :00
-	        "))" ")$");		// 2004-12-31T19:01:00-05:00
-
-	    //derived numerics
-
-	_VAL1("nonPositiveInteger", "^\\+?0+|-[0-9]+$");
-	_VALL("negativeInteger",    "^-[0-9]+$", RANGE_unlimited, -1);
-	_VALL("long", 		    longPattern, _MINL, _MAXL); // -9223372036854775808, 9223372036854775807);
-	_VALL("int", 		    longPattern, _MINL, _MAXL); // -2147483648, 2147483647);
-	_VALL("short", 		    longPattern, -32768, 32767);
-	_VALL("byte",		    longPattern, -128, 127);
-	_VALL("nonNegativeInteger", longPattern, 0, RANGE_unlimited);
-	_VALL("unsignedLong", 	    longPattern, 0, _MAXL); // 18446744073709551615);
-	_VALL("unsignedInt", 	    longPattern, 0, _MAXL); // 4294967295);
-	_VALL("unsignedShort", 	    longPattern, 0, 65535);
-	_VALL("unsignedByte", 	    longPattern, 0, 255);
-	_VALL("positiveInteger",    longPattern, 1, RANGE_unlimited);
-
-  #undef _VAL1
-  #undef _VALL
-  #undef _VALD
-  #undef _MINL
-  #undef _MAXL
-  #undef _MIND
-  #undef _MAXD
-#endif /* REGEX_LIB == SWOb_BOOST */
-    }
+    AtomFactory();
     ~AtomFactory();
     const Variable* getVariable(std::string name);
     const BNode* createBNode();
@@ -1174,8 +1172,6 @@ public:
     const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
 
     const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
-    const BooleanRDFLiteral* getFalse () { return litFalse; }
-    const BooleanRDFLiteral* getTrue () { return litTrue; }
     const NULLtterm* getNULL () { return &nullTTerm; }
 
     /* getTriple(s) interface: */
@@ -1324,8 +1320,8 @@ public:
 	} else if (ldt == NULL && 
 		   rdt == NULL) {
 	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
-	} else if (ldt == &DT_string && 
-		   rdt == &DT_string) {
+	} else if (ldt == &URI_xsd_string && 
+		   rdt == &URI_xsd_string) {
 	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue()));
 	} else if (dynamic_cast<const BooleanRDFLiteral*>(l) && 
 		   dynamic_cast<const BooleanRDFLiteral*>(r)) {
@@ -1337,8 +1333,8 @@ public:
 		!bl && br ? SORT_lt : 
 		bl && !br ?  SORT_gt : 
 		SORT_eq;
-	} else if (ldt == &DT_dateTime && 
-		   rdt == &DT_dateTime) {
+	} else if (ldt == &URI_xsd_dateTime && 
+		   rdt == &URI_xsd_dateTime) {
 	    l->validate();
 	    r->validate();
 	    return TTerm::_int2e_SORT(l->getLexicalValue().compare(r->getLexicalValue())); // luv dem isodates
@@ -1362,8 +1358,8 @@ public:
 	const int li = lhs->getTypeOrder();
 	const int ri = rhs->getTypeOrder();
 	if (li != ri) {
-	    if (li != TTerm::DT_Err && 
-		ri != TTerm::DT_Err) {
+	    if (li != TTerm::TYPE_Err && 
+		ri != TTerm::TYPE_Err) {
 		if (li < ri)
 		    return SORT_lt;
 		if (li > ri)
@@ -1436,32 +1432,6 @@ public:
     bool eval(const Expression* expression, const Result* row);
 };
 
-    /* Sorter for the POSs. */
-struct POSsorter;
-extern POSsorter* ThePOSsorter;
-
-struct POSsorter {
-public:
-    std::map<const std::string, int> typeOrder;
-    POSsorter () {
-	//typeOrder.insert(make_pair(typeid(BNode).name(), 2));
-	typeOrder[typeid(BNode).name()] = 2;
-	typeOrder[typeid(URI).name()] = 3;
-	typeOrder[typeid(RDFLiteral).name()] = 4;
-	ThePOSsorter = this;
-    }
-    bool operator() (const TTerm* lhs, const TTerm* rhs) {
-	const std::string lt = typeid(*lhs).name();
-	const std::string rt = typeid(*rhs).name();
-	const int li = typeOrder[lt];
-	const int ri = typeOrder[rt];
-	return
-	    li < ri ? true : 
-	    li > ri ? false : 
-	    lhs->getLexicalValue().compare(rhs->getLexicalValue()) < 0;
-    }
-};
-
 /* END Parts Of Speach */
 
 class Expression : public Base {
@@ -1478,7 +1448,7 @@ typedef ProductionVector<const Expression*> ExprSet;
 inline bool AtomFactory::eval (const Expression* expression, const Result* row) {
     bool ret;
     try {
-	ret = ebv(expression->eval(row, this, NULL)) == getTrue();
+	ret = ebv(expression->eval(row, this, NULL)) == &BOOL_true;
     } catch (SafeEvaluationError&) {
 	ret = false;
     }
@@ -2353,108 +2323,130 @@ public:
     ~FunctionCall () { delete m_ArgList; }
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+
 	std::vector<const TTerm*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    subd.push_back((*it)->eval(r, atomFactory, evaluator));
 
+	/* nary predicates: */
+	// concat
+	if (m_IRIref == &AtomFactory::FUNC_concat) {
+	    std::stringstream ss;
+	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
+		 sub != subd.end(); ++sub) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
+		if (s == NULL || s->getDatatype() != NULL || s->getLangtag() != NULL)
+		    throw TypeError(std::string("unexpected ") + s->toString(), "concat");
+		else
+		    ss << s->getLexicalValue();
+	    }
+	    return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
+	}
+
 	/* Write down the first 3 for convenience. */
 	std::vector<const TTerm*>::const_iterator it = subd.begin();
 	const TTerm* first = it == subd.end() ? NULL : *it++;
-	std::string func = m_IRIref->getLexicalValue();
 
 	/* casts */
-	if (func == "http://www.w3.org/2001/XMLSchema#float"    || 
-	    func == "http://www.w3.org/2001/XMLSchema#double"   || 
-	    func == "http://www.w3.org/2001/XMLSchema#decimal"  || 
-	    func == "http://www.w3.org/2001/XMLSchema#integer"  || 
-	    func == "http://www.w3.org/2001/XMLSchema#boolean"    ) {
+	if (m_IRIref == &AtomFactory::URI_xsd_float    || 
+	    m_IRIref == &AtomFactory::URI_xsd_double   || 
+	    m_IRIref == &AtomFactory::URI_xsd_decimal  || 
+	    m_IRIref == &AtomFactory::URI_xsd_integer  || 
+	    m_IRIref == &AtomFactory::URI_xsd_boolean    ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
-		std::string dtl = dt ? dt->getLexicalValue() : ":noDT";
 		if (dt == NULL || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#string"  || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#float"   || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#double"  || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#decimal" || // check
-		    dtl == "http://www.w3.org/2001/XMLSchema#integer" || // check
-		    dtl == "http://www.w3.org/2001/XMLSchema#boolean"   )// adjust
+		    dt == &AtomFactory::URI_xsd_string  || 
+		    dt == &AtomFactory::URI_xsd_float   || 
+		    dt == &AtomFactory::URI_xsd_double  || 
+		    dt == &AtomFactory::URI_xsd_decimal || // check
+		    dt == &AtomFactory::URI_xsd_integer || // check
+		    dt == &AtomFactory::URI_xsd_boolean   )// adjust
 		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
 	}
 
-	if (func == "http://www.w3.org/2001/XMLSchema#dateTime"   ) {
+	if (m_IRIref == &AtomFactory::URI_xsd_dateTime   ) {
 	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
 	    if (s != NULL) {
 		const URI* dt = s->getDatatype();
-		std::string dtl = dt ? dt->getLexicalValue() : ":noDT";
 		if (dt == NULL || 
-		    dtl == "http://www.w3.org/2001/XMLSchema#dateTime"  )// adjust
+		    dt == &AtomFactory::URI_xsd_dateTime  )// adjust
 		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	    }
 	}
 
-	if (func == "http://www.w3.org/2001/XMLSchema#string"   ) {
+	if (m_IRIref == &AtomFactory::URI_xsd_string) {
 	    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
 	}
 
 	/* operators */
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-bound") && 
+	if (m_IRIref == &AtomFactory::FUNC_bound && 
 	    subd.size() == 1)
-	    return first == NULL ? atomFactory->getFalse() : atomFactory->getTrue();
+	    return first == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI") && 
+	if ((m_IRIref == &AtomFactory::FUNC_isIRI || m_IRIref == &AtomFactory::FUNC_isURI) && 
 	    subd.size() == 1)
-	    return dynamic_cast<const URI*>(first) == NULL ? atomFactory->getFalse() : atomFactory->getTrue();
+	    return dynamic_cast<const URI*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank") && 
+	if (m_IRIref == &AtomFactory::FUNC_isBlank && 
 	    subd.size() == 1)
-	    return dynamic_cast<const BNode*>(first) == NULL ? atomFactory->getFalse() : atomFactory->getTrue();
+	    return dynamic_cast<const BNode*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral") && 
+	if (m_IRIref == &AtomFactory::FUNC_isLiteral && 
 	    subd.size() == 1)
-	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? atomFactory->getFalse() : atomFactory->getTrue();
+	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(RDFLiteral)
+	if (m_IRIref == &AtomFactory::FUNC_str && // STR(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    return atomFactory->getRDFLiteral(first->getLexicalValue());
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str") && // STR(URI)
+	if (m_IRIref == &AtomFactory::FUNC_str && // STR(URI)
 	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
 	    return atomFactory->getRDFLiteral(first->getLexicalValue());
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-lang") && 
+	if (m_IRIref == &AtomFactory::FUNC_lang && 
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
 	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
 	    return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
 	}
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-datatype") && 
+	if ((m_IRIref == &AtomFactory::FUNC_iri || m_IRIref == &AtomFactory::FUNC_uri) && // IRI(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    return atomFactory->getURI(first->getLexicalValue());
+
+	if (m_IRIref == &AtomFactory::FUNC_blank && // blank(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    //return atomFactory->getBNode(first->getLexicalValue());
+	    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
+
+	if (m_IRIref == &AtomFactory::FUNC_datatype && 
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL && 
 	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
 	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
-	    return dt ? dt : atomFactory->getURI("http://www.w3.org/2001/XMLSchema#string");
+	    return dt ? dt : &AtomFactory::URI_xsd_string;
 	}
 
 	const TTerm* second = it == subd.end() ? NULL : *it++;
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm") && 
+	if (m_IRIref == &AtomFactory::FUNC_sameTerm && 
 	    subd.size() == 2) {
-	    return first == second && first != NULL ? atomFactory->getTrue() : atomFactory->getFalse();
+	    return first == second && first != NULL ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
 	}
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches") && 
+	if (m_IRIref == &AtomFactory::FUNC_langMatches && 
 	    subd.size() == 2 && 
 	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
 	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
 
 	    /* knock off the easy ones... */
 	    if (first == second)
-		return atomFactory->getTrue();
+		return &AtomFactory::BOOL_true;
 	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
 	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
 	    if (range == "*")
-		return tag.empty() ? atomFactory->getFalse() : atomFactory->getTrue();
+		return tag.empty() ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
 
 	    std::string::iterator t = tag.begin();
 	    std::string::iterator te = tag.end();
@@ -2463,13 +2455,13 @@ public:
 
 	    while (t != te && r != re)
 		if (::tolower(*t++) != ::tolower(*r++))
-		    return atomFactory->getFalse();
+		    return &AtomFactory::BOOL_false;
 
 	    if (r == re && 
 		(t == te || *t == '-'))
-		return atomFactory->getTrue();
+		return &AtomFactory::BOOL_true;
 
-	    return atomFactory->getFalse();
+	    return &AtomFactory::BOOL_false;
 	}
 
 	const TTerm* third = it == subd.end() ? NULL : *it++;
@@ -2477,7 +2469,7 @@ public:
 	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
 	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
 
-	if (m_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-regex") && 
+	if (m_IRIref == &AtomFactory::FUNC_regex && 
 	    ( subd.size() == 2 || subd.size() == 3 ) && 
 	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
 	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
@@ -2501,7 +2493,7 @@ public:
 		    l_flags |= boost::regex::mod_x;
 	    }
 	    const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
-	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? atomFactory->getTrue() : atomFactory->getFalse();
+	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
 #endif
 	}
 
@@ -2614,7 +2606,7 @@ public:
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
 		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
-		if (ret != atomFactory->getTrue())
+		if (ret != &AtomFactory::BOOL_true)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
 		lastError = e;
@@ -2623,7 +2615,7 @@ public:
 	}
 	if (errorCount > 0)
 	    throw lastError;
-	return atomFactory->getTrue();
+	return &AtomFactory::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanConjunction* pref = dynamic_cast<const BooleanConjunction*>(&ref);
@@ -2642,7 +2634,7 @@ public:
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
 		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
-		if (ret != atomFactory->getFalse())
+		if (ret != &AtomFactory::BOOL_false)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
 		lastError = e;
@@ -2651,7 +2643,7 @@ public:
 	}
 	if (errorCount > 0)
 	    throw lastError;
-	return atomFactory->getFalse();
+	return &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanDisjunction* pref = dynamic_cast<const BooleanDisjunction*>(&ref);
@@ -2698,7 +2690,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == SORT_eq ? atomFactory->getTrue() : atomFactory->getFalse();
+	return l == r || atomFactory->cmp(l, r) == SORT_eq ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -2713,7 +2705,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || atomFactory->cmp(l, r) == SORT_eq ? atomFactory->getFalse() : atomFactory->getTrue();
+	return l == r || atomFactory->cmp(l, r) == SORT_eq ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -2728,7 +2720,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == SORT_lt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -2743,7 +2735,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) == SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) == SORT_gt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -2758,7 +2750,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != SORT_gt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != SORT_gt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -2773,7 +2765,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return atomFactory->cmp(l, r) != SORT_lt ? atomFactory->getTrue() : atomFactory->getFalse();
+	return atomFactory->cmp(l, r) != SORT_lt ? &AtomFactory::BOOL_true : &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);
@@ -2793,9 +2785,9 @@ public:
 	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
 	    if (l == r)
 	    // if (atomFactory->cmp(l, r) == 0)
-		return atomFactory->getTrue();
+		return &AtomFactory::BOOL_true;
 	}
-	return atomFactory->getFalse();
+	return &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const NaryIn* pref = dynamic_cast<const NaryIn*>(&ref);
@@ -2815,9 +2807,9 @@ public:
 	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
 	    if (l != r)
 	    // if (atomFactory->cmp(l, r) != 0)
-		return atomFactory->getTrue();
+		return &AtomFactory::BOOL_true;
 	}
-	return atomFactory->getFalse();
+	return &AtomFactory::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const NaryNotIn* pref = dynamic_cast<const NaryNotIn*>(&ref);
@@ -2847,7 +2839,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator));
-	return v == atomFactory->getTrue() ? atomFactory->getFalse() : atomFactory->getTrue();
+	return v == &AtomFactory::BOOL_true ? &AtomFactory::BOOL_false : &AtomFactory::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNegation* pref = dynamic_cast<const BooleanNegation*>(&ref);

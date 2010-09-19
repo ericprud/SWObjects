@@ -329,7 +329,7 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void uri (const URI* const, std::string lexicalValue) {
+	virtual void uri (const URI* const self, std::string lexicalValue) {
 	    w3c_sw_MARK;
 	    std::string relation, attribute;
 	    int value;
@@ -359,10 +359,10 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		if (lexicalValue == "http://www.w3.org/2001/XMLSchema#integer" || 
-		    lexicalValue == "http://www.w3.org/2001/XMLSchema#decimal" || 
-		    lexicalValue == "http://www.w3.org/2001/XMLSchema#float" || 
-		    lexicalValue == "http://www.w3.org/2001/XMLSchema#double"  ) {
+		if (self == &AtomFactory::URI_xsd_integer || 
+		    self == &AtomFactory::URI_xsd_decimal || 
+		    self == &AtomFactory::URI_xsd_float   || 
+		    self == &AtomFactory::URI_xsd_double    ) {
 		} else {
 		    w3c_sw_FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
 		}
@@ -439,27 +439,27 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    std::string value = lexicalValue;
 	    if (datatype != NULL) {
-		if (datatype->getLexicalValue() == "http://www.w3.org/2001/XMLSchema#dateTime")
+		if (datatype != &AtomFactory::URI_xsd_dateTime)
 		    value.replace(value.find("T"), 1, " ");
 		/* These have the same lexical value in SQL as in RDF. */
-		else if (datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#integer" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#decimal" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#float" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#double" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#string" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#boolean" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#nonPositiveInteger" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#negativeInteger" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#long" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#int" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#short" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#byte" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#nonNegativeInteger" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedLong" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedInt" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedShort" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#unsignedByte" && 
-			 datatype->getLexicalValue() != "http://www.w3.org/2001/XMLSchema#positiveInteger" )
+		else if (datatype != &AtomFactory::URI_xsd_integer && 
+			 datatype != &AtomFactory::URI_xsd_decimal && 
+			 datatype != &AtomFactory::URI_xsd_float && 
+			 datatype != &AtomFactory::URI_xsd_double && 
+			 datatype != &AtomFactory::URI_xsd_string && 
+			 datatype != &AtomFactory::URI_xsd_boolean && 
+			 datatype != &AtomFactory::URI_xsd_nonPositiveInteger && 
+			 datatype != &AtomFactory::URI_xsd_negativeInteger && 
+			 datatype != &AtomFactory::URI_xsd_long && 
+			 datatype != &AtomFactory::URI_xsd_int && 
+			 datatype != &AtomFactory::URI_xsd_short && 
+			 datatype != &AtomFactory::URI_xsd_byte && 
+			 datatype != &AtomFactory::URI_xsd_nonNegativeInteger && 
+			 datatype != &AtomFactory::URI_xsd_unsignedLong && 
+			 datatype != &AtomFactory::URI_xsd_unsignedInt && 
+			 datatype != &AtomFactory::URI_xsd_unsignedShort && 
+			 datatype != &AtomFactory::URI_xsd_unsignedByte && 
+			 datatype != &AtomFactory::URI_xsd_positiveInteger)
 		    w3c_sw_FAIL1("unknown datatype: <%s>", datatype->getLexicalValue().c_str());
 	    }
 	    if (p_LANGTAG != NULL) {
@@ -871,7 +871,7 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    w3c_sw_MARK;
 	    args->express(this);
-	    if (iri->getLexicalValue() == "http://www.w3.org/TR/rdf-sparql-query/#func-bound")
+	    if (iri == &AtomFactory::FUNC_bound)
 		curConstraint = new NullConstraint(curConstraint);
 	    else
 		iri->express(this);

@@ -294,9 +294,9 @@ namespace w3c_sw {
 		AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef) {  }
 		virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
-		    if (p_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-count")) {
+		    if (p_IRIref == &AtomFactory::FUNC_count) {
 			last.functionCall = new CountState(groupIndexRef);
-		    } else if (p_IRIref == atomFactory->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-sum")) {
+		    } else if (p_IRIref == &AtomFactory::FUNC_sum) {
 			(*it)->express(this);
 			last.functionCall = new SumState(last.expression, groupIndexRef);
 		    } else {

@@ -522,25 +522,25 @@ public:
     }
     virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 
-	if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-str"))
+	if (p_IRIref == &AtomFactory::FUNC_str)
 	    ret << "str";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-lang"))
+	else if (p_IRIref == &AtomFactory::FUNC_lang)
 	    ret << "lang";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches"))
+	else if (p_IRIref == &AtomFactory::FUNC_langMatches)
 	    ret << "langMatches";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-datatype"))
+	else if (p_IRIref == &AtomFactory::FUNC_datatype)
 	    ret << "datatype";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-bound"))
+	else if (p_IRIref == &AtomFactory::FUNC_bound)
 	    ret << "bound";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm"))
+	else if (p_IRIref == &AtomFactory::FUNC_sameTerm)
 	    ret << "sameTerm";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"))
+	else if (p_IRIref == &AtomFactory::FUNC_isIRI)
 	    ret << "isIRI";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI"))
+	else if (p_IRIref == &AtomFactory::FUNC_isIRI)
 	    ret << "isIRI";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank"))
+	else if (p_IRIref == &AtomFactory::FUNC_isBlank)
 	    ret << "isBlank";
-	else if (p_IRIref->matches("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral"))
+	else if (p_IRIref == &AtomFactory::FUNC_isLiteral)
 	    ret << "isLiteral";
 	else
 	    p_IRIref->express(this);

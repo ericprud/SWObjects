@@ -35,10 +35,10 @@ namespace w3c_sw {
 
     class DefaultGraphClass : public TTerm {
     protected:
-	virtual DT_TypeOrder getTypeOrder () { return DT_Err; }
+	virtual e_TYPE getTypeOrder () { return TYPE_Err; }
     public:
 	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
-	virtual DT_TypeOrder getTypeOrder () const { return DT_Err; }
+	virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual std::string toString () const { return "Default Graph"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
@@ -176,8 +176,7 @@ namespace w3c_sw {
 		for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
 		    // if (it->second->size() > 0)
 		    graphList.push_back(it->first);
-	    POSsorter sorter;
-	    graphList.sort(sorter);
+	    graphList.sort(TTermSorter());
 	    std::stringstream s;
 	    for (std::list<const TTerm*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) 
 		s << graphs.find(*it)->second->toString(mediaType, namespaces);

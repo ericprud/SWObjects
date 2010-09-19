@@ -606,8 +606,7 @@ namespace w3c_sw {
 	    else {
 		for (VariableListConstIterator it = knownVars.begin() ; it != knownVars.end(); ++it)
 		    ret.push_back(*it);
-		POSsorter sorter;
-		std::sort(ret.begin(), ret.end(), sorter);
+		std::sort(ret.begin(), ret.end(), TTermSorter());
 	    }
 	    return ret;
 	}
@@ -820,7 +819,7 @@ namespace w3c_sw {
 				(new BooleanEQ
 				 (new FunctionCallExpression
 				  (new FunctionCall
-				   (getAtomFactory()->getURI("http://www.w3.org/TR/rdf-sparql-query/#func-str"),
+				   (&AtomFactory::FUNC_str,
 				    new TTermExpression(*var), NULL, NULL)), 
 				  posExpression));
 			} else {

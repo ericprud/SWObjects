@@ -38,9 +38,6 @@ namespace w3c_sw {
     const char* NS_dc  = "http://purl.org/dc/terms/"			;
     const char* NS_sadl= "http://www.w3.org/2005/03/saddle/#"		;
 
-    const URI AtomFactory::DT_string("http://www.w3.org/2001/XMLSchema#string");
-    const URI AtomFactory::DT_dateTime("http://www.w3.org/2001/XMLSchema#dateTime");
-
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
 }
@@ -349,7 +346,7 @@ void DoubleRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, m_value);
 }
 void DateTimeRDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, terminal, &AtomFactory::DT_dateTime, NULL);
+    p_expressor->rdfLiteral(this, terminal, &AtomFactory::URI_xsd_dateTime, NULL);
     // w3c_sw_NEED_IMPL("DateTimeRDFLiteral non-existent in expressor");
 }
 void BooleanRDFLiteral::express (Expressor* p_expressor) const {
@@ -516,15 +513,187 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
+    /** URI constants, shared between all AtomFactories: */
+    const URI AtomFactory::URI_xsd_integer("http://www.w3.org/2001/XMLSchema#integer");
+    const URI AtomFactory::URI_xsd_decimal("http://www.w3.org/2001/XMLSchema#decimal");
+    const URI AtomFactory::URI_xsd_float("http://www.w3.org/2001/XMLSchema#float");
+    const URI AtomFactory::URI_xsd_double("http://www.w3.org/2001/XMLSchema#double");
+    const URI AtomFactory::URI_xsd_string("http://www.w3.org/2001/XMLSchema#string");
+    const URI AtomFactory::URI_xsd_boolean("http://www.w3.org/2001/XMLSchema#boolean");
+    const URI AtomFactory::URI_xsd_nonPositiveInteger("http://www.w3.org/2001/XMLSchema#nonPositiveInteger");
+    const URI AtomFactory::URI_xsd_negativeInteger("http://www.w3.org/2001/XMLSchema#negativeInteger");
+    const URI AtomFactory::URI_xsd_long("http://www.w3.org/2001/XMLSchema#long");
+    const URI AtomFactory::URI_xsd_int("http://www.w3.org/2001/XMLSchema#int");
+    const URI AtomFactory::URI_xsd_short("http://www.w3.org/2001/XMLSchema#short");
+    const URI AtomFactory::URI_xsd_byte("http://www.w3.org/2001/XMLSchema#byte");
+    const URI AtomFactory::URI_xsd_nonNegativeInteger("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
+    const URI AtomFactory::URI_xsd_unsignedLong("http://www.w3.org/2001/XMLSchema#unsignedLong");
+    const URI AtomFactory::URI_xsd_unsignedInt("http://www.w3.org/2001/XMLSchema#unsignedInt");
+    const URI AtomFactory::URI_xsd_unsignedShort("http://www.w3.org/2001/XMLSchema#unsignedShort");
+    const URI AtomFactory::URI_xsd_unsignedByte("http://www.w3.org/2001/XMLSchema#unsignedByte");
+    const URI AtomFactory::URI_xsd_positiveInteger("http://www.w3.org/2001/XMLSchema#positiveInteger");
+    const URI AtomFactory::URI_xsd_dateTime("http://www.w3.org/2001/XMLSchema#dateTime");
 
-    POSsorter* ThePOSsorter;
+    const URI AtomFactory::FUNC_str("http://www.w3.org/TR/rdf-sparql-query/#func-str");
+    const URI AtomFactory::FUNC_lang("http://www.w3.org/TR/rdf-sparql-query/#func-lang");
+    const URI AtomFactory::FUNC_langMatches("http://www.w3.org/TR/rdf-sparql-query/#func-langMatches");
+    const URI AtomFactory::FUNC_datatype("http://www.w3.org/TR/rdf-sparql-query/#func-datatype");
+    const URI AtomFactory::FUNC_bound("http://www.w3.org/TR/rdf-sparql-query/#func-bound");
+    const URI AtomFactory::FUNC_sameTerm("http://www.w3.org/TR/rdf-sparql-query/#func-sameTerm");
+    const URI AtomFactory::FUNC_isIRI("http://www.w3.org/TR/rdf-sparql-query/#func-isIRI");
+    const URI AtomFactory::FUNC_isURI("http://www.w3.org/TR/rdf-sparql-query/#func-isURI");
+    const URI AtomFactory::FUNC_isBlank("http://www.w3.org/TR/rdf-sparql-query/#func-isBlank");
+    const URI AtomFactory::FUNC_isLiteral("http://www.w3.org/TR/rdf-sparql-query/#func-isLiteral");
+    const URI AtomFactory::FUNC_count("http://www.w3.org/TR/rdf-sparql-query/#func-count");
+    const URI AtomFactory::FUNC_sum("http://www.w3.org/TR/rdf-sparql-query/#func-sum");
+    const URI AtomFactory::FUNC_min("http://www.w3.org/TR/rdf-sparql-query/#func-min");
+    const URI AtomFactory::FUNC_max("http://www.w3.org/TR/rdf-sparql-query/#func-max");
+    const URI AtomFactory::FUNC_avg("http://www.w3.org/TR/rdf-sparql-query/#func-avg");
+    const URI AtomFactory::FUNC_group("http://www.w3.org/TR/rdf-sparql-query/#func-group_group");
+    const URI AtomFactory::FUNC_regex("http://www.w3.org/TR/rdf-sparql-query/#func-group_regex");
+    const URI AtomFactory::FUNC_concat("http://www.w3.org/TR/rdf-sparql-query/#func-concat");
+    const URI AtomFactory::FUNC_group_concat("http://www.w3.org/TR/rdf-sparql-query/#func-group_concat");
+    const URI AtomFactory::FUNC_if("http://www.w3.org/TR/rdf-sparql-query/#func-if");
+    const URI AtomFactory::FUNC_strlang("http://www.w3.org/TR/rdf-sparql-query/#func-strlang");
+    const URI AtomFactory::FUNC_strdt("http://www.w3.org/TR/rdf-sparql-query/#func-strdt");
+    const URI AtomFactory::FUNC_sample("http://www.w3.org/TR/rdf-sparql-query/#func-sample");
+    const URI AtomFactory::FUNC_iri("http://www.w3.org/TR/rdf-sparql-query/#func-iri");
+    const URI AtomFactory::FUNC_uri("http://www.w3.org/TR/rdf-sparql-query/#func-uri");
+    const URI AtomFactory::FUNC_blank("http://www.w3.org/TR/rdf-sparql-query/#func-blank");
+
+    const URI* AtomFactory::_ConstantURIs[] = {
+	&AtomFactory::URI_xsd_integer,
+	&AtomFactory::URI_xsd_decimal,
+	&AtomFactory::URI_xsd_float,
+	&AtomFactory::URI_xsd_double,
+	&AtomFactory::URI_xsd_string,
+	&AtomFactory::URI_xsd_boolean,
+	&AtomFactory::URI_xsd_nonPositiveInteger,
+	&AtomFactory::URI_xsd_negativeInteger,
+	&AtomFactory::URI_xsd_long,
+	&AtomFactory::URI_xsd_int,
+	&AtomFactory::URI_xsd_short,
+	&AtomFactory::URI_xsd_byte,
+	&AtomFactory::URI_xsd_nonNegativeInteger,
+	&AtomFactory::URI_xsd_unsignedLong,
+	&AtomFactory::URI_xsd_unsignedInt,
+	&AtomFactory::URI_xsd_unsignedShort,
+	&AtomFactory::URI_xsd_unsignedByte,
+	&AtomFactory::URI_xsd_positiveInteger,
+	&AtomFactory::URI_xsd_dateTime,
+
+	&AtomFactory::FUNC_str,
+	&AtomFactory::FUNC_lang,
+	&AtomFactory::FUNC_langMatches,
+	&AtomFactory::FUNC_datatype,
+	&AtomFactory::FUNC_bound,
+	&AtomFactory::FUNC_sameTerm,
+	&AtomFactory::FUNC_isIRI,
+	&AtomFactory::FUNC_isURI,
+	&AtomFactory::FUNC_isBlank,
+	&AtomFactory::FUNC_isLiteral,
+	&AtomFactory::FUNC_count,
+	&AtomFactory::FUNC_sum,
+	&AtomFactory::FUNC_min,
+	&AtomFactory::FUNC_max,
+	&AtomFactory::FUNC_avg,
+	&AtomFactory::FUNC_group,
+	&AtomFactory::FUNC_regex,
+	&AtomFactory::FUNC_concat,
+	&AtomFactory::FUNC_group_concat,
+	&AtomFactory::FUNC_if,
+	&AtomFactory::FUNC_strlang,
+	&AtomFactory::FUNC_strdt,
+	&AtomFactory::FUNC_sample,
+	&AtomFactory::FUNC_iri,
+	&AtomFactory::FUNC_uri,
+	&AtomFactory::FUNC_blank
+    };
+
+    const BooleanRDFLiteral AtomFactory::BOOL_true("true", &URI_xsd_boolean, true);
+    const BooleanRDFLiteral AtomFactory::BOOL_false("false", &URI_xsd_boolean, false);
+
+    const RDFLiteral* AtomFactory::_ConstantLiterals[] = {
+	&AtomFactory::BOOL_true,
+	&AtomFactory::BOOL_false
+    };
+
+    //POSsorter* ThePOSsorter;
 
     /* <AtomFactory> */
+    AtomFactory::AtomFactory () {
+	for (size_t i = 0; i < sizeof(_ConstantURIs)/sizeof(_ConstantURIs[0]); ++i)
+	    uris[_ConstantURIs[i]->getLexicalValue()] = _ConstantURIs[i];
+
+	for (size_t i = 0; i < sizeof(_ConstantLiterals)/sizeof(_ConstantLiterals[0]); ++i)
+	    rdfLiterals[_ConstantLiterals[i]->getLexicalValue()] = _ConstantLiterals[i];
+
+	assert(BOOL_true.RDFLiteral::toString() == "\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>");
+
+#if REGEX_LIB == SWOb_BOOST
+	using std::numeric_limits;
+  #define _VAL1(T, P) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P)))
+  #define _VALL(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long)L, (long)U)))
+  #define _VALD(T, P, L, U) validators.insert(ValidatorElt("http://www.w3.org/2001/XMLSchema#" T, Validator(P, (long double)L, (long double)U)))
+  #define _MIND RANGE_unlimited /* -numeric_limits<long double>::max() */
+  #define _MAXD RANGE_unlimited /* numeric_limits<long double>::max() */
+  #define _MINL RANGE_unlimited /* numeric_limits<long>::min() */
+  #define _MAXL RANGE_unlimited /* numeric_limits<long>::max() */
+
+	const char* longPattern =    "^[-+]?[0-9]+$";
+	const char* decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
+	const char* floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
+	_VAL1("integer", 	    longPattern);
+	_VAL1("decimal", 	    decimalPattern);
+	_VALD("float", 		    floatPattern, _MIND, _MAXD); // -149E16777216, 104E16777216);
+	_VALL("double", 	    floatPattern, _MIND, _MAXD); // -1075E2251799813685248, 970E2251799813685248);
+	_VAL1("string", 	    ".*");
+	_VAL1("boolean", 	    "^(true|false|1|0)$");
+	_VAL1("dateTime", "^("
+	      "([\\-+]?)"	// optional sign @@ perhaps not supported by time(2)
+	      "(\\d{4,})"	// 2004
+	      "-(\\d{2})"	//     -12
+	      "-(\\d{2})"	//        -31
+	      "T(\\d{2})"	//           T19
+	      ":(\\d{2})"	//              :01
+	      "(?::(\\d{2}))?"	//                 :00
+	      "(?:Z|"		//                    Z
+	       "(?:([+\\-])"	//                    -
+	        "(\\d{2})"	//                     05
+	        ":(\\d{2})"	//                       :00
+	        "))" ")$");		// 2004-12-31T19:01:00-05:00
+
+	    //derived numerics
+
+	_VAL1("nonPositiveInteger", "^\\+?0+|-[0-9]+$");
+	_VALL("negativeInteger",    "^-[0-9]+$", RANGE_unlimited, -1);
+	_VALL("long", 		    longPattern, _MINL, _MAXL); // -9223372036854775808, 9223372036854775807);
+	_VALL("int", 		    longPattern, _MINL, _MAXL); // -2147483648, 2147483647);
+	_VALL("short", 		    longPattern, -32768, 32767);
+	_VALL("byte",		    longPattern, -128, 127);
+	_VALL("nonNegativeInteger", longPattern, 0, RANGE_unlimited);
+	_VALL("unsignedLong", 	    longPattern, 0, _MAXL); // 18446744073709551615);
+	_VALL("unsignedInt", 	    longPattern, 0, _MAXL); // 4294967295);
+	_VALL("unsignedShort", 	    longPattern, 0, 65535);
+	_VALL("unsignedByte", 	    longPattern, 0, 255);
+	_VALL("positiveInteger",    longPattern, 1, RANGE_unlimited);
+
+  #undef _VAL1
+  #undef _VALL
+  #undef _VALD
+  #undef _MINL
+  #undef _MAXL
+  #undef _MIND
+  #undef _MAXD
+#endif /* REGEX_LIB == SWOb_BOOST */
+    }
     AtomFactory::~AtomFactory () {
 
-	// remove static entries:
-	uris.erase(DT_string.getLexicalValue());
-	uris.erase(DT_dateTime.getLexicalValue());
+	for (size_t i = 0; i < sizeof(_ConstantURIs)/sizeof(_ConstantURIs[0]); ++i)
+	    uris.erase(_ConstantURIs[i]->getLexicalValue());
+
+	for (size_t i = 0; i < sizeof(_ConstantLiterals)/sizeof(_ConstantLiterals[0]); ++i)
+	    rdfLiterals.erase(_ConstantLiterals[i]->getLexicalValue());
 
 	std::map<std::string, const TriplePattern*>::iterator iTriples;
 	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
@@ -652,45 +821,45 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 	if (p_URI != NULL && needsValidation == true)
 	    validate(p_String, p_URI->getLexicalValue());
-	if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#integer") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#negativeInteger") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#long") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#int") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#short") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#byte") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#nonNegativeInteger") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedLong") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedInt") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedShort") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#unsignedByte") || 
-	    p_URI == getURI("http://www.w3.org/2001/XMLSchema#positiveInteger")) {
+	if (p_URI == &URI_xsd_integer || 
+	    p_URI == &URI_xsd_nonPositiveInteger || 
+	    p_URI == &URI_xsd_negativeInteger || 
+	    p_URI == &URI_xsd_long || 
+	    p_URI == &URI_xsd_int || 
+	    p_URI == &URI_xsd_short || 
+	    p_URI == &URI_xsd_byte || 
+	    p_URI == &URI_xsd_nonNegativeInteger || 
+	    p_URI == &URI_xsd_unsignedLong || 
+	    p_URI == &URI_xsd_unsignedInt || 
+	    p_URI == &URI_xsd_unsignedShort || 
+	    p_URI == &URI_xsd_unsignedByte || 
+	    p_URI == &URI_xsd_positiveInteger) {
 	    int i;
 	    is >> i;
 // 	    std::stringstream canonical;
 // 	    canonical << std::dec << i;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), i);
 	    return getNumericRDFLiteral(p_String.c_str(), i);
-	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#decimal") || 
-		   p_URI == getURI("http://www.w3.org/2001/XMLSchema#float")) {
+	} else if (p_URI == &URI_xsd_decimal || 
+		   p_URI == &URI_xsd_float) {
 	    float f;
 	    is >> f;
 // 	    std::stringstream canonical;
 // 	    canonical << std::fixed << f;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), f);
-	    return p_URI == getURI("http://www.w3.org/2001/XMLSchema#float") ? 
+	    return p_URI == &URI_xsd_float ? 
 		getNumericRDFLiteral(p_String.c_str(), f, true) :
 		getNumericRDFLiteral(p_String.c_str(), f);
-	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#double")) {
+	} else if (p_URI == &URI_xsd_double) {
 	    double d;
 	    is >> d;
 // 	    std::stringstream canonical;
 // 	    canonical << std::scientific << d;
 // 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
-	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#dateTime")) {
+	} else if (p_URI == &URI_xsd_dateTime) {
 	    return getDateTimeRDFLiteral(p_String.c_str());
-	} else if (p_URI == getURI("http://www.w3.org/2001/XMLSchema#boolean")) {
+	} else if (p_URI == &URI_xsd_boolean) {
 	    if (p_String == "0" || p_String == "false")
 		return getBooleanRDFLiteral("false", 0);
 	    bool b;
@@ -788,7 +957,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    DateTimeRDFLiteral* ret = new DateTimeRDFLiteral(p_String, getURI("http://www.w3.org/2001/XMLSchema#dateTime"));
+	    DateTimeRDFLiteral* ret = new DateTimeRDFLiteral(p_String, &URI_xsd_dateTime);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -801,7 +970,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals.find(key);
 	if (vi == rdfLiterals.end()) {
-	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, getURI("http://www.w3.org/2001/XMLSchema#boolean"), p_value);
+	    BooleanRDFLiteral* ret = new BooleanRDFLiteral(p_String, &URI_xsd_boolean, p_value);
 	    rdfLiterals[key] = ret;
 	    return ret;
 	} else
@@ -890,26 +1059,26 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
 	const TTerm* v = arg->eval(func->res, this, func->evaluator);
-	TTerm::DT_TypeOrder dt = v->getTypeOrder();
-	if (dt == TTerm::DT_Err)
+	TTerm::e_TYPE dt = v->getTypeOrder();
+	if (dt == TTerm::TYPE_Err)
 	    throw std::string(typeid(*v).name()) + " is not a known datatype.";
 	switch (dt) {
-	case TTerm::DT_Integer: {
+	case TTerm::TYPE_Integer: {
 	    int i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getInt());
 	    std::stringstream s;
 	    s << i;
 	    v = getNumericRDFLiteral(s.str(), i);
 	     break;
 	 }
-	case TTerm::DT_Float:
-	     case TTerm::DT_Decimal: {
+	case TTerm::TYPE_Float:
+	     case TTerm::TYPE_Decimal: {
 		 float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
 		 std::stringstream s;
 		 s << i;
 		 v = getNumericRDFLiteral(s.str(), i);
 		 break;
 	     }
-	     case TTerm::DT_Double: {
+	     case TTerm::TYPE_Double: {
 		 double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
 		 std::stringstream s;
 		 s << i;
@@ -925,19 +1094,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::vector<const Expression*>::const_iterator it = args.begin();
 	const TTerm* l = (*it)->eval(func->res, this, func->evaluator);
 
-	TTerm::DT_TypeOrder dt = l->getTypeOrder();
-	if (dt == TTerm::DT_Err)
+	TTerm::e_TYPE dt = l->getTypeOrder();
+	if (dt == TTerm::TYPE_Err)
 	    throw std::string(typeid(*l).name()) + " is not a known datatype.";
 	++it;
 	while (it != args.end()) {
 	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator);
-	    TTerm::DT_TypeOrder dtr = r->getTypeOrder();
-	    if (dtr == TTerm::DT_Err)
+	    TTerm::e_TYPE dtr = r->getTypeOrder();
+	    if (dtr == TTerm::TYPE_Err)
 		throw std::string(typeid(*r).name()) + " is not a known datatype.";
 	    if (dtr > dt)
 		dt = dtr;
 	    switch (dt) {
-	    case TTerm::DT_Integer: {
+	    case TTerm::TYPE_Integer: {
 		int i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getInt(), 
 				   static_cast<const NumericRDFLiteral*>(r)->getInt());
 		std::stringstream s;
@@ -945,16 +1114,16 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		l = getNumericRDFLiteral(s.str(), i);
 		break;
 	    }
-	    case TTerm::DT_Float:
-	    case TTerm::DT_Decimal: {
+	    case TTerm::TYPE_Float:
+	    case TTerm::TYPE_Decimal: {
 		float i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getFloat(), 
 				     static_cast<const NumericRDFLiteral*>(r)->getFloat());
 		std::stringstream s;
 		s << i;
-		l = dt == TTerm::DT_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
+		l = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
 		break;
 	    }
-	    case TTerm::DT_Double: {
+	    case TTerm::TYPE_Double: {
 		double i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getDouble(), 
 				      static_cast<const NumericRDFLiteral*>(r)->getDouble());
 		std::stringstream s;
@@ -974,24 +1143,24 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const TTerm* AtomFactory::ebv (const TTerm* tterm) {
 	const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(tterm);
 	if (b != NULL)
-	    return b->getValue() ? getTrue() : getFalse();
+	    return b->getValue() ? &BOOL_true : &BOOL_false;
 	const IntegerRDFLiteral* i = dynamic_cast<const IntegerRDFLiteral*>(tterm);
 	if (i != NULL)
-	    return i->getValue() == 0 ? getFalse() : getTrue();
+	    return i->getValue() == 0 ? &BOOL_false : &BOOL_true;
 	const DecimalRDFLiteral* f = dynamic_cast<const DecimalRDFLiteral*>(tterm);
 	if (f != NULL)
-	    return f->getValue() == 0.0 ? getFalse() : getTrue();
+	    return f->getValue() == 0.0 ? &BOOL_false : &BOOL_true;
 	const FloatRDFLiteral* fl = dynamic_cast<const FloatRDFLiteral*>(tterm);
 	if (fl != NULL)
-	    return fl->getValue() == 0.0 ? getFalse() : getTrue();
+	    return fl->getValue() == 0.0 ? &BOOL_false : &BOOL_true;
 	const DoubleRDFLiteral* d = dynamic_cast<const DoubleRDFLiteral*>(tterm);
 	if (d != NULL)
-	    return d->getValue() == 0.0 ? getFalse() : getTrue();
+	    return d->getValue() == 0.0 ? &BOOL_false : &BOOL_true;
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*>(tterm);
 	const URI* dt = l == NULL ? NULL : l->getDatatype();
 	if (l != NULL && 
-	    (dt == NULL || dt == getURI("http://www.w3.org/2001/XMLSchema#string")))
-	    return std::string(l->getLexicalValue()).empty() ? getFalse() : getTrue();
+	    (dt == NULL || dt == &URI_xsd_string))
+	    return std::string(l->getLexicalValue()).empty() ? &BOOL_false : &BOOL_true;
 	throw TypeError("beats me", "EBV");
     }
 
