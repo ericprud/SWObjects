@@ -90,7 +90,7 @@ namespace w3c_sw {
 	    last.tterms.tterm = last.tterms.booleanRDFLiteral = atomFactory ? atomFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;
 	}
 	virtual void nulltterm (const NULLtterm* const self) {
-	    last.tterms.tterm = atomFactory ? atomFactory->getNULL() : self;
+	    last.tterms.tterm = TTerm::Unbound;
 	}
 	virtual void triplePattern (const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	    p_s->express(this);

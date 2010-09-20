@@ -1235,7 +1235,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 912 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getNULL();
+	(yyval.p_TTerm) = TTerm::Unbound;
     }
     break;
 

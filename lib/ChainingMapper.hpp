@@ -387,7 +387,7 @@ namespace w3c_sw {
 
 		    /** If the pattern matches the triple,
 		          we will add it to the <alternatives>. */
-		    if ((*constraint)->bindVariables(triple, false, &testRS, DefaultGraph, *testRS.begin(), NULL))
+		    if ((*constraint)->bindVariables(triple, false, &testRS, *testRS.begin()))
 			adds.push_back(Add(*rule, testRS));
 		}
 	    }

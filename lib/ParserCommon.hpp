@@ -136,7 +136,6 @@ public:
     const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
 
     const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return atomFactory->getBooleanRDFLiteral(p_String, p_value); }
-    const NULLtterm* getNULL  () { return atomFactory->getNULL(); }
 
 };
 

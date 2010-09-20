@@ -499,6 +499,7 @@ class URI;
 class RDFLiteral;
 class BooleanRDFLiteral;
 class BNode;
+class NULLtterm;
 class BNodeEvaluator;
 class AtomFactory;
 
@@ -553,12 +554,13 @@ public:
 	return s.str();
     }
 
-    static e_SORT cmp(const TTerm* ltterm, const TTerm* rtterm);
-    static e_SORT safeCmp(const TTerm* lhs, const TTerm* rhs);
+    e_SORT cmp(const TTerm& rtterm) const;
+    e_SORT safeCmp(const TTerm& rhs) const;
 
     /* TTerm Constants: */
     static const URI _ConstantURIs[];
     static const BooleanRDFLiteral _ConstantBooleans[];
+    static const NULLtterm _NULLtterms[]; // needed because NULLtterm is incomplete at time of declaration
 
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
@@ -610,6 +612,7 @@ public:
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
 
+    static const NULLtterm* Unbound;
 };
 
 inline bool operator< (const TTerm& left, const TTerm& right) {
@@ -1020,36 +1023,38 @@ public:
     }
 };
 class NULLtterm : public TTerm {
-    friend class AtomFactory;
+    friend class TTerm;
 private:
-    NULLtterm () : TTerm("NULL", "") {  }
+    NULLtterm () : TTerm("NULLtterm", "") {  }
     ~NULLtterm () {  }
 protected:
     virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString () const { std::stringstream s; s << "NULL"; return s.str(); }
+    virtual std::string toString () const { std::stringstream s; s << "NULLterm"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
 
 
     /** cmp -- implement XML Schema numeric type promotion and inter-type
-	comparisons.
+     * comparisons.
+     * This should be implemented as virtual overloads by factorying out e.g.
+     * what happens to a DecimalRDFLiteral.
      */
-    inline e_SORT TTerm::cmp (const TTerm* ltterm, const TTerm* rtterm) {
+    inline e_SORT TTerm::cmp (const TTerm& rtterm) const {
 	/* Compare URIs lexically */
-	const URI* luri = dynamic_cast<const URI*> (ltterm);
-	const URI* ruri = dynamic_cast<const URI*> (rtterm);
+	const URI* luri = dynamic_cast<const URI*> (this);
+	const URI* ruri = dynamic_cast<const URI*> (&rtterm);
 	if (luri != NULL && ruri != NULL)
 	    return _int2e_SORT(luri->getLexicalValue().compare(ruri->getLexicalValue()));
 
 	/* Compare literals. */
-	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (ltterm);
-	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (rtterm);
+	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (this);
+	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (&rtterm);
 	if (l == NULL || r == NULL)
-	    throw TypeError(ltterm ? ltterm->toString() : "NULL", rtterm ? rtterm->toString() : "NULL");
+	    throw TypeError(toString(), rtterm.toString());
 
 	const URI* ldt = l->getDatatype();
 	const URI* rdt = r->getDatatype();
@@ -1153,20 +1158,20 @@ public:
     /** safeCmp -- try the XML Schema-sensitive comparisons but fall back to
 	lexical comparison if there is an e.g. type error.
      */
-    inline e_SORT TTerm::safeCmp (const TTerm* lhs, const TTerm* rhs) {
-	if (rhs == NULL)
-	    return lhs == NULL ? SORT_eq : SORT_gt;
-	if (lhs == NULL)
+    inline e_SORT TTerm::safeCmp (const TTerm& rhs) const {
+	if (&rhs == Unbound)
+	    return this == Unbound ? SORT_eq : SORT_gt;
+	if (this == Unbound)
 	    return SORT_lt;
 	try {
-	    e_SORT ret = cmp(lhs, rhs);
+	    e_SORT ret = cmp(rhs);
 	    if (ret != SORT_eq)
 		return ret;
 	} catch (SafeEvaluationError&) {
 	}
 
-	const int li = lhs->getTypeOrder();
-	const int ri = rhs->getTypeOrder();
+	const int li = getTypeOrder();
+	const int ri = rhs.getTypeOrder();
 	if (li != ri) {
 	    if (li != TYPE_Err && 
 		ri != TYPE_Err) {
@@ -1176,8 +1181,8 @@ public:
 		    return SORT_gt;
 	    }
 	}
-	const RDFLiteral* llit = dynamic_cast<const RDFLiteral*>(lhs);
-	const RDFLiteral* rlit = dynamic_cast<const RDFLiteral*>(rhs);
+	const RDFLiteral* llit = dynamic_cast<const RDFLiteral*>(this);
+	const RDFLiteral* rlit = dynamic_cast<const RDFLiteral*>(&rhs);
 	if (llit != NULL && rlit != NULL) {
 	    /* Sort literals first by datatype... */
 	    if (llit->getDatatype() != NULL) {
@@ -1213,10 +1218,10 @@ public:
 		}
 	    }
 	}
-	int lex = lhs->getLexicalValue().compare(rhs->getLexicalValue());
+	int lex = getLexicalValue().compare(rhs.getLexicalValue());
 	if (lex != 0)
 	    return _int2e_SORT(lex);
-	throw std::string("unexpected partial ordering(") + lhs->toString() + ", " + rhs->toString() + ")";
+	throw std::string("unexpected partial ordering(") + toString() + ", " + rhs.toString() + ")";
     }
 
 struct BiDiBNodeMap {
@@ -1259,8 +1264,6 @@ public:
     const TTerm* getP () const { return m_p; }
     const TTerm* getO () const { return m_o; }
 
-    bool mappedBNodesEquals(const TriplePattern& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const;
-
     static bool lt (TriplePattern* l, TriplePattern* r) {
 	if (l->m_s != r->m_s) return l->m_s < r->m_s;
 	if (l->m_p != r->m_p) return l->m_p < r->m_p;
@@ -1283,9 +1286,9 @@ public:
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
-    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const TTerm* graphVar, Result* provisional, const TTerm* graphName) const {
+    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, Result* provisional, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const {
 	return
-	    (graphVar == NULL || graphVar->bindVariable(graphName, rs, provisional, weaklyBound)) &&
+	    (graphVar == TTerm::Unbound || graphVar->bindVariable(graphName, rs, provisional, weaklyBound)) &&
 	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
 	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
@@ -1299,21 +1302,21 @@ public:
 	if (getS() != ref.getS() &&
 	    dynamic_cast<const BNode*>(getS()) != NULL &&
 	    dynamic_cast<const BNode*>(ref.getS()) != NULL)
-	    return TTerm::TTerm::safeCmp(getS(), ref.getS());
+	    return getS()->safeCmp(*ref.getS());
 	if (getP() != ref.getP() &&
 	    dynamic_cast<const BNode*>(getP()) != NULL &&
 	    dynamic_cast<const BNode*>(ref.getP()) != NULL)
-	    return TTerm::safeCmp(getP(), ref.getP());
+	    return getP()->safeCmp(*ref.getP());
 	if (getO() != ref.getO() &&
 	    dynamic_cast<const BNode*>(getO()) != NULL &&
 	    dynamic_cast<const BNode*>(ref.getO()) != NULL)
-	    return TTerm::safeCmp(getO(), ref.getO());
+	    return getO()->safeCmp(*ref.getO());
 	if (getS() != ref.getS())
-	    return TTerm::safeCmp(getS(), ref.getS());
+	    return getS()->safeCmp(*ref.getS());
 	if (getP() != ref.getP())
-	    return TTerm::safeCmp(getP(), ref.getP());
+	    return getP()->safeCmp(*ref.getP());
 	if (getO() != ref.getO())
-	    return TTerm::safeCmp(getO(), ref.getO());
+	    return getO()->safeCmp(*ref.getO());
 	return SORT_eq;
     }
 };
@@ -1340,7 +1343,6 @@ protected:
     URIMap		uris;
     RDFLiteralMap	rdfLiterals;
     TriplePatternMap	triples;
-    NULLtterm		nullTTerm;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
 
 #if REGEX_LIB == SWOb_BOOST
@@ -1391,7 +1393,6 @@ public:
     const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
 
     const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
-    const NULLtterm* getNULL () { return &nullTTerm; }
 
     /* getTriple(s) interface: */
     const TriplePattern* getTriple (const TriplePattern* p, bool weaklyBound) {
@@ -1646,9 +1647,6 @@ protected:
 public:
 
     bool operator==(const BasicGraphPattern& ref) const;
-    bool compareOrdered(const BasicGraphPattern& ref,
-			std::set<const TriplePattern*> lUnordered = std::set<const TriplePattern*>(),
-			std::set<const TriplePattern*> rUnordered = std::set<const TriplePattern*>()) const;
     /* Controls for operator==(BasicGraphPatter&)
      */
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
@@ -1669,7 +1667,7 @@ public:
 	OS[t->getO()].insert(TTerm2Triple_pair(t->getS(), t));
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
-    void bindVariables(ResultSet* rs, const TTerm* graphVar, const BasicGraphPattern* toMatch, const TTerm* graphName) const;
+    void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
     void construct(BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
@@ -2404,7 +2402,7 @@ public:
 	/* operators */
 	if (m_IRIref == TTerm::FUNC_bound && 
 	    subd.size() == 1)
-	    return first == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    return first == TTerm::Unbound ? TTerm::BOOL_false : TTerm::BOOL_true;
 
 	if ((m_IRIref == TTerm::FUNC_isIRI || m_IRIref == TTerm::FUNC_isURI) && 
 	    subd.size() == 1)
@@ -2452,7 +2450,7 @@ public:
 
 	if (m_IRIref == TTerm::FUNC_sameTerm && 
 	    subd.size() == 2) {
-	    return first == second && first != NULL ? TTerm::BOOL_true : TTerm::BOOL_false;
+	    return first == second && first != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
 	}
 
 	if (m_IRIref == TTerm::FUNC_langMatches && 
@@ -2710,7 +2708,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || TTerm::cmp(l, r) == SORT_eq ? TTerm::BOOL_true : TTerm::BOOL_false;
+	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanEQ* pref = dynamic_cast<const BooleanEQ*>(&ref);
@@ -2725,7 +2723,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return l == r || TTerm::cmp(l, r) == SORT_eq ? TTerm::BOOL_false : TTerm::BOOL_true;
+	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanNE* pref = dynamic_cast<const BooleanNE*>(&ref);
@@ -2740,7 +2738,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return TTerm::cmp(l, r) == SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
+	return l->cmp(*r) == SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLT* pref = dynamic_cast<const BooleanLT*>(&ref);
@@ -2755,7 +2753,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return TTerm::cmp(l, r) == SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
+	return l->cmp(*r) == SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGT* pref = dynamic_cast<const BooleanGT*>(&ref);
@@ -2770,7 +2768,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return TTerm::cmp(l, r) != SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
+	return l->cmp(*r) != SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanLE* pref = dynamic_cast<const BooleanLE*>(&ref);
@@ -2785,7 +2783,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator);
 	const TTerm* r = right->eval(res, atomFactory, evaluator);
-	return TTerm::cmp(l, r) != SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
+	return l->cmp(*r) != SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
 	const BooleanGE* pref = dynamic_cast<const BooleanGE*>(&ref);

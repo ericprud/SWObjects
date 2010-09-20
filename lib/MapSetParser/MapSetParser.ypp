@@ -961,7 +961,7 @@ BindingValue:
 	$$ = $1;
     }
   | IT_UNDEF	{
-	$$ = driver.getNULL();
+	$$ = TTerm::Unbound;
     }
   | Var	{
 	$$ = $1;
@@ -1970,7 +1970,7 @@ namespace w3c_sw {
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
-	root(NULL), lastRuleTerm(atomFactory->getNULL(), atomFactory->getNULL()),
+	root(NULL), lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false), sharedVarsSet(false)
 {
 }

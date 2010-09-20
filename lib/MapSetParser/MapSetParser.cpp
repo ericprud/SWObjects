@@ -1311,7 +1311,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 963 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getNULL();
+	(yyval.p_TTerm) = TTerm::Unbound;
     }
     break;
 
@@ -3990,7 +3990,7 @@ namespace w3c_sw {
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
-	root(NULL), lastRuleTerm(atomFactory->getNULL(), atomFactory->getNULL()),
+	root(NULL), lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false), sharedVarsSet(false)
 {
 }

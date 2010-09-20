@@ -517,6 +517,8 @@ namespace w3c_sw {
 
 	virtual ~ResultSet();
 
+#if !defined(SWIG)
+	// not available in SWIG; broke java, presume not needed for others.
 	struct AscendingOrder {
 	    const VariableVector vars;
 	    std::set<const Result*>* incomparables;
@@ -544,7 +546,7 @@ namespace w3c_sw {
 			dynamic_cast<const Bindable*>(r))
 			continue;
 		    if (l != r)
-			return TTerm::safeCmp(l, r) == SORT_lt;
+			return l->safeCmp(*r) == SORT_lt;
 		    else
 			incomparable = false;
 		}
@@ -555,6 +557,7 @@ namespace w3c_sw {
 		return false;
 	    }
 	};
+#endif /* !defined(SWIG) */
 
 	bool operator== (const ResultSet & ref) const {
 	    if (ref.isOrdered() != isOrdered() || 
@@ -854,7 +857,8 @@ namespace w3c_sw {
 
     struct TreatAsVar : public BNodeEvaluator {
 	virtual const TTerm* evaluate (const BNode* node, const Result* r) {
-	    return r->get(node);
+	    const TTerm* ret = r->get(node);
+	    return ret == NULL ? TTerm::Unbound : ret;
 	}
     };
 

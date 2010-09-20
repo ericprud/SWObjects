@@ -618,7 +618,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const BooleanRDFLiteral* TTerm::BOOL_true	 = TTerm::_ConstantBooleans + 0;
     const BooleanRDFLiteral* TTerm::BOOL_false	 = TTerm::_ConstantBooleans + 1;
 
-    //POSsorter* ThePOSsorter;
+    const NULLtterm TTerm::_NULLtterms[] = { // needed because NULLtterm is incomplete at time of declaration
+	NULLtterm()
+    };
+
+    const NULLtterm* TTerm::Unbound		 = TTerm::_NULLtterms + 0;
 
     /* <AtomFactory> */
     AtomFactory::AtomFactory () {
@@ -999,12 +1003,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     const TriplePattern* AtomFactory::getTriple (const TTerm* s, const TTerm* p, const TTerm* o, bool weaklyBound) {
-	if (s == NULL || p == NULL || o == NULL)
+	if (s == NULL || s == TTerm::Unbound || 
+	    p == NULL || p == TTerm::Unbound || 
+	    o == NULL || o == TTerm::Unbound)
 	    throw
 		std::string("getTriple(")
-		+ (s == NULL ? "NULL" : s->toString()) + ", " 
-		+ (p == NULL ? "NULL" : p->toString()) + ", " 
-		+ (o == NULL ? "NULL" : o->toString()) + ")";
+		+ (s == NULL ? "NULLptr" : s->toString()) + ", " 
+		+ (p == NULL ? "NULLptr" : p->toString()) + ", " 
+		+ (o == NULL ? "NULLptr" : o->toString()) + ")";
 
 	std::stringstream key;
 	key << s << p << o << weaklyBound;
@@ -1170,7 +1176,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return evaluator->evaluate(this, r);
     }
     const TTerm* Variable::evalTTerm (const Result* r, BNodeEvaluator*) const {
-	return r->get(this);
+	const TTerm* ret = r->get(this);
+	return ret == NULL ? TTerm::Unbound : ret;
     }
 
     std::string Operation::toString () const {
@@ -1218,6 +1225,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     struct MakeNewBNode : public BNodeEvaluator {
+#if !defined(SWIG)
 	struct _Pair {
 	    const BNode* node;
 	    const Result* r;
@@ -1236,6 +1244,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		map[p] = atomFactory->createBNode();
 	    return map[p];
 	}
+#endif /* defined(SWIG) */
     public:
 	MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
     };
@@ -1428,7 +1437,7 @@ compared against
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
 
 	ResultSet rs(NULL);
-	bindVariables(&rs, NULL, &ref, NULL);
+	bindVariables(&rs, &ref);
 	if (rs.size() == 0)
 	    return false;
 	// make sure the solution is 1:1 for mappables.
@@ -1444,7 +1453,7 @@ compared against
 	return true;
     }
 
-    void BasicGraphPattern::bindVariables (ResultSet* rs, const TTerm* graphVar, const BasicGraphPattern* toMatch, const TTerm* graphName) const {
+    void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar, const TTerm* graphName) const {
  	if (rs->debugStream != NULL && *rs->debugStream != NULL)
 	    **rs->debugStream << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
@@ -1500,7 +1509,7 @@ compared against
 			for (TTerm2Triple_type::const_iterator triple = inner.first; triple != inner.second; ++triple) {
 			    Result* newRow = (*row)->duplicate(rs, row);
 			    /* @@@ move filter her */
-			    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+			    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, newRow, graphVar, graphName)) {
 				rowMatched = true;
 				rs->insert(row, newRow);
 			    } else {
@@ -1513,7 +1522,7 @@ compared against
 			    for (TTerm2Triple_type::const_iterator triple = inner.first; triple != inner.second; ++triple) {
 				Result* newRow = (*row)->duplicate(rs, row);
 				/* @@@ move filter her */
-				if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, graphVar, newRow, graphName)) {
+				if ((*constraint)->bindVariables(triple->second, toMatch->allOpts, rs, newRow, graphVar, graphName)) {
 				    rowMatched = true;
 				    rs->insert(row, newRow);
 				} else {
@@ -1534,11 +1543,11 @@ compared against
 	    **rs->debugStream << "produced\n" << *rs;
     }
     bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
-	if (this == NULL || constant == NULL)
+	if (this == Unbound || constant == Unbound)
 	    return true;
 	TreatAsVar treatAsVar;
 	const TTerm* curVal = evalTTerm(provisional, &treatAsVar); // doesn't need to generate symbols
-	if (curVal == NULL) {
+	if (curVal == Unbound) {
 	    rs->set(provisional, this, constant, weaklyBound);
 	    return true;
 	}
@@ -1742,7 +1751,7 @@ compared against
 		for (std::vector<const TriplePattern*>::iterator triple = bgp->m_TriplePatterns.begin();
 		     triple != bgp->m_TriplePatterns.end(); ) {
 		    ResultSet* island = (*row)->makeResultSet(rs->getAtomFactory());
-		    if ((*constraint)->bindVariables(*triple, false, island, NULL, *island->begin(), NULL))
+		    if ((*constraint)->bindVariables(*triple, false, island, *island->begin())) // may need graphVar, graphName?
 			triple = bgp->m_TriplePatterns.erase(triple);
 		    else
 			triple++;
@@ -1755,9 +1764,9 @@ compared against
     bool TriplePattern::construct (BasicGraphPattern* target, const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	bool ret = false;
 	const TTerm *s, *p, *o;
-	if ((s = m_s->evalTTerm(r, evaluator)) != NULL && 
-	    (p = m_p->evalTTerm(r, evaluator)) != NULL && 
-	    (o = m_o->evalTTerm(r, evaluator)) != NULL) {
+	if ((s = m_s->evalTTerm(r, evaluator)) != TTerm::Unbound && 
+	    (p = m_p->evalTTerm(r, evaluator)) != TTerm::Unbound && 
+	    (o = m_o->evalTTerm(r, evaluator)) != TTerm::Unbound) {
 	    if (atomFactory == NULL) {
 		if (s == m_s && p == m_p && o == m_o && !weaklyBound)
 		    target->addTriplePattern(this);

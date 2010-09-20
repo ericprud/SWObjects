@@ -112,17 +112,27 @@ namespace w3c_sw {
 	/* Look in each candidate graph. */
 	if (graph->isConstant()) {
 	    if ((vi = graphs.find(graph)) != graphs.end()) {
-		vi->second->bindVariables(rs, graph, toMatch, vi->first);
+		vi->second->bindVariables(rs, toMatch, graph, vi->first);
 		++matched;
 	    }
 	} else {
 	    ResultSet island(rs->getAtomFactory());
 	    delete *(island.begin());
 	    island.erase(island.begin());
+	    /* Multi-graph match algorithm:
+	     * for each graph
+	     *     BasicGraphPattern::bindVariables(... ?graph, foundGraph)
+	     *         for each rs row...
+	     * 
+	     * The lack of SPOG index means we always iterate across all graphs.
+	     * It could be cheaper to iterate across rows in the result set and
+	     * only iterate across graphs if ?graph is unbound. Could decide by:
+	     *   rs->first()->get(?graph) == TTerm::Unbound
+	     */
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
 		if (vi->first != DefaultGraph) {
 		    ResultSet disjoint(rs->getAtomFactory());
-		    vi->second->bindVariables(&disjoint, graph, toMatch, vi->first);
+		    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
 		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 			island.insert(island.end(), (*row)->duplicate(&island, island.end()));
 			delete *row;

@@ -910,7 +910,7 @@ BindingValue:
 	$$ = $1;
     }
   | IT_UNDEF	{
-	$$ = driver.getNULL();
+	$$ = TTerm::Unbound;
     }
   | Var	{
 	$$ = $1;

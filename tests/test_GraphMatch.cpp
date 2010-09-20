@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 	BOOST_CHECK_EQUAL(RS(rows, bnodeMap), expected);
 
 	ResultSet r(&f);
-	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
+	data.BasicGraphPattern::bindVariables(&r, &pattern);
 	BOOST_CHECK_EQUAL(r, expected);
     }
 
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 	BOOST_CHECK_EQUAL(data.size(), (size_t)3);
 
 	ResultSet r(&f);
-	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
+	data.BasicGraphPattern::bindVariables(&r, &pattern);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2\n"
 				       "<n1> <n2>\n"
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 
     {
 	ResultSet r(&f);
-	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
+	data.BasicGraphPattern::bindVariables(&r, &pattern);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>",
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 
     /* <n1> <p1> <n2> . <n2> <p1> <n3>,<n4> . */ {
 	ResultSet r(&f);
-	data.BasicGraphPattern::bindVariables(&r, NULL, &pattern, NULL);
+	data.BasicGraphPattern::bindVariables(&r, &pattern);
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>\n"
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 			  "?ruleProduct <label>   ?ruleLabel ."
 			  "?ruleProduct <feature> ?ruleFeature .", bnodeMap);
 	ResultSet tested(&f);
-	d.BasicGraphPattern::bindVariables(&tested, NULL, &p, NULL);
+	d.BasicGraphPattern::bindVariables(&tested, &p);
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
 			   "?product     ?label     <feature1> \n"

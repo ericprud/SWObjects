@@ -20,6 +20,8 @@ namespace w3c_sw {
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
+	if (value == TTerm::Unbound)
+	    throw std::string("setting ") + variable->toString() + " to Unbound is just wrong";
 	BindingSet::const_iterator vi = bindings.find(variable);
 	if (replace || vi == bindings.end()) {
 	    BindingInfo b = {weaklyBound, value};
@@ -184,7 +186,7 @@ namespace w3c_sw {
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
 		if (l != r)
-		    return pair.ascOrDesc == ORDER_Desc ? TTerm::safeCmp(r, l) == SORT_lt : TTerm::safeCmp(l, r) == SORT_lt;
+		    return pair.ascOrDesc == ORDER_Desc ? r->safeCmp(*l) == SORT_lt : l->safeCmp(*r) == SORT_lt;
 	    }
 	    return false;
 	}
@@ -347,7 +349,7 @@ namespace w3c_sw {
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
 		const TTerm* val = pos2expr[*knownVar]->eval(*aggregateRow, atomFactory, NULL);
-		if (val != NULL)
+		if (val != TTerm::Unbound)
 		    (*aggregateRow)->set(*knownVar, val, false, true); // !! WG decision on overwrite
 	    }
 
@@ -484,7 +486,7 @@ namespace w3c_sw {
 
     std::string render (const TTerm* p, NamespaceMap* namespaces) {
 	return
-	    p == NULL
+	    p == TTerm::Unbound
 	    ? BoxChars::GBoxChars->unbound
 	    : (namespaces == NULL || dynamic_cast<const URI*>(p) == NULL)
 	    ? p->toString()
@@ -567,6 +569,8 @@ namespace w3c_sw {
 	    for (i = 0; i < count; ++i) {
 		const TTerm* var = vars[i];
 		const TTerm* val = (*row)->get(var);
+		if (val == NULL)
+		    val = TTerm::Unbound;
 		const std::string str = render(val, namespaces);
 		s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
 		size_t width = str.length();
