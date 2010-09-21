@@ -60,8 +60,10 @@ sub test_turtleParser {
     # print "manualDB: ", $manualDB->toString();
     $parsedDB = new SWObjects::RdfDB();
     my $tparser = new SWObjects::TurtleSDriver("", $F);
+    # Instruct the parser to insert data into the default graph.
     # Shortcut: undef = SWObjects.cvar.DefaultGraph
     $tparser->setGraph($parsedDB->ensureGraph(undef));
+    # Parse a turtle string with an IStreamContext.
     $tparser->parse(new SWObjects::IStreamContext(
 			"<s> <p1> <o1> ; <p2> <o2> ; <p2> <o3> .",
 			$SWObjects::StreamContextIstream::STRING));
@@ -69,10 +71,9 @@ sub test_turtleParser {
     ok($manualDB == $parsedDB, 'DB eqivalance');
 
     my $different = new SWObjects::RdfDB();
-    $tparser->setGraph($different->ensureGraph(undef));
-    $tparser->parse(new SWObjects::IStreamContext(
-			"<s2> <p1> <o1> ; <p2> <o2> .",
-			$SWObjects::StreamContextIstream::STRING));
+    # Shortcut: parse strings without the IStreamContext.
+    # Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+    $tparser->parse("<s2> <p1> <o1> ; <p2> <o2> .", $different);
     # print "different: ", different->toString();
     ok($parsedDB != $different, 'DB difference');
 }
@@ -89,18 +90,12 @@ sub test_trigParser {
     $parsedDB = new SWObjects::RdfDB();
     eval {
 	my $tparser = new SWObjects::TrigSDriver("", $F);
-	$tparser->setDB($parsedDB);
-	$tparser->parse(new SWObjects::IStreamContext(
-			    "{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
-			    $SWObjects::StreamContextIstream::STRING));
+	$tparser->parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", $parsedDB);
 	# print "parsedDB: ", $parsedDB->toString();
 	ok($manualDB == $parsedDB, 'trig DB eqivalance');
 
 	my $different = new SWObjects::RdfDB();
-	$tparser->setDB($different);
-	$tparser->parse(new SWObjects::IStreamContext(
-			    "<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
-			    $SWObjects::StreamContextIstream::STRING));
+	$tparser->parse("<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }", $different);
 	# print "different: ", different->toString();
 	ok($parsedDB != $different, 'trig DB difference');
     }; if ($@) {
@@ -113,21 +108,11 @@ sub test_s_p1_o1_p2_o2 {
     my $F = new SWObjects::AtomFactory();
     my $DB = new SWObjects::RdfDB();
     my $tparser = new SWObjects::TurtleSDriver("", $F);
-    $tparser->setGraph($DB->ensureGraph(undef));
-    $tparser->parse(new SWObjects::IStreamContext(
-			"<s> <p1> <o1> ; <p2> <o2> .",
-			$SWObjects::StreamContextIstream::STRING));
+    $tparser->parse("<s> <p1> <o1> ; <p2> <o2> .", $DB);
     # print "DB: ", $DB->toString();
-    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
-    $sparser->parse(new SWObjects::IStreamContext(
-			"SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
-			$SWObjects::StreamContextIstream::STRING));
-    my $query = $sparser->{'root'};
-    # my $s = &SWObjects::SPARQLSerializer();
-    # $query->express($s)
-    # print "parsed: ", $s->str();
     my $rs = new SWObjects::ResultSet($F);
-    $query->execute($DB, $rs);
+    # Parse simple query strings with a SPARQLfedDriver.
+    new SWObjects::SPARQLfedDriver("", $F)->executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", $DB, $rs);
     my $bnodereps = new SWObjects::BNode2string();
     my $bnodeMap = new SWObjects::String2BNode();
     my $reference = new SWObjects::ResultSet($F, "
@@ -140,7 +125,7 @@ sub test_s_p1_o1_p2_o2 {
     ok($reference == $rs, 'result equivalence');
 
     my $different = new SWObjects::ResultSet($F, "
-# Results for T1.
+# NOT results for T1.
 +------+------+------+
 | ?o1  | ?o2  | ?s   |
 | <o1> | <o2> | <s2> |
@@ -158,7 +143,9 @@ sub test_remote {
     my $DB = new SWObjects::RdfDB($agent, $xmlParser);
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
     my $srvc = 'http://api.talis.com/stores/space/services/sparql';
-    $sparser->parse(new SWObjects::IStreamContext("
+    # Parsing can be done from a FILE or a STRING (shown below).
+    # The StreamContextIstream.STRING argument is eqivalent to parse("...").
+    my $query = $sparser->parse(new SWObjects::IStreamContext("
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?craft ?homepage
  WHERE {
@@ -167,7 +154,6 @@ SELECT ?craft ?homepage
     ?craft foaf:homepage ?homepage
   }
 }", $SWObjects::StreamContextIstream::STRING));
-    my $query = $sparser->{'root'};
     my $rs = new SWObjects::ResultSet($F);
 
     # Try remote query with a timeout of 1s.
@@ -191,10 +177,7 @@ sub test_update {
 
     $updatedDB = new SWObjects::RdfDB();
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
-    $sparser->parse(new SWObjects::IStreamContext(
-			"INSERT { <s> <p1> <o1> ; <p2> <o2> }",
-			$SWObjects::StreamContextIstream::STRING));
-    my $query = $sparser->{'root'};
+    my $query = $sparser->parse("INSERT { <s> <p1> <o1> ; <p2> <o2> }");
     # my $s = new SWObjects::SPARQLSerializer();
     # $query->express($s);
     # print "parsed: ", $s->str();
@@ -221,10 +204,7 @@ sub test_construct {
     my $bnodeMap = new SWObjects::String2BNode();
     $F->parseNTPatterns($manDefault, "<s> <p1> <o1> .", $bnodeMap);
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
-    $sparser->parse(new SWObjects::IStreamContext(
-			"CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
-			$SWObjects::StreamContextIstream::STRING));
-    my $query = $sparser->{'root'};
+    my $query = $sparser->parse("CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }");
     # my $s = new SWObjects::SPARQLSerializer();
     # $query->express($s);
     # print "parsed: ", $s->str();

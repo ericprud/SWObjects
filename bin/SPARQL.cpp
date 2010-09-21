@@ -1269,9 +1269,8 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 	sw::IStreamContext::STRING : 
 	sw::IStreamContext::STDIN;
     sw::IStreamContext iptr(querySpec, opts, NULL, &Agent, &DebugStream);
-    int res;
     try {
-	res = SparqlParser.parse(iptr);
+	return SparqlParser.parse(iptr);
     } catch (sw::ParserException& e) {
 	throw e;
     } catch (std::exception& e) {
@@ -1279,9 +1278,6 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
     } catch(std::string& e) {
 	throw std::string("error parsing query: ") + e;
     }
-    if (res != 0)
-	throw std::string("error when parsing query ").append(querySpec);
-    return SparqlParser.root;
 }
 
 int main(int ac, char* av[])

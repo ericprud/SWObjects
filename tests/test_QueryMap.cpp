@@ -37,21 +37,11 @@ struct EqualsTest {
 
 	/* Parse left. */
 	IStreamContext lstream(leftString, IStreamContext::STRING);
-	if (sparqlParser.parse(lstream)) {
-	    std::string msg = std::string("failed to parse left \"") + 
-		leftString + std::string("\".");
-	    throw msg;
-	}
-	left = sparqlParser.root;
+	left = sparqlParser.parse(lstream);
 
 	/* Parse right. */
 	IStreamContext rstream(rightString, IStreamContext::STRING);
-	if (sparqlParser.parse(rstream)) {
-	    std::string msg = std::string("failed to parse right \"") + 
-		rightString + std::string("\".");
-	    throw msg;
-	}
-	right = sparqlParser.root;
+	right = sparqlParser.parse(rstream);
 	mapper = BasicGraphPattern::MappableTerm;
 	BasicGraphPattern::MappableTerm = BasicGraphPattern::MapBNodes;
     }
@@ -859,12 +849,7 @@ struct RuleMapTest {
 
 	/* Parse query. */
 	IStreamContext qstr(queryFile, type);
-	if (sparqlParser.parse(qstr)) {
-	    std::string msg = std::string("failed to parse query \"") + 
-		queryFile + std::string("\".");
-	    throw msg;
-	}
-	Operation* query = sparqlParser.root;
+	Operation* query = sparqlParser.parse(qstr);
 
 	/* Parse map. */
 	IStreamContext mstr(mapFile, type);
@@ -895,12 +880,7 @@ struct RuleMapTest {
 
 	/* Parse map results. */
 	IStreamContext rstr(mapResultsFile, type);
-	if (sparqlParser.parse(rstr)) {
-	    std::string msg = std::string("failed to parse map results \"") + 
-		mapResultsFile + std::string("\".");
-	    throw msg;
-	}
-	mapResults = sparqlParser.root;
+	mapResults = sparqlParser.parse(rstr);
 	mapResultsNorm = canonicalize(mapResults);
 
 	BasicGraphPattern::MappableTerm = &BasicGraphPattern::MapVarsAndBNodes;
@@ -934,12 +914,7 @@ struct SQLizerTest {
     {
 	//SQLizer::ErrorStream = &std::cerr;
 	IStreamContext qstr(queryFile, IStreamContext::FILE);
-	if (sparqlParser.parse(qstr)) {
-	    std::string msg = std::string("failed to parse query \"") + 
-		queryFile + std::string("\".");
-	    throw msg;
-	}
-	deleteOperation = sparqlParser.root;
+	deleteOperation = sparqlParser.parse(qstr);
 	_init(deleteOperation, stemURI, sqlResultsFile);
     }
     SQLizerTest (const Operation* sparqlQuery, 

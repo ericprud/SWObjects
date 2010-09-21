@@ -29,13 +29,12 @@ SPARQLfedDriver sparqlParser("", &F);
 std::string algebrize (std::string sparql, SPARQLAlgebraSerializer::e_ALGEBRA algebra) {
     /* Parse query. */
     IStreamContext istr(sparql, IStreamContext::STRING);
-    if (sparqlParser.parse(istr))
-	throw std::string("failed to parse SPARQL \"") + sparql + "\".";
+    Operation* op = sparqlParser.parse(istr);
     sparqlParser.clear(""); // clear out namespaces and base URI.
 
     SPARQLAlgebraSerializer s(algebra);
-    sparqlParser.root->express(&s);
-    delete sparqlParser.root;
+    op->express(&s);
+    delete op;
     return s.str();
 }
 

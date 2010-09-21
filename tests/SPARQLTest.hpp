@@ -73,17 +73,17 @@ struct MeasuredRS : public ResultSet {
     MeasuredRS (const char* defGraph, 
 		const char* namedGraphs[], size_t namedCount, 
 		const URI* requires[], size_t reqsCount, 
-		const char* query) : ResultSet(&F, F.debugStream) {
+		const char* queryPath) : ResultSet(&F, F.debugStream) {
 
-	std::string baseURI(query);
+	std::string baseURI(queryPath);
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	Operation* query;
 
 	/* Parse query. */
 	{
-	    IStreamContext istr(query, IStreamContext::FILE);
+	    IStreamContext istr(queryPath, IStreamContext::FILE);
 	    sparqlParser.setBase(baseURI);
-	    if (sparqlParser.parse(istr))
-		throw std::string("failed to parse query file \"") + query + "\".";
+	    query = sparqlParser.parse(istr);
 	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
@@ -109,25 +109,25 @@ struct MeasuredRS : public ResultSet {
 
 	/* Exectute query. */
 	setRdfDB(&constructed);
-	sparqlParser.root->execute(&d, this);
+	query->execute(&d, this);
     }
 
     /* SPARQUL tests consist of:
      *   a trig (set of graphs) for input
      *   a query to perform
      */
-    MeasuredRS (const char* input, const char* query)
+    MeasuredRS (const char* input, const char* queryPath)
 	: ResultSet(&F) {
  
-	std::string baseURI(query);
+	std::string baseURI(queryPath);
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	Operation* query;
 
 	/* Parse query. */
 	{
 	    sparqlParser.setBase(baseURI);
-	    IStreamContext istr(query, IStreamContext::FILE);
-	    if (sparqlParser.parse(istr))
-		throw std::string("failed to parse query file \"") + query + "\".";
+	    IStreamContext istr(queryPath, IStreamContext::FILE);
+	    query = sparqlParser.parse(istr);
 	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	}
 
@@ -144,7 +144,7 @@ struct MeasuredRS : public ResultSet {
 
 	/* Exectute query. */
 	setRdfDB(&constructed);
-	sparqlParser.root->execute(&d, this);
+	query->execute(&d, this);
     }
     ~MeasuredRS () {
 	delete sparqlParser.root;

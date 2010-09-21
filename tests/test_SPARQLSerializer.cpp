@@ -59,20 +59,16 @@ struct OpPair {
 OpPair algebrize_TWICE (std::string sparql) {
     /* Parse query. */
     IStreamContext sparstream(sparql, IStreamContext::STRING);
-    if (sparqlParser.parse(sparstream))
-	throw std::string("failed to parse SPARQL \"") + sparql + "\".";
+    Operation* first = sparqlParser.parse(sparstream);
     sparqlParser.clear(""); // clear out namespaces and base URI.
 
     SPARQLSerializer s;
-    sparqlParser.root->express(&s);
-    OpWrap once(sparql, sparqlParser.root);
-    sparqlParser.root = NULL;
+    first->express(&s);
+    OpWrap once(sparql, first);
 
     IStreamContext serialstream(s.str(), IStreamContext::STRING);
-    if (sparqlParser.parse(serialstream))
-	throw std::string("failed to parse re-serialized SPARQL \"") + s.str() + "\".";
-    OpWrap twice(s.str(), sparqlParser.root);
-    sparqlParser.root = NULL;
+    Operation* second = sparqlParser.parse(serialstream);
+    OpWrap twice(s.str(), second);
 
     SWObjectDuplicator duper(&F);
     once.op->express(&duper);

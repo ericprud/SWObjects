@@ -52,6 +52,7 @@
 #define TRIGS_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -72,6 +73,7 @@ protected:
     const TTerm* curPredicate;
     RdfDB* db;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
+    BasicGraphPattern* defaultBGP;
 public:
     TrigSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
 	curSubject = curPredicate = NULL;
@@ -79,7 +81,12 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse(IStreamContext& in);
+    void parse(IStreamContext& in);
+    void parse(IStreamContext& in, BasicGraphPattern* bgp);
+    void parse(IStreamContext& in, RdfDB* db);
+    void parse(std::string turtleStr);
+    void parse(std::string turtleStr, BasicGraphPattern* bgp);
+    void parse(std::string turtleStr, RdfDB* db);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -237,7 +244,7 @@ _QTrigTemplate_E_Star:
 TrigTemplate:
     // '{' ConstructTriples? '}'
     GraphName_Opt GT_LCURLEY {
-	driver.curBGP = driver.db->ensureGraph($1);
+	driver.curBGP = $1 ? driver.db->ensureGraph($1) : driver.defaultBGP;
 	driver.neededBGP = NULL;
       } _QConstructTriples_E_Opt GT_RCURLEY	{
 	  $$ = $4;
@@ -610,7 +617,7 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TrigSDriver::parse(IStreamContext& in)
+void TrigSDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 
@@ -620,7 +627,35 @@ bool TrigSDriver::parse(IStreamContext& in)
 
     TrigSParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    return (parser.parse());
+    defaultBGP = curBGP ? curBGP : db->ensureGraph(NULL);
+    parser.parse();
+}
+
+void TrigSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {
+    setGraph(bgp);
+    parse(in);
+}
+
+void TrigSDriver::parse (IStreamContext& in, RdfDB* db) {
+    setDB(db);
+    parse(in);
+}
+
+void TrigSDriver::parse(std::string turtleStr) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    parse(in);
+}
+
+void TrigSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setGraph(bgp);
+    parse(in);
+}
+
+void TrigSDriver::parse (std::string turtleStr, RdfDB* db) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setDB(db);
+    parse(in);
 }
 
 } // namespace w3c_sw

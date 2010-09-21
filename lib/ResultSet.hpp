@@ -442,11 +442,10 @@ namespace w3c_sw {
 	    SPARQLfedDriver sparqlParser(baseURI, atomFactory);
 	    IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				 "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
-	    if (sparqlParser.parse(boolq))
-		throw std::string("failed to parse boolean ResultSet constructor query.");
+	    Operation* op = sparqlParser.parse(boolq);
 	    ResultSet booleanResult(atomFactory);
-	    sparqlParser.root->execute(db, &booleanResult);
-	    delete sparqlParser.root;
+	    op->execute(db, &booleanResult);
+	    delete op;
 	    sparqlParser.clear(""); // clear out namespaces and base URI.
 	    if (booleanResult.size() > 0) {
 		ResultSetIterator booleanRecord = booleanResult.begin();
@@ -464,11 +463,8 @@ namespace w3c_sw {
 		/* Get list of known variables. */
 		IStreamContext variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				      "SELECT ?var {?set rs:resultVariable ?var }\n", IStreamContext::STRING);
-		if (sparqlParser.parse(variablesQ))
-		    throw std::string("failed to parse boolean ResultSet variables query.");
 		ResultSet listOfVariables(atomFactory);
-		sparqlParser.root->execute(db, &listOfVariables);
-		delete sparqlParser.root;
+		sparqlParser.executeSelect(variablesQ, db, &listOfVariables);
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		for (ResultSetIterator resultRecord = listOfVariables.begin(); 
 		     resultRecord != listOfVariables.end(); ++resultRecord) {
@@ -483,11 +479,10 @@ namespace w3c_sw {
 				     "		 rs:variable ?var ;\n"
 				     "		 rs:value ?val\n"
 				     " ]} ORDER BY ?soln\n", IStreamContext::STRING);
-		if (sparqlParser.parse(bindingsQ))
-		    throw std::string("failed to parse boolean ResultSet bindings query.");
+		Operation* op = sparqlParser.parse(bindingsQ);
 		ResultSet listOfResults(atomFactory);
-		sparqlParser.root->execute(db, &listOfResults);
-		delete sparqlParser.root;
+		op->execute(db, &listOfResults);
+		delete op;
 		sparqlParser.clear(""); // not necessary unless we re-use parser.
 		std::map<const TTerm*, Result*> tterm2r;
 		for (ResultSetIterator resultRecord = listOfResults.begin(); 

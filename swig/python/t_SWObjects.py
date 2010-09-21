@@ -38,8 +38,10 @@ class TestSWObjects(unittest.TestCase):
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
+        # Instruct the parser to insert data into the default graph.
         # Shortcut: None = SWObjects.cvar.DefaultGraph
         tparser.setGraph(parsedDB.ensureGraph(None))
+        # Parse a turtle string with an IStreamContext.
         tparser.parse(SWObjects.IStreamContext(
                 "<s> <p1> <o1> ; <p2> <o2> ; <p2> <o3> .",
                 SWObjects.StreamContextIstream.STRING))
@@ -47,10 +49,9 @@ class TestSWObjects(unittest.TestCase):
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
-        tparser.setGraph(different.ensureGraph(None))
-        tparser.parse(SWObjects.IStreamContext(
-                "<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .",
-                SWObjects.StreamContextIstream.STRING))
+        # Shortcut: parse strings without the IStreamContext.
+        # Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+        tparser.parse("<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .", different)
         # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
 
@@ -67,18 +68,12 @@ class TestSWObjects(unittest.TestCase):
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
         tparser = SWObjects.TrigSDriver("", F)
-        tparser.setDB(parsedDB)
-        tparser.parse(SWObjects.IStreamContext(
-                "{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
-                SWObjects.StreamContextIstream.STRING))
+        tparser.parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", parsedDB)
         # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
 
         different = SWObjects.RdfDB()
-        tparser.setDB(different)
-        tparser.parse(SWObjects.IStreamContext(
-                "<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
-                SWObjects.StreamContextIstream.STRING))
+        tparser.parse("<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }", different)
         # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
 
@@ -88,21 +83,11 @@ class TestSWObjects(unittest.TestCase):
         F = SWObjects.AtomFactory()
         DB = SWObjects.RdfDB()
         tparser = SWObjects.TurtleSDriver("", F)
-        tparser.setGraph(DB.ensureGraph(None))
-        tparser.parse(SWObjects.IStreamContext(
-                "<s> <p1> <o1> ; <p2> <o2> .",
-                SWObjects.StreamContextIstream.STRING))
+        tparser.parse("<s> <p1> <o1> ; <p2> <o2> .", DB)
         # print "DB: ", DB.toString()
-        sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext(
-                "SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
-                SWObjects.StreamContextIstream.STRING))
-        query = sparser.root
-        # s = SWObjects.SPARQLSerializer()
-        # query.express(s)
-        # print "parsed: ", s.str()
         rs = SWObjects.ResultSet(F)
-        query.execute(DB, rs)
+        # Parse simple query strings with a SPARQLfedDriver.
+        SWObjects.SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs)
         bnodereps = SWObjects.BNode2string()
         bnodeMap = SWObjects.String2BNode()
         reference = SWObjects.ResultSet(F, """
@@ -115,7 +100,7 @@ class TestSWObjects(unittest.TestCase):
         self.assertEqual(reference, rs)
 
         different = SWObjects.ResultSet(F, """
-# Results for T1.
+# NOT results for T1.
 +------+------+------+
 | ?o1  | ?o2  | ?s   |
 | <o1> | <o2> | <s2> |
@@ -132,7 +117,9 @@ class TestSWObjects(unittest.TestCase):
         xmlParser = SWObjects.SAXparser_expat()
         DB = SWObjects.RdfDB(agent, xmlParser)
         sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext("""
+        # Parsing can be done from a FILE or a STRING (shown below).
+        # The StreamContextIstream.STRING argument is eqivalent to parse("...").
+        query = sparser.parse(SWObjects.IStreamContext("""
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?craft ?homepage
  WHERE {
@@ -141,7 +128,6 @@ SELECT ?craft ?homepage
     ?craft foaf:homepage ?homepage
   }
 }""", SWObjects.StreamContextIstream.STRING))
-        query = sparser.root
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str()
@@ -164,10 +150,7 @@ SELECT ?craft ?homepage
 
         updatedDB = SWObjects.RdfDB()
         sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext(
-                "INSERT { <s> <p1> <o1> ; <p2> <o2> }",
-                SWObjects.StreamContextIstream.STRING))
-        query = sparser.root
+        query = sparser.parse("INSERT { <s> <p1> <o1> ; <p2> <o2> }")
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str()
@@ -192,10 +175,7 @@ SELECT ?craft ?homepage
         bnodeMap = SWObjects.String2BNode()
         F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap)
         sparser = SWObjects.SPARQLfedDriver("", F)
-        sparser.parse(SWObjects.IStreamContext(
-                "CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
-                SWObjects.StreamContextIstream.STRING))
-        query = sparser.root
+        query = sparser.parse("CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }")
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str()

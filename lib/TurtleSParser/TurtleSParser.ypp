@@ -52,6 +52,7 @@
 #define TURTLES_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -77,7 +78,13 @@ public:
 	neededBGP = curBGP = NULL;
     }
 
-    virtual bool parse(IStreamContext& in);
+    void parse(IStreamContext& in);
+    void parse(IStreamContext& in, BasicGraphPattern* bgp);
+    void parse(IStreamContext& in, RdfDB* db);
+    void parse(std::string turtleStr);
+    void parse(std::string turtleStr, BasicGraphPattern* bgp);
+    void parse(std::string turtleStr, RdfDB* db);
+
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -580,8 +587,7 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TurtleSDriver::parse(IStreamContext& in)
-{
+void TurtleSDriver::parse (IStreamContext& in) {
     streamname = in.nameStr;
 
     TurtleSScanner scanner(this, in.p);
@@ -590,7 +596,34 @@ bool TurtleSDriver::parse(IStreamContext& in)
 
     TurtleSParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    return (parser.parse());
+    parser.parse();
+}
+
+void TurtleSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {
+    setGraph(bgp);
+    parse(in);
+}
+
+void TurtleSDriver::parse (IStreamContext& in, RdfDB* db) {
+    setGraph(db->ensureGraph(NULL));
+    parse(in);
+}
+
+void TurtleSDriver::parse(std::string turtleStr) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    parse(in);
+}
+
+void TurtleSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setGraph(bgp);
+    parse(in);
+}
+
+void TurtleSDriver::parse (std::string turtleStr, RdfDB* db) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setGraph(db->ensureGraph(NULL));
+    parse(in);
 }
 
 } // namespace w3c_sw

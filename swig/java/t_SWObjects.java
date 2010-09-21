@@ -43,8 +43,10 @@ public class t_SWObjects extends TestCase {
         // print "manualDB: ", manualDB.toString();
         RdfDB parsedDB = new RdfDB();
         TurtleSDriver tparser = new TurtleSDriver("", F);
+        // Instruct the parser to insert data into the default graph.
         // Shortcut: null = SWObjects.cvar.DefaultGraph
         tparser.setGraph(parsedDB.ensureGraph(null));
+        // Parse a turtle string with an IStreamContext.
         tparser.parse(new IStreamContext(
                 "<s> <p1> <o1> ; <p2> <o2> ; <p2> <o3> .",
 		StreamContextIstream.e_opts.STRING));
@@ -52,10 +54,9 @@ public class t_SWObjects extends TestCase {
         assertTrue(manualDB.equals(parsedDB));
 
         RdfDB different = new RdfDB();
-        tparser.setGraph(different.ensureGraph(null));
-        tparser.parse(new IStreamContext(
-                "<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .",
-		StreamContextIstream.e_opts.STRING));
+        // Shortcut: parse strings without the IStreamContext.
+        // Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+        tparser.parse("<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .", different);
         // print "different: ", different.toString();
 	assertFalse(different.equals(parsedDB));
     }
@@ -73,18 +74,12 @@ public class t_SWObjects extends TestCase {
         // print "manualDB: ", manualDB.toString();
         RdfDB parsedDB = new RdfDB();
         TrigSDriver tparser = new TrigSDriver("", F);
-        tparser.setDB(parsedDB);
-        tparser.parse(new IStreamContext(
-                "{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }",
-		StreamContextIstream.e_opts.STRING));
+        tparser.parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", parsedDB);
         // print "parsedDB: ", parsedDB.toString();
         assertTrue(manualDB.equals(parsedDB));
 
         RdfDB different = new RdfDB();
-        tparser.setDB(different);
-        tparser.parse(new IStreamContext(
-                "<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }",
-		StreamContextIstream.e_opts.STRING));
+        tparser.parse("<g> { <s> <p1> <o1> . } { <s> <p2> <o2> . }", different);
         // print "different: ", different.toString();
 	assertFalse(different.equals(parsedDB));
     }
@@ -95,21 +90,11 @@ public class t_SWObjects extends TestCase {
         AtomFactory F = new AtomFactory();
         RdfDB DB = new RdfDB();
         TurtleSDriver tparser = new TurtleSDriver("", F);
-        tparser.setGraph(DB.ensureGraph(null));
-        tparser.parse(new IStreamContext(
-                "<s> <p1> <o1> ; <p2> <o2> .",
-		StreamContextIstream.e_opts.STRING));
+        tparser.parse("<s> <p1> <o1> ; <p2> <o2> .", DB);
         // print "DB: ", DB.toString();
-        SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
-        sparser.parse(new IStreamContext(
-                "SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }",
-		StreamContextIstream.e_opts.STRING));
-        Operation query = sparser.getRoot();
-        // s = new SPARQLSerializer();
-        // query.express(s);
-        // print "parsed: ", s.str();
         ResultSet rs = new ResultSet(F);
-        query.execute(DB, rs);
+        // Parse simple query strings with a SPARQLfedDriver.
+        new SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs);
         BNode2string bnodereps = new BNode2string();
         String2BNode bnodeMap = new String2BNode();
         ResultSet reference = new ResultSet(F,
@@ -122,7 +107,7 @@ public class t_SWObjects extends TestCase {
         assertTrue(reference.equals(rs));
 
         ResultSet different = new ResultSet(F,
-						  "# Results for T1.\n" +
+						  "# NOT results for T1.\n" +
 						  "+------+------+------+\n" +
 						  "| ?o1  | ?o2  | ?s   |\n" +
 						  "| <o1> | <o2> | <s2> |\n" +

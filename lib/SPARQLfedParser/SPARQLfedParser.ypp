@@ -136,7 +136,11 @@ public:
     SPARQLfedDriver(std::string baseURI, AtomFactory* atomFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse(IStreamContext& in);
+    Operation* parse(IStreamContext& in);
+    Operation* parse(std::string queryStr);
+    void executeSelect(IStreamContext& in, RdfDB* db, ResultSet* rs);
+    void executeSelect(std::string queryStr, RdfDB* db, ResultSet* rs);
+
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -2093,7 +2097,7 @@ namespace w3c_sw {
 {
 }
 
-bool SPARQLfedDriver::parse(IStreamContext& in)
+Operation* SPARQLfedDriver::parse(IStreamContext& in)
 {
     streamname = in.nameStr;
 
@@ -2105,8 +2109,29 @@ bool SPARQLfedDriver::parse(IStreamContext& in)
     parser.set_debug_level(trace_parsing);
     // !!! Clear out namespaces!
     ignorePrefixFlag = false;
-    return (parser.parse());
+    parser.parse();
+    return root;
 }
+
+Operation* SPARQLfedDriver::parse(std::string queryStr)
+{
+    IStreamContext in(queryStr.c_str(), IStreamContext::STRING);
+    return parse(in);
+}
+
+void SPARQLfedDriver::executeSelect (IStreamContext& in, RdfDB* db, ResultSet* rs) {
+    parse(in);
+    root->execute(db, rs);
+    delete root;
+    root = NULL;
+}
+void SPARQLfedDriver::executeSelect (std::string queryStr, RdfDB* db, ResultSet* rs) {
+    parse(queryStr);
+    root->execute(db, rs);
+    delete root;
+    root = NULL;
+}
+
 
 } // namespace w3c_sw
 
