@@ -27,7 +27,61 @@ BOOST_AUTO_TEST_CASE( subselect_02 ) {
     const URI** requires = NULL;
     DAWG_TEST("sparql11/subselect-02.rq", "sparql11/subselect-02.srx", 0, 0);
 }
-BOOST_AUTO_TEST_CASE( subselect_03 ) {
+BOOST_AUTO_TEST_CASE( count_star ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++--------+
+| ?count |
+|      3 |
++--------+
+     */
+    GRAPH_TEST(NULL, "sparql11/count-star.rq", "sparql11/count-star.srx");
+}
+BOOST_AUTO_TEST_CASE( groupBy_v ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++----+--------+
+| ?a | ?count |
+|  1 |      3 |
++----+--------+
+     */
+    GRAPH_TEST(NULL, "sparql11/groupBy-v.rq", "sparql11/groupBy-v.srx");
+}
+BOOST_AUTO_TEST_CASE( groupBy_v_AS ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++----+--------+
+| ?x | ?count |
+|  1 |      3 |
++----+--------+
+     */
+    GRAPH_TEST(NULL, "sparql11/groupBy-v-AS.rq", "sparql11/groupBy-v-AS.srx");
+}
+BOOST_AUTO_TEST_CASE( groupBy_f ) {
     /* name: 
      * 
 start
@@ -44,12 +98,9 @@ end
 |      15 |         15 |              0 |
 +---------+------------+----------------+
      */
-    const char* defaultGraph( "sparql11/subselect-01.ttl" );
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("sparql11/subselect-03.rq", "sparql11/subselect-03.srx", 0, 0);
+    GRAPH_TEST(NULL, "sparql11/groupBy-f.rq", "sparql11/groupBy-f.srx");
 }
-BOOST_AUTO_TEST_CASE( subselect_04 ) {
+BOOST_AUTO_TEST_CASE( groupBy_f_having_f ) {
     /* name: 
      * 
 start
@@ -65,7 +116,7 @@ end
 |      12 |         24 |             -1 |
 +---------+------------+----------------+
      */
-    GRAPH_TEST(NULL, "sparql11/subselect-04.rq", "sparql11/subselect-04.srx");
+    GRAPH_TEST(NULL, "sparql11/groupBy-f-having-f.rq", "sparql11/groupBy-f-having-f.srx");
 }
 BOOST_AUTO_TEST_CASE( ext_select_expr_01 ) {
     /* name: 

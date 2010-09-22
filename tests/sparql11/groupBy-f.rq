@@ -1,4 +1,4 @@
-# subselect-04 - GROUP BY, HAVING
+# groupBy-f.rq - GROUP BY function
 
 # $Id$
 
@@ -15,5 +15,4 @@ SELECT ?bPlusC (SUM(?bPlusC) AS ?sumBPlusC) (1 - COUNT(*) AS ?oneMinusCount)
     }
 }
 GROUP BY (?a AS ?x) ((?b+?c) AS ?bPlusC)
-  HAVING (?bPlusC < 13)
 
