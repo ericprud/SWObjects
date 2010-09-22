@@ -558,10 +558,6 @@ public:
     e_SORT safeCmp(const TTerm& rhs) const;
 
     /* TTerm Constants: */
-    static const URI _ConstantURIs[];
-    static const BooleanRDFLiteral _ConstantBooleans[];
-    static const NULLtterm _NULLtterms[]; // needed because NULLtterm is incomplete at time of declaration
-
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
     static const URI* URI_xsd_float;
@@ -630,7 +626,6 @@ struct TTermSorter {
 };
 
 class URI : public TTerm {
-    friend class TTerm; // for constructing constants
     friend class AtomFactory;
 private:
     URI (std::string str) : TTerm(str) {  }
@@ -643,6 +638,8 @@ public:
     virtual std::string toString () const { return std::string("<") + terminal + ">"; }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
+
+    void useURI (  ) {  }
 };
 
 class Bindable : public TTerm {
@@ -1023,7 +1020,7 @@ public:
     }
 };
 class NULLtterm : public TTerm {
-    friend class TTerm;
+    friend class AtomFactory;
 private:
     NULLtterm () : TTerm("NULLtterm", "") {  }
     ~NULLtterm () {  }
@@ -1324,12 +1321,25 @@ public:
 class DefaultGraphPattern;
 class Expression;
 class AtomFactory {
+    friend class TTerm;
 
 protected:
     typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
-    typedef std::map<std::string, const URI*> URIMap;
-    typedef std::map<std::string, const RDFLiteral*> RDFLiteralMap;
+    struct URIMap : public std::map<std::string, const URI*> {
+	URIMap () {  }
+	URIMap (const URI* b, const URI* e) {
+	    for (const URI* p = b; p != e; ++p)
+		insert(std::pair<std::string, const URI*>(p->getLexicalValue(), p));
+	}
+    };
+    struct RDFLiteralMap : public std::map<std::string, const RDFLiteral*> {
+	RDFLiteralMap () {  }
+	RDFLiteralMap (const BooleanRDFLiteral* b, const BooleanRDFLiteral* e) {
+	    for (const BooleanRDFLiteral* p = b; p != e; ++p)
+		insert(std::pair<std::string, const RDFLiteral*>(p->getLexicalValue(), p));
+	}
+    };
     typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
     class MakeNumericRDFLiteral {
     public:
@@ -1341,9 +1351,22 @@ protected:
     VariableMap		variables;
     BNodeSet		bnodes;
     URIMap		uris;
+    static URIMap	uris_static;
     RDFLiteralMap	rdfLiterals;
+    static RDFLiteralMap rdfLiterals_static;
     TriplePatternMap	triples;
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+
+    /** URI and Boolean contants are kept in separate hashes to avoid
+	a dependency on the initialization order of globals. In
+	particular, windows appears to initialize the library globals
+	after the main's globals, requiring that constructing an
+	AtomFactory not require the initialization of the constant
+	hashes. EGP 20100922
+     */
+    static const URI _URIConstants[];
+    static const BooleanRDFLiteral _BooleanConstants[];
+    static const NULLtterm _NULLtterm;
 
 #if REGEX_LIB == SWOb_BOOST
     enum {RANGE_unlimited = -2} Range;
