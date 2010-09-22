@@ -77,6 +77,7 @@ protected:
     ProductionVector<const Expression*>* curExprList;
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
+    bool countStar;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -129,7 +130,11 @@ public:
     SPARQLfedDriver(std::string baseURI, AtomFactory* atomFactory);
     ~SPARQLfedDriver();
 
-    virtual bool parse(IStreamContext& in);
+    Operation* parse(IStreamContext& in);
+    Operation* parse(std::string queryStr);
+    void executeSelect(IStreamContext& in, RdfDB* db, ResultSet* rs);
+    void executeSelect(std::string queryStr, RdfDB* db, ResultSet* rs);
+
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -149,7 +154,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 153 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 158 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -163,7 +168,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 167 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 172 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -173,7 +178,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 177 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 182 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -221,7 +226,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 225 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 230 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -233,7 +238,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 159 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 164 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -301,7 +306,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 305 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 310 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -316,123 +321,124 @@ namespace w3c_sw {
      __EOF__ = 0,
      IT_DELETE = 258,
      IT_INSERT = 259,
-     IT_GRAPH = 260,
-     IT_SERVICE = 261,
-     IT_LOAD = 262,
-     IT_INTO = 263,
-     IT_CLEAR = 264,
-     IT_CREATE = 265,
-     IT_SILENT = 266,
-     IT_DROP = 267,
-     IT_BASE = 268,
-     IT_PREFIX = 269,
-     IT_SELECT = 270,
-     IT_DISTINCT = 271,
-     IT_REDUCED = 272,
-     GT_TIMES = 273,
-     IT_CONSTRUCT = 274,
-     IT_DESCRIBE = 275,
-     IT_FROM = 276,
-     IT_NAMED = 277,
-     IT_ORDER = 278,
-     IT_BY = 279,
-     IT_ASC = 280,
-     IT_DESC = 281,
-     IT_LIMIT = 282,
-     IT_OFFSET = 283,
-     IT_BINDINGS = 284,
-     IT_MEMBERS = 285,
-     IT_STARTS = 286,
-     IT_ENDS = 287,
-     IT_ANY = 288,
-     IT_UNORDERED = 289,
-     GT_LCURLEY = 290,
-     GT_RCURLEY = 291,
-     IT_ASK = 292,
-     IT_WHERE = 293,
-     GT_LPAREN = 294,
-     GT_RPAREN = 295,
-     IT_UNDEF = 296,
-     GT_DOT = 297,
-     IT_OPTIONAL = 298,
-     IT_MINUS = 299,
-     IT_UNION = 300,
-     IT_FILTER = 301,
-     GT_COMMA = 302,
-     GT_SEMI = 303,
-     IT_a = 304,
-     GT_LBRACKET = 305,
-     GT_RBRACKET = 306,
-     GT_OR = 307,
-     GT_AND = 308,
-     GT_EQUAL = 309,
-     GT_NEQUAL = 310,
-     GT_LT = 311,
-     GT_GT = 312,
-     GT_LE = 313,
-     GT_GE = 314,
-     GT_PLUS = 315,
-     GT_MINUS = 316,
-     GT_DIVIDE = 317,
-     GT_NOT = 318,
-     IT_IN = 319,
-     GT_NOT_SPACECHAR_IN = 320,
-     IT_IRI = 321,
-     IT_URI = 322,
-     IT_BNODE = 323,
-     IT_COALESCE = 324,
-     IT_IF = 325,
-     IT_STRLANG = 326,
-     IT_STRDT = 327,
-     IT_EXISTS = 328,
-     GT_NOT_SPACECHAR_EXISTS = 329,
-     IT_SEPARATOR = 330,
-     IT_STR = 331,
-     IT_LANG = 332,
-     IT_LANGMATCHES = 333,
-     IT_DATATYPE = 334,
-     IT_BOUND = 335,
-     IT_sameTerm = 336,
-     IT_isIRI = 337,
-     IT_isURI = 338,
-     IT_isBLANK = 339,
-     IT_isLITERAL = 340,
-     IT_REGEX = 341,
-     GT_DTYPE = 342,
-     IT_AS = 343,
-     IT_GROUP = 344,
-     IT_HAVING = 345,
-     IT_COUNT = 346,
-     IT_SUM = 347,
-     IT_MIN = 348,
-     IT_MAX = 349,
-     IT_AVG = 350,
-     IT_GROUP_CONCAT = 351,
-     IT_SAMPLE = 352,
-     IT_true = 353,
-     IT_false = 354,
-     INTEGER = 355,
-     DECIMAL = 356,
-     DOUBLE = 357,
-     INTEGER_POSITIVE = 358,
-     DECIMAL_POSITIVE = 359,
-     DOUBLE_POSITIVE = 360,
-     INTEGER_NEGATIVE = 361,
-     DECIMAL_NEGATIVE = 362,
-     DOUBLE_NEGATIVE = 363,
-     STRING_LITERAL1 = 364,
-     STRING_LITERAL_LONG1 = 365,
-     STRING_LITERAL2 = 366,
-     STRING_LITERAL_LONG2 = 367,
-     IRI_REF = 368,
-     PNAME_NS = 369,
-     PNAME_LN = 370,
-     BLANK_NODE_LABEL = 371,
-     ANON = 372,
-     VAR1 = 373,
-     VAR2 = 374,
-     LANGTAG = 375,
-     NIL = 376
+     IT_DATA = 260,
+     IT_GRAPH = 261,
+     IT_SERVICE = 262,
+     IT_LOAD = 263,
+     IT_INTO = 264,
+     IT_CLEAR = 265,
+     IT_CREATE = 266,
+     IT_SILENT = 267,
+     IT_DROP = 268,
+     IT_BASE = 269,
+     IT_PREFIX = 270,
+     IT_SELECT = 271,
+     IT_DISTINCT = 272,
+     IT_REDUCED = 273,
+     GT_TIMES = 274,
+     IT_CONSTRUCT = 275,
+     IT_DESCRIBE = 276,
+     IT_FROM = 277,
+     IT_NAMED = 278,
+     IT_ORDER = 279,
+     IT_BY = 280,
+     IT_ASC = 281,
+     IT_DESC = 282,
+     IT_LIMIT = 283,
+     IT_OFFSET = 284,
+     IT_BINDINGS = 285,
+     IT_MEMBERS = 286,
+     IT_STARTS = 287,
+     IT_ENDS = 288,
+     IT_ANY = 289,
+     IT_UNORDERED = 290,
+     GT_LCURLEY = 291,
+     GT_RCURLEY = 292,
+     IT_ASK = 293,
+     IT_WHERE = 294,
+     GT_LPAREN = 295,
+     GT_RPAREN = 296,
+     IT_UNDEF = 297,
+     GT_DOT = 298,
+     IT_OPTIONAL = 299,
+     IT_MINUS = 300,
+     IT_UNION = 301,
+     IT_FILTER = 302,
+     GT_COMMA = 303,
+     GT_SEMI = 304,
+     IT_a = 305,
+     GT_LBRACKET = 306,
+     GT_RBRACKET = 307,
+     GT_OR = 308,
+     GT_AND = 309,
+     GT_EQUAL = 310,
+     GT_NEQUAL = 311,
+     GT_LT = 312,
+     GT_GT = 313,
+     GT_LE = 314,
+     GT_GE = 315,
+     GT_PLUS = 316,
+     GT_MINUS = 317,
+     GT_DIVIDE = 318,
+     GT_NOT = 319,
+     IT_IN = 320,
+     GT_NOT_SPACECHAR_IN = 321,
+     IT_IRI = 322,
+     IT_URI = 323,
+     IT_BNODE = 324,
+     IT_COALESCE = 325,
+     IT_IF = 326,
+     IT_STRLANG = 327,
+     IT_STRDT = 328,
+     IT_EXISTS = 329,
+     GT_NOT_SPACECHAR_EXISTS = 330,
+     IT_SEPARATOR = 331,
+     IT_STR = 332,
+     IT_LANG = 333,
+     IT_LANGMATCHES = 334,
+     IT_DATATYPE = 335,
+     IT_BOUND = 336,
+     IT_sameTerm = 337,
+     IT_isIRI = 338,
+     IT_isURI = 339,
+     IT_isBLANK = 340,
+     IT_isLITERAL = 341,
+     IT_REGEX = 342,
+     GT_DTYPE = 343,
+     IT_AS = 344,
+     IT_GROUP = 345,
+     IT_HAVING = 346,
+     IT_COUNT = 347,
+     IT_SUM = 348,
+     IT_MIN = 349,
+     IT_MAX = 350,
+     IT_AVG = 351,
+     IT_GROUP_CONCAT = 352,
+     IT_SAMPLE = 353,
+     IT_true = 354,
+     IT_false = 355,
+     INTEGER = 356,
+     DECIMAL = 357,
+     DOUBLE = 358,
+     INTEGER_POSITIVE = 359,
+     DECIMAL_POSITIVE = 360,
+     DOUBLE_POSITIVE = 361,
+     INTEGER_NEGATIVE = 362,
+     DECIMAL_NEGATIVE = 363,
+     DOUBLE_NEGATIVE = 364,
+     STRING_LITERAL1 = 365,
+     STRING_LITERAL_LONG1 = 366,
+     STRING_LITERAL2 = 367,
+     STRING_LITERAL_LONG2 = 368,
+     IRI_REF = 369,
+     PNAME_NS = 370,
+     PNAME_LN = 371,
+     BLANK_NODE_LABEL = 372,
+     ANON = 373,
+     VAR1 = 374,
+     VAR2 = 375,
+     LANGTAG = 376,
+     NIL = 377
    };
 
     };
@@ -609,7 +615,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 613 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 619 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

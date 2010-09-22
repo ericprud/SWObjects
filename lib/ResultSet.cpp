@@ -212,7 +212,7 @@ namespace w3c_sw {
 	 * that the variables for all rows appear in knownVars.
 	 */
 	std::set<const TTerm*> delMes(knownVars.begin(), knownVars.end());
-	if (groupBy != NULL && groupBy->size() > 0)
+	if (groupBy != NULL)
 	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		 it != groupBy->end(); ++it)
 		delMes.insert(_getLabel(*it, atomFactory));
@@ -318,14 +318,14 @@ namespace w3c_sw {
 	for (ResultSetIterator row = begin() ; row != end(); ) {
 
 	    ResultSetIterator aggregateRow;
-	    if (groupBy != NULL && groupBy->size() > 0) {
+	    if (groupBy != NULL) {
 		/* eval groupIndex args, add to result */
 		groupIndex = "";
 		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		     it != groupBy->end(); ++it) {
 		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL);
 		    groupIndex += val->toString() + "~";
-		    (*row)->set((*it)->label, val, false, true); // !! WG decision on overwrite
+		    (*row)->set(_getLabel(*it, atomFactory), val, false, true); // !! WG decision on overwrite
 		}
 
 		/* This working row may be redundant against an older row (with same

@@ -409,8 +409,8 @@ int yyFlexLexer::yywrap() { return 1; }
 	(yy_c_buf_p) = yy_cp;
 
 /* %% [4.0] data tables for the DFA and the user's section 1 definitions go here */
-#define YY_NUM_RULES 123
-#define YY_END_OF_BUFFER 124
+#define YY_NUM_RULES 124
+#define YY_END_OF_BUFFER 125
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -420,124 +420,124 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[1078] =
     {   0,
-        0,    0,  124,  122,    2,    1,    1,   68,  122,    2,
-      122,  122,  122,    9,   10,   11,   66,   46,   67,   40,
-       65,  107,  101,   30,   59,   57,   60,  122,  122,  122,
-      122,  122,  122,  122,  122,  122,  122,  122,  122,  122,
-      122,  122,  122,  122,  122,  122,  122,  122,   48,   49,
-      122,  122,   47,  122,  122,  122,  122,   27,  122,   28,
-      122,  122,  122,  122,  122,  122,  122,  122,  122,  122,
-      122,  122,  122,  122,  122,  122,  122,  122,  122,    2,
-        1,   58,    0,  117,    0,    0,    0,    0,    0,    0,
+        0,    0,  125,  123,    2,    1,    1,   69,  123,    2,
+      123,  123,  123,    9,   10,   11,   67,   47,   68,   41,
+       66,  108,  102,   30,   60,   58,   61,  123,  123,  123,
+      123,  123,  123,  123,  123,  123,  123,  123,  123,  123,
+      123,  123,  123,  123,  123,  123,  123,  123,   49,   50,
+      123,  123,   48,  123,  123,  123,  123,   27,  123,   28,
+      123,  123,  123,  123,  123,  123,  123,  123,  123,  123,
+      123,  123,  123,  123,  123,  123,  123,  123,  123,    2,
+        1,   59,    0,  118,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    2,    0,    0,    0,    0,
 
-        0,    0,    0,    0,    0,    0,  105,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,  106,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,   56,    0,  116,    0,
+        0,    0,    0,    0,    0,    0,   57,    0,  117,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,  120,    0,  110,    0,  113,  108,  108,  107,    0,
-      102,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,  121,    0,  111,    0,  114,  109,  109,  108,    0,
+      103,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,   61,  100,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,   62,  104,    0,    0,    0,    0,    0,
+        0,   62,  101,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,   63,  105,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 
-        0,    0,    0,    0,  106,    0,    0,  101,    0,    0,
+        0,    0,    0,    0,  107,    0,    0,  102,    0,    0,
         8,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,   19,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,   78,   63,    0,    0,    0,    0,    0,
+        0,    0,    0,   79,   64,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,  121,
-       97,    0,    0,    0,   55,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,  122,
+       98,    0,    0,    0,   56,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 
-        0,    0,    0,    0,    0,  117,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,  118,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,  105,  105,    0,    0,    0,
+        0,    0,    0,    0,    0,  106,  106,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,  106,  106,
+      106,  106,  106,  106,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,  117,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,  112,  112,
+        0,  115,  115,    0,    0,  109,    0,    0,  110,  103,
+        0,  103,    0,    0,    0,    0,    0,    0,    0,    0,
+
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,  103,  103,  103,  103,  103,  103,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,  105,  105,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,  105,  105,  105,  105,  105,
+      105,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,   54,   22,   14,   94,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,   75,    0,    0,    0,    0,
+        0,    0,    0,   93,    0,   92,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+       70,   91,    0,    0,    0,   76,    0,  104,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    2,    0,    0,    0,  106,  106,  106,
+      106,  106,  106,  106,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,  106,  106,  106,
+      106,  106,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,  112,    0,    0,  113,    0,  115,    0,    0,
+      116,    0,  110,    0,  110,  103,  103,  103,  103,  103,
+      103,  103,  103,  103,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,  103,  103,  103,
+
+      103,  103,    0,    0,    0,    0,    0,    0,  105,  105,
+      105,  105,  105,  105,  105,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,  105,  105,
-      105,  105,  105,  105,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,  116,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,  111,  111,
-        0,  114,  114,    0,    0,  108,    0,    0,  109,  102,
-        0,  102,    0,    0,    0,    0,    0,    0,    0,    0,
-
+      105,  105,  105,    0,    0,  107,    0,    0,    0,    0,
+        0,    0,    0,    3,    0,    0,    0,    0,    0,    0,
+        0,    0,   31,    0,   23,    0,   37,   53,    0,    0,
+       15,    0,    0,    0,    0,    0,   36,    0,    0,    0,
+        0,   71,    0,   35,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,  102,  102,  102,  102,  102,  102,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,  104,  104,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,  104,  104,  104,  104,  104,
-      104,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,   53,   22,   14,   93,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,  104,    0,  104,
 
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,  104,  104,  104,  104,  104,  104,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,   74,    0,    0,    0,    0,
-        0,    0,    0,   92,    0,   91,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       69,   90,    0,    0,    0,   75,    0,  103,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,   99,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,    0,  106,  106,  106,  106,  106,    0,
+        0,  106,    0,    0,    0,    0,    0,    0,    0,    0,
+        0,    0,    0,  113,    0,  113,    0,  116,    0,  116,
+      103,  103,  103,  103,  103,    0,    0,  103,  105,  105,
+      105,  105,  105,    0,    0,  105,    0,    0,   77,   74,
 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    2,    0,    0,    0,  105,  105,  105,
-      105,  105,  105,  105,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,  105,  105,  105,
-      105,  105,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,  111,    0,    0,  112,    0,  114,    0,    0,
-      115,    0,  109,    0,  109,  102,  102,  102,  102,  102,
-      102,  102,  102,  102,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,  102,  102,  102,
-
-      102,  102,    0,    0,    0,    0,    0,    0,  104,  104,
+       34,    0,    0,   90,    0,    0,    0,    0,    0,    0,
+        0,   40,   18,   18,    0,    0,    0,   83,    0,   84,
+        0,   24,    0,   44,   16,    0,    0,    0,    0,   21,
+        0,    0,   87,    0,    0,    0,    0,    0,    0,    0,
+       81,    0,   29,   45,    0,   17,  104,  104,  104,  104,
       104,  104,  104,  104,  104,    0,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,    0,  104,  104,
-      104,  104,  104,    0,    0,  106,    0,    0,    0,    0,
-        0,    0,    0,    3,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,   23,    0,   36,   52,    0,    0,
-       15,    0,    0,    0,    0,    0,   35,    0,    0,    0,
-        0,   70,    0,   34,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,  103,    0,  103,
+      104,  104,  104,    0,    0,  100,  120,    0,    0,    0,
+        0,  106,  119,    0,    0,    0,    0,  103,  105,    0,
+        0,    0,   39,    0,   33,    0,    0,   88,   46,    0,
 
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,  103,  103,  103,  103,  103,  103,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,   98,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,  105,  105,  105,  105,  105,    0,
-        0,  105,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,  112,    0,  112,    0,  115,    0,  115,
-      102,  102,  102,  102,  102,    0,    0,  102,  104,  104,
-      104,  104,  104,    0,    0,  104,    0,    0,   76,   73,
-
-       33,    0,    0,   89,    0,    0,    0,    0,    0,    0,
-        0,   39,   18,   18,    0,    0,    0,   82,    0,   83,
-        0,   24,    0,   43,   16,    0,    0,    0,    0,   21,
-        0,    0,   86,    0,    0,    0,    0,    0,    0,    0,
-       80,    0,   29,   44,    0,   17,  103,  103,  103,  103,
-      103,  103,  103,  103,  103,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,    0,    0,  103,  103,
-      103,  103,  103,    0,    0,   99,  119,    0,    0,    0,
-        0,  105,  118,    0,    0,    0,    0,  102,  104,    0,
-        0,    0,   38,    0,   32,    0,    0,   87,   45,    0,
-
-       20,   31,    0,    0,    0,    0,    0,   64,   25,    0,
-        4,    0,    0,   94,    5,    0,    0,   37,   51,    0,
-        0,  103,  103,  103,  103,  103,    0,    0,  103,    0,
-        0,    0,    0,    0,    0,    0,   84,    0,    0,   50,
-        0,    0,    7,    0,    0,   42,   79,    0,  103,   26,
-       77,    0,   72,   13,    6,    0,    0,    0,    0,   41,
-       81,    0,    0,   12,    0,   85,    0,    0,   96,   54,
-        0,    0,   88,    0,   71,   95,    0
+       20,   32,    0,    0,    0,    0,    0,   65,   25,    0,
+        4,    0,    0,   95,    5,    0,    0,   38,   52,    0,
+        0,  104,  104,  104,  104,  104,    0,    0,  104,    0,
+        0,    0,    0,    0,    0,    0,   85,    0,    0,   51,
+        0,    0,    7,    0,    0,   43,   80,    0,  104,   26,
+       78,    0,   73,   13,    6,    0,    0,    0,    0,   42,
+       82,    0,    0,   12,    0,   86,    0,    0,   97,   55,
+        0,    0,   89,    0,   72,   96,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -3557,22 +3557,22 @@ static yyconst flex_int16_t yy_chk[12340] =
      1077, 1077, 1077, 1077, 1077, 1077, 1077, 1077, 1077
     } ;
 
-static yyconst flex_int16_t yy_rule_linenum[123] =
+static yyconst flex_int16_t yy_rule_linenum[124] =
     {   0,
-      206,  207,  208,  209,  210,  211,  212,  213,  214,  215,
-      216,  217,  218,  219,  220,  221,  222,  223,  224,  225,
-      226,  227,  228,  229,  230,  231,  232,  233,  234,  235,
-      236,  237,  238,  239,  240,  241,  242,  243,  244,  245,
-      246,  247,  248,  249,  250,  251,  252,  253,  254,  255,
-      256,  257,  258,  259,  260,  261,  262,  263,  264,  265,
-      266,  267,  268,  269,  270,  271,  272,  273,  274,  275,
-      276,  277,  278,  279,  280,  281,  282,  283,  284,  285,
-      286,  287,  288,  289,  290,  291,  292,  293,  294,  295,
-      296,  297,  298,  299,  300,  301,  302,  303,  304,  305,
+      207,  208,  209,  210,  211,  212,  213,  214,  215,  216,
+      217,  218,  219,  220,  221,  222,  223,  224,  225,  226,
+      227,  228,  229,  230,  231,  232,  233,  234,  235,  236,
+      237,  238,  239,  240,  241,  242,  243,  244,  245,  246,
+      247,  248,  249,  250,  251,  252,  253,  254,  255,  256,
+      257,  258,  259,  260,  261,  262,  263,  264,  265,  266,
+      267,  268,  269,  270,  271,  272,  273,  274,  275,  276,
+      277,  278,  279,  280,  281,  282,  283,  284,  285,  286,
+      287,  288,  289,  290,  291,  292,  293,  294,  295,  296,
+      297,  298,  299,  300,  301,  302,  303,  304,  305,  306,
 
-      306,  307,  308,  309,  310,  311,  312,  313,  314,  315,
-      316,  317,  318,  319,  320,  321,  322,  323,  324,  325,
-      326,  329
+      307,  308,  309,  310,  311,  312,  313,  314,  315,  316,
+      317,  318,  319,  320,  321,  322,  323,  324,  325,  326,
+      327,  328,  331
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -3794,7 +3794,7 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 205 "lib/SPARQLfedScanner.lpp"
+#line 206 "lib/SPARQLfedScanner.lpp"
 
 #line 3800 "lib/SPARQLfedScanner.cpp"
 
@@ -3884,12 +3884,12 @@ do_action:	/* This label is used only to access EOF actions. */
 			{
 			if ( yy_act == 0 )
 				std::cerr << "--scanner backing up\n";
-			else if ( yy_act < 123 )
+			else if ( yy_act < 124 )
 				std::cerr << "--accepting rule at line " << yy_rule_linenum[yy_act] <<
 				         "(\"" << yytext << "\")\n";
-			else if ( yy_act == 123 )
-				std::cerr << "--accepting default rule (\"" << yytext << "\")\n";
 			else if ( yy_act == 124 )
+				std::cerr << "--accepting default rule (\"" << yytext << "\")\n";
+			else if ( yy_act == 125 )
 				std::cerr << "--(end of buffer or a NUL)\n";
 			else
 				std::cerr << "--EOF (start condition " << YY_START << ")\n";
@@ -3908,632 +3908,637 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 206 "lib/SPARQLfedScanner.lpp"
+#line 207 "lib/SPARQLfedScanner.lpp"
 { yylloc->end.lines(1); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 207 "lib/SPARQLfedScanner.lpp"
+#line 208 "lib/SPARQLfedScanner.lpp"
 { yylloc->step(); /* @@ needed? useful? */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 208 "lib/SPARQLfedScanner.lpp"
+#line 209 "lib/SPARQLfedScanner.lpp"
 {return token::IT_BASE;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 209 "lib/SPARQLfedScanner.lpp"
+#line 210 "lib/SPARQLfedScanner.lpp"
 {return token::IT_PREFIX;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 210 "lib/SPARQLfedScanner.lpp"
+#line 211 "lib/SPARQLfedScanner.lpp"
 {return token::IT_SELECT;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 211 "lib/SPARQLfedScanner.lpp"
+#line 212 "lib/SPARQLfedScanner.lpp"
 {return token::IT_DISTINCT;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 212 "lib/SPARQLfedScanner.lpp"
+#line 213 "lib/SPARQLfedScanner.lpp"
 {return token::IT_REDUCED;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 213 "lib/SPARQLfedScanner.lpp"
+#line 214 "lib/SPARQLfedScanner.lpp"
 {return token::IT_AS;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 214 "lib/SPARQLfedScanner.lpp"
+#line 215 "lib/SPARQLfedScanner.lpp"
 {return token::GT_LPAREN;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 215 "lib/SPARQLfedScanner.lpp"
+#line 216 "lib/SPARQLfedScanner.lpp"
 {return token::GT_RPAREN;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 216 "lib/SPARQLfedScanner.lpp"
+#line 217 "lib/SPARQLfedScanner.lpp"
 {return token::GT_TIMES;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 217 "lib/SPARQLfedScanner.lpp"
+#line 218 "lib/SPARQLfedScanner.lpp"
 {return token::IT_CONSTRUCT;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 218 "lib/SPARQLfedScanner.lpp"
+#line 219 "lib/SPARQLfedScanner.lpp"
 {return token::IT_DESCRIBE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 219 "lib/SPARQLfedScanner.lpp"
+#line 220 "lib/SPARQLfedScanner.lpp"
 {return token::IT_ASK;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 220 "lib/SPARQLfedScanner.lpp"
+#line 221 "lib/SPARQLfedScanner.lpp"
 {return token::IT_FROM;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 221 "lib/SPARQLfedScanner.lpp"
+#line 222 "lib/SPARQLfedScanner.lpp"
 {return token::IT_NAMED;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 222 "lib/SPARQLfedScanner.lpp"
+#line 223 "lib/SPARQLfedScanner.lpp"
 {return token::IT_WHERE;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 223 "lib/SPARQLfedScanner.lpp"
+#line 224 "lib/SPARQLfedScanner.lpp"
 {return token::IT_GROUP;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 224 "lib/SPARQLfedScanner.lpp"
+#line 225 "lib/SPARQLfedScanner.lpp"
 {return token::IT_BY;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 225 "lib/SPARQLfedScanner.lpp"
+#line 226 "lib/SPARQLfedScanner.lpp"
 {return token::IT_HAVING;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 226 "lib/SPARQLfedScanner.lpp"
+#line 227 "lib/SPARQLfedScanner.lpp"
 {return token::IT_ORDER;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 227 "lib/SPARQLfedScanner.lpp"
+#line 228 "lib/SPARQLfedScanner.lpp"
 {return token::IT_ASC;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 228 "lib/SPARQLfedScanner.lpp"
+#line 229 "lib/SPARQLfedScanner.lpp"
 {return token::IT_DESC;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 229 "lib/SPARQLfedScanner.lpp"
+#line 230 "lib/SPARQLfedScanner.lpp"
 {return token::IT_LIMIT;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 230 "lib/SPARQLfedScanner.lpp"
+#line 231 "lib/SPARQLfedScanner.lpp"
 {return token::IT_OFFSET;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 231 "lib/SPARQLfedScanner.lpp"
+#line 232 "lib/SPARQLfedScanner.lpp"
 {return token::IT_BINDINGS;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 232 "lib/SPARQLfedScanner.lpp"
+#line 233 "lib/SPARQLfedScanner.lpp"
 {return token::GT_LCURLEY;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 233 "lib/SPARQLfedScanner.lpp"
+#line 234 "lib/SPARQLfedScanner.lpp"
 {return token::GT_RCURLEY;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 234 "lib/SPARQLfedScanner.lpp"
+#line 235 "lib/SPARQLfedScanner.lpp"
 {return token::IT_UNDEF;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 235 "lib/SPARQLfedScanner.lpp"
+#line 236 "lib/SPARQLfedScanner.lpp"
 {return token::GT_SEMI;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 236 "lib/SPARQLfedScanner.lpp"
-{return token::IT_INSERT;}
+#line 237 "lib/SPARQLfedScanner.lpp"
+{return token::IT_DATA;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 237 "lib/SPARQLfedScanner.lpp"
-{return token::IT_DELETE;}
+#line 238 "lib/SPARQLfedScanner.lpp"
+{return token::IT_INSERT;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 238 "lib/SPARQLfedScanner.lpp"
-{return token::IT_CLEAR;}
+#line 239 "lib/SPARQLfedScanner.lpp"
+{return token::IT_DELETE;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 239 "lib/SPARQLfedScanner.lpp"
-{return token::IT_LOAD;}
+#line 240 "lib/SPARQLfedScanner.lpp"
+{return token::IT_CLEAR;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 240 "lib/SPARQLfedScanner.lpp"
-{return token::IT_INTO;}
+#line 241 "lib/SPARQLfedScanner.lpp"
+{return token::IT_LOAD;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 241 "lib/SPARQLfedScanner.lpp"
-{return token::IT_DROP;}
+#line 242 "lib/SPARQLfedScanner.lpp"
+{return token::IT_INTO;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 242 "lib/SPARQLfedScanner.lpp"
-{return token::IT_SILENT;}
+#line 243 "lib/SPARQLfedScanner.lpp"
+{return token::IT_DROP;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 243 "lib/SPARQLfedScanner.lpp"
-{return token::IT_CREATE;}
+#line 244 "lib/SPARQLfedScanner.lpp"
+{return token::IT_SILENT;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 244 "lib/SPARQLfedScanner.lpp"
-{return token::IT_GRAPH;}
+#line 245 "lib/SPARQLfedScanner.lpp"
+{return token::IT_CREATE;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 245 "lib/SPARQLfedScanner.lpp"
-{return token::GT_DOT;}
+#line 246 "lib/SPARQLfedScanner.lpp"
+{return token::IT_GRAPH;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 246 "lib/SPARQLfedScanner.lpp"
-{return token::IT_OPTIONAL;}
+#line 247 "lib/SPARQLfedScanner.lpp"
+{return token::GT_DOT;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 247 "lib/SPARQLfedScanner.lpp"
-{return token::IT_SERVICE;}
+#line 248 "lib/SPARQLfedScanner.lpp"
+{return token::IT_OPTIONAL;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 248 "lib/SPARQLfedScanner.lpp"
-{return token::IT_MINUS;}
+#line 249 "lib/SPARQLfedScanner.lpp"
+{return token::IT_SERVICE;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 249 "lib/SPARQLfedScanner.lpp"
-{return token::IT_UNION;}
+#line 250 "lib/SPARQLfedScanner.lpp"
+{return token::IT_MINUS;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 250 "lib/SPARQLfedScanner.lpp"
-{return token::IT_FILTER;}
+#line 251 "lib/SPARQLfedScanner.lpp"
+{return token::IT_UNION;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 251 "lib/SPARQLfedScanner.lpp"
-{return token::GT_COMMA;}
+#line 252 "lib/SPARQLfedScanner.lpp"
+{return token::IT_FILTER;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 252 "lib/SPARQLfedScanner.lpp"
-{return token::IT_a;}
+#line 253 "lib/SPARQLfedScanner.lpp"
+{return token::GT_COMMA;}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 253 "lib/SPARQLfedScanner.lpp"
-{return token::GT_LBRACKET;}
+#line 254 "lib/SPARQLfedScanner.lpp"
+{return token::IT_a;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 254 "lib/SPARQLfedScanner.lpp"
-{return token::GT_RBRACKET;}
+#line 255 "lib/SPARQLfedScanner.lpp"
+{return token::GT_LBRACKET;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 255 "lib/SPARQLfedScanner.lpp"
-{return token::IT_MEMBERS;}
+#line 256 "lib/SPARQLfedScanner.lpp"
+{return token::GT_RBRACKET;}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 256 "lib/SPARQLfedScanner.lpp"
-{return token::IT_STARTS;}
+#line 257 "lib/SPARQLfedScanner.lpp"
+{return token::IT_MEMBERS;}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 257 "lib/SPARQLfedScanner.lpp"
-{return token::IT_ENDS;}
+#line 258 "lib/SPARQLfedScanner.lpp"
+{return token::IT_STARTS;}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 258 "lib/SPARQLfedScanner.lpp"
-{return token::IT_ANY;}
+#line 259 "lib/SPARQLfedScanner.lpp"
+{return token::IT_ENDS;}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 259 "lib/SPARQLfedScanner.lpp"
-{return token::IT_UNORDERED;}
+#line 260 "lib/SPARQLfedScanner.lpp"
+{return token::IT_ANY;}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 260 "lib/SPARQLfedScanner.lpp"
-{return token::GT_OR;}
+#line 261 "lib/SPARQLfedScanner.lpp"
+{return token::IT_UNORDERED;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 261 "lib/SPARQLfedScanner.lpp"
-{return token::GT_AND;}
+#line 262 "lib/SPARQLfedScanner.lpp"
+{return token::GT_OR;}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 262 "lib/SPARQLfedScanner.lpp"
-{return token::GT_EQUAL;}
+#line 263 "lib/SPARQLfedScanner.lpp"
+{return token::GT_AND;}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 263 "lib/SPARQLfedScanner.lpp"
-{return token::GT_NEQUAL;}
+#line 264 "lib/SPARQLfedScanner.lpp"
+{return token::GT_EQUAL;}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 264 "lib/SPARQLfedScanner.lpp"
-{return token::GT_LT;}
+#line 265 "lib/SPARQLfedScanner.lpp"
+{return token::GT_NEQUAL;}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 265 "lib/SPARQLfedScanner.lpp"
-{return token::GT_GT;}
+#line 266 "lib/SPARQLfedScanner.lpp"
+{return token::GT_LT;}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 266 "lib/SPARQLfedScanner.lpp"
-{return token::GT_LE;}
+#line 267 "lib/SPARQLfedScanner.lpp"
+{return token::GT_GT;}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 267 "lib/SPARQLfedScanner.lpp"
-{return token::GT_GE;}
+#line 268 "lib/SPARQLfedScanner.lpp"
+{return token::GT_LE;}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 268 "lib/SPARQLfedScanner.lpp"
-{return token::IT_IN;}
+#line 269 "lib/SPARQLfedScanner.lpp"
+{return token::GT_GE;}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 269 "lib/SPARQLfedScanner.lpp"
-{return token::GT_NOT_SPACECHAR_IN;}
+#line 270 "lib/SPARQLfedScanner.lpp"
+{return token::IT_IN;}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 270 "lib/SPARQLfedScanner.lpp"
-{return token::GT_DIVIDE;}
+#line 271 "lib/SPARQLfedScanner.lpp"
+{return token::GT_NOT_SPACECHAR_IN;}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 271 "lib/SPARQLfedScanner.lpp"
-{return token::GT_PLUS;}
+#line 272 "lib/SPARQLfedScanner.lpp"
+{return token::GT_DIVIDE;}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 272 "lib/SPARQLfedScanner.lpp"
-{return token::GT_MINUS;}
+#line 273 "lib/SPARQLfedScanner.lpp"
+{return token::GT_PLUS;}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 273 "lib/SPARQLfedScanner.lpp"
-{return token::GT_NOT;}
+#line 274 "lib/SPARQLfedScanner.lpp"
+{return token::GT_MINUS;}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 274 "lib/SPARQLfedScanner.lpp"
-{return token::IT_STR;}
+#line 275 "lib/SPARQLfedScanner.lpp"
+{return token::GT_NOT;}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 275 "lib/SPARQLfedScanner.lpp"
-{return token::IT_LANG;}
+#line 276 "lib/SPARQLfedScanner.lpp"
+{return token::IT_STR;}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 276 "lib/SPARQLfedScanner.lpp"
-{return token::IT_LANGMATCHES;}
+#line 277 "lib/SPARQLfedScanner.lpp"
+{return token::IT_LANG;}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 277 "lib/SPARQLfedScanner.lpp"
-{return token::IT_DATATYPE;}
+#line 278 "lib/SPARQLfedScanner.lpp"
+{return token::IT_LANGMATCHES;}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 278 "lib/SPARQLfedScanner.lpp"
-{return token::IT_BOUND;}
+#line 279 "lib/SPARQLfedScanner.lpp"
+{return token::IT_DATATYPE;}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 279 "lib/SPARQLfedScanner.lpp"
-{return token::IT_IRI;}
+#line 280 "lib/SPARQLfedScanner.lpp"
+{return token::IT_BOUND;}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 280 "lib/SPARQLfedScanner.lpp"
-{return token::IT_URI;}
+#line 281 "lib/SPARQLfedScanner.lpp"
+{return token::IT_IRI;}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 281 "lib/SPARQLfedScanner.lpp"
-{return token::IT_BNODE;}
+#line 282 "lib/SPARQLfedScanner.lpp"
+{return token::IT_URI;}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 282 "lib/SPARQLfedScanner.lpp"
-{return token::IT_COALESCE;}
+#line 283 "lib/SPARQLfedScanner.lpp"
+{return token::IT_BNODE;}
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 283 "lib/SPARQLfedScanner.lpp"
-{return token::IT_IF;}
+#line 284 "lib/SPARQLfedScanner.lpp"
+{return token::IT_COALESCE;}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 284 "lib/SPARQLfedScanner.lpp"
-{return token::IT_STRLANG;}
+#line 285 "lib/SPARQLfedScanner.lpp"
+{return token::IT_IF;}
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 285 "lib/SPARQLfedScanner.lpp"
-{return token::IT_STRDT;}
+#line 286 "lib/SPARQLfedScanner.lpp"
+{return token::IT_STRLANG;}
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 286 "lib/SPARQLfedScanner.lpp"
-{return token::IT_sameTerm;}
+#line 287 "lib/SPARQLfedScanner.lpp"
+{return token::IT_STRDT;}
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 287 "lib/SPARQLfedScanner.lpp"
-{return token::IT_isIRI;}
+#line 288 "lib/SPARQLfedScanner.lpp"
+{return token::IT_sameTerm;}
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 288 "lib/SPARQLfedScanner.lpp"
-{return token::IT_isURI;}
+#line 289 "lib/SPARQLfedScanner.lpp"
+{return token::IT_isIRI;}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 289 "lib/SPARQLfedScanner.lpp"
-{return token::IT_isBLANK;}
+#line 290 "lib/SPARQLfedScanner.lpp"
+{return token::IT_isURI;}
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 290 "lib/SPARQLfedScanner.lpp"
-{return token::IT_isLITERAL;}
+#line 291 "lib/SPARQLfedScanner.lpp"
+{return token::IT_isBLANK;}
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 291 "lib/SPARQLfedScanner.lpp"
-{return token::IT_REGEX;}
+#line 292 "lib/SPARQLfedScanner.lpp"
+{return token::IT_isLITERAL;}
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 292 "lib/SPARQLfedScanner.lpp"
-{return token::IT_EXISTS;}
+#line 293 "lib/SPARQLfedScanner.lpp"
+{return token::IT_REGEX;}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 293 "lib/SPARQLfedScanner.lpp"
-{return token::GT_NOT_SPACECHAR_EXISTS;}
+#line 294 "lib/SPARQLfedScanner.lpp"
+{return token::IT_EXISTS;}
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 294 "lib/SPARQLfedScanner.lpp"
-{return token::IT_COUNT;}
+#line 295 "lib/SPARQLfedScanner.lpp"
+{return token::GT_NOT_SPACECHAR_EXISTS;}
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 295 "lib/SPARQLfedScanner.lpp"
-{return token::IT_SUM;}
+#line 296 "lib/SPARQLfedScanner.lpp"
+{return token::IT_COUNT;}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 296 "lib/SPARQLfedScanner.lpp"
-{return token::IT_MIN;}
+#line 297 "lib/SPARQLfedScanner.lpp"
+{return token::IT_SUM;}
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 297 "lib/SPARQLfedScanner.lpp"
-{return token::IT_MAX;}
+#line 298 "lib/SPARQLfedScanner.lpp"
+{return token::IT_MIN;}
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 298 "lib/SPARQLfedScanner.lpp"
-{return token::IT_AVG;}
+#line 299 "lib/SPARQLfedScanner.lpp"
+{return token::IT_MAX;}
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 299 "lib/SPARQLfedScanner.lpp"
-{return token::IT_SAMPLE;}
+#line 300 "lib/SPARQLfedScanner.lpp"
+{return token::IT_AVG;}
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 300 "lib/SPARQLfedScanner.lpp"
-{return token::IT_GROUP_CONCAT;}
+#line 301 "lib/SPARQLfedScanner.lpp"
+{return token::IT_SAMPLE;}
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 301 "lib/SPARQLfedScanner.lpp"
-{return token::IT_SEPARATOR;}
+#line 302 "lib/SPARQLfedScanner.lpp"
+{return token::IT_GROUP_CONCAT;}
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 302 "lib/SPARQLfedScanner.lpp"
-{return token::GT_DTYPE;}
+#line 303 "lib/SPARQLfedScanner.lpp"
+{return token::IT_SEPARATOR;}
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 303 "lib/SPARQLfedScanner.lpp"
-{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
+#line 304 "lib/SPARQLfedScanner.lpp"
+{return token::GT_DTYPE;}
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 304 "lib/SPARQLfedScanner.lpp"
-{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
+#line 305 "lib/SPARQLfedScanner.lpp"
+{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 305 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+#line 306 "lib/SPARQLfedScanner.lpp"
+{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 306 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
+#line 307 "lib/SPARQLfedScanner.lpp"
+{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 307 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+#line 308 "lib/SPARQLfedScanner.lpp"
+{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 308 "lib/SPARQLfedScanner.lpp"
-{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+#line 309 "lib/SPARQLfedScanner.lpp"
+{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 309 "lib/SPARQLfedScanner.lpp"
-{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
+#line 310 "lib/SPARQLfedScanner.lpp"
+{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 310 "lib/SPARQLfedScanner.lpp"
-{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
+#line 311 "lib/SPARQLfedScanner.lpp"
+{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 311 "lib/SPARQLfedScanner.lpp"
-{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
+#line 312 "lib/SPARQLfedScanner.lpp"
+{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 312 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::INTEGER);}
+#line 313 "lib/SPARQLfedScanner.lpp"
+{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 313 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DECIMAL);}
+#line 314 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::INTEGER);}
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 314 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DOUBLE);}
+#line 315 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DECIMAL);}
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 315 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
+#line 316 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DOUBLE);}
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 316 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
+#line 317 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 317 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
+#line 318 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 318 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
+#line 319 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 319 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
+#line 320 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 320 "lib/SPARQLfedScanner.lpp"
-{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
+#line 321 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 321 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL1);}
+#line 322 "lib/SPARQLfedScanner.lpp"
+{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 322 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL2);}
+#line 323 "lib/SPARQLfedScanner.lpp"
+{return unescape(yylval, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 118:
-/* rule 118 can match eol */
 YY_RULE_SETUP
-#line 323 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
+#line 324 "lib/SPARQLfedScanner.lpp"
+{return unescape(yylval, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 119:
 /* rule 119 can match eol */
 YY_RULE_SETUP
-#line 324 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
+#line 325 "lib/SPARQLfedScanner.lpp"
+{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 120:
 /* rule 120 can match eol */
 YY_RULE_SETUP
-#line 325 "lib/SPARQLfedScanner.lpp"
-{return token::NIL;}
+#line 326 "lib/SPARQLfedScanner.lpp"
+{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case 121:
 /* rule 121 can match eol */
 YY_RULE_SETUP
-#line 326 "lib/SPARQLfedScanner.lpp"
+#line 327 "lib/SPARQLfedScanner.lpp"
+{return token::NIL;}
+	YY_BREAK
+case 122:
+/* rule 122 can match eol */
+YY_RULE_SETUP
+#line 328 "lib/SPARQLfedScanner.lpp"
 {yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 328 "lib/SPARQLfedScanner.lpp"
+#line 330 "lib/SPARQLfedScanner.lpp"
 { yyterminate();}
 	YY_BREAK
-case 122:
+case 123:
 YY_RULE_SETUP
-#line 329 "lib/SPARQLfedScanner.lpp"
+#line 331 "lib/SPARQLfedScanner.lpp"
 {
     std::stringstream s;
     s << "unexpected input '" << yytext << "' at " << *yylloc;
     throw s.str();
 }
 	YY_BREAK
-case 123:
+case 124:
 YY_RULE_SETUP
-#line 335 "lib/SPARQLfedScanner.lpp"
+#line 337 "lib/SPARQLfedScanner.lpp"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 4537 "lib/SPARQLfedScanner.cpp"
+#line 4542 "lib/SPARQLfedScanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -5230,7 +5235,7 @@ int yyFlexLexer::yy_get_next_buffer()
 
 /* %if-c++-only */
 
-// extern "C" int isatty (int );
+extern "C" int isatty (int ) throw();
 
 /* %endif */
 
@@ -5580,7 +5585,7 @@ void SPARQLfedfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 335 "lib/SPARQLfedScanner.lpp"
+#line 337 "lib/SPARQLfedScanner.lpp"
 
 
 /* END semantic actions for SPARQLfed terminals */

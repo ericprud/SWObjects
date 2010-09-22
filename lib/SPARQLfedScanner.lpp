@@ -92,6 +92,7 @@ GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
 GT_SEMI		";"
+IT_DATA			[Dd][Aa][Tt][Aa]
 IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
 IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
 IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
@@ -233,6 +234,7 @@ LINEFEED		(\r\n|\r|\n)
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_SEMI}		{return token::GT_SEMI;}
+{IT_DATA}		{return token::IT_DATA;}
 {IT_INSERT}		{return token::IT_INSERT;}
 {IT_DELETE}		{return token::IT_DELETE;}
 {IT_CLEAR}		{return token::IT_CLEAR;}
