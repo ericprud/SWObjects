@@ -51,6 +51,7 @@
 #define TURTLES_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -76,7 +77,13 @@ public:
 	neededBGP = curBGP = NULL;
     }
 
-    virtual bool parse(IStreamContext& in);
+    void parse(IStreamContext& in);
+    void parse(IStreamContext& in, BasicGraphPattern* bgp);
+    void parse(IStreamContext& in, RdfDB* db);
+    void parse(std::string turtleStr);
+    void parse(std::string turtleStr, BasicGraphPattern* bgp);
+    void parse(std::string turtleStr, RdfDB* db);
+
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -91,7 +98,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 95 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 102 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 #include <string>
@@ -105,7 +112,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 109 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 116 "lib/TurtleSParser/TurtleSParser.hpp"
   class position;
   class location;
 
@@ -115,7 +122,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 119 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 126 "lib/TurtleSParser/TurtleSParser.hpp"
 
 #include "location.hh"
 
@@ -163,7 +170,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 167 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 174 "lib/TurtleSParser/TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -175,7 +182,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 95 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 102 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -202,7 +209,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 206 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 213 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -426,7 +433,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 430 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 437 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 

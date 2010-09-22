@@ -47,12 +47,12 @@
 /* User implementation prologue.  */
 
 /* Line 317 of lalr1.cc  */
-#line 119 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 126 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
 /* Line 317 of lalr1.cc  */
-#line 170 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 177 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
@@ -436,7 +436,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 678 of lalr1.cc  */
-#line 185 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 192 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
     }
@@ -445,7 +445,7 @@ namespace w3c_sw {
   case 8:
 
 /* Line 678 of lalr1.cc  */
-#line 208 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 215 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
@@ -454,7 +454,7 @@ namespace w3c_sw {
   case 9:
 
 /* Line 678 of lalr1.cc  */
-#line 214 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 221 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -463,7 +463,7 @@ namespace w3c_sw {
   case 10:
 
 /* Line 678 of lalr1.cc  */
-#line 216 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 223 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -472,7 +472,7 @@ namespace w3c_sw {
   case 11:
 
 /* Line 678 of lalr1.cc  */
-#line 218 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 225 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -482,14 +482,14 @@ namespace w3c_sw {
   case 13:
 
 /* Line 678 of lalr1.cc  */
-#line 226 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 233 "lib/TurtleSParser/TurtleSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 14:
 
 /* Line 678 of lalr1.cc  */
-#line 227 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 234 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
     }
@@ -498,7 +498,7 @@ namespace w3c_sw {
   case 15:
 
 /* Line 678 of lalr1.cc  */
-#line 234 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 241 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
 	driver.neededBGP = NULL;
@@ -508,7 +508,7 @@ namespace w3c_sw {
   case 16:
 
 /* Line 678 of lalr1.cc  */
-#line 242 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 249 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
     }
@@ -517,14 +517,14 @@ namespace w3c_sw {
   case 17:
 
 /* Line 678 of lalr1.cc  */
-#line 249 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 256 "lib/TurtleSParser/TurtleSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 19:
 
 /* Line 678 of lalr1.cc  */
-#line 254 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 261 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -533,7 +533,7 @@ namespace w3c_sw {
   case 21:
 
 /* Line 678 of lalr1.cc  */
-#line 257 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 264 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -542,7 +542,7 @@ namespace w3c_sw {
   case 37:
 
 /* Line 678 of lalr1.cc  */
-#line 317 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 324 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
@@ -554,7 +554,7 @@ namespace w3c_sw {
   case 38:
 
 /* Line 678 of lalr1.cc  */
-#line 326 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 333 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
@@ -564,7 +564,7 @@ namespace w3c_sw {
   case 39:
 
 /* Line 678 of lalr1.cc  */
-#line 330 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 337 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_TTerm);
@@ -574,7 +574,7 @@ namespace w3c_sw {
   case 40:
 
 /* Line 678 of lalr1.cc  */
-#line 337 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 344 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -583,7 +583,7 @@ namespace w3c_sw {
   case 41:
 
 /* Line 678 of lalr1.cc  */
-#line 340 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 347 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -592,7 +592,7 @@ namespace w3c_sw {
   case 42:
 
 /* Line 678 of lalr1.cc  */
-#line 346 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 353 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -603,7 +603,7 @@ namespace w3c_sw {
   case 43:
 
 /* Line 678 of lalr1.cc  */
-#line 350 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 357 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -614,7 +614,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 359 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 366 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
 	const TTerm* tail = (yyval.p_BNode);
@@ -638,7 +638,7 @@ namespace w3c_sw {
   case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 381 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 388 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
@@ -647,7 +647,7 @@ namespace w3c_sw {
   case 46:
 
 /* Line 678 of lalr1.cc  */
-#line 384 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 391 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
 	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
@@ -657,7 +657,7 @@ namespace w3c_sw {
   case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 391 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 398 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -666,7 +666,7 @@ namespace w3c_sw {
   case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 394 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 401 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -675,7 +675,7 @@ namespace w3c_sw {
   case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 400 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 407 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -684,7 +684,7 @@ namespace w3c_sw {
   case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 406 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 413 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -693,7 +693,7 @@ namespace w3c_sw {
   case 51:
 
 /* Line 678 of lalr1.cc  */
-#line 412 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 419 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -702,7 +702,7 @@ namespace w3c_sw {
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 415 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 422 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
@@ -711,7 +711,7 @@ namespace w3c_sw {
   case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 418 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 425 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -720,7 +720,7 @@ namespace w3c_sw {
   case 54:
 
 /* Line 678 of lalr1.cc  */
-#line 421 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 428 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -729,7 +729,7 @@ namespace w3c_sw {
   case 55:
 
 /* Line 678 of lalr1.cc  */
-#line 424 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 431 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -738,7 +738,7 @@ namespace w3c_sw {
   case 56:
 
 /* Line 678 of lalr1.cc  */
-#line 427 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 434 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
@@ -747,7 +747,7 @@ namespace w3c_sw {
   case 57:
 
 /* Line 678 of lalr1.cc  */
-#line 434 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 441 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -757,7 +757,7 @@ namespace w3c_sw {
   case 58:
 
 /* Line 678 of lalr1.cc  */
-#line 442 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 449 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -766,7 +766,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 449 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 456 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -776,7 +776,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 453 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 460 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -786,7 +786,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 461 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 468 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -796,7 +796,7 @@ namespace w3c_sw {
   case 62:
 
 /* Line 678 of lalr1.cc  */
-#line 465 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 472 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
     }
@@ -805,7 +805,7 @@ namespace w3c_sw {
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 471 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 478 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -814,7 +814,7 @@ namespace w3c_sw {
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 474 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 481 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -823,7 +823,7 @@ namespace w3c_sw {
   case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 477 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 484 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -832,7 +832,7 @@ namespace w3c_sw {
   case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 483 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 490 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -841,7 +841,7 @@ namespace w3c_sw {
   case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 486 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 493 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -850,7 +850,7 @@ namespace w3c_sw {
   case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 489 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 496 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -859,7 +859,7 @@ namespace w3c_sw {
   case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 495 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 502 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -868,7 +868,7 @@ namespace w3c_sw {
   case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 498 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 505 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -877,7 +877,7 @@ namespace w3c_sw {
   case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 501 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 508 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -886,7 +886,7 @@ namespace w3c_sw {
   case 72:
 
 /* Line 678 of lalr1.cc  */
-#line 507 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 514 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -895,7 +895,7 @@ namespace w3c_sw {
   case 73:
 
 /* Line 678 of lalr1.cc  */
-#line 510 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 517 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -904,7 +904,7 @@ namespace w3c_sw {
   case 74:
 
 /* Line 678 of lalr1.cc  */
-#line 513 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 520 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -913,7 +913,7 @@ namespace w3c_sw {
   case 75:
 
 /* Line 678 of lalr1.cc  */
-#line 519 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 526 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -922,7 +922,7 @@ namespace w3c_sw {
   case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 522 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 529 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -931,7 +931,7 @@ namespace w3c_sw {
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 528 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 535 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -940,7 +940,7 @@ namespace w3c_sw {
   case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 531 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 538 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -949,7 +949,7 @@ namespace w3c_sw {
   case 79:
 
 /* Line 678 of lalr1.cc  */
-#line 534 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 541 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -958,7 +958,7 @@ namespace w3c_sw {
   case 80:
 
 /* Line 678 of lalr1.cc  */
-#line 537 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 544 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -967,7 +967,7 @@ namespace w3c_sw {
   case 81:
 
 /* Line 678 of lalr1.cc  */
-#line 543 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 550 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -976,7 +976,7 @@ namespace w3c_sw {
   case 82:
 
 /* Line 678 of lalr1.cc  */
-#line 546 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 553 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -985,7 +985,7 @@ namespace w3c_sw {
   case 83:
 
 /* Line 678 of lalr1.cc  */
-#line 552 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 559 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -994,7 +994,7 @@ namespace w3c_sw {
   case 84:
 
 /* Line 678 of lalr1.cc  */
-#line 555 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 562 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1003,7 +1003,7 @@ namespace w3c_sw {
   case 85:
 
 /* Line 678 of lalr1.cc  */
-#line 561 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 568 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -1012,7 +1012,7 @@ namespace w3c_sw {
   case 86:
 
 /* Line 678 of lalr1.cc  */
-#line 564 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 571 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -1465,15 +1465,15 @@ namespace w3c_sw {
   const unsigned short int
   TurtleSParser::yyrline_[] =
   {
-         0,   185,   185,   192,   196,   198,   202,   204,   208,   214,
-     216,   218,   214,   226,   227,   234,   242,   249,   250,   254,
-     254,   257,   257,   264,   269,   273,   275,   280,   284,   286,
-     291,   295,   297,   302,   307,   311,   313,   317,   326,   330,
-     337,   340,   346,   346,   359,   381,   384,   391,   394,   400,
-     406,   412,   415,   418,   421,   424,   427,   434,   442,   449,
-     453,   461,   465,   471,   474,   477,   483,   486,   489,   495,
-     498,   501,   507,   510,   513,   519,   522,   528,   531,   534,
-     537,   543,   546,   552,   555,   561,   564
+         0,   192,   192,   199,   203,   205,   209,   211,   215,   221,
+     223,   225,   221,   233,   234,   241,   249,   256,   257,   261,
+     261,   264,   264,   271,   276,   280,   282,   287,   291,   293,
+     298,   302,   304,   309,   314,   318,   320,   324,   333,   337,
+     344,   347,   353,   353,   366,   388,   391,   398,   401,   407,
+     413,   419,   422,   425,   428,   431,   434,   441,   449,   456,
+     460,   468,   472,   478,   481,   484,   490,   493,   496,   502,
+     505,   508,   514,   517,   520,   526,   529,   535,   538,   541,
+     544,   550,   553,   559,   562,   568,   571
   };
 
   // Print the state stack on the debug stream.
@@ -1573,7 +1573,7 @@ namespace w3c_sw {
 
 
 /* Line 1056 of lalr1.cc  */
-#line 571 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 578 "lib/TurtleSParser/TurtleSParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
@@ -1586,8 +1586,7 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
-bool TurtleSDriver::parse(IStreamContext& in)
-{
+void TurtleSDriver::parse (IStreamContext& in) {
     streamname = in.nameStr;
 
     TurtleSScanner scanner(this, in.p);
@@ -1596,7 +1595,34 @@ bool TurtleSDriver::parse(IStreamContext& in)
 
     TurtleSParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    return (parser.parse());
+    parser.parse();
+}
+
+void TurtleSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {
+    setGraph(bgp);
+    parse(in);
+}
+
+void TurtleSDriver::parse (IStreamContext& in, RdfDB* db) {
+    setGraph(db->ensureGraph(NULL));
+    parse(in);
+}
+
+void TurtleSDriver::parse(std::string turtleStr) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    parse(in);
+}
+
+void TurtleSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setGraph(bgp);
+    parse(in);
+}
+
+void TurtleSDriver::parse (std::string turtleStr, RdfDB* db) {
+    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
+    setGraph(db->ensureGraph(NULL));
+    parse(in);
 }
 
 } // namespace w3c_sw

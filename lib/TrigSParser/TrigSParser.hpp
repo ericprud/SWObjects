@@ -51,6 +51,7 @@
 #define TRIGS_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 
 #include <stack>
@@ -71,6 +72,7 @@ protected:
     const TTerm* curPredicate;
     RdfDB* db;
     BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
+    BasicGraphPattern* defaultBGP;
 public:
     TrigSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
 	curSubject = curPredicate = NULL;
@@ -78,7 +80,12 @@ public:
     }
     void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
 
-    virtual bool parse(IStreamContext& in);
+    void parse(IStreamContext& in);
+    void parse(IStreamContext& in, BasicGraphPattern* bgp);
+    void parse(IStreamContext& in, RdfDB* db);
+    void parse(std::string turtleStr);
+    void parse(std::string turtleStr, BasicGraphPattern* bgp);
+    void parse(std::string turtleStr, RdfDB* db);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -93,7 +100,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 97 "lib/TrigSParser/TrigSParser.hpp"
+#line 104 "lib/TrigSParser/TrigSParser.hpp"
 
 
 #include <string>
@@ -107,7 +114,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 111 "lib/TrigSParser/TrigSParser.hpp"
+#line 118 "lib/TrigSParser/TrigSParser.hpp"
   class position;
   class location;
 
@@ -117,7 +124,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 121 "lib/TrigSParser/TrigSParser.hpp"
+#line 128 "lib/TrigSParser/TrigSParser.hpp"
 
 #include "location.hh"
 
@@ -165,7 +172,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 169 "lib/TrigSParser/TrigSParser.hpp"
+#line 176 "lib/TrigSParser/TrigSParser.hpp"
 
   /// A Bison parser.
   class TrigSParser
@@ -177,7 +184,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 97 "lib/TrigSParser/TrigSParser.ypp"
+#line 104 "lib/TrigSParser/TrigSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -204,7 +211,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 208 "lib/TrigSParser/TrigSParser.hpp"
+#line 215 "lib/TrigSParser/TrigSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -430,7 +437,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 434 "lib/TrigSParser/TrigSParser.hpp"
+#line 441 "lib/TrigSParser/TrigSParser.hpp"
 
 
 
