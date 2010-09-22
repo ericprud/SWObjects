@@ -243,14 +243,14 @@ SQLParser::token_type SQLScanner::typedLiteral (SQLParser::semantic_type*& yylva
     case token::DECIMAL_NEGATIVE:
 	float f;
 	is >> f;
-	yylval->p_Expression = new sql::FloatConstraint(i);
+	yylval->p_Expression = new sql::FloatConstraint(f);
 	return tok;
     case token::DOUBLE:
     case token::DOUBLE_POSITIVE:
     case token::DOUBLE_NEGATIVE:
 	double d;
 	is >> d;
-	yylval->p_Expression = new sql::DoubleConstraint(i);
+	yylval->p_Expression = new sql::DoubleConstraint(d);
 	return tok;
     default: throw(new std::exception());
     }
