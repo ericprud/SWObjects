@@ -1,5 +1,5 @@
 /* $Id: SPARQLfedParser.ypp,v 1.3 2008-11-13 19:18:01 eric Exp $ -*- mode: c++ -*- */
-/* from yacker grammar http://www.w3.org/2005/01/yacker?name=SPARUL_EGP */
+/* from yacker grammar http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPParser.yy */
 /* Bison parser for SPARQL + SPARUL
  * conventions:
  *   generated production names are composed of their constituents.
@@ -240,9 +240,9 @@ public:
        GT_LPAREN GT_RPAREN IT_UNDEF GT_DOT IT_OPTIONAL IT_MINUS IT_UNION IT_FILTER
        GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_OR GT_AND GT_EQUAL
        GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
-       IT_IN GT_NOT_SPACECHAR_IN
+       IT_NOT IT_IN
        IT_IRI IT_URI IT_BNODE IT_COALESCE IT_IF IT_STRLANG IT_STRDT
-       IT_EXISTS GT_NOT_SPACECHAR_EXISTS IT_SEPARATOR
+       IT_EXISTS IT_SEPARATOR
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
@@ -350,8 +350,8 @@ public:
 %type <p_ExpressionAliaseList> _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
 
 
-%type <p_GeneralComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C
-			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt
+%type <p_GeneralComparator> RelativeExpression
+			    _QRelativeExpression_E_Opt
 
 %type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName GraphRef
 	      _QGraphRef_E_Opt _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt
@@ -962,11 +962,6 @@ Modify:
   | Delete	
 ;
 
-_QIT_DATA_E_Opt:
-    
-  | IT_DATA	
-;
-
 Insert:
     IT_INSERT _QIT_DATA_E_Opt GraphTemplate {
 	$<p_TableOperation>$ = driver.curOp;
@@ -974,6 +969,11 @@ Insert:
       } _QWhereClause_E_Opt	{
 	$$ = new Insert($<p_TableOperation>4, $5);
       }
+;
+
+_QIT_DATA_E_Opt:
+    
+  | IT_DATA	
 ;
 
 Delete:
@@ -1646,7 +1646,7 @@ ValueLogical:
 
 RelationalExpression:
     // NumericExpression ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList )?
-    NumericExpression _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt	{
+    NumericExpression _QRelativeExpression_E_Opt	{
 	if ($2) {
 	    $2->setLeftParm($1);
 	    $$ = new ComparatorExpression($2); // !!!
@@ -1655,8 +1655,15 @@ RelationalExpression:
     }
 ;
 
-// '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList
-_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C:
+// RelativeExpression?
+_QRelativeExpression_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | RelativeExpression	
+;
+
+RelativeExpression:
     GT_EQUAL NumericExpression	{
 	$$ = new BooleanEQ($2);
     }
@@ -1678,17 +1685,9 @@ _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_
   | IT_IN ExpressionList	{
 	$$ = new NaryIn($2);
     }
-  | GT_NOT_SPACECHAR_IN ExpressionList	{
-	$$ = new NaryNotIn($2);
+  | IT_NOT IT_IN ExpressionList	{
+	$$ = new NaryNotIn($3);
     }
-;
-
-// ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList )?
-_Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C	
 ;
 
 NumericExpression:
@@ -1915,7 +1914,7 @@ ExistsFunc:
 ;
 
 NotExistsFunc:
-    GT_NOT_SPACECHAR_EXISTS GroupGraphPattern	{
+    IT_NOT IT_EXISTS GroupGraphPattern	{
 	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL)));
 	w3c_sw_NEED_IMPL("EXISTS");
     }

@@ -1,5 +1,6 @@
 /* $Id: SPARQLfedScanner.lpp,v 1.4 2008-10-03 07:06:03 eric Exp $ -*- mode: c++ -*- */
-/** \file SPARQLfedScanner.ll Define the Flex lexical scanner */
+/* from yacker grammar http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPScanner.ll */
+/** Flex scanner for SPARQL + SPARUL */
 
 %{ /*** C/C++ Declarations ***/
 
@@ -92,8 +93,8 @@ GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
 GT_SEMI		";"
-IT_DATA			[Dd][Aa][Tt][Aa]
 IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
+IT_DATA		[Dd][Aa][Tt][Aa]
 IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
 IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
 IT_LOAD		[Ll][Oo][Aa][Dd]
@@ -126,7 +127,7 @@ GT_GT		">"
 GT_LE		"<="
 GT_GE		">="
 IT_IN		[Ii][Nn]
-GT_NOT_SPACECHAR_IN		"NOT IN"
+IT_NOT		[Nn][Oo][Tt]
 GT_DIVIDE		"/"
 GT_PLUS		"+"
 GT_MINUS		"-"
@@ -150,7 +151,6 @@ IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
-GT_NOT_SPACECHAR_EXISTS		"NOT EXISTS"
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
 IT_SUM		[Ss][Uu][Mm]
 IT_MIN		[Mm][Ii][Nn]
@@ -234,8 +234,8 @@ LINEFEED		(\r\n|\r|\n)
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_SEMI}		{return token::GT_SEMI;}
-{IT_DATA}		{return token::IT_DATA;}
 {IT_INSERT}		{return token::IT_INSERT;}
+{IT_DATA}		{return token::IT_DATA;}
 {IT_DELETE}		{return token::IT_DELETE;}
 {IT_CLEAR}		{return token::IT_CLEAR;}
 {IT_LOAD}		{return token::IT_LOAD;}
@@ -268,7 +268,7 @@ LINEFEED		(\r\n|\r|\n)
 {GT_LE}			{return token::GT_LE;}
 {GT_GE}			{return token::GT_GE;}
 {IT_IN}			{return token::IT_IN;}
-{GT_NOT_SPACECHAR_IN}		{return token::GT_NOT_SPACECHAR_IN;}
+{IT_NOT}		{return token::IT_NOT;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}
 {GT_PLUS}		{return token::GT_PLUS;}
 {GT_MINUS}		{return token::GT_MINUS;}
@@ -292,7 +292,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
 {IT_REGEX}		{return token::IT_REGEX;}
 {IT_EXISTS}		{return token::IT_EXISTS;}
-{GT_NOT_SPACECHAR_EXISTS}		{return token::GT_NOT_SPACECHAR_EXISTS;}
 {IT_COUNT}		{return token::IT_COUNT;}
 {IT_SUM}		{return token::IT_SUM;}
 {IT_MIN}		{return token::IT_MIN;}
