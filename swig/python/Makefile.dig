@@ -1,0 +1,4 @@
+install:
+	@cp -a SWObjects.py /srv/dig/lib/python/
+	@cp -a _SWObjects.so /srv/dig/lib/python/
+	-@pkill -9 -u apache -f python\.\*wiki\.\*handler
