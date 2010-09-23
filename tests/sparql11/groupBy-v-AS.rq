@@ -1,0 +1,18 @@
+# groupBy-v-AS.rq - GROUP BY variable AS
+
+# $Id$
+
+SELECT ?x (COUNT(*) AS ?count)
+{
+    {
+      SELECT * {}
+      BINDINGS
+?a ?b  ?c {
+(1 10 2)
+(1  9 3)
+(1 11 4)
+          }
+    }
+}
+GROUP BY (?a AS ?x)
+
