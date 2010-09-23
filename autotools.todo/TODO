@@ -1,0 +1,121 @@
+FLEX:=flex
+YACC:=bison
+TEE:=tee
+SED:=sed
+OPTIM:=-g -O0
+PYTHON_HOME:=/usr/include/python2.6
+PERL_HOME:=/usr/lib/perl/5.10.1
+JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
+# GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
+ECHO ?= echo
+#LIBS
+DEBUG:=-g -O0
+OPT=-fPIC
+DEFS += -DYYTEXT_POINTER=1
+WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
+# --pedantic
+# pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
+
+
+
+
+
+
+INCLUDES = ""
+INCLUDES += -I${PWD} -I${PWD}/lib  # . (for config.h) and ./lib (for the rest)
+I2=$(subst /, ,$(BISONOBJ:.o=))
+I3=$(sort $(I2))
+INCLUDES += $(I3:%=-I${PWD}/%)
+
+PWD ?= $(shell pwd -P)
+
+CONFIG_DEFS=""
+if equals($(XML_PARSER), LIBXML2)
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_LIBXML2 "\n"
+  INCLUDES += -I/usr/include/libxml2
+  XML_PARSER_LIB ?= -lxml2
+else ifeq ($(XML_PARSER), EXPAT1)
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_EXPAT1 "\n"
+  XML_PARSER_LIB ?= -lexpat
+else ifeq ($(XML_PARSER), MSXML3)
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_MSXML3 "\n"
+  XML_PARSER_LIB ?= -lmsxml
+else
+  ifneq ($(XML_PARSER), )
+    $(warning $(XML_PARSER) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define XML_PARSER	SWOb_DISABLED "\n"
+endif
+
+
+ifeq ($(CONSOLE_ENCODING), UTF8)
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_UTF8 "\n"
+else
+  ifneq ($(CONSOLE_ENCODING), )
+    $(warning CONSOLE_ENCODING= $(CONSOLE_ENCODING) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define CONSOLE_ENCODING	SWOb_DISABLED "\n"
+endif
+
+
+ifeq ($(REGEX), BOOST)
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\n"
+  REGEX_LIB?= -lboost_regex$(BOOST_VERSION) -lpthread
+else
+  ifneq ($(REGEX), )
+    $(warning $(REGEX_LIB) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_DISABLED "\n"
+endif
+
+
+ifeq ($(HTTP_CLIENT), ASIO)
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\n"
+  HTTP_CLIENT_LIB?= -lboost_system$(BOOST_VERSION)
+else ifeq ($(HTTP_CLIENT), DLIB)
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\n"
+  $(warning DLIB HTTP client code not yet written)
+else
+  ifneq ($(HTTP_CLIENT), )
+    $(warning $(HTTP_CLIENT) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DISABLED "\n"
+endif
+
+
+ifeq ($(HTTP_SERVER), ASIO)
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\n"
+  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) -lpthread
+else ifeq ($(HTTP_SERVER), DLIB)
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\n"
+  DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
+else
+  ifneq ($(HTTP_SERVER), )
+    $(warning $(HTTP_SERVER) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DISABLED "\n"
+endif
+
+
+ifeq ($(SQL_CLIENT), MYSQL)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\n"
+  SQL_CLIENT_LIB?= -lmysqlclient -lz
+else
+  ifneq ($(SQL_CLIENT), )
+    $(warning $(SQL_CLIENT) may not be supported)
+  endif
+  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_DISABLED "\n"
+endif
+
+
+TEST_LIB?= -lboost_unit_test_framework$(BOOST_VERSION)
+
+
+ifeq ($(LINK), DYNAMIC)
+  CONFIG_DEFS+= \\\#define BOOST_ALL_DYN_LINK "\\n"
+  STATICITY=
+else
+  STATICITY= -static
+endif
+
+
