@@ -625,7 +625,8 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	    } else {
 		sw::IStreamContext istr(query, sw::IStreamContext::STRING);
 		try {
-		    if (server.sparqlParser.parse(istr)) {
+		    sw::Operation* op = server.sparqlParser.parse(istr);
+		    if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
 			head(sout, "Query Error");
 
 			sout << "    <p>Query</p>\n"
@@ -637,7 +638,6 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 
 			foot(sout);
 		    } else {
-			sw::Operation* op = server.sparqlParser.root;
 			sw::ResultSet rs(&server.atomFactory);
 			std::string language;
 			std::string newQuery(query);
