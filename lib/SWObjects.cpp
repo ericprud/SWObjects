@@ -614,9 +614,6 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const URI* TTerm::FUNC_uri			 = AtomFactory::_URIConstants + 43;
     const URI* TTerm::FUNC_blank		 = AtomFactory::_URIConstants + 44;
 
-    AtomFactory::URIMap AtomFactory::uris_static (_URIConstants, 
-						  _URIConstants + sizeof(_URIConstants)/sizeof(_URIConstants[0]));
-
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
 	BooleanRDFLiteral("true",  TTerm::URI_xsd_boolean, true),
 	BooleanRDFLiteral("false", TTerm::URI_xsd_boolean, false)
@@ -625,8 +622,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const BooleanRDFLiteral* TTerm::BOOL_true	 = AtomFactory::_BooleanConstants + 0;
     const BooleanRDFLiteral* TTerm::BOOL_false	 = AtomFactory::_BooleanConstants + 1;
 
+#if !defined(SWIG) // SWIG 2.0.0 appears to barf on initializers for statics.
+    AtomFactory::URIMap AtomFactory::uris_static (_URIConstants, 
+						  _URIConstants + sizeof(_URIConstants)/sizeof(_URIConstants[0]));
     AtomFactory::RDFLiteralMap AtomFactory::rdfLiterals_static (_BooleanConstants, 
 								_BooleanConstants + sizeof(_BooleanConstants)/sizeof(_BooleanConstants[0]));
+#endif /* !defined(SWIG) */
 
     const NULLtterm AtomFactory::_NULLtterm;
 
