@@ -1016,7 +1016,7 @@ public:
 	    // canonical << std::boolalpha << m_value;
 	    // return canonical.str();
 	}
-	return CanonicalRDFLiteral::nonCanonicalString();
+	return RDFLiteral::toString();
     }
 };
 class NULLtterm : public TTerm {
@@ -3156,12 +3156,9 @@ public:
 		std::streamsize amt = static_cast<std::streamsize>(streamRewinder.buffer.size() - streamRewinder.pos);
 		std::streamsize result = (std::min)(n, amt);
 		if (result != 0) {
-// #pragma warning(push) // technically should stifle MS's unilateral deprecation, but doesn't work in 2008.
-// #pragma warning(disable:4996)
 		    std::copy( streamRewinder.buffer.begin() + streamRewinder.pos, 
 			       streamRewinder.buffer.begin() + streamRewinder.pos + result, 
 			       s );
-// #pragma warning(pop)
 		    streamRewinder.pos += result;
 		    // w3c_sw_LINE << "replay: " << toString() << "\n";
 		    return result;
