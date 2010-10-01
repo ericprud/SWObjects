@@ -452,6 +452,7 @@ _QDatasetClause_E_Star:
 SubSelect:
     // SelectClause WhereClause SolutionModifier
     SelectClause {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1123,6 +1124,7 @@ GraphTemplate:
 // 'GRAPH' VarOrIRIref GraphTemplate
 _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_QGraphTemplate_E_C:
     {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curFilter = NULL;
       } IT_GRAPH VarOrIRIref {
@@ -1172,9 +1174,8 @@ GraphPatternNotTriples:
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-      } {
-	  $<p_ParserFilter>$ = driver.curFilter;
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
 	  if (driver.curFilter) {
@@ -1183,12 +1184,12 @@ OptionalGraphPattern:
 	      driver.curFilter = NULL;
 	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
-	  driver.curFilter = $<p_ParserFilter>3;
       }
 ;
 
 GraphGraphPattern:
     IT_GRAPH {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1204,6 +1205,7 @@ GraphGraphPattern:
 
 ServiceGraphPattern:
     IT_SERVICE {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1215,6 +1217,7 @@ ServiceGraphPattern:
 
 MinusGraphPattern:
     IT_MINUS {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
