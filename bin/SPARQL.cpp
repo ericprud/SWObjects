@@ -931,7 +931,7 @@ NamespaceRelay NsRelay(NsAccumulator);
 
 loadList LoadList;
 loadList MapList;
-loadEntry Output(NULL, F.getURI("-"), NULL);
+loadEntry Output(NULL, NULL, NULL);
 bool InPlace = false;
 
 #endif /* TEST_CLI */
@@ -1283,6 +1283,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 int main(int ac, char* av[])
 {
     MyServer::MyHandler handler(TheServer);
+    Output = loadEntry(NULL, F.getURI("-"), NULL);
 
     int ret = 0; /* no errors */
     sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
