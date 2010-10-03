@@ -215,13 +215,27 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (AtomFactory* atomFactory, std::string str, bool ordered, TTerm::String2BNode& nodeMap) : 
+	ResultSet (AtomFactory* atomFactory, std::string srt, bool ordered, TTerm::String2BNode& nodeMap) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING);
+	    parseTable(sptr, ordered, nodeMap);
+	}
+
+	ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) : 
+	    atomFactory(atomFactory), knownVars(), 
+	    results(), ordered(ordered), db(NULL), selectOrder(), 
+	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    parseTable(sptr, ordered, nodeMap);
+	}
+
+	void parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
 
 	    /* Iterate through the input string. */
 	    std::string::const_iterator start, end; 
+	    std::string str((std::istreambuf_iterator<char>(*sptr.p)),
+			    std::istreambuf_iterator<char>());
 	    start = str.begin(); 
 	    end = str.end(); 
 

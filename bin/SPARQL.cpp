@@ -565,10 +565,8 @@ struct loadEntry {
 		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
 		*DebugStream << " into result set.\n";
 	    }
-	    std::istreambuf_iterator<char> i(*istr.p), e;
-	    std::string s(i, e);
 	    sw::TTerm::String2BNode bnodeMap;
-	    sw::ResultSet loaded(&F, s.c_str(), false, bnodeMap);
+	    sw::ResultSet loaded(&F, istr, false, bnodeMap);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
@@ -1713,6 +1711,9 @@ int main(int ac, char* av[])
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml")) {
 			reference = new sw::ResultSet(&F, &P, iptr);
+		    } else if (iptr.mediaType.match("text/sparql-results")) {
+			sw::TTerm::String2BNode str2b;
+			reference = new sw::ResultSet(&F, iptr, false, str2b);
 		    } else {
 			sw::RdfDB resGraph;
 			if (iptr.mediaType.match("text/ntriples") || 
@@ -1728,14 +1729,15 @@ int main(int ac, char* av[])
 			    new sw::ResultSet(&F, &resGraph) :
 			    new sw::ResultSet(&F, &resGraph, "");
 		    }
-		    if (!(rs == *reference)) {
-			if (!Quiet)
-			    std::cout << rs << "!=\n" << *reference << "\n";
-			ret = 0; // !!! should be 1 but that kills tests
-		    } else {
+		    if (rs == *reference) {
 			if (!Quiet)
 			    std::cout << "matched\n";
 			ret = 0;
+		    } else {
+			if (Quiet)
+			    ret = 1;
+			else
+			    std::cout << rs << "!=\n" << *reference << "\n";
 		    }
 		    delete reference;
 		    Output.resource = NULL; // No other output reqired.
