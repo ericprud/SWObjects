@@ -405,13 +405,13 @@ Prologue:
 // BaseDecl?
 _QBaseDecl_E_Opt:
 
-    | BaseDecl
+  | BaseDecl	
 ;
 
 // PrefixDecl*
 _QPrefixDecl_E_Star:
 
-    | _QPrefixDecl_E_Star PrefixDecl
+  | _QPrefixDecl_E_Star PrefixDecl
 ;
 
 BaseDecl:
@@ -454,11 +454,8 @@ SubSelect:
     SelectClause {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-      } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
       } WhereClause SolutionModifier	{
-	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $3, $4)));
       }
 ;
 
@@ -2106,7 +2103,7 @@ namespace w3c_sw {
 {
 }
 
-Operation* SPARQLfedDriver::parse(IStreamContext& in)
+Operation* SPARQLfedDriver::parse (IStreamContext& in)
 {
     streamname = in.nameStr;
 
@@ -2122,7 +2119,7 @@ Operation* SPARQLfedDriver::parse(IStreamContext& in)
     return root;
 }
 
-Operation* SPARQLfedDriver::parse(std::string queryStr)
+Operation* SPARQLfedDriver::parse (std::string queryStr)
 {
     IStreamContext in(queryStr.c_str(), IStreamContext::STRING);
     return parse(in);
