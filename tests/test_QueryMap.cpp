@@ -847,24 +847,20 @@ struct RuleMapTest {
 		 IStreamContext::e_opts type = IStreamContext::FILE) :
 	bgpMappableTerm(BasicGraphPattern::MappableTerm) {
 
+	sparqlParser.unnestTree = true;
 	/* Parse query. */
 	IStreamContext qstr(queryFile, type);
 	Operation* query = sparqlParser.parse(qstr);
 
 	/* Parse map. */
 	IStreamContext mstr(mapFile, type);
-	if (mapSetParser.parse(mstr)) {
-	    std::string msg = std::string("failed to parse map \"") + 
-		mapFile + std::string("\".");
-	    throw msg;
-	}
-	MapSet* ms = mapSetParser.root;
+	MapSet* ms = mapSetParser.parse(mstr);
 	queryMapper.sharedVars = ms->sharedVars;
 	for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
 	     it != ms->maps.end(); ++it)
 	    queryMapper.addRule(it->constr, it->label);
 	queryMapper.nodeShare = ms->nodeShare;
-	delete mapSetParser.root;
+	delete ms;
 
 	try {
 	    transformed = queryMapper.map(query);
