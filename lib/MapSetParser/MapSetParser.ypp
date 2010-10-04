@@ -1,5 +1,13 @@
 /* $Id: MapSetParser.ypp,v 1.3 2008-11-13 19:18:01 eric Exp $ -*- mode: c++ -*- */
 
+/* PATCHES:
+
+AccessParm: IT_STEMURI RDFLiteral instate of IRIref
+ConstructQuery: ends in SolutionModifier insted of BindingsClause
+WhereClause: _QIT_WHERE_E_Opt  GroupGraphPattern -BindingsClause-
+
+ */
+
 /* Bison parser for SWObjects MapSets encapsulating SPARQL CONSTRUCTs
  * conventions:
  *   generated production names are composed of their constituents.
@@ -137,7 +145,8 @@ public:
     MapSetDriver(std::string baseURI, AtomFactory* atomFactory);
     ~MapSetDriver();
 
-    virtual bool parse(IStreamContext& in);
+    MapSet* parse(IStreamContext& in);
+    MapSet* parse(std::string queryStr);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -238,9 +247,9 @@ public:
        GT_LPAREN GT_RPAREN IT_UNDEF GT_DOT IT_OPTIONAL IT_MINUS IT_UNION IT_FILTER
        GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_OR GT_AND GT_EQUAL
        GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
-       IT_IN GT_NOT_SPACECHAR_IN
+       IT_NOT IT_IN
        IT_IRI IT_URI IT_BNODE IT_COALESCE IT_IF IT_STRLANG IT_STRDT
-       IT_EXISTS GT_NOT_SPACECHAR_EXISTS IT_SEPARATOR
+       IT_EXISTS IT_SEPARATOR
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
@@ -340,8 +349,8 @@ public:
 %type <p_ExpressionAlias>  GroupCondition
                            _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
                            _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
-%type <p_GeneralComparator> _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C
-			    _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt
+%type <p_GeneralComparator> RelativeExpression
+			    _QRelativeExpression_E_Opt
 
 %type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C
@@ -411,9 +420,11 @@ AccessParm:
 	static_cast<MapSet*>(driver.root)->stemURI = $2;
     }
   | IT_PRIMARYKEY PrimaryKeySpec	
+  // "SHAREDVARS" ( "PROMISCUOUS" | "VARNAMES" | "DRACONIAN" )
   | IT_SHAREDVARS _O_QIT_PROMISCUOUS_E_Or_QIT_VARNAMES_E_Or_QIT_DRACONIAN_E_C	{
 	driver.sharedVarsSet = true;
     }
+  // "INTERSECTION" ( "{" GraphTerm? "}" GraphTerm )+
   | IT_INTERSECTION _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus	{
 	driver.lastRuleTermSet = false;
     }
@@ -454,7 +465,6 @@ _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus:
     _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
   | _Q_O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C_E_Plus _O_QGT_LCURLEY_E_S_QGraphTerm_E_Opt_S_QGT_RCURLEY_E_S_QVarOrTerm_E_C	
 ;
-
 
 PrimaryKeySpec:
     _QDefaultPrimaryKey_E_Opt _QPrimaryKeySet_E_Opt	
@@ -529,11 +539,8 @@ SubSelect:
     // SelectClause WhereClause SolutionModifier
     SelectClause {
 	$<p_TableOperation>$ = driver.curOp;
-      } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
       } WhereClause SolutionModifier	{
-	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $3, $4)));
       }
 ;
 
@@ -694,8 +701,8 @@ WhereClause:
 ;
 
 _QIT_WHERE_E_Opt:
-
-    | IT_WHERE	;
+    
+  | IT_WHERE	;
 
 SolutionModifier:
     // GroupClause? HavingClauses? OrderClause? LimitOffsetClauses?
@@ -999,14 +1006,14 @@ _QTriplesBlock_E_Opt:
 
 // GraphPatternNotTriples | Filter
 _O_QGraphPatternNotTriples_E_Or_QFilter_E_C:
-    GraphPatternNotTriples
+    GraphPatternNotTriples	
   | Filter	
 ;
 
 // '.'?
 _QGT_DOT_E_Opt:
-
-    | GT_DOT
+    
+  | GT_DOT
 ;
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
@@ -1043,27 +1050,27 @@ GraphPatternNotTriples:
   | MinusGraphPattern
   | GroupOrUnionGraphPattern
   | GraphGraphPattern
-  | ServiceGraphPattern
+  | ServiceGraphPattern	
 ;
 
 OptionalGraphPattern:
     IT_OPTIONAL	{
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-      } {
-	  $<p_ParserFilter>$ = driver.curFilter;
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
 	  if (driver.curFilter) {
 	      driver.curFilter->copyExpressionsTo(ret);
 	      delete driver.curFilter;
+	      driver.curFilter = NULL;
 	  }
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, ret);
-	  driver.curFilter = $<p_ParserFilter>3;
       }
 ;
 
 GraphGraphPattern:
     IT_GRAPH {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1079,6 +1086,7 @@ GraphGraphPattern:
 
 ServiceGraphPattern:
     IT_SERVICE {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1090,6 +1098,7 @@ ServiceGraphPattern:
 
 MinusGraphPattern:
     IT_MINUS {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
@@ -1271,8 +1280,8 @@ _O_QVerb_E_S_QObjectList_E_C:
 
 // ( Verb ObjectList )?
 _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt:
-
-    | _O_QVerb_E_S_QObjectList_E_C
+    
+  | _O_QVerb_E_S_QObjectList_E_C
 ;
 
 // ';' ( Verb ObjectList )?
@@ -1282,8 +1291,8 @@ _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C:
 
 // ( ';' ( Verb ObjectList )? )*
 _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
-
-    | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
+    
+  | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
 ;
 
 PropertyList:
@@ -1293,8 +1302,8 @@ PropertyList:
 
 // PropertyListNotEmpty?
 _QPropertyListNotEmpty_E_Opt:
-
-    | PropertyListNotEmpty
+    
+  | PropertyListNotEmpty
 ;
 
 ObjectList:
@@ -1309,8 +1318,8 @@ _O_QGT_COMMA_E_S_QObject_E_C:
 
 // ( ',' Object )*
 _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
-
-    | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
+    
+  | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
 ;
 
 Object:
@@ -1521,7 +1530,7 @@ ValueLogical:
 
 RelationalExpression:
     // NumericExpression ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList )?
-    NumericExpression _Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt	{
+    NumericExpression _QRelativeExpression_E_Opt	{
 	if ($2) {
 	    $2->setLeftParm($1);
 	    $$ = new ComparatorExpression($2); // !!!
@@ -1530,8 +1539,15 @@ RelationalExpression:
     }
 ;
 
+_QRelativeExpression_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | RelativeExpression	
+;
+
 // '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList
-_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C:
+RelativeExpression:
     GT_EQUAL NumericExpression	{
 	$$ = new BooleanEQ($2);
     }
@@ -1553,17 +1569,9 @@ _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_
   | IT_IN ExpressionList	{
 	$$ = new NaryIn($2);
     }
-  | GT_NOT_SPACECHAR_IN ExpressionList	{
-	$$ = new NaryNotIn($2);
+  | IT_NOT IT_IN ExpressionList	{
+	$$ = new NaryNotIn($3);
     }
-;
-
-// ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList )?
-_Q_O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | _O_QGT_EQUAL_E_S_QNumericExpression_E_Or_QGT_NEQUAL_E_S_QNumericExpression_E_Or_QGT_LT_E_S_QNumericExpression_E_Or_QGT_GT_E_S_QNumericExpression_E_Or_QGT_LE_E_S_QNumericExpression_E_Or_QGT_GE_E_S_QNumericExpression_E_Or_QIT_IN_E_S_QExpressionList_E_Or_QGT_NOT_SPACECHAR_IN_E_S_QExpressionList_E_C	
 ;
 
 NumericExpression:
@@ -1717,7 +1725,7 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, NULL, NULL));
     }
   | IT_URI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uri, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, NULL, NULL));
     }
   | // 'BNODE' ( '(' Expression  ')' | NIL )
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
@@ -1790,7 +1798,7 @@ ExistsFunc:
 ;
 
 NotExistsFunc:
-    GT_NOT_SPACECHAR_EXISTS GroupGraphPattern	{
+    IT_NOT IT_EXISTS GroupGraphPattern	{
 	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL)));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
@@ -1927,7 +1935,7 @@ NumericLiteralNegative:
 BooleanLiteral:
     IT_true	
   | IT_false	
-    ;
+;
 
 String:
     STRING_LITERAL1	
@@ -1968,7 +1976,7 @@ namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), 
+	curBGP(NULL), curFilter(NULL), curOp(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
 	root(NULL), lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false), sharedVarsSet(false)
@@ -1979,7 +1987,7 @@ namespace w3c_sw {
 {
 }
 
-bool MapSetDriver::parse(IStreamContext& in)
+MapSet* MapSetDriver::parse (IStreamContext& in)
 {
     streamname = in.nameStr;
 
@@ -1991,7 +1999,14 @@ bool MapSetDriver::parse(IStreamContext& in)
     parser.set_debug_level(trace_parsing);
     // !!! Clear out namespaces!
     ignorePrefixFlag = false;
-    return (parser.parse());
+    parser.parse();
+    return root;
+}
+
+MapSet* MapSetDriver::parse (std::string queryStr)
+{
+    IStreamContext in(queryStr.c_str(), IStreamContext::STRING);
+    return parse(in);
 }
 
 } // namespace w3c_sw

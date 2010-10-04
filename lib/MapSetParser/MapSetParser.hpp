@@ -40,7 +40,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 51 "lib/MapSetParser/MapSetParser.ypp"
+#line 59 "lib/MapSetParser/MapSetParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -130,7 +130,8 @@ public:
     MapSetDriver(std::string baseURI, AtomFactory* atomFactory);
     ~MapSetDriver();
 
-    virtual bool parse(IStreamContext& in);
+    MapSet* parse(IStreamContext& in);
+    MapSet* parse(std::string queryStr);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -153,7 +154,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 157 "lib/MapSetParser/MapSetParser.hpp"
+#line 158 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -167,7 +168,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 171 "lib/MapSetParser/MapSetParser.hpp"
+#line 172 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -177,7 +178,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 181 "lib/MapSetParser/MapSetParser.hpp"
+#line 182 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -225,7 +226,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 229 "lib/MapSetParser/MapSetParser.hpp"
+#line 230 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -237,7 +238,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 163 "lib/MapSetParser/MapSetParser.ypp"
+#line 172 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -303,7 +304,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 307 "lib/MapSetParser/MapSetParser.hpp"
+#line 308 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -379,8 +380,8 @@ namespace w3c_sw {
      GT_MINUS = 318,
      GT_DIVIDE = 319,
      GT_NOT = 320,
-     IT_IN = 321,
-     GT_NOT_SPACECHAR_IN = 322,
+     IT_NOT = 321,
+     IT_IN = 322,
      IT_IRI = 323,
      IT_URI = 324,
      IT_BNODE = 325,
@@ -389,54 +390,53 @@ namespace w3c_sw {
      IT_STRLANG = 328,
      IT_STRDT = 329,
      IT_EXISTS = 330,
-     GT_NOT_SPACECHAR_EXISTS = 331,
-     IT_SEPARATOR = 332,
-     IT_STR = 333,
-     IT_LANG = 334,
-     IT_LANGMATCHES = 335,
-     IT_DATATYPE = 336,
-     IT_BOUND = 337,
-     IT_sameTerm = 338,
-     IT_isIRI = 339,
-     IT_isURI = 340,
-     IT_isBLANK = 341,
-     IT_isLITERAL = 342,
-     IT_REGEX = 343,
-     GT_DTYPE = 344,
-     IT_AS = 345,
-     IT_GROUP = 346,
-     IT_HAVING = 347,
-     IT_COUNT = 348,
-     IT_SUM = 349,
-     IT_MIN = 350,
-     IT_MAX = 351,
-     IT_AVG = 352,
-     IT_GROUP_CONCAT = 353,
-     IT_SAMPLE = 354,
-     IT_true = 355,
-     IT_false = 356,
-     INTEGER = 357,
-     DECIMAL = 358,
-     DOUBLE = 359,
-     INTEGER_POSITIVE = 360,
-     DECIMAL_POSITIVE = 361,
-     DOUBLE_POSITIVE = 362,
-     INTEGER_NEGATIVE = 363,
-     DECIMAL_NEGATIVE = 364,
-     DOUBLE_NEGATIVE = 365,
-     STRING_LITERAL1 = 366,
-     STRING_LITERAL_LONG1 = 367,
-     STRING_LITERAL2 = 368,
-     STRING_LITERAL_LONG2 = 369,
-     IRI_REF = 370,
-     PNAME_NS = 371,
-     PNAME_LN = 372,
-     BLANK_NODE_LABEL = 373,
-     ANON = 374,
-     VAR1 = 375,
-     VAR2 = 376,
-     LANGTAG = 377,
-     NIL = 378
+     IT_SEPARATOR = 331,
+     IT_STR = 332,
+     IT_LANG = 333,
+     IT_LANGMATCHES = 334,
+     IT_DATATYPE = 335,
+     IT_BOUND = 336,
+     IT_sameTerm = 337,
+     IT_isIRI = 338,
+     IT_isURI = 339,
+     IT_isBLANK = 340,
+     IT_isLITERAL = 341,
+     IT_REGEX = 342,
+     GT_DTYPE = 343,
+     IT_AS = 344,
+     IT_GROUP = 345,
+     IT_HAVING = 346,
+     IT_COUNT = 347,
+     IT_SUM = 348,
+     IT_MIN = 349,
+     IT_MAX = 350,
+     IT_AVG = 351,
+     IT_GROUP_CONCAT = 352,
+     IT_SAMPLE = 353,
+     IT_true = 354,
+     IT_false = 355,
+     INTEGER = 356,
+     DECIMAL = 357,
+     DOUBLE = 358,
+     INTEGER_POSITIVE = 359,
+     DECIMAL_POSITIVE = 360,
+     DOUBLE_POSITIVE = 361,
+     INTEGER_NEGATIVE = 362,
+     DECIMAL_NEGATIVE = 363,
+     DOUBLE_NEGATIVE = 364,
+     STRING_LITERAL1 = 365,
+     STRING_LITERAL_LONG1 = 366,
+     STRING_LITERAL2 = 367,
+     STRING_LITERAL_LONG2 = 368,
+     IRI_REF = 369,
+     PNAME_NS = 370,
+     PNAME_LN = 371,
+     BLANK_NODE_LABEL = 372,
+     ANON = 373,
+     VAR1 = 374,
+     VAR2 = 375,
+     LANGTAG = 376,
+     NIL = 377
    };
 
     };
