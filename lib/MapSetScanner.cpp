@@ -3012,16 +3012,16 @@ static yyconst flex_int16_t yy_chk[9940] =
 
 static yyconst flex_int16_t yy_rule_linenum[94] =
     {   0,
-      209,  210,  211,  212,  213,  214,  215,  216,  217,  218,
-      219,  220,  221,  222,  223,  224,  225,  226,  227,  228,
-      229,  230,  231,  232,  233,  234,  235,  236,  237,  238,
-      239,  240,  241,  242,  243,  244,  245,  246,  247,  248,
-      249,  250,  251,  252,  253,  254,  255,  256,  257,  258,
-      259,  260,  261,  262,  263,  264,  265,  266,  267,  268,
-      269,  270,  271,  272,  273,  274,  275,  276,  277,  278,
-      279,  280,  281,  282,  283,  284,  285,  286,  287,  288,
-      289,  290,  291,  292,  293,  294,  295,  296,  297,  298,
-      299,  300,  303
+      207,  208,  209,  210,  211,  212,  213,  214,  215,  216,
+      217,  218,  219,  220,  221,  222,  223,  224,  225,  226,
+      227,  228,  229,  230,  231,  232,  233,  234,  235,  236,
+      237,  238,  239,  240,  241,  242,  243,  244,  245,  246,
+      247,  248,  249,  250,  251,  252,  253,  254,  255,  256,
+      257,  258,  259,  260,  261,  262,  263,  264,  265,  266,
+      267,  268,  269,  270,  271,  272,  273,  274,  275,  276,
+      277,  278,  279,  280,  281,  282,  283,  284,  285,  286,
+      287,  288,  289,  290,  291,  292,  293,  294,  295,  296,
+      297,  298,  301
 
     } ;
 
@@ -3244,7 +3244,7 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 208 "lib/MapSetScanner.lpp"
+#line 206 "lib/MapSetScanner.lpp"
 
 #line 3250 "lib/MapSetScanner.cpp"
 
@@ -3358,475 +3358,475 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 209 "lib/MapSetScanner.lpp"
+#line 207 "lib/MapSetScanner.lpp"
 { yylloc->end.lines(1); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 210 "lib/MapSetScanner.lpp"
+#line 208 "lib/MapSetScanner.lpp"
 { yylloc->step(); /* @@ needed? useful? */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 211 "lib/MapSetScanner.lpp"
+#line 209 "lib/MapSetScanner.lpp"
 {return token::IT_REWRITEVAR;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 212 "lib/MapSetScanner.lpp"
+#line 210 "lib/MapSetScanner.lpp"
 {return token::IT_SERVER;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 213 "lib/MapSetScanner.lpp"
+#line 211 "lib/MapSetScanner.lpp"
 {return token::IT_USER;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 214 "lib/MapSetScanner.lpp"
+#line 212 "lib/MapSetScanner.lpp"
 {return token::IT_PASSWORD;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 215 "lib/MapSetScanner.lpp"
+#line 213 "lib/MapSetScanner.lpp"
 {return token::IT_DATABASE;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 216 "lib/MapSetScanner.lpp"
+#line 214 "lib/MapSetScanner.lpp"
 {return token::IT_STEMURI;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 217 "lib/MapSetScanner.lpp"
+#line 215 "lib/MapSetScanner.lpp"
 {return token::IT_PRIMARYKEY;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 218 "lib/MapSetScanner.lpp"
+#line 216 "lib/MapSetScanner.lpp"
 {return token::IT_SHAREDVARS;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 219 "lib/MapSetScanner.lpp"
+#line 217 "lib/MapSetScanner.lpp"
 {return token::IT_INTERSECTION;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 220 "lib/MapSetScanner.lpp"
+#line 218 "lib/MapSetScanner.lpp"
 {return token::IT_PROMISCUOUS;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 221 "lib/MapSetScanner.lpp"
+#line 219 "lib/MapSetScanner.lpp"
 {return token::IT_VARNAMES;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 222 "lib/MapSetScanner.lpp"
+#line 220 "lib/MapSetScanner.lpp"
 {return token::IT_DRACONIAN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 223 "lib/MapSetScanner.lpp"
+#line 221 "lib/MapSetScanner.lpp"
 {return token::IT_GRAPH;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 224 "lib/MapSetScanner.lpp"
+#line 222 "lib/MapSetScanner.lpp"
 {return token::IT_BASE;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 225 "lib/MapSetScanner.lpp"
+#line 223 "lib/MapSetScanner.lpp"
 {return token::IT_PREFIX;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 226 "lib/MapSetScanner.lpp"
+#line 224 "lib/MapSetScanner.lpp"
 {return token::IT_SELECT;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 227 "lib/MapSetScanner.lpp"
+#line 225 "lib/MapSetScanner.lpp"
 {return token::GT_TIMES;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 228 "lib/MapSetScanner.lpp"
+#line 226 "lib/MapSetScanner.lpp"
 {return token::IT_CONSTRUCT;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 229 "lib/MapSetScanner.lpp"
+#line 227 "lib/MapSetScanner.lpp"
 {return token::IT_FROM;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 230 "lib/MapSetScanner.lpp"
+#line 228 "lib/MapSetScanner.lpp"
 {return token::IT_NAMED;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 231 "lib/MapSetScanner.lpp"
+#line 229 "lib/MapSetScanner.lpp"
 {return token::IT_WHERE;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 232 "lib/MapSetScanner.lpp"
+#line 230 "lib/MapSetScanner.lpp"
 {return token::IT_BINDINGS;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 233 "lib/MapSetScanner.lpp"
+#line 231 "lib/MapSetScanner.lpp"
 {return token::IT_MEMBERS;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 234 "lib/MapSetScanner.lpp"
+#line 232 "lib/MapSetScanner.lpp"
 {return token::IT_STARTS;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 235 "lib/MapSetScanner.lpp"
+#line 233 "lib/MapSetScanner.lpp"
 {return token::IT_ENDS;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 236 "lib/MapSetScanner.lpp"
+#line 234 "lib/MapSetScanner.lpp"
 {return token::IT_ANY;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 237 "lib/MapSetScanner.lpp"
+#line 235 "lib/MapSetScanner.lpp"
 {return token::IT_UNORDERED;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 238 "lib/MapSetScanner.lpp"
+#line 236 "lib/MapSetScanner.lpp"
 {return token::GT_LCURLEY;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 239 "lib/MapSetScanner.lpp"
+#line 237 "lib/MapSetScanner.lpp"
 {return token::GT_RCURLEY;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 240 "lib/MapSetScanner.lpp"
+#line 238 "lib/MapSetScanner.lpp"
 {return token::IT_UNDEF;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 241 "lib/MapSetScanner.lpp"
+#line 239 "lib/MapSetScanner.lpp"
 {return token::GT_SEMI;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 242 "lib/MapSetScanner.lpp"
+#line 240 "lib/MapSetScanner.lpp"
 {return token::GT_LPAREN;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 243 "lib/MapSetScanner.lpp"
+#line 241 "lib/MapSetScanner.lpp"
 {return token::GT_RPAREN;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 244 "lib/MapSetScanner.lpp"
+#line 242 "lib/MapSetScanner.lpp"
 {return token::GT_DOT;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 245 "lib/MapSetScanner.lpp"
+#line 243 "lib/MapSetScanner.lpp"
 {return token::IT_OPTIONAL;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 246 "lib/MapSetScanner.lpp"
+#line 244 "lib/MapSetScanner.lpp"
 {return token::IT_SERVICE;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 247 "lib/MapSetScanner.lpp"
+#line 245 "lib/MapSetScanner.lpp"
 {return token::IT_UNION;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 248 "lib/MapSetScanner.lpp"
+#line 246 "lib/MapSetScanner.lpp"
 {return token::IT_FILTER;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 249 "lib/MapSetScanner.lpp"
+#line 247 "lib/MapSetScanner.lpp"
 {return token::GT_COMMA;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 250 "lib/MapSetScanner.lpp"
+#line 248 "lib/MapSetScanner.lpp"
 {return token::IT_a;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 251 "lib/MapSetScanner.lpp"
+#line 249 "lib/MapSetScanner.lpp"
 {return token::GT_LBRACKET;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 252 "lib/MapSetScanner.lpp"
+#line 250 "lib/MapSetScanner.lpp"
 {return token::GT_RBRACKET;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 253 "lib/MapSetScanner.lpp"
+#line 251 "lib/MapSetScanner.lpp"
 {return token::GT_OR;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 254 "lib/MapSetScanner.lpp"
+#line 252 "lib/MapSetScanner.lpp"
 {return token::GT_AND;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 255 "lib/MapSetScanner.lpp"
+#line 253 "lib/MapSetScanner.lpp"
 {return token::GT_EQUAL;}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 256 "lib/MapSetScanner.lpp"
+#line 254 "lib/MapSetScanner.lpp"
 {return token::GT_NEQUAL;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 257 "lib/MapSetScanner.lpp"
+#line 255 "lib/MapSetScanner.lpp"
 {return token::GT_LT;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 258 "lib/MapSetScanner.lpp"
+#line 256 "lib/MapSetScanner.lpp"
 {return token::GT_GT;}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 259 "lib/MapSetScanner.lpp"
+#line 257 "lib/MapSetScanner.lpp"
 {return token::GT_LE;}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 260 "lib/MapSetScanner.lpp"
+#line 258 "lib/MapSetScanner.lpp"
 {return token::GT_GE;}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 261 "lib/MapSetScanner.lpp"
+#line 259 "lib/MapSetScanner.lpp"
 {return token::GT_PLUS;}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 262 "lib/MapSetScanner.lpp"
+#line 260 "lib/MapSetScanner.lpp"
 {return token::GT_MINUS;}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 263 "lib/MapSetScanner.lpp"
+#line 261 "lib/MapSetScanner.lpp"
 {return token::GT_DIVIDE;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 264 "lib/MapSetScanner.lpp"
+#line 262 "lib/MapSetScanner.lpp"
 {return token::GT_NOT;}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 265 "lib/MapSetScanner.lpp"
+#line 263 "lib/MapSetScanner.lpp"
 {return token::IT_STR;}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 266 "lib/MapSetScanner.lpp"
+#line 264 "lib/MapSetScanner.lpp"
 {return token::IT_LANG;}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 267 "lib/MapSetScanner.lpp"
+#line 265 "lib/MapSetScanner.lpp"
 {return token::IT_LANGMATCHES;}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 268 "lib/MapSetScanner.lpp"
+#line 266 "lib/MapSetScanner.lpp"
 {return token::IT_DATATYPE;}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 269 "lib/MapSetScanner.lpp"
+#line 267 "lib/MapSetScanner.lpp"
 {return token::IT_BOUND;}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 270 "lib/MapSetScanner.lpp"
+#line 268 "lib/MapSetScanner.lpp"
 {return token::IT_sameTerm;}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 271 "lib/MapSetScanner.lpp"
+#line 269 "lib/MapSetScanner.lpp"
 {return token::IT_isIRI;}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 272 "lib/MapSetScanner.lpp"
+#line 270 "lib/MapSetScanner.lpp"
 {return token::IT_isURI;}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 273 "lib/MapSetScanner.lpp"
+#line 271 "lib/MapSetScanner.lpp"
 {return token::IT_isBLANK;}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 274 "lib/MapSetScanner.lpp"
+#line 272 "lib/MapSetScanner.lpp"
 {return token::IT_isLITERAL;}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 275 "lib/MapSetScanner.lpp"
+#line 273 "lib/MapSetScanner.lpp"
 {return token::IT_REGEX;}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 276 "lib/MapSetScanner.lpp"
+#line 274 "lib/MapSetScanner.lpp"
 {return token::GT_DTYPE;}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 277 "lib/MapSetScanner.lpp"
+#line 275 "lib/MapSetScanner.lpp"
 {yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 278 "lib/MapSetScanner.lpp"
+#line 276 "lib/MapSetScanner.lpp"
 {yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 279 "lib/MapSetScanner.lpp"
+#line 277 "lib/MapSetScanner.lpp"
 {yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 280 "lib/MapSetScanner.lpp"
+#line 278 "lib/MapSetScanner.lpp"
 {yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 281 "lib/MapSetScanner.lpp"
+#line 279 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER);}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 282 "lib/MapSetScanner.lpp"
+#line 280 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL);}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 283 "lib/MapSetScanner.lpp"
+#line 281 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_POSITIVE);}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 284 "lib/MapSetScanner.lpp"
+#line 282 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 285 "lib/MapSetScanner.lpp"
+#line 283 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 286 "lib/MapSetScanner.lpp"
+#line 284 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 287 "lib/MapSetScanner.lpp"
+#line 285 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE);}
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 288 "lib/MapSetScanner.lpp"
+#line 286 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 289 "lib/MapSetScanner.lpp"
+#line 287 "lib/MapSetScanner.lpp"
 {return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
 	YY_BREAK
 case 82:
 /* rule 82 can match eol */
 YY_RULE_SETUP
-#line 290 "lib/MapSetScanner.lpp"
+#line 288 "lib/MapSetScanner.lpp"
 {return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 83:
 /* rule 83 can match eol */
 YY_RULE_SETUP
-#line 291 "lib/MapSetScanner.lpp"
+#line 289 "lib/MapSetScanner.lpp"
 {return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 292 "lib/MapSetScanner.lpp"
+#line 290 "lib/MapSetScanner.lpp"
 {return unescape(yylval, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 293 "lib/MapSetScanner.lpp"
+#line 291 "lib/MapSetScanner.lpp"
 {return unescape(yylval, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 86:
 /* rule 86 can match eol */
 YY_RULE_SETUP
-#line 294 "lib/MapSetScanner.lpp"
+#line 292 "lib/MapSetScanner.lpp"
 {return token::NIL;}
 	YY_BREAK
 case 87:
 /* rule 87 can match eol */
 YY_RULE_SETUP
-#line 295 "lib/MapSetScanner.lpp"
+#line 293 "lib/MapSetScanner.lpp"
 {yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 296 "lib/MapSetScanner.lpp"
+#line 294 "lib/MapSetScanner.lpp"
 {yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 297 "lib/MapSetScanner.lpp"
+#line 295 "lib/MapSetScanner.lpp"
 {yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 298 "lib/MapSetScanner.lpp"
+#line 296 "lib/MapSetScanner.lpp"
 {yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 299 "lib/MapSetScanner.lpp"
+#line 297 "lib/MapSetScanner.lpp"
 {yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 300 "lib/MapSetScanner.lpp"
+#line 298 "lib/MapSetScanner.lpp"
 {yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 302 "lib/MapSetScanner.lpp"
+#line 300 "lib/MapSetScanner.lpp"
 { yyterminate();}
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 303 "lib/MapSetScanner.lpp"
+#line 301 "lib/MapSetScanner.lpp"
 {
     std::stringstream s;
     s << "unexpected input '" << yytext << "' at " << *yylloc;
@@ -3835,7 +3835,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 309 "lib/MapSetScanner.lpp"
+#line 307 "lib/MapSetScanner.lpp"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
 #line 3842 "lib/MapSetScanner.cpp"
@@ -4535,7 +4535,7 @@ int yyFlexLexer::yy_get_next_buffer()
 
 /* %if-c++-only */
 
-// extern "C" int isatty (int );
+extern "C" int isatty (int ) throw();
 
 /* %endif */
 
@@ -4885,7 +4885,7 @@ void MapSetfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 309 "lib/MapSetScanner.lpp"
+#line 307 "lib/MapSetScanner.lpp"
 
 
 /* END semantic actions for MapSet terminals */

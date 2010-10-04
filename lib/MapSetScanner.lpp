@@ -128,7 +128,6 @@ GT_GT		">"
 GT_LE		"<="
 GT_GE		">="
 IT_IN		[Ii][Nn]
-GT_NOT_SPACECHAR_IN		"NOT IN"
 GT_DIVIDE		"/"
 GT_PLUS		"+"
 GT_MINUS		"-"
@@ -152,7 +151,6 @@ IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
-GT_NOT_SPACECHAR_EXISTS		"NOT EXISTS"
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
 IT_SUM		[Ss][Uu][Mm]
 IT_MIN		[Mm][Ii][Nn]
