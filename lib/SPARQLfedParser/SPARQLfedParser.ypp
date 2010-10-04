@@ -386,7 +386,7 @@ Top:
 
 _O_QQuery_E_Or_QUpdate_E_C:
     Query	
-    | Update	
+  | Update	
 ;
 
 // SelectQuery | ConstructQuery | DescribeQuery | AskQuery
@@ -404,13 +404,13 @@ Prologue:
 
 // BaseDecl?
 _QBaseDecl_E_Opt:
-
+    
   | BaseDecl	
 ;
 
 // PrefixDecl*
 _QPrefixDecl_E_Star:
-
+    
   | _QPrefixDecl_E_Star PrefixDecl
 ;
 
@@ -647,8 +647,8 @@ WhereClause:
 ;
 
 _QIT_WHERE_E_Opt:
-
-    | IT_WHERE	;
+    
+  | IT_WHERE	;
 
 SolutionModifier:
     // GroupClause? HavingClauses? OrderClause? LimitOffsetClauses?
@@ -1092,8 +1092,8 @@ _O_QGraphPatternNotTriples_E_Or_QFilter_E_C:
 
 // '.'?
 _QGT_DOT_E_Opt:
-
-    | GT_DOT
+    
+  | GT_DOT
 ;
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
@@ -1396,8 +1396,8 @@ _O_QVerb_E_S_QObjectList_E_C:
 
 // ( Verb ObjectList )?
 _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt:
-
-    | _O_QVerb_E_S_QObjectList_E_C
+    
+  | _O_QVerb_E_S_QObjectList_E_C
 ;
 
 // ';' ( Verb ObjectList )?
@@ -1407,8 +1407,8 @@ _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C:
 
 // ( ';' ( Verb ObjectList )? )*
 _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
-
-    | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
+    
+  | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
 ;
 
 PropertyList:
@@ -1418,8 +1418,8 @@ PropertyList:
 
 // PropertyListNotEmpty?
 _QPropertyListNotEmpty_E_Opt:
-
-    | PropertyListNotEmpty
+    
+  | PropertyListNotEmpty
 ;
 
 ObjectList:
@@ -1434,8 +1434,8 @@ _O_QGT_COMMA_E_S_QObject_E_C:
 
 // ( ',' Object )*
 _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
-
-    | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
+    
+  | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
 ;
 
 Object:
