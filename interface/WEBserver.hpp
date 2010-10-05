@@ -525,6 +525,7 @@ namespace w3c_sw {
 
 	static void head (std::ostringstream& sout, std::string title, std::string head = "") {
 	    sout << 
+		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
 		"          \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
@@ -554,20 +555,23 @@ namespace w3c_sw {
 	    SimpleMessageException (ParserException& ex) : StringException(make(ex)) {  }
 	    std::string make (ParserException& ex) {
 		std::ostringstream ss;
-		head(ss, "Q&amp;D SPARQL Server Paring Error");
-		ss << "<h1>Parsing Error</h1>\n<pre>";
+		head(ss, "Q&amp;D SPARQL Server Parsing Error");
+		ss << "<h2>Parsing Error</h2>\n";
+		ss << "<p><code>" << ex.what() << "</code></p>\n";
 		std::string& str(*ex.begin.filename);
 		size_t begin = 0;
 		size_t end = 0;
 		size_t line = 0;
 		bool overrun = false;
 		for (; !overrun && line < ex.begin.line; ++line) {
-		    size_t pos = str.find_first_of('\n', begin);
+		    size_t pos = str.find_first_of("\r\n", begin);
 		    if (pos == std::string::npos) {
 			end = str.size();
 			overrun = true;
 		    } else {
-			begin = pos;
+			if (str[pos] == '\r' && pos < str.size()-1 && str[pos+1] == '\n')
+			    ++pos;
+			begin = pos + 1; // continue after \n
 		    }
 		}
 		if (!overrun) {
@@ -578,11 +582,13 @@ namespace w3c_sw {
 			begin += ex.begin.column;
 			end = begin;
 			for (; !overrun && line < ex.end.line; ++line) {
-			    size_t pos = str.find_first_of('\n', end);
+			    size_t pos = str.find_first_of("\r\n", end);
 			    if (pos == std::string::npos) {
 				end = str.size();
 				overrun = true;
 			    } else {
+				if (str[pos] == '\r' && pos < str.size()-1 && str[pos+1] == '\n')
+				    ++pos;
 				end = pos;
 			    }
 			}
@@ -592,15 +598,34 @@ namespace w3c_sw {
 			    end = str.size();
 			    overrun = true;
 			} else {
-			    end += ex.end.column;
+			    end += ex.begin.line == ex.end.line
+				? ex.end.column-ex.begin.column
+				: ex.end.column;
 			}
 		    }
 		}
+		std::string before(str.substr(0, begin));
+		std::string error(str.substr(begin, end - begin));
+		std::string after(str.substr(end, str.size() - end));
+
+		/** Paint in some unicode characters to make lexer errors on a
+		    word boundry visible. */
+		for (size_t pos = 0; pos < error.size() && (pos = error.find_first_of("\r", pos)) != std::string::npos; )
+		    if (pos == error.size()-1 || error[pos+1] != '\n') {
+			error.insert(pos, "␍");
+			pos += 4; // 3 bytes for unicode char
+		    } else
+			error.replace(pos, pos+1, "");
+		for (size_t pos = 0; pos < error.size() && (pos = error.find_first_of("\n", pos)) != std::string::npos; ) {
+		    error.insert(pos, "␊");
+		    pos += 4; // 3 bytes for unicode char
+		}
+
 		std::cerr << "begin: " << begin << "\nend: " << end << std::endl;
-		ss << str.substr(0, begin);
-		ss << "<span style='color: #f00;'>" << str.substr(begin, end) << "</span>";
-		ss << str.substr(end, str.size());
-		ss << "</pre>";
+		ss
+		    << "<pre style='border:1px solid #000; padding:.5em; float:left;'>" << before
+		    << "<span style='background-color: #f00;'>" << error << "</span>"
+		    << after << "</pre>\n  </body>\n</html>";
 		return ss.str();
 	    }
 	};

@@ -4524,8 +4524,8 @@ YY_RULE_SETUP
 #line 330 "lib/SPARQLfedScanner.lpp"
 {
     std::stringstream s;
-    s << "unexpected input '" << yytext << "' at " << *yylloc;
-    throw s.str();
+    s << "unexpected input: '" << yytext << "'";
+    driver->error(*yylloc, s.str());
 }
 	YY_BREAK
 case 123:

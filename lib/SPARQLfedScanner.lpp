@@ -329,8 +329,8 @@ LINEFEED		(\r\n|\r|\n)
 <<EOF>>			{ yyterminate();}
 .			{
     std::stringstream s;
-    s << "unexpected input '" << yytext << "' at " << *yylloc;
-    throw s.str();
+    s << "unexpected input: '" << yytext << "'";
+    driver->error(*yylloc, s.str());
 }
 
 %%

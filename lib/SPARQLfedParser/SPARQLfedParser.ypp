@@ -2082,8 +2082,42 @@ BlankNode:
 %% /*** Additional Code ***/
 
 void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
-			    const std::string& m)
+				    const std::string& constM)
 {
+    std::string m = constM;
+    static struct { const char* from; const char* to; } tokens[] = {
+	{ "GT_LPAREN",		"'('" },
+	{ "GT_RPAREN",		"')'" },
+	{ "GT_TIMES",		"'*'" },
+	{ "GT_LCURLEY",		"'{'" },
+	{ "GT_RCURLEY",		"'}'" },
+	{ "GT_SEMI",		"';'" },
+	{ "GT_DOT",		"'.'" },
+	{ "GT_COMMA",		"','" },
+	{ "GT_LBRACKET",	"'['" },
+	{ "GT_RBRACKET",	"']'" },
+	{ "GT_OR",		"'||'" },
+	{ "GT_AND",		"'&&'" },
+	{ "GT_EQUAL",		"'='" },
+	{ "GT_NEQUAL",		"'!='" },
+	{ "GT_LT",		"'<'" },
+	{ "GT_GT",		"'>'" },
+	{ "GT_LE",		"'<='" },
+	{ "GT_GE",		"'>='" },
+	{ "GT_DIVIDE",		"'/'" },
+	{ "GT_PLUS",		"'+'" },
+	{ "GT_MINUS",		"'-'" },
+	{ "GT_NOT",		"'!'" },
+	{ "GT_DTYPE",		"'^^'" },
+	{ "GT_", "" }
+    };
+    for (size_t i = 0; i < sizeof(tokens)/sizeof(tokens[0]); ++i) {
+	size_t p = m.find(tokens[i].from);
+	if (p != std::string::npos) {
+	    m.replace(p, strlen(tokens[i].from) + 1, tokens[i].to);
+	    break;
+	}
+    }
     driver.error(l, m);
 }
 

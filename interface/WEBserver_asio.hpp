@@ -16,6 +16,7 @@
 
 #if defined(_WIN32)
   #include <boost/function.hpp>
+  #include <boost/thread/win32/mutex.hpp>
   namespace boost {
     typedef boost::asio::detail::thread thread;
   }
