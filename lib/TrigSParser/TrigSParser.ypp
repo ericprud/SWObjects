@@ -79,14 +79,12 @@ public:
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
-    void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
+    void setDB (RdfDB* db) { this->db = db; }
 
-    void parse(IStreamContext& in);
-    void parse(IStreamContext& in, BasicGraphPattern* bgp);
-    void parse(IStreamContext& in, RdfDB* db);
-    void parse(std::string turtleStr);
-    void parse(std::string turtleStr, BasicGraphPattern* bgp);
-    void parse(std::string turtleStr, RdfDB* db);
+    void parse (IStreamContext& in, RdfDB* db = NULL, BasicGraphPattern* bgp = NULL);
+    void parse (IStreamContext& in, BasicGraphPattern* bgp);
+    void parse (std::string turtleStr, RdfDB* db = NULL, BasicGraphPattern* bgp = NULL);
+    void parse (std::string turtleStr, BasicGraphPattern* bgp);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -617,8 +615,13 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-void TrigSDriver::parse(IStreamContext& in)
+void TrigSDriver::parse (IStreamContext& in, RdfDB* db, BasicGraphPattern* bgp)
 {
+    if (db != NULL)
+	setDB(db);
+    if (bgp != NULL)
+	setGraph(bgp);
+
     streamname = in.nameStr;
 
     TrigSScanner scanner(this, in.p);
@@ -627,35 +630,22 @@ void TrigSDriver::parse(IStreamContext& in)
 
     TrigSParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    defaultBGP = curBGP ? curBGP : db->ensureGraph(NULL);
+    defaultBGP = curBGP ? curBGP : this->db->ensureGraph(NULL);
     parser.parse();
 }
 
 void TrigSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {
-    setGraph(bgp);
-    parse(in);
+    parse(in, NULL, bgp);
 }
 
-void TrigSDriver::parse (IStreamContext& in, RdfDB* db) {
-    setDB(db);
-    parse(in);
-}
-
-void TrigSDriver::parse(std::string turtleStr) {
+void TrigSDriver::parse (std::string turtleStr, RdfDB* db, BasicGraphPattern* bgp) {
     IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    parse(in);
+    parse(in, db, bgp);
 }
 
 void TrigSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
     IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    setGraph(bgp);
-    parse(in);
-}
-
-void TrigSDriver::parse (std::string turtleStr, RdfDB* db) {
-    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    setDB(db);
-    parse(in);
+    parse(in, NULL, bgp);
 }
 
 } // namespace w3c_sw

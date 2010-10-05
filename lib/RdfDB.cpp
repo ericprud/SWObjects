@@ -77,21 +77,19 @@ namespace w3c_sw {
 	    } else if (istr.mediaType.match("text/turtle") || 
 		       istr.mediaType.match("text/ntriples")) {
 		TurtleSDriver parser(nameStr, atomFactory);
-		parser.setGraph(target);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
 		    parser.setNamespaceMap(nsMap);
-		parser.parse(istr);
+		parser.parse(istr, target);
 		return false;
 	    } else {
 		TrigSDriver parser(nameStr, atomFactory);
-		parser.setDB(this);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
 		    parser.setNamespaceMap(nsMap);
-		parser.parse(istr);
+		parser.parse(istr, this, target);
 		return false;
 	    }
 	} catch (ChangeMediaTypeException& e) {

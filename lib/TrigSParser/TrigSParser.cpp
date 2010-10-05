@@ -47,12 +47,12 @@
 /* User implementation prologue.  */
 
 /* Line 317 of lalr1.cc  */
-#line 128 "lib/TrigSParser/TrigSParser.ypp"
+#line 126 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
 
 /* Line 317 of lalr1.cc  */
-#line 180 "lib/TrigSParser/TrigSParser.ypp"
+#line 178 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
 
@@ -438,7 +438,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 678 of lalr1.cc  */
-#line 197 "lib/TrigSParser/TrigSParser.ypp"
+#line 195 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern); // last graph -- kinda useless
     }
@@ -447,7 +447,7 @@ namespace w3c_sw {
   case 8:
 
 /* Line 678 of lalr1.cc  */
-#line 220 "lib/TrigSParser/TrigSParser.ypp"
+#line 218 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
@@ -456,7 +456,7 @@ namespace w3c_sw {
   case 9:
 
 /* Line 678 of lalr1.cc  */
-#line 226 "lib/TrigSParser/TrigSParser.ypp"
+#line 224 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -465,7 +465,7 @@ namespace w3c_sw {
   case 10:
 
 /* Line 678 of lalr1.cc  */
-#line 228 "lib/TrigSParser/TrigSParser.ypp"
+#line 226 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -474,7 +474,7 @@ namespace w3c_sw {
   case 11:
 
 /* Line 678 of lalr1.cc  */
-#line 230 "lib/TrigSParser/TrigSParser.ypp"
+#line 228 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -484,14 +484,14 @@ namespace w3c_sw {
   case 13:
 
 /* Line 678 of lalr1.cc  */
-#line 238 "lib/TrigSParser/TrigSParser.ypp"
+#line 236 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 14:
 
 /* Line 678 of lalr1.cc  */
-#line 239 "lib/TrigSParser/TrigSParser.ypp"
+#line 237 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
     }
@@ -500,7 +500,7 @@ namespace w3c_sw {
   case 15:
 
 /* Line 678 of lalr1.cc  */
-#line 246 "lib/TrigSParser/TrigSParser.ypp"
+#line 244 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curBGP = (yysemantic_stack_[(2) - (1)].p_URI) ? driver.db->ensureGraph((yysemantic_stack_[(2) - (1)].p_URI)) : driver.defaultBGP;
 	driver.neededBGP = NULL;
@@ -510,7 +510,7 @@ namespace w3c_sw {
   case 16:
 
 /* Line 678 of lalr1.cc  */
-#line 249 "lib/TrigSParser/TrigSParser.ypp"
+#line 247 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(5) - (4)].p_DefaultGraphPattern);
 	  driver.neededBGP = NULL;
@@ -521,21 +521,21 @@ namespace w3c_sw {
   case 17:
 
 /* Line 678 of lalr1.cc  */
-#line 257 "lib/TrigSParser/TrigSParser.ypp"
+#line 255 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_URI) = NULL; }
     break;
 
   case 19:
 
 /* Line 678 of lalr1.cc  */
-#line 263 "lib/TrigSParser/TrigSParser.ypp"
+#line 261 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 20:
 
 /* Line 678 of lalr1.cc  */
-#line 264 "lib/TrigSParser/TrigSParser.ypp"
+#line 262 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
     }
@@ -544,7 +544,7 @@ namespace w3c_sw {
   case 21:
 
 /* Line 678 of lalr1.cc  */
-#line 271 "lib/TrigSParser/TrigSParser.ypp"
+#line 269 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
 	driver.neededBGP = NULL;
@@ -554,7 +554,7 @@ namespace w3c_sw {
   case 22:
 
 /* Line 678 of lalr1.cc  */
-#line 279 "lib/TrigSParser/TrigSParser.ypp"
+#line 277 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
     }
@@ -563,14 +563,14 @@ namespace w3c_sw {
   case 23:
 
 /* Line 678 of lalr1.cc  */
-#line 286 "lib/TrigSParser/TrigSParser.ypp"
+#line 284 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 25:
 
 /* Line 678 of lalr1.cc  */
-#line 291 "lib/TrigSParser/TrigSParser.ypp"
+#line 289 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -579,7 +579,7 @@ namespace w3c_sw {
   case 27:
 
 /* Line 678 of lalr1.cc  */
-#line 294 "lib/TrigSParser/TrigSParser.ypp"
+#line 292 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -588,7 +588,7 @@ namespace w3c_sw {
   case 43:
 
 /* Line 678 of lalr1.cc  */
-#line 354 "lib/TrigSParser/TrigSParser.ypp"
+#line 352 "lib/TrigSParser/TrigSParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
@@ -600,7 +600,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 363 "lib/TrigSParser/TrigSParser.ypp"
+#line 361 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
@@ -610,7 +610,7 @@ namespace w3c_sw {
   case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 367 "lib/TrigSParser/TrigSParser.ypp"
+#line 365 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_TTerm);
@@ -620,7 +620,7 @@ namespace w3c_sw {
   case 46:
 
 /* Line 678 of lalr1.cc  */
-#line 374 "lib/TrigSParser/TrigSParser.ypp"
+#line 372 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -629,7 +629,7 @@ namespace w3c_sw {
   case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 377 "lib/TrigSParser/TrigSParser.ypp"
+#line 375 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -638,7 +638,7 @@ namespace w3c_sw {
   case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 383 "lib/TrigSParser/TrigSParser.ypp"
+#line 381 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -649,7 +649,7 @@ namespace w3c_sw {
   case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 387 "lib/TrigSParser/TrigSParser.ypp"
+#line 385 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -660,7 +660,7 @@ namespace w3c_sw {
   case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 396 "lib/TrigSParser/TrigSParser.ypp"
+#line 394 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
 	const TTerm* tail = (yyval.p_BNode);
@@ -684,7 +684,7 @@ namespace w3c_sw {
   case 51:
 
 /* Line 678 of lalr1.cc  */
-#line 418 "lib/TrigSParser/TrigSParser.ypp"
+#line 416 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
@@ -693,7 +693,7 @@ namespace w3c_sw {
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 421 "lib/TrigSParser/TrigSParser.ypp"
+#line 419 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
 	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
@@ -703,7 +703,7 @@ namespace w3c_sw {
   case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 428 "lib/TrigSParser/TrigSParser.ypp"
+#line 426 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -712,7 +712,7 @@ namespace w3c_sw {
   case 54:
 
 /* Line 678 of lalr1.cc  */
-#line 431 "lib/TrigSParser/TrigSParser.ypp"
+#line 429 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -721,7 +721,7 @@ namespace w3c_sw {
   case 55:
 
 /* Line 678 of lalr1.cc  */
-#line 437 "lib/TrigSParser/TrigSParser.ypp"
+#line 435 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -730,7 +730,7 @@ namespace w3c_sw {
   case 56:
 
 /* Line 678 of lalr1.cc  */
-#line 443 "lib/TrigSParser/TrigSParser.ypp"
+#line 441 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -739,7 +739,7 @@ namespace w3c_sw {
   case 57:
 
 /* Line 678 of lalr1.cc  */
-#line 449 "lib/TrigSParser/TrigSParser.ypp"
+#line 447 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -748,7 +748,7 @@ namespace w3c_sw {
   case 58:
 
 /* Line 678 of lalr1.cc  */
-#line 452 "lib/TrigSParser/TrigSParser.ypp"
+#line 450 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
@@ -757,7 +757,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 455 "lib/TrigSParser/TrigSParser.ypp"
+#line 453 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -766,7 +766,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 458 "lib/TrigSParser/TrigSParser.ypp"
+#line 456 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -775,7 +775,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 461 "lib/TrigSParser/TrigSParser.ypp"
+#line 459 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -784,7 +784,7 @@ namespace w3c_sw {
   case 62:
 
 /* Line 678 of lalr1.cc  */
-#line 464 "lib/TrigSParser/TrigSParser.ypp"
+#line 462 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
@@ -793,7 +793,7 @@ namespace w3c_sw {
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 471 "lib/TrigSParser/TrigSParser.ypp"
+#line 469 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -803,7 +803,7 @@ namespace w3c_sw {
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 479 "lib/TrigSParser/TrigSParser.ypp"
+#line 477 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -812,7 +812,7 @@ namespace w3c_sw {
   case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 486 "lib/TrigSParser/TrigSParser.ypp"
+#line 484 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -822,7 +822,7 @@ namespace w3c_sw {
   case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 490 "lib/TrigSParser/TrigSParser.ypp"
+#line 488 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -832,7 +832,7 @@ namespace w3c_sw {
   case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 498 "lib/TrigSParser/TrigSParser.ypp"
+#line 496 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -842,7 +842,7 @@ namespace w3c_sw {
   case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 502 "lib/TrigSParser/TrigSParser.ypp"
+#line 500 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
     }
@@ -851,7 +851,7 @@ namespace w3c_sw {
   case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 508 "lib/TrigSParser/TrigSParser.ypp"
+#line 506 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -860,7 +860,7 @@ namespace w3c_sw {
   case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 511 "lib/TrigSParser/TrigSParser.ypp"
+#line 509 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -869,7 +869,7 @@ namespace w3c_sw {
   case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 514 "lib/TrigSParser/TrigSParser.ypp"
+#line 512 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -878,7 +878,7 @@ namespace w3c_sw {
   case 72:
 
 /* Line 678 of lalr1.cc  */
-#line 520 "lib/TrigSParser/TrigSParser.ypp"
+#line 518 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -887,7 +887,7 @@ namespace w3c_sw {
   case 73:
 
 /* Line 678 of lalr1.cc  */
-#line 523 "lib/TrigSParser/TrigSParser.ypp"
+#line 521 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -896,7 +896,7 @@ namespace w3c_sw {
   case 74:
 
 /* Line 678 of lalr1.cc  */
-#line 526 "lib/TrigSParser/TrigSParser.ypp"
+#line 524 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -905,7 +905,7 @@ namespace w3c_sw {
   case 75:
 
 /* Line 678 of lalr1.cc  */
-#line 532 "lib/TrigSParser/TrigSParser.ypp"
+#line 530 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -914,7 +914,7 @@ namespace w3c_sw {
   case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 535 "lib/TrigSParser/TrigSParser.ypp"
+#line 533 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -923,7 +923,7 @@ namespace w3c_sw {
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 538 "lib/TrigSParser/TrigSParser.ypp"
+#line 536 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -932,7 +932,7 @@ namespace w3c_sw {
   case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 544 "lib/TrigSParser/TrigSParser.ypp"
+#line 542 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -941,7 +941,7 @@ namespace w3c_sw {
   case 79:
 
 /* Line 678 of lalr1.cc  */
-#line 547 "lib/TrigSParser/TrigSParser.ypp"
+#line 545 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -950,7 +950,7 @@ namespace w3c_sw {
   case 80:
 
 /* Line 678 of lalr1.cc  */
-#line 550 "lib/TrigSParser/TrigSParser.ypp"
+#line 548 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -959,7 +959,7 @@ namespace w3c_sw {
   case 81:
 
 /* Line 678 of lalr1.cc  */
-#line 556 "lib/TrigSParser/TrigSParser.ypp"
+#line 554 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -968,7 +968,7 @@ namespace w3c_sw {
   case 82:
 
 /* Line 678 of lalr1.cc  */
-#line 559 "lib/TrigSParser/TrigSParser.ypp"
+#line 557 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -977,7 +977,7 @@ namespace w3c_sw {
   case 83:
 
 /* Line 678 of lalr1.cc  */
-#line 565 "lib/TrigSParser/TrigSParser.ypp"
+#line 563 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -986,7 +986,7 @@ namespace w3c_sw {
   case 84:
 
 /* Line 678 of lalr1.cc  */
-#line 568 "lib/TrigSParser/TrigSParser.ypp"
+#line 566 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -995,7 +995,7 @@ namespace w3c_sw {
   case 85:
 
 /* Line 678 of lalr1.cc  */
-#line 571 "lib/TrigSParser/TrigSParser.ypp"
+#line 569 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -1004,7 +1004,7 @@ namespace w3c_sw {
   case 86:
 
 /* Line 678 of lalr1.cc  */
-#line 574 "lib/TrigSParser/TrigSParser.ypp"
+#line 572 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
     }
@@ -1013,7 +1013,7 @@ namespace w3c_sw {
   case 87:
 
 /* Line 678 of lalr1.cc  */
-#line 580 "lib/TrigSParser/TrigSParser.ypp"
+#line 578 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1022,7 +1022,7 @@ namespace w3c_sw {
   case 88:
 
 /* Line 678 of lalr1.cc  */
-#line 583 "lib/TrigSParser/TrigSParser.ypp"
+#line 581 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1031,7 +1031,7 @@ namespace w3c_sw {
   case 89:
 
 /* Line 678 of lalr1.cc  */
-#line 589 "lib/TrigSParser/TrigSParser.ypp"
+#line 587 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1040,7 +1040,7 @@ namespace w3c_sw {
   case 90:
 
 /* Line 678 of lalr1.cc  */
-#line 592 "lib/TrigSParser/TrigSParser.ypp"
+#line 590 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1049,7 +1049,7 @@ namespace w3c_sw {
   case 91:
 
 /* Line 678 of lalr1.cc  */
-#line 598 "lib/TrigSParser/TrigSParser.ypp"
+#line 596 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -1058,7 +1058,7 @@ namespace w3c_sw {
   case 92:
 
 /* Line 678 of lalr1.cc  */
-#line 601 "lib/TrigSParser/TrigSParser.ypp"
+#line 599 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -1518,16 +1518,16 @@ namespace w3c_sw {
   const unsigned short int
   TrigSParser::yyrline_[] =
   {
-         0,   197,   197,   204,   208,   210,   214,   216,   220,   226,
-     228,   230,   226,   238,   239,   246,   246,   257,   258,   263,
-     264,   271,   279,   286,   287,   291,   291,   294,   294,   301,
-     306,   310,   312,   317,   321,   323,   328,   332,   334,   339,
-     344,   348,   350,   354,   363,   367,   374,   377,   383,   383,
-     396,   418,   421,   428,   431,   437,   443,   449,   452,   455,
-     458,   461,   464,   471,   479,   486,   490,   498,   502,   508,
-     511,   514,   520,   523,   526,   532,   535,   538,   544,   547,
-     550,   556,   559,   565,   568,   571,   574,   580,   583,   589,
-     592,   598,   601
+         0,   195,   195,   202,   206,   208,   212,   214,   218,   224,
+     226,   228,   224,   236,   237,   244,   244,   255,   256,   261,
+     262,   269,   277,   284,   285,   289,   289,   292,   292,   299,
+     304,   308,   310,   315,   319,   321,   326,   330,   332,   337,
+     342,   346,   348,   352,   361,   365,   372,   375,   381,   381,
+     394,   416,   419,   426,   429,   435,   441,   447,   450,   453,
+     456,   459,   462,   469,   477,   484,   488,   496,   500,   506,
+     509,   512,   518,   521,   524,   530,   533,   536,   542,   545,
+     548,   554,   557,   563,   566,   569,   572,   578,   581,   587,
+     590,   596,   599
   };
 
   // Print the state stack on the debug stream.
@@ -1627,7 +1627,7 @@ namespace w3c_sw {
 
 
 /* Line 1056 of lalr1.cc  */
-#line 608 "lib/TrigSParser/TrigSParser.ypp"
+#line 606 "lib/TrigSParser/TrigSParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
@@ -1640,8 +1640,13 @@ void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,
 
 namespace w3c_sw {
 
-void TrigSDriver::parse(IStreamContext& in)
+void TrigSDriver::parse (IStreamContext& in, RdfDB* db, BasicGraphPattern* bgp)
 {
+    if (db != NULL)
+	setDB(db);
+    if (bgp != NULL)
+	setGraph(bgp);
+
     streamname = in.nameStr;
 
     TrigSScanner scanner(this, in.p);
@@ -1650,35 +1655,22 @@ void TrigSDriver::parse(IStreamContext& in)
 
     TrigSParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    defaultBGP = curBGP ? curBGP : db->ensureGraph(NULL);
+    defaultBGP = curBGP ? curBGP : this->db->ensureGraph(NULL);
     parser.parse();
 }
 
 void TrigSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {
-    setGraph(bgp);
-    parse(in);
+    parse(in, NULL, bgp);
 }
 
-void TrigSDriver::parse (IStreamContext& in, RdfDB* db) {
-    setDB(db);
-    parse(in);
-}
-
-void TrigSDriver::parse(std::string turtleStr) {
+void TrigSDriver::parse (std::string turtleStr, RdfDB* db, BasicGraphPattern* bgp) {
     IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    parse(in);
+    parse(in, db, bgp);
 }
 
 void TrigSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
     IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    setGraph(bgp);
-    parse(in);
-}
-
-void TrigSDriver::parse (std::string turtleStr, RdfDB* db) {
-    IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    setDB(db);
-    parse(in);
+    parse(in, NULL, bgp);
 }
 
 } // namespace w3c_sw

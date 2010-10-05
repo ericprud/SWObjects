@@ -78,14 +78,12 @@ public:
 	curSubject = curPredicate = NULL;
 	neededBGP = curBGP = NULL;
     }
-    void setDB (RdfDB* db) { this->db = db; curBGP = NULL; }
+    void setDB (RdfDB* db) { this->db = db; }
 
-    void parse(IStreamContext& in);
-    void parse(IStreamContext& in, BasicGraphPattern* bgp);
-    void parse(IStreamContext& in, RdfDB* db);
-    void parse(std::string turtleStr);
-    void parse(std::string turtleStr, BasicGraphPattern* bgp);
-    void parse(std::string turtleStr, RdfDB* db);
+    void parse (IStreamContext& in, RdfDB* db = NULL, BasicGraphPattern* bgp = NULL);
+    void parse (IStreamContext& in, BasicGraphPattern* bgp);
+    void parse (std::string turtleStr, RdfDB* db = NULL, BasicGraphPattern* bgp = NULL);
+    void parse (std::string turtleStr, BasicGraphPattern* bgp);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -100,7 +98,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 104 "lib/TrigSParser/TrigSParser.hpp"
+#line 102 "lib/TrigSParser/TrigSParser.hpp"
 
 
 #include <string>
@@ -114,7 +112,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 118 "lib/TrigSParser/TrigSParser.hpp"
+#line 116 "lib/TrigSParser/TrigSParser.hpp"
   class position;
   class location;
 
@@ -124,7 +122,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 128 "lib/TrigSParser/TrigSParser.hpp"
+#line 126 "lib/TrigSParser/TrigSParser.hpp"
 
 #include "location.hh"
 
@@ -172,7 +170,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 176 "lib/TrigSParser/TrigSParser.hpp"
+#line 174 "lib/TrigSParser/TrigSParser.hpp"
 
   /// A Bison parser.
   class TrigSParser
@@ -184,7 +182,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 104 "lib/TrigSParser/TrigSParser.ypp"
+#line 102 "lib/TrigSParser/TrigSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -211,7 +209,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 215 "lib/TrigSParser/TrigSParser.hpp"
+#line 213 "lib/TrigSParser/TrigSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -437,7 +435,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 441 "lib/TrigSParser/TrigSParser.hpp"
+#line 439 "lib/TrigSParser/TrigSParser.hpp"
 
 
 
