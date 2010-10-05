@@ -344,6 +344,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string SQLPort;
     std::string SQLDatabase;
     std::ostream**   debugStream;
+#if HTTP_SERVER == SWOb_ASIO
+    boost::mutex executeMutex;    
+#endif /* HTTP_SERVER == SWOb_ASIO */
 
     MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute, std::ostream** debugStream = NULL)
@@ -520,7 +523,13 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    std::cout << query->toString() << std::endl;
 		}
 		if (NoExec == false) {
+#if HTTP_SERVER == SWOb_ASIO
+		    boost::mutex::scoped_lock lock(executeMutex);
+		    /* Is this how one implements a single-writer lock with a shared_mutex?
+		     *   if query->readOnly() executeMutex.lock_shared(); */
+#endif /* HTTP_SERVER == SWOb_ASIO */
 		    query->execute(&db, &rs);
+		    //executeMutex.unlock_shared();
 		    executed = true;
 		}
 	    }
