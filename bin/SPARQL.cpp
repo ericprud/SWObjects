@@ -315,9 +315,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    std::cerr << what << std::endl;
 	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
-		"    <pre>" << query << "</pre>\n"
+		"    <pre>" << escapeHTML(query) << "</pre>\n"
 		"    <p>yeilded</p>\n"
-		"    <pre>" << what << "</pre>\n"; 
+		"    <pre>" << escapeHTML(what) << "</pre>\n"; 
 	    foot(sout);
 	    rep.content = sout.str();
 	}
