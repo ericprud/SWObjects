@@ -621,11 +621,11 @@ namespace w3c_sw {
 		    pos += 4; // 3 bytes for unicode char
 		}
 
-		std::cerr << "begin: " << begin << "\nend: " << end << std::endl;
+		//std::cerr << "begin: " << begin << "\nend: " << end << std::endl;
 		ss
-		    << "<pre style='border:1px solid #000; padding:.5em; float:left;'>" << before
-		    << "<span style='background-color: #f00;'>" << error << "</span>"
-		    << after << "</pre>\n  </body>\n</html>";
+		    << "<pre style='border:1px solid #000; padding:.5em; float:left;'>" << escapeHTML(before)
+		    << "<span style='background-color: #f00;'>" << escapeHTML(error) << "</span>"
+		    << escapeHTML(after) << "</pre>\n  </body>\n</html>";
 		return ss.str();
 	    }
 	};
