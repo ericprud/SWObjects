@@ -65,8 +65,11 @@ BOOST_VERSION=-mt
 
 ##### INCLUDES: /some/path... - Directories containing additional headers #####
 # You must prefix each directory with "-I" and separate them with spaces.
-#OSX: INCLUDES += -I/opt/local/include/
-#OSX: LIBS += -L/opt/local/lib/
+#OSX: INCLUDES += -I/opt/local/include/ -I/opt/local/include/mysql5/
+#OSX: LIBS += -L/opt/local/lib/ -L/opt/local/lib/mysql5/
+# CFLAGS += -mmacosx-version-min=10.5
+#OSX: CFLAGS += -arch x86_64
+#OSX: LDFLAGS += -mmacosx-version-min=10.5 -L/opt/local/lib/mysql5/mysql/ -arch x86_64
 # Note that you may also set INCLUDES, LIBINC, etc on the command line:
 # INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. -lexpat1" make -j 4 t_DAWG
 

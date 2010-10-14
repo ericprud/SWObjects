@@ -29,7 +29,7 @@ PERL_HOME:=/usr/lib/perl/5.10.1
 JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
 #ECHO:=`which echo`
-#ECHO:= /bin/echo -e
+#OSX: ECHO:= /bin/echo
 ECHO ?= echo
 #LIBS
 DEBUG:=-g -O0
@@ -169,7 +169,8 @@ TOONOISEY=-ansi
 #for macports
 
 # -std=c++0x -- can't count on 0x on all platforms
-CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -pedantic-errors -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128 -fno-merge-constants
+#  -pedantic-errors -- breaks on OSX
+CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128 -fno-merge-constants
 CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
@@ -255,7 +256,7 @@ bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
 
 # bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ bin/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
@@ -315,7 +316,7 @@ TEST_ARGS ?= ""
 t_SPARQL: bin/SPARQL
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -327,7 +328,7 @@ tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
@@ -511,6 +512,39 @@ SWIG-CLEAN += perl-clean
 
 swig-test: $(SWIG-TEST)
 swig-clean: $(SWIG-CLEAN)
+
+# Mac OSX stuff
+Sparql.app/Contents/MacOS:
+	mkdir -p $@
+
+Sparql.app/Contents/Frameworks:
+	mkdir -p $@
+	cp /usr/lib/libstdc++.6.dylib $@
+	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $@/libstdc++.6.dylib
+	for l in regex system program_options filesystem thread; do \
+		cp /opt/local/lib/libboost_$$l-mt.dylib $@ && \
+		install_name_tool -id @executable_path/../Frameworks/libboost_$$l-mt.dylib $@/libboost_$$l-mt.dylib && \
+		install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $@/libboost_$$l-mt.dylib; \
+	done
+	for l in ssl.0.9.8 crypto.0.9.8 z.1; do \
+		cp /opt/local/lib/lib$$l.dylib $@ && \
+		install_name_tool -id @executable_path/../Frameworks/lib$$l.dylib $@/lib$$l.dylib && \
+		install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $@/lib$$l.dylib && \
+		install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $@/lib$$l.dylib; \
+	done
+	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $@
+	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $@/libmysqlclient.16.dylib && \
+	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $@/libmysqlclient.16.dylib
+	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $@/libmysqlclient.16.dylib
+	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $@/libmysqlclient.16.dylib
+
+Sparql.app/Contents/MacOS/Sparql: bin/SPARQL.o $(LIB) Sparql.app/Contents/MacOS Sparql.app/Contents/Frameworks
+	$(CXX) -o $@ $< -LSparql.app/Contents/Frameworks $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
+
+Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
+	rm -f $@
+	hdiutil create -srcfolder Sparql.app $@
+
 
 # Clean - rm everything we remember to rm.
 .PHONY: clean cleaner
