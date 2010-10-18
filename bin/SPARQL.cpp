@@ -299,11 +299,15 @@ DBHandlers  RdfDBHandlers;
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
+	size_t exploreTripleCountLimit;
+	size_t exploreGraphCountLimit;
 
     public:
 	MyHandler (MyServer& server) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
-	    server(server)
+	    server(server),
+	    // hard-code explore*CountLimit
+	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
     protected:
 
@@ -357,15 +361,12 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory, debugStream), debugStream(debugStream)
     {  }
-    sw::BasicGraphPattern* ensureGraph (const sw::TTerm* name) {
-	return db.ensureGraph(name);
-    }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	std::ostringstream s;
 	s << "http://localhost:" << serverPort << path;
 
 	const sw::URI* serviceURI = atomFactory.getURI(s.str());
-	sw::BasicGraphPattern* serviceGraph = ensureGraph(serviceURI);
+	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);
 	serviceGraph->addTriplePattern(atomFactory.getTriple(
 		    serviceURI, 
 		    atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
@@ -592,7 +593,7 @@ struct loadEntry {
 };
 typedef std::vector<loadEntry> loadList;
 
-const sw::TTerm* htparseWrapper(std::string s, const sw::TTerm* base) {
+const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
     std::string baseURIstring = base ? base->getLexicalValue() : "";
     std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
     return F.getURI(t.c_str());
@@ -787,7 +788,49 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		"    </form>\n"
 		"    <form action='" << server.path << "' method='post'>\n"
 		"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
-		"    </form>\n"; 
+		"    </form>\n";
+	    size_t triples = server.db.size();
+	    if (triples < 1000) {
+		/** Show the user what data exists à la:
+		  <p>5 triples in 3 graphs:</p>
+		  <ul>
+		    <li>Default Graph: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++%3Fs+%3Fp+%3Fo%0A%7D'>0 triples</a>.</li>
+		    <li>&lt;graphOne&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3CgraphOne%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>3 triples</a>.</li>
+		    <li>&lt;http://localhost:8888/SPARQL&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3Chttp%3A%2F%2Flocalhost%3A8888%2FSPARQL%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>2 triples</a>.</li>
+		  </ul>
+		 */
+		std::list<const sw::TTerm*>graphs = server.db.getGraphNames();
+		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
+		if (graphs.size() <= exploreGraphCountLimit) {
+		    sout << ":</p>\n    <ul>\n";
+		    for (std::set<const sw::TTerm*>::const_iterator g = graphs.begin();
+			 g != graphs.end(); ++g) {
+			size_t graphSize = server.db.ensureGraph(*g)->size();
+			std::stringstream query;
+			query << "SELECT ?s ?p ?o {\n  ";
+			if (*g != sw::DefaultGraph)
+			    query << "GRAPH " << (*g)->toString() << " {";
+			query << "?s ?p ?o";
+			sout << "      <li>" << escapeHTML((*g)->toString()) << ": <a href='";
+			if (*g != sw::DefaultGraph)
+			    query << "}";
+			query << "\n}";
+			if (graphSize > exploreTripleCountLimit)
+			    query << " LIMIT " << exploreTripleCountLimit;
+			sw::SWWEBagent::ParameterList p;
+			p.set("query", query.str());
+			p.set("media", "html");
+			sout << server.path << "?" << escapeHTML(p.str());
+			sout << "'>" << graphSize << " triples</a>";
+			sout << ".</li>\n";
+		    }
+		    sout << "    </ul>\n";
+		} else {
+		    sout << ".</p>\n";
+		}
+	    } else {
+		sout << "    <p>" << triples << " triples in database.</p>\n";
+	    }
 	    rep.addHeader("Content-Type", "text/html");
 	    foot(sout);
 	} else if (path == "/favicon.ico") {
