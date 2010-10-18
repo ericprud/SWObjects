@@ -88,13 +88,13 @@ namespace w3c_sw {
 		bgp->addTriplePattern(*it);
 	}
 	virtual ~RdfDB();
-	size_t size () {
+	size_t size () const {
 	    size_t ret = 0;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
 		ret += it->second->size();
 	    return ret;
 	}
-	std::set<const TTerm*> getGraphNames () {
+	std::set<const TTerm*> getGraphNames () const {
 	    std::set<const TTerm*> names;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
 		names.insert(it->first);
