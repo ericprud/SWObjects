@@ -257,10 +257,13 @@ public:
 	p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
-	xml->open("Replace");
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	xml->open("Modify");
+	if (p_delete != NULL)
+	    p_delete->express(this);
+	if (p_insert != NULL)
+	    p_insert->express(this);
 	p_WhereClause->express(this);
-	p_GraphTemplate->express(this);
 	xml->close();
     }
     virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
@@ -275,14 +278,15 @@ public:
 	p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
+    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
 	xml->open("Load");
-	p_IRIrefs->express(this);
+	p_from->express(this);
 	p_into->express(this);
 	xml->close();
     }
-    virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	xml->open("Clear");
+	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
 	p__QGraphIRI_E_Opt->express(this);
 	xml->close();
     }

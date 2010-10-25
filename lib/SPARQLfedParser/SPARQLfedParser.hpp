@@ -261,6 +261,9 @@ namespace w3c_sw {
 
     /* Productions */
     Operation* p_Operation;
+    struct {const Delete* del; const Insert* ins;} p_DeleteInsert;
+    Delete* p_Delete;
+    Insert* p_Insert;
     OperationSet* p_OperationSet;
     const Variable* p_Variable;
 
@@ -306,7 +309,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 310 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 313 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -414,30 +417,38 @@ namespace w3c_sw {
      IT_AVG = 350,
      IT_GROUP_CONCAT = 351,
      IT_SAMPLE = 352,
-     IT_true = 353,
-     IT_false = 354,
-     INTEGER = 355,
-     DECIMAL = 356,
-     DOUBLE = 357,
-     INTEGER_POSITIVE = 358,
-     DECIMAL_POSITIVE = 359,
-     DOUBLE_POSITIVE = 360,
-     INTEGER_NEGATIVE = 361,
-     DECIMAL_NEGATIVE = 362,
-     DOUBLE_NEGATIVE = 363,
-     STRING_LITERAL1 = 364,
-     STRING_LITERAL_LONG1 = 365,
-     STRING_LITERAL2 = 366,
-     STRING_LITERAL_LONG2 = 367,
-     IRI_REF = 368,
-     PNAME_NS = 369,
-     PNAME_LN = 370,
-     BLANK_NODE_LABEL = 371,
-     ANON = 372,
-     VAR1 = 373,
-     VAR2 = 374,
-     LANGTAG = 375,
-     NIL = 376
+     IT_isNUMERIC = 353,
+     GT_CARROT = 354,
+     GT_OPT = 355,
+     GT_PIPE = 356,
+     IT_WITH = 357,
+     IT_DEFAULT = 358,
+     IT_ALL = 359,
+     IT_USING = 360,
+     IT_true = 361,
+     IT_false = 362,
+     INTEGER = 363,
+     DECIMAL = 364,
+     DOUBLE = 365,
+     INTEGER_POSITIVE = 366,
+     DECIMAL_POSITIVE = 367,
+     DOUBLE_POSITIVE = 368,
+     INTEGER_NEGATIVE = 369,
+     DECIMAL_NEGATIVE = 370,
+     DOUBLE_NEGATIVE = 371,
+     STRING_LITERAL1 = 372,
+     STRING_LITERAL_LONG1 = 373,
+     STRING_LITERAL2 = 374,
+     STRING_LITERAL_LONG2 = 375,
+     IRI_REF = 376,
+     PNAME_NS = 377,
+     PNAME_LN = 378,
+     BLANK_NODE_LABEL = 379,
+     ANON = 380,
+     VAR1 = 381,
+     VAR2 = 382,
+     LANGTAG = 383,
+     NIL = 384
    };
 
     };
@@ -614,7 +625,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 618 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 629 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

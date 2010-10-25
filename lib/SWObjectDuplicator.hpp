@@ -348,11 +348,19 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    last.operation = new Ask(_DatasetClauses(p_DatasetClauses), last.whereClause);
 	}
-	virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	    const Delete* del = NULL;
+	    if (p_delete != NULL) {
+		p_delete->express(this);
+		del = dynamic_cast<const Delete*>(last.operation);
+	    }
+	    const Insert* ins;
+	    if (p_insert != NULL) {
+		p_insert->express(this);
+		ins = dynamic_cast<const Insert*>(last.operation);
+	    }
 	    p_WhereClause->express(this);
-	    WhereClause* where = last.whereClause;
-	    p_GraphTemplate->express(this);
-	    last.operation = new Replace(where, last.tableOperation);
+	    last.operation = new Modify(del, ins, last.whereClause);
 	}
 	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    last.whereClause = NULL;
@@ -368,21 +376,17 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    last.operation = new Delete(last.tableOperation, where);
 	}
-	virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
-	    ProductionVector<const URI*>* l_URIs = new ProductionVector<const URI*>();
-	    for (std::vector<const URI*>::iterator it = p_IRIrefs->begin();
-		 it != p_IRIrefs->end(); it++) {
-		(*it)->express(this);
-		l_URIs->push_back(last.tterms.uri);
-	    }
+	virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+	    p_from->express(this);
+	    const URI* from = last.tterms.uri;
 	    p_into->express(this);
-	    last.operation = new Load(l_URIs, last.tterms.uri);
+	    last.operation = new Load(from, last.tterms.uri);
 	}
-	virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
+	virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	    last.tterms.tterm = NULL;
 	    if (p__QGraphIRI_E_Opt != NULL)
 		p__QGraphIRI_E_Opt->express(this);
-	    last.operation = new Clear(last.tterms.uri);
+	    last.operation = new Clear(p_Silence, last.tterms.uri);
 	}
 	virtual void create (const Create* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	    p_GraphIRI->express(this);

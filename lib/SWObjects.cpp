@@ -433,8 +433,8 @@ void Describe::express (Expressor* p_expressor) const {
 void Ask::express (Expressor* p_expressor) const {
     p_expressor->ask(this, m_DatasetClauses,m_WhereClause);
 }
-void Replace::express (Expressor* p_expressor) const {
-    p_expressor->replace(this, m_WhereClause,m_GraphTemplate);
+void Modify::express (Expressor* p_expressor) const {
+    p_expressor->modify(this, m_delete,m_insert,m_WhereClause);
 }
 void Insert::express (Expressor* p_expressor) const {
     p_expressor->insert(this, m_GraphTemplate,m_WhereClause);
@@ -443,10 +443,10 @@ void Delete::express (Expressor* p_expressor) const {
     p_expressor->del(this, m_GraphTemplate,m_WhereClause);
 }
 void Load::express (Expressor* p_expressor) const {
-    p_expressor->load(this, m_IRIrefs,m_into);
+    p_expressor->load(this, m_from,m_into);
 }
 void Clear::express (Expressor* p_expressor) const {
-    p_expressor->clear(this, m__QGraphIRI_E_Opt);
+    p_expressor->clear(this, m_Silence,m__QGraphIRI_E_Opt);
 }
 void Create::express (Expressor* p_expressor) const {
     p_expressor->create(this, m_Silence,m_GraphIRI);
@@ -613,6 +613,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const URI* TTerm::FUNC_iri			 = AtomFactory::_URIConstants + 42;
     const URI* TTerm::FUNC_uri			 = AtomFactory::_URIConstants + 43;
     const URI* TTerm::FUNC_blank		 = AtomFactory::_URIConstants + 44;
+    const URI* TTerm::FUNC_isNumeric		 = AtomFactory::_URIConstants + 45;
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
 	BooleanRDFLiteral("true",  TTerm::URI_xsd_boolean, true),
@@ -1273,6 +1274,20 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return rs;
     }
 
+    ResultSet* Describe::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
+	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
+	     ds != m_DatasetClauses->end(); ds++)
+	    (*ds)->loadData(db);
+	m_WhereClause->bindVariables(db, rs);
+	MakeNewBNode makeNewBNode(rs->getAtomFactory());
+	rs->resultType = ResultSet::RESULT_Graphs;
+	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
+	// @@ do a CBD
+	//std::cerr << "CONSTRUCTED: " << g << std::endl;
+	return rs;
+    }
+
     ResultSet* Ask::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
@@ -1280,6 +1295,18 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	rs->resultType = ResultSet::RESULT_Boolean;
+	return rs;
+    }
+
+    ResultSet* Modify::execute (RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
+	if (m_WhereClause != NULL)
+	    m_WhereClause->bindVariables(db, rs);
+	rs->resultType = ResultSet::RESULT_Graphs;
+	if (m_delete != NULL)
+	    m_delete->execute(db, rs);
+	if (m_insert != NULL)
+	    m_insert->execute(db, rs);
 	return rs;
     }
 

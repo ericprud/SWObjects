@@ -799,7 +799,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		    <li>&lt;http://localhost:8888/SPARQL&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3Chttp%3A%2F%2Flocalhost%3A8888%2FSPARQL%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>2 triples</a>.</li>
 		  </ul>
 		 */
-		std::list<const sw::TTerm*>graphs = server.db.getGraphNames();
+		std::set<const sw::TTerm*>graphs = server.db.getGraphNames();
 		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
 		if (graphs.size() <= exploreGraphCountLimit) {
 		    sout << ":</p>\n    <ul>\n";

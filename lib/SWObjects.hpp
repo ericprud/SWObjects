@@ -461,7 +461,7 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
-    typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_replace, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop} e_OPTYPE;
+    typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_modify, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop} e_OPTYPE;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
@@ -493,6 +493,10 @@ public:
     void push_back(const Operation* op) {
 	operations.push_back(op);
     }
+    std::vector<const Operation*>::iterator begin () { return operations.begin(); }
+    std::vector<const Operation*>::const_iterator begin () const { return operations.begin(); }
+    std::vector<const Operation*>::iterator end () { return operations.end(); }
+    std::vector<const Operation*>::const_iterator end () const { return operations.end(); }
 };
 
 class URI;
@@ -604,6 +608,7 @@ public:
     static const URI* FUNC_iri;
     static const URI* FUNC_uri;
     static const URI* FUNC_blank;
+    static const URI* FUNC_isNumeric;
 
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
@@ -2078,6 +2083,7 @@ public:
     void bindVariables(RdfDB* db, ResultSet* rs) const;
 };
 class WhereClause : public Base {
+    friend class SPARQLfedParser;
 private:
     const TableOperation* m_GroupGraphPattern;
     const BindingClause* m_BindingClause;
@@ -2193,6 +2199,7 @@ public:
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2220,20 +2227,25 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_ask; }
 };
-class Replace : public Operation {
+class Delete;
+class Insert;
+class Modify : public Operation {
 private:
+    const Delete* m_delete;
+    const Insert* m_insert;
     WhereClause* m_WhereClause;
-    TableOperation* m_GraphTemplate;
 public:
-    Replace (WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) : Operation(), m_WhereClause(p_WhereClause), m_GraphTemplate(p_GraphTemplate) {  }
-    ~Replace () { delete m_WhereClause; delete m_GraphTemplate; }
+    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) : Operation(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause) {  }
+    ~Modify();
+    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
-    virtual e_OPTYPE getOperationType () const { return OPTYPE_replace; }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_modify; }
 };
 class Insert : public Operation {
+    friend class SPARQLfedParser;
 private:
     TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
@@ -2248,6 +2260,7 @@ public:
     virtual e_OPTYPE getOperationType () const { return OPTYPE_insert; }
 };
 class Delete : public Operation {
+    friend class SPARQLfedParser;
 private:
     TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
@@ -2261,13 +2274,18 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_delete; }
 };
+inline Modify::~Modify () {
+    delete m_delete; 
+    delete m_insert; 
+    delete m_WhereClause;
+}
 class Load : public Operation {
 private:
-    ProductionVector<const URI*>* m_IRIrefs;
+    const URI* m_from;
     const URI* m_into;
 public:
-    Load (ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) : Operation(), m_IRIrefs(p_IRIrefs), m_into(p_into) {  }
-    ~Load () { delete m_IRIrefs; delete m_into; }
+    Load (const URI* p_from, const URI* p_into) : Operation(), m_from(p_from), m_into(p_into) {  }
+    ~Load () { delete m_from; delete m_into; }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const Operation&) const {
 	return false;
@@ -2276,9 +2294,10 @@ public:
 };
 class Clear : public Operation {
 private:
+    e_Silence m_Silence;
     const URI* m__QGraphIRI_E_Opt;
 public:
-    Clear (const URI* p__QGraphIRI_E_Opt) : Operation(), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
+    Clear (e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) : Operation(), m_Silence(p_Silence), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
     ~Clear () { delete m__QGraphIRI_E_Opt; }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const Operation&) const {
@@ -3348,11 +3367,11 @@ public:
     virtual void construct(const Construct* const self, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
-    virtual void replace(const Replace* const self, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) = 0;
+    virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) = 0;
     virtual void insert(const Insert* const self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
     virtual void del(const Delete* const self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
-    virtual void load(const Load* const self, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) = 0;
-    virtual void clear(const Clear* const self, const URI* p__QGraphIRI_E_Opt) = 0;
+    virtual void load(const Load* const self, const URI* p_from, const URI* p_into) = 0;
+    virtual void clear(const Clear* const self, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void drop(const Drop* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void posExpression(const TTermExpression* const self, const TTerm* p_TTerm) = 0;
@@ -3516,9 +3535,12 @@ public:
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	if (p_delete != NULL)
+	    p_delete->express(this);
+	if (p_insert != NULL)
+	    p_insert->express(this);
 	p_WhereClause->express(this);
-	p_GraphTemplate->express(this);
     }
     virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
@@ -3528,11 +3550,11 @@ public:
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
-	p_IRIrefs->express(this);
+    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+	p_from->express(this);
 	p_into->express(this);
     }
-    virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	p__QGraphIRI_E_Opt->express(this);
     }
     virtual void create (const Create* const, e_Silence, const URI* p_GraphIRI) {

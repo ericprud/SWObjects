@@ -826,10 +826,13 @@ namespace w3c_sw {
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void replace (const Replace* const, WhereClause* p_WhereClause, TableOperation* p_GraphTemplate) {
+	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("REPLACE");
+	    if (p_delete != NULL)
+		p_delete->express(this);
+	    if (p_insert != NULL)
+		p_insert->express(this);
 	    p_WhereClause->express(this);
-	    p_GraphTemplate->express(this);
 	}
 	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("INSERT {");
@@ -841,13 +844,14 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void load (const Load* const, ProductionVector<const URI*>* p_IRIrefs, const URI* p_into) {
+	virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
 	    w3c_sw_FAIL("LOAD");
-	    p_IRIrefs->express(this);
+	    p_from->express(this);
 	    p_into->express(this);
 	}
-	virtual void clear (const Clear* const, const URI* p__QGraphIRI_E_Opt) {
+	virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	    w3c_sw_FAIL("CLEAR");
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p__QGraphIRI_E_Opt->express(this);
 	}
 	virtual void create (const Create* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {

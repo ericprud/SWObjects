@@ -93,16 +93,20 @@ GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
 GT_SEMI		";"
+IT_LOAD		[Ll][Oo][Aa][Dd]
+IT_INTO		[Ii][Nn][Tt][Oo]
+IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
+IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
+IT_DROP		[Dd][Rr][Oo][Pp]
+IT_CREATE		[Cc][Rr][Ee][Aa][Tt][Ee]
 IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
 IT_DATA		[Dd][Aa][Tt][Aa]
 IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
-IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
-IT_LOAD		[Ll][Oo][Aa][Dd]
-IT_INTO		[Ii][Nn][Tt][Oo]
-IT_DROP		[Dd][Rr][Oo][Pp]
-IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
-IT_CREATE		[Cc][Rr][Ee][Aa][Tt][Ee]
+IT_WITH		[Ww][Ii][Tt][Hh]
+IT_USING		[Uu][Ss][Ii][Nn][Gg]
 IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
+IT_DEFAULT		[Dd][Ee][Ff][Aa][Uu][Ll][Tt]
+IT_ALL		[Aa][Ll][Ll]
 GT_DOT		"."
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
@@ -111,6 +115,12 @@ IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
 GT_COMMA		","
 IT_a		"a"
+GT_PIPE		"|"
+GT_DIVIDE		"/"
+GT_CARROT		"^"
+GT_OPT		"?"
+GT_PLUS		"+"
+GT_NOT		"!"
 GT_LBRACKET		"\["
 GT_RBRACKET		"\]"
 IT_MEMBERS		[Mm][Ee][Mm][Bb][Ee][Rr][Ss]
@@ -128,10 +138,7 @@ GT_LE		"<="
 GT_GE		">="
 IT_IN		[Ii][Nn]
 IT_NOT		[Nn][Oo][Tt]
-GT_DIVIDE		"/"
-GT_PLUS		"+"
 GT_MINUS		"-"
-GT_NOT		"!"
 IT_STR		[Ss][Tt][Rr]
 IT_LANG		[Ll][Aa][Nn][Gg]
 IT_LANGMATCHES		[Ll][Aa][Nn][Gg][Mm][Aa][Tt][Cc][Hh][Ee][Ss]
@@ -149,15 +156,16 @@ IT_isIRI		[Ii][Ss][Ii][Rr][Ii]
 IT_isURI		[Ii][Ss][Uu][Rr][Ii]
 IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
+IT_isNUMERIC		[Ii][Ss][Nn][Uu][Mm][Ee][Rr][Ii][Cc]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
+IT_GROUP_CONCAT		[Gg][Rr][Oo][Uu][Pp]"_"[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_SUM		[Ss][Uu][Mm]
 IT_MIN		[Mm][Ii][Nn]
 IT_MAX		[Mm][Aa][Xx]
 IT_AVG		[Aa][Vv][Gg]
 IT_SAMPLE		[Ss][Aa][Mm][Pp][Ll][Ee]
-IT_GROUP_CONCAT		"GROUP_CONCAT"
 IT_SEPARATOR		[Ss][Ee][Pp][Aa][Rr][Aa][Tt][Oo][Rr]
 GT_DTYPE		"^^"
 IT_true		"true"
@@ -211,7 +219,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_SELECT}		{return token::IT_SELECT;}
 {IT_DISTINCT}		{return token::IT_DISTINCT;}
 {IT_REDUCED}		{return token::IT_REDUCED;}
-{IT_AS}			{return token::IT_AS;}
+{IT_AS}		{return token::IT_AS;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_TIMES}		{return token::GT_TIMES;}
@@ -234,16 +242,20 @@ LINEFEED		(\r\n|\r|\n)
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_SEMI}		{return token::GT_SEMI;}
+{IT_LOAD}		{return token::IT_LOAD;}
+{IT_INTO}		{return token::IT_INTO;}
+{IT_CLEAR}		{return token::IT_CLEAR;}
+{IT_SILENT}		{return token::IT_SILENT;}
+{IT_DROP}		{return token::IT_DROP;}
+{IT_CREATE}		{return token::IT_CREATE;}
 {IT_INSERT}		{return token::IT_INSERT;}
 {IT_DATA}		{return token::IT_DATA;}
 {IT_DELETE}		{return token::IT_DELETE;}
-{IT_CLEAR}		{return token::IT_CLEAR;}
-{IT_LOAD}		{return token::IT_LOAD;}
-{IT_INTO}		{return token::IT_INTO;}
-{IT_DROP}		{return token::IT_DROP;}
-{IT_SILENT}		{return token::IT_SILENT;}
-{IT_CREATE}		{return token::IT_CREATE;}
+{IT_WITH}		{return token::IT_WITH;}
+{IT_USING}		{return token::IT_USING;}
 {IT_GRAPH}		{return token::IT_GRAPH;}
+{IT_DEFAULT}		{return token::IT_DEFAULT;}
+{IT_ALL}		{return token::IT_ALL;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
@@ -251,7 +263,13 @@ LINEFEED		(\r\n|\r|\n)
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
 {GT_COMMA}		{return token::GT_COMMA;}
-{IT_a}			{return token::IT_a;}
+{IT_a}		{return token::IT_a;}
+{GT_PIPE}		{return token::GT_PIPE;}
+{GT_DIVIDE}		{return token::GT_DIVIDE;}
+{GT_CARROT}		{return token::GT_CARROT;}
+{GT_OPT}		{return token::GT_OPT;}
+{GT_PLUS}		{return token::GT_PLUS;}
+{GT_NOT}		{return token::GT_NOT;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
 {GT_RBRACKET}		{return token::GT_RBRACKET;}
 {IT_MEMBERS}		{return token::IT_MEMBERS;}
@@ -259,23 +277,20 @@ LINEFEED		(\r\n|\r|\n)
 {IT_ENDS}		{return token::IT_ENDS;}
 {IT_ANY}		{return token::IT_ANY;}
 {IT_UNORDERED}		{return token::IT_UNORDERED;}
-{GT_OR}			{return token::GT_OR;}
+{GT_OR}		{return token::GT_OR;}
 {GT_AND}		{return token::GT_AND;}
 {GT_EQUAL}		{return token::GT_EQUAL;}
 {GT_NEQUAL}		{return token::GT_NEQUAL;}
-{GT_LT}			{return token::GT_LT;}
-{GT_GT}			{return token::GT_GT;}
-{GT_LE}			{return token::GT_LE;}
-{GT_GE}			{return token::GT_GE;}
-{IT_IN}			{return token::IT_IN;}
+{GT_LT}		{return token::GT_LT;}
+{GT_GT}		{return token::GT_GT;}
+{GT_LE}		{return token::GT_LE;}
+{GT_GE}		{return token::GT_GE;}
+{IT_IN}		{return token::IT_IN;}
 {IT_NOT}		{return token::IT_NOT;}
-{GT_DIVIDE}		{return token::GT_DIVIDE;}
-{GT_PLUS}		{return token::GT_PLUS;}
 {GT_MINUS}		{return token::GT_MINUS;}
-{GT_NOT}		{return token::GT_NOT;}
 {IT_STR}		{return token::IT_STR;}
 {IT_LANG}		{return token::IT_LANG;}
-{IT_LANGMATCHES}	{return token::IT_LANGMATCHES;}
+{IT_LANGMATCHES}		{return token::IT_LANGMATCHES;}
 {IT_DATATYPE}		{return token::IT_DATATYPE;}
 {IT_BOUND}		{return token::IT_BOUND;}
 {IT_IRI}		{return token::IT_IRI;}
@@ -290,15 +305,16 @@ LINEFEED		(\r\n|\r|\n)
 {IT_isURI}		{return token::IT_isURI;}
 {IT_isBLANK}		{return token::IT_isBLANK;}
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
+{IT_isNUMERIC}		{return token::IT_isNUMERIC;}
 {IT_REGEX}		{return token::IT_REGEX;}
 {IT_EXISTS}		{return token::IT_EXISTS;}
 {IT_COUNT}		{return token::IT_COUNT;}
+{IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}
 {IT_SUM}		{return token::IT_SUM;}
 {IT_MIN}		{return token::IT_MIN;}
 {IT_MAX}		{return token::IT_MAX;}
 {IT_AVG}		{return token::IT_AVG;}
 {IT_SAMPLE}		{return token::IT_SAMPLE;}
-{IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}
 {IT_SEPARATOR}		{return token::IT_SEPARATOR;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}

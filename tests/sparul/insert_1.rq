@@ -1,4 +1,4 @@
 # insert0
 # $Id$
 
-INSERT { <x> <y> 1 }
+INSERT DATA { <x> <y> 1 }
