@@ -325,6 +325,51 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    foot(sout);
 	    rep.content = sout.str();
 	}
+	std::string DBsummary () {
+	    /** Show the user what data exists à la:
+		<p>5 triples in 3 graphs:</p>
+		<ul>
+		<li>Default Graph: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++%3Fs+%3Fp+%3Fo%0A%7D'>0 triples</a>.</li>
+		<li>&lt;graphOne&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3CgraphOne%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>3 triples</a>.</li>
+		<li>&lt;http://localhost:8888/SPARQL&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3Chttp%3A%2F%2Flocalhost%3A8888%2FSPARQL%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>2 triples</a>.</li>
+		</ul>
+	    */
+	    std::stringstream sout;
+	    size_t triples = server.db.size();
+	    if (triples < 1000) {
+		std::set<const sw::TTerm*>graphs = server.db.getGraphNames();
+		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
+		if (graphs.size() <= exploreGraphCountLimit) {
+		    sout << ":</p>\n    <ul>\n";
+		    for (std::set<const sw::TTerm*>::const_iterator g = graphs.begin();
+			 g != graphs.end(); ++g) {
+			size_t graphSize = server.db.ensureGraph(*g)->size();
+			std::stringstream query;
+			query << "SELECT ?s ?p ?o {\n  ";
+			if (*g != sw::DefaultGraph)
+			    query << "GRAPH " << (*g)->toString() << " {";
+			query << "?s ?p ?o";
+			sout << "      <li>" << escapeHTML((*g)->toString()) << ": <a href='";
+			if (*g != sw::DefaultGraph)
+			    query << "}";
+			query << "\n}";
+			if (graphSize > exploreTripleCountLimit)
+			    query << " LIMIT " << exploreTripleCountLimit;
+			sw::SWWEBagent::ParameterList p;
+			p.set("query", query.str());
+			p.set("media", "html");
+			sout << server.path << "?" << escapeHTML(p.str());
+			sout << "'>" << graphSize << " triples</a>";
+			sout << ".</li>\n";
+		    }
+		    sout << "    </ul>\n";
+		} else {
+		    sout << ".</p>\n";
+		}
+	    } else
+		sout << "    <p>" << triples << " triples in database.</p>\n";
+	    return sout.str();
+	}
     };
 
     sw::RdfDB db;
@@ -789,48 +834,8 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		"    <form action='" << server.path << "' method='post'>\n"
 		"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
 		"    </form>\n";
-	    size_t triples = server.db.size();
-	    if (triples < 1000) {
-		/** Show the user what data exists à la:
-		  <p>5 triples in 3 graphs:</p>
-		  <ul>
-		    <li>Default Graph: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++%3Fs+%3Fp+%3Fo%0A%7D'>0 triples</a>.</li>
-		    <li>&lt;graphOne&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3CgraphOne%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>3 triples</a>.</li>
-		    <li>&lt;http://localhost:8888/SPARQL&gt;: <a href='/SPARQL?media=html&amp;query=SELECT+%3Fs+%3Fp+%3Fo+%7B%0A++GRAPH+%3Chttp%3A%2F%2Flocalhost%3A8888%2FSPARQL%3E+%7B%3Fs+%3Fp+%3Fo%7D%0A%7D'>2 triples</a>.</li>
-		  </ul>
-		 */
-		std::set<const sw::TTerm*>graphs = server.db.getGraphNames();
-		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
-		if (graphs.size() <= exploreGraphCountLimit) {
-		    sout << ":</p>\n    <ul>\n";
-		    for (std::set<const sw::TTerm*>::const_iterator g = graphs.begin();
-			 g != graphs.end(); ++g) {
-			size_t graphSize = server.db.ensureGraph(*g)->size();
-			std::stringstream query;
-			query << "SELECT ?s ?p ?o {\n  ";
-			if (*g != sw::DefaultGraph)
-			    query << "GRAPH " << (*g)->toString() << " {";
-			query << "?s ?p ?o";
-			sout << "      <li>" << escapeHTML((*g)->toString()) << ": <a href='";
-			if (*g != sw::DefaultGraph)
-			    query << "}";
-			query << "\n}";
-			if (graphSize > exploreTripleCountLimit)
-			    query << " LIMIT " << exploreTripleCountLimit;
-			sw::SWWEBagent::ParameterList p;
-			p.set("query", query.str());
-			p.set("media", "html");
-			sout << server.path << "?" << escapeHTML(p.str());
-			sout << "'>" << graphSize << " triples</a>";
-			sout << ".</li>\n";
-		    }
-		    sout << "    </ul>\n";
-		} else {
-		    sout << ".</p>\n";
-		}
-	    } else {
-		sout << "    <p>" << triples << " triples in database.</p>\n";
-	    }
+	    sout << DBsummary();
+
 	    rep.addHeader("Content-Type", "text/html");
 	    foot(sout);
 	} else if (path == "/favicon.ico") {
@@ -843,7 +848,6 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		"    <p>path: " << path << "</p>\n"
 		"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
 		 << std::endl;
-	    std::cerr << "404: " << path << std::endl;
 	    rep.status = sw::webserver::reply::not_found;
 
 	    sout << "    <h2>Client Headers</h2>\n"
@@ -855,6 +859,8 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		     << ": " << it->value 
 		     << "</li>\n" << std::endl;
 	    sout << "    </ul>\n" << std::endl;
+	    sout << "    <h2>Database Summary</h2>\n";
+	    sout << DBsummary();
 
 	    foot(sout);
 	}
