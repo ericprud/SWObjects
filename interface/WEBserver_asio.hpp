@@ -2,6 +2,8 @@
  */
 
 #include "../interface/WEBserver.hpp"
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <boost/asio.hpp>
@@ -499,7 +501,16 @@ namespace w3c_sw {
 		    } catch (webserver::reply rep) {
 			reply_ = rep;
 		    }
-		    std::cerr << reply_.content << std::endl;
+		    time_t now;
+		    struct tm tm;
+		    time(&now);
+		    gmtime_r(&now, &tm);
+		    std::cout << std::setfill('0')
+			<< socket_.remote_endpoint().address().to_string() << " - - ["
+			<< tm.tm_year + 1900 << "-" << std::setw(2) << tm.tm_mon << "-" << std::setw(2) << tm.tm_mday
+			<< "T" << std::setw(2) << tm.tm_hour << ":" << std::setw(2) << tm.tm_min << ":" << std::setw(2) << tm.tm_sec << "]"
+			<< "\"" << request_->method << " " << request_->uri << " " << request_->http_version_major << "." << request_->http_version_minor << "\" "
+			<< reply_.status << " " << reply_.content.size() << std::endl;
 		    boost::asio::async_write(socket_, reply_.to_buffers(),
 		     strand_.wrap(
 			  boost::bind(&connection::handle_write, shared_from_this(),
