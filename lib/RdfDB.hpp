@@ -101,6 +101,10 @@ namespace w3c_sw {
 	    return names;
 		    
 	}
+	const BasicGraphPattern* getGraph (const TTerm* name) {
+	    graphmap_type::const_iterator vi = graphs.find(name);
+	    return vi == graphs.end() ? NULL : vi->second;
+	}
 	BasicGraphPattern* ensureGraph(const TTerm* name);
 	void ensureGraphs(std::set<const TTerm*> names) {
 	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)

@@ -606,7 +606,7 @@ namespace w3c_sw {
 	return xml;
     }
 
-    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes) {
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) {
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("table");
 	xml->attributes(attributes);
@@ -614,23 +614,85 @@ namespace w3c_sw {
 	    const VariableVector cols = getOrderedVars();
 	    xml->open("thead"); {
 		xml->open("tr"); {
+		    if (!editPath.empty()) {
+			xml->open("th"); xml->close();
+		    }
 		    for (VariableVector::const_iterator col = cols.begin();
 			 col != cols.end(); ++col)
 			xml->leaf("th", (*col)->toString());
 		} xml->close();
 	    } xml->close();
 	    xml->open("tbody"); {
+		size_t rowNo = 0;
 		bool even = true; // 0 is even.
-		for (ResultSetConstIterator row = begin(); row != end(); ++row) {
+		for (ResultSetConstIterator row = begin(); row != end(); ++row, ++rowNo) {
 		    xml->open("tr"); {
+			std::string rowNoStr;
+			if (!editPath.empty()) {
+			    std::stringstream rowNoss;
+			    rowNoss << "_" << rowNo;
+			    rowNoStr = rowNoss.str();
+			    xml->attribute("id", rowNoStr);
+			}
 			if ((even ^= 1) == true)
 			    xml->attribute("class", "even");
+			if (!editPath.empty()) {
+//    <td>
+//	<input id="_1_query" name="query" type="hidden" value="DELETE { &lt;/abcd&gt; { &lt;/as/s&gt; &lt;/as/p1&gt; &lt;/as/o1&gt; } }"/>
+//	<input id="_1_submit" type="submit" value="delete"/>
+//    </td>
+			    xml->open("td"); {
+				xml->open("form"); {
+				    xml->attribute("id", rowNoStr + "_form");
+				    xml->attribute("action", editPath);
+				    xml->attribute("method", "post");
+				    xml->open("input"); {
+					xml->attribute("id", rowNoStr + "_query");
+					xml->attribute("name", "query");
+					xml->attribute("type", "hidden");
+					std::stringstream delSS;
+					delSS << "DELETE DATA { GRAPH <" << editPath << "> { ";
+					for (VariableVector::const_iterator col = cols.begin();
+					     col != cols.end(); ++col) {
+					    const TTerm* val = (*row)->get(*col);
+					    if (val != NULL)
+						delSS <<  val->toString() << " ";
+					    else 
+						delSS << "[] ";
+					}
+					delSS << "} }";
+					xml->attribute("value", delSS.str());
+				    } xml->close();
+
+				    xml->open("input"); {
+					xml->attribute("id", rowNoStr + "_submit");
+					xml->attribute("type", "submit");
+					xml->attribute("value", "delete");
+				    } xml->close();
+				} xml->close();
+			    } xml->close();
+			}
+			size_t colNo = 0;
 			for (VariableVector::const_iterator col = cols.begin();
-			     col != cols.end(); ++col) {
+			     col != cols.end(); ++col, ++colNo) {
 			    const TTerm* val = (*row)->get(*col);
-			    if (val != NULL)
-				xml->leaf("td", val->toString());
-			    else {
+			    if (val != NULL) {
+				std::string colNoStr;
+				if (!editPath.empty()) {
+				    std::stringstream colNoss;
+				    colNoss << "_" << colNo;
+				    colNoStr = colNoss.str();
+//    <span id="_1_0" onkeyup="modify('_1');" contenteditable="true">
+				    xml->open("td"); {
+					xml->leaf("span", val->toString());
+					xml->attribute("onkeyup", std::string("modify('") + rowNoStr + "');");
+					xml->attribute("contenteditable", "true");
+					xml->attribute("id", rowNoStr + colNoStr);
+				    } xml->close();
+				} else {
+				    xml->leaf("td", val->toString());
+				}
+			    } else {
 				xml->open("td");
 				xml->leaf("code", std::string("NULL")); // so it doesn't call leaf(std::string tag, bool p_value) (naughty c++)
 				xml->close();
@@ -639,7 +701,7 @@ namespace w3c_sw {
 		    } xml->close();
 		} xml->close();
 	    }
-	} xml->close();
+	} xml->close(); // table
 	return xml;
     }
 

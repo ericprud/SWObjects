@@ -294,6 +294,22 @@ DBHandlers  RdfDBHandlers;
 "	else\n"
 "	    s.display = 'none';\n"
 "    }\n"
+"    function modify(id){\n"
+"	var path = document.getElementById(id + \"_form\").getAttribute(\"action\");\n"
+"	var tr = document.getElementById(id);\n"
+"	var q = document.getElementById(id + \"_query\");\n"
+"	var del = q.value;\n"
+"	var off = q.value.indexOf(\";\")\n"
+"	if (off != -1)\n"
+"	    del = del.substr(0, off);\n"
+"\n"
+"	var ns = document.getElementById(id + '_0').childNodes[0].nodeValue;\n"
+"	var np = document.getElementById(id + '_1').childNodes[0].nodeValue;\n"
+"	var no = document.getElementById(id + '_2').childNodes[0].nodeValue;\n"
+"\n"
+"	q.value = del + \"; INSERT DATA { GRAPH <\" + path + \"> { \" + ns + \" \" + np + \" \" + no + \" } }\";\n"
+"	document.getElementById(id + \"_submit\").value = \"modify\";\n"
+"    }\n"
 	    ;
 
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
@@ -325,6 +341,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    foot(sout);
 	    rep.content = sout.str();
 	}
+	std::string uriLink (const sw::URI* target) {
+	    return std::string() + "&lt;<a href=\"" + escapeHTML(target->getLexicalValue()) + "\">" + escapeHTML(target->getLexicalValue()) + "</a>&gt;";
+	}
 	std::string DBsummary () {
 	    /** Show the user what data exists à la:
 		<p>5 triples in 3 graphs:</p>
@@ -336,6 +355,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    */
 	    std::stringstream sout;
 	    size_t triples = server.db.size();
+	    sout << "    <h2>Database Summary</h2>\n";
 	    if (triples < 1000) {
 		std::set<const sw::TTerm*>graphs = server.db.getGraphNames();
 		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
@@ -349,7 +369,13 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			if (*g != sw::DefaultGraph)
 			    query << "GRAPH " << (*g)->toString() << " {";
 			query << "?s ?p ?o";
-			sout << "      <li>" << escapeHTML((*g)->toString()) << ": <a href='";
+
+			const sw::URI* asURI = dynamic_cast<const sw::URI*>(*g);
+			std::string renderedName = asURI == NULL
+			    ? escapeHTML((*g)->toString())
+			    : uriLink(asURI);
+
+			sout << "      <li>" << renderedName << ": <a href='";
 			if (*g != sw::DefaultGraph)
 			    query << "}";
 			query << "\n}";
@@ -357,10 +383,11 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			    query << " LIMIT " << exploreTripleCountLimit;
 			sw::SWWEBagent::ParameterList p;
 			p.set("query", query.str());
-			p.set("media", "html");
+			p.set("media", "edit");
+			p.set("path", escapeHTML((*g)->getLexicalValue()));
 			sout << server.path << "?" << escapeHTML(p.str());
-			sout << "'>" << graphSize << " triples</a>";
-			sout << ".</li>\n";
+			sout << "'>" << graphSize << " triples</a>.";
+			sout << "</li>\n";
 		    }
 		    sout << "    </ul>\n";
 		} else {
@@ -407,10 +434,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	  queryMapper(&atomFactory, debugStream), debugStream(debugStream)
     {  }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
-	std::ostringstream s;
-	s << "http://localhost:" << serverPort << path;
-
-	const sw::URI* serviceURI = atomFactory.getURI(s.str());
+	const sw::URI* serviceURI = atomFactory.getURI(path);
 	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);
 	serviceGraph->addTriplePattern(atomFactory.getTriple(
 		    serviceURI, 
@@ -650,168 +674,199 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	std::string path(req.getPath());
 	std::ostringstream sout;
 	loadList queryLoadList;
+	const sw::BasicGraphPattern* getGraph = server.db.getGraph(server.atomFactory.getURI(path));
 
-	if (path == server.path) {
-	    w3c_sw::webserver::request::parmmap::const_iterator parm;
-	    parm = req.parms.find("default-graph-uri");
-	    if (parm != req.parms.end() && parm->second != "") {
-		const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		queryLoadList.push_back(loadEntry(NULL, abs, BaseURI));
-		std::cerr << "default graph: " << parm->second << std::endl;
-	    }
-	    parm = req.parms.find("named-graph-uri");
-	    while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
-		const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		queryLoadList.push_back(loadEntry(abs, abs, BaseURI));
-		std::cerr << "named graph: " << parm->second << std::endl;
-		++parm;
-	    }
-	    parm = req.parms.find("query");
-	    if (parm != req.parms.end())
-		query = parm->second;
-	    if (query == "stop") {
-		head(sout, "Done!");
-		sout << "    <p>Served " << server.served << " queries.</p>\n";
-		foot(sout);
+	if (req.method == "PUT") {
+	    const sw::URI* into = server.atomFactory.getURI(req.getPath());
+	    sw::BasicGraphPattern* bgp = server.db.ensureGraph(into);
+	    sw::IStreamContext istr(req.body, sw::IStreamContext::STRING, req.content_type.c_str());
+	    sw::NamespaceMap map;
+	    server.db.loadData(bgp, istr, req.getPath(), "", &server.atomFactory, &map);
 
-		server.done = true;
+	    rep.status = sw::webserver::reply::ok;
+	    head(sout, "Q&amp;D SPARQL Server PUT Successful");
+	    sout << 
+		"    <p>Uploaded " << bgp->size() << " triples into " << uriLink(into) << "</p>\n";
+	    sout << DBsummary();
+
+	    rep.addHeader("Content-Type", "text/html");
+	    foot(sout);
+	} else if (getGraph != NULL) {
+	    sw::webserver::request::parmmap::const_iterator parm;
+	    if (req.method == "GET"
+		|| (req.method == "POST" && req.content_type == "application/x-www-form-urlencoded")) {
+		    parm = req.parms.find("query");
+		    if (parm != req.parms.end())
+			query = parm->second;
+	    } else if (req.method == "POST" && req.content_type == "application/sparql-query")
+		query = req.body;
+	    if (query == "" && path != server.path) {
+		rep.status = sw::webserver::reply::ok;
+		std::string body = getGraph->toString(sw::MediaType("text/turtle"));
+		sout.write(body.c_str(), body.size());
+		rep.addHeader("Content-Type", "text/turtle");
 	    } else {
-		sw::IStreamContext istr(query, sw::IStreamContext::STRING);
-		try {
-		    sw::Operation* op = server.sparqlParser.parse(istr);
-		    if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
-			head(sout, "Query Error");
+		parm = req.parms.find("default-graph-uri");
+		if (parm != req.parms.end() && parm->second != "") {
+		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
+		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI));
+		    std::cerr << "default graph: " << parm->second << std::endl;
+		}
+		parm = req.parms.find("named-graph-uri");
+		while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
+		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
+		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI));
+		    std::cerr << "named graph: " << parm->second << std::endl;
+		    ++parm;
+		}
+		if (query == "stop") {
+		    head(sout, "Done!");
+		    sout << "    <p>Served " << server.served << " queries.</p>\n";
+		    foot(sout);
 
-			sout << "    <p>Query</p>\n"
-			    "    <pre>" << sw::XMLSerializer::escapeCharData(query) << "</pre>\n"
-			    "    <p>is screwed up.</p>\n"
-			     << std::endl;
-			std::cerr << "400: " << query << std::endl;
-			rep.status = sw::webserver::reply::bad_request;
+		    server.done = true;
+		} else {
+		    sw::IStreamContext istr(query, sw::IStreamContext::STRING);
+		    try {
+			sw::Operation* op = server.sparqlParser.parse(istr);
+			if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
+			    head(sout, "Query Error");
 
-			foot(sout);
-		    } else {
-			sw::ResultSet rs(&server.atomFactory);
-			std::string language;
-			std::string newQuery(query);
+			    sout << "    <p>Query</p>\n"
+				"    <pre>" << sw::XMLSerializer::escapeCharData(query) << "</pre>\n"
+				"    <p>is screwed up.</p>\n"
+				 << std::endl;
+			    std::cerr << "400: " << query << std::endl;
+			    rep.status = sw::webserver::reply::bad_request;
 
-			try {
-			    for (loadList::iterator it = queryLoadList.begin();
-				 it != queryLoadList.end(); ++it)
-				it->loadGraph();
+			    foot(sout);
+			} else {
+			    sw::ResultSet rs(&server.atomFactory);
+			    std::string language;
+			    std::string newQuery(query);
 
-			    server.executeQuery(op, rs, language, newQuery);
-			    delete op;
-			} catch (sw::ParserException& ex) {
-			    delete op;
-			    std::cerr << ex.what() << std::endl;
-			    throw sw::WebHandler::SimpleMessageException(ex);
-			} catch (std::string ex) {
-			    delete op;
-			    std::cerr << ex << std::endl;
-			    throw sw::WebHandler::SimpleMessageException(sw::XMLSerializer::escapeCharData(ex));
-			}
-			const sw::VariableVector cols = rs.getOrderedVars();
+			    try {
+				for (loadList::iterator it = queryLoadList.begin();
+				     it != queryLoadList.end(); ++it)
+				    it->loadGraph();
 
-			sw::XMLSerializer xml("  ");
-			parm = req.parms.find("media");
-			if (parm != req.parms.end()
-			    && (parm->second == "html"
-				|| parm->second == "tablesorter")) {
-			    std::string headStr =
-"    <style type=\"text/css\" media=\"screen\">\n"
-"/*<![CDATA[*/\n" + CSS_common
-				;
-			    if (parm->second == "html")
-				headStr += CSS_Results;
-			    headStr +=
-"/*]]>*/\n"
-"    </style>\n"
-"\n"
-				;
-			    if (parm->second == "tablesorter")
-				headStr += Javascript_TableSorter_remote;
-			    headStr +=
-"    <script language=\"javascript\" type=\"text/javascript\">\n"
-"<!--\n"
-				;
-			    if (parm->second == "tablesorter")
-				headStr +=
-"    $(function() {\n"
+				server.executeQuery(op, rs, language, newQuery);
+				delete op;
+			    } catch (sw::ParserException& ex) {
+				delete op;
+				std::cerr << ex.what() << std::endl;
+				throw sw::WebHandler::SimpleMessageException(ex);
+			    } catch (std::string ex) {
+				delete op;
+				std::cerr << ex << std::endl;
+				throw sw::WebHandler::SimpleMessageException(sw::XMLSerializer::escapeCharData(ex));
+			    }
+			    const sw::VariableVector cols = rs.getOrderedVars();
+
+			    sw::XMLSerializer xml("  ");
+			    parm = req.parms.find("media");
+			    if (parm != req.parms.end()
+				&& (parm->second == "html"
+				    || parm->second == "edit"
+				    || parm->second == "tablesorter")) {
+				std::string headStr =
+				    "    <style type=\"text/css\" media=\"screen\">\n"
+				    "/*<![CDATA[*/\n" + CSS_common
 				    ;
-			    else
+				if (parm->second == "html"
+				    || parm->second == "edit")
+				    headStr += CSS_Results;
 				headStr +=
-"    window.onload=function(){\n"
+				    "/*]]>*/\n"
+				    "    </style>\n"
+				    "\n"
 				    ;
-			    headStr += Javascript_ToggleDisplay_init;
+				if (parm->second == "tablesorter")
+				    headStr += Javascript_TableSorter_remote;
+				headStr +=
+				    "    <script language=\"javascript\" type=\"text/javascript\">\n"
+				    "<!--\n"
+				    ;
+				if (parm->second == "tablesorter")
+				    headStr +=
+					"    $(function() {\n"
+					;
+				else
+				    headStr +=
+					"    window.onload=function(){\n"
+					;
+				headStr += Javascript_ToggleDisplay_init;
 				
-			    if (parm->second == "tablesorter")
-				headStr += Javascript_TableSorter_init;
-			    if (parm->second == "tablesorter")
-				headStr +=
-"    });\n"
+				if (parm->second == "tablesorter")
+				    headStr += Javascript_TableSorter_init;
+				if (parm->second == "tablesorter")
+				    headStr +=
+					"    });\n"
+					;
+				else
+				    headStr +=
+					"    };\n"
+					;
+				headStr += Javascript_ToggleDisplay_defn +
+				    "-->\n"
+				    "    </script>\n"
 				    ;
-			    else
-				headStr +=
-"    };\n"
-				    ;
-			    headStr += Javascript_ToggleDisplay_defn +
-"-->\n"
-"    </script>\n"
-				;
-			    head(sout, "SPARQL Query Results", headStr);
+				head(sout, "SPARQL Query Results", headStr);
 
-			    /** construct XHTML body with query and results. */
-			    sw::XMLSerializer::Attributes queryAttrs;
-			    queryAttrs["id"] = "query";
-			    queryAttrs["style"] = "display:block;";
-			    xml.leaf("pre", newQuery, queryAttrs);
+				/** construct XHTML body with query and results. */
+				sw::XMLSerializer::Attributes queryAttrs;
+				queryAttrs["id"] = "query";
+				queryAttrs["style"] = "display:block;";
+				xml.leaf("pre", newQuery, queryAttrs);
 
-			    sw::XMLSerializer::Attributes resultsAttrs;
-			    resultsAttrs["id"] = "results";
-			    resultsAttrs["class"] = "tablesorter";
-			    rs.toHtmlTable(&xml, resultsAttrs);
+				sw::XMLSerializer::Attributes resultsAttrs;
+				resultsAttrs["id"] = "results";
+				resultsAttrs["class"] = "tablesorter";
+				sw::webserver::request::parmmap::const_iterator path;
+				path = req.parms.find("path");
+				rs.toHtmlTable(&xml, resultsAttrs, path == req.parms.end() ? "" : path->second);
 
-			    /** construct reply from headers and XHTML body */
-			    rep.status = sw::webserver::reply::ok;
-			    rep.addHeader("Content-Type", 
-					  "text/html; charset=UTF-8");
-			    sout << xml.str();
-			    foot(sout);
+				/** construct reply from headers and XHTML body */
+				rep.status = sw::webserver::reply::ok;
+				rep.addHeader("Content-Type", 
+					      "text/html; charset=UTF-8");
+				sout << xml.str();
+				foot(sout);
 
-			} else if (parm != req.parms.end() && parm->second == "textplain") {
-			    head(sout, "SPARQL Query Results");
+			    } else if (parm != req.parms.end() && parm->second == "textplain") {
+				head(sout, "SPARQL Query Results");
 
-			    // cute lexical representation of xml nesting:
-			    xml.leaf("pre", newQuery);
-			    rep.status = sw::webserver::reply::ok;
-			    rep.addHeader("Content-Type", 
-					  "text/html; charset=UTF-8");
+				// cute lexical representation of xml nesting:
+				xml.leaf("pre", newQuery);
+				rep.status = sw::webserver::reply::ok;
+				rep.addHeader("Content-Type", 
+					      "text/html; charset=UTF-8");
 
-			    sw::XMLSerializer rsSerializer("  ");
-			    rs.toXml(&rsSerializer);
-			    std::string source(rsSerializer.str());
-			    xml.leaf("pre", rsSerializer.str());
+				sw::XMLSerializer rsSerializer("  ");
+				rs.toXml(&rsSerializer);
+				std::string source(rsSerializer.str());
+				xml.leaf("pre", rsSerializer.str());
 
-			    sout << xml.str();
-			    foot(sout);
-			} else { /* !htmlResults */
-			    rep.status = sw::webserver::reply::ok;
-			    rep.addHeader("Content-Type", 
-					  "application/sparql-results+xml; charset=UTF-8");
-			    rs.toXml(&xml);
-			    sout << xml.str();
-			} /* !htmlResults */
+				sout << xml.str();
+				foot(sout);
+			    } else { /* !htmlResults */
+				rep.status = sw::webserver::reply::ok;
+				rep.addHeader("Content-Type", 
+					      "application/sparql-results+xml; charset=UTF-8");
+				rs.toXml(&xml);
+				sout << xml.str();
+			    } /* !htmlResults */
 
-			if (server.debugStream != NULL && *server.debugStream != NULL)
-			    **server.debugStream << sout.str() << std::endl;
-			++server.served;
-			if (server.runOnce)
-			    server.done = true;
+			    if (server.debugStream != NULL && *server.debugStream != NULL)
+				**server.debugStream << sout.str() << std::endl;
+			    ++server.served;
+			    if (server.runOnce)
+				server.done = true;
+			}
+		    } catch (sw::ParserException& ex) {
+			std::cerr << ex.what() << std::endl;
+			throw sw::WebHandler::SimpleMessageException(ex);
 		    }
-		} catch (sw::ParserException& ex) {
-		    std::cerr << ex.what() << std::endl;
-		    throw sw::WebHandler::SimpleMessageException(ex);
 		}
 	    }
 	} else if (path == "/") {
@@ -839,6 +894,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	    rep.addHeader("Content-Type", "text/html");
 	    foot(sout);
 	} else if (path == "/favicon.ico") {
+	    rep.status = sw::webserver::reply::ok;
 	    sout.write((char*)favicon, sizeof(favicon));
 	    rep.addHeader("Content-Type", "image/x-icon");
 	} else {
@@ -859,7 +915,6 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		     << ": " << it->value 
 		     << "</li>\n" << std::endl;
 	    sout << "    </ul>\n" << std::endl;
-	    sout << "    <h2>Database Summary</h2>\n";
 	    sout << DBsummary();
 
 	    foot(sout);

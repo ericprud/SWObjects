@@ -800,7 +800,7 @@ namespace w3c_sw {
 	    }
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
-	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes);
+	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "");
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
