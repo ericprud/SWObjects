@@ -39,13 +39,14 @@ namespace w3c_sw {
 	    headerset headers;
 	    std::string body;
 	    virtual std::string getPath() const = 0;
-	    request () : content_length(0) {  };
+	    request () : content_length(0), content_type("") {  };
 	    virtual ~request () {  }
 	    void url_decode();
 	    std::string request_path;
 	    typedef std::multimap<std::string, std::string> parmmap;
 	    parmmap parms;
 	    size_t content_length;
+	    std::string content_type;
 	};
 
 	struct reply
@@ -84,7 +85,7 @@ namespace w3c_sw {
 	    /// Convert the reply into a vector of buffers. The buffers do not own the
 	    /// underlying memory blocks, therefore the reply object must remain valid and
 	    /// not be changed until the write operation has completed.
-	    std::vector<CONST_BUFFER> to_buffers();
+	    std::vector<CONST_BUFFER> to_buffers(bool noBody);
 
 	    /// Get a stock reply.
 	    static reply stock_reply(status_type status);
@@ -93,7 +94,7 @@ namespace w3c_sw {
 	// inline void request::url_decode ()
 	inline void request::url_decode ()
 	{
-	    if (method != "GET" && method != "POST")
+	    if (method != "GET" && method != "POST" && method != "HEAD" && method != "PUT" && method != "DELETE")
 		throw "not implemented error: url_decode only supports GET and POST.";
 	    request_path.clear();
 	    request_path.reserve(uri.size());
@@ -131,11 +132,9 @@ namespace w3c_sw {
 		}
 		switch (nowIn) {
 		case IN_path:
-		    if (method == "GET" && end == uri.size())
-			goto done;
-		    if ((method == "GET" && in[end] == '?') || 
-			(method == "POST" && end == uri.size())) {
-			if (method == "POST") {
+		    if (((method == "GET" || method == "HEAD") && in[end] == '?') || 
+			(method == "POST" && end == uri.size() && content_type == "application/x-www-form-urlencoded")) {
+			if (method == "POST" && content_type == "application/x-www-form-urlencoded") {
 			    in = body;
 			    i = -1;
 			    end = 0;
@@ -149,7 +148,8 @@ namespace w3c_sw {
 				throw w3c_sw::webserver::reply::
 				    stock_reply(w3c_sw::webserver::reply::bad_request);
 			}
-		    }
+		    } else if (end == uri.size())
+			goto done;
 		    break;
 		case IN_parm:
 		    nowIn = IN_value;
@@ -259,7 +259,7 @@ namespace w3c_sw {
 
 	} // namespace status_strings
 
-	inline std::vector<CONST_BUFFER> reply::to_buffers()
+	inline std::vector<CONST_BUFFER> reply::to_buffers(bool noBody)
 	{
 	    static const char name_value_separator[] = { ':', ' ' };
 	    static const char crlf[] = { '\r', '\n' };
@@ -288,7 +288,8 @@ namespace w3c_sw {
 		buffers.push_back(MUTABLE_BUFFER(crlf));
 	    }
 	    buffers.push_back(MUTABLE_BUFFER(crlf));
-	    buffers.push_back(MUTABLE_BUFFER(content));
+	    if (!noBody)
+		buffers.push_back(MUTABLE_BUFFER(content));
 	    // for (std::vector<CONST_BUFFER>::const_iterator it = buffers.begin();
 	    // 	 it != buffers.end(); ++it) {
 	    // 	std::size_t s = boost::asio::buffer_size(*it);
@@ -557,7 +558,7 @@ namespace w3c_sw {
 		std::ostringstream ss;
 		head(ss, "Q&amp;D SPARQL Server Parsing Error");
 		ss << "<h2>Parsing Error</h2>\n";
-		ss << "<p><code>" << ex.what() << "</code></p>\n";
+		ss << "<p><code>" << escapeHTML(ex.what()) << "</code></p>\n";
 		std::string& str(*ex.begin.filename);
 		size_t begin = 0;
 		size_t end = 0;

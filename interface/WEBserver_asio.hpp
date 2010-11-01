@@ -28,6 +28,24 @@
   #include <signal.h>
 #endif // !defined(_WIN32)
 
+#if defined(_WIN32)
+/* count on WIN32's thread-local storage and steal gmtime_r from
+   http://old.nabble.com/Porting-localtime_r-and-gmtime_r-td15282276.html
+ */
+struct tm *
+gmtime_r (const time_t *timer, struct tm *result)
+{
+   struct tm *local_result;
+   local_result = gmtime (timer);
+
+   if (local_result == NULL || result == NULL)
+     return NULL;
+
+   memcpy (result, local_result, sizeof (result));
+   return result;
+}
+#endif // defined(_WIN32)
+
 namespace w3c_sw {
 
     namespace webserver {
@@ -277,6 +295,9 @@ namespace w3c_sw {
 			    is >> body_size;
 			    req.content_length = body_size;
 			}
+			else if (req.headers.back().name == "Content-Type") {
+			    req.content_type = req.headers.back().value;
+			}
 			state_ = expecting_newline_2;
 			return boost::indeterminate;
 		    }
@@ -317,6 +338,9 @@ namespace w3c_sw {
 			    std::istringstream is(req.headers.back().value);
 			    is >> body_size;
 			    req.content_length = body_size;
+			}
+			else if (req.headers.back().name == "Content-Type") {
+			    req.content_type = req.headers.back().value;
 			}
 			state_ = expecting_newline_2;
 			return boost::indeterminate;
@@ -511,13 +535,14 @@ namespace w3c_sw {
 			<< "T" << std::setw(2) << tm.tm_hour << ":" << std::setw(2) << tm.tm_min << ":" << std::setw(2) << tm.tm_sec << "]"
 			<< "\"" << request_->method << " " << request_->uri << " " << request_->http_version_major << "." << request_->http_version_minor << "\" "
 			<< reply_.status << " " << reply_.content.size() << std::endl;
-		    boost::asio::async_write(socket_, reply_.to_buffers(),
+		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
 			  boost::bind(&connection::handle_write, shared_from_this(),
 				      boost::asio::placeholders::error)));
+		    //strand_.service_.owner_.impl_.stopped_ = true; stop_all_threads()
 		} else if (!result) {
 		    reply_ = reply::stock_reply(reply::bad_request);
-		    boost::asio::async_write(socket_, reply_.to_buffers(),
+		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
 			  boost::bind(&connection::handle_write, shared_from_this(),
 				      boost::asio::placeholders::error)));
