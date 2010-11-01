@@ -643,8 +643,6 @@ public:
     virtual std::string toString () const { return std::string("<") + terminal + ">"; }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
-
-    void useURI (  ) {  }
 };
 
 class Bindable : public TTerm {
@@ -1617,7 +1615,21 @@ public:
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 public:
-    typedef std::multimap<const TTerm*, const TriplePattern*> TTerm2Triple_type;
+
+    struct TTerm2Triple_type : public std::multimap<const TTerm*, const TriplePattern*> {
+	/**
+	 * returns: whether the index is now empty.
+	 */
+	bool erase (const TTerm* key, const TriplePattern* value) {
+	    std::pair<iterator, iterator> r = equal_range(key);
+	    for (std::multimap<const TTerm*, const TriplePattern*>::iterator it = r.first; it != r.second; ++it)
+		if (it->second == value) {
+		    std::multimap<const TTerm*, const TriplePattern*>::erase(it);
+		    break;
+		}
+	    return size() == 0;
+	}
+    };
     typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
     typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
 
@@ -1641,6 +1653,16 @@ public:
 		++next;
 		return range(oit, next);
 	    }
+	}
+	/**
+	 * returns: whether the index is now empty.
+	 */
+	bool erase (const TTerm* outer, const TTerm* middle, const TriplePattern* inner) {
+	    TTerm2TTerm2Triple_type::iterator it = find(outer);
+	    if (it != end())
+		if (it->second.erase(middle, inner))
+		    std::map<const TTerm*, TTerm2Triple_type>::erase(it);
+	    return size() == 0;
 	}
     };
     typedef std::pair<const TTerm*, TTerm2Triple_type> TTerm2TTerm2Triple_pair;
@@ -1704,7 +1726,12 @@ public:
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
     std::vector<const TriplePattern*>::const_iterator end () const { return m_TriplePatterns.end(); }
-    std::vector<const TriplePattern*>::iterator erase (std::vector<const TriplePattern*>::iterator it) { return m_TriplePatterns.erase(it); }
+    std::vector<const TriplePattern*>::iterator erase (std::vector<const TriplePattern*>::iterator triple) {
+	SP.erase((*triple)->getS(), (*triple)->getP(), *triple);
+	PO.erase((*triple)->getP(), (*triple)->getO(), *triple);
+	OS.erase((*triple)->getO(), (*triple)->getS(), *triple);
+	return m_TriplePatterns.erase(triple);
+    }
     void sort (bool (*comp)(const TriplePattern*, const TriplePattern*)) { m_TriplePatterns.sort(comp); }
     void clearTriples () { m_TriplePatterns.clear(); }
     virtual void express(Expressor* p_expressor) const = 0;

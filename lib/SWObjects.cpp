@@ -1789,7 +1789,7 @@ compared against
 		     triple != bgp->m_TriplePatterns.end(); ) {
 		    ResultSet* island = (*row)->makeResultSet(rs->getAtomFactory());
 		    if ((*constraint)->bindVariables(*triple, false, island, *island->begin())) // may need graphVar, graphName?
-			triple = bgp->m_TriplePatterns.erase(triple);
+			triple = bgp->erase(triple);
 		    else
 			triple++;
 		    delete island;
