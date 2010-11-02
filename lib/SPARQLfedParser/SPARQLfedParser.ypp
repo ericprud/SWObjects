@@ -1036,6 +1036,7 @@ InsertData:
     IT_INSERT IT_DATA QuadData	{
 	$$ = new Insert(driver.curOp, NULL);
 	driver.curOp = NULL;
+	driver.curBGP = NULL;
     }
 ;
 
@@ -1057,6 +1058,7 @@ DeleteData:
     IT_DELETE IT_DATA QuadData	{
 	$$ = new Delete(driver.curOp, NULL);
 	driver.curOp = NULL;
+	driver.curBGP = NULL;
     }
 ;
 
