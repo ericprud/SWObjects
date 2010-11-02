@@ -105,11 +105,15 @@ namespace w3c_sw {
 	    graphmap_type::const_iterator vi = graphs.find(name);
 	    return vi == graphs.end() ? NULL : vi->second;
 	}
-	BasicGraphPattern* ensureGraph(const TTerm* name);
+	virtual BasicGraphPattern* ensureGraph(const TTerm* name);
 	void ensureGraphs(std::set<const TTerm*> names) {
 	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)
 		ensureGraph(*it);
 	}
+	virtual bool isDefaultGraph (const TTerm* t) const {
+	    return t == DefaultGraph;
+	}
+
 	RdfDB& operator= (const RdfDB &ref) {
 	    for (graphmap_type::const_iterator it = graphs.begin(); // @@@ same as ~RdfDB()
 		 it != graphs.end(); it++)
@@ -186,11 +190,38 @@ namespace w3c_sw {
 		s << graphs.find(*it)->second->toString(mediaType, namespaces);
 	    return s.str();
 	}
+
     };
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {
 	return os << my.toString();
     }
+
+    class TargetedRdfDB : public RdfDB {
+	const TTerm* defaultTarget;
+    public:
+	TargetedRdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
+	    : RdfDB(webAgent, xmlParser, debugStream, handler), defaultTarget(NULL)
+	{  }
+	void setTarget (const TTerm* target) { defaultTarget = target; }
+
+	virtual BasicGraphPattern* ensureGraph (const TTerm* name) {
+	    if (name == NULL)
+		name = DefaultGraph;
+	    if (name == DefaultGraph && defaultTarget != NULL)
+		name = defaultTarget;
+	    return RdfDB::ensureGraph(name);
+	}
+
+	virtual bool isDefaultGraph (const TTerm* t) const {
+	    return t == DefaultGraph || t == defaultTarget;
+	}
+
+	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
+	    if (graph == NULL) graph = defaultTarget;
+	    return RdfDB::bindVariables(rs, graph, toMatch);
+	}
+    };
 
 } // namespace w3c_sw
 

@@ -651,7 +651,8 @@ namespace w3c_sw {
 					xml->attribute("name", "query");
 					xml->attribute("type", "hidden");
 					std::stringstream delSS;
-					delSS << "DELETE DATA { GRAPH <" << editPath << "> { ";
+					// delSS << "DELETE DATA { GRAPH <" << editPath << "> { ";
+					delSS << "DELETE DATA { ";
 					for (VariableVector::const_iterator col = cols.begin();
 					     col != cols.end(); ++col) {
 					    const TTerm* val = (*row)->get(*col);
@@ -660,7 +661,8 @@ namespace w3c_sw {
 					    else 
 						delSS << "[] ";
 					}
-					delSS << "} }";
+					// delSS << "} }";
+					delSS << "}";
 					xml->attribute("value", delSS.str());
 				    } xml->close();
 

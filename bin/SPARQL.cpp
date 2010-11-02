@@ -307,7 +307,8 @@ DBHandlers  RdfDBHandlers;
 "	var np = document.getElementById(id + '_1').childNodes[0].nodeValue;\n"
 "	var no = document.getElementById(id + '_2').childNodes[0].nodeValue;\n"
 "\n"
-"	q.value = del + \"; INSERT DATA { GRAPH <\" + path + \"> { \" + ns + \" \" + np + \" \" + no + \" } }\";\n"
+//"	q.value = del + \"; INSERT DATA { GRAPH <\" + path + \"> { \" + ns + \" \" + np + \" \" + no + \" } }\";\n"
+"	q.value = del + \"; INSERT DATA { \" + ns + \" \" + np + \" \" + no + \" }\";\n"
 "	document.getElementById(id + \"_submit\").value = \"modify\";\n"
 "    }\n"
 	    ;
@@ -399,7 +400,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	}
     };
 
-    sw::RdfDB db;
+    sw::TargetedRdfDB db;
     bool runOnce;
     bool done;
     int served;
@@ -749,8 +750,10 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 				for (loadList::iterator it = queryLoadList.begin();
 				     it != queryLoadList.end(); ++it)
 				    it->loadGraph();
-
+				if (path != server.path)
+				    server.db.setTarget(F.getURI(path));
 				server.executeQuery(op, rs, language, newQuery);
+				server.db.setTarget(NULL);
 				delete op;
 			    } catch (sw::ParserException& ex) {
 				delete op;

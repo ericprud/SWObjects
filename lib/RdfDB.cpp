@@ -130,7 +130,7 @@ namespace w3c_sw {
 	     *   rs->first()->get(?graph) == TTerm::Unbound
 	     */
 	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
-		if (vi->first != DefaultGraph) {
+		if (!isDefaultGraph(vi->first)) {
 		    ResultSet disjoint(rs->getAtomFactory());
 		    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
 		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
