@@ -235,9 +235,13 @@ DBHandlers  RdfDBHandlers;
 "  font-weight: bold;\n"
 "  }\n"
 "\n"
-"#query { \n"
+"#requery {\n"
+"  margin-top:-1em;\n"
+"}\n"
+"\n"
+"#edit {\n"
 "  border:1px solid #000;\n"
-"  padding-left: 1em;\n"
+"  padding: 1em;\n"
 "  background-color: #eee;\n"
 "  font-size: smaller;\n"
 "  }\n"
@@ -273,13 +277,13 @@ DBHandlers  RdfDBHandlers;
 "    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery.tablesorter.js\"></script>\n"
 	    ;
 	std::string Javascript_ToggleDisplay_init =
-"	toggleDisplay('query');\n"
-"	var query = document.getElementById('query');\n"
+"	toggleDisplay('requery');\n"
+"	var query = document.getElementById('requery');\n"
 "	var p = document.createElement('p');\n"
 "	document.body.insertBefore(p, query);\n"
 "	var input = document.createElement('input');\n"
 "	input.setAttribute('type', 'checkbox');\n"
-"	input.setAttribute('onclick', 'toggleDisplay(\"query\")');\n"
+"	input.setAttribute('onclick', 'toggleDisplay(\"requery\")');\n"
 "	p.appendChild(input);\n"
 "	p.appendChild(document.createTextNode(\" display query\"));\n"
 	  ;
@@ -310,6 +314,15 @@ DBHandlers  RdfDBHandlers;
 //"	q.value = del + \"; INSERT DATA { GRAPH <\" + path + \"> { \" + ns + \" \" + np + \" \" + no + \" } }\";\n"
 "	q.value = del + \"; INSERT DATA { \" + ns + \" \" + np + \" \" + no + \" }\";\n"
 "	document.getElementById(id + \"_submit\").value = \"modify\";\n"
+"    }\n"
+"    function copy (from, to) {\n"
+"	var children = document.getElementById(from).childNodes;\n"
+"	var q = \"\";\n"
+"	for (var i = 0; i < children.length; i++) {\n"
+"	    if (children[i].nodeValue != null)\n"
+"		q = q + children[i].nodeValue + \"\\n\";\n"
+"	}\n"
+"	document.getElementById(to).value = q;\n"
 "    }\n"
 	    ;
 
@@ -367,8 +380,6 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			size_t graphSize = server.db.ensureGraph(*g)->size();
 			std::stringstream query;
 			query << "SELECT ?s ?p ?o {\n  ";
-			if (*g != sw::DefaultGraph)
-			    query << "GRAPH " << (*g)->toString() << " {";
 			query << "?s ?p ?o";
 
 			const sw::URI* asURI = dynamic_cast<const sw::URI*>(*g);
@@ -377,16 +388,13 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			    : uriLink(asURI);
 
 			sout << "      <li>" << renderedName << ": <a href='";
-			if (*g != sw::DefaultGraph)
-			    query << "}";
 			query << "\n}";
 			if (graphSize > exploreTripleCountLimit)
 			    query << " LIMIT " << exploreTripleCountLimit;
 			sw::SWWEBagent::ParameterList p;
 			p.set("query", query.str());
 			p.set("media", "edit");
-			p.set("path", escapeHTML((*g)->getLexicalValue()));
-			sout << server.path << "?" << escapeHTML(p.str());
+			sout << escapeHTML(*g == sw::DefaultGraph ? server.path : (*g)->getLexicalValue()) << "?" << escapeHTML(p.str());
 			sout << "'>" << graphSize << " triples</a>.";
 			sout << "</li>\n";
 		    }
@@ -815,19 +823,58 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 				    "    </script>\n"
 				    ;
 				head(sout, "SPARQL Query Results", headStr);
-
+				/*
+    <div id="requery">
+      <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
+  ?s ?p ?o
+}</pre>
+      <form action="/as/df">
+        <p>
+          <input id="query" name="query" type="hidden" value=""/>
+          <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
+        </p>
+      </form>
+    </div>
+				*/
 				/** construct XHTML body with query and results. */
-				sw::XMLSerializer::Attributes queryAttrs;
-				queryAttrs["id"] = "query";
-				queryAttrs["style"] = "display:block;";
-				xml.leaf("pre", newQuery, queryAttrs);
+				xml.open("div"); {
+				    xml.attribute("id", "requery");
+				    sw::XMLSerializer::Attributes preAttrs;
+				    preAttrs["id"] = "edit";
+				    preAttrs["contenteditable"] = "true";
+				    preAttrs["style"] = "display:block; float:left;";
+				    xml.leaf("pre", newQuery, preAttrs);
+				    xml.open("form"); {
+					xml.attribute("action", path);
+					xml.attribute("method", "get");
+					xml.open("p"); {
+					    sw::XMLSerializer::Attributes queryAttrs;
+					    queryAttrs["type"] = "hidden";
+					    queryAttrs["value"] = "";
+					    queryAttrs["id"] = "query";
+					    queryAttrs["name"] = "query";
+					    xml.empty("input", queryAttrs);
+
+					    sw::XMLSerializer::Attributes mediaAttrs;
+					    mediaAttrs["type"] = "hidden";
+					    mediaAttrs["value"] = "edit";
+					    mediaAttrs["name"] = "media";
+					    xml.empty("input", mediaAttrs);
+
+					    sw::XMLSerializer::Attributes submitAttrs;
+					    submitAttrs["type"] = "submit";
+					    submitAttrs["value"] = "re-query";
+					    submitAttrs["onclick"] = "copy('edit', 'query')";
+					    submitAttrs["style"] = "margin: 2em;";
+					    xml.empty("input", submitAttrs);
+					} xml.close(); // p
+				    } xml.close(); // form
+				} xml.close(); // div
 
 				sw::XMLSerializer::Attributes resultsAttrs;
 				resultsAttrs["id"] = "results";
 				resultsAttrs["class"] = "tablesorter";
-				sw::webserver::request::parmmap::const_iterator path;
-				path = req.parms.find("path");
-				rs.toHtmlTable(&xml, resultsAttrs, path == req.parms.end() ? "" : path->second);
+				rs.toHtmlTable(&xml, resultsAttrs, path == server.path ? "" : path);
 
 				/** construct reply from headers and XHTML body */
 				rep.status = sw::webserver::reply::ok;
@@ -879,19 +926,28 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		sw::ServiceGraphPattern::defaultServiceProtocol == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
 		"post";
 	    sout << 
-		"    <form action='" << server.path << "' method='" << method << "'>\n"
+		"    <form action='" << server.path << "' method='" << method << "'><p>\n"
 		"      Query: <textarea name='query' rows='25' cols='80'></textarea> <input type='submit' /><br />\n"
 		"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
-		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
-		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><br />\n"
+		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><span id=\"addGraph\" onclick='\n"
+		"        var b = document.createElement(\"br\");\n"
+		"        this.parentNode.insertBefore(b, this);\n"
+		"        var t = document.createTextNode(\"named graph: \");\n"
+		"        this.parentNode.insertBefore(t, this);\n"
+		"        var i = document.createElement(\"input\");\n"
+		"        i.setAttribute(\"type\", \"text\");\n"
+		"        i.setAttribute(\"name\", \"named-graph-uri\");\n"
+		"        i.setAttribute(\"size\", \"50\");\n"
+		"        this.parentNode.insertBefore(i, this);\n"
+		"        '> +</span><br />\n"
 		"      <input type='radio' name='media' value='xmlres' />SPARQL XML Results\n"
 		"      <input type='radio' name='media' value='html' checked='checked' />HTML Results\n"
 		"      <input type='radio' name='media' value='tablesorter' />JQuery Tablesorter\n"
 		"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
-		"    </form>\n"
-		"    <form action='" << server.path << "' method='post'>\n"
+		"    </p></form>\n"
+		"    <form action='" << server.path << "' method='post'><p>\n"
 		"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
-		"    </form>\n";
+		"    </p></form>\n";
 	    sout << DBsummary();
 
 	    rep.addHeader("Content-Type", "text/html");
