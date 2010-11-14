@@ -3961,7 +3961,7 @@ namespace w3c_sw {
 	curBGP(NULL), curFilter(NULL), curOp(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
 	root(NULL), lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
-	lastRuleTermSet(false), sharedVarsSet(false)
+	lastRuleTermSet(false)
 {
 }
 
@@ -3971,6 +3971,7 @@ namespace w3c_sw {
 
 MapSet* MapSetDriver::parse (IStreamContext& in)
 {
+    sharedVarsSet = false;
     streamname = in.nameStr;
 
     MapSetScanner scanner(this, in.p);
