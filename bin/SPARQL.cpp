@@ -1795,8 +1795,8 @@ int main(int ac, char* av[])
 		    sw::IStreamContext::STRING : 
 		    sw::IStreamContext::STDIN;
 		sw::IStreamContext istr(nameStr, opts, NULL, &Agent, &DebugStream);
-		if (TheServer.mapSetParser.parse(istr) != 0)
-		    throw std::string("error when parsing map ").append(nameStr);
+		TheServer.mapSetParser.parse(istr); // throws if it fails to parse
+		    // could catch and re-throw std::string("error when parsing map ").append(nameStr);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
 		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
 		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
