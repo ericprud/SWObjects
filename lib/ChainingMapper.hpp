@@ -13,6 +13,7 @@
 #include "SWObjectDuplicator.hpp"
 #include "SPARQLSerializer.hpp"
 #include "RdfQueryDB.hpp"
+#include "prfxbuf.hpp"
 
 namespace w3c_sw {
 
@@ -231,9 +232,10 @@ namespace w3c_sw {
 	    Opts opts;
 	    MapSet::e_sharedVars sharedVars;
 	    NodeShare& nodeShare;
+	    std::ostream** debugStream;
 
-	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
+	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
+		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare), debugStream(debugStream) {  }
 	    void operator= (const Alternatives& ref) {
 		sharedVars = ref. sharedVars;
 		nodeShare = ref.nodeShare;
@@ -321,14 +323,38 @@ namespace w3c_sw {
 		TableDisjunction* ret = NULL;
 		if (opts.size() > 1)
 		    ret = new TableDisjunction();
+
+		oprfxstream* newDebugStream = NULL;
+		std::ostream* oldDebugStream = NULL;
+		if (debugStream && *debugStream != NULL) {
+		    newDebugStream = new oprfxstream((*debugStream)->rdbuf(), "   ");
+		    oldDebugStream = *debugStream;
+		    *debugStream = newDebugStream;
+		}
+
 		for (Opts::const_iterator alternative = opts.begin();
 		     alternative != opts.end(); ++alternative) {
+		    if (newDebugStream != NULL && alternative != opts.begin()) {
+			newDebugStream->prefix("");
+			*newDebugStream << "UNION" << std::endl;
+			newDebugStream->prefix("   ");
+		    }
+		    if (debugStream && *debugStream != NULL)
+			**debugStream << "alternative: " << alternative->str();
 		    std::vector<const TableOperation*> conjoints;
 		    for (Rule2rs::const_iterator rule = alternative->begin();
 			 rule != alternative->end(); ++rule)
 			for (ResultSetConstIterator res = rule->second.begin();
-			     res != rule->second.end(); ++res)
-			    conjoints.push_back(Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply());
+			     res != rule->second.end(); ++res) {
+			    TableOperation* bgp = Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply();
+			    if (debugStream && *debugStream != NULL) {
+				**debugStream << "bindings: " << **res << " instantiate as:\n";
+				newDebugStream->prefix("      ");
+				**debugStream << bgp->toString(MediaType("text/turtle"));
+				newDebugStream->prefix("   ");
+			    }
+			    conjoints.push_back(bgp);
+			}
 
 		    const TableOperation* op = 
 			conjoints.size() == 0 ? NULL :
@@ -339,6 +365,10 @@ namespace w3c_sw {
 			ret->addTableOperation(op, false);
 		    else
 			return op; // ret = op loses const-ness.
+		}
+		if (debugStream && *debugStream != NULL) {
+		    delete newDebugStream;
+		    *debugStream = oldDebugStream;
 		}
 		return ret;
 	    }
@@ -351,9 +381,10 @@ namespace w3c_sw {
 
 	Alternatives alternatives;
 	Failures failed;
+	std::ostream** debugStream;
 
-	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
+	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
+	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare, debugStream), debugStream(debugStream) {  }
 	void operator= (const Bindings& ref) {
 	    atomFactory = ref.atomFactory;
 	    rules = ref.rules;
@@ -428,10 +459,11 @@ namespace w3c_sw {
 	Bindings bindings;
 	MapSet::e_sharedVars sharedVars;
 	Bindings::Alternatives::VarUniquifier varUniquifier;
+	std::ostream** debugStream;
 
     public:
-	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
-	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare) {  }
+	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
+	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare, debugStream), debugStream(debugStream) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    bindings.alternatives.opts.clear();
@@ -439,7 +471,12 @@ namespace w3c_sw {
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
 		bindings.match(bgp, *it);
+
+	    if (debugStream && *debugStream != NULL)
+		**debugStream << "transforming bgp: " << *bgp << " -> [[\n";
 	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
+	    if (debugStream && *debugStream != NULL)
+		**debugStream << "]]\n";
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
@@ -520,12 +557,12 @@ namespace w3c_sw {
 		name = atomFactory->getRDFLiteral(ss.str());
 	    }
 	    Rule r = RuleParser().parseConstruct(rule, name);
-	    if (*debugStream != NULL)
+	    if (debugStream && *debugStream != NULL)
 		**debugStream << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
-	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
+	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare, debugStream).mapQuery(query);
 	    BGPSimplifier dup(atomFactory);
 	    op->express(&dup);
 	    delete op;
