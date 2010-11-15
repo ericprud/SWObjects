@@ -13,7 +13,7 @@
         <uri>http://usefulinc.com/ns/doap#homepage</uri>
       </binding>
       <binding name="O">
-        <uri>http://swobj.org/SPARQL/v1</uri>
+        <uri>http://swobj.org/sparql/v1</uri>
       </binding>
     </result>
     <result>

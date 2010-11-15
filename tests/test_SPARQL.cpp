@@ -16,7 +16,7 @@ w3c_sw::AtomFactory F;
 const char* Doutput =
     "+----+---------------------------------------------------+----------------------------------------+\n"
     "| ?S | ?P                                                | ?O                                     |\n"
-    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
     "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
     "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
     "+----+---------------------------------------------------+----------------------------------------+\n";
@@ -48,32 +48,32 @@ std::ostream& operator== (std::ostream& o, ExecResults& tested) {
 
 BOOST_AUTO_TEST_SUITE( tutorial )
 BOOST_AUTO_TEST_CASE( D ) {
-    ExecResults tested("../bin/SPARQL -D");
+    ExecResults tested("../bin/sparql -D");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "{\n"
 		      "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/SPARQL/v1> .\n"
+		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
 		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
 		      "}\n");
 }
 BOOST_AUTO_TEST_CASE( D_trig ) {
-    ExecResults tested("../bin/SPARQL -D -L text/trig");
+    ExecResults tested("../bin/sparql -D -L text/trig");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "{\n"
 		      "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/SPARQL/v1> .\n"
+		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
 		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
 		      "}\n");
 }
 BOOST_AUTO_TEST_CASE( D_turtle ) {
-    ExecResults tested("../bin/SPARQL -D -L text/turtle");
+    ExecResults tested("../bin/sparql -D -L text/turtle");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/SPARQL/v1> .\n"
+		      "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
 		      "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n");
 }
 BOOST_AUTO_TEST_CASE( D_spo ) {
-    ExecResults invocation("../bin/SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
+    ExecResults invocation("../bin/sparql -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
@@ -81,14 +81,14 @@ BOOST_AUTO_TEST_CASE( D_spo ) {
 		 "+----+---------------------------------------------------+----------------------------------------+\n"
 		 "| ?s | ?p                                                | ?o                                     |\n"
 		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
 		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
 		 "+----+---------------------------------------------------+----------------------------------------+\n",
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
-    ExecResults invocation("../bin/SPARQL -D -8 -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
+    ExecResults invocation("../bin/sparql -D -8 -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
@@ -96,14 +96,14 @@ BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
 		 "+----+---------------------------------------------------+----------------------------------------+\n"
 		 "| ?s | ?p                                                | ?o                                     |\n"
 		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
 		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
 		 "+----+---------------------------------------------------+----------------------------------------+\n",
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( G_spo ) {
-    ExecResults invocation("../bin/SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
+    ExecResults invocation("../bin/sparql -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
@@ -111,14 +111,14 @@ BOOST_AUTO_TEST_CASE( G_spo ) {
 		 "+----+---------------------------------------------------+----------------------------------------+\n"
 		 "| ?s | ?p                                                | ?o                                     |\n"
 		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
 		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
 		 "+----+---------------------------------------------------+----------------------------------------+\n", 
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp ) {
-    ExecResults invocation("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+    ExecResults invocation("../bin/sparql -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 		       "    GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( DG_sp ) {
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
-    ExecResults invocation("../bin/SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+    ExecResults invocation("../bin/sparql -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 			   "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
 			   "    UNION\n"
 			   "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 #ifdef FIXED_SPARQL_ARGS_ORDER // !!!
 /* sensitivity to position of -b directive */
 BOOST_AUTO_TEST_CASE( Dbe ) {
-    ExecResults tested("../bin/SPARQL -D -b http://foo.example/ -e \"SELECT * WHERE { <> a ?t}\"");
+    ExecResults tested("../bin/sparql -D -b http://foo.example/ -e \"SELECT * WHERE { <> a ?t}\"");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "+\n"
 		      "|\n"
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( Dbe ) {
 
 /* make sure we fail mis-matches */
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
-    ExecResults tested("../bin/SPARQL -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-02.ttl");
+    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-02.ttl");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "+-----------------------------+------------------------------+\n"
 		      "| ?p                          | ?q                           |\n"
@@ -182,13 +182,13 @@ BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
 }
 
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
-    ExecResults tested("../bin/SPARQL -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-01.ttl");
+    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-01.ttl");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "matched\n");
 }
 
 BOOST_AUTO_TEST_CASE( insert ) {
-    ExecResults tested("../bin/SPARQL -d sparul/g_12_12.trig -e \"INSERT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
+    ExecResults tested("../bin/sparql -d sparul/g_12_12.trig -e \"INSERT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "{\n"
 		      "  <sparul/g> <sparul/y> 1  .\n"
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE( insert ) {
 }
 
 BOOST_AUTO_TEST_CASE( construct ) {
-    ExecResults tested("../bin/SPARQL -d sparul/g_12_12.trig -e \"CONSTRUCT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
+    ExecResults tested("../bin/sparql -d sparul/g_12_12.trig -e \"CONSTRUCT { ?g ?y 3 } WHERE  { GRAPH ?g  { ?x ?y ?z } }\"");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "{\n"
 		      "  <sparul/g> <sparul/y> 3  .\n"
@@ -210,19 +210,19 @@ BOOST_AUTO_TEST_CASE( construct ) {
 }
 
 BOOST_AUTO_TEST_CASE( bool_no_base ) {
-    ExecResults tested("../bin/SPARQL -b '' -d SPARQL/rel.ttl SPARQL/rel.rq");
+    ExecResults tested("../bin/sparql -b '' -d SPARQL/rel.ttl SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "true\n");
 }
 
 BOOST_AUTO_TEST_CASE( bool_base_0 ) {
-    ExecResults tested("../bin/SPARQL -b http://foo.example/ -d SPARQL/rel.ttl SPARQL/rel.rq");
+    ExecResults tested("../bin/sparql -b http://foo.example/ -d SPARQL/rel.ttl SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "true\n");
 }
 
 BOOST_AUTO_TEST_CASE( bool_base_1 ) {
-    ExecResults tested("../bin/SPARQL -d SPARQL/rel.ttl -b http://foo.example/ SPARQL/rel.rq");
+    ExecResults tested("../bin/sparql -d SPARQL/rel.ttl -b http://foo.example/ SPARQL/rel.rq");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "false\n");
 }
@@ -230,22 +230,22 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 BOOST_AUTO_TEST_CASE( resultsFormat ) {
     w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
     {   /* Create an simple table dump. */
-	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
+	ExecResults creation("../bin/sparql -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
 
 	/* Check that table dump. */
-	ExecResults cat("../bin/SPARQL -d SPARQL/D.srt\n");
+	ExecResults cat("../bin/sparql -d SPARQL/D.srt\n");
 	w3c_sw::ResultSet cat_measured(&F, cat.s, false, bnodeMap);
 	w3c_sw::ResultSet cat_expected(&F, Doutput, false, bnodeMap);
 	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
     }
  
     {   /* Create an SRX (SPARQL Xml Results format) */
-	ExecResults creation("../bin/SPARQL -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srx\n");
+	ExecResults creation("../bin/sparql -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srx\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
 
 	/* Check that SRX. */
-	ExecResults cat("../bin/SPARQL -d SPARQL/D.srx\n");
+	ExecResults cat("../bin/sparql -d SPARQL/D.srx\n");
 	w3c_sw::ResultSet cat_measured(&F, cat.s, false, bnodeMap);
 	w3c_sw::ResultSet
 	    cat_expected(&F, Doutput, false, bnodeMap);
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
  
     {
-	ExecResults join("../bin/SPARQL -d SPARQL/D.srx -d SPARQL/E.srt\n");
+	ExecResults join("../bin/sparql -d SPARQL/D.srx -d SPARQL/E.srt\n");
 	w3c_sw::ResultSet join_measured(&F, join.s, false, bnodeMap);
 	w3c_sw::ResultSet
 	    join_expected(&F, 
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
 
 BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::setenv("XSLT", "/usr/bin/xsltproc %STYLESHEET %DATA", 1);
-    ExecResults invocation("../bin/SPARQL -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
+    ExecResults invocation("../bin/sparql -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
     w3c_sw::ResultSet
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( GRDDL0 ) {
 }
 
 BOOST_AUTO_TEST_CASE( escapes ) {
-    ExecResults tested("../bin/SPARQL -d SPARQL/escape.trig");
+    ExecResults tested("../bin/sparql -d SPARQL/escape.trig");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "{\n"
 		      "  <SPARQL/s> <SPARQL/p> \"as\\r\\n\\b\\t\\\"'\\\\df\"  .\n"

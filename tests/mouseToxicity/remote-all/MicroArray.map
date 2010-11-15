@@ -3,14 +3,6 @@
 
 # $Id: ToxicAssoc0.rq,v 1.4 2009/02/17 15:00:45 eric Exp $
 
- server: localhost
- user: root
- database: MicroArray
- stemURI: http://db.example/ma/
- primaryKey: id
- construct:
-
-
 PREFIX ma: <http://med.example/ma#>
 PREFIX cs: <http://med.example/cs#>
 PREFIX up: <http://med.example/up#>
@@ -20,6 +12,13 @@ PREFIX mt: <http://med.example/mt#>
 PREFIX MicroArray: <http://db.example/ma/MicroArray#>
 PREFIX Kinase: <http://db.example/ma/Kinase#>
 PREFIX Chemicals: <http://db.example/ma/Chemicals#>
+
+ server "localhost"
+ user "root"
+ database "MicroArray"
+ stemURI <http://db.example/ma/>
+ primaryKey "id"
+
 
 CONSTRUCT {
   ?g	  ma:name		?name .

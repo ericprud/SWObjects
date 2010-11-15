@@ -13,9 +13,6 @@
 #   debugging in emacs:
 #     gdb --annotate=3 sample_RuleMap1    (set args query_HealthCare1.rq ruleMap_HealthCare1.rq)
 
-# linking to dlib requires special maneuvers 'cause of the need to 
-# g++ -DHAVE_UTF8_OUTPUT -DHAVE_REGEX -I/home/eric/src/dlib-17.11 -o bin/SPARQL_server bin/SPARQL_server.o /home/eric/src/dlib-17.11/dlib/all/source.cpp -L/tmp/const-happy -lSWObjects -lboost_regex -lxml2 -lexpat -lmysqlclient
-
 # Edit CONFIG to set your build preferences.
 -include CONFIG
 
@@ -247,14 +244,6 @@ lib/%.cpp : lib/%.lpp
 
 ##### bin dirs ####
 
-# overrides for specific targets in bin
-bin/SPARQL_server.o : bin/SPARQL_server.cpp config.h
-	$(CXX) -DHTML_RESULTS=0 $(DEFS) $(OPT) $(DEBUG) $(INCLUDES) $(DLIB) -c -o $@ $<
-
-bin/SPARQL_server : bin/SPARQL_server.o $(LIB) #lib
-	$(CXX) -lnsl -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
-
-# bin/ general rules
 bin/%.dep: bin/%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
@@ -313,7 +302,7 @@ unitTESTexes := $(TESTNAMELIST)
 #TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
 TEST_ARGS ?= ""
 
-t_SPARQL: bin/SPARQL
+t_SPARQL: bin/sparql
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
@@ -355,12 +344,12 @@ m_%: tests/man_%
 	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
 
 
-### SWtransformer tests:
+### Query Map tests tests:
 
-tests/HealthCare1.results: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+tests/HealthCare1.results: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 	$< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
-tests/HealthCare1.valgrind: bin/SPARQL tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+tests/HealthCare1.valgrind: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 	valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 transformTESTS=tests/HealthCare1
@@ -369,10 +358,10 @@ transformTEST_RESULTS=$(transformTESTS:=.results)
 transformVALGRIND=$(transformTEST_RESULTS:.results=.valgrind)
 
 
-### SPARQL_server tests:
+### sparql server tests:
 
 tests/server_mouseToxicity_remote-all.results: \
-	bin/SPARQL_server bin/SWtransformer \
+	bin/sparql \
 	tests/mouseToxicity/remote-all/ToxicAssoc0.rq \
 	tests/mouseToxicity/remote-all/MicroArray.map \
 	tests/mouseToxicity/remote-all/Uniprot.map \
@@ -381,33 +370,32 @@ tests/server_mouseToxicity_remote-all.results: \
 	tests/mouseToxicity/remote-all/MouseToxicity.map
 	# Start servers.
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --once http://localhost:8881/microArray MicroArray.map |\
+	  ../../../$< --debug 1 --once --serve http://localhost:8881/microArray -m MicroArray.map |\
 	  tee ../../../$@.ma )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --once http://localhost:8882/uniprot Uniprot.map |\
+	  ../../../$< --debug 1 --once --serve http://localhost:8882/uniprot -m Uniprot.map |\
 	  tee ../../../$@.up )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --once http://localhost:8883/screeningAssay ScreeningAssay.map |\
+	  ../../../$< --debug 1 --once --serve http://localhost:8883/screeningAssay -m ScreeningAssay.map |\
 	  tee ../../../$@.sa )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --once http://localhost:8884/chemStructure ChemStructure.map |\
+	  ../../../$< --debug 1 --once --serve http://localhost:8884/chemStructure -m ChemStructure.map |\
 	  tee ../../../$@.cs )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --once http://localhost:8885/mouseToxicity MouseToxicity.map |\
+	  ../../../$< --debug 1 --once --serve http://localhost:8885/mouseToxicity -m MouseToxicity.map |\
 	  tee ../../../$@.mt )&
 	sleep 1 # give the servers time to start up
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  time ../../../bin/SWtransformer\
-	      -x -q ToxicAssoc0.rq )
+	  time ../../../bin/sparql ToxicAssoc0.rq )
 
 
-tests/7tm_receptors-flat.results: bin/SPARQL_server bin/SPARQL tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && ../../../$< --once http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
+tests/7tm_receptors-flat.results: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
+	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && ../../../bin/SPARQL q.rq )
+	( cd tests/7tm_receptors/flat/ && ../../../$< q.rq )
 
-tests/7tm_receptors-flat.results2: bin/SPARQL bin/SPARQL tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
+tests/7tm_receptors-flat.results2: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
+	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
 	sleep 1
 	( cd tests/7tm_receptors/flat/ && ../../../$< q.rq )
 

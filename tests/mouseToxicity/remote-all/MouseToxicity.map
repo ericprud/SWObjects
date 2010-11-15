@@ -3,14 +3,6 @@
 
 # $Id: ToxicAssoc0.rq,v 1.4 2009/02/17 15:00:45 eric Exp $
 
- server: localhost
- user: root
- database: MouseToxicity
- stemURI: http://db.example/mt/
- primaryKey: id
- construct:
-
-
 PREFIX ma: <http://med.example/ma#>
 PREFIX cs: <http://med.example/cs#>
 PREFIX up: <http://med.example/up#>
@@ -18,6 +10,13 @@ PREFIX sa: <http://med.example/sa#>
 PREFIX mt: <http://med.example/mt#>
 
 PREFIX MouseToxicity: <http://db.example/mt/MouseToxicity#>
+
+ server "localhost"
+ user "root"
+ database "MouseToxicity"
+ stemURI <http://db.example/mt/>
+ primaryKey "id"
+
 
 CONSTRUCT {
   ?t	cs:chemical	?like .		# bound to ?cs.cs:sidechain

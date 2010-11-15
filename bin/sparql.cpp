@@ -1586,7 +1586,7 @@ int main(int ac, char* av[])
 	po::store(po::command_line_parser(ac, av).
               options(cmdline_options).positional(p).run(), vm);
 
-	std::ifstream ifs(".SPARQL.cfg");
+	std::ifstream ifs(".sparql.cfg");
 	po::store(parse_config_file(ifs, config_file_options), vm);
 	po::notify(vm);
     
@@ -1628,46 +1628,46 @@ int main(int ac, char* av[])
 	static const char* appDescGraph = 
 	    "    @prefix doap: <http://usefulinc.com/ns/doap#> .\n"
 	    "    <> a doap:Project ;\n"
-            "        doap:homepage <http://swobj.org/SPARQL/v1> ;\n"
+            "        doap:homepage <http://swobj.org/sparql/v1> ;\n"
             "        doap:shortdesc \"a semantic web query toolbox\" .\n";
 	static const char* tutorial = 
 	    "Tutorial:\n"
-	    "  The SPARQL Query Language matches patterns of Semantic Web data. This SPARQL\n"
+	    "  The SPARQL Query Language matches patterns of Semantic Web data. This sparql\n"
 	    "  executable allows you to aggregate and query Semantic Web resources. To\n"
-	    "  introduce this, the SPARQL executable contains a short description of itself,\n"
+	    "  introduce this, the sparql executable contains a short description of itself,\n"
 	    "  with the following assertions:\n"
-	    "    SPARQL is a doap project.\n"
-	    "    SPARQL has a homepage http://swobj.org/SPARQL/v1 .\n"
-	    "    SPARQL is \"a Semantic Web query toolbox\".\n"
-	    "  The SPARQL program starts with an empty database. You can load the above\n"
-	    "  description (-D) and display it with \"SPARQL -D\":\n"
+	    "    sparql is a doap project.\n"
+	    "    sparql has a homepage http://swobj.org/sparql/v1 .\n"
+	    "    sparql is \"a Semantic Web query toolbox\".\n"
+	    "  The sparql program starts with an empty database. You can load the above\n"
+	    "  description (-D) and display it with \"sparql -D\":\n"
 	    "{\n"
 	    "  <> <http://...-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-	    "  <> <http://...#homepage> <http://swobj.org/SPARQL/v1> .\n"
+	    "  <> <http://...#homepage> <http://swobj.org/sparql/v1> .\n"
 	    "  <> <http://...#shortdesc> \"a semantic web query toolbox\"  .\n"
 	    "}\n"
-	    "  Because you supplied no query, SPARQL showed the contents of the loaded\n"
+	    "  Because you supplied no query, sparql showed the contents of the loaded\n"
 	    "  database. The default database output format is TriG, as specified at\n"
 	    "    http://www4.wiwiss.fu-berlin.de/bizer/TriG/\n"
 	    "\n"
 	    "  You can query for all the triples:\n"
-	    "    SPARQL -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"\n"
+	    "    sparql -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"\n"
 	    "  , giving resuls like:\n"
 	    " +----+-------------------------------+----------------------------------------+\n"
 	    " | ?s | ?p                            | ?o                                     |\n"
 	    " | <> | <http://www.w3....ax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-	    " | <> |           <http...p#homepage> |           <http://swobj.org/SPARQL/v1> |\n"
+	    " | <> |           <http...p#homepage> |           <http://swobj.org/sparql/v1> |\n"
 	    " | <> |          <http:...#shortdesc> |         \"a semantic web query toolbox\" |\n"
 	    " +----+-------------------------------+----------------------------------------+\n"
 	    "\n"
 	    "  -D loaded the three assertions into the \"default graph\", the graph to which\n"
 	    "  SPARQL queries are directed unless otherwise directed by GRAPH clause. To try\n"
 	    "  a GRAPH clause, load the description into the graph foo and query that graph:\n"
-	    "    SPARQL -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"\n"
+	    "    sparql -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"\n"
 	    "\n"
 	    "  We can load the description into a couple graphs *and* the default graph and\n"
 	    "  ask all of the graphs which include an assertion about a doap project:\n"
-	    "    SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+	    "    sparql -a -DG foo -G foo2 -e \"SELECT ?g {\n"
             "       GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"\n"
 	    "    +--------+\n"
 	    "    | ?g     |\n"
@@ -1678,7 +1678,7 @@ int main(int ac, char* av[])
 	    "  Note that the default graph did not appear as the query only matches loaded\n"
 	    "  *named* graphs. You can use a UNION to match both the default graph and loaded\n"
 	    "  named graphs:\n"
-	    "    ./SPARQL -a -DG foo -G foo2 -e \"SELECT ?g {\n"
+	    "    ./sparql -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 	    "        {?s ?p <http://usefulinc.com/ns/doap#Project>}\n"
 	    "      UNION\n"
 	    "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n"
@@ -1692,10 +1692,10 @@ int main(int ac, char* av[])
 
         if (vm.count("help")) {
             std::cout << 
-		"Usage: SPARQL [opts] queryURI mapURI*\n"
-		"       SPARQL [opts] -e query mapURI*\n"
-		"       SPARQL [opts] --server URL mapURI*\n\n"
-		"get started with: SPARQL --Help tutorial\n" << 
+		"Usage: sparql [opts] queryURI mapURI*\n"
+		"       sparql [opts] -e query mapURI*\n"
+		"       sparql [opts] --server URL mapURI*\n\n"
+		"get started with: sparql --Help tutorial\n" << 
 		queryHelp << cursory;
             NoExec = true;
         }
@@ -1719,7 +1719,7 @@ int main(int ac, char* av[])
 		if (!it->compare("data") || !it->compare("all"))
 		    matched = true, std::cout
 			<< dataOpts
-			<< "SPARQL will \"guess\" that data from ’-’ is trig and output is either a table or trig.\n\n"
+			<< "sparql will \"guess\" that data from ’-’ is trig and output is either a table or trig.\n\n"
 			<< "Application description graph:\n" << appDescGraph
 			<< nl;
  		if (!it->compare("http") || !it->compare("all"))
@@ -1736,7 +1736,7 @@ int main(int ac, char* av[])
 
 
         if (vm.count("version"))
-            std::cout << "SPARQL version 1.0, revision: $Id$\n";
+            std::cout << "sparql version 1.0, revision: $Id$\n";
 	else {
 	    if (NoExec == false) {
 		if (vm.count("description")) {
