@@ -247,7 +247,7 @@ namespace w3c_sw {
 		    for (ResultSetIterator row = bindings.rs.begin();
 			 !rowMatched && row != bindings.rs.end(); ++row)
 			if ((*row)->isCompatibleWith(testRow)
-			    && (*row)->isContiguousWith(testRow)) {
+			    /* && (*row)->isContiguousWith(testRow)*/) { // !!! kills test_QueryMap healthCare/simple/sdtm_db
 			    (*row)->assumeNewBindings(testRow);
 			    bindings.triples.insert(triple);
 			    rowMatched = true;
@@ -478,8 +478,11 @@ namespace w3c_sw {
 			*newDebugStream << "UNION" << std::endl;
 			newDebugStream->prefix("   ");
 		    }
-		    if (debugStream && *debugStream != NULL)
-			**debugStream << "alternative: " << alternative->str();
+		    if (debugStream && *debugStream != NULL) {
+			if (opts.size() > 1)
+			    **debugStream << "alternative: ";
+			**debugStream << alternative->str();
+		    }
 		    std::vector<const TableOperation*> conjoints;
 		    for (Rule2rs::const_iterator rule = alternative->begin();
 			 rule != alternative->end(); ++rule)
