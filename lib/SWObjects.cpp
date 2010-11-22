@@ -515,6 +515,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 #define URICONST(lname) URI("http://www.w3.org/2001/XMLSchema#" #lname)
 #define FUNCCONST(lname) URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname)
+#define EXTENCONST(lname) URI("https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#" #lname)
 
     /** URI constants, shared between all AtomFactories: */
     const URI AtomFactory::_URIConstants[] = {
@@ -556,7 +557,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	FUNCCONST(func-avg),
 	FUNCCONST(func-group_group),
 	FUNCCONST(func-group_regex),
-	FUNCCONST(func-concat),
+	EXTENCONST(func-concat),
 	FUNCCONST(func-group_concat),
 	FUNCCONST(func-if),
 	FUNCCONST(func-strlang),
@@ -604,7 +605,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const URI* TTerm::FUNC_avg			 = AtomFactory::_URIConstants + 33;
     const URI* TTerm::FUNC_group		 = AtomFactory::_URIConstants + 34;
     const URI* TTerm::FUNC_regex		 = AtomFactory::_URIConstants + 35;
-    const URI* TTerm::FUNC_concat		 = AtomFactory::_URIConstants + 36;
+    const URI* TTerm::EXTEN_concat		 = AtomFactory::_URIConstants + 36;
     const URI* TTerm::FUNC_group_concat		 = AtomFactory::_URIConstants + 37;
     const URI* TTerm::FUNC_if			 = AtomFactory::_URIConstants + 38;
     const URI* TTerm::FUNC_strlang		 = AtomFactory::_URIConstants + 39;
@@ -1331,6 +1332,195 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
 	return rs;
+    }
+
+    const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+
+	std::vector<const TTerm*> subd;
+	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
+	    subd.push_back((*it)->eval(r, atomFactory, evaluator));
+
+	/* nary predicates: */
+	// concat
+	if (m_IRIref == TTerm::EXTEN_concat) {
+	    std::stringstream ss;
+	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
+		 sub != subd.end(); ++sub) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
+		if (s == NULL || s->getDatatype() != NULL || s->getLangtag() != NULL)
+		    throw TypeError(std::string("unexpected ") + s->toString(), "concat");
+		else
+		    ss << s->getLexicalValue();
+	    }
+	    return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
+	}
+
+	/* Write down the first 3 for convenience. */
+	std::vector<const TTerm*>::const_iterator it = subd.begin();
+	const TTerm* first = it == subd.end() ? NULL : *it++;
+
+	/* casts */
+	if (m_IRIref == TTerm::URI_xsd_float    || 
+	    m_IRIref == TTerm::URI_xsd_double   || 
+	    m_IRIref == TTerm::URI_xsd_decimal  || 
+	    m_IRIref == TTerm::URI_xsd_integer  || 
+	    m_IRIref == TTerm::URI_xsd_boolean    ) {
+	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
+	    if (s != NULL) {
+		const URI* dt = s->getDatatype();
+		if (dt == NULL || 
+		    dt == TTerm::URI_xsd_string  || 
+		    dt == TTerm::URI_xsd_float   || 
+		    dt == TTerm::URI_xsd_double  || 
+		    dt == TTerm::URI_xsd_decimal || // check
+		    dt == TTerm::URI_xsd_integer || // check
+		    dt == TTerm::URI_xsd_boolean   )// adjust
+		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
+	    }
+	}
+
+	if (m_IRIref == TTerm::URI_xsd_dateTime   ) {
+	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
+	    if (s != NULL) {
+		const URI* dt = s->getDatatype();
+		if (dt == NULL || 
+		    dt == TTerm::URI_xsd_dateTime  )// adjust
+		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
+	    }
+	}
+
+	if (m_IRIref == TTerm::URI_xsd_string) {
+	    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
+	}
+
+	/* operators */
+	if (m_IRIref == TTerm::FUNC_bound && 
+	    subd.size() == 1)
+	    return first == TTerm::Unbound ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+	if ((m_IRIref == TTerm::FUNC_isIRI || m_IRIref == TTerm::FUNC_isURI) && 
+	    subd.size() == 1)
+	    return dynamic_cast<const URI*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+	if (m_IRIref == TTerm::FUNC_isBlank && 
+	    subd.size() == 1)
+	    return dynamic_cast<const BNode*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+	if (m_IRIref == TTerm::FUNC_isLiteral && 
+	    subd.size() == 1)
+	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+	if (m_IRIref == TTerm::FUNC_str && // STR(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    return atomFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == TTerm::FUNC_str && // STR(URI)
+	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
+	    return atomFactory->getRDFLiteral(first->getLexicalValue());
+
+	if (m_IRIref == TTerm::FUNC_lang && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
+	    return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
+	}
+
+	if ((m_IRIref == TTerm::FUNC_iri || m_IRIref == TTerm::FUNC_uri) && // IRI(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    return atomFactory->getURI(first->getLexicalValue());
+
+	if (m_IRIref == TTerm::FUNC_blank && // blank(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
+	    //return atomFactory->getBNode(first->getLexicalValue());
+	    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
+
+	if (m_IRIref == TTerm::FUNC_datatype && 
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL && 
+	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
+	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
+	    return dt ? dt : TTerm::URI_xsd_string;
+	}
+
+	const TTerm* second = it == subd.end() ? NULL : *it++;
+
+	if (m_IRIref == TTerm::FUNC_sameTerm && 
+	    subd.size() == 2) {
+	    return first == second && first != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
+	}
+
+	if (m_IRIref == TTerm::FUNC_langMatches && 
+	    subd.size() == 2 && 
+	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
+	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
+
+	    /* knock off the easy ones... */
+	    if (first == second)
+		return TTerm::BOOL_true;
+	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
+	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
+	    if (range == "*")
+		return tag.empty() ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+	    std::string::iterator t = tag.begin();
+	    std::string::iterator te = tag.end();
+	    std::string::iterator r = range.begin();
+	    std::string::iterator re = range.end();
+
+	    while (t != te && r != re)
+		if (::tolower(*t++) != ::tolower(*r++))
+		    return TTerm::BOOL_false;
+
+	    if (r == re && 
+		(t == te || *t == '-'))
+		return TTerm::BOOL_true;
+
+	    return TTerm::BOOL_false;
+	}
+
+	const TTerm* third = it == subd.end() ? NULL : *it++;
+	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
+	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
+	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
+
+	if (m_IRIref == TTerm::FUNC_regex && 
+	    ( subd.size() == 2 || subd.size() == 3 ) && 
+	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
+	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
+	    ( subd.size() == 2 || 
+	      (thirdLit != NULL && thirdLit->getDatatype() == NULL && thirdLit->getLangtag() == NULL))) {
+#if REGEX_LIB == SWOb_DISABLED
+	    throw std::string("no regular expression library was linked in");
+#else
+	    boost::match_results<std::string::const_iterator> what;
+	    boost::match_flag_type flags = boost::match_default;
+	    unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
+	    if (thirdLit != NULL) {
+		std::string smix = thirdLit->getLexicalValue();
+		if (smix.find_first_of('s') != std::string::npos)
+		    l_flags &= ~boost::regex::no_mod_s;
+		if (smix.find_first_of('m') != std::string::npos)
+		    l_flags &= ~boost::regex::no_mod_m;
+		if (smix.find_first_of('i') != std::string::npos)
+		    l_flags |= boost::regex::icase;
+		if (smix.find_first_of('x') != std::string::npos)
+		    l_flags |= boost::regex::mod_x;
+	    }
+	    const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
+	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
+#endif
+	}
+
+	std::stringstream s;
+	s << m_IRIref->toString() << '(';
+	for (std::vector<const TTerm*>::iterator it = subd.begin(); it != subd.end(); ++it) {
+	    if (it != subd.begin())
+		s << ", ";
+	    if (*it)
+		s << (*it)->toString();
+	    else
+		s << "NULL";
+	}
+	s << ')';
+	w3c_sw_NEED_IMPL(s.str());
     }
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
