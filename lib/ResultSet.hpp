@@ -148,6 +148,7 @@ namespace w3c_sw {
 
 	ResultSet* makeResultSet(AtomFactory* atomFactory);
 	bool isCompatibleWith(const Result* from) const;
+	bool isContiguousWith(const Result* from) const;
 	void assumeNewBindings(const Result* from);
     };
 

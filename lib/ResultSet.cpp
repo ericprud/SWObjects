@@ -92,6 +92,16 @@ namespace w3c_sw {
 	}
 	return true;
     }
+    /**
+     * this and with having bindings for at least one common variable.
+     */
+    bool Result::isContiguousWith (const Result* with) const {
+	for (BindingSetConstIterator it = with->bindings.begin();
+	     it != with->bindings.end(); it++)
+	    if (get(it->first) != NULL)
+		return true;
+	return false;
+    }
     void Result::assumeNewBindings (const Result* from) {
 	for (BindingSetConstIterator it = from->bindings.begin(); it != from->bindings.end(); it++)
 	    bindings[it->first] = it->second;
@@ -260,6 +270,20 @@ namespace w3c_sw {
 			return s.str();
 		    }
 		};
+		/** NoDelWrapper
+		 * Wrap a reference to a FunctionCall; don't delete it.
+		 */
+		struct NoDelWrapper : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const FunctionCall* func;
+		public:
+		    NoDelWrapper (std::string& groupIndexRef, const FunctionCall* func)
+			: FunctionState (groupIndexRef), func(func) {  }
+		    ~NoDelWrapper () {  }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			return func->eval(r, atomFactory, evaluator);
+		    }
+		};
 		struct CountState : public FunctionState { // FunctionCall for virtual eval
 		protected:
 		    std::map<std::string, int> counts;
@@ -276,7 +300,7 @@ namespace w3c_sw {
 		    const Expression* expr;
 		    std::map<std::string, const TTerm*> vals;
 		public:
-		    SumState (const Expression* expr, std::string& groupIndexRef)
+		    SumState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef), expr(expr) {  }
 		    ~SumState () { delete expr; }
 		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
@@ -294,15 +318,22 @@ namespace w3c_sw {
 		    }
 		};
 		AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef) {  }
-		virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
+		virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
 		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
+
+		    /**
+		     * Aggregate function invocations:
+		     */
 		    if (p_IRIref == TTerm::FUNC_count) {
 			last.functionCall = new CountState(groupIndexRef);
 		    } else if (p_IRIref == TTerm::FUNC_sum) {
 			(*it)->express(this);
-			last.functionCall = new SumState(last.expression, groupIndexRef);
+			last.functionCall = new SumState(groupIndexRef, last.expression);
 		    } else {
-			w3c_sw_NEED_IMPL(std::string("functionCall(") + p_IRIref->toString());
+			/**
+			 * Non-aggregate functions invoked 
+			 */
+			last.functionCall = new NoDelWrapper(groupIndexRef, self);
 		    }
 		}
 	    };

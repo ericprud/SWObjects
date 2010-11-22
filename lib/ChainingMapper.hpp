@@ -123,7 +123,24 @@ namespace w3c_sw {
 	     +----+----+
 	   </pre>
 	 */
-	struct Rule2rs : public std::map<const Rule, ResultSet> {
+	struct BindingsForTriples {
+	    ResultSet rs;
+	    std::set<const TriplePattern*> triples;
+	    BindingsForTriples (ResultSet rs, const TriplePattern* triple) : rs(rs) {
+		triples.insert(triple);
+	    }
+	    std::string str () const {
+		std::stringstream ss;
+		ss << rs.toString();
+		ss << "bound by triple patterns [[\n";
+		for (std::set<const TriplePattern*>::const_iterator it = triples.begin();
+		     it != triples.end(); ++it)
+		    ss << "  " << (*it)->toString() << "\n";
+		ss << "]]\n";
+		return ss.str();
+	    }
+	};
+	struct Rule2rs : public std::map<const Rule, BindingsForTriples> {
 
 	    /* Map query terms to their uses in RuleTerms. Insertion of
 	       incompatible RuleTerm into this map indicates an inconsistent
@@ -139,14 +156,14 @@ namespace w3c_sw {
 		std::stringstream ss;
 		for (Rule2rs::const_iterator rule = begin();
 		     rule != end(); ++rule) {
-		    ss << rule->first << std::endl << rule->second;
+		    ss << rule->first << std::endl << rule->second.str();
 		}
 		return ss.str();
 	    }
 
 	    /* Find out any term bound in testRS with by rule is inconsistent
 	       with existing term usage. e.g. can product.producer be the same
-	       as product.publisher (In BSBM, both reference producer.producer.
+	       as product.publisher (in BSBM, both reference producer.producer).
 	     */
 	    bool inconsistentWith (const Rule& rule, const ResultSet& testRS, MapSet::e_sharedVars sharedVars, const NodeShare& nodeShare) {
 		const Result* testRow = *testRS.begin();
@@ -174,7 +191,30 @@ namespace w3c_sw {
 		return false;
 	    }
 
-	    void add (const Rule& rule, const ResultSet& testRS) {
+	    /** someShorterPath - determine if the current bindings for rule
+	     * plus a candidate binding testRS is the minimal expression of
+	     * triples.
+	     * 
+	     * @@ unfinished -- instead testing for apparent redundancy at
+	     * instantiation.
+
+	    bool someShorterPath (const Rule& rule, const ResultSet& testRS, std::set<const TriplePattern*> triples) {
+		const Result* testRow = *testRS.begin();
+		{
+		    Rule2rs::const_iterator boundRule = find(rule);
+		    if (boundRule == end())
+			return false;
+		    const ResultSet& rs(boundRule->second);
+		    // std::cerr << "someShorterPath(" << rule << ",\n" << testRS << ", " << triple->toString() << ")?\n";
+		    for (ResultSetConstIterator res = rs.begin();
+			 res != rs.end(); ++res) {
+		    }
+		}
+		return false;
+	    }
+	     */
+
+	    void add (const Rule& rule, const ResultSet& testRS, const TriplePattern* triple) {
 		const Result* testRow = *testRS.begin();
 		{
 		    for (BindingSetConstIterator var = testRow->begin(); var != testRow->end(); ++var) {
@@ -194,22 +234,36 @@ namespace w3c_sw {
 		/** Test against existing variable bindings for that rule. */
 		bool rowMatched = false;
 		Rule2rs::iterator boundRule = find(rule);
+
+		/**
+		 * Walk through the current instantiations of the rule, seeing
+		 * if the new bindings (testRow) can be added to one of the
+		 * existing rows. It much be SPARQL-compatible and contiguous
+		 * with the existing binding (as otherwise we invent solutions
+		 * with a random mix of the matched variables).
+		 */
 		if (boundRule != end()) {
-		    ResultSet& rs(boundRule->second);
-		    for (ResultSetIterator row = rs.begin() ; !rowMatched && row != rs.end(); ++row)
-			if ((*row)->isCompatibleWith(testRow)) {
+		    BindingsForTriples& bindings(boundRule->second);
+		    for (ResultSetIterator row = bindings.rs.begin();
+			 !rowMatched && row != bindings.rs.end(); ++row)
+			if ((*row)->isCompatibleWith(testRow)
+			    && (*row)->isContiguousWith(testRow)) {
 			    (*row)->assumeNewBindings(testRow);
+			    bindings.triples.insert(triple);
 			    rowMatched = true;
+			    break; // @@ apply to first available instantiation. good?
 			}
 		}
 		if (!rowMatched) {
 		    /** Start a new result. */
 		    if (boundRule == end()) {
 			/** First binding for this rule. */
-			insert(std::pair<const w3c_sw::Rule, w3c_sw::ResultSet>(rule, testRS));
+			insert(std::pair<const Rule, BindingsForTriples>
+			       (rule, BindingsForTriples(testRS, triple)));
 		    } else {
-			ResultSet& rs(boundRule->second);
+			ResultSet& rs(boundRule->second.rs);
 			rs.insert(rs.end(), testRow->duplicate(&rs, rs.end()));
+			boundRule->second.triples.insert(triple);
 		    }
 		}
 	    }
@@ -221,14 +275,31 @@ namespace w3c_sw {
 	struct Add {
 	    Rule rule;
 	    ResultSet rs;
-	    Add (Rule rule, ResultSet rs) : rule(rule), rs(rs) {  }
+	    const TriplePattern* triple;
+	    Add (Rule rule, ResultSet rs, const TriplePattern* triple)
+		: rule(rule), rs(rs), triple(triple) {  }
 	    void operator= (const Add& ref) {
 		rule = ref.rule;
 		rs = ref.rs;
+		triple = ref.triple;
+	    }
+	    std::string str () {
+		return rule.label->toString() + "\n" + rs.toString();
 	    }
 	};
 	struct Alternatives {
-	    typedef std::vector<Rule2rs> Opts;
+	    struct Opts : public std::vector<Rule2rs> {
+		Opts () : std::vector<Rule2rs>() {  }
+		Opts (size_t s) : std::vector<Rule2rs>(s) {  }
+		std::string str () {
+		    std::stringstream ss;
+		    size_t i = 0;
+		    for (const_iterator it = begin(); it != end(); ++it, ++i) {
+			ss << "[" << i << "]" << it->str();
+		    }
+		    return ss.str();
+		}
+	    };
 	    Opts opts;
 	    MapSet::e_sharedVars sharedVars;
 	    NodeShare& nodeShare;
@@ -252,9 +323,9 @@ namespace w3c_sw {
 		return ss.str();
 	    }
 
-	    /** cross: create a cross product with the vector of added rule
-	       bindings. Enforce all integrity constraints and return the count
-	       of resulting alternatives.
+	    /** cross: Create a cross product with the vector of added rule.
+	     * bindings. Enforce all integrity constraints and return the count
+	     * of resulting alternatives.
 	     */
 	    size_t cross (const std::vector<Add> adds) {
 		if (adds.size() == 0)
@@ -262,12 +333,22 @@ namespace w3c_sw {
 		else {
 		    Opts newOpts;
 		    for (Opts::iterator alt = opts.begin(); alt != opts.end(); ++alt) {
+			// std::cerr << "alt: " << alt->str();
 			for (std::vector<Add>::const_iterator it_add = adds.begin();
 			     it_add != adds.end(); ++it_add) {
 			    Add add = *it_add;
-			    if (!alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare)) {
+			    // std::cerr << "add: " << add.str();
+
+			    /**
+			     * inconsistentWith handles the exotic rules to
+			     * avoid the spurious self-joins which stem from the
+			     * rule-head offering multiple arcs which match a
+			     * query arc.
+			     */
+			    if (!alt->inconsistentWith(add.rule, add.rs, sharedVars, nodeShare) /* &&
+				!alt->someShorterPath(add.rule, add.rs, triples) */) {
 				Rule2rs merge(*alt);
-				merge.add(add.rule, add.rs);
+				merge.add(add.rule, add.rs, add.triple);
 				newOpts.insert(newOpts.end(), merge);
 			    }
 			}
@@ -318,6 +399,64 @@ namespace w3c_sw {
 		}
 	    };
 
+	    /** eliminateRedundancies - eliminate each opt for which another opt
+	     * more succinctly uses the same rules to cover the same triples.
+	     * 
+	     */
+	    void eliminateRedundancies () {
+		typedef std::map<const Rule, std::set<const TriplePattern*> > Key;
+		typedef std::map<Key, size_t> Bests;
+		Bests best;
+		// opts: vector<Rule2rs>
+
+
+		/**
+		 * Use a disjoint index o (because e.g. a pointer will change as
+		 * soon as you delete an entry).
+		 */
+		size_t o = 0;
+		for (Opts::const_iterator alternative = opts.begin();
+		     alternative != opts.end(); ++alternative, ++o) {
+
+		    /**
+		     * Generate the key for this disjoint.
+		     */
+		    std::map<const Rule, std::set<const TriplePattern*> > cur;
+		    for (Rule2rs::const_iterator rule = alternative->begin();
+			 rule != alternative->end(); ++rule)
+			// rule->first: Rule
+			// rule->second.rs: ResultSet
+			// rule->second.triples: std::set<const TriplePattern*>
+			cur[rule->first] = rule->second.triples;
+
+		    if (best.find(cur) == best.end())
+			best[cur] = o;
+		    else {
+			for (Rule2rs::const_iterator rule = alternative->begin();
+			     rule != alternative->end(); ++rule)
+			    if (rule->second.rs.size() < opts[best[cur]].find(rule->first)->second.rs.size()) {
+				best[cur] = o;
+				break;
+			    }
+		    }
+		}
+
+		std::set<size_t> keep;
+		for (Bests::const_iterator it = best.begin();
+		     it != best.end(); ++it)
+		    keep.insert(it->second);
+
+		o = 0;
+		for (Opts::iterator alternative = opts.begin();
+		     alternative != opts.end(); ++o)
+		    if (keep.find(o) == keep.end())
+			alternative = opts.erase(alternative);
+		    else
+			++alternative;
+
+		// std::cerr << "trimmed: \n" << str();
+	    }
+
 	    const TableOperation* instantiate (AtomFactory* atomFactory, VarUniquifier& varUniquifier) const {
 		// std::cerr << "instantiate " << str();
 		TableDisjunction* ret = NULL;
@@ -344,8 +483,8 @@ namespace w3c_sw {
 		    std::vector<const TableOperation*> conjoints;
 		    for (Rule2rs::const_iterator rule = alternative->begin();
 			 rule != alternative->end(); ++rule)
-			for (ResultSetConstIterator res = rule->second.begin();
-			     res != rule->second.end(); ++res) {
+			for (ResultSetConstIterator res = rule->second.rs.begin();
+			     res != rule->second.rs.end(); ++res) {
 			    TableOperation* bgp = Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply();
 			    if (debugStream && *debugStream != NULL) {
 				**debugStream << "bindings: " << **res << " instantiate as:\n";
@@ -403,6 +542,8 @@ namespace w3c_sw {
 	bool match (const BasicGraphPattern* bgp, const TriplePattern* triple) {
 	    std::vector<Add> adds;
 
+	    // std::cerr << "query: " << triple->toString() << "\n";
+
 	    /** For each rule... */
 	    for (std::vector<Rule>::const_iterator rule = rules.begin();
 		 rule != rules.end(); ++rule) {
@@ -418,17 +559,27 @@ namespace w3c_sw {
 
 		    /** If the pattern matches the triple,
 		          we will add it to the <alternatives>. */
-		    if ((*constraint)->bindVariables(triple, false, &testRS, *testRS.begin()))
-			adds.push_back(Add(*rule, testRS));
+		    // std::cerr << "  rule: " << (*constraint)->toString();
+		    if ((*constraint)->bindVariables(triple, false, &testRS, *testRS.begin())) {
+			/**
+			 * Queue adding this combination of rule and bindings to
+			 * the opts.
+			 */
+			adds.push_back(Add(*rule, testRS, triple));
+			// std::cerr << "\n  new binding " << adds.rbegin()->str() << "\n" << adds.rbegin()->rs;
+		    } else {
+			// std::cerr << "\n" << testRS;
+		    }
 		}
 	    }
 	    if (adds.size() == 0 || alternatives.cross(adds) == 0)
 		failed.bgp2triples[bgp].insert(triple);
-	    // std::cerr << triple->toString() << "\n" << str();
+	    // std::cerr << "final:\n" << str();
 	    return adds.size() > 0;
 	}
 
 	const TableOperation* instantiate (Alternatives::VarUniquifier& varUniquifier) {
+	    alternatives.eliminateRedundancies();
 	    return alternatives.instantiate(atomFactory, varUniquifier);
 	}
 
