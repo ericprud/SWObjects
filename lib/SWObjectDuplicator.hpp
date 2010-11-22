@@ -643,6 +643,517 @@ namespace w3c_sw {
 	}
     };
 
+    struct SWObjectCanonicalizer : public SWObjectDuplicator {
+	SWObjectCanonicalizer (AtomFactory* atomFactory)
+	    : SWObjectDuplicator(atomFactory) {  }
+
+	struct Root {
+	    unsigned depth;
+	    std::set<const TTerm*> peers;
+	    Root () : depth(-1) {  }
+
+	    void consider (const TTerm* peer, unsigned peerDepth) {
+		if (peers.size() == 0 || depth >= peerDepth) {
+		    if (depth > peerDepth)
+			peers.clear();
+		    depth = peerDepth;
+		    peers.insert(peer);
+		}
+	    }
+	    void consider (const Root& candidateRoot) {
+		if (peers.size() == 0 || depth >= candidateRoot.depth) {
+		    if (depth > candidateRoot.depth)
+			peers.clear();
+		    depth = candidateRoot.depth;
+		    for (std::set<const TTerm*>::const_iterator peer = candidateRoot.peers.begin();
+			 peer != candidateRoot.peers.end(); ++peer)
+			peers.insert(*peer);
+		}
+	    }
+	};
+
+	struct DepthList {
+	    Root root;
+	    std::map<const TTerm*, unsigned> leads;
+	    std::map<const TTerm*, unsigned> touched;
+	    void print (std::ostream& os) const {
+		//assert(leads.size()>1 || root.peers.size()>1);
+		if (root.peers.size() > 0) {
+		    os << "roots: ";
+		    for (std::set<const TTerm*>::const_iterator it = root.peers.begin();
+			 it != root.peers.end(); ++it)
+			os << (*it)->toString();
+		    os << "@" << root.depth;
+		}
+		if (leads.size() > 0) {
+		    os << "leads: ";
+		    for (std::map<const TTerm*, unsigned>::const_iterator via = leads.begin();
+			 via != leads.end(); ++via) {
+			if (via != leads.begin())
+			    os << "|";
+			os << via->first->toString() << "@" << via->second;
+		    }
+		}
+		if (touched.size() > 0) {
+		    os << " touched: ";
+		    for (std::map<const TTerm*, unsigned>::const_iterator touch = touched.begin();
+			 touch != touched.end(); ++touch) {
+			if (touch != touched.begin())
+			    os << ",";
+			os << touch->first->toString() << "@" << touch->second;
+		    }
+		}
+	    }
+	};
+
+	struct ObjectOf : public std::map<const TTerm*, DepthList> {
+	    void print (std::ostream& os) const {
+		for (ObjectOf::const_iterator it = begin();
+		     it != end(); ++it) {
+		    os << it->first->toString() << ": ";
+		    it->second.print(os);
+		    os << std::endl;
+		}
+	    }
+	    unsigned depthOf (const TTerm* t) const {
+		ObjectOf::const_iterator it = find(t);
+		return it == end() ? 0 : it->second.root.depth;
+	    }
+	};
+
+	struct DepthTriple {
+	    unsigned depth;
+	    const TriplePattern* triple;
+	    const ObjectOf& oo;
+	    AtomFactory* atomFactory;
+	    DepthTriple(const TriplePattern* triple, const ObjectOf& oo, AtomFactory* atomFactory)
+		: depth(oo.depthOf(triple->getS())), triple(triple), oo(oo), atomFactory(atomFactory) {  }
+	    bool operator< (const DepthTriple& ref) const {
+		if (depth != ref.depth)
+		    return depth < ref.depth;
+		return triple < ref.triple;
+	    }
+	};
+
+	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
+	virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
+	    /*
+	     * A → B   D
+	     * ↓ ↖ ↓   ↓
+	     * F   C → E
+	     */
+	    ObjectOf work;
+	    std::set<const TTerm*> subjects;
+	    size_t pendingLeads = 0;
+
+	    for (std::vector<const TriplePattern*>::const_iterator t = p_TriplePatterns->begin();
+		 t != p_TriplePatterns->end(); ++t) {
+		work[(*t)->getO()].leads[(*t)->getS()] = 1;
+		++pendingLeads;
+		subjects.erase((*t)->getO());
+		if (work.find((*t)->getS()) == work.end())
+		    subjects.insert((*t)->getS());
+		/* !!! <s> <p> <s> . */
+	    }
+
+	    /* A: C
+	     * B: A
+	     * F: A|C
+	     * C: B
+	     * E: C+D
+	     */
+	    for (unsigned gen = 1; pendingLeads > 0 && gen < 5; ++gen) {
+		pendingLeads = 0;
+		// work.print(std::cerr);
+		for (ObjectOf::iterator oo = work.begin();
+		     oo != work.end(); ) {
+		    /* A		 * B		 * F		 * C		 * E		 */
+		    const TTerm* goal = oo->first;
+		    // std::cerr << *goal;
+
+		    std::map<const TTerm*, unsigned> nextLeads;
+		    Root candidateRoot;
+		    /* (C)		 * (A)		 * (AC)		 * (B)		 * (CD)		 */
+		    for (std::map<const TTerm*, unsigned>::const_iterator leads = oo->second.leads.begin();
+			 leads != oo->second.leads.end(); ++leads) {
+			const TTerm* lead = leads->first;
+			unsigned curDistance = leads->second;
+			ObjectOf::const_iterator follow = work.find(lead);
+			oo->second.touched[lead] = gen;
+			if (follow == work.end()) {
+			    // std::cerr << " finished with " << *lead << " in " << gen << " generations\n";
+			    candidateRoot.consider(lead, gen);
+			} else {
+			    /* C:1		 * A:1		 * A:1,C:1	 * B:1		 * C:1,D:1	 */
+			    // if (leads != oo->second.leads.begin())
+			    //     std::cerr << "   ";
+			    // std::cerr << " following " << *lead << " to (";
+			    /* (B)		 * (A)		 * (AC)		 * (B)		 * (CD)		 */
+			    for (std::map<const TTerm*, unsigned>::const_iterator followLead = follow->second.leads.begin();
+				 followLead != follow->second.leads.end(); ++followLead) {
+				const TTerm* gp = followLead->first;
+				unsigned nextDepth = curDistance + followLead->second;
+				if (gp == goal) {
+				    // std::cerr << "!";
+				    oo->second.touched[gp] = nextDepth;
+				    candidateRoot.consider(gp, nextDepth);
+				} else
+				    nextLeads[gp] = nextDepth;
+				// std::cerr << *gp << "@" << curDistance + followLead->second;
+			    }
+			    if (follow->second.leads.size() == 0 && follow->second.root.peers.size() > 0 && nextLeads.size() == 0) {
+				Root followedRoot(follow->second.root);
+				++followedRoot.depth;
+				candidateRoot.consider(followedRoot);
+			    }
+			    for (std::map<const TTerm*, unsigned>::const_iterator t = follow->second.touched.begin();
+				 t != follow->second.touched.end(); ++t)
+				if (oo->second.touched.find(t->first) != oo->second.touched.end()) {
+				    std::stringstream ss;
+				    // ss << t->first->toString() << "[" << oo->second.touched[t->first] << "]/" << t->first->toString() << "[" << t->second + gen << "] ";
+				    // std::cerr << ss.str();
+				} else {
+				    if (t->first == goal) {
+					// std::cerr << "^";
+					candidateRoot.consider(t->first, t->second + gen);
+				    }
+				    oo->second.touched[t->first] = t->second + gen;
+				}
+			    // std::cerr << ")" << std::endl;
+			}
+		    }
+		    if (nextLeads.size() == 0 && candidateRoot.peers.size() > 0)
+			oo->second.root.consider(candidateRoot);
+		    oo->second.leads = nextLeads;
+		    pendingLeads += nextLeads.size();
+		    // std::cerr << *goal << "-";
+		    // oo->second.print(std::cerr);
+		    // std::cerr << std::endl;
+		    ++oo;
+		}
+	    }
+	    // work.print(std::cerr);
+
+	    std::set<DepthTriple> ordered; // @@@ would like const DepthTriple
+	    for (std::vector<const TriplePattern*>::const_iterator t = p_TriplePatterns->begin();
+		 t != p_TriplePatterns->end(); ++t) {
+		const DepthTriple dt(*t, work, atomFactory);
+		ordered.insert(dt);
+		//	    *ret += (*t)->copy();
+	    }
+	    for (std::set<DepthTriple>::const_iterator it = ordered.begin();
+		 it != ordered.end(); ++it)
+		p->addTriplePattern(it->triple);
+	}
+
+	struct TableOperationSorter {
+
+	    typedef enum { DT_Err, DT_DefaultGraphPattern, DT_NamedGraphPattern, 
+			   DT_GraphGraphPattern, DT_ServiceGraphPattern,
+			   DT_TableConjunction, DT_TableDisjunction,
+			   DT_Filter, DT_OptionalGraphPattern,
+			   DT_MinusGraphPattern} DT_TableOperationSortOrder;
+
+	    AtomFactory* atomFactory;
+	    TableOperationSorter (AtomFactory* atomFactory)
+		: atomFactory(atomFactory) {  }
+	    struct OperationSorter : public RecursiveExpressor {
+		struct RHSslave : public RecursiveExpressor {
+		    AtomFactory* atomFactory;
+		    e_SORT ret;
+		    RHSslave (AtomFactory* atomFactory) : atomFactory(atomFactory), ret(SORT_error) {  }
+		    virtual void base (const Base* const, std::string) { throw "OperationSorter::RHSslave::base should not be called.";}
+		    virtual void defaultGraphPattern(const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
+		    virtual void namedGraphPattern(const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
+		    virtual void graphGraphPattern(const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) = 0;
+		    virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) = 0;
+		    virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) = 0;
+		    virtual void minusGraphPattern(const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
+		    virtual void filter(const Filter* const self, const TableOperation* p_op, const ProductionVector<const w3c_sw::Expression*>* p_Constraints) = 0;
+		    virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
+		    virtual void tableDisjunction(const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
+		    virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) = 0;
+		};
+
+		/* BasicGraphPattern-derived types: DefaultGraphPattern, NamedGraphPattern */
+		struct _BasicGraphPattern : public RHSslave {
+		    const ProductionVector<const TriplePattern*>* lhs;
+		    _BasicGraphPattern (AtomFactory* atomFactory, const ProductionVector<const TriplePattern*>* lhs)
+			: RHSslave(atomFactory), lhs(lhs) {  }
+		    e_SORT _basicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+			std::vector<const TriplePattern*>::const_iterator ltriple = lhs->begin();
+			std::vector<const TriplePattern*>::const_iterator rtriple = p_TriplePatterns->begin();
+			while (ltriple != lhs->end() && rtriple != p_TriplePatterns->end()) {
+			    if (*ltriple != *rtriple)
+				return (*ltriple)->safeCmp(**rtriple);
+			    ++ltriple;
+			    ++rtriple;
+			}
+			return SORT_eq;
+		    }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_lt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_lt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_lt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>*) { ret = SORT_lt; }
+		};
+		struct RHS_defaultGraphPattern : public _BasicGraphPattern {
+		    bool l_allOpts;
+		    RHS_defaultGraphPattern (AtomFactory* atomFactory, bool l_allOpts, const ProductionVector<const TriplePattern*>* l_TriplePatterns)
+			: _BasicGraphPattern(atomFactory, l_TriplePatterns), l_allOpts(l_allOpts) {  }
+		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+			ret = _basicGraphPattern(p_TriplePatterns);
+		    }
+		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm*, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_lt; }
+		};
+		struct RHS_namedGraphPattern : public _BasicGraphPattern {
+		    const TTerm* l_name;
+		    bool l_allOpts;
+		    RHS_namedGraphPattern (AtomFactory* atomFactory, const TTerm* l_name, bool l_allOpts, const ProductionVector<const TriplePattern*>* l_TriplePatterns)
+			: _BasicGraphPattern(atomFactory, l_TriplePatterns), l_name(l_name), l_allOpts(l_allOpts) {  }
+		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+			ret = l_name != p_name ? l_name->cmp(*p_name) : _basicGraphPattern(p_TriplePatterns);
+		    }
+		};
+
+
+		/* TableOperationOnOperation-derived types: Filter ServiceGraphPattern GraphGraphPattern OptionalGraphPattern MinusGraphPattern */
+		struct _TableOperationOnOperation : public RHSslave {
+		    const TableOperation* lhs;
+		    _TableOperationOnOperation (AtomFactory* atomFactory, const TableOperation* lhs)
+			: RHSslave(atomFactory), lhs(lhs) {  }
+		    e_SORT _tableOperationOnOperation(const TableOperation* p_TableOperation);
+		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm*, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+
+		    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>*) { ret = SORT_lt; }
+		};
+		struct RHS_graphGraphPattern : public _TableOperationOnOperation {
+		    const TTerm* l_TTerm;
+		    RHS_graphGraphPattern (AtomFactory* atomFactory, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern)
+			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_TTerm(p_TTerm) {  }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+			ret = l_TTerm != p_TTerm ? l_TTerm->cmp(*p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
+		    }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_lt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_lt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		};
+		struct RHS_serviceGraphPattern : public _TableOperationOnOperation {
+		    const TTerm* l_TTerm;
+		    RHS_serviceGraphPattern (AtomFactory* atomFactory, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, bool)
+			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_TTerm(p_TTerm) {  }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory*, bool) {
+			ret = l_TTerm != p_TTerm ? l_TTerm->cmp(*p_TTerm) : _tableOperationOnOperation(p_GroupGraphPattern);
+		    }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_lt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		};
+		struct RHS_optionalGraphPattern : public _TableOperationOnOperation {
+		    const ProductionVector<const w3c_sw::Expression*>* l_Expressions;
+		    RHS_optionalGraphPattern (AtomFactory* atomFactory, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions)
+			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_Expressions(p_Expressions) {  }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_gt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>*) {
+			// !!! ret = l_Expressions != p_TTerm ? atomFactory->cmp(l_Expressions, p_TTerm) : 
+			ret = _tableOperationOnOperation(p_GroupGraphPattern);
+		    }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_lt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		};
+		struct RHS_minusGraphPattern : public _TableOperationOnOperation {
+		    RHS_minusGraphPattern (AtomFactory* atomFactory, const TableOperation* p_GroupGraphPattern)
+			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern) {  }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_gt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+			ret = _tableOperationOnOperation(p_GroupGraphPattern);
+		    }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_lt; }
+		};
+		struct RHS_filter : public _TableOperationOnOperation {
+		    const ProductionVector<const w3c_sw::Expression*>* l_Expressions;
+		    RHS_filter (AtomFactory* atomFactory, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions)
+			: _TableOperationOnOperation(atomFactory, p_GroupGraphPattern), l_Expressions(p_Expressions) {  }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_gt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_gt; }
+		    virtual void filter (const Filter* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>*) {
+			// !!! ret = l_Expressions != p_TTerm ? atomFactory->cmp(l_Expressions, p_TTerm) : 
+			ret = _tableOperationOnOperation(p_GroupGraphPattern);
+		    }
+		};
+
+		/* TableJunction-derived types: TableConjunction, TableDisjunction */
+		struct _TableJunction : public RHSslave {
+		    const ProductionVector<const TableOperation*>* lhs;
+		    _TableJunction (AtomFactory* atomFactory, const ProductionVector<const TableOperation*>* lhs)
+			: RHSslave(atomFactory), lhs(lhs) {  }
+		    e_SORT _tableJunction(const ProductionVector<const TableOperation*>* p_TableOperations);
+		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm*, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_gt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_gt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+
+		    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>*) { ret = SORT_lt; }
+		};
+		struct RHS_tableConjunction : public _TableJunction {
+		    RHS_tableConjunction (AtomFactory* atomFactory, const ProductionVector<const TableOperation*>* p_TableOperations)
+			: _TableJunction(atomFactory, p_TableOperations) {  }
+		    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+			ret = _tableJunction(p_TableOperations);
+		    }
+		    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		};
+		struct RHS_tableDisjunction : public _TableJunction {
+		    RHS_tableDisjunction (AtomFactory* atomFactory, const ProductionVector<const TableOperation*>* p_TableOperations)
+			: _TableJunction(atomFactory, p_TableOperations) {  }
+		    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_gt; }
+		    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+			ret = _tableJunction(p_TableOperations);
+		    }
+		};
+
+		struct RHS_operationSet : public RHSslave {
+		    const ProductionVector<const Operation*>* lhs;
+		    RHS_operationSet (AtomFactory* atomFactory, const ProductionVector<const Operation*>* lhs)
+			: RHSslave(atomFactory), lhs(lhs) {  }
+		    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm*, bool, const ProductionVector<const TriplePattern*>*) { ret = SORT_gt; }
+		    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm*, const TableOperation*) { ret = SORT_gt; }
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm*, const TableOperation*, AtomFactory*, bool) { ret = SORT_gt; }
+		    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+		    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation*) { ret = SORT_gt; }
+		    virtual void filter (const Filter* const, const TableOperation*, const ProductionVector<const w3c_sw::Expression*>*) { ret = SORT_gt; }
+		    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>*) { ret = SORT_lt; }
+		    virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>*);
+		};
+		/* END of slave sorters */
+
+
+		AtomFactory* atomFactory;
+		const TableOperation* rhs;
+		e_SORT ret;
+		OperationSorter (AtomFactory* atomFactory, const TableOperation* rhs)
+		    : atomFactory(atomFactory), rhs(rhs), ret(SORT_error) {  }
+		virtual void base (const Base* const, std::string) { throw "OperationSorter::base should not be called.";}
+		virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    RHS_defaultGraphPattern slave(atomFactory, p_allOpts, p_TriplePatterns);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    RHS_namedGraphPattern slave(atomFactory, p_name, p_allOpts, p_TriplePatterns);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+		    RHS_graphGraphPattern slave(atomFactory, p_TTerm, p_GroupGraphPattern);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) {
+		    RHS_serviceGraphPattern slave(atomFactory, p_TTerm, p_GroupGraphPattern, lexicalCompare);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+		    RHS_optionalGraphPattern slave(atomFactory, p_GroupGraphPattern, p_Expressions);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+		    RHS_minusGraphPattern slave(atomFactory, p_GroupGraphPattern);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void filter (const Filter* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const w3c_sw::Expression*>* p_Constraints) {
+		    RHS_filter slave(atomFactory, p_GroupGraphPattern, p_Constraints);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+		    RHS_tableConjunction slave(atomFactory, p_TableOperations);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+		    RHS_tableDisjunction slave(atomFactory, p_TableOperations);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+		    RHS_operationSet slave(atomFactory, p_Operations);
+		    rhs->express(&slave);
+		    ret = slave.ret;
+		}
+		
+	    };
+	    bool operator () (const TableOperation* lhs, const TableOperation* rhs) {
+		OperationSorter os(atomFactory, rhs);
+		lhs->express(&os);
+		return os.ret == SORT_lt;
+	    }
+	};
+
+
+	/* _TableOperations factored out supporter function; virtual for MappedDuplicator. */
+	virtual void _TableOperations (const ProductionVector<const TableOperation*>* p_TableOperations, TableJunction* j) {
+	    ProductionVector<const TableOperation*> ops;
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+	    	 it != p_TableOperations->end(); it++) {
+	    	(*it)->express(this);
+	    	ops.push_back(last.tableOperation);
+	    }
+	    std::sort(ops.begin(), ops.end(), TableOperationSorter(atomFactory));
+	    for (std::vector<const TableOperation*>::const_iterator it = ops.begin();
+	    	 it != ops.end(); it++)
+		j->addTableOperation(*it, false);
+	    ops.clear(); // don't delete members.
+	}
+    };
+
+    inline e_SORT SWObjectCanonicalizer::TableOperationSorter::OperationSorter::_TableOperationOnOperation::_tableOperationOnOperation (const TableOperation* p_TableOperation) {
+	OperationSorter s(atomFactory, lhs);
+	p_TableOperation->express(&s);
+	return s.ret;
+    }
+
+    inline e_SORT SWObjectCanonicalizer::TableOperationSorter::OperationSorter::_TableJunction::_tableJunction (const ProductionVector<const TableOperation*>* p_TableOperations) {
+	std::vector<const TableOperation*>::const_iterator lop = lhs->begin();
+	std::vector<const TableOperation*>::const_iterator rop = p_TableOperations->begin();
+	while (lop != lhs->end() && rop != p_TableOperations->end()) {
+	    OperationSorter s(atomFactory, *lop);
+	    (*rop)->express(&s);
+	    if (s.ret != SORT_eq)
+		return s.ret;
+	    ++lop;
+	    ++rop;
+	}
+	return SORT_eq;
+    }
+
+    inline void SWObjectCanonicalizer::TableOperationSorter::OperationSorter::RHS_operationSet::operationSet(const OperationSet* const, const ProductionVector<const Operation*>*) {
+	w3c_sw_NEED_IMPL("extend sorter to sort Operations");
+    }
+
+
 } // namespace w3c_sw
 
 #endif // SWObjectDuplicator_H
