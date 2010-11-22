@@ -269,6 +269,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
 
 BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::setenv("XSLT", "/usr/bin/xsltproc %STYLESHEET %DATA", 1);
+    ::setenv("XML_CATALOG_FILES", "xml/catalog.xml", 1);
     ExecResults invocation("../bin/sparql -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
     w3c_sw::TTerm::String2BNode bnodeMap;
     w3c_sw::ResultSet tested(&F, invocation.s, false, bnodeMap);
