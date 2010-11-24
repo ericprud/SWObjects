@@ -3972,6 +3972,9 @@ namespace w3c_sw {
 MapSet* MapSetDriver::parse (IStreamContext& in)
 {
     sharedVarsSet = false;
+    root = NULL;
+    curBGP = NULL;
+    curOp = NULL;
     streamname = in.nameStr;
 
     MapSetScanner scanner(this, in.p);

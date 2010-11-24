@@ -4629,6 +4629,7 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
 {
     root = NULL;
     curBGP = NULL;
+    curOp = NULL;
     streamname = in.nameStr;
 
     SPARQLfedScanner scanner(this, in.p);
