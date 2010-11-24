@@ -3975,6 +3975,7 @@ MapSet* MapSetDriver::parse (IStreamContext& in)
     root = NULL;
     curBGP = NULL;
     curOp = NULL;
+    curGraphName = NULL;
     streamname = in.nameStr;
 
     MapSetScanner scanner(this, in.p);

@@ -4617,7 +4617,7 @@ namespace w3c_sw {
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
-	curGraphName(NULL), countStar(false), root(NULL),  unnestTree(false)
+	countStar(false), root(NULL), unnestTree(false)
 {
 }
 
@@ -4630,6 +4630,7 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
     root = NULL;
     curBGP = NULL;
     curOp = NULL;
+    curGraphName = NULL;
     streamname = in.nameStr;
 
     SPARQLfedScanner scanner(this, in.p);
