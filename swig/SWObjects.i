@@ -26,7 +26,7 @@
     } catch(std::exception e) {
 	SWIG_exception(SWIG_ValueError, e.what());
     } catch(...) {
-	SWIG_exception(SWIG_RuntimeError, "Unknown exception");
+	SWIG_exception(SWIG_RuntimeError, "runtime error");
     }
 }
 
@@ -172,6 +172,7 @@ struct ConnectSet : std::set<RuleTerm> {
 #include "SPARQLSerializer.hpp"
 #include "RuleInverter.hpp"
 #include "QueryMapper.hpp"
+#include "ChainingMapper.hpp"
 #include "MapSetParser/MapSetParser.hpp"
 #include "interface/WEBagent_boostASIO.hpp"
 #include "interface/SAXparser_expat.hpp"
@@ -200,6 +201,7 @@ struct ConnectSet : std::set<RuleTerm> {
 %include "SPARQLSerializer.hpp"
 %include "RuleInverter.hpp"
 %include "QueryMapper.hpp"
+%include "ChainingMapper.hpp"
 namespace w3c_sw {
     class SPARQLfedScanner;
     class MapSetScanner;
