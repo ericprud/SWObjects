@@ -681,6 +681,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
     std::string query;
     try {
 	std::string path(req.getPath());
+	path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
 	std::ostringstream sout;
 	loadList queryLoadList;
 	const sw::BasicGraphPattern* getGraph = server.db.getGraph(server.atomFactory.getURI(path));
@@ -714,6 +715,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		std::string body = getGraph->toString(sw::MediaType("text/turtle"));
 		sout.write(body.c_str(), body.size());
 		rep.addHeader("Content-Type", "text/turtle");
+		rep.addHeader("MS-Author-Via", "SPARQL");
 	    } else {
 		parm = req.parms.find("default-graph-uri");
 		if (parm != req.parms.end() && parm->second != "") {
