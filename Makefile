@@ -507,26 +507,30 @@ Sparql.app/Contents/MacOS:
 
 Sparql.app/Contents/Frameworks:
 	mkdir -p $@
-	cp /usr/lib/libstdc++.6.dylib $@
-	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $@/libstdc++.6.dylib
+
+.PHONY: RenamedFrameworks
+
+RenamedFrameworks: Sparql.app/Contents/Frameworks
+	cp /usr/lib/libstdc++.6.dylib $<
+	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $</libstdc++.6.dylib
 	for l in regex system program_options filesystem thread; do \
-		cp /opt/local/lib/libboost_$$l-mt.dylib $@ && \
-		install_name_tool -id @executable_path/../Frameworks/libboost_$$l-mt.dylib $@/libboost_$$l-mt.dylib && \
-		install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $@/libboost_$$l-mt.dylib; \
+		cp /opt/local/lib/libboost_$$l-mt.dylib $< && \
+		install_name_tool -id @executable_path/../Frameworks/libboost_$$l-mt.dylib $</libboost_$$l-mt.dylib && \
+		install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $</libboost_$$l-mt.dylib; \
 	done
 	for l in ssl.0.9.8 crypto.0.9.8 z.1; do \
-		cp /opt/local/lib/lib$$l.dylib $@ && \
-		install_name_tool -id @executable_path/../Frameworks/lib$$l.dylib $@/lib$$l.dylib && \
-		install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $@/lib$$l.dylib && \
-		install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $@/lib$$l.dylib; \
+		cp /opt/local/lib/lib$$l.dylib $< && \
+		install_name_tool -id @executable_path/../Frameworks/lib$$l.dylib $</lib$$l.dylib && \
+		install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</lib$$l.dylib && \
+		install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</lib$$l.dylib; \
 	done
-	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $@
-	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $@/libmysqlclient.16.dylib && \
-	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $@/libmysqlclient.16.dylib
-	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $@/libmysqlclient.16.dylib
-	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $@/libmysqlclient.16.dylib
+	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $<
+	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $</libmysqlclient.16.dylib && \
+	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.16.dylib
+	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.16.dylib
+	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.16.dylib
 
-Sparql.app/Contents/MacOS/Sparql: bin/SPARQL.o $(LIB) Sparql.app/Contents/MacOS Sparql.app/Contents/Frameworks
+Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS RenamedFrameworks
 	$(CXX) -o $@ $< -LSparql.app/Contents/Frameworks $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
