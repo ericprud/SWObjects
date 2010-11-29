@@ -428,7 +428,6 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     std::string SQLServer;
     std::string SQLPort;
     std::string SQLDatabase;
-    std::ostream**   debugStream;
 #if HTTP_SERVER == SWOb_ASIO
     boost::mutex executeMutex;    
 #endif /* HTTP_SERVER == SWOb_ASIO */
@@ -440,8 +439,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	  serviceURI(""), defaultGraphURI(""),
 	  printQuery(false), atomFactory(atomFactory), sparqlParser(sparqlParser),
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
-	  queryMapper(&atomFactory, debugStream), debugStream(debugStream)
-    {  }
+	  queryMapper(&atomFactory, debugStream)
+    { this->debugStream = debugStream; }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = atomFactory.getURI(path);
 	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);

@@ -448,7 +448,8 @@ namespace w3c_sw {
 	public:
 	    /// Construct a connection with the given io_service.
 	    explicit connection(boost::asio::io_service& io_service,
-				request_handler& handler);
+				request_handler& handler,
+				std::ostream** debugStream = NULL);
 	    ~connection();
 
 	    /// Get the socket associated with the connection.
@@ -457,6 +458,7 @@ namespace w3c_sw {
 	    /// Start the first asynchronous operation for the connection.
 	    void start();
 
+	    std::ostream** debugStream;
 	private:
 	    /// Handle completion of a read operation.
 	    void handle_read(const boost::system::error_code& e,
@@ -490,8 +492,10 @@ namespace w3c_sw {
 	typedef boost::shared_ptr<connection> connection_ptr;
 
 	inline connection::connection(boost::asio::io_service& io_service,
-				      request_handler& handler)
-	    : strand_(io_service),
+				      request_handler& handler,
+				      std::ostream** debugStream)
+	    : debugStream(debugStream),
+	      strand_(io_service),
 	      socket_(io_service),
 	      request_handler_(handler),
 	      request_(new asioRequest()), reply_() {  }
@@ -529,12 +533,16 @@ namespace w3c_sw {
 		    struct tm tm;
 		    time(&now);
 		    gmtime_r(&now, &tm);
-		    std::cout << std::setfill('0')
+		    std::ostream* logStream = (debugStream != NULL && *debugStream != NULL) ? *debugStream : &std::cout;
+		    *logStream << std::setfill('0')
 			<< socket_.remote_endpoint().address().to_string() << " - - ["
 			<< tm.tm_year + 1900 << "-" << std::setw(2) << tm.tm_mon << "-" << std::setw(2) << tm.tm_mday
 			<< "T" << std::setw(2) << tm.tm_hour << ":" << std::setw(2) << tm.tm_min << ":" << std::setw(2) << tm.tm_sec << "]"
 			<< "\"" << request_->method << " " << request_->uri << " " << request_->http_version_major << "." << request_->http_version_minor << "\" "
 			<< reply_.status << " " << reply_.content.size() << std::endl;
+		    if (debugStream != NULL && *debugStream != NULL)
+			**debugStream << "reply: [[" << reply_.content << "]]\n";
+
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
 			  boost::bind(&connection::handle_write, shared_from_this(),
@@ -587,7 +595,8 @@ namespace w3c_sw {
 	    explicit server(const std::string& address, 
 			    const std::string& port,
 			    std::size_t thread_pool_size, 
-			    request_handler& request_handler_);
+			    request_handler& request_handler_, 
+			    std::ostream** debugStream = NULL);
 
 	    /// Run the server's io_service loop.
 	    void run();
@@ -595,6 +604,7 @@ namespace w3c_sw {
 	    /// Stop the server.
 	    void stop();
 
+	    std::ostream**   debugStream;
 	private:
 	    /// Handle completion of an asynchronous accept operation.
 	    void handle_accept(const boost::system::error_code& e);
@@ -618,10 +628,11 @@ namespace w3c_sw {
 	inline server::server(const std::string& address, 
 			      const std::string& port,
 			      std::size_t thread_pool_size, 
-			      request_handler& request_handler_)
-	    : thread_pool_size_(thread_pool_size),
+			      request_handler& request_handler_, 
+			      std::ostream** debugStream)
+	    : debugStream(debugStream), thread_pool_size_(thread_pool_size),
 	      acceptor_(io_service_),
-	      new_connection_(new connection(io_service_, request_handler_)),
+	      new_connection_(new connection(io_service_, request_handler_, debugStream)),
 	      request_handler_(request_handler_)
 	{
 	    // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
@@ -694,8 +705,9 @@ namespace w3c_sw {
 #endif // defined(_WIN32)
     protected:
 	w3c_sw::webserver::server* server;
+	std::ostream**   debugStream;
     public:
-	WEBserver_asio () : server(NULL) {  }
+	WEBserver_asio () : server(NULL), debugStream(NULL) {  }
 	void stop () { server->stop(); }
 	void serve (const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler) {
 
@@ -721,7 +733,7 @@ namespace w3c_sw {
 	    pthread_sigmask(SIG_BLOCK, &new_mask, &old_mask);
 
 	    // Run server in background thread.
-	    w3c_sw::webserver::server s(address, port, num_threads, handler);
+	    w3c_sw::webserver::server s(address, port, num_threads, handler, debugStream);
 	    server = &s;
 	    boost::thread t(boost::bind(&w3c_sw::webserver::server::run, &s));
 
