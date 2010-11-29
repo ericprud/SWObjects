@@ -177,7 +177,7 @@ sub test_update {
 
     $updatedDB = new SWObjects::RdfDB();
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
-    my $query = $sparser->parse("INSERT { <s> <p1> <o1> ; <p2> <o2> }");
+    my $query = $sparser->parse("INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }");
     # my $s = new SWObjects::SPARQLSerializer();
     # $query->express($s);
     # print "parsed: ", $s->str();
@@ -231,13 +231,13 @@ sub test_parser_exception {
     my $F = new SWObjects::AtomFactory();
     my $sparser = new SWObjects::SPARQLfedDriver("", $F);
     my $istr = new SWObjects::IStreamContext(
-	    "SELECT * WHERE missing open curley brace",
+	    "SELECT * WHERE ~~~",
 	    $SWObjects::StreamContextIstream::STRING);
     eval {
 	$sparser->parse($istr);
 	ok(0, 'no error parsing bogus SPARQL query');
     };
-    ok($@ eq "ValueError unexpected input 'm' at SELECT * WHERE missing open curley brace:1.16\n", "parser exceptions");
+    ok($@ eq "ValueError SELECT * WHERE ~~~:1.16: unexpected input: '~'\n", "parser exceptions");
 }
 
 my @T = (

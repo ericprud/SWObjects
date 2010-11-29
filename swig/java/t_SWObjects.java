@@ -123,7 +123,7 @@ public class t_SWObjects extends TestCase {
         RdfDB updatedDB = new RdfDB();
         SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
         sparser.parse(new IStreamContext(
-                "INSERT { <s> <p1> <o1> ; <p2> <o2> }",
+                "INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }",
 		StreamContextIstream.e_opts.STRING));
         Operation query = sparser.getRoot();
         // SPARQLSerializer s = SPARQLSerializer();

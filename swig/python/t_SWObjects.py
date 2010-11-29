@@ -150,7 +150,7 @@ SELECT ?craft ?homepage
 
         updatedDB = SWObjects.RdfDB()
         sparser = SWObjects.SPARQLfedDriver("", F)
-        query = sparser.parse("INSERT { <s> <p1> <o1> ; <p2> <o2> }")
+        query = sparser.parse("INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }")
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
         # print "parsed: ", s.str()
@@ -201,9 +201,9 @@ SELECT ?craft ?homepage
         F = SWObjects.AtomFactory()
         sparser = SWObjects.SPARQLfedDriver("", F)
         istr = SWObjects.IStreamContext(
-                "SELECT * WHERE missing open curley brace",
+                "SELECT * WHERE ~~~",
                 SWObjects.StreamContextIstream.STRING)
-        self.assertRaises(ValueError, sparser.parse, istr) # "unexpected input 'm' at SELECT * WHERE missing open curley brace:1.16"
+        self.assertRaises(ValueError, sparser.parse, istr) # "ValueError SELECT * WHERE ~~~:1.16: unexpected input: '~'\n"
 
 
 if __name__ == '__main__':
