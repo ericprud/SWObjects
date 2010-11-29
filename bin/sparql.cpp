@@ -921,7 +921,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		    }
 		}
 	    }
-	} else if (path == "/") {
+	} else if (path == "") {
 	    rep.status = sw::webserver::reply::ok;
 	    head(sout, "Q&amp;D SPARQL Server");
 	    const char* method =
