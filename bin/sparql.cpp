@@ -751,6 +751,12 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 
 			    foot(sout);
 			} else {
+			    parm = req.parms.find("media");
+			    bool humanReader = (parm != req.parms.end()
+						&& (parm->second == "html"
+						    || parm->second == "edit"
+						    || parm->second == "tablesorter"));
+
 			    sw::ResultSet rs(&server.atomFactory);
 			    std::string language;
 			    std::string newQuery(query);
@@ -762,6 +768,19 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 				if (path != server.path)
 				    server.db.setTarget(F.getURI(path));
 				server.executeQuery(op, rs, language, newQuery);
+				if (humanReader &&
+				    (dynamic_cast<sw::GraphChange*>(op) != NULL || 
+				     dynamic_cast<sw::OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
+				    /** 
+				     * For a nice human interface, we can do
+				     * another query to report the resulting
+				     * database.
+				     */
+				    delete op;
+				    rs.clear();
+				    op = SparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
+				    op->execute(&server.db, &rs);
+				}
 				server.db.setTarget(NULL);
 				delete op;
 			    } catch (sw::ParserException& ex) {
@@ -776,11 +795,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 			    const sw::VariableVector cols = rs.getOrderedVars();
 
 			    sw::XMLSerializer xml("  ");
-			    parm = req.parms.find("media");
-			    if (parm != req.parms.end()
-				&& (parm->second == "html"
-				    || parm->second == "edit"
-				    || parm->second == "tablesorter")) {
+			    if (humanReader) {
 				std::string headStr =
 				    "    <style type=\"text/css\" media=\"screen\">\n"
 				    "/*<![CDATA[*/\n" + CSS_common
