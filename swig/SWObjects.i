@@ -23,7 +23,7 @@
 	SWIG_exception(SWIG_ValueError, e.c_str());
     } catch(const char* e) {
 	SWIG_exception(SWIG_ValueError, e);
-    } catch(std::exception e) {
+    } catch(std::exception& e) {
 	SWIG_exception(SWIG_ValueError, e.what());
     } catch(...) {
 	SWIG_exception(SWIG_RuntimeError, "runtime error");
