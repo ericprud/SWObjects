@@ -457,11 +457,11 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
 		std::wstring wstr(szDirectory);
 		size_t len = (int)wstr.length();
-		std::string str = "\\";
+		std::string str = "/";
 		unsigned int i = 0;
 		for (std::wstring::iterator it = wstr.begin();
 		     i < len; ++it, ++i)
-		    str += (char)*it;
+		    str += (char)(*it == '\\' ? '/' : *it);
 		strncpy(buf, str.c_str(), sizeof(buf)-1);
 	    }
 #else /* !_MSV_VER */
@@ -923,8 +923,6 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 				sout << xml.str();
 			    } /* !htmlResults */
 
-			    if (server.debugStream != NULL && *server.debugStream != NULL)
-				**server.debugStream << sout.str() << std::endl;
 			    ++server.served;
 			    if (server.runOnce)
 				server.done = true;
@@ -968,7 +966,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 
 	    rep.addHeader("Content-Type", "text/html");
 	    foot(sout);
-	} else if (path == "/favicon.ico") {
+	} else if (path == "favicon.ico") {
 	    rep.status = sw::webserver::reply::ok;
 	    sout.write((char*)favicon, sizeof(favicon));
 	    rep.addHeader("Content-Type", "image/x-icon");
@@ -1866,9 +1864,9 @@ int main(int ac, char* av[])
 		std::string ports(matches[PORT].first, matches[PORT].second);
 		std::istringstream portss(ports);
 		portss >> serverPort;
-		TheServer.path = std::string(matches[PATH].first, matches[PATH].second);
+		TheServer.path = std::string(matches[PATH].first + 1, matches[PATH].second);
 #else /* !REGEX_LIB == SWOb_BOOST */
-		TheServer.path = "/SPARQL";
+		TheServer.path = "SPARQL";
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
 		TheServer.startServer(handler, ServerURI, serverPort);
