@@ -703,11 +703,11 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	} else if (getGraph != NULL) {
 	    sw::webserver::request::parmmap::const_iterator parm;
 	    if (req.method == "GET"
-		|| (req.method == "POST" && req.content_type == "application/x-www-form-urlencoded")) {
+		|| (req.method == "POST" && req.content_type.compare(0, 33, "application/x-www-form-urlencoded"))) {
 		    parm = req.parms.find("query");
 		    if (parm != req.parms.end())
 			query = parm->second;
-	    } else if (req.method == "POST" && req.content_type == "application/sparql-query")
+	    } else if (req.method == "POST" && req.content_type.compare(0, 24, "application/sparql-query") == 0)
 		query = req.body;
 	    if (query == "" && path != server.path) {
 		rep.status = sw::webserver::reply::ok;
