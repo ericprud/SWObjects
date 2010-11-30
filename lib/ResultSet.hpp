@@ -231,6 +231,12 @@ namespace w3c_sw {
 	    parseTable(sptr, ordered, nodeMap);
 	}
 
+	void clear () {
+	    selectOrder.clear();
+	    results.clear();
+	    results.insert(results.begin(), new Result(this));
+	}
+
 	void parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
 
 	    /* Iterate through the input string. */
@@ -800,6 +806,7 @@ namespace w3c_sw {
 		return ret;
 	    }
 	}
+	std::string str () { return toString(); }
 	XMLSerializer* toXml(XMLSerializer* xml = NULL);
 	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "");
 	ResultSetIterator begin () { return results.begin(); }
