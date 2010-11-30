@@ -26,7 +26,15 @@ namespace w3c_sw {
 	    std::string value;
 	    header () {  }
 	    header (std::string name, std::string value) : name(name), value(value) {  }
+	    std::string str () const {
+		return name + ": " + value;
+	    }
 	};
+
+	std::ostream& operator<< (std::ostream& os, const header& h) {
+	    return os << h.str();
+	}
+
 
 	/// A request received from a client.
 	struct request
@@ -47,7 +55,21 @@ namespace w3c_sw {
 	    parmmap parms;
 	    size_t content_length;
 	    std::string content_type;
+	    std::string str () const {
+		std::stringstream ss;
+		ss << method << " " << uri << " HTTP/" << http_version_major << "." << http_version_minor << "\n";
+		for (std::vector<header>::const_iterator h = headers.begin();
+		     h != headers.end(); ++h)
+		    ss << *h << "\n";
+		ss << "\n" << body << "\n";
+		return ss.str();
+	    }
 	};
+
+	std::ostream& operator<< (std::ostream& os, const request& r) {
+	    return os << r.str();
+	}
+
 
 	struct reply
 	{
@@ -89,7 +111,14 @@ namespace w3c_sw {
 
 	    /// Get a stock reply.
 	    static reply stock_reply(status_type status);
+
+	    std::string str() const;
 	};
+
+	std::ostream& operator<< (std::ostream& os, const reply& r) {
+	    return os << r.str();
+	}
+
 
 	// inline void request::url_decode ()
 	inline void request::url_decode ()
@@ -182,81 +211,85 @@ namespace w3c_sw {
 
 	namespace status_strings {
 
+	    const std::string reply_version =
+		"HTTP/1.0 ";
+	    const std::string CRLF =
+		"\r\n";
+
 	    // !!! needs to be static but multi-module-safe
 		const std::string ok =
-		    "HTTP/1.0 200 OK\r\n";
+		    "200 OK";
 		const std::string created =
-		    "HTTP/1.0 201 Created\r\n";
+		    "201 Created";
 		const std::string accepted =
-		    "HTTP/1.0 202 Accepted\r\n";
+		    "202 Accepted";
 		const std::string no_content =
-		    "HTTP/1.0 204 No Content\r\n";
+		    "204 No Content";
 		const std::string multiple_choices =
-		    "HTTP/1.0 300 Multiple Choices\r\n";
+		    "300 Multiple Choices";
 		const std::string moved_permanently =
-		    "HTTP/1.0 301 Moved Permanently\r\n";
+		    "301 Moved Permanently";
 		const std::string moved_temporarily =
-		    "HTTP/1.0 302 Moved Temporarily\r\n";
+		    "302 Moved Temporarily";
 		const std::string not_modified =
-		    "HTTP/1.0 304 Not Modified\r\n";
+		    "304 Not Modified";
 		const std::string bad_request =
-		    "HTTP/1.0 400 Bad Request\r\n";
+		    "400 Bad Request";
 		const std::string unauthorized =
-		    "HTTP/1.0 401 Unauthorized\r\n";
+		    "401 Unauthorized";
 		const std::string forbidden =
-		    "HTTP/1.0 403 Forbidden\r\n";
+		    "403 Forbidden";
 		const std::string not_found =
-		    "HTTP/1.0 404 Not Found\r\n";
+		    "404 Not Found";
 		const std::string internal_server_error =
-		    "HTTP/1.0 500 Internal Server Error\r\n";
+		    "500 Internal Server Error";
 		const std::string not_implemented =
-		    "HTTP/1.0 501 Not Implemented\r\n";
+		    "501 Not Implemented";
 		const std::string bad_gateway =
-		    "HTTP/1.0 502 Bad Gateway\r\n";
+		    "502 Bad Gateway";
 		const std::string service_unavailable =
-		    "HTTP/1.0 503 Service Unavailable\r\n";
+		    "503 Service Unavailable";
 
-	    inline CONST_BUFFER to_buffer(reply::status_type status)
+	    inline std::string toString(reply::status_type status)
 	    {
 		switch (status)
 		    {
 		    case reply::ok:
-			return MUTABLE_BUFFER(ok);
+			return ok;
 		    case reply::created:
-			return MUTABLE_BUFFER(created);
+			return created;
 		    case reply::accepted:
-			return MUTABLE_BUFFER(accepted);
+			return accepted;
 		    case reply::no_content:
-			return MUTABLE_BUFFER(no_content);
+			return no_content;
 		    case reply::multiple_choices:
-			return MUTABLE_BUFFER(multiple_choices);
+			return multiple_choices;
 		    case reply::moved_permanently:
-			return MUTABLE_BUFFER(moved_permanently);
+			return moved_permanently;
 		    case reply::moved_temporarily:
-			return MUTABLE_BUFFER(moved_temporarily);
+			return moved_temporarily;
 		    case reply::not_modified:
-			return MUTABLE_BUFFER(not_modified);
+			return not_modified;
 		    case reply::bad_request:
-			return MUTABLE_BUFFER(bad_request);
+			return bad_request;
 		    case reply::unauthorized:
-			return MUTABLE_BUFFER(unauthorized);
+			return unauthorized;
 		    case reply::forbidden:
-			return MUTABLE_BUFFER(forbidden);
+			return forbidden;
 		    case reply::not_found:
-			return MUTABLE_BUFFER(not_found);
+			return not_found;
 		    case reply::internal_server_error:
-			return MUTABLE_BUFFER(internal_server_error);
+			return internal_server_error;
 		    case reply::not_implemented:
-			return MUTABLE_BUFFER(not_implemented);
+			return not_implemented;
 		    case reply::bad_gateway:
-			return MUTABLE_BUFFER(bad_gateway);
+			return bad_gateway;
 		    case reply::service_unavailable:
-			return MUTABLE_BUFFER(service_unavailable);
+			return service_unavailable;
 		    default:
-			return MUTABLE_BUFFER(internal_server_error);
+			return internal_server_error;
 		    }
 	    }
-
 	} // namespace status_strings
 
 	inline std::vector<CONST_BUFFER> reply::to_buffers(bool noBody)
@@ -267,7 +300,9 @@ namespace w3c_sw {
 	    bool clFound = false;
 
 	    std::vector<CONST_BUFFER> buffers;
-	    buffers.push_back(status_strings::to_buffer(status));
+	    buffers.push_back(MUTABLE_BUFFER(status_strings::reply_version));
+	    buffers.push_back(MUTABLE_BUFFER(status_strings::toString(status)));
+	    buffers.push_back(MUTABLE_BUFFER(status_strings::CRLF));
 	    for (std::size_t i = 0; i < headers.size(); ++i) {
 		header& h = headers[i];
 		buffers.push_back(MUTABLE_BUFFER(h.name));
@@ -421,6 +456,16 @@ namespace w3c_sw {
 	    }
 
 	} // namespace stock_replies
+
+	inline std::string reply::str () const {
+	    std::stringstream ss;
+	    ss << "HTTP/1.0 " << status_strings::toString(status) << "\n";
+	    for (std::vector<header>::const_iterator h = headers.begin();
+		 h != headers.end(); ++h)
+		ss << *h << "\n";
+	    ss << "\n" << content << "\n";
+	    return ss.str();
+	}
 
 	inline reply reply::stock_reply(reply::status_type status)
 	{

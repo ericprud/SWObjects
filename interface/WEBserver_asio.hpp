@@ -541,7 +541,7 @@ namespace w3c_sw {
 			<< "\"" << request_->method << " " << request_->uri << " " << request_->http_version_major << "." << request_->http_version_minor << "\" "
 			<< reply_.status << " " << reply_.content.size() << std::endl;
 		    if (debugStream != NULL && *debugStream != NULL)
-			**debugStream << "reply: [[" << reply_.content << "]]\n";
+			**debugStream << *request_ << reply_;
 
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
@@ -669,7 +669,7 @@ namespace w3c_sw {
 	inline void server::handle_accept(const boost::system::error_code& e) {
 	    if (!e) {
 		new_connection_->start();
-		new_connection_.reset(new connection(io_service_, request_handler_));
+		new_connection_.reset(new connection(io_service_, request_handler_, debugStream));
 		acceptor_.async_accept(new_connection_->socket(),
 				       boost::bind(&server::handle_accept, this,
 						   boost::asio::placeholders::error));
