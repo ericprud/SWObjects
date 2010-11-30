@@ -49,7 +49,6 @@ char const * yit = "yacker:implicit-terminal";
 #if defined(SWIG)
     %mutable;
 #endif /* defined(SWIG) */
-std::map<StringException*, std::string> StringException::strs;
 
 } // namespace w3c_sw
 
@@ -1303,7 +1302,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
-	rs->resultType = ResultSet::RESULT_Graphs;
+	rs->resultType = ResultSet::RESULT_Boolean;
 	if (m_delete != NULL)
 	    m_delete->execute(db, rs);
 	if (m_insert != NULL)
@@ -1316,7 +1315,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
-	rs->resultType = ResultSet::RESULT_Graphs;
+	rs->resultType = ResultSet::RESULT_Boolean;
 	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
 	return rs;
     }
@@ -1329,7 +1328,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	TreatAsVar treatAsVar;
-	rs->resultType = ResultSet::RESULT_Graphs;
+	rs->resultType = ResultSet::RESULT_Boolean;
 	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
 	return rs;
     }

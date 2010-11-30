@@ -144,25 +144,16 @@ public:
 #if defined(SWIG)
     %immutable;
 #endif /* defined(SWIG) */
-    char const* str;
+    std::string str;
 #if defined(SWIG)
     %mutable;
 #endif /* defined(SWIG) */
-    static std::map<StringException*, std::string> strs;
 
-    StringException (std::string m) : str(m.c_str()) {
-	strs[this] = m;
-    }
+    StringException (std::string m) : str(m.c_str()) {  }
     // !!! needs copy constructor in MS compilations, but
     //     haven't got UnknownPrefixException working in g++
-#ifdef WIN32
-    StringException (StringException& orig) {
-	strs[this] = strs[&orig];
-	str = strs[this].c_str();
-    }
-#endif
-    virtual ~StringException () throw() { strs.erase(this); }
-    char const* what() const throw() { 	return str; }
+    virtual ~StringException () throw() {  }
+    virtual const char* what() const throw() { return str.c_str(); }
 };
 
 class SafeEvaluationError : public std::exception {
@@ -2255,15 +2246,16 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_ask; }
 };
+class GraphChange : public Operation {  };
 class Delete;
 class Insert;
-class Modify : public Operation {
+class Modify : public GraphChange {
 private:
     const Delete* m_delete;
     const Insert* m_insert;
     WhereClause* m_WhereClause;
 public:
-    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) : Operation(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause) {  }
+    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) : GraphChange(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause) {  }
     ~Modify();
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual void express(Expressor* p_expressor) const;
@@ -2272,13 +2264,13 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_modify; }
 };
-class Insert : public Operation {
+class Insert : public GraphChange {
     friend class SPARQLfedParser;
 private:
     TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
 public:
-    Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Insert () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -2287,13 +2279,13 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_insert; }
 };
-class Delete : public Operation {
+class Delete : public GraphChange {
     friend class SPARQLfedParser;
 private:
     TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
 public:
-    Delete (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : Operation(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    Delete (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Delete () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
