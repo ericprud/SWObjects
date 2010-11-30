@@ -678,6 +678,11 @@ namespace w3c_sw {
 				    xml->attribute("action", editPath);
 				    xml->attribute("method", "post");
 				    xml->open("input"); {
+					xml->attribute("name", "media");
+					xml->attribute("value", "edit");
+					xml->attribute("type", "hidden");
+				    } xml->close();
+				    xml->open("input"); {
 					xml->attribute("id", rowNoStr + "_query");
 					xml->attribute("name", "query");
 					xml->attribute("type", "hidden");
