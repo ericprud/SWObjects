@@ -703,7 +703,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	} else if (getGraph != NULL) {
 	    sw::webserver::request::parmmap::const_iterator parm;
 	    if (req.method == "GET"
-		|| (req.method == "POST" && req.content_type.compare(0, 33, "application/x-www-form-urlencoded"))) {
+		|| (req.method == "POST" && req.content_type.compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
 		    parm = req.parms.find("query");
 		    if (parm != req.parms.end())
 			query = parm->second;
