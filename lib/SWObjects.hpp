@@ -591,7 +591,6 @@ public:
     static const URI* FUNC_avg;
     static const URI* FUNC_group;
     static const URI* FUNC_regex;
-    static const URI* EXTEN_concat;
     static const URI* FUNC_group_concat;
     static const URI* FUNC_if;
     static const URI* FUNC_strlang;
@@ -601,6 +600,10 @@ public:
     static const URI* FUNC_uri;
     static const URI* FUNC_blank;
     static const URI* FUNC_isNumeric;
+    static const URI* XPATH_concat;
+    static const URI* XPATH_lower_case;
+    static const URI* XPATH_upper_case;
+    static const URI* EXTEN_concat;
 
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
@@ -707,10 +710,10 @@ class RDFLiteral : public TTerm {
     friend class AtomFactory;
 private:
     const URI* datatype;
-    LANGTAG* m_LANGTAG;
+    const LANGTAG* m_LANGTAG;
 
 protected:
-    RDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) : TTerm(p_String) {
+    RDFLiteral (std::string p_String, const URI* p_URI, const LANGTAG* p_LANGTAG) : TTerm(p_String) {
 	datatype = p_URI;
 	m_LANGTAG = p_LANGTAG;
     }
@@ -1401,7 +1404,7 @@ public:
     const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
     const URI* getURI(std::string name);
     const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
-    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, LANGTAG* p_LANGTAG = NULL, bool validate = false);
+    const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, const LANGTAG* p_LANGTAG = NULL, bool validate = false);
 
     const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
     const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
@@ -3168,7 +3171,7 @@ public:
     virtual void uri(const URI* const self, std::string lexicalValue) = 0;
     virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
     virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
-    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) = 0;
+    virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, int p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, float p_value) = 0;
     virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value) = 0;
@@ -3247,7 +3250,7 @@ public:
     virtual void uri (const URI* const, std::string) {  }
     virtual void variable (const Variable* const, std::string) {  }
     virtual void bnode (const BNode* const, std::string) {  }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	if (datatype) datatype->express(this);
 	if (p_LANGTAG) p_LANGTAG->express(this);
     }

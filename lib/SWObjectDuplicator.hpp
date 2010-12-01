@@ -68,7 +68,7 @@ namespace w3c_sw {
 	virtual void bnode (const BNode* const self, std::string lexicalValue) {
 	    last.tterms.tterm = atomFactory ? atomFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
 	}
-	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
+	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {

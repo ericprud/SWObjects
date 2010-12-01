@@ -512,59 +512,64 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
-#define URICONST(lname) URI("http://www.w3.org/2001/XMLSchema#" #lname)
-#define FUNCCONST(lname) URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname)
+#define XSDCONST(lname) URI("http://www.w3.org/2001/XMLSchema#" #lname)
+#define XPATHCONST(lname) URI("http://www.w3.org/2005/xpath-functions#" #lname)
+#define OPERATORCONST(lname) URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname)
 #define EXTENCONST(lname) URI("https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#" #lname)
 
     /** URI constants, shared between all AtomFactories: */
     const URI AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
-	URICONST(integer),
-	URICONST(decimal),
-	URICONST(float),
-	URICONST(double),
-	URICONST(string),
-	URICONST(boolean),
-	URICONST(nonPositiveInteger),
-	URICONST(negativeInteger),
-	URICONST(long),
-	URICONST(int),
-	URICONST(short),
-	URICONST(byte),
-	URICONST(nonNegativeInteger),
-	URICONST(unsignedLong),
-	URICONST(unsignedInt),
-	URICONST(unsignedShort),
-	URICONST(unsignedByte),
-	URICONST(positiveInteger),
-	URICONST(dateTime),
+	XSDCONST(integer),
+	XSDCONST(decimal),
+	XSDCONST(float),
+	XSDCONST(double),
+	XSDCONST(string),
+	XSDCONST(boolean),
+	XSDCONST(nonPositiveInteger),
+	XSDCONST(negativeInteger),
+	XSDCONST(long),
+	XSDCONST(int),
+	XSDCONST(short),
+	XSDCONST(byte),
+	XSDCONST(nonNegativeInteger),
+	XSDCONST(unsignedLong),
+	XSDCONST(unsignedInt),
+	XSDCONST(unsignedShort),
+	XSDCONST(unsignedByte),
+	XSDCONST(positiveInteger),
+	XSDCONST(dateTime),
 
-	FUNCCONST(func-str),
-	FUNCCONST(func-lang),
-	FUNCCONST(func-langMatches),
-	FUNCCONST(func-datatype),
-	FUNCCONST(func-bound),
-	FUNCCONST(func-sameTerm),
-	FUNCCONST(func-isIRI),
-	FUNCCONST(func-isURI),
-	FUNCCONST(func-isBlank),
-	FUNCCONST(func-isLiteral),
-	FUNCCONST(func-count),
-	FUNCCONST(func-sum),
-	FUNCCONST(func-min),
-	FUNCCONST(func-max),
-	FUNCCONST(func-avg),
-	FUNCCONST(func-group_group),
-	FUNCCONST(func-group_regex),
-	EXTENCONST(func-concat),
-	FUNCCONST(func-group_concat),
-	FUNCCONST(func-if),
-	FUNCCONST(func-strlang),
-	FUNCCONST(func-strdt),
-	FUNCCONST(func-sample),
-	FUNCCONST(func-iri),
-	FUNCCONST(func-uri),
-	FUNCCONST(func-blank)
+	OPERATORCONST(func-str),
+	OPERATORCONST(func-lang),
+	OPERATORCONST(func-langMatches),
+	OPERATORCONST(func-datatype),
+	OPERATORCONST(func-bound),
+	OPERATORCONST(func-sameTerm),
+	OPERATORCONST(func-isIRI),
+	OPERATORCONST(func-isURI),
+	OPERATORCONST(func-isBlank),
+	OPERATORCONST(func-isLiteral),
+	OPERATORCONST(func-count),
+	OPERATORCONST(func-sum),
+	OPERATORCONST(func-min),
+	OPERATORCONST(func-max),
+	OPERATORCONST(func-avg),
+	OPERATORCONST(func-group_group),
+	OPERATORCONST(func-group_regex),
+	OPERATORCONST(func-group_concat),
+	OPERATORCONST(func-if),
+	OPERATORCONST(func-strlang),
+	OPERATORCONST(func-strdt),
+	OPERATORCONST(func-sample),
+	OPERATORCONST(func-iri),
+	OPERATORCONST(func-uri),
+	OPERATORCONST(func-blank),
+	OPERATORCONST(func-isNumeric),
+	XPATHCONST(concat),	// <http://www.w3.org/2005/xpath-functions#concat>
+	XPATHCONST(lower-case),
+	XPATHCONST(upper-case),
+	EXTENCONST(concat)	// <https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#concat>
     };
 
     const URI* TTerm::URI_xsd_integer		 = AtomFactory::_URIConstants + 0;
@@ -604,16 +609,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const URI* TTerm::FUNC_avg			 = AtomFactory::_URIConstants + 33;
     const URI* TTerm::FUNC_group		 = AtomFactory::_URIConstants + 34;
     const URI* TTerm::FUNC_regex		 = AtomFactory::_URIConstants + 35;
-    const URI* TTerm::EXTEN_concat		 = AtomFactory::_URIConstants + 36;
-    const URI* TTerm::FUNC_group_concat		 = AtomFactory::_URIConstants + 37;
-    const URI* TTerm::FUNC_if			 = AtomFactory::_URIConstants + 38;
-    const URI* TTerm::FUNC_strlang		 = AtomFactory::_URIConstants + 39;
-    const URI* TTerm::FUNC_strdt		 = AtomFactory::_URIConstants + 40;
-    const URI* TTerm::FUNC_sample		 = AtomFactory::_URIConstants + 41;
-    const URI* TTerm::FUNC_iri			 = AtomFactory::_URIConstants + 42;
-    const URI* TTerm::FUNC_uri			 = AtomFactory::_URIConstants + 43;
-    const URI* TTerm::FUNC_blank		 = AtomFactory::_URIConstants + 44;
-    const URI* TTerm::FUNC_isNumeric		 = AtomFactory::_URIConstants + 45;
+    const URI* TTerm::FUNC_group_concat		 = AtomFactory::_URIConstants + 36;
+    const URI* TTerm::FUNC_if			 = AtomFactory::_URIConstants + 37;
+    const URI* TTerm::FUNC_strlang		 = AtomFactory::_URIConstants + 38;
+    const URI* TTerm::FUNC_strdt		 = AtomFactory::_URIConstants + 39;
+    const URI* TTerm::FUNC_sample		 = AtomFactory::_URIConstants + 40;
+    const URI* TTerm::FUNC_iri			 = AtomFactory::_URIConstants + 41;
+    const URI* TTerm::FUNC_uri			 = AtomFactory::_URIConstants + 42;
+    const URI* TTerm::FUNC_blank		 = AtomFactory::_URIConstants + 43;
+    const URI* TTerm::FUNC_isNumeric		 = AtomFactory::_URIConstants + 44;
+    const URI* TTerm::XPATH_concat		 = AtomFactory::_URIConstants + 45;
+    const URI* TTerm::XPATH_lower_case		 = AtomFactory::_URIConstants + 46;
+    const URI* TTerm::XPATH_upper_case		 = AtomFactory::_URIConstants + 47;
+    const URI* TTerm::EXTEN_concat		 = AtomFactory::_URIConstants + 48;
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
 	BooleanRDFLiteral("true",  TTerm::URI_xsd_boolean, true),
@@ -820,7 +828,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 #endif /* REGEX_LIB != SWOb_BOOST */
     }
 
-    const RDFLiteral* AtomFactory::getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG, bool needsValidation) {
+    const RDFLiteral* AtomFactory::getRDFLiteral (std::string p_String, const URI* p_URI, const LANGTAG* p_LANGTAG, bool needsValidation) {
 	std::istringstream is(p_String);
 
 	if (p_URI != NULL && needsValidation == true)
@@ -1341,7 +1349,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 	/* nary predicates: */
 	// concat
-	if (m_IRIref == TTerm::EXTEN_concat) {
+	if (m_IRIref == TTerm::XPATH_concat || m_IRIref == TTerm::EXTEN_concat) { // legacy concat function
 	    std::stringstream ss;
 	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
 		 sub != subd.end(); ++sub) {
@@ -1437,6 +1445,22 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
 	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
 	    return dt ? dt : TTerm::URI_xsd_string;
+	}
+
+	if (m_IRIref == TTerm::XPATH_lower_case && // fn:lower-case(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
+	    std::string lex = upper->getLexicalValue();
+	    std::transform(lex.begin(), lex.end(), lex.begin(), ::tolower);
+	    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), upper->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
+	}
+
+	if (m_IRIref == TTerm::XPATH_upper_case && // fn:upper-case(RDFLiteral)
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(first);
+	    std::string lex = lower->getLexicalValue();
+	    std::transform(lex.begin(), lex.end(), lex.begin(), ::toupper);
+	    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
 	}
 
 	const TTerm* second = it == subd.end() ? NULL : *it++;

@@ -34,7 +34,7 @@ public:
     virtual void bnode (const BNode* const, std::string lexicalValue) {
 	xml->leaf("bnode", lexicalValue);
     }
-    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, LANGTAG* p_LANGTAG) {
+    virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	xml->leaf("literal", lexicalValue);
 	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getLexicalValue()); //!!!
 	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getLexicalValue());

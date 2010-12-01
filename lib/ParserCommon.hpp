@@ -127,7 +127,7 @@ public:
     const URI* getAbsoluteURI(std::string name);
     const BNode* createBNode () { return atomFactory->createBNode(); }
     const BNode* getBNode (std::string name) { return atomFactory->getBNode(name, nodeMap); }
-    const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, LANGTAG* p_LANGTAG) {
+    const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, const LANGTAG* p_LANGTAG) {
 	return atomFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
 
