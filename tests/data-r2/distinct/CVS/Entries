@@ -1,0 +1,25 @@
+/data-node.ttl/1.1/Sat Jul 14 15:50:04 2007//
+/data-opt.ttl/1.1/Sat Jul 14 15:50:04 2007//
+/data-str.ttl/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-1.rq/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-2.rq/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-all.srx/1.1/Sat Jul 14 15:57:52 2007//
+/distinct-node.srx/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-num.srx/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-opt.srx/1.1/Sat Jul 14 15:50:04 2007//
+/distinct-str.srx/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-1.rq/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-2.rq/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-all.srx/1.1/Sat Jul 14 15:57:52 2007//
+/no-distinct-node.srx/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-num.srx/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-opt.srx/1.1/Sat Jul 14 15:50:04 2007//
+/no-distinct-str.srx/1.1/Sat Jul 14 15:50:04 2007//
+/data-star.ttl/1.1/Tue Aug  7 13:21:32 2007//
+/distinct-1-results.srx/1.2/Mon Aug 13 22:13:31 2007//
+/distinct-star-1.rq/1.1/Tue Aug  7 13:21:32 2007//
+/distinct-star-1.srx/1.1/Tue Aug  7 13:21:32 2007//
+/manifest.ttl/1.7/Mon Aug 13 22:13:31 2007//
+/data-all.ttl/1.2/Fri Sep 14 21:10:56 2007//
+/data-num.ttl/1.2/Fri Sep 14 21:10:57 2007//
+D

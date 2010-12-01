@@ -1,0 +1,84 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix : <http://www.w3.org/2001/sw/DataAccess/tests/data-r2/ask/manifest#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> .
+@prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#> .
+
+<>  rdf:type mf:Manifest ;
+    rdfs:label "ASK" ;
+    mf:entries
+    ( 
+      <#ask-true-srx>
+      <#ask-true-json>
+      <#ask-true-ttl>
+      <#ask-false-srx>
+      <#ask-false-json>
+      <#ask-false-ttl>
+      <#ask-var-srx>
+    ) .
+
+
+<#ask-true-srx>
+      mf:name    "ask-true-srx" ;
+      rdfs:comment    "ASK => TRUE (SPARQL XML results)" ;
+      mf:action
+         [ qt:query  <ask-true.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-true.srx>
+      .
+
+<#ask-true-json>
+      mf:name    "ask-true-json" ;
+      rdfs:comment    "ASK => TRUE (SPARQL JSON results)" ;
+      mf:action
+         [ qt:query  <ask-true.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-true.srj>
+      .
+
+<#ask-true-ttl>
+      mf:name    "ask-true-ttl" ;
+      rdfs:comment    "ASK => TRUE (SPARQL TURTLE results)" ;
+      mf:action
+         [ qt:query  <ask-true.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-true.ttl>
+      .
+
+<#ask-false-srx>
+      mf:name    "ask-false-srx" ;
+      rdfs:comment    "ASK => FALSE (SPARQL XML results)" ;
+      mf:action
+         [ qt:query  <ask-false.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-false.srx>
+      .
+
+<#ask-false-json>
+      mf:name    "ask-false-json" ;
+      mf:comment    "ASK => FALSE (SPARQL JSON results)" ;
+      mf:action
+         [ qt:query  <ask-false.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-false.srj>
+      .
+
+<#ask-false-ttl>
+      mf:name    "ask-false-ttl" ;
+      rdfs:comment    "ASK => FALSE (SPARQL TURTLE results)" ;
+      mf:action
+         [ qt:query  <ask-false.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-false.ttl>
+      .
+
+<#ask-var-srx>
+      mf:name    "ask-var-srx" ;
+      rdfs:comment    "ASK with VAR1 => TRUE (SPARQL XML results)" ;
+      mf:action
+         [ qt:query  <ask-var.rq> ;
+           qt:data   <data.ttl> ] ;
+      mf:result  <ask-true.srx>
+      .
+

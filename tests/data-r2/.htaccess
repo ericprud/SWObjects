@@ -1,0 +1,9 @@
+<Files ~ ".*\.srx$">
+ForceType 'application/sparql-results+xml'
+</Files>
+<Files ~ ".*\.ttl$">
+ForceType 'application/x-turtle'
+</Files>
+<Files ~ ".*\.rq$">
+ForceType 'application/sparql-query'
+</Files>
