@@ -24,37 +24,39 @@
 
 namespace w3c_sw {
 
+    union SWObjectDuplicator_Last {
+      struct Tterms {
+        const TTerm* tterm;
+        const URI* uri;
+        const Variable* variable;
+        const RDFLiteral* rdfLiteral;
+        const BooleanRDFLiteral* booleanRDFLiteral;
+        const NumericRDFLiteral* numericRDFLiteral;
+      };
+      Tterms tterms;
+      const TriplePattern* triplePattern;
+      const Expression* expression;
+      const ExpressionAlias* expressionAlias;
+      const Filter* filter;
+      TableOperation* tableOperation;
+      struct { VarSet* varSet; const ProductionVector<const ExpressionAlias*>* exprList; } varSets;
+      const DatasetClause* datasetClause;
+      //ProductionVector<DatasetClause*> datasetClauses;
+      SolutionModifier* solutionModifier;
+      const Binding* binding;
+      TTermList* posList;
+      const BindingClause* bindingClause;
+      WhereClause* whereClause;
+      const Operation* operation;
+      const ArgList* argList;
+      FunctionCall* functionCall;
+    };
+
     struct SWObjectDuplicator : public Expressor {
 	AtomFactory* atomFactory; /* Can be used to create SWObjects in a different atom space. */
 	TTerm::String2BNode nodeMap;
 
-	union {
-	    struct {
-		const TTerm* tterm;
-		const URI* uri;
-		const Variable* variable;
-		const RDFLiteral* rdfLiteral;
-		const BooleanRDFLiteral* booleanRDFLiteral;
-		const NumericRDFLiteral* numericRDFLiteral;
-	    } tterms;
-	    const TriplePattern* triplePattern;
-	    const Expression* expression;
-	    const ExpressionAlias* expressionAlias;
-	    const Filter* filter;
-	    TableOperation* tableOperation;
-	    struct { VarSet* varSet; const ProductionVector<const ExpressionAlias*>* exprList; } varSets;
-	    const DatasetClause* datasetClause;
-	    //ProductionVector<DatasetClause*> datasetClauses;
-	    SolutionModifier* solutionModifier;
-	    const Binding* binding;
-	    TTermList* posList;
-	    const BindingClause* bindingClause;
-	    WhereClause* whereClause;
-	    const Operation* operation;
-	    const ArgList* argList;
-	    FunctionCall* functionCall;
-	} last;
-
+        SWObjectDuplicator_Last last;
 	SWObjectDuplicator (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };

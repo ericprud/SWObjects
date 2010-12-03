@@ -133,6 +133,7 @@ SELECT ?craft ?homepage
         # print "parsed: ", s.str()
         rs = SWObjects.ResultSet(F)
         query.execute(DB, rs)
+        #print rs.toString()
         bnodeMap = SWObjects.String2BNode()
         reference = SWObjects.ResultSet(F, """
 # name and homepage of Apollo 8
@@ -143,6 +144,65 @@ SELECT ?craft ?homepage
 """, False, bnodeMap)
         self.assertEqual(reference, rs)
 
+    def test_federation (self):
+        F = SWObjects.AtomFactory()
+        sparqlParser = SWObjects.SPARQLfedDriver("", F)
+        mapSetParser = SWObjects.MapSetDriver("", F)
+        queryMapper = SWObjects.ChainingMapper(F, None) 
+    
+        sparqlParser.unnestTree = True
+
+    #Parse query
+        q = """
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?s ?o ?craft ?homepage
+WHERE { 
+   ?s rdfs:label ?o .
+   ?craft foaf:name "Apollo 8" .
+   ?craft foaf:homepage ?homepage
+}
+"""
+        qstr = SWObjects.IStreamContext(q, SWObjects.StreamContextIstream.STRING)
+        query = sparqlParser.parse(qstr)
+    #Parse Map
+         #mstr = SWObjects.IStreamContext('service_map.txt', SWObjects.StreamContextIstream.FILE)
+        mstr = SWObjects.IStreamContext("""
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+'rdfs:label' CONSTRUCT { ?rs rdfs:label ?ro } { SERVICE <http://dbpedia.org/sparql> { ?rs rdfs:label ?ro } }
+'foaf:name' CONSTRUCT { ?rs foaf:name ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:name ?ro } }
+'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:homepage ?ro } }"""
+, SWObjects.StreamContextIstream.STRING)
+        ms = mapSetParser.parse(mstr)
+        queryMapper.sharedVars = ms.sharedVars
+        
+        for it in ms.left_maps():
+            queryMapper.addRule(it.constr, it.label)
+        print "MS nodeshare: ", ms.nodeShare
+        queryMapper.nodeShare = ms.nodeShare
+
+        #try:
+        transformed = queryMapper.map(query)
+        print transformed.toString()
+        #except SWObjects.RuleMatchingException:
+        #    queryMapper.clear()
+        
+        #transformedNorm = SWObjects.canonicalize(transformed)
+        canon = SWObjects.SWObjectCanonicalizer(F)
+        print "canon: ", canon
+        transformed.express(canon)
+        ourlast = canon.last
+        print "our last: ", ourlast
+        transformedNorm = ourlast.operation
+        print transformedNorm.toString()
+
+        agent = SWObjects.WEBagent_boostASIO()
+        xmlParser = SWObjects.SAXparser_expat()
+        DB = SWObjects.RdfDB(agent, xmlParser)
+        rs = SWObjects.ResultSet(F)
+        transformedNorm.execute(DB, rs)
+        print rs.toString()
 
     def test_update (self):
         # Test update .

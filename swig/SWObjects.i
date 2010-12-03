@@ -11,6 +11,7 @@
 %include <std_map.i>
 %include <std_vector.i>
 %include <exception.i>
+%include <typemaps.i>
 
 #if defined(SWIGJAVA)
     %rename(equals)		     *::operator==;
@@ -176,6 +177,7 @@ struct ConnectSet : std::set<RuleTerm> {
 #include "MapSetParser/MapSetParser.hpp"
 #include "interface/WEBagent_boostASIO.hpp"
 #include "interface/SAXparser_expat.hpp"
+  //#include "ServiceOptimizer.hpp"
     typedef w3c_sw::TTerm::BNode2string BNode2string;
     typedef w3c_sw::TTerm::String2BNode String2BNode;
 
@@ -202,6 +204,7 @@ struct ConnectSet : std::set<RuleTerm> {
 %include "RuleInverter.hpp"
 %include "QueryMapper.hpp"
 %include "ChainingMapper.hpp"
+ //%include "ServiceOptimizer.hpp"
 namespace w3c_sw {
     class SPARQLfedScanner;
     class MapSetScanner;
@@ -228,3 +231,49 @@ w3c_sw::SWSAXparser* w3c_sw::SWSAXparser::makeSAXparser () { return NULL; }
 typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__SWIG_0 references ::location.
 %}
 
+//vector iterator stuff
+
+%inline %{
+//! Thin wrapper for ONLY the increment operator
+//void _ConstructList_incr( std::vector<LabeledConstruct>::const_iterator* iter )
+  void _ConstructList_incr( w3c_sw::MapSet::ConstructList::const_iterator* iter )
+{
+    // increment the iterator
+    ++(*iter);
+}
+%}
+
+%extend w3c_sw::MapSet {
+%insert("python") %{
+    def left_maps(self):
+      constructlist = self.maps
+      print "constructlist: ", constructlist
+    #"A generator to iterate through maps." 
+      ConstructListIter = self._begin(constructlist)
+      keepLooping = True
+      while keepLooping == True:
+          element = self._ConstructList_dereference_Left(constructlist, ConstructListIter)
+          if element:
+             _ConstructList_incr( ConstructListIter )
+             yield element
+          else:
+             keepLooping = False
+%} //end insert
+
+w3c_sw::MapSet::ConstructList::const_iterator* _begin(w3c_sw::MapSet::ConstructList* maps)
+{
+  return new w3c_sw::MapSet::ConstructList::const_iterator((maps->begin()));
+}
+
+//! dereference the iterator; return NULL if at the end
+const w3c_sw::LabeledConstruct* _ConstructList_dereference_Left(w3c_sw::MapSet::ConstructList* maps, w3c_sw::MapSet::ConstructList::const_iterator* iter)
+{
+    // if at the end, return NULL
+  if (*iter == (maps->end()) ) {
+        return NULL;
+    }
+    // otherwise, return the map to which this iterator points
+  return &**iter;
+}
+}
+//end vector iterator stuff
