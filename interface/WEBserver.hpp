@@ -211,46 +211,28 @@ namespace w3c_sw {
 
 	namespace status_strings {
 
-	    const std::string reply_version =
-		"HTTP/1.0 ";
-	    const std::string CRLF =
-		"\r\n";
+	    static std::string reply_version("HTTP/1.0 ");
+	    static std::string CRLF("\r\n");
 
 	    // !!! needs to be static but multi-module-safe
-		const std::string ok =
-		    "200 OK";
-		const std::string created =
-		    "201 Created";
-		const std::string accepted =
-		    "202 Accepted";
-		const std::string no_content =
-		    "204 No Content";
-		const std::string multiple_choices =
-		    "300 Multiple Choices";
-		const std::string moved_permanently =
-		    "301 Moved Permanently";
-		const std::string moved_temporarily =
-		    "302 Moved Temporarily";
-		const std::string not_modified =
-		    "304 Not Modified";
-		const std::string bad_request =
-		    "400 Bad Request";
-		const std::string unauthorized =
-		    "401 Unauthorized";
-		const std::string forbidden =
-		    "403 Forbidden";
-		const std::string not_found =
-		    "404 Not Found";
-		const std::string internal_server_error =
-		    "500 Internal Server Error";
-		const std::string not_implemented =
-		    "501 Not Implemented";
-		const std::string bad_gateway =
-		    "502 Bad Gateway";
-		const std::string service_unavailable =
-		    "503 Service Unavailable";
+		static std::string ok("200 OK");
+		static std::string created("201 Created");
+		static std::string accepted("202 Accepted");
+		static std::string no_content("204 No Content");
+		static std::string multiple_choices("300 Multiple Choices");
+		static std::string moved_permanently("301 Moved Permanently");
+		static std::string moved_temporarily("302 Moved Temporarily");
+		static std::string not_modified("304 Not Modified");
+		static std::string bad_request("400 Bad Request");
+		static std::string unauthorized("401 Unauthorized");
+		static std::string forbidden("403 Forbidden");
+		static std::string not_found("404 Not Found");
+		static std::string internal_server_error("500 Internal Server Error");
+		static std::string not_implemented("501 Not Implemented");
+		static std::string bad_gateway("502 Bad Gateway");
+		static std::string service_unavailable("503 Service Unavailable");
 
-	    inline std::string toString(reply::status_type status)
+	    inline std::string& toString(reply::status_type status)
 	    {
 		switch (status)
 		    {
