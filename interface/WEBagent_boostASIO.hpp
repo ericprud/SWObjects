@@ -113,12 +113,15 @@ namespace w3c_sw {
 		std::istream response_stream(&response);
 		std::string http_version;
 		response_stream >> http_version;
-		unsigned int status_code;
+		unsigned int status_code = 0;
 		response_stream >> status_code;
 		std::string status_message;
 		std::getline(response_stream, status_message);
-		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
-		    throw std::string("Invalid response code: ") + http_version.substr(0, 5);
+		if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
+		    std::stringstream ss;
+		    ss << "Invalid HTTP response: " << http_version << " " << status_code << " " << status_message;
+		    throw ss.str();
+		}
 
 		// Read the response headers, which are terminated by a blank line.
 		boost::asio::read_until(socket, response, "\r\n\r\n");
