@@ -2106,6 +2106,7 @@ public:
 };
 class WhereClause : public Base {
     friend class SPARQLfedParser;
+    friend class MapSetParser;
 private:
     const TableOperation* m_GroupGraphPattern;
     const BindingClause* m_BindingClause;
