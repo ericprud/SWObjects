@@ -1,3 +1,13 @@
+# Out of date with MapSet yacker grammar.
+#   Last update via ediff with SPARQLfedParser.ypp
+#   conflicts: 9 shift/reduce caused by
+#     ConstructQuery ::= GraphTerm? 'CONSTRUCT' conflicts with the end of
+#       GroupClause ::= IT_GROUP IT_BY _QGroupCondition_E_Plus
+#       HavingClause ::= IT_HAVING _QHavingCondition_E_Plus
+#       OrderClause ::= IT_ORDER IT_BY _QOrderCondition_E_Plus
+# 
+# perl -pe "s{^\[[0-9]+\]\\s*([^ ]+)\\s*::=\\s*}{'[0]     ' . \$1 . (' ' x (27 - length(\$1))) . '::= '}e"
+
 # Location: http://www.w3.org/2009/sparql/docs/sparql-grammar-11
 # sparul_next 2010-06-09
 [0]     Top                        ::= Prologue AccessParm* ConstructQuery*

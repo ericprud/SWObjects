@@ -93,6 +93,7 @@ protected:
     ProductionVector<const Expression*>* curExprList;
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
+    bool countStar;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -253,6 +254,7 @@ public:
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
+       IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE
 
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
@@ -276,10 +278,9 @@ public:
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 
-%type <p_TTermList> _QVar_E_Plus
+%type <p_TTermList> _QVar_E_Star
 %type <p_VarSet>  _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C
 %type <p_ExpressionAliaseList> GroupClause _QGroupClause_E_Opt _QGroupCondition_E_Plus
-                               _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_DatasetClause> DatasetClause
 			_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C
@@ -296,10 +297,10 @@ public:
 			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
 %type <p_BindingsClause> BindingsClause
-                         _O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C
-                         _Q_O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C_E_Opt
-%type <p_BindingValue> _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C
-%type <p_BindingValues> _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star
+                         _O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C
+                         _Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt
+%type <p_BindingValue> _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C
+%type <p_BindingValues> _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star
 
 %type <p_BasicGraphPattern> ConstructTemplate
 
@@ -309,8 +310,8 @@ public:
 		      _Q_O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_S_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_Opt_C_E_Star
 		      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Star
                       HavingClause _QHavingCondition_E_Plus _QHavingClause_E_Opt
-                      ExpressionList _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C
-%type <p_DistExprPair> ExprAggArg
+                      ExpressionList
+ //%type <p_DistExprPair> ExprAggArg
 
  /* Parts Of Speach */
 %type <p_TTerm> SourceSelector
@@ -318,6 +319,8 @@ public:
 	      Verb VarOrIRIref VarOrTerm GraphNode
 	      GraphTerm _QGraphTerm_E_Opt BlankNode TriplesNode Generator
               BindingValue
+              _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple Path PathAlternative PathSequence PathEltOrInverse PathElt PathPrimary
+              _O_QIRIref_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C
 %type <p_TTerms> _QGraphNode_E_Plus
 %type <p_RDFLiteral> RDFLiteral _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
@@ -347,12 +350,16 @@ public:
                      _O_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_C
 
 %type <p_ExpressionAlias>  GroupCondition
-                           _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
                            _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
+                           _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C
+%type <p_ExpressionAliaseList> _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
+
+
 %type <p_GeneralComparator> RelativeExpression
 			    _QRelativeExpression_E_Opt
 
 %type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
+	      _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C
 			 _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
 
@@ -503,7 +510,7 @@ DefaultPrimaryKey:
 
 Prologue:
     // BaseDecl? PrefixDecl*
-    _QBaseDecl_E_Opt _QPrefixDecl_E_Star
+    _QBaseDecl_E_Opt _QPrefixDecl_E_Star	
 ;
 
 // BaseDecl?
@@ -515,7 +522,7 @@ _QBaseDecl_E_Opt:
 // PrefixDecl*
 _QPrefixDecl_E_Star:
     
-  | _QPrefixDecl_E_Star PrefixDecl
+  | _QPrefixDecl_E_Star PrefixDecl	
 ;
 
 BaseDecl:
@@ -535,11 +542,24 @@ PrefixDecl:
       }
 ;
 
+// DatasetClause*
+_QDatasetClause_E_Star:
+    {
+	$$ = new ProductionVector<const DatasetClause*>();
+    }
+  | _QDatasetClause_E_Star DatasetClause	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
 SubSelect:
     // SelectClause WhereClause SolutionModifier
     SelectClause {
+	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-      } WhereClause SolutionModifier	{
+      } WhereClause SolutionModifier BindingsClause	{
+	  $3->m_BindingClause = $5;
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $3, $4)));
       }
 ;
@@ -642,21 +662,11 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 
 ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    _QGraphTerm_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
+    _QGraphTerm_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier BindingsClause	{
+	$5->m_BindingClause = $7;
 	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	Construct* constr = new Construct((DefaultGraphPattern*)$3, $4, $5, $6);
 	driver.root->maps.push_back(LabeledConstruct($1, constr));
-    }
-;
-
-// DatasetClause*
-_QDatasetClause_E_Star:
-    {
-	$$ = new ProductionVector<const DatasetClause*>();
-    }
-  | _QDatasetClause_E_Star DatasetClause	{
-	$1->push_back($2);
-	$$ = $1;
     }
 ;
 
@@ -693,16 +703,17 @@ SourceSelector:
 
 WhereClause:
     // 'WHERE'? GroupGraphPattern BindingsClause?
-    _QIT_WHERE_E_Opt  GroupGraphPattern BindingsClause	{
+    _QIT_WHERE_E_Opt  GroupGraphPattern	{
 	driver.restoreFilter(NULL);
-	$$ = new WhereClause(driver.curOp ? driver.curOp : new DefaultGraphPattern(), $3);
+	$$ = new WhereClause(driver.curOp ? driver.curOp : new DefaultGraphPattern(), NULL);
 	driver.curOp = NULL;
     }
 ;
 
 _QIT_WHERE_E_Opt:
     
-  | IT_WHERE	;
+  | IT_WHERE	
+;
 
 SolutionModifier:
     // GroupClause? HavingClauses? OrderClause? LimitOffsetClauses?
@@ -714,7 +725,7 @@ SolutionModifier:
 // GroupClause?
 _QGroupClause_E_Opt:
     {
-	$$ = NULL;
+	$$ = driver.countStar ? new ExpressionAliasList() : NULL;
     }
   | GroupClause	
 ;
@@ -895,16 +906,15 @@ OffsetClause:
 // BindingsClause?
 BindingsClause:
     // ( 'BINDINGS' Var+ '{' ( '(' BindingValue+ ')' )* '}' )?
-    _Q_O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C_E_Opt
+    _Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt	
 ;
 
-// Var+
-_QVar_E_Plus:
-    Var	{
+// Var*
+_QVar_E_Star:
+    {
 	$$ = new TTermList;
-	$$->push_back($1);
     }
-  | _QVar_E_Plus Var	{
+  | _QVar_E_Star Var	{
 	$1->push_back($2);
 	$$ = $1;
     }
@@ -919,39 +929,42 @@ _QBindingValue_E_Plus:
     }
 ;
 
-_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C:
+_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C:
     GT_LPAREN {
 	driver.curBinding = new Binding();
       } _QBindingValue_E_Plus GT_RPAREN	{
 	  $$ = driver.curBinding;
 	  driver.curBinding = NULL;
       }
+  | NIL	{
+	driver.curBinding = new Binding();
+    }
 ;
 
-_Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star:
+_Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star:
     {
 	$$ = NULL;
     }
-  | _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C	{
+  | _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C	{
 	driver.curBindingsClause->push_back($2);
 	$$ = NULL;
     }
 ;
 
-_O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C:
-    IT_BINDINGS _QVar_E_Plus GT_LCURLEY	{
+_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C:
+    IT_BINDINGS _QVar_E_Star GT_LCURLEY {
 	driver.curBindingsClause = new BindingClause($2);
-      } _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_C_E_Star GT_RCURLEY	{
+      } _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
 	  $$ = driver.curBindingsClause;
 	  driver.curBindingsClause = NULL;
       }
 ;
 
-_Q_O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C_E_Opt:
+_Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt:
     {
 	$$ = NULL;
     }
-  | _O_QIT_BINDINGS_E_S_QVar_E_Plus_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Star_S_QGT_RCURLEY_E_C	
+  | _O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C	
 ;
 
 BindingValue:
@@ -975,6 +988,12 @@ BindingValue:
     }
 ;
 
+// '.'?
+_QGT_DOT_E_Opt:
+    
+  | GT_DOT	
+;
+
 GroupGraphPattern:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
@@ -987,15 +1006,15 @@ GroupGraphPattern:
       }
 ;
 
-// GroupGraphPatternSub
+// SubSelect | GroupGraphPatternSub
 _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
-    SubSelect
+    SubSelect	
   | GroupGraphPatternSub	
 ;
 
 GroupGraphPatternSub:
     // TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
-    _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star 
+    _QTriplesBlock_E_Opt _Q_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star	
 ;
 
 // TriplesBlock?
@@ -1005,32 +1024,36 @@ _QTriplesBlock_E_Opt:
 ;
 
 // GraphPatternNotTriples | Filter
-_O_QGraphPatternNotTriples_E_Or_QFilter_E_C:
-    GraphPatternNotTriples	
-  | Filter	
-;
-
-// '.'?
-_QGT_DOT_E_Opt:
-    
-  | GT_DOT
-;
+// GraphPatternNotTriples:
+//     GraphPatternNotTriples
+// ;
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
-_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
-    _O_QGraphPatternNotTriples_E_Or_QFilter_E_C _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	
+_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
+    GraphPatternNotTriples _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	
 ;
 
 // ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
-_Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
+_Q_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
     
   | // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
-    _Q_O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_Or_QFilter_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	
+    _Q_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	
 ;
+
+// ( 'GRAPH' VarOrIRIref _QTriplesTemplate_E_Opt ) '.'? TriplesBlock?
+// _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_Q_QTriplesTemplate_E_Opt_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
+//     QuadsNotTriples _QGT_DOT_E_Opt _QTriplesBlock_E_Opt	
+// ;
+
+// ( ( 'GRAPH' VarOrIRIref _QTriplesTemplate_E_Opt ) '.'? TriplesBlock? )*
+// _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_Q_QTriplesTemplate_E_Opt_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star:
+    
+//   | _Q_O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_Q_QTriplesTemplate_E_Opt_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star _O_QIT_GRAPH_E_S_QVarOrIRIref_E_S_Q_QTriplesTemplate_E_Opt_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C	
+// ;
 
 TriplesBlock:
     // TriplesSameSubject ( '.' TriplesBlock? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	
+    TriplesSameSubjectPath _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt	
 ;
 
 // '.' TriplesBlock?
@@ -1042,15 +1065,16 @@ _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C:
 _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt:
     
   | // '.' TriplesBlock?
-    _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C
+    _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C	
 ;
 
 GraphPatternNotTriples:
-    OptionalGraphPattern
-  | MinusGraphPattern
-  | GroupOrUnionGraphPattern
-  | GraphGraphPattern
+    GroupOrUnionGraphPattern	
+  | OptionalGraphPattern	
+  | MinusGraphPattern	
+  | GraphGraphPattern	
   | ServiceGraphPattern	
+  | Filter	
 ;
 
 OptionalGraphPattern:
@@ -1205,18 +1229,14 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star:
 ;
 
 // '(' 'DISTINCT'? Expression  ')'
-ExprAggArg:
-    GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
-	  $$.distinctness = $2;
-	  $$.p_Expression = $3;
-    }
-;
+// ExprAggArg:
+//     GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
+// 	  $$.distinctness = $2;
+// 	  $$.p_Expression = $3;
+//     }
+// ;
 
 ExpressionList:
-    _O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C	
-;
-
-_O_QNIL_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QGT_COMMA_E_S_QExpression_E_Star_S_QGT_RPAREN_E_C:
     NIL	{
 	$$ = NULL;
     }
@@ -1256,16 +1276,16 @@ _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
 // ( '.' ConstructTriples? )?
 _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
     
-  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
+  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C	
 ;
 
 TriplesSameSubject:
     VarOrTerm {
 	driver.curSubject = $1;
-    } PropertyListNotEmpty
+    } PropertyListNotEmpty	
   | TriplesNode {
 	driver.curSubject = $1;
-    } PropertyList
+    } PropertyList	
 ;
 
 PropertyListNotEmpty:
@@ -1275,35 +1295,35 @@ PropertyListNotEmpty:
 
 // Verb ObjectList
 _O_QVerb_E_S_QObjectList_E_C:
-    Verb ObjectList
+    Verb ObjectList	
 ;
 
 // ( Verb ObjectList )?
 _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt:
     
-  | _O_QVerb_E_S_QObjectList_E_C
+  | _O_QVerb_E_S_QObjectList_E_C	
 ;
 
 // ';' ( Verb ObjectList )?
 _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C:
-    GT_SEMI _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt
+    GT_SEMI _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt	
 ;
 
 // ( ';' ( Verb ObjectList )? )*
 _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
     
-  | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
+  | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C	
 ;
 
 PropertyList:
     // PropertyListNotEmpty?
-    _QPropertyListNotEmpty_E_Opt
+    _QPropertyListNotEmpty_E_Opt	
 ;
 
 // PropertyListNotEmpty?
 _QPropertyListNotEmpty_E_Opt:
     
-  | PropertyListNotEmpty
+  | PropertyListNotEmpty	
 ;
 
 ObjectList:
@@ -1313,13 +1333,13 @@ ObjectList:
 
 // ',' Object
 _O_QGT_COMMA_E_S_QObject_E_C:
-    GT_COMMA Object
+    GT_COMMA Object	
 ;
 
 // ( ',' Object )*
 _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
     
-  | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
+  | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C	
 ;
 
 Object:
@@ -1339,6 +1359,205 @@ Verb:
 	driver.curPredicate = $$;
     }
 ;
+
+// <path Expressions>
+TriplesSameSubjectPath:
+    VarOrTerm	{
+	driver.curSubject = $1;
+      } PropertyListNotEmptyPath	
+  | TriplesNode	{
+	driver.curSubject = $1;
+      } PropertyListPath	
+;
+
+PropertyListNotEmptyPath:
+    _O_QVerbPath_E_Or_QVerbSimple_E_C	{
+	driver.curPredicate = $1;
+      } ObjectList _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star	
+;
+
+_O_QVerbPath_E_Or_QVerbSimple_E_C:
+    VerbPath	
+  | VerbSimple	
+;
+
+_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C:
+    _O_QVerbPath_E_Or_QVerbSimple_E_C	{
+	driver.curPredicate = $1;
+      } ObjectList	
+;
+
+_Q_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C_E_Opt:
+    
+  | _O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C	
+;
+
+_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C:
+    GT_SEMI _Q_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C_E_Opt	
+;
+
+_Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star:
+    
+  | _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C	
+;
+
+PropertyListPath:
+    _QPropertyListNotEmpty_E_Opt	
+;
+
+VerbPath:
+    Path	
+;
+
+VerbSimple:
+    Var	{
+	$$ = $1;
+    }
+;
+
+Path:
+    PathAlternative	
+;
+
+PathAlternative:
+    PathSequence _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star	
+;
+
+_O_QGT_PIPE_E_S_QPathSequence_E_C:
+    GT_PIPE PathSequence	
+;
+
+_Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star:
+    
+  | _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star _O_QGT_PIPE_E_S_QPathSequence_E_C	
+;
+
+PathSequence:
+    PathEltOrInverse _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star	
+;
+
+_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C:
+    GT_DIVIDE PathEltOrInverse	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+;
+
+_Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star:
+    
+  | _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star _O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+;
+
+PathElt:
+    PathPrimary _QPathMod_E_Opt	
+;
+
+_QPathMod_E_Opt:
+    
+  | PathMod	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+;
+
+PathEltOrInverse:
+    PathElt	
+  | GT_CARROT PathElt	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+;
+
+PathMod:
+    _O_QGT_TIMES_E_Or_QGT_OPT_E_Or_QGT_PLUS_E_Or_QGT_LCURLEY_E_S_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C	
+;
+
+_O_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_C:
+    GT_RCURLEY	
+  | Integer GT_RCURLEY	
+;
+
+_O_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_C:
+    GT_COMMA _O_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_C	
+  | GT_RCURLEY	
+;
+
+_O_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C:
+    Integer _O_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_C	
+  | GT_COMMA Integer GT_RCURLEY	
+;
+
+_O_QGT_TIMES_E_Or_QGT_OPT_E_Or_QGT_PLUS_E_Or_QGT_LCURLEY_E_S_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C:
+    GT_TIMES	
+  | GT_OPT	
+  | GT_PLUS	
+  | GT_LCURLEY _O_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C	
+;
+
+PathPrimary:
+    _O_QIRIref_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C	
+;
+
+_O_QIRIref_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C:
+    IRIref	{
+	$$ = $1;
+    }
+  | IT_a	{
+	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+    }
+  | GT_NOT PathNegatedPropertySet	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+  | GT_LPAREN Path GT_RPAREN	{
+	w3c_sw_NEED_IMPL("@@@");
+    }
+;
+
+PathNegatedPropertySet:
+    _O_QPathOneInPropertySet_E_Or_QGT_LPAREN_E_S_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_Opt_S_QGT_RPAREN_E_C	
+;
+
+_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C:
+    GT_PIPE PathOneInPropertySet	
+;
+
+_Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star:
+    
+  | _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C	
+;
+
+_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C:
+    PathOneInPropertySet _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star	
+;
+
+_Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt:
+    
+  | _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C	
+;
+
+_O_QPathOneInPropertySet_E_Or_QGT_LPAREN_E_S_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_Opt_S_QGT_RPAREN_E_C:
+    PathOneInPropertySet	
+  | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	
+;
+
+PathOneInPropertySet:
+    _O_QIRIref_E_Or_QIT_a_E_Or_QGT_CARROT_E_S_QIRIref_E_Or_QIT_a_E_C	
+;
+
+_O_QIRIref_E_Or_QIT_a_E_C:
+    IRIref	
+  | IT_a	
+;
+
+_O_QIRIref_E_Or_QIT_a_E_Or_QGT_CARROT_E_S_QIRIref_E_Or_QIT_a_E_C:
+    IRIref	
+  | IT_a	
+  | GT_CARROT _O_QIRIref_E_Or_QIT_a_E_C	
+;
+
+Integer:
+    INTEGER	
+;
+// </path expressions>
 
 TriplesNode:
     Generator	
@@ -1539,6 +1758,7 @@ RelationalExpression:
     }
 ;
 
+// RelativeExpression?
 _QRelativeExpression_E_Opt:
     {
 	$$ = NULL;
@@ -1546,7 +1766,6 @@ _QRelativeExpression_E_Opt:
   | RelativeExpression	
 ;
 
-// '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList
 RelativeExpression:
     GT_EQUAL NumericExpression	{
 	$$ = new BooleanEQ($2);
@@ -1759,6 +1978,9 @@ BuiltInCall:
   | IT_isLITERAL GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, $3, NULL, NULL));
     }
+  | IT_isNUMERIC GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, $3, NULL, NULL));
+    }
   | RegexExpression	
   | ExistsFunc	
   | NotExistsFunc	
@@ -1808,25 +2030,13 @@ Aggregate:
     IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4));
     }
-  | IT_SUM ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_sum, $2.distinctness, $2.p_Expression));
-    }
-  | IT_MIN ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_min, $2.distinctness, $2.p_Expression));
-    }
-  | IT_MAX ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_max, $2.distinctness, $2.p_Expression));
-    }
-  | IT_AVG ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_avg, $2.distinctness, $2.p_Expression));
-    }
-  | IT_SAMPLE ExprAggArg	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_sample, $2.distinctness, $2.p_Expression));
+  | _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4));
     }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
     IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression	{
 	driver.curExprList = new ProductionVector<const Expression*>($4);
-      } _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
+      } _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
 	  // x = new ArgList($2, driver.curExprList);
 	  delete driver.curExprList;
 	  driver.curExprList = NULL;
@@ -1838,8 +2048,27 @@ Aggregate:
 _O_QGT_TIMES_E_Or_QExpression_E_C:
     GT_TIMES	{
 	$$ = NULL;
+	driver.countStar = true;
     }
   | Expression	
+;
+
+_O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C:
+    IT_SUM	{
+	$$ = TTerm::FUNC_sum;
+    }
+  | IT_MIN	{
+	$$ = TTerm::FUNC_min;
+    }
+  | IT_MAX	{
+	$$ = TTerm::FUNC_max;
+    }
+  | IT_AVG	{
+	$$ = TTerm::FUNC_avg;
+    }
+  | IT_SAMPLE	{
+	$$ = TTerm::FUNC_sample;
+    }
 ;
 
 _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C:
@@ -1965,8 +2194,42 @@ BlankNode:
 %% /*** Additional Code ***/
 
 void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
-			    const std::string& m)
+			    const std::string& constM)
 {
+    std::string m = constM;
+    static struct { const char* from; const char* to; } tokens[] = {
+	{ "GT_LPAREN",		"'('" },
+	{ "GT_RPAREN",		"')'" },
+	{ "GT_TIMES",		"'*'" },
+	{ "GT_LCURLEY",		"'{'" },
+	{ "GT_RCURLEY",		"'}'" },
+	{ "GT_SEMI",		"';'" },
+	{ "GT_DOT",		"'.'" },
+	{ "GT_COMMA",		"','" },
+	{ "GT_LBRACKET",	"'['" },
+	{ "GT_RBRACKET",	"']'" },
+	{ "GT_OR",		"'||'" },
+	{ "GT_AND",		"'&&'" },
+	{ "GT_EQUAL",		"'='" },
+	{ "GT_NEQUAL",		"'!='" },
+	{ "GT_LT",		"'<'" },
+	{ "GT_GT",		"'>'" },
+	{ "GT_LE",		"'<='" },
+	{ "GT_GE",		"'>='" },
+	{ "GT_DIVIDE",		"'/'" },
+	{ "GT_PLUS",		"'+'" },
+	{ "GT_MINUS",		"'-'" },
+	{ "GT_NOT",		"'!'" },
+	{ "GT_DTYPE",		"'^^'" },
+	{ "GT_", "" }
+    };
+    for (size_t i = 0; i < sizeof(tokens)/sizeof(tokens[0]); ++i) {
+	size_t p = m.find(tokens[i].from);
+	if (p != std::string::npos) {
+	    m.replace(p, strlen(tokens[i].from) + 1, tokens[i].to);
+	    break;
+	}
+    }
     driver.error(l, m);
 }
 
@@ -1976,9 +2239,10 @@ namespace w3c_sw {
 
     MapSetDriver::MapSetDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), curOp(NULL), 
+	curBGP(NULL), curFilter(NULL), 
 	curBindingsClause(NULL), curBinding(NULL), curExprList(NULL), 
-	root(NULL), lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
+	countStar(false), root(NULL), unnestTree(false), 
+	lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false)
 {
 }

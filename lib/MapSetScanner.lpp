@@ -237,6 +237,7 @@ LINEFEED		(\r\n|\r|\n)
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_SEMI}		{return token::GT_SEMI;}
+{IT_AS}		{return token::IT_AS;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DOT}		{return token::GT_DOT;}

@@ -78,6 +78,7 @@ protected:
     ProductionVector<const Expression*>* curExprList;
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
+    bool countStar;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -154,7 +155,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 158 "lib/MapSetParser/MapSetParser.hpp"
+#line 159 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -168,7 +169,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 172 "lib/MapSetParser/MapSetParser.hpp"
+#line 173 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -178,7 +179,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 182 "lib/MapSetParser/MapSetParser.hpp"
+#line 183 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -226,7 +227,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 230 "lib/MapSetParser/MapSetParser.hpp"
+#line 231 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -238,7 +239,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 172 "lib/MapSetParser/MapSetParser.ypp"
+#line 173 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -304,7 +305,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 308 "lib/MapSetParser/MapSetParser.hpp"
+#line 309 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -413,30 +414,34 @@ namespace w3c_sw {
      IT_AVG = 351,
      IT_GROUP_CONCAT = 352,
      IT_SAMPLE = 353,
-     IT_true = 354,
-     IT_false = 355,
-     INTEGER = 356,
-     DECIMAL = 357,
-     DOUBLE = 358,
-     INTEGER_POSITIVE = 359,
-     DECIMAL_POSITIVE = 360,
-     DOUBLE_POSITIVE = 361,
-     INTEGER_NEGATIVE = 362,
-     DECIMAL_NEGATIVE = 363,
-     DOUBLE_NEGATIVE = 364,
-     STRING_LITERAL1 = 365,
-     STRING_LITERAL_LONG1 = 366,
-     STRING_LITERAL2 = 367,
-     STRING_LITERAL_LONG2 = 368,
-     IRI_REF = 369,
-     PNAME_NS = 370,
-     PNAME_LN = 371,
-     BLANK_NODE_LABEL = 372,
-     ANON = 373,
-     VAR1 = 374,
-     VAR2 = 375,
-     LANGTAG = 376,
-     NIL = 377
+     IT_isNUMERIC = 354,
+     GT_CARROT = 355,
+     GT_OPT = 356,
+     GT_PIPE = 357,
+     IT_true = 358,
+     IT_false = 359,
+     INTEGER = 360,
+     DECIMAL = 361,
+     DOUBLE = 362,
+     INTEGER_POSITIVE = 363,
+     DECIMAL_POSITIVE = 364,
+     DOUBLE_POSITIVE = 365,
+     INTEGER_NEGATIVE = 366,
+     DECIMAL_NEGATIVE = 367,
+     DOUBLE_NEGATIVE = 368,
+     STRING_LITERAL1 = 369,
+     STRING_LITERAL_LONG1 = 370,
+     STRING_LITERAL2 = 371,
+     STRING_LITERAL_LONG2 = 372,
+     IRI_REF = 373,
+     PNAME_NS = 374,
+     PNAME_LN = 375,
+     BLANK_NODE_LABEL = 376,
+     ANON = 377,
+     VAR1 = 378,
+     VAR2 = 379,
+     LANGTAG = 380,
+     NIL = 381
    };
 
     };
@@ -613,7 +618,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 617 "lib/MapSetParser/MapSetParser.hpp"
+#line 622 "lib/MapSetParser/MapSetParser.hpp"
 
 
 
