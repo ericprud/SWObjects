@@ -490,7 +490,7 @@ namespace w3c_sw {
 			     res != rule->second.rs.end(); ++res) {
 			    TableOperation* bgp = Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply();
 			    if (debugStream && *debugStream != NULL) {
-				**debugStream << "bindings: " << **res << " instantiate as:\n";
+				**debugStream << "bindings: " << **res << " instantiates as:\n";
 				newDebugStream->prefix("      ");
 				**debugStream << bgp->toString(MediaType("text/turtle"));
 				newDebugStream->prefix("   ");
@@ -667,9 +667,9 @@ namespace w3c_sw {
 	    RecursiveExpressor::variable(self, lexicalValue); // in case we are defined from some other useful class.
 	}
 	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	    RecursiveExpressor::whereClause(self, p_GroupGraphPattern, p_BindingClause); // to call variable above.
 	    p_GroupGraphPattern->express(&d);
 	    body = d.last.tableOperation;
-	    RecursiveExpressor::whereClause(self, p_GroupGraphPattern, p_BindingClause); // to call variable above.
 	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) {
 	    p_ConstructTemplate->express(&d);
