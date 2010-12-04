@@ -643,6 +643,11 @@ namespace w3c_sw {
 	    SWObjectDuplicator::serviceGraphPattern(self, p_TTerm, p_GroupGraphPattern, atomFactory, lexicalCompare);
 	    pendingConjunction(outer);
 	}
+	virtual void subSelect (const SubSelect* const self, const Select* p_Select) {
+	    NonConjunctionState outer = flushConjunction();
+	    SWObjectDuplicator::subSelect(self, p_Select);
+	    pendingConjunction(outer);
+	}
     };
 
     struct SWObjectCanonicalizer : public SWObjectDuplicator {
