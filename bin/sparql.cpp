@@ -1748,9 +1748,12 @@ int main(int ac, char* av[])
             NoExec = true;
         }
 
-
+#include "docs/version.h"
         if (vm.count("version"))
-            std::cout << "sparql version 1.0, revision: $Id$\n";
+            std::cout <<
+		"sparql version 1.0 .\n"
+		"Revision " SVN_Revision " modified " SVN_Last_Changed_Date " by " SVN_Last_Changed_Author ".\n"
+		SVN_URL "\n";
 	else {
 	    if (NoExec == false) {
 		if (vm.count("description")) {

@@ -36,6 +36,11 @@ WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
+# Apache module stuff
+APXS ?= apxs2
+CODEA ?= ../codea
+CCL ?= ../ccl
+APR ?= /usr/include/apr-1.0
 
 INCLUDES += -I${PWD} -I${PWD}/lib  # . (for config.h) and ./lib (for the rest)
 I2=$(subst /, ,$(BISONOBJ:.o=))
@@ -241,6 +246,8 @@ lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
 	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
 
+docs/version.h:
+	svn info . | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
 
 ##### bin dirs ####
 
@@ -248,29 +255,30 @@ bin/%.dep: bin/%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
-bin/%.o. : bin/%.cpp bin/.dep/%.d config.h
+bin/%.o. : bin/%.cpp bin/.dep/%.d config.h docs/version.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) #lib
 	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
+unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
+bin: $(BINOBJLIST:.o=)
 
 ##### apache #####
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
-	($(ECHO) $@ \\; $(CXX) -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) $@ \\; $(CXX) -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 
 apache/mod_sparul.so: $(LIB) apache/mod_sparul.dep
-	cd apache; \
-	gcc -fPIC -Wall `/usr/sbin/apxs -q CFLAGS` -I`/usr/sbin/apxs -q INCLUDEDIR` -I/usr/local/src/codea -I/usr/local/src/ccl -I/usr/include/apr-1 $(INCLUDES) -c mod_sparul.cpp -o mod_sparul.o; \
-	apxs -c mod_sparul.o /usr/local/src/codea/codea_hooks.o ../lib/libSWObjects.a $(LDFLAGS)
+	gcc -fPIC -Wall `$(APXS) -q CFLAGS` -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(INCLUDES) -c apache/mod_sparul.cpp -o apache/mod_sparul.o; \
+	$(APXS) -I$(CODEA) -I$(CCL) -I$(APR) -c apache/mod_sparul.o $(CODEA)/codea_hooks.o lib/libSWObjects.a $(LDFLAGS)
 
 clean-mod_sparul:
 	rm -f apache/mod_sparul.{o,so,la} apache/.libs/mod_sparul.*
 
 install-mod_sparul: apache/mod_sparul.so
-	apxs -i -n sparul_module apache/.libs/mod_sparul.so
+	$(APXS) -i -n sparul_module apache/.libs/mod_sparul.so
 
 
 ##### packaged tests ####
