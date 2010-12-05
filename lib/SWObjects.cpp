@@ -1310,7 +1310,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
-	rs->resultType = ResultSet::RESULT_Boolean;
+	rs->resultType = ResultSet::RESULT_Graphs;
 	if (m_delete != NULL)
 	    m_delete->execute(db, rs);
 	if (m_insert != NULL)
@@ -1323,7 +1323,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
-	rs->resultType = ResultSet::RESULT_Boolean;
+	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
 	return rs;
     }
@@ -1336,7 +1336,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	if (m_WhereClause != NULL)
 	    m_WhereClause->bindVariables(db, rs);
 	TreatAsVar treatAsVar;
-	rs->resultType = ResultSet::RESULT_Boolean;
+	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
 	return rs;
     }
