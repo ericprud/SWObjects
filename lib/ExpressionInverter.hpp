@@ -64,17 +64,25 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 	    FuncType oldFunc = func;
 	    if (p_IRIref == TTerm::XPATH_concat) {
-		std::cerr << "p_IRIref: " << p_IRIref << "\n";
 		func = Concat;
 		concatRE = "^";
 		p_ArgList->express(this);
 		concatRE += "$";
+		std::string text(curTarget->getLexicalValue());
 		boost::match_results<std::string::const_iterator> what;
-		if (!regex_match(curTarget->getLexicalValue(), what, boost::regex(concatRE), boost::match_default))
+		boost::regex pattern(concatRE);
+		if (!regex_match(text, what, pattern, boost::match_default))
 		    throw SafeEvaluationError(std::string("") + "literal value \"" + curTarget->getLexicalValue() + "\" did not match pattern \"" + concatRE + "\".");
 
+#ifdef _MSC_VER
+  #define FIRST_MATCH 3 // @@ by inspection, not documentation. different defaults for $^ and the like?
+#else /* !_MSC_VER */
+  #define FIRST_MATCH 1 // consistent with comments in examples in docs: "what[0] contains the whole string"
+#endif /* !_MSC_VER */
 		for (size_t i = 0; i < reCaptures.size(); ++i)
-		    res->set(reCaptures[i], atomFactory->getRDFLiteral(std::string(what[i+1].first, what[i+1].second)), false);
+		    res->set(reCaptures[i], atomFactory->getRDFLiteral(std::string(what[FIRST_MATCH + i].first, what[FIRST_MATCH + i].second)), false);
+#undef FIRST_MATCH
+
 		concatRE = "";
 		reCaptures.clear();
 	    } else {
