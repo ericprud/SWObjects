@@ -244,6 +244,7 @@ typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__S
 %}
 
 %extend w3c_sw::MapSet {
+#if defined(SWIGPYTHON)
 %insert("python") %{
     def left_maps(self):
       constructlist = self.maps
@@ -259,6 +260,7 @@ typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__S
           else:
              keepLooping = False
 %} //end insert
+#endif /* defined(SWIGPYTHON) */
 
 w3c_sw::MapSet::ConstructList::const_iterator* _begin(w3c_sw::MapSet::ConstructList* maps)
 {
