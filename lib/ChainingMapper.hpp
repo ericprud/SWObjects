@@ -13,6 +13,7 @@
 #include "SWObjectDuplicator.hpp"
 #include "SPARQLSerializer.hpp"
 #include "RdfQueryDB.hpp"
+#include "ExpressionInverter.hpp"
 #include "prfxbuf.hpp"
 
 namespace w3c_sw {
@@ -374,6 +375,15 @@ namespace w3c_sw {
 		    if ((last.tterms.tterm = res->get(self)) == NULL)
 			last.tterms.tterm = atomFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
 		    //throw "no unique binding for bnode " + label;
+		}
+		virtual void expressionAlias (const ExpressionAlias* const self, const Expression* expr, const Bindable* label) {
+		    const TTerm* curBinding = label ? res->get(label) : NULL;
+		    if (curBinding != NULL && dynamic_cast<const Bindable*>(curBinding) == NULL) {
+			ExpressionInverter inv(curBinding, const_cast<Result*>(res), atomFactory); // !!!! res shouldn't be const
+			expr->express(&inv);
+		    } else {
+			SWObjectDuplicator::expressionAlias(self, expr, label);
+		    }
 		}
 		TableOperation* apply () {
 		    pattern->express(this);
