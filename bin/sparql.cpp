@@ -1748,7 +1748,7 @@ int main(int ac, char* av[])
             NoExec = true;
         }
 
-#include "docs/version.h"
+#include "version.h"
         if (vm.count("version"))
             std::cout <<
 		"sparql version 1.0 .\n"

@@ -42,7 +42,7 @@ CODEA ?= ../codea
 CCL ?= ../ccl
 APR ?= /usr/include/apr-1.0
 
-INCLUDES += -I${PWD} -I${PWD}/lib  # . (for config.h) and ./lib (for the rest)
+INCLUDES += -I${PWD} -I${PWD}/lib -I${PWD}/docs  # . (for config.h) and ./lib (for the rest)
 I2=$(subst /, ,$(BISONOBJ:.o=))
 I3=$(sort $(I2))
 INCLUDES += $(I3:%=-I${PWD}/%)
