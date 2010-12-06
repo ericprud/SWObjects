@@ -3473,6 +3473,144 @@ class TestExpressor : public RecursiveExpressor {
     virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
+/* ExpressionExpressor - default no-call actions for everything above Expression.
+ * Derive from ExpressionExpressor when you only need to express Expressions.
+ */
+class ExpressionExpressor : public Expressor {
+public:
+    /** the virtual functions you need to provide:
+	virtual void uri (const URI* const, std::string) {  }
+	virtual void variable (const Variable* const, std::string) {  }
+	virtual void bnode (const BNode* const, std::string) {  }
+	virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, int) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, float) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, double) {  }
+	virtual void rdfLiteral (const BooleanRDFLiteral* const, bool) {  }
+	virtual void nulltterm (const NULLtterm* const) {  }
+
+	virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {  }
+	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {  }
+	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {  }
+	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {  }
+	Expressions
+	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {  }
+	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {  }
+	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {  }
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {  }
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {  }
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {  }
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {  }
+	virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<const Expression*>* p_Expressions) {  }
+	virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {  }
+	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {  }
+    */
+    virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
+	w3c_sw_NEED_IMPL("triplePattern");
+    }
+    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+	w3c_sw_NEED_IMPL("filter");
+    }
+    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	w3c_sw_NEED_IMPL("namedGraphPattern");
+    }
+    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	w3c_sw_NEED_IMPL("defaultGraphPattern");
+    }
+    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	w3c_sw_NEED_IMPL("tableConjunction");
+    }
+    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	w3c_sw_NEED_IMPL("tableDisjunction");
+    }
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+	w3c_sw_NEED_IMPL("optionalGraphPattern");
+    }
+    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+	w3c_sw_NEED_IMPL("minusGraphPattern");
+    }
+    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	w3c_sw_NEED_IMPL("graphGraphPattern");
+    }
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	w3c_sw_NEED_IMPL("serviceGraphPattern");
+    }
+    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	w3c_sw_NEED_IMPL("expressionAlias");
+    }
+    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+	w3c_sw_NEED_IMPL("expressionAliasList");
+    }
+    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	w3c_sw_NEED_IMPL("posList");
+    }
+    virtual void starVarSet (const StarVarSet* const) {
+	w3c_sw_NEED_IMPL("starVarSet");
+    }
+    virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
+	w3c_sw_NEED_IMPL("defaultGraphClause");
+    }
+    virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
+	w3c_sw_NEED_IMPL("namedGraphClause");
+    }
+    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
+	w3c_sw_NEED_IMPL("solutionModifier");
+    }
+    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {
+	w3c_sw_NEED_IMPL("binding");
+    }
+    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+	w3c_sw_NEED_IMPL("bindingClause");
+    }
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	w3c_sw_NEED_IMPL("whereClause");
+    }
+    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	w3c_sw_NEED_IMPL("operationSet");
+    }
+    virtual void select (const Select* const, e_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	w3c_sw_NEED_IMPL("select");
+    }
+    virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	w3c_sw_NEED_IMPL("subSelect");
+    }
+    virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	w3c_sw_NEED_IMPL("construct");
+    }
+    virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	w3c_sw_NEED_IMPL("describe");
+    }
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	w3c_sw_NEED_IMPL("ask");
+    }
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	w3c_sw_NEED_IMPL("modify");
+    }
+    virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	w3c_sw_NEED_IMPL("insert");
+    }
+    virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	w3c_sw_NEED_IMPL("del");
+    }
+    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+	w3c_sw_NEED_IMPL("load");
+    }
+    virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
+	w3c_sw_NEED_IMPL("clear");
+    }
+    virtual void create (const Create* const, e_Silence, const URI* p_GraphIRI) {
+	w3c_sw_NEED_IMPL("create");
+    }
+    virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
+	w3c_sw_NEED_IMPL("drop");
+    }
+};
     std::ostream& operator<<(std::ostream& os, BasicGraphPattern const& my);
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
