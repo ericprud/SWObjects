@@ -1355,7 +1355,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 sub != subd.end(); ++sub) {
 		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
 		if (s == NULL || s->getDatatype() != NULL || s->getLangtag() != NULL)
-		    throw TypeError(std::string("unexpected ") + s->toString(), "concat");
+		    throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")), "concat");
 		else
 		    ss << s->getLexicalValue();
 	    }
