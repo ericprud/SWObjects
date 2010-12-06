@@ -380,7 +380,8 @@ namespace w3c_sw {
 		    const TTerm* curBinding = label ? res->get(label) : NULL;
 		    if (curBinding != NULL && dynamic_cast<const Bindable*>(curBinding) == NULL) {
 			ExpressionInverter inv(curBinding, const_cast<Result*>(res), atomFactory); // !!!! res shouldn't be const
-			expr->express(&inv);
+			expr->express(&inv); // binds variables !! will add filters
+			last.expressionAlias = new ExpressionAlias(new TTermExpression(curBinding), label);
 		    } else {
 			SWObjectDuplicator::expressionAlias(self, expr, label);
 		    }
