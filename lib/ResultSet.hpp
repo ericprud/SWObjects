@@ -778,7 +778,7 @@ namespace w3c_sw {
 
 
 	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having);
-	void restrict(const Expression* expression);
+	void restrictResults(const Expression* expression); // no longer called "restrict" 'cause it screws up php.
 	void order(std::vector<s_OrderConditionPair>* orderConditions);
 	void order();
 	bool isOrdered () const { return ordered; }

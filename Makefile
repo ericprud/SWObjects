@@ -22,6 +22,8 @@ TEE:=tee
 SED:=sed
 OPTIM:=-g -O0
 PYTHON_HOME:=/usr/include/python2.6
+PHP_HOME:=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
+LUA_HOME:=/usr/include/lua5.1
 PERL_HOME:=/usr/lib/perl/5.10.1
 JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
@@ -144,7 +146,7 @@ all:   lib test
 
 
 config.h: CONFIG
-	echo "/* Generated from CONFIG.\n" \
+	$(ECHO) "/* Generated from CONFIG.\n" \
 	"* In order to keep your link directives appropriate for the features enabled\n" \
 	"* by defines in this header, you should edit CONFIG and then \`make config.h\`.\n" \
 	"*/\n" \
@@ -170,8 +172,9 @@ config.h: CONFIG
 TOONOISEY=-ansi
 #for macports
 
-# -std=c++0x -- can't count on 0x on all platforms
-#  -pedantic-errors -- breaks on OSX
+# fussiness directives removed from CFLAGS:
+#   -std=c++0x -- can't count on 0x on all platforms
+#   -pedantic-errors -- breaks on OSX, aborts on #pragma
 CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128 -fno-merge-constants
 CXXFLAGS += $(CFLAGS)
 
@@ -423,7 +426,7 @@ SWIG ?= swig
 #   2. in  va_list * temp = reinterpret_cast< va_list * >(argp3);
 #          arg3 = *temp;
 #      arg3 = *temp => va_copy(arg3, *temp)
-SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g'
+SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g;'
 
 SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
 SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLfedParser/SPARQLfedParser.hpp lib/TurtleSParser/TurtleSParser.hpp lib/TrigSParser/TrigSParser.hpp interface/WEBagent.hpp
@@ -506,8 +509,50 @@ SWIG-TEST += perl-test
 SWIG-CLEAN += perl-clean
 
 
+# Lua
+swig/lua/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
+	$(SWIG) -o $@ -c++ -lua -I. -Ilib -Iinterface $<
+	$(SWIG_SUBST) $@
+
+swig/lua/SWObjects_wrap.o: swig/lua/SWObjects_wrap.cxx
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(LUA_HOME)
+
+swig/lua/SWObjects.so: swig/lua/SWObjects_wrap.o $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+
+lua-test: swig/lua/SWObjects.so
+	(cd swig/lua/ && shake t_SWObjects.lua)
+
+lua-clean:
+	$(RM) -f swig/lua/SWObjects.* swig/lua/SWObjects_wrap.* swig/lua/libSWObjects.so
+
+SWIG-TEST += lua-test
+SWIG-CLEAN += lua-clean
+
+
+ # Php
+swig/php/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
+	$(SWIG) -DYYDEBUG=0 -o $@ -c++ -php -I. -Ilib -Iinterface $<
+	$(SWIG_SUBST) $@
+
+swig/php/SWObjects_wrap.o: swig/php/SWObjects_wrap.cxx
+	g++ $(OPTIM) -DHAVE_LIBEXPAT=1 -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/php/SWObjects_wrap.o swig/php/SWObjects_wrap.cxx -I$(PHP_HOME)
+
+swig/php/SWObjects.so: swig/php/SWObjects_wrap.o $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+
+php-test: swig/php/SWObjects.so
+	(cd swig/php/ && php -d extension=./SWObjects.so t_SWObjects.php)
+
+php-clean:
+	$(RM) -f swig/php/SWObjects.* swig/php/SWObjects_wrap.* swig/php/_SWObjects.so
+
+SWIG-TEST += php-test
+SWIG-CLEAN += php-clean
+
 swig-test: $(SWIG-TEST)
 swig-clean: $(SWIG-CLEAN)
+
 
 # Mac OSX stuff
 Sparql.app/Contents/MacOS:

@@ -1,11 +1,11 @@
 %module SWObjects
 %{
-#if defined(SWIGJAVA) || defined(SWIGPERL)
+#if defined(SWIGJAVA) || defined(SWIGPERL) || defined(SWIGLUA) || defined(SWIGPHP)
     struct pointer_category { };
     namespace swig {
 	template <class Type> struct traits { };
     }
-#endif /* defined(SWIGJAVA) || defined(SWIGPERL) */
+#endif /* defined(SWIGJAVA) || defined(SWIGPERL) || defined(SWIGLUA) || defined(SWIGPHP) */
 %}
 %include <std_string.i>
 %include <std_map.i>

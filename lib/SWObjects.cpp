@@ -1603,7 +1603,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
-	    island.restrict(*it);
+	    island.restrictResults(*it);
 	rs->joinIn(&island, false);
     }
 
@@ -1638,7 +1638,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 #if 0
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 		 it != m_Filters.end(); it++)
-		disjoint.restrict(*it);
+		disjoint.restrictResults(*it);
 #endif
 	    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
 		island.insert(island.end(), (*row)->duplicate(&island, island.end()));
@@ -1673,7 +1673,7 @@ compared against
 	db->bindVariables(&island, p_name, this);
 	for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
 	     it != m_Filters.end(); it++)
-	    island.restrict(*it);
+	    island.restrictResults(*it);
 	rs->joinIn(&island, false);
 
 	*/

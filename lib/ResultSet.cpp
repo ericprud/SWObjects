@@ -409,7 +409,7 @@ namespace w3c_sw {
 	// std::cerr << "end\n" << *this;
     }
 
-    void ResultSet::restrict (const Expression* expression) {
+    void ResultSet::restrictResults (const Expression* expression) { // no longer called "restrict" 'cause it screws up php.
 
 	for (ResultSetIterator it = begin(); it != end(); ) {
 	    if (atomFactory->eval(expression, *it) == true)
