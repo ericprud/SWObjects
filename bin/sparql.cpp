@@ -676,6 +676,8 @@ const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
     return F.getURI(t.c_str());
 }
 
+bool InPlace = false;
+
 inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
     std::string query;
     try {
@@ -758,6 +760,8 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 						    || parm->second == "tablesorter"));
 
 			    sw::ResultSet rs(&server.atomFactory);
+			    sw::RdfDB constructed; // For operations which create a new database.
+			    rs.setRdfDB(dynamic_cast<sw::Construct*>(op) != NULL && !InPlace ? &constructed : &TheServer.db);
 			    std::string language;
 			    std::string newQuery(query);
 
@@ -918,7 +922,9 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 			    } else { /* !htmlResults */
 				rep.status = sw::webserver::reply::ok;
 				rep.addHeader("Content-Type", 
-					      "application/sparql-results+xml; charset=UTF-8");
+					      rs.resultType == sw::ResultSet::RESULT_Graphs
+					      ? "text/turtle; charset=UTF-8"
+					      : "application/sparql-results+xml; charset=UTF-8");
 				rs.toXml(&xml);
 				sout << xml.str();
 			    } /* !htmlResults */
@@ -1116,7 +1122,6 @@ NamespaceRelay NsRelay(NsAccumulator);
 loadList LoadList;
 loadList MapList;
 loadEntry Output(NULL, NULL, NULL);
-bool InPlace = false;
 
 #endif /* TEST_CLI */
 
