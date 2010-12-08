@@ -618,7 +618,11 @@ namespace w3c_sw {
 	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
-    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) {
+    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) { // Early returns
+	if (resultType != RESULT_Tabular) {
+	    xml->rawData(toString(MediaType("text/turtle")));
+	    return xml;
+	}
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("sparql");
 	xml->attribute("xmlns", "http://www.w3.org/2005/sparql-results#");
@@ -637,7 +641,11 @@ namespace w3c_sw {
 	return xml;
     }
 
-    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) {
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) { // Early returns
+	if (resultType != RESULT_Tabular) {
+	    xml->leaf("<pre>", toString(MediaType("text/turtle")));
+	    return xml;
+	}
 	if (xml == NULL) xml = new XMLSerializer("  ");
 	xml->open("table");
 	xml->attributes(attributes);

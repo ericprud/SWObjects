@@ -102,6 +102,12 @@ public:
 	needs = "";
 	ret << escapeCharData(contents);
     }
+    void rawData (std::string contents) {
+	if (needs.size())
+	    ret << needs << std::endl;
+	needs = "";
+	ret << contents;
+    }
     void leaf (std::string tag, std::string contents, Attributes attrs = Attributes()) {
 	lead();
 	ret << "<" << tag;
