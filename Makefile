@@ -254,14 +254,14 @@ docs/version.h:
 
 ##### bin dirs ####
 
-bin/%.dep: bin/%.cpp config.h $(BISONH)
+bin/%.dep: bin/%.cpp config.h docs/version.h $(BISONH)
 	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h docs/version.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-bin/% : bin/%.o $(LIB) #lib
+bin/% : bin/%.o $(LIB) docs/version.h #lib
 	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
@@ -592,19 +592,25 @@ Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 
 
 # Clean - rm everything we remember to rm.
-.PHONY: clean cleaner
+.PHONY: clean parse-clean meta-clean cleaner
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
 	$(subst .ypp,.o,$(wildcard lib/*/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
 	$(unitTESTexes) *~ */*.dep */*/*.dep
 
-cleaner: clean swig-clean
+parse-clean:
 	$(RM) \
 	$(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
 	$(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
 	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
 	$(BISONHH:%=*/%)
+
+meta-clean:
+	$(RM) \
+	docs/version.h
+
+cleaner: clean parse-clean meta-clean swig-clean
 
 dep: $(DEPEND)
 
