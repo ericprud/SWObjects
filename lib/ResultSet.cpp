@@ -643,7 +643,7 @@ namespace w3c_sw {
 
     XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) { // Early returns
 	if (resultType != RESULT_Tabular) {
-	    xml->leaf("<pre>", toString(MediaType("text/turtle")));
+	    xml->leaf("pre", toString(MediaType("text/turtle")));
 	    return xml;
 	}
 	if (xml == NULL) xml = new XMLSerializer("  ");
