@@ -477,10 +477,10 @@ swig/java/SWObjects.jar: swig/java/src/AtomFactory.java # there are zillions of 
 	jar cf $@ -C swig/java/class .
 
 swig/java/t_SWObjects.class: swig/java/t_SWObjects.java swig/java/SWObjects.jar
-	javac -d swig/java -classpath .:/usr/share/java/junit4-4.8.1.jar:swig/java/SWObjects.jar $<
+	javac -d swig/java -classpath .:/usr/share/java/hamcrest-core.jar:/usr/share/java/junit4.jar:swig/java/SWObjects.jar $<
 
 java-test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
-	LD_LIBRARY_PATH=swig/java java -classpath .:/usr/share/java/junit4-4.8.1.jar:swig/java:swig/java/SWObjects.jar org.junit.runner.JUnitCore t_SWObjects
+	LD_LIBRARY_PATH=swig/java java -classpath .:/usr/share/java/hamcrest-core.jar:/usr/share/java/junit4.jar:swig/java:swig/java/SWObjects.jar org.junit.runner.JUnitCore t_SWObjects
 
 java-clean:
 	$(RM) -f swig/java/libSWObjects.so swig/java/class/* swig/java/src/* swig/java/t_SWObjects.class
