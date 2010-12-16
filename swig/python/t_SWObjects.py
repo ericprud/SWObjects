@@ -149,9 +149,7 @@ SELECT ?craft ?homepage
         sparqlParser = SWObjects.SPARQLfedDriver("", F)
         mapSetParser = SWObjects.MapSetDriver("", F)
         queryMapper = SWObjects.ChainingMapper(F, None) 
-    
         sparqlParser.unnestTree = True
-
     #Parse query
         q = """
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -161,12 +159,13 @@ WHERE {
    ?s rdfs:label ?o .
    ?craft foaf:name "Apollo 8" .
    ?craft foaf:homepage ?homepage
-}
+} limit 5
 """
         qstr = SWObjects.IStreamContext(q, SWObjects.StreamContextIstream.STRING)
         query = sparqlParser.parse(qstr)
+        #print "query: ", query.toString()
     #Parse Map
-         #mstr = SWObjects.IStreamContext('service_map.txt', SWObjects.StreamContextIstream.FILE)
+        #mstr = SWObjects.IStreamContext('service_map.txt', SWObjects.StreamContextIstream.FILE)
         mstr = SWObjects.IStreamContext("""
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -179,30 +178,27 @@ PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         
         for it in ms.left_maps():
             queryMapper.addRule(it.constr, it.label)
-        print "MS nodeshare: ", ms.nodeShare
         queryMapper.nodeShare = ms.nodeShare
+        try:
+            transformed = queryMapper.map(query)
+            canon = SWObjects.SWObjectCanonicalizer(F)
+            transformed.express(canon)
+            ourlast = canon.last
+            transformedNorm = ourlast.operation
+            #print "\nTransformed Query:"
+            #print transformedNorm.toString()
 
-        #try:
-        transformed = queryMapper.map(query)
-        print transformed.toString()
-        #except SWObjects.RuleMatchingException:
-        #    queryMapper.clear()
-        
-        #transformedNorm = SWObjects.canonicalize(transformed)
-        canon = SWObjects.SWObjectCanonicalizer(F)
-        print "canon: ", canon
-        transformed.express(canon)
-        ourlast = canon.last
-        print "our last: ", ourlast
-        transformedNorm = ourlast.operation
-        print transformedNorm.toString()
-
-        agent = SWObjects.WEBagent_boostASIO()
-        xmlParser = SWObjects.SAXparser_expat()
-        DB = SWObjects.RdfDB(agent, xmlParser)
-        rs = SWObjects.ResultSet(F)
-        transformedNorm.execute(DB, rs)
-        print rs.toString()
+            agent = SWObjects.WEBagent_boostASIO()
+            xmlParser = SWObjects.SAXparser_expat()
+            DB = SWObjects.RdfDB(agent, xmlParser)
+            rs = SWObjects.ResultSet(F)
+            transformedNorm.execute(DB, rs)
+            p = rs.toString()
+            print p
+            #print transformed.toString()
+        except ValueError:
+            queryMapper.clear() 
+            print "ERROR: The Federator couldn't find one or more of the predicates in your query in the list of registered endpoints.\n Please check your predicates and run the query again."
 
     def test_update (self):
         # Test update .

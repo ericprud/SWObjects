@@ -248,7 +248,6 @@ typedef w3c_sw::location location; // I don't know why _wrap_YaccDriver_error__S
 %insert("python") %{
     def left_maps(self):
       constructlist = self.maps
-      print "constructlist: ", constructlist
     #"A generator to iterate through maps." 
       ConstructListIter = self._begin(constructlist)
       keepLooping = True
