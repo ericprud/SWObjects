@@ -1316,6 +1316,14 @@ public:
     }
 };
 
+inline bool operator< (const TriplePattern& left, const TriplePattern& right) {
+    if (left.getP() != right.getP())
+	return *(left.getP()) < *(right.getP());
+    if (left.getS() != right.getS())
+	return *(left.getS()) < *(right.getS());
+    return *(left.getO()) < *(right.getO());
+}
+
 class DefaultGraphPattern;
 class Expression;
 class AtomFactory {
@@ -1785,6 +1793,7 @@ public:
     }
 };
 class TableOperationOnOperation : public TableOperation {
+    friend class GraphAndServiceMerger;
 protected:
     const TableOperation* m_TableOperation;
     TableOperationOnOperation (const TableOperation* p_TableOperation) : TableOperation(), m_TableOperation(p_TableOperation) {  }

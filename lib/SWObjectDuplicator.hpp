@@ -162,7 +162,8 @@ namespace w3c_sw {
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); it++) {
 		(*it)->express(this);
-		j->addTableOperation(last.tableOperation, true);
+		if (last.tableOperation != NULL)  // make it easy for filters to eliminate conjoints.
+		    j->addTableOperation(last.tableOperation, true);
 	    }
 	}
 	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
@@ -650,6 +651,80 @@ namespace w3c_sw {
 	}
     };
 
+    struct GraphAndServiceMerger : public SWObjectDuplicator {
+	const TTerm* lastGraphName;
+	GraphGraphPattern* lastGraph;
+	const TTerm* lastServiceName;
+	ServiceGraphPattern* lastService;
+	bool unchanged;
+
+	GraphAndServiceMerger (AtomFactory* atomFactory)
+	    : SWObjectDuplicator(atomFactory), lastGraphName(NULL), lastServiceName(NULL), unchanged(true) {  }
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    const TTerm* parentLastGraphName = lastGraphName; lastGraphName = NULL;
+	    const TTerm* parentLastServiceName = lastServiceName; lastServiceName = NULL;
+
+	    ProductionVector<TableOperation*> ops;
+	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
+		 it != p_TableOperations->end(); it++) {
+		(*it)->express(this);
+		if (last.tableOperation != NULL)  // make it easy for filters to eliminate conjoints.
+		    ops.push_back(last.tableOperation);
+	    }
+	    if (ops.size() == 1) {
+		last.tableOperation = ops[0];
+	    } else {
+		TableConjunction* ret = new TableConjunction();
+		last.tableOperation = ret;
+		for (std::vector<TableOperation*>::const_iterator it = ops.begin();
+		     it != ops.end(); it++)
+		    ret->addTableOperation(*it, false);
+		last.tableOperation = ret;
+	    }
+	    ops.clear(); // don't delete members.
+
+	    lastGraphName = parentLastGraphName;
+	    lastServiceName = parentLastServiceName;
+	}
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	    p_TTerm->express(this);
+	    const TTerm* name = last.tterms.tterm;
+	    p_GroupGraphPattern->express(this);
+	    lastGraphName = name;
+	    last.tableOperation = lastGraph = new GraphGraphPattern(name, last.tableOperation);
+	}
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) {
+	    p_TTerm->express(this);
+	    const TTerm* name = last.tterms.tterm;
+	    ServiceGraphPattern* mergeMe = p_TTerm == lastServiceName ? lastService : NULL;
+	    p_GroupGraphPattern->express(this);
+	    if (mergeMe) {
+		unchanged = false;
+		TableConjunction* conj = new TableConjunction();
+		conj->addTableOperation(mergeMe->m_TableOperation, true);
+		conj->addTableOperation(last.tableOperation, true);
+		BGPSimplifier b(atomFactory);
+		conj->express(&b);
+		delete conj;
+		mergeMe->m_TableOperation = b.last.tableOperation;
+		last.tableOperation = NULL;
+	    } else {
+		lastServiceName = name;
+		last.tableOperation = lastService = new ServiceGraphPattern(name, last.tableOperation, atomFactory, lexicalCompare);
+	    }
+	}
+	TableOperation* apply(TableConjunction* conj) {
+	    conj->express(this);
+	    if (unchanged) {
+		delete last.tableOperation;
+		return conj;
+	    } else {
+		delete conj;
+		return last.tableOperation;
+	    }
+	}
+    };
+
     struct SWObjectCanonicalizer : public SWObjectDuplicator {
 	SWObjectCanonicalizer (AtomFactory* atomFactory)
 	    : SWObjectDuplicator(atomFactory) {  }
@@ -738,7 +813,7 @@ namespace w3c_sw {
 	    bool operator< (const DepthTriple& ref) const {
 		if (depth != ref.depth)
 		    return depth < ref.depth;
-		return triple < ref.triple;
+		return *triple < *ref.triple;
 	    }
 	};
 
@@ -1134,6 +1209,19 @@ namespace w3c_sw {
 		j->addTableOperation(*it, false);
 	    ops.clear(); // don't delete members.
 	}
+
+	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    TableConjunction* ret = new TableConjunction();
+	    _TableOperations(p_TableOperations, ret);
+	    GraphAndServiceMerger m(atomFactory);
+	    TableOperation* op = m.apply(ret);
+	    if (!m.unchanged)
+		op->express(this);
+	    else
+		last.tableOperation = op;
+	    // last.tableOperation = GraphAndServiceMerger(atomFactory).apply(ret);
+	}
+
     };
 
     inline e_SORT SWObjectCanonicalizer::TableOperationSorter::OperationSorter::_TableOperationOnOperation::_tableOperationOnOperation (const TableOperation* p_TableOperation) {

@@ -1685,22 +1685,28 @@ compared against
     ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultServiceProtocol = ServiceGraphPattern::HTTP_METHOD_GET;
 
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
-
 	ResultSet rs(NULL);
 	bindVariables(&rs, &ref);
-	if (rs.size() == 0)
-	    return false;
-	// make sure the solution is 1:1 for mappables.
+	// std::cerr << "rs: \n" << rs;
+	// make sure there is at least one solution which is 1:1 for mappables.
 	for (ResultSetIterator row = rs.begin(); row != rs.end(); ++row) {
 	    std::set<const TTerm*> seen;
+	    // std::cerr << "checking " << **row << "\n";
+	    bool onto = true;
 	    for (BindingSetConstIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
-		if (seen.find(b->second.tterm) != seen.end())
-		    // std::cerr << rs; // see the mapping
-		    return false; // break and see if next row is 1:1?
+		// std::cerr << "have we seen " << b->second.tterm->toString() << "?\n";
+		if (seen.find(b->second.tterm) != seen.end()) {
+		    // std::cerr << b->second.tterm->toString() << " already seen\n";
+		    onto = false;
+		    break;
+		    // return false; // break and see if next row is 1:1?
+		}
 		seen.insert(b->second.tterm);
 	    }
+	    if (onto)
+		return true;
 	}
-	return true;
+	return false;
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar, const TTerm* graphName) const {

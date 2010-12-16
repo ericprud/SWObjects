@@ -240,7 +240,7 @@ public:
 
 /* Language tokens */
 %token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS
-       IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES
+       IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES IT_LABEL
        IT_GRAPH IT_SERVICE IT_BASE IT_PREFIX IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_SELECT IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
@@ -317,7 +317,7 @@ public:
 %type <p_TTerm> SourceSelector
 	      BlankNodePropertyList
 	      Verb VarOrIRIref VarOrTerm GraphNode
-	      GraphTerm _QGraphTerm_E_Opt BlankNode TriplesNode Generator
+	      GraphTerm _QGraphTerm_E_Opt _QIT_LABEL_GraphTerm_E_Opt BlankNode TriplesNode Generator
               BindingValue
               _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple Path PathAlternative PathSequence PathEltOrInverse PathElt PathPrimary
               _O_QIRIref_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C
@@ -660,9 +660,18 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
     }
 ;
 
+_QIT_LABEL_GraphTerm_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | IT_LABEL GraphTerm	{
+	$$ = $2;
+    }
+;
+
 ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    _QGraphTerm_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier BindingsClause	{
+    _QIT_LABEL_GraphTerm_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier BindingsClause	{
 	$5->m_BindingClause = $7;
 	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	Construct* constr = new Construct((DefaultGraphPattern*)$3, $4, $5, $6);

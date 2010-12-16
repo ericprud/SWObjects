@@ -324,6 +324,136 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 
+struct CanonicalizerTest {
+    bool (*bgpMappableTerm)(const TTerm*);
+    const Operation* canon;
+    const Operation* expected;
+
+    CanonicalizerTest (const char* queryFile, const char* expectedFile,
+		 IStreamContext::e_opts type = IStreamContext::FILE) :
+	bgpMappableTerm(BasicGraphPattern::MappableTerm) {
+
+	sparqlParser.unnestTree = true;
+	/* Parse query. */
+	IStreamContext qstr(queryFile, type);
+	Operation* query = sparqlParser.parse(qstr);
+	canon = canonicalize(query);
+
+	/* Parse map expected. */
+	IStreamContext rstr(expectedFile, type);
+	expected = sparqlParser.parse(rstr);
+
+	BasicGraphPattern::MappableTerm = &BasicGraphPattern::MapVarsAndBNodes;
+    }
+    const Operation* canonicalize (const Operation* op) {
+	SWObjectCanonicalizer canon(&f);
+	op->express(&canon);
+	return canon.last.operation;
+    }
+    ~CanonicalizerTest () {
+	BasicGraphPattern::MappableTerm = bgpMappableTerm;
+	queryMapper.clear();
+	delete expected;
+	delete canon;
+    }
+};
+
+#define CANON_TEST(QUERY, EXPECTED, TYPE)	       \
+    try {								       \
+	CanonicalizerTest t(QUERY, EXPECTED, TYPE);           \
+	BOOST_CHECK_EQUAL(*t.expected, *t.canon);	       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
+BOOST_AUTO_TEST_SUITE( canon )
+
+	BOOST_AUTO_TEST_CASE( empty ) {
+	    CANON_TEST("SELECT * {  }",
+		       "SELECT * {  }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( bgps2_asis ) {
+	    CANON_TEST("SELECT * { ?qs <p1> ?qo ; \n"
+		       "               <p2> ?qo }",
+		       "SELECT * { ?qs <p1> ?qo ; \n"
+		       "               <p2> ?qo }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( bgps2_reorder ) {
+	    CANON_TEST("SELECT * { ?qs <p2> ?qo ; \n"
+		       "               <p1> ?qo }",
+		       "SELECT * { ?qs <p1> ?qo ; \n"
+		       "               <p2> ?qo }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( services2_asis ) {
+	    CANON_TEST("SELECT * { SERVICE <S1> { ?qs <p1> ?qo }\n"
+		       "           SERVICE <S2> { ?qs <p2> ?qo } }",
+		       "SELECT * { SERVICE <S1> { ?qs <p1> ?qo }\n"
+		       "           SERVICE <S2> { ?qs <p2> ?qo } }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( services2_onservice ) {
+	    CANON_TEST("SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
+		       "           SERVICE <S1> { ?qs <p1> ?qo } }",
+		       "SELECT * { SERVICE <S1> { ?qs <p1> ?qo }\n"
+		       "           SERVICE <S2> { ?qs <p2> ?qo } }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( services2_bgps2_reorder ) {
+	    CANON_TEST("SELECT * { SERVICE <S1> { ?qs <p2> ?qo1 , ?qo2 }\n"
+		       "           SERVICE <S1> { ?qs <p1> ?qo1 , ?qo2 } }",
+		       "SELECT * { SERVICE <S1> { ?qs <p1> ?qo1 , ?qo2 . \n"
+		       "                          ?qs <p2> ?qo1 , ?qo2 } }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( services2_bgps2_asis ) {
+	    CANON_TEST("SELECT * { SERVICE <S1> { ?qs <p1> ?qo1 , ?qo2 }\n"
+		       "           SERVICE <S1> { ?qs <p2> ?qo1 , ?qo2 } }",
+		       "SELECT * { SERVICE <S1> { ?qs <p1> ?qo1 , ?qo2 .\n"
+		       "                          ?qs <p2> ?qo1 , ?qo2 } }",
+		       IStreamContext::STRING);
+	}
+
+	BOOST_AUTO_TEST_CASE( services4 ) {
+	    CANON_TEST("SELECT * { { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech }\n"
+		       "             SERVICE <nixonzpage> { <nixon> <hometown> ?town } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?_presidents_1_inpech }\n"
+		       "             SERVICE <nixonzpage> { <nixon> <impeachment> ?impech ; <hometown> ?town } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <presidents> { <nixon> <inauguration> ?_presidents_2_inaug ; <impeachment> ?impech }\n"
+		       "             SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <hometown> ?town } } }",
+		       "SELECT * { { SERVICE <nixonzpage> { <nixon> <hometown> ?town ; <impeachment> ?impech ; <inauguration> ?inaug } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <nixonzpage> { <nixon> <impeachment> ?impech ; <hometown> ?town }\n"
+		       "             SERVICE <presidents> { <nixon> <impeachment> ?_presidents_1_inpech ; <inauguration> ?inaug } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <hometown> ?town }\n"
+		       "             SERVICE <presidents> { <nixon> <impeachment> ?impech ; <inauguration> ?_presidents_2_inaug } }\n"
+		       "           UNION\n"
+		       "           { SERVICE <nixonzpage> { <nixon> <hometown> ?town }\n"
+		       "             SERVICE <presidents> { <nixon> <impeachment> ?impech ; <inauguration> ?inaug } } }",
+		       IStreamContext::STRING);
+	}
+
+BOOST_AUTO_TEST_SUITE_END( )
+
+
 struct RuleMapTest {
     bool (*bgpMappableTerm)(const TTerm*);
     const Operation* transformed;
@@ -444,23 +574,50 @@ struct SQLizerTest {
     }
 };
 
+#define RULE_MAP_TEST(QUERY_FILE, MAP_FILE, MAP_RESULTS_FILE, TYPE)	       \
+    try {								       \
+	RuleMapTest t(QUERY_FILE, MAP_FILE, MAP_RESULTS_FILE, TYPE);           \
+	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);	       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
+#define SQLIZER_TEST(QUERY_FILE, MAP_FILE, MAP_RESULTS_FILE,		       \
+		     STEMURI, SQLRESULTSFILE, TYPE)			       \
+    try {								       \
+	RuleMapTest t(QUERY_FILE, MAP_FILE, MAP_RESULTS_FILE, TYPE);           \
+	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);	       \
+	SQLizerTest s(t.mapResults, STEMURI, SQLRESULTSFILE);		       \
+	BOOST_CHECK_EQUAL(*s.transformed, *s.ref);			       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
 BOOST_AUTO_TEST_SUITE( sparql2sparql )
     BOOST_AUTO_TEST_SUITE( simple )
 	BOOST_AUTO_TEST_CASE( order ) {
-	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3 }",
-			  "'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
-			  "'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
+	    RULE_MAP_TEST("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3 }",
+			  "LABEL 'p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
+			  "LABEL 'p3' CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
 			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
 			  "           SERVICE <S3> { ?qs <p3> ?qo } }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 
-#if PARSER_BUG && SERVICE_MERGING
 	BOOST_AUTO_TEST_CASE( by_P_by_S ) {
-	    RuleMapTest t("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
-			  "'presidents' CONSTRUCT { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } { SERVICE <presidents> { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } }\n"
-			  "'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
+	    RULE_MAP_TEST("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
+			  "LABEL 'presidents' CONSTRUCT { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } { SERVICE <presidents> { ?pres <inauguration> ?inaug ; <impeachment> ?inpech } }\n"
+			  "LABEL 'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
 			  "SELECT * { { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech }\n"
 			  "             SERVICE <nixonzpage> { <nixon> <hometown> ?town } }\n"
 			  "           UNION\n"
@@ -472,16 +629,13 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  "           UNION\n"
 			  "           { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town } } }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
-#endif /* PARSER_BUG && SERVICE_MERGING */
 
-#if PARSER_BUG && SERVICE_MERGING
 	BOOST_AUTO_TEST_CASE( by_P_by_S_msr ) {
-	    RuleMapTest t("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
-			  "'inaug'      CONSTRUCT { ?pres <inauguration> ?inaug } { SERVICE <presidents> { ?pres <inauguration> ?inaug } }\n"
-			  "'impeach'    CONSTRUCT { ?pres <impeachment> ?inpech } { SERVICE <presidents> { ?pres <impeachment> ?inpech } }\n"
-			  "'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
+	    RULE_MAP_TEST("SELECT * { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town}",
+			  "LABEL 'inaug'      CONSTRUCT { ?pres <inauguration> ?inaug } { SERVICE <presidents> { ?pres <inauguration> ?inaug } }\n"
+			  "LABEL 'impeach'    CONSTRUCT { ?pres <impeachment> ?inpech } { SERVICE <presidents> { ?pres <impeachment> ?inpech } }\n"
+			  "LABEL 'nixonzpage' CONSTRUCT { <nixon> ?p ?o } { SERVICE <nixonzpage> { <nixon> ?p ?o } }",
 			  "SELECT * { { SERVICE <presidents> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech }\n"
 			  "               SERVICE <nixonzpage> { <nixon> <hometown> ?town } }\n"
 			  "           UNION\n"
@@ -493,23 +647,19 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  "           UNION\n"
 			  "             { SERVICE <nixonzpage> { <nixon> <inauguration> ?inaug ; <impeachment> ?impech ; <hometown> ?town } } }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
-#endif /* PARSER_BUG && SERVICE_MERGING */
 
 	BOOST_AUTO_TEST_CASE( p1_p2 ) {
-	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+	    RULE_MAP_TEST("SELECT * { ?qs <p2> ?qo }",
 			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro }",
 			  "SELECT * { ?qs <p1> ?qo }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 	BOOST_AUTO_TEST_CASE( p01_p2 ) {
-	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
+	    RULE_MAP_TEST("SELECT * { ?qs <p2> ?qo }",
 			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <p1> ?ro ; <p0> 'x' }",
 			  "SELECT * { ?qs <p1> ?qo ; <p0> 'x' }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 	BOOST_AUTO_TEST_CASE( p3 ) {
 	    BOOST_CHECK_THROW
@@ -520,24 +670,22 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 		 RuleMatchingException);
 	}
 	BOOST_AUTO_TEST_CASE( p1_S1_p2 ) {
-	    RuleMapTest t("SELECT * { ?qs <p2> ?qo }",
-			  "'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
+	    RULE_MAP_TEST("SELECT * { ?qs <p2> ?qo }",
+			  "LABEL 'p1_S1_p2' CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S1> { ?rs <p1> ?ro } }",
 			  "SELECT * { SERVICE <S1> { ?qs <p1> ?qo } }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 	BOOST_AUTO_TEST_CASE( p1_S2_p2_S3_p3 ) {
-	    RuleMapTest t("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+	    RULE_MAP_TEST("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
 			  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
 			  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
 			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
 			  "           SERVICE <S3> { ?qs <p3> ?qo } }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 
 	BOOST_AUTO_TEST_CASE( to_many_to_many ) {
-	    RuleMapTest t("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+	    RULE_MAP_TEST("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
 			  "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
 			  "SELECT ?lname {\n"
 			  "  ?who  foaf:last_name    ?lname .\n"
@@ -549,7 +697,7 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  "  PREFIX task: <http://hr.example/DB/Task#>\n"
 			  "  SHAREDVARS DRACONIAN\n"
 			  "  INTERSECTION {<Emp_TaskToFoaf>}?emp {<Emp_TaskToFoaf>}?man\n"
-			  "<Emp_TaskToFoaf> \n"
+			  "LABEL <Emp_TaskToFoaf> \n"
 			  "  CONSTRUCT { ?emp  foaf:last_name  ?wname .\n"
 			  "             ?emp  foaf:knows      ?man .\n"
 			  "             ?man  foaf:last_name  ?mname }\n"
@@ -567,7 +715,6 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  "       ?_0_pair task:manager    ?whom .\n"
 			  "       ?whom empP:lastName   'Smith'^^xsd:string }",
 			  IStreamContext::STRING);
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
 	}
 
     BOOST_AUTO_TEST_SUITE_END()
@@ -576,8 +723,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE( simple )
 	BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
-	    RuleMapTest t("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq");
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
+	RULE_MAP_TEST("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq", IStreamContext::FILE);
 	}
 	BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
 	    RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
@@ -592,17 +738,14 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 
     BOOST_AUTO_TEST_SUITE( notBound )
 	BOOST_AUTO_TEST_CASE( lists_notBound ) {
-	    RuleMapTest t("healthCare/lists-notBound/hl7.rq", "healthCare/lists-notBound/db-hl7.rq", "healthCare/lists-notBound/db.rq");
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
-	    SQLizerTest s(t.mapResults, "http://hospital.example/DB/", "healthCare/lists-notBound/db.sql");
-	    BOOST_CHECK_EQUAL(*s.transformed, *s.ref);
+	    SQLIZER_TEST("healthCare/lists-notBound/hl7.rq", "healthCare/lists-notBound/db-hl7.rq", "healthCare/lists-notBound/db.rq",
+			 "http://hospital.example/DB/", "healthCare/lists-notBound/db.sql", IStreamContext::FILE);
         }
     BOOST_AUTO_TEST_SUITE_END()
 
     BOOST_AUTO_TEST_SUITE( cabig )
 	BOOST_AUTO_TEST_CASE( bg_hl7 ) {
-	    RuleMapTest t("healthCare/cabig/twoWayBGQuery.rq", "healthCare/cabig/twoWayHL7-BGMap.rq", "healthCare/cabig/twoWayHL7Query.rq");
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
+	RULE_MAP_TEST("healthCare/cabig/twoWayBGQuery.rq", "healthCare/cabig/twoWayHL7-BGMap.rq", "healthCare/cabig/twoWayHL7Query.rq", IStreamContext::FILE);
 	}
     BOOST_AUTO_TEST_SUITE_END()
 

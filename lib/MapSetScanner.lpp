@@ -76,6 +76,7 @@ IT_INTERSECTION		[Ii][Nn][Tt][Ee][Rr][Ss][Ee][Cc][Tt][Ii][Oo][Nn]
 IT_PROMISCUOUS		[Pp][Rr][Oo][Mm][Ii][Ss][Cc][Uu][Oo][Uu][Ss]
 IT_VARNAMES		[Vv][Aa][Rr][Nn][Aa][Mm][Ee][Ss]
 IT_DRACONIAN		[Dd][Rr][Aa][Cc][Oo][Nn][Ii][Aa][Nn]
+IT_LABEL		[Ll][Aa][Bb][Ee][Ll]
 
 IT_BASE		[Bb][Aa][Ss][Ee]
 IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
@@ -218,6 +219,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_PROMISCUOUS}	{return token::IT_PROMISCUOUS;}
 {IT_VARNAMES}		{return token::IT_VARNAMES;}
 {IT_DRACONIAN}		{return token::IT_DRACONIAN;}
+{IT_LABEL}		{return token::IT_LABEL;}
 {IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_BASE}		{return token::IT_BASE;}
 {IT_PREFIX}		{return token::IT_PREFIX;}

@@ -8,7 +8,7 @@ PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabular
 #SHAREDVARS varnames
 INTERSECTION {<name>}?patient {<dob>}?patient {<sex>}?patient {<med>}?patient
 
-<name> CONSTRUCT
+LABEL <name> CONSTRUCT
 { ?patient a bg:Person;
            bg:name
     [ a dt:EN ;
@@ -17,17 +17,17 @@ INTERSECTION {<name>}?patient {<dob>}?patient {<sex>}?patient {<med>}?patient
           dt:type "GIV"^^xsd:string;
           dt:value ?middleName ] ] } WHERE { ?patient hl7:entityName       ?middleName }
 
-<dob> CONSTRUCT
+LABEL <dob> CONSTRUCT
 { ?patient bg:birthDate [
     a dt:TS.DATETIME;
     dt:value     ?birthDate ] } WHERE { ?patient hl7:livingSubjectBirthTime ?birthDate }
 
-<sex> CONSTRUCT
+LABEL <sex> CONSTRUCT
 { ?patient bg:administrativeGenderCode
     [ a dt:CD;
       dt:code ?sexCode ] } WHERE { ?patient hl7:administrativeGenderCodePrintName ?sexCode }
 
-<med> CONSTRUCT
+LABEL <med> CONSTRUCT
 { ?patient bg:isParticitpatedInBy ?medication .
   ?medication a bg:DefinedSubstanceAdministration;
               bg:nameCode [ a dt:CD; dt:code ?medName ; spl:activeIngredient [ spl:classCode ?ingred ] ] ;

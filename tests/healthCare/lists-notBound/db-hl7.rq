@@ -11,14 +11,18 @@ PREFIX spl: <http://www.hl7.org/v3ballot/xml/infrastructure/vocabulary/vocabular
 
 STEMURI <http://hospital.example/DB/>
 
-<name> CONSTRUCT { ?person a hl7:Person ; hl7:entityName                        ?middleName }
+LABEL <name>
+       CONSTRUCT { ?person a hl7:Person ; hl7:entityName                        ?middleName }
            WHERE { ?person Person:MiddleName  ?middleName }
-<dob>  CONSTRUCT { ?person a hl7:Person ; hl7:livingSubjectBirthTime		?dob        }
+LABEL <dob>  
+       CONSTRUCT { ?person a hl7:Person ; hl7:livingSubjectBirthTime		?dob        }
            WHERE { ?person Person:DateOfBirth ?dob }
-<sex>  CONSTRUCT { ?person a hl7:Person ; hl7:administrativeGenderCodePrintName ?sex        }
+LABEL <sex>
+       CONSTRUCT { ?person a hl7:Person ; hl7:administrativeGenderCodePrintName ?sex        }
            WHERE { ?person Person:SexDE       ?sexEntry .
 		   ?sexEntry Sex_DE:EntryName   ?sex }
-<person2drug> CONSTRUCT {
+LABEL <person2drug>
+ CONSTRUCT {
 ?person a hl7:Person ;
     hl7:substanceAdministration [
             a hl7:SubstanceAdministration ;
