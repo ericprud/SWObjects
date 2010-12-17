@@ -45,6 +45,7 @@ namespace w3c_sw {
 // 		    delete it->second;
 		/* ~query{~AliasedSelect{delete exp;}} deletes expressions
 		 * shared with AliasAttrConstraint in attachments. */
+		delete query;
 	    }
 	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);

@@ -87,7 +87,7 @@ namespace w3c_sw {
 
 	class IsNullProxy : public BooleanComparator {
 	public:
-	    IsNullProxy () : BooleanComparator(NULL) {  }
+	    IsNullProxy () : BooleanComparator(NULL, NULL) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
@@ -728,8 +728,10 @@ RelationalExpression:
     NumericExpression _QRightRelationalExpression_E_Opt	{
 	if ($2) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>($2) != NULL) {
+		delete $2;
 		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1))); // new sql::ReallyNullConstraint();
 	    } else if (dynamic_cast<sql::IsNullProxy*>($2) != NULL) {
+		delete $2;
 		$$ = new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1));
 	    } else {
 		$2->setLeftParm($1);

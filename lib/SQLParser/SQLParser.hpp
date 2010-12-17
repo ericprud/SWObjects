@@ -85,7 +85,7 @@ namespace w3c_sw {
 
 	class IsNullProxy : public BooleanComparator {
 	public:
-	    IsNullProxy () : BooleanComparator(NULL) {  }
+	    IsNullProxy () : BooleanComparator(NULL, NULL) {  }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
