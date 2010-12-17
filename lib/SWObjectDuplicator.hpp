@@ -1215,9 +1215,10 @@ namespace w3c_sw {
 	    _TableOperations(p_TableOperations, ret);
 	    GraphAndServiceMerger m(atomFactory);
 	    TableOperation* op = m.apply(ret);
-	    if (!m.unchanged)
+	    if (!m.unchanged) {
 		op->express(this);
-	    else
+		delete op;
+	    } else
 		last.tableOperation = op;
 	    // last.tableOperation = GraphAndServiceMerger(atomFactory).apply(ret);
 	}

@@ -338,6 +338,7 @@ struct CanonicalizerTest {
 	IStreamContext qstr(queryFile, type);
 	Operation* query = sparqlParser.parse(qstr);
 	canon = canonicalize(query);
+	delete query;
 
 	/* Parse map expected. */
 	IStreamContext rstr(expectedFile, type);
