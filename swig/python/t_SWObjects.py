@@ -169,9 +169,9 @@ WHERE {
         mstr = SWObjects.IStreamContext("""
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-'rdfs:label' CONSTRUCT { ?rs rdfs:label ?ro } { SERVICE <http://dbpedia.org/sparql> { ?rs rdfs:label ?ro } }
-'foaf:name' CONSTRUCT { ?rs foaf:name ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:name ?ro } }
-'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:homepage ?ro } }"""
+LABEL 'rdfs:label' CONSTRUCT { ?rs rdfs:label ?ro } { SERVICE <http://dbpedia.org/sparql> { ?rs rdfs:label ?ro } }
+LABEL 'foaf:name' CONSTRUCT { ?rs foaf:name ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:name ?ro } }
+LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.talis.com/stores/space/services/sparql> { ?rs foaf:homepage ?ro } }"""
 , SWObjects.StreamContextIstream.STRING)
         ms = mapSetParser.parse(mstr)
         queryMapper.sharedVars = ms.sharedVars
