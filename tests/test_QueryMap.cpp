@@ -550,15 +550,13 @@ struct SQLizerTest {
 	sparqlQuery->express(&s);
 	IStreamContext generated(s.getSQLstring(), IStreamContext::STRING);
 	try {
-	    BOOST_CHECK_EQUAL(0, sqlParser.parse(generated));
-	    transformed = sqlParser.root;
+	    transformed = sqlParser.parse(generated);
 	    //std::cout << s.getSQLstring() << endl;
 
 	    /* Read reference SQL. */
 	    IStreamContext parsed(sqlResultsFile, IStreamContext::FILE);
 	    try {
-		BOOST_CHECK_EQUAL(0, sqlParser.parse(parsed));
-		ref = sqlParser.root;
+		ref = sqlParser.parse(parsed);
 	    } catch (std::string e) {
 		std::cerr << e;
 		ref = NULL;

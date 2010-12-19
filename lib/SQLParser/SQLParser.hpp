@@ -132,7 +132,8 @@ public:
      * @param in	input stream
      * @return		true if successfully parsed
      */
-    bool parse(IStreamContext& in);
+    sql::SQLQuery* parse(IStreamContext& in);
+    sql::SQLQuery* parse(std::string queryStr);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -168,7 +169,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 172 "lib/SQLParser/SQLParser.hpp"
+#line 173 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -182,7 +183,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 186 "lib/SQLParser/SQLParser.hpp"
+#line 187 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -192,7 +193,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 196 "lib/SQLParser/SQLParser.hpp"
+#line 197 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -240,7 +241,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 244 "lib/SQLParser/SQLParser.hpp"
+#line 245 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -252,7 +253,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 173 "lib/SQLParser/SQLParser.ypp"
+#line 174 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -277,7 +278,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 281 "lib/SQLParser/SQLParser.hpp"
+#line 282 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -528,7 +529,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 532 "lib/SQLParser/SQLParser.hpp"
+#line 533 "lib/SQLParser/SQLParser.hpp"
 
 
 

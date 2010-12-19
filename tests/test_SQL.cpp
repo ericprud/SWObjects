@@ -63,11 +63,13 @@ struct EqTest {
 	: context(), driver(context)
     {
 	IStreamContext str1(s1, IStreamContext::STRING);
-	BOOST_CHECK_EQUAL(0, driver.parse(str1));
-	q1 = driver.root;
+	q1 = driver.parse(str1);
 	IStreamContext str2(s2, IStreamContext::STRING);
-	BOOST_CHECK_EQUAL(0, driver.parse(str2));
-	q2 = driver.root;
+	q2 = driver.parse(str2);
+    }
+    ~EqTest () {
+	delete q1;
+	delete q2;
     }
 };
 
@@ -268,21 +270,12 @@ BOOST_AUTO_TEST_CASE( SQL1 ) {
     sqlContext context;
     SQLDriver driver(context);
 
-    IStreamContext str1(qs1, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, driver.parse(str1));
-    sql::SQLQuery* q1 = driver.root;
-
-    IStreamContext str2(qs1, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, driver.parse(str2));
-    sql::SQLQuery* q2 = driver.root;
-
+    sql::SQLQuery* q1 = driver.parse(qs1);
+    sql::SQLQuery* q2 = driver.parse(qs1);
     BOOST_CHECK_EQUAL(*q1, *q2);
     delete q2;
 
-    IStreamContext str3(qs2, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, driver.parse(str3));
-    sql::SQLQuery* q3 = driver.root;
-
+    sql::SQLQuery* q3 = driver.parse(qs2); 
     BOOST_CHECK(!(*q1 == *q3));
     delete q3;
     delete q1;
@@ -308,11 +301,21 @@ std::string Rel1("CREATE TABLE rel (\n"
 		 ");\n"
 		 );
 
+BOOST_AUTO_TEST_CASE( DDLP0 ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
+    ddl1Driver.parse("CREATE TABLE rel (\n"
+		     "  id0 INT\n"
+		     ");\n");
+    ddl1Driver.tables.clear();
+}
+
 BOOST_AUTO_TEST_CASE( DDL0 ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
     IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+    ddl1Driver.parse(ddl1Str);
     ddl1Driver.tables.clear();
 }
 
@@ -320,11 +323,11 @@ BOOST_AUTO_TEST_CASE( DDL1 ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
     IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+    ddl1Driver.parse(ddl1Str);
 
     SQLDriver ddl2Driver(context);
     IStreamContext ddl2Str(Rel0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+    ddl2Driver.parse(ddl2Str);
 
     BOOST_CHECK_EQUAL(ddl1Driver.tables, ddl2Driver.tables);
     ddl2Driver.tables.clear();
@@ -335,11 +338,11 @@ BOOST_AUTO_TEST_CASE( DDL2 ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
     IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+    ddl1Driver.parse(ddl1Str);
 
     SQLDriver ddl2Driver(context);
     IStreamContext ddl2Str(Rel1, IStreamContext::STRING);
-    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+    ddl2Driver.parse(ddl2Str);
 
     BOOST_CHECK_MESSAGE( !(ddl1Driver.tables == ddl2Driver.tables), ddl1Driver.tables << " == " << ddl2Driver.tables );
     ddl2Driver.tables.clear();
@@ -350,11 +353,11 @@ BOOST_AUTO_TEST_CASE( bsbm_ddl ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
     IStreamContext ddl1Str("bsbm/ddl.sql", IStreamContext::FILE);
-    BOOST_CHECK_EQUAL(0, ddl1Driver.parse(ddl1Str));
+    ddl1Driver.parse(ddl1Str);
 
     SQLDriver ddl2Driver(context);
     IStreamContext ddl2Str("bsbm/ddl.sql", IStreamContext::FILE);
-    BOOST_CHECK_EQUAL(0, ddl2Driver.parse(ddl2Str));
+    ddl2Driver.parse(ddl2Str);
 
     BOOST_CHECK_EQUAL(ddl1Driver.tables, ddl2Driver.tables);
     ddl2Driver.tables.clear();

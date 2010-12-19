@@ -134,7 +134,8 @@ public:
      * @param in	input stream
      * @return		true if successfully parsed
      */
-    bool parse(IStreamContext& in);
+    sql::SQLQuery* parse(IStreamContext& in);
+    sql::SQLQuery* parse(std::string queryStr);
 
     // To demonstrate pure handling of parse errors, instead of
     // simply dumping them on the standard error output, we will pass
@@ -302,6 +303,7 @@ Create:
     driver.curCreate = new sql::schema::Relation(*$3);
       } GT_LPAREN FieldOrKey _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star GT_RPAREN	{
       driver.tables[*$3] = driver.curCreate;
+      delete $3;
       driver.curCreate = NULL;
 }
 ;
@@ -317,13 +319,14 @@ _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star:
 
 FieldOrKey:
     Attribute _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C	{
-    std::string s = *$1;
-    sql::schema::Field* f = new sql::schema::Field(s, $2);
+    sql::schema::Field* f = new sql::schema::Field(*$1, $2);
+    delete $1;
     driver.curCreate->addField(f);
 }
 
     | IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
     driver.curCreate->addForeignKey(new sql::schema::ForeignKey($3, *$5, $6));
+    delete $5;
 }
 
     | IT_PRIMARY IT_KEY AttrList	{
@@ -374,6 +377,7 @@ _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
 
     | _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QAttribute_E_C	{
     $1->push_back(*$2);
+    delete $2;
     $$ = $1;
 }
 ;
@@ -966,7 +970,7 @@ SQLDriver::SQLDriver(class sqlContext& _context)
 {
 }
 
-bool SQLDriver::parse (IStreamContext& in)
+sql::SQLQuery* SQLDriver::parse (IStreamContext& in)
 {
     streamname = in.nameStr;
 
@@ -976,7 +980,14 @@ bool SQLDriver::parse (IStreamContext& in)
 
     SQLParser parser(*this);
     parser.set_debug_level(trace_parsing);
-    return (parser.parse());
+    parser.parse();
+    return root;
+}
+
+sql::SQLQuery* SQLDriver::parse (std::string queryStr)
+{
+    IStreamContext in(queryStr.c_str(), IStreamContext::STRING);
+    return parse(in);
 }
 
 void SQLDriver::error (const class location& l,
