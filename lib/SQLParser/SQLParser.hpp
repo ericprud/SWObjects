@@ -86,11 +86,14 @@ namespace w3c_sw {
 	class IsNullProxy : public BooleanComparator {
 	public:
 	    IsNullProxy () : BooleanComparator(NULL, NULL) {  }
+	    virtual Expression* clone () const {
+		return new IsNullProxy();
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
 	    }	    
-	    virtual bool operator== (const WhereConstraint&) const {
+	    virtual bool operator== (const Expression&) const {
 		throw "ProgramFlowException";
 	    }
 	    virtual const char* getComparisonNotation () const {
@@ -98,6 +101,9 @@ namespace w3c_sw {
 	    };
 	};
 	class IsNotNullProxy : public IsNullProxy {
+	    virtual Expression* clone () const {
+		return new IsNotNullProxy();
+	    }
 	};
     }
 /** The SQLDriver class brings together all components. It creates an instance of
@@ -169,7 +175,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 173 "lib/SQLParser/SQLParser.hpp"
+#line 179 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -183,7 +189,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 187 "lib/SQLParser/SQLParser.hpp"
+#line 193 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -193,7 +199,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 197 "lib/SQLParser/SQLParser.hpp"
+#line 203 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -241,7 +247,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 245 "lib/SQLParser/SQLParser.hpp"
+#line 251 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -253,13 +259,13 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 174 "lib/SQLParser/SQLParser.ypp"
+#line 180 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
     sql::SQLQuery* p_Select;
     std::vector<sql::SQLQuery*>* p_Selects;
-    // struct {std::vector<sql::Join*>* joins; sql::WhereConstraint* where;} p_fromWhere;
+    // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
     bool p_bool;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
@@ -278,7 +284,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 282 "lib/SQLParser/SQLParser.hpp"
+#line 288 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -529,7 +535,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 533 "lib/SQLParser/SQLParser.hpp"
+#line 539 "lib/SQLParser/SQLParser.hpp"
 
 
 

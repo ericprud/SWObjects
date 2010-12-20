@@ -31,13 +31,6 @@ namespace w3c_sw {
 	    virtual std::string toString () const { return alias + "." + attr; }
 	};
 
-	class Constraint {
-	protected:
-	public:
-	    Constraint () {  }
-	    virtual ~Constraint () {  }
-	};
-
 	/* Implementable subclassed of Constraint:  */
 	class DisjunctionConstraint;
 	class ConjunctionConstraint;
@@ -67,11 +60,12 @@ namespace w3c_sw {
 	class RegexConstraint;
 
 	struct EquivSet;
-	class WhereConstraint : public Constraint {
+	class Expression {
 	protected:
 	public:
-	    WhereConstraint () {  }
-	    virtual ~WhereConstraint () {  }
+	    Expression () {  }
+	    virtual ~Expression () {  }
+	    virtual Expression* clone() const = 0;
 	    std::string str () const { return toString(); }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
@@ -102,24 +96,24 @@ namespace w3c_sw {
 	    virtual bool finalEq (const ArithmeticNegation&) const { return false; }
 	    virtual bool finalEq (const ConcatConstraint&) const { return false; }
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
-	    virtual bool operator==(const WhereConstraint&) const = 0;
+	    virtual bool operator==(const Expression&) const = 0;
 	};
-	typedef WhereConstraint Expression;
-	class JunctionConstraint : public WhereConstraint {
+	class JunctionConstraint : public Expression {
 	public:
 	    std::vector<const Expression*> constraints;
 	public:
-	    JunctionConstraint () : WhereConstraint(), constraints() {  }
+	    JunctionConstraint () : Expression(), constraints() {  }
 	    JunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
 				std::vector<const sql::Expression*>::const_iterator end)
 		: constraints(start, end)
 	    {  }
-	    ~JunctionConstraint () {
+	    virtual ~JunctionConstraint () {
 		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++)
 		    delete *it;
 	    }
-	    void addConstraint (WhereConstraint* constraint) { constraints.push_back(constraint); }
+	    virtual Expression* clone() const = 0;
+	    void addConstraint (Expression* constraint) { constraints.push_back(constraint); }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
@@ -162,12 +156,20 @@ namespace w3c_sw {
 				   std::vector<const sql::Expression*>::const_iterator end)
 		: JunctionConstraint(start, end)
 	    {  }
+	    virtual Expression* clone () const {
+		ConjunctionConstraint* ret = new ConjunctionConstraint();
+		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); it++) {
+		    ret->addConstraint((*it)->clone());
+		}
+		return ret;
+	    }
 	    virtual std::string getJunctionString () const { return " AND "; }
 	    virtual e_PREC getPrecedence () const { return PREC_And; }
 	    virtual bool finalEq (const ConjunctionConstraint& l) const {
 		return JunctionConstraint::finalEq(l);
 	    }
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual void getEquivs(struct EquivSet&) const;
@@ -179,19 +181,28 @@ namespace w3c_sw {
 				   std::vector<const sql::Expression*>::const_iterator end)
 		: JunctionConstraint(start, end)
 	    {  }
+	    virtual Expression* clone () const {
+		DisjunctionConstraint* ret = new DisjunctionConstraint();
+		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); it++) {
+		    ret->addConstraint((*it)->clone());
+		}
+		return ret;
+	    }
 	    virtual std::string getJunctionString () const { return " OR "; }
 	    virtual e_PREC getPrecedence () const { return PREC_Or; }
 	    virtual bool finalEq (const DisjunctionConstraint& l) const {
 		return JunctionConstraint::finalEq(l);
 	    }
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	};
-	class BooleanJunction : public WhereConstraint {
+	class BooleanJunction : public Expression { // @@ delme?
 	public:
 	    std::vector<const Expression*> m_Expressions;
 	    BooleanJunction (std::vector<const Expression*>* p_Expressions) : m_Expressions(*p_Expressions) {  }
+	    virtual Expression* clone() const = 0;
 	    virtual const char* getInfixNotation() const = 0;
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
 		std::stringstream s;
@@ -222,31 +233,43 @@ namespace w3c_sw {
 // 	    virtual bool finalEq (const BooleanConjunction& l) const {
 // 		return l.BooleanJunction::operator==(*this);
 // 	    }	    
-// 	    virtual bool operator== (const WhereConstraint& r) const {
+// 	    virtual bool operator== (const Expression& r) const {
 // 		return r.finalEq(*this);
 // 	    }
 // 	    virtual const char* getInfixNotation () const { return "&&"; }
 // 	};
-	class ArithOperation : public WhereConstraint {
-	    std::vector<WhereConstraint*> constraints;
+	class ArithOperation : public Expression {
+	    std::vector<Expression*> constraints;
 	    std::string sqlOperator;
 	    e_PREC prec;
 
 	public:
 	    ArithOperation (std::string sqlOperator, e_PREC prec) : 
-		WhereConstraint(), sqlOperator(sqlOperator), prec(prec) {  }
-	    void push_back (WhereConstraint* constraint) { constraints.push_back(constraint); }
+		Expression(), sqlOperator(sqlOperator), prec(prec) {  }
+	    virtual ~ArithOperation () {
+		for (std::vector<Expression*>::iterator it = constraints.begin();
+		     it != constraints.end(); ++it)
+		    delete *it;
+	    }
+	    virtual Expression* clone () const {
+		ArithOperation* ret = new ArithOperation(sqlOperator, prec);
+		for (std::vector<Expression*>::const_iterator it = constraints.begin();
+		     it != constraints.end(); ++it)
+		    ret->push_back((*it)->clone());
+		return ret;
+	    }
+	    void push_back (Expression* constraint) { constraints.push_back(constraint); }
 	    virtual e_PREC getPrecedence () const { return PREC_Neg; }
 	    virtual bool finalEq (const ArithOperation& l) const {
 		return l.constraints == constraints && l.sqlOperator == sqlOperator;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
 		std::stringstream s;
 		if (prec < parentPrec) s << "(";
-		for (std::vector<WhereConstraint*>::const_iterator it = constraints.begin();
+		for (std::vector<Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			s << " " <<  sqlOperator << " ";
@@ -261,9 +284,10 @@ namespace w3c_sw {
 	    const Expression* left;
 	    const Expression* right;
 	public:
-	    BooleanComparator (const Expression* p_Expression) : Expression(), right(p_Expression) {  }
+	    BooleanComparator (const Expression* right) : Expression(), right(right) {  }
 	    BooleanComparator (const Expression* left, const Expression* right) : Expression(), left(left), right(right) {  }
 	    ~BooleanComparator () { delete left; delete right; }
+	    virtual Expression* clone() const = 0;
 	    virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 	    virtual const char* getComparisonNotation() const = 0;
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
@@ -278,14 +302,17 @@ namespace w3c_sw {
 	};
 	class BooleanEQ : public BooleanComparator {
 	public:
-	    BooleanEQ (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanEQ (const Expression* right) : BooleanComparator(right) {  }
 	    BooleanEQ (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanEQ(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_EQ; }
 	    virtual bool finalEq (const BooleanEQ& l) const {
 		return (*l.left == *left  && *l.right == *right) // unordered
 		    || (*l.left == *right && *l.right == *left);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return "="; };
@@ -293,61 +320,81 @@ namespace w3c_sw {
 	};
 	class BooleanNE : public BooleanComparator {
 	public:
-	    BooleanNE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanNE (const Expression* right) : BooleanComparator(right) {  }
+	    BooleanNE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanNE(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_NE; }
 	    virtual bool finalEq (const BooleanNE& l) const {
 		return (*l.left == *left  && *l.right == *right) // unordered
 		    || (*l.left == *right && *l.right == *left);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return "!="; };
 	};
 	class BooleanLT : public BooleanComparator {
 	public:
-	    BooleanLT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanLT (const Expression* right) : BooleanComparator(right) {  }
+	    BooleanLT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanLT(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
 	    virtual bool finalEq (const BooleanLT& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return "<"; };
 	};
 	class BooleanGT : public BooleanComparator {
 	public:
-	    BooleanGT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanGT (const Expression* right) : BooleanComparator(right) {  }
+	    BooleanGT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanGT(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGT& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return ">"; };
 	};
 	class BooleanLE : public BooleanComparator {
 	public:
-	    BooleanLE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanLE (const Expression* right) : BooleanComparator(right) {  }
+	    BooleanLE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanLE(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
 	    virtual bool finalEq (const BooleanLE& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return "<="; };
 	};
 	class BooleanGE : public BooleanComparator {
 	public:
-	    BooleanGE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+	    BooleanGE (const Expression* right) : BooleanComparator(right) {  }
+	    BooleanGE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
+	    virtual Expression* clone () const {
+		return new BooleanGE(left, right);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getComparisonNotation () const { return ">="; };
@@ -360,6 +407,7 @@ namespace w3c_sw {
 	    ~UnaryExpression () {
 		delete arg;
 	    }
+	    virtual Expression* clone() const = 0;
 	    bool baseEq (const UnaryExpression& r) const {
 		return *arg == *r.arg;
 	    }
@@ -387,6 +435,7 @@ namespace w3c_sw {
 		     it != args.end(); ++it)
 		    delete *it;
 	    }
+	    virtual Expression* clone() const = 0;
 	    bool baseEq (const NaryExpression& r) const {
 		return ptrequal(args.begin(), args.end(), r.args.begin());
 	    }
@@ -407,11 +456,14 @@ namespace w3c_sw {
 	class BooleanNegation : public UnaryExpression {
 	public:
 	    BooleanNegation (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual Expression* clone () const {
+		return new BooleanNegation(arg->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const BooleanNegation& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getPrefixOperator () const { return "!"; }
@@ -426,11 +478,19 @@ namespace w3c_sw {
 			       std::vector<const sql::Expression*>::const_iterator end)
 		: NaryExpression(start, end)
 	    {  }
+	    virtual Expression* clone () const {
+		std::vector<const Expression*> v;
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); it++) {
+		    v.push_back((*it)->clone());
+		}
+		return new ArithmeticProduct(v.begin(), v.end());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticProduct& l) const {
 		return l.NaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getInfixOperator () const { return " * "; }
@@ -438,11 +498,14 @@ namespace w3c_sw {
 	class ArithmeticInverse : public UnaryExpression {
 	public:
 	    ArithmeticInverse (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual Expression* clone () const {
+		return new ArithmeticInverse(arg->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticInverse& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getPrefixOperator () const { return "1/"; }
@@ -453,11 +516,19 @@ namespace w3c_sw {
 			   std::vector<const sql::Expression*>::const_iterator end)
 		: NaryExpression(start, end)
 	    {  }
+	    virtual Expression* clone () const {
+		std::vector<const Expression*> v;
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); it++) {
+		    v.push_back((*it)->clone());
+		}
+		return new ArithmeticSum(v.begin(), v.end());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticSum& l) const {
 		return l.NaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getInfixOperator () const { return " + "; }
@@ -465,24 +536,30 @@ namespace w3c_sw {
 	class ArithmeticNegation : public UnaryExpression {
 	public:
 	    ArithmeticNegation (const Expression* arg) : UnaryExpression(arg) {  }
+	    virtual Expression* clone () const {
+		return new ArithmeticNegation(arg->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ArithmeticNegation& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getPrefixOperator () const { return "-"; }
 	};
-	class LiteralConstraint : public WhereConstraint {
+	class LiteralConstraint : public Expression {
 	    std::string value;
 	public:
-	    LiteralConstraint (std::string value) : WhereConstraint(), value(value) {  }
+	    LiteralConstraint (std::string value) : Expression(), value(value) {  }
+	    virtual Expression* clone () const {
+		return new LiteralConstraint(value);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const LiteralConstraint& l) const {
 		return l.value == value;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -491,15 +568,19 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	class IntConstraint : public WhereConstraint {
+	class IntConstraint : public Expression {
 	    int value;
 	public:
-	    IntConstraint (int value) : WhereConstraint(), value(value) {  }
+	    IntConstraint (int value) : Expression(), value(value) {  }
+	    virtual ~IntConstraint () {  }
+	    virtual Expression* clone () const {
+		return new IntConstraint(value);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const IntConstraint& l) const {
 		return l.value == value;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -509,15 +590,18 @@ namespace w3c_sw {
 	    }
 	    int getValue () const { return value; }
 	};
-	class FloatConstraint : public WhereConstraint {
+	class FloatConstraint : public Expression {
 	    float value;
 	public:
-	    FloatConstraint (float value) : WhereConstraint(), value(value) {  }
+	    FloatConstraint (float value) : Expression(), value(value) {  }
+	    virtual Expression* clone () const {
+		return new FloatConstraint(value);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const FloatConstraint& l) const {
 		return l.value == value;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -526,15 +610,18 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	class DoubleConstraint : public WhereConstraint {
+	class DoubleConstraint : public Expression {
 	    double value;
 	public:
-	    DoubleConstraint (double value) : WhereConstraint(), value(value) {  }
+	    DoubleConstraint (double value) : Expression(), value(value) {  }
+	    virtual Expression* clone () const {
+		return new DoubleConstraint(value);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const DoubleConstraint& l) const {
 		return l.value == value;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -543,44 +630,54 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	class BoolConstraint : public WhereConstraint {
+	class BoolConstraint : public Expression {
 	    bool value;
 	public:
-	    BoolConstraint (bool value) : WhereConstraint(), value(value) {  }
+	    BoolConstraint (bool value) : Expression(), value(value) {  }
+	    virtual Expression* clone () const {
+		return new BoolConstraint(value);
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const BoolConstraint& l) const {
 		return l.value == value;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
 		return value ? "true" : "false";
 	    }
 	};
-	class ReallyNullConstraint : public WhereConstraint {
+	class ReallyNullConstraint : public Expression {
 	public:
-	    ReallyNullConstraint () : WhereConstraint() {  }
+	    ReallyNullConstraint () : Expression() {  }
+	    virtual Expression* clone () const {
+		return new ReallyNullConstraint();
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ReallyNullConstraint&) const {
 		return true;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
 		return "NULL";
 	    }
 	};
-	class NullConstraint : public WhereConstraint {
-	    const WhereConstraint* tterm;
+	class NullConstraint : public Expression {
+	    const Expression* tterm;
 	public:
-	    NullConstraint (const WhereConstraint* tterm) : WhereConstraint(), tterm(tterm) {  }
+	    NullConstraint (const Expression* tterm) : Expression(), tterm(tterm) {  }
+	    ~NullConstraint () { delete tterm; }
+	    virtual Expression* clone () const {
+		return new NullConstraint(tterm->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const NullConstraint&) const {
 		return true;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -590,15 +687,19 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	class NegationConstraint : public WhereConstraint {
-	    WhereConstraint* negated;
+	class NegationConstraint : public Expression {
+	    Expression* negated;
 	public:
-	    NegationConstraint (WhereConstraint* negated) : WhereConstraint(), negated(negated) {  }
+	    NegationConstraint (Expression* negated) : Expression(), negated(negated) {  }
+	    ~NegationConstraint () { delete negated; }
+	    virtual Expression* clone () const {
+		return new NegationConstraint(negated->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_Neg; }
 	    virtual bool finalEq (const NegationConstraint& l) const {
 		return *l.negated == *negated;
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec) const {
@@ -607,15 +708,18 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
-	class AliasAttrConstraint : public WhereConstraint {
+	class AliasAttrConstraint : public Expression {
 	public: // !!!
 	    AliasAttr aattr;
 	public:
-	    AliasAttrConstraint (AliasAttr aattr) : WhereConstraint(), aattr(aattr) {  }
+	    AliasAttrConstraint (AliasAttr aattr) : Expression(), aattr(aattr) {  }
+	    virtual Expression* clone () const {
+		return new AliasAttrConstraint(aattr);
+	    }
 	    virtual bool finalEq (const AliasAttrConstraint& l) const {
 		return l.aattr == aattr;
 	    }
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -633,11 +737,19 @@ namespace w3c_sw {
 			      std::vector<const sql::Expression*>::const_iterator end)
 		: NaryExpression(start, end)
 	    {  }
+	    virtual Expression* clone () const {
+		std::vector<const Expression*> v;
+		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		     it != args.end(); it++) {
+		    v.push_back((*it)->clone());
+		}
+		return new ConcatConstraint(v.begin(), v.end());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const ConcatConstraint& l) const {
 		return l.NaryExpression::baseEq(*this);
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
@@ -647,16 +759,19 @@ namespace w3c_sw {
 	    }
 	};
 
-	class RegexConstraint : public WhereConstraint {
+	class RegexConstraint : public Expression {
 	    const Expression* text;
 	    const Expression* pattern;
 	public:
-	    RegexConstraint (const Expression* text, const Expression* pattern) : WhereConstraint(), text(text), pattern(pattern) {  }
+	    RegexConstraint (const Expression* text, const Expression* pattern) : Expression(), text(text), pattern(pattern) {  }
+	    virtual Expression* clone () const {
+		return new RegexConstraint(text->clone(), pattern->clone());
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
 	    virtual bool finalEq (const RegexConstraint& l) const {
 		return l.text == text && l.pattern == pattern; // @@ does this compare by ref? by val?
 	    }	    
-	    virtual bool operator== (const WhereConstraint& r) const {
+	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
 	    virtual std::string toString (std::string, e_PREC) const {
@@ -670,18 +785,18 @@ namespace w3c_sw {
 	    class ForeignKeyJoinConstraint;
 	    class IntegerJoinConstraint;
 	    class StringJoinConstraint;
-	    class JoinConstraint : public Constraint {
+	    class JoinConstraint {
 	    protected:
 		std::string myAttr;
 	    public:
-		JoinConstraint (std::string myAttr) : Constraint(), myAttr(myAttr) {  }
+		JoinConstraint (std::string myAttr) : myAttr(myAttr) {  }
 		virtual ~JoinConstraint () {  }
 		bool baseEq (const JoinConstraint& r) const {
 		    return myAttr == r.myAttr;
 		}
-		virtual bool finalEq (const ForeignKeyJoinConstraint&) const { return false; }
-		virtual bool finalEq (const IntegerJoinConstraint&) const { return false; }
-		virtual bool finalEq (const StringJoinConstraint&) const { return false; }
+		bool finalEq (const ForeignKeyJoinConstraint&) const { return false; }
+		bool finalEq (const IntegerJoinConstraint&) const { return false; }
+		bool finalEq (const StringJoinConstraint&) const { return false; }
 		virtual bool operator==(const JoinConstraint&) const = 0;
 		virtual std::string toString(std::string alias, std::string pad = "") = 0;
 	    };
@@ -828,8 +943,8 @@ namespace w3c_sw {
 
 	    std::vector<Join*> joins;
 
-	    std::vector<const WhereConstraint*> constraints;
-	    std::vector<const WhereConstraint*> orderBy;
+	    std::vector<const Expression*> constraints;
+	    std::vector<const Expression*> orderBy;
 	    std::vector<AliasedSelect*> selects;
 	    bool distinct;
 	    int limit, offset;
@@ -843,20 +958,19 @@ namespace w3c_sw {
 		// 	     << "\n";
 
 		for (std::vector<AliasedSelect*>::iterator iSelects = selects.begin();
-		     iSelects != selects.end(); ++iSelects) {
+		     iSelects != selects.end(); ++iSelects)
 		    delete *iSelects;
-		}
 
 		for (std::vector<Join*>::iterator iJoins = joins.begin();
 		     iJoins != joins.end(); ++iJoins) {
 		    delete *iJoins;
 		}
 
-		for (std::vector<const WhereConstraint*>::iterator iConstraints = constraints.begin();
+		for (std::vector<const Expression*>::iterator iConstraints = constraints.begin();
 		     iConstraints != constraints.end(); ++iConstraints)
 		    delete *iConstraints;
 
-		for (std::vector<const WhereConstraint*>::iterator iOrderBy = orderBy.begin();
+		for (std::vector<const Expression*>::iterator iOrderBy = orderBy.begin();
 		     iOrderBy != orderBy.end(); ++iOrderBy)
 		    delete *iOrderBy;
 	    }
@@ -895,7 +1009,7 @@ namespace w3c_sw {
 			s << (*it)->toString(NULL, pad);
 
 		/* WHERE */
-		for (std::vector<const WhereConstraint*>::const_iterator it = constraints.begin();
+		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (where.length() != 0)
 			where += " AND ";
@@ -908,7 +1022,7 @@ namespace w3c_sw {
 		/* ORDER BY */
 		if (orderBy.begin() != orderBy.end()) {
 		    s << std::endl << pad << " ORDER BY ";
-		    for (std::vector<const WhereConstraint*>::const_iterator it = orderBy.begin();
+		    for (std::vector<const Expression*>::const_iterator it = orderBy.begin();
 			 it != orderBy.end(); ++it) {
 			if (it != orderBy.begin())
 			    s << ", ";
@@ -927,8 +1041,8 @@ namespace w3c_sw {
 
 	struct EquivSet {
 	    std::map<std::string, std::set<std::string> > equivs;
-	    EquivSet (const std::vector<const WhereConstraint*> constraints) {
-		for (std::vector<const WhereConstraint*>::const_iterator it = constraints.begin();
+	    EquivSet (const std::vector<const Expression*> constraints) {
+		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    (*it)->getEquivs(*this);
 		}
@@ -1069,6 +1183,7 @@ namespace w3c_sw {
 	    struct FieldOrKey {
 		int i;
 		FieldOrKey () : i(7) {  }
+		virtual ~FieldOrKey () {  }
 		virtual bool operator==(const FieldOrKey& ref) const = 0;
 		virtual std::string str() const = 0;
 	    };
@@ -1107,6 +1222,7 @@ namespace w3c_sw {
 		std::vector<std::string>* attrs;
 		Key (std::vector<std::string>* attrs) : attrs(attrs)
 		{  }
+		virtual ~Key () { delete attrs; }
 		bool Key_equals (const FieldOrKey& ref) const {
 		    const Key* refp = dynamic_cast<const Key*>(&ref);
 		    if (refp == NULL
@@ -1125,6 +1241,7 @@ namespace w3c_sw {
 	    struct PrimaryKey : public Key {
 		PrimaryKey (std::vector<std::string>* attrs) : Key(attrs)
 		{  }
+		virtual ~PrimaryKey () {  }
 		virtual bool operator== (const FieldOrKey& ref) const {
 		    const PrimaryKey* refp = dynamic_cast<const PrimaryKey*>(&ref);
 		    return (refp != NULL && Key_equals(ref));
@@ -1151,6 +1268,7 @@ namespace w3c_sw {
 			    std::vector<std::string>* relAttrs)
 		    : Key(myAttrs), targetRel(targetRel), relAttrs(relAttrs)
 		{  }
+		virtual ~ForeignKey () { delete relAttrs; }
 		virtual bool operator== (const FieldOrKey& ref) const {
 		    const ForeignKey* refp = dynamic_cast<const ForeignKey*>(&ref);
 		    if (refp == NULL

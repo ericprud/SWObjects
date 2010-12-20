@@ -88,11 +88,14 @@ namespace w3c_sw {
 	class IsNullProxy : public BooleanComparator {
 	public:
 	    IsNullProxy () : BooleanComparator(NULL, NULL) {  }
+	    virtual Expression* clone () const {
+		return new IsNullProxy();
+	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
 	    }	    
-	    virtual bool operator== (const WhereConstraint&) const {
+	    virtual bool operator== (const Expression&) const {
 		throw "ProgramFlowException";
 	    }
 	    virtual const char* getComparisonNotation () const {
@@ -100,6 +103,9 @@ namespace w3c_sw {
 	    };
 	};
 	class IsNotNullProxy : public IsNullProxy {
+	    virtual Expression* clone () const {
+		return new IsNotNullProxy();
+	    }
 	};
     }
 /** The SQLDriver class brings together all components. It creates an instance of
@@ -176,7 +182,7 @@ public:
     std::string* p_NAME;
     sql::SQLQuery* p_Select;
     std::vector<sql::SQLQuery*>* p_Selects;
-    // struct {std::vector<sql::Join*>* joins; sql::WhereConstraint* where;} p_fromWhere;
+    // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
     bool p_bool;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
@@ -733,10 +739,10 @@ RelationalExpression:
 	if ($2) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>($2) != NULL) {
 		delete $2;
-		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1))); // new sql::ReallyNullConstraint();
+		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::Expression*>($1))); // new sql::ReallyNullConstraint();
 	    } else if (dynamic_cast<sql::IsNullProxy*>($2) != NULL) {
 		delete $2;
-		$$ = new sql::NullConstraint(dynamic_cast<const sql::WhereConstraint*>($1));
+		$$ = new sql::NullConstraint(dynamic_cast<const sql::Expression*>($1));
 	    } else {
 		$2->setLeftParm($1);
 		$$ = $2; // !!!

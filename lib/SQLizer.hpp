@@ -17,8 +17,6 @@
 
 namespace w3c_sw {
 
-    using namespace w3c_sw::sql;
-
     class SQLizer : public Expressor {
 
 	class SQLOptionalGenerator;
@@ -27,84 +25,84 @@ namespace w3c_sw {
 	    friend class SQLizer;
             friend class SQLUnionGenerator;
 	protected:
-	    SQLQuery* query;
+	    sql::SQLQuery* query;
 	    SQLQueryGenerator* parent;
 	    std::map<std::string, sql::Expression*> attachments;
 
-	    std::map<const TTerm*, std::map<std::string, Join*> > aliasMap;
+	    std::map<const TTerm*, std::map<std::string, sql::Join*> > aliasMap;
 	    std::map<std::string, std::string> usedAliases;
-	    Join* curJoin;
+	    sql::Join* curJoin;
 	    int nextUnionAlias;
 	    int nextOptAlias;
 
 	public:
-	    SQLQueryGenerator (SQLQueryGenerator* parent) : query(new SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
+	    SQLQueryGenerator (SQLQueryGenerator* parent) : query(new sql::SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
 	    ~SQLQueryGenerator () {
-// 		for (std::map<std::string, sql::Expression*>::iterator it = attachments.begin();
-// 		     it != attachments.end(); ++it)
-// 		    delete it->second;
+		for (std::map<std::string, sql::Expression*>::iterator it = attachments.begin();
+		     it != attachments.end(); ++it)
+		    delete it->second;
 		/* ~query{~AliasedSelect{delete exp;}} deletes expressions
 		 * shared with AliasAttrConstraint in attachments. */
 		delete query;
 	    }
-	    void attachVariable (AliasAttr aattr, std::string lexicalValue) {
+	    void attachVariable (sql::AliasAttr aattr, std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    attachments[lexicalValue] = new AliasAttrConstraint(aattr);
+		    attachments[lexicalValue] = new sql::AliasAttrConstraint(aattr);
 		else
-		    constrain(aattr, dynamic_cast<AliasAttrConstraint*>(attachments[lexicalValue])->aattr);
+		    constrain(aattr, dynamic_cast<sql::AliasAttrConstraint*>(attachments[lexicalValue])->aattr);
 	    }
 	    sql::Expression* getVariableConstraint (std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
 		    w3c_sw_FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
 		else
-		    return it->second;
+		    return it->second->clone();
 	    }
 	    void selectVariable (std::string lexicalValue) {
 		if (attachments.find(lexicalValue) == attachments.end())
-		    attachments[lexicalValue] = new ReallyNullConstraint();
+		    attachments[lexicalValue] = new sql::ReallyNullConstraint();
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query->selects.push_back(new AliasedSelect(attachments[lexicalValue], lexicalValue));
+		query->selects.push_back(new sql::AliasedSelect(attachments[lexicalValue]->clone(), lexicalValue));
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new IntConstraint(value);
+		    attachments[alias] = new sql::IntConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new sql::AliasedSelect(attachments[alias]->clone(), alias));
 	    }
 	    void selectConstant (float value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new FloatConstraint(value);
+		    attachments[alias] = new sql::FloatConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new sql::AliasedSelect(attachments[alias]->clone(), alias));
 	    }
 	    void selectConstant (double value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
-		    attachments[alias] = new DoubleConstraint(value);
+		    attachments[alias] = new sql::DoubleConstraint(value);
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
-		query->selects.push_back(new AliasedSelect(attachments[alias], alias));
+		query->selects.push_back(new sql::AliasedSelect(attachments[alias]->clone(), alias));
 	    }
 	    /* Always add to the last join unless we figure out a reason this doesn't work. */
-	    void constrain (AliasAttr x, AliasAttr y) {
+	    void constrain (sql::AliasAttr x, sql::AliasAttr y) {
 		//std::cerr << "SQLQueryGenerator " << this << " constraint: " << x.alias << "." << x.attr << "=" << y.alias << "." << y.attr << std::endl;
 		if (curJoin->debug_getAlias() != x.alias)
 		    w3c_sw_FAIL2("constraint on %s is not for last join %s", x.alias.c_str(), curJoin->debug_getAlias().c_str());
 		curJoin->addForeignKeyJoinConstraint(x.attr, y.alias, y.attr);
 	    }
-	    void constrain (AliasAttr aattr, std::string value) {
+	    void constrain (sql::AliasAttr aattr, std::string value) {
 		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, value);
 	    }
-	    void constrain (AliasAttr aattr, int value) {
+	    void constrain (sql::AliasAttr aattr, int value) {
 		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (int)value);
 	    }
-	    void constrain (AliasAttr aattr, float value) {
+	    void constrain (sql::AliasAttr aattr, float value) {
 		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (float)value);
 	    }
-	    void constrain (AliasAttr aattr, double value) {
+	    void constrain (sql::AliasAttr aattr, double value) {
 		if (curJoin->debug_getAlias() != aattr.alias) w3c_sw_FAIL("constraint is not for last join");
 		curJoin->addConstantJoinConstraint(aattr.attr, (double)value);
 	    }
@@ -112,7 +110,7 @@ namespace w3c_sw {
 		std::stringstream s;
 		s << "union" << ++nextUnionAlias;
 		SQLUnionGenerator* ret = new SQLUnionGenerator(this, corefs, s.str());
-		curJoin = new SubqueryJoin(ret->onion, s.str(), false);
+		curJoin = new sql::SubqueryJoin(ret->onion, s.str(), false);
 		query->add(curJoin);
 		return ret;
 	    }
@@ -120,14 +118,14 @@ namespace w3c_sw {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
 		SQLOptionalGenerator* ret = new SQLOptionalGenerator(this, corefs, s.str());
-		curJoin = new SubqueryJoin(ret->query, s.str(), true);
+		curJoin = new sql::SubqueryJoin(ret->query, s.str(), true);
 		query->add(curJoin);
 		return ret;
 	    }
 	    std::string attachTuple (const TTerm* subject, std::string toRelation) {
-		std::map<const TTerm*, std::map<std::string, Join*> >::iterator byTTerm = aliasMap.find(subject);
+		std::map<const TTerm*, std::map<std::string, sql::Join*> >::iterator byTTerm = aliasMap.find(subject);
 		if (byTTerm != aliasMap.end()) {
-		    std::map<std::string, Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
+		    std::map<std::string, sql::Join*>::iterator byRelation = aliasMap[subject].find(toRelation);
 		    if (byRelation != aliasMap[subject].end()) {
 			curJoin = aliasMap[subject][toRelation];
 			return curJoin->debug_getAlias();
@@ -161,15 +159,15 @@ namespace w3c_sw {
 		    s << subject->getLexicalValue() << "_" << ++ordinal;
 		    aliasName = s.str();
 		}
-		curJoin = new TableJoin(toRelation, aliasName, false);
+		curJoin = new sql::TableJoin(toRelation, aliasName, false);
 		query->add(curJoin);
 		usedAliases.insert(std::pair<std::string, std::string>(aliasName, toRelation));
 		// std::cerr << "SQLQuery " << this << ": attachTuple: " << subject->getLexicalValue() << " bound to " << toRelation << " bound to " << aliasName << std::endl;
 		aliasMap[subject][toRelation] = curJoin;
 		return aliasName;
 	    }
-	    void addConstraint (WhereConstraint* constraint) { query->constraints.push_back(constraint); }
-	    void addOrderClause (WhereConstraint* constraint) { query->orderBy.push_back(constraint); }
+	    void addConstraint (sql::Expression* constraint) { query->constraints.push_back(constraint); }
+	    void addOrderClause (sql::Expression* constraint) { query->orderBy.push_back(constraint); }
 	    void setDistinct (bool state = true) { query->distinct = state; }
 	    void setLimit (int limit) { query->limit = limit; }
 	    void setOffset (int offset) { query->offset = offset; }
@@ -189,7 +187,7 @@ namespace w3c_sw {
 		    // SELECT <field for coref> AS <coref name>
 		    selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
+		    parent->attachVariable(sql::AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 // 	    virtual std::string toString (std::string pad = "") {
@@ -210,7 +208,7 @@ namespace w3c_sw {
 	    friend class SQLizer;
             friend class SQLQueryGenerator;
 	protected:
-	    SQLUnion* onion;
+	    sql::SQLUnion* onion;
 	    // SQLQueryGenerator* parent;
 	    std::vector<const TTerm*> corefs;
 	    std::string name;
@@ -219,7 +217,7 @@ namespace w3c_sw {
 	    SQLUnionGenerator (SQLQueryGenerator* parent, std::vector<const TTerm*> corefs, std::string name) : 
 		SQLQueryGenerator(parent), corefs(corefs), name(name)
 	    {
-		onion = new SQLUnion();
+		onion = new sql::SQLUnion();
 	    }
             // std::string toString () {
             //     std::stringstream ss;
@@ -241,7 +239,7 @@ namespace w3c_sw {
 			// SELECT <field for coref> AS <coref name>
 			(*dis)->selectVariable((*coref)->getLexicalValue());
 		    // ON <name>.<coref name> = <parent's field for coref>
-		    parent->attachVariable(AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
+		    parent->attachVariable(sql::AliasAttr(name, (*coref)->getLexicalValue()), (*coref)->getLexicalValue());
 		}
 	    }
 
@@ -291,9 +289,9 @@ namespace w3c_sw {
 
 	    return pos+1;
 	}
-	AliasAttr getPKAttr (std::string alias) {
+	sql::AliasAttr getPKAttr (std::string alias) {
 	    std::string relation(curQuery->usedAliases[alias]);
-	    return AliasAttr(alias, keyMap.find(relation) == keyMap.end() ? defaultPKAttr : keyMap[relation]);
+	    return sql::AliasAttr(alias, keyMap.find(relation) == keyMap.end() ? defaultPKAttr : keyMap[relation]);
 	}
 
 	std::string stem;
@@ -302,14 +300,14 @@ namespace w3c_sw {
 	e_Mode mode;
 	SQLQueryGenerator* curQuery;
 	const TTerm* curSubject;
-	AliasAttr curAliasAttr; // established by predicate
+	sql::AliasAttr curAliasAttr; // established by predicate
 	const TableOperation* curTableOperation;
 	std::string subjectRelation, predicateRelation;
 	Consequents* consequentsP;
 	VarSet* selectVars;
 	char* predicateDelims;
 	char* nodeDelims;
-	WhereConstraint* curConstraint;
+	sql::Expression* curConstraint;
 	std::string defaultPKAttr;
 	KeyMap keyMap;
 
@@ -350,7 +348,7 @@ namespace w3c_sw {
 		if (resolve(lexicalValue, &relation, &attribute, &value) != 3) w3c_sw_FAIL("incomplete key");
 		if (predicateRelation != relation)
 		    std::cerr << "!Subject relation is " << relation << " while predicate relation is " << predicateRelation << std::endl;
-		curQuery->constrain(AliasAttr(curAliasAttr.alias, attribute), value);
+		curQuery->constrain(sql::AliasAttr(curAliasAttr.alias, attribute), value);
 		break;
 
 	    case MODE_object:
@@ -490,7 +488,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		w3c_sw_NOW("Literal as constraint");
-		curConstraint = new LiteralConstraint(value);
+		curConstraint = new sql::LiteralConstraint(value);
 		break;
 
 	    default:
@@ -522,7 +520,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		w3c_sw_NOW("int as constraint");
-		curConstraint = new IntConstraint(p_value);
+		curConstraint = new sql::IntConstraint(p_value);
 		break;
 
 	    default:
@@ -554,7 +552,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		w3c_sw_NOW("float as constraint");
-		curConstraint = new FloatConstraint(p_value);
+		curConstraint = new sql::FloatConstraint(p_value);
 		break;
 
 	    default:
@@ -586,7 +584,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		w3c_sw_NOW("double as constraint");
-		curConstraint = new DoubleConstraint(p_value);
+		curConstraint = new sql::DoubleConstraint(p_value);
 		break;
 
 	    default:
@@ -618,7 +616,7 @@ namespace w3c_sw {
 
 	    case MODE_constraint:
 		w3c_sw_NOW("bool as constraint");
-		curConstraint = new BoolConstraint(p_value);
+		curConstraint = new sql::BoolConstraint(p_value);
 		break;
 
 	    default:
@@ -718,6 +716,11 @@ namespace w3c_sw {
 		}
 	    mode = oldMode;
 	    optional->attach();
+
+	    /** clear optional's generated SQL query pointer so it doesn't get reaped (ownership has switched to parent).
+	     */
+	    optional->query = NULL;
+	    delete optional;
 	    curQuery = parent;
 	}
 	virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */) {
@@ -877,7 +880,7 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    args->express(this);
 	    if (iri == TTerm::FUNC_bound)
-		curConstraint = new NullConstraint(curConstraint);
+		curConstraint = new sql::NullConstraint(curConstraint);
 	    else
 		iri->express(this);
 	}
@@ -889,7 +892,7 @@ namespace w3c_sw {
 	virtual void booleanNegation (const w3c_sw::BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
 	    w3c_sw_MARK;
 	    p_Expression->express(this);
-	    curConstraint = new NegationConstraint(curConstraint);
+	    curConstraint = new sql::NegationConstraint(curConstraint);
 	}
 	virtual void arithmeticNegation (const w3c_sw::ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
 	    w3c_sw_MARK;
@@ -901,7 +904,7 @@ namespace w3c_sw {
 	}
 	virtual void booleanConjunction (const w3c_sw::BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    ConjunctionConstraint* conj = new ConjunctionConstraint();
+	    sql::ConjunctionConstraint* conj = new sql::ConjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
@@ -911,7 +914,7 @@ namespace w3c_sw {
 	}
 	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    DisjunctionConstraint* disj = new DisjunctionConstraint();
+	    sql::DisjunctionConstraint* disj = new sql::DisjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
@@ -919,8 +922,8 @@ namespace w3c_sw {
 	    }
 	    curConstraint = disj;
 	}
-	void _arithOp (std::string sqlOperator, const ProductionVector<const w3c_sw::Expression*>* p_Expressions, e_PREC prec) {
-	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
+	void _arithOp (std::string sqlOperator, const ProductionVector<const w3c_sw::Expression*>* p_Expressions, sql::e_PREC prec) {
+	    sql::ArithOperation* c = new sql::ArithOperation(sqlOperator, prec);
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
@@ -930,14 +933,14 @@ namespace w3c_sw {
 	}
 	virtual void arithmeticSum (const w3c_sw::ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    _arithOp("+", p_Expressions, PREC_Plus);
+	    _arithOp("+", p_Expressions, sql::PREC_Plus);
 	}
 	virtual void arithmeticProduct (const w3c_sw::ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    _arithOp("*", p_Expressions, PREC_Times);
+	    _arithOp("*", p_Expressions, sql::PREC_Times);
 	}
-	void _boolConstraint (const w3c_sw::Expression* p_left, std::string sqlOperator, const w3c_sw::Expression* p_right, e_PREC prec) {
-	    ArithOperation* c = new ArithOperation(sqlOperator, prec);
+	void _boolConstraint (const w3c_sw::Expression* p_left, std::string sqlOperator, const w3c_sw::Expression* p_right, sql::e_PREC prec) {
+	    sql::ArithOperation* c = new sql::ArithOperation(sqlOperator, prec);
 	    p_left->express(this);
 	    c->push_back(curConstraint);
 	    p_right->express(this);
@@ -946,27 +949,27 @@ namespace w3c_sw {
 	}
 	virtual void booleanEQ (const w3c_sw::BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "=", p_right, PREC_EQ);
+	    _boolConstraint(p_left, "=", p_right, sql::PREC_EQ);
 	}
 	virtual void booleanNE (const w3c_sw::BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "!=", p_right, PREC_NE);
+	    _boolConstraint(p_left, "!=", p_right, sql::PREC_NE);
 	}
 	virtual void booleanLT (const w3c_sw::BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "<", p_right, PREC_LT);
+	    _boolConstraint(p_left, "<", p_right, sql::PREC_LT);
 	}
 	virtual void booleanGT (const w3c_sw::BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, ">", p_right, PREC_GT);
+	    _boolConstraint(p_left, ">", p_right, sql::PREC_GT);
 	}
 	virtual void booleanLE (const w3c_sw::BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "<=", p_right, PREC_LE);
+	    _boolConstraint(p_left, "<=", p_right, sql::PREC_LE);
 	}
 	virtual void booleanGE (const w3c_sw::BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, ">=", p_right, PREC_GE);
+	    _boolConstraint(p_left, ">=", p_right, sql::PREC_GE);
 	}
 	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {
 	    w3c_sw_MARK;
