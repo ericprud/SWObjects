@@ -685,6 +685,11 @@ namespace w3c_sw {
 		curTableOperation->express(this);
 	    }
 	    disjunction->attach();
+
+	    /** clear disjunction's generated SQL query pointer so it doesn't get reaped (ownership has switched to parent). @@ untested
+	     */
+	    disjunction->query = NULL;
+	    delete disjunction;
 	    curQuery = parent;
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
