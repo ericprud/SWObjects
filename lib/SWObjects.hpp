@@ -2059,7 +2059,7 @@ public:
 		     !(*mit->expression == *rit->expression))
 		    return false;
 	}
-	return m_OrderConditions == ref.m_OrderConditions;
+	return true;
 
 #if I_MAKE_m_OrderConditions_A_ProductionVector
 	return m_limit == ref.m_limit
@@ -3308,7 +3308,8 @@ public:
     }
     virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
 	expr->express(this);
-	label->express(this);
+	if (label != NULL)
+	    label->express(this);
     }
     virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
 	p_Expressions->express(this);
