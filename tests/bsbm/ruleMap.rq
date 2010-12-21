@@ -29,6 +29,9 @@ PREFIX review: <http://bsbm.example/db/review#>
 PREFIX vendor: <http://bsbm.example/db/vendor#>
 
 PREFIX tr: <http://www.w3.org/2008/04/SPARQLfed/#>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+
+SHAREDVARS varnames
 
 CONSTRUCT {
 ?offer # tr:bind(?offer, bsbm-inst:, "dataFromVendor$(offer_publisher)/Offer$(offer_nr)")
@@ -42,77 +45,6 @@ CONSTRUCT {
        bsbm:offerWebpage ?lit_offerWebpage ; # unknown!
        dc:publisher ?vendor ;
        dc:date ?offer_publishDate . # xsd:date
-
-?person a foaf:Person ;
-        foaf:name ?lit_name ;
-        foaf:mbox_sha1sum ?lit_mbox_sha1sum ;
-	d2rq:belongsToClassMap map:person ;
-	bsbm:country ?perCountry ;
-	dc:publisher ?perPublisher ;
-        dc:date ?per_publishDate . # xsd:date
-
-?producer a bsbm:Producer ;
-          rdfs:label ?prod_label ;
-          rdfs:comment ?prod_comment ;
-          foaf:homepage ?prod_homepage ;
-          bsbm:country ?prodCountry ;
-	  dc:publisher ?prodPublisher ;
-          dc:date ?prod_publishDate . # xsd:date
-
-?product a bsbm:Product ;
-         bsbm:productFeature ?pfp ;
-         rdf:type ?ptp ;
-         rdfs:label ?p_label ;
-         rdfs:comment ?p_comment ;
-         bsbm:producer ?producer ;
-         bsbm:productPropertyNumeric1 ?lit_propertyNum1 ; # xsd:int
-         bsbm:productPropertyNumeric2 ?lit_propertyNum2 ; # xsd:int
-         bsbm:productPropertyNumeric3 ?lit_propertyNum3 ; # xsd:int
-         bsbm:productPropertyNumeric4 ?lit_propertyNum4 ; # xsd:int
-         bsbm:productPropertyNumeric5 ?lit_propertyNum5 ; # xsd:int
-         bsbm:productPropertyNumeric6 ?lit_propertyNum6 ; # xsd:int
-         bsbm:productPropertyTextual1 ?lit_propertyTex1 ;
-         bsbm:productPropertyTextual2 ?lit_propertyTex2 ;
-         bsbm:productPropertyTextual3 ?lit_propertyTex3 ;
-         bsbm:productPropertyTextual4 ?lit_propertyTex4 ;
-         bsbm:productPropertyTextual5 ?lit_propertyTex5 ;
-         bsbm:productPropertyTextual6 ?lit_propertyTex6 ;
-         dc:publisher ?producer ;
-         dc:date ?p_publishDate . # xsd:date;
-
-?productfeature a bsbm:ProductFeature ;
-                rdfs:label ?pf_label ;
-                rdfs:comment ?pf_comment ;
-	        dc:publisher ?prodPub ;
-                dc:date ?pf_publishDate . # xsd:date
-
-?producttype a bsbm:ProductType ;
-             rdfs:label ?pt_label ;
-             rdfs:comment ?pt_comment ;
-             rdfs:subClassOf ?producttypeparent ;
-	     dc:publisher ?pt_publisher ;
-             dc:date ?pt_publishDate . # xsd:date
-
-?review a bsbm:Review ;
-        bsbm:reviewFor ?product ;
-        rev:reviewer ?person ;
-        bsbm:reviewDate ?lit_reviewDate ; # xsd:date
-        dc:title ?lit_title ;
-        rev:text ?lit_text ; # @review_lang 
-        bsbm:rating1 ?lit_rating1 ; # xsd:int
-        bsbm:rating2 ?lit_rating2 ; # xsd:int
-        bsbm:rating3 ?lit_rating3 ; # xsd:int
-        bsbm:rating4 ?lit_rating4 ; # xsd:int
-	dc:publisher ?rev_publisher ;
-        dc:date ?rev_publishDate . # xsd:date
-
-?vendor a bsbm:Vendor ;
-        rdfs:label ?vend_label ;
-        rdfs:comment ?vend_comment ;
-        foaf:homepage ?vend_homepage ;
-	bsbm:country ?vend_country ;
-	dc:publisher ?vend_publisher ;
-        dc:date ?lit_publishDate . # xsd:date
 } WHERE {
 ?offer
        offer:product ?product ;
@@ -126,14 +58,34 @@ CONSTRUCT {
        offer:publisher ?offer_publisher ;
        offer:nr ?offer_nr ;
        offer:publishDate ?offer_publishDate .
+}
 
+CONSTRUCT {
+?person a foaf:Person ;
+        foaf:name ?lit_name ;
+        foaf:mbox_sha1sum ?lit_mbox_sha1sum ;
+	d2rq:belongsToClassMap map:person ;
+	bsbm:country ?perCountry ;
+	dc:publisher ?perPublisher ;
+        dc:date ?per_publishDate . # xsd:date
+} WHERE {
 ?person # tr:bind(?person, bsbm-inst:, "dataFromRatingSite@@person.publisher@@/Reviewer@@person.nr@@")
         person:name ?lit_name ;
         person:mbox_sha1sum ?lit_mbox_sha1sum ;
         person:publishDate ?per_publishDate .
         # tr:bind(?perCountry, "http://downlode.org/rdf/iso-3166/countries#@@person:country@@")
         # tr:bind(?perPublisher, bsbm-inst:, "dataFromRatingSite@@person.publisher@@/RatingSite@@person.publisher@@")
+}
 
+CONSTRUCT {
+?producer a bsbm:Producer ;
+          rdfs:label ?prod_label ;
+          rdfs:comment ?prod_comment ;
+          foaf:homepage ?prod_homepage ;
+          bsbm:country ?prodCountry ;
+	  dc:publisher ?prodPublisher ;
+          dc:date ?prod_publishDate . # xsd:date
+} WHERE {
 ?producer # tr:bind(?producer, bsbm-inst:, "dataFromProducer@@producer.nr@@/Producer@@producer.nr@@")
           producer:label ?prod_label ;
           producer:comment ?prod_comment ;
@@ -141,46 +93,76 @@ CONSTRUCT {
           # tr:bind(?prodCountry, "http://downlode.org/rdf/iso-3166/countries#@@producer.country@@")
           # tr:bind(?prodPublisher, bsbm-inst:, "dataFromProducer@@producer.nr@@/Producer@@producer.nr@@")
           producer:publishDate ?prod_publishDate .
+}
 
-?product # tr:bind(?product, bsbm-inst:, "dataFromProducer@@product.producer@@/Product@@product.nr@@")
-         product:label ?p_label ;
-         product:comment ?p_comment ;
-         product:producer ?producer ;
-         product:propertyNum1 ?lit_propertyNum1 ;
-         product:propertyNum2 ?lit_propertyNum2 ;
-         product:propertyNum3 ?lit_propertyNum3 ;
-         product:propertyNum4 ?lit_propertyNum4 ;
-         product:propertyNum5 ?lit_propertyNum5 ;
-         product:propertyNum6 ?lit_propertyNum6 ;
-         product:propertyTex1 ?lit_propertyTex1 ;
-         product:propertyTex2 ?lit_propertyTex2 ;
-         product:propertyTex3 ?lit_propertyTex3 ;
-         product:propertyTex4 ?lit_propertyTex4 ;
-         product:propertyTex5 ?lit_propertyTex5 ;
-         product:propertyTex6 ?lit_propertyTex6 ;
-         product:producer ?producer ;
-         product:publishDate ?p_publishDate .
+LABEL "ptptype" CONSTRUCT { ?product a ?ptptype ;				                      } { { SELECT ?ptp (fn:concat(<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType>, ?pt) AS ?ptptype) WHERE { _:ptp producttypeproduct:product ?product ; producttypeproduct:productType ?pt } } } # tr:bind(?ptp, bsbm-inst:, "ProductType@@producttypeproduct.producttype@@")
+LABEL "productFeature" CONSTRUCT { ?product bsbm:productFeature ?featid ;			              } { { SELECT ?pfp (fn:concat(<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature>, ?pf) AS ?featid) WHERE { _:pfp productfeatureproduct:product ?product ; productfeatureproduct:productfeature ?pf } }   }
+LABEL "label" CONSTRUCT { ?product rdfs:label ?p_label ;			       } { ?product product:label ?p_label ;		     }
+LABEL "comment" CONSTRUCT { ?product rdfs:comment ?p_comment ;			       } { ?product product:comment ?p_comment ;	     }
+LABEL "producer" CONSTRUCT { ?product bsbm:producer ?producer ;			       } { ?product product:producer ?producer ;	     }
+LABEL "productPropertyNumeric1" CONSTRUCT { ?product bsbm:productPropertyNumeric1 ?lit_propertyNum1 ; } { ?product product:propertyNum1 ?lit_propertyNum1 ; } # xsd:int
+LABEL "productPropertyNumeric2" CONSTRUCT { ?product bsbm:productPropertyNumeric2 ?lit_propertyNum2 ; } { ?product product:propertyNum2 ?lit_propertyNum2 ; } # xsd:int
+LABEL "productPropertyNumeric3" CONSTRUCT { ?product bsbm:productPropertyNumeric3 ?lit_propertyNum3 ; } { ?product product:propertyNum3 ?lit_propertyNum3 ; } # xsd:int
+LABEL "productPropertyNumeric4" CONSTRUCT { ?product bsbm:productPropertyNumeric4 ?lit_propertyNum4 ; } { ?product product:propertyNum4 ?lit_propertyNum4 ; } # xsd:int
+LABEL "productPropertyNumeric5" CONSTRUCT { ?product bsbm:productPropertyNumeric5 ?lit_propertyNum5 ; } { ?product product:propertyNum5 ?lit_propertyNum5 ; } # xsd:int
+LABEL "productPropertyNumeric6" CONSTRUCT { ?product bsbm:productPropertyNumeric6 ?lit_propertyNum6 ; } { ?product product:propertyNum6 ?lit_propertyNum6 ; } # xsd:int
+LABEL "productPropertyTextual1" CONSTRUCT { ?product bsbm:productPropertyTextual1 ?lit_propertyTex1 ; } { ?product product:propertyTex1 ?lit_propertyTex1 ; }
+LABEL "productPropertyTextual2" CONSTRUCT { ?product bsbm:productPropertyTextual2 ?lit_propertyTex2 ; } { ?product product:propertyTex2 ?lit_propertyTex2 ; }
+LABEL "productPropertyTextual3" CONSTRUCT { ?product bsbm:productPropertyTextual3 ?lit_propertyTex3 ; } { ?product product:propertyTex3 ?lit_propertyTex3 ; }
+LABEL "productPropertyTextual4" CONSTRUCT { ?product bsbm:productPropertyTextual4 ?lit_propertyTex4 ; } { ?product product:propertyTex4 ?lit_propertyTex4 ; }
+LABEL "productPropertyTextual5" CONSTRUCT { ?product bsbm:productPropertyTextual5 ?lit_propertyTex5 ; } { ?product product:propertyTex5 ?lit_propertyTex5 ; }
+LABEL "productPropertyTextual6" CONSTRUCT { ?product bsbm:productPropertyTextual6 ?lit_propertyTex6 ; } { ?product product:propertyTex6 ?lit_propertyTex6 ; }
+LABEL "publisher" CONSTRUCT { ?product dc:publisher ?producer ;			       } { ?product product:producer ?producer ;	     }
+LABEL "date" CONSTRUCT { ?product dc:date ?p_publishDate .                         } { ?product product:publishDate ?p_publishDate .     } # xsd:date;
 
-?pfp # tr:bind(?pfp, bsbm-inst:, "ProductFeature@@productfeatureproduct.productfeature@@")
-     productfeatureproduct:product ?product .
+# ?product # tr:bind(?product, bsbm-inst:, "dataFromProducer@@product.producer@@/Product@@product.nr@@")
 
-?ptp # tr:bind(?ptp, bsbm-inst:, "ProductType@@producttypeproduct.producttype@@")
-     producttypeproduct:product ?product .
 
+CONSTRUCT {
+?productfeature a bsbm:ProductFeature ;
+                rdfs:label ?pf_label ;
+                rdfs:comment ?pf_comment ;
+	        dc:publisher ?prodPub ;
+                dc:date ?pf_publishDate . # xsd:date
+} WHERE {
 ?productfeature # tr:bind(?productfeature, bsbm-inst:, "ProductFeature@@productfeature.nr@@")
                 productfeature:label ?pf_label ;
                 productfeature:nr ?pfk ;
                 productfeature:comment ?pf_comment ;
                 # tr:bind(?prodPub, bsbm-inst:, "StandardizationInstitution@@productfeature.publisher@@")
                 productfeature:publishDate ?pf_publishDate .
+}
 
+CONSTRUCT {
+?producttype a bsbm:ProductType ;
+             rdfs:label ?pt_label ;
+             rdfs:comment ?pt_comment ;
+             rdfs:subClassOf ?producttypeparent ;
+	     dc:publisher ?pt_publisher ;
+             dc:date ?pt_publishDate . # xsd:date
+} WHERE {
 ?producttype # tr:bind(?producttype, bsbm-inst:, "ProductType@@producttype.nr@@")
              producttype:label ?pt_label ;
              producttype:comment ?pt_comment ;
              producttype:parent ?producttypeparent ;
              # tr:bind(?pt_publisher, bsbm-inst:, "StandardizationInstitution@@producttype.publisher@@")
              producttype:publishDate ?pt_publishDate .
+}
 
+CONSTRUCT {
+?review a bsbm:Review ;
+        bsbm:reviewFor ?product ;
+        rev:reviewer ?person ;
+        bsbm:reviewDate ?lit_reviewDate ; # xsd:date
+        dc:title ?lit_title ;
+        rev:text ?lit_text ; # @review_lang 
+        bsbm:rating1 ?lit_rating1 ; # xsd:int
+        bsbm:rating2 ?lit_rating2 ; # xsd:int
+        bsbm:rating3 ?lit_rating3 ; # xsd:int
+        bsbm:rating4 ?lit_rating4 ; # xsd:int
+	dc:publisher ?rev_publisher ;
+        dc:date ?rev_publishDate . # xsd:date
+} WHERE {
 ?review # tr:bind(?review, bsbm-inst:, "dataFromRatingSite@@review.publisher@@/Review@@review.nr@@")
         review:product ?product ;
         review:person ?person ;
@@ -194,7 +176,17 @@ CONSTRUCT {
         review:rating4 ?lit_rating4 ;
         # tr:bind(?rev_publisher, bsbm-inst:, "dataFromRatingSite@@review.publisher@@/RatingSite@@review.publisher@@")
         review:publishDate ?rev_publishDate .
+}
 
+CONSTRUCT {
+?vendor a bsbm:Vendor ;
+        rdfs:label ?vend_label ;
+        rdfs:comment ?vend_comment ;
+        foaf:homepage ?vend_homepage ;
+	bsbm:country ?vend_country ;
+	dc:publisher ?vend_publisher ;
+        dc:date ?lit_publishDate . # xsd:date
+} WHERE {
 ?vendor # tr:bind(?vendor, bsbm-inst:, "dataFromVendor@@vendor.nr@@/Vendor@@vendor.nr@@")
         vendor:label ?vend_label ;
         vendor:comment ?vend_comment ;
@@ -202,13 +194,13 @@ CONSTRUCT {
         # tr:bind(?vend_country, "http://downlode.org/rdf/iso-3166/countries#@@vendor.country@@")
         # tr:bind(?vend_publisher, bsbm-inst:, "dataFromVendor@@vendor.nr@@/Vendor@@vendor.nr@@")
         vendor:publishDate ?lit_publishDate .
-FILTER (
-tr:rewriteVar(?product, "http://bsbm.example/db/productfeatureproduct/offer.nr=($offer=[0-9]+)&publisher=($pub=[0-9]+)", 
-			"http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor($pub=[0-9]+)/Offer($offer=[0-9]+)") &&
-tr:rewriteVar(?pfp, "http://bsbm.example/db/productfeatureproduct/productfeature.($pfk=[0-9]+)", 
-		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature($pfk=[0-9]+)") &&
-tr:rewriteVar(?ptp, "http://bsbm.example/db/producttypeproduct/producttype.($pfk=[0-9]+)", 
-		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType($pfk=[0-9]+)")
-)
+# FILTER (
+# tr:rewriteVar(?product, "http://bsbm.example/db/productfeatureproduct/offer.nr=($offer=[0-9]+)&publisher=($pub=[0-9]+)", 
+# 			"http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor($pub=[0-9]+)/Offer($offer=[0-9]+)") &&
+# tr:rewriteVar(?pfp, "http://bsbm.example/db/productfeatureproduct/productfeature.($pfk=[0-9]+)", 
+# 		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature($pfk=[0-9]+)") &&
+# tr:rewriteVar(?ptp, "http://bsbm.example/db/producttypeproduct/producttype.($pfk=[0-9]+)", 
+# 		    "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType($pfk=[0-9]+)")
+# )
 }
 

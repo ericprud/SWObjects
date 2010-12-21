@@ -18,8 +18,8 @@ WHERE {
  ?product a <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59> .
  ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5> . 
  ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7> . 
-?product bsbm:productPropertyNumeric1 ?value1 . 
-	FILTER (?value1 > 578) 
-	}
+ ?product bsbm:productPropertyNumeric1 ?value1 . 
+ FILTER (?value1 > 578) 
+}
 ORDER BY ?label
 LIMIT 10

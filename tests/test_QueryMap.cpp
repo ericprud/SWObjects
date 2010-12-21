@@ -467,6 +467,11 @@ struct RuleMapTest {
 		 IStreamContext::e_opts type = IStreamContext::FILE) :
 	bgpMappableTerm(BasicGraphPattern::MappableTerm) {
 
+	namespace tst = boost::unit_test::framework;
+	for (int i = 1; i < tst::master_test_suite().argc; ++i)
+	    if (std::string(tst::master_test_suite().argv[i]) == "-D")
+		DebugStream = &std::cerr;
+
 	sparqlParser.unnestTree = true;
 	/* Parse query. */
 	IStreamContext qstr(queryFile, type);
@@ -751,25 +756,22 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#if 0
-BOOST_AUTO_TEST_CASE( refree ) { // !! leaky
+BOOST_AUTO_TEST_SUITE( bsbm )
+    BOOST_AUTO_TEST_CASE( q1 ) {
+	RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
+	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
+    }
+BOOST_AUTO_TEST_SUITE_END()
+
+/** record how to access test argc/argv 'cause i always forget:
     namespace tst = boost::unit_test::framework;
-    std::string stem = "http://someClinic.exampe/DB/";
     for (int i = 1; i < tst::master_test_suite().argc; ++i) {
 	std::string s = tst::master_test_suite().argv[i];
 	if (s.find_first_of("stem=") == 0)
 	    stem = s.substr(5, s.size()-5);
     }
-    SQLizerTest s("toy.rq", stem.c_str(), "healthCare/simple/db.sql");
-    BOOST_CHECK_EQUAL(s.transformed, s.ref);
-}
 
-BOOST_AUTO_TEST_CASE( bsbm_1 ) {
-    RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
     if (boost::unit_test::framework::master_test_suite().argc > 1 && 
 	std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
-	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
-}
-#endif
-
+*/
 
