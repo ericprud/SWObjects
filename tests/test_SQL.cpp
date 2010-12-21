@@ -304,18 +304,21 @@ std::string Rel1("CREATE TABLE rel (\n"
 BOOST_AUTO_TEST_CASE( DDLP0 ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
-    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
     ddl1Driver.parse("CREATE TABLE rel (\n"
-		     "  id0 INT\n"
-		     ");\n");
+		 "  id0 INT,\n"
+		 "  id1 INT,\n"
+		 "  str STRING,\n"
+		 "  dt DATETIME,\n"
+		 "  FOREIGN KEY (id1, str) REFERENCES rel2(candkey1, candkey2),\n"
+		 "  PRIMARY KEY (id0, id1)\n"
+		 ");\n");
     ddl1Driver.tables.clear();
 }
 
 BOOST_AUTO_TEST_CASE( DDL0 ) {
     sqlContext context;
     SQLDriver ddl1Driver(context);
-    IStreamContext ddl1Str(Rel0, IStreamContext::STRING);
-    ddl1Driver.parse(ddl1Str);
+    ddl1Driver.parse(Rel0);
     ddl1Driver.tables.clear();
 }
 
