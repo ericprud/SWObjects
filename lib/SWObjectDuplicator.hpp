@@ -610,7 +610,7 @@ namespace w3c_sw {
 			    autoAdd->addTableOperation(last.tableOperation, false);
 			last.tableOperation = autoAdd;
 		    }
-		    autoAdd = lastBGP == NULL || lastInConj ? nestingConj : NULL;
+		    autoAdd = lastBGP == NULL || nestingConj || lastInConj ? nestingConj : NULL;
 		}
 	    }
 	    /*
