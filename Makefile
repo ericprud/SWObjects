@@ -6,8 +6,11 @@
 #     make SPARQLfed
 #   force the use of the tracing facilities (and redirect to stdout):
 #     make -W tests/test_HealthCare1.cpp test
-#   have valgrind start a debugger (works as M-x gdb invocation command):
+#   have valgrind start a debugger
 #     valgrind --db-attach=yes --leak-check=yes tests/execute_HealthCare1 tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
+#     (may require root to first `echo 0 > /proc/sys/kernel/yama/ptrace_scope` on Ubuntu >= 10.04)
+#   M-x gdb invocation command:
+#     M-x gdb valgrind --db-attach=yes "--db-command=gdb --annotate=3 %f %p" --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./test_QueryMap --run_test=bsbm/q1
 #   same, if you aren't working in gdb:
 #     make valgrind
 #   debugging in emacs:
@@ -347,12 +350,12 @@ t_%: tests/test_%
 	( cd tests && ./$(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
-	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp
 
 # "manual" (non-boost) tests, synthesized from the boost tests.
 m_%: tests/man_%
-	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 
 
 ### Query Map tests tests:
