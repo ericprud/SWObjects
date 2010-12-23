@@ -26,6 +26,9 @@ namespace w3c_sw {
     public:
 	ExpressionInverter (const TTerm* curTarget, Result* res, AtomFactory* atomFactory)
 	    : curTarget(curTarget), res(res), atomFactory(atomFactory), lastType(Empty), func(None) {  }
+	~ExpressionInverter () {
+	    delete last.args; // discoverd by valgrind -- not really investigated.
+	}
 
 	virtual void base(const Base* const self, std::string productionName) { throw "why did we call base?"; }
 
@@ -48,6 +51,7 @@ namespace w3c_sw {
 	    } else {
 		concatRE += val->getLexicalValue();
 	    }
+	    last.expr = new TTermExpression(p_TTerm);
 	}
 	ProductionVector<const Expression*>* _Expressions (const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* l_Expressions = new ProductionVector<const Expression*>();
