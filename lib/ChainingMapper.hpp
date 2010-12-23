@@ -682,6 +682,10 @@ namespace w3c_sw {
 	    p_GroupGraphPattern->express(&d);
 	    body = d.last.tableOperation;
 	}
+	virtual void subSelect (const SubSelect* const self, const Select* p_Select) {
+	    RecursiveExpressor::subSelect(self, p_Select);
+	    delete body; // body got erroneously set in the nested where clause
+	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) {
 	    p_ConstructTemplate->express(&d);
 	    // bodyVars.clear(); -- unnecessary because p_ConstructTemplate was only visited with an SWObjectDuplicator.
