@@ -440,7 +440,12 @@ public:
 	p_TTerm->express(this);
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
-	expressions->express(this);
+	for (std::vector<const Expression*>::const_iterator it = expressions->begin();
+	     it != expressions->end(); ++it) {
+	    if (it != expressions->begin())
+		ret << ", ";
+	    (*it)->express(this);
+	}
     }
     virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 
@@ -474,8 +479,32 @@ public:
 	    ret << "max";
 	else if (p_IRIref == TTerm::FUNC_avg)
 	    ret << "avg";
+	else if (p_IRIref == TTerm::FUNC_group)
+	    ret << "group";
+	else if (p_IRIref == TTerm::FUNC_regex)
+	    ret << "regex";
 	else if (p_IRIref == TTerm::FUNC_group_concat)
 	    ret << "group_concat";
+	else if (p_IRIref == TTerm::FUNC_if)
+	    ret << "if";
+	else if (p_IRIref == TTerm::FUNC_strlang)
+	    ret << "strlang";
+	else if (p_IRIref == TTerm::FUNC_strdt)
+	    ret << "strdt";
+	else if (p_IRIref == TTerm::FUNC_sample)
+	    ret << "sample";
+	else if (p_IRIref == TTerm::FUNC_iri)
+	    ret << "iri";
+	else if (p_IRIref == TTerm::FUNC_blank)
+	    ret << "blank";
+	else if (p_IRIref == TTerm::FUNC_isNumeric)
+	    ret << "isNumeric";
+	else if (p_IRIref == TTerm::XPATH_concat)
+	    ret << "concat";
+	else if (p_IRIref == TTerm::XPATH_lower_case)
+	    ret << "lower-case";
+	else if (p_IRIref == TTerm::XPATH_upper_case)
+	    ret << "upper-case";
 	else
 	    p_IRIref->express(this);
 	ret << "(";
