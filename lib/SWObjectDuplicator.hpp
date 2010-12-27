@@ -652,14 +652,48 @@ namespace w3c_sw {
     };
 
     struct GraphAndServiceMerger : public SWObjectDuplicator {
+	/**
+	 * ReferenceCounter - count how many times a variable is referenced
+	 * in a query.
+	 */
+	struct TermReferenceCount : std::map<const TTerm*, int> {
+	    std::string str () {
+		std::stringstream ss;
+		for (std::map<const TTerm*, int>::const_iterator it = begin();
+		     it != end(); ++it) {
+		    if (it != begin())
+			ss << ", ";
+		    ss << it->first->toString() << ": " << it->second;
+		}
+		return ss.str();
+	    }
+	};
+
+	struct ReferenceCounter : public RecursiveExpressor {
+	    TermReferenceCount& vars;
+	    ReferenceCounter (TermReferenceCount& vars) : vars(vars) {  }
+	    virtual void base (const Base* const self, std::string productionName) {  }
+	    virtual void variable (const Variable* const self, std::string lexicalValue) {
+		vars[self]++;
+	    }
+	    /* specifically elide label->express(this) as labels in subselect
+	       expression aliases do not consitute co-references, I think.
+	    */
+	    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+		expr->express(this);
+	    }
+	};
+
 	const TTerm* lastGraphName;
 	GraphGraphPattern* lastGraph;
 	const TTerm* lastServiceName;
 	ServiceGraphPattern* lastService;
-	bool unchanged;
+	bool changed;
+	TermReferenceCount termRefCount;
+	bool elideSubSelect;
 
 	GraphAndServiceMerger (AtomFactory* atomFactory)
-	    : SWObjectDuplicator(atomFactory), lastGraphName(NULL), lastServiceName(NULL), unchanged(true) {  }
+	    : SWObjectDuplicator(atomFactory), lastGraphName(NULL), lastServiceName(NULL), changed(false) {  }
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    const TTerm* parentLastGraphName = lastGraphName; lastGraphName = NULL;
 	    const TTerm* parentLastServiceName = lastServiceName; lastServiceName = NULL;
@@ -699,7 +733,7 @@ namespace w3c_sw {
 	    ServiceGraphPattern* mergeMe = p_TTerm == lastServiceName ? lastService : NULL;
 	    p_GroupGraphPattern->express(this);
 	    if (mergeMe) {
-		unchanged = false;
+		changed = true;
 		TableConjunction* conj = new TableConjunction();
 		conj->addTableOperation(mergeMe->m_TableOperation, true);
 		conj->addTableOperation(last.tableOperation, true);
@@ -713,14 +747,53 @@ namespace w3c_sw {
 		last.tableOperation = lastService = new ServiceGraphPattern(name, last.tableOperation, atomFactory, lexicalCompare);
 	    }
 	}
-	TableOperation* apply(TableConjunction* conj) {
-	    conj->express(this);
-	    if (unchanged) {
-		delete last.tableOperation;
-		return conj;
+	/** doesn't seem needed - EGP 20101226
+	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	    if (elideSubSelect)
+		// just set last.tableOperation
+		p_GroupGraphPattern->express(this);
+	    else
+		SWObjectDuplicator::whereClause(self, p_GroupGraphPattern, p_BindingClause);
+	}
+	*/
+	bool _unneededProject (const ExpressionAliasList* eal) {
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = eal->begin();
+		 it != eal->end(); ++it) {
+		if (((*it)->label != NULL && termRefCount[(*it)->label] > 1) ||
+		    ((*it)->label == NULL && dynamic_cast<const TTermExpression*>((*it)->expr) != NULL && termRefCount[dynamic_cast<const TTermExpression*>((*it)->expr)->getTTerm()] > 1))
+		    return false;
+	    }
+	    return true;
+	}
+	virtual void select (const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	    ExpressionAliasList* eal(dynamic_cast<ExpressionAliasList*>(p_VarSet));
+	    if (eal != NULL && _unneededProject(eal)) {
+		elideSubSelect = true;
+		changed = true;
+		p_WhereClause->express(this);
 	    } else {
+		SWObjectDuplicator::select(self, p_distinctness, p_VarSet, p_DatasetClauses, p_WhereClause, p_SolutionModifier);
+	    }
+	}
+	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+	    bool parent_elideSubSelect(elideSubSelect);
+	    elideSubSelect = false;
+	    p_Select->express(this);
+	    if (!elideSubSelect)
+		last.tableOperation = new SubSelect((const Select*)last.operation);
+	    elideSubSelect = parent_elideSubSelect;
+	}
+	TableOperation* apply(TableConjunction* conj) {
+	    ReferenceCounter c(termRefCount);
+	    conj->express(&c);
+	    // w3c_sw_LINEN << *conj << "\n  had " << termRefCount.str() << std::endl;
+	    conj->express(this);
+	    if (changed) {
 		delete conj;
 		return last.tableOperation;
+	    } else {
+		delete last.tableOperation;
+		return conj;
 	    }
 	}
     };
@@ -1215,9 +1288,16 @@ namespace w3c_sw {
 	    _TableOperations(p_TableOperations, ret);
 	    GraphAndServiceMerger m(atomFactory);
 	    TableOperation* op = m.apply(ret);
-	    if (!m.unchanged) {
-		op->express(this);
+	    if (m.changed) {
+
+		/** Eliminate adjoining conjoints. */
+		BGPSimplifier b(atomFactory);
+		op->express(&b);
 		delete op;
+
+		/** Canonicalize (e.g. order triple patterns). */
+		b.last.tableOperation->express(this);
+		delete b.last.tableOperation;
 	    } else
 		last.tableOperation = op;
 	    // last.tableOperation = GraphAndServiceMerger(atomFactory).apply(ret);
