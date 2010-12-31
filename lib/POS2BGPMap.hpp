@@ -258,13 +258,12 @@ namespace w3c_sw {
 
 	    /* Add _Binding_SELECT where necessary. */
 	    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+		_BindingStrength oldOptState = optState;
+		optState = _Binding_SELECT;
 		for (std::vector<const ExpressionAlias*>::const_iterator it = p_Expressions->begin();
-		     it != p_Expressions->end(); it++) {
-		    const TTermExpression* posExpr = dynamic_cast<const TTermExpression *>((*it)->expr);
-		    if (!posExpr)
-			w3c_sw_NEED_IMPL("expressionAliasList !TTermExpression");
-		    _depends(posExpr->getTTerm(), _Binding_SELECT);
-		}
+		     it != p_Expressions->end(); it++)
+		    (*it)->expr->express(this);
+		optState = oldOptState;
 	    }
 	    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* ) {
 		w3c_sw_FAIL("need to impl POS2BGPMap::posList");
