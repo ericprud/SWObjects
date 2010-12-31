@@ -158,6 +158,7 @@ IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_isNUMERIC		[Ii][Ss][Nn][Uu][Mm][Ee][Rr][Ii][Cc]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
+IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
 IT_GROUP_CONCAT		[Gg][Rr][Oo][Uu][Pp]"_"[Cc][Oo][Nn][Cc][Aa][Tt]
@@ -307,6 +308,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
 {IT_isNUMERIC}		{return token::IT_isNUMERIC;}
 {IT_REGEX}		{return token::IT_REGEX;}
+{IT_CONCAT}		{return token::IT_CONCAT;}
 {IT_EXISTS}		{return token::IT_EXISTS;}
 {IT_COUNT}		{return token::IT_COUNT;}
 {IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}

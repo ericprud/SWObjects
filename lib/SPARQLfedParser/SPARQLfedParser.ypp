@@ -247,7 +247,7 @@ public:
        IT_IRI IT_URI IT_BNODE IT_COALESCE IT_IF IT_STRLANG IT_STRDT
        IT_EXISTS IT_SEPARATOR
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
-       IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
+       IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE IT_CONCAT
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
        IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE IT_WITH IT_DEFAULT IT_ALL IT_USING
 
@@ -2260,6 +2260,9 @@ BuiltInCall:
     }
   | IT_isNUMERIC GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, $3, NULL, NULL));
+    }
+  | IT_CONCAT _QArgList_E_Opt	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, $2));
     }
   | RegexExpression	
   | ExistsFunc	
