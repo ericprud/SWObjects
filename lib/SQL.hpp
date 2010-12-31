@@ -754,8 +754,8 @@ namespace w3c_sw {
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
 	    virtual std::string toString (std::string, e_PREC) const {
-		return std::string("CONCAT")
-		    + NaryExpression::toString("", PREC_Low);
+		return std::string("CONCAT(")
+		    + NaryExpression::toString("", PREC_Low) + ")";
 	    }
 	};
 
@@ -873,7 +873,11 @@ namespace w3c_sw {
 	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+#ifdef ORACLE
+		s << getRelationText(pad) << " " << alias;
+#else
 		s << getRelationText(pad) << " AS " << alias;
+#endif
 		std::stringstream on;
 		for (std::vector<JoinConstraint*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
@@ -932,7 +936,11 @@ namespace w3c_sw {
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
 	    virtual std::string toString (std::string pad = "") const {
+#ifdef ORACLE
+		return exp->toString(pad) + " " + alias;
+#else
 		return exp->toString(pad) + " AS " + alias;
+#endif
 	    }
 	};
 
@@ -1030,7 +1038,11 @@ namespace w3c_sw {
 		    }
 		}
 
+#ifdef ORACLE
+		if (limit != -1) s << std::endl << pad << " rownum <= " << limit;
+#else
 		if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
+#endif
 		if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
 
 		return s.str();
