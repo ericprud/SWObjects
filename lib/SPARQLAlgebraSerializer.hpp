@@ -522,7 +522,12 @@ public:
 	p_TTerm->express(this);
     }
     virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {
-	expressions->express(this);
+	for (std::vector<const Expression*>::const_iterator it = expressions->begin();
+	     it != expressions->end(); ++it) {
+	    if (it != expressions->begin())
+		ret << ", ";
+	    (*it)->express(this);
+	}
     }
     virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 
