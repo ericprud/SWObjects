@@ -1,0 +1,39 @@
+# The interface graph includes terms from CPR and TMO:
+PREFIX cpr: <http://purl.org/cpr/0.75#>
+PREFIX trans: <tag:eric@w3.org:2009/tmo/translator#>
+
+# Constructed identifiers:
+PREFIX encounter: <http://informatics.kumc.edu/encounter/>
+PREFIX testtype: <http://informatics.kumc.edu/testtype/>
+
+# The database-native namespaces:
+PREFIX fact: <http://informatics.kumc.edu/404/i2b2demo/observation_fact#>
+PREFIX concept: <http://informatics.kumc.edu/404/i2b2demo/concept_dimension#>
+
+# XPath F&O:
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+
+STEMURI <http://informatics.kumc.edu/404/i2b2demo/>
+SHAREDVARS varnames
+
+LABEL <all> CONSTRUCT {
+  ?encounter trans:patient [ cpr:patientID ?patID ] ;
+       trans:dateMeasured ?start_date ;
+       trans:test [ a ?test ]
+} WHERE {
+  { SELECT (fn:concat(encounter:, ?encNum) AS ?encounter)
+           (fn:concat(testtype:, ?concept_cd) AS ?test)
+     WHERE {
+  ?entry
+     fact:encounter_num ?encNum;
+     fact:patient_num ?patID;
+     fact:concept_cd ?concept_cd;
+     fact:start_date ?start_date .
+     # skip values, for now
+     # fact:end_date ?end_date .
+
+  ?concept concept:concept_cd ?concept_cd;
+    concept:concept_path ?concept_path;
+    }
+  }
+}

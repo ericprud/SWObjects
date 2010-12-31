@@ -1,0 +1,13 @@
+PREFIX cpr: <http://purl.org/cpr/0.75#>
+PREFIX trans: <tag:eric@w3.org:2009/tmo/translator#>
+PREFIX encounter: <http://informatics.kumc.edu/encounter/_>
+
+SELECT ?pat ?test ?encDate
+ WHERE {
+#  ?enc
+  encounter:123
+       trans:patient [ cpr:patientID ?pat ] ;
+       trans:dateMeasured ?encDate ;
+       trans:test [ a ?test ]
+}
+LIMIT 10
