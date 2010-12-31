@@ -56,6 +56,7 @@
 #include <vector>
 #include <string.h>
 #include "SWObjects.hpp" // for IStreamContext
+#include "ParserCommon.hpp"
 #include "SQL.hpp"
 
 #define STRINGIFY(x) #x
@@ -119,7 +120,7 @@ public:
     }
 };
 
-class SQLDriver
+class SQLDriver : public YaccDriver
 {
 public:
     /// construct a new parser driver context
@@ -175,7 +176,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 179 "lib/SQLParser/SQLParser.hpp"
+#line 180 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -189,7 +190,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 193 "lib/SQLParser/SQLParser.hpp"
+#line 194 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -199,7 +200,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 203 "lib/SQLParser/SQLParser.hpp"
+#line 204 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -247,7 +248,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 251 "lib/SQLParser/SQLParser.hpp"
+#line 252 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -259,7 +260,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 180 "lib/SQLParser/SQLParser.ypp"
+#line 181 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -284,7 +285,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 288 "lib/SQLParser/SQLParser.hpp"
+#line 289 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -311,54 +312,55 @@ namespace w3c_sw {
      IT_JOIN = 269,
      IT_OR = 270,
      IT_AND = 271,
-     IT_LIMIT = 272,
-     IT_OFFSET = 273,
-     IT_IS = 274,
-     IT_NOT = 275,
-     IT_NULL = 276,
-     GT_EQUAL = 277,
-     GT_NEQUAL = 278,
-     GT_LT = 279,
-     GT_GT = 280,
-     GT_LE = 281,
-     GT_GE = 282,
-     GT_PLUS = 283,
-     GT_MINUS = 284,
-     GT_DIVIDE = 285,
-     GT_NOT = 286,
-     IT_CONCAT = 287,
-     IT_REGEX = 288,
-     GT_SEMI = 289,
-     IT_CREATE = 290,
-     IT_TABLE = 291,
-     GT_LPAREN = 292,
-     GT_RPAREN = 293,
-     GT_COMMA = 294,
-     IT_FOREIGN = 295,
-     IT_KEY = 296,
-     IT_REFERENCES = 297,
-     IT_PRIMARY = 298,
-     IT_INT = 299,
-     IT_DOUBLE = 300,
-     IT_DATE = 301,
-     IT_DATETIME = 302,
-     IT_STRING = 303,
-     NAME = 304,
-     INTEGER = 305,
-     INTEGER_POSITIVE = 306,
-     INTEGER_NEGATIVE = 307,
-     DECIMAL = 308,
-     DECIMAL_POSITIVE = 309,
-     DECIMAL_NEGATIVE = 310,
-     DOUBLE = 311,
-     DOUBLE_POSITIVE = 312,
-     DOUBLE_NEGATIVE = 313,
-     STRING_LITERAL1 = 314,
-     STRING_LITERAL2 = 315,
-     STRING_LITERAL_LONG1 = 316,
-     STRING_LITERAL_LONG2 = 317,
-     IT_true = 318,
-     IT_false = 319
+     IT_ROWNUM = 272,
+     IT_LIMIT = 273,
+     IT_OFFSET = 274,
+     IT_IS = 275,
+     IT_NOT = 276,
+     IT_NULL = 277,
+     GT_EQUAL = 278,
+     GT_NEQUAL = 279,
+     GT_LT = 280,
+     GT_GT = 281,
+     GT_LE = 282,
+     GT_GE = 283,
+     GT_PLUS = 284,
+     GT_MINUS = 285,
+     GT_DIVIDE = 286,
+     GT_NOT = 287,
+     IT_CONCAT = 288,
+     IT_REGEX = 289,
+     GT_SEMI = 290,
+     IT_CREATE = 291,
+     IT_TABLE = 292,
+     GT_LPAREN = 293,
+     GT_RPAREN = 294,
+     GT_COMMA = 295,
+     IT_FOREIGN = 296,
+     IT_KEY = 297,
+     IT_REFERENCES = 298,
+     IT_PRIMARY = 299,
+     IT_INT = 300,
+     IT_DOUBLE = 301,
+     IT_DATE = 302,
+     IT_DATETIME = 303,
+     IT_STRING = 304,
+     NAME = 305,
+     INTEGER = 306,
+     INTEGER_POSITIVE = 307,
+     INTEGER_NEGATIVE = 308,
+     DECIMAL = 309,
+     DECIMAL_POSITIVE = 310,
+     DECIMAL_NEGATIVE = 311,
+     DOUBLE = 312,
+     DOUBLE_POSITIVE = 313,
+     DOUBLE_NEGATIVE = 314,
+     STRING_LITERAL1 = 315,
+     STRING_LITERAL2 = 316,
+     STRING_LITERAL_LONG1 = 317,
+     STRING_LITERAL_LONG2 = 318,
+     IT_true = 319,
+     IT_false = 320
    };
 
     };
@@ -455,7 +457,7 @@ namespace w3c_sw {
     static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const unsigned char yycheck_[];
+    static const short int yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];
@@ -535,7 +537,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 539 "lib/SQLParser/SQLParser.hpp"
+#line 541 "lib/SQLParser/SQLParser.hpp"
 
 
 

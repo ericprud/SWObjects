@@ -88,6 +88,7 @@ IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
 IT_FROM		[Ff][Rr][Oo][Mm]
+IT_ROWNUM		[Rr][Oo][Ww][Nn][Uu][Mm]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 GT_TIMES		"*"
@@ -161,6 +162,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_UNION}		{return token::IT_UNION;}
 {IT_WHERE}		{return token::IT_WHERE;}
 {IT_FROM}		{return token::IT_FROM;}
+{IT_ROWNUM}		{return token::IT_ROWNUM;}
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {GT_TIMES}		{return token::GT_TIMES;}

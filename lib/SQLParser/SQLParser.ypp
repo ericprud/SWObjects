@@ -58,6 +58,7 @@
 #include <vector>
 #include <string.h>
 #include "SWObjects.hpp" // for IStreamContext
+#include "ParserCommon.hpp"
 #include "SQL.hpp"
 
 #define STRINGIFY(x) #x
@@ -121,7 +122,7 @@ public:
     }
 };
 
-class SQLDriver
+class SQLDriver : public YaccDriver
 {
 public:
     /// construct a new parser driver context
@@ -206,7 +207,7 @@ public:
 /* START TokenBlock */
 /* Terminals */
 %token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES IT_AS GT_DOT
-       IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
+       IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_ROWNUM IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT IT_CONCAT IT_REGEX
 
@@ -472,6 +473,11 @@ _O_QIT_LIMIT_E_S_QINTEGER_E_C:
 	$$ = i->getValue();
 	delete $2;
 }
+    | IT_ROWNUM GT_LE INTEGER	{
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($3);
+	$$ = i->getValue();
+	delete $3;
+}
 ;
 
 _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt:
@@ -538,6 +544,7 @@ _O_QIT_AS_E_S_QAttribute_E_C:
     IT_AS Attribute	{
     $$ = $2;
 }
+    | Attribute	
 ;
 
 _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt:
@@ -642,17 +649,23 @@ TableAlias:
 	$$.subselect = NULL;
 	$$.alias = $2 ? $2 : new std::string(*$1);
 }
+    | GT_LPAREN SelectUnion GT_RPAREN Relation	{
+	$$.relation = NULL;
+	$$.subselect = $2;
+	$$.alias = $4;
+}
     | GT_LPAREN SelectUnion GT_RPAREN IT_AS Relation	{
 	$$.relation = NULL;
 	$$.subselect = $2;
 	$$.alias = $5;
-    }
+}
 ;
 
 _O_QIT_AS_E_S_QRelation_E_C:
     IT_AS Relation	{
     $$ = $2;
 }
+    | Relation
 ;
 
 _Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt:
@@ -875,12 +888,15 @@ UnaryExpression:
 ;
 
 PrimaryExpression:
-      BrackettedExpression
-    | BuiltInCall
-    | String
-    | NumericLiteral
-    | BooleanLiteral
-    | FQAttribute
+    BrackettedExpression
+  | BuiltInCall
+  | String
+  | NumericLiteral
+  | BooleanLiteral
+  | FQAttribute
+  | IT_NULL	{
+	$$ = new sql::ReallyNullConstraint();
+    }
 ;
 
 BrackettedExpression:
@@ -970,7 +986,7 @@ void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
 namespace w3c_sw {
 
 SQLDriver::SQLDriver(class sqlContext& _context)
-    : trace_scanning(false),
+    : YaccDriver("", NULL), trace_scanning(false),
       trace_parsing(false),
       context(_context)
 {
@@ -997,11 +1013,43 @@ sql::SQLQuery* SQLDriver::parse (std::string queryStr)
 }
 
 void SQLDriver::error (const class location& l,
-		   const std::string& m)
+		   const std::string& constM)
 {
-    std::stringstream s;
-    s << l << ": " << m;
-    throw s.str();
+    std::string m = constM;
+    static struct { const char* from; const char* to; } tokens[] = {
+	{ "GT_LPAREN",		"'('" },
+	{ "GT_RPAREN",		"')'" },
+	{ "GT_TIMES",		"'*'" },
+	{ "GT_LCURLEY",		"'{'" },
+	{ "GT_RCURLEY",		"'}'" },
+	{ "GT_SEMI",		"';'" },
+	{ "GT_DOT",		"'.'" },
+	{ "GT_COMMA",		"','" },
+	{ "GT_LBRACKET",	"'['" },
+	{ "GT_RBRACKET",	"']'" },
+	{ "GT_OR",		"'||'" },
+	{ "GT_AND",		"'&&'" },
+	{ "GT_EQUAL",		"'='" },
+	{ "GT_NEQUAL",		"'!='" },
+	{ "GT_LT",		"'<'" },
+	{ "GT_GT",		"'>'" },
+	{ "GT_LE",		"'<='" },
+	{ "GT_GE",		"'>='" },
+	{ "GT_DIVIDE",		"'/'" },
+	{ "GT_PLUS",		"'+'" },
+	{ "GT_MINUS",		"'-'" },
+	{ "GT_NOT",		"'!'" },
+	{ "GT_DTYPE",		"'^^'" },
+	{ "GT_", "" }
+    };
+    for (size_t i = 0; i < sizeof(tokens)/sizeof(tokens[0]); ++i) {
+	size_t p = m.find(tokens[i].from);
+	if (p != std::string::npos) {
+	    m.replace(p, strlen(tokens[i].from) + 1, tokens[i].to);
+	    break;
+	}
+    }
+    YaccDriver::error(l, m);
 }
 
 void SQLDriver::error (const std::string& m)
