@@ -765,6 +765,12 @@ namespace w3c_sw {
 	    }
 	    return true;
 	}
+	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	    if (elideSubSelect)
+		p_GroupGraphPattern->express(this);
+	    else
+		SWObjectDuplicator::whereClause(self,  p_GroupGraphPattern, p_BindingClause);
+	}
 	virtual void select (const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    ExpressionAliasList* eal(dynamic_cast<ExpressionAliasList*>(p_VarSet));
 	    if (eal != NULL && _unneededProject(eal)) {
