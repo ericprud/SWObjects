@@ -6,30 +6,12 @@ SELECT DISTINCT ?product ?label
 WHERE
 {
   {
-    SELECT ?_productFeature_0_pfp     (<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature5> AS ?featid) 
-    WHERE
-    {
-      _:_productFeature_0_pfp <http://bsbm.example/db/productfeatureproduct#product> ?product .
-      _:_productFeature_0_pfp <http://bsbm.example/db/productfeatureproduct#productfeature> "5"  .
-    }
-      }
-  {
-    SELECT ?_productFeature_1_pfp     (<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature7> AS ?featid) 
-    WHERE
-    {
-      _:_productFeature_1_pfp <http://bsbm.example/db/productfeatureproduct#product> ?product .
-      _:_productFeature_1_pfp <http://bsbm.example/db/productfeatureproduct#productfeature> "7"  .
-    }
-      }
-  {
-    SELECT ?_ptptype_0_ptp     (<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType59> AS ?ptptype) 
-    WHERE
-    {
-      _:_ptptype_0_ptp <http://bsbm.example/db/producttypeproduct#product> ?product .
-      _:_ptptype_0_ptp <http://bsbm.example/db/producttypeproduct#productType> "59"  .
-    }
-      }
-  {
+    _:_productFeature_0_pfp <http://bsbm.example/db/productfeatureproduct#product> ?product .
+    _:_productFeature_0_pfp <http://bsbm.example/db/productfeatureproduct#productfeature> "5"  .
+    _:_productFeature_1_pfp <http://bsbm.example/db/productfeatureproduct#product> ?product .
+    _:_productFeature_1_pfp <http://bsbm.example/db/productfeatureproduct#productfeature> "7"  .
+    _:_ptptype_0_ptp <http://bsbm.example/db/producttypeproduct#product> ?product .
+    _:_ptptype_0_ptp <http://bsbm.example/db/producttypeproduct#productType> "59"  .
     ?product <http://bsbm.example/db/product#label> ?label .
     ?product <http://bsbm.example/db/product#propertyNum1> ?value1 .
   }

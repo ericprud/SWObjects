@@ -566,7 +566,7 @@ struct SQLizerTest {
 		std::cerr << e;
 		ref = NULL;
 	    }
-	} catch (std::string e) {
+	} catch (std::string e) { // SQL parser exceptions aren't very elegant yet.
 	    std::cerr << e;
 	    transformed = NULL;
 	}
@@ -727,9 +727,9 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE( simple )
 	BOOST_AUTO_TEST_CASE( hl7_sdtm ) {
-	RULE_MAP_TEST("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq", IStreamContext::FILE);
+	    RULE_MAP_TEST("healthCare/simple/sdtm.rq", "healthCare/simple/hl7-sdtm.rq", "healthCare/simple/hl7.rq", IStreamContext::FILE);
 	}
-	BOOST_AUTO_TEST_CASE( sdtm_db ) { // !! leaky
+	BOOST_AUTO_TEST_CASE( sdtm_db ) {
 	    RuleMapTest t("healthCare/simple/hl7.rq", "healthCare/simple/db-hl7.rq", "healthCare/simple/db.rq");
 	    if (boost::unit_test::framework::master_test_suite().argc > 1 && 
 		std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
@@ -739,6 +739,14 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 	}
     BOOST_AUTO_TEST_SUITE_END()
 
+    BOOST_AUTO_TEST_SUITE( i2b2 )
+	BOOST_AUTO_TEST_CASE( a ) {
+	    RuleMapTest t("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo.map", "i2b2/db_pat_test_date.rq");
+	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
+	    SQLizerTest s(t.mapResults, "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date.sql");
+	    BOOST_CHECK_EQUAL(*s.transformed, *s.ref);
+	}
+    BOOST_AUTO_TEST_SUITE_END()
 
     BOOST_AUTO_TEST_SUITE( notBound )
 	BOOST_AUTO_TEST_CASE( lists_notBound ) {
@@ -753,14 +761,81 @@ BOOST_AUTO_TEST_SUITE( healthCare )
 	}
     BOOST_AUTO_TEST_SUITE_END()
 
+    BOOST_AUTO_TEST_CASE( goProt ) {
+	RuleMapTest t("goProt/goProt2.rq", "goProt/goProt2.map", "goProt/goProt2-srvc.rq");
+	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( bsbm )
+    BOOST_AUTO_TEST_SUITE( pieces )
+	BOOST_AUTO_TEST_CASE( parseQuery ) {
+	    IStreamContext::e_opts type = IStreamContext::FILE;
+	    IStreamContext qstr("bsbm/q1.rq", type);
+	    Operation* query = sparqlParser.parse(qstr);
+	    delete query;
+	}
+
+	BOOST_AUTO_TEST_CASE( parseMap ) {
+	    IStreamContext::e_opts type = IStreamContext::FILE;
+	    IStreamContext mstr("bsbm/db2bsbm.map", type);
+	    MapSet* ms = mapSetParser.parse(mstr);
+	    queryMapper.sharedVars = ms->sharedVars;
+	    for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
+		 it != ms->maps.end(); ++it)
+		queryMapper.addRule(it->constr, it->label);
+	    queryMapper.nodeShare = ms->nodeShare;
+	    delete ms;
+	}
+
+	BOOST_AUTO_TEST_CASE( transformQuery ) {
+	    IStreamContext::e_opts type = IStreamContext::FILE;
+	    IStreamContext qstr("bsbm/q1.rq", type);
+	    Operation* query = sparqlParser.parse(qstr);
+
+	    IStreamContext mstr("bsbm/db2bsbm.map", type);
+	    MapSet* ms = mapSetParser.parse(mstr);
+	    queryMapper.sharedVars = ms->sharedVars;
+	    for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
+		 it != ms->maps.end(); ++it)
+		queryMapper.addRule(it->constr, it->label);
+	    queryMapper.nodeShare = ms->nodeShare;
+
+	    const Operation* transformed = queryMapper.map(query);
+	    delete transformed;
+	    delete query;
+	    delete ms;
+	}
+
+	BOOST_AUTO_TEST_CASE( canonicalizeTransformation ) {
+	    IStreamContext::e_opts type = IStreamContext::FILE;
+	    IStreamContext qstr("bsbm/q1.rq", type);
+	    Operation* query = sparqlParser.parse(qstr);
+
+	    IStreamContext mstr("bsbm/db2bsbm.map", type);
+	    MapSet* ms = mapSetParser.parse(mstr);
+	    queryMapper.sharedVars = ms->sharedVars;
+	    for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
+		 it != ms->maps.end(); ++it)
+		queryMapper.addRule(it->constr, it->label);
+	    queryMapper.nodeShare = ms->nodeShare;
+
+	    const Operation* transformed = queryMapper.map(query);
+	    SPARQLSerializer s;
+	    transformed->express(&s);
+	    delete transformed;
+	    delete query;
+	    delete ms;
+	}
+    BOOST_AUTO_TEST_SUITE_END()
+
+
     BOOST_AUTO_TEST_CASE( q1 ) {
-	RuleMapTest t("bsbm/q1.rq", "bsbm/ruleMap.rq", "bsbm/q1-db.rq");
+	RuleMapTest t("bsbm/q1.rq", "bsbm/db2bsbm.map", "bsbm/q1-db.rq");
 	BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
     }
+
 BOOST_AUTO_TEST_SUITE_END()
 
 /** record how to access test argc/argv 'cause i always forget:

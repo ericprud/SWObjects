@@ -19,7 +19,7 @@ namespace w3c_sw {
 
     class SQLizer : public Expressor {
 
-	class SQLOptionalGenerator;
+	class SQLSubselectGenerator;
 	class SQLUnionGenerator;
 	class SQLQueryGenerator {
 	    friend class SQLizer;
@@ -45,6 +45,14 @@ namespace w3c_sw {
 		 * shared with AliasAttrConstraint in attachments. */
 		delete query;
 	    }
+ 	    virtual std::string toString (std::string pad = "") {
+		std::stringstream ss;
+		for (std::map<std::string, sql::Expression*>::const_iterator att = attachments.begin();
+		     att != attachments.end(); ++att)
+		    ss << att->first << ": " << att->second->toString() << std::endl;
+		ss << "query: " << *query;
+		return ss.str();
+	    }
 	    void attachVariable (sql::AliasAttr aattr, std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
@@ -55,7 +63,7 @@ namespace w3c_sw {
 	    sql::Expression* getVariableConstraint (std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
 		if (it == attachments.end())
-		    w3c_sw_FAIL1("can't find variable \"%s\"", lexicalValue.c_str());
+		    w3c_sw_FAIL1("Can't find variable \"%s\".", lexicalValue.c_str());
 		else
 		    return it->second->clone();
 	    }
@@ -64,6 +72,12 @@ namespace w3c_sw {
 		    attachments[lexicalValue] = new sql::ReallyNullConstraint();
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
 		query->selects.push_back(new sql::AliasedSelect(attachments[lexicalValue]->clone(), lexicalValue));
+	    }
+	    void projectVariable (std::string lexicalValue, sql::Expression* expr) {
+		if (attachments.find(lexicalValue) != attachments.end())
+		    w3c_sw_FAIL2("Variable \"%s\" already bound to \"%s\".", lexicalValue.c_str(), expr->toString().c_str());
+		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
+		attachments[lexicalValue] = expr;
 	    }
 	    void selectConstant (int value, std::string alias) {
 		if (attachments.find(alias) == attachments.end())
@@ -114,10 +128,10 @@ namespace w3c_sw {
 		query->add(curJoin);
 		return ret;
 	    }
-	    SQLOptionalGenerator* makeOptional (std::vector<const TTerm*> corefs) {
+	    SQLSubselectGenerator* makeSubselect (std::vector<const TTerm*> corefs) {
 		std::stringstream s;
 		s << "opt" << ++nextOptAlias;
-		SQLOptionalGenerator* ret = new SQLOptionalGenerator(this, corefs, s.str());
+		SQLSubselectGenerator* ret = new SQLSubselectGenerator(this, corefs, s.str());
 		curJoin = new sql::SubqueryJoin(ret->query, s.str(), true);
 		query->add(curJoin);
 		return ret;
@@ -173,14 +187,14 @@ namespace w3c_sw {
 	    void setOffset (int offset) { query->offset = offset; }
 	};
 
-	class SQLOptionalGenerator : public SQLQueryGenerator {
+	class SQLSubselectGenerator : public SQLQueryGenerator {
 	    std::vector<const TTerm*> corefs;
 	    std::string name;
 	public:
-	    SQLOptionalGenerator (SQLQueryGenerator* parent, std::vector<const TTerm*> corefs, std::string name) : 
+	    SQLSubselectGenerator (SQLQueryGenerator* parent, std::vector<const TTerm*> corefs, std::string name) : 
 		SQLQueryGenerator(parent), corefs(corefs), name(name)
 	    {  }
-	    virtual ~SQLOptionalGenerator () {  }
+	    virtual ~SQLSubselectGenerator () {  }
 	    void attach () {
 		for (std::vector<const TTerm*>::iterator coref = corefs.begin();
 		     coref != corefs.end(); ++coref) {
@@ -358,13 +372,7 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_constraint:
-		if (self == TTerm::URI_xsd_integer || 
-		    self == TTerm::URI_xsd_decimal || 
-		    self == TTerm::URI_xsd_float   || 
-		    self == TTerm::URI_xsd_double    ) {
-		} else {
-		    w3c_sw_FAIL1("URI <%s> as constraint is unimplemented", lexicalValue.c_str());
-		}
+		curConstraint = new sql::LiteralConstraint(lexicalValue);
 		break;
 
 	    default:
@@ -662,7 +670,9 @@ namespace w3c_sw {
 		try {
 		    (*tripleIt)->express(this);
 		} catch (nonLocalIdentifierException& e) {
-		    std::cerr << "pattern {" << (*tripleIt) << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
+		    SPARQLSerializer s;
+		    (*tripleIt)->express(&s);
+		    std::cerr << "pattern {" << s.str() << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* /* p_name */, bool /* p_allOpts */, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
@@ -705,7 +715,7 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    SQLQueryGenerator* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
-	    SQLOptionalGenerator* optional = parent->makeOptional(consequentsP->entriesFor(curTableOperation));
+	    SQLSubselectGenerator* optional = parent->makeSubselect(consequentsP->entriesFor(curTableOperation));
 	    curQuery = optional;
 	    curTableOperation = p_GroupGraphPattern; 
 	    curTableOperation->express(this);
@@ -744,10 +754,24 @@ namespace w3c_sw {
 	    curTableOperation->express(this);
 	}
 	virtual void expressionAlias (const ExpressionAlias* const, const w3c_sw::Expression* expr, const Bindable* label) {
-	    if (label != NULL) {
-		w3c_sw_NEED_IMPL("SQLizer(ExpressionAliase)");
-	    } else
+	    const TTermExpression* ttexp = dynamic_cast<const TTermExpression*>(expr);
+	    if (ttexp != NULL && label == NULL)
+		// Selecting a simple variable is handled (perhaps inelegantly) by mode MODE_select.
 		expr->express(this);
+	    else {
+		mode = MODE_constraint;
+		expr->express(this);
+		std::string labelStr;
+		if (label != NULL) {
+		    labelStr = label->getLexicalValue();
+		} else {
+		    SPARQLSerializer s;
+		    expr->express(&s);
+		    labelStr = s.str();
+		}
+		curQuery->projectVariable(labelStr, curConstraint);
+		curConstraint = NULL;
+	    }
 	}
 	virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const w3c_sw::ExpressionAlias*>* p_Expressions) {
 	    for (std::vector<const w3c_sw::ExpressionAlias*>::const_iterator it = p_Expressions->begin();
@@ -802,7 +826,8 @@ namespace w3c_sw {
 	}
 	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    w3c_sw_START("cracking select clause");
-	    curQuery = new SQLQueryGenerator(NULL);
+	    if (curQuery == NULL) // perhaps set by parent subSelect.
+		curQuery = new SQLQueryGenerator(NULL);
 	    selectVars = p_VarSet;
 	    if (p_distinctness == DIST_distinct) curQuery->setDistinct(true);
 	    //if (p_distinctness == DIST_reduced) ...
@@ -813,8 +838,20 @@ namespace w3c_sw {
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
 	}
-	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
-	    w3c_sw_NEED_IMPL("SQLizer(subselect)");
+	virtual void subSelect (const SubSelect* const self, const Select* p_Select) {
+	    w3c_sw_MARK;
+	    SQLQueryGenerator* parent = curQuery;
+	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
+	    SQLSubselectGenerator* subselect = parent->makeSubselect(consequentsP->entriesFor(curTableOperation));
+	    curQuery = subselect;
+	    p_Select->express(this);
+	    subselect->attach();
+
+	    /** clear subselect's generated SQL query pointer so it doesn't get reaped (ownership has switched to parent).
+	     */
+	    subselect->query = NULL;
+	    delete subselect;
+	    curQuery = parent;
 	}
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    w3c_sw_FAIL("CONSTRUCT");
@@ -877,15 +914,22 @@ namespace w3c_sw {
 	    p_TTerm->express(this);
 	}
 	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* expressions) {
-	    w3c_sw_MARK;
-	    expressions->express(this);
+	    w3c_sw_FAIL("argList");
 	}
 	// !!!
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    w3c_sw_MARK;
-	    args->express(this);
+	    // args->express(this);
+	    std::vector<const sql::Expression*> sqlArgs;
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator arg = args->begin();
+		 arg != args->end(); ++arg) {
+		(*arg)->express(this);
+		sqlArgs.push_back(curConstraint);
+	    }
 	    if (iri == TTerm::FUNC_bound)
 		curConstraint = new sql::NullConstraint(curConstraint);
+	    else if (iri == TTerm::XPATH_concat)
+		curConstraint = new sql::ConcatConstraint(sqlArgs.begin(), sqlArgs.end());
 	    else
 		iri->express(this);
 	}
