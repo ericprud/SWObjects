@@ -1067,7 +1067,7 @@ DeleteWhere: // !!! lost in yacker
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } WhereClause	{
-	$$ = new Delete($<p_TableOperation>3, $5);
+	$$ = new Delete($<p_TableOperation>3, NULL);
       }
 ;
 
@@ -2261,8 +2261,8 @@ BuiltInCall:
   | IT_isNUMERIC GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, $3, NULL, NULL));
     }
-  | IT_CONCAT _QArgList_E_Opt	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, $2));
+  | IT_CONCAT ExpressionList	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, new ArgList($2)));
     }
   | RegexExpression	
   | ExistsFunc	
