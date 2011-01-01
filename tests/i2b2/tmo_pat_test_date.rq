@@ -1,6 +1,6 @@
 PREFIX cpr: <http://purl.org/cpr/0.75#>
 PREFIX trans: <tag:eric@w3.org:2009/tmo/translator#>
-PREFIX encounter: <http://informatics.kumc.edu/encounter/_>
+PREFIX encounter: <http://informatics.kumc.edu/404/i2b2demo/visit_dimension#_>
 
 SELECT ?pat ?test ?encDate
  WHERE {

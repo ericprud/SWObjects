@@ -3,7 +3,7 @@ PREFIX cpr: <http://purl.org/cpr/0.75#>
 PREFIX trans: <tag:eric@w3.org:2009/tmo/translator#>
 
 # Constructed identifiers:
-PREFIX encounter: <http://informatics.kumc.edu/encounter/>
+PREFIX encounter: <http://informatics.kumc.edu/404/i2b2demo/visit_dimension#_>
 PREFIX testtype: <http://informatics.kumc.edu/testtype/>
 
 # The database-native namespaces:
