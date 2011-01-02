@@ -138,6 +138,29 @@ end
 }
 BOOST_AUTO_TEST_SUITE_END(/* subselect */)
 
+BOOST_AUTO_TEST_SUITE( bind )
+BOOST_AUTO_TEST_CASE( _1 ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++----+----+----+----+
+| ?a | ?b | ?c | ?d |
+|  1 | 10 |  2 |  9 |
+|  1 |  9 |  3 |  7 |
+|  1 | 11 |  4 |  8 |
++----+----+----+----+
+     */
+    GRAPH_TEST(NULL, "sparql11/bind_1.rq", "sparql11/bind_1.srx");
+}
+BOOST_AUTO_TEST_SUITE_END(/* bind */)
+
 
 // EOF
 

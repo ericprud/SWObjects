@@ -1,0 +1,18 @@
+# bind_1.rq - BIND ?d to ?a + ?b - ?c
+
+# $Id$
+
+SELECT *
+{
+    {
+      SELECT * {}
+      BINDINGS
+?a ?b  ?c {
+(1 10 2)
+(1  9 3)
+(1 11 4)
+          }
+    }
+BIND (?a + ?b - ?c AS ?d)
+}
+

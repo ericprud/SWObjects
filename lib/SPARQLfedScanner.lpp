@@ -99,17 +99,24 @@ IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
 IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
 IT_DROP		[Dd][Rr][Oo][Pp]
 IT_CREATE		[Cc][Rr][Ee][Aa][Tt][Ee]
-IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
-IT_DATA		[Dd][Aa][Tt][Aa]
-IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
+IT_ADD		[Aa][Dd][Dd]
+IT_TO		[Tt][Oo]
+IT_MOVE		[Mm][Oo][Vv][Ee]
+IT_COPY		[Cc][Oo][Pp][Yy]
+GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA		[Ii][Nn][Ss][Ee][Rr][Tt][ \t\r\n]+[Dd][Aa][Tt][Aa]
+GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA		[Dd][Ee][Ll][Ee][Tt][Ee][ \t\r\n]+[Dd][Aa][Tt][Aa]
+GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE		[Dd][Ee][Ll][Ee][Tt][Ee][ \t\r\n]+[Ww][Hh][Ee][Rr][Ee]
 IT_WITH		[Ww][Ii][Tt][Hh]
+IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
+IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
 IT_USING		[Uu][Ss][Ii][Nn][Gg]
-IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_DEFAULT		[Dd][Ee][Ff][Aa][Uu][Ll][Tt]
+IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_ALL		[Aa][Ll][Ll]
 GT_DOT		"."
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
+IT_BIND		[Bb][Ii][Nn][Dd]
 IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
@@ -147,6 +154,33 @@ IT_BOUND		[Bb][Oo][Uu][Nn][Dd]
 IT_IRI		[Ii][Rr][Ii]
 IT_URI		[Uu][Rr][Ii]
 IT_BNODE		[Bb][Nn][Oo][Dd][Ee]
+IT_RAND		[Rr][Aa][Nn][Dd]
+IT_ABS		[Aa][Bb][Ss]
+IT_CEIL		[Cc][Ee][Ii][Ll]
+IT_FLOOR		[Ff][Ll][Oo][Oo][Rr]
+IT_ROUND		[Rr][Oo][Uu][Nn][Dd]
+IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
+IT_STRLEN		[Ss][Tt][Rr][Ll][Ee][Nn]
+IT_UCASE		[Uu][Cc][Aa][Ss][Ee]
+IT_LCASE		[Ll][Cc][Aa][Ss][Ee]
+IT_ENCODE_FOR_URI		[Ee][Nn][Cc][Oo][Dd][Ee]'_'[Ff][Oo][Rr]'_'[Uu][Rr][Ii]
+IT_CONTAINS		[Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
+IT_STRSTARTS		[Ss][Tt][Rr][Ss][Tt][Aa][Rr][Tt][Ss]
+IT_STRENDS		[Ss][Tt][Rr][Ee][Nn][Dd][Ss]
+IT_YEAR		[Yy][Ee][Aa][Rr]
+IT_MONTH		[Mm][Oo][Nn][Tt][Hh]
+IT_DAY		[Dd][Aa][Yy]
+IT_HOURS		[Hh][Oo][Uu][Rr][Ss]
+IT_MINUTES		[Mm][Ii][Nn][Uu][Tt][Ee][Ss]
+IT_SECONDS		[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
+IT_TIMEZONE		[Tt][Ii][Mm][Ee][Zz][Oo][Nn][Ee]
+IT_NOW		[Nn][Oo][Ww]
+IT_MD5		[Mm][Dd]'5'
+IT_SHA1		[Ss][Hh][Aa]'1'
+IT_SHA224		[Ss][Hh][Aa]'224'
+IT_SHA256		[Ss][Hh][Aa]'256'
+IT_SHA384		[Ss][Hh][Aa]'384'
+IT_SHA512		[Ss][Hh][Aa]'512'
 IT_COALESCE		[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]
 IT_IF		[Ii][Ff]
 IT_STRLANG		[Ss][Tt][Rr][Ll][Aa][Nn][Gg]
@@ -158,7 +192,7 @@ IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_isNUMERIC		[Ii][Ss][Nn][Uu][Mm][Ee][Rr][Ii][Cc]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
-IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
+IT_SUBSTR		[Ss][Uu][Bb][Ss][Tt][Rr]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
 IT_GROUP_CONCAT		[Gg][Rr][Oo][Uu][Pp]"_"[Cc][Oo][Nn][Cc][Aa][Tt]
@@ -249,17 +283,24 @@ LINEFEED		(\r\n|\r|\n)
 {IT_SILENT}		{return token::IT_SILENT;}
 {IT_DROP}		{return token::IT_DROP;}
 {IT_CREATE}		{return token::IT_CREATE;}
-{IT_INSERT}		{return token::IT_INSERT;}
-{IT_DATA}		{return token::IT_DATA;}
-{IT_DELETE}		{return token::IT_DELETE;}
+{IT_ADD}		{return token::IT_ADD;}
+{IT_TO}		{return token::IT_TO;}
+{IT_MOVE}		{return token::IT_MOVE;}
+{IT_COPY}		{return token::IT_COPY;}
+{GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA}		{return token::GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA;}
+{GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA}		{return token::GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA;}
+{GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE}		{return token::GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE;}
 {IT_WITH}		{return token::IT_WITH;}
+{IT_DELETE}		{return token::IT_DELETE;}
+{IT_INSERT}		{return token::IT_INSERT;}
 {IT_USING}		{return token::IT_USING;}
-{IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_DEFAULT}		{return token::IT_DEFAULT;}
+{IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_ALL}		{return token::IT_ALL;}
 {GT_DOT}		{return token::GT_DOT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
+{IT_BIND}		{return token::IT_BIND;}
 {IT_MINUS}		{return token::IT_MINUS;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
@@ -297,6 +338,33 @@ LINEFEED		(\r\n|\r|\n)
 {IT_IRI}		{return token::IT_IRI;}
 {IT_URI}		{return token::IT_URI;}
 {IT_BNODE}		{return token::IT_BNODE;}
+{IT_RAND}		{return token::IT_RAND;}
+{IT_ABS}		{return token::IT_ABS;}
+{IT_CEIL}		{return token::IT_CEIL;}
+{IT_FLOOR}		{return token::IT_FLOOR;}
+{IT_ROUND}		{return token::IT_ROUND;}
+{IT_CONCAT}		{return token::IT_CONCAT;}
+{IT_STRLEN}		{return token::IT_STRLEN;}
+{IT_UCASE}		{return token::IT_UCASE;}
+{IT_LCASE}		{return token::IT_LCASE;}
+{IT_ENCODE_FOR_URI}		{return token::IT_ENCODE_FOR_URI;}
+{IT_CONTAINS}		{return token::IT_CONTAINS;}
+{IT_STRSTARTS}		{return token::IT_STRSTARTS;}
+{IT_STRENDS}		{return token::IT_STRENDS;}
+{IT_YEAR}		{return token::IT_YEAR;}
+{IT_MONTH}		{return token::IT_MONTH;}
+{IT_DAY}		{return token::IT_DAY;}
+{IT_HOURS}		{return token::IT_HOURS;}
+{IT_MINUTES}		{return token::IT_MINUTES;}
+{IT_SECONDS}		{return token::IT_SECONDS;}
+{IT_TIMEZONE}		{return token::IT_TIMEZONE;}
+{IT_NOW}		{return token::IT_NOW;}
+{IT_MD5}		{return token::IT_MD5;}
+{IT_SHA1}		{return token::IT_SHA1;}
+{IT_SHA224}		{return token::IT_SHA224;}
+{IT_SHA256}		{return token::IT_SHA256;}
+{IT_SHA384}		{return token::IT_SHA384;}
+{IT_SHA512}		{return token::IT_SHA512;}
 {IT_COALESCE}		{return token::IT_COALESCE;}
 {IT_IF}		{return token::IT_IF;}
 {IT_STRLANG}		{return token::IT_STRLANG;}
@@ -308,7 +376,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
 {IT_isNUMERIC}		{return token::IT_isNUMERIC;}
 {IT_REGEX}		{return token::IT_REGEX;}
-{IT_CONCAT}		{return token::IT_CONCAT;}
+{IT_SUBSTR}		{return token::IT_SUBSTR;}
 {IT_EXISTS}		{return token::IT_EXISTS;}
 {IT_COUNT}		{return token::IT_COUNT;}
 {IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}

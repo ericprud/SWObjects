@@ -71,6 +71,13 @@ public:
 	p_Constraints->express(this);
 	xml->close();
     }
+    virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) {
+	p_op->express(this);
+	xml->open("Bind"); {
+	    p_expr->express(this);
+	    p_label->express(this);
+	} xml->close();
+    }
     virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	if (sparqlx)
 	    xml->open("BasicGraphPattern");
@@ -301,6 +308,39 @@ public:
 	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
+    }
+    virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	xml->open("Add"); {
+	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    xml->open("From"); {
+		from->express(this);
+	    } xml->close();
+	    xml->open("To"); {
+		from->express(this);
+	    } xml->close();
+	} xml->close();
+    }
+    virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	xml->open("Move"); {
+	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    xml->open("From"); {
+		from->express(this);
+	    } xml->close();
+	    xml->open("To"); {
+		from->express(this);
+	    } xml->close();
+	} xml->close();
+    }
+    virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	xml->open("Copy"); {
+	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    xml->open("From"); {
+		from->express(this);
+	    } xml->close();
+	    xml->open("To"); {
+		from->express(this);
+	    } xml->close();
+	} xml->close();
     }
     virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
 	xml->open("TTermExpression");

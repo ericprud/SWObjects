@@ -663,6 +663,13 @@ namespace w3c_sw {
 		    std::cerr << "filter {" << *it << "} is not handled by stem " << stem << " because " << e.what() << std::endl;
 		}
 	}
+	virtual void bind (const Bind* const, const TableOperation* p_op, const w3c_sw::Expression* expr, const Variable* label) {
+	    p_op->express(this);
+	    mode = MODE_constraint;
+	    expr->express(this);
+	    curQuery->projectVariable(label->getLexicalValue(), curConstraint);
+	    curConstraint = NULL;
+	}
 	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    w3c_sw_MARK;
 	    for (std::vector<const TriplePattern*>::const_iterator tripleIt = p_TriplePatterns->begin();
@@ -908,6 +915,21 @@ namespace w3c_sw {
 	virtual void drop (const Drop* const, e_Silence /* p_Silence */, const URI* p_GraphIRI) {
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
+	}
+	virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    w3c_sw_FAIL("add");
+	    from->express(this);
+	    to->express(this);
+	}
+	virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    w3c_sw_FAIL("move");
+	    from->express(this);
+	    to->express(this);
+	}
+	virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    w3c_sw_FAIL("copy");
+	    from->express(this);
+	    to->express(this);
 	}
 	virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
 	    w3c_sw_MARK;

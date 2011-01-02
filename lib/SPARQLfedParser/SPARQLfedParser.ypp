@@ -250,6 +250,13 @@ public:
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE IT_CONCAT
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
        IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE IT_WITH IT_DEFAULT IT_ALL IT_USING
+       IT_MD5 IT_TO IT_YEAR IT_ADD IT_COPY IT_RAND IT_SHA512
+       GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE
+       IT_NOW GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
+       IT_TIMEZONE IT_ROUND IT_SHA384 IT_BIND IT_CONTAINS IT_SECONDS IT_MOVE IT_FLOOR
+       GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
+       IT_MINUTES IT_SUBSTR IT_SHA256 IT_HOURS IT_ENCODE_FOR_URI IT_STRSTARTS IT_CEIL
+       IT_DAY IT_LCASE IT_ABS IT_UCASE IT_SHA224 IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
 
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
@@ -265,9 +272,9 @@ public:
 %token <p_NIL> NIL
 
 /* Productions */
-%type <p_Operation> Query SelectQuery SubSelect ConstructQuery DescribeQuery AskQuery  // SPARQL 1
+%type <p_Operation> Query _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C SelectQuery SubSelect ConstructQuery DescribeQuery AskQuery  // SPARQL 1
 		    Top QueryUnit UpdateUnit Update1
-                    Update Modify DeleteData DeleteWhere InsertData Load Clear Create Drop // SPARUL
+                    Update Modify DeleteData DeleteWhere InsertData Load Clear Create Drop Add Move Copy// SPARUL
 
 %type <p_DeleteInsert> _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C
 %type <p_Delete> DeleteClause
@@ -345,7 +352,7 @@ public:
 		     _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_S_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_Opt_C
 		     MultiplicativeExpression
 		     _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C
-		     UnaryExpression PrimaryExpression RegexExpression
+		     UnaryExpression PrimaryExpression RegexExpression SubstringExpression
 		     _O_QGT_COMMA_E_S_QExpression_E_C
 		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
                      HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
@@ -367,6 +374,8 @@ public:
 	      GraphRefAll _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt
 	      _O_QIT_INTO_E_S_QGraphRef_E_C
 	      _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C
+	      _O_QIT_WITH_E_S_QIRIref_E_C _Q_O_QIT_WITH_E_S_QIRIref_E_C_E_Opt
+	      GraphOrDefault
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C
 			 _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
 
@@ -404,8 +413,15 @@ QueryUnit:
     }
 ;
 
-// SelectQuery | ConstructQuery | DescribeQuery | AskQuery
+// Prologue ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery )
 Query:
+    Prologue _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C	{
+	$$ = $2;
+    }
+;
+
+// SelectQuery | ConstructQuery | DescribeQuery | AskQuery
+_O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C:
     SelectQuery	
   | ConstructQuery	
   | DescribeQuery	
@@ -977,6 +993,9 @@ Update1:
     Load	
   | Clear	
   | Drop	
+  | Add	
+  | Move	
+  | Copy	
   | Create	
   | InsertData	
   | DeleteData	
@@ -1032,54 +1051,68 @@ Create:
     }
 ;
 
+Add:
+    IT_ADD _QIT_SILENT_E_Opt GraphOrDefault IT_TO GraphOrDefault	{
+	$$ = new Add($2, $3, $5);
+}
+;
+
+Move:
+    IT_MOVE _QIT_SILENT_E_Opt GraphOrDefault IT_TO GraphOrDefault	{
+	$$ = new Move($2, $3, $5);
+}
+;
+
+Copy:
+    IT_COPY _QIT_SILENT_E_Opt GraphOrDefault IT_TO GraphOrDefault	{
+	$$ = new Copy($2, $3, $5);
+}
+;
+
 InsertData:
-    IT_INSERT IT_DATA QuadData	{
+    GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA QuadData	{
 	$$ = new Insert(driver.curOp, NULL);
 	driver.curOp = NULL;
 	driver.curBGP = NULL;
     }
 ;
 
-// InsertData:
-//     IT_INSERT IT_DATA GraphTemplate {
-// 	$<p_TableOperation>$ = driver.curOp;
-// 	driver.curOp = NULL;
-//       } _QWhereClause_E_Opt	{
-// 	$$ = new Insert($<p_TableOperation>4, $5);
-//       }
-// ;
-
-// _QIT_DATA_E_Opt:
-//     
-//   | IT_DATA	
-// ;
-
 DeleteData:
-    IT_DELETE IT_DATA QuadData	{
+    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA QuadData	{
 	$$ = new Delete(driver.curOp, NULL);
 	driver.curOp = NULL;
 	driver.curBGP = NULL;
     }
 ;
 
-DeleteWhere: // !!! lost in yacker
-    IT_DELETE IT_WHERE QuadData {
-	$<p_TableOperation>$ = driver.curOp;
+DeleteWhere:
+    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE QuadData {
+	$$ = new Delete(driver.curOp, NULL);
 	driver.curOp = NULL;
-      } WhereClause	{
-	$$ = new Delete($<p_TableOperation>3, NULL);
-      }
+    }
 ;
 
 // <Modify>
 Modify:
-    _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star IT_WHERE GroupGraphPattern	{
-	$$ = new Modify($1.del, $1.ins, new WhereClause(driver.curOp, NULL));
+    _Q_O_QIT_WITH_E_S_QIRIref_E_C_E_Opt _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star IT_WHERE GroupGraphPattern	{
+	if ($1)
+	    w3c_sw_NEED_IMPL("WITH <URI> (DELETE INSERT?|INSERT) ...");
+	$$ = new Modify($2.del, $2.ins, new WhereClause(driver.curOp, NULL));
 	driver.curOp = NULL;
     }
-  | _O_QIT_WITH_E_S_QIRIref_E_C _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star IT_WHERE GroupGraphPattern	{
-	w3c_sw_NEED_IMPL("@@");
+;
+
+_O_QIT_WITH_E_S_QIRIref_E_C:
+    IT_WITH IRIref	{
+	$$ = $2;
     }
+;
+
+_Q_O_QIT_WITH_E_S_QIRIref_E_C_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | _O_QIT_WITH_E_S_QIRIref_E_C	
 ;
 
 _QInsertClause_E_Opt:
@@ -1107,21 +1140,15 @@ _QUsingClause_E_Star:
     }
 ;
 
-_O_QIT_WITH_E_S_QIRIref_E_C:
-    IT_WITH IRIref	{
-	w3c_sw_NEED_IMPL("@@");
-    }
-;
-
 DeleteClause:
-    IT_DELETE QuadData	{
+    IT_DELETE QuadPattern	{
 	$$ = new Delete(driver.curOp, NULL);
 	driver.curOp = NULL;
     }
 ;
 
 InsertClause:
-    IT_INSERT QuadData	{
+    IT_INSERT QuadPattern	{
 	$$ = new Insert(driver.curOp, NULL);
 	driver.curOp = NULL;
     }
@@ -1141,57 +1168,20 @@ _O_QIRIref_E_Or_QIT_NAMED_E_S_QIRIref_E_C:
 	w3c_sw_NEED_IMPL("@@");
     }
 ;
-// </Modify>
 
-// _QInsertClause_E_Opt:
-//     {
-// 	$$ = NULL;
-//     }
-//   | InsertClause	
-// ;
+GraphOrDefault:
+    IT_DEFAULT	{
+	$$ = NULL;
+    }
+  | _QIT_GRAPH_E_Opt IRIref	{
+	$$ = $2;
+    }
+;
 
-// _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C:
-//     DeleteClause _QInsertClause_E_Opt	{
-// 	if ($2 = NULL)
-// 	    $$ = $1;
-// 	else {
-// 	    OperationSet* ret = new OperationSet();
-// 	    ret->push_back($1);
-// 	    ret->push_back($2);
-// 	    $$ = ret;
-// 	}
-//     }
-//   | InsertClause	
-// ;
-
-// _QUsingClause_E_Star:
+_QIT_GRAPH_E_Opt:
     
-//   | _QUsingClause_E_Star UsingClause	{
-// 	w3c_sw_NEED_IMPL("_QUsingClause_E_Star");
-//     }
-// ;
-
-// _O_QIT_WITH_E_S_QIRIref_E_C:
-//     IT_WITH IRIref	{
-// 	w3c_sw_NEED_IMPL("WITH...");
-//     }
-// ;
-
-// Modify:
-//     Insert	
-//   | Delete	
-// ;
-
-// IRIref+
-// _QIRIref_E_Plus:
-//     IRIref	{
-// 	$$ = new ProductionVector<const URI*>($1);
-//     }
-//   | _QIRIref_E_Plus IRIref	{
-// 	$1->push_back($2);
-// 	$$ = $1;
-//     }
-// ;
+  | IT_GRAPH	
+;
 
 GraphRef:
     IT_GRAPH IRIref	{
@@ -1212,6 +1202,11 @@ GraphRefAll:
   | IT_ALL	{
 	w3c_sw_NEED_IMPL("ALL");
       }
+;
+// </Modify>
+
+QuadPattern:
+    GT_LCURLEY Quads GT_RCURLEY	
 ;
 
 QuadData:
@@ -1355,6 +1350,7 @@ GraphPatternNotTriples:
   | GraphGraphPattern	
   | ServiceGraphPattern	
   | Filter	
+  | Bind	
 ;
 
 OptionalGraphPattern:
@@ -1398,6 +1394,12 @@ ServiceGraphPattern:
 	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.atomFactory, false));
       }
+;
+
+Bind:
+    IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
+	driver.curOp = new Bind(driver.curOp, $3, $5);
+    }
 ;
 
 MinusGraphPattern:
@@ -2230,6 +2232,88 @@ BuiltInCall:
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_blank, $2, NULL, NULL));
     }
+  | IT_RAND NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+    }
+  | IT_ABS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_abs, $3, NULL, NULL));
+    }
+  | IT_CEIL GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ciel, $3, NULL, NULL));
+    }
+  | IT_FLOOR GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_floor, $3, NULL, NULL));
+    }
+  | IT_ROUND GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_round, $3, NULL, NULL));
+    }
+  | IT_CONCAT ExpressionList	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, new ArgList($2)));
+    }
+  | SubstringExpression	
+  | IT_STRLEN GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlen, $3, NULL, NULL));
+    }
+  | IT_UCASE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ucase, $3, NULL, NULL));
+    }
+  | IT_LCASE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lcase, $3, NULL, NULL));
+    }
+  | IT_ENCODE_FOR_URI GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encodeForUri, $3, NULL, NULL));
+    }
+  | IT_CONTAINS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, NULL, NULL));
+    }
+  | IT_STRSTARTS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strStarts, $3, NULL, NULL));
+    }
+  | IT_STRENDS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strEnds, $3, NULL, NULL));
+    }
+  | IT_YEAR GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year, $3, NULL, NULL));
+    }
+  | IT_MONTH GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month, $3, NULL, NULL));
+    }
+  | IT_DAY GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day, $3, NULL, NULL));
+    }
+  | IT_HOURS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours, $3, NULL, NULL));
+    }
+  | IT_MINUTES GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes, $3, NULL, NULL));
+    }
+  | IT_SECONDS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds, $3, NULL, NULL));
+    }
+  | IT_TIMEZONE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone, $3, NULL, NULL));
+    }
+  | IT_NOW NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+    }
+  | IT_MD5 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, $3, NULL, NULL));
+    }
+  | IT_SHA1 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, $3, NULL, NULL));
+    }
+  | IT_SHA224 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, $3, NULL, NULL));
+    }
+  | IT_SHA256 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, $3, NULL, NULL));
+    }
+  | IT_SHA384 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, $3, NULL, NULL));
+    }
+  | IT_SHA512 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, $3, NULL, NULL));
+    }
   | IT_COALESCE ExpressionList	{
 	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
 	w3c_sw_NEED_IMPL("COALESCE");
@@ -2261,9 +2345,6 @@ BuiltInCall:
   | IT_isNUMERIC GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, $3, NULL, NULL));
     }
-  | IT_CONCAT ExpressionList	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, new ArgList($2)));
-    }
   | RegexExpression	
   | ExistsFunc	
   | NotExistsFunc	
@@ -2293,6 +2374,12 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 	$$ = NULL;
     }
   | _O_QGT_COMMA_E_S_QExpression_E_C	
+;
+
+SubstringExpression:
+    IT_SUBSTR GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, $3, $5, $6));
+    }
 ;
 
 ExistsFunc:

@@ -138,6 +138,14 @@ namespace w3c_sw {
 	    }
 	}
 #endif
+	virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* expr, const Variable* label) {
+	    p_op->express(this);
+	    const TableOperation* op = last.tableOperation;
+	    expr->express(this);
+	    const Expression* e = last.expression;
+	    label->express(this);
+	    last.tableOperation = new Bind(op, e, last.tterms.variable);
+	}
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const ProductionVector<const TriplePattern*>* p_TriplePatterns, BasicGraphPattern* p) {
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
@@ -398,6 +406,24 @@ namespace w3c_sw {
 	virtual void drop (const Drop* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	    p_GraphIRI->express(this);
 	    last.operation = new Drop(p_Silence, last.tterms.uri);
+	}
+	virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    from->express(this);
+	    const URI* f = last.tterms.uri;
+	    to->express(this);
+	    last.operation = new Add(p_Silence, f, last.tterms.uri);
+	}
+	virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    from->express(this);
+	    const URI* f = last.tterms.uri;
+	    to->express(this);
+	    last.operation = new Move(p_Silence, f, last.tterms.uri);
+	}
+	virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	    from->express(this);
+	    const URI* f = last.tterms.uri;
+	    to->express(this);
+	    last.operation = new Copy(p_Silence, f, last.tterms.uri);
 	}
 
 	/* Expressions */

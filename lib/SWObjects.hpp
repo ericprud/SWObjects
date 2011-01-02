@@ -453,7 +453,7 @@ class Operation : public Base {
 protected:
     Operation () : Base() {  }
 public:
-    typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_modify, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop} e_OPTYPE;
+    typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_modify, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop, OPTYPE_add, OPTYPE_move, OPTYPE_copy} e_OPTYPE;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
@@ -604,6 +604,34 @@ public:
     static const URI* XPATH_lower_case;
     static const URI* XPATH_upper_case;
     static const URI* EXTEN_concat;
+
+    static const URI* FUNC_rand;
+    static const URI* FUNC_abs;
+    static const URI* FUNC_ciel;
+    static const URI* FUNC_floor;
+    static const URI* FUNC_round;
+    static const URI* FUNC_strlen;
+    static const URI* FUNC_ucase;
+    static const URI* FUNC_lcase;
+    static const URI* FUNC_encodeForUri;
+    static const URI* FUNC_contains;
+    static const URI* FUNC_strStarts;
+    static const URI* FUNC_strEnds;
+    static const URI* FUNC_year;
+    static const URI* FUNC_month;
+    static const URI* FUNC_day;
+    static const URI* FUNC_hours;
+    static const URI* FUNC_minutes;
+    static const URI* FUNC_seconds;
+    static const URI* FUNC_timezone;
+    static const URI* FUNC_now;
+    static const URI* FUNC_md5;
+    static const URI* FUNC_sha1;
+    static const URI* FUNC_sha224;
+    static const URI* FUNC_sha256;
+    static const URI* FUNC_sha384;
+    static const URI* FUNC_sha512;
+    static const URI* FUNC_substring;
 
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
@@ -1833,6 +1861,33 @@ public:
     }
     virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const;
 };
+class Bind : public TableOperationOnOperation {
+protected:
+    const Expression* m_expr;
+    const Variable* m_label;
+
+public:
+    Bind (const TableOperation* op, const Expression* p_expr, const Variable* p_label) : TableOperationOnOperation(op), m_expr(p_expr), m_label(p_label) {  }
+    ~Bind () {  }
+
+    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	w3c_sw_NEED_IMPL("CONSTRUCT{BIND(...)}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	w3c_sw_NEED_IMPL("DELETEPATTERN{BIND(...)}");
+    }
+    virtual void express(Expressor* p_expressor) const;
+    bool operator== (const Bind& ref) const {
+	return *m_expr == *ref.m_expr
+	    && m_label == ref.m_label;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const Bind* pref = dynamic_cast<const Bind*>(&ref);
+	return pref == NULL ? false : operator==(*pref); // calls Bind-specific operator==
+    }
+    virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const;
+};
 /* GraphGraphPattern: pass-through class that's just used to reproduce verbatim SPARQL queries
  */
 class GraphGraphPattern : public TableOperationOnOperation {
@@ -2363,6 +2418,51 @@ public:
 	return false;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_drop; }
+};
+
+class Displacement : public Operation {
+protected:
+    e_Silence m_Silence;
+    const URI* from;
+    const URI* to;
+public:
+    Displacement (e_Silence p_Silence, const URI* from, const URI* to) : Operation(), m_Silence(p_Silence), from(from), to(to) {  }
+    ~Displacement () { /* m_GraphIRI is centrally managed */ }
+    virtual void express(Expressor* p_expressor) const = 0;
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
+    virtual e_OPTYPE getOperationType () const = 0;
+};
+class Add : public Displacement {
+public:
+    Add (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
+    ~Add () {  }
+    virtual void express(Expressor* p_expressor) const;
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_add; }
+};
+class Move : public Displacement {
+public:
+    Move (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
+    ~Move () {  }
+    virtual void express(Expressor* p_expressor) const;
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_move; }
+};
+class Copy : public Displacement {
+public:
+    Copy (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
+    ~Copy () {  }
+    virtual void express(Expressor* p_expressor) const;
+    virtual bool operator== (const Operation&) const {
+	return false;
+    }
+    virtual e_OPTYPE getOperationType () const { return OPTYPE_copy; }
 };
 
 /* kinds of Expressions */
@@ -3189,6 +3289,7 @@ public:
     virtual void nulltterm(const NULLtterm* const self) = 0;
     virtual void triplePattern(const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) = 0;
     virtual void filter(const Filter* const self, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) = 0;
+    virtual void bind(const Bind* const self, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) = 0;
     virtual void namedGraphPattern(const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
     virtual void defaultGraphPattern(const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) = 0;
     virtual void tableConjunction(const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) = 0;
@@ -3220,6 +3321,9 @@ public:
     virtual void clear(const Clear* const self, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void drop(const Drop* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
+    virtual void add(const Add* const self, e_Silence p_Silence, const URI* from, const URI* to) = 0;
+    virtual void move(const Move* const self, e_Silence p_Silence, const URI* from, const URI* to) = 0;
+    virtual void copy(const Copy* const self, e_Silence p_Silence, const URI* from, const URI* to) = 0;
     virtual void posExpression(const TTermExpression* const self, const TTerm* p_TTerm) = 0;
     virtual void argList(const ArgList* const self, ProductionVector<const Expression*>* expressions) = 0;
     virtual void functionCall(const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) = 0;
@@ -3277,6 +3381,11 @@ public:
     virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
 	p_op->express(this);
 	p_Constraints->express(this);
+    }
+    virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) {
+	p_op->express(this);
+	p_expr->express(this);
+	p_label->express(this);
     }
     virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	p_name->express(this);
@@ -3410,6 +3519,18 @@ public:
     virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
 	p_GraphIRI->express(this);
     }
+    virtual void add (const Add* const, e_Silence, const URI* from, const URI* to) {
+	from->express(this);
+	to->express(this);
+    }
+    virtual void move (const Move* const, e_Silence, const URI* from, const URI* to) {
+	from->express(this);
+	to->express(this);
+    }
+    virtual void copy (const Copy* const, e_Silence, const URI* from, const URI* to) {
+	from->express(this);
+	to->express(this);
+    }
     virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
 	p_TTerm->express(this);
     }
@@ -3527,6 +3648,9 @@ public:
     virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
 	w3c_sw_NEED_IMPL("filter");
     }
+    virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) {
+	w3c_sw_NEED_IMPL("bind");
+    }
     virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	w3c_sw_NEED_IMPL("namedGraphPattern");
     }
@@ -3619,6 +3743,15 @@ public:
     }
     virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
 	w3c_sw_NEED_IMPL("drop");
+    }
+    virtual void add (const Add* const, e_Silence, const URI* from, const URI* to) {
+	w3c_sw_NEED_IMPL("add");
+    }
+    virtual void move (const Move* const, e_Silence, const URI* from, const URI* to) {
+	w3c_sw_NEED_IMPL("add");
+    }
+    virtual void copy (const Copy* const, e_Silence, const URI* from, const URI* to) {
+	w3c_sw_NEED_IMPL("add");
     }
 };
     std::ostream& operator<<(std::ostream& os, BasicGraphPattern const& my);

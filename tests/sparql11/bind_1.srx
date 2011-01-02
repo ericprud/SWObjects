@@ -1,0 +1,36 @@
+<?xml version="1.0"?><!--
+bind_1 - BIND variable
+
+$Id$
+-->
+<sparql
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema#"
+    xmlns="http://www.w3.org/2005/sparql-results#" >
+  <head>
+    <variable name="a"/>
+    <variable name="b"/>
+    <variable name="c"/>
+    <variable name="d"/>
+  </head>
+  <results>
+    <result>
+      <binding name="a"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal></binding>
+      <binding name="b"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">10</literal></binding>
+      <binding name="c"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">2</literal></binding>
+      <binding name="d"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">9</literal></binding>
+    </result>
+    <result>
+      <binding name="a"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal></binding>
+      <binding name="b"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">9</literal></binding>
+      <binding name="c"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">3</literal></binding>
+      <binding name="d"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">7</literal></binding>
+    </result>
+    <result>
+      <binding name="a"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal></binding>
+      <binding name="b"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">11</literal></binding>
+      <binding name="c"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">4</literal></binding>
+      <binding name="d"><literal datatype="http://www.w3.org/2001/XMLSchema#integer">8</literal></binding>
+    </result>
+  </results>
+</sparql>

@@ -153,6 +153,16 @@ public:
 	    }
 	}
     }
+    virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_exp, const Variable* p_var) {
+	lead();
+	ret << "BIND ";
+	++depth;
+	p_exp->express(this);
+	--depth;
+	ret << " AS ";
+	p_var->express(this);
+	ret << std::endl;
+    }
     void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -435,6 +445,30 @@ public:
 	ret << "DROP ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_GraphIRI->express(this);
+    }
+    virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	lead();
+	ret << "ADD ";
+	if (p_Silence != SILENT_Yes) ret << "SILENT";
+	from->express(this);
+	ret << " TO ";
+	to->express(this);
+    }
+    virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	lead();
+	ret << "MOVE ";
+	if (p_Silence != SILENT_Yes) ret << "SILENT";
+	from->express(this);
+	ret << " TO ";
+	to->express(this);
+    }
+    virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	lead();
+	ret << "COPY ";
+	if (p_Silence != SILENT_Yes) ret << "SILENT";
+	from->express(this);
+	ret << " TO ";
+	to->express(this);
     }
     virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {
 	p_TTerm->express(this);

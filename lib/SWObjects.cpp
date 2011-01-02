@@ -360,6 +360,9 @@ void TriplePattern::express (Expressor* p_expressor) const {
 void Filter::express (Expressor* p_expressor) const {
     p_expressor->filter(this, m_TableOperation, &m_Expressions);
 }
+void Bind::express (Expressor* p_expressor) const {
+    p_expressor->bind(this, m_TableOperation, m_expr, m_label);
+}
 void NamedGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->namedGraphPattern(this, m_name, allOpts, &m_TriplePatterns);
 }
@@ -452,6 +455,15 @@ void Create::express (Expressor* p_expressor) const {
 }
 void Drop::express (Expressor* p_expressor) const {
     p_expressor->drop(this, m_Silence,m_GraphIRI);
+}
+void Add::express (Expressor* p_expressor) const {
+    p_expressor->add(this, m_Silence,from,to);
+}
+void Move::express (Expressor* p_expressor) const {
+    p_expressor->move(this, m_Silence,from,to);
+}
+void Copy::express (Expressor* p_expressor) const {
+    p_expressor->copy(this, m_Silence,from,to);
 }
 void TTermExpression::express (Expressor* p_expressor) const {
     p_expressor->posExpression(this, m_TTerm);
@@ -622,6 +634,35 @@ void NumberExpression::express (Expressor* p_expressor) const {
     const URI* TTerm::XPATH_lower_case		 = AtomFactory::_URIConstants + 46;
     const URI* TTerm::XPATH_upper_case		 = AtomFactory::_URIConstants + 47;
     const URI* TTerm::EXTEN_concat		 = AtomFactory::_URIConstants + 48;
+
+    const URI* TTerm::FUNC_rand			 = AtomFactory::_URIConstants + 49;
+    const URI* TTerm::FUNC_abs			 = AtomFactory::_URIConstants + 50;
+    const URI* TTerm::FUNC_ciel			 = AtomFactory::_URIConstants + 51;
+    const URI* TTerm::FUNC_floor		 = AtomFactory::_URIConstants + 52;
+    const URI* TTerm::FUNC_round		 = AtomFactory::_URIConstants + 53;
+    const URI* TTerm::FUNC_strlen		 = AtomFactory::_URIConstants + 54;
+    const URI* TTerm::FUNC_ucase		 = AtomFactory::_URIConstants + 55;
+    const URI* TTerm::FUNC_lcase		 = AtomFactory::_URIConstants + 56;
+    const URI* TTerm::FUNC_encodeForUri		 = AtomFactory::_URIConstants + 57;
+    const URI* TTerm::FUNC_contains		 = AtomFactory::_URIConstants + 58;
+    const URI* TTerm::FUNC_strStarts		 = AtomFactory::_URIConstants + 59;
+    const URI* TTerm::FUNC_strEnds		 = AtomFactory::_URIConstants + 60;
+    const URI* TTerm::FUNC_year			 = AtomFactory::_URIConstants + 61;
+    const URI* TTerm::FUNC_month		 = AtomFactory::_URIConstants + 62;
+    const URI* TTerm::FUNC_day			 = AtomFactory::_URIConstants + 63;
+    const URI* TTerm::FUNC_hours		 = AtomFactory::_URIConstants + 64;
+    const URI* TTerm::FUNC_minutes		 = AtomFactory::_URIConstants + 65;
+    const URI* TTerm::FUNC_seconds		 = AtomFactory::_URIConstants + 66;
+    const URI* TTerm::FUNC_timezone		 = AtomFactory::_URIConstants + 67;
+    const URI* TTerm::FUNC_now			 = AtomFactory::_URIConstants + 68;
+    const URI* TTerm::FUNC_md5			 = AtomFactory::_URIConstants + 69;
+    const URI* TTerm::FUNC_sha1			 = AtomFactory::_URIConstants + 70;
+    const URI* TTerm::FUNC_sha224		 = AtomFactory::_URIConstants + 71;
+    const URI* TTerm::FUNC_sha256		 = AtomFactory::_URIConstants + 72;
+    const URI* TTerm::FUNC_sha384		 = AtomFactory::_URIConstants + 73;
+    const URI* TTerm::FUNC_sha512		 = AtomFactory::_URIConstants + 74;
+    const URI* TTerm::FUNC_substring		 = AtomFactory::_URIConstants + 75;
+
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
 	BooleanRDFLiteral("true",  TTerm::URI_xsd_boolean, true),
@@ -1084,6 +1125,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
 	const TTerm* v = arg->eval(func->res, this, func->evaluator);
+	if (v == TTerm::Unbound)
+	    throw TypeError("no value returned from argument evaluation", "AtomFactory::applyCommonNumeric");
 	TTerm::e_TYPE dt = v->getTypeOrder();
 	if (dt == TTerm::TYPE_Err)
 	    throw std::string(typeid(*v).name()) + " is not a known datatype.";
@@ -1808,6 +1851,22 @@ compared against
 	    return true;
 	}
 	return constant == curVal;
+    }
+
+    void Bind::bindVariables (RdfDB* db, ResultSet* rs) const {
+	m_TableOperation->bindVariables(db, rs);
+	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
+	    try {
+		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL), false); // @@ NULL for atomFactory
+	    } catch (SafeEvaluationError&) {
+		// Don't (*row)->set(m_label, TTerm::Unbound, false) as RS contract is to leave unbounds NULL c.f. "setting ?d to Unbound is just wrong"
+	    }
+    }
+
+    TableOperationOnOperation* Bind::makeANewThis (const TableOperation* p_TableOperation) const {
+	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
+	m_expr->express(&dup);
+	return new Bind(p_TableOperation, dup.last.expression, m_label);
     }
 
     void GraphGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* /* bgp */) const {
