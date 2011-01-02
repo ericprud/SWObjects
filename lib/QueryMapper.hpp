@@ -11,6 +11,7 @@
 #include "SWObjectDuplicator.hpp"
 #include "RuleInverter.hpp"
 #include "RdfQueryDB.hpp"
+#include "prfxbuf.hpp"
 
 namespace w3c_sw {
 
@@ -161,7 +162,13 @@ namespace w3c_sw {
 	    SPARQLSerializer bodySer(mediaType, namespaces), headSer(mediaType, namespaces);
 	    body->express(&bodySer);
 	    head->express(&headSer);
-	    return l + bodySer.str() + " => " + headSer.str();
+
+	    /** Indent for readability: */
+	    std::stringstream ss;
+	    oprfxstream b(ss.rdbuf(), "   ");
+	    b << "LABEL " << l << " CONSTRUCT " << headSer.str() << " WHERE " << bodySer.str();
+
+	    return ss.str();
 	}
 
 	bool operator== (const Rule& ref) const {
