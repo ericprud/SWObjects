@@ -155,6 +155,7 @@ public:
     }
     virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_exp, const Variable* p_var) {
 	lead();
+	p_op->express(this);
 	ret << "BIND ";
 	++depth;
 	p_exp->express(this);

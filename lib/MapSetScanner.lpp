@@ -108,11 +108,18 @@ IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 GT_DOT		"."
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
+IT_BIND		[Bb][Ii][Nn][Dd]
 IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
 GT_COMMA		","
 IT_a		"a"
+GT_PIPE		"|"
+GT_DIVIDE		"/"
+GT_CARROT		"^"
+GT_OPT		"?"
+GT_PLUS		"+"
+GT_NOT		"!"
 GT_LBRACKET		"\["
 GT_RBRACKET		"\]"
 IT_MEMBERS		[Mm][Ee][Mm][Bb][Ee][Rr][Ss]
@@ -129,10 +136,8 @@ GT_GT		">"
 GT_LE		"<="
 GT_GE		">="
 IT_IN		[Ii][Nn]
-GT_DIVIDE		"/"
-GT_PLUS		"+"
+IT_NOT		[Nn][Oo][Tt]
 GT_MINUS		"-"
-GT_NOT		"!"
 IT_STR		[Ss][Tt][Rr]
 IT_LANG		[Ll][Aa][Nn][Gg]
 IT_LANGMATCHES		[Ll][Aa][Nn][Gg][Mm][Aa][Tt][Cc][Hh][Ee][Ss]
@@ -141,6 +146,33 @@ IT_BOUND		[Bb][Oo][Uu][Nn][Dd]
 IT_IRI		[Ii][Rr][Ii]
 IT_URI		[Uu][Rr][Ii]
 IT_BNODE		[Bb][Nn][Oo][Dd][Ee]
+IT_RAND		[Rr][Aa][Nn][Dd]
+IT_ABS		[Aa][Bb][Ss]
+IT_CEIL		[Cc][Ee][Ii][Ll]
+IT_FLOOR		[Ff][Ll][Oo][Oo][Rr]
+IT_ROUND		[Rr][Oo][Uu][Nn][Dd]
+IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
+IT_STRLEN		[Ss][Tt][Rr][Ll][Ee][Nn]
+IT_UCASE		[Uu][Cc][Aa][Ss][Ee]
+IT_LCASE		[Ll][Cc][Aa][Ss][Ee]
+IT_ENCODE_FOR_URI		[Ee][Nn][Cc][Oo][Dd][Ee]'_'[Ff][Oo][Rr]'_'[Uu][Rr][Ii]
+IT_CONTAINS		[Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
+IT_STRSTARTS		[Ss][Tt][Rr][Ss][Tt][Aa][Rr][Tt][Ss]
+IT_STRENDS		[Ss][Tt][Rr][Ee][Nn][Dd][Ss]
+IT_YEAR		[Yy][Ee][Aa][Rr]
+IT_MONTH		[Mm][Oo][Nn][Tt][Hh]
+IT_DAY		[Dd][Aa][Yy]
+IT_HOURS		[Hh][Oo][Uu][Rr][Ss]
+IT_MINUTES		[Mm][Ii][Nn][Uu][Tt][Ee][Ss]
+IT_SECONDS		[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
+IT_TIMEZONE		[Tt][Ii][Mm][Ee][Zz][Oo][Nn][Ee]
+IT_NOW		[Nn][Oo][Ww]
+IT_MD5		[Mm][Dd]'5'
+IT_SHA1		[Ss][Hh][Aa]'1'
+IT_SHA224		[Ss][Hh][Aa]'224'
+IT_SHA256		[Ss][Hh][Aa]'256'
+IT_SHA384		[Ss][Hh][Aa]'384'
+IT_SHA512		[Ss][Hh][Aa]'512'
 IT_COALESCE		[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]
 IT_IF		[Ii][Ff]
 IT_STRLANG		[Ss][Tt][Rr][Ll][Aa][Nn][Gg]
@@ -150,15 +182,17 @@ IT_isIRI		[Ii][Ss][Ii][Rr][Ii]
 IT_isURI		[Ii][Ss][Uu][Rr][Ii]
 IT_isBLANK		[Ii][Ss][Bb][Ll][Aa][Nn][Kk]
 IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
+IT_isNUMERIC		[Ii][Ss][Nn][Uu][Mm][Ee][Rr][Ii][Cc]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
+IT_SUBSTR		[Ss][Uu][Bb][Ss][Tt][Rr]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
+IT_GROUP_CONCAT		[Gg][Rr][Oo][Uu][Pp]"_"[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_SUM		[Ss][Uu][Mm]
 IT_MIN		[Mm][Ii][Nn]
 IT_MAX		[Mm][Aa][Xx]
 IT_AVG		[Aa][Vv][Gg]
 IT_SAMPLE		[Ss][Aa][Mm][Pp][Ll][Ee]
-IT_GROUP_CONCAT		"GROUP_CONCAT"
 IT_SEPARATOR		[Ss][Ee][Pp][Aa][Rr][Aa][Tt][Oo][Rr]
 GT_DTYPE		"^^"
 IT_true		"true"
@@ -224,33 +258,49 @@ LINEFEED		(\r\n|\r|\n)
 {IT_BASE}		{return token::IT_BASE;}
 {IT_PREFIX}		{return token::IT_PREFIX;}
 {IT_SELECT}		{return token::IT_SELECT;}
+{IT_AS}		{return token::IT_AS;}
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_TIMES}		{return token::GT_TIMES;}
 {IT_CONSTRUCT}		{return token::IT_CONSTRUCT;}
 {IT_FROM}		{return token::IT_FROM;}
 {IT_NAMED}		{return token::IT_NAMED;}
 {IT_WHERE}		{return token::IT_WHERE;}
+{IT_GROUP}		{return token::IT_GROUP;}
+{IT_BY}		{return token::IT_BY;}
+{IT_HAVING}		{return token::IT_HAVING;}
+{IT_ORDER}		{return token::IT_ORDER;}
+{IT_ASC}		{return token::IT_ASC;}
+{IT_DESC}		{return token::IT_DESC;}
+{IT_LIMIT}		{return token::IT_LIMIT;}
+{IT_OFFSET}		{return token::IT_OFFSET;}
 {IT_BINDINGS}		{return token::IT_BINDINGS;}
+{GT_LCURLEY}		{return token::GT_LCURLEY;}
+{GT_RCURLEY}		{return token::GT_RCURLEY;}
+{IT_UNDEF}		{return token::IT_UNDEF;}
+{GT_SEMI}		{return token::GT_SEMI;}
+{GT_DOT}		{return token::GT_DOT;}
+{IT_OPTIONAL}		{return token::IT_OPTIONAL;}
+{IT_SERVICE}		{return token::IT_SERVICE;}
+{IT_BIND}		{return token::IT_BIND;}
+{IT_MINUS}		{return token::IT_MINUS;}
+{IT_UNION}		{return token::IT_UNION;}
+{IT_FILTER}		{return token::IT_FILTER;}
+{GT_COMMA}		{return token::GT_COMMA;}
+{IT_a}		{return token::IT_a;}
+{GT_PIPE}		{return token::GT_PIPE;}
+{GT_DIVIDE}		{return token::GT_DIVIDE;}
+{GT_CARROT}		{return token::GT_CARROT;}
+{GT_OPT}		{return token::GT_OPT;}
+{GT_PLUS}		{return token::GT_PLUS;}
+{GT_NOT}		{return token::GT_NOT;}
+{GT_LBRACKET}		{return token::GT_LBRACKET;}
+{GT_RBRACKET}		{return token::GT_RBRACKET;}
 {IT_MEMBERS}		{return token::IT_MEMBERS;}
 {IT_STARTS}		{return token::IT_STARTS;}
 {IT_ENDS}		{return token::IT_ENDS;}
 {IT_ANY}		{return token::IT_ANY;}
 {IT_UNORDERED}		{return token::IT_UNORDERED;}
-{GT_LCURLEY}		{return token::GT_LCURLEY;}
-{GT_RCURLEY}		{return token::GT_RCURLEY;}
-{IT_UNDEF}		{return token::IT_UNDEF;}
-{GT_SEMI}		{return token::GT_SEMI;}
-{IT_AS}		{return token::IT_AS;}
-{GT_LPAREN}		{return token::GT_LPAREN;}
-{GT_RPAREN}		{return token::GT_RPAREN;}
-{GT_DOT}		{return token::GT_DOT;}
-{IT_OPTIONAL}		{return token::IT_OPTIONAL;}
-{IT_SERVICE}		{return token::IT_SERVICE;}
-{IT_UNION}		{return token::IT_UNION;}
-{IT_FILTER}		{return token::IT_FILTER;}
-{GT_COMMA}		{return token::GT_COMMA;}
-{IT_a}		{return token::IT_a;}
-{GT_LBRACKET}		{return token::GT_LBRACKET;}
-{GT_RBRACKET}		{return token::GT_RBRACKET;}
 {GT_OR}		{return token::GT_OR;}
 {GT_AND}		{return token::GT_AND;}
 {GT_EQUAL}		{return token::GT_EQUAL;}
@@ -259,52 +309,96 @@ LINEFEED		(\r\n|\r|\n)
 {GT_GT}		{return token::GT_GT;}
 {GT_LE}		{return token::GT_LE;}
 {GT_GE}		{return token::GT_GE;}
-{GT_PLUS}		{return token::GT_PLUS;}
+{IT_IN}		{return token::IT_IN;}
+{IT_NOT}		{return token::IT_NOT;}
 {GT_MINUS}		{return token::GT_MINUS;}
-{GT_DIVIDE}		{return token::GT_DIVIDE;}
-{GT_NOT}		{return token::GT_NOT;}
 {IT_STR}		{return token::IT_STR;}
 {IT_LANG}		{return token::IT_LANG;}
 {IT_LANGMATCHES}		{return token::IT_LANGMATCHES;}
 {IT_DATATYPE}		{return token::IT_DATATYPE;}
 {IT_BOUND}		{return token::IT_BOUND;}
+{IT_IRI}		{return token::IT_IRI;}
+{IT_URI}		{return token::IT_URI;}
+{IT_BNODE}		{return token::IT_BNODE;}
+{IT_RAND}		{return token::IT_RAND;}
+{IT_ABS}		{return token::IT_ABS;}
+{IT_CEIL}		{return token::IT_CEIL;}
+{IT_FLOOR}		{return token::IT_FLOOR;}
+{IT_ROUND}		{return token::IT_ROUND;}
+{IT_CONCAT}		{return token::IT_CONCAT;}
+{IT_STRLEN}		{return token::IT_STRLEN;}
+{IT_UCASE}		{return token::IT_UCASE;}
+{IT_LCASE}		{return token::IT_LCASE;}
+{IT_ENCODE_FOR_URI}		{return token::IT_ENCODE_FOR_URI;}
+{IT_CONTAINS}		{return token::IT_CONTAINS;}
+{IT_STRSTARTS}		{return token::IT_STRSTARTS;}
+{IT_STRENDS}		{return token::IT_STRENDS;}
+{IT_YEAR}		{return token::IT_YEAR;}
+{IT_MONTH}		{return token::IT_MONTH;}
+{IT_DAY}		{return token::IT_DAY;}
+{IT_HOURS}		{return token::IT_HOURS;}
+{IT_MINUTES}		{return token::IT_MINUTES;}
+{IT_SECONDS}		{return token::IT_SECONDS;}
+{IT_TIMEZONE}		{return token::IT_TIMEZONE;}
+{IT_NOW}		{return token::IT_NOW;}
+{IT_MD5}		{return token::IT_MD5;}
+{IT_SHA1}		{return token::IT_SHA1;}
+{IT_SHA224}		{return token::IT_SHA224;}
+{IT_SHA256}		{return token::IT_SHA256;}
+{IT_SHA384}		{return token::IT_SHA384;}
+{IT_SHA512}		{return token::IT_SHA512;}
+{IT_COALESCE}		{return token::IT_COALESCE;}
+{IT_IF}		{return token::IT_IF;}
+{IT_STRLANG}		{return token::IT_STRLANG;}
+{IT_STRDT}		{return token::IT_STRDT;}
 {IT_sameTerm}		{return token::IT_sameTerm;}
 {IT_isIRI}		{return token::IT_isIRI;}
 {IT_isURI}		{return token::IT_isURI;}
 {IT_isBLANK}		{return token::IT_isBLANK;}
 {IT_isLITERAL}		{return token::IT_isLITERAL;}
+{IT_isNUMERIC}		{return token::IT_isNUMERIC;}
 {IT_REGEX}		{return token::IT_REGEX;}
+{IT_SUBSTR}		{return token::IT_SUBSTR;}
+{IT_EXISTS}		{return token::IT_EXISTS;}
+{IT_COUNT}		{return token::IT_COUNT;}
+{IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}
+{IT_SUM}		{return token::IT_SUM;}
+{IT_MIN}		{return token::IT_MIN;}
+{IT_MAX}		{return token::IT_MAX;}
+{IT_AVG}		{return token::IT_AVG;}
+{IT_SAMPLE}		{return token::IT_SAMPLE;}
+{IT_SEPARATOR}		{return token::IT_SEPARATOR;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
 {IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
+{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{BLANK_NODE_LABEL}	{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{VAR1}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
+{VAR2}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
 {DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
-{INTEGER_POSITIVE}		{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
-{DECIMAL_POSITIVE}		{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
-{INTEGER_NEGATIVE}		{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
-{DECIMAL_NEGATIVE}		{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
 {DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
-{DOUBLE_NEGATIVE}		{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
-{DOUBLE_POSITIVE}		{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
-{STRING_LITERAL_LONG1}		{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
-{STRING_LITERAL_LONG2}		{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
-{STRING_LITERAL1}		{return unescape(yylval, 1, token::STRING_LITERAL1);}
-{STRING_LITERAL2}		{return unescape(yylval, 1, token::STRING_LITERAL2);}
-{NIL}		{return token::NIL;}
-{ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
-{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
-{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
-{BLANK_NODE_LABEL}		{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
-{VAR1}		{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
-{VAR2}		{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
+{INTEGER_POSITIVE}	{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
+{DECIMAL_POSITIVE}	{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
+{DOUBLE_POSITIVE}	{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
+{INTEGER_NEGATIVE}	{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
+{DECIMAL_NEGATIVE}	{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
+{DOUBLE_NEGATIVE}	{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
+{STRING_LITERAL1}	{return unescape(yylval, 1, token::STRING_LITERAL1);}
+{STRING_LITERAL2}	{return unescape(yylval, 1, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}	{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}	{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
+{NIL}			{return token::NIL;}
+{ANON}			{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 
 <<EOF>>			{ yyterminate();}
 .			{
     std::stringstream s;
-    s << "unexpected input '" << yytext << "' at " << *yylloc;
-    throw s.str();
+    s << "unexpected input: '" << yytext << "'";
+    driver->error(*yylloc, s.str());
 }
 
 %%

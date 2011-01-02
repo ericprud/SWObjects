@@ -740,11 +740,13 @@ BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE_END()
 
     BOOST_AUTO_TEST_SUITE( i2b2 )
-	BOOST_AUTO_TEST_CASE( a ) {
-	    RuleMapTest t("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo.map", "i2b2/db_pat_test_date.rq");
-	    BOOST_CHECK_EQUAL(*t.transformedNorm, *t.mapResultsNorm);
-	    SQLizerTest s(t.mapResults, "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date.sql");
-	    BOOST_CHECK_EQUAL(*s.transformed, *s.ref);
+	BOOST_AUTO_TEST_CASE( subselect ) {
+	    SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo-subselect.map", "i2b2/db_pat_test_date-subselect.rq",
+			 "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date-subselect.sql", IStreamContext::FILE);
+	}
+	BOOST_AUTO_TEST_CASE( bind ) {
+	    SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo-bind.map", "i2b2/db_pat_test_date-bind.rq",
+			 "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date-bind.sql", IStreamContext::FILE);
 	}
     BOOST_AUTO_TEST_SUITE_END()
 

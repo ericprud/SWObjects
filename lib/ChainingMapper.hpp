@@ -376,6 +376,17 @@ namespace w3c_sw {
 			last.tterms.tterm = atomFactory->getBNode(uniquePrefix+self->getLexicalValue(), nodeMap);
 		    //throw "no unique binding for bnode " + label;
 		}
+		/**
+		 * Overload SWObjectDuplicator::bind to keep it from calling
+		 * calling Instantiator::var on labels as we want to keep the
+		 * original label. (Do we? What about re-mapped vars?)
+		 */
+		virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* expr, const Variable* label) {
+		    p_op->express(this);
+		    const TableOperation* op = last.tableOperation;
+		    expr->express(this);
+		    last.tableOperation = new Bind(op, last.expression, label);
+		}
 		virtual void expressionAlias (const ExpressionAlias* const self, const Expression* expr, const Bindable* label) {
 		    const TTerm* curBinding = label ? res->get(label) : NULL;
 		    if (curBinding != NULL && dynamic_cast<const Bindable*>(curBinding) == NULL) {

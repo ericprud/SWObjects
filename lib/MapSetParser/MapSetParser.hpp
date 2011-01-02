@@ -267,7 +267,6 @@ namespace w3c_sw {
     Select* p_Select;
     e_distinctness p_distinctness;
     e_listModifier p_listModifier;
-    e_Silence p_Silence;
     TTermList* p_TTermList;
     ExpressionAliasList* p_ExpressionAliaseList;
     ExpressionAlias* p_ExpressionAlias;
@@ -305,7 +304,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 309 "lib/MapSetParser/MapSetParser.hpp"
+#line 308 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -405,44 +404,84 @@ namespace w3c_sw {
      IT_isLITERAL = 342,
      IT_REGEX = 343,
      GT_DTYPE = 344,
-     IT_AS = 345,
-     IT_GROUP = 346,
-     IT_HAVING = 347,
-     IT_COUNT = 348,
-     IT_SUM = 349,
-     IT_MIN = 350,
-     IT_MAX = 351,
-     IT_AVG = 352,
-     IT_GROUP_CONCAT = 353,
-     IT_SAMPLE = 354,
-     IT_isNUMERIC = 355,
-     GT_CARROT = 356,
-     GT_OPT = 357,
-     GT_PIPE = 358,
-     IT_true = 359,
-     IT_false = 360,
-     INTEGER = 361,
-     DECIMAL = 362,
-     DOUBLE = 363,
-     INTEGER_POSITIVE = 364,
-     DECIMAL_POSITIVE = 365,
-     DOUBLE_POSITIVE = 366,
-     INTEGER_NEGATIVE = 367,
-     DECIMAL_NEGATIVE = 368,
-     DOUBLE_NEGATIVE = 369,
-     STRING_LITERAL1 = 370,
-     STRING_LITERAL_LONG1 = 371,
-     STRING_LITERAL2 = 372,
-     STRING_LITERAL_LONG2 = 373,
-     IRI_REF = 374,
-     PNAME_NS = 375,
-     PNAME_LN = 376,
-     BLANK_NODE_LABEL = 377,
-     ANON = 378,
-     VAR1 = 379,
-     VAR2 = 380,
-     LANGTAG = 381,
-     NIL = 382
+     IT_CONCAT = 345,
+     IT_AS = 346,
+     IT_GROUP = 347,
+     IT_HAVING = 348,
+     IT_COUNT = 349,
+     IT_SUM = 350,
+     IT_MIN = 351,
+     IT_MAX = 352,
+     IT_AVG = 353,
+     IT_GROUP_CONCAT = 354,
+     IT_SAMPLE = 355,
+     IT_isNUMERIC = 356,
+     GT_CARROT = 357,
+     GT_OPT = 358,
+     GT_PIPE = 359,
+     IT_WITH = 360,
+     IT_DEFAULT = 361,
+     IT_ALL = 362,
+     IT_USING = 363,
+     IT_MD5 = 364,
+     IT_TO = 365,
+     IT_YEAR = 366,
+     IT_ADD = 367,
+     IT_COPY = 368,
+     IT_RAND = 369,
+     IT_SHA512 = 370,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE = 371,
+     IT_NOW = 372,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 373,
+     IT_TIMEZONE = 374,
+     IT_ROUND = 375,
+     IT_SHA384 = 376,
+     IT_BIND = 377,
+     IT_CONTAINS = 378,
+     IT_SECONDS = 379,
+     IT_MOVE = 380,
+     IT_FLOOR = 381,
+     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 382,
+     IT_MINUTES = 383,
+     IT_SUBSTR = 384,
+     IT_SHA256 = 385,
+     IT_HOURS = 386,
+     IT_ENCODE_FOR_URI = 387,
+     IT_STRSTARTS = 388,
+     IT_CEIL = 389,
+     IT_DAY = 390,
+     IT_LCASE = 391,
+     IT_ABS = 392,
+     IT_UCASE = 393,
+     IT_SHA224 = 394,
+     IT_STRENDS = 395,
+     IT_STRLEN = 396,
+     IT_SHA1 = 397,
+     IT_MONTH = 398,
+     IT_true = 399,
+     IT_false = 400,
+     INTEGER = 401,
+     DECIMAL = 402,
+     DOUBLE = 403,
+     INTEGER_POSITIVE = 404,
+     DECIMAL_POSITIVE = 405,
+     DOUBLE_POSITIVE = 406,
+     INTEGER_NEGATIVE = 407,
+     DECIMAL_NEGATIVE = 408,
+     DOUBLE_NEGATIVE = 409,
+     STRING_LITERAL1 = 410,
+     STRING_LITERAL_LONG1 = 411,
+     STRING_LITERAL2 = 412,
+     STRING_LITERAL_LONG2 = 413,
+     IRI_REF = 414,
+     PNAME_NS = 415,
+     PNAME_LN = 416,
+     BLANK_NODE_LABEL = 417,
+     ANON = 418,
+     VAR1 = 419,
+     VAR2 = 420,
+     LANGTAG = 421,
+     NIL = 422
    };
 
     };
@@ -619,7 +658,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 623 "lib/MapSetParser/MapSetParser.hpp"
+#line 662 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

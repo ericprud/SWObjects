@@ -197,7 +197,6 @@ public:
     Select* p_Select;
     e_distinctness p_distinctness;
     e_listModifier p_listModifier;
-    e_Silence p_Silence;
     TTermList* p_TTermList;
     ExpressionAliasList* p_ExpressionAliaseList;
     ExpressionAlias* p_ExpressionAlias;
@@ -252,9 +251,16 @@ public:
        IT_IRI IT_URI IT_BNODE IT_COALESCE IT_IF IT_STRLANG IT_STRDT
        IT_EXISTS IT_SEPARATOR
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
-       IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE
+       IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE IT_CONCAT
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
-       IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE
+       IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE IT_WITH IT_DEFAULT IT_ALL IT_USING
+       IT_MD5 IT_TO IT_YEAR IT_ADD IT_COPY IT_RAND IT_SHA512
+       GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE
+       IT_NOW GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
+       IT_TIMEZONE IT_ROUND IT_SHA384 IT_BIND IT_CONTAINS IT_SECONDS IT_MOVE IT_FLOOR
+       GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
+       IT_MINUTES IT_SUBSTR IT_SHA256 IT_HOURS IT_ENCODE_FOR_URI IT_STRSTARTS IT_CEIL
+       IT_DAY IT_LCASE IT_ABS IT_UCASE IT_SHA224 IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
 
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
@@ -272,15 +278,16 @@ public:
 /* Productions */
 %type <p_Operation> ConstructQuery SubSelect // SPARQL 1
 %type <p_Project> SelectClause
-
 %type <p_distinctness> _O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C
 		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _QIT_DISTINCT_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
 
 %type <p_TTermList> _QVar_E_Star
+ //%type <p_URIs> _QIRIref_E_Plus
 %type <p_VarSet>  _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C
 %type <p_ExpressionAliaseList> GroupClause _QGroupClause_E_Opt _QGroupCondition_E_Plus
+
 %type <p_DatasetClauses> _QDatasetClause_E_Star
 %type <p_DatasetClause> DatasetClause
 			_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C
@@ -340,7 +347,7 @@ public:
 		     _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpression_E_Or_QNumericLiteralPositive_E_Or_QNumericLiteralNegative_E_S_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_Opt_C
 		     MultiplicativeExpression
 		     _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C
-		     UnaryExpression PrimaryExpression RegexExpression
+		     UnaryExpression PrimaryExpression RegexExpression SubstringExpression
 		     _O_QGT_COMMA_E_S_QExpression_E_C
 		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt IRIrefOrFunction
                      HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
@@ -1084,6 +1091,7 @@ GraphPatternNotTriples:
   | GraphGraphPattern	
   | ServiceGraphPattern	
   | Filter	
+  | Bind	
 ;
 
 OptionalGraphPattern:
@@ -1127,6 +1135,12 @@ ServiceGraphPattern:
 	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.atomFactory, false));
       }
+;
+
+Bind:
+    IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
+	driver.curOp = new Bind(driver.curOp, $3, $5);
+    }
 ;
 
 MinusGraphPattern:
@@ -1959,6 +1973,88 @@ BuiltInCall:
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_blank, $2, NULL, NULL));
     }
+  | IT_RAND NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+    }
+  | IT_ABS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_abs, $3, NULL, NULL));
+    }
+  | IT_CEIL GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ciel, $3, NULL, NULL));
+    }
+  | IT_FLOOR GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_floor, $3, NULL, NULL));
+    }
+  | IT_ROUND GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_round, $3, NULL, NULL));
+    }
+  | IT_CONCAT ExpressionList	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, new ArgList($2)));
+    }
+  | SubstringExpression	
+  | IT_STRLEN GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlen, $3, NULL, NULL));
+    }
+  | IT_UCASE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ucase, $3, NULL, NULL));
+    }
+  | IT_LCASE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lcase, $3, NULL, NULL));
+    }
+  | IT_ENCODE_FOR_URI GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encodeForUri, $3, NULL, NULL));
+    }
+  | IT_CONTAINS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, NULL, NULL));
+    }
+  | IT_STRSTARTS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strStarts, $3, NULL, NULL));
+    }
+  | IT_STRENDS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strEnds, $3, NULL, NULL));
+    }
+  | IT_YEAR GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year, $3, NULL, NULL));
+    }
+  | IT_MONTH GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month, $3, NULL, NULL));
+    }
+  | IT_DAY GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day, $3, NULL, NULL));
+    }
+  | IT_HOURS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours, $3, NULL, NULL));
+    }
+  | IT_MINUTES GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes, $3, NULL, NULL));
+    }
+  | IT_SECONDS GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds, $3, NULL, NULL));
+    }
+  | IT_TIMEZONE GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone, $3, NULL, NULL));
+    }
+  | IT_NOW NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+    }
+  | IT_MD5 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, $3, NULL, NULL));
+    }
+  | IT_SHA1 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, $3, NULL, NULL));
+    }
+  | IT_SHA224 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, $3, NULL, NULL));
+    }
+  | IT_SHA256 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, $3, NULL, NULL));
+    }
+  | IT_SHA384 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, $3, NULL, NULL));
+    }
+  | IT_SHA512 GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, $3, NULL, NULL));
+    }
   | IT_COALESCE ExpressionList	{
 	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
 	w3c_sw_NEED_IMPL("COALESCE");
@@ -2019,6 +2115,12 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 	$$ = NULL;
     }
   | _O_QGT_COMMA_E_S_QExpression_E_C	
+;
+
+SubstringExpression:
+    IT_SUBSTR GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, $3, $5, $6));
+    }
 ;
 
 ExistsFunc:
