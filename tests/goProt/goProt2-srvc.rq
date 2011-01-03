@@ -1,0 +1,21 @@
+SELECT ?symbol ?label 
+WHERE
+{
+  {
+    SELECT     (<http://www.uniprot.org/uniprot/P04637> AS ?gene)     (<http://www.w3.org/2005/xpath-functions#lower-case>(?_uniProt_0_u_gene_symbol) AS ?symbol) 
+    WHERE {
+    SERVICE <http://localhost:8001/uniProt>
+      {
+        _:_uniProt_0_gene <http://ucsc.example/uniProt/gene#acc> "P04637"  .
+        _:_uniProt_0_gene <http://ucsc.example/uniProt/gene#val> ?_uniProt_0_u_gene_symbol .
+      }
+    }
+  }
+  SERVICE <http://localhost:8003/go>
+    {
+      ?_go_0_gp <http://ucsc.example/go/gene_product#Symbol> ?symbol .
+      ?_go_0_association <http://ucsc.example/go/association#gene_product_id> ?_go_0_gp .
+      ?_go_0_association <http://ucsc.example/go/association#term_id> ?_go_0_t .
+      ?_go_0_t <http://ucsc.example/go/term#name> ?label .
+    }
+}

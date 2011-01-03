@@ -1,0 +1,51 @@
+# Common RDF vocabularies:
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# Uniprot and GO:
+PREFIX uniprot: <http://purl.uniprot.org/core/>
+PREFIX unigene: <http://www.uniprot.org/uniprot/>
+PREFIX go: <http://www.geneontology.org/dtd/go.dtd>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+PREFIX gene: <http://yetanothergenevocabulary.org#>
+
+# Direct graph tables:
+PREFIX Ugene: <http://ucsc.example/uniProt/gene#>
+PREFIX gene_product: <http://ucsc.example/go/gene_product#>
+PREFIX association: <http://ucsc.example/go/association#>
+PREFIX term: <http://ucsc.example/go/term#>
+
+LABEL <uniProt> CONSTRUCT
+  {
+    ?gene uniprot:id ?id ; skos:prefLabel ?gene_symbol
+  }
+  WHERE
+  {
+    SELECT (fn:concat(unigene:, ?id) AS ?gene)
+           (fn:lower-case(?u_gene_symbol) AS ?gene_symbol)
+    {
+      SERVICE <http://localhost:8001/uniProt>
+      {
+        _:gene Ugene:acc ?id ; Ugene:val ?u_gene_symbol
+      }
+    }
+  }
+
+LABEL <go> CONSTRUCT
+  {
+    ?go_product gene:symbol ?gene_symbol .
+    ?go_id gene:product ?go_product .
+    ?go_id go:term ?goterm_id .
+    ?goterm_id rdfs:label ?goterm .
+  }
+  WHERE
+  {
+    SERVICE <http://localhost:8003/go>
+    {
+      ?gp gene_product:Symbol ?gene_symbol .
+      ?association association:gene_product_id ?gp .
+      ?association association:term_id ?t .
+      ?t term:name ?goterm
+    }
+  }
+

@@ -1,0 +1,15 @@
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX uniprot: <http://purl.uniprot.org/core/>
+PREFIX go: <http://www.geneontology.org/dtd/go.dtd>
+PREFIX gene: <http://yetanothergenevocabulary.org#>
+
+SELECT ?symbol ?label
+{
+  <http://www.uniprot.org/uniprot/P04637>
+           skos:prefLabel ?symbol .
+  ?product gene:symbol    ?symbol .
+  ?id      gene:product   ?product .
+  ?id      go:term        ?goterm .
+  ?goterm  rdfs:label     ?label .
+}
