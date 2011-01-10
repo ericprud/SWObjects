@@ -521,6 +521,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\ExpressionInverter.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\exs.hpp"
 				>
 			</File>
