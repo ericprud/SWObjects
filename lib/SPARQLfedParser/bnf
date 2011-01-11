@@ -1,17 +1,17 @@
 # Location: http://www.w3.org/2009/sparql/docs/sparql-grammar-11
-# sparul_next 2010-06-09
+# sparul_next 2011-01-01
 [0]     Top                        ::= QueryUnit | UpdateUnit
-[0]     QueryUnit                  ::= Prologue Query
-[0]     Query                      ::= SelectQuery | ConstructQuery | DescribeQuery | AskQuery
+[0]     QueryUnit                  ::= Query
+[0]     Query                      ::= Prologue ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery ) BindingsClause?
 [0]     Prologue                   ::= BaseDecl? PrefixDecl*
 [0]     BaseDecl                   ::= 'BASE' IRI_REF
 [0]     PrefixDecl                 ::= 'PREFIX' PNAME_NS IRI_REF
-[0]     SelectQuery                ::= SelectClause DatasetClause* WhereClause SolutionModifier BindingsClause
-[0]     SubSelect                  ::= SelectClause WhereClause SolutionModifier BindingsClause
+[0]     SelectQuery                ::= SelectClause DatasetClause* WhereClause SolutionModifier
+[0]     SubSelect                  ::= SelectClause WhereClause SolutionModifier BindingsClause?
 [0]     SelectClause               ::= 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
-[0]     ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier BindingsClause
-[0]     DescribeQuery              ::= 'DESCRIBE' ( VarOrIRIref+ | '*' ) DatasetClause* WhereClause? SolutionModifier BindingsClause
-[0]     AskQuery                   ::= 'ASK' DatasetClause* WhereClause BindingsClause
+[0]     ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
+[0]     DescribeQuery              ::= 'DESCRIBE' ( VarOrIRIref+ | '*' ) DatasetClause* WhereClause? SolutionModifier
+[0]     AskQuery                   ::= 'ASK' DatasetClause* WhereClause
 [0]     DatasetClause              ::= 'FROM' ( DefaultGraphClause | NamedGraphClause )
 [0]     DefaultGraphClause         ::= SourceSelector
 [0]     NamedGraphClause           ::= 'NAMED' SourceSelector
@@ -27,25 +27,29 @@
 [0]     LimitOffsetClauses         ::= LimitClause OffsetClause? | OffsetClause LimitClause?
 [0]     LimitClause                ::= 'LIMIT' INTEGER
 [0]     OffsetClause               ::= 'OFFSET' INTEGER
-[0]     BindingsClause             ::= ( 'BINDINGS' Var* '{' ( '(' BindingValue+ ')' | NIL )* '}' )?
+[0]     BindingsClause             ::= 'BINDINGS' Var* '{' ( '(' BindingValue+ ')' | NIL )* '}'
 [0]     BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | Var
 [0]     UpdateUnit                 ::= Update
 [0]     Update                     ::= Prologue Update1 ( ';' Update? )?
-[0]     Update1                    ::= Load | Clear | Drop | Create | InsertData | DeleteData | DeleteWhere | Modify
+[0]     Update1                    ::= Load | Clear | Drop | Add | Move | Copy | Create | InsertData | DeleteData | DeleteWhere | Modify
 [0]     Load                       ::= 'LOAD' IRIref ( 'INTO' GraphRef )?
 [0]     Clear                      ::= 'CLEAR' 'SILENT'? GraphRefAll
 [0]     Drop                       ::= 'DROP' 'SILENT'? GraphRefAll
 [0]     Create                     ::= 'CREATE' 'SILENT'? GraphRef
-[0]     InsertData                 ::= 'INSERT' 'DATA' QuadData
-[0]     DeleteData                 ::= 'DELETE' 'DATA' QuadData
-[0]     DeleteWhere                ::= 'DELETE' 'WHERE' QuadPattern
-[0]     Modify                     ::= ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
-| ( 'WITH' IRIref ) ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
-[0]     DeleteClause               ::= 'DELETE' QuadData
-[0]     InsertClause               ::= 'INSERT' QuadData
+[0]     Add                        ::= 'ADD' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
+[0]     Move                       ::= 'MOVE' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
+[0]     Copy                       ::= 'COPY' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
+[0]     InsertData                 ::= 'INSERT[ \t\r\n]+DATA' QuadData
+[0]     DeleteData                 ::= 'DELETE[ \t\r\n]+DATA' QuadData
+[0]     DeleteWhere                ::= 'DELETE[ \t\r\n]+WHERE' QuadPattern
+[0]     Modify                     ::= ( 'WITH' IRIref )? ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
+[0]     DeleteClause               ::= 'DELETE' QuadPattern
+[0]     InsertClause               ::= 'INSERT' QuadPattern
 [0]     UsingClause                ::= 'USING' ( IRIref | 'NAMED' IRIref )
+[0]     GraphOrDefault             ::= 'DEFAULT' | 'GRAPH'? IRIref
 [0]     GraphRef                   ::= 'GRAPH' IRIref
 [0]     GraphRefAll                ::= GraphRef | 'DEFAULT' | 'NAMED' | 'ALL'
+[0]     QuadPattern                ::= '{' Quads '}'
 [0]     QuadData                   ::= '{' Quads '}'
 [0]     Quads                      ::= TriplesTemplate? ( QuadsNotTriples '.'? TriplesTemplate? )*
 [0]     QuadsNotTriples            ::= 'GRAPH' VarOrIRIref '{' TriplesTemplate? '}'
@@ -53,10 +57,11 @@
 [0]     GroupGraphPattern          ::= '{' ( SubSelect | GroupGraphPatternSub ) '}'
 [0]     GroupGraphPatternSub       ::= TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
 [0]     TriplesBlock               ::= TriplesSameSubjectPath ( '.' TriplesBlock? )?
-[0]     GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter
+[0]     GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
 [0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
+[0]     Bind                       ::= 'BIND' '(' Expression 'AS' Var ')'
 [0]     MinusGraphPattern          ::= 'MINUS' GroupGraphPattern
 [0]     GroupOrUnionGraphPattern   ::= GroupGraphPattern ( 'UNION' GroupGraphPattern )*
 [0]     Filter                     ::= 'FILTER' Constraint
@@ -101,13 +106,13 @@
 [0]     ValueLogical               ::= RelationalExpression
 [0]     RelationalExpression       ::= NumericExpression RelativeExpression?
 [0]     RelativeExpression         ::= '=' NumericExpression
-| '!=' NumericExpression
-| '<' NumericExpression
-| '>' NumericExpression
-| '<=' NumericExpression
-| '>=' NumericExpression
-| 'IN' ExpressionList
-| 'NOT' 'IN' ExpressionList
+  | '!=' NumericExpression
+  | '<' NumericExpression
+  | '>' NumericExpression
+  | '<=' NumericExpression
+  | '>=' NumericExpression
+  | 'IN' ExpressionList
+  | 'NOT' 'IN' ExpressionList
 [0]     NumericExpression          ::= AdditiveExpression
 [0]     AdditiveExpression         ::= MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | ( NumericLiteralPositive | NumericLiteralNegative ) ( '*' UnaryExpression | '/' UnaryExpression )? )*
 [0]     MultiplicativeExpression   ::= UnaryExpression ( '*' UnaryExpression | '/' UnaryExpression )*
@@ -125,6 +130,34 @@
 | 'IRI' '(' Expression ')'
 | 'URI' '(' Expression ')'
 | 'BNODE' ( '(' Expression ')' | NIL )
+| 'RAND' NIL
+| 'ABS' '(' Expression ')'
+| 'CEIL' '(' Expression ')'
+| 'FLOOR' '(' Expression ')'
+| 'ROUND' '(' Expression ')'
+| 'CONCAT' ExpressionList
+| SubstringExpression
+| 'STRLEN' '(' Expression ')'
+| 'UCASE' '(' Expression ')'
+| 'LCASE' '(' Expression ')'
+| 'ENCODE_FOR_URI' '(' Expression ')'
+| 'CONTAINS' '(' Expression ',' Expression ')'
+| 'STRSTARTS' '(' Expression ',' Expression ')'
+| 'STRENDS' '(' Expression ',' Expression ')'
+| 'YEAR' '(' Expression ')'
+| 'MONTH' '(' Expression ')'
+| 'DAY' '(' Expression ')'
+| 'HOURS' '(' Expression ')'
+| 'MINUTES' '(' Expression ')'
+| 'SECONDS' '(' Expression ')'
+| 'TIMEZONE' '(' Expression ')'
+| 'NOW' NIL
+| 'MD5' '(' Expression ')'
+| 'SHA1' '(' Expression ')'
+| 'SHA224' '(' Expression ')'
+| 'SHA256' '(' Expression ')'
+| 'SHA384' '(' Expression ')'
+| 'SHA512' '(' Expression ')'
 | 'COALESCE' ExpressionList
 | 'IF' '(' Expression ',' Expression ',' Expression ')'
 | 'STRLANG' '(' Expression ',' Expression ')'
@@ -135,11 +168,11 @@
 | 'isBLANK' '(' Expression ')'
 | 'isLITERAL' '(' Expression ')'
 | 'isNUMERIC' '(' Expression ')'
-| 'CONCAT' ExpressionList
 | RegexExpression
 | ExistsFunc
 | NotExistsFunc
 [0]     RegexExpression            ::= 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
+[0]     SubstringExpression        ::= 'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
 [0]     ExistsFunc                 ::= 'EXISTS' GroupGraphPattern
 [0]     NotExistsFunc              ::= 'NOT' 'EXISTS' GroupGraphPattern
 [0]     Aggregate                  ::= 'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')' | ( 'SUM' | 'MIN' | 'MAX' | 'AVG' | 'SAMPLE' ) '(' 'DISTINCT'? Expression ')' | 'GROUP_CONCAT' '(' 'DISTINCT'? Expression ( ';' 'SEPARATOR' '=' String )? ')'

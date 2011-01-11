@@ -85,6 +85,7 @@ protected:
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
     bool countStar;
+    WhereClause* lastWhereClause;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -308,9 +309,7 @@ public:
 %type <p_OrderConditionPair> OrderCondition
 			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
-%type <p_BindingsClause> BindingsClause
-                         _O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C
-                         _Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt
+%type <p_BindingsClause> BindingsClause _QBindingsClause_E_Opt
 %type <p_BindingValue> _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C
 %type <p_BindingValues> _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star
 
@@ -408,14 +407,14 @@ Top:
 ;
 
 QueryUnit:
-    Prologue Query	{
-	$$ = $2;
-    }
+    Query	
 ;
 
-// Prologue ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery )
+// Prologue ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery ) BindingClause?
 Query:
-    Prologue _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C	{
+    Prologue _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C _QBindingsClause_E_Opt	{
+	if (driver.lastWhereClause != NULL)
+	    driver.lastWhereClause->m_BindingClause = $3;
 	$$ = $2;
     }
 ;
@@ -426,6 +425,14 @@ _O_QSelectQuery_E_Or_QConstructQuery_E_Or_QDescribeQuery_E_Or_QAskQuery_E_C:
   | ConstructQuery	
   | DescribeQuery	
   | AskQuery	
+;
+
+// BindingClause?
+_QBindingsClause_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | BindingsClause	
 ;
 
 Prologue:
@@ -464,8 +471,8 @@ PrefixDecl:
 
 SelectQuery:
     // SelectClause DatasetClause* WhereClause SolutionModifier
-    SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier BindingsClause	{
-	$3->m_BindingClause = $5;
+    SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	driver.lastWhereClause = $3;
 	$$ = new Select($1.distinctness, $1.varSet, $2, $3, $4);
     }
 ;
@@ -482,11 +489,11 @@ _QDatasetClause_E_Star:
 ;
 
 SubSelect:
-    // SelectClause WhereClause SolutionModifier
+    // SelectClause WhereClause SolutionModifier BindingClause?
     SelectClause {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
-      } WhereClause SolutionModifier BindingsClause	{
+      } WhereClause SolutionModifier _QBindingsClause_E_Opt	{
 	  $3->m_BindingClause = $5;
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $3, $4)));
       }
@@ -590,8 +597,8 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 
 ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier BindingsClause	{
-	$4->m_BindingClause = $6;
+    IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	driver.lastWhereClause = $4;
 	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	$$ = new Construct((DefaultGraphPattern*)$2, $3, $4, $5);
     }
@@ -599,9 +606,8 @@ ConstructQuery:
 
 DescribeQuery:
     // 'DESCRIBE' ( VarOrIRIref+ | '*' ) DatasetClause* WhereClause? SolutionModifier
-    IT_DESCRIBE _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C _QDatasetClause_E_Star _QWhereClause_E_Opt SolutionModifier BindingsClause	{
-	if ($4)
-	    $4->m_BindingClause = $6;
+    IT_DESCRIBE _O_QVarOrIRIref_E_Plus_Or_QGT_TIMES_E_C _QDatasetClause_E_Star _QWhereClause_E_Opt SolutionModifier	{
+	driver.lastWhereClause = $4;
 	$$ = new Describe($2, $3, $4, $5);
     }
 ;
@@ -637,8 +643,8 @@ _QWhereClause_E_Opt:
 
 AskQuery:
     // 'ASK' DatasetClause* WhereClause
-    IT_ASK _QDatasetClause_E_Star WhereClause BindingsClause	{
-	$3->m_BindingClause = $4;
+    IT_ASK _QDatasetClause_E_Star WhereClause	{
+	driver.lastWhereClause = $3;
 	$$ = new Ask($2, $3);
     }
 ;
@@ -876,10 +882,14 @@ OffsetClause:
     }
 ;
 
-// BindingsClause?
 BindingsClause:
-    // ( 'BINDINGS' Var+ '{' ( '(' BindingValue+ ')' )* '}' )?
-    _Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt	
+    // 'BINDINGS' Var+ '{' ( '(' BindingValue+ ')' )* '}'
+    IT_BINDINGS _QVar_E_Star GT_LCURLEY {
+	driver.curBindingsClause = new BindingClause($2);
+      } _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
+	  $$ = driver.curBindingsClause;
+	  driver.curBindingsClause = NULL;
+      }
 ;
 
 // Var*
@@ -922,22 +932,6 @@ _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star:
 	driver.curBindingsClause->push_back($2);
 	$$ = NULL;
     }
-;
-
-_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C:
-    IT_BINDINGS _QVar_E_Star GT_LCURLEY {
-	driver.curBindingsClause = new BindingClause($2);
-      } _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
-	  $$ = driver.curBindingsClause;
-	  driver.curBindingsClause = NULL;
-      }
-;
-
-_Q_O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | _O_QIT_BINDINGS_E_S_QVar_E_Star_S_QGT_LCURLEY_E_S_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_Star_S_QGT_RCURLEY_E_C	
 ;
 
 BindingValue:
@@ -1086,7 +1080,7 @@ DeleteData:
 ;
 
 DeleteWhere:
-    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE QuadData {
+    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE QuadPattern {
 	$$ = new Delete(driver.curOp, NULL);
 	driver.curOp = NULL;
     }
@@ -1351,6 +1345,7 @@ GraphPatternNotTriples:
   | ServiceGraphPattern	
   | Filter	
   | Bind	
+  | BindingsClause	
 ;
 
 OptionalGraphPattern:
