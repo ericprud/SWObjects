@@ -4,7 +4,7 @@ PREFIX trans: <tag:eric@w3.org:2009/tmo/translator#>
 
 # Constructed identifiers:
 PREFIX encounter: <http://informatics.kumc.edu/404/i2b2demo/visit_dimension#_>
-PREFIX testtype: <http://informatics.kumc.edu/testtype/>
+PREFIX testtype: <http://informatics.kumc.edu/404/i2b2demo/testtype#T>
 
 # The database-native namespaces:
 PREFIX fact: <http://informatics.kumc.edu/404/i2b2demo/observation_fact#>
@@ -19,7 +19,7 @@ SHAREDVARS varnames
 LABEL <all> CONSTRUCT {
   ?encounter trans:patient [ cpr:patientID ?patID ] ;
        trans:dateMeasured ?start_date ;
-       trans:test [ a ?test ]
+       trans:test [ a ?testtype ]
 } WHERE {
 
   ?entry
@@ -35,6 +35,6 @@ LABEL <all> CONSTRUCT {
      concept:concept_path ?concept_path;
 
   BIND (fn:concat(encounter:, ?encNum) AS ?encounter)
-  BIND (fn:concat(testtype:, ?concept_cd) AS ?test)
+  BIND (fn:concat(testtype:, ?concept_cd) AS ?testtype)
 
 }

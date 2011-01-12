@@ -740,15 +740,27 @@ BOOST_AUTO_TEST_SUITE( healthCare )
     BOOST_AUTO_TEST_SUITE_END()
 
     BOOST_AUTO_TEST_SUITE( i2b2 )
-	BOOST_AUTO_TEST_CASE( subselect ) {
-	    SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo-subselect.map", "i2b2/db_pat_test_date-subselect.rq",
-			 "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date-subselect.sql", IStreamContext::FILE);
-	}
-	BOOST_AUTO_TEST_CASE( bind ) {
-	    SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/i2b2_to_tmo-bind.map", "i2b2/db_pat_test_date-bind.rq",
-			 "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/db_pat_test_date-bind.sql", IStreamContext::FILE);
-	}
-    BOOST_AUTO_TEST_SUITE_END()
+	BOOST_AUTO_TEST_SUITE( monolithic )
+	    BOOST_AUTO_TEST_CASE( subselect ) {
+		SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/monolithic/i2b2_to_tmo-subselect.map", "i2b2/monolithic/db_pat_test_date-subselect.rq",
+			     "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/monolithic/db_pat_test_date-subselect.sql", IStreamContext::FILE);
+	    }
+	    BOOST_AUTO_TEST_CASE( bind ) {
+		SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/monolithic/i2b2_to_tmo-bind.map", "i2b2/monolithic/db_pat_test_date-bind.rq",
+			     "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/monolithic/db_pat_test_date-bind.sql", IStreamContext::FILE);
+	    }
+	BOOST_AUTO_TEST_SUITE_END() //monolithic
+	BOOST_AUTO_TEST_SUITE( modular )
+	    BOOST_AUTO_TEST_CASE( subselect ) {
+		SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/modular/i2b2_to_tmo-subselect.map", "i2b2/modular/db_pat_test_date-subselect.rq",
+			     "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/modular/db_pat_test_date-subselect.sql", IStreamContext::FILE);
+	    }
+	    BOOST_AUTO_TEST_CASE( bind ) {
+		SQLIZER_TEST("i2b2/tmo_pat_test_date.rq", "i2b2/modular/i2b2_to_tmo-bind.map", "i2b2/modular/db_pat_test_date-bind.rq",
+			     "http://informatics.kumc.edu/404/i2b2demo/", "i2b2/modular/db_pat_test_date-bind.sql", IStreamContext::FILE);
+	    }
+	BOOST_AUTO_TEST_SUITE_END() //modular
+    BOOST_AUTO_TEST_SUITE_END() //i2b2
 
     BOOST_AUTO_TEST_SUITE( notBound )
 	BOOST_AUTO_TEST_CASE( lists_notBound ) {
