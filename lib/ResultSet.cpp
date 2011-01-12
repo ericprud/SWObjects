@@ -263,7 +263,6 @@ namespace w3c_sw {
 		public:
 		    FunctionState (std::string& groupIndexRef) : FunctionCall (NULL, NULL), groupIndexRef(groupIndexRef) {  }
 		    ~FunctionState () {  }
-		    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const = 0; // @@ needed?
 		    static std::string mitoa (int i) {
 			std::stringstream s;
 			s << i;

@@ -1821,7 +1821,7 @@ public:
     }
 };
 class TableOperationOnOperation : public TableOperation {
-    friend class GraphAndServiceMerger;
+    friend struct GraphAndServiceMerger;
 protected:
     const TableOperation* m_TableOperation;
     TableOperationOnOperation (const TableOperation* p_TableOperation) : TableOperation(), m_TableOperation(p_TableOperation) {  }

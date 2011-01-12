@@ -78,12 +78,12 @@ namespace w3c_sw {
 		if (!regex_match(text, what, pattern, boost::match_default))
 		    throw SafeEvaluationError(std::string("") + "literal value \"" + curTarget->getLexicalValue() + "\" did not match pattern \"" + concatRE + "\".");
 
-#ifdef _MSC_VER
+#ifdef BOOST_REGEX_INDEX_BUG // not in 1.44
   #define FIRST_MATCH 3 // @@ by inspection, not documentation. different defaults for $^ and the like?
-#else /* !_MSC_VER */
+#else /* !BOOST_REGEX_INDEX_BUG */
   #define FIRST_MATCH 1 // consistent with comments in examples in docs: "what[0] contains the whole string"
-#endif /* !_MSC_VER */
-		for (size_t i = 0; i < reCaptures.size(); ++i)
+#endif /* !BOOST_REGEX_INDEX_BUG */
+		for (std::vector<const TTerm*>::size_type i = 0; i < reCaptures.size(); ++i)
 		    res->set(reCaptures[i], atomFactory->getRDFLiteral(std::string(what[FIRST_MATCH + i].first, what[FIRST_MATCH + i].second)), false);
 #undef FIRST_MATCH
 

@@ -160,7 +160,7 @@ std::string genTempFile (std::string dir, std::istream& istr) {
     std::string filename;
     for (std::wstring::const_iterator it = file.begin();
 	 it != file.end(); ++it)
-	filename += *it;
+	filename += (char)*it;
     int fileHandle = POSIX_open(filename.c_str(), POSIX_trunkwrite, POSIX_USER_RW);
 #else /* !_MSC_VER */
     char buf[] = "SWObjXXXXXX";
@@ -1569,6 +1569,8 @@ int main(int ac, char* av[])
             ("sql-service,S", po::value<sqlService>(), 
 	     "odbc-style SQL database\n\tdriver://[username[:password]@]host[:port]/database\nmysql://localhost/orders")
 #endif /* REGEX_LIB != SWOb_DISABLED */
+
+	    /** hmm, these aren't strictly SQL-related... */
             ("mapset,m", po::value<mapURI>(), 
 	     "mapset resource, which supplies above parameters.")
             ("mapstring,M", po::value<mapString>(), 
