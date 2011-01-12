@@ -244,6 +244,7 @@ NOGEN:
 	touch $(GENERATED)
 	ln -s win/FlexLexer.h
 
+
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
 	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
@@ -252,6 +253,21 @@ lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
 	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
 
+
+# Parser maintenance
+lib/SPARQLfedParser/bnf-new:
+	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/bnf | perl -pi -e 's{^\[\d+\]\s+(\S+)\s+::=\s+}{"[0]     $$1".(" " x (27-length($$1)))."::= "}e' > $@
+
+lib/SPARQLfedParser/SPARQLfedParser-new.yy:
+	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPParser.yy -o $@
+
+lib/SPARQLfedScanner-new.ll:
+	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPScanner.ll -o $@
+
+SPARQLfed-next: lib/SPARQLfedParser/bnf-new lib/SPARQLfedParser/SPARQLfedParser-new.yy lib/SPARQLfedScanner-new.ll
+
+
+# Status files
 docs/version.h:
 	svn info . | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
 
