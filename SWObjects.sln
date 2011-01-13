@@ -1,17 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL_server", "win\SPARQL_server\SPARQL_server.vcproj", "{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libSWObjects", "win\libSWObjects\libSWObjects.vcproj", "{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SWtransformer", "win\SWtransformer.vcproj", "{8A5017B4-B240-4C6C-92FF-A2CE4699913C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DAWG", "win\test_DAWG\test_DAWG.vcproj", "{A7163889-6F8D-4788-8DDA-39B6459C82CC}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -76,18 +66,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}.Debug|Win32.ActiveCfg = Debug|Win32
-		{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}.Debug|Win32.Build.0 = Debug|Win32
-		{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}.Release|Win32.ActiveCfg = Release|Win32
-		{18D11BB1-A7C8-4A22-BCC2-7606E0F5D436}.Release|Win32.Build.0 = Release|Win32
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}.Debug|Win32.Build.0 = Debug|Win32
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}.Release|Win32.ActiveCfg = Release|Win32
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}.Release|Win32.Build.0 = Release|Win32
-		{8A5017B4-B240-4C6C-92FF-A2CE4699913C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8A5017B4-B240-4C6C-92FF-A2CE4699913C}.Debug|Win32.Build.0 = Debug|Win32
-		{8A5017B4-B240-4C6C-92FF-A2CE4699913C}.Release|Win32.ActiveCfg = Release|Win32
-		{8A5017B4-B240-4C6C-92FF-A2CE4699913C}.Release|Win32.Build.0 = Release|Win32
 		{A7163889-6F8D-4788-8DDA-39B6459C82CC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A7163889-6F8D-4788-8DDA-39B6459C82CC}.Debug|Win32.Build.0 = Debug|Win32
 		{A7163889-6F8D-4788-8DDA-39B6459C82CC}.Release|Win32.ActiveCfg = Release|Win32
