@@ -596,14 +596,22 @@ RenamedFrameworks: Sparql.app/Contents/Frameworks
 		install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</lib$$l.dylib && \
 		install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</lib$$l.dylib; \
 	done
-	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $<
-	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $</libmysqlclient.16.dylib && \
-	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.16.dylib
-	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.16.dylib
-	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.16.dylib
+	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $</libmysqlclient.dylib
+	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $</libmysqlclient.dylib && \
+	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.dylib
+	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.dylib
+	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.dylib
 
 Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS RenamedFrameworks
 	$(CXX) -o $@ $< -LSparql.app/Contents/Frameworks $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
+# Runs something like:
+#	g++ -o Sparql.app/Contents/MacOS/Sparql bin/sparql.o -LSparql.app/Contents/Frameworks
+#	 -mmacosx-version-min=10.5 -L/opt/local/lib/mysql5/mysql/ -arch x86_64
+#	 -L/opt/local/lib/ -L/opt/local/lib/mysql5/ -L/Users/ericp/checkouts/sparql11/lib
+#	 -lSWObjects -lboost_regex-mt -lpthread -lboost_system-mt -lexpat -lmysqlclient -lz
+#	 -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread
+# It would be nice to eliminate -L/opt/* as they should all be in @executable_path/../Frameworks/ .
+
 
 Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 	rm -f $@
