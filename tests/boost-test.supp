@@ -1,4 +1,12 @@
 {
+   std::string local alloc bug
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag
+   fun:_ZNSsC1EPKcRKSaIcE
+}
+{
    sigaltstack1
    Memcheck:Param
    sigaltstack(ss)

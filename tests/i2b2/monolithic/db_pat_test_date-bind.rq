@@ -1,7 +1,7 @@
 PREFIX encounter: <http://informatics.kumc.edu/404/i2b2demo/visit_dimension#_>
 PREFIX testtype: <http://informatics.kumc.edu/404/i2b2demo/testtype#T>
 
-SELECT ?pat ?t ?encDate 
+SELECT ?pat ?typ ?encDate 
 WHERE
 {
   ?_all_0_concept <http://informatics.kumc.edu/404/i2b2demo/concept_dimension#concept_cd> ?_all_0_concept_cd .
@@ -11,6 +11,6 @@ WHERE
   ?_all_0_entry <http://informatics.kumc.edu/404/i2b2demo/observation_fact#patient_num> ?pat .
   ?_all_0_entry <http://informatics.kumc.edu/404/i2b2demo/observation_fact#start_date> ?encDate .
   BIND (encounter:123 AS ?encounter)
-  BIND (CONCAT(testtype:, ?_all_0_concept_cd) AS ?t)
+  BIND (CONCAT(testtype:, ?_all_0_concept_cd) AS ?typ)
 }
 LIMIT 10
