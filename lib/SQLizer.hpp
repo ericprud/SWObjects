@@ -324,21 +324,23 @@ namespace w3c_sw {
 	sql::Expression* curConstraint;
 	std::string defaultPKAttr;
 	KeyMap keyMap;
+	std::string driver;
 
 	std::ostream** debugStream;
 
     public:
 	//static std::ostream** ErrorStream;
 
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::ostream** debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver, std::ostream** debugStream = NULL) : 
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
-	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap), debugStream(debugStream)
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
+	    driver(driver), debugStream(debugStream)
 	{  }
 	~SQLizer () {
 	    delete curQuery;
 	}
 
-	std::string getSQLstring () { return curQuery->query->toString(); }
+	std::string getSQLstring () { return curQuery->query->toString("", driver); }
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 

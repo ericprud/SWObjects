@@ -76,9 +76,15 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
  #include "../interface/WEBserver_dummy.hpp"
 #endif
 
-#if SQL_CLIENT == SWOb_MYSQL
+#include "../interface/SQLclient.hpp" // Needed when no SQL clients are linked in.
+#ifdef SQL_CLIENT_MYSQL
   #include "../interface/SQLclient_MySQL.hpp"
-#endif /* SQL_CLIENT == SWOb_MYSQL */
+#endif /* SQL_CLIENT_MYSQL */
+
+#ifdef SQL_CLIENT_ORACLE
+  #include "../interface/SQLclient_Oracle.hpp"
+#endif /* SQL_CLIENT_ORACLE */
+
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or include config.h manually) */
@@ -326,6 +332,31 @@ DBHandlers  RdfDBHandlers;
 "    }\n"
 	    ;
 
+class SQLClientWrapper : public sw::SQLclient {
+    sw::SQLclient * const client;
+public:
+    SQLClientWrapper (std::string driver) : client(makeClient(driver)) {  }
+    ~SQLClientWrapper () { delete client; }
+    static sw::SQLclient* makeClient (std::string driver) {
+#ifdef SQL_CLIENT_MYSQL
+	if (driver == "mysql") return new sw::SQLclient_MySQL();
+#endif
+#ifdef SQL_CLIENT_ORACLE
+	if (driver == "oracle") return new sw::SQLclient_Oracle();
+#endif
+	throw driver + " driver not linked in.";
+    }
+    virtual void connect(std::string server, std::string database, std::string user) {
+	client->connect(server, database, user);
+    }
+    virtual void connect(std::string server, std::string database, std::string user, std::string password) {
+	client->connect(server, database, user, password);
+    }
+    virtual Result* executeQuery(std::string query) {
+	return client->executeQuery(query);
+    }
+};
+
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
@@ -423,6 +454,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     sw::KeyMap keyMap;
     sw::MapSetDriver mapSetParser;
     sw::ChainingMapper queryMapper;
+    std::string SQLDriver;
     std::string SQLUser;
     std::string SQLPassword;
     std::string SQLServer;
@@ -488,7 +520,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
     }
 
     std::string sqlConnectString () const {
-	return SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
+	return SQLDriver + "://" + SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
     }
 
     bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
@@ -525,34 +557,41 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    language = "SQL";
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
-	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, &DebugStream);
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, SQLDriver, &DebugStream);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
-	    bool doSQLquery = !SQLServer.empty() || !SQLDatabase.empty() || !SQLUser.empty();
+	    bool doSQLquery = NoExec == false && 
+		(!SQLDriver.empty() || !SQLServer.empty()
+		 || !SQLDatabase.empty() || !SQLUser.empty());
 	    if (DebugStream != NULL)
 		*DebugStream << "SQL: " << std::endl;
-	    if (doSQLquery == false)
+	    if (printQuery || doSQLquery == false) {
+		if (DebugStream != NULL)
+		    *DebugStream << "Final query: " << ".\n";
 		std::cout << finalQuery << std::endl;
-	    else if (DebugStream != NULL)
+	    } else if (DebugStream != NULL)
 		*DebugStream << "SQL Query: " << finalQuery << std::endl;
 
-#if SQL_CLIENT != SWOb_DISABLED
 	    if (doSQLquery == true) {
-		sw::SQLclient_MySQL MySQLclient;
-		sw::SQLclient* SQLclient(&MySQLclient);
+#ifdef SQL_CLIENT_NONE
+		std::cerr <<
+		    "Unable to connect to " << sqlConnectString() << " .\n"
+		    "No SQL client libraries linked in.\n";
+#else /* !SQL_CLIENT_NONE */
+		SQLClientWrapper sqlClient(SQLDriver);
 		sw::SQLclient::Result* res;
 		try {
 		    if (SQLPassword.empty())
-			SQLclient->connect(SQLServer, SQLDatabase, SQLUser); // @@ wrap password with Optional to enable --password=''
+			sqlClient.connect(SQLServer, SQLDatabase, SQLUser); // @@ wrap password with Optional to enable --password=''
 		    else
-			SQLclient->connect(SQLServer, SQLDatabase, SQLUser, SQLPassword);
+			sqlClient.connect(SQLServer, SQLDatabase, SQLUser, SQLPassword);
 		}
 		catch (std::string ex) {
 		    throw std::string("unable to connect to ") + sqlConnectString() + ": " + ex;
 		}
 		try {
-		    res = SQLclient->executeQuery(finalQuery);
+		    res = sqlClient.executeQuery(finalQuery);
 		}
 		catch (std::string ex) {
 		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
@@ -560,8 +599,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		sw::SqlResultSet rs2(&atomFactory, res);
 		rs.joinIn(&rs2);
 		executed = true;
+#endif /* !SQL_CLIENT_NONE */
 	    }
-#endif /* SQL_CLIENT != SWOb_DISABLED */
 	} else {
 	    if (!serviceURI.empty()) {
 		sw::SWWEBagent::ParameterList p;
@@ -1424,8 +1463,9 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
 				   "/(.+)$");		// 6: database
     boost::cmatch matches;
     if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
-	if (matches[1] != "mysql")
-	    throw std::string("only mysql SQL service is currently supported -- saw ") + matches[1];
+	if (matches[1] != "mysql" && matches[1] != "oracle")
+	    throw std::string("only mysql or oracle SQL service is currently supported -- saw ") + matches[1];
+	TheServer.SQLDriver = matches[1];
 	if (matches[2].matched)
 	    TheServer.SQLUser = matches[2];
 	if (matches[3].matched)

@@ -122,14 +122,21 @@ else
 endif
 
 
-ifeq ($(SQL_CLIENT), MYSQL)
-  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_MYSQL "\n"
-  SQL_CLIENT_LIB?= -lmysqlclient -lz
-else
-  ifneq ($(SQL_CLIENT), )
-    $(warning $(SQL_CLIENT) may not be supported)
-  endif
-  CONFIG_DEFS+= \\\#define SQL_CLIENT	SWOb_DISABLED "\n"
+ifeq ($(findstring MYSQL, $(SQL_CLIENTS)), MYSQL)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_MYSQL "\n"
+  SOME_SQL_CLIENT = 1
+  SQL_CLIENT_LIB+= -lmysqlclient -lz
+endif
+
+ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_ORACLE "\n"
+  SOME_SQL_CLIENT = 1
+  SQL_CLIENT_LIB+= -lmysqlclient -lz # !!! update with real oracle library
+endif
+
+ifeq ($(SOME_SQL_CLIENT), )
+  $(warning no SQL client)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_NONE "\n"
 endif
 
 
@@ -165,8 +172,6 @@ config.h: CONFIG
 	"/* HTTP Libs: */\n" \
 	"#define SWOb_ASIO		145\n" \
 	"#define SWOb_DLIB		146\n" \
-	"/* SQL Libs: */\n" \
-	"#define SWOb_MYSQL		148\n" \
 	"\n" $(CONFIG_DEFS) "\n" > config.h
 	@$(ECHO) config.h updated.
 

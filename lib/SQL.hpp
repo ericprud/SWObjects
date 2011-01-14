@@ -67,7 +67,7 @@ namespace w3c_sw {
 	    virtual ~Expression () {  }
 	    virtual Expression* clone() const = 0;
 	    std::string str () const { return toString(); }
-	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High) const = 0;
+	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
 	    virtual void getEquivs (struct EquivSet&) const {  }
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
@@ -114,13 +114,13 @@ namespace w3c_sw {
 	    }
 	    virtual Expression* clone() const = 0;
 	    void addConstraint (Expression* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    if (it != constraints.begin()) s << getJunctionString();
-		    s << (*it)->toString(pad, getPrecedence());
+		    s << (*it)->toString(pad, getPrecedence(), driver);
 		}
 		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
@@ -204,13 +204,13 @@ namespace w3c_sw {
 	    BooleanJunction (std::vector<const Expression*>* p_Expressions) : m_Expressions(*p_Expressions) {  }
 	    virtual Expression* clone() const = 0;
 	    virtual const char* getInfixNotation() const = 0;
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 		     it != m_Expressions.end(); it++) {
 		    if (it != m_Expressions.begin()) s << getInfixNotation();
-		    s << (*it)->toString(pad, getPrecedence());
+		    s << (*it)->toString(pad, getPrecedence(), driver);
 		}
 		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
@@ -266,14 +266,14 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (prec < parentPrec) s << "(";
 		for (std::vector<Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			s << " " <<  sqlOperator << " ";
-		    s << (*it)->toString(pad, prec);
+		    s << (*it)->toString(pad, prec, driver);
 		}
 		if (prec < parentPrec) s << ")";
 		return s.str();
@@ -290,12 +290,12 @@ namespace w3c_sw {
 	    virtual Expression* clone() const = 0;
 	    virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 	    virtual const char* getComparisonNotation() const = 0;
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
-		s << left->toString(pad, getPrecedence());
+		s << left->toString(pad, getPrecedence(), driver);
 		s << getComparisonNotation();
-		s << right->toString(pad, getPrecedence());
+		s << right->toString(pad, getPrecedence(), driver);
 		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
 	    }
@@ -412,7 +412,7 @@ namespace w3c_sw {
 		return *arg == *r.arg;
 	    }
 	    virtual const char* getPrefixOperator() const = 0;
-	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		s << getPrefixOperator();
@@ -440,7 +440,7 @@ namespace w3c_sw {
 		return ptrequal(args.begin(), args.end(), r.args.begin());
 	    }
 	    virtual const char* getInfixOperator() const = 0;
-	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High) const {
+	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		for (std::vector<const Expression*>::const_iterator it = args.begin();
@@ -467,9 +467,9 @@ namespace w3c_sw {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getPrefixOperator () const { return "!"; }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string driver = "") const {
 		return std::string("CONCAT")
-		    + UnaryExpression::toString("", PREC_Low);
+		    + UnaryExpression::toString("", PREC_Low, driver);
 	    }
 	};
 	class ArithmeticProduct : public NaryExpression {
@@ -562,7 +562,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
 		s << "\"" << value << "\"";
 		return s.str();
@@ -583,7 +583,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
 		s << value;
 		return s.str();
@@ -604,7 +604,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
 		s << value;
 		return s.str();
@@ -624,7 +624,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
 		s << value;
 		return s.str();
@@ -644,7 +644,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		return value ? "true" : "false";
 	    }
 	};
@@ -661,7 +661,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		return "NULL";
 	    }
 	};
@@ -680,7 +680,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
 		s << tterm->toString();
 		s << " IS NOT NULL";
@@ -702,9 +702,9 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec, std::string driver = "") const {
 		std::stringstream s;
-		s << "!(" << negated->toString(pad, parentPrec) << ")";
+		s << "!(" << negated->toString(pad, parentPrec, driver) << ")";
 		return s.str();
 	    }
 	};
@@ -722,7 +722,7 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string, e_PREC, std::string driver = "") const {
 		std::stringstream s;
 		s << aattr.alias;
 		s << ".";
@@ -753,9 +753,9 @@ namespace w3c_sw {
 		return r.finalEq(*this);
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
-	    virtual std::string toString (std::string, e_PREC) const {
+	    virtual std::string toString (std::string pad, e_PREC prec, std::string driver = "") const {
 		return std::string("CONCAT(")
-		    + NaryExpression::toString("", PREC_Low) + ")";
+		    + NaryExpression::toString("", PREC_Low, driver) + ")";
 	    }
 	};
 
@@ -774,8 +774,8 @@ namespace w3c_sw {
 	    virtual bool operator== (const Expression& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string, e_PREC) const {
-		return std::string("REGEX(") + text->toString() + ", " + pattern->toString() + ")";
+	    virtual std::string toString (std::string pad, e_PREC prec, std::string driver = "") const {
+		return std::string("REGEX(") + text->toString(pad, prec, driver) + ", " + pattern->toString() + ")";
 	    }
 	};
 
@@ -798,7 +798,7 @@ namespace w3c_sw {
 		bool finalEq (const IntegerJoinConstraint&) const { return false; }
 		bool finalEq (const StringJoinConstraint&) const { return false; }
 		virtual bool operator==(const JoinConstraint&) const = 0;
-		virtual std::string toString(std::string alias, std::string pad = "") = 0;
+		virtual std::string toString(std::string alias, std::string pad = "", std::string driver = "") = 0;
 	    };
 	    class ForeignKeyJoinConstraint : public JoinConstraint {
 		std::string otherAlias;
@@ -811,7 +811,7 @@ namespace w3c_sw {
 		virtual bool operator== (const JoinConstraint& r) const {
 		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
 		}
-		virtual std::string toString (std::string alias, std::string) {
+		virtual std::string toString (std::string alias, std::string, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
 		    return s.str();
@@ -827,7 +827,7 @@ namespace w3c_sw {
 		virtual bool operator== (const JoinConstraint& r) const {
 		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
 		}
-		virtual std::string toString (std::string alias, std::string) {
+		virtual std::string toString (std::string alias, std::string, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=" << value;
 		    return s.str();
@@ -843,7 +843,7 @@ namespace w3c_sw {
 		virtual bool operator== (const JoinConstraint& r) const {
 		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
 		}
-		virtual std::string toString (std::string alias, std::string) {
+		virtual std::string toString (std::string alias, std::string, std::string) {
 		    std::stringstream s;
 		    s << alias << "." << myAttr << "=\"" << value << "\"";
 		    return s.str();
@@ -870,20 +870,20 @@ namespace w3c_sw {
 	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
 	    virtual bool operator==(const Join& ref) const = 0;
 	    std::string str () const { return toString(); } // for debugger invocation
-	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "") const {
+	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
-#ifdef ORACLE
-		s << getRelationText(pad) << " " << alias;
-#else
-		s << getRelationText(pad) << " AS " << alias;
-#endif
+		if (driver == "oracle")
+		    s << getRelationText(pad) << " " << alias;
+		else
+		    s << getRelationText(pad) << " AS " << alias;
+
 		std::stringstream on;
 		for (std::vector<JoinConstraint*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			on << " AND ";
-		    on << (*it)->toString(alias, pad);
+		    on << (*it)->toString(alias, pad, driver);
 		}
 		std::string onStr = on.str();
 		if (!onStr.empty()) {
@@ -935,12 +935,11 @@ namespace w3c_sw {
 		return *exp == *ref.exp && alias == ref.alias;
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
-	    virtual std::string toString (std::string pad = "") const {
-#ifdef ORACLE
-		return exp->toString(pad) + " " + alias;
-#else
-		return exp->toString(pad) + " AS " + alias;
-#endif
+	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
+		if (driver == "oracle")
+		    return exp->toString(pad, PREC_High, driver) + " " + alias;
+		else
+		    return exp->toString(pad, PREC_High, driver) + " AS " + alias;
 	    }
 	};
 
@@ -994,7 +993,7 @@ namespace w3c_sw {
 	    std::string str () const { // easy to call from debugger.
 		return toString("");
 	    }
-	    virtual std::string toString (std::string pad = "") const {
+	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		s << pad << "SELECT ";
 		if (distinct) s << "DISTINCT ";
@@ -1003,7 +1002,7 @@ namespace w3c_sw {
 		for (std::vector<AliasedSelect*>::const_iterator it = selects.begin();
 		     it != selects.end(); ++it) {
 		    if (it != selects.begin()) s << ", ";
-		    s << (*it)->toString(pad);
+		    s << (*it)->toString(pad, driver);
 		}
 		if (selects.begin() == selects.end()) s << "NULL";
 
@@ -1012,16 +1011,16 @@ namespace w3c_sw {
 		for (std::vector<Join*>::const_iterator it = joins.begin();
 		     it != joins.end(); ++it)
 		    if (it == joins.begin())
-			s << std::endl << pad << "       FROM " << (*it)->toString(&where, pad);
+			s << std::endl << pad << "       FROM " << (*it)->toString(&where, pad, driver);
 		    else
-			s << (*it)->toString(NULL, pad);
+			s << (*it)->toString(NULL, pad, driver);
 
 		/* WHERE */
 		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (where.length() != 0)
 			where += " AND ";
-		    where += (*it)->toString(pad);
+		    where += (*it)->toString(pad, PREC_High, driver);
 		}
 
 		if (where.length() != 0)
@@ -1034,7 +1033,7 @@ namespace w3c_sw {
 			 it != orderBy.end(); ++it) {
 			if (it != orderBy.begin())
 			    s << ", ";
-			s << (*it)->toString(pad);
+			s << (*it)->toString(pad, PREC_High, driver);
 		    }
 		}
 
@@ -1135,14 +1134,14 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this); // !!! no Join::baseEq(r) && 
 	    }
-	    virtual std::string toString (std::string pad = "") const {
+	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		std::string newPad = pad + "    ";
 		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it) {
 		    if (it != disjoints.begin())
 			s << std::endl << pad << "  UNION" << std::endl;
-		    s << (*it)->toString(newPad);
+		    s << (*it)->toString(newPad, driver);
 		}
 		return s.str();
 	    }
@@ -1178,9 +1177,9 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string pad = "") const {
+	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
 		std::string newPad = pad + "    ";
-		return SQLQuery::toString(newPad);
+		return SQLQuery::toString(newPad, driver);
 	    }
 	};
 
