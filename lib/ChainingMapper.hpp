@@ -382,11 +382,35 @@ namespace w3c_sw {
 		 * original label. (Do we? What about re-mapped vars?)
 		 */
 		virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* expr, const Variable* label) {
+		    const TTerm* curBinding = label ? res->get(label) : NULL;
+		    if (curBinding != NULL && dynamic_cast<const Bindable*>(curBinding) == NULL) {
+			ExpressionInverter inv(curBinding, const_cast<Result*>(res), atomFactory); // !!!! res shouldn't be const
+			expr->express(&inv); // binds variables !! will add filters
+			last.expression = new TTermExpression(curBinding);
+		    } else {
+			expr->express(this);
+		    }
+		    const Expression* e = last.expression;
+
+		    /**
+		     * Make sure you've added the bindings before visiting p_op
+		     * (so res has the new bindings when the BGPs are duplicated).
+		     */
 		    p_op->express(this);
-		    const TableOperation* op = last.tableOperation;
-		    expr->express(this);
-		    last.tableOperation = new Bind(op, last.expression, label);
+		    TableOperation* op = last.tableOperation;
+		    label->express(this);
+		    if (dynamic_cast<const Variable*>(last.tterms.tterm) == NULL) {
+			delete e;
+			last.tableOperation = op;
+		    } else {
+			last.tableOperation = new Bind(op, e, dynamic_cast<const Variable*>(last.tterms.tterm));
+		    }
 		}
+		/**
+		 * This counts on SWObjectDuplicator::select visiting p_VarSet
+		 * (which calls expressionAlias) before visiting p_WhereClause
+		 * (so res has the new bindings when the BGPs are duplicated).
+		 */
 		virtual void expressionAlias (const ExpressionAlias* const self, const Expression* expr, const Bindable* label) {
 		    const TTerm* curBinding = label ? res->get(label) : NULL;
 		    if (curBinding != NULL && dynamic_cast<const Bindable*>(curBinding) == NULL) {
