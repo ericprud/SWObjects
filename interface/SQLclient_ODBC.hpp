@@ -65,7 +65,7 @@ namespace w3c_sw {
 	 */
 	class Result : public SQLclient::Result {
 	protected:
-	    SQLHSTMT& stmt;
+	    SQLHSTMT stmt;
 	    SQLSMALLINT num_fields;
 	    ColumnSet colSet;
 	    std::vector<SQLSMALLINT> sqlColTypes;
@@ -77,7 +77,7 @@ namespace w3c_sw {
 	     * SQLclient_ODBC::Result constructor.
 	     * @stmt: handle used in SQLExec.
 	     */
-	    Result (SQLHSTMT& stmt) : stmt(stmt) {
+	    Result (SQLHSTMT stmt) : stmt(stmt) {
 		if (!SQL_SUCCEEDED(::SQLNumResultCols(stmt, &num_fields)))
 		    throwFailure("SQLNumResultCols failed: ", SQL_HANDLE_STMT, stmt);
 		for(int i = 0; i < num_fields; i++) {
@@ -214,11 +214,10 @@ namespace w3c_sw {
 	virtual Result* executeQuery (std::string query) {
 	    SQLHSTMT stmt;
 
-	    // !! uncommenting the throwFailures appears to corrupt the stmt handler.
 	    if (!SQL_SUCCEEDED(::SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt)))
-		; // throwFailure("SQLAllocHandle statement failed: ", SQL_HANDLE_STMT, env);
+		throwFailure("SQLAllocHandle statement failed: ", SQL_HANDLE_STMT, env);
 	    if (!SQL_SUCCEEDED(::SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS)))
-		; // throwFailure("SQLExecDirect failed: ", SQL_HANDLE_STMT, env);
+		throwFailure("SQLExecDirect failed: ", SQL_HANDLE_STMT, env);
 
 	    return new Result(stmt);
 	}
@@ -228,3 +227,20 @@ namespace w3c_sw {
 
 #endif // !SQL_CLIENT_ODBC_H
 
+/* Add extra return code debugging info somday:
+		SQLRETURN r;
+		if (!(SQL_SUCCEEDED(r = ::SQLFetch(stmt)))) {
+		    std::stringstream ss;
+		    ss << __FILE__ << "(" << __LINE__ << "): error: SQLFetch failed with " << r << "(" <<
+			(r == SQL_SUCCESS ? "SQL_SUCCESS" :
+			 r == SQL_SUCCESS_WITH_INFO ? "SQL_SUCCESS_WITH_INFO" :
+			 r == SQL_NO_DATA ? "SQL_NO_DATA" :
+			 r == SQL_STILL_EXECUTING ? "SQL_STILL_EXECUTING" :
+			 r == SQL_ERROR ? "SQL_ERROR" :
+			 r == SQL_INVALID_HANDLE ? "SQL_INVALID_HANDLE" :
+			 "???")
+		       << "): ";
+		    sql.throwFailure(ss.str(), SQL_HANDLE_STMT, (stmt);
+		}
+
+ */
