@@ -551,7 +551,7 @@ struct SQLizerTest {
 	/* map SPARQLquery to SQL. */
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", KeyMap(), &DebugStream);
+	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", KeyMap(), "", &DebugStream);
 	sparqlQuery->express(&s);
 	IStreamContext generated(s.getSQLstring(), IStreamContext::STRING);
 	try {
