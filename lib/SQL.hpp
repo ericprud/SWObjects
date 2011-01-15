@@ -873,7 +873,7 @@ namespace w3c_sw {
 	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
-		if (driver == "oracle")
+		if (driver.find("oracle") == 0)
 		    s << getRelationText(pad) << " " << alias;
 		else
 		    s << getRelationText(pad) << " AS " << alias;
@@ -936,7 +936,7 @@ namespace w3c_sw {
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
 	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
-		if (driver == "oracle")
+		if (driver.find("oracle") == 0)
 		    return exp->toString(pad, PREC_High, driver) + " " + alias;
 		else
 		    return exp->toString(pad, PREC_High, driver) + " AS " + alias;
@@ -1037,12 +1037,13 @@ namespace w3c_sw {
 		    }
 		}
 
-#ifdef ORACLE
-		if (limit != -1) s << std::endl << pad << " rownum <= " << limit;
-#else
-		if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
-#endif
-		if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
+		if (driver.find("oracle") == 0) {
+		    if (offset != -1) s << std::endl << pad << "rownum > " << offset;
+		    if (limit != -1) s << std::endl << pad << " rownum <= " << limit;
+		} else {
+		    if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
+		    if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
+		}
 
 		return s.str();
 	    }
