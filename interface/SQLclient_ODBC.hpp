@@ -227,7 +227,7 @@ namespace w3c_sw {
 
 #endif // !SQL_CLIENT_ODBC_H
 
-/* Add extra return code debugging info somday:
+/* Add extra return code debugging info someday:
 		SQLRETURN r;
 		if (!(SQL_SUCCEEDED(r = ::SQLFetch(stmt)))) {
 		    std::stringstream ss;
