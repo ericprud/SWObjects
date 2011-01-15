@@ -134,6 +134,12 @@ ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
   SQL_CLIENT_LIB+= -lmysqlclient -lz # !!! update with real oracle library
 endif
 
+ifeq ($(findstring ODBC, $(SQL_CLIENTS)), ODBC)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_ODBC "\n"
+  SOME_SQL_CLIENT = 1
+  SQL_CLIENT_LIB+= -lodbc
+endif
+
 ifeq ($(SOME_SQL_CLIENT), )
   $(warning no SQL client)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_NONE "\n"

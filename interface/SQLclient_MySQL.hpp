@@ -20,6 +20,14 @@ namespace w3c_sw {
     protected:
 	MYSQL mysql, *sock;
 	std::string server, database, user;
+
+	/**
+	 * _connect - connect to the database using the supplied credentials.
+	 * @server: database server.
+	 * @database: database name.
+	 * @user: username to access the database.
+	 * @password: @user's password.
+	 */
 	virtual void _connect (std::string server, std::string database, std::string user, const char* password) {
 	    this->server = server;
 	    this->database = database;
@@ -29,6 +37,10 @@ namespace w3c_sw {
 	}
 
     public:
+
+	/**
+	 * SQLclient_MySQL::Result - MySQL-specific SQLclient::Result (row).
+	 */
 	class Result : public SQLclient::Result {
 	protected:
 	    MYSQL_RES *result;
@@ -37,10 +49,17 @@ namespace w3c_sw {
 	    ColumnSet colSet;
 	    Row row;
 	public:
+
+	    /**
+	     * SQLclient_MySQL::Result constructor.
+	     * @result: MySQL result handle returned from mysql_query.
+	     */
 	    Result (MYSQL_RES *result) : result(result) {
 		num_fields = mysql_num_fields(result);
 		fields = mysql_fetch_fields(result);
 		for(int i = 0; i < num_fields; i++) {
+
+		    // Create a field to store the name and RDF type of this column.
 		    Field f;
 		    f.name = fields[i].name;
 		    switch (fields[i].type) {
@@ -94,17 +113,30 @@ namespace w3c_sw {
 			}
 			f.type = Field::TYPE__unknown;
 		    }
-		    colSet.push_back(f);
+
+		    colSet.push_back(f); 		// Store the new Field.
 		}
 	    }
+
 	    virtual ColumnSet cols () { return colSet; }
+
+	    /**
+	     * nextRow: create a Row record for the next fetchable row.
+	     * @returns: SQLclient::Row, or SQLclient::Result.end() if at the end.
+	     */
 	    virtual Row nextRow () {
 		Row ret;
 		MYSQL_ROW row;
 		if ((row = mysql_fetch_row(result)) == NULL)
-		    return ret;
+		    return ret; // returns SQLclient::Result.end()
+
+		// For each column:
 		for(int i = 0; i < num_fields; i++) {
+
+		    /* retrieve column data as a string */
 		    std::string lexval(row[i] ? row[i] : "SQL NULL");
+
+		    // Perform necessary SQL-to-RDF lexical transformations:
 		    switch (fields[i].type) {
 		    case MYSQL_TYPE_DATETIME:
 			lexval.replace(lexval.find_first_of(' '), 1, "T");
@@ -123,24 +155,36 @@ namespace w3c_sw {
 		return ret;
 	    }
 	};
+
+	/**
+	 * SQLclient_MySQL constructor.
+	 */
 	SQLclient_MySQL () : SQLclient() { 
 	    mysql_init(&mysql);
 	}
+
 	~SQLclient_MySQL () {  }
+
 	virtual void connect (std::string server, std::string database, std::string user) {
 	    _connect(server, database, user, NULL);
 	}
 	virtual void connect (std::string server, std::string database, std::string user, std::string password) {
 	    _connect(server, database, user, password.c_str());
 	}
+
+	/**
+	 * executeQuery - Execute a generic SQL query.
+	 * @query: the query string to send to the engine.
+	 */
 	virtual Result* executeQuery (std::string query) {
 	    if (mysql_query(sock, query.c_str()))
-		throw std::string("mysql://") + user + "@" + server + "/" + database +
-				  "could not execute [[\n" + query + "\n]]";
+		throw std::string("error calling mysql_query: ") + mysql_error(sock);
 	    MYSQL_RES *result;
 	    if (!(result = mysql_store_result(sock)))
-		throw std::string("mysql://") + user + "@" + server + "/" + database +
-				  "could not retrieve results of [[\n" + query + "\n]]";
+		throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
+// 		throw std::string("mysql://") + user + "@" + server + "/" + database +
+// 				  "could not retrieve results of [[\n" + query + "\n]]";
+
 	    return new Result(result);
 	}
     };

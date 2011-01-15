@@ -85,6 +85,10 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
   #include "../interface/SQLclient_Oracle.hpp"
 #endif /* SQL_CLIENT_ORACLE */
 
+#ifdef SQL_CLIENT_ODBC
+  #include "../interface/SQLclient_ODBC.hpp"
+#endif /* SQL_CLIENT_ODBC */
+
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or include config.h manually) */
@@ -332,12 +336,17 @@ DBHandlers  RdfDBHandlers;
 "    }\n"
 	    ;
 
+bool UseODBC = false;
+
 class SQLClientWrapper : public sw::SQLclient {
     sw::SQLclient * const client;
 public:
     SQLClientWrapper (std::string driver) : client(makeClient(driver)) {  }
     ~SQLClientWrapper () { delete client; }
     static sw::SQLclient* makeClient (std::string driver) {
+#ifdef SQL_CLIENT_ODBC
+	if (UseODBC) return new sw::SQLclient_ODBC(driver);
+#endif
 #ifdef SQL_CLIENT_MYSQL
 	if (driver == "mysql") return new sw::SQLclient_MySQL();
 #endif
@@ -557,7 +566,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    language = "SQL";
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
-	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, SQLDriver, &DebugStream);
+	    std::string drv = SQLDriver.find("oracle") == 0 ? "oracle" : SQLDriver;
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv, &DebugStream);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
@@ -593,7 +603,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		try {
 		    res = sqlClient.executeQuery(finalQuery);
 		}
-		catch (std::string ex) {
+ 		catch (std::string ex) {
 		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		sw::SqlResultSet rs2(&atomFactory, res);
@@ -1453,6 +1463,18 @@ struct sqlService {};
 void validate (boost::any&, const std::vector<std::string>& values, sqlService*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
+    /**
+     * ODBC drivers patterns are pretty random.
+     * c.f. http://www.herongyang.com/JDBC/Summary-Connection-URL.html
+     * We let ODBC work it out.
+     */
+    size_t p = s.find("odbc:");
+    if (p == 0) {
+	UseODBC = true;
+	TheServer.SQLDriver = s.substr(5);
+	return;
+    }
+
     const boost::regex odbcPattern("^([^:]+)://"	// 1: protocol ://
 				   "(?:"		//    [
 				   "([^:]+)"		// 2:   user

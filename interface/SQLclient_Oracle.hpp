@@ -280,12 +280,12 @@ namespace w3c_sw {
 	}
 	virtual Result* executeQuery (std::string query) {
 	    if (mysql_query(sock, query.c_str()))
-		throw std::string("mysql://") + user + "@" + server + "/" + database +
-				  "could not execute [[\n" + query + "\n]]";
+		throw std::string("error calling mysql_query: ") + mysql_error(sock);
 	    MYSQL_RES *result;
 	    if (!(result = mysql_store_result(sock)))
-		throw std::string("mysql://") + user + "@" + server + "/" + database +
-				  "could not retrieve results of [[\n" + query + "\n]]";
+		throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
+// 		throw std::string("mysql://") + user + "@" + server + "/" + database +
+// 				  "could not retrieve results of [[\n" + query + "\n]]";
 	    return new Result(result);
 	}
     };

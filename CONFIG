@@ -49,10 +49,11 @@ HTTP_SERVER= ASIO
 # SQL_CLIENTS: MYSQL |  - what library provies HTTP server support. #####
 # Needed for any binary exectuting relational queries.
 # Tested with:
-#   MYSQL v?.??
+#   MYSQL v16
+#   ODBC
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
-SQL_CLIENTS= MYSQL|ORACLE
+SQL_CLIENTS= MYSQL|ORACLE|ODBC
 
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
