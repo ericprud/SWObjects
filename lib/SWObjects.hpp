@@ -331,6 +331,7 @@ public:
 
     void push_back(T v) {
 	assert(v != NULL); // @DEBUG
+	assert(v != (void*)this); // @DEBUG
 	data.push_back(v);
     }
     size_t size () const { return data.size(); }
@@ -531,6 +532,7 @@ public:
     }
     virtual const TTerm* evalTTerm (const Result*, BNodeEvaluator* /* evaluator */) const { return this; }
     bool bindVariable (const TTerm* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
+    bool symmetricBindVariable (const TTerm* p, ResultSet* rs, Result* provisional, bool weaklyBound) const;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual std::string getBindingAttributeName() const = 0;
     struct BNode2string : public std::map<const BNode*, std::string> {
@@ -1315,6 +1317,13 @@ public:
 	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
 	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
 	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
+    }
+    bool symmetricBindVariables (const TriplePattern* tp, bool, ResultSet* rs, Result* provisional, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const {
+	return
+	    (graphVar == TTerm::Unbound || graphVar->symmetricBindVariable(graphName, rs, provisional, weaklyBound)) &&
+	    m_p->symmetricBindVariable(tp->m_p, rs, provisional, weaklyBound) && 
+	    m_s->symmetricBindVariable(tp->m_s, rs, provisional, weaklyBound) && 
+	    m_o->symmetricBindVariable(tp->m_o, rs, provisional, weaklyBound);
     }
     bool construct(BasicGraphPattern* target, const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const;
 

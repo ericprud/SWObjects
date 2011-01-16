@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  IStreamContext::STRING);
 	}
 	BOOST_AUTO_TEST_CASE( p1_S2_p2_S3_p3 ) {
-	    RULE_MAP_TEST("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3}",
+	    RULE_MAP_TEST("SELECT * { ?q1 <p2> ?q2 ; <p3> ?q3 }",
 			  "CONSTRUCT { ?rs <p2> ?ro } { SERVICE <S2> { ?rs <p2> ?ro } }\n"
 			  "CONSTRUCT { ?rs <p3> ?ro } { SERVICE <S3> { ?rs <p3> ?ro } }",
 			  "SELECT * { SERVICE <S2> { ?qs <p2> ?qo }\n"
@@ -722,6 +722,36 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 	}
 
     BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( toy )
+	BOOST_AUTO_TEST_CASE( const_p ) {
+	    RULE_MAP_TEST("SELECT * { ?s <p3> ?o }",
+			  "CONSTRUCT { <x> <p1> ?ro } { ?rs <q1> ?ro }\n"
+			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <q2> ?ro }\n"
+			  "CONSTRUCT { <x> <p3> ?ro } { ?rs <q3> ?ro }\n"
+			  "CONSTRUCT { ?rs <p4> ?ro } { ?rs <q4> ?ro }",
+			  "SELECT * { ?s <q3> ?o }",
+			  IStreamContext::STRING);
+	}
+	BOOST_AUTO_TEST_CASE( var_p ) {
+	    RULE_MAP_TEST("SELECT * { ?s ?p ?o }",
+			  "CONSTRUCT { ?rs <p1> ?ro } { ?rs <q1> ?ro }\n"
+			  "CONSTRUCT { ?rs <p2> ?ro } { ?rs <q2> ?ro }",
+			  "SELECT * { { ?s <q1> ?qo }\n"
+			  "           UNION\n"
+			  "           { ?s <q2> ?qo } }",
+			  IStreamContext::STRING);
+	}
+	BOOST_AUTO_TEST_CASE( poly_p ) {
+	    RULE_MAP_TEST("SELECT * { ?s <p1> ?o }",
+			  "LABEL <1> CONSTRUCT { ?s3 <p1> ?ro } { ?rs <q1> ?ro }\n"
+			  "LABEL <2> CONSTRUCT { <x> <p1> ?ro } { ?rs <q1b> ?ro }",
+			  "SELECT * { { ?rs1 <q1> ?qo }\n"
+			  "           UNION\n"
+			  "           { ?rs2 <q1b> ?qo } }",
+			  IStreamContext::STRING);
+	}
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( healthCare )

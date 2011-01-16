@@ -609,7 +609,7 @@ namespace w3c_sw {
 		    /** If the pattern matches the triple,
 		          we will add it to the <alternatives>. */
 		    // std::cerr << "  rule: " << (*constraint)->toString();
-		    if ((*constraint)->bindVariables(triple, false, &testRS, *testRS.begin())) {
+		    if ((*constraint)->symmetricBindVariables(triple, false, &testRS, *testRS.begin())) {
 			/**
 			 * Queue adding this combination of rule and bindings to
 			 * the opts.

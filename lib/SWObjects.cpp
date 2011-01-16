@@ -1852,6 +1852,23 @@ compared against
 	}
 	return constant == curVal;
     }
+    bool TTerm::symmetricBindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+	if (this == Unbound || constant == Unbound)
+	    return true;
+	TreatAsVar treatAsVar;
+	const TTerm* curVal = evalTTerm(provisional, &treatAsVar); // doesn't need to generate symbols
+	if (curVal == Unbound) {
+	    rs->set(provisional, this, constant, weaklyBound);
+	    return true;
+	} else {
+	    const TTerm* curVal = constant->evalTTerm(provisional, &treatAsVar); // doesn't need to generate symbols
+	    if (curVal == Unbound) {
+		rs->set(provisional, constant, this, weaklyBound);
+		return true;
+	    }
+	}
+	return constant == curVal;
+    }
 
     void Bind::bindVariables (RdfDB* db, ResultSet* rs) const {
 	m_TableOperation->bindVariables(db, rs);
