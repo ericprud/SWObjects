@@ -125,6 +125,7 @@ namespace w3c_sw {
 	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
 
+	    ::xmlSubstituteEntitiesDefault(1);
 	    bool failed =
 		::xmlSAXUserParseMemory(&libXMLhandler, this, s.c_str(), s.size()) != 0;
 	    testAbort("SAXparser_libxml");
@@ -150,7 +151,7 @@ namespace w3c_sw {
 	    NSmapImpl nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
 	    for (int i = 0; i < nb_namespaces; ++i)
-		self.nsz.top()[namespaces[i] ? (char*)namespaces[i] : ""] = (char*)namespaces[2*i+1];
+		self.nsz.top()[namespaces[2*i] ? (char*)namespaces[2*i] : ""] = (char*)namespaces[2*i+1];
 
  	    Attributes_libxml attrs(attributes, nb_attributes);
 	    SimpleNsMap nsMap(self.nsz.top());
