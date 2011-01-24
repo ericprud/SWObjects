@@ -8,6 +8,7 @@
 #include <string.h>
 #include <map>
 #include <libxml/parser.h>
+#include <libxml/parserInternals.h>
 #include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
@@ -125,13 +126,57 @@ namespace w3c_sw {
 	    std::istreambuf_iterator<char> i(*istr.p), e;
 	    std::string s(i, e);
 
-	    ::xmlSubstituteEntitiesDefault(1);
-	    bool failed =
-		::xmlSAXUserParseMemory(&libXMLhandler, this, s.c_str(), s.size()) != 0;
+
+	    int parseError = 0;
+	    /**
+	     * The parser invocation below, stolen from libxml2/parser.c
+	     * xmlSAXUserParseMemory, tells libxml to substitute all entities.
+	     * It is essentially equivalent to
+	     *   ::xmlSubstituteEntitiesDefault(1);
+	     *   bool failed =
+	     *       ::xmlSAXUserParseMemory(&libXMLhandler, this,
+	     *                               s.c_str(), s.size()) != 0;
+	     * except that it doesn't set the default for all other invocations
+	     * of the parser.
+	     */
+	    {
+		xmlParserCtxtPtr ctxt;
+		const char* buffer = s.c_str();
+
+		xmlInitParser();
+
+		ctxt = xmlCreateMemoryParserCtxt(buffer, s.size());
+		ctxt->sax = &libXMLhandler;
+		ctxt->sax2 = 1;
+		if ((ctxt->str_xml = xmlDictLookup(ctxt->dict, BAD_CAST "xml", 3)) == NULL ||
+		    (ctxt->str_xmlns = xmlDictLookup(ctxt->dict, BAD_CAST "xmlns", 5)) == NULL ||
+		    (ctxt->str_xml_ns = xmlDictLookup(ctxt->dict, XML_XML_NAMESPACE, 36)) == NULL)
+		    throw std::string("malloc error preparing libxml SAX parser");
+		ctxt->userData = this;
+		ctxt->replaceEntities = 1;
+		ctxt->options |= XML_PARSE_NOENT;
+		xmlParseDocument(ctxt);
+		if (ctxt->wellFormed)
+		    parseError = 0;
+		else {
+		    if (ctxt->errNo != 0)
+			parseError = ctxt->errNo;
+		    else
+			parseError = -1;
+		}
+		ctxt->sax = NULL;
+		if (ctxt->myDoc != NULL) {
+		    xmlFreeDoc(ctxt->myDoc);
+		    ctxt->myDoc = NULL;
+		}
+		xmlFreeParserCtxt(ctxt);
+	    }
+
 	    testAbort("SAXparser_libxml");
-	    if (failed) {
+	    if (parseError) {
+		::xmlErrorPtr e = xmlGetLastError();
 		throw locationStr(/* parser */) + "error " + 
-		    // XML_ErrorString(XML_GetErrorCode(parser)) + 
+		    (e ? e->message : "unknown") + 
 		    " parsing document [[" + s.substr(0, 50) + "]].\n";
 	    }
 	    return false;
