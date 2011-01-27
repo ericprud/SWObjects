@@ -224,6 +224,37 @@ LIBINC	+=	 -l$(LIBNAME)
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
 
+
+# Imported Boost log verbatim 'cause it's not packaged yet.
+# https://boost-log.svn.sourceforge.net/svnroot/boost-log/trunk/boost-log
+# 587 2011-01-12T17:20:24.416501Z ab6a8de6-4e00-4c3d-a860-8899c17d353f
+BOOST_LOG_CFLAGS= -Wall -ftemplate-depth-128 -O3 -finline-functions -Wno-inline -pthread -fPIC -fno-strict-aliasing
+BOOST_LOG_DEFINES= -DBOOST_LOG_USE_NATIVE_SYSLOG=1 -DNDEBUG \
+	-DBOOST_ALL_NO_LIB=1 -DBOOST_LOG_DLL -DBOOST_THREAD_USE_DLL=1 -DBOOST_THREAD_POSIX -DDATE_TIME_INLINE \
+	-DBOOST_DATE_TIME_DYN_LINK=1 -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_SYSTEM_DYN_LINK=1
+LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
+# not needed currently LOG_SETUP_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_HAS_ICU=1 -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1 -DBOOST_LOG_SETUP_DLL
+BOOST_LOG_SRC_DIR=boost-log/
+BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
+BOOST_LOG_LIB=libboost_log.so
+BOOST_LOG_VERSION=1.45.0
+
+BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /sink_frontends.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /trivial.cpp
+BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
+BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
+
+$(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp Makefile
+	$(CXX) -Iboost-log $(LOG_ARGS) -c -o $@ $<
+
+$(BOOST_TARGET)lib/$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
+	$(CXX) -o $@ -Wl,-h -Wl,$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION) -shared -Wl,--start-group $^ \
+	-lboost_thread -lboost_filesystem -lboost_system -lboost_date_time \
+	-Wl,-Bstatic  -Wl,-Bdynamic -lrt -Wl,--end-group -pthread 
+
+$(BOOST_TARGET)lib/$(BOOST_LOG_LIB): $(BOOST_TARGET)lib/$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION)
+	ln -sf $(BOOST_LOG_LIB).$(BOOST_LOG_VERSION) $@
+
+
 .PHONY: lib NOGEN
 lib: dep $(LIB)
 

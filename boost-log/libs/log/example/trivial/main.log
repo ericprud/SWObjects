@@ -1,0 +1,10 @@
+1 [2011-Jan-22 19:52:28.206718] [0x13e81e0] [trace] A trace severity message
+2 [2011-Jan-22 19:52:28.207223] [0x13e81e0] [debug] A debug severity message
+3 [2011-Jan-22 19:52:28.207286] [0x13e81e0] [info] An informational severity message
+4 [2011-Jan-22 19:52:28.207334] [0x13e81e0] [warning] A warning severity message
+5 [2011-Jan-22 19:52:28.207380] [0x13e81e0] [error] An error severity message
+6 [2011-Jan-22 19:52:28.207426] [0x13e81e0] [fatal] A fatal severity message
+7 [2011-Jan-22 19:52:28.207492] [0x13e81e0] [info] An informational severity message
+8 [2011-Jan-22 19:52:28.207542] [0x13e81e0] [warning] A warning severity message
+9 [2011-Jan-22 19:52:28.207591] [0x13e81e0] [error] An error severity message
+10 [2011-Jan-22 19:52:28.207640] [0x13e81e0] [fatal] A fatal severity message
