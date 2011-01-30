@@ -60,6 +60,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL", "win\SPARQL\SPARQL
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SPARQL_msi", "SPARQL_Msi\SPARQL_Msi.vdproj", "{08909057-98BD-4844-A38E-C2C66952F8A0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libboost-log", "win\libboost-log\libboost-log.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980009}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -116,6 +118,10 @@ Global
 		{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}.Release|Win32.Build.0 = Release|Win32
 		{08909057-98BD-4844-A38E-C2C66952F8A0}.Debug|Win32.ActiveCfg = Debug
 		{08909057-98BD-4844-A38E-C2C66952F8A0}.Release|Win32.ActiveCfg = Release
+		{56EF9C8B-007E-4CEE-AE32-6233A8980009}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980009}.Debug|Win32.Build.0 = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980009}.Release|Win32.ActiveCfg = Release|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A8980009}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

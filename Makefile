@@ -236,23 +236,25 @@ LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
 # not needed currently LOG_SETUP_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_HAS_ICU=1 -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1 -DBOOST_LOG_SETUP_DLL
 BOOST_LOG_SRC_DIR=boost-log/
 BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
-BOOST_LOG_LIB=libboost_log.so
+BOOST_LOG_LIB=boost_log
 BOOST_LOG_VERSION=1.45.0
+INCLUDES += -Iboost-log
+LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread -lboost_filesystem -lboost_system -lboost_date_time
 
 BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /sink_frontends.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /trivial.cpp
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
 
-$(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp Makefile
+$(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp
 	$(CXX) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
-$(BOOST_TARGET)lib/$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
-	$(CXX) -o $@ -Wl,-h -Wl,$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION) -shared -Wl,--start-group $^ \
+$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
+	$(CXX) -o $@ -Wl,-h -Wl,lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) -shared -Wl,--start-group $^ \
 	-lboost_thread -lboost_filesystem -lboost_system -lboost_date_time \
 	-Wl,-Bstatic  -Wl,-Bdynamic -lrt -Wl,--end-group -pthread 
 
-$(BOOST_TARGET)lib/$(BOOST_LOG_LIB): $(BOOST_TARGET)lib/$(BOOST_LOG_LIB).$(BOOST_LOG_VERSION)
-	ln -sf $(BOOST_LOG_LIB).$(BOOST_LOG_VERSION) $@
+$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION)
+	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $@
 
 
 .PHONY: lib NOGEN
@@ -382,7 +384,7 @@ tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-tests/test_%: tests/test_%.o $(LIB)
+tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
 
 tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
@@ -405,7 +407,7 @@ tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
 	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
 t_%: tests/test_%
-	( cd tests && ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
 	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
@@ -664,6 +666,7 @@ Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 .PHONY: clean parse-clean meta-clean cleaner
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
+	$(BOOST_TARGET)*.o $(BOOST_TARGET)lib/*.so.* \
 	$(subst .ypp,.o,$(wildcard lib/*/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
 	$(unitTESTexes) *~ */*.dep */*/*.dep
