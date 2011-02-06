@@ -4,7 +4,12 @@
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-// g++ -o toy2 toy2.cpp -Iboost-log -g -O0 -W -Wextra -Wnon-virtual-dtor -ansi -std=c++98 -Lboost-log/stage/lib -lboost_log -lboost_date_time -lboost_filesystem -lboost_system -lboost_thread -lpthread && LD_LIBRARY_PATH=boost-log/stage/lib ./toy2
+// g++ -o test_logging test_logging.cpp -DBOOST_TEST_DYN_LINK -I. -Iboost-log -g -O0 -W -Wextra -Wnon-virtual-dtor -ansi -std=c++98 -Lboost-log/stage/lib -lboost_log -lboost_date_time -lboost_filesystem -lboost_system -lboost_thread -lpthread -lboost_unit_test_framework-mt && LD_LIBRARY_PATH=boost-log/stage/lib ./test_logging
+
+#include "config.h"
+
+#define BOOST_TEST_MODULE logging
+#include <boost/test/unit_test.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -35,6 +40,15 @@
 // #include "boost/thread/thread.hpp"
 
 //using boost::shared_ptr;
+
+#ifdef _MSC_VER
+//typedef DWORD useconds_t;
+  typedef unsigned long useconds_t;
+  #define usleep(X) Sleep(X)
+  include: <windows.h>
+//   include: <winbase.h>
+//   void Sleep(unsigned long);
+#endif /* _MSC_VER */
 
 enum {
     LOG_RECORDS_TO_WRITE = 5,
@@ -109,7 +123,7 @@ namespace fmt = boost::log::formatters;
 namespace keywords = boost::log::keywords;
 namespace fs = boost::filesystem;
 
-#include "lib/prfxbuf.hpp"
+#include "prfxbuf.hpp"
 
 //! This function is executed in multiple threads
 void
@@ -206,7 +220,10 @@ void myFormatter(std::ostream& strm, logging::record const& rec)
     */
 }
 
-int main (int argc, char* argv[]) {
+BOOST_AUTO_TEST_CASE( a ) {
+    int& argc = boost::unit_test::framework::master_test_suite().argc;
+    char** argv = boost::unit_test::framework::master_test_suite().argv;
+
     fs::path argv0(argv[0]);
     fs::path logFile(argv0.filename() + "_%2N.log");
     std::cout << "logFile: " << logFile << "\n";
@@ -270,5 +287,4 @@ int main (int argc, char* argv[]) {
   } catch (std::exception& e) {
     std::cout << "FAILURE: " << e.what() << std::endl;
   }
-  return 0;
 }

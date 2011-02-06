@@ -50,8 +50,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\boost-log"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\..\boost-log;$(ProjectDir)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;BOOST_LOG_NO_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -119,8 +119,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\boost-log"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="..\..\boost-log;$(ProjectDir)"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;BOOST_LOG_NO_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -169,20 +169,23 @@
 			<File RelativePath="..\..\boost-log\libs\log\src\attribute_values_view.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\code_conversion.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\core.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\debug_output_backend.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\event_log_backend.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\exceptions.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\global_logger_storage.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\light_rw_mutex.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\named_scope.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\once_block.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\process_id.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\record_ostream.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\severity_level.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\global_logger_storage.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\named_scope.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\process_id.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\timer.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\exceptions.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\sink_frontends.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\text_ostream_backend.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\text_file_backend.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\syslog_backend.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\text_file_backend.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\text_ostream_backend.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\thread_specific.cpp" />
-			<File RelativePath="..\..\boost-log\libs\log\src\once_block.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\threadsafe_queue.cpp" />
+			<File RelativePath="..\..\boost-log\libs\log\src\timer.cpp" />
 			<File RelativePath="..\..\boost-log\libs\log\src\trivial.cpp" />
 		</Filter>
 		<Filter
@@ -191,13 +194,29 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File RelativePath="..\config.h" />
+			<File RelativePath=".\resource.h" />
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File RelativePath=".\simple_event_log.rc" />
 		</Filter>
+		<File
+			RelativePath="..\..\boost-log\libs\log\src\simple_event_log.mc"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Compiling Messages..."
+					CommandLine="mc.exe -A &quot;$(InputDir)$(InputName).mc&quot; -r &quot;$(SolutionDir)win\$(ProjectName)&quot; -h &quot;$(SolutionDir)win\$(ProjectName)&quot;&#x0D;&#x0A;"
+					Outputs="$(ProjectDir)\$(InputName).rc;$(ProjectDir)\$(InputName).h"
+				/>
+			</FileConfiguration>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

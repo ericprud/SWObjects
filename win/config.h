@@ -27,7 +27,14 @@
 #ifdef _DEBUG
   /* Debug builds can use the dynamic libs as you probably installed them
    * with the dev libs. */
-  #define BOOST_ALL_DYN_LINK /* implies e.g. BOOST_TEST_DYN_LINK */
+  #define BOOST_ALL_DYN_LINK	// implies e.g. BOOST_TEST_DYN_LINK
+  #define BOOST_LOG_NO_LIB	// statically link boost log
+  #define BOOST_LIB_DIAGNOSTIC
+/*   #define BOOST_TEST_DYN_LINK */
+/*   #define BOOST_DATE_TIME_DYN_LINK */
+/*   #define BOOST_FILESYSTEM_DYN_LINK */
+/*   #define BOOST_SYSTEM_DYN_LINK */
+/*   #define BOOST_THREAD_DYN_LINK */
 #else /* !_DEBUG */
   /* Release (NDEBUG) builds are probably for folks who don't have
    * boost*.dll installed. By default, boost links statically. */
