@@ -151,6 +151,7 @@ TEST_LIB?= -lboost_unit_test_framework$(BOOST_VERSION)
 
 ifeq ($(LINK), DYNAMIC)
   CONFIG_DEFS+= \\\#define BOOST_ALL_DYN_LINK "\\n"
+  CONFIG_DEFS+= \\\#define BOOST_LOG_NO_LIB "\\n"
   STATICITY=
 else
   STATICITY= -static
@@ -230,8 +231,7 @@ $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 # 587 2011-01-12T17:20:24.416501Z ab6a8de6-4e00-4c3d-a860-8899c17d353f
 BOOST_LOG_CFLAGS= -Wall -ftemplate-depth-128 -O3 -finline-functions -Wno-inline -pthread -fPIC -fno-strict-aliasing
 BOOST_LOG_DEFINES= -DBOOST_LOG_USE_NATIVE_SYSLOG=1 -DNDEBUG \
-	-DBOOST_ALL_NO_LIB=1 -DBOOST_LOG_DLL -DBOOST_THREAD_USE_DLL=1 -DBOOST_THREAD_POSIX -DDATE_TIME_INLINE \
-	-DBOOST_DATE_TIME_DYN_LINK=1 -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_SYSTEM_DYN_LINK=1
+	-DBOOST_ALL_DYN_LINK=1 -DBOOST_LOG_NO_LIB -DBOOST_THREAD_POSIX -DDATE_TIME_INLINE
 LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
 # not needed currently LOG_SETUP_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_HAS_ICU=1 -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1 -DBOOST_LOG_SETUP_DLL
 BOOST_LOG_SRC_DIR=boost-log/
@@ -666,7 +666,6 @@ Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 .PHONY: clean parse-clean meta-clean cleaner
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
-	$(BOOST_TARGET)*.o $(BOOST_TARGET)lib/*.so.* \
 	$(subst .ypp,.o,$(wildcard lib/*/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
 	$(unitTESTexes) *~ */*.dep */*/*.dep
@@ -678,11 +677,14 @@ parse-clean:
 	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
 	$(BISONHH:%=*/%)
 
+boost-log-clean:
+	$(RM) $(BOOST_TARGET)*.o $(BOOST_TARGET)lib/*.so.*
+
 meta-clean:
 	$(RM) \
 	docs/version.h
 
-cleaner: clean parse-clean meta-clean swig-clean
+cleaner: clean parse-clean boost-log-clean meta-clean swig-clean
 
 dep: $(DEPEND)
 

@@ -42,12 +42,9 @@
 //using boost::shared_ptr;
 
 #ifdef _MSC_VER
-//typedef DWORD useconds_t;
-  typedef unsigned long useconds_t;
+  #include <windows.h>
+  typedef DWORD useconds_t;
   #define usleep(X) Sleep(X)
-  include: <windows.h>
-//   include: <winbase.h>
-//   void Sleep(unsigned long);
 #endif /* _MSC_VER */
 
 enum {
