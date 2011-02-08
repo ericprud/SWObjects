@@ -130,7 +130,7 @@ public:
     {
         typedef basic_attribute_value< value_type > attr_value;
         register unsigned long next_counter = static_cast< unsigned long >(++m_Counter);
-        register value_type next = static_cast< value_type >(m_Initial + (next_counter * m_Step));
+        value_type next = static_cast< value_type >(m_Initial + (next_counter * m_Step));
         return attribute_value(new attr_value(next));
     }
 };

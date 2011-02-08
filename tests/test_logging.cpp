@@ -39,7 +39,6 @@
 #include "boost/thread/barrier.hpp"
 // #include "boost/thread/thread.hpp"
 
-//using boost::shared_ptr;
 
 #ifdef _MSC_VER
   #include <windows.h>
@@ -114,11 +113,6 @@ namespace Logger {
 
 namespace logging = boost::log;
 namespace attrs = boost::log::attributes;
-namespace sinks = boost::log::sinks;
-namespace flt = boost::log::filters;
-namespace fmt = boost::log::formatters;
-namespace keywords = boost::log::keywords;
-namespace fs = boost::filesystem;
 
 #include "prfxbuf.hpp"
 
@@ -208,44 +202,14 @@ void myFormatter(std::ostream& strm, logging::record const& rec)
 
     if (logging::extract<boost::posix_time::time_duration>(Logger::ATTR_Timeline, rec).is_initialized())
 	prfxstr << " [taking: " << logging::extract< boost::posix_time::time_duration >(Logger::ATTR_Timeline, rec).get() << "]";
-
-    /* as a format string, module the line wrapping on rec.message():
-        fmt::stream
-        << fmt::if_ (flt::has_attr<boost::posix_time::ptime>(Logger::ATTR_Timestamp))
-        [
-	 fmt::attr<boost::posix_time::ptime>(Logger::ATTR_Timestamp) << ": "
-	 ]
-        << fmt::if_ (flt::has_attr<unsigned int>(Logger::ATTR_LineId))
-        [
-	 fmt::attr<unsigned int>(Logger::ATTR_LineId, keywords::format = "%08x") << ": "
-	 ]
-        << fmt::if_ (flt::has_attr<std::string>(Logger::ATTR_Channel))
-        [
-	 fmt::stream << fmt::attr<std::string>(Logger::ATTR_Channel, keywords::format = "%-11s") << " "
-	 ]
-        << "[-" << fmt::attr<severity_level>("Severity", std::nothrow) << "+] "
-        << fmt::if_ (flt::has_attr<std::string>(Logger::ATTR_Scope))
-        [
-	 fmt::stream << "[" << fmt::attr<std::string>(Logger::ATTR_Scope) << "] "
-	 ]
-        << fmt::if_ (flt::has_attr<boost::thread::id>(Logger::ATTR_ThreadID))
-	[
-	 fmt::attr<boost::thread::id>(Logger::ATTR_ThreadID) << "] - "
-	 ]
-        << fmt::message()
-        << fmt::if_ (flt::has_attr<boost::posix_time::time_duration>(Logger::ATTR_Timeline))
-        [
-	 fmt::stream << " [taking: " << fmt::attr<boost::posix_time::time_duration >(Logger::ATTR_Timeline) << "]"
-	 ]
-    */
 }
 
 BOOST_AUTO_TEST_CASE( a ) {
     int& argc = boost::unit_test::framework::master_test_suite().argc;
     char** argv = boost::unit_test::framework::master_test_suite().argv;
 
-    fs::path argv0(argv[0]);
-    fs::path logFile(argv0.filename() + "_%2N.log");
+    boost::filesystem::path argv0(argv[0]);
+    boost::filesystem::path logFile(argv0.filename() + "_%2N.log");
     std::cout << "logFile: " << logFile << "\n";
   try {
     boost::shared_ptr< logging::core > core = logging::core::get();
@@ -264,7 +228,7 @@ BOOST_AUTO_TEST_CASE( a ) {
 	core->add_global_attribute(Logger::ATTR_LineId, attrs::counter< unsigned int >());
 
 
-    typedef sinks::synchronous_sink< sinks::text_ostream_backend > SparqlAppSync;
+    typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > SparqlAppSync;
 
     // Wrap backend in to the frontend
     boost::shared_ptr< SparqlAppSync > sink(new SparqlAppSync());
