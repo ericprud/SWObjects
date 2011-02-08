@@ -63,9 +63,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libboost-log", "win\libboost-log\libboost-log.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980009}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_logging", "win\test_logging\test_logging.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{56EF9C8B-007E-4CEE-AE32-6233A8980009} = {56EF9C8B-007E-4CEE-AE32-6233A8980009}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -143,7 +143,7 @@ thread_fun(boost::barrier& bar, const useconds_t rand_sleep) {
         break;
       }
       case 1: {
-	  BOOST_LOG_SEV(Logger::Net::get(), support) << "Log record " << i << std::endl << "line2\nline3";
+	  BOOST_LOG_SEV(Logger::Net::get(), support) << "Log record " << i << std::endl << "Line2\nLine3";
         ++log_state;
         break;
       }
@@ -157,34 +157,57 @@ thread_fun(boost::barrier& bar, const useconds_t rand_sleep) {
 
 void myFormatter(std::ostream& strm, logging::record const& rec)
 {
+    /**
+     * Overload prfxbuf to not indent the first line.
+     */
+    class prfxnbuf: public prfxbuf {
+
+    public:
+	prfxnbuf (std::streambuf *sb, std::streamsize width, const char space):
+	    prfxbuf(sb, std::string(width, space).c_str())
+	{
+	    i_newline = false; // don't indent first line
+	}
+    };  
+    class oprfxnstream: public std::ostream
+    {
+	prfxnbuf* b;
+    public:
+	oprfxnstream (std::streambuf *sb, std::streamsize width, const char space):
+	    std::ostream(new prfxnbuf(sb, width, space)), b((prfxnbuf*)rdbuf())
+	{  } 
+	~oprfxnstream () {
+	    delete rdbuf();
+	}
+    }; 
+
+    oprfxnstream prfxstr(strm.rdbuf(), 24, ' ');
+
     using boost::format;
 
     if (logging::extract<boost::posix_time::ptime>(Logger::ATTR_Timestamp, rec).is_initialized())
-	strm << logging::extract<boost::posix_time::ptime>(Logger::ATTR_Timestamp, rec).get() << ": ";
+	prfxstr << logging::extract<boost::posix_time::ptime>(Logger::ATTR_Timestamp, rec).get() << ": ";
 
     if (logging::extract< unsigned int >(Logger::ATTR_LineId, rec).is_initialized())
-	strm << format("%08x") % logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
-// 	strm << std::hex << std::setw(8) << std::right << logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
+	prfxstr << format("%08x") % logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
+// 	prfxstr << std::hex << std::setw(8) << std::right << logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
 
     if (logging::extract<std::string>(Logger::ATTR_Channel, rec).is_initialized())
-	strm << format("%-11s") % logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
-// 	strm << std::left << std::setw(11) << logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
+	prfxstr << format("%-11s") % logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
+// 	prfxstr << std::left << std::setw(11) << logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
 
-    strm << "[-" << logging::extract<severity_level>("Severity", rec).get() << "+] ";
+    prfxstr << "[-" << logging::extract<severity_level>("Severity", rec).get() << "+] ";
 
     if (logging::extract<std::string>(Logger::ATTR_Scope, rec).is_initialized())
-	strm << "[" << logging::extract<std::string>(Logger::ATTR_Scope, rec).get() << "] ";
+	prfxstr << "[" << logging::extract<std::string>(Logger::ATTR_Scope, rec).get() << "] ";
 
     if (logging::extract<boost::thread::id>(Logger::ATTR_ThreadID, rec).is_initialized())
-	strm << "[" << logging::extract<boost::thread::id>(Logger::ATTR_ThreadID, rec).get() << "] - ";
+	prfxstr << "[" << logging::extract<boost::thread::id>(Logger::ATTR_ThreadID, rec).get() << "] - ";
 
-    std::stringstream ss; // clearly need a specialized prfxstr which takes a space length and prefixes only non-0th line
-    oprfxstream prfxstr(ss.rdbuf(), "                         ");
     prfxstr << rec.message();
-    strm << ss.str().substr(24);
 
     if (logging::extract<boost::posix_time::time_duration>(Logger::ATTR_Timeline, rec).is_initialized())
-	strm << " [taking: " << logging::extract< boost::posix_time::time_duration >(Logger::ATTR_Timeline, rec).get() << "]";
+	prfxstr << " [taking: " << logging::extract< boost::posix_time::time_duration >(Logger::ATTR_Timeline, rec).get() << "]";
 
     /* as a format string, module the line wrapping on rec.message():
         fmt::stream

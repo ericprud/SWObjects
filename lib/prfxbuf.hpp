@@ -48,7 +48,7 @@
 
 class prfxbuf: public std::streambuf {
 
-private:
+protected:
     std::streambuf	*i_sbuf;	// the actual streambuf used to read and write chars
     std::streamsize	i_len;		// the length of the prefix
     char		*i_prfx;	// the prefix
@@ -68,7 +68,7 @@ private:
 	i_newline = false;
 	return true;
     } 
-protected:
+
     int overflow (int c) {
 	if (c != EOF) {
 	    if (i_newline) {
