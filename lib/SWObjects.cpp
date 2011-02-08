@@ -30,6 +30,16 @@
 
 namespace w3c_sw {
 
+    namespace Logger {
+	const char* ATTR_Timeline = "Timeline";
+	const char* ATTR_Scope = "Scope";
+	const char* ATTR_ThreadID = "ThreadID";
+	const char* ATTR_LineId = "LineId";
+	const char* ATTR_Timestamp = "Timestamp";
+	const char* ATTR_Channel = "Channel";
+    } /* namespace Logger */
+
+
     const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
     const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"		;
     const char* NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"  ;

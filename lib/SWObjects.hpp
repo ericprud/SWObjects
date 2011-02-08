@@ -79,6 +79,8 @@ std::string iterStr (InputIterator first, InputIterator last) {
   #endif
 #endif /* !_MSC_VER */
 
+#include "Logging.hpp"
+
 /* non-portable debug messages */
 #ifdef _MSC_VER
   #define FUNCTION_STRING __FUNCSIG__ // __FUNCDNAME__ || __FUNCTION__ -- http://msdn.microsoft.com/en-us/library/b0084kay(VS.80).aspx
