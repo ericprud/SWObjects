@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 * FlexBison.rules
 *
@@ -110,7 +110,7 @@
 					Name="OutputFile"
 					DisplayName="Output File"
 					Description="The output file containing the implementation of the analyser"
-					Switch="-o[value]"
+					Switch="-o&quot;[value]&quot;"
 					DefaultValue="$(InputDir)$(InputName).cpp"
 				/>
 				<StringProperty
@@ -219,7 +219,7 @@
 					Name="OutputFile"
 					DisplayName="Output file name"
 					Description="Specify the name outfile for the parser file"
-					Switch="-o [value]"
+					Switch="-o &quot;[value]&quot;"
 					DefaultValue="$(InputDir)$(InputName).cpp"
 				/>
 				<StringProperty
