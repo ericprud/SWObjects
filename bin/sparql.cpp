@@ -482,16 +482,16 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 
 #if REGEX_LIB != SWOb_DISABLED
 	struct PathMap {
-	    const boost::regex from;
-	    const std::string to;
+	    boost::regex from;
+	    std::string to;
 	    PathMap (const boost::regex from, const std::string to)
 		: from(from), to(to)
 	    {  }
-	    bool operator< (const PathMap& r) const {
-		return from < r.from || to < r.to;
-	    }
+// 	    bool operator< (const PathMap& r) const {
+// 		return from < r.from || to < r.to;
+// 	    }
 	};
-	std::set<PathMap> pathMaps;
+	std::vector<PathMap> pathMaps;
 #endif /* REGEX_LIB != SWOb_DISABLED */
 
 	struct MappedPath {
@@ -539,7 +539,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    if (u != NULL) {
 		std::string outres = u->getLexicalValue();
 		bool matched;
-		for (std::set<PathMap>::const_iterator it = pathMaps.begin();
+		for (std::vector<PathMap>::const_iterator it = pathMaps.begin();
 		     it != pathMaps.end(); ++it)
 		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
 
@@ -1414,7 +1414,7 @@ void validate (boost::any&, const std::vector<std::string>& values, pathmapArg*,
     const boost::regex pathMapPattern("^s\\{(.*?)\\}\\{(.*?)\\}$");
     boost::cmatch matches;
     if (boost::regex_match(s.c_str(), matches, pathMapPattern))
-	TheServer.db.pathMaps.insert
+	TheServer.db.pathMaps.push_back
 	    (MyServer::FilesystemRdfDB::PathMap
 	     (boost::regex(std::string(matches[1])), matches[2]));
     else
