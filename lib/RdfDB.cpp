@@ -26,12 +26,19 @@ namespace w3c_sw {
 	    it->second->clearTriples();
     }
 
-    BasicGraphPattern* RdfDB::ensureGraph (const TTerm* name) {
+
+    BasicGraphPattern* RdfDB::findGraph (const TTerm* name) {
 	if (name == NULL)
 	    name = DefaultGraph;
 	graphmap_type::const_iterator vi = graphs.find(name);
-	if (vi == graphs.end()) {
-	    BasicGraphPattern* ret;
+	return vi == graphs.end() ? NULL : vi->second;
+    }
+
+    BasicGraphPattern* RdfDB::ensureGraph (const TTerm* name) {
+	if (name == NULL)
+	    name = DefaultGraph;
+	BasicGraphPattern* ret = findGraph(name);
+	if (ret == NULL) {
 	    if (name == DefaultGraph)
 		ret = new DefaultGraphPattern();
 	    else
@@ -39,7 +46,7 @@ namespace w3c_sw {
 	    graphs[name] = ret;
 	    return ret;
 	} else {
-	    return vi->second;
+	    return ret;
 	}
     }
 
@@ -106,13 +113,13 @@ namespace w3c_sw {
 
     void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
 	if (graph == NULL) graph = DefaultGraph;
-	graphmap_type::const_iterator vi;
 	size_t matched = 0;
 
 	/* Look in each candidate graph. */
 	if (graph->isConstant()) {
-	    if ((vi = graphs.find(graph)) != graphs.end()) {
-		vi->second->bindVariables(rs, toMatch, graph, vi->first);
+	    const BasicGraphPattern* found = findGraph(graph);
+	    if (found != NULL) {
+		found->bindVariables(rs, toMatch, graph, graph);
 		++matched;
 	    }
 	} else {
@@ -129,7 +136,7 @@ namespace w3c_sw {
 	     * only iterate across graphs if ?graph is unbound. Could decide by:
 	     *   rs->first()->get(?graph) == TTerm::Unbound
 	     */
-	    for (vi = graphs.begin(); vi != graphs.end(); vi++)
+	    for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
 		if (!isDefaultGraph(vi->first)) {
 		    ResultSet disjoint(rs->getAtomFactory());
 		    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);

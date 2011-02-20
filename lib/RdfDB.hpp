@@ -104,6 +104,7 @@ namespace w3c_sw {
 	    graphmap_type::const_iterator vi = graphs.find(name);
 	    return vi == graphs.end() ? NULL : vi->second;
 	}
+	virtual BasicGraphPattern* findGraph(const TTerm* name);
 	virtual BasicGraphPattern* ensureGraph(const TTerm* name);
 	void ensureGraphs(std::set<const TTerm*> names) {
 	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)
@@ -195,8 +196,14 @@ namespace w3c_sw {
 	return os << my.toString();
     }
 
+    /** TargetedRdfDB - an RdfDB which overrides the default graph with a named
+     * target graph.
+     * defaultTarget: the name of the graph to use in lieu of the default graph.
+     */
     class TargetedRdfDB : public RdfDB {
+    protected:
 	const TTerm* defaultTarget;
+
     public:
 	TargetedRdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, HandlerSet* handler)
 	    : RdfDB(webAgent, xmlParser, handler), defaultTarget(NULL)
