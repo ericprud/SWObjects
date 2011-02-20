@@ -65,9 +65,9 @@ namespace w3c_sw {
 	return ret;
     }
 
-    ResultSet::ResultSet (AtomFactory* atomFactory, std::ostream** debugStream) : 
+    ResultSet::ResultSet (AtomFactory* atomFactory) : 
 	atomFactory(atomFactory), knownVars(), results(), ordered(false),  db(NULL), 
-	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular), debugStream(debugStream) {
+	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular) {
 	results.insert(results.begin(), new Result(this));
     }
 

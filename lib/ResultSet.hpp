@@ -78,10 +78,9 @@ namespace w3c_sw {
 	    return true;	    
 	}
 	/** mappedBNodesEquals -- test that Results are identical after a BNode mapping */
-	bool mappedBNodesEquals (const Result& ref, BiDiBNodeMap& refBNodes2myBNodes, std::ostream** debugStream) const {
+	bool mappedBNodesEquals (const Result& ref, BiDiBNodeMap& refBNodes2myBNodes) const {
 	    if (size() != ref.size()) {
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << "l->size: " << ref.size() << " != r->size: " << size() << std::endl;
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l->size: " << ref.size() << " != r->size: " << size() << std::endl;
 		return false;
 	    }
 	    std::set<const TTerm*> yourVars;
@@ -92,8 +91,7 @@ namespace w3c_sw {
 		 myBinding != ref.end(); ++myBinding) {
 		const TTerm* var = myBinding->first;
 		if (yourVars.erase(var) == 0) {
-		    if (debugStream != NULL && *debugStream != NULL)
-			**debugStream << "r missing: " << var->toString() << std::endl;
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "r missing: " << var->toString() << std::endl;
 		    return false;
 		}
 		const TTerm* yours = find(var)->second.tterm;
@@ -105,14 +103,12 @@ namespace w3c_sw {
 		    yours = mine;
 		}
 		if (yours != mine) {
-		    if (debugStream != NULL && *debugStream != NULL)
-			**debugStream << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
 		    return false;
 		}
 	    }
 	    if (yourVars.size() != 0) {
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << "l missing: " << (*yourVars.begin())->toString() << std::endl;
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l missing: " << (*yourVars.begin())->toString() << std::endl;
 		return false;
 	    }
 	    return true;
@@ -175,14 +171,13 @@ namespace w3c_sw {
 #endif /* defined(SWIG) */
 	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
 	ResultType resultType;
-	std::ostream** debugStream;
 	static size_t DebugEnumerateLimit;
 
-	ResultSet(AtomFactory* atomFactory, std::ostream** debugStream = NULL);
+	ResultSet(AtomFactory* atomFactory);
 	ResultSet (const ResultSet& ref) : 
 	    atomFactory(ref.atomFactory), knownVars(ref.knownVars), 
 	    results(), ordered(ref.ordered), db(ref.db), selectOrder(ref.selectOrder), 
-	    orderedSelect(ref.orderedSelect), resultType(ref.resultType), debugStream(NULL) {
+	    orderedSelect(ref.orderedSelect), resultType(ref.resultType) {
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 	}
@@ -202,7 +197,6 @@ namespace w3c_sw {
 	    selectOrder = ref.selectOrder;
 	    orderedSelect = ref.orderedSelect;
 	    resultType = ref.resultType;
-	    debugStream = ref.debugStream;
 	    for (ResultSetConstIterator row = ref.results.begin() ; row != ref.results.end(); row++)
 		insert(this->end(), new Result(**row));
 
@@ -219,7 +213,7 @@ namespace w3c_sw {
 	ResultSet (AtomFactory* atomFactory, std::string srt, bool ordered, TTerm::String2BNode& nodeMap) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING);
 	    parseTable(sptr, ordered, nodeMap);
 	}
@@ -227,7 +221,7 @@ namespace w3c_sw {
 	ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    parseTable(sptr, ordered, nodeMap);
 	}
 
@@ -454,12 +448,12 @@ namespace w3c_sw {
 	ResultSet (AtomFactory* atomFactory, RdfDB* db) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(db), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Graphs), debugStream(NULL) {  }
+	    orderedSelect(false), resultType(RESULT_Graphs) {  }
 
 	ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    SPARQLfedDriver sparqlParser(baseURI, atomFactory);
 	    IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 				 "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
@@ -526,7 +520,7 @@ namespace w3c_sw {
 	ResultSet (AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular), debugStream(NULL) {
+	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    RSsax handler(this, atomFactory);
 	    parser->parse(sptr, &handler);
 	}
@@ -593,8 +587,7 @@ namespace w3c_sw {
 		/* Copy ResultSets */
 		ResultSet self(*this);
 		ResultSet newRef(ref);
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << self.toString() << newRef.toString();
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << self.toString() << newRef.toString();
 
 		/* Sort according to variables in this ResultSet. Record the
 		   rows we couldn't sort so compareOrdered can handle them
@@ -610,8 +603,7 @@ namespace w3c_sw {
 		AscendingOrder rComp(newRef.getOrderedVars(), &rUnordered);
 		newRef.results.sort(rComp);
 
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << self.toString() << newRef.toString();
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << self.toString() << newRef.toString();
 		return self.compareOrdered(newRef, lUnordered, rUnordered);
 	    }
 	}
@@ -708,8 +700,7 @@ namespace w3c_sw {
 
 	/** Test an unorderable vector of Results against another vector. */
 	static bool _mapsTo (std::vector<const Result*> lv, std::vector<const Result*> rv,
-		      BiDiBNodeMap& refBNodes2myBNodes,
-		      std::ostream** debugStream) {
+		      BiDiBNodeMap& refBNodes2myBNodes) {
 	    for (std::vector<const Result*>::iterator lit = lv.begin(); lit != lv.end(); ++lit) {
 		const Result* l = *lit;
 		lit = lv.erase(lit);
@@ -717,10 +708,10 @@ namespace w3c_sw {
 		    const Result* r = *rit;
 		    rit = rv.erase(rit);
 		    BiDiBNodeMap provisional(refBNodes2myBNodes);
-		    if (l->mappedBNodesEquals(*r, provisional, debugStream) &&
+		    if (l->mappedBNodesEquals(*r, provisional) &&
 			(lv.size() == 0 ||
 			 _mapsTo(std::vector<const Result*>(lv),
-				 std::vector<const Result*>(rv), provisional, debugStream))) {
+				 std::vector<const Result*>(rv), provisional))) {
 			refBNodes2myBNodes = provisional;
 			return true;
 		    }
@@ -751,17 +742,17 @@ namespace w3c_sw {
 		    if (myRow == results.end() && yourRow == ref.results.end())
 			// fall through to unordered compare.
 			break;
-		    if (debugStream != NULL && *debugStream != NULL) {
+		    if (Logger::Logging(Logger::GraphMatchLog_level, Logger::info)) {
 			while (myRow != results.end())
-			    **debugStream << "r missing result: " << **myRow++ << std::endl;
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "r missing result: " << **myRow++ << std::endl;
 			while (yourRow != ref.results.end())
-			    **debugStream << "l missing result: " << **yourRow++ << std::endl;
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l missing result: " << **yourRow++ << std::endl;
 		    }
 		    return false;
 		}
 
 		// carry on to compare these (ordered) results.
-		if (!(*myRow)->mappedBNodesEquals(**yourRow, refBNodes2myBNodes, debugStream))
+		if (!(*myRow)->mappedBNodesEquals(**yourRow, refBNodes2myBNodes))
 		    return false;
 		++myRow;
 		++yourRow;
@@ -773,7 +764,7 @@ namespace w3c_sw {
 	    // explore every combination of bnode mappings.
 	    return _mapsTo(std::vector<const Result*>(lUnordered.begin(), lUnordered.end()),
 			   std::vector<const Result*>(rUnordered.begin(), rUnordered.end()),
-			   refBNodes2myBNodes, debugStream);
+			   refBNodes2myBNodes);
 	}
 
 
