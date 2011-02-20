@@ -365,6 +365,30 @@ public:
     }
 };
 
+class NamespaceAccumulator : public sw::NamespaceMap {
+public:
+    std::string toString (const char* mediaType = NULL) {
+	std::stringstream sstr;
+	if (mediaType == NULL)
+	    for (sw::NamespaceMap::const_iterator it = begin();
+		 it != end(); ++it)
+		sstr << it->first << "=> " << it->second->toString() << "\n";
+	return sstr.str();
+    }
+};
+class NamespaceRelay : public sw::NamespaceMap {
+    sw::NamespaceMap& relay;
+public:
+    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
+    virtual void set (std::string prefix, const sw::URI* uri) {
+	sw::NamespaceMap::set(prefix, uri);
+	relay.set(prefix, uri);
+    }
+};
+
+NamespaceAccumulator NsAccumulator;
+NamespaceRelay NsRelay(NsAccumulator);
+
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
@@ -447,7 +471,111 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	}
     };
 
-    sw::TargetedRdfDB db;
+
+    /** FilesystemRdfDB - a TargetedRdfDB which may be backed by files in the
+     * filesystem.
+     *
+     * pathMap: a mapping from paths patterns to filesystem paths, similar to,
+     * but more expressive than, an apache Alias.
+     */
+    struct FilesystemRdfDB : public sw::TargetedRdfDB {
+
+#if REGEX_LIB != SWOb_DISABLED
+	struct PathMap {
+	    const boost::regex from;
+	    const std::string to;
+	    PathMap (const boost::regex from, const std::string to)
+		: from(from), to(to)
+	    {  }
+	    bool operator< (const PathMap& r) const {
+		return from < r.from || to < r.to;
+	    }
+	};
+	std::set<PathMap> pathMaps;
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+	struct MappedPath {
+	    const sw::TTerm* name;
+	    const std::string path;
+	    MappedPath (const sw::TTerm* name, const std::string path)
+		: name(name), path(path)
+	    {  }
+	    bool operator< (const MappedPath& r) const {
+		return *name < *(r.name) || path < r.path;
+	    }
+	};
+	std::set<MappedPath> dirty;
+
+	FilesystemRdfDB (sw::SWWEBagent* webAgent, sw::SWSAXparser* xmlParser, sw::RdfDB::HandlerSet* handler)
+	    : sw::TargetedRdfDB(webAgent, xmlParser, handler)
+	{  }
+
+	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
+	 *  endlessly recurse when findGraph gets a graph in which to load data.
+	 */
+	sw::BasicGraphPattern* finalEnsureGraph (const sw::TTerm* name) {
+	    if (name == NULL)
+		name = sw::DefaultGraph;
+	    sw::BasicGraphPattern* ret = sw::RdfDB::findGraph(name);
+	    if (ret == NULL) {
+		if (name == sw::DefaultGraph)
+		    ret = new sw::DefaultGraphPattern();
+		else
+		    ret = new sw::NamedGraphPattern(name);
+		graphs[name] = ret;
+		return ret;
+	    } else {
+		return ret;
+	    }
+	}
+
+#if REGEX_LIB != SWOb_DISABLED
+	virtual sw::BasicGraphPattern* findGraph (const sw::TTerm* name) {
+	    if (name == NULL)
+		name = sw::DefaultGraph;
+	    if (name == sw::DefaultGraph && defaultTarget != NULL)
+		name = defaultTarget;
+	    const sw::URI* u = dynamic_cast<const sw::URI*>(name);
+	    if (u != NULL) {
+		std::string outres = u->getLexicalValue();
+		bool matched;
+		for (std::set<PathMap>::const_iterator it = pathMaps.begin();
+		     it != pathMaps.end(); ++it)
+		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
+
+		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << BaseUriMessage() << ".\n";
+		    try {
+			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &Agent);
+			loadData(finalEnsureGraph(name), istr, UriString(BaseURI), 
+				 BaseURI ? UriString(BaseURI) : outres, &F);
+		    } catch (std::string&) {
+		    }
+		    dirty.insert(MappedPath(name, outres));
+		}
+	    }
+	    return RdfDB::findGraph(name);
+	}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+	void clearGraphLog () {
+	    dirty.clear();
+	}
+
+	void synch () {
+	    for (std::set<MappedPath>::const_iterator it = dirty.begin();
+		 it != dirty.end(); ++it) {
+		sw::OStreamContext optr(it->path, sw::OStreamContext::FILE,
+					DataMediaType.c_str(),
+					&Agent);
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
+		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &NsAccumulator);
+	    }
+	    clearGraphLog();
+	}
+
+    };
+    FilesystemRdfDB db;
     bool runOnce;
     bool done;
     int served;
@@ -648,7 +776,9 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    /* Is this how one implements a single-writer lock with a shared_mutex?
 		     *   if query->readOnly() executeMutex.lock_shared(); */
 #endif /* HTTP_SERVER == SWOb_ASIO */
+		    db.clearGraphLog();
 		    query->execute(&db, &rs);
+		    db.synch();
 		    //executeMutex.unlock_shared();
 		    executed = true;
 		}
@@ -670,6 +800,7 @@ struct loadEntry {
     const sw::TTerm* graphName;
     const sw::TTerm* resource;
     const sw::TTerm* baseURI;
+    
     loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI)
 	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
     void loadGraph () {
@@ -1132,33 +1263,9 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 					    atomFactory, nsMap);
 }
 
-class NamespaceAccumulator : public sw::NamespaceMap {
-public:
-    std::string toString (const char* mediaType = NULL) {
-	std::stringstream sstr;
-	if (mediaType == NULL)
-	    for (sw::NamespaceMap::const_iterator it = begin();
-		 it != end(); ++it)
-		sstr << it->first << "=> " << it->second->toString() << "\n";
-	return sstr.str();
-    }
-};
-class NamespaceRelay : public sw::NamespaceMap {
-    sw::NamespaceMap& relay;
-public:
-    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
-    virtual void set (std::string prefix, const sw::URI* uri) {
-	sw::NamespaceMap::set(prefix, uri);
-	relay.set(prefix, uri);
-    }
-};
-
 // std::ostream& operator<< (std::ostream& os, sw::NamespaceMap map) {
 //     return os << map->toString();
 // }
-
-NamespaceAccumulator NsAccumulator;
-NamespaceRelay NsRelay(NsAccumulator);
 
 loadList LoadList;
 loadList MapList;
@@ -1296,6 +1403,28 @@ void validate (boost::any&, const std::vector<std::string>& values, serveURI*, i
 			       append(ServerURI));
     ServerURI = s;
 }
+
+#if REGEX_LIB != SWOb_DISABLED
+/* Add PathMaps from the form "s{/some/URI/path}{relative/filesystem/path}" */
+struct pathmapArg {};
+void validate (boost::any&, const std::vector<std::string>& values, pathmapArg*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+
+    const boost::regex pathMapPattern("^s\\{(.*?)\\}\\{(.*?)\\}$");
+    boost::cmatch matches;
+    if (boost::regex_match(s.c_str(), matches, pathMapPattern))
+	TheServer.db.pathMaps.insert
+	    (MyServer::FilesystemRdfDB::PathMap
+	     (boost::regex(std::string(matches[1])), matches[2]));
+    else
+	throw boost::program_options::VALIDATION_ERROR
+	    (std::string("pathmap \"") + s +
+	     "\" did not match expression \"" +
+	     pathMapPattern.str() + "\".");
+}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
 
 /* Set DataMediaType when parsed. */
 struct langName { };
@@ -1731,6 +1860,9 @@ int main(int ac, char* av[])
         hidden.add_options()
             ("exec,e", po::value<queryString>(), "queries")
             ("serve", po::value<serveURI>(), "serve URI")
+#if REGEX_LIB != SWOb_DISABLED
+            ("pathmap", po::value<pathmapArg>(), "path map in the form \"s{/some/URI/path}{relative/filesystem/path}\"")
+#endif /* REGEX_LIB != SWOb_DISABLED */
             ("ordered", po::value<orderedURI>(), "URIs")
             ;
 
