@@ -10,6 +10,7 @@
 
 #ifndef TEST_CLI
 #include "SWObjects.hpp"
+
 namespace sw = w3c_sw;
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
@@ -133,7 +134,6 @@ std::string UriString (const sw::TTerm* uri) {
 
 const sw::TTerm* ArgBaseURI;
 bool NoExec = false;
-int Debug = 0;
 bool Quiet = false;
 bool ResultSetsLoaded = false;
 const sw::TTerm* NamedGraphName = NULL;
@@ -144,7 +144,6 @@ sw::MediaType DataMediaType;
 std::map<std::string, std::string> HTTPHeaders;
 
 #ifndef TEST_CLI
-std::ostream* DebugStream = NULL;
 sw::AtomFactory F;
 
 #include <fstream>
@@ -474,14 +473,14 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 #endif /* HTTP_SERVER == SWOb_ASIO */
 
     MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
-	      std::string pkAttribute, std::ostream** debugStream = NULL)
-	: db(&Agent, &P, debugStream, &RdfDBHandlers),
+	      std::string pkAttribute)
+	: db(&Agent, &P, &RdfDBHandlers),
 	  runOnce(false), done(false), served(0), stemURI(""),
 	  serviceURI(""), defaultGraphURI(""),
 	  printQuery(false), atomFactory(atomFactory), sparqlParser(sparqlParser),
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
-	  queryMapper(&atomFactory, debugStream)
-    { this->debugStream = debugStream; }
+	  queryMapper(&atomFactory)
+    {  }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = atomFactory.getURI(path);
 	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);
@@ -539,18 +538,17 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    query = delMe;
 
 	if (queryMapper.getRuleCount() > 0) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
 	    const sw::Operation* transformed(queryMapper.map(query));
 	    if (delMe != NULL)
 		delete delMe;
 	    query = delMe = transformed;
 	}
 
-	if (DebugStream != NULL) {
+	if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	    sw::SPARQLAlgebraSerializer s;
 	    query->express(&s);
-	    *DebugStream << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 	}
 
 	bool executed = false;
@@ -567,21 +565,19 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
 	    std::string drv = SQLDriver.find("oracle") == 0 ? "oracle" : SQLDriver;
-	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv, &DebugStream);
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
 	    bool doSQLquery = NoExec == false && 
 		(!SQLDriver.empty() || !SQLServer.empty()
 		 || !SQLDatabase.empty() || !SQLUser.empty());
-	    if (DebugStream != NULL)
-		*DebugStream << "SQL: " << std::endl;
+	    BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "SQL: " << std::endl;
 	    if (printQuery || doSQLquery == false) {
-		if (DebugStream != NULL)
-		    *DebugStream << "Final query: " << ".\n";
+		BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "Final query: " << ".\n";
 		std::cout << finalQuery << std::endl;
-	    } else if (DebugStream != NULL)
-		*DebugStream << "SQL Query: " << finalQuery << std::endl;
+	    } else
+		BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "SQL Query: " << finalQuery << std::endl;
 
 	    if (doSQLquery == true) {
 #ifdef SQL_CLIENT_NONE
@@ -618,8 +614,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		if (!defaultGraphURI.empty())
 		    p.set("default-graph-uri", defaultGraphURI);
 		if (printQuery) {
-		    if (DebugStream != NULL)
-			*DebugStream << "Service query: " << std::endl;
+		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << "Service query: " << std::endl;
 		    std::cout << serviceURI << " " << p << std::endl;
 		}
 		if (NoExec == false) {
@@ -636,8 +631,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    }
 		    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
 		    sw::ResultSet red(&F, &P, istr);
-		    if (DebugStream != NULL)
-			*DebugStream << " yielded\n" << red;
+		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << " yielded\n" << red;
 
 		    /* Join those results against our initial results. */
 		    rs.joinIn(&red);
@@ -645,8 +639,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		}
 	    } else {
 		if (printQuery) {
-		    if (DebugStream != NULL)
-			*DebugStream << "Final query: " << ".\n";
+		    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Final query: " << ".\n";
 		    std::cout << query->toString() << std::endl;
 		}
 		if (NoExec == false) {
@@ -671,7 +664,7 @@ sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
 sw::ResultSet rs(&F);
 
-MyServer TheServer(F, SparqlParser, "ID", &DebugStream);
+MyServer TheServer(F, SparqlParser, "ID");
 
 struct loadEntry {
     const sw::TTerm* graphName;
@@ -683,34 +676,34 @@ struct loadEntry {
 	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
-				&Agent, &DebugStream);
+				&Agent);
 	if (istr.mediaType.match("application/sparql-results+xml")) {
-	    if (DebugStream != NULL) {
-		*DebugStream << "Reading SPARQL XML Result Set " << nameStr;
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading SPARQL XML Result Set " << nameStr;
 		if (baseURI != NULL)
-		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		*DebugStream << " into result set.\n";
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into result set.\n";
 	    }
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else if (istr.mediaType.match("text/sparql-results")) {
-	    if (DebugStream != NULL) {
-		*DebugStream << "Reading data table " << nameStr;
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading data table " << nameStr;
 		if (baseURI != NULL)
-		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		*DebugStream << " into result set.\n";
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into result set.\n";
 	    }
 	    sw::TTerm::String2BNode bnodeMap;
 	    sw::ResultSet loaded(&F, istr, false, bnodeMap);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
-	    if (DebugStream != NULL) {
-		*DebugStream << "Reading " << nameStr;
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << nameStr;
 		if (baseURI != NULL)
-		    *DebugStream << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		*DebugStream << " into " << graph->toString() << ".\n";
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into " << graph->toString() << ".\n";
 	    }
 	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
 			baseURI ? UriString(baseURI) : nameStr, &F);
@@ -1089,7 +1082,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 		createdFiles.push_back(*iToken);
 	    } else if (*iToken == "%STYLESHEET") {
 		sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-					    &Agent, &DebugStream);
+					    &Agent);
 		*iToken = genTempFile(".", *xsltIstr);
 		createdFiles.push_back(*iToken);
 	    }
@@ -1112,8 +1105,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 		cmd << " ";
 	    cmd << *iToken;
 	}
-	if (DebugStream != NULL)
-	    *DebugStream << "Executing \"" << cmd.str().c_str() << "\".\n";
+	BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
 	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
 	assert(p != NULL);
 	char buf[100];
@@ -1174,19 +1166,108 @@ loadEntry Output(NULL, NULL, NULL);
 
 #endif /* TEST_CLI */
 
+boost::shared_ptr< sw::Logger::Sink_t > LogSink;
+
 /* Set Debug when parsed. */
+inline void addLogLabel (std::vector<std::string>& logs, std::string label) {
+    if (label == "*") {
+	for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
+	     it != sw::Logger::Labels.end(); ++it)
+	    logs.push_back(*it);
+    } else {
+	sw::Logger::getLabelLevel(label);
+	logs.push_back(label);
+    }
+}
+
+inline void setLogLevels (const std::vector<std::string>& logs, int level) {
+    for (std::vector<std::string>::const_iterator it = logs.begin();
+	 it != logs.end(); ++it)
+	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(level);
+}
+
 struct debugLevel { };
 void validate (boost::any& v, const std::vector<std::string>& values, debugLevel*, int)
 {
+    const std::string& parm = po::validators::get_single_string(values);
+
+    std::vector<std::string> logs;
+    size_t start = 0;
+    do {
+	size_t next = parm.find_first_of(",:", start);
+	if (next == std::string::npos) {
+	    if (start == 0) {
+		try {
+		    int l = boost::lexical_cast<int>(parm.substr(start));
+		    addLogLabel(logs, "*");
+		    setLogLevels(logs, l);
+		    logs.clear();
+		} catch (boost::bad_lexical_cast&) { }
+	    } else {
+		addLogLabel(logs, parm.substr(start));
+		setLogLevels(logs, 1);
+		logs.clear();
+	    }
+	} else {
+	    addLogLabel(logs, parm.substr(start, next - start));
+	    if (parm[next] == ':') {
+		start = next + 1;
+		next = parm.find_first_of(",:", start);
+		std::string is
+		    = next == std::string::npos
+		    ? parm.substr(start)
+		    : parm.substr(start, next - start);
+		if (next != std::string::npos)
+		    ++next;
+		int l;		
+		try {
+		    l = boost::lexical_cast<int>(is);
+		} catch (boost::bad_lexical_cast& e) {
+		    std::stringstream ss;
+		    ss << "invalid int \"" << is << "\" at offeset " << start << " in \"" << parm << "\".";
+		    throw ss.str();
+		}
+		setLogLevels(logs, l);
+		logs.clear();
+	    } else
+		++next;
+	}
+	start = next;
+    } while (start != std::string::npos);
+
+    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+
+    // Add a global scope attribute
+    if (false)
+	core->add_global_attribute(sw::Logger::ATTR_Scope,
+				   boost::log::attributes::named_scope());
+    if (false)
+	core->add_global_attribute(sw::Logger::ATTR_ThreadID,
+				   boost::log::attributes::current_thread_id());
+
+
+    // Add some attributes too
+    if (false)
+	core->add_global_attribute(sw::Logger::ATTR_Timestamp,
+				   boost::log::attributes::utc_clock());
+    if (false)
+	core->add_global_attribute(sw::Logger::ATTR_LineId,
+				   boost::log::attributes::counter< unsigned int >());
+}
+
+struct loggingFile { };
+void validate (boost::any& v, const std::vector<std::string>& values, loggingFile*, int)
+{
     const std::string& s = po::validators::get_single_string(values);
-    std::stringstream stream(s);
-    int i;
-    stream >> i;
-    Debug = i;
-    DebugStream = (i > 0) ? &std::cerr : NULL;
-    v = boost::any(debugLevel());
-    if (DebugStream != NULL)
-	*DebugStream << "Debug level: " << Debug << ".\n";
+    try {
+	std::ofstream* fstream = new std::ofstream(s.c_str());
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Opening log file \"" << s << "\".";
+	if (!fstream->is_open())
+	    throw sw::StringException(s + " is not open");
+	sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(fstream));
+    } catch (std::exception& e) {
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::error) << "Unable to open logging file \"" << s << "\".";
+    }
 }
 
 /* Set Query to an RDFLiteral when parsed. */
@@ -1243,12 +1324,10 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
-	if (DebugStream != NULL) {
-	    if (!DataMediaType)
-		*DebugStream << "Using no data language mediatype.\n";
-	    else
-		*DebugStream << "Using data language mediatype " << *DataMediaType << ".\n";
-	}
+	if (!DataMediaType)
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data language mediatype.\n";
+	else
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *DataMediaType << ".\n";
     }
 }
 struct langType { };
@@ -1266,12 +1345,10 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
 	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	DataMediaType = s;
-	if (DebugStream != NULL) {
-	    if (!DataMediaType)
-		*DebugStream << "Using no data mediatype mediatype.\n";
-	    else
-		*DebugStream << "Using data mediatype mediatype " << *DataMediaType << ".\n";
-	}
+	if (!DataMediaType)
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
+	else
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *DataMediaType << ".\n";
     }
 }
 
@@ -1284,8 +1361,7 @@ void validateBase(const std::vector<std::string>& values, const sw::TTerm** setM
 	    (s == ".") ? CwdURI : 
 	    (s == ":") ? copySource : 
 	    htparseWrapper(s, *setMe);
-	if (DebugStream != NULL)
-	    *DebugStream << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
     }
 }
 
@@ -1314,8 +1390,7 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     Output = loadEntry(NULL, abs, BaseURI);
-    if (DebugStream != NULL)
-	*DebugStream << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
+    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -1325,16 +1400,15 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
     const std::string& s = po::validators::get_single_string(values);
     if (s == ".") {
 	InPlace = true;
-	if (DebugStream != NULL)
-	    *DebugStream << "Manipulating other input data.\n";
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
     } else {
 	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
 	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
 	Output = loadEntry(NULL, abs, BaseURI);
-	if (DebugStream != NULL) {
-	    *DebugStream << "Replacing data from " << abs->getLexicalValue();
+	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Replacing data from " << abs->getLexicalValue();
 	    if (BaseURI != NULL)
-		*DebugStream << " with base URI " << BaseURI->getLexicalValue() << ".\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue() << ".\n";
 	}
     }
 }
@@ -1346,11 +1420,11 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
-    if (DebugStream != NULL) {
-	*DebugStream << "Queued reading default data from " << abs->getLexicalValue();
+    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
-	*DebugStream << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << ".\n";
     }
 }
 
@@ -1361,11 +1435,11 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     MapList.push_back(loadEntry(NULL, abs, BaseURI));
-    if (DebugStream != NULL) {
-	*DebugStream << "Queued reading default map from " << abs->getLexicalValue();
+    if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Queued reading default map from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
-	*DebugStream << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << ".\n";
     }
 }
 
@@ -1375,11 +1449,11 @@ void validate (boost::any&, const std::vector<std::string>& values, mapString*, 
 {
     const std::string& s = po::validators::get_single_string(values);
     MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
-    if (DebugStream != NULL) {
-	*DebugStream << "Queued reading default map from command line";
+    if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Queued reading default map from command line";
 	if (BaseURI != NULL)
-	    *DebugStream << " with base URI " << BaseURI->getLexicalValue();
-	*DebugStream << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << ".\n";
     }
 }
 
@@ -1401,18 +1475,16 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
 	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI));
-	if (DebugStream != NULL)
-	    *DebugStream << "Reading named graph " << NamedGraphName->toString()
-		      << " from " << vald->getLexicalValue()
-		      << BaseUriMessage() << ".\n";
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
+	    << "Reading named graph " << NamedGraphName->toString()
+	    << " from " << vald->getLexicalValue()
+	    << BaseUriMessage() << ".\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL && ServerURI.empty()) {
-	if (DebugStream != NULL)
-	    *DebugStream << "Query resource: " << vald->getLexicalValue() << ".\n";
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
 	Query = vald;
     } else {
-	if (DebugStream != NULL)
-	    *DebugStream << "View: " << vald->getLexicalValue() << ".\n";
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "View: " << vald->getLexicalValue() << ".\n";
 	Maps.push_back(vald);
     }
 }
@@ -1519,7 +1591,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
 	sw::IStreamContext::STRING : 
 	sw::IStreamContext::STDIN;
-    sw::IStreamContext iptr(querySpec, opts, NULL, &Agent, &DebugStream);
+    sw::IStreamContext iptr(querySpec, opts, NULL, &Agent);
     try {
 	return SparqlParser.parse(iptr);
     } catch (sw::ParserException& e) {
@@ -1533,12 +1605,22 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 
 int main(int ac, char* av[])
 {
-    MyServer::MyHandler handler(TheServer);
-    Output = loadEntry(NULL, F.getURI("-"), NULL);
-
     int ret = 0; /* no errors */
-    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
     try {
+	{ /* Set logs at log level 0 */
+	    LogSink = sw::Logger::prepare();
+	    sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
+
+	    std::vector<std::string> logs;
+	    addLogLabel(logs, "*");
+	    setLogLevels(logs, 0);
+	}
+
+	MyServer::MyHandler handler(TheServer);
+	Output = loadEntry(NULL, F.getURI("-"), NULL);
+
+	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
+
 	CwdURI = 
 	    F.getURI(std::string("file://localhost")
 		     .append(fs::current_path().string())
@@ -1553,7 +1635,9 @@ int main(int ac, char* av[])
 	     "general, results, uri, query, data, http, sql, tutorial, all")
             ("debug", po::value<debugLevel>(), 
 	     "debugging level")
-            ("DbDebugEnumerateLimit", po::value<size_t>(),
+            ("logging-file", po::value<loggingFile>(), 
+	     "log file for debug output")
+	    ("DbDebugEnumerateLimit", po::value<size_t>(),
 	     "max number of triples to serialize in debug stream")
             ("ResultSetDebugEnumerateLimit", po::value<size_t>(),
 	     "max number of results to serialize in debug stream")
@@ -1674,32 +1758,27 @@ int main(int ac, char* av[])
 	po::notify(vm);
     
         if (vm.count("utf-8")) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Switching to utf-8.\n";
+	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to utf-8.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
         }
 
         if (vm.count("ascii")) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Switching to ASCII.\n";
+	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to ASCII.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
         }
 
         if (vm.count("bold")) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Switching to bold-bordered boxes.\n";
+	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to bold-bordered boxes.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BldChars;
         }
 
         if (vm.count("no-exec")) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Execution suppressed.\n";
+	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Execution suppressed.\n";
             NoExec = true;
         }
 
         if (vm.count("quiet")) {
-	    if (DebugStream != NULL)
-		*DebugStream << "Non-debug messages supressed.\n";
+	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Non-debug messages supressed.\n";
             Quiet = true;
         }
 
@@ -1850,17 +1929,17 @@ int main(int ac, char* av[])
 		if (vm.count("ResultSetDebugEnumerateLimit"))
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
 
-		if (DebugStream != NULL) {
+		if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		    size_t size = TheServer.db.size();
 		    if (size > sw::RdfDB::DebugEnumerateLimit) {
 			size_t graphCount = TheServer.db.getGraphNames().size();
-			*DebugStream << "Loaded " << size
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Loaded " << size
 				     << " triple" << (size == 1 ? "" : "s")
 				     << " into "
 				     << graphCount << " graph" << (graphCount == 1 ? "" : "s")
 				     << ".\n";
 		    } else
-			*DebugStream << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
 		}
 	    }
 
@@ -1880,7 +1959,7 @@ int main(int ac, char* av[])
 		    (dynamic_cast<const sw::RDFLiteral*>(it->resource) != NULL) ? 
 		    sw::IStreamContext::STRING : 
 		    sw::IStreamContext::STDIN;
-		sw::IStreamContext istr(nameStr, opts, NULL, &Agent, &DebugStream);
+		sw::IStreamContext istr(nameStr, opts, NULL, &Agent);
 		TheServer.mapSetParser.parse(istr); // throws if it fails to parse
 		    // could catch and re-throw std::string("error when parsing map ").append(nameStr);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
@@ -1964,7 +2043,7 @@ int main(int ac, char* av[])
 		    const sw::TTerm* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
-					    NULL, &Agent, &DebugStream);
+					    NULL, &Agent);
 
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml")) {
@@ -2005,7 +2084,7 @@ int main(int ac, char* av[])
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
 					DataMediaType.c_str(),
-					&Agent, &DebugStream);
+					&Agent);
 		bool mustDumpDb = Query == NULL && ResultSetsLoaded == false;
 		if (!mustDumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
 		    !DataMediaType)

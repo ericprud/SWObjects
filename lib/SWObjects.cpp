@@ -5,7 +5,9 @@
  * $Id: SWObjects.cpp,v 1.17 2008-12-02 04:57:12 eric Exp $
  */
 
+#define SWObjects_STAND_ALONE
 #include "SWObjects.hpp"
+#undef SWObjects_STAND_ALONE
 #include "ResultSet.hpp"
 #include <string.h>
 #include <vector>
@@ -29,16 +31,6 @@
 #endif /* !_MSC_VER */
 
 namespace w3c_sw {
-
-    namespace Logger {
-	const char* ATTR_Timeline = "Timeline";
-	const char* ATTR_Scope = "Scope";
-	const char* ATTR_ThreadID = "ThreadID";
-	const char* ATTR_LineId = "LineId";
-	const char* ATTR_Timestamp = "Timestamp";
-	const char* ATTR_Channel = "Channel";
-    } /* namespace Logger */
-
 
     const char* NS_xml = "http://www.w3.org/XML/1998/namespace"		;
     const char* NS_xsd = "http://www.w3.org/2001/XMLSchema#"		;
@@ -255,15 +247,13 @@ MediaTypeMap StreamContextMediaTypes::MediaTypes;
 
 template<class T>
 StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
-				 const char* p_mediaType, SWWEBagent* webAgent,
-				 std::ostream** debugStream)
+				 const char* p_mediaType, SWWEBagent* webAgent)
     : nameStr(nameStr), malloced(true), p(NULL)
 {
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "reading web resource " << nameStr << std::endl;
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
 	mediaType = webAgent->getMediaType().c_str();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
@@ -288,13 +278,11 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 }
 
 IStreamContext::IStreamContext (std::string name, e_opts opts,
-				const char* p_mediaType, SWWEBagent* webAgent,
-				std::ostream** debugStream)
+				const char* p_mediaType, SWWEBagent* webAgent)
     : StreamContext<std::istream>(name, &std::cin, opts, 
-				  p_mediaType, webAgent, debugStream) {
+				  p_mediaType, webAgent) {
     if (p == NULL) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "+ Stream constructed to read file " << nameStr << ".\n";
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "+ Stream constructed to read file " << nameStr << ".\n";
 	std::ifstream* istr = new std::ifstream(nameStr.c_str());
 	malloced = true;
 	p = istr;
@@ -304,13 +292,11 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
 }
 
 OStreamContext::OStreamContext (std::string name, e_opts opts,
-				const char* p_mediaType, SWWEBagent* webAgent,
-				std::ostream** debugStream)
+				const char* p_mediaType, SWWEBagent* webAgent)
     : StreamContext<std::ostream>(name, &std::cout, opts, 
-				  p_mediaType, webAgent, debugStream) {
+				  p_mediaType, webAgent) {
     if (p == NULL) {
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "+ Stream constructed to write file " << nameStr << ".\n";
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "+ Stream constructed to write file " << nameStr << ".\n";
 	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
 	malloced = true;
 	p = ostr;
@@ -853,8 +839,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	 const Validator& v = it->second;
 	 boost::match_results<std::string::const_iterator> what;
 	 if (!regex_search(value, what, v.pattern, boost::match_default)) {
-	     if (debugStream && *debugStream)
-		 **debugStream << "pattern \"" << v.pattern << "\" failed to match \"" << value << "\"." << std::endl;
+	     BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "pattern \"" << v.pattern << "\" failed to match \"" << value << "\"." << std::endl;
 	     throw TypeError(value, datatype);
 	 }
 	 if (v.intmin != RANGE_unlimited || v.intmax != RANGE_unlimited) {
@@ -874,8 +859,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		 throw TypeError(value, datatype);
 	 }
 #else /* REGEX_LIB == SWOb_BOOST */
-	if (debugStream != NULL && *debugStream != NULL)
-	    **debugStream << "unable to validate that \"" << value << "\" is a " << datatype << " without boost regular expression" << std::endl;
+	 BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "unable to validate that \"" << value << "\" is a " << datatype << " without boost regular expression" << std::endl;
 #endif /* REGEX_LIB != SWOb_BOOST */
     }
 
@@ -1601,7 +1585,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
-	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent, db->debugStream);
+	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
 	if (db->loadData(target, iptr, nameStr, nameStr, m_atomFactory))
 	    throw nameStr + ":0: error: unable to parse web document";
     }
@@ -1652,7 +1636,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getAtomFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory());
 	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
@@ -1661,7 +1645,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getAtomFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
@@ -1681,12 +1665,12 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getAtomFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory());
 	delete *(island.begin());
 	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet disjoint(rs->getAtomFactory(), rs->debugStream);
+	    ResultSet disjoint(rs->getAtomFactory());
 	    (*it)->bindVariables(db, &disjoint);
 #if 0
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
@@ -1703,7 +1687,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getAtomFactory(), rs->debugStream);
+	ResultSet island(rs->getAtomFactory());
 	m_Select->execute(db, &island);
 	rs->joinIn(&island, false);
     }
@@ -1763,8 +1747,7 @@ compared against
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar, const TTerm* graphName) const {
- 	if (rs->debugStream != NULL && *rs->debugStream != NULL)
-	    **rs->debugStream << "matching " << *toMatch;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
@@ -1848,8 +1831,7 @@ compared against
 		}
 	    }
 	}
-	if (rs->debugStream != NULL && *rs->debugStream != NULL)
-	    **rs->debugStream << "produced\n" << *rs;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "produced\n" << *rs;
     }
     bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == Unbound || constant == Unbound)
@@ -1928,7 +1910,7 @@ compared against
 	}
     }
 
-    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, AtomFactory* atomFactory, SWSAXparser* xmlParser, SWWEBagent* agent, std::ostream** debugStream) {
+    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, AtomFactory* atomFactory, SWSAXparser* xmlParser, SWWEBagent* agent) {
 	/* The VarLister is a serializer which also records all variables.
 	 */
 	struct VarLister : public SPARQLSerializer {
@@ -1963,8 +1945,8 @@ compared against
 	    delete rsConstrained;
 	delete query;
 
-	if (debugStream != NULL && *(debugStream) != NULL)
-	    **(debugStream) << "Querying <" << service->getLexicalValue() << "> for\n" << p;
+	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+	    << "Querying <" << service->getLexicalValue() << "> for\n" << p;
 
 	/* Do an HTTP GET and parse results into a ResultSet. */
 	std::string s;
@@ -1981,15 +1963,17 @@ compared against
 	IStreamContext istr(s, IStreamContext::STRING);
 	try {
 	    ResultSet red(atomFactory, xmlParser, istr);
-	    if (debugStream != NULL && *(debugStream) != NULL) {
-		**(debugStream) << " yielded";
+	    if (Logger::Logging(Logger::ServiceLog_level, Logger::info)) {
+		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << " yielded";
 		size_t size = red.size();
 		if (size > ResultSet::DebugEnumerateLimit)
-		    **debugStream << " " << size
-				  << " result" << (size == 1 ? "" : "s")
-				  << ".\n";
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+			<< " " << size
+			<< " result" << (size == 1 ? "" : "s")
+			<< ".\n";
 		else
-		    **debugStream << "\n" << red;
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+			<< "\n" << red;
 	    }
 
 	    /* Join those results against our initial results. */
@@ -2001,7 +1985,7 @@ compared against
     void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
-	    _constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
+	    _constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent);
 	else {
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
 	    if (graphVar != NULL) {
@@ -2009,7 +1993,7 @@ compared against
 		    const URI* graph = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
 		    if (graph != NULL) {
 			ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
-			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent, db->debugStream);
+			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent);
 			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
 			    rs->insert(outerRow, *innerRow);
 			    innerRow = single->erase(innerRow);

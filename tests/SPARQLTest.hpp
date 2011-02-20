@@ -73,7 +73,7 @@ struct MeasuredRS : public ResultSet {
     MeasuredRS (const char* defGraph, 
 		const char* namedGraphs[], size_t namedCount, 
 		const URI* requires[], size_t reqsCount, 
-		const char* queryPath) : ResultSet(&F, F.debugStream) {
+		const char* queryPath) : ResultSet(&F) {
 
 	std::string baseURI(queryPath);
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);

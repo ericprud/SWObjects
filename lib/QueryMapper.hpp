@@ -42,10 +42,9 @@ namespace w3c_sw {
     protected:
 	std::vector<MappingConstruct*> invertedRules;
 	int ruleCount;
-	std::ostream** debugStream;
 
     public:
-	QueryMapper (AtomFactory* atomFactory, std::ostream** debugStream) : SWObjectDuplicator(atomFactory), ruleCount(0), debugStream(debugStream) {  }
+	QueryMapper (AtomFactory* atomFactory) : SWObjectDuplicator(atomFactory), ruleCount(0) {  }
 	~QueryMapper () { clear(); }
 	void clear () {
 	    for (std::vector<MappingConstruct*>::iterator it = invertedRules.begin();
@@ -55,7 +54,7 @@ namespace w3c_sw {
 	}
 	int getRuleCount () { return ruleCount; }
 	MappingConstruct* addRule (const Construct* rule) {
-	    RuleInverter inv(atomFactory, debugStream);
+	    RuleInverter inv(atomFactory);
 	    rule->express(&inv);
 	    MappingConstruct* c = inv.getConstruct();
 	    invertedRules.push_back(c);
@@ -68,17 +67,15 @@ namespace w3c_sw {
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
-	    if (debugStream != NULL && *debugStream != NULL)
-		**debugStream << "Firing " << invertedRules.size() << " rules againsts user query disjoint " << std::endl << 
-		    *userQueryDisjoint << std::endl << 
-		    "(as DB):" << std::endl << 
-		    userQueryAsAssertions << std::endl;
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Firing " << invertedRules.size() << " rules againsts user query disjoint " << std::endl << 
+		*userQueryDisjoint << std::endl << 
+		"(as DB):" << std::endl << 
+		userQueryAsAssertions << std::endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
-		if (debugStream != NULL && *debugStream != NULL)
-		    **debugStream << "matched against rule head (expressed as a pattern)" << std::endl << 
-			*(*invertedRule)->getRuleBody() << std::endl;
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "matched against rule head (expressed as a pattern)" << std::endl << 
+		    *(*invertedRule)->getRuleBody() << std::endl;
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03
 		 */

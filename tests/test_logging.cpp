@@ -17,6 +17,13 @@
   #define usleep(X) Sleep(X)
 #endif /* _MSC_VER */
 
+enum {
+    LOG_RECORDS_TO_WRITE = 5,
+    THREAD_COUNT = 3,
+    USLEEP_MIN = 1,
+    USLEEP_MAX = 1000
+};
+
 namespace w3c_sw {
 
     //! This function is executed in multiple threads
@@ -25,7 +32,7 @@ namespace w3c_sw {
 	// Wait until all threads are created
 	bar.wait();
 
-	BOOST_LOG_SCOPED_LOGGER_ATTR(Logger::GraphMatch::get(),
+	BOOST_LOG_SCOPED_LOGGER_ATTR(Logger::RewriteLog::get(),
 				     Logger::ATTR_Timeline,
 				     boost::log::attributes::timer);
 
@@ -39,17 +46,17 @@ namespace w3c_sw {
 	for (unsigned int i = 0; i < LOG_RECORDS_TO_WRITE; ++i) {
 	    switch (log_state) {
 	    case 0: {
-		BOOST_LOG_SEV(Logger::GraphMatch::get(), warning) << "Log record " << i;
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::warning) << "Log record " << i;
 		++log_state;
 		break;
 	    }
 	    case 1: {
-		BOOST_LOG_SEV(Logger::Net::get(), support) << "Log record " << i << std::endl << "Line2\nLine3";
+		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Log record " << i << std::endl << "Line2\nLine3";
 		++log_state;
 		break;
 	    }
 	    default:
-		BOOST_LOG_SEV(Logger::Default::get(), admin) << "Log record " << i;
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::admin) << "Log record " << i;
 		log_state = 0;
 	    }
 	    ::usleep(rand_sleep);

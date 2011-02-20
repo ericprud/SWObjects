@@ -428,7 +428,7 @@ namespace w3c_sw {
 	}
 
     public:
-	Consequents (const TableOperation* op, VarSet* p_VarSet = NULL, std::ostream** debugStream = NULL) {
+	Consequents (const TableOperation* op, VarSet* p_VarSet = NULL) {
 	    w3c_sw_START("POS2BGPMap Consequents constructor");
 	    ConsequentsConstructor ctor(&consequents, op);
 	    w3c_sw_NOW("traversing TableOperation");
@@ -437,10 +437,8 @@ namespace w3c_sw {
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    w3c_sw_NOW("finding corefs");
 	    ctor.findCorefs(op);
-	    if (*debugStream != NULL) {
-		**debugStream << "Consequents:" << std::endl << consequents.dump();
-		**debugStream << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
-	    }
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Consequents:" << std::endl << consequents.dump();
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	}
 	~Consequents () {
 	    for (ConsequentMapList::iterator maps = consequents.begin();

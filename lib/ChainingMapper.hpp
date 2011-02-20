@@ -304,10 +304,9 @@ namespace w3c_sw {
 	    Opts opts;
 	    MapSet::e_sharedVars sharedVars;
 	    NodeShare& nodeShare;
-	    std::ostream** debugStream;
 
-	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
-		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare), debugStream(debugStream) {  }
+	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
 	    void operator= (const Alternatives& ref) {
 		sharedVars = ref. sharedVars;
 		nodeShare = ref.nodeShare;
@@ -509,38 +508,32 @@ namespace w3c_sw {
 		if (opts.size() > 1)
 		    ret = new TableDisjunction();
 
-		oprfxstream* newDebugStream = NULL;
-		std::ostream* oldDebugStream = NULL;
-		if (debugStream && *debugStream != NULL) {
-		    newDebugStream = new oprfxstream((*debugStream)->rdbuf(), "   ");
-		    oldDebugStream = *debugStream;
-		    *debugStream = newDebugStream;
-		}
+		Logger::indent(3);
 
 		for (Opts::const_iterator alternative = opts.begin();
 		     alternative != opts.end(); ++alternative) {
-		    if (newDebugStream != NULL && alternative != opts.begin()) {
-			newDebugStream->prefix("");
-			*newDebugStream << "UNION" << std::endl;
-			newDebugStream->prefix("   ");
+
+		    if (alternative != opts.begin()) {
+			Logger::indent(-3);
+			BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "UNION" << std::endl;
+			Logger::indent(3);
 		    }
-		    if (debugStream && *debugStream != NULL) {
-			if (opts.size() > 1)
-			    **debugStream << "alternative: ";
-			**debugStream << alternative->str();
-		    }
+		    if (opts.size() > 1)
+			BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "alternative: ";
+		    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << alternative->str();
+
 		    std::vector<const TableOperation*> conjoints;
 		    for (Rule2rs::const_iterator rule = alternative->begin();
 			 rule != alternative->end(); ++rule)
 			for (ResultSetConstIterator res = rule->second.rs.begin();
 			     res != rule->second.rs.end(); ++res) {
 			    TableOperation* bgp = Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply();
-			    if (debugStream && *debugStream != NULL) {
-				**debugStream << "bindings: " << **res << " instantiates as:\n";
-				newDebugStream->prefix("      ");
-				**debugStream << bgp->toString(MediaType("text/turtle"));
-				newDebugStream->prefix("   ");
-			    }
+
+			    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "bindings: " << **res << " instantiates as:\n";
+			    Logger::indent(3);
+			    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << bgp->toString(MediaType("text/turtle"));
+			    Logger::indent(-3);
+
 			    conjoints.push_back(bgp);
 			}
 
@@ -554,10 +547,7 @@ namespace w3c_sw {
 		    else
 			return op; // ret = op loses const-ness.
 		}
-		if (debugStream && *debugStream != NULL) {
-		    delete newDebugStream;
-		    *debugStream = oldDebugStream;
-		}
+		Logger::indent(-3);
 		return ret;
 	    }
 
@@ -569,10 +559,9 @@ namespace w3c_sw {
 
 	Alternatives alternatives;
 	Failures failed;
-	std::ostream** debugStream;
 
-	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
-	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare, debugStream), debugStream(debugStream) {  }
+	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
 	void operator= (const Bindings& ref) {
 	    atomFactory = ref.atomFactory;
 	    rules = ref.rules;
@@ -659,11 +648,10 @@ namespace w3c_sw {
 	Bindings bindings;
 	MapSet::e_sharedVars sharedVars;
 	Bindings::Alternatives::VarUniquifier varUniquifier;
-	std::ostream** debugStream;
 
     public:
-	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare, std::ostream** debugStream)
-	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare, debugStream), debugStream(debugStream) {  }
+	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
 	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    bindings.alternatives.opts.clear();
@@ -672,11 +660,9 @@ namespace w3c_sw {
 		 it != p_TriplePatterns->end(); it++)
 		bindings.match(bgp, *it);
 
-	    if (debugStream && *debugStream != NULL)
-		**debugStream << "transforming bgp: " << *bgp << " -> [[\n";
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "transforming bgp: " << *bgp << " -> [[\n";
 	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
-	    if (debugStream && *debugStream != NULL)
-		**debugStream << "]]\n";
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "]]\n";
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
@@ -736,13 +722,12 @@ namespace w3c_sw {
     class ChainingMapper : public SWObjectDuplicator {
     protected:
 	std::vector<Rule> rules;
-	std::ostream** debugStream;
 
     public:
 	MapSet::e_sharedVars sharedVars;
 	NodeShare nodeShare;
 
-	ChainingMapper (AtomFactory* atomFactory, std::ostream** debugStream) : SWObjectDuplicator(atomFactory), debugStream(debugStream) {  }
+	ChainingMapper (AtomFactory* atomFactory) : SWObjectDuplicator(atomFactory) {  }
 	~ChainingMapper () { clear(); }
 	void clear () {
 	    /* clear rules -- called twice for some reason, needs the erase to guard against double delete. */
@@ -761,12 +746,11 @@ namespace w3c_sw {
 		name = atomFactory->getRDFLiteral(ss.str());
 	    }
 	    Rule r = RuleParser().parseConstruct(rule, name);
-	    if (debugStream && *debugStream != NULL)
-		**debugStream << "adding rule: " << r.toString();
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
 	const Operation* map (const Operation* query) {
-	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare, debugStream).mapQuery(query);
+	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
 	    BGPSimplifier dup(atomFactory);
 	    op->express(&dup);
 	    delete op;

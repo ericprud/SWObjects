@@ -64,24 +64,23 @@ namespace w3c_sw {
 
 	SWWEBagent* webAgent;
 	SWSAXparser* xmlParser;
-	std::ostream** debugStream;
 	HandlerSet* handler;
 	static HandlerSet defaultHandler;
 	static size_t DebugEnumerateLimit;
 
 	RdfDB (SWSAXparser* xmlParser = NULL)
-	    : graphs(), webAgent(NULL), xmlParser(xmlParser), debugStream(NULL), handler(&defaultHandler)
+	    : graphs(), webAgent(NULL), xmlParser(xmlParser), handler(&defaultHandler)
 	{ ensureGraph(DefaultGraph); }
-	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, std::ostream** debugStream = NULL)
-	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(&defaultHandler)
+	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL)
+	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), handler(&defaultHandler)
 	{ ensureGraph(DefaultGraph); }
-	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
-	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), debugStream(debugStream), handler(handler)
+	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, HandlerSet* handler)
+	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), handler(handler)
 	{ ensureGraph(DefaultGraph); }
 	RdfDB (RdfDB const &)
 	    : graphs()
 	{ throw(std::runtime_error(FUNCTION_STRING)); ensureGraph(DefaultGraph); }
-	RdfDB (const DefaultGraphPattern* graph) : graphs(), debugStream(NULL), handler(&defaultHandler) {
+	RdfDB (const DefaultGraphPattern* graph) : graphs(), handler(&defaultHandler) {
 	    BasicGraphPattern* bgp = ensureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
 		 it != graph->end(); it++)
@@ -131,7 +130,6 @@ namespace w3c_sw {
 	    webAgent = ref.webAgent;
 	    xmlParser = ref.xmlParser;
 
-	    debugStream = ref.debugStream;
 	    return *this;
 	}
 	bool operator== (const RdfDB& ref) const {
@@ -200,8 +198,8 @@ namespace w3c_sw {
     class TargetedRdfDB : public RdfDB {
 	const TTerm* defaultTarget;
     public:
-	TargetedRdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, std::ostream** debugStream, HandlerSet* handler)
-	    : RdfDB(webAgent, xmlParser, debugStream, handler), defaultTarget(NULL)
+	TargetedRdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, HandlerSet* handler)
+	    : RdfDB(webAgent, xmlParser, handler), defaultTarget(NULL)
 	{  }
 	void setTarget (const TTerm* target) { defaultTarget = target; }
 

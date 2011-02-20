@@ -276,23 +276,21 @@ namespace w3c_sw {
 #if REGEX_LIB == SWOb_BOOST
 	std::vector<POSmap> uriMaps;
 #endif /* REGEX_LIB == SWOb_BOOST */
-	std::ostream** debugStream;
 
     public:
 	MappingConstruct (TableOperation* constructRuleBodyAsConsequent, ProductionVector<const DatasetClause*>* p_DatasetClauses, 
-			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, AtomFactory* atomFactory, 
+			  WhereClause* constructRuleHeadAsPattern, SolutionModifier* p_SolutionModifier, AtomFactory* atomFactory
 #if REGEX_LIB == SWOb_BOOST
-			  std::vector<POSmap> uriMaps, 
+			  , std::vector<POSmap> uriMaps
 #endif /* REGEX_LIB == SWOb_BOOST */
-			  std::ostream** debugStream) : 
+			  ) : 
 	    Construct(NULL, p_DatasetClauses, constructRuleHeadAsPattern, p_SolutionModifier), 
 	    constructRuleBodyAsConsequent(constructRuleBodyAsConsequent), 
-	    consequents(constructRuleBodyAsConsequent, NULL, debugStream), 
-	    atomFactory(atomFactory), 
+	    consequents(constructRuleBodyAsConsequent, NULL), 
+	    atomFactory(atomFactory)
 #if REGEX_LIB == SWOb_BOOST
-	    uriMaps(uriMaps), 
+	    , uriMaps(uriMaps)
 #endif /* REGEX_LIB == SWOb_BOOST */
-	    debugStream(debugStream)
 	{  }
 	~MappingConstruct () {
 	    delete constructRuleBodyAsConsequent;
@@ -314,8 +312,7 @@ namespace w3c_sw {
 #ifndef APPLY_VARMAPS_INDISCRIMINATELY
  	    opRS->applyMaps(uriMaps);
 #endif
-	    if (*debugStream != NULL)
-		**debugStream << "produced result set" << std::endl << opRS->toString() << std::endl;
+	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "produced result set" << std::endl << opRS->toString() << std::endl;
 
 	    /* 05 — For each rule solution S in RScd:
 	     * http://www.w3.org/2008/07/MappingRules/#_05
@@ -351,12 +348,10 @@ namespace w3c_sw {
 		opRS->addTableOperation(res);
 
 	    }
-	    if (*debugStream != NULL) {
-		if (res == NULL)
-		    **debugStream << "yielding no transformed query disjoint." << std::endl << std::endl;
-		else
-		    **debugStream << "yielding transformed query disjoint:" << std::endl << *res << std::endl;
-	    }
+	    if (res == NULL)
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "yielding no transformed query disjoint." << std::endl << std::endl;
+	    else
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "yielding transformed query disjoint:" << std::endl << *res << std::endl;
 	    return opRS;
 	}
     };
@@ -368,7 +363,6 @@ namespace w3c_sw {
 	DefaultGraphPattern* constructRuleHead;
 	TableOperation* constructRuleBodyAsConsequent;
 	MappingConstruct* m_Construct;
-	std::ostream** debugStream;
 	bool inUserRuleHead;
 	std::map<const TTerm*, size_t> variablesInLexicalOrder;
 	size_t nextVariableIndex;
@@ -378,8 +372,8 @@ namespace w3c_sw {
 #endif /* REGEX_LIB == SWOb_BOOST */
 
     public:
-	RuleInverter (AtomFactory* atomFactory, std::ostream** debugStream = NULL) : 
-	    SWObjectDuplicator(atomFactory), debugStream(debugStream), inUserRuleHead(false), nextVariableIndex(0) {  }
+	RuleInverter (AtomFactory* atomFactory) : 
+	    SWObjectDuplicator(atomFactory), inUserRuleHead(false), nextVariableIndex(0) {  }
 
 	MappingConstruct* getConstruct() { return m_Construct; }
 
@@ -494,10 +488,10 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 
-	    if (*debugStream != NULL) {
+	    if (Logger::Logging(Logger::RewriteLog_level, Logger::info)) {
 		SPARQLSerializer sparqlizer(MediaType(), NULL, "  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		**debugStream << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
 	    }
 	    p_SolutionModifier->express(this);
 
@@ -505,11 +499,11 @@ namespace w3c_sw {
 					       _DatasetClauses(p_DatasetClauses),//
 					       constructRuleHeadAsPattern,	 // antecedent of new mapping rule
 					       last.solutionModifier, 		 //
-					       atomFactory, 
+					       atomFactory
 #if REGEX_LIB == SWOb_BOOST
-					       uriMaps, 
+					       , uriMaps
 #endif /* REGEX_LIB == SWOb_BOOST */
-					       debugStream);
+					       );
 	}
 
 	/* RuleInverter only works on CONSTRUCTs. All other verbs

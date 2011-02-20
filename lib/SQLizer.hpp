@@ -326,15 +326,13 @@ namespace w3c_sw {
 	KeyMap keyMap;
 	std::string driver;
 
-	std::ostream** debugStream;
-
     public:
 	//static std::ostream** ErrorStream;
 
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver, std::ostream** debugStream = NULL) : 
+	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver) : 
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
-	    driver(driver), debugStream(debugStream)
+	    driver(driver)
 	{  }
 	~SQLizer () {
 	    delete curQuery;
@@ -824,7 +822,7 @@ namespace w3c_sw {
 	}
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	    w3c_sw_START("p_GroupGraphPattern");
-	    Consequents consequents(p_GroupGraphPattern, selectVars, debugStream);
+	    Consequents consequents(p_GroupGraphPattern, selectVars);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);

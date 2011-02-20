@@ -1443,7 +1443,6 @@ protected:
 
 public:
 
-    std::ostream** debugStream;
     AtomFactory();
     ~AtomFactory();
     const Variable* getVariable(std::string name);
@@ -3064,8 +3063,7 @@ struct StreamContext : public StreamContextMediaTypes {
 	: nameStr(nameStr), mediaType(mediaType), malloced(false), p(p)
     {  }
     StreamContext(std::string nameStr, T* def, e_opts,
-		  const char* p_mediaType, SWWEBagent* webAgent,
-		   std::ostream** debugStream);
+		  const char* p_mediaType, SWWEBagent* webAgent);
     virtual ~StreamContext () { if (malloced) delete p; }
     T& operator* () { return *p; }
 
@@ -3090,13 +3088,11 @@ struct IStreamContext : public StreamContext<std::istream> {
 	: StreamContext<std::istream>(name, &istr, p_mediaType)
     {  }
     IStreamContext(std::string name, e_opts opts = NONE,
-		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
-		   std::ostream** debugStream = NULL);
+		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL);
 };
 struct OStreamContext : public StreamContext<std::ostream> {
     OStreamContext(std::string name, e_opts opts = NONE,
-		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL,
-		   std::ostream** debugStream = NULL);
+		   const char* p_mediaType = NULL, SWWEBagent* webAgent = NULL);
 };
 
 #if !defined SWIG

@@ -26,8 +26,7 @@ using namespace w3c_sw;
 AtomFactory f;
 SPARQLfedDriver sparqlParser("", &f);
 MapSetDriver mapSetParser("", &f);
-std::ostream* DebugStream = NULL; // &std::cerr;
-ChainingMapper queryMapper(&f, &DebugStream);
+ChainingMapper queryMapper(&f);
 
 
 struct EqualsTest {
@@ -470,7 +469,7 @@ struct RuleMapTest {
 	namespace tst = boost::unit_test::framework;
 	for (int i = 1; i < tst::master_test_suite().argc; ++i)
 	    if (std::string(tst::master_test_suite().argv[i]) == "-D")
-		DebugStream = &std::cerr;
+		Logger::addStream(Logger::prepare(), boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
 
 	sparqlParser.unnestTree = true;
 	/* Parse query. */
@@ -551,7 +550,7 @@ struct SQLizerTest {
 	/* map SPARQLquery to SQL. */
 	char predicateDelims[]={'#',' ',' '};
 	char nodeDelims[]={'/','.',' '};
-	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", KeyMap(), "", &DebugStream);
+	SQLizer s(stemURI, predicateDelims, nodeDelims, "id", KeyMap(), "");
 	sparqlQuery->express(&s);
 	IStreamContext generated(s.getSQLstring(), IStreamContext::STRING);
 	try {
