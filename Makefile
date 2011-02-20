@@ -421,10 +421,10 @@ m_%: tests/man_%
 ### Query Map tests tests:
 
 tests/HealthCare1.results: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	$< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
+	LD_LIBRARY_PATH=$(BOOST_TARGET)lib $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 tests/HealthCare1.valgrind: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
+	LD_LIBRARY_PATH=$(BOOST_TARGET)lib valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 transformTESTS=tests/HealthCare1
 
@@ -444,34 +444,34 @@ tests/server_mouseToxicity_remote-all.results: \
 	tests/mouseToxicity/remote-all/MouseToxicity.map
 	# Start servers.
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --debug 1 --once --serve http://localhost:8881/microArray -m MicroArray.map |\
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8881/microArray -m MicroArray.map |\
 	  tee ../../../$@.ma )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --debug 1 --once --serve http://localhost:8882/uniprot -m Uniprot.map |\
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8882/uniprot -m Uniprot.map |\
 	  tee ../../../$@.up )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --debug 1 --once --serve http://localhost:8883/screeningAssay -m ScreeningAssay.map |\
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8883/screeningAssay -m ScreeningAssay.map |\
 	  tee ../../../$@.sa )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --debug 1 --once --serve http://localhost:8884/chemStructure -m ChemStructure.map |\
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8884/chemStructure -m ChemStructure.map |\
 	  tee ../../../$@.cs )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  ../../../$< --debug 1 --once --serve http://localhost:8885/mouseToxicity -m MouseToxicity.map |\
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8885/mouseToxicity -m MouseToxicity.map |\
 	  tee ../../../$@.mt )&
 	sleep 1 # give the servers time to start up
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  time ../../../bin/sparql ToxicAssoc0.rq )
+	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib time ../../../bin/sparql ToxicAssoc0.rq )
 
 
 tests/7tm_receptors-flat.results: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --once --serve http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && ../../../$< q.rq )
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< q.rq )
 
 tests/7tm_receptors-flat.results2: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && ../../../$< --once --serve --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --once --serve --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && ../../../$< q.rq )
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< q.rq )
 
 SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 
