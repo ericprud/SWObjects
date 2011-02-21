@@ -810,20 +810,24 @@ struct loadEntry {
 				&Agent);
 	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading SPARQL XML Result Set " << nameStr;
+		std::stringstream o;
+		o << "Reading SPARQL XML Result Set " << nameStr;
 		if (baseURI != NULL)
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into result set.\n";
+		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else if (istr.mediaType.match("text/sparql-results")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading data table " << nameStr;
+		std::stringstream o;
+		o << "Reading data table " << nameStr;
 		if (baseURI != NULL)
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into result set.\n";
+		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
 	    sw::TTerm::String2BNode bnodeMap;
 	    sw::ResultSet loaded(&F, istr, false, bnodeMap);
@@ -831,10 +835,12 @@ struct loadEntry {
 	    ResultSetsLoaded = true;
 	} else {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << nameStr;
+		std::stringstream o;
+		o << "Reading " << nameStr;
 		if (baseURI != NULL)
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " into " << graph->toString() << ".\n";
+		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		o << " into " << graph->toString() << ".\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
 	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
 			baseURI ? UriString(baseURI) : nameStr, &F);
@@ -1276,21 +1282,27 @@ loadEntry Output(NULL, NULL, NULL);
 boost::shared_ptr< sw::Logger::Sink_t > LogSink;
 
 /* Set Debug when parsed. */
-inline void addLogLabel (std::vector<std::string>& logs, std::string label) {
+inline void addLogLabel (std::vector<std::string>& logs, std::set<std::string>& visitedLogs, std::string label) {
     if (label == "*") {
 	for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
 	     it != sw::Logger::Labels.end(); ++it)
-	    logs.push_back(*it);
+	    if (visitedLogs.find(*it) == visitedLogs.end()) {
+		logs.push_back(*it);
+		visitedLogs.insert(*it);
+	    }
     } else {
 	sw::Logger::getLabelLevel(label);
 	logs.push_back(label);
+	visitedLogs.insert(label);
     }
 }
 
 inline void setLogLevels (const std::vector<std::string>& logs, int level) {
     for (std::vector<std::string>::const_iterator it = logs.begin();
-	 it != logs.end(); ++it)
+	 it != logs.end(); ++it) {
 	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(level);
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "log level \"" << *it << "\" set to " << level << ".";
+    }
 }
 
 struct debugLevel { };
@@ -1298,7 +1310,8 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
 {
     const std::string& parm = po::validators::get_single_string(values);
 
-    std::vector<std::string> logs;
+    std::set<std::string> visitedLogs;
+    std::vector<std::string> curLogList;
     size_t start = 0;
     do {
 	size_t next = parm.find_first_of(",:", start);
@@ -1306,17 +1319,17 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
 	    if (start == 0) {
 		try {
 		    int l = boost::lexical_cast<int>(parm.substr(start));
-		    addLogLabel(logs, "*");
-		    setLogLevels(logs, l);
-		    logs.clear();
+		    addLogLabel(curLogList, visitedLogs, "*");
+		    setLogLevels(curLogList, l);
+		    curLogList.clear();
 		} catch (boost::bad_lexical_cast&) { }
 	    } else {
-		addLogLabel(logs, parm.substr(start));
-		setLogLevels(logs, 1);
-		logs.clear();
+		addLogLabel(curLogList, visitedLogs, parm.substr(start));
+		setLogLevels(curLogList, 1);
+		curLogList.clear();
 	    }
 	} else {
-	    addLogLabel(logs, parm.substr(start, next - start));
+	    addLogLabel(curLogList, visitedLogs, parm.substr(start, next - start));
 	    if (parm[next] == ':') {
 		start = next + 1;
 		next = parm.find_first_of(",:", start);
@@ -1334,8 +1347,8 @@ void validate (boost::any& v, const std::vector<std::string>& values, debugLevel
 		    ss << "invalid int \"" << is << "\" at offeset " << start << " in \"" << parm << "\".";
 		    throw ss.str();
 		}
-		setLogLevels(logs, l);
-		logs.clear();
+		setLogLevels(curLogList, l);
+		curLogList.clear();
 	    } else
 		++next;
 	}
@@ -1535,9 +1548,11 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
 	Output = loadEntry(NULL, abs, BaseURI);
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Replacing data from " << abs->getLexicalValue();
+	    std::stringstream o;
+	    o << "Replacing data from " << abs->getLexicalValue();
 	    if (BaseURI != NULL)
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue() << ".\n";
+		o << " with base URI " << BaseURI->getLexicalValue() << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	}
     }
 }
@@ -1550,10 +1565,12 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     LoadList.push_back(loadEntry(NULL, abs, BaseURI));
     if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Queued reading default data from " << abs->getLexicalValue();
+	std::stringstream o;
+	o << "Queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << ".\n";
+	    o << " with base URI " << BaseURI->getLexicalValue();
+	o << ".\n";
+	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
     }
 }
 
@@ -1565,10 +1582,12 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
     MapList.push_back(loadEntry(NULL, abs, BaseURI));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Queued reading default map from " << abs->getLexicalValue();
+	std::stringstream o;
+	o << "Queued reading default map from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
-	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << ".\n";
+	    o << " with base URI " << BaseURI->getLexicalValue();
+	o << ".\n";
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
 }
 
@@ -1579,10 +1598,12 @@ void validate (boost::any&, const std::vector<std::string>& values, mapString*, 
     const std::string& s = po::validators::get_single_string(values);
     MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Queued reading default map from command line";
+	std::stringstream o;
+	o << "Queued reading default map from command line";
 	if (BaseURI != NULL)
-	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << " with base URI " << BaseURI->getLexicalValue();
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << ".\n";
+	    o << " with base URI " << BaseURI->getLexicalValue();
+	o << ".\n";
+	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
 }
 
@@ -1741,7 +1762,8 @@ int main(int ac, char* av[])
 	    sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
 
 	    std::vector<std::string> logs;
-	    addLogLabel(logs, "*");
+	    std::set<std::string> visitedLogs;
+	    addLogLabel(logs, visitedLogs, "*");
 	    setLogLevels(logs, 0);
 	}
 
@@ -2061,17 +2083,17 @@ int main(int ac, char* av[])
 		if (vm.count("ResultSetDebugEnumerateLimit"))
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
 
-		if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::support)) {
 		    size_t size = TheServer.db.size();
 		    if (size > sw::RdfDB::DebugEnumerateLimit) {
 			size_t graphCount = TheServer.db.getGraphNames().size();
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Loaded " << size
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "Loaded " << size
 				     << " triple" << (size == 1 ? "" : "s")
 				     << " into "
 				     << graphCount << " graph" << (graphCount == 1 ? "" : "s")
 				     << ".\n";
 		    } else
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
 		}
 	    }
 
