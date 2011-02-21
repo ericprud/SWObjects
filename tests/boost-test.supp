@@ -1,4 +1,15 @@
 {
+   dl_map_object_deps
+   Memcheck:Jump
+   obj:*
+   fun:_dl_signal_error
+   fun:_dl_map_object_deps
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib/ld-2.12.1.so
+}
+{
    std::string local alloc bug
    Memcheck:Leak
    fun:_Znwm
