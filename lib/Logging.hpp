@@ -210,7 +210,7 @@ namespace w3c_sw {
 		(
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == ""          && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTDefault   )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Rewrite"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTRewrite   )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "IO"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
+		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "I/O"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "GraphMatch"&& boost::log::filters::attr<severity_level>("Severity").satisfies(&GTGraphMatch)) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "SQL"       && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTSQL       )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Service"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTService   )) ||

@@ -282,7 +282,7 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
     : StreamContext<std::istream>(name, &std::cin, opts, 
 				  p_mediaType, webAgent) {
     if (p == NULL) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "+ Stream constructed to read file " << nameStr << ".\n";
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Stream constructed to read file " << nameStr << ".\n";
 	std::ifstream* istr = new std::ifstream(nameStr.c_str());
 	malloced = true;
 	p = istr;
@@ -296,7 +296,7 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
     : StreamContext<std::ostream>(name, &std::cout, opts, 
 				  p_mediaType, webAgent) {
     if (p == NULL) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "+ Stream constructed to write file " << nameStr << ".\n";
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Stream constructed to write file " << nameStr << ".\n";
 	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
 	malloced = true;
 	p = ostr;
@@ -1964,16 +1964,17 @@ compared against
 	try {
 	    ResultSet red(atomFactory, xmlParser, istr);
 	    if (Logger::Logging(Logger::ServiceLog_level, Logger::info)) {
-		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << " yielded";
+		std::stringstream o;
+		o << " yielded";
 		size_t size = red.size();
 		if (size > ResultSet::DebugEnumerateLimit)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		    o
 			<< " " << size
 			<< " result" << (size == 1 ? "" : "s")
 			<< ".\n";
 		else
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
-			<< "\n" << red;
+		    o << "\n" << red;
+		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << o.str();
 	    }
 
 	    /* Join those results against our initial results. */

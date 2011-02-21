@@ -239,19 +239,19 @@ BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
 BOOST_LOG_LIB=boost_log
 BOOST_LOG_VERSION=1.45.0
 INCLUDES += -Iboost-log
-LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread -lboost_filesystem -lboost_system -lboost_date_time
+LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION)
 
 BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /sink_frontends.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /trivial.cpp
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
 
 $(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp
-	$(CXX) -Iboost-log $(LOG_ARGS) -c -o $@ $<
+	$(CXX) $(INCLUDES) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
-	$(CXX) -o $@ -Wl,-h -Wl,lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) -shared -Wl,--start-group $^ \
-	-lboost_thread -lboost_filesystem -lboost_system -lboost_date_time \
-	-Wl,-Bstatic  -Wl,-Bdynamic -lrt -Wl,--end-group -pthread 
+	$(CXX) $(LIBS) -o $@ -shared $^ \
+	-lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION) \
+	-pthread 
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION)
 	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $@
@@ -324,7 +324,7 @@ DEPEND += $(BINOBJLIST:.o=.dep)
 bin/%.o. : bin/%.cpp bin/.dep/%.d config.h docs/version.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-bin/% : bin/%.o $(LIB) docs/version.h #lib
+bin/% : bin/%.o $(LIB) docs/version.h $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
 	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
@@ -626,7 +626,7 @@ Sparql.app/Contents/Frameworks:
 
 .PHONY: RenamedFrameworks
 
-RenamedFrameworks: Sparql.app/Contents/Frameworks
+RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	cp /usr/lib/libstdc++.6.dylib $<
 	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $</libstdc++.6.dylib
 	for l in regex system program_options filesystem thread; do \
@@ -641,10 +641,17 @@ RenamedFrameworks: Sparql.app/Contents/Frameworks
 		install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</lib$$l.dylib; \
 	done
 	cp /opt/local/lib/mysql5/mysql/libmysqlclient.16.dylib $</libmysqlclient.dylib
-	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $</libmysqlclient.dylib && \
+	install_name_tool -id @executable_path/../Frameworks/libmysqlclient.16.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.dylib
+	cp boost-log/stage/lib/libboost_log.so.1.45.0 $<
+	install_name_tool -id @executable_path/../Frameworks/libboost_log.so.1.45.0 $</libboost_log.so.1.45.0
+	install_name_tool -change /opt/local/lib/libboost_thread-mt.dylib @executable_path/../Frameworks/libboost_thread-mt.dylib $</libboost_log.so.1.45.0;
+	install_name_tool -change /opt/local/lib/libboost_filesystem-mt.dylib @executable_path/../Frameworks/libboost_filesystem-mt.dylib $</libboost_log.so.1.45.0;
+	install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $</libboost_log.so.1.45.0;
+	install_name_tool -change /opt/local/lib/libboost_date_time-mt.dylib @executable_path/../Frameworks/libboost_date_time-mt.dylib $</libboost_log.so.1.45.0;
+
 
 Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS RenamedFrameworks
 	$(CXX) -o $@ $< -LSparql.app/Contents/Frameworks $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
@@ -660,6 +667,7 @@ Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS 
 Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 	rm -f $@
 	hdiutil create -srcfolder Sparql.app $@
+	mkdir tmp_mount && hdiutil mount Sparql.dmg -mountroot tmp_mount && tmp_mount/Sparql/Sparql.app/Contents/MacOS/Sparql --version; hdiutil detach tmp_mount/Sparql && rmdir tmp_mount
 
 
 # Clean - rm everything we remember to rm.
