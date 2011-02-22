@@ -629,7 +629,7 @@ Sparql.app/Contents/Frameworks:
 RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	cp /usr/lib/libstdc++.6.dylib $<
 	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $</libstdc++.6.dylib
-	for l in regex system program_options filesystem thread; do \
+	for l in regex system program_options filesystem thread date_time; do \
 		cp /opt/local/lib/libboost_$$l-mt.dylib $< && \
 		install_name_tool -id @executable_path/../Frameworks/libboost_$$l-mt.dylib $</libboost_$$l-mt.dylib && \
 		install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $</libboost_$$l-mt.dylib; \
@@ -645,12 +645,12 @@ RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_
 	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.dylib
-	cp boost-log/stage/lib/libboost_log.so.1.45.0 $<
-	install_name_tool -id @executable_path/../Frameworks/libboost_log.so.1.45.0 $</libboost_log.so.1.45.0
-	install_name_tool -change /opt/local/lib/libboost_thread-mt.dylib @executable_path/../Frameworks/libboost_thread-mt.dylib $</libboost_log.so.1.45.0;
-	install_name_tool -change /opt/local/lib/libboost_filesystem-mt.dylib @executable_path/../Frameworks/libboost_filesystem-mt.dylib $</libboost_log.so.1.45.0;
-	install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $</libboost_log.so.1.45.0;
-	install_name_tool -change /opt/local/lib/libboost_date_time-mt.dylib @executable_path/../Frameworks/libboost_date_time-mt.dylib $</libboost_log.so.1.45.0;
+	cp boost-log/stage/lib/libboost_log.so.1.45.0 $</libboost_log.so
+	install_name_tool -id @executable_path/../Frameworks/libboost_log.so $</libboost_log.so
+	install_name_tool -change /opt/local/lib/libboost_thread-mt.dylib @executable_path/../Frameworks/libboost_thread-mt.dylib $</libboost_log.so;
+	install_name_tool -change /opt/local/lib/libboost_filesystem-mt.dylib @executable_path/../Frameworks/libboost_filesystem-mt.dylib $</libboost_log.so;
+	install_name_tool -change /opt/local/lib/libboost_system-mt.dylib @executable_path/../Frameworks/libboost_system-mt.dylib $</libboost_log.so;
+	install_name_tool -change /opt/local/lib/libboost_date_time-mt.dylib @executable_path/../Frameworks/libboost_date_time-mt.dylib $</libboost_log.so;
 
 
 Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS RenamedFrameworks
@@ -667,7 +667,7 @@ Sparql.app/Contents/MacOS/Sparql: bin/sparql.o $(LIB) Sparql.app/Contents/MacOS 
 Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 	rm -f $@
 	hdiutil create -srcfolder Sparql.app $@
-	mkdir tmp_mount && hdiutil mount Sparql.dmg -mountroot tmp_mount && tmp_mount/Sparql/Sparql.app/Contents/MacOS/Sparql --version; hdiutil detach tmp_mount/Sparql && rmdir tmp_mount
+	mkdir tmp_mount && hdiutil mount Sparql.dmg -mountroot tmp_mount && (cd tmp_mount/Sparql/Sparql.app/Contents/MacOS/ && ./Sparql --version); hdiutil detach tmp_mount/Sparql && rmdir tmp_mount
 
 
 # Clean - rm everything we remember to rm.
