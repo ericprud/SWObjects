@@ -253,7 +253,7 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "reading web resource " << nameStr << std::endl;
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
 	mediaType = webAgent->getMediaType().c_str();
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.

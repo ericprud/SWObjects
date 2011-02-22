@@ -161,6 +161,38 @@ namespace w3c_sw {
 	    : mediaType(mediaType), args(args) {  }
 	~ChangeMediaTypeException() throw () {  }
     };
+
+    struct GRDDLmap {
+	struct Entry {
+	    std::string transform;
+	    std::string mediaType;
+	    Entry (std::string transform, std::string mediaType)
+		: transform(transform), mediaType(mediaType)
+	    {  }
+	};
+	std::map<std::string, Entry> map;
+
+	void insert (std::string uri, std::string localName,
+		     std::string transform, std::string mediaType) {
+	    map.insert(std::pair<std::string, Entry>(makeKey(uri, localName), Entry(transform, mediaType)));
+	}
+
+	void maybeChangeMediaType(std::string uri, std::string localName) {
+	    std::map<std::string, Entry>::const_iterator it = map.find(makeKey(uri, localName));
+	    if (it != map.end()) {
+		std::vector<std::string> args;
+		args.push_back(it->second.transform);
+		BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		    << "GRDDL link header rel=\"transformation\" encountered -- \""
+		    << it->second.transform << "\" transforms to \"" << it->second.mediaType << "\".";
+		throw ChangeMediaTypeException(it->second.mediaType, args);
+	    }
+	}
+	std::string makeKey (std::string uri, std::string localName) {
+	    return std::string("{") + uri + std::string("}") + localName;
+	}
+    };
+
     class SAXhandlerInsulator;
     class InsulatedSAXparser : public SWSAXparser {
 	friend class SAXhandlerInsulator;

@@ -41,6 +41,7 @@ namespace w3c_sw {
 	    AtomFactory* atomFactory;
 	    std::string chars;
 	    std::stack<State> stack;
+	    GRDDLmap* grddlMap;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -69,14 +70,14 @@ namespace w3c_sw {
 	    }
 
 	public:
-	    RDFaSaxHandler (BasicGraphPattern* bgp, AtomFactory* atomFactory, std::string baseURI = "") : 
-		bgp(bgp), atomFactory(atomFactory), chars("") {
+	    RDFaSaxHandler (BasicGraphPattern* bgp, AtomFactory* atomFactory, std::string baseURI = "", GRDDLmap* grddlMap = NULL) : 
+		bgp(bgp), atomFactory(atomFactory), chars(""), grddlMap(grddlMap) {
 		State topState;
 		topState.baseURI = baseURI;
 		stack.push(topState);
 	    }
 
-	    virtual void startElement (std::string /* uri */,
+	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string /* qName */,
 				       Attributes* attrs, 
@@ -88,9 +89,14 @@ namespace w3c_sw {
 
 		std::string t;
 
+		if (grddlMap != NULL)
+		    grddlMap->maybeChangeMediaType(uri, localName);
 		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation") {
 		    std::vector<std::string> args;
 		    args.push_back(attrs->getValue("", "href"));
+		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+			<< "GRDDL link header rel=\"transformation\" encountered -- GRDDLing with stylesheet \""
+			<< attrs->getValue("", "href") << "\".";
 		    throw ChangeMediaTypeException("application/x-grddl", args);
 		    bgp->addTriplePattern(atomFactory->
 					  getTriple(atomFactory->getURI(nested.baseURI), 
@@ -205,13 +211,14 @@ namespace w3c_sw {
     protected:
 	AtomFactory* atomFactory;
 	SWSAXparser* saxParser;
+	GRDDLmap* grddlMap;
 
     public:
-	RDFaParser (std::string baseURI, AtomFactory* atomFactory, SWSAXparser* saxParser) : 
-	    ParserDriver(baseURI), atomFactory(atomFactory), saxParser(saxParser) {  }
+	RDFaParser (std::string baseURI, AtomFactory* atomFactory, SWSAXparser* saxParser, GRDDLmap* grddlMap = NULL) : 
+	    ParserDriver(baseURI), atomFactory(atomFactory), saxParser(saxParser), grddlMap(grddlMap) {  }
 
 	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
-	    RDFaSaxHandler handler(bgp, atomFactory, this->baseURI);
+	    RDFaSaxHandler handler(bgp, atomFactory, this->baseURI, grddlMap);
 	    return saxParser->parse(sptr, &handler);
 	}
 

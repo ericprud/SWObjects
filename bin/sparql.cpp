@@ -796,17 +796,23 @@ sw::ResultSet rs(&F);
 
 MyServer TheServer(F, SparqlParser, "ID");
 
+sw::GRDDLmap GrddlMap;
+
 struct loadEntry {
     const sw::TTerm* graphName;
     const sw::TTerm* resource;
     const sw::TTerm* baseURI;
+    sw::MediaType mediaType;
     
-    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI)
-	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
+    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
+	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
+    loadEntry (const loadEntry& ref)
+	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
     void loadGraph () {
 	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
+	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
+				mediaType ? mediaType.get().c_str() : NULL, 
 				&Agent);
 	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
@@ -843,7 +849,7 @@ struct loadEntry {
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
 	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
-			baseURI ? UriString(baseURI) : nameStr, &F);
+				  baseURI ? UriString(baseURI) : nameStr, &F, &NsAccumulator, &GrddlMap);
 	}
     }
 };
@@ -900,13 +906,13 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		parm = req.parms.find("default-graph-uri");
 		if (parm != req.parms.end() && parm->second != "") {
 		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI));
+		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
 		    std::cerr << "default graph: " << parm->second << std::endl;
 		}
 		parm = req.parms.find("named-graph-uri");
 		while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
 		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI));
+		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI, DataMediaType));
 		    std::cerr << "named graph: " << parm->second << std::endl;
 		    ++parm;
 		}
@@ -1194,7 +1200,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 			std::string nameStr, std::string baseURI,
 			sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
-    if (mediaType == "application/x-grddl") {
+    if (mediaType == "application/x-grddl" || mediaType == "text/trig") {
 	const char* env = ::getenv("XSLT");
 	if (env == NULL)
 	    return sw::RdfDB::HandlerSet::parse(mediaType, args,
@@ -1260,7 +1266,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 	     iCreatedFile != createdFiles.end(); ++iCreatedFile)
 	    if (POSIX_unlink(iCreatedFile->c_str()) != 0)
 		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
-	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
+	sw::IStreamContext istr2(istr.nameStr, pis, mediaType == "application/x-grddl" ? "application/rdf+xml" : mediaType.c_str());
 	return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
     } else
 	return sw::RdfDB::HandlerSet::parse(mediaType, args,
@@ -1275,7 +1281,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 
 loadList LoadList;
 loadList MapList;
-loadEntry Output(NULL, NULL, NULL);
+loadEntry Output(NULL, NULL, NULL, sw::MediaType());
 
 #endif /* TEST_CLI */
 
@@ -1445,7 +1451,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -1463,6 +1469,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    DataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
 	    DataMediaType = "application/sparql-results+xml";
+	else if (!s.compare("xml"))
+	    DataMediaType = "application/xml";
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
@@ -1477,13 +1485,14 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/xml";
     } else {
 	if (!Quiet && s.compare("") && s.compare("text/plain")
 	    && s.compare("text/ntriples") && s.compare("text/turtle")
 	    && s.compare("text/trig") && s.compare("text/html")
 	    && s.compare("application/rdf+xml")
-	    && s.compare("application/sparql-results+xml"))
+	    && s.compare("application/sparql-results+xml")
+	    && s.compare("application/xml"))
 	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
 	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	DataMediaType = s;
@@ -1531,7 +1540,7 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    Output = loadEntry(NULL, abs, BaseURI);
+    Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
     BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
 }
 
@@ -1545,8 +1554,8 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
     } else {
 	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
-	Output = loadEntry(NULL, abs, BaseURI);
+	LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
+	Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	    std::stringstream o;
 	    o << "Replacing data from " << abs->getLexicalValue();
@@ -1563,7 +1572,7 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    LoadList.push_back(loadEntry(NULL, abs, BaseURI));
+    LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default data from " << abs->getLexicalValue();
@@ -1574,13 +1583,45 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
     }
 }
 
+/* Overload of xmlTransform to validate --data arguments. */
+struct xmlTransform : public relURI {};
+void validate (boost::any&, const std::vector<std::string>& values, xmlTransform*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+
+    size_t start, end;
+    if (s.find_first_of("{") != 0)
+	throw std::string("expected '{' at start of \"") + s + "\".";
+
+    start = 0;
+    end = s.find_first_of("}", start + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '}' to delineate end of namespace in \"") + s + "\".";
+    std::string nsS = s.substr(1, end - 1);
+
+    start = end;
+    end = s.find_first_of("{", start + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '{' to end end \"") + s.substr(start + 1) + "\".";
+    std::string tagS = s.substr(start + 1, end - start - 1);
+
+    start = end;
+    end = s.find_first_of("}", end + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '}' to end end \"") + s.substr(start + 1) + "\".";
+    std::string transformS = s.substr(start + 1, end - start - 1);
+
+    std::string mediaTypeS = s.substr(end + 1);
+    GrddlMap.insert(nsS, tagS, transformS, mediaTypeS);
+}
+
 /* Overload of relURI to validate --mapset arguments. */
 struct mapURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    MapList.push_back(loadEntry(NULL, abs, BaseURI));
+    MapList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from " << abs->getLexicalValue();
@@ -1596,7 +1637,7 @@ struct mapString {};
 void validate (boost::any&, const std::vector<std::string>& values, mapString*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
+    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from command line";
@@ -1624,7 +1665,7 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
-	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI));
+	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI, DataMediaType));
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
 	    << "Reading named graph " << NamedGraphName->toString()
 	    << " from " << vald->getLexicalValue()
@@ -1768,7 +1809,7 @@ int main(int ac, char* av[])
 	}
 
 	MyServer::MyHandler handler(TheServer);
-	Output = loadEntry(NULL, F.getURI("-"), NULL);
+	Output = loadEntry(NULL, F.getURI("-"), NULL, sw::MediaType());
 
 	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
 
@@ -1825,6 +1866,8 @@ int main(int ac, char* av[])
 	     "read default graph from arg or stdin")
             ("graph,g", po::value<graphURI>(), 
 	     "URI  read named graph <arg> from <URI> or stdin")
+            ("xmltransform", po::value<xmlTransform>(), 
+	     "GRDDL supplementary info: {namespace}tag{transformer}media/type")
             ("language-name,l", po::value<langName>(), 
 	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
             ("lang-media-type,L", po::value<langType>(), 

@@ -162,7 +162,9 @@ namespace w3c_sw {
 	    return true;
 	}
 	void clearTriples();
-	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istr, std::string nameStr, std::string baseURI, AtomFactory* atomFactory, NamespaceMap* nsMap = NULL);
+	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istrP,
+			      std::string nameStr, std::string baseURI,
+			      AtomFactory* atomFactory, NamespaceMap* nsMap = NULL, GRDDLmap* grddlMap = NULL);
 	virtual void bindVariables(ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
 	std::string toString (MediaType mediaType = MediaType("text/trig"), NamespaceMap* namespaces = NULL) const {
