@@ -256,6 +256,8 @@ $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION)
 	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $@
 
+$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a: $(BOOST_LOG_OBJ_FILEPATHS)
+	ar rcvs $@ $(BOOST_LOG_OBJ_FILEPATHS)
 
 .PHONY: lib NOGEN
 lib: dep $(LIB)
@@ -329,6 +331,9 @@ bin/% : bin/%.o $(LIB) docs/version.h $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so 
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
+
+release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
+	g++ -o bin/sparql bin/sparql.o -static  -L/home/eric/checkouts/swobjects11/lib -lSWObjects -Lboost-log/stage/lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat -lmysqlclient -lz -lmysqlclient -lz  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
 
 ##### apache #####
 
