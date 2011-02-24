@@ -79,7 +79,8 @@ BOOST_VERSION=-mt
 # Needed when building any executables.
 # Tested with:
 #   STATIC, DYNAMIC
-# but STATIC only works for bin/* 'cause of boost::unit_test challenges.
+# STATIC + ODBC requires explicit dynamic linking functionality so you need to
+# link to ltdl and dl after odbc: LDFLAGS += -lodbc -lltdl -ldl
 LINK= DYNAMIC
 
 
