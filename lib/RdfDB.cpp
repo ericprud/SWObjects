@@ -6,6 +6,7 @@
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "TrigSParser/TrigSParser.hpp"
+#include "RdfXmlParser.hpp"
 #include <boost/iostreams/stream.hpp>
 
 namespace w3c_sw {

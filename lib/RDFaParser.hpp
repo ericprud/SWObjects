@@ -91,13 +91,22 @@ namespace w3c_sw {
 
 		if (grddlMap != NULL)
 		    grddlMap->maybeChangeMediaType(uri, localName);
+		std::string trans = attrs->getValue("http://www.w3.org/2003/g/data-view#", "transformation");
+		if (!trans.empty()) {
+		    std::vector<std::string> args;
+		    args.push_back(trans);
+		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+			<< "GRDDL attribute transformation encountered -- GRDDLing with stylesheet \""
+			<< trans << "\".";
+		    throw ChangeMediaTypeException("application/rdf+xml", args);
+		}
 		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation") {
 		    std::vector<std::string> args;
 		    args.push_back(attrs->getValue("", "href"));
 		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 			<< "GRDDL link header rel=\"transformation\" encountered -- GRDDLing with stylesheet \""
 			<< attrs->getValue("", "href") << "\".";
-		    throw ChangeMediaTypeException("application/x-grddl", args);
+		    throw ChangeMediaTypeException("application/rdf+xml", args);
 		    bgp->addTriplePattern(atomFactory->
 					  getTriple(atomFactory->getURI(nested.baseURI), 
 						    atomFactory->getURI(std::string(NS_dc) + "TRANS"), 

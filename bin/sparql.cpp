@@ -814,6 +814,10 @@ struct loadEntry {
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
 				mediaType ? mediaType.get().c_str() : NULL, 
 				&Agent);
+
+	/**
+	 * Look for a couple of sparql-specific non-standard "media types".
+	 */
 	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		std::stringstream o;
@@ -840,6 +844,9 @@ struct loadEntry {
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
+	    /**
+	     * All other media types are loaded via RdfDB::loadData.
+	     */
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		std::stringstream o;
 		o << "Reading " << nameStr;
@@ -1200,79 +1207,77 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 			std::string nameStr, std::string baseURI,
 			sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
-    if (mediaType == "application/x-grddl" || mediaType == "text/trig") {
-	const char* env = ::getenv("XSLT");
-	if (env == NULL)
-	    return sw::RdfDB::HandlerSet::parse(mediaType, args,
-						target, istr,
-						nameStr, baseURI,
-						atomFactory, nsMap);
-
-	// break up $XSLT
-	std::vector<std::string> tokens;
-	{
-	    std::string buf;
-	    std::stringstream ss(env);
-	    while (ss >> buf)
-		tokens.push_back(buf);
-	}
-
-	std::vector<std::string> createdFiles;
-	for (std::vector<std::string>::iterator iToken = tokens.begin();
-	     iToken != tokens.end(); ++iToken) {
-	    if (*iToken == "%DATA") {
-		*iToken = genTempFile(".", *istr);
-		createdFiles.push_back(*iToken);
-	    } else if (*iToken == "%STYLESHEET") {
-		sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-					    &Agent);
-		*iToken = genTempFile(".", *xsltIstr);
-		createdFiles.push_back(*iToken);
-	    }
-	}
-
-#ifdef BOOST_PROCESS
-	std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
-
-	namespace bp = ::boost::process; 
-
-	bp::context ctx;
-	ctx.stdout_behavior = bp::capture_stream();
-	bp::child c = bp::launch(exec, tokens, ctx);
-	bp::pistream &pis = c.get_stdout();
-#else /* !BOOST_PROCESS */
-	std::stringstream cmd;
-	for (std::vector<std::string>::const_iterator iToken = tokens.begin();
-	     iToken != tokens.end(); ++iToken) {
-	    if (iToken != tokens.begin())
-		cmd << " ";
-	    cmd << *iToken;
-	}
-	BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
-	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
-	assert(p != NULL);
-	char buf[100];
-	std::string s  = "execution failure";
-	s = "";
-
-	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
-	 */
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
-	    s += std::string(buf, buf + count);
-	POSIX_pclose(p);
-	std::stringstream pis(s);
-#endif /* !BOOST_PROCESS */
-	for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
-	     iCreatedFile != createdFiles.end(); ++iCreatedFile)
-	    if (POSIX_unlink(iCreatedFile->c_str()) != 0)
-		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
-	sw::IStreamContext istr2(istr.nameStr, pis, mediaType == "application/x-grddl" ? "application/rdf+xml" : mediaType.c_str());
-	return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
-    } else
+    const char* env = ::getenv("XSLT");
+    if (env == NULL)
 	return sw::RdfDB::HandlerSet::parse(mediaType, args,
 					    target, istr,
 					    nameStr, baseURI,
 					    atomFactory, nsMap);
+
+    // break up $XSLT
+    std::vector<std::string> tokens;
+    {
+	std::string buf;
+	std::stringstream ss(env);
+	while (ss >> buf)
+	    tokens.push_back(buf);
+    }
+
+    std::vector<std::string> createdFiles;
+    for (std::vector<std::string>::iterator iToken = tokens.begin();
+	 iToken != tokens.end(); ++iToken) {
+	if (*iToken == "%DATA") {
+	    *iToken = genTempFile(".", *istr);
+	    createdFiles.push_back(*iToken);
+	} else if (*iToken == "%STYLESHEET") {
+	    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+					&Agent);
+	    *iToken = genTempFile(".", *xsltIstr);
+	    createdFiles.push_back(*iToken);
+	}
+    }
+
+#ifdef BOOST_PROCESS
+    std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
+
+    namespace bp = ::boost::process; 
+
+    bp::context ctx;
+    ctx.stdout_behavior = bp::capture_stream();
+    bp::child c = bp::launch(exec, tokens, ctx);
+    bp::pistream &pis = c.get_stdout();
+#else /* !BOOST_PROCESS */
+    std::stringstream cmd;
+    for (std::vector<std::string>::const_iterator iToken = tokens.begin();
+	 iToken != tokens.end(); ++iToken) {
+	if (iToken != tokens.begin())
+	    cmd << " ";
+	cmd << *iToken;
+    }
+    BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
+    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
+    assert(p != NULL);
+    char buf[100];
+    std::string s  = "execution failure";
+    s = "";
+
+    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+     */
+    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+	s += std::string(buf, buf + count);
+    POSIX_pclose(p);
+    std::stringstream pis(s);
+#endif /* !BOOST_PROCESS */
+    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
+	 iCreatedFile != createdFiles.end(); ++iCreatedFile)
+	if (POSIX_unlink(iCreatedFile->c_str()) != 0)
+	    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
+    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
+    return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
+//     return sw::RdfDB::HandlerSet::parse(mediaType, args,
+// 					target, istr,
+// 					nameStr, baseURI,
+// 					atomFactory, nsMap);
 }
 
 // std::ostream& operator<< (std::ostream& os, sw::NamespaceMap map) {
