@@ -1747,7 +1747,7 @@ compared against
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar, const TTerm* graphName) const {
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "matching " << *toMatch;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
@@ -1831,7 +1831,7 @@ compared against
 		}
 	    }
 	}
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "produced\n" << *rs;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced\n" << *rs;
     }
     bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == Unbound || constant == Unbound)

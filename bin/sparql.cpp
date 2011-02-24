@@ -676,7 +676,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	    sw::SPARQLAlgebraSerializer s;
 	    query->express(&s);
-	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::support) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 	}
 
 	bool executed = false;
@@ -1312,7 +1312,7 @@ inline void setLogLevels (const std::vector<std::string>& logs, int level) {
     for (std::vector<std::string>::const_iterator it = logs.begin();
 	 it != logs.end(); ++it) {
 	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(level);
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "log level \"" << *it << "\" set to " << level << ".";
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
     }
 }
 
