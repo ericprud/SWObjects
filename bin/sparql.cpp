@@ -1453,8 +1453,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
     if (!s.compare("?")) {
 	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml";
     } else {
-	if (!s.compare(""))
-	    DataMediaType = "";
+	if (s == "" || s == "guess")
+	    DataMediaType = sw::MediaType();
 	else if (!s.compare("guess"))
 	    DataMediaType = "text/plain";
 	else if (!s.compare("ntriples"))
@@ -1487,15 +1487,19 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
     if (!s.compare("?")) {
 	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/xml";
     } else {
-	if (!Quiet && s.compare("") && s.compare("text/plain")
-	    && s.compare("text/ntriples") && s.compare("text/turtle")
-	    && s.compare("text/trig") && s.compare("text/html")
-	    && s.compare("application/rdf+xml")
-	    && s.compare("application/sparql-results+xml")
-	    && s.compare("application/xml"))
-	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
-	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
-	DataMediaType = s;
+	if (s == "" || s == "guess") {
+	    DataMediaType = sw::MediaType(); // no media type
+	} else {
+	    if (!Quiet && s.compare("text/plain")
+		&& s.compare("text/ntriples") && s.compare("text/turtle")
+		&& s.compare("text/trig") && s.compare("text/html")
+		&& s.compare("application/rdf+xml")
+		&& s.compare("application/sparql-results+xml")
+		&& s.compare("application/xml"))
+		std::cerr << "proceeding with unknown media type \"" << s << "\"";
+		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
+	    DataMediaType = s;
+	}
 	if (!DataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
 	else
@@ -1869,9 +1873,9 @@ int main(int ac, char* av[])
             ("xmltransform", po::value<xmlTransform>(), 
 	     "GRDDL supplementary info: {namespace}tag{transformer}media/type")
             ("language-name,l", po::value<langName>(), 
-	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
+	     "data language\n\"guess\" to guess by resource extension, or \"?\" to query options")
             ("lang-media-type,L", po::value<langType>(), 
-	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
+	     "data language\n\"guess\" to guess by resource extension, or \"?\" to query options")
             ("output,o", po::value<outPut>(), 
 	     "send results to relURI or \"-\" for stdout.")
             ("in-place,i", po::value<inPlace>(), 

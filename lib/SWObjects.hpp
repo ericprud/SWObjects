@@ -266,9 +266,9 @@ public:
 	: OptString(p_str, std::string("-no media type-")) {  }
     MediaType (std::string p_str)
 	: OptString(p_str.c_str(), std::string("-no media type-")) {  }
-//     void operator= (const char* p_str) {
-// 	assign(p_str);
-//     }
+    // void operator= (const char* p_str) {
+    // 	assign(p_str ? p_str : boost::detail::none_t);
+    // }
 };
 
 struct MediaTypeMap : public std::map<const std::string, const char*> {
