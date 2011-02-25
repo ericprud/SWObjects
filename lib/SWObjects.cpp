@@ -792,10 +792,19 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
+    std::set<std::string> UsedBNodeLabels;
+
     const BNode* AtomFactory::getBNode (std::string name, TTerm::String2BNode& nodeMap) {
 	std::string key(name);
 	TTerm::String2BNode::const_iterator vi = nodeMap.find(key);
 	if (vi == nodeMap.end()) {
+	    std::string base = name;
+	    for (unsigned int i = 1;
+		 UsedBNodeLabels.find(name) != UsedBNodeLabels.end();
+		 ++i)
+		name = base + "_" + boost::lexical_cast<std::string>(i);
+	    UsedBNodeLabels.insert(name);
+
 	    BNode* ret = new BNode(name);
 	    nodeMap[key] = ret;
 	    bnodes.insert(ret);
