@@ -255,7 +255,13 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	mediaType = webAgent->getMediaType().c_str();
+	if (p_mediaType == NULL) {
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << nameStr << "'s reported media type is " << webAgent->getMediaType() << ".";
+	    mediaType = webAgent->getMediaType().c_str();
+	} else {
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Overriding " << nameStr << "'s reported media type (" << webAgent->getMediaType() << ") with " << p_mediaType << ".";
+	    mediaType = p_mediaType;
+	}
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDIO) && nameStr == "-") {
 	p = def;
@@ -1623,6 +1629,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete *it;
 	    it = rs->erase(it);
 	}
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
     void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
@@ -1642,6 +1649,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_Expressions.end(); it++)
 	    island.restrictResults(*it);
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -1650,6 +1658,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Conjunction produced\n" << *rs;
     }
 
     void TableConjunction::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
@@ -1684,6 +1693,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -2008,6 +2018,7 @@ compared against
 	    } else
 		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
 	}
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "SERVICE produced\n" << *rs;
     }
 
     void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
@@ -2048,12 +2059,14 @@ compared against
 	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "OPTIONAL produced\n" << *rs;
     }
 
     void MinusGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "MINUS produced\n" << *rs;
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {

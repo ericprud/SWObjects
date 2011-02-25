@@ -852,6 +852,8 @@ struct loadEntry {
 		o << "Reading " << nameStr;
 		if (baseURI != NULL)
 		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		if (istr.mediaType)
+		    o << " with media type " << *istr.mediaType;
 		o << " into " << graph->toString() << ".\n";
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
@@ -1570,6 +1572,8 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	    o << "Replacing data from " << abs->getLexicalValue();
 	    if (BaseURI != NULL)
 		o << " with base URI " << BaseURI->getLexicalValue() << ".\n";
+	    if (DataMediaType)
+		o << " with media type " << *DataMediaType;
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	}
     }
@@ -1587,6 +1591,8 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
 	o << "Queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
 	    o << " with base URI " << BaseURI->getLexicalValue();
+	if (DataMediaType)
+	    o << " with media type " << *DataMediaType;
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
     }
@@ -1963,6 +1969,11 @@ int main(int ac, char* av[])
 	po::store(parse_config_file(ifs, config_file_options), vm);
 	po::notify(vm);
     
+	if (vm.count("post")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
+	    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
+	}
+
         if (vm.count("utf-8")) {
 	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to utf-8.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
@@ -2200,8 +2211,6 @@ int main(int ac, char* av[])
 		/* Act as a SPARQL server. */
 		if (vm.count("once"))
 		    TheServer.runOnce = true;
-		if (vm.count("post"))
-		    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
 		int serverPort = 8888;
 
 #if REGEX_LIB == SWOb_BOOST
