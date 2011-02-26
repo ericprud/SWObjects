@@ -131,10 +131,11 @@ namespace w3c_sw {
 		std::string authType("unspecified");
 		std::string realm("unspecified");
 		while (std::getline(response_stream, header) && header != "\r") {
+		    header.resize(header.size()-1);
 		    size_t colon = header.find_first_of(":");
 		    if (colon != std::string::npos) {
 			if (!header.compare(0, colon, "WWW-Authenticate")) {
-			    size_t space = header.find_first_of(" ", colon + 2);
+			    size_t space = header.find_first_of(" ", colon + 1);
 			    realm = header.substr(colon+2, space);
 			    size_t equal = header.find_first_of("=", space + 2);
 			    realm = header.substr(equal+1);

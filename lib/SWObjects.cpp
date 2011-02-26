@@ -253,9 +253,15 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "reading web resource " << nameStr << std::endl;
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
 	std::string s(webAgent->get(nameStr.c_str()));
-	mediaType = webAgent->getMediaType().c_str();
+	if (p_mediaType == NULL) {
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << nameStr << "'s reported media type is " << webAgent->getMediaType() << ".";
+	    mediaType = webAgent->getMediaType().c_str();
+	} else {
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Overriding " << nameStr << "'s reported media type (" << webAgent->getMediaType() << ") with " << p_mediaType << ".";
+	    mediaType = p_mediaType;
+	}
 	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
     } else if ((opts & STDIO) && nameStr == "-") {
 	p = def;
@@ -786,11 +792,71 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
+    /** AtomFactory::getBNode maps a bnode label name to a BNode to that nodeMap.
+     * 
+     * Usage: a parser or generator will create a String2BNode which
+     * scopes blank node labels to a document. An e.g. parser
+     * encountering a labeled blank node will call getBNode and get
+     * back a BNode with that label unless that label has already been
+     * allocated (to another String2BNode). It it has, an ordinal will
+     * be appended, e.g. X_1. More ordinals will be appended if the
+     * constructed name is has been allocated. The ordinal is recorded
+     * and subsequent calls for a unique BNode with that label will
+     * increment the ordinal.
+     * 
+     * Examples (all assuming a unique String2BNode):
+     *   X	    X		First allocation gets preferred label.
+     *   X	    X_1		Collision, add ordinal.
+     *   X	    X_2		Increment _1 ordinal.
+     *   X_3	    X_3		Preferred label (which confounds X_n).
+     *   X_3_1	    X_3_1	Preferred label.
+     *  *X	    X_3_1_1	X_3 allocated so add ordinals.
+     *   X	    X_3_1_2	Increment the _3_1_1 ordinal.
+     *   X_3_1	    X_3_1_1_1	...
+     *   X_3	    X_3_1_2_1	
+     *   X_3_1_2_1  X_3_1_2_1_1	
+     * 
+     * The 4th X returns instead of X_3_1_1 X_4 as the earlier
+     * allocation of X_3 indicates a series, likely eventually
+     * allocating X_4, X_5...
+     * 
+     * Improvements: could reap name allocations when String2BNodes
+     * are declared expired.
+     */
+
     const BNode* AtomFactory::getBNode (std::string name, TTerm::String2BNode& nodeMap) {
+
+	// Comments track the 4th X allocation (marked *X):
+	typedef std::pair<std::string, unsigned int> Components_t;	// (X_3_1, 0)
+	typedef std::map<std::string, Components_t> UsedBNodeLabel_t;	// (X     -> (X,     2),
+									//  X_3_1 -> (X_3_1, 0))
+	typedef std::pair<std::string, Components_t> UsedBNodeLabel_p;
+	static UsedBNodeLabel_t UsedBNodeLabels;
+
 	std::string key(name);
 	TTerm::String2BNode::const_iterator vi = nodeMap.find(key);
 	if (vi == nodeMap.end()) {
-	    BNode* ret = new BNode(name);
+	    UsedBNodeLabel_t::const_iterator e = UsedBNodeLabels.end();
+	    UsedBNodeLabel_t::const_iterator test = UsedBNodeLabels.find(name);
+	    std::string base = name;
+	    std::string lex = name;
+	    unsigned int ord = 0;
+	    if (test != e) {
+		base = test->second.first;	// X
+		ord = test->second.second + 1;	// 2
+		lex = base + "_" + boost::lexical_cast<std::string>(ord); // X_3
+		test = UsedBNodeLabels.find(lex);
+		while (test != e) {	// two iterations: 1st   | 2nd
+		    base = lex;				// X_3   | X_3_1
+		    ord = test->second.second + 1;	// 1     | 1
+		    lex = base + "_" + boost::lexical_cast<std::string>(ord);
+		    test = UsedBNodeLabels.find(lex);	// X_3_1 | X_3_1_1
+		}
+	    }
+	    UsedBNodeLabels[name] = Components_t(base, ord); // [X]       = (X_3_1, 1)
+	    UsedBNodeLabels[lex] = Components_t(lex, 0);     // [X_3_1_1] = (X_3_1_1, 0)
+
+	    BNode* ret = new BNode(lex);
 	    nodeMap[key] = ret;
 	    bnodes.insert(ret);
 	    return ret;
@@ -1623,6 +1689,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    delete *it;
 	    it = rs->erase(it);
 	}
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
     void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
@@ -1642,6 +1709,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_Expressions.end(); it++)
 	    island.restrictResults(*it);
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
     void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -1650,6 +1718,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Conjunction produced\n" << *rs;
     }
 
     void TableConjunction::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
@@ -1684,6 +1753,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
 	rs->joinIn(&island, false);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -1747,7 +1817,7 @@ compared against
     }
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar, const TTerm* graphName) const {
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "matching " << *toMatch;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
@@ -1831,7 +1901,7 @@ compared against
 		}
 	    }
 	}
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "produced\n" << *rs;
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced\n" << *rs;
     }
     bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == Unbound || constant == Unbound)
@@ -2008,6 +2078,7 @@ compared against
 	    } else
 		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
 	}
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "SERVICE produced\n" << *rs;
     }
 
     void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
@@ -2048,12 +2119,14 @@ compared against
 	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "OPTIONAL produced\n" << *rs;
     }
 
     void MinusGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "MINUS produced\n" << *rs;
     }
 
     void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {

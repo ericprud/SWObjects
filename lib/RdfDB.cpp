@@ -6,6 +6,7 @@
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "TrigSParser/TrigSParser.hpp"
+#include "RdfXmlParser.hpp"
 #include "WSDLparser.hpp"
 #include <boost/iostreams/stream.hpp>
 
@@ -51,7 +52,10 @@ namespace w3c_sw {
 	}
     }
 
-    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP, std::string nameStr, std::string baseURI, AtomFactory* atomFactory, NamespaceMap* nsMap) {
+
+    bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP,
+			  std::string nameStr, std::string baseURI,
+			  AtomFactory* atomFactory, NamespaceMap* nsMap, GRDDLmap* grddlMap) {
 	w3c_sw::StreamRewinder rb(*istrP);
 	boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> srsb(rb.device); // ## debug with small buffer size, e.g. 4
 	std::istream is(&srsb);
@@ -59,12 +63,13 @@ namespace w3c_sw {
 			    istrP.mediaType.is_initialized() ? istrP.mediaType.get().c_str() : NULL);
 	try {
 	    if (istr.mediaType.match("text/html") || 
-		istr.mediaType.match("application/xhtml")) {
+		istr.mediaType.match("application/xhtml") || 
+		istr.mediaType.match("application/xml")) {
 		if (xmlParser == NULL)
 		    throw std::string("no XML parser to parse ")
 			+ istr.mediaType.toString()
 			+ " document " + nameStr;
-		RDFaParser parser(nameStr, atomFactory, xmlParser);
+		RDFaParser parser(nameStr, atomFactory, xmlParser, grddlMap);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -112,8 +117,16 @@ namespace w3c_sw {
 		return false;
 	    }
 	} catch (ChangeMediaTypeException& e) {
+	    if (Logger::Logging(Logger::ProcessLog_level, Logger::engineer)) {
+		std::stringstream o;
+		o << "Changing media type to " << e.mediaType << " with " << e.args.size() << " args:" ;
+		for (std::vector<std::string>::const_iterator it = e.args.begin();
+		     it != e.args.end(); ++it)
+		    o << " " << *it;
+		BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::engineer) << o.str();
+	    }
 	    rb.replay();
-	    boost::iostreams::stream_buffer<w3c_sw::StreamRewinder::Device> sb2(rb.device);
+	    boost::iostreams::stream_buffer<StreamRewinder::Device> sb2(rb.device);
 	    std::istream is2(&sb2);
 	    IStreamContext again(istrP.nameStr, is, e.mediaType.c_str());
 	    return handler->parse(e.mediaType, e.args, target, again, nameStr, baseURI, atomFactory, nsMap);

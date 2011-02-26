@@ -676,7 +676,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	    sw::SPARQLAlgebraSerializer s;
 	    query->express(&s);
-	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::support) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 	}
 
 	bool executed = false;
@@ -796,18 +796,28 @@ sw::ResultSet rs(&F);
 
 MyServer TheServer(F, SparqlParser, "ID");
 
+sw::GRDDLmap GrddlMap;
+
 struct loadEntry {
     const sw::TTerm* graphName;
     const sw::TTerm* resource;
     const sw::TTerm* baseURI;
+    sw::MediaType mediaType;
     
-    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI)
-	: graphName(graphName), resource(resource), baseURI(baseURI) {  }
+    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
+	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
+    loadEntry (const loadEntry& ref)
+	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
     void loadGraph () {
 	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN, NULL, 
+	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
+				mediaType ? mediaType.get().c_str() : NULL, 
 				&Agent);
+
+	/**
+	 * Look for a couple of sparql-specific non-standard "media types".
+	 */
 	if (istr.mediaType.match("application/sparql-results+xml")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		std::stringstream o;
@@ -834,16 +844,21 @@ struct loadEntry {
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
 	} else {
+	    /**
+	     * All other media types are loaded via RdfDB::loadData.
+	     */
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		std::stringstream o;
 		o << "Reading " << nameStr;
 		if (baseURI != NULL)
 		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+		if (istr.mediaType)
+		    o << " with media type " << *istr.mediaType;
 		o << " into " << graph->toString() << ".\n";
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
 	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
-			baseURI ? UriString(baseURI) : nameStr, &F);
+				  baseURI ? UriString(baseURI) : nameStr, &F, &NsAccumulator, &GrddlMap);
 	}
     }
 };
@@ -900,13 +915,13 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 		parm = req.parms.find("default-graph-uri");
 		if (parm != req.parms.end() && parm->second != "") {
 		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI));
+		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
 		    std::cerr << "default graph: " << parm->second << std::endl;
 		}
 		parm = req.parms.find("named-graph-uri");
 		while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
 		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI));
+		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI, DataMediaType));
 		    std::cerr << "named graph: " << parm->second << std::endl;
 		    ++parm;
 		}
@@ -1194,79 +1209,77 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 			std::string nameStr, std::string baseURI,
 			sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
-    if (mediaType == "application/x-grddl") {
-	const char* env = ::getenv("XSLT");
-	if (env == NULL)
-	    return sw::RdfDB::HandlerSet::parse(mediaType, args,
-						target, istr,
-						nameStr, baseURI,
-						atomFactory, nsMap);
-
-	// break up $XSLT
-	std::vector<std::string> tokens;
-	{
-	    std::string buf;
-	    std::stringstream ss(env);
-	    while (ss >> buf)
-		tokens.push_back(buf);
-	}
-
-	std::vector<std::string> createdFiles;
-	for (std::vector<std::string>::iterator iToken = tokens.begin();
-	     iToken != tokens.end(); ++iToken) {
-	    if (*iToken == "%DATA") {
-		*iToken = genTempFile(".", *istr);
-		createdFiles.push_back(*iToken);
-	    } else if (*iToken == "%STYLESHEET") {
-		sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-					    &Agent);
-		*iToken = genTempFile(".", *xsltIstr);
-		createdFiles.push_back(*iToken);
-	    }
-	}
-
-#ifdef BOOST_PROCESS
-	std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
-
-	namespace bp = ::boost::process; 
-
-	bp::context ctx;
-	ctx.stdout_behavior = bp::capture_stream();
-	bp::child c = bp::launch(exec, tokens, ctx);
-	bp::pistream &pis = c.get_stdout();
-#else /* !BOOST_PROCESS */
-	std::stringstream cmd;
-	for (std::vector<std::string>::const_iterator iToken = tokens.begin();
-	     iToken != tokens.end(); ++iToken) {
-	    if (iToken != tokens.begin())
-		cmd << " ";
-	    cmd << *iToken;
-	}
-	BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
-	FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
-	assert(p != NULL);
-	char buf[100];
-	std::string s  = "execution failure";
-	s = "";
-
-	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
-	 */
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
-	    s += std::string(buf, buf + count);
-	POSIX_pclose(p);
-	std::stringstream pis(s);
-#endif /* !BOOST_PROCESS */
-	for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
-	     iCreatedFile != createdFiles.end(); ++iCreatedFile)
-	    if (POSIX_unlink(iCreatedFile->c_str()) != 0)
-		std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
-	sw::IStreamContext istr2(istr.nameStr, pis, "application/rdf+xml");
-	return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
-    } else
+    const char* env = ::getenv("XSLT");
+    if (env == NULL)
 	return sw::RdfDB::HandlerSet::parse(mediaType, args,
 					    target, istr,
 					    nameStr, baseURI,
 					    atomFactory, nsMap);
+
+    // break up $XSLT
+    std::vector<std::string> tokens;
+    {
+	std::string buf;
+	std::stringstream ss(env);
+	while (ss >> buf)
+	    tokens.push_back(buf);
+    }
+
+    std::vector<std::string> createdFiles;
+    for (std::vector<std::string>::iterator iToken = tokens.begin();
+	 iToken != tokens.end(); ++iToken) {
+	if (*iToken == "%DATA") {
+	    *iToken = genTempFile(".", *istr);
+	    createdFiles.push_back(*iToken);
+	} else if (*iToken == "%STYLESHEET") {
+	    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+					&Agent);
+	    *iToken = genTempFile(".", *xsltIstr);
+	    createdFiles.push_back(*iToken);
+	}
+    }
+
+#ifdef BOOST_PROCESS
+    std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
+
+    namespace bp = ::boost::process; 
+
+    bp::context ctx;
+    ctx.stdout_behavior = bp::capture_stream();
+    bp::child c = bp::launch(exec, tokens, ctx);
+    bp::pistream &pis = c.get_stdout();
+#else /* !BOOST_PROCESS */
+    std::stringstream cmd;
+    for (std::vector<std::string>::const_iterator iToken = tokens.begin();
+	 iToken != tokens.end(); ++iToken) {
+	if (iToken != tokens.begin())
+	    cmd << " ";
+	cmd << *iToken;
+    }
+    BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
+    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
+    assert(p != NULL);
+    char buf[100];
+    std::string s  = "execution failure";
+    s = "";
+
+    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+     */
+    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+	s += std::string(buf, buf + count);
+    POSIX_pclose(p);
+    std::stringstream pis(s);
+#endif /* !BOOST_PROCESS */
+    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
+	 iCreatedFile != createdFiles.end(); ++iCreatedFile)
+	if (POSIX_unlink(iCreatedFile->c_str()) != 0)
+	    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
+    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
+    return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
+//     return sw::RdfDB::HandlerSet::parse(mediaType, args,
+// 					target, istr,
+// 					nameStr, baseURI,
+// 					atomFactory, nsMap);
 }
 
 // std::ostream& operator<< (std::ostream& os, sw::NamespaceMap map) {
@@ -1275,7 +1288,7 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 
 loadList LoadList;
 loadList MapList;
-loadEntry Output(NULL, NULL, NULL);
+loadEntry Output(NULL, NULL, NULL, sw::MediaType());
 
 #endif /* TEST_CLI */
 
@@ -1301,7 +1314,7 @@ inline void setLogLevels (const std::vector<std::string>& logs, int level) {
     for (std::vector<std::string>::const_iterator it = logs.begin();
 	 it != logs.end(); ++it) {
 	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(level);
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "log level \"" << *it << "\" set to " << level << ".";
+	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
     }
 }
 
@@ -1445,10 +1458,10 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, wsdl";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml, wsdl";
     } else {
-	if (!s.compare(""))
-	    DataMediaType = "";
+	if (s == "" || s == "guess")
+	    DataMediaType = sw::MediaType();
 	else if (!s.compare("guess"))
 	    DataMediaType = "text/plain";
 	else if (!s.compare("ntriples"))
@@ -1463,6 +1476,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    DataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
 	    DataMediaType = "application/sparql-results+xml";
+	else if (!s.compare("xml"))
+	    DataMediaType = "application/xml";
 	else if (!s.compare("wsdl"))
 	    DataMediaType = "application/wsdl+xml";
 	else {
@@ -1479,17 +1494,22 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/wsdl+xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/xml, application/wsdl+xml";
     } else {
-	if (!Quiet && s.compare("") && s.compare("text/plain")
-	    && s.compare("text/ntriples") && s.compare("text/turtle")
-	    && s.compare("text/trig") && s.compare("text/html")
-	    && s.compare("application/rdf+xml")
-	    && s.compare("application/sparql-results+xml")
-	    && s.compare("application/wsdl+xml"))
-	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
-	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
-	DataMediaType = s;
+	if (s == "" || s == "guess") {
+	    DataMediaType = sw::MediaType(); // no media type
+	} else {
+	    if (!Quiet && s.compare("text/plain")
+		&& s.compare("text/ntriples") && s.compare("text/turtle")
+		&& s.compare("text/trig") && s.compare("text/html")
+		&& s.compare("application/rdf+xml")
+		&& s.compare("application/sparql-results+xml")
+		&& s.compare("application/xml")
+		&& s.compare("application/wsdl+xml"))
+		std::cerr << "proceeding with unknown media type \"" << s << "\"";
+		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
+	    DataMediaType = s;
+	}
 	if (!DataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
 	else
@@ -1534,7 +1554,7 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    Output = loadEntry(NULL, abs, BaseURI);
+    Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
     BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
 }
 
@@ -1548,13 +1568,15 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
     } else {
 	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-	LoadList.push_back(loadEntry(NULL, abs, BaseURI));
-	Output = loadEntry(NULL, abs, BaseURI);
+	LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
+	Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	    std::stringstream o;
 	    o << "Replacing data from " << abs->getLexicalValue();
 	    if (BaseURI != NULL)
 		o << " with base URI " << BaseURI->getLexicalValue() << ".\n";
+	    if (DataMediaType)
+		o << " with media type " << *DataMediaType;
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	}
     }
@@ -1566,15 +1588,49 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    LoadList.push_back(loadEntry(NULL, abs, BaseURI));
+    LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default data from " << abs->getLexicalValue();
 	if (BaseURI != NULL)
 	    o << " with base URI " << BaseURI->getLexicalValue();
+	if (DataMediaType)
+	    o << " with media type " << *DataMediaType;
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
     }
+}
+
+/* Overload of xmlTransform to validate --data arguments. */
+struct xmlTransform : public relURI {};
+void validate (boost::any&, const std::vector<std::string>& values, xmlTransform*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+
+    size_t start, end;
+    if (s.find_first_of("{") != 0)
+	throw std::string("expected '{' at start of \"") + s + "\".";
+
+    start = 0;
+    end = s.find_first_of("}", start + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '}' to delineate end of namespace in \"") + s + "\".";
+    std::string nsS = s.substr(1, end - 1);
+
+    start = end;
+    end = s.find_first_of("{", start + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '{' to end end \"") + s.substr(start + 1) + "\".";
+    std::string tagS = s.substr(start + 1, end - start - 1);
+
+    start = end;
+    end = s.find_first_of("}", end + 1);
+    if (end == std::string::npos)
+	throw std::string("expected '}' to end end \"") + s.substr(start + 1) + "\".";
+    std::string transformS = s.substr(start + 1, end - start - 1);
+
+    std::string mediaTypeS = s.substr(end + 1);
+    GrddlMap.insert(nsS, tagS, transformS, mediaTypeS);
 }
 
 /* Overload of relURI to validate --mapset arguments. */
@@ -1583,7 +1639,7 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
 {
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    MapList.push_back(loadEntry(NULL, abs, BaseURI));
+    MapList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from " << abs->getLexicalValue();
@@ -1599,7 +1655,7 @@ struct mapString {};
 void validate (boost::any&, const std::vector<std::string>& values, mapString*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI));
+    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI, DataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from command line";
@@ -1627,7 +1683,7 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
-	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI));
+	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI, DataMediaType));
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
 	    << "Reading named graph " << NamedGraphName->toString()
 	    << " from " << vald->getLexicalValue()
@@ -1773,7 +1829,7 @@ int main(int ac, char* av[])
 	sw::StreamContextMediaTypes::MediaTypes.insert(sw::MediaTypeMap::pair("wsdl" , "application/wsdl+xml"));
 
 	MyServer::MyHandler handler(TheServer);
-	Output = loadEntry(NULL, F.getURI("-"), NULL);
+	Output = loadEntry(NULL, F.getURI("-"), NULL, sw::MediaType());
 
 	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
 
@@ -1830,10 +1886,12 @@ int main(int ac, char* av[])
 	     "read default graph from arg or stdin")
             ("graph,g", po::value<graphURI>(), 
 	     "URI  read named graph <arg> from <URI> or stdin")
+            ("xmltransform", po::value<xmlTransform>(), 
+	     "GRDDL supplementary info: {namespace}tag{transformer}media/type")
             ("language-name,l", po::value<langName>(), 
-	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
+	     "data language\n\"guess\" to guess by resource extension, or \"?\" to query options")
             ("lang-media-type,L", po::value<langType>(), 
-	     "data language\n\"guess\" to guess by resource extension, or \"-\" for stdin")
+	     "data language\n\"guess\" to guess by resource extension, or \"?\" to query options")
             ("output,o", po::value<outPut>(), 
 	     "send results to relURI or \"-\" for stdout.")
             ("in-place,i", po::value<inPlace>(), 
@@ -1916,6 +1974,11 @@ int main(int ac, char* av[])
 	po::store(parse_config_file(ifs, config_file_options), vm);
 	po::notify(vm);
     
+	if (vm.count("post")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
+	    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
+	}
+
         if (vm.count("utf-8")) {
 	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to utf-8.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
@@ -2153,8 +2216,6 @@ int main(int ac, char* av[])
 		/* Act as a SPARQL server. */
 		if (vm.count("once"))
 		    TheServer.runOnce = true;
-		if (vm.count("post"))
-		    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
 		int serverPort = 8888;
 
 #if REGEX_LIB == SWOb_BOOST

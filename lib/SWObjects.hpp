@@ -266,9 +266,9 @@ public:
 	: OptString(p_str, std::string("-no media type-")) {  }
     MediaType (std::string p_str)
 	: OptString(p_str.c_str(), std::string("-no media type-")) {  }
-//     void operator= (const char* p_str) {
-// 	assign(p_str);
-//     }
+    // void operator= (const char* p_str) {
+    // 	assign(p_str ? p_str : boost::detail::none_t);
+    // }
 };
 
 struct MediaTypeMap : public std::map<const std::string, const char*> {
@@ -276,8 +276,8 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
     typedef std::pair<const std::string, const char*> pair;
     MediaTypeMap () {
 	insert(pair("html", "text/html"));
-	insert(pair("rdf" , "text/rdf+xml"));
-	insert(pair("xml" , "text/rdf+xml"));
+	insert(pair("rdf" , "application/rdf+xml"));
+	insert(pair("xml" , "application/xml"));
 	insert(pair("nt" ,  "text/ntriples"));
 	insert(pair("ttl" , "text/turtle"));
 	insert(pair("trig", "text/trig"));

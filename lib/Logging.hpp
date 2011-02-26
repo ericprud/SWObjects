@@ -57,13 +57,13 @@ namespace w3c_sw {
 	inline std::basic_ostream< CharT, TraitsT >& operator<< (std::basic_ostream< CharT, TraitsT >& strm, severity_level lvl) {
 	    const int str_offset = 3;
 	    static const char* const str[] = {
-		"      3",
-		"     2 ",
-		"    1  ",
-		"   0   ",
-		"  1    ",
+		"3      ",
 		" 2     ",
-		"3      "
+		"  1    ",
+		"   0   ",
+		"    1  ",
+		"     2 ",
+		"      3"
 	    };
 	    if (static_cast< std::size_t >(lvl + str_offset) < (sizeof(str) / sizeof(*str)))
 		strm << str[lvl + str_offset];

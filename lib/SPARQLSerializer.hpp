@@ -30,6 +30,7 @@ protected:
     size_t depth;
     std::stack<e_PREC> precStack;
     const char* leadStr;
+    bool needBraces;
 
     void start (e_PREC prec) {
 	if (prec < precStack.top())
@@ -54,7 +55,7 @@ protected:
     }
 public:
     SPARQLSerializer (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, const char* p_tab = "  ", e_DEBUG debug = DEBUG_none, const char* leadStr = "") : 
-	mediaType(mediaType), namespaces(namespaces), injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr)
+	mediaType(mediaType), namespaces(namespaces), injectFilter(NULL), normalizing(false), tab(p_tab), debug(debug), depth(0), precStack(), leadStr(leadStr), needBraces(false)
     { precStack.push(PREC_High); }
     virtual std::string str () { return ret.str(); }
     virtual void str (std::string seed) { ret.str(seed); }
@@ -187,17 +188,25 @@ public:
 	ret << '}' << std::endl;
     }
     virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	lead();
+	bool braces = needBraces;
+	needBraces = false;
 	p_name->express(this);
+	if (braces)
+	    ret << "{ ";
+	lead();
 	ret << ' ';
 	_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
+	if (braces)
+	    ret << " }";
     }
     virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	needBraces = false;
 	lead();
 	_BasicGraphPattern(self, p_TriplePatterns, p_allOpts);
     }
     virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	lead();
+	needBraces = false;
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
@@ -218,6 +227,7 @@ public:
     }
     virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	lead();
+	needBraces = false;
 	ret << '{';
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	ret << std::endl;
@@ -230,6 +240,10 @@ public:
 	ret << '}' << std::endl;
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ExprSet* p_Expressions) {
+	bool braces = needBraces;
+	needBraces = false;
+	if (braces)
+	    ret << "{ ";
 	lead();
 	ret << "OPTIONAL ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
@@ -237,33 +251,53 @@ public:
 	injectFilter = p_Expressions;
 	p_GroupGraphPattern->express(this);
 	depth--;
+	if (braces)
+	    ret << " }";
     }
     virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) {
+	bool braces = needBraces;
+	needBraces = false;
+	if (braces)
+	    ret << "{ ";
 	lead();
 	ret << "MINUS ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	depth++;
 	p_GroupGraphPattern->express(this);
 	depth--;
+	if (braces)
+	    ret << " }";
     }
     virtual void _nestedGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
-	p_TTerm->express(this);
+	// p_TTerm->express(this); // handled by nested NamedGraphPattern
 	ret << std::endl;
 	depth++;
 	p_GroupGraphPattern->express(this);
 	depth--;
     }
     virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	bool braces = needBraces;
+	needBraces = false;
+	if (braces)
+	    ret << "{ ";
 	lead();
 	ret << "GRAPH ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
+	if (braces)
+	    ret << " }";
     }
     virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	bool braces = needBraces;
+	needBraces = false;
+	if (braces)
+	    ret << "{ ";
 	lead();
 	ret << "SERVICE ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
+	if (braces)
+	    ret << " }";
     }
     virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
 	if (label != NULL) {
@@ -345,6 +379,7 @@ public:
     }
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
 	ret << "WHERE" << std::endl;
+	needBraces = true;
 	p_GroupGraphPattern->express(this);
 	if (p_BindingClause) p_BindingClause->express(this);
     }

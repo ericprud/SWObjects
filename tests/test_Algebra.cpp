@@ -618,7 +618,7 @@ ASK { \n\
     (bgp (triple ?person <http://xmlns.com/foaf/0.1/firstName> ?firstN))\n\
   )\n\
 )\n\
-");
+"); // "
 }
 
 BOOST_AUTO_TEST_CASE( optional__q_opt_complex_1_arq ) {
@@ -637,5 +637,23 @@ ASK { \n\
   )\n\
 )\n\
 ");
+}
+
+BOOST_AUTO_TEST_CASE( getBNode ) {
+
+    /** make sure that getBNode gives unique bnodes when called with new
+     * different String2BNode maps.
+     */
+    TTerm::String2BNode m1, m2, m3, m4, m5, m6, m7, m8, m9, m10;
+    BOOST_CHECK_EQUAL(F.getBNode("X", m1)->getLexicalValue(), "X");
+    BOOST_CHECK_EQUAL(F.getBNode("X", m4)->getLexicalValue(), "X_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", m5)->getLexicalValue(), "X_2");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3", m2)->getLexicalValue(), "X_3");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", m3)->getLexicalValue(), "X_3_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", m6)->getLexicalValue(), "X_3_1_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", m7)->getLexicalValue(), "X_3_1_2");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", m8)->getLexicalValue(), "X_3_1_1_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3", m9)->getLexicalValue(), "X_3_1_2_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1_2_1", m10)->getLexicalValue(), "X_3_1_2_1_1");
 }
 
