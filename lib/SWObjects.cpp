@@ -792,20 +792,71 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return ret;
     }
 
-    std::set<std::string> UsedBNodeLabels;
+    /** AtomFactory::getBNode maps a bnode label name to a BNode to that nodeMap.
+     * 
+     * Usage: a parser or generator will create a String2BNode which
+     * scopes blank node labels to a document. An e.g. parser
+     * encountering a labeled blank node will call getBNode and get
+     * back a BNode with that label unless that label has already been
+     * allocated (to another String2BNode). It it has, an ordinal will
+     * be appended, e.g. X_1. More ordinals will be appended if the
+     * constructed name is has been allocated. The ordinal is recorded
+     * and subsequent calls for a unique BNode with that label will
+     * increment the ordinal.
+     * 
+     * Examples (all assuming a unique String2BNode):
+     *   X	    X		First allocation gets preferred label.
+     *   X	    X_1		Collision, add ordinal.
+     *   X	    X_2		Increment _1 ordinal.
+     *   X_3	    X_3		Preferred label (which confounds X_n).
+     *   X_3_1	    X_3_1	Preferred label.
+     *  *X	    X_3_1_1	X_3 allocated so add ordinals.
+     *   X	    X_3_1_2	Increment the _3_1_1 ordinal.
+     *   X_3_1	    X_3_1_1_1	...
+     *   X_3	    X_3_1_2_1	
+     *   X_3_1_2_1  X_3_1_2_1_1	
+     * 
+     * The 4th X returns instead of X_3_1_1 X_4 as the earlier
+     * allocation of X_3 indicates a series, likely eventually
+     * allocating X_4, X_5...
+     * 
+     * Improvements: could reap name allocations when String2BNodes
+     * are declared expired.
+     */
 
     const BNode* AtomFactory::getBNode (std::string name, TTerm::String2BNode& nodeMap) {
+
+	// Comments track the 4th X allocation (marked *X):
+	typedef std::pair<std::string, unsigned int> Components_t;	// (X_3_1, 0)
+	typedef std::map<std::string, Components_t> UsedBNodeLabel_t;	// (X     -> (X,     2),
+									//  X_3_1 -> (X_3_1, 0))
+	typedef std::pair<std::string, Components_t> UsedBNodeLabel_p;
+	static UsedBNodeLabel_t UsedBNodeLabels;
+
 	std::string key(name);
 	TTerm::String2BNode::const_iterator vi = nodeMap.find(key);
 	if (vi == nodeMap.end()) {
+	    UsedBNodeLabel_t::const_iterator e = UsedBNodeLabels.end();
+	    UsedBNodeLabel_t::const_iterator test = UsedBNodeLabels.find(name);
 	    std::string base = name;
-	    for (unsigned int i = 1;
-		 UsedBNodeLabels.find(name) != UsedBNodeLabels.end();
-		 ++i)
-		name = base + "_" + boost::lexical_cast<std::string>(i);
-	    UsedBNodeLabels.insert(name);
+	    std::string lex = name;
+	    unsigned int ord = 0;
+	    if (test != e) {
+		base = test->second.first;	// X
+		ord = test->second.second + 1;	// 2
+		lex = base + "_" + boost::lexical_cast<std::string>(ord); // X_3
+		test = UsedBNodeLabels.find(lex);
+		while (test != e) {	// two iterations: 1st   | 2nd
+		    base = lex;				// X_3   | X_3_1
+		    ord = test->second.second + 1;	// 1     | 1
+		    lex = base + "_" + boost::lexical_cast<std::string>(ord);
+		    test = UsedBNodeLabels.find(lex);	// X_3_1 | X_3_1_1
+		}
+	    }
+	    UsedBNodeLabels[name] = Components_t(base, ord); // [X]       = (X_3_1, 1)
+	    UsedBNodeLabels[lex] = Components_t(lex, 0);     // [X_3_1_1] = (X_3_1_1, 0)
 
-	    BNode* ret = new BNode(name);
+	    BNode* ret = new BNode(lex);
 	    nodeMap[key] = ret;
 	    bnodes.insert(ret);
 	    return ret;
