@@ -1445,7 +1445,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, wsdl";
     } else {
 	if (!s.compare(""))
 	    DataMediaType = "";
@@ -1463,6 +1463,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    DataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
 	    DataMediaType = "application/sparql-results+xml";
+	else if (!s.compare("wsdl"))
+	    DataMediaType = "application/wsdl+xml";
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
@@ -1477,13 +1479,14 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/wsdl+xml";
     } else {
 	if (!Quiet && s.compare("") && s.compare("text/plain")
 	    && s.compare("text/ntriples") && s.compare("text/turtle")
 	    && s.compare("text/trig") && s.compare("text/html")
 	    && s.compare("application/rdf+xml")
-	    && s.compare("application/sparql-results+xml"))
+	    && s.compare("application/sparql-results+xml")
+	    && s.compare("application/wsdl+xml"))
 	    std::cerr << "proceeding with unknown media type \"" << s << "\"";
 	    // throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	DataMediaType = s;
@@ -1766,6 +1769,8 @@ int main(int ac, char* av[])
 	    addLogLabel(logs, visitedLogs, "*");
 	    setLogLevels(logs, 0);
 	}
+
+	sw::StreamContextMediaTypes::MediaTypes.insert(sw::MediaTypeMap::pair("wsdl" , "application/wsdl+xml"));
 
 	MyServer::MyHandler handler(TheServer);
 	Output = loadEntry(NULL, F.getURI("-"), NULL);

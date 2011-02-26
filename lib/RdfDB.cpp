@@ -6,6 +6,7 @@
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "TrigSParser/TrigSParser.hpp"
+#include "WSDLparser.hpp"
 #include <boost/iostreams/stream.hpp>
 
 namespace w3c_sw {
@@ -90,6 +91,17 @@ namespace w3c_sw {
 		    parser.setNamespaceMap(nsMap);
 		parser.parse(istr, target);
 		return false;
+	    } else if (istr.mediaType.match("application/wsdl+xml")) {
+		if (xmlParser == NULL)
+		    throw std::string("no XML parser to parse ")
+			+ istr.mediaType.toString()
+			+ " document " + nameStr;
+		WSDLparser parser(nameStr, atomFactory, xmlParser);
+		if (baseURI != "")
+		    parser.setBase(baseURI);
+		if (nsMap != NULL)
+		    parser.setNamespaceMap(nsMap);
+		return parser.parse(target, istr);
 	    } else {
 		TrigSDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
