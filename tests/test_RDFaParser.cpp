@@ -64,10 +64,19 @@ BOOST_AUTO_TEST_CASE( QName_eqiv ) {
     SWSAXhandler::QName q2("p2:foo", ns);
     SWSAXhandler::QName q3("p3:foo", ns);
     SWSAXhandler::QName q4("p3:fop", ns);
+
+    // test operator==
     BOOST_CHECK_EQUAL(q1, q1);
     BOOST_CHECK_EQUAL(q1, q2);
     BOOST_CHECK_NE(q1, q3);
     BOOST_CHECK_NE(q3, q4);
+
+    // test operator<
+    std::map<SWSAXhandler::QName, std::string> qs;
+    qs[q1] = q1.asURI();
+    qs[q2] = q2.asURI();
+    qs[q3] = q3.asURI();
+    qs[q4] = q4.asURI();
 }
 
 BOOST_AUTO_TEST_CASE( APC ) {

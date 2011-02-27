@@ -35,6 +35,9 @@ namespace w3c_sw {
 	    bool operator== (const QName& ref) const {
 		return ns == ref.ns && local == ref.local;
 	    }
+	    bool operator< (const QName& ref) const {
+		return ns < ref.ns || local < ref.local;
+	    }
 	    std::string asURI (std::string separator = "") {
 		return ns + separator + local;
 	    }
