@@ -39,6 +39,8 @@ namespace w3c_sw {
     const char* NS_srx = "http://www.w3.org/2005/sparql-results#"	;
     const char* NS_dc  = "http://purl.org/dc/terms/"			;
     const char* NS_sadl= "http://www.w3.org/2005/03/saddle/#"		;
+    const char* NS_grddl="http://www.w3.org/2003/g/data-view#"		;
+
 
 void Base::express (Expressor* p_expressor) const {
     p_expressor->base(this, typeid(*this).name());
