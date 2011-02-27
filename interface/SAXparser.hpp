@@ -24,14 +24,16 @@ namespace w3c_sw {
 	struct QName {
 	    std::string ns;
 	    std::string local;
-	    std::string prefix;
 	    QName (std::string qname, NSmap& map) {
 		size_t f = qname.find_first_of(":");
 		if (f == std::string::npos)
-		    throw std::string("':' expected in QName \"") + qname + "\"";
-		prefix = f == std::string::npos ? "" : qname.substr(0, f);
+		    throw std::string("':' expected in QName \"") + qname + "\""; // be conservative and throw 'till we have use cases which motivate the flexibility below.
+		std::string prefix = f == std::string::npos ? "" : qname.substr(0, f);
 		local = f == std::string::npos ? qname : qname.substr(f + 1);
 		ns = map[prefix];
+	    }
+	    bool operator== (const QName& ref) const {
+		return ns == ref.ns && local == ref.local;
 	    }
 	    std::string asURI (std::string separator = "") {
 		return ns + separator + local;
@@ -121,6 +123,11 @@ namespace w3c_sw {
 	}
 
     };
+
+    inline std::ostream& operator<< (std::ostream& os, const SWSAXhandler::QName& ref) {
+	os << '{' + ref.ns +'}' + ref.local;
+	return os;
+    }
 
     class SAXserializer : public SWSAXhandler {
 	std::ostream& out;
