@@ -21,6 +21,26 @@ namespace w3c_sw {
 	    virtual std::string operator[](std::string prefix) = 0;
 	};
 
+	struct QName {
+	    std::string ns;
+	    std::string local;
+	    std::string prefix;
+	    QName (std::string qname, NSmap& map) {
+		size_t f = qname.find_first_of(":");
+		if (f == std::string::npos)
+		    throw std::string("':' expected in QName \"") + qname + "\"";
+		prefix = f == std::string::npos ? "" : qname.substr(0, f);
+		local = f == std::string::npos ? qname : qname.substr(f + 1);
+		ns = map[prefix];
+	    }
+	    std::string asURI (std::string separator = "") {
+		return ns + separator + local;
+	    }
+	};
+
+	/** qName: get some preverse serialization of a QName.
+	 * used only for debugging?
+	 */
 	static std::string qName (const char* prefix, const char* localName) {
 	    return (prefix && prefix[0] ? std::string((const char*)prefix) + '~' : std::string("")) + (const char*)localName;
 	}
