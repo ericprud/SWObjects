@@ -19,6 +19,7 @@ namespace w3c_sw {
 	public:
 	    virtual ~NSmap () {  }
 	    virtual std::string operator[](std::string prefix) = 0;
+	    virtual std::set<std::string> keys () = 0;
 	};
 
 	static std::string qName (const char* prefix, const char* localName) {
@@ -305,6 +306,13 @@ namespace w3c_sw {
 	public:
 	    SimpleNsMap (NSmapImpl& map) : map(map) {  }
 	    virtual std::string operator[] (std::string prefix) { return map[prefix]; }
+	    virtual std::set<std::string> keys () {
+		std::set<std::string> ret;
+		for (NSmapImpl::const_iterator it = map.begin();
+		     it != map.end(); ++it)
+		    ret.insert(it->first);
+		return ret;
+	    }
 	};
 
 	std::stack< NSmapImpl > nsz;

@@ -6,36 +6,62 @@
 #define WSDL_PARSER_H
 
 #include "RdfDB.hpp"
+#include "QueryMapper.hpp"
 #include "ParserCommon.hpp"
 #include "../interface/SAXparser.hpp"
+#include "MapSetParser/MapSetParser.hpp"
 
 namespace w3c_sw {
 
+    struct ServiceDescription {
+	MapSet* ms;
+    };
+
     class WSDLparser : public ParserDriver { // !!! doesn't respect setBase API
-	class WSDLSaxHandler : public SWSAXhandler {
+	class ContentModelSAXhandler : public SWSAXhandler {
+// 	protected:
+// 	    struct Element {
+// 		std::string uri;
+// 		std::string localName;
+// 		Element (std::string uri, std::string localName)
+// 		    : uri(uri), localName(localName)
+// 		{  }
+// 	    }; 
+// 	    class AllowedElements : public std::map<Element, int> {
+// 	    };
+// 	    class ContentModel : public std::map<Element, AllowedElements> {
+// 	    };
+// 	    ContentModel& m;
+// 	    ContentModelSAXhandler (ContentModel& m) : m(m) {  }
+	};
+	class WSDLSaxHandler : public ContentModelSAXhandler {
 	protected:
-	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
+	    enum NestedIn {S_ERROR, S_EMPTY, S_DOCUMENT,
+			   S_binding, S_binding_operation, S_definitions, S_documentation,
+			   S_message, S_operationInput, S_operationOutput,
+			   S_portType, S_portType_operation,
+			   S_service, S_service_port};
 	    struct State {
-		enum Expect expect;
-		const TTerm* s;
-		const TTerm* p;
+		enum NestedIn nestedIn;
 		const char* stateStr () const {
 		    static const char* stateStrs[] =
-			{"document", "subject", "property", "collection", "huh?"};
-		    return stateStrs[expect];
+			{"ERROR", "EMPTY", "DOCUMENT",
+			 "binding", "binding_operation", "definitions", "documentation",
+			 "message", "operationInput", "operationOutput",
+			 "portType", "portType_operation",
+			 "service", "service_port"};
+		    return stateStrs[nestedIn];
 		}
 		std::string toString () const {
 		    std::stringstream ret;
 		    ret << 
 			"{ " << stateStr() << 
-			"	" << (s == NULL ? "NULL" : s->toString()) << 
-			"	" << (p == NULL ? "NULL" : p->toString()) << 
 			"}" << std::endl;
 		    return ret.str();
 		}
 	    };
 
-	    BasicGraphPattern* bgp;
+	    ServiceDescription* sd;
 	    AtomFactory* atomFactory;
 	    std::string baseURI;
 	    std::string chars;
@@ -44,6 +70,7 @@ namespace w3c_sw {
 	    LANGTAG* langtag;
 	    std::stack<State> stack;
 	    TTerm::String2BNode bnodeMap;
+	    std::string head, body, targetNamespace, opName;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -60,9 +87,9 @@ namespace w3c_sw {
 	    }
 
 	public:
-	    WSDLSaxHandler (BasicGraphPattern* bgp, std::string baseURI, AtomFactory* atomFactory) : 
-		bgp(bgp), atomFactory(atomFactory), baseURI(baseURI), chars(""), expectCharData(false) {
-		State newState = {DOCUMENT, NULL, NULL};
+	    WSDLSaxHandler (ServiceDescription* sd, std::string baseURI, AtomFactory* atomFactory)
+		: sd(sd), atomFactory(atomFactory), baseURI(baseURI), chars("") {
+		State newState = {S_DOCUMENT};
 		stack.push(newState);
 	    }
 
@@ -71,201 +98,85 @@ namespace w3c_sw {
 				       std::string qName,
 				       Attributes* attrs, 
 				       NSmap& /* nsz */) {
-		State newState = {s_ERROR, NULL, NULL};
-		switch (stack.top().expect) {
-		case DOCUMENT:
-		    if (uri == NS_rdf && localName == "RDF") {
-			newState.expect = SUBJECT;
-			break;
-		    }
-		case SUBJECT:
-		case COLLECTION: {
-		    newState.expect = PROPERTY;
-
-		    /* Each subject element represents a node.
-		     */
-		    {
-			/* subject comes from about or ID or is a BNode. */
-			std::string subject;
-			subject = attrs->getValue(NS_rdf, "about");
-			if (subject.empty()) {
-			    subject = attrs->getValue(NS_rdf, "ID");
-			    if (subject.empty()) {
-				subject = attrs->getValue(NS_rdf, "nodeID");
-				if (subject.empty())
-				    newState.s = atomFactory->createBNode();
-				else
-				    newState.s = atomFactory->getBNode(subject, bnodeMap);
-			    } else
-				newState.s = atomFactory->getURI(baseURI + "#" + subject);
-			} else
-			    newState.s = atomFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
-		    }
-
-		    /* Subject elements nested inside a predicate element are
-		     * objects of that predicate.
-		     */
-		    const TTerm* p = stack.top().p;
-		    if (p != NULL) {
-			State parentState = stack.top();
-			const TTerm* s = parentState.s;
-
-			stack.pop(); // we will re-push with a new predicate.
-			if (stack.top().expect == COLLECTION) {
-			    const TTerm* b = atomFactory->createBNode();
-
-			    /* Subsequent entries will be rests. */
-			    parentState.p = atomFactory->getURI( std::string(NS_rdf) + "rest");
-			    /* Subsequent entries will append the tail of the list. */
-			    parentState.s = b;
-			    stack.push(parentState);
-
-			    /*
-			     *	    s
-			     *	     \p [was rest if nth in a Collection]
-			     *	      \
-			     *	       b _type_ rdf:Collection
-			     *	      /	\
-			     *	first/   \rest
-			     *	    /	  \
-			     *	 node      [another list or rdf:Nil]
-			     */
-			    const TTerm* f = atomFactory->getURI(std::string(NS_rdf) + "first");
-			    const TTerm* t = atomFactory->getURI(std::string(NS_rdf) + "type");
-			    const TTerm* c = atomFactory->getURI(std::string(NS_rdf) + "Collection");
-			    bgp->addTriplePattern(atomFactory->getTriple(s, p, b));
-			    bgp->addTriplePattern(atomFactory->getTriple(b, t, c));
-			    bgp->addTriplePattern(atomFactory->getTriple(b, f, newState.s));
-			} else {
-			    /* Only one nested subject allowed. */
-			    parentState.p = NULL;
-			    stack.push(parentState);
-
-			    /*
-			     *	    s
-			     *	     \p
-			     *	      \
-			     *	      node
-			     */
-			    bgp->addTriplePattern(atomFactory->getTriple(s, p, newState.s));
-			}
-		    }
-
-		    /* Add type arc for typed nodes. */
-		    if ( !(uri == NS_rdf && localName == "Description") ) {
-			const TTerm* p = atomFactory->getURI(std::string(NS_rdf) + "type");
-			const TTerm* t = atomFactory->getURI(uri + localName);
-			bgp->addTriplePattern(atomFactory->getTriple(newState.s, p, t));
-		    }
-		    break;
-		}
-		case PROPERTY: {
-		    std::string t; // used a couple times below
-		    newState.p = atomFactory->getURI(uri + localName);
-		    std::string parseType = attrs->getValue(NS_rdf, "parseType");
-		    std::string nodeID = attrs->getValue(NS_rdf, "nodeID");
-
-		    /* rdf:parseType or rdf:resource attributes imply a new node.
-		     * Otherwise, may be a:
-		     *   literal - expect chars).
-		     *   Collection - may be nil for an empty Collection.
-		     *   node with predicate attributes - handled below.
-		     */
-		    t = attrs->getValue(NS_rdf, "resource");
-		    if ( !t.empty() )
-			newState.s = atomFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
-		    else if ( !parseType.empty() )
-			newState.s = atomFactory->createBNode();
-		    else if ( !nodeID.empty() )
-			newState.s = atomFactory->getBNode(nodeID, bnodeMap);
-		    else
-			expectCharData = true;
-		    if (newState.s != NULL)
-			bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, 
-							    newState.p, newState.s));
-
-		    /* Grab xsd:datatype and xml:lang.
-		     * These are non-recursive (a literal predicate can't
-		     * contain another predicate) so we leave them out of the
-		     * stack state.
-		     */
-		    t = attrs->getValue(NS_rdf, "datatype");
-		    datatype = t.empty() ? NULL : atomFactory->getURI(t);
-		    t = attrs->getValue(NS_xml, "lang");
-		    langtag = t.empty() ? NULL : new LANGTAG(t.c_str());
-
-		    /* Create statements for predicate attributes. */
-		    for (size_t i = 0; i < attrs->getLength(); ++i) {
-			std::string attrURI = attrs->getURI(i);
-			std::string attrLName = attrs->getLocalName(i);
-			if ( !(attrURI == NS_rdf && attrLName == "parseType") && 
-			     !(attrURI == NS_rdf && attrLName == "resource") && 
-			     !(attrURI == NS_rdf && attrLName == "datatype") && 
-			     !(attrURI == NS_xml && attrLName == "lang")) {
-
-			    /* We must have a current node. */
-			    if (newState.s == NULL) {
-				newState.s = atomFactory->createBNode();
-				bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, 
-									    newState.p, newState.s));
-			    }
-
-			    /* newState.s -[attribute]-> [value] . */
-			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
-			    std::string value = attrs->getValue(attrURI, attrLName);
-			    const TTerm* object = atomFactory->getRDFLiteral(value, NULL, NULL);
-			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
-			}
-		    }
-
-		    /* Nested state depends souly on parseType. */
-		    newState.expect = 
-			parseType == "Collection" ? COLLECTION : 
-			parseType == "Resource" ? PROPERTY : 
-			SUBJECT;
-
-		    if (newState.s == NULL)
-			newState.s = stack.top().s;
-		    break;
-		}
-		default:
-		    varError("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
-		}
-		if (newState.expect == s_ERROR)
-		    varError("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
+		State newState = {S_ERROR};
+		NestedIn p = stack.top().nestedIn;
+		std::string c = uri + ' ' + localName;
+		if (p == S_DOCUMENT && c == "http://schemas.xmlsoap.org/wsdl/ definitions") {
+		    targetNamespace = attrs->getValue("", "targetNamespace");
+		    newState.nestedIn = S_definitions;
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ documentation") {
+		    newState.nestedIn = S_documentation;
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ types") {
+		    throw std::string("write a bridge to the schema parser");
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ message") {
+		    newState.nestedIn = S_message;
+		} else if (p == S_message && c == "http://schemas.xmlsoap.org/wsdl/ part") {
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ portType") {
+		    newState.nestedIn = S_portType;
+		} else if (p == S_portType && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
+		    opName = attrs->getValue("", "name");
+		    newState.nestedIn = S_portType_operation;
+		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
+		    body = attrs->getValue("http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/", "SPAT");
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ output") {
+		    head = attrs->getValue("http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/", "SPAT");
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ binding") {
+		    newState.nestedIn = S_binding;
+		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/soap/ binding") {
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
+		    newState.nestedIn = S_binding_operation;
+		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/soap/ operation") {
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
+		    newState.nestedIn = S_operationInput;
+		} else if (p == S_operationInput && c == "http://schemas.xmlsoap.org/wsdl/soap/ body") {
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/ output") {
+		    newState.nestedIn = S_operationOutput;
+		} else if (p == S_operationOutput && c == "http://schemas.xmlsoap.org/wsdl/soap/ body") {
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ service") {
+		    newState.nestedIn = S_service;
+		} else if (p == S_service && c == "http://schemas.xmlsoap.org/wsdl/ port") {
+		    newState.nestedIn = S_service_port;
+		} else if (p == S_service_port && c == "http://schemas.xmlsoap.org/wsdl/soap/ address") {
+		    newState.nestedIn = S_EMPTY;
+		} else
+		    varError("unexpected %s within %s", c.c_str(), stack.top().stateStr());
 		stack.push(newState);
 		chars = "";
 		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
+
 	    virtual void endElement (std::string,
 				     std::string,
 				     std::string qName, 
-				     NSmap& /* nsz */) {
+				     NSmap& nsz) {
 		State nestedState = stack.top();
 		stack.pop();
-		switch (nestedState.expect) {
-		case DOCUMENT:
+		switch (nestedState.nestedIn) {
+		case S_documentation:
+		    chars.resize(0);
 		    break;
-		case SUBJECT:
-		    if (nestedState.p != NULL && expectCharData == true) {
-			/* We were expecting a literal node. */
-			const TTerm* o = atomFactory->getRDFLiteral(chars, datatype, langtag);
-			chars = "";
-			bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, nestedState.p, o));
+		case S_portType_operation:
+		    if (!head.empty() || !body.empty()) {
+			std::stringstream ss;
+			ss << "LABEL <" << targetNamespace << opName << "> CONSTRUCT {" << head << "} WHERE {" << body << "}";
+			std::set<std::string> prefixes = nsz.keys();
+			MapSetDriver sp(baseURI, atomFactory);
+			for (std::set<std::string>::const_iterator it = prefixes.begin();
+			     it != prefixes.end(); ++it)
+			    sp.addPrefix(*it, atomFactory->getURI(nsz[*it]));
+			sp.parse(ss.str());
+			sd->ms = dynamic_cast<MapSet*>(sp.root);
 		    }
-		    break;
-		case COLLECTION: {
-		    /* Tack on trailing nil to current predicate (rdf:rest,
-		     * except when parsing an empty Collection).
-		     */
-		    const TTerm* n = atomFactory->getURI(std::string(NS_rdf) + "nil");
-		    bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, stack.top().p, n));
-		}
-		    break;
-		case PROPERTY:
-		    break;
 		default:
-		    varError("unexpected state %d", stack.top().expect);
+		    break;
+		    // varError("unexpected state %d", stack.top().nestedIn);
 		}
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
 		    varError("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
@@ -287,8 +198,8 @@ namespace w3c_sw {
     public:
 	WSDLparser (std::string baseURI, AtomFactory* atomFactory, SWSAXparser* saxParser)
 	    : ParserDriver(baseURI), atomFactory(atomFactory), saxParser(saxParser) {  }
-	bool parse (BasicGraphPattern* bgp, IStreamContext& sptr) {
-	    WSDLSaxHandler handler(bgp, baseURI, atomFactory);
+	bool parse (ServiceDescription* sd, IStreamContext& sptr) {
+	    WSDLSaxHandler handler(sd, baseURI, atomFactory);
 	    return saxParser->parse(sptr, &handler);
 	}
 

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<!-- prenormalize.rq - simple WSDL sample.
+     $Id$
+ -->
+<definitions 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+ 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+ 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
+ 	xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+ 	targetNamespace= "http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
+
+ <documentation>
+	 This document describes a mock service corresponding to the 'prenormalize'
+	 node from the PIQ Workflow in Fig 4a of "Parameterized specification,
+	 configuration and execution of data-intensive scientific workflows" by
+	 Kumar et al.  The prenormalize node takes as input a ProjectedChunkFile and returns an OffsetTileFile and an AverageTileFile.
+</documentation>
+
+
+
+<!-- types>
+	<xs:schema
+		targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
+     	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
+		
+     
+     <xs:element name="prenormalizeOutput">
+	     <xs:complexType>
+			  <xs:sequence>
+	    		<xs:element name="OffsetTileFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	    		<xs:element name="AverageTileFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	  		</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+     
+     <xs:element name="ProjectedChunkFile" type="xs:string"/>
+	  
+	</xs:schema>    
+</types -->
+
+
+<message name="prenormalizeInputMessage">
+    <part name="body" element="tns:ProjectedChunkFile"/>
+</message>
+
+<message name="prenormalizeOutputMessage">
+    <part name="body" element="tns:prenormalizeOutput"/>
+</message>
+
+
+
+<portType name="prenormalizePortType">
+    <operation name="opPrenormalize">
+      <input message="tns:prenormalizeInputMessage" spat:SPAT="_:x a tns:Abnormal"/>
+      <output message="tns:prenormalizeOutputMessage" spat:SPAT="_:x a tns:Normal"/>
+    </operation>
+</portType>
+
+
+ <binding name="prenormalizeSOAPBinding" type="tns:prenormalizePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="opPrenormalize">
+    <soap:operation soapAction="http://www.semanticbits.com/piq-workflow/prenormalize"/>
+      <input>
+	<soap:body use="literal"/>
+      </input>
+      <output>
+	<soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+
+<!-- This is mock-up of a service: there is no endpoint associated. - SH -->
+<service name="prenormalizeService">
+    <port name="prenormalizeServicePort" binding="tns:prenormalizeSOAPBinding">
+      <soap:address location="http://www.semanticbits.com/piq-workflow/prenormalize"/>
+    </port>
+  </service>
+</definitions>
+

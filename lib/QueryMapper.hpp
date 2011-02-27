@@ -295,14 +295,20 @@ namespace w3c_sw {
 	    const MapSet* pMapSet = dynamic_cast<const MapSet*>(&ref);
 	    if (pMapSet == NULL)
 		return false;
+	    if (maps.size() != pMapSet->maps.size())
+		return false;
+	    std::vector<LabeledConstruct>::const_iterator mit = maps.begin();
+	    std::vector<LabeledConstruct>::const_iterator rit = pMapSet->maps.begin();
+	    for ( ; mit != maps.end(); ++mit, ++rit)
+		if ( !(VectorOps<LabeledConstruct>::cmp(mit, rit)) )
+		    return false;
 	    return
 		server == pMapSet->server && 
 		user == pMapSet->user && 
 		password == pMapSet->password && 
 		database == pMapSet->database && 
 		stemURI == pMapSet->stemURI && 
-		primaryKey == pMapSet->primaryKey && 
-		maps == pMapSet->maps
+		primaryKey == pMapSet->primaryKey
 #if REGEX_LIB != SWOb_DISABLED
 #if NotYet
 		&& rewriteVars == pMapSet->rewriteVars

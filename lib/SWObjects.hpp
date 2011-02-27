@@ -2223,6 +2223,7 @@ public:
 	if (pSel == NULL)
 	    return false;
 	return
+	    m_distinctness == pSel->m_distinctness && 
 	    *m_VarSet == *pSel->m_VarSet && 
 	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
 	    *m_WhereClause == *pSel->m_WhereClause && 
@@ -2276,8 +2277,15 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     WhereClause* getWhereClause () { return m_WhereClause; }
-    virtual bool operator== (const Operation&) const {
-	return false;
+    virtual bool operator== (const Operation& ref) const {
+	const Construct* pSel = dynamic_cast<const Construct*>(&ref);
+	if (pSel == NULL)
+	    return false;
+	return
+	    *m_ConstructTemplate == *pSel->m_ConstructTemplate && 
+	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
+	    *m_WhereClause == *pSel->m_WhereClause && 
+	    *m_SolutionModifier == *pSel->m_SolutionModifier;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_construct; }
 };

@@ -106,7 +106,8 @@ namespace w3c_sw {
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
 		    parser.setNamespaceMap(nsMap);
-		return parser.parse(target, istr);
+		ServiceDescription sd;
+		return parser.parse(&sd, istr);
 	    } else {
 		TrigSDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
