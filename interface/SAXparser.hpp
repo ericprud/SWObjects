@@ -25,6 +25,9 @@ namespace w3c_sw {
 	struct QName {
 	    std::string ns;
 	    std::string local;
+	    QName (std::string ns, std::string local)
+		: ns(ns), local(local)
+	    {  }
 	    QName (std::string qname, NSmap& map) {
 		size_t f = qname.find_first_of(":");
 		if (f == std::string::npos)
