@@ -53,6 +53,13 @@ BOOST_AUTO_TEST_CASE( QName_eqiv ) {
     public:
 	SimpleNsMap (NSmapImpl& map) : map(map) {  }
 	virtual std::string operator[] (std::string prefix) { return map[prefix]; }
+	virtual std::set<std::string> keys () {
+	    std::set<std::string> ret;
+	    for (NSmapImpl::const_iterator it = map.begin();
+		 it != map.end(); ++it)
+		ret.insert(it->first);
+	    return ret;
+	}
     };
 
     NSmapImpl m;
