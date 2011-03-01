@@ -137,6 +137,7 @@ namespace w3c_sw {
     extern const char* NS_srx;
     extern const char* NS_dc;
     extern const char* NS_sadl;
+    extern const char* NS_grddl;
 #if defined(SWIG)
     %mutable;
 #endif /* defined(SWIG) */

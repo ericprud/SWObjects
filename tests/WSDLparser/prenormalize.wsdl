@@ -19,7 +19,7 @@
 
 
 
-<!-- types>
+<types>
 	<xs:schema
 		targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
      	xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -38,7 +38,7 @@
      <xs:element name="ProjectedChunkFile" type="xs:string"/>
 	  
 	</xs:schema>    
-</types -->
+</types>
 
 
 <message name="prenormalizeInputMessage">
@@ -53,8 +53,8 @@
 
 <portType name="prenormalizePortType">
     <operation name="opPrenormalize">
-      <input message="tns:prenormalizeInputMessage" spat:SPAT="_:x a tns:Abnormal"/>
-      <output message="tns:prenormalizeOutputMessage" spat:SPAT="_:x a tns:Normal"/>
+      <input message="tns:prenormalizeInputMessage" spat:SPAT="?x a tns:Abnormal"/>
+      <output message="tns:prenormalizeOutputMessage" spat:SPAT="?x a tns:Normal"/>
     </operation>
 </portType>
 

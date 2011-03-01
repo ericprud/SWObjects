@@ -11,12 +11,177 @@
 #include "../interface/SAXparser.hpp"
 #include "MapSetParser/MapSetParser.hpp"
 
+#define NS_spdl "http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+
 namespace w3c_sw {
 
-    struct ServiceDescription {
-	MapSet* ms;
-    };
+    struct ServiceDescription { // 2.0 model:
+	typedef SWSAXhandler::QName QName;
+	typedef enum {M_GET, M_POST, M_PUT, M_DELETE} HTTPmethod;
+	typedef enum {S_LITERAL, S_urlencoded} Encoding;
+	typedef enum {P_InOut} Pattern;
+	typedef enum {SOAP_10, SOAP_11} Protocol;
+	struct Endpoint {
+	    QName service, binding, operation;
+	    std::string endpoint;
+	    Endpoint (QName service, QName binding, QName operation, std::string endpoint)
+		: service(service), binding(binding), operation(operation), endpoint(endpoint)
+	    {  }
+	    virtual bool operator==(const Endpoint& ref) const = 0;
+	    bool _eq (const Endpoint* p) const {
+		return service == p->service
+		    && binding == p->binding
+		    && operation == p->operation
+		    && endpoint == p->endpoint;
+	    }
+	    std::string _toString () const {
+		std::stringstream ss;
+		ss
+		    << "service: " << service
+		    << " binding: " << binding
+		    << " operation: " << operation
+		    << " endpoint: " << endpoint;
+		return ss.str();
+	    }
+	    virtual std::string toString() const = 0;
+	};
+	struct HTTPEndpoint : public Endpoint {
+	    std::string methodDefault;
+	    std::map<HTTPmethod, Encoding> inputSerializations;
+	    HTTPEndpoint (QName service, QName binding, QName operation, std::string endpoint, std::string methodDefault)
+		: Endpoint(service, binding, operation, endpoint), methodDefault(methodDefault)
+	    {  }
+	    virtual bool operator== (const Endpoint& ref) const {
+		const HTTPEndpoint* p = dynamic_cast<const HTTPEndpoint*>(&ref);
+		if (p == NULL)
+		    return false;
+		return Endpoint::_eq(p) && methodDefault == p->methodDefault;
+	    }
+	    virtual std::string toString () const {
+		return _toString() + " methodDefault: " + methodDefault;
+	    }
+	};
+	struct SoapEndpoint : public Endpoint {
+	    Protocol protocol;
+	    SoapEndpoint (QName service, QName binding, QName operation, std::string endpoint, Protocol protocol)
+		: Endpoint(service, binding, operation, endpoint), protocol(protocol)
+	    {  }
+	    virtual bool operator== (const Endpoint& ref) const {
+		const SoapEndpoint* p = dynamic_cast<const SoapEndpoint*>(&ref);
+		if (p == NULL)
+		    return false;
+		return Endpoint::_eq(p) && protocol == p->protocol;
+	    }
+	    virtual std::string toString () const {
+		std::stringstream ss;
+		ss << _toString() << " protocol: " << protocol;
+		return ss.str();
+	    }
+	};
+	struct Operation {
+// 	    struct IO {
+// 		QName label, element;
+// 		IO (QName label, QName element)
+// 		    : label(label), element(element)
+// 		{  }
+// 	    };
+// 	    Ignore the label for now. (What would we do with it?)
+	    QName name;
+	    Pattern pattern;
+// 	    IO in, out;
+	    QName in, out;
+	    QName interface;
+	    std::set<boost::shared_ptr<Endpoint> > endpoints;
+	    Operation (QName name, Pattern pattern, QName in, QName out, QName interface)
+		: name(name), pattern(pattern), in(in), out(out), interface(interface)
+	    {  }
+	    bool operator== (const Operation& ref) const {
+		if (!(name == ref.name &&
+		      pattern == ref.pattern &&
+		      in == ref.in &&
+		      out == ref.out &&
+		      interface == ref.interface))
+		    return false;
 
+		if (endpoints.size() != ref.endpoints.size())
+		    return false;
+		std::set<boost::shared_ptr<Endpoint> >::const_iterator mit = endpoints.begin();
+		std::set<boost::shared_ptr<Endpoint> >::const_iterator rit = ref.endpoints.begin();
+		for ( ; mit != endpoints.end(); ++mit, ++rit)
+		    if ( !(**mit == **rit))
+			return false;
+		return true;
+	    }
+	    std::string toString () const {
+		std::stringstream ss;
+		ss
+		    << "name: " << name
+		    << " pattern: " << pattern
+		    << " in: " << in
+		    << " out: " << out
+		    << " interface: " << interface
+		    << std::endl;
+		for (std::set<boost::shared_ptr<Endpoint> >::const_iterator it = endpoints.begin();
+		     it != endpoints.end(); ++it)
+		    ss << "  " << (*it)->toString() << std::endl;
+		return ss.str();
+	    }
+	};
+
+	MapSet* ms;
+	typedef std::map<QName, Operation> OperationMap;
+	OperationMap operations;
+	bool operator== (const ServiceDescription& ref) const {
+	    if (ms && ref.ms) {
+		if (ms && !(*ms == *ref.ms))
+		    return false;
+	    } else if (ms != ref.ms)
+		return false;
+	    if (operations.size() != ref.operations.size())
+		return false;
+	    OperationMap::const_iterator mit = operations.begin();
+	    OperationMap::const_iterator rit = ref.operations.begin();
+	    for ( ; mit != operations.end(); ++mit, ++rit)
+		if ( !(*mit == *rit))
+		    return false;
+	    return true;
+	}
+	std::string toString () const {
+	    std::stringstream ss;
+	    ss << ms->toString();
+	    for (OperationMap::const_iterator it = operations.begin();
+		 it != operations.end(); ++it)
+		ss << it->first << " -> {" << it->second.toString() << "}\n";
+	    return ss.str();
+	}
+	void addOperation (QName name, Pattern pattern, QName in, QName out, QName interface) {
+	    operations.insert
+		(std::pair<QName, ServiceDescription::Operation>
+		 (name, ServiceDescription::Operation
+		  (name, pattern, in, out, interface)));
+	}
+	void addEndpoint (boost::shared_ptr<ServiceDescription::Endpoint> endpoint) {
+	    QName key = endpoint->operation;
+	    OperationMap::iterator it
+		= operations.find(key);
+	    if (it == operations.end()) {
+		std::stringstream ss;
+		ss << "failed to find " << key << " in ";
+		for (OperationMap::const_iterator it = operations.begin();
+		     it != operations.end(); ++it)
+		    ss << it->first << "->" << it->second.toString() << std::endl;
+		ss << "\n";
+		throw ss.str();
+	    }
+	    it->second.endpoints.insert(endpoint);
+	}
+    };
+    inline std::ostream& operator<< (std::ostream& os, const ServiceDescription& my) {
+	os << my.toString();
+	return os;
+    }
+
+    // 1.1 parser (so far)
     class WSDLparser : public ParserDriver { // !!! doesn't respect setBase API
 	class ContentModelSAXhandler : public SWSAXhandler {
 // 	protected:
@@ -37,19 +202,21 @@ namespace w3c_sw {
 	class WSDLSaxHandler : public ContentModelSAXhandler {
 	protected:
 	    enum NestedIn {S_ERROR, S_EMPTY, S_DOCUMENT,
-			   S_binding, S_binding_operation, S_definitions, S_documentation,
-			   S_message, S_operationInput, S_operationOutput,
-			   S_portType, S_portType_operation,
+			   S_definitions, S_documentation, S_types, 
+			   S_message, S_portType, S_portType_operation,
+			   S_binding, S_binding_operation,
+			   S_operationInput, S_operationOutput,
 			   S_service, S_service_port};
 	    struct State {
 		enum NestedIn nestedIn;
 		const char* stateStr () const {
 		    static const char* stateStrs[] =
 			{"ERROR", "EMPTY", "DOCUMENT",
-			 "binding", "binding_operation", "definitions", "documentation",
-			 "message", "operationInput", "operationOutput",
-			 "portType", "portType_operation",
-			 "service", "service_port"};
+			 "definitions", "documentation", "types", 
+			 "message", "portType", "portType/operation",
+			 "binding", "binding/operation",
+			 "binding/operation/input", "binding/operation/output",
+			 "service", "service/port"};
 		    return stateStrs[nestedIn];
 		}
 		std::string toString () const {
@@ -65,12 +232,43 @@ namespace w3c_sw {
 	    AtomFactory* atomFactory;
 	    std::string baseURI;
 	    std::string chars;
-	    bool expectCharData;
-	    const URI* datatype;
-	    LANGTAG* langtag;
 	    std::stack<State> stack;
-	    TTerm::String2BNode bnodeMap;
-	    std::string head, body, targetNamespace, opName;
+	    std::string head, body, targetNamespace;
+	    QName opName;
+	    QName inMessage;
+
+	    struct M2E : public std::map<QName, QName> {
+		typedef std::pair<QName, QName> Pair;
+		void insert1 (QName m, QName e) {
+		    insert(Pair(m, e));
+		}
+		std::map<QName, QName>::const_iterator find1 (QName key) {
+		    std::map<QName, QName>::const_iterator ret = find(key);
+		    if ((ret == end())) {
+			std::stringstream ss;
+			ss << "failed to find " << key << " in ";
+			for (M2E::const_iterator it = begin();
+			     it != end(); ++it)
+			    ss << it->first << "->" << it->second << std::endl;
+			ss << "\n";
+			throw ss.str();
+		    }
+		    return ret;
+		}
+	    };
+	    M2E message2element;
+	    QName ifaceName, inputMessage, outputMessage, bindingName;;
+
+	    struct BindingInfo {
+		QName operation;
+		typedef enum {T_UNKNOWN, T_HTTP, T_SOAP} Type;
+		// http://www.w3.org/ns/wsdl/http
+		// http://www.w3.org/ns/wsdl/soap
+		Type type;
+		std::string soapProtocol;
+	    };
+	    std::map<QName, BindingInfo> bindings;
+	    QName serviceName, portName;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -97,7 +295,7 @@ namespace w3c_sw {
 				       std::string localName,
 				       std::string qName,
 				       Attributes* attrs, 
-				       NSmap& /* nsz */) {
+				       NSmap& nsz) {
 		State newState = {S_ERROR};
 		NestedIn p = stack.top().nestedIn;
 		std::string c = uri + ' ' + localName;
@@ -107,29 +305,51 @@ namespace w3c_sw {
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ documentation") {
 		    newState.nestedIn = S_documentation;
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ types") {
-		    throw std::string("write a bridge to the schema parser");
+		    std::cerr << std::string("Write a bridge to the schema parser, slacker!");
+		    newState.nestedIn = S_types;
+		} else if (p == S_types) {
+		    newState.nestedIn = S_types;
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ message") {
+		    inMessage = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_message;
 		} else if (p == S_message && c == "http://schemas.xmlsoap.org/wsdl/ part") {
+		    message2element.insert1(inMessage, QName(attrs->getValue("", "element"), nsz));
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ portType") {
+		    ifaceName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_portType;
 		} else if (p == S_portType && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
-		    opName = attrs->getValue("", "name");
+		    opName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_portType_operation;
 		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
-		    body = attrs->getValue("http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/", "SPAT");
+		    inputMessage = QName(attrs->getValue("", "message"), nsz);
+		    body = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ output") {
-		    head = attrs->getValue("http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/", "SPAT");
+		    outputMessage = QName(attrs->getValue("", "message"), nsz);
+		    head = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ binding") {
+		    bindingName = QName(targetNamespace, attrs->getValue("", "name"));
+		    bindings[bindingName].type = BindingInfo::T_UNKNOWN;
+		    bindings[bindingName].soapProtocol = "~http~";
 		    newState.nestedIn = S_binding;
 		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/soap/ binding") {
+		    bindings[bindingName].type = BindingInfo::T_SOAP;
+		    std::string p = attrs->getValue("", "transport");
+		    bindings[bindingName].soapProtocol
+			= p == "http://schemas.xmlsoap.org/soap/http"
+			? "http://www.w3.org/2006/01/soap11/bindings/HTTP/"
+			: p;
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/http/ binding") {
+		    bindings[bindingName].type = BindingInfo::T_HTTP;
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
+		    bindings[bindingName].operation = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_binding_operation;
 		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/soap/ operation") {
+		    // What would we do with @soapAction ?
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
 		    newState.nestedIn = S_operationInput;
@@ -140,11 +360,23 @@ namespace w3c_sw {
 		} else if (p == S_operationOutput && c == "http://schemas.xmlsoap.org/wsdl/soap/ body") {
 		    newState.nestedIn = S_EMPTY;
 		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ service") {
+		    serviceName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_service;
 		} else if (p == S_service && c == "http://schemas.xmlsoap.org/wsdl/ port") {
+		    portName = QName(targetNamespace, attrs->getValue("", "name"));
+		    bindingName = QName(attrs->getValue("", "binding"), nsz);
 		    newState.nestedIn = S_service_port;
 		} else if (p == S_service_port && c == "http://schemas.xmlsoap.org/wsdl/soap/ address") {
+		    assert(bindings[bindingName].type = BindingInfo::T_SOAP);
+		    std::string address = attrs->getValue("", "location");
+		    QName op = bindings[bindingName].operation;
+		    // bindings[bindingName].soapProtocol ? 
+		    ServiceDescription::SoapEndpoint endpoint(serviceName, bindingName, op, address, ServiceDescription::SOAP_11);
+		    sd->addEndpoint(boost::make_shared<ServiceDescription::SoapEndpoint>(endpoint));
+		    // sd->operations[op].endpoints.insert(boost::make_shared<ServiceDescription::SoapEndpoint>(endpoint));
 		    newState.nestedIn = S_EMPTY;
+		// WSDL1.1 for HTTP } else if (p == S_service_port && c == "?? ??") {
+		//     HTTPEndpoint end(serviceName, bindingName, op, address, @@methodDefault);
 		} else
 		    varError("unexpected %s within %s", c.c_str(), stack.top().stateStr());
 		stack.push(newState);
@@ -159,13 +391,27 @@ namespace w3c_sw {
 		State nestedState = stack.top();
 		stack.pop();
 		switch (nestedState.nestedIn) {
-		case S_documentation:
-		    chars.resize(0);
+		    /**
+		     * Work through the above states in reverse order to follow the order that tags are closed.
+		     */
+		case S_service_port:
+		    portName.reset();
 		    break;
-		case S_portType_operation:
+		case S_service:
+		    serviceName.reset();
+		    break;
+		case S_binding:
+		    bindingName.reset();
+		    break;
+		case S_portType_operation: {
+
+		    QName inElt = message2element.find1(inputMessage)->second;
+		    QName outElt = message2element.find1(outputMessage)->second;
+		    sd->operations.insert(std::pair<QName, ServiceDescription::Operation>
+					  (opName, ServiceDescription::Operation(opName, ServiceDescription::P_InOut, inElt, outElt, ifaceName)));
 		    if (!head.empty() || !body.empty()) {
 			std::stringstream ss;
-			ss << "LABEL <" << targetNamespace << opName << "> CONSTRUCT {" << head << "} WHERE {" << body << "}";
+			ss << "LABEL <" << opName.asURI() << "> CONSTRUCT {" << head << "} WHERE {" << body << "}";
 			std::set<std::string> prefixes = nsz.keys();
 			MapSetDriver sp(baseURI, atomFactory);
 			for (std::set<std::string>::const_iterator it = prefixes.begin();
@@ -174,6 +420,17 @@ namespace w3c_sw {
 			sp.parse(ss.str());
 			sd->ms = dynamic_cast<MapSet*>(sp.root);
 		    }
+		    ifaceName.reset();
+		}
+		case S_portType:
+		    ifaceName.reset();
+		    break;
+		case S_message:
+		    inMessage.reset();
+		    break;
+		case S_documentation:
+		    chars.resize(0);
+		    break;
 		default:
 		    break;
 		    // varError("unexpected state %d", stack.top().nestedIn);
@@ -181,7 +438,6 @@ namespace w3c_sw {
 		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
 		    varError("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
 		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
-		expectCharData = false;
 	    }
 	    virtual void characters (const char ch[],
 				     int start,

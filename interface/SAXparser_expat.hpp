@@ -58,7 +58,7 @@ namespace w3c_sw {
 	SAXparser_expat () {  }
 	virtual ~SAXparser_expat () {  }
 
-	std::string locationStr (XML_Parser parser) {
+	std::string locationStr (XML_Parser parser) { // @@ seems to report errors at the end of the document.
 	    std::stringstream ret;
 	    ret << ":" << XML_GetCurrentLineNumber(parser)
 		<< ":" << XML_GetCurrentColumnNumber(parser)
@@ -92,7 +92,7 @@ namespace w3c_sw {
 #else /* !_MSC_VER */
 		    XML_ParseBuffer(parser, istr.p->gcount(), isFinal) == XML_STATUS_ERROR;
 #endif /* !_MSC_VER */
-		testAbort(std::string("SAXparser_expat") + locationStr(parser));
+		testAbort(istr.nameStr + locationStr(parser));
 		if (failed) {
 		    buff[istr.p->gcount()] = 0;
 		    buff[100] = 0;

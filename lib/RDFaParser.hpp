@@ -63,10 +63,7 @@ namespace w3c_sw {
 	    }
 
 	    const URI* _QnameToURI (std::string qname, NSmap& map) {
-		size_t f = qname.find_first_of(":");
-		std::string prefix = f == std::string::npos ? "" : qname.substr(0, f);
-		std::string local = f == std::string::npos ? qname : qname.substr(f + 1);
-		return atomFactory->getURI(map[prefix] + local);
+		return atomFactory->getURI(QName(qname, map).asURI());
 	    }
 
 	public:
@@ -91,7 +88,7 @@ namespace w3c_sw {
 
 		if (grddlMap != NULL)
 		    grddlMap->maybeChangeMediaType(uri, localName);
-		std::string trans = attrs->getValue("http://www.w3.org/2003/g/data-view#", "transformation");
+		std::string trans = attrs->getValue(NS_grddl, "transformation");
 		if (!trans.empty()) {
 		    std::vector<std::string> args;
 		    args.push_back(trans);
@@ -145,7 +142,7 @@ namespace w3c_sw {
 		}
 
 		t = attrs->getValue("", "rel");
-		if (!t.empty()) {
+		if (!t.empty() && localName != "link") {  // link tags have a conflicting semantics for @rel.
 		    nested.rel = _QnameToURI(t, nsz);
 		    t = attrs->getValue("", "href");
 		    if (!t.empty()) {

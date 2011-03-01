@@ -4,5 +4,5 @@
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/prenormalize>
 
 LABEL tns:opPrenormalize
-CONSTRUCT { _:y a tns:Normal }
-    WHERE { _:y a tns:Abnormal }
+CONSTRUCT { ?y a tns:Normal }
+    WHERE { ?y a tns:Abnormal }
