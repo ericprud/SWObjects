@@ -11,6 +11,9 @@
 #include "../interface/SAXparser.hpp"
 #include "MapSetParser/MapSetParser.hpp"
 
+#define NS_wsdl11 "http://schemas.xmlsoap.org/wsdl/"
+#define NS_wsdlsoap "http://schemas.xmlsoap.org/wsdl/soap/"
+#define NS_wsdlhttp "http://schemas.xmlsoap.org/wsdl/http/"
 #define NS_spdl "http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
 
 namespace w3c_sw {
@@ -298,43 +301,43 @@ namespace w3c_sw {
 				       NSmap& nsz) {
 		State newState = {S_ERROR};
 		NestedIn p = stack.top().nestedIn;
-		std::string c = uri + ' ' + localName;
-		if (p == S_DOCUMENT && c == "http://schemas.xmlsoap.org/wsdl/ definitions") {
+		QName c(uri, localName);
+		if (p == S_DOCUMENT && c == QName(NS_wsdl11, "definitions")) {
 		    targetNamespace = attrs->getValue("", "targetNamespace");
 		    newState.nestedIn = S_definitions;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ documentation") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "documentation")) {
 		    newState.nestedIn = S_documentation;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ types") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "types")) {
 		    std::cerr << std::string("Write a bridge to the schema parser, slacker!");
 		    newState.nestedIn = S_types;
 		} else if (p == S_types) {
 		    newState.nestedIn = S_types;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ message") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "message")) {
 		    inMessage = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_message;
-		} else if (p == S_message && c == "http://schemas.xmlsoap.org/wsdl/ part") {
+		} else if (p == S_message && c == QName(NS_wsdl11, "part")) {
 		    message2element.insert1(inMessage, QName(attrs->getValue("", "element"), nsz));
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ portType") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "portType")) {
 		    ifaceName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_portType;
-		} else if (p == S_portType && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
+		} else if (p == S_portType && c == QName(NS_wsdl11, "operation")) {
 		    opName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_portType_operation;
-		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
+		} else if (p == S_portType_operation && c == QName(NS_wsdl11, "input")) {
 		    inputMessage = QName(attrs->getValue("", "message"), nsz);
 		    body = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_portType_operation && c == "http://schemas.xmlsoap.org/wsdl/ output") {
+		} else if (p == S_portType_operation && c == QName(NS_wsdl11, "output")) {
 		    outputMessage = QName(attrs->getValue("", "message"), nsz);
 		    head = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ binding") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "binding")) {
 		    bindingName = QName(targetNamespace, attrs->getValue("", "name"));
 		    bindings[bindingName].type = BindingInfo::T_UNKNOWN;
 		    bindings[bindingName].soapProtocol = "~http~";
 		    newState.nestedIn = S_binding;
-		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/soap/ binding") {
+		} else if (p == S_binding && c == QName(NS_wsdlsoap, "binding")) {
 		    bindings[bindingName].type = BindingInfo::T_SOAP;
 		    std::string p = attrs->getValue("", "transport");
 		    bindings[bindingName].soapProtocol
@@ -342,31 +345,31 @@ namespace w3c_sw {
 			? "http://www.w3.org/2006/01/soap11/bindings/HTTP/"
 			: p;
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/http/ binding") {
+		} else if (p == S_binding && c == QName(NS_wsdlhttp, "binding")) {
 		    bindings[bindingName].type = BindingInfo::T_HTTP;
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding && c == "http://schemas.xmlsoap.org/wsdl/ operation") {
+		} else if (p == S_binding && c == QName(NS_wsdl11, "operation")) {
 		    bindings[bindingName].operation = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_binding_operation;
-		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/soap/ operation") {
+		} else if (p == S_binding_operation && c == QName(NS_wsdlsoap, "operation")) {
 		    // What would we do with @soapAction ?
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/ input") {
+		} else if (p == S_binding_operation && c == QName(NS_wsdl11, "input")) {
 		    newState.nestedIn = S_operationInput;
-		} else if (p == S_operationInput && c == "http://schemas.xmlsoap.org/wsdl/soap/ body") {
+		} else if (p == S_operationInput && c == QName(NS_wsdlsoap, "body")) {
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding_operation && c == "http://schemas.xmlsoap.org/wsdl/ output") {
+		} else if (p == S_binding_operation && c == QName(NS_wsdl11, "output")) {
 		    newState.nestedIn = S_operationOutput;
-		} else if (p == S_operationOutput && c == "http://schemas.xmlsoap.org/wsdl/soap/ body") {
+		} else if (p == S_operationOutput && c == QName(NS_wsdlsoap, "body")) {
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == "http://schemas.xmlsoap.org/wsdl/ service") {
+		} else if (p == S_definitions && c == QName(NS_wsdl11, "service")) {
 		    serviceName = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_service;
-		} else if (p == S_service && c == "http://schemas.xmlsoap.org/wsdl/ port") {
+		} else if (p == S_service && c == QName(NS_wsdl11, "port")) {
 		    portName = QName(targetNamespace, attrs->getValue("", "name"));
 		    bindingName = QName(attrs->getValue("", "binding"), nsz);
 		    newState.nestedIn = S_service_port;
-		} else if (p == S_service_port && c == "http://schemas.xmlsoap.org/wsdl/soap/ address") {
+		} else if (p == S_service_port && c == QName(NS_wsdlsoap, "address")) {
 		    assert(bindings[bindingName].type = BindingInfo::T_SOAP);
 		    std::string address = attrs->getValue("", "location");
 		    QName op = bindings[bindingName].operation;
@@ -378,7 +381,7 @@ namespace w3c_sw {
 		// WSDL1.1 for HTTP } else if (p == S_service_port && c == "?? ??") {
 		//     HTTPEndpoint end(serviceName, bindingName, op, address, @@methodDefault);
 		} else
-		    varError("unexpected %s within %s", c.c_str(), stack.top().stateStr());
+		    varError("unexpected %s within %s", c.asURI().c_str(), stack.top().stateStr());
 		stack.push(newState);
 		chars = "";
 		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
