@@ -25,24 +25,46 @@ namespace w3c_sw {
 	struct QName {
 	    std::string ns;
 	    std::string local;
-	    QName (std::string ns, std::string local)
-		: ns(ns), local(local)
+	    bool _initialized;
+	    QName ()
+		: ns("UNINTIALIZED"), local("UNINTIALIZED"), _initialized(false)
 	    {  }
-	    QName (std::string qname, NSmap& map) {
+	    QName (std::string ns, std::string local)
+		: ns(ns), local(local), _initialized(true)
+	    {  }
+	    QName (const QName& ref)
+		: ns(ref.ns), local(ref.local), _initialized(ref._initialized)
+	    {  }
+	    QName (std::string qname, NSmap& map)
+		: ns("UNINTIALIZED"), local("UNINTIALIZED"), _initialized(false)
+	    {
 		size_t f = qname.find_first_of(":");
 		if (f == std::string::npos)
 		    throw std::string("':' expected in QName \"") + qname + "\""; // be conservative and throw 'till we have use cases which motivate the flexibility below.
 		std::string prefix = f == std::string::npos ? "" : qname.substr(0, f);
 		local = f == std::string::npos ? qname : qname.substr(f + 1);
 		ns = map[prefix];
+		_initialized = true;
+	    }
+	    void reset () {
+		ns = "UNINTIALIZED";
+		local = "UNINTIALIZED";
+		_initialized = false;
+	    }
+	    void _test () const {
+		if (!_initialized)
+		    throw std::string("unintialized QName");
 	    }
 	    bool operator== (const QName& ref) const {
+		_test();
 		return ns == ref.ns && local == ref.local;
 	    }
 	    bool operator< (const QName& ref) const {
+		_test();
 		return ns < ref.ns || local < ref.local;
 	    }
 	    std::string asURI (std::string separator = "") {
+		_test();
 		return ns + separator + local;
 	    }
 	};
