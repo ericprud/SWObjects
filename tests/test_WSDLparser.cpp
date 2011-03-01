@@ -77,6 +77,35 @@ BOOST_AUTO_TEST_CASE( prenormalize ) {
     BOOST_CHECK_EQUAL(tested, expected);
 }
 
+BOOST_AUTO_TEST_CASE( prenormalize_2 ) {
+    sw::IStreamContext rdfxml("WSDLparser/prenormalize-2.0.wsdl");
+    sw::ServiceDescription tested;
+    GWSDLparser.parse(&tested, rdfxml);
+
+    const std::string NS_prenorm = "http://www.semanticbits.com/piq-workflow/wsdl/prenormalize";
+    sw::ServiceDescription expected;
+    sw::IStreamContext reference("WSDLparser/prenormalize.rq", sw::IStreamContext::FILE);
+    expected.ms = mapSetParser.parse(reference);
+    QName opName = QName(NS_prenorm, "opPrenormalize");
+    expected.addOperation
+	(opName,
+	 sw::ServiceDescription::P_InOut,
+	 QName(NS_prenorm, "ProjectedChunkFile"), // inElt,
+	 QName(NS_prenorm, "prenormalizeOutput"), // outElt,
+	 QName(NS_prenorm, "prenormalizePortType")// ifaceName
+	 );
+    expected.addEndpoint(boost::make_shared<sw::ServiceDescription::SoapEndpoint>
+			 (sw::ServiceDescription::SoapEndpoint
+			  (QName(NS_prenorm, "prenormalizeService"),
+			   QName(NS_prenorm, "prenormalizeSOAPBinding"),
+			   QName(NS_prenorm, "opPrenormalize"),
+			   "http://www.semanticbits.com/piq-workflow/prenormalize",
+			   sw::ServiceDescription::SOAP_11)));
+    mapSetParser.clear(""); // clear out namespaces and base URI.
+
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
 /* invoke with e.g. -DHTTP_RdfXml_test=http://mouni.local/RdfXml-0.rdf */
 #if HTTP_CLIENT != SWOb_DISABLED && defined(HTTP_RdfXml_test)
 BOOST_AUTO_TEST_CASE( by_http ) {

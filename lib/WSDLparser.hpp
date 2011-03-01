@@ -14,6 +14,9 @@
 #define NS_wsdl11 "http://schemas.xmlsoap.org/wsdl/"
 #define NS_wsdlsoap "http://schemas.xmlsoap.org/wsdl/soap/"
 #define NS_wsdlhttp "http://schemas.xmlsoap.org/wsdl/http/"
+
+#define NS_wsdl20 "http://www.w3.org/ns/wsdl"
+
 #define NS_spdl "http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
 
 namespace w3c_sw {
@@ -134,6 +137,7 @@ namespace w3c_sw {
 	MapSet* ms;
 	typedef std::map<QName, Operation> OperationMap;
 	OperationMap operations;
+
 	bool operator== (const ServiceDescription& ref) const {
 	    if (ms && ref.ms) {
 		if (ms && !(*ms == *ref.ms))
@@ -224,9 +228,10 @@ namespace w3c_sw {
 	protected:
 	    enum NestedIn {S_ERROR, S_EMPTY, S_DOCUMENT,
 			   S_definitions, S_documentation, S_types, 
-			   S_message, S_portType, S_portType_operation,
-			   S_binding, S_binding_operation,
-			   S_operationInput, S_operationOutput,
+			   S_message, S_portType, S_portType_operation, // WSDL11
+			   S_interface, S_interface_operation, // WSDL20
+			   S_binding, S_binding_operation, S_operationInput, S_operationOutput, // WSDL11
+			   S_20_binding, // WSDL20
 			   S_service, S_service_port};
 	    struct State {
 		enum NestedIn nestedIn;
@@ -234,9 +239,10 @@ namespace w3c_sw {
 		    static const char* stateStrs[] =
 			{"ERROR", "EMPTY", "DOCUMENT",
 			 "definitions", "documentation", "types", 
-			 "message", "portType", "portType/operation",
-			 "binding", "binding/operation",
-			 "binding/operation/input", "binding/operation/output",
+			 "message", "portType", "portType/operation", // WSDL11
+			 "interfaec", "interface/operation", // WSDL20
+			 "binding", "binding/operation", "binding/operation/input", "binding/operation/output", // WSDL11
+			 "binding", // WSDL20
 			 "service", "service/port"};
 		    return stateStrs[nestedIn];
 		}
@@ -248,6 +254,8 @@ namespace w3c_sw {
 		    return ret.str();
 		}
 	    };
+
+	    enum { WSDL_unknown, WSDL11, WSDL20 } version;
 
 	    ServiceDescription* sd;
 	    AtomFactory* atomFactory;
@@ -277,8 +285,8 @@ namespace w3c_sw {
 		    return ret;
 		}
 	    };
-	    M2E message2element;
-	    QName ifaceName, inputMessage, outputMessage, bindingName;;
+	    M2E message2element; // used for WSDL1.1 which separates messages from portTypes (interfaces)
+	    QName ifaceName, inElt, outElt, bindingName;;
 
 	    struct BindingInfo {
 		QName operation;
@@ -289,7 +297,7 @@ namespace w3c_sw {
 		std::string soapProtocol;
 	    };
 	    std::map<QName, BindingInfo> bindings;
-	    QName serviceName, portName;
+	    QName serviceName;
 
 	    std::string dumpStack () {
 		std::vector<State> copy;
@@ -307,7 +315,7 @@ namespace w3c_sw {
 
 	public:
 	    WSDLSaxHandler (ServiceDescription* sd, std::string baseURI, AtomFactory* atomFactory)
-		: sd(sd), atomFactory(atomFactory), baseURI(baseURI), chars("") {
+		: version(WSDL_unknown), sd(sd), atomFactory(atomFactory), baseURI(baseURI), chars("") {
 		State newState = {S_DOCUMENT};
 		stack.push(newState);
 	    }
@@ -322,40 +330,91 @@ namespace w3c_sw {
 		QName c(uri, localName);
 		if (p == S_DOCUMENT && c == QName(NS_wsdl11, "definitions")) {
 		    targetNamespace = attrs->getValue("", "targetNamespace");
+		    version = WSDL11;
 		    newState.nestedIn = S_definitions;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "documentation")) {
+		} else if (p == S_DOCUMENT && c == QName(NS_wsdl20, "description")) {
+		    targetNamespace = attrs->getValue("", "targetNamespace");
+		    version = WSDL20;
+		    newState.nestedIn = S_definitions;
+		} else if (p == S_definitions &&
+			   ((version == WSDL11 && c == QName(NS_wsdl11, "documentation")) ||
+			    (version == WSDL20 && c == QName(NS_wsdl20, "documentation")))) {
 		    newState.nestedIn = S_documentation;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "types")) {
-		    std::cerr << std::string("Write a bridge to the schema parser, slacker!");
+		} else if (p == S_definitions &&
+			   ((version == WSDL11 && c == QName(NS_wsdl11, "types")) ||
+			    (version == WSDL20 && c == QName(NS_wsdl20, "types")))) {
+		    std::cerr << "Write a bridge to the schema parser, slacker!\n";
 		    newState.nestedIn = S_types;
 		} else if (p == S_types) {
+		    // Stay in types mode -- ignore the nested schema.
 		    newState.nestedIn = S_types;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "message")) {
-		    inMessage = QName(targetNamespace, attrs->getValue("", "name"));
-		    newState.nestedIn = S_message;
-		} else if (p == S_message && c == QName(NS_wsdl11, "part")) {
-		    message2element.insert1(inMessage, QName(attrs->getValue("", "element"), nsz));
-		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "portType")) {
+
+		    // 2.0 uses interface/operation
+		} else if (p == S_definitions && version == WSDL20 && c == QName(NS_wsdl20, "interface")) {
 		    ifaceName = QName(targetNamespace, attrs->getValue("", "name"));
-		    newState.nestedIn = S_portType;
-		} else if (p == S_portType && c == QName(NS_wsdl11, "operation")) {
+		    newState.nestedIn = S_interface;
+		} else if (p == S_interface && version == WSDL20 && c == QName(NS_wsdl20, "operation")) {
 		    opName = QName(targetNamespace, attrs->getValue("", "name"));
-		    newState.nestedIn = S_portType_operation;
-		} else if (p == S_portType_operation && c == QName(NS_wsdl11, "input")) {
-		    inputMessage = QName(attrs->getValue("", "message"), nsz);
+		    // pattern = attrs->getValue("", "pattern");
+		    newState.nestedIn = S_interface_operation;
+		} else if (p == S_interface_operation && version == WSDL20 && c == QName(NS_wsdl20, "input")) {
+		    inElt = QName(attrs->getValue("", "element"), nsz);
 		    body = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_portType_operation && c == QName(NS_wsdl11, "output")) {
-		    outputMessage = QName(attrs->getValue("", "message"), nsz);
+		} else if (p == S_interface_operation && version == WSDL20 && c == QName(NS_wsdl20, "output")) {
+		    outElt = QName(attrs->getValue("", "element"), nsz);
 		    head = attrs->getValue(NS_spdl, "SPAT");
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "binding")) {
+
+
+		    // 1.1 uses message,portType/operation
+		} else if (p == S_definitions && version == WSDL11 && c == QName(NS_wsdl11, "message")) {
+		    inMessage = QName(targetNamespace, attrs->getValue("", "name"));
+		    newState.nestedIn = S_message;
+		} else if (p == S_message && version == WSDL11 && c == QName(NS_wsdl11, "part")) {
+		    message2element.insert1(inMessage, QName(attrs->getValue("", "element"), nsz));
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_definitions && version == WSDL11 && c == QName(NS_wsdl11, "portType")) {
+		    ifaceName = QName(targetNamespace, attrs->getValue("", "name"));
+		    newState.nestedIn = S_portType;
+		} else if (p == S_portType && version == WSDL11 && c == QName(NS_wsdl11, "operation")) {
+		    opName = QName(targetNamespace, attrs->getValue("", "name"));
+		    newState.nestedIn = S_portType_operation;
+		} else if (p == S_portType_operation && version == WSDL11 && c == QName(NS_wsdl11, "input")) {
+		    QName inputMessage = QName(attrs->getValue("", "message"), nsz);
+		    inElt = message2element.find1(inputMessage)->second;
+		    body = attrs->getValue(NS_spdl, "SPAT");
+		    newState.nestedIn = S_EMPTY;
+		} else if (p == S_portType_operation && version == WSDL11 && c == QName(NS_wsdl11, "output")) {
+		    QName outputMessage = QName(attrs->getValue("", "message"), nsz);
+		    outElt = message2element.find1(outputMessage)->second;
+		    head = attrs->getValue(NS_spdl, "SPAT");
+		    newState.nestedIn = S_EMPTY;
+
+		    // <binding>
+		    // 2.0
+		} else if (p == S_definitions && version == WSDL20 && c == QName(NS_wsdl20, "binding")) {
 		    bindingName = QName(targetNamespace, attrs->getValue("", "name"));
+		    // Ignore @interface -- we key on operation/@ref .
+		    std::string type = attrs->getValue("", "type");
+		    bindings[bindingName].type = 
+			type == "http://www.w3.org/ns/wsdl/http" ? BindingInfo::T_HTTP :
+			type == "http://www.w3.org/ns/wsdl/soap" ? BindingInfo::T_SOAP :
+			BindingInfo::T_UNKNOWN;
+		    bindings[bindingName].soapProtocol = attrs->getValue("http://www.w3.org/ns/wsdl/soap", "protocol");
+		    newState.nestedIn = S_20_binding;
+		} else if (p == S_20_binding && version == WSDL20 && c == QName(NS_wsdl20, "operation")) {
+		    bindings[bindingName].operation = QName(attrs->getValue("", "ref"), nsz);
+		    newState.nestedIn = S_EMPTY;
+
+		    // 1.1
+		} else if (p == S_definitions && version == WSDL11 && c == QName(NS_wsdl11, "binding")) {
+		    bindingName = QName(targetNamespace, attrs->getValue("", "name"));
+		    // Ignore @type -- we key on operation/@name .
 		    bindings[bindingName].type = BindingInfo::T_UNKNOWN;
 		    bindings[bindingName].soapProtocol = "~http~";
 		    newState.nestedIn = S_binding;
-		} else if (p == S_binding && c == QName(NS_wsdlsoap, "binding")) {
+		} else if (p == S_binding && version == WSDL11 && c == QName(NS_wsdlsoap, "binding")) {
 		    bindings[bindingName].type = BindingInfo::T_SOAP;
 		    std::string p = attrs->getValue("", "transport");
 		    bindings[bindingName].soapProtocol
@@ -363,31 +422,63 @@ namespace w3c_sw {
 			? "http://www.w3.org/2006/01/soap11/bindings/HTTP/"
 			: p;
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding && c == QName(NS_wsdlhttp, "binding")) {
+		} else if (p == S_binding && version == WSDL11 && c == QName(NS_wsdlhttp, "binding")) {
 		    bindings[bindingName].type = BindingInfo::T_HTTP;
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding && c == QName(NS_wsdl11, "operation")) {
+		} else if (p == S_binding && version == WSDL11 && c == QName(NS_wsdl11, "operation")) {
 		    bindings[bindingName].operation = QName(targetNamespace, attrs->getValue("", "name"));
 		    newState.nestedIn = S_binding_operation;
-		} else if (p == S_binding_operation && c == QName(NS_wsdlsoap, "operation")) {
+		} else if (p == S_binding_operation && version == WSDL11 && c == QName(NS_wsdlsoap, "operation")) {
 		    // What would we do with @soapAction ?
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding_operation && c == QName(NS_wsdl11, "input")) {
+		} else if (p == S_binding_operation && version == WSDL11 && c == QName(NS_wsdl11, "input")) {
 		    newState.nestedIn = S_operationInput;
-		} else if (p == S_operationInput && c == QName(NS_wsdlsoap, "body")) {
+		} else if (p == S_operationInput && version == WSDL11 && c == QName(NS_wsdlsoap, "body")) {
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_binding_operation && c == QName(NS_wsdl11, "output")) {
+		} else if (p == S_binding_operation && version == WSDL11 && c == QName(NS_wsdl11, "output")) {
 		    newState.nestedIn = S_operationOutput;
-		} else if (p == S_operationOutput && c == QName(NS_wsdlsoap, "body")) {
+		} else if (p == S_operationOutput && version == WSDL11 && c == QName(NS_wsdlsoap, "body")) {
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_definitions && c == QName(NS_wsdl11, "service")) {
+		    // </binding>
+
+		    // <service>
+		} else if (p == S_definitions &&
+			   ((version == WSDL11 && c == QName(NS_wsdl11, "service")) ||
+			    (version == WSDL20 && c == QName(NS_wsdl20, "service")))) {
 		    serviceName = QName(targetNamespace, attrs->getValue("", "name"));
+		    // ignore 2.0's @interface as we key on endpoint/binding
 		    newState.nestedIn = S_service;
-		} else if (p == S_service && c == QName(NS_wsdl11, "port")) {
-		    portName = QName(targetNamespace, attrs->getValue("", "name"));
+		    
+
+		    // 2.0
+		} else if (p == S_service && version == WSDL20 && c == QName(NS_wsdl20, "endpoint")) {
+		    // ignore QName(targetNamespace, attrs->getValue("", "name"))
+		    QName binding = QName(attrs->getValue("", "binding"), nsz);
+		    std::string address = attrs->getValue("", "address");
+		    switch (bindings[binding].type) {
+		    case BindingInfo::T_HTTP:
+			sd->addHTTPEndpoint(serviceName, binding,
+					    bindings[binding].operation,
+					    address, "@@w11http:binding/@methodDefault");
+			break;
+		    case BindingInfo::T_SOAP:
+			sd->addSoapEndpoint(serviceName, binding,
+					    bindings[binding].operation,
+					    address, ServiceDescription::SOAP_11);
+			break;
+		    case BindingInfo::T_UNKNOWN:
+			break;
+		    }
+		    newState.nestedIn = S_EMPTY;
+
+		    // 1.1
+		} else if (p == S_service && version == WSDL11 && c == QName(NS_wsdl11, "port")) {
+		    // ignore QName(targetNamespace, attrs->getValue("", "name"))
 		    bindingName = QName(attrs->getValue("", "binding"), nsz);
 		    newState.nestedIn = S_service_port;
-		} else if (p == S_service_port && c == QName(NS_wsdlsoap, "address")) {
+		} else if (p == S_service_port &&
+			   ((version == WSDL11 && c == QName(NS_wsdlsoap, "address")) ||
+			    (version == WSDL20 && c == QName(NS_wsdlsoap, "address")))) {
 		    assert(bindings[bindingName].type = BindingInfo::T_SOAP);
 		    std::string address = attrs->getValue("", "location");
 		    // What do we do with bindings[bindingName].soapProtocol ? 
@@ -395,14 +486,18 @@ namespace w3c_sw {
 					bindings[bindingName].operation,
 					address, ServiceDescription::SOAP_11);
 		    newState.nestedIn = S_EMPTY;
-		} else if (p == S_service_port && c == QName(NS_wsdlhttp, "@@??")) {
+		} else if (p == S_service_port &&
+			   ((version == WSDL11 && c == QName(NS_wsdlhttp, "@@??")) ||
+			    (version == WSDL20 && c == QName(NS_wsdlhttp, "@@??")))) {
 		    /** Still need to suss out WSDL 1.0 structure for HTTP bindings. */
 		    assert(bindings[bindingName].type = BindingInfo::T_HTTP);
 		    std::string address = attrs->getValue("", "@@location");
 		    sd->addHTTPEndpoint(serviceName, bindingName,
 					bindings[bindingName].operation,
-					address, "@@methodDefault");
+					address, "@@w11http:binding/@verb");
 		    newState.nestedIn = S_EMPTY;
+		    // </service>
+
 		} else
 		    varError("unexpected %s within %s", c.asURI().c_str(), stack.top().stateStr());
 		stack.push(newState);
@@ -420,19 +515,16 @@ namespace w3c_sw {
 		    /**
 		     * Work through the above states in reverse order to follow the order that tags are closed.
 		     */
-		case S_service_port:
-		    portName.reset();
-		    break;
 		case S_service:
 		    serviceName.reset();
 		    break;
+		case S_20_binding:
 		case S_binding:
 		    bindingName.reset();
 		    break;
+		case S_interface_operation:
 		case S_portType_operation: {
 
-		    QName inElt = message2element.find1(inputMessage)->second;
-		    QName outElt = message2element.find1(outputMessage)->second;
 		    sd->operations.insert(std::pair<QName, ServiceDescription::Operation>
 					  (opName, ServiceDescription::Operation(opName, ServiceDescription::P_InOut, inElt, outElt, ifaceName)));
 		    if (!head.empty() || !body.empty()) {

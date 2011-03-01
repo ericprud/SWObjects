@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<!-- prenormalize-2.0.wsdl - WSDL 2.0 version of prenormalize.wsdl
+     $Id$
+
+    Output of http://www.w3.org/2006/02/WSDLConvert.html
+    with intput: xmlfile=http://swobjects.svn.sourceforge.net/viewvc/swobjects/branches/wsdl/tests/WSDLparser/prenormalize.wsdl
+    and SPAT manually re-added.
+  -->
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
+ 	     xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+             targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
+    <documentation>
+	 This document describes a mock service corresponding to the 'prenormalize'
+	 node from the PIQ Workflow in Fig 4a of "Parameterized specification,
+	 configuration and execution of data-intensive scientific workflows" by
+	 Kumar et al.  The prenormalize node takes as input a ProjectedChunkFile and returns an OffsetTileFile and an AverageTileFile.
+</documentation>
+   <types>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                 xmlns="http://schemas.xmlsoap.org/wsdl/"
+                 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                 xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+                 targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
+         <xs:element name="prenormalizeOutput">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="OffsetTileFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                  <xs:element name="AverageTileFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="ProjectedChunkFile" type="xs:string"/>
+      </xs:schema>
+   </types>
+   <interface name="prenormalizePortType">
+      <operation name="opPrenormalize" pattern="http://www.w3.org/ns/wsdl/in-out">
+         <input element="tns:ProjectedChunkFile" spat:SPAT="?x a tns:Abnormal"/>
+         <output element="tns:prenormalizeOutput" spat:SPAT="?x a tns:Normal"/>
+      </operation>
+   </interface>
+   <binding xmlns:wsoap="http://www.w3.org/ns/wsdl/soap" name="prenormalizeSOAPBinding"
+            interface="tns:prenormalizePortType"
+            type="http://www.w3.org/ns/wsdl/soap"
+            wsoap:version="1.1"
+            wsoap:protocol="http://www.w3.org/2006/01/soap11/bindings/HTTP/">
+      <operation ref="tns:opPrenormalize"
+                 wsoap:soapAction="http://www.semanticbits.com/piq-workflow/prenormalize"/>
+   </binding>
+   <service name="prenormalizeService" interface="tns:prenormalizePortType">
+      <endpoint name="prenormalizeServicePort" binding="tns:prenormalizeSOAPBinding"
+                address="http://www.semanticbits.com/piq-workflow/prenormalize"/>
+   </service>
+</description>
