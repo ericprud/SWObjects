@@ -178,6 +178,24 @@ namespace w3c_sw {
 	    }
 	    it->second.endpoints.insert(endpoint);
 	}
+	void addHTTPEndpoint (QName service, QName binding, QName operation,
+			      std::string endpoint, std::string methodDefault) {
+	    addEndpoint
+		(
+		 boost::make_shared<ServiceDescription::HTTPEndpoint>
+		 (ServiceDescription::HTTPEndpoint
+		  (service, binding, operation, endpoint, methodDefault
+		   )));
+	}
+	void addSoapEndpoint (QName service, QName binding, QName operation,
+			      std::string endpoint, Protocol protocol) {
+	    addEndpoint
+		(
+		 boost::make_shared<ServiceDescription::SoapEndpoint>
+		 (ServiceDescription::SoapEndpoint
+		  (service, binding, operation, endpoint, protocol
+		   )));
+	}
     };
     inline std::ostream& operator<< (std::ostream& os, const ServiceDescription& my) {
 	os << my.toString();
@@ -372,14 +390,19 @@ namespace w3c_sw {
 		} else if (p == S_service_port && c == QName(NS_wsdlsoap, "address")) {
 		    assert(bindings[bindingName].type = BindingInfo::T_SOAP);
 		    std::string address = attrs->getValue("", "location");
-		    QName op = bindings[bindingName].operation;
-		    // bindings[bindingName].soapProtocol ? 
-		    ServiceDescription::SoapEndpoint endpoint(serviceName, bindingName, op, address, ServiceDescription::SOAP_11);
-		    sd->addEndpoint(boost::make_shared<ServiceDescription::SoapEndpoint>(endpoint));
-		    // sd->operations[op].endpoints.insert(boost::make_shared<ServiceDescription::SoapEndpoint>(endpoint));
+		    // What do we do with bindings[bindingName].soapProtocol ? 
+		    sd->addSoapEndpoint(serviceName, bindingName,
+					bindings[bindingName].operation,
+					address, ServiceDescription::SOAP_11);
 		    newState.nestedIn = S_EMPTY;
-		// WSDL1.1 for HTTP } else if (p == S_service_port && c == "?? ??") {
-		//     HTTPEndpoint end(serviceName, bindingName, op, address, @@methodDefault);
+		} else if (p == S_service_port && c == QName(NS_wsdlhttp, "@@??")) {
+		    /** Still need to suss out WSDL 1.0 structure for HTTP bindings. */
+		    assert(bindings[bindingName].type = BindingInfo::T_HTTP);
+		    std::string address = attrs->getValue("", "@@location");
+		    sd->addHTTPEndpoint(serviceName, bindingName,
+					bindings[bindingName].operation,
+					address, "@@methodDefault");
+		    newState.nestedIn = S_EMPTY;
 		} else
 		    varError("unexpected %s within %s", c.asURI().c_str(), stack.top().stateStr());
 		stack.push(newState);
