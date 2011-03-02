@@ -134,15 +134,12 @@ namespace w3c_sw {
 	    }
 	};
 
-	MapSet* ms;
+	MapSet ms;
 	typedef std::map<QName, Operation> OperationMap;
 	OperationMap operations;
 
 	bool operator== (const ServiceDescription& ref) const {
-	    if (ms && ref.ms) {
-		if (ms && !(*ms == *ref.ms))
-		    return false;
-	    } else if (ms != ref.ms)
+	    if (!(ms == ref.ms))
 		return false;
 	    if (operations.size() != ref.operations.size())
 		return false;
@@ -155,7 +152,7 @@ namespace w3c_sw {
 	}
 	std::string toString () const {
 	    std::stringstream ss;
-	    ss << ms->toString();
+	    ss << ms.toString();
 	    for (OperationMap::const_iterator it = operations.begin();
 		 it != operations.end(); ++it)
 		ss << it->first << " -> {" << it->second.toString() << "}\n";
@@ -536,7 +533,7 @@ namespace w3c_sw {
 			     it != prefixes.end(); ++it)
 			    sp.addPrefix(*it, atomFactory->getURI(nsz[*it]));
 			sp.parse(ss.str());
-			sd->ms = dynamic_cast<MapSet*>(sp.root);
+			sd->ms.append(*dynamic_cast<MapSet*>(sp.root));
 		    }
 		    ifaceName.reset();
 		}

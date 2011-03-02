@@ -1,0 +1,17 @@
+partition.wsdl		ImageFile			DimFile				ImageFile			DimFile
+
+chunkisize.wsdl		ChunkiSizeInput			ChunkiSizeOutput		DimFile				ChucksizeMetaFile,StackFile's
+
+zproject.wsdl		zprojectInput			ProjectedChunkFile		ChucksizeMetaFile,StackFile's	ProjectedChunkFile's
+   prenormalize.wsdl	ProjectedChunkFile		prenormalizeOutput		ProjectedChunkFile's		OffsetTileFile,AverageTileFile
+
+normalizeZ.wsdl		normalizeZInput			NormalizedProjectedChunkFile	ProjectedChunkFile's,OffsetTileFile,AverageTileFile	NormalizedProjectedChunkFile's
+  autoalign.wsdl	NormalizedProjectedChunkFile	OffsetsFile			NormalizedProjectedChunkFile's	OffsetsFile
+  mst.wsdl		OffsetsFile			DisplacementsFile		OffsetsFile			DisplacementsFile
+
+stitch.wsdl		stitchInput			StitchedChunkFile		NormalizedProjectedChunkFile's,DisplacementsFile	StichedChunkFile's
+reorganize.wsdl		StitchedChunkFile		StitchedChunkFile		StichedChunkFile's		StichedChunkFile's
+
+warp.wsdl		warpInput			WarpMetaFile			ControlPointsFile,StichedChunkFile's			WarpMetaFile
+preprocess.wsdl		WarpMetaFile			PreprocessMetaFile		WarpMetaFile			PreprocessMetaFile
+

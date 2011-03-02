@@ -6,6 +6,7 @@
 	xmlns="http://schemas.xmlsoap.org/wsdl/"
  	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
  	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 	xmlns:bas="http://www.semanticbits.com/piq-workflow/wsdl/"
  	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
  	xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
  	targetNamespace= "http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
@@ -53,8 +54,8 @@
 
 <portType name="prenormalizePortType">
     <operation name="opPrenormalize">
-      <input message="tns:prenormalizeInputMessage" spat:SPAT="?x a tns:Abnormal"/>
-      <output message="tns:prenormalizeOutputMessage" spat:SPAT="?x a tns:Normal"/>
+      <input message="tns:prenormalizeInputMessage" spat:SPAT="?prenormalize bas:has tns:ProjectedChunkFile"/>
+      <output message="tns:prenormalizeOutputMessage" spat:SPAT="?prenormalize bas:has tns:OffsetTileFile, tns:AverageTileFile"/>
     </operation>
 </portType>
 

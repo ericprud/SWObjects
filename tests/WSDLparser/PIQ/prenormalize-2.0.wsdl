@@ -7,6 +7,7 @@
     and SPAT manually re-added.
   -->
 <description xmlns="http://www.w3.org/ns/wsdl"
+ 	     xmlns:bas="http://www.semanticbits.com/piq-workflow/wsdl/"
              xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize"
  	     xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
              targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/prenormalize">
@@ -35,8 +36,8 @@
    </types>
    <interface name="prenormalizePortType">
       <operation name="opPrenormalize" pattern="http://www.w3.org/ns/wsdl/in-out">
-         <input element="tns:ProjectedChunkFile" spat:SPAT="?x a tns:Abnormal"/>
-         <output element="tns:prenormalizeOutput" spat:SPAT="?x a tns:Normal"/>
+         <input element="tns:ProjectedChunkFile" spat:SPAT="?prenormalize bas:has tns:ProjectedChunkFile"/>
+         <output element="tns:prenormalizeOutput" spat:SPAT="?prenormalize bas:has tns:OffsetTileFile, tns:AverageTileFile"/>
       </operation>
    </interface>
    <binding xmlns:wsoap="http://www.w3.org/ns/wsdl/soap" name="prenormalizeSOAPBinding"

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<definitions 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+ 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+ 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 	xmlns:bas="http://www.semanticbits.com/piq-workflow/wsdl/"
+ 	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/partition"
+ 	xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+ 	targetNamespace= "http://www.semanticbits.com/piq-workflow/wsdl/partition">
+
+ <documentation>
+	 This document describes a mock service corresponding to the 'partition'
+	 node from the PIQ Workflow in Fig 4a of "Parameterized specification,
+	 configuration and execution of data-intensive scientific workflows" by
+	 Kumar et al.  The partition node takes as input an ImageFile and returns a
+	 DimFile.
+</documentation>
+
+
+
+<types>
+	<xs:schema
+		targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/partition"
+     	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/partition">
+		<!-- types are kept simple as the focus is on composition - SH -->     
+      <xs:element name="ImageFile" type="xs:string"/>    
+	  <xs:element name="DimFile" type="xs:string"/>   
+
+	</xs:schema>    
+</types>
+
+
+<message name="ImageFileInputMessage">
+    <part name="body" element="tns:ImageFile"/>
+</message>
+
+<message name="DimFileOutputMessage">
+    <part name="body" element="tns:DimFile"/>
+</message>
+
+
+<portType name="partitionPortType">
+    <operation name="opPartition">
+      <input message="tns:ImageFileInputMessage" spat:SPAT="?partition bas:has tns:ImageFile"/>
+      <output message="tns:DimFileOutputMessage" spat:SPAT="?partition bas:has tns:DimFile"/>
+    </operation>
+</portType>
+
+ <binding name="partitionSOAPBinding" type="tns:partitionPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="opPartition">
+    <soap:operation soapAction="http://www.semanticbits.com/piq-workflow/partition"/>
+      <input>
+	<soap:body use="literal"/>
+      </input>
+      <output>
+	<soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+
+<!-- This is mock-up of a service: there is no endpoint associated. - SH -->
+<service name="partitionService">
+    <port name="partitionServicePort" binding="tns:partitionSOAPBinding">
+      <soap:address location="http://www.semanticbits.com/piq-workflow/partition"/>
+    </port>
+  </service>
+
+
+
+</definitions>
+

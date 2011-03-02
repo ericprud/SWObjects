@@ -1,0 +1,28 @@
+# prenormalize.rq - rules parsed from prenormalize.wsdl
+# $Id$
+
+PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>
+PREFIX prt: <http://www.semanticbits.com/piq-workflow/wsdl/partition>
+PREFIX chk: <http://www.semanticbits.com/piq-workflow/wsdl/chunkisize>
+PREFIX zpj: <http://www.semanticbits.com/piq-workflow/wsdl/zproject>
+PREFIX prn: <http://www.semanticbits.com/piq-workflow/wsdl/prenormalize>
+PREFIX nmz: <http://www.semanticbits.com/piq-workflow/wsdl/normalizeZ>
+PREFIX aut: <http://www.semanticbits.com/piq-workflow/wsdl/autoalign>
+PREFIX mst: <http://www.semanticbits.com/piq-workflow/wsdl/mst>
+PREFIX stc: <http://www.semanticbits.com/piq-workflow/wsdl/stitch>
+PREFIX reg: <http://www.semanticbits.com/piq-workflow/wsdl/reorganize>
+PREFIX wrp: <http://www.semanticbits.com/piq-workflow/wsdl/warp>
+PREFIX prp: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>
+
+LABEL prt:opPartition		CONSTRUCT { ?a bas:has prt:DimFile				} WHERE { ?a bas:has prt:ImageFile							}
+LABEL chk:opChunkisize		CONSTRUCT { ?b bas:has chk:ChucksizeMetaFile, chk:StackFile	} WHERE { ?b bas:has chk:DimFile							}
+LABEL zpj:opZproject		CONSTRUCT { ?c bas:has zpj:ProjectedChunkFile			} WHERE { ?c bas:has zpj:ChucksizeMetaFile, zpj:StackFile				}
+LABEL prn:opPrenormalize	CONSTRUCT { ?d bas:has prn:OffsetTileFile, prn:AverageTileFile	} WHERE { ?d bas:has prn:ProjectedChunkFile						}
+LABEL nmz:opNormalizeZ		CONSTRUCT { ?e bas:has nmz:NormalizedProjectedChunkFile		} WHERE { ?e bas:has nmz:ProjectedChunkFile, nmz:OffsetTileFile, nmz:AverageTileFile	}
+LABEL aut:opAutoalign		CONSTRUCT { ?f bas:has aut:OffsetsFile				} WHERE { ?f bas:has aut:NormalizedProjectedChunkFile					}
+LABEL mst:opMst			CONSTRUCT { ?g bas:has mst:DisplacementsFile			} WHERE { ?g bas:has mst:OffsetsFile							}
+LABEL stc:opStitch		CONSTRUCT { ?h bas:has stc:StichedChunkFile			} WHERE { ?h bas:has stc:NormalizedProjectedChunkFile, stc:DisplacementsFile		}
+LABEL reg:opReorganize		CONSTRUCT { ?i bas:has reg:StichedChunkFile			} WHERE { ?i bas:has reg:StichedChunkFile						}
+LABEL wrp:opWarp		CONSTRUCT { ?j bas:has wrp:WarpMetaFile				} WHERE { ?j bas:has wrp:ControlPointsFile, wrp:StichedChunkFile			}
+LABEL prp:opPreprocess		CONSTRUCT { ?k bas:has prp:PreprocessMetaFile			} WHERE { ?k bas:has prp:WarpMetaFile							}
+

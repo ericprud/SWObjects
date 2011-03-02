@@ -1,8 +1,0 @@
-# prenormalize.rq - rules parsed from prenormalize.wsdl
-# $Id$
-
-PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/prenormalize>
-
-LABEL tns:opPrenormalize
-CONSTRUCT { ?y a tns:Normal }
-    WHERE { ?y a tns:Abnormal }

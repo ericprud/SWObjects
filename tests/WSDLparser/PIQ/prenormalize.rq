@@ -1,0 +1,9 @@
+# prenormalize.rq - rules parsed from prenormalize.wsdl
+# $Id$
+
+PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>
+PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/prenormalize>
+
+LABEL tns:opPrenormalize
+CONSTRUCT { ?d bas:has tns:OffsetTileFile, tns:AverageTileFile }
+    WHERE { ?d bas:has tns:ProjectedChunkFile }

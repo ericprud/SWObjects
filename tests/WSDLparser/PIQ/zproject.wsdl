@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<definitions 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+ 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+ 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 	xmlns:bas="http://www.semanticbits.com/piq-workflow/wsdl/"
+ 	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/zproject"
+ 	xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+ 	targetNamespace= "http://www.semanticbits.com/piq-workflow/wsdl/zproject">
+
+ <documentation>
+	 This document describes a mock service corresponding to the 'zproject'
+	 node from the PIQ Workflow in Fig 4a of "Parameterized specification,
+	 configuration and execution of data-intensive scientific workflows" by
+	 Kumar et al.  The zproject node takes as input a ChunkisizeMetaFile, a StackFile, and 2 parameters (StartZ and EndZ) and returns a ProjectedChunkFile.
+</documentation>
+
+
+
+<types>
+	<xs:schema
+		targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/zproject"
+     	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/zproject">
+		
+     
+     <xs:element name="zprojectInput">
+	     <xs:complexType>
+			  <xs:sequence>
+			  	<!-- When a query is performed (in the context of a composition with ImageFile, the StartZ and EndZ have to be added as input. -->
+	    		<xs:element name="StartZ" type="xs:double" minOccurs="1" maxOccurs="1"/>
+	    		<xs:element name="EndZ" type="xs:double" minOccurs="1" maxOccurs="1"/>
+	    		<xs:element name="ChunkisizeMetaFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	    		<xs:element name="StackFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	  		</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+     
+     <xs:element name="ProjectedChunkFile" type="xs:string"/>
+	  
+	</xs:schema>    
+</types>
+
+
+<message name="zprojectInputMessage">
+    <part name="body" element="tns:zprojectInput"/>
+</message>
+
+<message name="zprojectOutputMessage">
+    <part name="body" element="tns:ProjectedChunkFile"/>
+</message>
+
+
+
+<portType name="zprojectPortType">
+    <operation name="opZproject">
+      <input message="tns:zprojectInputMessage" spat:SPAT="?zproject bas:has tns:ChucksizeMetaFile, tns:StackFile"/>
+      <output message="tns:zprojectOutputMessage" spat:SPAT="?zproject bas:has tns:ProjectedChunkFile"/>
+    </operation>
+</portType>
+
+
+ <binding name="zprojectSOAPBinding" type="tns:zprojectPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="opZproject">
+    <soap:operation soapAction="http://www.semanticbits.com/piq-workflow/zproject"/>
+      <input>
+	<soap:body use="literal"/>
+      </input>
+      <output>
+	<soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+
+<!-- This is mock-up of a service: there is no endpoint associated. - SH -->
+<service name="zprojectService">
+    <port name="zprojectServicePort" binding="tns:zprojectSOAPBinding">
+      <soap:address location="http://www.semanticbits.com/piq-workflow/zproject"/>
+    </port>
+  </service>
+</definitions>
+

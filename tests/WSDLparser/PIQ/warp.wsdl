@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<definitions 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+ 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+ 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ 	xmlns:bas="http://www.semanticbits.com/piq-workflow/wsdl/"
+ 	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/warp"
+ 	xmlns:spat="http://dev.w3.org/cvsweb/perl/modules/W3C/SPDL/"
+ 	targetNamespace= "http://www.semanticbits.com/piq-workflow/wsdl/warp">
+
+ <documentation>
+	 This document describes a mock service corresponding to the 'warp'
+	 node from the PIQ Workflow in Fig 4a of "Parameterized specification,
+	 configuration and execution of data-intensive scientific workflows" by
+	 Kumar et al.  The warp node takes as input a ControlPointsFile (as a parameter) and a StitchedChunkFile and returns a WarpMetaFile.
+</documentation>
+
+
+
+<types>
+	<xs:schema
+		targetNamespace="http://www.semanticbits.com/piq-workflow/wsdl/warp"
+     	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     	xmlns:tns="http://www.semanticbits.com/piq-workflow/wsdl/warp">
+		
+     
+     <xs:element name="warpInput">
+	     <xs:complexType>
+			  <xs:sequence>
+			  <!-- the ControlPointsFile has to be given as part of the input query (parameter) -->
+	    		<xs:element name="ControlPointsFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	    		<xs:element name="StitchedChunkFile" type="xs:string" minOccurs="1" maxOccurs="1"/>
+	  		</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+     
+     <xs:element name="WarpMetaFile" type="xs:string"/>
+	  
+	</xs:schema>    
+</types>
+
+
+<message name="warpInputMessage">
+    <part name="body" element="tns:warpInput"/>
+</message>
+
+<message name="warpOutputMessage">
+    <part name="body" element="tns:WarpMetaFile"/>
+</message>
+
+
+
+<portType name="warpPortType">
+    <operation name="opWarp">
+      <input message="tns:warpInputMessage" spat:SPAT="?warp bas:has tns:ControlPointsFile, tns:StichedChunkFile"/>
+      <output message="tns:warpOutputMessage" spat:SPAT="?warp bas:has tns:WarpMetaFile"/>
+    </operation>
+</portType>
+
+
+ <binding name="warpSOAPBinding" type="tns:warpPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="opWarp">
+    <soap:operation soapAction="http://www.semanticbits.com/piq-workflow/warp"/>
+      <input>
+	<soap:body use="literal"/>
+      </input>
+      <output>
+	<soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+
+<!-- This is mock-up of a service: there is no endpoint associated. - SH -->
+<service name="warpService">
+    <port name="warpServicePort" binding="tns:warpSOAPBinding">
+      <soap:address location="http://www.semanticbits.com/piq-workflow/warp"/>
+    </port>
+  </service>
+</definitions>
+
