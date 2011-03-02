@@ -54,8 +54,8 @@
 
 <portType name="zprojectPortType">
     <operation name="opZproject">
-      <input message="tns:zprojectInputMessage" spat:SPAT="?zproject bas:has tns:ChucksizeMetaFile, tns:StackFile"/>
-      <output message="tns:zprojectOutputMessage" spat:SPAT="?zproject bas:has tns:ProjectedChunkFile"/>
+      <input message="tns:zprojectInputMessage" spat:SPAT="?zproject bas:has bas:ChucksizeMetaFile, bas:StackFile"/>
+      <output message="tns:zprojectOutputMessage" spat:SPAT="?zproject bas:has bas:ProjectedChunkFile"/>
     </operation>
 </portType>
 

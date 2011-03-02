@@ -14,15 +14,15 @@ PREFIX reg: <http://www.semanticbits.com/piq-workflow/wsdl/reorganize>
 PREFIX wrp: <http://www.semanticbits.com/piq-workflow/wsdl/warp>
 PREFIX prp: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>
 
-LABEL prt:opPartition		CONSTRUCT { ?a bas:has prt:DimFile				} WHERE { ?a bas:has prt:ImageFile							}
-LABEL chk:opChunkisize		CONSTRUCT { ?b bas:has chk:ChucksizeMetaFile, chk:StackFile	} WHERE { ?b bas:has chk:DimFile							}
-LABEL zpj:opZproject		CONSTRUCT { ?c bas:has zpj:ProjectedChunkFile			} WHERE { ?c bas:has zpj:ChucksizeMetaFile, zpj:StackFile				}
-LABEL prn:opPrenormalize	CONSTRUCT { ?d bas:has prn:OffsetTileFile, prn:AverageTileFile	} WHERE { ?d bas:has prn:ProjectedChunkFile						}
-LABEL nmz:opNormalizeZ		CONSTRUCT { ?e bas:has nmz:NormalizedProjectedChunkFile		} WHERE { ?e bas:has nmz:ProjectedChunkFile, nmz:OffsetTileFile, nmz:AverageTileFile	}
-LABEL aut:opAutoalign		CONSTRUCT { ?f bas:has aut:OffsetsFile				} WHERE { ?f bas:has aut:NormalizedProjectedChunkFile					}
-LABEL mst:opMst			CONSTRUCT { ?g bas:has mst:DisplacementsFile			} WHERE { ?g bas:has mst:OffsetsFile							}
-LABEL stc:opStitch		CONSTRUCT { ?h bas:has stc:StichedChunkFile			} WHERE { ?h bas:has stc:NormalizedProjectedChunkFile, stc:DisplacementsFile		}
-LABEL reg:opReorganize		CONSTRUCT { ?i bas:has reg:StichedChunkFile			} WHERE { ?i bas:has reg:StichedChunkFile						}
-LABEL wrp:opWarp		CONSTRUCT { ?j bas:has wrp:WarpMetaFile				} WHERE { ?j bas:has wrp:ControlPointsFile, wrp:StichedChunkFile			}
-LABEL prp:opPreprocess		CONSTRUCT { ?k bas:has prp:PreprocessMetaFile			} WHERE { ?k bas:has prp:WarpMetaFile							}
+LABEL prt:opPartition		CONSTRUCT { ?a bas:has bas:DimFile				} WHERE { ?a bas:has bas:ImageFile							}
+LABEL chk:opChunkisize		CONSTRUCT { ?b bas:has bas:ChucksizeMetaFile, bas:StackFile	} WHERE { ?b bas:has bas:DimFile							}
+LABEL zpj:opZproject		CONSTRUCT { ?c bas:has bas:ProjectedChunkFile			} WHERE { ?c bas:has bas:ChucksizeMetaFile, bas:StackFile				}
+LABEL prn:opPrenormalize	CONSTRUCT { ?d bas:has bas:OffsetTileFile, bas:AverageTileFile	} WHERE { ?d bas:has bas:ProjectedChunkFile						}
+LABEL nmz:opNormalizeZ		CONSTRUCT { ?e bas:has bas:NormalizedProjectedChunkFile		} WHERE { ?e bas:has bas:ProjectedChunkFile, bas:OffsetTileFile, bas:AverageTileFile	}
+LABEL aut:opAutoalign		CONSTRUCT { ?f bas:has bas:OffsetsFile				} WHERE { ?f bas:has bas:NormalizedProjectedChunkFile					}
+LABEL mst:opMst			CONSTRUCT { ?g bas:has bas:DisplacementsFile			} WHERE { ?g bas:has bas:OffsetsFile							}
+LABEL stc:opStitch		CONSTRUCT { ?h bas:has bas:StichedChunkFile			} WHERE { ?h bas:has bas:NormalizedProjectedChunkFile, bas:DisplacementsFile		}
+LABEL reg:opReorganize		CONSTRUCT { ?i bas:has bas:StichedChunkFile			} WHERE { ?i bas:has bas:StichedChunkFile						}
+LABEL wrp:opWarp		CONSTRUCT { ?j bas:has bas:WarpMetaFile				} WHERE { ?j bas:has bas:ControlPointsFile, bas:StichedChunkFile			}
+LABEL prp:opPreprocess		CONSTRUCT { ?k bas:has bas:PreprocessMetaFile			} WHERE { ?k bas:has bas:WarpMetaFile							}
 

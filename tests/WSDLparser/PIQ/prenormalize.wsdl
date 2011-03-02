@@ -54,8 +54,8 @@
 
 <portType name="prenormalizePortType">
     <operation name="opPrenormalize">
-      <input message="tns:prenormalizeInputMessage" spat:SPAT="?prenormalize bas:has tns:ProjectedChunkFile"/>
-      <output message="tns:prenormalizeOutputMessage" spat:SPAT="?prenormalize bas:has tns:OffsetTileFile, tns:AverageTileFile"/>
+      <input message="tns:prenormalizeInputMessage" spat:SPAT="?prenormalize bas:has bas:ProjectedChunkFile"/>
+      <output message="tns:prenormalizeOutputMessage" spat:SPAT="?prenormalize bas:has bas:OffsetTileFile, bas:AverageTileFile"/>
     </operation>
 </portType>
 

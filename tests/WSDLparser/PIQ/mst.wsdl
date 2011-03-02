@@ -40,8 +40,8 @@
 
 <portType name="mstPortType">
     <operation name="opMst">
-      <input message="tns:InputMessage" spat:SPAT="?mst bas:has tns:OffsetsFile"/>
-      <output message="tns:OutputMessage" spat:SPAT="?mst bas:has tns:DisplacementsFile"/>
+      <input message="tns:InputMessage" spat:SPAT="?mst bas:has bas:OffsetsFile"/>
+      <output message="tns:OutputMessage" spat:SPAT="?mst bas:has bas:DisplacementsFile"/>
     </operation>
 </portType>
 

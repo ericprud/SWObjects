@@ -51,8 +51,8 @@
 
 <portType name="stitchPortType">
     <operation name="opStitch">
-      <input message="tns:stitchInputMessage" spat:SPAT="?stitch bas:has tns:NormalizedProjectedChunkFile, tns:DisplacementsFile"/>
-      <output message="tns:stitchOutputMessage" spat:SPAT="?stitch bas:has tns:StichedChunkFile"/>
+      <input message="tns:stitchInputMessage" spat:SPAT="?stitch bas:has bas:NormalizedProjectedChunkFile, bas:DisplacementsFile"/>
+      <output message="tns:stitchOutputMessage" spat:SPAT="?stitch bas:has bas:StichedChunkFile"/>
     </operation>
 </portType>
 

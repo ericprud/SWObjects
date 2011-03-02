@@ -40,8 +40,8 @@
 
 <portType name="autoalignPortType">
     <operation name="opAutoalign">
-      <input message="tns:InputMessage" spat:SPAT="?autoalign bas:has tns:NormalizedProjectedChunkFile"/>
-      <output message="tns:OutputMessage" spat:SPAT="?autoalign bas:has tns:OffsetsFile"/>
+      <input message="tns:InputMessage" spat:SPAT="?autoalign bas:has bas:NormalizedProjectedChunkFile"/>
+      <output message="tns:OutputMessage" spat:SPAT="?autoalign bas:has bas:OffsetsFile"/>
     </operation>
 </portType>
 

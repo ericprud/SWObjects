@@ -62,8 +62,8 @@
 
 <portType name="chunkisizePortType">
     <operation name="opChunkisize">
-      <input message="tns:ChunkisizeInputMessage" spat:SPAT="?chunkisize bas:has tns:DimFile"/>
-      <output message="tns:ChunkisizeOutputMessage" spat:SPAT="?chunkisize bas:has tns:ChucksizeMetaFile, tns:StackFile"/>
+      <input message="tns:ChunkisizeInputMessage" spat:SPAT="?chunkisize bas:has bas:DimFile"/>
+      <output message="tns:ChunkisizeOutputMessage" spat:SPAT="?chunkisize bas:has bas:ChucksizeMetaFile, bas:StackFile"/>
     </operation>
 </portType>
 

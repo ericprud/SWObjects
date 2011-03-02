@@ -44,8 +44,8 @@
 
 <portType name="preprocessPortType">
     <operation name="opPreprocess">
-      <input message="tns:preprocessInputMessage" spat:SPAT="?preprocess bas:has tns:WarpMetaFile"/>
-      <output message="tns:preprocessOutputMessage" spat:SPAT="?preprocess bas:has tns:PreprocessMetaFile"/>
+      <input message="tns:preprocessInputMessage" spat:SPAT="?preprocess bas:has bas:WarpMetaFile"/>
+      <output message="tns:preprocessOutputMessage" spat:SPAT="?preprocess bas:has bas:PreprocessMetaFile"/>
     </operation>
 </portType>
 

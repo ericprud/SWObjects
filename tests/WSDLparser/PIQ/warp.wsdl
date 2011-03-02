@@ -52,8 +52,8 @@
 
 <portType name="warpPortType">
     <operation name="opWarp">
-      <input message="tns:warpInputMessage" spat:SPAT="?warp bas:has tns:ControlPointsFile, tns:StichedChunkFile"/>
-      <output message="tns:warpOutputMessage" spat:SPAT="?warp bas:has tns:WarpMetaFile"/>
+      <input message="tns:warpInputMessage" spat:SPAT="?warp bas:has bas:ControlPointsFile, bas:StichedChunkFile"/>
+      <output message="tns:warpOutputMessage" spat:SPAT="?warp bas:has bas:WarpMetaFile"/>
     </operation>
 </portType>
 

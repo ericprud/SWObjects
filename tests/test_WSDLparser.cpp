@@ -13,6 +13,8 @@
 #include <vector>
 #include "SWObjects.hpp"
 #include "MapSetParser/MapSetParser.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "WSDLparser.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
@@ -50,7 +52,12 @@ typedef sw::SWSAXhandler::QName QName;
 
 const std::string Piqflow = "http://www.semanticbits.com/piq-workflow/";
 
-void loadWSDL (sw::ServiceDescription& tested, sw::ServiceDescription& expected,
+void loadWSDL (sw::ServiceDescription& sd, std::string wsdlfile) {
+    sw::IStreamContext wsdl(wsdlfile);
+    GWSDLparser.parse(&sd, wsdl);
+}
+
+void synWSDL (sw::ServiceDescription& tested, sw::ServiceDescription& expected,
 	       std::string name, std::string inElt, std::string outElt,
 	       std::string wsdlfile = "") {
     const std::string ns = Piqflow + "wsdl/" + name;
@@ -58,8 +65,7 @@ void loadWSDL (sw::ServiceDescription& tested, sw::ServiceDescription& expected,
     // Load each WSDL file and add the expected operations and endpoints.
     if (wsdlfile.empty())
 	wsdlfile = std::string("WSDLparser/PIQ/") + name + ".wsdl";
-    sw::IStreamContext wsdl(wsdlfile);
-    GWSDLparser.parse(&tested, wsdl);
+    loadWSDL(tested, wsdlfile);
 
     std::string op = name;
     op[0] = ::toupper(op[0]);
@@ -92,7 +98,7 @@ BOOST_AUTO_TEST_CASE( prenormalizeF ) {
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
+    synWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -106,7 +112,7 @@ BOOST_AUTO_TEST_CASE( prenormalizeF_2 ) {
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput", "WSDLparser/PIQ/prenormalize-2.0.wsdl");
+    synWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput", "WSDLparser/PIQ/prenormalize-2.0.wsdl");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -115,16 +121,16 @@ BOOST_AUTO_TEST_CASE( partition ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/partition>\n\
-LABEL tns:opPartition CONSTRUCT { ?a bas:has tns:DimFile } WHERE { ?a bas:has tns:ImageFile }\n\
+LABEL tns:opPartition CONSTRUCT { ?a bas:has bas:DimFile } WHERE { ?a bas:has bas:ImageFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "partition", "ImageFile", "DimFile");
+    synWSDL(tested, expected, "partition", "ImageFile", "DimFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -133,16 +139,16 @@ BOOST_AUTO_TEST_CASE( chunkisize ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/chunkisize>\n\
-LABEL tns:opChunkisize CONSTRUCT { ?a bas:has tns:ChucksizeMetaFile , tns:StackFile } WHERE { ?a bas:has tns:DimFile }\n\
+LABEL tns:opChunkisize CONSTRUCT { ?a bas:has bas:ChucksizeMetaFile , bas:StackFile } WHERE { ?a bas:has bas:DimFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "chunkisize", "ChunkiSizeInput", "ChunkiSizeOutput");
+    synWSDL(tested, expected, "chunkisize", "ChunkiSizeInput", "ChunkiSizeOutput");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -151,16 +157,16 @@ BOOST_AUTO_TEST_CASE( zproject ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/zproject>\n\
-LABEL tns:opZproject CONSTRUCT { ?a bas:has tns:ProjectedChunkFile } WHERE { ?a bas:has tns:ChucksizeMetaFile , tns:StackFile }\n\
+LABEL tns:opZproject CONSTRUCT { ?a bas:has bas:ProjectedChunkFile } WHERE { ?a bas:has bas:ChucksizeMetaFile , bas:StackFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "zproject", "zprojectInput", "ProjectedChunkFile");
+    synWSDL(tested, expected, "zproject", "zprojectInput", "ProjectedChunkFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -169,16 +175,16 @@ BOOST_AUTO_TEST_CASE( prenormalize ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/prenormalize>\n\
-LABEL tns:opPrenormalize CONSTRUCT { ?a bas:has tns:OffsetTileFile , tns:AverageTileFile } WHERE { ?a bas:has tns:ProjectedChunkFile }\n\
+LABEL tns:opPrenormalize CONSTRUCT { ?a bas:has bas:OffsetTileFile , bas:AverageTileFile } WHERE { ?a bas:has bas:ProjectedChunkFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
+    synWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -187,16 +193,16 @@ BOOST_AUTO_TEST_CASE( normalizeZ ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/normalizeZ>\n\
-LABEL tns:opNormalizeZ CONSTRUCT { ?a bas:has tns:NormalizedProjectedChunkFile } WHERE { ?a bas:has tns:ProjectedChunkFile , tns:OffsetTileFile , tns:AverageTileFile }\n\
+LABEL tns:opNormalizeZ CONSTRUCT { ?a bas:has bas:NormalizedProjectedChunkFile } WHERE { ?a bas:has bas:ProjectedChunkFile , bas:OffsetTileFile , bas:AverageTileFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "normalizeZ", "normalizeZInput", "NormalizedProjectedChunkFile");
+    synWSDL(tested, expected, "normalizeZ", "normalizeZInput", "NormalizedProjectedChunkFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -205,16 +211,16 @@ BOOST_AUTO_TEST_CASE( autoalign ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/autoalign>\n\
-LABEL tns:opAutoalign CONSTRUCT { ?a bas:has tns:OffsetsFile } WHERE { ?a bas:has tns:NormalizedProjectedChunkFile }\n\
+LABEL tns:opAutoalign CONSTRUCT { ?a bas:has bas:OffsetsFile } WHERE { ?a bas:has bas:NormalizedProjectedChunkFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "autoalign", "NormalizedProjectedChunkFile", "OffsetsFile");
+    synWSDL(tested, expected, "autoalign", "NormalizedProjectedChunkFile", "OffsetsFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -223,16 +229,16 @@ BOOST_AUTO_TEST_CASE( mst ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/mst>\n\
-LABEL tns:opMst CONSTRUCT { ?a bas:has tns:DisplacementsFile } WHERE { ?a bas:has tns:OffsetsFile }\n\
+LABEL tns:opMst CONSTRUCT { ?a bas:has bas:DisplacementsFile } WHERE { ?a bas:has bas:OffsetsFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "mst", "OffsetsFile", "DisplacementsFile");
+    synWSDL(tested, expected, "mst", "OffsetsFile", "DisplacementsFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -241,16 +247,16 @@ BOOST_AUTO_TEST_CASE( stitch ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/stitch>\n\
-LABEL tns:opStitch CONSTRUCT { ?a bas:has tns:StichedChunkFile } WHERE { ?a bas:has tns:NormalizedProjectedChunkFile , tns:DisplacementsFile }\n\
+LABEL tns:opStitch CONSTRUCT { ?a bas:has bas:StichedChunkFile } WHERE { ?a bas:has bas:NormalizedProjectedChunkFile , bas:DisplacementsFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "stitch", "stitchInput", "StitchedChunkFile");
+    synWSDL(tested, expected, "stitch", "stitchInput", "StitchedChunkFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -259,16 +265,16 @@ BOOST_AUTO_TEST_CASE( reorganize ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/reorganize>\n\
-LABEL tns:opReorganize CONSTRUCT { ?a bas:has tns:StichedChunkFile } WHERE { ?a bas:has tns:StichedChunkFile }\n\
+LABEL tns:opReorganize CONSTRUCT { ?a bas:has bas:StichedChunkFile } WHERE { ?a bas:has bas:StichedChunkFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "reorganize", "StitchedChunkFile", "StitchedChunkFile");
+    synWSDL(tested, expected, "reorganize", "StitchedChunkFile", "StitchedChunkFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -277,16 +283,16 @@ BOOST_AUTO_TEST_CASE( warp ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/warp>\n\
-LABEL tns:opWarp CONSTRUCT { ?a bas:has tns:WarpMetaFile } WHERE { ?a bas:has tns:ControlPointsFile , tns:StichedChunkFile }\n\
+LABEL tns:opWarp CONSTRUCT { ?a bas:has bas:WarpMetaFile } WHERE { ?a bas:has bas:ControlPointsFile , bas:StichedChunkFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "warp", "warpInput", "WarpMetaFile");
+    synWSDL(tested, expected, "warp", "warpInput", "WarpMetaFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -295,16 +301,16 @@ BOOST_AUTO_TEST_CASE( preprocess ) {
     sw::ServiceDescription tested;
     sw::ServiceDescription expected;
 
-    sw::IStreamContext reference("\n\
+    sw::IStreamContext reference("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>\n\
-LABEL tns:opPreprocess CONSTRUCT { ?a bas:has tns:PreprocessMetaFile } WHERE { ?a bas:has tns:WarpMetaFile }\n\
+LABEL tns:opPreprocess CONSTRUCT { ?a bas:has bas:PreprocessMetaFile } WHERE { ?a bas:has bas:WarpMetaFile }\n\
 ", sw::IStreamContext::STRING);
     sw::MapSet* ms = mapSetParser.parse(reference);
     expected.ms.append(*ms);
     delete ms;
 
-    loadWSDL(tested, expected, "preprocess", "WarpMetaFile", "PreprocessMetaFile");
+    synWSDL(tested, expected, "preprocess", "WarpMetaFile", "PreprocessMetaFile");
 
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -321,18 +327,68 @@ BOOST_AUTO_TEST_CASE( all ) {
     delete ms;
 
     // Load each WSDL file and add the expected operations and endpoints.
-    loadWSDL(tested, expected, "partition", "ImageFile", "DimFile");
-    loadWSDL(tested, expected, "chunkisize", "ChunkiSizeInput", "ChunkiSizeOutput");
-    loadWSDL(tested, expected, "zproject", "zprojectInput", "ProjectedChunkFile");
-    loadWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
-    loadWSDL(tested, expected, "normalizeZ", "normalizeZInput", "NormalizedProjectedChunkFile");
-    loadWSDL(tested, expected, "autoalign", "NormalizedProjectedChunkFile", "OffsetsFile");
-    loadWSDL(tested, expected, "mst", "OffsetsFile", "DisplacementsFile");
-    loadWSDL(tested, expected, "stitch", "stitchInput", "StitchedChunkFile");
-    loadWSDL(tested, expected, "reorganize", "StitchedChunkFile", "StitchedChunkFile");
-    loadWSDL(tested, expected, "warp", "warpInput", "WarpMetaFile");
-    loadWSDL(tested, expected, "preprocess", "WarpMetaFile", "PreprocessMetaFile");
+    synWSDL(tested, expected, "partition", "ImageFile", "DimFile");
+    synWSDL(tested, expected, "chunkisize", "ChunkiSizeInput", "ChunkiSizeOutput");
+    synWSDL(tested, expected, "zproject", "zprojectInput", "ProjectedChunkFile");
+    synWSDL(tested, expected, "prenormalize", "ProjectedChunkFile", "prenormalizeOutput");
+    synWSDL(tested, expected, "normalizeZ", "normalizeZInput", "NormalizedProjectedChunkFile");
+    synWSDL(tested, expected, "autoalign", "NormalizedProjectedChunkFile", "OffsetsFile");
+    synWSDL(tested, expected, "mst", "OffsetsFile", "DisplacementsFile");
+    synWSDL(tested, expected, "stitch", "stitchInput", "StitchedChunkFile");
+    synWSDL(tested, expected, "reorganize", "StitchedChunkFile", "StitchedChunkFile");
+    synWSDL(tested, expected, "warp", "warpInput", "WarpMetaFile");
+    synWSDL(tested, expected, "preprocess", "WarpMetaFile", "PreprocessMetaFile");
     BOOST_CHECK_EQUAL(tested, expected);
+}
+
+BOOST_AUTO_TEST_CASE( forwardChainAll ) {
+    sw::RdfDB db;
+    sw::TurtleSDriver tparser("", &F);
+    sw::SPARQLfedDriver sparser("", &F);
+    sw::ServiceDescription sd;
+
+    loadWSDL(sd, "WSDLparser/PIQ/partition.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/chunkisize.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/zproject.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/prenormalize.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/normalizeZ.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/autoalign.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/mst.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/stitch.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/reorganize.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/warp.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/preprocess.wsdl");
+
+    tparser.parse("\
+@prefix bas: <http://www.semanticbits.com/piq-workflow/wsdl/> .\n\
+@prefix tns: <http://www.semanticbits.com/piq-workflow/wsdl/partition> .\n\
+<I> bas:has bas:ImageFile, bas:ControlPointsFile .\n\
+", &db);
+    sw::ResultSet working(&F), rs(&F);
+    for (sw::MapSet::ConstructList::const_iterator it = sd.ms.maps.begin();
+	 it != sd.ms.maps.end(); ++it)
+	it->constr->execute(&db, &working);
+
+//     rs.clear();
+//     rs.setRdfDB(&db);
+//     rs.resultType = sw::ResultSet::RESULT_Tabular;
+    sw::Operation* q = sparser.parse("\
+PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
+PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>\n\
+SELECT ?who WHERE { ?who bas:has bas:PreprocessMetaFile }\n\
+");
+    q->execute(&db, &rs);
+
+    sw::TTerm::String2BNode bnodeMap;
+    sw::ResultSet ref(&F, "\
+# Who has da PreprocessMetaFile?\n\
++------+\n\
+| ?who |\n\
+| <I>  |\n\
++------+\n\
+", false, bnodeMap);
+
+    BOOST_CHECK_EQUAL(rs, ref);
 }
 
 /* invoke with e.g. -DHTTP_Wsdl_test=http://mouni.local/Wsdl-0.rdf */

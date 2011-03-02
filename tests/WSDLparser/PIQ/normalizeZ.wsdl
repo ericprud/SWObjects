@@ -52,8 +52,8 @@
 
 <portType name="normalizeZPortType">
     <operation name="opNormalizeZ">
-      <input message="tns:normalizeZInputMessage"   spat:SPAT="?normalizeZ bas:has tns:ProjectedChunkFile, tns:OffsetTileFile, tns:AverageTileFile"/>
-      <output message="tns:normalizeZOutputMessage" spat:SPAT="?normalizeZ bas:has tns:NormalizedProjectedChunkFile"/>
+      <input message="tns:normalizeZInputMessage"   spat:SPAT="?normalizeZ bas:has bas:ProjectedChunkFile, bas:OffsetTileFile, bas:AverageTileFile"/>
+      <output message="tns:normalizeZOutputMessage" spat:SPAT="?normalizeZ bas:has bas:NormalizedProjectedChunkFile"/>
     </operation>
 </portType>
 

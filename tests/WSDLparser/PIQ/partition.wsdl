@@ -42,8 +42,8 @@
 
 <portType name="partitionPortType">
     <operation name="opPartition">
-      <input message="tns:ImageFileInputMessage" spat:SPAT="?partition bas:has tns:ImageFile"/>
-      <output message="tns:DimFileOutputMessage" spat:SPAT="?partition bas:has tns:DimFile"/>
+      <input message="tns:ImageFileInputMessage" spat:SPAT="?partition bas:has bas:ImageFile"/>
+      <output message="tns:DimFileOutputMessage" spat:SPAT="?partition bas:has bas:DimFile"/>
     </operation>
 </portType>
 

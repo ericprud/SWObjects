@@ -39,8 +39,8 @@
 
 <portType name="reorganizePortType">
     <operation name="opReorganize">
-      <input message="tns:InputMessage" spat:SPAT="?reorganize bas:has tns:StichedChunkFile"/>
-      <output message="tns:OutputMessage" spat:SPAT="?reorganize bas:has tns:StichedChunkFile"/>
+      <input message="tns:InputMessage" spat:SPAT="?reorganize bas:has bas:StichedChunkFile"/>
+      <output message="tns:OutputMessage" spat:SPAT="?reorganize bas:has bas:StichedChunkFile"/>
     </operation>
 </portType>
 
