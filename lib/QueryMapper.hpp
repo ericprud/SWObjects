@@ -311,6 +311,29 @@ namespace w3c_sw {
 #endif /* REGEX_LIB != SWOb_DISABLED */
 		;
 	}
+
+	virtual void append (const MapSet& ref) {
+	    if (!server && ref.server) server = ref.server;
+	    if (!user && ref.user) user = ref.user;
+	    if (!password && ref.password) password = ref.password;
+	    if (!database && ref.database) database = ref.database;
+	    if (!stemURI && ref.stemURI) stemURI = ref.stemURI;
+	    if (!primaryKey && ref.primaryKey) primaryKey = ref.primaryKey;
+#if REGEX_LIB != SWOb_DISABLED
+#if NotYet
+	    if (!rewriteVars && ref.rewriteVars) rewriteVars = ref.rewriteVars;
+#endif /* NotYet */
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+	    for (std::vector<LabeledConstruct>::const_iterator it = ref.maps.begin();
+		 it != ref.maps.end(); ++it) {
+		SWObjectDuplicator d(NULL);
+		it->constr->express(&d);
+		LabeledConstruct copy(it->label, dynamic_cast<const Construct*>(d.last.operation));
+		maps.push_back(copy);
+	    }
+	}
+
 	/* Gives rules to QueryMapper and !deletes self!.
 	 */
 #if NotYet
