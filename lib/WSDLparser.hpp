@@ -340,7 +340,7 @@ namespace w3c_sw {
 		} else if (p == S_definitions &&
 			   ((version == WSDL11 && c == QName(NS_wsdl11, "types")) ||
 			    (version == WSDL20 && c == QName(NS_wsdl20, "types")))) {
-		    std::cerr << "Write a bridge to the schema parser, slacker!\n";
+		    // std::cerr << "Write a bridge to the schema parser, slacker!\n";
 		    newState.nestedIn = S_types;
 		} else if (p == S_types) {
 		    // Stay in types mode -- ignore the nested schema.
