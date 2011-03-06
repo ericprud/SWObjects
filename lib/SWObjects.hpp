@@ -1,7 +1,17 @@
-/* SWObjects: components for capturing and manipulating compile trees of RDF
-   languages. This should capture all of SPARQL and most of N3 (no graphs as
-   parts of an RDF triple).
-
+/** @mainpage SWObjects: components for capturing and manipulating compile trees of RDF languages.
+ * @par Description:
+ *   SWObjects is a C++ library for manipulating RDF objects.
+ *
+ * @par Features
+ *   - Capture all of SPARQL and most of N3 (no graphs as parts of an RDF triple).
+ *   - Execute SPARQL queries against stores:
+ *     - w3c_sw::RdfDB: a simple triple store.
+ *     - w3c_sw::TargetedRdfDB: a specialized RdfDB for which the default graph
+ *       can be set to some arbitrary named graph.
+ *   - Query transformation engines:
+ *     - w3c_sw::ChainingMapper: transform queries backwards through rules.
+ *     - w3c_sw::SQLizer: transform queries to conventional SQL databases.
+ *
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
