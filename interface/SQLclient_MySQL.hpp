@@ -23,10 +23,10 @@ namespace w3c_sw {
 
 	/**
 	 * _connect - connect to the database using the supplied credentials.
-	 * @server: database server.
-	 * @database: database name.
-	 * @user: username to access the database.
-	 * @password: @user's password.
+	 * @param server	database server.
+	 * @param database	database name.
+	 * @param user		username to access the database.
+	 * @param password	#user's password.
 	 */
 	virtual void _connect (std::string server, std::string database, std::string user, const char* password) {
 	    this->server = server;
@@ -174,7 +174,8 @@ namespace w3c_sw {
 
 	/**
 	 * executeQuery - Execute a generic SQL query.
-	 * @query: the query string to send to the engine.
+	 * @param query		the query string to send to the engine.
+	 * @return		an SQLclient#Result with the table results of #query.
 	 */
 	virtual Result* executeQuery (std::string query) {
 	    if (mysql_query(sock, query.c_str()))

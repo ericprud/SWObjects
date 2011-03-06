@@ -1148,7 +1148,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
 #if REGEX_LIB == SWOb_BOOST
-    /** parseNTPatterns - parse forms like   _:a <p2> 's2' .\n
+    /** parseNTPatterns - parse forms like   _:a \<p2\> 's2' .\n
      */
     void AtomFactory::parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap) {
 	const boost::regex expression("\\G(?:"	// anchor at start

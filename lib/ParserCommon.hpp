@@ -94,11 +94,6 @@ public:
     /// stream name (file or input stream) used for error messages.
     std::string streamname;
 
-    /** Invoke the scanner and parser for a stream.
-     * @param in	IStreamContext with input stream and name
-     */
-    //virtual bool parse(IStreamContext& in) = 0; maybe we don't need a general parser interface
-
     /** Error handling with associated line number. This can be modified to
      * output the error e.g. to a dialog box. */
     void error(const class location& l, const std::string& m);
