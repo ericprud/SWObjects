@@ -596,7 +596,7 @@ namespace w3c_sw {
 			testRS.addKnownVar(*it);
 
 		    /** If the pattern matches the triple,
-		          we will add it to the <alternatives>. */
+		          we will add it to Bindings#alternatives. */
 		    // std::cerr << "  rule: " << (*constraint)->toString();
 		    if ((*constraint)->symmetricBindVariables(triple, false, &testRS, *testRS.begin())) {
 			/**
@@ -719,16 +719,27 @@ namespace w3c_sw {
 	}
     };
 
+    /** An extension of the #SWObjectDuplicator which transforms input graph
+     * patterns to match the antecedents of a supplied set of rules.
+     *
+     */
     class ChainingMapper : public SWObjectDuplicator {
     protected:
+	/** A set of rules which define a virtual input graph. */
 	std::vector<Rule> rules;
 
     public:
+	/// A policy for how variables indicate the possible intersections between rules.
 	MapSet::e_sharedVars sharedVars;
-	NodeShare nodeShare;
+	NodeShare nodeShare; //! The exhaustive set of intersections between the rules.
 
+	/** ChainingMapper constructor.
+	 * @param atomFactory	an AtomFactory for allocating new TTerm s.
+	 */
 	ChainingMapper (AtomFactory* atomFactory) : SWObjectDuplicator(atomFactory) {  }
 	~ChainingMapper () { clear(); }
+
+	/** Free each rule in #rules. */
 	void clear () {
 	    /* clear rules -- called twice for some reason, needs the erase to guard against double delete. */
 	    for (std::vector<Rule>::iterator rule = rules.begin();
@@ -738,7 +749,13 @@ namespace w3c_sw {
 		rule = rules.erase(rule);
 	    }
 	}
-	size_t getRuleCount () { return rules.size(); }
+	size_t getRuleCount () { return rules.size(); } //! @return the number of rules.
+
+	/** Add a rule to #rules.
+	 * @param rule	a SPARQL CONSTRUCT pattern to be interpreted as a Rule.
+	 * @param name the name for this rule.The name is used for generation of
+	 * implicit variable and BNode identifiers.
+	 */
 	void addRule (const Construct* rule, const TTerm* name) {
 	    if (name == NULL) {
 		std::stringstream ss;
@@ -749,6 +766,8 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
+
+	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
 	const Operation* map (const Operation* query) {
 	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7

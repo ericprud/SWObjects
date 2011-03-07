@@ -23,9 +23,9 @@ namespace w3c_sw {
 
 	/**
 	 * throwFailure - throw as informative an error as we can muster.
-	 * @leader: context error string to start the exception text.
-	 * @type: the type of handle: SQL_HANDLE_ENV | SQL_HANDLE_DBC | SQL_HANDLE_STMT | SQL_HANDLE_DESC
-	 * @handle: ODBC handle used in the failed operation.
+	 * @param leader	context error string to start the exception text.
+	 * @param type		the type of handle: SQL_HANDLE_ENV | SQL_HANDLE_DBC | SQL_HANDLE_STMT | SQL_HANDLE_DESC
+	 * @param handle	ODBC handle used in the failed operation.
 	 */
 	static void throwFailure (std::string leader, SQLSMALLINT type, SQLHANDLE handle) {
 	    SQLINTEGER	i = 0;
@@ -48,7 +48,7 @@ namespace w3c_sw {
 	}
 
 	/**
-	 * _connect - connect to the database using the credentials in @driver.
+	 * _connect - connect to the database using the credentials in SQLclient_ODBC#driver.
 	 * The four parameters (server, database, user, password) are ignored.
 	 */
 	virtual void _connect (std::string, std::string, std::string, const char*) {
@@ -75,7 +75,7 @@ namespace w3c_sw {
 
 	    /**
 	     * SQLclient_ODBC::Result constructor.
-	     * @stmt: handle used in SQLExec.
+	     * @param stmt	handle used in SQLExec.
 	     */
 	    Result (SQLHSTMT stmt) : stmt(stmt) {
 		if (!SQL_SUCCEEDED(::SQLNumResultCols(stmt, &num_fields)))
@@ -186,7 +186,7 @@ namespace w3c_sw {
 
 	/**
 	 * SQLclient_ODBC constructor.
-	 * @driver: the ODBC connect string.
+	 * @param driver	the ODBC connect string.
 	 * We don't even try to parse out e.g. database and user names.
 	 */
 	SQLclient_ODBC (std::string driver) : SQLclient(), driver(driver) {
@@ -209,7 +209,7 @@ namespace w3c_sw {
 
 	/**
 	 * executeQuery - Execute a generic SQL query.
-	 * @query: the query string to send to the engine.
+	 * @param query		the query string to send to the engine.
 	 */
 	virtual Result* executeQuery (std::string query) {
 	    SQLHSTMT stmt;
