@@ -751,10 +751,14 @@ namespace w3c_sw {
 	}
 	const Operation* map (const Operation* query) {
 	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
-	    BGPSimplifier dup(atomFactory);
+	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7
 	    op->express(&dup);
 	    delete op;
-	    return dup.last.operation;
+
+	    SWObjectCanonicalizer c(atomFactory);
+	    dup.last.operation->express(&c);
+	    delete dup.last.operation;
+	    return c.last.operation;
 	}
     }; // class ChainingMapper
 

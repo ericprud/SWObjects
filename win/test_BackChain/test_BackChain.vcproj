@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="test_WSDLparser"
-	ProjectGUID="{56EF9C8B-007E-4CEE-AE32-6233A898000C}"
+	Name="test_BackChain"
+	ProjectGUID="{56EF9C8B-007E-4CEE-AE32-6233A898000B}"
 	RootNamespace="w3c_sw_test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
@@ -41,8 +41,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\win;..\..\lib"
+				AdditionalIncludeDirectories="..\..\win;..\..\boost-log;..\..\lib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
+				GeneratePreprocessedFile="0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -61,6 +62,9 @@
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
+			<!-- 
+				AdditionalDependencies="&quot;c:/Users/eric/Documents/Visual Studio 2008/Projects/boost_1_45_0/stage/lib/libboost_unit_test_framework-vc90-mt-gd-1_45.lib&quot; &quot;c:/Users/eric/Documents/Visual Studio 2008/Projects/boost_1_45_0/stage/lib/libboost_log-vc90-mt-gd.lib&quot; &quot;c:/Users/eric/Documents/Visual Studio 2008/Projects/boost_1_45_0/stage/lib/libboost_date_time-vc90-mt-gd-1_45.lib&quot;"
+			  -->
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
@@ -117,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\win;..\..\lib"
+				AdditionalIncludeDirectories="..\..\win;..\..\boost-log;..\..\lib"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="false"
@@ -178,7 +182,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\test_WSDLparser.cpp"
+				RelativePath="..\..\tests\test_BackChain.cpp"
 				>
 			</File>
 		</Filter>

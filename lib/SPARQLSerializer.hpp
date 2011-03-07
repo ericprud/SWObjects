@@ -293,7 +293,7 @@ public:
 	if (braces)
 	    ret << "{ ";
 	lead();
-	ret << "SERVICE ";
+	ret << "SERVICE " << p_TTerm->toString();
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
 	if (braces)

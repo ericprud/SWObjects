@@ -16,7 +16,7 @@
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "WSDLparser.hpp"
-#include "ChainingMapper.hpp"
+#include "BackwardChainingRdfDB.hpp"
 
 #if XML_PARSER == SWOb_LIBXML2
   #include "../interface/SAXparser_libxml.hpp"
@@ -53,11 +53,29 @@ typedef sw::SWSAXhandler::QName QName;
 
 const std::string Piqflow = "http://www.semanticbits.com/piq-workflow/";
 
+/**
+ * Enable copious logging.
+ */
+void logAllAt3 () {
+    boost::shared_ptr< sw::Logger::Sink_t > sink = sw::Logger::prepare();
+    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
+    for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
+	 it != sw::Logger::Labels.end(); ++it)
+	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(3);
+}
+
+/**
+ * Populate a ServiceDescription with a WSDL file.
+ */
 void loadWSDL (sw::ServiceDescription& sd, std::string wsdlfile) {
     sw::IStreamContext wsdl(wsdlfile);
     GWSDLparser.parse(&sd, wsdl);
 }
 
+
+/**
+ * Populate Load a WSDL file into tested and populate expected with the 
+ */
 void synWSDL (sw::ServiceDescription& tested, sw::ServiceDescription& expected,
 	       std::string name, std::string inElt, std::string outElt,
 	       std::string wsdlfile = "") {
@@ -434,79 +452,6 @@ SELECT ?who WHERE { ?who bas:has bas:PreprocessMetaFile }\n\
 }
 
 
-namespace w3c_sw {
-
-    /** BackwardChainingRdfDB - an RdfDB which backward-chains
-     * ms: MapSet of rules
-     */
-    class BackwardChainingRdfDB : public RdfDB {
-    protected:
-	AtomFactory* atomFactory;
-	std::vector<Rule> rules;
-	MapSet::e_sharedVars sharedVars;
-	NodeShare nodeShare;
-
-    public:
-	BackwardChainingRdfDB (AtomFactory* atomFactory, const MapSet* ms)
-	    : RdfDB(), atomFactory(atomFactory), sharedVars(MapSet::e_PROMISCUOUS) 
-	{
-	    for (MapSet::ConstructList::const_iterator it = ms->maps.begin();
-		 it != ms->maps.end(); ++it)
-		addRule(it->constr, it->label);
-	}
-	void addRule (const Construct* rule, const TTerm* name) {
-	    if (name == NULL) {
-		std::stringstream ss;
-		ss << rule;
-		name = atomFactory->getRDFLiteral(ss.str());
-	    }
-	    Rule r = RuleParser().parseConstruct(rule, name);
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "adding rule: " << r.toString();
-	    rules.push_back(r);
-	}
-	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
-	    ResultSet island(rs->getAtomFactory());
-	    RdfDB::bindVariables(&island, graph, toMatch);
-
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "matching: " << *toMatch << "\nagainst ground facts got:\n" << island;
-
-	    Bindings bindings(atomFactory, rules, sharedVars, nodeShare);
-	    bindings.alternatives.opts.clear();
-	    bindings.alternatives.opts.push_back(Bindings::Rule2rs());
-	    for (std::vector<const TriplePattern*>::const_iterator it = toMatch->begin();
-		 it != toMatch->end(); it++)
-		bindings.match(toMatch, *it);
-
-// w3c_sw_LINEN << "opts: " << bindings.alternatives.opts.str() << "\n";
-	    if (bindings.failed.size() > 0) {
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "unable to match\n" << bindings.failed.toString(toMatch);
-	    } else {
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "reachable by rules: " << bindings << " -> [[\n";
-		ResultSet disjoint(rs->getAtomFactory());
-
-		Bindings::Alternatives::VarUniquifier varUniquifier;
-		const TableOperation* gp = bindings.alternatives.instantiate(atomFactory, varUniquifier);
-		// ResultSet copy(atomFactory);
-    // w3c_sw_LINEN << "gp: " << *gp;
-		gp->bindVariables(this, rs);
-    // w3c_sw_LINEN << "got " << *rs;
-
-		for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
-		    island.insert(island.end(), (*row)->duplicate(&island, island.end()));
-		    delete *row;
-		    row = disjoint.erase(row);
-		}
-
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "]]\n";
-	    }
-
-	    rs->joinIn(&island);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Backward chaining produced\n" << *rs;
-	}
-    };
-}
-
-
 BOOST_AUTO_TEST_CASE( backwardChainOne ) {
     sw::TurtleSDriver tparser("", &F);
     sw::SPARQLfedDriver sparser("", &F);
@@ -588,13 +533,51 @@ SELECT ?who WHERE { ?who bas:has bas:StackFile }\n\
     BOOST_CHECK_EQUAL(rs, ref);
 }
 
-void logAllAt3 () {
-    boost::shared_ptr< sw::Logger::Sink_t > sink = sw::Logger::prepare();
-    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
-    for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
-	 it != sw::Logger::Labels.end(); ++it)
-	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(3);
+
+BOOST_AUTO_TEST_CASE( backwardChainTwoMixed ) {
+    sw::TurtleSDriver tparser("", &F);
+    sw::SPARQLfedDriver sparser("", &F);
+    sw::ServiceDescription sd;
+
+    loadWSDL(sd, "WSDLparser/PIQ/stitch.wsdl");
+//     loadWSDL(sd, "WSDLparser/PIQ/reorganize.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/warp.wsdl");
+//     loadWSDL(sd, "WSDLparser/PIQ/preprocess.wsdl");
+
+    sw::BackwardChainingRdfDB db(&F, &sd.ms);
+
+    tparser.parse("\
+@prefix bas: <http://www.semanticbits.com/piq-workflow/wsdl/> .\n\
+@prefix tns: <http://www.semanticbits.com/piq-workflow/wsdl/partition> .\n\
+<I> bas:has bas:NormalizedProjectedChunkFile, bas:DisplacementsFile, bas:ControlPointsFile .\n\
+<you> bas:has bas:NormalizedProjectedChunkFile, bas:DisplacementsFile, bas:ControlPointsFile .\n\
+<they> bas:has bas:NormalizedProjectedChunkFile, bas:NO_DisplacementsFile, bas:ControlPointsFile .\n\
+", &db);
+    sw::ResultSet rs(&F);
+
+    sw::Operation* q = sparser.parse("\
+PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
+PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>\n\
+SELECT ?who WHERE { ?who bas:has bas:StichedChunkFile }\n\
+");
+
+    // logAllAt3();
+
+    q->execute(&db, &rs);
+
+    sw::TTerm::String2BNode bnodeMap;
+    sw::ResultSet ref(&F, "\
+# Who has da PreprocessMetaFile?\n\
++--------+\n\
+|   ?who |\n\
+|   <I>  |\n\
+| <you>  |\n\
++--------+\n\
+", false, bnodeMap);
+
+    BOOST_CHECK_EQUAL(rs, ref);
 }
+
 
 BOOST_AUTO_TEST_CASE( backwardChainAll ) {
     sw::TurtleSDriver tparser("", &F);
@@ -611,7 +594,7 @@ BOOST_AUTO_TEST_CASE( backwardChainAll ) {
     loadWSDL(sd, "WSDLparser/PIQ/stitch.wsdl");
 //     loadWSDL(sd, "WSDLparser/PIQ/reorganize.wsdl");
     loadWSDL(sd, "WSDLparser/PIQ/warp.wsdl");
-//     loadWSDL(sd, "WSDLparser/PIQ/preprocess.wsdl");
+    loadWSDL(sd, "WSDLparser/PIQ/preprocess.wsdl");
 
     sw::BackwardChainingRdfDB db(&F, &sd.ms);
 
@@ -627,9 +610,9 @@ BOOST_AUTO_TEST_CASE( backwardChainAll ) {
     sw::Operation* q = sparser.parse("\
 PREFIX bas: <http://www.semanticbits.com/piq-workflow/wsdl/>\n\
 PREFIX tns: <http://www.semanticbits.com/piq-workflow/wsdl/preprocess>\n\
-SELECT ?who WHERE { ?who bas:has bas:StichedChunkFile }\n\
+#SELECT ?who WHERE { ?who bas:has bas:StichedChunkFile }\n\
 #SELECT ?who WHERE { ?who bas:has bas:WarpMetaFile }\n\
-#SELECT ?who WHERE { ?who bas:has bas:PreprocessMetaFile }\n\
+SELECT ?who WHERE { ?who bas:has bas:PreprocessMetaFile }\n\
 ");
 
     // logAllAt3();

@@ -67,7 +67,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_logging", "win\test_lo
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WSDLparser", "win\test_WSDLparser\test_WSDLparser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_BackChain", "win\test_BackChain\test_BackChain.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WSDLparser", "win\test_WSDLparser\test_WSDLparser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
 	EndProjectSection
@@ -140,6 +145,10 @@ Global
 		{56EF9C8B-007E-4CEE-AE32-6233A898000B}.Debug|Win32.Build.0 = Debug|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A898000B}.Release|Win32.ActiveCfg = Release|Win32
 		{56EF9C8B-007E-4CEE-AE32-6233A898000B}.Release|Win32.Build.0 = Release|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A898000C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A898000C}.Debug|Win32.Build.0 = Debug|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A898000C}.Release|Win32.ActiveCfg = Release|Win32
+		{56EF9C8B-007E-4CEE-AE32-6233A898000C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
