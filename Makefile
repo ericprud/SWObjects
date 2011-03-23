@@ -24,7 +24,7 @@ YACC:=bison
 TEE:=tee
 SED:=sed
 OPTIM:=-g -O0
-PYTHON_HOME:=/usr/include/python2.6
+PYTHON_INC:=$(shell python-config --includes)
 PHP_HOME:=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
 LUA_HOME:=/usr/include/lua5.1
 PERL_HOME:=/usr/lib/perl/5.10.1
@@ -506,7 +506,7 @@ swig/python/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG_SUBST) $@
 
 swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
-	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx -I$(PYTHON_HOME)
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx $(PYTHON_INC) $(INCLUDES)
 
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
