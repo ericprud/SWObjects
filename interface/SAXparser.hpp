@@ -218,7 +218,6 @@ namespace w3c_sw {
 	~ChangeMediaTypeException() throw () {  }
     };
 
-    struct GRDDLmap {
 	struct Entry {
 	    std::string transform;
 	    std::string mediaType;
@@ -226,6 +225,8 @@ namespace w3c_sw {
 		: transform(transform), mediaType(mediaType)
 	    {  }
 	};
+
+    struct GRDDLmap {
 	std::map<std::string, Entry> map;
 
 	void insert (std::string uri, std::string localName,

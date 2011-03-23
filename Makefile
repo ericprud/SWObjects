@@ -509,7 +509,7 @@ swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx $(PYTHON_INC) $(INCLUDES)
 
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -Lboost-log/stage/lib -lboost_log
 
 # The _SWObjects.so target can be built with the python distutils package,
 # but it's noisier and doesn't re-use the object files in lib:
