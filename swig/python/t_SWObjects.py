@@ -148,7 +148,7 @@ SELECT ?craft ?homepage
         F = SWObjects.AtomFactory()
         sparqlParser = SWObjects.SPARQLfedDriver("", F)
         mapSetParser = SWObjects.MapSetDriver("", F)
-        queryMapper = SWObjects.ChainingMapper(F, None) 
+        queryMapper = SWObjects.ChainingMapper(F) 
         sparqlParser.unnestTree = True
     #Parse query
         q = """
