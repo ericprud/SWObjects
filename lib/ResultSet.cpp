@@ -190,8 +190,8 @@ namespace w3c_sw {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		const TTerm* l = pair.expression->eval(lhs, atomFactory, false);
-		const TTerm* r = pair.expression->eval(rhs, atomFactory, false);
+		const TTerm* l = pair.expression->eval(lhs, atomFactory, NULL);
+		const TTerm* r = pair.expression->eval(rhs, atomFactory, NULL);
 		if (dynamic_cast<const Bindable*>(l) && 
 		    dynamic_cast<const Bindable*>(r))
 		    continue;

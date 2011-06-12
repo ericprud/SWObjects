@@ -1318,9 +1318,9 @@ public:
     std::string toString (Result* row) const {
 	std::stringstream s;
 	s << 
-	    "{" << m_s->substitutedString(row, false) << 
-	    " " << m_p->substitutedString(row, false) << 
-	    " " << m_o->substitutedString(row, false) << "}";
+	    "{" << m_s->substitutedString(row, NULL) << 
+	    " " << m_p->substitutedString(row, NULL) << 
+	    " " << m_o->substitutedString(row, NULL) << "}";
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
@@ -2155,6 +2155,7 @@ public:
     virtual ~TTermList () { m_TTerms.clear(); }
     void push_back(const TTerm* v) { m_TTerms.push_back(v); }
     virtual void express(Expressor* p_expressor) const;
+    size_t size () const { return m_TTerms.size(); }
     std::vector<const TTerm*>::iterator begin () { return m_TTerms.begin(); }
     std::vector<const TTerm*>::const_iterator begin () const { return m_TTerms.begin(); }
     std::vector<const TTerm*>::iterator end () { return m_TTerms.end(); }
@@ -2186,6 +2187,7 @@ private:
 public:
     BindingClause (TTermList* p_Vars) : ProductionVector<const Binding*>(), m_Vars(p_Vars) {  }
     ~BindingClause () { delete m_Vars; }
+    const TTermList* getVars () const { return m_Vars; }
     virtual void express(Expressor* p_expressor) const;
     void bindVariables(RdfDB* db, ResultSet* rs) const;
 };

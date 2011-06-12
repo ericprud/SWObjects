@@ -1698,6 +1698,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
 	std::vector<const TTerm*>::const_iterator value = begin();
 	while (value != end()) {
+	    if (variable == p_Vars->end())
+		throw std::string("binding ") + (*value)->toString() + " has no slot in the binding set";
 	    rs->set(r, *variable, *value, false);
 	    variable++;
 	    value++;
@@ -1710,7 +1712,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
 	    island.restrictResults(*it);
-	rs->joinIn(&island, false);
+	rs->joinIn(&island, NULL);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
@@ -1719,7 +1721,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
-	rs->joinIn(&island, false);
+	rs->joinIn(&island, NULL);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Conjunction produced\n" << *rs;
     }
 
@@ -1754,14 +1756,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		row = disjoint.erase(row);
 	    }
 	}
-	rs->joinIn(&island, false);
+	rs->joinIn(&island, NULL);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	m_Select->execute(db, &island);
-	rs->joinIn(&island, false);
+	rs->joinIn(&island, NULL);
     }
 
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */

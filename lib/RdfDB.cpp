@@ -160,7 +160,7 @@ namespace w3c_sw {
 		    }
 		    ++matched;
 		}
-	    rs->joinIn(&island, false);
+	    rs->joinIn(&island, NULL);
 	}
 	if (matched == 0)
 	    for (ResultSetIterator it = rs->begin(); it != rs->end(); ) {

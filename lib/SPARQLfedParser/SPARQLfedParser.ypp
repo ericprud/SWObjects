@@ -905,6 +905,11 @@ _QVar_E_Star:
 
 _QBindingValue_E_Plus:
     BindingValue	{
+	if (driver.curBinding->size() + 1 > driver.curBindingsClause->getVars()->size()) {
+	    std::stringstream ss;
+	    ss << "atom " << (yysemantic_stack_[(1) - (1)].p_TTerm)->toString() << " binding tuple wider than first argument to BINDINGS.";
+	    error(*(yylocation_stack_.begin()), ss.str().c_str());
+	}
 	driver.curBinding->push_back($1);
     }
   | _QBindingValue_E_Plus BindingValue	{
@@ -920,7 +925,8 @@ _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C:
 	  driver.curBinding = NULL;
       }
   | NIL	{
-	driver.curBinding = new Binding();
+	$$ = new Binding();
+	driver.curBinding = NULL;
     }
 ;
 
