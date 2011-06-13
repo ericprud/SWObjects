@@ -342,7 +342,7 @@ public:
 	    delete *it;
     }
 
-    void push_back(T v) {
+    void push_back (T v) {
 	assert(v != NULL); // @DEBUG
 	assert(v != (void*)this); // @DEBUG
 	data.push_back(v);
@@ -1851,6 +1851,31 @@ protected:
 public:
     virtual TableOperation* getDNF() const;
 };
+
+class Print : public TableOperationOnOperation {
+
+public:
+    Print (const TableOperation* op) : TableOperationOnOperation(op) {  }
+    ~Print () {  }
+
+    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	construct(target, rs, evaluator, bgp);
+    }
+    virtual void deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	deletePattern(target, rs, evaluator, bgp);
+    }
+    virtual void express (Expressor* p_expressor) const { m_TableOperation->express(p_expressor); } // Print is invisible for now.
+    bool operator== (const Print& ref) const {
+	return *m_TableOperation == *ref.m_TableOperation;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const Print* pref = dynamic_cast<const Print*>(&ref);
+	return pref == NULL ? false : operator==(*pref); // calls Print-specific operator==
+    }
+    virtual TableOperationOnOperation* makeANewThis(const TableOperation* p_TableOperation) const { return new Print(p_TableOperation); }
+};
+
 class Filter : public TableOperationOnOperation {
 protected:
     ProductionVector<const Expression*> m_Expressions;
@@ -2160,10 +2185,13 @@ public:
     std::vector<const TTerm*>::const_iterator begin () const { return m_TTerms.begin(); }
     std::vector<const TTerm*>::iterator end () { return m_TTerms.end(); }
     std::vector<const TTerm*>::const_iterator end () const { return m_TTerms.end(); }
-    bool operator== (const VarSet& ref) const {
-	const TTermList* pref = dynamic_cast<const TTermList*>(&ref);
-	return pref == NULL ? false : m_TTerms == pref->m_TTerms;
+    bool operator== (const TTermList& ref) const {
+	return m_TTerms == ref.m_TTerms;
     }
+    // bool operator== (const VarSet& ref) const {
+    // 	const TTermList* pref = dynamic_cast<const TTermList*>(&ref);
+    // 	return pref == NULL ? false : m_TTerms == pref->m_TTerms;
+    // }
     // virtual void project (ResultSet* rs) const;
 };
 
@@ -2181,12 +2209,39 @@ public:
 #if defined(SWIG)
     %template(ProductionVector_Bindingstar) ProductionVector<Binding const *>;
 #endif /* defined(SWIG) */
-class BindingClause : public ProductionVector<const Binding*> {
+class BindingClause : public TableOperation {
 private:
     TTermList* m_Vars;
+    ProductionVector<const Binding*> bindings;
 public:
-    BindingClause (TTermList* p_Vars) : ProductionVector<const Binding*>(), m_Vars(p_Vars) {  }
+    BindingClause (TTermList* p_Vars) : m_Vars(p_Vars) {  }
     ~BindingClause () { delete m_Vars; }
+
+    std::vector<const Binding*>::iterator begin () { return bindings.begin(); }
+    std::vector<const Binding*>::const_iterator begin () const { return bindings.begin(); }
+    std::vector<const Binding*>::iterator end () { return bindings.end(); }
+    std::vector<const Binding*>::const_iterator end () const { return bindings.end(); }
+    void push_back (const Binding* binding) { bindings.push_back(binding); }
+
+    // <TableOperation virtuals>
+    virtual TableOperation* getDNF () const {
+	w3c_sw_NEED_IMPL("getDNF{BindingClause(...)}");
+    }
+    virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	w3c_sw_NEED_IMPL("CONSTRUCT{BindingClause(...)}");
+    }
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+	w3c_sw_NEED_IMPL("DELETEPATTERN{BindingClause(...)}");
+    }
+    bool operator== (const BindingClause& ref) const {
+	return *m_Vars == *ref.m_Vars && bindings == ref.bindings;
+    }
+    bool operator== (const TableOperation& ref) const {
+	const BindingClause* pref = dynamic_cast<const BindingClause*>(&ref);
+	return pref == NULL ? false : operator==(*pref); // calls BindingClause-specific operator==
+    }
+    // </TableOperation virtuals>
+
     const TTermList* getVars () const { return m_Vars; }
     virtual void express(Expressor* p_expressor) const;
     void bindVariables(RdfDB* db, ResultSet* rs) const;

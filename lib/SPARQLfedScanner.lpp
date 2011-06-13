@@ -114,6 +114,7 @@ IT_DEFAULT		[Dd][Ee][Ff][Aa][Uu][Ll][Tt]
 IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_ALL		[Aa][Ll][Ll]
 GT_DOT		"."
+IT_PRINT		[Pp][Rr][Ii][Nn][Tt]
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
 IT_BIND		[Bb][Ii][Nn][Dd]
@@ -298,6 +299,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_ALL}		{return token::IT_ALL;}
 {GT_DOT}		{return token::GT_DOT;}
+{IT_PRINT}		{return token::IT_PRINT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
 {IT_BIND}		{return token::IT_BIND;}

@@ -258,6 +258,7 @@ public:
        GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
        IT_MINUTES IT_SUBSTR IT_SHA256 IT_HOURS IT_ENCODE_FOR_URI IT_STRSTARTS IT_CEIL
        IT_DAY IT_LCASE IT_ABS IT_UCASE IT_SHA224 IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
+       IT_PRINT
 
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
@@ -907,7 +908,7 @@ _QBindingValue_E_Plus:
     BindingValue	{
 	if (driver.curBinding->size() + 1 > driver.curBindingsClause->getVars()->size()) {
 	    std::stringstream ss;
-	    ss << "atom " << (yysemantic_stack_[(1) - (1)].p_TTerm)->toString() << " binding tuple wider than first argument to BINDINGS.";
+	    ss << "atom " << $1->toString() << " binding tuple wider than first argument to BINDINGS.";
 	    error(*(yylocation_stack_.begin()), ss.str().c_str());
 	}
 	driver.curBinding->push_back($1);
@@ -1351,7 +1352,16 @@ GraphPatternNotTriples:
   | ServiceGraphPattern	
   | Filter	
   | Bind	
-  | BindingsClause	
+  | BindingsClause	    {
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, $1) : $1;
+    }
+  | Print	
+;
+
+Print:
+    IT_PRINT GraphPatternNotTriples	{
+	driver.curOp = new Print(driver.curOp);
+    }
 ;
 
 OptionalGraphPattern:

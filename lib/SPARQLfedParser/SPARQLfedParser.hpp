@@ -462,30 +462,31 @@ namespace w3c_sw {
      IT_STRLEN = 394,
      IT_SHA1 = 395,
      IT_MONTH = 396,
-     IT_true = 397,
-     IT_false = 398,
-     INTEGER = 399,
-     DECIMAL = 400,
-     DOUBLE = 401,
-     INTEGER_POSITIVE = 402,
-     DECIMAL_POSITIVE = 403,
-     DOUBLE_POSITIVE = 404,
-     INTEGER_NEGATIVE = 405,
-     DECIMAL_NEGATIVE = 406,
-     DOUBLE_NEGATIVE = 407,
-     STRING_LITERAL1 = 408,
-     STRING_LITERAL_LONG1 = 409,
-     STRING_LITERAL2 = 410,
-     STRING_LITERAL_LONG2 = 411,
-     IRI_REF = 412,
-     PNAME_NS = 413,
-     PNAME_LN = 414,
-     BLANK_NODE_LABEL = 415,
-     ANON = 416,
-     VAR1 = 417,
-     VAR2 = 418,
-     LANGTAG = 419,
-     NIL = 420
+     IT_PRINT = 397,
+     IT_true = 398,
+     IT_false = 399,
+     INTEGER = 400,
+     DECIMAL = 401,
+     DOUBLE = 402,
+     INTEGER_POSITIVE = 403,
+     DECIMAL_POSITIVE = 404,
+     DOUBLE_POSITIVE = 405,
+     INTEGER_NEGATIVE = 406,
+     DECIMAL_NEGATIVE = 407,
+     DOUBLE_NEGATIVE = 408,
+     STRING_LITERAL1 = 409,
+     STRING_LITERAL_LONG1 = 410,
+     STRING_LITERAL2 = 411,
+     STRING_LITERAL_LONG2 = 412,
+     IRI_REF = 413,
+     PNAME_NS = 414,
+     PNAME_LN = 415,
+     BLANK_NODE_LABEL = 416,
+     ANON = 417,
+     VAR1 = 418,
+     VAR2 = 419,
+     LANGTAG = 420,
+     NIL = 421
    };
 
     };
@@ -662,7 +663,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 666 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 667 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

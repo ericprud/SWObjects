@@ -416,7 +416,7 @@ void Binding::express (Expressor* p_expressor) const {
     p_expressor->binding(this, this);
 }
 void BindingClause::express (Expressor* p_expressor) const {
-    p_expressor->bindingClause(this, m_Vars, this);
+    p_expressor->bindingClause(this, m_Vars, &bindings);
 }
 void WhereClause::express (Expressor* p_expressor) const {
     p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
@@ -1682,15 +1682,17 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
-	for (ResultSetIterator it = rs->begin() ; it != rs->end(); ) {
+	ResultSet island(rs->getAtomFactory());
+	for (ResultSetIterator it = island.begin() ; it != island.end(); ) {
 	    for (std::vector<const Binding*>::const_iterator binding = begin() ; binding != end(); ++binding) {
 		Result* r = new Result(rs);
-		rs->insert(it, r);
-		(*binding)->bindVariables(db, rs, r, m_Vars);
+		island.insert(it, r);
+		(*binding)->bindVariables(db, &island, r, m_Vars);
 	    }
 	    delete *it;
-	    it = rs->erase(it);
+	    it = island.erase(it);
 	}
+	rs->joinIn(&island);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
@@ -1706,13 +1708,23 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	}
     }
 
+    void Print::bindVariables (RdfDB* db, ResultSet* rs) const {
+	SPARQLSerializer ss(NULL); // doesn't need to create new atoms.
+	m_TableOperation->express(&ss);
+	std::stringstream str;
+	str << "Executing " << ss.str() << "on\n" << *rs;
+	m_TableOperation->bindVariables(db, rs);
+	str << "yielded\n" << *rs;
+	std::cout << str.str();
+    }
+
     void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
 	    island.restrictResults(*it);
-	rs->joinIn(&island, NULL);
+	rs->joinIn(&island);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
@@ -1721,7 +1733,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
-	rs->joinIn(&island, NULL);
+	rs->joinIn(&island);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Conjunction produced\n" << *rs;
     }
 
@@ -1756,14 +1768,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
 		row = disjoint.erase(row);
 	    }
 	}
-	rs->joinIn(&island, NULL);
+	rs->joinIn(&island);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
     }
 
     void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	m_Select->execute(db, &island);
-	rs->joinIn(&island, NULL);
+	rs->joinIn(&island);
     }
 
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */
