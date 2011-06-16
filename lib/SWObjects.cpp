@@ -1475,6 +1475,20 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
     const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 
+	if (m_IRIref == TTerm::FUNC_if && m_ArgList->size() == 3) {
+	    // IF only evaluates the test and either arg2 or arg3 so it must be
+	    // evaluated before the subd substitutions.
+	    ArgList::ArgIterator it = m_ArgList->begin();
+	    const TTerm* iff = (*it)->eval(r, atomFactory, evaluator);
+	    ++it; // now pointed at THEN. ELSE is next.
+	    return atomFactory->ebv(iff) == TTerm::BOOL_true ?
+		(*it)->eval(r, atomFactory, evaluator) :
+		(*++it)->eval(r, atomFactory, evaluator);
+	}
+
+	/* Other than IF, all functions evaluate all arguments.
+	 * Here we place the evaluation results in subd:
+	 */
 	std::vector<const TTerm*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    subd.push_back((*it)->eval(r, atomFactory, evaluator));
@@ -1638,18 +1652,23 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 	if (m_IRIref == TTerm::FUNC_substring && 
 	    ( subd.size() == 2 || subd.size() == 3 ) && 
-	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
+	    firstLit != NULL && 
 	    secondLit != NULL && secondLit->getDatatype() == TTerm::URI_xsd_integer && secondLit->getLangtag() == NULL && 
 	    ( subd.size() == 2 || 
 	      (thirdLit != NULL && thirdLit->getDatatype() == TTerm::URI_xsd_integer && thirdLit->getLangtag() == NULL))) {
 	    int pos = static_cast<const NumericRDFLiteral*>(secondLit)->getInt() - 1;
+	    size_t firstLen = first->getLexicalValue().length();
 	    if (pos < 0)
 		pos = 0;
+	    else if (size_t(pos) > firstLen)
+		pos = firstLen;
+	    const URI* dt = firstLit->getDatatype();
+	    const LANGTAG* langtag = (firstLit->getLangtag() == NULL) ? NULL : new LANGTAG(firstLit->getLangtag()->getLexicalValue());
 	    if (subd.size() == 3) {
 		int len = static_cast<const NumericRDFLiteral*>(thirdLit)->getInt();
-		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), NULL, NULL, false);
+		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), dt, langtag, false);
 	    } else {
-		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), NULL, NULL, false);
+		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), dt, langtag, false);
 	    }
 	}
 
@@ -1746,7 +1765,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	while (value != end()) {
 	    if (variable == p_Vars->end())
 		throw std::string("binding ") + (*value)->toString() + " has no slot in the binding set";
-	    rs->set(r, *variable, *value, false);
+	    if (*value != TTerm::Unbound)
+		rs->set(r, *variable, *value, false);
 	    variable++;
 	    value++;
 	}
@@ -2071,6 +2091,7 @@ compared against
 	const Operation* rsConstrained = rs->getConstrainedOperation(query);
 	SWWEBagent::ParameterList p;
 	p.set("query", (rsConstrained ? rsConstrained : query)->toString());
+	p.set("Accept", "application/sparql-results+xml");
 	if (rsConstrained)
 	    delete rsConstrained;
 	delete query;
