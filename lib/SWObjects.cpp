@@ -585,7 +585,34 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	XPATHCONST(concat),	// <http://www.w3.org/2005/xpath-functions#concat>
 	XPATHCONST(lower-case),
 	XPATHCONST(upper-case),
-	EXTENCONST(concat)	// <https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#concat>
+	EXTENCONST(concat),	// <https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#concat>
+	OPERATORCONST(func-rand),
+	OPERATORCONST(func-abs),
+	OPERATORCONST(func-ciel),
+	OPERATORCONST(func-floor),
+	OPERATORCONST(func-round),
+	OPERATORCONST(func-strlen),
+	OPERATORCONST(func-ucase),
+	OPERATORCONST(func-lcase),
+	OPERATORCONST(func-encodeForUri),
+	OPERATORCONST(func-contains),
+	OPERATORCONST(func-strStarts),
+	OPERATORCONST(func-strEnds),
+	OPERATORCONST(func-year),
+	OPERATORCONST(func-month),
+	OPERATORCONST(func-day),
+	OPERATORCONST(func-hours),
+	OPERATORCONST(func-minutes),
+	OPERATORCONST(func-seconds),
+	OPERATORCONST(func-timezone),
+	OPERATORCONST(func-now),
+	OPERATORCONST(func-md5),
+	OPERATORCONST(func-sha1),
+	OPERATORCONST(func-sha224),
+	OPERATORCONST(func-sha256),
+	OPERATORCONST(func-sha384),
+	OPERATORCONST(func-sha512),
+	OPERATORCONST(func-substring)
     };
 
     const URI* TTerm::URI_xsd_integer		 = AtomFactory::_URIConstants + 0;
@@ -1608,6 +1635,21 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
 	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
 	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
+
+	if (m_IRIref == TTerm::FUNC_substring && 
+	    ( subd.size() == 2 || subd.size() == 3 ) && 
+	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
+	    secondLit != NULL && secondLit->getDatatype() == TTerm::URI_xsd_integer && secondLit->getLangtag() == NULL && 
+	    ( subd.size() == 2 || 
+	      (thirdLit != NULL && thirdLit->getDatatype() == TTerm::URI_xsd_integer && thirdLit->getLangtag() == NULL))) {
+	    int pos = static_cast<const NumericRDFLiteral*>(secondLit)->getInt() - 1;
+	    if (subd.size() == 3) {
+		int len = static_cast<const NumericRDFLiteral*>(thirdLit)->getInt();
+		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), NULL, NULL, false);
+	    } else {
+		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), NULL, NULL, false);
+	    }
+	}
 
 	if (m_IRIref == TTerm::FUNC_regex && 
 	    ( subd.size() == 2 || subd.size() == 3 ) && 
