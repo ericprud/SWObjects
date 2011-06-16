@@ -261,7 +261,7 @@ namespace w3c_sw {
 		protected:
 		    std::string& groupIndexRef;
 		public:
-		    FunctionState (std::string& groupIndexRef) : FunctionCall (NULL, NULL), groupIndexRef(groupIndexRef) {  }
+		    FunctionState (std::string& groupIndexRef, const URI* functionName) : FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef) {  }
 		    ~FunctionState () {  }
 		    static std::string mitoa (int i) {
 			std::stringstream s;
@@ -276,8 +276,8 @@ namespace w3c_sw {
 		protected:
 		    const FunctionCall* func;
 		public:
-		    NoDelWrapper (std::string& groupIndexRef, const FunctionCall* func)
-			: FunctionState (groupIndexRef), func(func) {  }
+		    NoDelWrapper (std::string& groupIndexRef, const URI* functionName, const FunctionCall* func)
+			: FunctionState (groupIndexRef, functionName), func(func) {  }
 		    ~NoDelWrapper () {  }
 		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 			return func->eval(r, atomFactory, evaluator);
@@ -288,7 +288,7 @@ namespace w3c_sw {
 		    std::map<std::string, int> counts;
 		public:
 		    CountState (std::string& groupIndexRef)
-			: FunctionState (groupIndexRef) {  }
+			: FunctionState (groupIndexRef, TTerm::FUNC_count) {  }
 		    ~CountState () {  }
 		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */) const {
 			return atomFactory->getNumericRDFLiteral(mitoa(++(((CountState*)this)->counts[groupIndexRef])), ((CountState*)this)->counts[groupIndexRef]);
@@ -300,7 +300,7 @@ namespace w3c_sw {
 		    std::map<std::string, const TTerm*> vals;
 		public:
 		    SumState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef), expr(expr) {  }
+			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
 		    ~SumState () { delete expr; }
 		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 			if (vals.find(groupIndexRef) == vals.end()) {
@@ -332,7 +332,7 @@ namespace w3c_sw {
 			/**
 			 * Non-aggregate functions invoked 
 			 */
-			last.functionCall = new NoDelWrapper(groupIndexRef, self);
+			last.functionCall = new NoDelWrapper(groupIndexRef, p_IRIref, self);
 		    }
 		}
 	    };
