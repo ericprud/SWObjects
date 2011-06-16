@@ -1643,6 +1643,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    ( subd.size() == 2 || 
 	      (thirdLit != NULL && thirdLit->getDatatype() == TTerm::URI_xsd_integer && thirdLit->getLangtag() == NULL))) {
 	    int pos = static_cast<const NumericRDFLiteral*>(secondLit)->getInt() - 1;
+	    if (pos < 0)
+		pos = 0;
 	    if (subd.size() == 3) {
 		int len = static_cast<const NumericRDFLiteral*>(thirdLit)->getInt();
 		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), NULL, NULL, false);
