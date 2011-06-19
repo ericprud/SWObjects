@@ -57,7 +57,8 @@
 [0]     GroupGraphPattern          ::= '{' ( SubSelect | GroupGraphPatternSub ) '}'
 [0]     GroupGraphPatternSub       ::= TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
 [0]     TriplesBlock               ::= TriplesSameSubjectPath ( '.' TriplesBlock? )?
-[0]     GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause
+[0]     GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause | Print
+[0]     Print                      ::= 'PRINT' GraphPatternNotTriples
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
 [0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
