@@ -164,21 +164,25 @@ namespace w3c_sw {
 		    if (!SQL_SUCCEEDED(::SQLGetData(stmt, i+1, SQL_C_CHAR,
 						    buf, sizeof(buf), &indicator)))
 			throwFailure("SQLGetData failed: ", SQL_HANDLE_STMT, stmt);
-		    std::string lexval(indicator == SQL_NULL_DATA ? "SQL NULL" : buf);
+		    if (indicator == SQL_NULL_DATA) {
+			ret.push_back(OptString());
+		    } else {
+			std::string lexval(buf);
 
-		    // Perform necessary SQL-to-RDF lexical transformations:
-		    switch (sqlColTypes[i]) {
-		    case SQL_DATETIME:
-			lexval.replace(lexval.find_first_of(' '), 1, "T");
-			break;
-		    case SQL_TIMESTAMP:
-			lexval = "0-0-0T" + lexval;
-			break;
-		    default:
-			break;
+			// Perform necessary SQL-to-RDF lexical transformations:
+			switch (sqlColTypes[i]) {
+			case SQL_DATETIME:
+			    lexval.replace(lexval.find_first_of(' '), 1, "T");
+			    break;
+			case SQL_TIMESTAMP:
+			    lexval = "0-0-0T" + lexval;
+			    break;
+			default:
+			    break;
+			}
+
+			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
 		    }
-
-		    ret.push_back(lexval);
 		}
 		return ret;
 	    }

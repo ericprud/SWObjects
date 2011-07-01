@@ -39,7 +39,9 @@ namespace w3c_sw {
 	    };
 	    typedef std::vector<Field> ColumnSet;
 	    virtual ColumnSet cols() = 0;
-	    typedef std::vector<std::string> Row;
+	    struct value {
+	    };
+	    typedef std::vector<OptString> Row;
 	    virtual Row nextRow() = 0;
 	    Row end () { return Row(); } // count on operator!= to say that two empty Row's are ==
 	};
@@ -83,9 +85,9 @@ namespace w3c_sw {
 	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
 		Result* result = new Result(this);
 		for(size_t i = 0; i < cols.size(); i++)
-		    if (row[i].size() > 0) {
+		    if (row[i].is_initialized()) {
 			std::string dt = SQLclient::Result::Field::typeNames[cols[i].type];
-			std::string lexval(row[i]);
+			std::string lexval(row[i].get());
 			if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
 			    cols[i].type == SQLclient::Result::Field::TYPE__unknown)
 			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;

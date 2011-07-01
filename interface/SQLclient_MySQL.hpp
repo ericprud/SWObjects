@@ -133,24 +133,29 @@ namespace w3c_sw {
 		// For each column:
 		for(int i = 0; i < num_fields; i++) {
 
-		    /* retrieve column data as a string */
-		    std::string lexval(row[i] ? row[i] : "SQL NULL");
+		    if (row[i]) {
 
-		    // Perform necessary SQL-to-RDF lexical transformations:
-		    switch (fields[i].type) {
-		    case MYSQL_TYPE_DATETIME:
-			lexval.replace(lexval.find_first_of(' '), 1, "T");
-			break;
-		    case MYSQL_TYPE_TIMESTAMP:
-			lexval = "0-0-0T" + lexval;
-			break;
-		    case MYSQL_TYPE_YEAR:
-			lexval = lexval = "-0-0T00:00";
-			break;
-		    default:
-			break;
+			/* retrieve column data as a string */
+			std::string lexval(row[i]);
+
+			// Perform necessary SQL-to-RDF lexical transformations:
+			switch (fields[i].type) {
+			case MYSQL_TYPE_DATETIME:
+			    lexval.replace(lexval.find_first_of(' '), 1, "T");
+			    break;
+			case MYSQL_TYPE_TIMESTAMP:
+			    lexval = "0-0-0T" + lexval;
+			    break;
+			case MYSQL_TYPE_YEAR:
+			    lexval = lexval = "-0-0T00:00";
+			    break;
+			default:
+			    break;
+			}
+			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
+		    } else {
+			ret.push_back(OptString());
 		    }
-		    ret.push_back(lexval);
 		}
 		return ret;
 	    }
