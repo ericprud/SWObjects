@@ -65,6 +65,7 @@ typedef w3c_sw::MapSetParser::token_type token_type;
 
 /* START patterns for MapSet terminals */
 IT_REWRITEVAR		[Rr][Ee][Ww][Rr][Ii][Tt][Ee][Vv][Aa][Rr]
+IT_DRIVER		[Dd][Rr][Ii][Vv][Ee][Rr]
 IT_SERVER		[Ss][Ee][Rr][Vv][Ee][Rr]
 IT_USER		[Uu][Ss][Ee][Rr]
 IT_PASSWORD		[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]
@@ -242,6 +243,7 @@ LINEFEED		(\r\n|\r|\n)
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
 {IT_REWRITEVAR}		{return token::IT_REWRITEVAR;}
+{IT_DRIVER}		{return token::IT_DRIVER;}
 {IT_SERVER}		{return token::IT_SERVER;}
 {IT_USER}		{return token::IT_USER;}
 {IT_PASSWORD}		{return token::IT_PASSWORD;}

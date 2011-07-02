@@ -2180,6 +2180,7 @@ int main(int ac, char* av[])
 		TheServer.mapSetParser.parse(istr); // throws if it fails to parse
 		    // could catch and re-throw std::string("error when parsing map ").append(nameStr);
 		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
+		if (ms->driver) TheServer.SQLDriver = ms->driver->getLexicalValue();
 		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
 		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
 		if (ms->password) TheServer.SQLPassword = ms->password->getLexicalValue();

@@ -253,6 +253,7 @@ namespace w3c_sw {
     public:
 	typedef std::vector<LabeledConstruct> ConstructList;
 
+	const RDFLiteral* driver;
 	const RDFLiteral* server;
 	const RDFLiteral* user;
 	const RDFLiteral* password;
@@ -269,9 +270,9 @@ namespace w3c_sw {
 
     public:
 	MapSet ()
-	    : server(NULL), user(NULL), password(NULL), database(NULL),
-	      stemURI(NULL), primaryKey(NULL), sharedVars(e_PROMISCUOUS),
-	      nodeShare(), keyMap(), maps()
+	    : driver(NULL), server(NULL), user(NULL), password(NULL),
+	      database(NULL), stemURI(NULL), primaryKey(NULL),
+	      sharedVars(e_PROMISCUOUS), nodeShare(), keyMap(), maps()
 	{  }
 	~MapSet () {
 	    for (ConstructList::iterator it = maps.begin(); 
@@ -280,6 +281,7 @@ namespace w3c_sw {
 	    }
 	}
 	virtual void express (Expressor* p_expressor) const { // ???
+	    if (driver != NULL) driver->express(p_expressor);
 	    if (server != NULL) server->express(p_expressor);
 	    if (user != NULL) user->express(p_expressor);
 	    if (password != NULL) password->express(p_expressor);
@@ -296,6 +298,7 @@ namespace w3c_sw {
 	    if (pMapSet == NULL)
 		return false;
 	    return
+		driver == pMapSet->driver && 
 		server == pMapSet->server && 
 		user == pMapSet->user && 
 		password == pMapSet->password && 
@@ -313,6 +316,7 @@ namespace w3c_sw {
 	}
 
 	virtual void append (const MapSet& ref) {
+	    if (!driver && ref.driver) driver = ref.driver;
 	    if (!server && ref.server) server = ref.server;
 	    if (!user && ref.user) user = ref.user;
 	    if (!password && ref.password) password = ref.password;
@@ -356,6 +360,7 @@ namespace w3c_sw {
 	virtual e_OPTYPE getOperationType () const { return OPTYPE_unknown; } // @@ could try to unify with OPTYPE_operationSet
 	std::string toString () const {
 	    std::stringstream ss;
+	    if (driver != NULL) ss << "driver: " << driver->toString() << std::endl;
 	    if (server != NULL) ss << "server: " << server->toString() << std::endl;
 	    if (user != NULL) ss << "user: " << user->toString() << std::endl;
 	    if (password != NULL) ss << "password: " << password->toString() << std::endl;

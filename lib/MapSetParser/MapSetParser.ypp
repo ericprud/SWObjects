@@ -238,7 +238,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_REWRITEVAR IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS
+%token IT_REWRITEVAR IT_DRIVER IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS
        IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES IT_LABEL
        IT_GRAPH IT_SERVICE IT_BASE IT_PREFIX IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_SELECT IT_FROM IT_NAMED IT_ORDER
@@ -417,6 +417,9 @@ AccessParm:
       driver.root->rewriteVars.push_back(POSmap($2, $3->getLexicalValue(), $4->getLexicalValue()));
 #endif /* NotYet */
 #endif /* ! REGEX_LIB == SWOb_DISABLED */
+    }
+  | IT_DRIVER RDFLiteral	{
+	static_cast<MapSet*>(driver.root)->driver = $2;
     }
   | IT_SERVER RDFLiteral	{
 	static_cast<MapSet*>(driver.root)->server = $2;
