@@ -245,7 +245,10 @@ BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_vie
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
 
-$(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp
+$(BOOST_TARGET)lib:
+	mkdir -p $(BOOST_TARGET)lib
+
+$(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp | $(BOOST_TARGET)lib
 	$(CXX) $(INCLUDES) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
@@ -315,18 +318,24 @@ SPARQLfed-next: lib/SPARQLfedParser/bnf-new lib/SPARQLfedParser/SPARQLfedParser-
 
 # Status files
 docs/version.h:
-	svn info . | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
+	((svn info 2>/dev/null) || (git --no-pager log --max-count=1 | perl -ne 'print "URL: $$1\nRevision: $$2\nLast Changed Date: $$1\n" if (m/^ +git-svn-id: (.*?)@(\d+) (.*)$$/); print "Last Changed Author: $$1\n" if (m/^Author: ([^ ]+) </);')) | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
+# Was:	svn info . | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
+# Made more complicated to address import to git by
+##  git svn clone  -s -r1400:HEAD https://swobjects.svn.sourceforge.net/svnroot/swobjects -T trunk --branches=branches
+##  cd swobjects/
+##  git svn fetch --all
+##  git checkout -b sparql11 remotes/sparql11
 
 ##### bin dirs ####
 
-bin/%.dep: bin/%.cpp config.h docs/version.h $(BISONH)
+bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
 	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
-bin/%.o. : bin/%.cpp bin/.dep/%.d config.h docs/version.h
+bin/%.o : bin/%.cpp bin/%.dep config.h docs/version.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-bin/% : bin/%.o $(LIB) docs/version.h $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
+bin/% : bin/%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
 	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
