@@ -417,7 +417,7 @@ tests/man_%: tests/man_%.o $(LIB)
 .PHONY: tests/manualHarness.dep
 
 
-tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
+tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
 t_%: tests/test_%
