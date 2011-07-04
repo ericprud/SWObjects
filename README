@@ -1,0 +1,8 @@
+Hi, welcome to SWObjects and all that. You probably want to:
+  Edit CONFIG to change which libs you link to.
+  If you're using MacOS or non debian linux, edit the Makefile 
+    to select the appropriate echo (e.g. ECHO:=`which echo`).
+    There is some guidance in Makefile:33
+  make test
+
+This should all be made easier when ./configure if finished.
