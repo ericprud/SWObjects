@@ -36,7 +36,7 @@ namespace w3c_sw {
 		return ss.str();
 	    }
 	};
-	virtual std::string _execute(std::string method,
+	virtual boost::shared_ptr<IStreamContext> _execute(std::string method,
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
 #else /* !REGEX_LIB == SWOb_BOOST */
@@ -45,7 +45,7 @@ namespace w3c_sw {
 				     , std::string urlParms, std::string body
 				     ) = 0;
 
-	virtual std::string get (
+	virtual boost::shared_ptr<IStreamContext> get (
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
 #else /* !REGEX_LIB == SWOb_BOOST */
@@ -61,7 +61,7 @@ namespace w3c_sw {
 #endif /* !REGEX_LIB == SWOb_BOOST */
 				 , p.str().c_str(), "");
 	}
-	virtual std::string post (
+	virtual boost::shared_ptr<IStreamContext> post (
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
 #else /* !REGEX_LIB == SWOb_BOOST */

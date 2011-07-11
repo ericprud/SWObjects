@@ -256,7 +256,7 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
 	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
-	std::string s(webAgent->get(nameStr.c_str()));
+	boost::shared_ptr<IStreamContext> s(webAgent->get(nameStr.c_str()));
 	if (p_mediaType == NULL) {
 	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << nameStr << "'s reported media type is " << webAgent->getMediaType() << ".";
 	    mediaType = webAgent->getMediaType().c_str();
@@ -264,7 +264,11 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Overriding " << nameStr << "'s reported media type (" << webAgent->getMediaType() << ") with " << p_mediaType << ".";
 	    mediaType = p_mediaType;
 	}
-	p = new std::stringstream(s); // would be nice to use webAgent stream, or have a callback.
+	
+	/* optimization opportunity: re-use the old rdbuf and add a ref count for reaping. */
+	std::stringstream* ss = new std::stringstream(); // would be nice to use webAgent stream, or have a callback.
+	*ss << s->p->rdbuf();
+	p = ss;
     } else if ((opts & STDIO) && nameStr == "-") {
 	p = def;
 	malloced = false;
@@ -2100,20 +2104,20 @@ compared against
 	    << "Querying <" << service->getLexicalValue() << "> for\n" << p;
 
 	/* Do an HTTP GET and parse results into a ResultSet. */
+	boost::shared_ptr<IStreamContext> istr;
 	std::string s;
 	switch (ServiceGraphPattern::defaultServiceProtocol) {
 	case ServiceGraphPattern::HTTP_METHOD_GET:
-	    s = agent->get(service->getLexicalValue().c_str(), p);
+	    istr = agent->get(service->getLexicalValue().c_str(), p);
 	    break;
 	case ServiceGraphPattern::HTTP_METHOD_POST:
-	    s = agent->post(service->getLexicalValue().c_str(), p);
+	    istr = agent->post(service->getLexicalValue().c_str(), p);
 	    break;
 	default:
 	    throw "program flow exception -- unknown defaultServiceProtocol";
 	}
-	IStreamContext istr(s, IStreamContext::STRING);
 	try {
-	    ResultSet red(atomFactory, xmlParser, istr);
+	    ResultSet red(atomFactory, xmlParser, *istr);
 	    if (Logger::Logging(Logger::ServiceLog_level, Logger::info)) {
 		std::stringstream o;
 		o << " yielded";

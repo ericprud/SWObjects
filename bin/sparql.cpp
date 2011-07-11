@@ -746,19 +746,18 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    std::cout << serviceURI << " " << p << std::endl;
 		}
 		if (NoExec == false) {
-		    std::string s;
+		    boost::shared_ptr<sw::IStreamContext> istr;
 		    switch (sw::ServiceGraphPattern::defaultServiceProtocol) {
 		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
-			s = Agent.get(serviceURI.c_str(), p);
+			istr = Agent.get(serviceURI.c_str(), p);
 			break;
 		    case sw::ServiceGraphPattern::HTTP_METHOD_POST:
-			s = Agent.post(serviceURI.c_str(), p);
+			istr = Agent.post(serviceURI.c_str(), p);
 			break;
 		    default:
 			throw "program flow exception -- unknown defaultServiceProtocol";
 		    }
-		    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
-		    sw::ResultSet red(&F, &P, istr);
+		    sw::ResultSet red(&F, &P, *istr);
 		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << " yielded\n" << red;
 
 		    /* Join those results against our initial results. */

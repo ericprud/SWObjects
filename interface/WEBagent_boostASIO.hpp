@@ -26,7 +26,7 @@ namespace w3c_sw {
 	    : SWWEBagent(), authHandler(authHandler), authPreempt(authPreempt)
 	{  }
 	~WEBagent_boostASIO () {  }
-	virtual std::string _execute (std::string method,
+	virtual boost::shared_ptr<IStreamContext> _execute (std::string method,
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
 #else /* !REGEX_LIB == SWOb_BOOST */
@@ -39,7 +39,7 @@ namespace w3c_sw {
 	    boost::regex re;
 	    boost::cmatch matches;
 
-	    re = "(ftp|http|https):\\/\\/((?:\\w+\\.)*\\w*)(?::([0-9]+))?(.*)";
+	    re = "(ftp|http|https):\\/\\/((?:\\w(?:\\w|-)+\\.)*\\w*)(?::([0-9]+))?(.*)";
 	    if (!boost::regex_match(url.c_str(), matches, re))
 		throw std::string("Address ") + url + " is not a valid URL\n";
 
@@ -70,7 +70,11 @@ namespace w3c_sw {
 		// server will close the socket after transmitting the response. This will
 		// allow us to treat all data up until the EOF as the content.
 		boost::asio::streambuf request;
+#ifdef LOGGING_HH
+		std::stringstream request_stream;
+#else /* !LOGGING_HH */
 		std::ostream request_stream(&request);
+#endif /* !LOGGING_HH */
 		request_stream << method << " " << path;
 		if (urlParms.size() != 0)
 		    request_stream << (path.find_first_of("?") == std::string::npos ? "?" : 
@@ -78,7 +82,7 @@ namespace w3c_sw {
 				       "&") << urlParms;
 		request_stream << " HTTP/1.0\r\n";
 		request_stream << "Host: " << host << "\r\n";
-		request_stream << "Accept: */*\r\n";
+		request_stream << "Accept: application/sparql-results+xml\r\n";
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
 		if (reqBody.size() != 0) {
@@ -87,6 +91,14 @@ namespace w3c_sw {
 		}
 		request_stream << "Connection: close\r\n\r\n";
 		request_stream << reqBody;
+
+#ifdef LOGGING_HH
+		{
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "Request: " << request_stream.str() << "\n";
+		    std::ostream rs(&request);
+		    rs << request_stream.str();
+		}
+#endif /* LOGGING_HH */
 
 		// Get a list of endpoints corresponding to the server name.
 		tcp::resolver resolver(io_service);
@@ -179,7 +191,7 @@ namespace w3c_sw {
 		}
 	    } while (redo);
 
-	    return body.str();
+	    return boost::shared_ptr<IStreamContext>(new IStreamContext(body.str(), IStreamContext::STRING, mediaType.c_str()));
 	}
 
     };
