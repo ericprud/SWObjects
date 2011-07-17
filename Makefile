@@ -137,7 +137,7 @@ endif
 ifeq ($(findstring ODBC, $(SQL_CLIENTS)), ODBC)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_ODBC "\n"
   SOME_SQL_CLIENT = 1
-  SQL_CLIENT_LIB+= -lodbc
+  SQL_CLIENT_LIB+= -lodbc -lltdl -ldl
 endif
 
 ifeq ($(SOME_SQL_CLIENT), )
