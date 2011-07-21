@@ -151,6 +151,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	curResultSet->erase(curResultSet->begin());
     }
 
     void addBindingVar (const TTerm* var) {
@@ -200,8 +201,8 @@ protected:
 	return ret;
     }
 
-    BindingClause* endBindingSet () {
-	BindingClause* ret = new BindingClause(curResultSet);
+    ResultSet* endBindingSet () {
+	ResultSet* ret = curResultSet;
 	curResultSet = NULL;
 	termList.clear();
 	return ret;
@@ -616,6 +617,7 @@ SubSelect:
     SelectClause {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } WhereClause SolutionModifier _QBindingsClause_E_Opt	{
 	  if ($5 != NULL)
 	      $3->m_GroupGraphPattern = driver.makeConjunction($5, $3->m_GroupGraphPattern);
@@ -728,11 +730,13 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 
 ConstructQuery:
     // ('LABEL' GraphTerm)? 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier _QBindingsClause_E_Opt	{
+    _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT ConstructTemplate {
+	driver.curOp = NULL;
+      } _QDatasetClause_E_Star WhereClause SolutionModifier _QBindingsClause_E_Opt	{
 	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
-	if ($7 != NULL)
-	    $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
-	Construct* constr = new Construct((DefaultGraphPattern*)$3, $4, $5, $6);
+	if ($8 != NULL)
+	    $6->m_GroupGraphPattern = driver.makeConjunction($8, $6->m_GroupGraphPattern);
+	Construct* constr = new Construct((DefaultGraphPattern*)$3, $5, $6, $7);
 	driver.root->maps.push_back(LabeledConstruct($1, constr));
     }
 ;
@@ -999,7 +1003,7 @@ BindingsClause:
     IT_BINDINGS {
 	driver.startBindingSet();
       } _QVar_E_Star GT_LCURLEY  _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
-	  $$ = driver.endBindingSet();
+	  $$ = new BindingClause(driver.endBindingSet());
       }
 ;
 
@@ -1064,7 +1068,6 @@ BindingValue:
 GroupGraphPattern:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
-	driver.curOp = NULL;
 	driver.curBGP = NULL;
       } _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C GT_RCURLEY	{
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
@@ -1157,6 +1160,7 @@ OptionalGraphPattern:
     IT_OPTIONAL	{
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } GroupGraphPattern	{
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
 	  if (driver.curFilter) {
@@ -1172,6 +1176,7 @@ GraphGraphPattern:
     IT_GRAPH {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } VarOrIRIref {
@@ -1188,6 +1193,7 @@ ServiceGraphPattern:
     IT_SERVICE {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } VarOrIRIref GroupGraphPattern	{
@@ -1206,6 +1212,7 @@ MinusGraphPattern:
     IT_MINUS {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } GroupGraphPattern	{
@@ -1219,6 +1226,7 @@ GroupOrUnionGraphPattern:
     {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
@@ -1234,6 +1242,7 @@ _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
 	    driver.ensureBasicGraphPattern();
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
       } GroupGraphPattern	{
 	  if (driver.curOp == NULL)
 	      driver.ensureBasicGraphPattern();

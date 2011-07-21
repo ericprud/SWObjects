@@ -848,11 +848,13 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 
 ConstructQuery:
     // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    IT_CONSTRUCT ConstructTemplate _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	driver.lastWhereClause = $4;
-	/* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
-	$$ = new Construct((DefaultGraphPattern*)$2, $3, $4, $5);
-    }
+    IT_CONSTRUCT ConstructTemplate {
+	driver.curOp = NULL;
+      } _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	  driver.lastWhereClause = $5;
+	  /* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
+	  $$ = new Construct((DefaultGraphPattern*)$2, $4, $5, $6);
+      }
 ;
 
 DescribeQuery:
@@ -1525,7 +1527,6 @@ _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
 _O_QGT_LCURLEY_E_S_QSubSelect_E_Or_QGroupGraphPatternSub_E_S_QGT_RCURLEY_E_C:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
-	driver.curOp = NULL;
 	driver.curBGP = NULL;
       } _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C GT_RCURLEY	{
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";

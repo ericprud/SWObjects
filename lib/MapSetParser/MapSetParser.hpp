@@ -136,6 +136,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	curResultSet->erase(curResultSet->begin());
     }
 
     void addBindingVar (const TTerm* var) {
@@ -185,8 +186,8 @@ protected:
 	return ret;
     }
 
-    BindingClause* endBindingSet () {
-	BindingClause* ret = new BindingClause(curResultSet);
+    ResultSet* endBindingSet () {
+	ResultSet* ret = curResultSet;
 	curResultSet = NULL;
 	termList.clear();
 	return ret;
@@ -221,7 +222,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 225 "lib/MapSetParser/MapSetParser.hpp"
+#line 226 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -235,7 +236,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 239 "lib/MapSetParser/MapSetParser.hpp"
+#line 240 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -245,7 +246,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 249 "lib/MapSetParser/MapSetParser.hpp"
+#line 250 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -293,7 +294,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 297 "lib/MapSetParser/MapSetParser.hpp"
+#line 298 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -305,7 +306,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 239 "lib/MapSetParser/MapSetParser.ypp"
+#line 240 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -368,7 +369,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 372 "lib/MapSetParser/MapSetParser.hpp"
+#line 373 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -724,7 +725,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 728 "lib/MapSetParser/MapSetParser.hpp"
+#line 729 "lib/MapSetParser/MapSetParser.hpp"
 
 
 
