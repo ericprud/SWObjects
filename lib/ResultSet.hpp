@@ -18,8 +18,6 @@
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
 #include "../interface/SAXparser.hpp"
-#include "SPARQLSerializer.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
 
 namespace w3c_sw {
 
@@ -31,9 +29,6 @@ namespace w3c_sw {
     typedef std::set<const TTerm*> VariableList;
     typedef std::set<const TTerm*>::iterator VariableListIterator;
     typedef std::set<const TTerm*>::const_iterator VariableListConstIterator;
-    typedef std::vector<const TTerm*> VariableVector;
-    typedef std::vector<const TTerm*>::iterator VariableVectorIterator;
-    typedef std::vector<const TTerm*>::const_iterator VariableVectorConstIterator;
 
     typedef std::list<Result*> ResultList;
     typedef std::list<Result*>::iterator ResultSetIterator;
@@ -125,7 +120,7 @@ namespace w3c_sw {
 	    return s.str();
 	}
 
-	XMLSerializer* toXml(XMLSerializer* xml = NULL);
+	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
 	BindingSetIterator begin () { return bindings.begin(); }
 	BindingSetConstIterator begin () const { return bindings.begin(); }
 	BindingSetIterator end () { return bindings.end(); }
@@ -513,72 +508,7 @@ namespace w3c_sw {
 	    results(), ordered(false), db(db), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Graphs) {  }
 
-	ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
-	    atomFactory(atomFactory), knownVars(), 
-	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
-	    SPARQLfedDriver sparqlParser(baseURI, atomFactory);
-	    IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-				 "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
-	    Operation* op = sparqlParser.parse(boolq);
-	    ResultSet booleanResult(atomFactory);
-	    op->execute(db, &booleanResult);
-	    delete op;
-	    sparqlParser.clear(""); // clear out namespaces and base URI.
-	    if (booleanResult.size() > 0) {
-		ResultSetIterator booleanRecord = booleanResult.begin();
-		const TTerm* btterm = (*booleanRecord)->get(atomFactory->getVariable("bool"));
-		const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(btterm);
-		if (blit == NULL /* !!! || ++booleanRecord != end() */)
-		    throw std::string("database:\n") + 
-			db->toString() + 
-			"\nis not a validate initializer for a boolen ResultSet.";
-		resultType = RESULT_Boolean;
-		/* So far, size() > 0 is how we test a boolean ResultSet. */
-		if (blit->getValue())
-		    results.insert(results.begin(), new Result(this));
-	    } else {
-		/* Get list of known variables. */
-		IStreamContext variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-				      "SELECT ?var {?set rs:resultVariable ?var }\n", IStreamContext::STRING);
-		ResultSet listOfVariables(atomFactory);
-		sparqlParser.executeSelect(variablesQ, db, &listOfVariables);
-		sparqlParser.clear(""); // not necessary unless we re-use parser.
-		for (ResultSetIterator resultRecord = listOfVariables.begin(); 
-		     resultRecord != listOfVariables.end(); ++resultRecord) {
-		    const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
-		    const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
-		    knownVars.insert(var);
-		}
-
-		/* Get list of bindings. */
-		IStreamContext bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
-				     "SELECT * {?soln rs:binding [\n"
-				     "		 rs:variable ?var ;\n"
-				     "		 rs:value ?val\n"
-				     " ]} ORDER BY ?soln\n", IStreamContext::STRING);
-		Operation* op = sparqlParser.parse(bindingsQ);
-		ResultSet listOfResults(atomFactory);
-		op->execute(db, &listOfResults);
-		delete op;
-		sparqlParser.clear(""); // not necessary unless we re-use parser.
-		std::map<const TTerm*, Result*> tterm2r;
-		for (ResultSetIterator resultRecord = listOfResults.begin(); 
-		     resultRecord != listOfResults.end(); ++resultRecord) {
-		    const TTerm* soln = (*resultRecord)->get(atomFactory->getVariable("soln"));
-		    const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
-		    const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
-		    const TTerm* val  = (*resultRecord)->get(atomFactory->getVariable("val" ));
-		    std::map<const TTerm*, Result*>::iterator ttr = tterm2r.find(soln);
-		    if (ttr == tterm2r.end()) {
-			Result* r = new Result(this);
-			insert(end(), r);
-			tterm2r[soln] = r;
-		    }
-		    set(tterm2r[soln], var, val, false);
-		}
-	    }
-	}
+	ResultSet(AtomFactory* atomFactory, RdfDB* db, const char* baseURI);
 
 	ResultSet (AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr) : 
 	    atomFactory(atomFactory), knownVars(), 
@@ -688,6 +618,11 @@ namespace w3c_sw {
 	}
 	const VariableList* getKnownVars () const { return &knownVars; }
 	void addKnownVar (const TTerm* var) { knownVars.insert(var); }
+	void addOrderedVar (const TTerm* var) {
+	    addKnownVar(var);
+	    selectOrder.push_back(var);
+	    orderedSelect = true;
+	}
 	VariableVector getOrderedVars () const {
 	    VariableVector ret;
 	    if (orderedSelect)
@@ -862,7 +797,7 @@ namespace w3c_sw {
 	    return atomFactory;
 	}
 	std::string toString(NamespaceMap* namespaces = NULL) const;
-	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) {
+	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) const {
 	    if (preferDb || resultType == RESULT_Graphs) {
 		// text/ntriples , text/turtle , text/trig
 		return db->toString(mediaType, namespaces);
@@ -876,8 +811,8 @@ namespace w3c_sw {
 		return ret;
 	    }
 	}
-	std::string str () { return toString(); }
-	XMLSerializer* toXml(XMLSerializer* xml = NULL);
+	std::string str () const { return toString(); }
+	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
 	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "");
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }

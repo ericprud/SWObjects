@@ -698,8 +698,8 @@ namespace w3c_sw {
 		bodyVars.insert(self);
 	    RecursiveExpressor::variable(self, lexicalValue); // in case we are defined from some other useful class.
 	}
-	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
-	    RecursiveExpressor::whereClause(self, p_GroupGraphPattern, p_BindingClause); // to call variable above.
+	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern) {
+	    RecursiveExpressor::whereClause(self, p_GroupGraphPattern); // to call variable above.
 	    p_GroupGraphPattern->express(&d);
 	    body = d.last.tableOperation;
 	}

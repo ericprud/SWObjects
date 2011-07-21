@@ -77,8 +77,11 @@ IT_INTERSECTION		[Ii][Nn][Tt][Ee][Rr][Ss][Ee][Cc][Tt][Ii][Oo][Nn]
 IT_PROMISCUOUS		[Pp][Rr][Oo][Mm][Ii][Ss][Cc][Uu][Oo][Uu][Ss]
 IT_VARNAMES		[Vv][Aa][Rr][Nn][Aa][Mm][Ee][Ss]
 IT_DRACONIAN		[Dd][Rr][Aa][Cc][Oo][Nn][Ii][Aa][Nn]
-IT_LABEL		[Ll][Aa][Bb][Ee][Ll]
-
+GT_LCURLEY		"{"
+GT_RCURLEY		"}"
+GT_DOT		"."
+GT_LBRACKET		"\["
+GT_RBRACKET		"\]"
 IT_BASE		[Bb][Aa][Ss][Ee]
 IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
@@ -88,6 +91,7 @@ IT_AS		[Aa][Ss]
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_TIMES		"*"
+IT_LABEL		[Ll][Aa][Bb][Ee][Ll]
 IT_CONSTRUCT		[Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt]
 IT_FROM		[Ff][Rr][Oo][Mm]
 IT_NAMED		[Nn][Aa][Mm][Ee][Dd]
@@ -101,19 +105,17 @@ IT_DESC		[Dd][Ee][Ss][Cc]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 IT_BINDINGS		[Bb][Ii][Nn][Dd][Ii][Nn][Gg][Ss]
-GT_LCURLEY		"{"
-GT_RCURLEY		"}"
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
-GT_SEMI		";"
-IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
-GT_DOT		"."
+GT_MINUS_MINUS		"--"
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
+IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
 IT_BIND		[Bb][Ii][Nn][Dd]
 IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
 GT_COMMA		","
+GT_SEMI		";"
 IT_a		"a"
 GT_PIPE		"|"
 GT_DIVIDE		"/"
@@ -121,8 +123,6 @@ GT_CARROT		"^"
 GT_OPT		"?"
 GT_PLUS		"+"
 GT_NOT		"!"
-GT_LBRACKET		"\["
-GT_RBRACKET		"\]"
 IT_MEMBERS		[Mm][Ee][Mm][Bb][Ee][Rr][Ss]
 IT_STARTS		[Ss][Tt][Aa][Rr][Tt][Ss]
 IT_ENDS		[Ee][Nn][Dd][Ss]
@@ -255,15 +255,21 @@ LINEFEED		(\r\n|\r|\n)
 {IT_PROMISCUOUS}	{return token::IT_PROMISCUOUS;}
 {IT_VARNAMES}		{return token::IT_VARNAMES;}
 {IT_DRACONIAN}		{return token::IT_DRACONIAN;}
-{IT_LABEL}		{return token::IT_LABEL;}
-{IT_GRAPH}		{return token::IT_GRAPH;}
+{GT_LCURLEY}		{return token::GT_LCURLEY;}
+{GT_RCURLEY}		{return token::GT_RCURLEY;}
+{GT_DOT}		{return token::GT_DOT;}
+{GT_LBRACKET}		{return token::GT_LBRACKET;}
+{GT_RBRACKET}		{return token::GT_RBRACKET;}
 {IT_BASE}		{return token::IT_BASE;}
 {IT_PREFIX}		{return token::IT_PREFIX;}
 {IT_SELECT}		{return token::IT_SELECT;}
+{IT_DISTINCT}		{return token::IT_DISTINCT;}
+{IT_REDUCED}		{return token::IT_REDUCED;}
 {IT_AS}		{return token::IT_AS;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_TIMES}		{return token::GT_TIMES;}
+{IT_LABEL}		{return token::IT_LABEL;}
 {IT_CONSTRUCT}		{return token::IT_CONSTRUCT;}
 {IT_FROM}		{return token::IT_FROM;}
 {IT_NAMED}		{return token::IT_NAMED;}
@@ -277,18 +283,17 @@ LINEFEED		(\r\n|\r|\n)
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {IT_BINDINGS}		{return token::IT_BINDINGS;}
-{GT_LCURLEY}		{return token::GT_LCURLEY;}
-{GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
-{GT_SEMI}		{return token::GT_SEMI;}
-{GT_DOT}		{return token::GT_DOT;}
+{GT_MINUS_MINUS}	{return token::GT_MINUS_MINUS;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
+{IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
 {IT_BIND}		{return token::IT_BIND;}
 {IT_MINUS}		{return token::IT_MINUS;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
 {GT_COMMA}		{return token::GT_COMMA;}
+{GT_SEMI}		{return token::GT_SEMI;}
 {IT_a}		{return token::IT_a;}
 {GT_PIPE}		{return token::GT_PIPE;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}
@@ -296,8 +301,6 @@ LINEFEED		(\r\n|\r|\n)
 {GT_OPT}		{return token::GT_OPT;}
 {GT_PLUS}		{return token::GT_PLUS;}
 {GT_NOT}		{return token::GT_NOT;}
-{GT_LBRACKET}		{return token::GT_LBRACKET;}
-{GT_RBRACKET}		{return token::GT_RBRACKET;}
 {IT_MEMBERS}		{return token::IT_MEMBERS;}
 {IT_STARTS}		{return token::IT_STARTS;}
 {IT_ENDS}		{return token::IT_ENDS;}

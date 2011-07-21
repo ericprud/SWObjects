@@ -363,25 +363,45 @@ public:
 	    ret << std::endl;
 	}
     }
-    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
-	ret << "  { ";
-	for (std::vector<const TTerm*>::const_iterator it = values->begin();
-	     it != values->end(); ++it)
-	    (*it)->express(this);
-	ret << ')' << std::endl;
-    }
-    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
 	ret << "BINDINGS ";
-	p_Vars->express(this);
+	std::map< const TTerm*, unsigned > pos2col;
+	std::vector<const TTerm*> vars;
+	{
+	    const VariableVector cols = p_ResultSet->getOrderedVars();
+	    for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
+		const TTerm* var = *varIt;
+		pos2col[var] = vars.size();
+		vars.push_back(var);
+		var->express(this);
+	    }
+	}
+
 	ret << '{' << std::endl; //!!!
-	p_Bindings->ProductionVector<const Binding*>::express(this);
+	{
+
+	    for (ResultSetConstIterator row = p_ResultSet->begin();
+		 row != p_ResultSet->end(); row++) {
+		ret << "(";
+		/*  Values */
+		for (size_t i = 0; i < vars.size(); ++i) {
+		    if (i != 0)
+			ret << ", ";
+		    const TTerm* var = vars[i];
+		    const TTerm* val = (*row)->get(var);
+		    if (val == NULL)
+			val = TTerm::Unbound;
+		    ret << val->toString();
+		}
+		ret << ")" << std::endl;
+	    }
+	}
 	ret << '}' << std::endl;
     }
-    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	ret << "WHERE" << std::endl;
 	needBraces = true;
 	p_GroupGraphPattern->express(this);
-	if (p_BindingClause) p_BindingClause->express(this);
     }
     virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
 	for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
@@ -443,7 +463,7 @@ public:
 	    p_insert->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void insert (const Insert* const self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (const Insert* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
 	ret << "INSERT { ";
 	if (debug & DEBUG_graphs) ret << self << ' ';
@@ -451,7 +471,7 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;
     }
-    virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
 	ret << "DELETE { ";
 	p_GraphTemplate->express(this);

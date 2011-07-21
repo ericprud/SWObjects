@@ -1,9 +1,35 @@
-# Location: http://www.w3.org/2009/sparql/docs/sparql-grammar-11
-# sparul_next 2011-01-01
+# Location: http://www.w3.org/2005/01/yacker?name=SPARUL_EGP
+# draws on <http://www.w3.org/2009/sparql/docs/sparql-grammar-11>
+# related: sparul_next 2011-01-01
 [0]     Top                        ::= QueryUnit | UpdateUnit
 [0]     QueryUnit                  ::= Query
 [0]     Query                      ::= Prologue ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery ) BindingsClause?
-[0]     Prologue                   ::= BaseDecl? PrefixDecl*
+[0X]    Prologue                   ::= BaseDecl? PrefixDecl* LoadResults*
+
+[0RS]   LoadResults                ::= (RSREF '=')? Result
+[0RS]   Result			   ::= ABox | UBox | CurlySet
+
+[0RS]   ABox			   ::= ABoxTop ABoxHeader ABoxRow* ABoxBottom
+         			     | ABoxHeader ABoxRow* "."
+[0RS]   ABoxTop 		   ::= ABOX_HR
+[0RS]   ABoxHeader 		   ::= '|' ('|' | ABoxCell+)
+[0RS]   ABoxRow 		   ::= '|' ('|' | ABoxCell+)
+[0RS]   ABoxCell 		   ::= BindingValue '|'
+[0RS]   ABoxBottom		   ::= ABOX_HR
+
+[0RS]   UBox			   ::= UBoxTop UBoxHeader UBoxRow* UBoxBottom
+ 				     | UBoxHeader UBoxRow* '.'
+[0RS]   UBoxTop 		   ::= UBOX_UHR
+[0RS]   UBoxHeader 		   ::= '│' ('│' | UBoxCell+)
+[0RS]   UBoxRow 		   ::= '│' ('│' | UBoxCell+)
+[0RS]   UBoxCell 		   ::= BindingValue '│'
+[0RS]   UBoxBottom 		   ::= UBOX_LHR
+
+[0RS]   CurlySet 		   ::= '{' Map* '}'
+[0RS]   Map 			   ::= '(' (Binding ','?)* ')'
+[0RS]   Binding			   ::= BindingValue '->' BindingValue
+                  		     | BindingValue '→' BindingValue
+
 [0]     BaseDecl                   ::= 'BASE' IRI_REF
 [0]     PrefixDecl                 ::= 'PREFIX' PNAME_NS IRI_REF
 [0]     SelectQuery                ::= SelectClause DatasetClause* WhereClause SolutionModifier
@@ -28,7 +54,7 @@
 [0]     LimitClause                ::= 'LIMIT' INTEGER
 [0]     OffsetClause               ::= 'OFFSET' INTEGER
 [0]     BindingsClause             ::= 'BINDINGS' Var* '{' ( '(' BindingValue+ ')' | NIL )* '}'
-[0]     BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | Var
+[0]     BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | '--' | Var
 [0]     UpdateUnit                 ::= Update
 [0]     Update                     ::= Prologue Update1 ( ';' Update? )?
 [0]     Update1                    ::= Load | Clear | Drop | Add | Move | Copy | Create | InsertData | DeleteData | DeleteWhere | Modify
@@ -54,11 +80,11 @@
 [0]     Quads                      ::= TriplesTemplate? ( QuadsNotTriples '.'? TriplesTemplate? )*
 [0]     QuadsNotTriples            ::= 'GRAPH' VarOrIRIref '{' TriplesTemplate? '}'
 [0]     TriplesTemplate            ::= TriplesSameSubject ( '.' TriplesTemplate? )?
-[0]     GroupGraphPattern          ::= '{' ( SubSelect | GroupGraphPatternSub ) '}'
+[0]     GroupGraphPattern          ::= ('{' ( SubSelect | GroupGraphPatternSub ) '}') | RSREF
 [0]     GroupGraphPatternSub       ::= TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
 [0]     TriplesBlock               ::= TriplesSameSubjectPath ( '.' TriplesBlock? )?
 [0]     GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause | Print
-[0]     Print                      ::= 'PRINT' GraphPatternNotTriples
+[0]     Print                      ::= 'PRINT' GroupGraphPattern
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
 [0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
@@ -107,71 +133,71 @@
 [0]     ValueLogical               ::= RelationalExpression
 [0]     RelationalExpression       ::= NumericExpression RelativeExpression?
 [0]     RelativeExpression         ::= '=' NumericExpression
-  | '!=' NumericExpression
-  | '<' NumericExpression
-  | '>' NumericExpression
-  | '<=' NumericExpression
-  | '>=' NumericExpression
-  | 'IN' ExpressionList
-  | 'NOT' 'IN' ExpressionList
+				     | '!=' NumericExpression
+				     | '<' NumericExpression
+  				     | '>' NumericExpression
+  				     | '<=' NumericExpression
+  				     | '>=' NumericExpression
+  				     | 'IN' ExpressionList
+  				     | 'NOT' 'IN' ExpressionList
 [0]     NumericExpression          ::= AdditiveExpression
 [0]     AdditiveExpression         ::= MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | ( NumericLiteralPositive | NumericLiteralNegative ) ( '*' UnaryExpression | '/' UnaryExpression )? )*
 [0]     MultiplicativeExpression   ::= UnaryExpression ( '*' UnaryExpression | '/' UnaryExpression )*
 [0]     UnaryExpression            ::= '!' PrimaryExpression
-| '+' PrimaryExpression
-| '-' PrimaryExpression
-| PrimaryExpression
+				     | '+' PrimaryExpression
+				     | '-' PrimaryExpression
+				     | PrimaryExpression
 [0]     PrimaryExpression          ::= BrackettedExpression | BuiltInCall | IRIrefOrFunction | RDFLiteral | NumericLiteral | BooleanLiteral | Var | Aggregate
 [0]     BrackettedExpression       ::= '(' Expression ')'
 [0]     BuiltInCall                ::= 'STR' '(' Expression ')'
-| 'LANG' '(' Expression ')'
-| 'LANGMATCHES' '(' Expression ',' Expression ')'
-| 'DATATYPE' '(' Expression ')'
-| 'BOUND' '(' Var ')'
-| 'IRI' '(' Expression ')'
-| 'URI' '(' Expression ')'
-| 'BNODE' ( '(' Expression ')' | NIL )
-| 'RAND' NIL
-| 'ABS' '(' Expression ')'
-| 'CEIL' '(' Expression ')'
-| 'FLOOR' '(' Expression ')'
-| 'ROUND' '(' Expression ')'
-| 'CONCAT' ExpressionList
-| SubstringExpression
-| 'STRLEN' '(' Expression ')'
-| 'UCASE' '(' Expression ')'
-| 'LCASE' '(' Expression ')'
-| 'ENCODE_FOR_URI' '(' Expression ')'
-| 'CONTAINS' '(' Expression ',' Expression ')'
-| 'STRSTARTS' '(' Expression ',' Expression ')'
-| 'STRENDS' '(' Expression ',' Expression ')'
-| 'YEAR' '(' Expression ')'
-| 'MONTH' '(' Expression ')'
-| 'DAY' '(' Expression ')'
-| 'HOURS' '(' Expression ')'
-| 'MINUTES' '(' Expression ')'
-| 'SECONDS' '(' Expression ')'
-| 'TIMEZONE' '(' Expression ')'
-| 'NOW' NIL
-| 'MD5' '(' Expression ')'
-| 'SHA1' '(' Expression ')'
-| 'SHA224' '(' Expression ')'
-| 'SHA256' '(' Expression ')'
-| 'SHA384' '(' Expression ')'
-| 'SHA512' '(' Expression ')'
-| 'COALESCE' ExpressionList
-| 'IF' '(' Expression ',' Expression ',' Expression ')'
-| 'STRLANG' '(' Expression ',' Expression ')'
-| 'STRDT' '(' Expression ',' Expression ')'
-| 'sameTerm' '(' Expression ',' Expression ')'
-| 'isIRI' '(' Expression ')'
-| 'isURI' '(' Expression ')'
-| 'isBLANK' '(' Expression ')'
-| 'isLITERAL' '(' Expression ')'
-| 'isNUMERIC' '(' Expression ')'
-| RegexExpression
-| ExistsFunc
-| NotExistsFunc
+				     | 'LANG' '(' Expression ')'
+				     | 'LANGMATCHES' '(' Expression ',' Expression ')'
+				     | 'DATATYPE' '(' Expression ')'
+				     | 'BOUND' '(' Var ')'
+				     | 'IRI' '(' Expression ')'
+				     | 'URI' '(' Expression ')'
+				     | 'BNODE' ( '(' Expression ')' | NIL )
+				     | 'RAND' NIL
+				     | 'ABS' '(' Expression ')'
+				     | 'CEIL' '(' Expression ')'
+				     | 'FLOOR' '(' Expression ')'
+				     | 'ROUND' '(' Expression ')'
+				     | 'CONCAT' ExpressionList
+				     | SubstringExpression
+				     | 'STRLEN' '(' Expression ')'
+				     | 'UCASE' '(' Expression ')'
+				     | 'LCASE' '(' Expression ')'
+				     | 'ENCODE_FOR_URI' '(' Expression ')'
+				     | 'CONTAINS' '(' Expression ',' Expression ')'
+				     | 'STRSTARTS' '(' Expression ',' Expression ')'
+				     | 'STRENDS' '(' Expression ',' Expression ')'
+				     | 'YEAR' '(' Expression ')'
+				     | 'MONTH' '(' Expression ')'
+				     | 'DAY' '(' Expression ')'
+				     | 'HOURS' '(' Expression ')'
+				     | 'MINUTES' '(' Expression ')'
+				     | 'SECONDS' '(' Expression ')'
+				     | 'TIMEZONE' '(' Expression ')'
+				     | 'NOW' NIL
+				     | 'MD5' '(' Expression ')'
+				     | 'SHA1' '(' Expression ')'
+				     | 'SHA224' '(' Expression ')'
+				     | 'SHA256' '(' Expression ')'
+				     | 'SHA384' '(' Expression ')'
+				     | 'SHA512' '(' Expression ')'
+				     | 'COALESCE' ExpressionList
+				     | 'IF' '(' Expression ',' Expression ',' Expression ')'
+				     | 'STRLANG' '(' Expression ',' Expression ')'
+				     | 'STRDT' '(' Expression ',' Expression ')'
+				     | 'sameTerm' '(' Expression ',' Expression ')'
+				     | 'isIRI' '(' Expression ')'
+				     | 'isURI' '(' Expression ')'
+				     | 'isBLANK' '(' Expression ')'
+				     | 'isLITERAL' '(' Expression ')'
+				     | 'isNUMERIC' '(' Expression ')'
+				     | RegexExpression
+				     | ExistsFunc
+				     | NotExistsFunc
 [0]     RegexExpression            ::= 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
 [0]     SubstringExpression        ::= 'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
 [0]     ExistsFunc                 ::= 'EXISTS' GroupGraphPattern
@@ -221,5 +247,11 @@
 [0]     PN_CHARS                   ::= PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]
 [0]     PN_PREFIX                  ::= PN_CHARS_BASE ((PN_CHARS|'.')* PN_CHARS)?
 [0]     PN_LOCAL                   ::= ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
+
+[0RS]   ABOX_HR			   ::= ('+' '-'+)+ '+'
+[0RS]   UBOX_UHR 		   ::= '┌' '─'* ('┬' '─'*)* '┐'
+[0RS]   UBOX_LHR 		   ::= '└' '─'* ('┴' '─'*)* '┘'
+
+[0RS]   RSREF 			   ::= '*' VARNAME
 
 @pass: [ \t\r\n]+ | '#' [^\r\n]*

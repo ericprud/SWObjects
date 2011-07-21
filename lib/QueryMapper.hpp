@@ -84,7 +84,7 @@ namespace w3c_sw {
 		/* rules 04 - 08 are performed by MappingConstruct::execute, called above. */
 	    }
 	}
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 
 	    /* # 01 — Produce a disjunctive normal form DQI. For each disjunct D:
 	     * http://www.w3.org/2008/07/MappingRules/#_01
@@ -117,11 +117,7 @@ namespace w3c_sw {
 	    if (pattern == NULL)
 		pattern = new DefaultGraphPattern();
 
-	    last.bindingClause = NULL;
-	    if (p_BindingClause != NULL)
-		p_BindingClause->express(this);
-
-	    last.whereClause = new WhereClause(pattern, last.bindingClause);
+	    last.whereClause = new WhereClause(pattern);
 	}
     };
 

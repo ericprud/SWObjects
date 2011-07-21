@@ -147,7 +147,7 @@ public:
     class ParserFilter : public Filter {
     public:
 	ParserFilter () : Filter(NULL) {  }
-	void setOp (TableOperation* newOp) { m_TableOperation = newOp; }
+	void setOp (const TableOperation* newOp) { m_TableOperation = newOp; }
 	void copyExpressionsTo (OptionalGraphPattern* target) {
 	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 		 it != m_Expressions.end(); ++it)

@@ -6,6 +6,8 @@
 #include "ResultSet.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "XMLQueryExpressor.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLSerializer.hpp"
 #include <iostream>
 
 namespace w3c_sw {
@@ -43,11 +45,11 @@ namespace w3c_sw {
 	    return (*vi).second.tterm;
     }
 
-    XMLSerializer* Result::toXml (XMLSerializer* xml) {
+    XMLSerializer* Result::toXml (XMLSerializer* xml) const {
 	XMLQueryExpressor xmlizer(xml);
 	xml->open("result");
 	xml->attribute("xmlns:xsd", NS_xsd);
-	for (BindingSetIterator it = bindings.begin(); it != bindings.end(); it++) {
+	for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); it++) {
 	    xml->open("binding");
 	    xml->attribute(it->first->getBindingAttributeName(), it->first->getLexicalValue());
 	    if (it->second.weaklyBound) xml->attribute("binding", "weak" );
@@ -69,6 +71,73 @@ namespace w3c_sw {
 	atomFactory(atomFactory), knownVars(), results(), ordered(false),  db(NULL), 
 	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular) {
 	results.insert(results.begin(), new Result(this));
+    }
+
+    ResultSet::ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
+	atomFactory(atomFactory), knownVars(), 
+	results(), ordered(false), db(NULL), selectOrder(), 
+	orderedSelect(false), resultType(RESULT_Tabular) {
+	SPARQLfedDriver sparqlParser(baseURI, atomFactory);
+	IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
+	Operation* op = sparqlParser.parse(boolq);
+	ResultSet booleanResult(atomFactory);
+	op->execute(db, &booleanResult);
+	delete op;
+	sparqlParser.clear(""); // clear out namespaces and base URI.
+	if (booleanResult.size() > 0) {
+	    ResultSetIterator booleanRecord = booleanResult.begin();
+	    const TTerm* btterm = (*booleanRecord)->get(atomFactory->getVariable("bool"));
+	    const BooleanRDFLiteral* blit = dynamic_cast<const BooleanRDFLiteral*>(btterm);
+	    if (blit == NULL /* !!! || ++booleanRecord != end() */)
+		throw std::string("database:\n") + 
+		    db->toString() + 
+		    "\nis not a validate initializer for a boolen ResultSet.";
+	    resultType = RESULT_Boolean;
+	    /* So far, size() > 0 is how we test a boolean ResultSet. */
+	    if (blit->getValue())
+		results.insert(results.begin(), new Result(this));
+	} else {
+	    /* Get list of known variables. */
+	    IStreamContext variablesQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				      "SELECT ?var {?set rs:resultVariable ?var }\n", IStreamContext::STRING);
+	    ResultSet listOfVariables(atomFactory);
+	    sparqlParser.executeSelect(variablesQ, db, &listOfVariables);
+	    sparqlParser.clear(""); // not necessary unless we re-use parser.
+	    for (ResultSetIterator resultRecord = listOfVariables.begin(); 
+		 resultRecord != listOfVariables.end(); ++resultRecord) {
+		const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
+		const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
+		knownVars.insert(var);
+	    }
+
+	    /* Get list of bindings. */
+	    IStreamContext bindingsQ("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
+				     "SELECT * {?soln rs:binding [\n"
+				     "		 rs:variable ?var ;\n"
+				     "		 rs:value ?val\n"
+				     " ]} ORDER BY ?soln\n", IStreamContext::STRING);
+	    Operation* op = sparqlParser.parse(bindingsQ);
+	    ResultSet listOfResults(atomFactory);
+	    op->execute(db, &listOfResults);
+	    delete op;
+	    sparqlParser.clear(""); // not necessary unless we re-use parser.
+	    std::map<const TTerm*, Result*> tterm2r;
+	    for (ResultSetIterator resultRecord = listOfResults.begin(); 
+		 resultRecord != listOfResults.end(); ++resultRecord) {
+		const TTerm* soln = (*resultRecord)->get(atomFactory->getVariable("soln"));
+		const TTerm* varStr = (*resultRecord)->get(atomFactory->getVariable("var" ));
+		const TTerm* var  = atomFactory->getVariable(varStr->getLexicalValue());
+		const TTerm* val  = (*resultRecord)->get(atomFactory->getVariable("val" ));
+		std::map<const TTerm*, Result*>::iterator ttr = tterm2r.find(soln);
+		if (ttr == tterm2r.end()) {
+		    Result* r = new Result(this);
+		    insert(end(), r);
+		    tterm2r[soln] = r;
+		}
+		set(tterm2r[soln], var, val, false);
+	    }
+	}
     }
 
     ResultSet::~ResultSet () {
@@ -130,13 +199,9 @@ namespace w3c_sw {
 	    vars.insert(self);
 	    SWObjectDuplicator::variable(self, lexicalValue);
 	}
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    ResultSet* joined(NULL);
 	    const ResultSet* working = &rs;
-	    if (p_BindingClause != NULL) {
-		working = joined = new ResultSet(rs);
-		p_BindingClause->bindVariables(NULL, joined);
-	    }
 
 	    vars.clear(); // probably got filled with e.g. select vars.
 	    p_GroupGraphPattern->express(this);
@@ -156,7 +221,7 @@ namespace w3c_sw {
 
 	    if (joined)
 		delete joined;
-	    last.whereClause = new WhereClause(op, NULL);
+	    last.whereClause = new WhereClause(op);
 	}
     };
 
@@ -617,7 +682,7 @@ namespace w3c_sw {
 	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
-    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) { // Early returns
+    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) const { // Early returns
 	if (resultType != RESULT_Tabular) {
 	    xml->rawData(toString(MediaType("text/turtle")));
 	    return xml;
@@ -633,7 +698,7 @@ namespace w3c_sw {
 	}
 	xml->close();
 	xml->open("results");
-	for (ResultSetIterator it = begin() ; it != end(); it++)
+	for (ResultSetConstIterator it = begin() ; it != end(); it++)
 	    (*it)->toXml(xml);
 	xml->close();
 	xml->close();

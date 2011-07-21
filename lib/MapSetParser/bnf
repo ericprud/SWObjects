@@ -1,10 +1,5 @@
-# Out of date with MapSet yacker grammar.
-#   Last update via ediff with SPARQLfedParser.ypp
-#   conflicts: 9 shift/reduce caused by
-#     ConstructQuery ::= GraphTerm? 'CONSTRUCT' conflicts with the end of
-#       GroupClause ::= IT_GROUP IT_BY _QGroupCondition_E_Plus
-#       HavingClause ::= IT_HAVING _QHavingCondition_E_Plus
-#       OrderClause ::= IT_ORDER IT_BY _QOrderCondition_E_Plus
+# basis for http://swobjects.svn.sourceforge.net/viewvc/swobjects/branches/sparql11/lib/MapSetParser/MapSetParser.ypp?view=markup
+# Eric Prud'hommeaux
 # 
 # perl -pe "s{^\[[0-9]+\]\\s*([^ ]+)\\s*::=\\s*}{'[0]     ' . \$1 . (' ' x (27 - length(\$1))) . '::= '}e"
 
@@ -16,7 +11,7 @@
                                      | 'USER' RDFLiteral
                                      | 'PASSWORD' RDFLiteral
                                      | 'DATABASE' RDFLiteral
-                                     | 'STEMURI' RDFLiteral
+                                     | 'STEMURI' IRIref
                                      | 'PRIMARYKEY' PrimaryKeySpec
                                      | 'SHAREDVARS' ( 'PROMISCUOUS' | 'VARNAMES' | 'DRACONIAN' )
                                      | 'INTERSECTION'( '{' GraphTerm? '}' VarOrTerm )+
@@ -26,9 +21,9 @@
 [0]     Prologue                   ::= BaseDecl? PrefixDecl*
 [0]     BaseDecl                   ::= 'BASE' IRI_REF
 [0]     PrefixDecl                 ::= 'PREFIX' PNAME_NS IRI_REF
-[0]     SubSelect                  ::= SelectClause WhereClause SolutionModifier
+[0]     SubSelect                  ::= SelectClause WhereClause SolutionModifier BindingsClause?
 [0]     SelectClause               ::= 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
-[0]     ConstructQuery             ::= GraphTerm? 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause BindingsClause
+[0]     ConstructQuery             ::= ('LABEL' GraphTerm)? 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier BindingsClause?
 [0]     DatasetClause              ::= 'FROM' ( DefaultGraphClause | NamedGraphClause )
 [0]     DefaultGraphClause         ::= SourceSelector
 [0]     NamedGraphClause           ::= 'NAMED' SourceSelector
@@ -45,23 +40,23 @@
 [0]     LimitOffsetClauses         ::= LimitClause OffsetClause? | OffsetClause LimitClause?
 [0]     LimitClause                ::= 'LIMIT' INTEGER
 [0]     OffsetClause               ::= 'OFFSET' INTEGER
-[0]     BindingsClause             ::= ( 'BINDINGS' Var+ '{' ( '(' BindingValue+ ')' )* '}' )?
-[0]     BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | Var
+[0]     BindingsClause             ::= 'BINDINGS' Var* '{' ( '(' BindingValue+ ')' | NIL )* '}'
+[0x]    BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | '--' | Var
 [0]     GroupGraphPattern          ::= '{' ( SubSelect | GroupGraphPatternSub ) '}'
-[0]     GroupGraphPatternSub       ::= TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
-[0]     TriplesBlock               ::= TriplesSameSubject ( '.' TriplesBlock? )?
-[0]     GraphPatternNotTriples     ::= OptionalGraphPattern | MinusGraphPattern | GroupOrUnionGraphPattern | GraphGraphPattern | ServiceGraphPattern
+[0]     GroupGraphPatternSub       ::= TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
+[0]     TriplesBlock               ::= TriplesSameSubjectPath ( '.' TriplesBlock? )?
+[0x]    GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
 [0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
+[0]     Bind                       ::= 'BIND' '(' Expression 'AS' Var ')'
 [0]     MinusGraphPattern          ::= 'MINUS' GroupGraphPattern
 [0]     GroupOrUnionGraphPattern   ::= GroupGraphPattern ( 'UNION' GroupGraphPattern )*
 [0]     Filter                     ::= 'FILTER' Constraint
 [0]     Constraint                 ::= BrackettedExpression | BuiltInCall | FunctionCall
 [0]     FunctionCall               ::= IRIref ArgList
 [0]     ArgList                    ::= NIL | '(' 'DISTINCT'? Expression ( ',' Expression )* ')'
-[0]     ExprAggArg                 ::= '(' 'DISTINCT'? Expression ')'
-[0]     ExpressionList             ::= ( NIL | '(' Expression ( ',' Expression )* ')' )
+[0]     ExpressionList             ::= NIL | '(' Expression ( ',' Expression )* ')'
 [0]     ConstructTemplate          ::= '{' ConstructTriples? '}'
 [0]     ConstructTriples           ::= TriplesSameSubject ( '.' ConstructTriples? )?
 [0]     TriplesSameSubject         ::= VarOrTerm PropertyListNotEmpty | TriplesNode PropertyList
@@ -70,6 +65,21 @@
 [0]     ObjectList                 ::= Object ( ',' Object )*
 [0]     Object                     ::= GraphNode
 [0]     Verb                       ::= VarOrIRIref | 'a'
+[0]     TriplesSameSubjectPath     ::= VarOrTerm PropertyListNotEmptyPath | TriplesNode PropertyListPath
+[0]     PropertyListNotEmptyPath   ::= ( VerbPath | VerbSimple ) ObjectList ( ';' ( ( VerbPath | VerbSimple ) ObjectList )? )*
+[0]     PropertyListPath           ::= PropertyListNotEmpty?
+[0]     VerbPath                   ::= Path
+[0]     VerbSimple                 ::= Var
+[0]     Path                       ::= PathAlternative
+[0]     PathAlternative            ::= PathSequence ( '|' PathSequence )*
+[0]     PathSequence               ::= PathEltOrInverse ( '/' PathEltOrInverse )*
+[0]     PathElt                    ::= PathPrimary PathMod?
+[0]     PathEltOrInverse           ::= PathElt | '^' PathElt
+[0]     PathMod                    ::= ( '*' | '?' | '+' | '{' ( Integer ( ',' ( '}' | Integer '}' ) | '}' ) | ',' Integer '}' ) )
+[0]     PathPrimary                ::= ( IRIref | 'a' | '!' PathNegatedPropertySet | '(' Path ')' )
+[0]     PathNegatedPropertySet     ::= ( PathOneInPropertySet | '(' ( PathOneInPropertySet ( '|' PathOneInPropertySet )* )? ')' )
+[0]     PathOneInPropertySet       ::= ( IRIref | 'a' | '^' ( IRIref | 'a' ) )
+[0]     Integer                    ::= INTEGER
 [0]     TriplesNode                ::= Generator | BlankNodePropertyList
 [0]     BlankNodePropertyList      ::= '[' PropertyListNotEmpty ']'
 [0]     Generator                  ::= ('MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED')? '(' GraphNode+ ')'
@@ -108,6 +118,34 @@
                                        | 'IRI' '(' Expression ')'
                                        | 'URI' '(' Expression ')'
                                        | 'BNODE' ( '(' Expression ')' | NIL )
+				       | 'RAND' NIL
+				       | 'ABS' '(' Expression ')'
+				       | 'CEIL' '(' Expression ')'
+				       | 'FLOOR' '(' Expression ')'
+				       | 'ROUND' '(' Expression ')'
+				       | 'CONCAT' ExpressionList
+				       | SubstringExpression
+				       | 'STRLEN' '(' Expression ')'
+				       | 'UCASE' '(' Expression ')'
+				       | 'LCASE' '(' Expression ')'
+				       | 'ENCODE_FOR_URI' '(' Expression ')'
+				       | 'CONTAINS' '(' Expression ',' Expression ')'
+				       | 'STRSTARTS' '(' Expression ',' Expression ')'
+				       | 'STRENDS' '(' Expression ',' Expression ')'
+				       | 'YEAR' '(' Expression ')'
+				       | 'MONTH' '(' Expression ')'
+				       | 'DAY' '(' Expression ')'
+				       | 'HOURS' '(' Expression ')'
+				       | 'MINUTES' '(' Expression ')'
+				       | 'SECONDS' '(' Expression ')'
+				       | 'TIMEZONE' '(' Expression ')'
+				       | 'NOW' NIL
+				       | 'MD5' '(' Expression ')'
+				       | 'SHA1' '(' Expression ')'
+				       | 'SHA224' '(' Expression ')'
+				       | 'SHA256' '(' Expression ')'
+				       | 'SHA384' '(' Expression ')'
+				       | 'SHA512' '(' Expression ')'
                                        | 'COALESCE' ExpressionList
                                        | 'IF' '(' Expression ',' Expression ',' Expression ')'
                                        | 'STRLANG' '(' Expression ',' Expression ')'
@@ -117,14 +155,15 @@
                                        | 'isURI' '(' Expression ')'
                                        | 'isBLANK' '(' Expression ')'
                                        | 'isLITERAL' '(' Expression ')'
+				       | 'isNUMERIC' '(' Expression ')'
                                        | RegexExpression
                                        | ExistsFunc
                                        | NotExistsFunc
 [0]     RegexExpression            ::= 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
+[0]     SubstringExpression        ::= 'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
 [0]     ExistsFunc                 ::= 'EXISTS' GroupGraphPattern
 [0]     NotExistsFunc              ::= 'NOT' 'EXISTS' GroupGraphPattern
-[0]     Aggregate                  ::=   'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')' | 'SUM' ExprAggArg | 'MIN' ExprAggArg | 'MAX' ExprAggArg | 'AVG' ExprAggArg | 'SAMPLE' ExprAggArg
-                                       | 'GROUP_CONCAT' '(' 'DISTINCT'? Expression ( ',' Expression )* ( ';' 'SEPARATOR' '=' String )? ')'
+[0]     Aggregate                  ::= 'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')' | ( 'SUM' | 'MIN' | 'MAX' | 'AVG' | 'SAMPLE' ) '(' 'DISTINCT'? Expression ')' | 'GROUP_CONCAT' '(' 'DISTINCT'? Expression ( ';' 'SEPARATOR' '=' String )? ')'
 [0]     IRIrefOrFunction           ::= IRIref ArgList?
 [0]     RDFLiteral                 ::= String ( LANGTAG | ( '^^' IRIref ) )?
 [0]     NumericLiteral             ::= NumericLiteralUnsigned | NumericLiteralPositive | NumericLiteralNegative

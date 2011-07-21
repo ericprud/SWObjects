@@ -668,6 +668,10 @@ struct TTermSorter {
     }
 };
 
+typedef std::vector<const TTerm*> VariableVector;
+typedef std::vector<const TTerm*>::iterator VariableVectorIterator;
+typedef std::vector<const TTerm*>::const_iterator VariableVectorConstIterator;
+
 class URI : public TTerm {
     friend class AtomFactory;
 private:
@@ -2198,30 +2202,17 @@ public:
 #if defined(SWIG)
     %template(ProductionVector_POSstar) ProductionVector<TTerm const *>;
 #endif /* defined(SWIG) */
-class Binding : public ProductionVector<const TTerm*> {
-private:
-public:
-    Binding () : ProductionVector<const TTerm*>() {  }
-    ~Binding () { clear(); /* atoms in vector are centrally managed */ }
-    virtual void express(Expressor* p_expressor) const;
-    void bindVariables(RdfDB* db, ResultSet* rs, Result* r, TTermList* p_Vars) const;
-};
 #if defined(SWIG)
     %template(ProductionVector_Bindingstar) ProductionVector<Binding const *>;
 #endif /* defined(SWIG) */
+
 class BindingClause : public TableOperation {
 private:
-    TTermList* m_Vars;
-    ProductionVector<const Binding*> bindings;
+    ResultSet* m_ResultSet;
 public:
-    BindingClause (TTermList* p_Vars) : m_Vars(p_Vars) {  }
-    ~BindingClause () { delete m_Vars; }
-
-    std::vector<const Binding*>::iterator begin () { return bindings.begin(); }
-    std::vector<const Binding*>::const_iterator begin () const { return bindings.begin(); }
-    std::vector<const Binding*>::iterator end () { return bindings.end(); }
-    std::vector<const Binding*>::const_iterator end () const { return bindings.end(); }
-    void push_back (const Binding* binding) { bindings.push_back(binding); }
+    BindingClause();
+    BindingClause(ResultSet* p_ResultSet);
+    ~BindingClause();
 
     // <TableOperation virtuals>
     virtual TableOperation* getDNF () const {
@@ -2234,7 +2225,7 @@ public:
 	w3c_sw_NEED_IMPL("DELETEPATTERN{BindingClause(...)}");
     }
     bool operator== (const BindingClause& ref) const {
-	return *m_Vars == *ref.m_Vars && bindings == ref.bindings;
+	return m_ResultSet == ref.m_ResultSet;
     }
     bool operator== (const TableOperation& ref) const {
 	const BindingClause* pref = dynamic_cast<const BindingClause*>(&ref);
@@ -2242,7 +2233,7 @@ public:
     }
     // </TableOperation virtuals>
 
-    const TTermList* getVars () const { return m_Vars; }
+    const ResultSet& getResultSet () { return *m_ResultSet; }
     virtual void express(Expressor* p_expressor) const;
     void bindVariables(RdfDB* db, ResultSet* rs) const;
 };
@@ -2251,21 +2242,15 @@ class WhereClause : public Base {
     friend class MapSetParser;
 private:
     const TableOperation* m_GroupGraphPattern;
-    const BindingClause* m_BindingClause;
 public:
-    WhereClause (const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) : Base(), m_GroupGraphPattern(p_GroupGraphPattern), m_BindingClause(p_BindingClause) {  }
+    WhereClause (const TableOperation* p_GroupGraphPattern) : Base(), m_GroupGraphPattern(p_GroupGraphPattern) {  }
     ~WhereClause () {
 	delete m_GroupGraphPattern;
-	delete m_BindingClause;
     }
     virtual void express(Expressor* p_expressor) const;
     void bindVariables(RdfDB* db, ResultSet* rs) const;
     bool operator== (const WhereClause& ref) const {
-	return
-	    *m_GroupGraphPattern == *ref.m_GroupGraphPattern &&
-	    ( m_BindingClause && ref.m_BindingClause ? 
-	      *m_BindingClause == *ref.m_BindingClause : 
-	      m_BindingClause == ref.m_BindingClause );
+	return *m_GroupGraphPattern == *ref.m_GroupGraphPattern;
     }
 };
 
@@ -2413,10 +2398,10 @@ public:
 class Insert : public GraphChange {
     friend class SPARQLfedParser;
 private:
-    TableOperation* m_GraphTemplate;
+    const TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
 public:
-    Insert (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    Insert (const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Insert () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -2428,10 +2413,10 @@ public:
 class Delete : public GraphChange {
     friend class SPARQLfedParser;
 private:
-    TableOperation* m_GraphTemplate;
+    const TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
 public:
-    Delete (TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    Delete (const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
     ~Delete () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -3380,9 +3365,8 @@ public:
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const TTerm* p_IRIref) = 0;
     virtual void namedGraphClause(const NamedGraphClause* const self, const TTerm* p_IRIref) = 0;
     virtual void solutionModifier(const SolutionModifier* const self, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
-    virtual void binding(const Binding* const self, const ProductionVector<const TTerm*>* values) = 0;
-    virtual void bindingClause(const BindingClause* const self, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) = 0;
-    virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) = 0;
+    virtual void bindingClause(const BindingClause* const self, const ResultSet* p_ResultSet) = 0;
+    virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) = 0;
     virtual void select(const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void subSelect(const SubSelect* const self, const Select* p_Select) = 0;
@@ -3390,8 +3374,8 @@ public:
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
     virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) = 0;
-    virtual void insert(const Insert* const self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
-    virtual void del(const Delete* const self, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
+    virtual void insert(const Insert* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
+    virtual void del(const Delete* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
     virtual void load(const Load* const self, const URI* p_from, const URI* p_into) = 0;
     virtual void clear(const Clear* const self, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
@@ -3523,18 +3507,11 @@ public:
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++)
 		p_OrderConditions->at(i).expression->express(this);
     }
-    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
-	for (std::vector<const TTerm*>::const_iterator it = values->begin();
-	     it != values->end(); ++it)
-	    (*it)->express(this);
+    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+	w3c_sw_NEED_IMPL("RecursiveExpressor::bindingClause");
     }
-    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	p_Vars->express(this);
-	p_Bindings->ProductionVector<const Binding*>::express(this);
-    }
-    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	p_GroupGraphPattern->express(this);
-	if (p_BindingClause) p_BindingClause->express(this);
     }
     virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
 	for (std::vector<const Operation*>::const_iterator it = p_Operations->begin();
@@ -3573,11 +3550,11 @@ public:
 	    p_insert->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
     }
-    virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
@@ -3771,13 +3748,10 @@ public:
     virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
 	w3c_sw_NEED_IMPL("solutionModifier");
     }
-    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {
-	w3c_sw_NEED_IMPL("binding");
-    }
-    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
+    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
 	w3c_sw_NEED_IMPL("bindingClause");
     }
-    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	w3c_sw_NEED_IMPL("whereClause");
     }
     virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
@@ -3801,10 +3775,10 @@ public:
     virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("modify");
     }
-    virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("insert");
     }
-    virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("del");
     }
     virtual void load (const Load* const, const URI* p_from, const URI* p_into) {

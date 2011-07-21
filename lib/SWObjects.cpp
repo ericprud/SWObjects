@@ -416,14 +416,11 @@ void NamedGraphClause::express (Expressor* p_expressor) const {
 void SolutionModifier::express (Expressor* p_expressor) const {
     p_expressor->solutionModifier(this, groupBy, having, m_OrderConditions, m_limit, m_offset);
 }
-void Binding::express (Expressor* p_expressor) const {
-    p_expressor->binding(this, this);
-}
 void BindingClause::express (Expressor* p_expressor) const {
-    p_expressor->bindingClause(this, m_Vars, &bindings);
+    p_expressor->bindingClause(this, m_ResultSet);
 }
 void WhereClause::express (Expressor* p_expressor) const {
-    p_expressor->whereClause(this, m_GroupGraphPattern, m_BindingClause);
+    p_expressor->whereClause(this, m_GroupGraphPattern);
 }
 void OperationSet::express (Expressor* p_expressor) const {
     p_expressor->operationSet(this, &operations);
@@ -1613,6 +1610,15 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
 	}
 
+	if (m_IRIref == TTerm::FUNC_strlen &&
+	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
+	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
+	    int i = upper->getLexicalValue().size();
+	    std::stringstream ss;
+	    ss << i;
+	    return atomFactory->getNumericRDFLiteral(ss.str(), i);
+	}
+
 	const TTerm* second = it == subd.end() ? NULL : *it++;
 
 	if (m_IRIref == TTerm::FUNC_sameTerm && 
@@ -1731,8 +1737,18 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	loadGraph(db, m_IRIref, db->ensureGraph(m_IRIref));
     }
 
+    BindingClause::BindingClause () : m_ResultSet(new ResultSet(NULL)) { // ResultSet will never create new atoms so it needs no AtomFactory
+	// ResultSets in BindingClauses don't need to start with one empty row.
+	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
+	rs->erase(rs->begin());
+    }
+    BindingClause::BindingClause (ResultSet* p_ResultSet) : m_ResultSet(p_ResultSet) {  }
+    BindingClause::~BindingClause () {
+	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
+	delete rs;
+    }
+
     void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
-	if (m_BindingClause != NULL) m_BindingClause->bindVariables(db, rs);
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
@@ -1749,32 +1765,23 @@ void NumberExpression::express (Expressor* p_expressor) const {
     }
 
     void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet island(rs->getAtomFactory());
-	for (ResultSetIterator it = island.begin() ; it != island.end(); ) {
-	    for (std::vector<const Binding*>::const_iterator binding = begin() ; binding != end(); ++binding) {
-		Result* r = new Result(rs);
-		island.insert(it, r);
-		(*binding)->bindVariables(db, &island, r, m_Vars);
-	    }
-	    delete *it;
-	    it = island.erase(it);
-	}
-	rs->joinIn(&island);
+	rs->joinIn(m_ResultSet);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
-    void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
-	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
-	std::vector<const TTerm*>::const_iterator value = begin();
-	while (value != end()) {
-	    if (variable == p_Vars->end())
-		throw std::string("binding ") + (*value)->toString() + " has no slot in the binding set";
-	    if (*value != TTerm::Unbound)
-		rs->set(r, *variable, *value, false);
-	    variable++;
-	    value++;
-	}
-    }
+    //@delme !!
+    // void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
+    // 	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
+    // 	std::vector<const TTerm*>::const_iterator value = begin();
+    // 	while (value != end()) {
+    // 	    if (variable == p_Vars->end())
+    // 		throw std::string("binding ") + (*value)->toString() + " has no slot in the binding set";
+    // 	    if (*value != TTerm::Unbound)
+    // 		rs->set(r, *variable, *value, false);
+    // 	    variable++;
+    // 	    value++;
+    // 	}
+    // }
 
     void Print::bindVariables (RdfDB* db, ResultSet* rs) const {
 	SPARQLSerializer ss(NULL); // doesn't need to create new atoms.
@@ -2017,7 +2024,8 @@ compared against
     }
 
     void Bind::bindVariables (RdfDB* db, ResultSet* rs) const {
-	m_TableOperation->bindVariables(db, rs);
+	if (m_TableOperation != NULL)
+	    m_TableOperation->bindVariables(db, rs);
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
 	    try {
 		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL), false); // @@ NULL for atomFactory
@@ -2088,7 +2096,7 @@ compared against
 	op->express(&dup);
 	const Operation* query = new Select(DIST_distinct, vars.l,
 					    new ProductionVector<const DatasetClause*>(),
-					    new WhereClause(dup.last.tableOperation, NULL),
+					    new WhereClause(dup.last.tableOperation),
 					    new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
 
 	/* Constrain query with any existing result bindings. */

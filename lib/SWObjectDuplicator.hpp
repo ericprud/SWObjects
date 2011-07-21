@@ -43,7 +43,6 @@ namespace w3c_sw {
       const DatasetClause* datasetClause;
       //ProductionVector<DatasetClause*> datasetClauses;
       SolutionModifier* solutionModifier;
-      const Binding* binding;
       TTermList* posList;
       const BindingClause* bindingClause;
       WhereClause* whereClause;
@@ -281,32 +280,13 @@ namespace w3c_sw {
 		last.solutionModifier = new SolutionModifier(NULL, NULL, NULL, p_limit, p_offset);
 	    }
 	}
-	virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
-	    Binding* ret = new Binding();
-	    for (std::vector<const TTerm*>::const_iterator it = values->begin();
-		 it != values->end(); it++) {
-		(*it)->express(this);
-		ret->push_back(last.tterms.tterm);
-	    }
-	    last.binding = ret;
+	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+	    last.bindingClause = new BindingClause(new ResultSet(*p_ResultSet));
 	}
-	virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	    p_Vars->express(this);
-	    BindingClause* ret = new BindingClause(last.posList); // last.varSets.posList);
-	    for (std::vector<const Binding*>::const_iterator it = p_Bindings->begin();
-		 it != p_Bindings->end(); it++) {
-		(*it)->express(this);
-		ret->push_back(last.binding);
-	    }
-	    last.bindingClause = ret;
-	}
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    p_GroupGraphPattern->express(this);
 	    const TableOperation* op = last.tableOperation;
-	    last.bindingClause = NULL;
-	    if (p_BindingClause != NULL)
-		p_BindingClause->express(this);
-	    last.whereClause = new WhereClause(op, last.bindingClause);
+	    last.whereClause = new WhereClause(op);
 	}
 	ProductionVector<const DatasetClause*>* _DatasetClauses (ProductionVector<const DatasetClause*>* p_DatasetClauses) {
 	    ProductionVector<const DatasetClause*>* l_DatasetClauses = new ProductionVector<const DatasetClause*>();
@@ -373,7 +353,7 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    last.operation = new Modify(del, ins, last.whereClause);
 	}
-	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    last.whereClause = NULL;
 	    if (p_WhereClause != NULL)
 		p_WhereClause->express(this);
@@ -381,7 +361,7 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    last.operation = new Insert(last.tableOperation, where);
 	}
-	virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
 	    p_GraphTemplate->express(this);
@@ -774,12 +754,12 @@ namespace w3c_sw {
 	    }
 	}
 	/** doesn't seem needed - EGP 20101226
-	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern) {
 	    if (elideSubSelect)
 		// just set last.tableOperation
 		p_GroupGraphPattern->express(this);
 	    else
-		SWObjectDuplicator::whereClause(self, p_GroupGraphPattern, p_BindingClause);
+		SWObjectDuplicator::whereClause(self, p_GroupGraphPattern);
 	}
 	*/
 	bool _unneededProject (const ExpressionAliasList* eal) {
@@ -791,11 +771,11 @@ namespace w3c_sw {
 	    }
 	    return true;
 	}
-	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const self, const TableOperation* p_GroupGraphPattern) {
 	    if (elideSubSelect)
 		p_GroupGraphPattern->express(this);
 	    else
-		SWObjectDuplicator::whereClause(self,  p_GroupGraphPattern, p_BindingClause);
+		SWObjectDuplicator::whereClause(self,  p_GroupGraphPattern);
 	}
 	virtual void select (const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    ExpressionAliasList* eal(dynamic_cast<ExpressionAliasList*>(p_VarSet));

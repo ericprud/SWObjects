@@ -810,23 +810,15 @@ namespace w3c_sw {
 		    curQuery->addOrderClause(curConstraint);
 		}
 	}
-	virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
-	    // !!!
-	    for (std::vector<const TTerm*>::const_iterator it = values->begin();
-		 it != values->end(); ++it)
-		(*it)->express(this);
+	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+	    assert (false);
 	}
-	virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	    p_Vars->express(this);
-	    p_Bindings->ProductionVector<const Binding*>::express(this);
-	}
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    w3c_sw_START("p_GroupGraphPattern");
 	    Consequents consequents(p_GroupGraphPattern, selectVars);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
-	    if (p_BindingClause) p_BindingClause->express(this);
 	}
 	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
 	    w3c_sw_NEED_IMPL("SQLizer(operationSet)");
@@ -887,12 +879,12 @@ namespace w3c_sw {
 		p_insert->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("INSERT {");
 	    p_GraphTemplate->express(this);
 	    if (p_WhereClause) p_WhereClause->express(this);
 	}
-	virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("DELET");
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);

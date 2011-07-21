@@ -51,6 +51,7 @@
 #define MAPSET_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "ResultSet.hpp"
 #include "ParserCommon.hpp"
 #include "QueryMapper.hpp"
 
@@ -72,9 +73,11 @@ protected:
     const TTerm* curPredicate;
     BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
-    TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
-    BindingClause* curBindingsClause;
-    Binding* curBinding;
+    const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
+    ResultSet* curResultSet;
+    Result* curResult;
+    VariableVector termList;
+    std::vector<const TTerm*>::const_iterator curTTerm;
     ProductionVector<const Expression*>* curExprList;
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
@@ -105,7 +108,7 @@ protected:
 	curFilter = was;
     }
 
-    TableOperation* makeConjunction (TableOperation* l, TableOperation* r) {
+    const TableOperation* makeConjunction (const TableOperation* l, const TableOperation* r) {
 	if (l != NULL) {
 	    if (r != NULL) {
 		TableConjunction* ret = new TableConjunction();
@@ -120,10 +123,72 @@ protected:
 	return NULL;
     }
 
-    TableOperation* makeDisjunction (TableOperation* l, TableOperation* r) {
+    const TableOperation* makeDisjunction (const TableOperation* l, const TableOperation* r) {
 	TableDisjunction* ret = new TableDisjunction();
 	ret->addTableOperation(l, unnestTree);
 	ret->addTableOperation(r, unnestTree);
+	return ret;
+    }
+
+    /**
+     * Interface to normalize the zillion ways to parse a ResultSet.
+     */
+
+    void startBindingSet () {
+	curResultSet = new ResultSet(atomFactory);
+    }
+
+    void addBindingVar (const TTerm* var) {
+	curResultSet->addOrderedVar(var);
+	termList.push_back(var);
+    }
+
+    void startBindingRow (bool iterateBindingVars = true) {
+	curResult = new Result(curResultSet);
+	curResultSet->insert(curResultSet->end(), curResult);
+	curTTerm = iterateBindingVars ? termList.begin() : termList.end();
+    }
+
+    void addBinding (const TTerm* variable, const TTerm* value) {
+	assert (curResult != NULL);
+	if (value != TTerm::Unbound)
+	    curResultSet->set(curResult, variable, value, false);
+    }
+
+    void addBindingValue (const TTerm* value) {
+	    throw "!! how can i get the yylocation_stack_?";
+	if (curTTerm == termList.end()) {
+	    std::stringstream ss;
+	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
+	    // error(*(yylocation_stack_.begin()), ss.str().c_str());
+	    throw "!! how can i get the yylocation_stack_?";
+	}
+	if (value != TTerm::Unbound)
+	    curResultSet->set(curResult, *curTTerm, value, false);
+	++curTTerm;
+    }
+
+    void addBindingVarOrValue (const TTerm* term) {
+	if (curResult == NULL)
+	    addBindingVar(term);
+	else
+	    addBindingValue(term);
+    }
+
+    Result* endBindingRow () {
+	if (curTTerm != termList.end()) {
+	    // error(*(yylocation_stack_.begin()), "insufficient bindings for result set row.");
+	    throw "!! how can i get the yylocation_stack_?";
+	}
+	Result* ret = curResult;
+	curResult = NULL;
+	return ret;
+    }
+
+    BindingClause* endBindingSet () {
+	BindingClause* ret = new BindingClause(curResultSet);
+	curResultSet = NULL;
+	termList.clear();
 	return ret;
     }
 
@@ -133,6 +198,7 @@ public:
 
     MapSet* parse(IStreamContext& in);
     MapSet* parse(std::string queryStr);
+
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -155,7 +221,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 159 "lib/MapSetParser/MapSetParser.hpp"
+#line 225 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -169,7 +235,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 173 "lib/MapSetParser/MapSetParser.hpp"
+#line 239 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -179,7 +245,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 183 "lib/MapSetParser/MapSetParser.hpp"
+#line 249 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -227,7 +293,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 231 "lib/MapSetParser/MapSetParser.hpp"
+#line 297 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -239,7 +305,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 173 "lib/MapSetParser/MapSetParser.ypp"
+#line 239 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -280,10 +346,8 @@ namespace w3c_sw {
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingsClause;
-    ProductionVector<const Binding*>* p_BindingValues;
-    Binding* p_BindingValue;
-    TableOperation* p_TableOperation;
+    BindingClause* p_BindingClause;
+    const TableOperation* p_TableOperation;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
@@ -304,7 +368,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 308 "lib/MapSetParser/MapSetParser.hpp"
+#line 372 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -360,129 +424,130 @@ namespace w3c_sw {
      GT_LPAREN = 298,
      GT_RPAREN = 299,
      IT_UNDEF = 300,
-     GT_DOT = 301,
-     IT_OPTIONAL = 302,
-     IT_MINUS = 303,
-     IT_UNION = 304,
-     IT_FILTER = 305,
-     GT_COMMA = 306,
-     GT_SEMI = 307,
-     IT_a = 308,
-     GT_LBRACKET = 309,
-     GT_RBRACKET = 310,
-     GT_OR = 311,
-     GT_AND = 312,
-     GT_EQUAL = 313,
-     GT_NEQUAL = 314,
-     GT_LT = 315,
-     GT_GT = 316,
-     GT_LE = 317,
-     GT_GE = 318,
-     GT_PLUS = 319,
-     GT_MINUS = 320,
-     GT_DIVIDE = 321,
-     GT_NOT = 322,
-     IT_NOT = 323,
-     IT_IN = 324,
-     IT_IRI = 325,
-     IT_URI = 326,
-     IT_BNODE = 327,
-     IT_COALESCE = 328,
-     IT_IF = 329,
-     IT_STRLANG = 330,
-     IT_STRDT = 331,
-     IT_EXISTS = 332,
-     IT_SEPARATOR = 333,
-     IT_STR = 334,
-     IT_LANG = 335,
-     IT_LANGMATCHES = 336,
-     IT_DATATYPE = 337,
-     IT_BOUND = 338,
-     IT_sameTerm = 339,
-     IT_isIRI = 340,
-     IT_isURI = 341,
-     IT_isBLANK = 342,
-     IT_isLITERAL = 343,
-     IT_REGEX = 344,
-     GT_DTYPE = 345,
-     IT_CONCAT = 346,
-     IT_AS = 347,
-     IT_GROUP = 348,
-     IT_HAVING = 349,
-     IT_COUNT = 350,
-     IT_SUM = 351,
-     IT_MIN = 352,
-     IT_MAX = 353,
-     IT_AVG = 354,
-     IT_GROUP_CONCAT = 355,
-     IT_SAMPLE = 356,
-     IT_isNUMERIC = 357,
-     GT_CARROT = 358,
-     GT_OPT = 359,
-     GT_PIPE = 360,
-     IT_WITH = 361,
-     IT_DEFAULT = 362,
-     IT_ALL = 363,
-     IT_USING = 364,
-     IT_MD5 = 365,
-     IT_TO = 366,
-     IT_YEAR = 367,
-     IT_ADD = 368,
-     IT_COPY = 369,
-     IT_RAND = 370,
-     IT_SHA512 = 371,
-     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE = 372,
-     IT_NOW = 373,
-     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 374,
-     IT_TIMEZONE = 375,
-     IT_ROUND = 376,
-     IT_SHA384 = 377,
-     IT_BIND = 378,
-     IT_CONTAINS = 379,
-     IT_SECONDS = 380,
-     IT_MOVE = 381,
-     IT_FLOOR = 382,
-     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 383,
-     IT_MINUTES = 384,
-     IT_SUBSTR = 385,
-     IT_SHA256 = 386,
-     IT_HOURS = 387,
-     IT_ENCODE_FOR_URI = 388,
-     IT_STRSTARTS = 389,
-     IT_CEIL = 390,
-     IT_DAY = 391,
-     IT_LCASE = 392,
-     IT_ABS = 393,
-     IT_UCASE = 394,
-     IT_SHA224 = 395,
-     IT_STRENDS = 396,
-     IT_STRLEN = 397,
-     IT_SHA1 = 398,
-     IT_MONTH = 399,
-     IT_true = 400,
-     IT_false = 401,
-     INTEGER = 402,
-     DECIMAL = 403,
-     DOUBLE = 404,
-     INTEGER_POSITIVE = 405,
-     DECIMAL_POSITIVE = 406,
-     DOUBLE_POSITIVE = 407,
-     INTEGER_NEGATIVE = 408,
-     DECIMAL_NEGATIVE = 409,
-     DOUBLE_NEGATIVE = 410,
-     STRING_LITERAL1 = 411,
-     STRING_LITERAL_LONG1 = 412,
-     STRING_LITERAL2 = 413,
-     STRING_LITERAL_LONG2 = 414,
-     IRI_REF = 415,
-     PNAME_NS = 416,
-     PNAME_LN = 417,
-     BLANK_NODE_LABEL = 418,
-     ANON = 419,
-     VAR1 = 420,
-     VAR2 = 421,
-     LANGTAG = 422,
-     NIL = 423
+     GT_MINUS_MINUS = 301,
+     GT_DOT = 302,
+     IT_OPTIONAL = 303,
+     IT_MINUS = 304,
+     IT_UNION = 305,
+     IT_FILTER = 306,
+     GT_COMMA = 307,
+     GT_SEMI = 308,
+     IT_a = 309,
+     GT_LBRACKET = 310,
+     GT_RBRACKET = 311,
+     GT_OR = 312,
+     GT_AND = 313,
+     GT_EQUAL = 314,
+     GT_NEQUAL = 315,
+     GT_LT = 316,
+     GT_GT = 317,
+     GT_LE = 318,
+     GT_GE = 319,
+     GT_PLUS = 320,
+     GT_MINUS = 321,
+     GT_DIVIDE = 322,
+     GT_NOT = 323,
+     IT_NOT = 324,
+     IT_IN = 325,
+     IT_IRI = 326,
+     IT_URI = 327,
+     IT_BNODE = 328,
+     IT_COALESCE = 329,
+     IT_IF = 330,
+     IT_STRLANG = 331,
+     IT_STRDT = 332,
+     IT_EXISTS = 333,
+     IT_SEPARATOR = 334,
+     IT_STR = 335,
+     IT_LANG = 336,
+     IT_LANGMATCHES = 337,
+     IT_DATATYPE = 338,
+     IT_BOUND = 339,
+     IT_sameTerm = 340,
+     IT_isIRI = 341,
+     IT_isURI = 342,
+     IT_isBLANK = 343,
+     IT_isLITERAL = 344,
+     IT_REGEX = 345,
+     GT_DTYPE = 346,
+     IT_CONCAT = 347,
+     IT_AS = 348,
+     IT_GROUP = 349,
+     IT_HAVING = 350,
+     IT_COUNT = 351,
+     IT_SUM = 352,
+     IT_MIN = 353,
+     IT_MAX = 354,
+     IT_AVG = 355,
+     IT_GROUP_CONCAT = 356,
+     IT_SAMPLE = 357,
+     IT_isNUMERIC = 358,
+     GT_CARROT = 359,
+     GT_OPT = 360,
+     GT_PIPE = 361,
+     IT_WITH = 362,
+     IT_DEFAULT = 363,
+     IT_ALL = 364,
+     IT_USING = 365,
+     IT_MD5 = 366,
+     IT_TO = 367,
+     IT_YEAR = 368,
+     IT_ADD = 369,
+     IT_COPY = 370,
+     IT_RAND = 371,
+     IT_SHA512 = 372,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE = 373,
+     IT_NOW = 374,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 375,
+     IT_TIMEZONE = 376,
+     IT_ROUND = 377,
+     IT_SHA384 = 378,
+     IT_BIND = 379,
+     IT_CONTAINS = 380,
+     IT_SECONDS = 381,
+     IT_MOVE = 382,
+     IT_FLOOR = 383,
+     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 384,
+     IT_MINUTES = 385,
+     IT_SUBSTR = 386,
+     IT_SHA256 = 387,
+     IT_HOURS = 388,
+     IT_ENCODE_FOR_URI = 389,
+     IT_STRSTARTS = 390,
+     IT_CEIL = 391,
+     IT_DAY = 392,
+     IT_LCASE = 393,
+     IT_ABS = 394,
+     IT_UCASE = 395,
+     IT_SHA224 = 396,
+     IT_STRENDS = 397,
+     IT_STRLEN = 398,
+     IT_SHA1 = 399,
+     IT_MONTH = 400,
+     IT_true = 401,
+     IT_false = 402,
+     INTEGER = 403,
+     DECIMAL = 404,
+     DOUBLE = 405,
+     INTEGER_POSITIVE = 406,
+     DECIMAL_POSITIVE = 407,
+     DOUBLE_POSITIVE = 408,
+     INTEGER_NEGATIVE = 409,
+     DECIMAL_NEGATIVE = 410,
+     DOUBLE_NEGATIVE = 411,
+     STRING_LITERAL1 = 412,
+     STRING_LITERAL_LONG1 = 413,
+     STRING_LITERAL2 = 414,
+     STRING_LITERAL_LONG2 = 415,
+     IRI_REF = 416,
+     PNAME_NS = 417,
+     PNAME_LN = 418,
+     BLANK_NODE_LABEL = 419,
+     ANON = 420,
+     VAR1 = 421,
+     VAR2 = 422,
+     LANGTAG = 423,
+     NIL = 424
    };
 
     };
@@ -659,7 +724,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 663 "lib/MapSetParser/MapSetParser.hpp"
+#line 728 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

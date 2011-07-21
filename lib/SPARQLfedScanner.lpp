@@ -64,15 +64,24 @@ typedef w3c_sw::SPARQLfedParser::token_type token_type;
 } while(0)
 %}
 
-/* START patterns for SPARQLfed terminals */
+/* START patterns for SPARUL_EGP terminals */
+GT_EQUAL		"="
+GT_DOT		"."
+GT_PIPE		"|"
+GT_H_2502_		"\x2502"
+GT_LCURLEY		"{"
+GT_RCURLEY		"}"
+GT_LPAREN		"("
+GT_RPAREN		")"
+GT_COMMA		","
+GT_MINUS_GT		"->"
+GT_H_2192_		"\x2192"
 IT_BASE		[Bb][Aa][Ss][Ee]
 IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_DISTINCT		[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
 IT_REDUCED		[Rr][Ee][Dd][Uu][Cc][Ee][Dd]
 IT_AS		[Aa][Ss]
-GT_LPAREN		"("
-GT_RPAREN		")"
 GT_TIMES		"*"
 IT_CONSTRUCT		[Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt]
 IT_DESCRIBE		[Dd][Ee][Ss][Cc][Rr][Ii][Bb][Ee]
@@ -89,9 +98,8 @@ IT_DESC		[Dd][Ee][Ss][Cc]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 IT_BINDINGS		[Bb][Ii][Nn][Dd][Ii][Nn][Gg][Ss]
-GT_LCURLEY		"{"
-GT_RCURLEY		"}"
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
+GT_MINUS_MINUS		"--"
 GT_SEMI		";"
 IT_LOAD		[Ll][Oo][Aa][Dd]
 IT_INTO		[Ii][Nn][Tt][Oo]
@@ -113,7 +121,6 @@ IT_USING		[Uu][Ss][Ii][Nn][Gg]
 IT_DEFAULT		[Dd][Ee][Ff][Aa][Uu][Ll][Tt]
 IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 IT_ALL		[Aa][Ll][Ll]
-GT_DOT		"."
 IT_PRINT		[Pp][Rr][Ii][Nn][Tt]
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
@@ -121,9 +128,7 @@ IT_BIND		[Bb][Ii][Nn][Dd]
 IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
-GT_COMMA		","
 IT_a		"a"
-GT_PIPE		"|"
 GT_DIVIDE		"/"
 GT_CARROT		"^"
 GT_OPT		"?"
@@ -138,7 +143,6 @@ IT_ANY		[Aa][Nn][Yy]
 IT_UNORDERED		[Uu][Nn][Oo][Rr][Dd][Ee][Rr][Ee][Dd]
 GT_OR		"||"
 GT_AND		"&&"
-GT_EQUAL		"="
 GT_NEQUAL		"!="
 GT_LT		"<"
 GT_GT		">"
@@ -206,8 +210,6 @@ IT_SEPARATOR		[Ss][Ee][Pp][Aa][Rr][Aa][Tt][Oo][Rr]
 GT_DTYPE		"^^"
 IT_true		"true"
 IT_false		"false"
-
-/* <IRI_REF> ::= "<" (( [^<>\"{}|^`\\] - [#0000- ] ))* ">" */
 IRI_REF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
 LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER		([0-9])+
@@ -241,23 +243,36 @@ PNAME_NS		(({PN_PREFIX}))?":"
 PN_LOCAL		((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
 BLANK_NODE_LABEL		"_:"({PN_LOCAL})
 PNAME_LN		({PNAME_NS})({PN_LOCAL})
+ABOX_HR		(("+"("-")+))+"+"
+UBOX_UHR		\xE2\x94\x8C(\xE2\x94\x80)*((\xE2\x94\xAC(\xE2\x94\x80)*))*\xE2\x94\x90
+UBOX_LHR		\xE2\x94\x94(\xE2\x94\x80)*((\xE2\x94\xB4(\xE2\x94\x80)*))*\xE2\x94\x98
+RSREF		"*"({VARNAME})
 PASSED_TOKENS		(([\t ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 LINEFEED		(\r\n|\r|\n)
 
-/* END patterns for SPARQLfed terminals */
+/* END patterns for SPARUL_EGP terminals */
 
-/* START semantic actions for SPARQLfed terminals */
+/* START semantic actions for SPARUL_EGP terminals */
 %%
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
+{GT_EQUAL}		{return token::GT_EQUAL;}
+{GT_DOT}		{return token::GT_DOT;}
+{GT_PIPE}		{return token::GT_PIPE;}
+{GT_H_2502_}		{return token::GT_H_2502_;}
+{GT_LCURLEY}		{return token::GT_LCURLEY;}
+{GT_RCURLEY}		{return token::GT_RCURLEY;}
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
+{GT_COMMA}		{return token::GT_COMMA;}
+{GT_MINUS_GT}		{return token::GT_MINUS_GT;}
+{GT_H_2192_}		{return token::GT_H_2192_;}
 {IT_BASE}		{return token::IT_BASE;}
 {IT_PREFIX}		{return token::IT_PREFIX;}
 {IT_SELECT}		{return token::IT_SELECT;}
 {IT_DISTINCT}		{return token::IT_DISTINCT;}
 {IT_REDUCED}		{return token::IT_REDUCED;}
 {IT_AS}		{return token::IT_AS;}
-{GT_LPAREN}		{return token::GT_LPAREN;}
-{GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_TIMES}		{return token::GT_TIMES;}
 {IT_CONSTRUCT}		{return token::IT_CONSTRUCT;}
 {IT_DESCRIBE}		{return token::IT_DESCRIBE;}
@@ -274,9 +289,8 @@ LINEFEED		(\r\n|\r|\n)
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {IT_BINDINGS}		{return token::IT_BINDINGS;}
-{GT_LCURLEY}		{return token::GT_LCURLEY;}
-{GT_RCURLEY}		{return token::GT_RCURLEY;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
+{GT_MINUS_MINUS}		{return token::GT_MINUS_MINUS;}
 {GT_SEMI}		{return token::GT_SEMI;}
 {IT_LOAD}		{return token::IT_LOAD;}
 {IT_INTO}		{return token::IT_INTO;}
@@ -298,7 +312,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_DEFAULT}		{return token::IT_DEFAULT;}
 {IT_GRAPH}		{return token::IT_GRAPH;}
 {IT_ALL}		{return token::IT_ALL;}
-{GT_DOT}		{return token::GT_DOT;}
 {IT_PRINT}		{return token::IT_PRINT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
@@ -306,9 +319,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_MINUS}		{return token::IT_MINUS;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
-{GT_COMMA}		{return token::GT_COMMA;}
 {IT_a}		{return token::IT_a;}
-{GT_PIPE}		{return token::GT_PIPE;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}
 {GT_CARROT}		{return token::GT_CARROT;}
 {GT_OPT}		{return token::GT_OPT;}
@@ -323,7 +334,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_UNORDERED}		{return token::IT_UNORDERED;}
 {GT_OR}		{return token::GT_OR;}
 {GT_AND}		{return token::GT_AND;}
-{GT_EQUAL}		{return token::GT_EQUAL;}
 {GT_NEQUAL}		{return token::GT_NEQUAL;}
 {GT_LT}		{return token::GT_LT;}
 {GT_GT}		{return token::GT_GT;}
@@ -413,6 +423,10 @@ LINEFEED		(\r\n|\r|\n)
 {STRING_LITERAL_LONG2}	{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
 {NIL}			{return token::NIL;}
 {ANON}			{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
+{ABOX_HR}		{return token::ABOX_HR;}
+{UBOX_UHR}		{return token::UBOX_UHR;}
+{UBOX_LHR}		{return token::UBOX_LHR;}
+{RSREF}		{yylval->p_RSName = new RSName(yytext + 1); return token::RSREF;}
 
 <<EOF>>			{ yyterminate();}
 .			{

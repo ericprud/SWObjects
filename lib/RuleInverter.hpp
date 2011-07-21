@@ -447,9 +447,7 @@ namespace w3c_sw {
 	    _graphPattern(new DefaultGraphPattern(inUserRuleHead), p_allOpts, p_TriplePatterns); // allOpts = true when in rule body
 	}
 
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
-	    if (p_BindingClause != NULL)
-		throw(std::runtime_error("Don't know how to invert a Construct with a BindingClause."));
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 
 	    /* Create a rule head from the userRuleBody and record to use later
 	     * to build a MappingConstruct. Traverse the userRuleBody before the
@@ -470,9 +468,7 @@ namespace w3c_sw {
 	    TableOperation* op = last.tableOperation;
 
 	    last.bindingClause = NULL;
-	    if (p_BindingClause != NULL)
-		p_BindingClause->express(this);
-	    last.whereClause = new WhereClause(op, last.bindingClause);
+	    last.whereClause = new WhereClause(op);
 	}
 
 	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {

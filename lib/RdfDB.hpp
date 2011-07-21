@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include "SWObjects.hpp"
-#include "SPARQLSerializer.hpp"
 #include "../interface/WEBagent.hpp"
 #include "../interface/SAXparser.hpp"
 #include "RdfXmlParser.hpp"

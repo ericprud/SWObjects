@@ -94,7 +94,7 @@ namespace w3c_sw {
 
 #ifdef LOGGING_HH
 		{
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "Request: " << request_stream.str() << "\n";
+		    BOOST_LOG_SEV(w3c_sw::Logger::IOLog::get(), w3c_sw::Logger::support) << "Request: " << request_stream.str() << "\n";
 		    std::ostream rs(&request);
 		    rs << request_stream.str();
 		}

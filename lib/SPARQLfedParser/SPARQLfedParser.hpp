@@ -51,9 +51,18 @@
 #define SPARQLFED_PARSER_HPP
 
 #include "SWObjects.hpp"
+#include "ResultSet.hpp"
 #include "ParserCommon.hpp"
 
 namespace w3c_sw {
+
+struct RSName {
+    RSName (std::string name) : name(name) {  }
+    std::string name;
+};
+
+class BindingsMap : public std::map<std::string, ResultSet*> {
+};
 
 class SPARQLfedScanner;
 
@@ -71,9 +80,12 @@ protected:
     const TTerm* curPredicate;
     BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
-    TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
-    BindingClause* curBindingsClause;
-    Binding* curBinding;
+    const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
+    ResultSet* curResultSet;
+    Result* curResult;
+    VariableVector termList;
+    std::vector<const TTerm*>::const_iterator curTTerm;
+    BindingsMap bindingsMap;
     ProductionVector<const Expression*>* curExprList;
     const TTerm* curGraphName;
     ProductionVector<const Expression*> filterExpressions;
@@ -105,7 +117,7 @@ protected:
 	curFilter = was;
     }
 
-    TableOperation* makeConjunction (TableOperation* l, TableOperation* r) {
+    const TableOperation* makeConjunction (const TableOperation* l, const TableOperation* r) {
 	if (l != NULL) {
 	    if (r != NULL) {
 		TableConjunction* ret = new TableConjunction();
@@ -120,10 +132,73 @@ protected:
 	return NULL;
     }
 
-    TableOperation* makeDisjunction (TableOperation* l, TableOperation* r) {
+    const TableOperation* makeDisjunction (const TableOperation* l, const TableOperation* r) {
 	TableDisjunction* ret = new TableDisjunction();
 	ret->addTableOperation(l, unnestTree);
 	ret->addTableOperation(r, unnestTree);
+	return ret;
+    }
+
+    /**
+     * Interface to normalize the zillion ways to parse a ResultSet.
+     */
+
+    void startBindingSet () {
+	curResultSet = new ResultSet(atomFactory);
+	curResultSet->erase(curResultSet->begin());
+    }
+
+    void addBindingVar (const TTerm* var) {
+	curResultSet->addOrderedVar(var);
+	termList.push_back(var);
+    }
+
+    void startBindingRow (bool iterateBindingVars = true) {
+	curResult = new Result(curResultSet);
+	curResultSet->insert(curResultSet->end(), curResult);
+	curTTerm = iterateBindingVars ? termList.begin() : termList.end();
+    }
+
+    void addBinding (const TTerm* variable, const TTerm* value) {
+	assert (curResult != NULL);
+	if (value != TTerm::Unbound)
+	    curResultSet->set(curResult, variable, value, false);
+    }
+
+    void addBindingValue (const TTerm* value) {
+	//    throw "!! how can i get the yylocation_stack_?";
+	if (curTTerm == termList.end()) {
+	    std::stringstream ss;
+	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
+	    // error(*(yylocation_stack_.begin()), ss.str().c_str());
+	    throw "!! how can i get the yylocation_stack_?";
+	}
+	if (value != TTerm::Unbound)
+	    curResultSet->set(curResult, *curTTerm, value, false);
+	++curTTerm;
+    }
+
+    void addBindingVarOrValue (const TTerm* term) {
+	if (curResult == NULL)
+	    addBindingVar(term);
+	else
+	    addBindingValue(term);
+    }
+
+    Result* endBindingRow () {
+	if (curTTerm != termList.end()) {
+	    // error(*(yylocation_stack_.begin()), "insufficient bindings for result set row.");
+	    throw "!! how can i get the yylocation_stack_?";
+	}
+	Result* ret = curResult;
+	curResult = NULL;
+	return ret;
+    }
+
+    ResultSet* endBindingSet () {
+	ResultSet* ret = curResultSet;
+	curResultSet = NULL;
+	termList.clear();
 	return ret;
     }
 
@@ -155,7 +230,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 159 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 234 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -169,7 +244,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 173 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 248 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -179,7 +254,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 183 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 258 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -227,7 +302,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 231 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 306 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -239,7 +314,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 165 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 240 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -256,6 +331,7 @@ namespace w3c_sw {
     LANGTAG* p_LANGTAG;
 
     std::string* p_string;
+    RSName* p_RSName;
 
     const NumericRDFLiteral* p_NumericRDFLiteral;
     const BooleanRDFLiteral* p_BooleanRDFLiteral;
@@ -286,10 +362,8 @@ namespace w3c_sw {
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingsClause;
-    ProductionVector<const Binding*>* p_BindingValues;
-    Binding* p_BindingValue;
-    TableOperation* p_TableOperation;
+    BindingClause* p_BindingClause;
+    const TableOperation* p_TableOperation;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
@@ -310,7 +384,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 314 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 388 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -463,30 +537,46 @@ namespace w3c_sw {
      IT_SHA1 = 395,
      IT_MONTH = 396,
      IT_PRINT = 397,
-     IT_true = 398,
-     IT_false = 399,
-     INTEGER = 400,
-     DECIMAL = 401,
-     DOUBLE = 402,
-     INTEGER_POSITIVE = 403,
-     DECIMAL_POSITIVE = 404,
-     DOUBLE_POSITIVE = 405,
-     INTEGER_NEGATIVE = 406,
-     DECIMAL_NEGATIVE = 407,
-     DOUBLE_NEGATIVE = 408,
-     STRING_LITERAL1 = 409,
-     STRING_LITERAL_LONG1 = 410,
-     STRING_LITERAL2 = 411,
-     STRING_LITERAL_LONG2 = 412,
-     IRI_REF = 413,
-     PNAME_NS = 414,
-     PNAME_LN = 415,
-     BLANK_NODE_LABEL = 416,
-     ANON = 417,
-     VAR1 = 418,
-     VAR2 = 419,
-     LANGTAG = 420,
-     NIL = 421
+     GT_H_2192_ = 398,
+     GT_MINUS_GT = 399,
+     ABOX_HR = 400,
+     ABOX_CELL = 401,
+     UBOX_UHR = 402,
+     UBOX_LHR = 403,
+     GT_H_2502_ = 404,
+     UBOX_UL = 405,
+     UBOX_U = 406,
+     UBOX_UR = 407,
+     UBOX_SEP = 408,
+     UBOX_LL = 409,
+     UBOX_L = 410,
+     UBOX_LR = 411,
+     RSREF = 412,
+     GT_MINUS_MINUS = 413,
+     IT_true = 414,
+     IT_false = 415,
+     INTEGER = 416,
+     DECIMAL = 417,
+     DOUBLE = 418,
+     INTEGER_POSITIVE = 419,
+     DECIMAL_POSITIVE = 420,
+     DOUBLE_POSITIVE = 421,
+     INTEGER_NEGATIVE = 422,
+     DECIMAL_NEGATIVE = 423,
+     DOUBLE_NEGATIVE = 424,
+     STRING_LITERAL1 = 425,
+     STRING_LITERAL_LONG1 = 426,
+     STRING_LITERAL2 = 427,
+     STRING_LITERAL_LONG2 = 428,
+     IRI_REF = 429,
+     PNAME_NS = 430,
+     PNAME_LN = 431,
+     BLANK_NODE_LABEL = 432,
+     ANON = 433,
+     VAR1 = 434,
+     VAR2 = 435,
+     LANGTAG = 436,
+     NIL = 437
    };
 
     };
@@ -663,7 +753,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 667 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 757 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

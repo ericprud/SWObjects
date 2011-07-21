@@ -9,6 +9,7 @@
  */
 
 #pragma once
+#include <stack>
 #include "SWObjects.hpp"
 
 namespace w3c_sw {

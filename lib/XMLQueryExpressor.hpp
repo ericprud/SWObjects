@@ -198,23 +198,12 @@ public:
 	    }
 	xml->close();
     }
-    virtual void binding (const Binding* const, const ProductionVector<const TTerm*>* values) {//!!!
-	xml->open("BindingClause");
-	for (std::vector<const TTerm*>::const_iterator it = values->begin();
-	     it != values->end(); ++it)
-	    (*it)->express(this);
-	xml->close();
+    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+	p_ResultSet->toXml(xml);
     }
-    virtual void bindingClause (const BindingClause* const, TTermList* p_Vars, const ProductionVector<const Binding*>* p_Bindings) {
-	xml->open("BindingClause");
-	p_Vars->express(this);
-	p_Bindings->ProductionVector<const Binding*>::express(this);
-	xml->close();
-    }
-    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause* p_BindingClause) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	xml->open("WhereClause");
 	p_GroupGraphPattern->express(this);
-	if (p_BindingClause) p_BindingClause->express(this);
 	xml->close();
     }
     virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
@@ -273,13 +262,13 @@ public:
 	p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void insert (const Insert* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	xml->open("Insert");
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void del (const Delete* const, TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	xml->open("Delete");
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);

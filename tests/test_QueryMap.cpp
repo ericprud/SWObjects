@@ -208,9 +208,10 @@ struct DNFtest : public EqualsTest {
     const TableOperation* dnf;
     const TableOperation* ref;
     struct GetRootOp : public RecursiveExpressor {
+	GetRootOp () : rootOp(NULL) {  }
 	const TableOperation* rootOp;
 	virtual void base (const w3c_sw::Base* const, std::string) {  }
-	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern, const BindingClause*) {
+	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    rootOp = p_GroupGraphPattern;
 	}
     };
