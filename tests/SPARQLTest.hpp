@@ -198,17 +198,9 @@ struct ReferenceRS {
 	} else {
 	    std::string rfs(resultFile);
 	    IStreamContext istr(resultFile, IStreamContext::FILE);
-	    if (rfs.substr(rfs.size()-4, 4) == ".srx") {
+	    if (rfs.substr(rfs.size()-4, 4) == ".srx" ||
+		rfs.substr(rfs.size()-4, 4) == ".srt") {
 		reference = new ResultSet(atomFactory, saxParser, istr);
-	    } else if (rfs.substr(rfs.size()-4, 4) == ".srt") {
-		std::ifstream istr(rfs.c_str());
-		if (!istr.is_open())
-		    throw std::string("unable to open file \"").append(rfs.c_str()).append("\"");
-
-		std::istreambuf_iterator<char> i(istr), e;
-		std::string s(i, e);
-		TTerm::String2BNode bnodeMap;
-		reference = new ResultSet(&F, s.c_str(), false, bnodeMap);
 	    } else {			/* retults in a graph */
 		if (rfs.substr(rfs.size()-4, 4) == ".nt" || 
 		    rfs.substr(rfs.size()-4, 4) == ".ttl") {

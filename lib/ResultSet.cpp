@@ -172,7 +172,8 @@ namespace w3c_sw {
     bool ResultSet::parseText (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
 #if REGEX_LIB != SWOb_DISABLED
 	if (!sptr.mediaType.is_initialized() ||
-	    sptr.mediaType.match("text/sparql-results")) {
+	    sptr.mediaType.match("text/sparql-results") || 
+	    sptr.mediaType.match("text/plain")) {
 	    TTerm::String2BNode nodeMap;
 	    parseTable(sptr, ordered, nodeMap);
 	    return true;

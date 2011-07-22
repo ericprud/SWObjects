@@ -69,13 +69,9 @@ SELECT ?e WHERE { ?e a <Mammal> }\n\
     q->execute(&db, &rs);
 
     sw::TTerm::String2BNode bnodeMap;
-    sw::ResultSet ref(&F, "\
-# Who has da PreprocessMetaFile?\n\
-+---------+\n\
-|      ?e |\n\
-| <fido>  |\n\
-+---------+\n\
-", false, bnodeMap);
+    sw::ResultSet ref(&F,
+		      "?e\n"
+		      "<fido>", false, bnodeMap);
 
     BOOST_CHECK_EQUAL(rs, ref);
 }

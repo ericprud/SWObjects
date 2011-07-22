@@ -208,7 +208,7 @@ namespace w3c_sw {
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular) {
-	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING);
+	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/plain");
 	    parseTable(sptr, ordered, nodeMap);
 	}
 
@@ -241,18 +241,33 @@ namespace w3c_sw {
 	    /* ... and generate Results for each remaining row. */
 	    int col = 0;
 	    Result* curRow = NULL;
-	    const boost::regex expression("^[ \\t\\n]*(?:"	// ignore leading whitespace
-					  "((?:\\+-+)+\\+|[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+)[ \\t\\n]*"	// box chars
+	    const boost::regex srt("^[ \\t\\n]*(?:"	// ignore leading whitespace
+					  "((?:\\+-+)+\\+|[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+)[ \\t\\n]*"	// \1: box chars
 					  "|(?:[|│┃][ \\t]*"
-					   "((?:<[^>]*>)"		// IRI
+					   "("				// \2: captured term
+				   	    "(?:<[^>]*>)"		// IRI
 					    "|(?:_:[^[:space:]]+)"	// bnode
 					    "|(?:[?$][^[:space:]]+)"	// variable
 					    "|(?:\\\"(?:[^\\\\\"]|\\\\[\"nrtb])*\\\"" // literal
 					        "(?:\\^\\^<[^>]*>|@[a-z_-]+)?)"
 					    "|(?:-?[0-9\\.]+)"		// integer
-					    "|(--|UNDEF)"		// no binding
+					    "|(--|UNDEF)"		// \3: no binding
 					   ")?))");
-	    while (regex_search(start, end, what, expression, flags)) {
+	    const boost::regex plain("^[ \\t]*(?:"			// ignore leading whitespace
+					  "(asdfqwer)"			// disable \1, box chars
+					  "|\n|("			// \2: empty if \n
+					   "(?:<[^>]*>)"		// IRI
+					    "|(?:_:[^[:space:]]+)"	// bnode
+					    "|(?:[?$][^[:space:]]+)"	// variable
+					    "|(?:\\\"(?:[^\\\\\"]|\\\\[\"nrtb])*\\\"" // literal
+					        "(?:\\^\\^<[^>]*>|@[a-z_-]+)?)"
+				     	    "|(?:'[^']*')"		// literal
+					    "|(?:-?[0-9\\.]+)"		// integer
+					    "|(--|UNDEF)"		// no binding
+					   "))");
+	    const boost::regex& expr = sptr.mediaType.match("text/plain") ? plain : srt;
+
+	    while (regex_search(start, end, what, expr, flags)) {
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << "matched \"" << std::string(what[0].first, what[0].second) << "\"\n";
 		if (what[1].first != what[1].second) {
