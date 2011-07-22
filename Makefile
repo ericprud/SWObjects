@@ -284,6 +284,8 @@ lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
 	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
 	($(ECHO) -n $@ lib/SQLParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/JSONresultsParser/JSONresultsParser.dep: lib/JSONresultsParser/JSONresultsParser.cpp config.h
+	($(ECHO) -n $@ lib/JSONresultsParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
@@ -505,8 +507,8 @@ SWIG ?= swig
 #      arg3 = *temp => va_copy(arg3, *temp)
 SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g;'
 
-SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
-SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLfedParser/SPARQLfedParser.hpp lib/TurtleSParser/TurtleSParser.hpp lib/TrigSParser/TrigSParser.hpp interface/WEBagent.hpp
+SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o lib/JSONresultsParser/JSONresultsParser.o lib/JSONresultsScanner.o
+SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLfedParser/SPARQLfedParser.hpp lib/TurtleSParser/TurtleSParser.hpp lib/TrigSParser/TrigSParser.hpp interface/WEBagent.hpp lib/JSONresultsParser/JSONresultsParser.hpp
 SWIG_LIBS =  $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 
  # Python

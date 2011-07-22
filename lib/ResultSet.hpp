@@ -17,7 +17,6 @@
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
 #include "XMLSerializer.hpp"
-#include "../interface/SAXparser.hpp"
 
 namespace w3c_sw {
 
@@ -213,12 +212,7 @@ namespace w3c_sw {
 	    parseTable(sptr, ordered, nodeMap);
 	}
 
-	ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) : 
-	    atomFactory(atomFactory), knownVars(), 
-	    results(), ordered(ordered), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
-	    parseTable(sptr, ordered, nodeMap);
-	}
+	ResultSet(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap);
 
 	void clear () {
 	    selectOrder.clear();
@@ -289,69 +283,9 @@ namespace w3c_sw {
 	    }
 	}
 
-	void parseJSON (IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
-
-	    /* Iterate through the input string. */
-	    std::string::const_iterator start, end; 
-	    std::string str((std::istreambuf_iterator<char>(*sptr.p)),
-			    std::istreambuf_iterator<char>());
-	    start = str.begin(); 
-	    end = str.end(); 
-
-	    /* Ignore leading whitespace and comments. */
-	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    while (regex_search(start, end, what, boost::regex("^[ \\t]*(#[^\\n]*)?\\n"), flags)) {
-		start = what[0].second; 
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
-	    }
-
-	    /* Populate <headers> from the first row ... */
-	    bool firstRow = true;
-	    std::vector<const TTerm*> headers;
-	    /* ... and generate Results for each remaining row. */
-	    int col = 0;
-	    Result* curRow = NULL;
-	    const boost::regex expression("[ \\t]*"			// ignore leading whitespace
-					  "((?:<[^>]*>)"		// IRI
-					   "|(?:_:[^[:space:]]+)"	// bnode
-					   "|(?:[?$][^[:space:]]+)"	// variable
-					   "|(?:\\\"[^\\\"]*\\\")"	// literal
-					   "|(?:'[^']*')"		// literal
-					   "|(?:-?[0-9\\.]+)"		// integer
-					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
-					  ")");
-	    while (regex_search(start, end, what, expression, flags)) {
-		std::string matched(what[1].first, what[1].second);
-		if (matched == "\n") {
-		    firstRow = false;
-		    col = 0;
-		    curRow = NULL;
-		} else if (matched == "+" || matched == "┌" || matched == "├" || matched == "└") {
-		    const boost::regex nl("[^\\n]*\\n");
-		    regex_search(start, end, what, nl, flags); // skip rest of line
-		} else {
-		    const TTerm* tterm = atomFactory->getTTerm(matched, nodeMap);
-		    if (firstRow)
-			headers.push_back(tterm);
-		    else {
-			if (curRow == NULL) {
-			    curRow = new Result(this);
-			    insert(this->end(), curRow);
-			}
-			set(curRow, headers[col++], tterm, false);
-		    }
-		}
-
-		/* Start after the end of the stuff we just parsed. */
-		start = what[0].second; 
-		/* Re-assert the flags. */
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
-	    }
-	}
 #endif /* REGEX_LIB != SWOb_DISABLED */
+
+	bool parseText(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap);
 
 #if !defined(SWIG)
 	class RSsax : public SWSAXhandler {
@@ -509,30 +443,7 @@ namespace w3c_sw {
 	    orderedSelect(false), resultType(RESULT_Graphs) {  }
 
 	ResultSet(AtomFactory* atomFactory, RdfDB* db, const char* baseURI);
-
-	ResultSet (AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr) : 
-	    atomFactory(atomFactory), knownVars(), 
-	    results(), ordered(false), db(NULL), selectOrder(), 
-	    orderedSelect(false), resultType(RESULT_Tabular) {
-	    if (!sptr.mediaType.is_initialized() ||
-		sptr.mediaType.match("application/sparql-results+xml")) {
-		if (parser == NULL)
-		    throw(std::runtime_error("ResultSet constructor requires a SAX parser."));
-		RSsax handler(this, atomFactory);
-		parser->parse(sptr, &handler);
-#if REGEX_LIB != SWOb_DISABLED
-	    } else if (sptr.mediaType.match("text/sparql-results")) {
-		TTerm::String2BNode nodeMap;
-		parseTable(sptr, false, nodeMap);
-	    } else if (sptr.mediaType.match("application/sparql-results+json")) {
-		TTerm::String2BNode nodeMap;
-		parseJSON(sptr, false, nodeMap);
-#endif /* REGEX_LIB != SWOb_DISABLED */
-	    } else {
-		throw(std::runtime_error(std::string("no ResultSet constructor for mediatype ")
-					 + sptr.mediaType.get()));
-	    }
-	}
+	ResultSet(AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr);
 
 	virtual ~ResultSet();
 

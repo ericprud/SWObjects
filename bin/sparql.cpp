@@ -829,7 +829,8 @@ struct loadEntry {
 	    sw::ResultSet loaded(&F, &P, istr);
 	    rs.joinIn(&loaded);
 	    ResultSetsLoaded = true;
-	} else if (istr.mediaType.match("text/sparql-results")) {
+	} else if (istr.mediaType.match("text/sparql-results") ||
+		   istr.mediaType.match("application/sparql-results+json")) {
 	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 		std::stringstream o;
 		o << "Reading data table " << nameStr;

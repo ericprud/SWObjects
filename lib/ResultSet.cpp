@@ -7,6 +7,8 @@
 #include "SWObjectDuplicator.hpp"
 #include "XMLQueryExpressor.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
 #include <iostream>
 
@@ -71,6 +73,15 @@ namespace w3c_sw {
 	atomFactory(atomFactory), knownVars(), results(), ordered(false),  db(NULL), 
 	selectOrder(), orderedSelect(false), resultType(RESULT_Tabular) {
 	results.insert(results.begin(), new Result(this));
+    }
+
+    ResultSet::ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) : 
+	atomFactory(atomFactory), knownVars(), 
+	results(), ordered(ordered), db(NULL), selectOrder(), 
+	orderedSelect(false), resultType(RESULT_Tabular) {
+	if (!parseText(atomFactory, sptr, ordered, nodeMap))
+	    throw(std::runtime_error(std::string("no ResultSet constructor for mediatype ")
+				     + sptr.mediaType.get()));
     }
 
     ResultSet::ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
@@ -140,6 +151,41 @@ namespace w3c_sw {
 	}
     }
 
+    ResultSet::ResultSet (AtomFactory* atomFactory, SWSAXparser* parser, IStreamContext& sptr) : 
+	atomFactory(atomFactory), knownVars(), 
+	results(), ordered(false), db(NULL), selectOrder(), 
+	orderedSelect(false), resultType(RESULT_Tabular) {
+	if (!sptr.mediaType.is_initialized() ||
+	    sptr.mediaType.match("application/sparql-results+xml")) {
+	    if (parser == NULL)
+		throw(std::runtime_error("ResultSet constructor requires a SAX parser."));
+	    RSsax handler(this, atomFactory);
+	    parser->parse(sptr, &handler);
+	} else {
+	    TTerm::String2BNode nodeMap;
+	    if (!parseText(atomFactory, sptr, false, nodeMap))
+		throw(std::runtime_error(std::string("no ResultSet constructor for mediatype ")
+					 + sptr.mediaType.get()));
+	}
+    }
+
+    bool ResultSet::parseText (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
+#if REGEX_LIB != SWOb_DISABLED
+	if (!sptr.mediaType.is_initialized() ||
+	    sptr.mediaType.match("text/sparql-results")) {
+	    TTerm::String2BNode nodeMap;
+	    parseTable(sptr, ordered, nodeMap);
+	    return true;
+	} else
+#endif /* REGEX_LIB != SWOb_DISABLED */
+	    if (sptr.mediaType.match("application/sparql-results+json")) {
+		TTerm::String2BNode nodeMap;
+		JSONresultsDriver jsonResParser(atomFactory);
+		jsonResParser.parse(sptr, this);
+		return true;
+	    }
+	return false;
+    }
     ResultSet::~ResultSet () {
 	selectOrder.clear();
 	for (ResultSetIterator it = results.begin(); it != results.end(); it++)

@@ -294,6 +294,7 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 	insert(pair("trig", "text/trig"));
 	insert(pair("srx" , "application/sparql-results+xml"));
 	insert(pair("srt" , "text/sparql-results"));
+	insert(pair("srj" , "application/sparql-results+json"));
 	insert(pair("rq"  , "text/sparql-query"));
     }
 };
