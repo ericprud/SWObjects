@@ -908,14 +908,58 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	return vi->second;
     }
 
+    std::string unescapeStr (std::string p_String) {
+	std::stringstream ss;
+	std::ostreambuf_iterator<char> out(ss);
+	bool escaped = false;
+	for (std::string::const_iterator it = p_String.begin();
+	     it != p_String.end(); ++it)
+	    if (escaped) {
+		switch (*it) {
+		case 'b':  out = '\b'; break;
+		case 'f':  out = '\f'; break;
+		case 'n':  out = '\n'; break;
+		case 'r':  out = '\r'; break;
+		case 't':  out = '\t'; break;
+		case '\\': out = '\\'; break;
+		case  '"': out = '\"'; break;
+		default:   out = *it;
+		}
+		escaped = false;
+	    } else if (*it == '\\')
+		escaped = true;
+	    else
+		out = *it;
+
+	return ss.str();
+    }
+
     const TTerm* AtomFactory::getTTerm (std::string posStr, TTerm::String2BNode& nodeMap) {
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
 	    return getBNode(posStr.substr(2, posStr.size()-2), nodeMap);
-	if ((posStr[0] == '"' && posStr[posStr.size()-1] == '"') ||
-	    (posStr[0] == '\'' && posStr[posStr.size()-1] == '\''))
-	    return getRDFLiteral(posStr.substr(1, posStr.size()-2), NULL, NULL);
+	if (posStr[0] == '"' ||
+	    posStr[0] == '\'') {
+	    char matchme = posStr[0];
+	    if (posStr[posStr.size()-1] == matchme)
+		return getRDFLiteral(unescapeStr(posStr.substr(1, posStr.size()-2)), NULL, NULL);
+	    size_t i;
+	    if (posStr[posStr.size()-1] == '>') {
+		for (i = posStr.size()-2; i > 3; --i) // ""^^
+		    if (posStr[i] == '<')
+			break;
+		if (posStr[i] == '<' && posStr[i-1] == '^' && posStr[i-2] == '^' && posStr[i-3] == matchme)
+		    return getRDFLiteral(unescapeStr(posStr.substr(1, i-4)),
+					 getURI(posStr.substr(i+1, posStr.size()-i-2)), NULL);
+	    }
+	    for (i = posStr.size()-2; i > 2; --i) // ""@
+		if (posStr[i] == '@')
+		    break;
+	    if (posStr[i] == '@' && posStr[i-1] == matchme)
+		return getRDFLiteral(unescapeStr(posStr.substr(1, i-2)), NULL, 
+				     new LANGTAG(posStr.substr(i+1)));
+	}
 	if (posStr[0] == '?')
 	    return getVariable(posStr.substr(1, posStr.size()-1));
 	if (posStr[0] == '-' || (posStr[0] >= '0' && posStr[0] <= '9')) {

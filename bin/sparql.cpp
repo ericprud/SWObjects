@@ -1476,6 +1476,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    DataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
 	    DataMediaType = "application/sparql-results+xml";
+	else if (!s.compare("sparqlj"))
+	    DataMediaType = "application/sparql-results+json";
 	else if (!s.compare("xml"))
 	    DataMediaType = "application/xml";
 	else {
@@ -1492,7 +1494,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/xml";
+	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/sparql-results+json, application/xml";
     } else {
 	if (s == "" || s == "guess") {
 	    DataMediaType = sw::MediaType(); // no media type
@@ -1502,6 +1504,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 		&& s.compare("text/trig") && s.compare("text/html")
 		&& s.compare("application/rdf+xml")
 		&& s.compare("application/sparql-results+xml")
+		&& s.compare("application/sparql-results+json")
 		&& s.compare("application/xml"))
 		std::cerr << "proceeding with unknown media type \"" << s << "\"";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
@@ -2262,7 +2265,8 @@ int main(int ac, char* av[])
 					    NULL, &Agent);
 
 		    sw::ResultSet* reference;
-		    if (iptr.mediaType.match("application/sparql-results+xml")) {
+		    if (iptr.mediaType.match("application/sparql-results+xml") || 
+			iptr.mediaType.match("application/sparql-results+json")) {
 			reference = new sw::ResultSet(&F, &P, iptr);
 		    } else if (iptr.mediaType.match("text/sparql-results")) {
 			sw::TTerm::String2BNode str2b;

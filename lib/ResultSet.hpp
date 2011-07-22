@@ -231,12 +231,9 @@ namespace w3c_sw {
 
 	    /* Ignore leading whitespace and comments. */
 	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    while (regex_search(start, end, what, boost::regex("^[ \\t]*(#[^\\n]*)?\\n"), flags)) {
+	    boost::match_flag_type flags = boost::match_perl|boost::match_single_line;
+	    while (regex_search(start, end, what, boost::regex("^[ \\t]*(#[^\\n]*)?\\n"), flags))
 		start = what[0].second; 
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
-	    }
 
 	    /* Populate <headers> from the first row ... */
 	    bool firstRow = true;
@@ -244,26 +241,51 @@ namespace w3c_sw {
 	    /* ... and generate Results for each remaining row. */
 	    int col = 0;
 	    Result* curRow = NULL;
-	    const boost::regex expression("[ \\t]*"			// ignore leading whitespace
-					  "((?:<[^>]*>)"		// IRI
-					   "|(?:_:[^[:space:]]+)"	// bnode
-					   "|(?:[?$][^[:space:]]+)"	// variable
-					   "|(?:\\\"[^\\\"]*\\\")"	// literal
-					   "|(?:'[^']*')"		// literal
-					   "|(?:-?[0-9\\.]+)"		// integer
-					   "|\\+|┌|├|└|┏|┠|┗|\\n"	// box chars
-					  ")");
+	    const boost::regex expression("^[ \\t\\n]*(?:"	// ignore leading whitespace
+					  "((?:\\+-+)+\\+|[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+)[ \\t\\n]*"	// box chars
+					  "|(?:[|│┃][ \\t]*"
+					   "((?:<[^>]*>)"		// IRI
+					    "|(?:_:[^[:space:]]+)"	// bnode
+					    "|(?:[?$][^[:space:]]+)"	// variable
+					    "|(?:\\\"(?:[^\\\\\"]|\\\\[\"nrtb])*\\\"" // literal
+					        "(?:\\^\\^<[^>]*>|@[a-z_-]+)?)"
+					    "|(?:-?[0-9\\.]+)"		// integer
+					    "|(--|UNDEF)"		// no binding
+					   ")?))");
 	    while (regex_search(start, end, what, expression, flags)) {
-		std::string matched(what[1].first, what[1].second);
-		if (matched == "\n") {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "matched \"" << std::string(what[0].first, what[0].second) << "\"\n";
+		if (what[1].first != what[1].second) {
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< "skipping box chars: \"" << std::string(what[1].first, what[1].second) << "\"\n";
+		} else if (what[2].first == what[2].second) {
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< "end of header or solution\n";
 		    firstRow = false;
 		    col = 0;
 		    curRow = NULL;
-		} else if (matched == "+" || matched == "┌" || matched == "├" || matched == "└") {
-		    const boost::regex nl("[^\\n]*\\n");
-		    regex_search(start, end, what, nl, flags); // skip rest of line
+		} else if (what[3].first != what[3].second) {
+		    if (firstRow) {
+			const BNode* b = atomFactory->createBNode();
+			BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			    << "fresh header variable: " << b->toString() << "\n";
+			headers.push_back(b);
+		    } else {
+			if (curRow == NULL) {
+			    curRow = new Result(this);
+			    insert(this->end(), curRow);
+			}
+			BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			    << headers[col]->toString() << "unbound\n";
+			++col;
+		    }
 		} else {
-		    const TTerm* tterm = atomFactory->getTTerm(matched, nodeMap);
+		    std::string term(what[2].first, what[2].second);
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< "term text: \"" << term << "\"\n";
+		    const TTerm* tterm = atomFactory->getTTerm(term, nodeMap);
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< "term: " << tterm->toString() << "\n";
 		    if (firstRow)
 			headers.push_back(tterm);
 		    else {
@@ -277,9 +299,17 @@ namespace w3c_sw {
 
 		/* Start after the end of the stuff we just parsed. */
 		start = what[0].second; 
-		/* Re-assert the flags. */
-		flags |= boost::match_prev_avail; 
-		flags |= boost::match_not_bob; 
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "starting again at: \"" << std::string(start, end).substr(0, 20) << "\"\n";
+	    }
+	    if (start != end) {
+		std::string garbage(start, end);
+		if (garbage.size() > 20)
+		    garbage = garbage.substr(0, 20)+"...";
+		std::stringstream ss;
+		ss << "Garbage " << (end - start) << " bytes from end of stream: \""
+		   << garbage << "\"";
+		throw(std::runtime_error(ss.str()));
 	    }
 	}
 

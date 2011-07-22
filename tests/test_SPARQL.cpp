@@ -265,6 +265,13 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
 			  false, bnodeMap);
 	BOOST_CHECK_EQUAL(join_measured, join_expected);
     }
+    {
+	ExecResults join("../bin/sparql -d SPARQL/note.srj\n");
+	w3c_sw::ResultSet join_measured(&F, join.s, false, bnodeMap);
+	w3c_sw::IStreamContext istr("SPARQL/note.srj", w3c_sw::IStreamContext::FILE);
+	w3c_sw::ResultSet join_expected(&F, istr, false, bnodeMap);
+	BOOST_CHECK_EQUAL(join_measured, join_expected);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( resultsInSparql ) {

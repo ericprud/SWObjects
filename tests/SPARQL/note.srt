@@ -1,0 +1,11 @@
+## unicode table result set for:
+#   reference: http://www.w3.org/TR/2007/NOTE-rdf-sparql-json-res-20070618/#examples
+#   reference: http://www.w3.org/TR/rdf-sparql-XMLres/output.srx
+
+# $Id$
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬─────────┬──────────────────────────────────┬───────────────────────────────┬──────────┬──────┐
+│ ?blurb                                                                                                                           │ ?friend │ ?hpage                           │ ?mbox                         │ ?name    │ ?x   │
+│ "<p xmlns=\"http://www.w3.org/1999/xhtml\">My name is <b>alice</b></p>"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral> │    _:r2 │ <http://work.example.org/alice/> │                            "" │  "Alice" │ _:r1 │
+│                                                                                                                               -- │    _:r1 │   <http://work.example.org/bob/> │ <mailto:bob@work.example.org> │ "Bob"@en │ _:r2 │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴─────────┴──────────────────────────────────┴───────────────────────────────┴──────────┴──────┘
