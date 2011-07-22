@@ -1511,7 +1511,10 @@ _Q_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C_E_Opt:
 GroupGraphPattern:
     _O_QGT_LCURLEY_E_S_QSubSelect_E_Or_QGroupGraphPatternSub_E_S_QGT_RCURLEY_E_C	
   | RSREF	{
-	ResultSet* copy = new ResultSet(*driver.bindingsMap[$1->name]);
+	BindingsMap::const_iterator rs = driver.bindingsMap.find($1->name);
+	if (rs == driver.bindingsMap.end())
+	    error(*(yylocation_stack_.end()), std::string("") + "unknown named result set " + $1->name);
+	ResultSet* copy = new ResultSet(*rs->second);
 	delete $1;
 	BindingClause* b = new BindingClause(copy);
 	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, b) : b;

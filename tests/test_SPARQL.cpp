@@ -267,6 +267,41 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
 }
 
+BOOST_AUTO_TEST_CASE( resultsInSparql ) {
+    w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
+    {
+	ExecResults join("../bin/sparql SPARQL/redundantRows.rq\n");
+	w3c_sw::ResultSet join_measured(&F, join.s, false, bnodeMap);
+	w3c_sw::ResultSet
+	    join_expected(&F, 
+			  "+----+----+\n"
+			  "| ?X | ?Z |\n"
+			  "|  1 |  3 |\n"
+			  "|  1 |  3 |\n"
+			  "|  1 |  3 |\n"
+			  "|  1 |  3 |\n"
+			  "|  2 |  4 |\n"
+			  "+----+----+\n", 
+			  false, bnodeMap);
+	BOOST_CHECK_EQUAL(join_measured, join_expected);
+    }
+    {
+	ExecResults join("../bin/sparql SPARQL/fiveForms.rq\n");
+	w3c_sw::ResultSet join_measured(&F, join.s, false, bnodeMap);
+	w3c_sw::ResultSet
+	    join_expected(&F, 
+			  "+----+----+----+----+----+----+\n"
+			  "| ?A | ?B | ?C | ?D | ?E | ?X |\n"
+			  "|  2 |  3 |  3 |  3 |  5 |  1 |\n"
+			  "|  2 |  3 |  3 |  3 |  6 |  1 |\n"
+			  "|  2 |  3 |  3 |  3 |  5 |  1 |\n"
+			  "|  2 |  3 |  3 |  3 |  6 |  1 |\n"
+			  "+----+----+----+----+----+----+\n", 
+			  false, bnodeMap);
+	BOOST_CHECK_EQUAL(join_measured, join_expected);
+    }
+}
+
 BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::setenv("XSLT", "/usr/bin/xsltproc %STYLESHEET %DATA", 1);
     ::setenv("XML_CATALOG_FILES", "xml/catalog.xml", 1);
