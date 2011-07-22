@@ -68,14 +68,14 @@ typedef w3c_sw::SPARQLfedParser::token_type token_type;
 GT_EQUAL		"="
 GT_DOT		"."
 GT_PIPE		"|"
-GT_H_2502_		"\x2502"
+GT_H_2502_		\xE2\x94\x82
 GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_COMMA		","
 GT_MINUS_GT		"->"
-GT_H_2192_		"\x2192"
+GT_H_2192_		\xE2\x86\x92
 IT_BASE		[Bb][Aa][Ss][Ee]
 IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
