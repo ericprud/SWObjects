@@ -166,12 +166,19 @@ public:
     }
     virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_exp, const Variable* p_var) {
 	lead();
-	ret << "(extend ";
+	ret << "(extend (";
+	++depth;
+	p_var->express(this);
+	--depth;
+	ret << " ";
 	++depth;
 	p_exp->express(this);
 	--depth;
-	ret << " ";
-	p_var->express(this);
+	ret << ")" << std::endl;
+	++depth;
+	if (p_op) p_op->express(this); else ret << "No nested operation!"; // !!!
+	--depth;
+	lead();
 	ret << ")";
 	ret << std::endl;
     }

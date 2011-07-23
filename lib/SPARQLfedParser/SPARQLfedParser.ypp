@@ -1663,6 +1663,11 @@ ServiceGraphPattern:
 Bind:
     IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
 	driver.curOp = new Bind(driver.curOp, $3, $5);
+	// no more triples go into the current BGP, per
+	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns
+	// test reference:
+	//   http://www.sparql.org/query-validator?query=ASK+{+%3Fs+%3Fp+%3Fo+FILTER+%281%29+BIND+%282+AS+%3Fb%29+%3Fs2+%3Fp2+%3Fo2+FILTER+%283%29+BIND+%284+AS+%3Fd%29}&languageSyntax=SPARQL&outputFormat=algebra&linenumbers=false
+	driver.curBGP = NULL;
     }
 ;
 

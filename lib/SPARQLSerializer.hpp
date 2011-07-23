@@ -169,7 +169,7 @@ public:
 	ret << ")" << std::endl;
 	--depth;
 	lead();
-	ret << "}";
+	ret << "}" << std::endl;
     }
     void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
 	ret << '{';
