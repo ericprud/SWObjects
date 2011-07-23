@@ -156,14 +156,20 @@ public:
     }
     virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_exp, const Variable* p_var) {
 	lead();
+	ret << "{" << std::endl;
+	++depth;
 	p_op->express(this);
-	ret << "BIND ";
+	lead();
+	ret << "BIND (";
 	++depth;
 	p_exp->express(this);
 	--depth;
 	ret << " AS ";
 	p_var->express(this);
-	ret << std::endl;
+	ret << ")" << std::endl;
+	--depth;
+	lead();
+	ret << "}";
     }
     void _BasicGraphPattern (const BasicGraphPattern* self, const ProductionVector<const TriplePattern*>* p_TriplePatterns, bool p_allOpts) {
 	ret << '{';
