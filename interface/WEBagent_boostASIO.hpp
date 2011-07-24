@@ -185,6 +185,11 @@ namespace w3c_sw {
 		    //std::cout << "\n";
 		    std::stringstream s;
 		    s << status_code;
+		    { // @@ quick hack to allow users to see the returned error bodies
+			while (boost::asio::read(socket, response,
+						 boost::asio::transfer_at_least(1), error))
+			    s << &response;
+		    }
 		    throw method + " " + url + " returned with status code " + s.str();
 		}
 
