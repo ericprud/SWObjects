@@ -67,7 +67,7 @@ namespace w3c_sw {
 	}
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {
 	    FuncType oldFunc = func;
-	    if (p_IRIref == TTerm::XPATH_concat) {
+	    if (p_IRIref == TTerm::FUNC_concat) {
 		func = Concat;
 		concatRE = "^";
 		p_ArgList->express(this);

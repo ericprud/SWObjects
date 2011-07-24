@@ -590,64 +590,65 @@ public:
     static const URI* URI_xsd_positiveInteger;
     static const URI* URI_xsd_dateTime;
 
-    static const URI* FUNC_str;
-    static const URI* FUNC_lang;
-    static const URI* FUNC_langMatches;
-    static const URI* FUNC_datatype;
     static const URI* FUNC_bound;
+    static const URI* FUNC_if;
+    static const URI* FUNC_coalesce;
+    static const URI* FUNC_exists;
     static const URI* FUNC_sameTerm;
+    static const URI* FUNC_in;
     static const URI* FUNC_isIRI;
     static const URI* FUNC_isURI;
     static const URI* FUNC_isBlank;
     static const URI* FUNC_isLiteral;
-    static const URI* FUNC_count;
-    static const URI* FUNC_sum;
-    static const URI* FUNC_min;
-    static const URI* FUNC_max;
-    static const URI* FUNC_avg;
-    static const URI* FUNC_group;
-    static const URI* FUNC_regex;
-    static const URI* FUNC_group_concat;
-    static const URI* FUNC_if;
-    static const URI* FUNC_strlang;
-    static const URI* FUNC_strdt;
-    static const URI* FUNC_sample;
+    static const URI* FUNC_isNumeric;
+    static const URI* FUNC_str;
+    static const URI* FUNC_lang;
+    static const URI* FUNC_datatype;
     static const URI* FUNC_iri;
     static const URI* FUNC_uri;
-    static const URI* FUNC_blank;
-    static const URI* FUNC_isNumeric;
-    static const URI* XPATH_concat;
-    static const URI* XPATH_lower_case;
-    static const URI* XPATH_upper_case;
-    static const URI* EXTEN_concat;
-
-    static const URI* FUNC_rand;
-    static const URI* FUNC_abs;
-    static const URI* FUNC_ciel;
-    static const URI* FUNC_floor;
-    static const URI* FUNC_round;
-    static const URI* FUNC_strlen;
-    static const URI* FUNC_ucase;
-    static const URI* FUNC_lcase;
-    static const URI* FUNC_encodeForUri;
+    static const URI* FUNC_bnode;
+    static const URI* FUNC_strdt;
+    static const URI* FUNC_strlang;
+    static const URI* FUNC_string_length;
+    static const URI* FUNC_substring;
+    static const URI* FUNC_upper_case;
+    static const URI* FUNC_lower_case;
+    static const URI* FUNC_starts_with;
+    static const URI* FUNC_ends_with;
     static const URI* FUNC_contains;
-    static const URI* FUNC_strStarts;
-    static const URI* FUNC_strEnds;
-    static const URI* FUNC_year;
-    static const URI* FUNC_month;
-    static const URI* FUNC_day;
-    static const URI* FUNC_hours;
-    static const URI* FUNC_minutes;
-    static const URI* FUNC_seconds;
-    static const URI* FUNC_timezone;
+    static const URI* FUNC_encode_for_uri;
+    static const URI* FUNC_concat;
+    static const URI* FUNC_langMatches;
+    static const URI* FUNC_matches;
+    static const URI* FUNC_numeric_abs;
+    static const URI* FUNC_numeric_round;
+    static const URI* FUNC_numeric_ciel;
+    static const URI* FUNC_numeric_floor;
+    static const URI* FUNC_rand;
     static const URI* FUNC_now;
+    static const URI* FUNC_year_from_dateTime;
+    static const URI* FUNC_month_from_dateTime;
+    static const URI* FUNC_day_from_dateTime;
+    static const URI* FUNC_hours_from_dateTime;
+    static const URI* FUNC_minutes_from_dateTime;
+    static const URI* FUNC_seconds_from_dateTime;
+    static const URI* FUNC_timezone_from_dateTime;
+    static const URI* FUNC_tz;
     static const URI* FUNC_md5;
     static const URI* FUNC_sha1;
     static const URI* FUNC_sha224;
     static const URI* FUNC_sha256;
     static const URI* FUNC_sha384;
     static const URI* FUNC_sha512;
-    static const URI* FUNC_substring;
+    static const URI* FUNC_count;
+    static const URI* FUNC_sum;
+    static const URI* FUNC_min;
+    static const URI* FUNC_max;
+    static const URI* FUNC_avg;
+    static const URI* FUNC_group_concat;
+    static const URI* FUNC_sample;
+    static const URI* FUNC_group_group;
+    static const URI* FUNC_group_regex;
 
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
@@ -1387,11 +1388,17 @@ class AtomFactory {
 protected:
     typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
+
+    struct URIstr {
+	URI uri;
+	const char* op;
+    };
+
     struct URIMap : public std::map<std::string, const URI*> {
 	URIMap () {  }
-	URIMap (const URI* b, const URI* e) {
-	    for (const URI* p = b; p != e; ++p)
-		insert(std::pair<std::string, const URI*>(p->getLexicalValue(), p));
+	URIMap (const URIstr* b, const URIstr* e) {
+	    for (const URIstr* p = b; p != e; ++p)
+		insert(std::pair<std::string, const URI*>(p->uri.getLexicalValue(), &p->uri));
 	}
     };
     struct RDFLiteralMap : public std::map<std::string, const RDFLiteral*> {
@@ -1402,6 +1409,14 @@ protected:
 	}
     };
     typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
+
+    struct pURI_str : public std::map<const URI*, const char*> {
+	pURI_str (const URIstr* b, const URIstr* e) {
+	    for (const URIstr* p = b; p != e; ++p)
+		insert(std::pair<const URI*, const char*>(&p->uri, p->op));
+	}
+    };
+
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
@@ -1416,6 +1431,8 @@ protected:
     RDFLiteralMap	rdfLiterals;
     static RDFLiteralMap rdfLiterals_static;
     TriplePatternMap	triples;
+    static pURI_str	operatorNames_static;
+
     const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
 
     /** URI and Boolean contants are kept in separate hashes to avoid
@@ -1425,7 +1442,7 @@ protected:
 	AtomFactory not require the initialization of the constant
 	hashes. EGP 20100922
      */
-    static const URI _URIConstants[];
+    static const URIstr _URIConstants[];
     static const BooleanRDFLiteral _BooleanConstants[];
     static const NULLtterm _NULLtterm;
 
@@ -1505,6 +1522,8 @@ public:
 
     /* EBV (Better place for this?) */
     const TTerm* ebv(const TTerm* tterm);
+
+    static const char* getOperatorName (const URI* p_IRIref);
 
     struct Functor {
 	const Result* res;

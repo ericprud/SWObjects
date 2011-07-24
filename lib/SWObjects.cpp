@@ -529,13 +529,14 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
-#define XSDCONST(lname) URI("http://www.w3.org/2001/XMLSchema#" #lname)
-#define XPATHCONST(lname) URI("http://www.w3.org/2005/xpath-functions#" #lname)
-#define OPERATORCONST(lname) URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname)
-#define EXTENCONST(lname) URI("https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#" #lname)
+#define XSDCONST(lname) { URI("http://www.w3.org/2001/XMLSchema#" #lname), #lname }
+#define XPATHCONST(lname) { URI("http://www.w3.org/2005/xpath-functions#" #lname), #lname }
+#define XPATHCNST2(lname, op) { URI("http://www.w3.org/2005/xpath-functions/#" #lname), #op }
+#define OPERATORCONST(lname) { URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname), #lname }
+#define EXTENCONST(lname) { URI("https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#" #lname), NULL}
 
     /** URI constants, shared between all AtomFactories: */
-    const URI AtomFactory::_URIConstants[] = {
+    const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
 	XSDCONST(integer),
 	XSDCONST(decimal),
@@ -557,144 +558,146 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	XSDCONST(positiveInteger),
 	XSDCONST(dateTime),
 
-	OPERATORCONST(func-str),
-	OPERATORCONST(func-lang),
-	OPERATORCONST(func-langMatches),
-	OPERATORCONST(func-datatype),
-	OPERATORCONST(func-bound),
-	OPERATORCONST(func-sameTerm),
-	OPERATORCONST(func-isIRI),
-	OPERATORCONST(func-isURI),
-	OPERATORCONST(func-isBlank),
-	OPERATORCONST(func-isLiteral),
-	OPERATORCONST(func-count),
-	OPERATORCONST(func-sum),
-	OPERATORCONST(func-min),
-	OPERATORCONST(func-max),
-	OPERATORCONST(func-avg),
-	OPERATORCONST(func-group_group),
-	OPERATORCONST(func-group_regex),
-	OPERATORCONST(func-group_concat),
-	OPERATORCONST(func-if),
-	OPERATORCONST(func-strlang),
-	OPERATORCONST(func-strdt),
-	OPERATORCONST(func-sample),
-	OPERATORCONST(func-iri),
-	OPERATORCONST(func-uri),
-	OPERATORCONST(func-blank),
-	OPERATORCONST(func-isNumeric),
-	XPATHCONST(concat),	// <http://www.w3.org/2005/xpath-functions#concat>
-	XPATHCONST(lower-case),
-	XPATHCONST(upper-case),
-	EXTENCONST(concat),	// <https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#concat>
-	OPERATORCONST(func-rand),
-	OPERATORCONST(func-abs),
-	OPERATORCONST(func-ciel),
-	OPERATORCONST(func-floor),
-	OPERATORCONST(func-round),
-	OPERATORCONST(func-strlen),
-	OPERATORCONST(func-ucase),
-	OPERATORCONST(func-lcase),
-	OPERATORCONST(func-encodeForUri),
-	OPERATORCONST(func-contains),
-	OPERATORCONST(func-strStarts),
-	OPERATORCONST(func-strEnds),
-	OPERATORCONST(func-year),
-	OPERATORCONST(func-month),
-	OPERATORCONST(func-day),
-	OPERATORCONST(func-hours),
-	OPERATORCONST(func-minutes),
-	OPERATORCONST(func-seconds),
-	OPERATORCONST(func-timezone),
-	OPERATORCONST(func-now),
-	OPERATORCONST(func-md5),
-	OPERATORCONST(func-sha1),
-	OPERATORCONST(func-sha224),
-	OPERATORCONST(func-sha256),
-	OPERATORCONST(func-sha384),
-	OPERATORCONST(func-sha512),
-	OPERATORCONST(func-substring)
+	OPERATORCONST(bound),
+	OPERATORCONST(if),
+	OPERATORCONST(coalesce),
+	OPERATORCONST(exists), // not exists || && RDFterm-equal
+	OPERATORCONST(sameTerm),
+	OPERATORCONST(in), // not in
+	OPERATORCONST(isIRI),
+	OPERATORCONST(isURI),
+	OPERATORCONST(isBlank),
+	OPERATORCONST(isLiteral),
+	OPERATORCONST(isNumeric),
+	OPERATORCONST(str),
+	OPERATORCONST(lang),
+	OPERATORCONST(datatype),
+	OPERATORCONST(iri),
+	OPERATORCONST(uri),
+	OPERATORCONST(bnode),
+	OPERATORCONST(strdt),
+	OPERATORCONST(strlang),
+	XPATHCNST2   (string-length, "strlen"),
+	XPATHCNST2   (substring, "substr"),
+	XPATHCNST2   (upper-case, "ucase"),
+	XPATHCNST2   (lower-case, "lcase"),
+	XPATHCNST2   (starts-with, "strStarts"),
+	XPATHCNST2   (ends-with, "strEnds"),
+	XPATHCONST   (contains),
+	XPATHCONST   (encode-for-uri),
+	XPATHCONST   (concat),
+	OPERATORCONST(langMatches),
+	XPATHCNST2   (matches, "regex"),
+	XPATHCNST2   (numeric-abs, "abs"),
+	XPATHCNST2   (numeric-round, "round"),
+	XPATHCNST2   (numeric-ciel, "ciel"),
+	XPATHCNST2   (numeric-floor, "floor"),
+	OPERATORCONST(rand),
+	OPERATORCONST(now),
+	XPATHCNST2   (year-from-dateTime, "year"),
+	XPATHCNST2   (month-from-dateTime, "month"),
+	XPATHCNST2   (day-from-dateTime, "day"),
+	XPATHCNST2   (hours-from-dateTime, "hours"),
+	XPATHCNST2   (minutes-from-dateTime, "minutes"),
+	XPATHCNST2   (seconds-from-dateTime, "seconds"),
+	XPATHCNST2   (timezone-from-dateTime, "timezone"),
+	OPERATORCONST(tz),
+	OPERATORCONST(md5),
+	OPERATORCONST(sha1),
+	OPERATORCONST(sha224),
+	OPERATORCONST(sha256),
+	OPERATORCONST(sha384),
+	OPERATORCONST(sha512),
+	OPERATORCONST(count),
+	OPERATORCONST(sum),
+	OPERATORCONST(min),
+	OPERATORCONST(max),
+	OPERATORCONST(avg),
+	OPERATORCONST(group_concat),
+	OPERATORCONST(sample),
+	EXTENCONST   (group_group),
+	EXTENCONST   (group_regex),
     };
 
-    const URI* TTerm::URI_xsd_integer		 = AtomFactory::_URIConstants + 0;
-    const URI* TTerm::URI_xsd_decimal		 = AtomFactory::_URIConstants + 1;
-    const URI* TTerm::URI_xsd_float		 = AtomFactory::_URIConstants + 2;
-    const URI* TTerm::URI_xsd_double		 = AtomFactory::_URIConstants + 3;
-    const URI* TTerm::URI_xsd_string		 = AtomFactory::_URIConstants + 4;
-    const URI* TTerm::URI_xsd_boolean		 = AtomFactory::_URIConstants + 5;
-    const URI* TTerm::URI_xsd_nonPositiveInteger = AtomFactory::_URIConstants + 6;
-    const URI* TTerm::URI_xsd_negativeInteger	 = AtomFactory::_URIConstants + 7;
-    const URI* TTerm::URI_xsd_long		 = AtomFactory::_URIConstants + 8;
-    const URI* TTerm::URI_xsd_int		 = AtomFactory::_URIConstants + 9;
-    const URI* TTerm::URI_xsd_short		 = AtomFactory::_URIConstants + 10;
-    const URI* TTerm::URI_xsd_byte		 = AtomFactory::_URIConstants + 11;
-    const URI* TTerm::URI_xsd_nonNegativeInteger = AtomFactory::_URIConstants + 12;
-    const URI* TTerm::URI_xsd_unsignedLong	 = AtomFactory::_URIConstants + 13;
-    const URI* TTerm::URI_xsd_unsignedInt	 = AtomFactory::_URIConstants + 14;
-    const URI* TTerm::URI_xsd_unsignedShort	 = AtomFactory::_URIConstants + 15;
-    const URI* TTerm::URI_xsd_unsignedByte	 = AtomFactory::_URIConstants + 16;
-    const URI* TTerm::URI_xsd_positiveInteger	 = AtomFactory::_URIConstants + 17;
-    const URI* TTerm::URI_xsd_dateTime		 = AtomFactory::_URIConstants + 18;
+    const URI* TTerm::URI_xsd_integer		 = &AtomFactory::_URIConstants[0].uri;
+    const URI* TTerm::URI_xsd_decimal		 = &AtomFactory::_URIConstants[1].uri;
+    const URI* TTerm::URI_xsd_float		 = &AtomFactory::_URIConstants[2].uri;
+    const URI* TTerm::URI_xsd_double		 = &AtomFactory::_URIConstants[3].uri;
+    const URI* TTerm::URI_xsd_string		 = &AtomFactory::_URIConstants[4].uri;
+    const URI* TTerm::URI_xsd_boolean		 = &AtomFactory::_URIConstants[5].uri;
+    const URI* TTerm::URI_xsd_nonPositiveInteger = &AtomFactory::_URIConstants[6].uri;
+    const URI* TTerm::URI_xsd_negativeInteger	 = &AtomFactory::_URIConstants[7].uri;
+    const URI* TTerm::URI_xsd_long		 = &AtomFactory::_URIConstants[8].uri;
+    const URI* TTerm::URI_xsd_int		 = &AtomFactory::_URIConstants[9].uri;
+    const URI* TTerm::URI_xsd_short		 = &AtomFactory::_URIConstants[10].uri;
+    const URI* TTerm::URI_xsd_byte		 = &AtomFactory::_URIConstants[11].uri;
+    const URI* TTerm::URI_xsd_nonNegativeInteger = &AtomFactory::_URIConstants[12].uri;
+    const URI* TTerm::URI_xsd_unsignedLong	 = &AtomFactory::_URIConstants[13].uri;
+    const URI* TTerm::URI_xsd_unsignedInt	 = &AtomFactory::_URIConstants[14].uri;
+    const URI* TTerm::URI_xsd_unsignedShort	 = &AtomFactory::_URIConstants[15].uri;
+    const URI* TTerm::URI_xsd_unsignedByte	 = &AtomFactory::_URIConstants[16].uri;
+    const URI* TTerm::URI_xsd_positiveInteger	 = &AtomFactory::_URIConstants[17].uri;
+    const URI* TTerm::URI_xsd_dateTime		 = &AtomFactory::_URIConstants[18].uri;
 
-    const URI* TTerm::FUNC_str			 = AtomFactory::_URIConstants + 19;
-    const URI* TTerm::FUNC_lang			 = AtomFactory::_URIConstants + 20;
-    const URI* TTerm::FUNC_langMatches		 = AtomFactory::_URIConstants + 21;
-    const URI* TTerm::FUNC_datatype		 = AtomFactory::_URIConstants + 22;
-    const URI* TTerm::FUNC_bound		 = AtomFactory::_URIConstants + 23;
-    const URI* TTerm::FUNC_sameTerm		 = AtomFactory::_URIConstants + 24;
-    const URI* TTerm::FUNC_isIRI		 = AtomFactory::_URIConstants + 25;
-    const URI* TTerm::FUNC_isURI		 = AtomFactory::_URIConstants + 26;
-    const URI* TTerm::FUNC_isBlank		 = AtomFactory::_URIConstants + 27;
-    const URI* TTerm::FUNC_isLiteral		 = AtomFactory::_URIConstants + 28;
-    const URI* TTerm::FUNC_count		 = AtomFactory::_URIConstants + 29;
-    const URI* TTerm::FUNC_sum			 = AtomFactory::_URIConstants + 30;
-    const URI* TTerm::FUNC_min			 = AtomFactory::_URIConstants + 31;
-    const URI* TTerm::FUNC_max			 = AtomFactory::_URIConstants + 32;
-    const URI* TTerm::FUNC_avg			 = AtomFactory::_URIConstants + 33;
-    const URI* TTerm::FUNC_group		 = AtomFactory::_URIConstants + 34;
-    const URI* TTerm::FUNC_regex		 = AtomFactory::_URIConstants + 35;
-    const URI* TTerm::FUNC_group_concat		 = AtomFactory::_URIConstants + 36;
-    const URI* TTerm::FUNC_if			 = AtomFactory::_URIConstants + 37;
-    const URI* TTerm::FUNC_strlang		 = AtomFactory::_URIConstants + 38;
-    const URI* TTerm::FUNC_strdt		 = AtomFactory::_URIConstants + 39;
-    const URI* TTerm::FUNC_sample		 = AtomFactory::_URIConstants + 40;
-    const URI* TTerm::FUNC_iri			 = AtomFactory::_URIConstants + 41;
-    const URI* TTerm::FUNC_uri			 = AtomFactory::_URIConstants + 42;
-    const URI* TTerm::FUNC_blank		 = AtomFactory::_URIConstants + 43;
-    const URI* TTerm::FUNC_isNumeric		 = AtomFactory::_URIConstants + 44;
-    const URI* TTerm::XPATH_concat		 = AtomFactory::_URIConstants + 45;
-    const URI* TTerm::XPATH_lower_case		 = AtomFactory::_URIConstants + 46;
-    const URI* TTerm::XPATH_upper_case		 = AtomFactory::_URIConstants + 47;
-    const URI* TTerm::EXTEN_concat		 = AtomFactory::_URIConstants + 48;
-
-    const URI* TTerm::FUNC_rand			 = AtomFactory::_URIConstants + 49;
-    const URI* TTerm::FUNC_abs			 = AtomFactory::_URIConstants + 50;
-    const URI* TTerm::FUNC_ciel			 = AtomFactory::_URIConstants + 51;
-    const URI* TTerm::FUNC_floor		 = AtomFactory::_URIConstants + 52;
-    const URI* TTerm::FUNC_round		 = AtomFactory::_URIConstants + 53;
-    const URI* TTerm::FUNC_strlen		 = AtomFactory::_URIConstants + 54;
-    const URI* TTerm::FUNC_ucase		 = AtomFactory::_URIConstants + 55;
-    const URI* TTerm::FUNC_lcase		 = AtomFactory::_URIConstants + 56;
-    const URI* TTerm::FUNC_encodeForUri		 = AtomFactory::_URIConstants + 57;
-    const URI* TTerm::FUNC_contains		 = AtomFactory::_URIConstants + 58;
-    const URI* TTerm::FUNC_strStarts		 = AtomFactory::_URIConstants + 59;
-    const URI* TTerm::FUNC_strEnds		 = AtomFactory::_URIConstants + 60;
-    const URI* TTerm::FUNC_year			 = AtomFactory::_URIConstants + 61;
-    const URI* TTerm::FUNC_month		 = AtomFactory::_URIConstants + 62;
-    const URI* TTerm::FUNC_day			 = AtomFactory::_URIConstants + 63;
-    const URI* TTerm::FUNC_hours		 = AtomFactory::_URIConstants + 64;
-    const URI* TTerm::FUNC_minutes		 = AtomFactory::_URIConstants + 65;
-    const URI* TTerm::FUNC_seconds		 = AtomFactory::_URIConstants + 66;
-    const URI* TTerm::FUNC_timezone		 = AtomFactory::_URIConstants + 67;
-    const URI* TTerm::FUNC_now			 = AtomFactory::_URIConstants + 68;
-    const URI* TTerm::FUNC_md5			 = AtomFactory::_URIConstants + 69;
-    const URI* TTerm::FUNC_sha1			 = AtomFactory::_URIConstants + 70;
-    const URI* TTerm::FUNC_sha224		 = AtomFactory::_URIConstants + 71;
-    const URI* TTerm::FUNC_sha256		 = AtomFactory::_URIConstants + 72;
-    const URI* TTerm::FUNC_sha384		 = AtomFactory::_URIConstants + 73;
-    const URI* TTerm::FUNC_sha512		 = AtomFactory::_URIConstants + 74;
-    const URI* TTerm::FUNC_substring		 = AtomFactory::_URIConstants + 75;
-
+    const URI* TTerm::FUNC_bound		 = &AtomFactory::_URIConstants[19].uri;
+    const URI* TTerm::FUNC_if			 = &AtomFactory::_URIConstants[20].uri;
+    const URI* TTerm::FUNC_coalesce		 = &AtomFactory::_URIConstants[21].uri;
+    const URI* TTerm::FUNC_exists		 = &AtomFactory::_URIConstants[22].uri;
+    const URI* TTerm::FUNC_sameTerm 		 = &AtomFactory::_URIConstants[23].uri;
+    const URI* TTerm::FUNC_in			 = &AtomFactory::_URIConstants[24].uri;
+    const URI* TTerm::FUNC_isIRI		 = &AtomFactory::_URIConstants[25].uri;
+    const URI* TTerm::FUNC_isURI		 = &AtomFactory::_URIConstants[26].uri;
+    const URI* TTerm::FUNC_isBlank		 = &AtomFactory::_URIConstants[27].uri;
+    const URI* TTerm::FUNC_isLiteral		 = &AtomFactory::_URIConstants[28].uri;
+    const URI* TTerm::FUNC_isNumeric		 = &AtomFactory::_URIConstants[29].uri;
+    const URI* TTerm::FUNC_str			 = &AtomFactory::_URIConstants[30].uri;
+    const URI* TTerm::FUNC_lang			 = &AtomFactory::_URIConstants[31].uri;
+    const URI* TTerm::FUNC_datatype		 = &AtomFactory::_URIConstants[32].uri;
+    const URI* TTerm::FUNC_iri			 = &AtomFactory::_URIConstants[33].uri;
+    const URI* TTerm::FUNC_uri			 = &AtomFactory::_URIConstants[34].uri;
+    const URI* TTerm::FUNC_bnode		 = &AtomFactory::_URIConstants[35].uri;
+    const URI* TTerm::FUNC_strdt		 = &AtomFactory::_URIConstants[36].uri;
+    const URI* TTerm::FUNC_strlang		 = &AtomFactory::_URIConstants[37].uri;
+    const URI* TTerm::FUNC_string_length	 = &AtomFactory::_URIConstants[38].uri;
+    const URI* TTerm::FUNC_substring		 = &AtomFactory::_URIConstants[39].uri;
+    const URI* TTerm::FUNC_upper_case		 = &AtomFactory::_URIConstants[40].uri;
+    const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[41].uri;
+    const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[42].uri;
+    const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[43].uri;
+    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[44].uri;
+    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[45].uri;
+    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[46].uri;
+    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[47].uri;
+    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[48].uri;
+    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[49].uri;
+    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[50].uri;
+    const URI* TTerm::FUNC_numeric_ciel		 = &AtomFactory::_URIConstants[51].uri;
+    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[52].uri;
+    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[53].uri;
+    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[54].uri;
+    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[55].uri;
+    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[56].uri;
+    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[57].uri;
+    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[58].uri;
+    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[59].uri;
+    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[60].uri;
+    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[61].uri;
+    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[62].uri;
+    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[63].uri;
+    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[64].uri;
+    const URI* TTerm::FUNC_sha224		 = &AtomFactory::_URIConstants[65].uri;
+    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[66].uri;
+    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[67].uri;
+    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[68].uri;
+    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[69].uri;
+    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[70].uri;
+    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[71].uri;
+    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[72].uri;
+    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[73].uri;
+    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[74].uri;
+    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[75].uri;
+    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[76].uri;
+    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[77].uri;
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
 	BooleanRDFLiteral("true",  TTerm::URI_xsd_boolean, true),
@@ -709,6 +712,8 @@ void NumberExpression::express (Expressor* p_expressor) const {
 						  _URIConstants + sizeof(_URIConstants)/sizeof(_URIConstants[0]));
     AtomFactory::RDFLiteralMap AtomFactory::rdfLiterals_static (_BooleanConstants, 
 								_BooleanConstants + sizeof(_BooleanConstants)/sizeof(_BooleanConstants[0]));
+    AtomFactory::pURI_str AtomFactory::operatorNames_static (_URIConstants, 
+						  _URIConstants + sizeof(_URIConstants)/sizeof(_URIConstants[0]));
 #endif /* !defined(SWIG) */
 
     const NULLtterm AtomFactory::_NULLtterm;
@@ -906,6 +911,11 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
 	return vi->second;
+    }
+
+    const char* AtomFactory::getOperatorName (const URI* uri) {
+	pURI_str::const_iterator vi = operatorNames_static.find(uri);
+	return vi == operatorNames_static.end() ? NULL : vi->second;
     }
 
     std::string unescapeStr (std::string p_String) {
@@ -1540,7 +1550,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 	/* nary predicates: */
 	// concat
-	if (m_IRIref == TTerm::XPATH_concat || m_IRIref == TTerm::EXTEN_concat) { // legacy concat function
+	if (m_IRIref == TTerm::FUNC_concat) { // legacy concat function
 	    std::stringstream ss;
 	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
 		 sub != subd.end(); ++sub) {
@@ -1626,7 +1636,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    return atomFactory->getURI(first->getLexicalValue());
 
-	if (m_IRIref == TTerm::FUNC_blank && // blank(RDFLiteral)
+	if (m_IRIref == TTerm::FUNC_bnode && // bnode(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
 	    //return atomFactory->getBNode(first->getLexicalValue());
 	    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
@@ -1638,7 +1648,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return dt ? dt : TTerm::URI_xsd_string;
 	}
 
-	if (m_IRIref == TTerm::XPATH_lower_case && // fn:lower-case(RDFLiteral)
+	if (m_IRIref == TTerm::FUNC_lower_case && // fn:lower-case(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
 	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
 	    std::string lex = upper->getLexicalValue();
@@ -1646,7 +1656,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), upper->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
 	}
 
-	if (m_IRIref == TTerm::XPATH_upper_case && // fn:upper-case(RDFLiteral)
+	if (m_IRIref == TTerm::FUNC_upper_case && // fn:upper-case(RDFLiteral)
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
 	    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(first);
 	    std::string lex = lower->getLexicalValue();
@@ -1654,7 +1664,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
 	}
 
-	if (m_IRIref == TTerm::FUNC_strlen &&
+	if (m_IRIref == TTerm::FUNC_string_length &&
 	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
 	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
 	    int i = upper->getLexicalValue().size();
@@ -1726,7 +1736,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    }
 	}
 
-	if (m_IRIref == TTerm::FUNC_regex && 
+	if (m_IRIref == TTerm::FUNC_matches && 
 	    ( subd.size() == 2 || subd.size() == 3 ) && 
 	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
 	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 

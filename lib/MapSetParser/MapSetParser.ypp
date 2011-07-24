@@ -2039,68 +2039,68 @@ BuiltInCall:
     }
   | // 'BNODE' ( '(' Expression  ')' | NIL )
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_blank, $2, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, $2, NULL, NULL));
     }
   | IT_RAND NIL	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
   | IT_ABS GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_abs, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, $3, NULL, NULL));
     }
   | IT_CEIL GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ciel, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ciel, $3, NULL, NULL));
     }
   | IT_FLOOR GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_floor, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, $3, NULL, NULL));
     }
   | IT_ROUND GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_round, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, $3, NULL, NULL));
     }
   | IT_CONCAT ExpressionList	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::XPATH_concat, new ArgList($2)));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList($2)));
     }
   | SubstringExpression	
   | IT_STRLEN GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlen, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, $3, NULL, NULL));
     }
   | IT_UCASE GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ucase, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, $3, NULL, NULL));
     }
   | IT_LCASE GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lcase, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, $3, NULL, NULL));
     }
   | IT_ENCODE_FOR_URI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encodeForUri, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, $3, NULL, NULL));
     }
   | IT_CONTAINS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, NULL, NULL));
     }
   | IT_STRSTARTS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strStarts, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, $3, NULL, NULL));
     }
   | IT_STRENDS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strEnds, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, $3, NULL, NULL));
     }
   | IT_YEAR GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, $3, NULL, NULL));
     }
   | IT_MONTH GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, $3, NULL, NULL));
     }
   | IT_DAY GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, $3, NULL, NULL));
     }
   | IT_HOURS GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, $3, NULL, NULL));
     }
   | IT_MINUTES GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, $3, NULL, NULL));
     }
   | IT_SECONDS GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, $3, NULL, NULL));
     }
   | IT_TIMEZONE GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
     }
   | IT_NOW NIL	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
@@ -2173,7 +2173,7 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C:
 RegexExpression:
     // 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
     IT_REGEX GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_regex, $3, $5, $6));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, $3, $5, $6));
     }
 ;
 
