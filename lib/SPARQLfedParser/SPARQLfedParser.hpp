@@ -101,6 +101,12 @@ protected:
 	}
     }
 
+    const TableOperation* ensureGraphPattern ( ) {
+	if (curOp == NULL)
+	    ensureBasicGraphPattern();
+	return curOp;
+    }
+
     ParserFilter* saveFilter () {
 	ParserFilter* ret = curFilter;
 	curFilter = NULL;
@@ -230,7 +236,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 234 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 240 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -244,7 +250,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 248 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 254 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
   class position;
   class location;
 
@@ -254,7 +260,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 258 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 264 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 #include "location.hh"
 
@@ -302,7 +308,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 306 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 312 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -314,7 +320,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 240 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 246 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -384,7 +390,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 388 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 394 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -753,7 +759,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 757 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 763 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

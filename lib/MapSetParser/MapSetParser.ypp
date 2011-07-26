@@ -107,6 +107,12 @@ protected:
 	}
     }
 
+    const TableOperation* ensureGraphPattern ( ) {
+	if (curOp == NULL)
+	    ensureBasicGraphPattern();
+	return curOp;
+    }
+
     ParserFilter* saveFilter () {
 	ParserFilter* ret = curFilter;
 	curFilter = NULL;
@@ -800,7 +806,7 @@ WhereClause:
     // 'WHERE'? GroupGraphPattern
     _QIT_WHERE_E_Opt  GroupGraphPattern	{
 	driver.restoreFilter(NULL);
-	$$ = new WhereClause(driver.curOp ? driver.curOp : new DefaultGraphPattern());
+	$$ = new WhereClause(driver.ensureGraphPattern());
 	driver.curOp = NULL;
     }
 ;
@@ -1152,7 +1158,7 @@ GraphPatternNotTriples:
   | Filter	
   | Bind	
   | BindingsClause	{
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, $1) : $1;
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.ensureGraphPattern(), $1) : $1;
     }
 ;
 
@@ -1162,7 +1168,7 @@ OptionalGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } GroupGraphPattern	{
-	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.curOp);
+	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.ensureGraphPattern());
 	  if (driver.curFilter) {
 	      driver.curFilter->copyExpressionsTo(ret);
 	      delete driver.curFilter;
@@ -1204,7 +1210,7 @@ ServiceGraphPattern:
 
 Bind:
     IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
-	driver.curOp = new Bind(driver.curOp, $3, $5);
+	driver.curOp = new Bind(driver.ensureGraphPattern(), $3, $5);
     }
 ;
 
@@ -1217,7 +1223,7 @@ MinusGraphPattern:
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new MinusGraphPattern(driver.curOp));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new MinusGraphPattern(driver.ensureGraphPattern()));
       }
 ;
 
@@ -1238,16 +1244,13 @@ GroupOrUnionGraphPattern:
 // 'UNION' GroupGraphPattern
 _O_QIT_UNION_E_S_QGroupGraphPattern_E_C:
     IT_UNION {
-	if (driver.curOp == NULL)
-	    driver.ensureBasicGraphPattern();
+	driver.ensureGraphPattern();
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } GroupGraphPattern	{
-	  if (driver.curOp == NULL)
-	      driver.ensureBasicGraphPattern();
 	  driver.restoreFilter(NULL);
-	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.curOp);
+	  driver.curOp = driver.makeDisjunction($<p_TableOperation>2, driver.ensureGraphPattern());
       }
 ;
 
@@ -1260,8 +1263,7 @@ _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star:
 Filter:
     IT_FILTER Constraint	{
 	if (driver.curFilter == NULL) {
-	    if (driver.curOp == NULL)
-		driver.ensureBasicGraphPattern();
+	    driver.ensureGraphPattern();
 	    driver.curFilter = new ParserFilter();
 	}
 	driver.curFilter->addExpression($2);
@@ -2193,14 +2195,14 @@ SubstringExpression:
 
 ExistsFunc:
     IT_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL));
+	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;
 
 NotExistsFunc:
     IT_NOT IT_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.curOp, NULL, NULL)));
+	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL)));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
 ;

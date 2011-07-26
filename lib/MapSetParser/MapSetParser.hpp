@@ -92,6 +92,12 @@ protected:
 	}
     }
 
+    const TableOperation* ensureGraphPattern ( ) {
+	if (curOp == NULL)
+	    ensureBasicGraphPattern();
+	return curOp;
+    }
+
     ParserFilter* saveFilter () {
 	ParserFilter* ret = curFilter;
 	curFilter = NULL;
@@ -222,7 +228,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 226 "lib/MapSetParser/MapSetParser.hpp"
+#line 232 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -236,7 +242,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 240 "lib/MapSetParser/MapSetParser.hpp"
+#line 246 "lib/MapSetParser/MapSetParser.hpp"
   class position;
   class location;
 
@@ -246,7 +252,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 250 "lib/MapSetParser/MapSetParser.hpp"
+#line 256 "lib/MapSetParser/MapSetParser.hpp"
 
 #include "location.hh"
 
@@ -294,7 +300,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 298 "lib/MapSetParser/MapSetParser.hpp"
+#line 304 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -306,7 +312,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 240 "lib/MapSetParser/MapSetParser.ypp"
+#line 246 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -369,7 +375,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 373 "lib/MapSetParser/MapSetParser.hpp"
+#line 379 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -725,7 +731,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 729 "lib/MapSetParser/MapSetParser.hpp"
+#line 735 "lib/MapSetParser/MapSetParser.hpp"
 
 
 
