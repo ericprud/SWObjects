@@ -275,11 +275,13 @@ public:
 	}
     }
 
-    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	if (algebra & ALGEBRA_binaryOpts)
 	    recursiveJoiner(p_TableOperations, std::vector<const TableOperation*>::const_reverse_iterator(p_TableOperations->end()));
 	else {
-	    lead(); ret << "(join" << std::endl;
+	    lead(); ret << "(join";
+	    if (debug & DEBUG_graphs) ret << ' ' << self;
+	    ret << std::endl;
 	    depth++;
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); ++it)
