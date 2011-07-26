@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <iterator>
+#include <boost/lexical_cast.hpp>
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
@@ -68,6 +69,43 @@ BOOST_AUTO_TEST_CASE( algebra__filter_nested_2 ) {
   )\n\
 )\n\
 ");
+}
+
+BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
+    try {
+	TableConjunction* c = new TableConjunction();
+	TTerm::String2BNode nodeMap;
+	const TTerm* s = F.getTTerm(std::string("<s>"), nodeMap);
+	const TTerm* p = F.getTTerm(std::string("<p>"), nodeMap);
+	for (int i = 0; i < 3; ++i) {
+	    const TTerm* o = F.getNumericRDFLiteral(boost::lexical_cast<std::string>(i), i);
+	    BasicGraphPattern* bgp = new DefaultGraphPattern();
+	    bgp->addTriplePattern(F.getTriple(s, p, o));
+	    c->addTableOperation(bgp, false);
+	}
+	c->addTableOperation(new OptionalGraphPattern(new DefaultGraphPattern()), false);
+	Ask* a = new Ask(new ProductionVector<const DatasetClause*>, new WhereClause(c));
+	SPARQLAlgebraSerializer alg(SPARQLAlgebraSerializer::ALGEBRA_simple);
+	a->express(&alg);
+	delete c;
+	std::string measured = alg.str();
+	std::string expected("(ask\n\
+  (join\n\
+    (bgp (triple <s> <p> 0))\n\
+    (bgp (triple <s> <p> 1))\n\
+    (bgp (triple <s> <p> 2))\n\
+    (optional\n\
+      (table unit)\n\
+    )\n\
+  )\n\
+)\n\
+");
+	BOOST_CHECK_EQUAL(measured, expected);
+    } catch (std::string& s) {
+	BOOST_ERROR ( s );
+    } catch (std::exception& s) {
+	BOOST_ERROR ( s.what() );
+    }
 }
 
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
