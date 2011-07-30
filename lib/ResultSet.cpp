@@ -729,26 +729,37 @@ namespace w3c_sw {
 	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
-    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) const { // Early returns
-	if (resultType != RESULT_Tabular) {
-	    xml->rawData(toString(MediaType("text/turtle")));
-	    return xml;
+    XMLSerializer* ResultSet::toXml (XMLSerializer* xml) const {
+	switch (resultType) {
+	case RESULT_Graphs:
+	    xml->rawData(toString(MediaType("text/turtle"))); // !! Evolve to RDF/XML serializer.
+	    break;
+	case RESULT_Tabular:
+	case RESULT_Boolean:
+	    if (xml == NULL) xml = new XMLSerializer("  ");
+	    xml->open("sparql");
+	    xml->attribute("xmlns", "http://www.w3.org/2005/sparql-results#");
+	    xml->open("head");
+	    if (resultType == RESULT_Tabular) {
+		const VariableVector cols = getOrderedVars();
+		for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
+		    xml->empty("variable");
+		    xml->attribute("name", (*varIt)->getLexicalValue());
+		}
+	    }
+	    xml->close();
+	    if (resultType == RESULT_Tabular) {
+		xml->open("results");
+		for (ResultSetConstIterator it = begin() ; it != end(); it++)
+		    (*it)->toXml(xml);
+		xml->close();
+	    } else {
+		assert (resultType == RESULT_Boolean);
+		xml->leaf("boolean", size() > 0 ? "true" : "false");
+	    }
+	    xml->close();
+	    break;
 	}
-	if (xml == NULL) xml = new XMLSerializer("  ");
-	xml->open("sparql");
-	xml->attribute("xmlns", "http://www.w3.org/2005/sparql-results#");
-	xml->open("head");
-	const VariableVector cols = getOrderedVars();
-	for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
-	    xml->empty("variable");
-	    xml->attribute("name", (*varIt)->getLexicalValue());
-	}
-	xml->close();
-	xml->open("results");
-	for (ResultSetConstIterator it = begin() ; it != end(); it++)
-	    (*it)->toXml(xml);
-	xml->close();
-	xml->close();
 	return xml;
     }
 
