@@ -877,7 +877,7 @@ namespace w3c_sw {
     {
 	  driver.lastWhereClause = (yysemantic_stack_[(6) - (5)].p_WhereClause);
 	  /* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
-	  (yyval.p_Operation) = new Construct((DefaultGraphPattern*)(yysemantic_stack_[(6) - (2)].p_BasicGraphPattern), (yysemantic_stack_[(6) - (4)].p_DatasetClauses), (yysemantic_stack_[(6) - (5)].p_WhereClause), (yysemantic_stack_[(6) - (6)].p_SolutionModifier));
+	  (yyval.p_Operation) = new Construct((DefaultGraphPattern*)((yysemantic_stack_[(6) - (2)].p_BasicGraphPattern) ? (yysemantic_stack_[(6) - (2)].p_BasicGraphPattern) : new DefaultGraphPattern()), (yysemantic_stack_[(6) - (4)].p_DatasetClauses), (yysemantic_stack_[(6) - (5)].p_WhereClause), (yysemantic_stack_[(6) - (6)].p_SolutionModifier));
       }
     break;
 

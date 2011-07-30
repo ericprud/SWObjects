@@ -38,6 +38,14 @@ struct ExecResults {
     }
 };
 
+bool operator== (ExecResults& tested, std::string& ref) {
+    return tested.s == ref;
+}
+
+std::ostream& operator== (std::ostream& o, ExecResults& tested) {
+    return o << tested.s;
+}
+
 struct TableResultSet : public w3c_sw::ResultSet {
     TableResultSet (w3c_sw::AtomFactory* atomFactory, std::string srt, bool ordered, w3c_sw::TTerm::String2BNode& nodeMap) : 
 	ResultSet(atomFactory) {
@@ -47,13 +55,14 @@ struct TableResultSet : public w3c_sw::ResultSet {
     }
 };
 
-bool operator== (ExecResults& tested, std::string& ref) {
-    return tested.s == ref;
-}
-
-std::ostream& operator== (std::ostream& o, ExecResults& tested) {
-    return o << tested.s;
-}
+struct BooleanResultSet : public w3c_sw::ResultSet {
+    BooleanResultSet (w3c_sw::AtomFactory* atomFactory, bool b) : 
+	ResultSet(atomFactory) {
+	resultType = RESULT_Boolean;
+	if (!b)
+	    erase(begin());
+    }
+};
 
 BOOST_AUTO_TEST_SUITE( tutorial )
 BOOST_AUTO_TEST_CASE( D ) {
@@ -342,3 +351,34 @@ BOOST_AUTO_TEST_CASE( escapes ) {
 		      "  <SPARQL/s> <SPARQL/p> \"as\\r\\n\\b\\t\\\"'\\\\df\"  .\n"
 		      "}\n");
 }
+
+#if XML_PARSER == SWOb_LIBXML2
+    #include "../interface/SAXparser_libxml.hpp"
+    w3c_sw::SAXparser_libxml P;
+#elif XML_PARSER == SWOb_EXPAT1
+    #include "../interface/SAXparser_expat.hpp"
+    w3c_sw::SAXparser_expat P;
+#elif XML_PARSER == SWOb_MSXML3
+    #include "../interface/SAXparser_msxml3.hpp"
+    w3c_sw::SAXparser_msxml3 P;
+#else
+    #warning DAWG tests require an XML parser
+#endif
+
+#if XML_PARSER != SWOb_DISABLED
+BOOST_AUTO_TEST_CASE( empty_ask ) {
+    ExecResults invocation("../bin/sparql -l sparqlx -e 'ASK {}'");
+    w3c_sw::IStreamContext sptr(invocation.s, w3c_sw::IStreamContext::STRING, "application/sparql-results+xml");
+    w3c_sw::ResultSet tested(&F, &P, sptr);
+    BooleanResultSet expected(&F, true);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+#endif /* XML_PARSER != SWOb_None */
+
+BOOST_AUTO_TEST_CASE( empty_construct ) {
+    ExecResults tested("../bin/sparql -e 'CONSTRUCT {} {}'");
+    BOOST_CHECK_EQUAL(tested.s, 
+		      "{\n"
+		      "}\n");
+}
+

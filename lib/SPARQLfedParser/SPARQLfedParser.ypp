@@ -859,7 +859,7 @@ ConstructQuery:
       } _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	  driver.lastWhereClause = $5;
 	  /* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
-	  $$ = new Construct((DefaultGraphPattern*)$2, $4, $5, $6);
+	  $$ = new Construct((DefaultGraphPattern*)($2 ? $2 : new DefaultGraphPattern()), $4, $5, $6);
       }
 ;
 

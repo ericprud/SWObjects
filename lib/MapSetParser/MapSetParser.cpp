@@ -848,7 +848,7 @@ namespace w3c_sw {
 	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	if ((yysemantic_stack_[(8) - (8)].p_BindingClause) != NULL)
 	    (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(8) - (8)].p_BindingClause), (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern);
-	Construct* constr = new Construct((DefaultGraphPattern*)(yysemantic_stack_[(8) - (3)].p_BasicGraphPattern), (yysemantic_stack_[(8) - (5)].p_DatasetClauses), (yysemantic_stack_[(8) - (6)].p_WhereClause), (yysemantic_stack_[(8) - (7)].p_SolutionModifier));
+	Construct* constr = new Construct((DefaultGraphPattern*)((yysemantic_stack_[(8) - (3)].p_BasicGraphPattern) ? (yysemantic_stack_[(8) - (3)].p_BasicGraphPattern) : new DefaultGraphPattern()), (yysemantic_stack_[(8) - (5)].p_DatasetClauses), (yysemantic_stack_[(8) - (6)].p_WhereClause), (yysemantic_stack_[(8) - (7)].p_SolutionModifier));
 	driver.root->maps.push_back(LabeledConstruct((yysemantic_stack_[(8) - (1)].p_TTerm), constr));
     }
     break;

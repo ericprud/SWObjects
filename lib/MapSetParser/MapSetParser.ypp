@@ -742,7 +742,7 @@ ConstructQuery:
 	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	if ($8 != NULL)
 	    $6->m_GroupGraphPattern = driver.makeConjunction($8, $6->m_GroupGraphPattern);
-	Construct* constr = new Construct((DefaultGraphPattern*)$3, $5, $6, $7);
+	Construct* constr = new Construct((DefaultGraphPattern*)($3 ? $3 : new DefaultGraphPattern()), $5, $6, $7);
 	driver.root->maps.push_back(LabeledConstruct($1, constr));
     }
 ;
