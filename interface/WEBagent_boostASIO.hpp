@@ -82,7 +82,7 @@ namespace w3c_sw {
 				       "&") << urlParms;
 		request_stream << " HTTP/1.0\r\n";
 		request_stream << "Host: " << host << "\r\n";
-		request_stream << "Accept: application/sparql-results+xml\r\n";
+		request_stream << "Accept: application/sparql-results+xml, application/rdf+xml\r\n"; // !! Boy does this need to be a parameter...
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
 		if (reqBody.size() != 0) {
@@ -186,9 +186,14 @@ namespace w3c_sw {
 		    std::stringstream s;
 		    s << status_code;
 		    { // @@ quick hack to allow users to see the returned error bodies
+			if (response.size() > 0)
+			    body << &response;
+
+			// Read until EOF, writing data to output as we go.
 			while (boost::asio::read(socket, response,
 						 boost::asio::transfer_at_least(1), error))
-			    s << &response;
+			    body << &response;
+			s << ": " << body.str();
 		    }
 		    throw method + " " + url + " returned with status code " + s.str();
 		}
