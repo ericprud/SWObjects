@@ -386,8 +386,65 @@ public:
     }
 };
 
+sw::ResultSet rs(&F);
+sw::GRDDLmap GrddlMap;
 NamespaceAccumulator NsAccumulator;
 NamespaceRelay NsRelay(NsAccumulator);
+
+bool GlobalLoadDataOrResults (const sw::TTerm* graph,
+			      std::string nameStr,
+			      const sw::TTerm* baseURI,
+			      sw::IStreamContext& istr,
+			      sw::ResultSet& rs,
+			      sw::RdfDB* db) {
+    /**
+     * Look for a couple of sparql-specific non-standard "media types".
+     */
+    if (istr.mediaType.match("application/sparql-results+xml")) {
+	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+	    std::stringstream o;
+	    o << "Reading SPARQL XML Result Set " << nameStr;
+	    if (baseURI != NULL)
+		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+	    o << " into result set.\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	}
+	sw::ResultSet loaded(&F, &P, istr);
+	rs.joinIn(&loaded);
+	return true;
+    } else if (istr.mediaType.match("text/sparql-results") ||
+	       istr.mediaType.match("application/sparql-results+json")) {
+	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+	    std::stringstream o;
+	    o << "Reading data table " << nameStr;
+	    if (baseURI != NULL)
+		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+	    o << " into result set.\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	}
+	sw::TTerm::String2BNode bnodeMap;
+	sw::ResultSet loaded(&F, istr, false, bnodeMap);
+	rs.joinIn(&loaded);
+	return true;
+    } else {
+	/**
+	 * All other media types are loaded via RdfDB::loadData.
+	 */
+	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+	    std::stringstream o;
+	    o << "Reading " << nameStr;
+	    if (baseURI != NULL)
+		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
+	    if (istr.mediaType)
+		o << " with media type " << *istr.mediaType;
+	    o << " into " << graph->toString() << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	}
+	db->loadData(db->ensureGraph(graph), istr, UriString(baseURI), 
+		     baseURI ? UriString(baseURI) : nameStr, &F, &NsAccumulator, &GrddlMap);
+	return false;
+    }
+}
 
 struct MyServer : WEBSERVER { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
@@ -757,11 +814,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		    default:
 			throw "program flow exception -- unknown defaultServiceProtocol";
 		    }
-		    sw::ResultSet red(&F, &P, *istr);
-		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << " yielded\n" << red;
-
-		    /* Join those results against our initial results. */
-		    rs.joinIn(&red);
+		    if (!GlobalLoadDataOrResults(sw::DefaultGraph, serviceURI, BaseURI, *istr, rs, rs.getRdfDB()))
+			rs.resultType = sw::ResultSet::RESULT_Graphs;
 		    executed = true;
 		}
 	    } else {
@@ -791,11 +845,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 
 sw::SPARQLfedDriver SparqlParser("", &F);
 sw::TurtleSDriver TurtleParser("", &F);
-sw::ResultSet rs(&F);
 
 MyServer TheServer(F, SparqlParser, "ID");
-
-sw::GRDDLmap GrddlMap;
 
 struct loadEntry {
     const sw::TTerm* graphName;
@@ -814,52 +865,7 @@ struct loadEntry {
 				mediaType ? mediaType.get().c_str() : NULL, 
 				&Agent);
 
-	/**
-	 * Look for a couple of sparql-specific non-standard "media types".
-	 */
-	if (istr.mediaType.match("application/sparql-results+xml")) {
-	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		std::stringstream o;
-		o << "Reading SPARQL XML Result Set " << nameStr;
-		if (baseURI != NULL)
-		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		o << " into result set.\n";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	    }
-	    sw::ResultSet loaded(&F, &P, istr);
-	    rs.joinIn(&loaded);
-	    ResultSetsLoaded = true;
-	} else if (istr.mediaType.match("text/sparql-results") ||
-		   istr.mediaType.match("application/sparql-results+json")) {
-	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		std::stringstream o;
-		o << "Reading data table " << nameStr;
-		if (baseURI != NULL)
-		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		o << " into result set.\n";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	    }
-	    sw::TTerm::String2BNode bnodeMap;
-	    sw::ResultSet loaded(&F, istr, false, bnodeMap);
-	    rs.joinIn(&loaded);
-	    ResultSetsLoaded = true;
-	} else {
-	    /**
-	     * All other media types are loaded via RdfDB::loadData.
-	     */
-	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-		std::stringstream o;
-		o << "Reading " << nameStr;
-		if (baseURI != NULL)
-		    o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-		if (istr.mediaType)
-		    o << " with media type " << *istr.mediaType;
-		o << " into " << graph->toString() << ".\n";
-		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	    }
-	    TheServer.db.loadData(TheServer.db.ensureGraph(graph), istr, UriString(baseURI), 
-				  baseURI ? UriString(baseURI) : nameStr, &F, &NsAccumulator, &GrddlMap);
-	}
+	ResultSetsLoaded = GlobalLoadDataOrResults (graph, nameStr, baseURI, istr, rs, &TheServer.db);
     }
 };
 typedef std::vector<loadEntry> loadList;
@@ -2180,9 +2186,9 @@ int main(int ac, char* av[])
 		    sw::IStreamContext::STRING : 
 		    sw::IStreamContext::STDIN;
 		sw::IStreamContext istr(nameStr, opts, NULL, &Agent);
-		TheServer.mapSetParser.parse(istr); // throws if it fails to parse
-		    // could catch and re-throw std::string("error when parsing map ").append(nameStr);
-		sw::MapSet* ms = dynamic_cast<sw::MapSet*>(TheServer.mapSetParser.root);
+		sw::MapSet* ms = TheServer.mapSetParser.parse(istr); // throws if it fails to parse
+		// could catch and re-throw std::string("error when parsing map ").append(nameStr);
+
 		if (ms->driver) TheServer.SQLDriver = ms->driver->getLexicalValue();
 		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
 		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
@@ -2242,7 +2248,7 @@ int main(int ac, char* av[])
 		TheServer.startServer(handler, ServerURI, serverPort);
 	    }
 
-	    sw::RdfDB constructed; // For operations which create a new database.
+	    sw::RdfDB constructed(&P); // For operations which create a new database.
 
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
