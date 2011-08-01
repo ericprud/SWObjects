@@ -102,6 +102,31 @@ namespace w3c_sw {
 			    newState.s = atomFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
 		    }
 
+		    /* Create statements for subject's literalPropertyElt. */
+		    for (size_t i = 0; i < attrs->getLength(); ++i) {
+			std::string attrURI = attrs->getURI(i);
+			std::string attrLName = attrs->getLocalName(i);
+			if ( !(attrURI == NS_rdf && attrLName == "RDF") && 
+			     !(attrURI == NS_rdf && attrLName == "ID") && 
+			     !(attrURI == NS_rdf && attrLName == "about") && 
+			     !(attrURI == NS_rdf && attrLName == "parseType") && 
+			     !(attrURI == NS_rdf && attrLName == "resource") && 
+			     !(attrURI == NS_rdf && attrLName == "nodeID") && 
+			     !(attrURI == NS_rdf && attrLName == "datatype") && 
+			     !(attrURI == NS_rdf && attrLName == "Description") && 
+			     !(attrURI == NS_rdf && attrLName == "aboutEach") && 
+			     !(attrURI == NS_rdf && attrLName == "aboutEachPrefix") && 
+			     !(attrURI == NS_rdf && attrLName == "bagID") && 
+			     !(attrURI == NS_xml)) {
+
+			    /* newState.s -[attribute]-> [value] . */
+			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
+			    std::string value = attrs->getValue(attrURI, attrLName);
+			    const TTerm* object = atomFactory->getRDFLiteral(value, NULL, NULL);
+			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
+			}
+		    }
+
 		    /* Subject elements nested inside a predicate element are
 		     * objects of that predicate.
 		     */
