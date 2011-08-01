@@ -529,7 +529,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
-#define XSDCONST(lname) { URI("http://www.w3.org/2001/XMLSchema#" #lname), #lname }
+#define XSDCONST(lname) { URI("http://www.w3.org/2001/XMLSchema#" #lname), NULL }
 #define XPATHCONST(lname) { URI("http://www.w3.org/2005/xpath-functions#" #lname), #lname }
 #define XPATHCNST2(lname, op) { URI("http://www.w3.org/2005/xpath-functions/#" #lname), #op }
 #define OPERATORCONST(lname) { URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname), #lname }
