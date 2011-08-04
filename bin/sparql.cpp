@@ -413,7 +413,9 @@ bool GlobalLoadDataOrResults (const sw::TTerm* graph,
 	rs.joinIn(&loaded);
 	return true;
     } else if (istr.mediaType.match("text/sparql-results") ||
-	       istr.mediaType.match("application/sparql-results+json")) {
+	       istr.mediaType.match("application/sparql-results+json") ||
+	       istr.mediaType.match("application/binary-rdf-results-table") ||
+	       istr.mediaType.match("application/x-binary-rdf-results-table")) {
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	    std::stringstream o;
 	    o << "Reading data table " << nameStr;

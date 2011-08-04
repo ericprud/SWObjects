@@ -294,6 +294,7 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 	insert(pair("trig", "text/trig"));
 	insert(pair("srx" , "application/sparql-results+xml"));
 	insert(pair("srt" , "text/sparql-results"));
+	insert(pair("brt" , "application/binary-rdf-results-table"));
 	insert(pair("srj" , "application/sparql-results+json"));
 	insert(pair("rq"  , "text/sparql-query"));
     }
@@ -1483,6 +1484,8 @@ public:
     const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
     const URI* getURI(std::string name);
     const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
+    /** getRDFLiteral gets native e.g. integer or boolean types
+     */
     const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, const LANGTAG* p_LANGTAG = NULL, bool validate = false);
 
     const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);

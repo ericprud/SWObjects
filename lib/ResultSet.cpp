@@ -8,6 +8,7 @@
 #include "XMLQueryExpressor.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "JSONresultsParser/JSONresultsParser.hpp"
+#include "BRTparser.hpp"
 #include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
 #include <iostream>
@@ -174,15 +175,19 @@ namespace w3c_sw {
 	if (!sptr.mediaType.is_initialized() ||
 	    sptr.mediaType.match("text/sparql-results") || 
 	    sptr.mediaType.match("text/plain")) {
-	    TTerm::String2BNode nodeMap;
 	    parseTable(sptr, ordered, nodeMap);
 	    return true;
 	} else
 #endif /* REGEX_LIB != SWOb_DISABLED */
 	    if (sptr.mediaType.match("application/sparql-results+json")) {
-		TTerm::String2BNode nodeMap;
 		JSONresultsDriver jsonResParser(atomFactory);
 		jsonResParser.parse(sptr, this);
+		return true;
+	    }
+	    else if (sptr.mediaType.match("application/binary-rdf-results-table") ||
+		     sptr.mediaType.match("application/x-binary-rdf-results-table"  )) {
+		BRTparser brtParser(atomFactory, *this);
+		brtParser(sptr, nodeMap);
 		return true;
 	    }
 	return false;
