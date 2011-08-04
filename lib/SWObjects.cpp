@@ -531,7 +531,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 
 #define XSDCONST(lname) { URI("http://www.w3.org/2001/XMLSchema#" #lname), NULL }
 #define XPATHCONST(lname) { URI("http://www.w3.org/2005/xpath-functions#" #lname), #lname }
-#define XPATHCNST2(lname, op) { URI("http://www.w3.org/2005/xpath-functions/#" #lname), #op }
+#define XPATHCNST2(lname, op) { URI("http://www.w3.org/2005/xpath-functions#" #lname), op }
 #define OPERATORCONST(lname) { URI("http://www.w3.org/TR/rdf-sparql-query/#" #lname), #lname }
 #define EXTENCONST(lname) { URI("https://sourceforge.net/apps/mediawiki/swobjects/index.php?title=SPARQL_Extensions#" #lname), NULL}
 
@@ -1555,7 +1555,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
 		 sub != subd.end(); ++sub) {
 		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
-		if (s == NULL || s->getDatatype() != NULL || s->getLangtag() != NULL)
+		if (s == NULL || (s->getDatatype() != NULL && s->getDatatype() != TTerm::URI_xsd_string) || s->getLangtag() != NULL)
 		    throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")), "concat");
 		else
 		    ss << s->getLexicalValue();
