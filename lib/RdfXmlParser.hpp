@@ -284,7 +284,7 @@ namespace w3c_sw {
 		     * except when parsing an empty Collection).
 		     */
 		    const TTerm* n = atomFactory->getURI(std::string(NS_rdf) + "nil");
-		    bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, stack.top().p, n));
+		    bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, atomFactory->getURI( std::string(NS_rdf) + "rest"), n));
 		}
 		    break;
 		case PROPERTY:
