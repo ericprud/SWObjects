@@ -1934,7 +1934,8 @@ compared against
     CanonicalRDFLiteral::e_CANON CanonicalRDFLiteral::format = CANON_brief;
     std::ostream* BasicGraphPattern::DiffStream = NULL;
     bool (*BasicGraphPattern::MappableTerm)(const TTerm*) = &BasicGraphPattern::MapVarsAndBNodes;
-    ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultServiceProtocol = ServiceGraphPattern::HTTP_METHOD_GET;
+    ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultHTTPmethod = ServiceGraphPattern::HTTP_METHOD_GET;
+    size_t ServiceGraphPattern::defaultFederationRowLimit = 1000; // don't try to federation more than 1000 rows.
 
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
 	ResultSet rs(NULL);
@@ -2080,6 +2081,7 @@ compared against
     void Bind::bindVariables (RdfDB* db, ResultSet* rs) const {
 	if (m_TableOperation != NULL)
 	    m_TableOperation->bindVariables(db, rs);
+	rs->addKnownVar(m_label);
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
 	    try {
 		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL), false); // @@ NULL for atomFactory
@@ -2154,7 +2156,10 @@ compared against
 					    new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
 
 	/* Constrain query with any existing result bindings. */
-	const Operation* rsConstrained = rs->getConstrainedOperation(query);
+	const Operation* rsConstrained =
+	    rs->size() > ServiceGraphPattern::defaultFederationRowLimit
+	    ? NULL
+	    : rs->getConstrainedOperation(query);
 	SWWEBagent::ParameterList p;
 	p.set("query", (rsConstrained ? rsConstrained : query)->toString());
 	p.set("Accept", "application/sparql-results+xml");
@@ -2168,7 +2173,7 @@ compared against
 	/* Do an HTTP GET and parse results into a ResultSet. */
 	boost::shared_ptr<IStreamContext> istr;
 	std::string s;
-	switch (ServiceGraphPattern::defaultServiceProtocol) {
+	switch (ServiceGraphPattern::defaultHTTPmethod) {
 	case ServiceGraphPattern::HTTP_METHOD_GET:
 	    istr = agent->get(service->getLexicalValue().c_str(), p);
 	    break;
@@ -2176,7 +2181,7 @@ compared against
 	    istr = agent->post(service->getLexicalValue().c_str(), p);
 	    break;
 	default:
-	    throw "program flow exception -- unknown defaultServiceProtocol";
+	    throw "program flow exception -- unknown defaultHTTPmethod";
 	}
 	try {
 	    ResultSet red(atomFactory, xmlParser, *istr);

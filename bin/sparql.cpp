@@ -806,7 +806,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 		}
 		if (NoExec == false) {
 		    boost::shared_ptr<sw::IStreamContext> istr;
-		    switch (sw::ServiceGraphPattern::defaultServiceProtocol) {
+		    switch (sw::ServiceGraphPattern::defaultHTTPmethod) {
 		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
 			istr = Agent.get(serviceURI.c_str(), p);
 			break;
@@ -814,7 +814,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 			istr = Agent.post(serviceURI.c_str(), p);
 			break;
 		    default:
-			throw "program flow exception -- unknown defaultServiceProtocol";
+			throw "program flow exception -- unknown defaultHTTPmethod";
 		    }
 		    if (!GlobalLoadDataOrResults(sw::DefaultGraph, serviceURI, BaseURI, *istr, rs, rs.getRdfDB()))
 			rs.resultType = sw::ResultSet::RESULT_Graphs;
@@ -1145,7 +1145,7 @@ inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req
 	    rep.status = sw::webserver::reply::ok;
 	    head(sout, "Q&amp;D SPARQL Server");
 	    const char* method =
-		sw::ServiceGraphPattern::defaultServiceProtocol == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
+		sw::ServiceGraphPattern::defaultHTTPmethod == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
 		"post";
 	    sout << 
 		"    <form action='" << server.path << "' method='" << method << "'><p>\n"
@@ -1925,6 +1925,10 @@ int main(int ac, char* av[])
 	     "append earlier value of header.")
             ("once", "SPARQL server handles one request.")
             ("post", "use POST (while GET is obviously superior) for SPARQL services.")
+            ("federation-row-limit", po::value<size_t>(),
+	     (std::string("max number of results to send to a remote service, default ")
+	      + boost::lexical_cast<std::string>(sw::ServiceGraphPattern::defaultFederationRowLimit)).c_str()
+	     )
             ;
 
         po::options_description sqlOpts("SQL options");
@@ -1982,7 +1986,13 @@ int main(int ac, char* av[])
     
 	if (vm.count("post")) {
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
-	    sw::ServiceGraphPattern::defaultServiceProtocol = sw::ServiceGraphPattern::HTTP_METHOD_POST;
+	    sw::ServiceGraphPattern::defaultHTTPmethod = sw::ServiceGraphPattern::HTTP_METHOD_POST;
+	}
+
+	if (vm.count("federation-row-limit")) {
+	    size_t rows = vm["federation-row-limit"].as<size_t>();
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Limiting result set federation to" << rows << " rows.\n";
+	    sw::ServiceGraphPattern::defaultFederationRowLimit = rows;
 	}
 
         if (vm.count("utf-8")) {
