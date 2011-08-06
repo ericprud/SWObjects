@@ -82,7 +82,11 @@ namespace w3c_sw {
 				       "&") << urlParms;
 		request_stream << " HTTP/1.0\r\n";
 		request_stream << "Host: " << host << "\r\n";
-		request_stream << "Accept: application/sparql-results+xml, application/rdf+xml\r\n"; // !! Boy does this need to be a parameter...
+		request_stream << "Accept: "
+		    "application/sparql-results+xml, "
+		    "application/rdf+xml, "
+		    "application/binary-rdf-results-table, "
+		    "application/x-binary-rdf-results-table\r\n"; // !! Boy does this need to be a parameter...
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
 		if (reqBody.size() != 0) {
