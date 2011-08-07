@@ -768,6 +768,9 @@ namespace w3c_sw {
 	    }
 	}
 	std::string str () const { return toString(); }
+	bool empty () const {
+	    return size() == 1 && (*results.begin())->size() == 0;
+	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
 	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "");
 	ResultSetIterator begin () { return results.begin(); }
@@ -829,6 +832,7 @@ namespace w3c_sw {
 	    return ret;
 	}
 	const Operation* getConstrainedOperation(const Operation* op) const;
+	const std::string getBindingsString(std::vector<const TTerm*> vars) const;
     };
 
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);

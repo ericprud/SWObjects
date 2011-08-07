@@ -1936,6 +1936,7 @@ compared against
     bool (*BasicGraphPattern::MappableTerm)(const TTerm*) = &BasicGraphPattern::MapVarsAndBNodes;
     ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultHTTPmethod = ServiceGraphPattern::HTTP_METHOD_GET;
     size_t ServiceGraphPattern::defaultFederationRowLimit = 1000; // don't try to federation more than 1000 rows.
+    bool ServiceGraphPattern::useFilters = false;
 
     bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
 	ResultSet rs(NULL);
@@ -2128,7 +2129,10 @@ compared against
 	}
     }
 
-    void _constructQuery (const URI* service, const TableOperation* op, ResultSet* rs, AtomFactory* atomFactory, SWSAXparser* xmlParser, SWWEBagent* agent) {
+    void _constructQuery (const URI* service, const TableOperation* op,
+			  ResultSet* rs, AtomFactory* atomFactory,
+			  SWSAXparser* xmlParser, SWWEBagent* agent) {
+
 	/* The VarLister is a serializer which also records all variables.
 	 */
 	struct VarLister : public SPARQLSerializer {
@@ -2155,16 +2159,35 @@ compared against
 					    new WhereClause(dup.last.tableOperation),
 					    new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
 
-	/* Constrain query with any existing result bindings. */
-	const Operation* rsConstrained =
-	    rs->size() > ServiceGraphPattern::defaultFederationRowLimit
-	    ? NULL
-	    : rs->getConstrainedOperation(query);
+	/* Query parms for GET or POST */
 	SWWEBagent::ParameterList p;
-	p.set("query", (rsConstrained ? rsConstrained : query)->toString());
 	p.set("Accept", "application/sparql-results+xml");
-	if (rsConstrained)
+
+	const VariableList* knownVars = rs->getKnownVars();
+	std::vector<const TTerm*> varsIntersection(vars.vars.size() + knownVars->size());
+	std::vector<const TTerm*>::iterator end =
+	    std::set_intersection (vars.vars.begin(), vars.vars.end(),
+				   knownVars->begin(), knownVars->end(),
+				   varsIntersection.begin());
+	varsIntersection.resize(end - varsIntersection.begin());
+
+	if (rs->empty()
+	    || varsIntersection.size() == 0
+	    || rs->size() > ServiceGraphPattern::defaultFederationRowLimit) {
+	    p.set("query", query->toString());
+	} else if (ServiceGraphPattern::useFilters) {
+	    /*
+	     * Constrain query with any existing result bindings.
+	     */
+	    // Either through a BINDINGS string ...
+	    const Operation* rsConstrained =
+		rs->getConstrainedOperation(query);
+	    p.set("query", rsConstrained->toString());
 	    delete rsConstrained;
+	} else {
+	    // ... or some FILTERs on the operation.
+	    p.set("query", query->toString() + rs->getBindingsString(varsIntersection));
+	}
 	delete query;
 
 	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)

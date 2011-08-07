@@ -1925,6 +1925,7 @@ int main(int ac, char* av[])
 	     "append earlier value of header.")
             ("once", "SPARQL server handles one request.")
             ("post", "use POST (while GET is obviously superior) for SPARQL services.")
+            ("federation-use-filters", "use FILTERs to convey constraints to SPARQL services.")
             ("federation-row-limit", po::value<size_t>(),
 	     (std::string("max number of results to send to a remote service, default ")
 	      + boost::lexical_cast<std::string>(sw::ServiceGraphPattern::defaultFederationRowLimit)).c_str()
@@ -1987,6 +1988,11 @@ int main(int ac, char* av[])
 	if (vm.count("post")) {
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
 	    sw::ServiceGraphPattern::defaultHTTPmethod = sw::ServiceGraphPattern::HTTP_METHOD_POST;
+	}
+
+	if (vm.count("federation-use-filters")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using FILTER for query federation.\n";
+	    sw::ServiceGraphPattern::useFilters = true;
 	}
 
 	if (vm.count("federation-row-limit")) {

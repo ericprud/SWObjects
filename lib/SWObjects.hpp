@@ -1993,6 +1993,7 @@ public:
     typedef enum {HTTP_METHOD_error, HTTP_METHOD_GET, HTTP_METHOD_POST} e_HTTP_METHOD;
     static e_HTTP_METHOD defaultHTTPmethod;
     static size_t defaultFederationRowLimit;
+    static bool useFilters;
 
     ServiceGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) : 
 	TableOperationOnOperation(p_GroupGraphPattern), 

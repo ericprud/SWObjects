@@ -260,10 +260,10 @@ namespace w3c_sw {
 	    const TableOperation* op = last.tableOperation;
 	    const VariableList* knownVars = working->getKnownVars();
 	    std::vector<const TTerm*> v(vars.size() + knownVars->size());
-	    std::vector<const TTerm*>::iterator needed =
+	    std::vector<const TTerm*>::iterator end =
 		std::set_intersection (vars.begin(), vars.end(), knownVars->begin(),
 				       knownVars->end(), v.begin());
-	    const std::set<const TTerm*> s(v.begin(), v.end());
+	    const std::set<const TTerm*> s(v.begin(), end);
 	    const Expression* filter = working->getFederationExpression(s, false);
 	    if (filter) {
 		Filter* f = new Filter(op);
@@ -282,11 +282,41 @@ namespace w3c_sw {
     const Operation* ResultSet::getConstrainedOperation (const Operation* op) const {
 	/* The VarLister is a serializer which also records all variables.
 	 */
-	if (size() == 1 && (*results.begin())->size() == 0)
-	    return NULL;
 	FilterInjector ij((AtomFactory*)atomFactory, *this); // this is const, but the factory isn't.
 	op->express(&ij);
 	return ij.last.operation;
+    }
+
+    const std::string ResultSet::getBindingsString (std::vector<const TTerm*> vars) const {
+	std::vector<const TTerm*> ordered(vars.begin(), vars.end());
+	std::set<std::string> rows;
+	for (ResultSetConstIterator row = begin() ; row != end(); ++row) {
+	    std::stringstream rowString;
+	    rowString << "(";
+	    for (std::vector<const TTerm*>::const_iterator col = ordered.begin();
+		 col != ordered.end(); ++col) {
+		if (col != ordered.begin())
+		    rowString << ", ";
+		const TTerm* v = (*row)->get(*col);
+		rowString <<
+		    (v != NULL
+		     ? v->toString()
+		     : std::string("UNDEF"));
+	    }
+	    rowString << ")";
+	    rows.insert(rowString.str());
+	}
+	std::stringstream ret;
+	ret << "BINDINGS";
+	for (std::vector<const TTerm*>::const_iterator col = ordered.begin();
+	     col != ordered.end(); ++col)
+	    ret << " " << (*col)->toString();
+	ret << " {\n";
+	for (std::set<std::string>::const_iterator rowString = rows.begin();
+	     rowString != rows.end(); ++rowString)
+	    ret << "  " << *rowString << "\n";
+	ret << "}";
+	return ret.str();
     }
 
     void ResultSet::set (Result* r, const TTerm* variable, const TTerm* value, bool weaklyBound) {
