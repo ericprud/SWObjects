@@ -321,6 +321,10 @@ SPARQLfed-next: lib/SPARQLfedParser/bnf-new lib/SPARQLfedParser/SPARQLfedParser-
 # Status files
 docs/version.h:
 	((svn info 2>/dev/null) || (git --no-pager log --max-count=1 | perl -ne 'print "URL: $$1\nRevision: $$2\nLast Changed Date: $$1\n" if (m/^ +git-svn-id: (.*?)@(\d+) (.*)$$/); print "Last Changed Author: $$1\n" if (m/^Author: ([^ ]+) </);')) | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
+	cp $@ win/
+
+win/version.h: docs/version.h
+
 # Was:	svn info . | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
 # Made more complicated to address import to git by
 ##  git svn clone  -s -r1400:HEAD https://swobjects.svn.sourceforge.net/svnroot/swobjects -T trunk --branches=branches
