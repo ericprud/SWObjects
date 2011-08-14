@@ -251,6 +251,28 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\lib\SQLParser\SQLParser.ypp"
 				>
 				<FileConfiguration
@@ -510,6 +532,46 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsScanner.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -622,6 +684,14 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\TurtleSScanner.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsScanner.hpp"
 				>
 			</File>
 			<File
