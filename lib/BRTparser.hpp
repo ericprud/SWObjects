@@ -9,8 +9,10 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifndef _MSC_VER
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+#endif /* !_MSC_VER */
 
 namespace w3c_sw {
 
