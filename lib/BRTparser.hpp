@@ -9,7 +9,9 @@
 
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+  #define ntohl(X) _byteswap_ulong(X)
+#else /* !_MSC_VER */
   #include <netinet/in.h>
   #include <arpa/inet.h>
 #endif /* !_MSC_VER */
@@ -247,6 +249,10 @@ struct BRTparser {
 };
 
 } // namespace w3c_sw
+
+#ifdef _MSC_VER
+  #undef ntohl(X)
+#endif /* _MSC_VER */
 
 #endif // BRTparser_H
 
