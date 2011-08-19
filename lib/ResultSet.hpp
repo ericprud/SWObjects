@@ -616,6 +616,13 @@ namespace w3c_sw {
 	    orderedSelect = true;
 	    return mismatches;
 	}
+
+	/**
+	 * joinIn - implements:
+	 *   join on compatible rows.
+	 *   optional which preserves the original rows with no compatibility.
+	 *   minus which removes incompatible rows with a non-empty domain union.
+	 */
 	typedef enum {OP_join, OP_outer, OP_minus} e_OP;
 	void joinIn (ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join) { // !!! make const ref
 	    for (ResultSetIterator myRow = results.begin();
@@ -623,8 +630,8 @@ namespace w3c_sw {
 		bool matchedSomeRow = false;
 		for (ResultSetConstIterator yourRow = ref->results.begin();
 		     yourRow != ref->results.end(); ++yourRow) {
-		    bool matched = true;
-		    size_t intersection = 0;
+		    bool matched = true; // Mark false if we don't find a row with all bound vars equivalent.
+		    size_t intersection = 0; // Increment if we find a shared domain.
 		    std::set<const TTerm*>copy;
 		    for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 			 yourBinding != (*yourRow)->end(); ++yourBinding) {
@@ -632,43 +639,54 @@ namespace w3c_sw {
 			const TTerm* yourVal = yourBinding->second.tterm;
 			const TTerm* myVal = (*myRow)->get(var);
 			if (myVal == NULL) {
-			    knownVars.insert(var); // means we can bypass ResultSet::set(...).
+			    knownVars.insert(var); // so we can bypass ResultSet::set(...).
 			    if (yourVal != NULL)
 				copy.insert(var);
 			} else {
-			    ++intersection;
-			    if (myVal != yourVal) {
+			    ++intersection; // Row as a binding for the same variable.
+			    if (myVal != yourVal) { // Variable doesn't have the same value.
 				matched = false;
 				break;
 			    }
 			}
 		    }
 		    if (matched) {
+			// Copy joined values into new row.
 			Result* newRow = (*myRow)->duplicate(this, myRow);
 			for (std::set<const TTerm*>::iterator vars = copy.begin();
 			     vars != copy.end(); ++vars)
 			    newRow->set(*vars, (*yourRow)->get(*vars), false);
+
+			// Evaluate filter expressions.
 			if (expressions != NULL)
 			    for (std::vector<const Expression*>::const_iterator expression = expressions->begin();
 				 matched && expression != expressions->end(); expression++)
 				matched &= atomFactory->eval(*expression, newRow);
+
+			// If filter expressions passed...
 			if (matched) {
 			    if (operation == OP_minus) {
+				// MINUS only needs the row to evaluate the filters.
 				delete newRow;
 				if (intersection > 0)
 				    matchedSomeRow = true;
 			    } else {
+				// Join inserts the new row.
 				insert(myRow, newRow);
 				matchedSomeRow = true;
 			    }
 			} else {
+			    // If the filters failed, we don't need the row after filter evaluation.
 			    delete newRow;
 			}
 		    }
 		}
 		if ((operation == OP_outer || operation == OP_minus) && !matchedSomeRow)
+		    // Keeo the old row.
 		    myRow++;
 		else {
+		    // Remove the old row and advance.
+		    // Note that join already inserted the new row.
 		    delete *myRow;
 		    myRow = erase(myRow);
 		}
