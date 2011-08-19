@@ -620,14 +620,18 @@ PrefixDecl:
 
 SubSelect:
     // SelectClause WhereClause SolutionModifier BindingsClause?
-    SelectClause {
+    {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = NULL;
+      } SelectClause {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } WhereClause SolutionModifier _QBindingsClause_E_Opt	{
-	  if ($5 != NULL)
-	      $3->m_GroupGraphPattern = driver.makeConjunction($5, $3->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $3, $4)));
+	  if ($6 != NULL)
+	      $4->m_GroupGraphPattern = driver.makeConjunction($6, $4->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+	  driver.curGraphName = $<p_TTerm>1;
       }
 ;
 
@@ -1202,9 +1206,13 @@ ServiceGraphPattern:
 	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
+      } {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = NULL;
       } VarOrIRIref GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($4, driver.curOp, driver.atomFactory, false));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.curOp, driver.atomFactory, false));
+	  driver.curGraphName = $<p_TTerm>4;
       }
 ;
 
