@@ -721,6 +721,8 @@ namespace w3c_sw {
 	    s << (i == 0 ? (ordered == true ? BoxChars::GBoxChars->ordered : BoxChars::GBoxChars->ul) : BoxChars::GBoxChars->us);
 	    s << STRING(widths[i]+2, BoxChars::GBoxChars->ub);
 	}
+	if (count == 0)
+	    s << BoxChars::GBoxChars->ul << BoxChars::GBoxChars->ub;
 	s << BoxChars::GBoxChars->ur << std::endl;
 
 	/*   Column Headings */
@@ -730,6 +732,8 @@ namespace w3c_sw {
 	    size_t width = var->toString().length();
 	    s << var->toString() << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << ' '; // left justified.
 	}
+	if (count == 0)
+	    s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
 	s << BoxChars::GBoxChars->rr << std::endl;
 
 	/*  Rows */
@@ -753,6 +757,8 @@ namespace w3c_sw {
 		size_t width = str.length();
 		s << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << str << ' '; // right justified.
 	    }
+	    if (count == 0)
+		s << BoxChars::GBoxChars->rl << ' ';
 	    s << BoxChars::GBoxChars->rr << std::endl;
 	}
 
@@ -761,6 +767,8 @@ namespace w3c_sw {
 	    s << (i == 0 ? BoxChars::GBoxChars->ll : BoxChars::GBoxChars->ls);
 	    s << STRING(widths[i]+2, BoxChars::GBoxChars->lb);
 	}
+	if (count == 0)
+	    s << BoxChars::GBoxChars->ll << BoxChars::GBoxChars->lb;
 	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
