@@ -624,6 +624,7 @@ namespace w3c_sw {
 		for (ResultSetConstIterator yourRow = ref->results.begin();
 		     yourRow != ref->results.end(); ++yourRow) {
 		    bool matched = true;
+		    size_t intersection = 0;
 		    std::set<const TTerm*>copy;
 		    for (BindingSetConstIterator yourBinding = (*yourRow)->begin();
 			 yourBinding != (*yourRow)->end(); ++yourBinding) {
@@ -634,9 +635,12 @@ namespace w3c_sw {
 			    knownVars.insert(var); // means we can bypass ResultSet::set(...).
 			    if (yourVal != NULL)
 				copy.insert(var);
-			} else if (myVal != yourVal) {
-			    matched = false;
-			    break;
+			} else {
+			    ++intersection;
+			    if (myVal != yourVal) {
+				matched = false;
+				break;
+			    }
 			}
 		    }
 		    if (matched) {
@@ -649,11 +653,14 @@ namespace w3c_sw {
 				 matched && expression != expressions->end(); expression++)
 				matched &= atomFactory->eval(*expression, newRow);
 			if (matched) {
-			    if (operation == OP_minus)
+			    if (operation == OP_minus) {
 				delete newRow;
-			    else
+				if (intersection > 0)
+				    matchedSomeRow = true;
+			    } else {
 				insert(myRow, newRow);
-			    matchedSomeRow = true;
+				matchedSomeRow = true;
+			    }
 			} else {
 			    delete newRow;
 			}
