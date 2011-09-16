@@ -241,8 +241,13 @@ namespace w3c_sw {
 	    /* ... and generate Results for each remaining row. */
 	    int col = 0;
 	    Result* curRow = NULL;
-	    const boost::regex srt("^[ \\t\\n]*(?:"	// ignore leading whitespace
-					  "((?:\\+-+)+\\+|[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+)[ \\t\\n]*"	// \1: box chars
+	    const boost::regex srt("^[ \\t\\n]*(?:"		// ignore leading whitespace
+					  "("				// \1: box chars
+				           "(?:[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+"	//   unicode
+				              "|(?:\\+-+)+\\+"		//   ascii
+				            ")[ \\t\\n]*"		//     white space
+					    //"|#[^\\n]+\\n?"		// in-line comments -- to weird?
+				          ")"
 					  "|(?:[|│┃][ \\t]*"
 					   "("				// \2: captured term
 				   	    "(?:<[^>]*>)"		// IRI
@@ -253,8 +258,8 @@ namespace w3c_sw {
 					    "|(?:-?[0-9\\.]+)"		// integer
 					    "|(--|UNDEF)"		// \3: no binding
 					   ")?))");
-	    const boost::regex plain("^[ \\t]*(?:"			// ignore leading whitespace
-					  "(asdfqwer)"			// disable \1, box chars
+	    const boost::regex plain("^[ \\t]*(?:"		// ignore leading whitespace
+					  "(23gj3232jhg2v)"		// disable \1, box chars
 					  "|\n|("			// \2: empty if \n
 					   "(?:<[^>]*>)"		// IRI
 					    "|(?:_:[^[:space:]]+)"	// bnode
