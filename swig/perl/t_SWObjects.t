@@ -115,22 +115,22 @@ sub test_s_p1_o1_p2_o2 {
     new SWObjects::SPARQLfedDriver("", $F)->executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", $DB, $rs);
     my $bnodereps = new SWObjects::BNode2string();
     my $bnodeMap = new SWObjects::String2BNode();
-    my $reference = new SWObjects::ResultSet($F, "
+    my $reference = new SWObjects::ResultSet($F, new SWObjects::IStreamContext("
     # Results for T1.
-+------+------+-----+
-| ?o1  | ?o2  | ?s  |
-| <o1> | <o2> | <s> |
-+------+------+-----+
-", 0, $bnodeMap);
+┌──────┬──────┬─────┐
+│ ?o1  │ ?o2  │ ?s  │
+│ <o1> │ <o2> │ <s> │
+└──────┴──────┴─────┘
+", $SWObjects::StreamContextIstream::STRING, "text/sparql-results"), 0, $bnodeMap);
     ok($reference == $rs, 'result equivalence');
 
-    my $different = new SWObjects::ResultSet($F, "
+    my $different = new SWObjects::ResultSet($F, new SWObjects::IStreamContext("
 # NOT results for T1.
 +------+------+------+
 | ?o1  | ?o2  | ?s   |
 | <o1> | <o2> | <s2> |
 +------+------+------+
-", 0, $bnodeMap);
+", $SWObjects::StreamContextIstream::STRING, "text/sparql-results"), 0, $bnodeMap);
     ok($different != $rs, 'result difference');
 }
 
@@ -163,10 +163,8 @@ SELECT ?craft ?homepage
     my $bnodeMap = new SWObjects::String2BNode();
     my $reference = new SWObjects::ResultSet($F, "
 # name and homepage of Apollo 8
-+------------------------------------------------------+------------------------------------------------------------------+
-| ?craft                                               | ?homepage                                                        |
-| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
-+------------------------------------------------------+------------------------------------------------------------------+
+?craft                                               ?homepage
+<http://nasa.dataincubator.org/spacecraft/1968-118A> <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A>
 ", 0, $bnodeMap);
     ok($reference == $rs, 'remote query');
 }

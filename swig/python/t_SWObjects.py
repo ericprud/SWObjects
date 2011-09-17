@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # 
 # 
 
@@ -90,22 +91,22 @@ class TestSWObjects(unittest.TestCase):
         SWObjects.SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs)
         bnodereps = SWObjects.BNode2string()
         bnodeMap = SWObjects.String2BNode()
-        reference = SWObjects.ResultSet(F, """
+        reference = SWObjects.ResultSet(F, SWObjects.IStreamContext("""
 # Results for T1.
-+------+------+-----+
-| ?o1  | ?o2  | ?s  |
-| <o1> | <o2> | <s> |
-+------+------+-----+
-""", False, bnodeMap)
+┌──────┬──────┬─────┐
+│ ?o1  │ ?o2  │ ?s  │
+│ <o1> │ <o2> │ <s> │
+└──────┴──────┴─────┘
+""", SWObjects.StreamContextIstream.STRING, "text/sparql-results"), False, bnodeMap)
         self.assertEqual(reference, rs)
 
-        different = SWObjects.ResultSet(F, """
+        different = SWObjects.ResultSet(F, SWObjects.IStreamContext("""
 # NOT results for T1.
 +------+------+------+
 | ?o1  | ?o2  | ?s   |
 | <o1> | <o2> | <s2> |
 +------+------+------+
-""", False, bnodeMap)
+""", SWObjects.StreamContextIstream.STRING, "text/sparql-results"), False, bnodeMap)
         self.assertNotEqual(different, rs)
 
 
@@ -137,10 +138,8 @@ SELECT ?craft ?homepage
         bnodeMap = SWObjects.String2BNode()
         reference = SWObjects.ResultSet(F, """
 # name and homepage of Apollo 8
-+------------------------------------------------------+------------------------------------------------------------------+
-| ?craft                                               | ?homepage                                                        |
-| <http://nasa.dataincubator.org/spacecraft/1968-118A> | <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A> |
-+------------------------------------------------------+------------------------------------------------------------------+
+?craft                                               ?homepage                                                       
+<http://nasa.dataincubator.org/spacecraft/1968-118A> <http://nssdc.gsfc.nasa.gov/database/MasterCatalog?sc=1968-118A>
 """, False, bnodeMap)
         self.assertEqual(reference, rs)
 
@@ -194,7 +193,7 @@ LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.
             rs = SWObjects.ResultSet(F)
             transformedNorm.execute(DB, rs)
             p = rs.toString()
-            print p
+            #print p
             #print transformed.toString()
         except ValueError:
             queryMapper.clear() 

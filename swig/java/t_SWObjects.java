@@ -97,22 +97,24 @@ public class t_SWObjects extends TestCase {
         new SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs);
         BNode2string bnodereps = new BNode2string();
         String2BNode bnodeMap = new String2BNode();
-        ResultSet reference = new ResultSet(F,
+        ResultSet reference = new ResultSet(F, new IStreamContext(
 						  "# Results for T1.\n" +
-						  "+------+------+-----+\n" +
-						  "| ?o1  | ?o2  | ?s  |\n" +
-						  "| <o1> | <o2> | <s> |\n" +
-						  "+------+------+-----+\n",
-						  false, bnodeMap);
+						  "┌──────┬──────┬─────┐\n" +
+						  "│ ?o1  │ ?o2  │ ?s  │\n" +
+						  "│ <o1> │ <o2> │ <s> │\n" +
+						  "└──────┴──────┴─────┘\n",
+						  StreamContextIstream.e_opts.STRING, "text/sparql-results"),
+					    false, bnodeMap);
         assertTrue(reference.equals(rs));
 
-        ResultSet different = new ResultSet(F,
+        ResultSet different = new ResultSet(F, new IStreamContext(
 						  "# NOT results for T1.\n" +
 						  "+------+------+------+\n" +
 						  "| ?o1  | ?o2  | ?s   |\n" +
 						  "| <o1> | <o2> | <s2> |\n" +
 						  "+------+------+------+\n",
-						  false, bnodeMap);
+						  StreamContextIstream.e_opts.STRING, "text/sparql-results"),
+					    false, bnodeMap);
 	assertFalse(different.equals(rs));
     }
 

@@ -162,6 +162,15 @@ struct ConnectSet : std::set<RuleTerm> {
 /*     SWIG_fail; */
 /* } */
 
+#if defined(SWIGPERL)
+%{
+#undef push_scope
+#undef pop_scope
+#undef seed
+#undef Copy
+%}
+#endif /* defined(SWIGPERL) */
+
 %{
 #include "SWObjects.cpp"
 #include "SWObjectDuplicator.hpp"
