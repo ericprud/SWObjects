@@ -81,12 +81,19 @@ namespace w3c_sw {
 				       path.at(path.size()-1) == '&' ? "" : 
 				       "&") << urlParms;
 		request_stream << " HTTP/1.0\r\n";
-		request_stream << "Host: " << host << "\r\n";
+
+		request_stream << "Host: " << host;
+		if (port != "80")
+		    request_stream << ":" << port;
+		request_stream << "\r\n";
+
 		request_stream << "Accept: "
-		    "application/sparql-results+xml, "
-		    "application/rdf+xml, "
-		    "application/binary-rdf-results-table, "
-		    "application/x-binary-rdf-results-table\r\n"; // !! Boy does this need to be a parameter...
+		    /* 1. */ "application/binary-rdf-results-table,application/x-binary-rdf-results-table,"
+		    /* .9 */ "application/sparql-results+xml;q=.9,text/sparql-results;q=.9,"
+		    /* .8 */ "application/xml;q=.8,application/html+xml;q=.8,"
+		    /* .7 */ "text/html;q=.7"
+		    "\n"; // !! Boy does this need to be a parameter...
+
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
 		if (reqBody.size() != 0) {
@@ -150,13 +157,14 @@ namespace w3c_sw {
 		    header.resize(header.size()-1);
 		    size_t colon = header.find_first_of(":");
 		    if (colon != std::string::npos) {
-			if (!header.compare(0, colon, "WWW-Authenticate")) {
+			std::transform(header.begin(), header.end(), header.begin(), ::tolower);
+			if (!header.compare(0, colon, "www-authenticate")) {
 			    size_t space = header.find_first_of(" ", colon + 1);
 			    realm = header.substr(colon+2, space);
 			    size_t equal = header.find_first_of("=", space + 2);
 			    realm = header.substr(equal+1);
 			}
-			if (!header.compare(0, colon, "Content-Type"))
+			if (!header.compare(0, colon, "content-type"))
 			    mediaType = header.substr(colon+2);
 		    }
 		    //std::cout << header << "\n";
@@ -205,7 +213,7 @@ namespace w3c_sw {
 		}
 	    } while (redo);
 
-	    return boost::shared_ptr<IStreamContext>(new IStreamContext(body.str(), IStreamContext::STRING, mediaType.c_str()));
+	    return boost::shared_ptr<IStreamContext>(new IStreamContext(body.str(), IStreamContext::STRING, mediaType.empty() ? NULL : mediaType.c_str()));
 	}
 
     };
