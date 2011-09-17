@@ -528,7 +528,7 @@ swig/python/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx $(PYTHON_INC) $(INCLUDES)
 
-swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
+swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 # The _SWObjects.so target can be built with the python distutils package,
@@ -556,7 +556,7 @@ swig/java/src/AtomFactory.java swig/java/src/SWObjects_wrap.cxx: swig/SWObjects.
 swig/java/src/SWObjects_wrap.o: swig/java/src/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o $@ $< -I$(JAVA_HOME)/include $(INCLUDES)
 
-swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS)
+swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 swig/java/SWObjects.jar: swig/java/src/AtomFactory.java # there are zillions of class files, use AtomFactory as an indicator
@@ -584,7 +584,7 @@ swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 swig/perl/SWObjects_wrap.o: swig/perl/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(PERL_HOME)/CORE $(INCLUDES)
 
-swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $(SWIG_OBJS)
+swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 perl-test: swig/perl/libSWObjects.so
@@ -605,7 +605,7 @@ swig/lua/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 swig/lua/SWObjects_wrap.o: swig/lua/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(LUA_HOME) $(INCLUDES)
 
-swig/lua/SWObjects.so: swig/lua/SWObjects_wrap.o $(SWIG_OBJS)
+swig/lua/SWObjects.so: swig/lua/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 lua-test: swig/lua/SWObjects.so
@@ -626,7 +626,7 @@ swig/php/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 swig/php/SWObjects_wrap.o: swig/php/SWObjects_wrap.cxx
 	g++ $(OPTIM) -DHAVE_LIBEXPAT=1 -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/php/SWObjects_wrap.o swig/php/SWObjects_wrap.cxx -I$(PHP_HOME) $(INCLUDES)
 
-swig/php/SWObjects.so: swig/php/SWObjects_wrap.o $(SWIG_OBJS)
+swig/php/SWObjects.so: swig/php/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 php-test: swig/php/SWObjects.so
