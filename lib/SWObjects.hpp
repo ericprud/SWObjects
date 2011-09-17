@@ -2224,13 +2224,6 @@ public:
     // virtual void project (ResultSet* rs) const;
 };
 
-#if defined(SWIG)
-    %template(ProductionVector_POSstar) ProductionVector<TTerm const *>;
-#endif /* defined(SWIG) */
-#if defined(SWIG)
-    %template(ProductionVector_Bindingstar) ProductionVector<Binding const *>;
-#endif /* defined(SWIG) */
-
 class BindingClause : public TableOperation {
 private:
     ResultSet* m_ResultSet;
