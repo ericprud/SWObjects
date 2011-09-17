@@ -157,7 +157,8 @@ namespace w3c_sw {
 	results(), ordered(false), db(NULL), selectOrder(), 
 	orderedSelect(false), resultType(RESULT_Tabular) {
 	if (!sptr.mediaType.is_initialized() ||
-	    sptr.mediaType.match("application/sparql-results+xml")) {
+	    sptr.mediaType.match("application/sparql-results+xml") ||
+	    sptr.mediaType.match("application/xml")) {
 	    if (parser == NULL)
 		throw(std::runtime_error("ResultSet constructor requires a SAX parser."));
 	    RSsax handler(this, atomFactory);
@@ -165,8 +166,10 @@ namespace w3c_sw {
 	} else {
 	    TTerm::String2BNode nodeMap;
 	    if (!parseText(atomFactory, sptr, false, nodeMap))
-		throw(std::runtime_error(std::string("no ResultSet constructor for mediatype ")
-					 + sptr.mediaType.get()));
+		throw(std::runtime_error(std::string()
+					 + "ResultSet constructor: no parser for mediatype \""
+					 + sptr.mediaType.get()
+					 + "\""));
 	}
     }
 
