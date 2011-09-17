@@ -246,7 +246,7 @@ namespace w3c_sw {
 				           "(?:[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+"	//   unicode
 				              "|(?:\\+-+)+\\+"		//   ascii
 				            ")[ \\t\\n]*"		//     white space
-					    //"|#[^\\n]+\\n?"		// in-line comments -- to weird?
+					    //"|#[^\\n]+\\n?"	// in-line comments -- too weird?
 				          ")"
 					  "|(?:[|│┃][ \\t]*"
 					   "("				// \2: captured term
