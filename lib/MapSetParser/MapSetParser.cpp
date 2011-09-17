@@ -47,12 +47,12 @@
 /* User implementation prologue.  */
 
 /* Line 317 of lalr1.cc  */
-#line 306 "lib/MapSetParser/MapSetParser.ypp"
+#line 307 "lib/MapSetParser/MapSetParser.ypp"
 
 #include "../MapSetScanner.hpp"
 
 /* Line 317 of lalr1.cc  */
-#line 445 "lib/MapSetParser/MapSetParser.ypp"
+#line 447 "lib/MapSetParser/MapSetParser.ypp"
 
 #include "../MapSetScanner.hpp"
 
@@ -436,7 +436,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 678 of lalr1.cc  */
-#line 460 "lib/MapSetParser/MapSetParser.ypp"
+#line 462 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.root = new MapSet();
 	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
@@ -446,7 +446,7 @@ namespace w3c_sw {
   case 8:
 
 /* Line 678 of lalr1.cc  */
-#line 478 "lib/MapSetParser/MapSetParser.ypp"
+#line 480 "lib/MapSetParser/MapSetParser.ypp"
     {
 #if REGEX_LIB == SWOb_DISABLED
       throw std::string("not compiled with REGEX_LIB: can't map ") + (yysemantic_stack_[(4) - (2)].p_Variable)->toString() + " from " + (yysemantic_stack_[(4) - (3)].p_RDFLiteral)->toString() + " to " + (yysemantic_stack_[(4) - (4)].p_RDFLiteral)->toString() + ".";
@@ -461,7 +461,7 @@ namespace w3c_sw {
   case 9:
 
 /* Line 678 of lalr1.cc  */
-#line 487 "lib/MapSetParser/MapSetParser.ypp"
+#line 489 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->driver = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
     }
@@ -470,7 +470,7 @@ namespace w3c_sw {
   case 10:
 
 /* Line 678 of lalr1.cc  */
-#line 490 "lib/MapSetParser/MapSetParser.ypp"
+#line 492 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->server = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
     }
@@ -479,7 +479,7 @@ namespace w3c_sw {
   case 11:
 
 /* Line 678 of lalr1.cc  */
-#line 493 "lib/MapSetParser/MapSetParser.ypp"
+#line 495 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->user = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
     }
@@ -488,7 +488,7 @@ namespace w3c_sw {
   case 12:
 
 /* Line 678 of lalr1.cc  */
-#line 496 "lib/MapSetParser/MapSetParser.ypp"
+#line 498 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->password = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
     }
@@ -497,7 +497,7 @@ namespace w3c_sw {
   case 13:
 
 /* Line 678 of lalr1.cc  */
-#line 499 "lib/MapSetParser/MapSetParser.ypp"
+#line 501 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->database = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
     }
@@ -506,7 +506,7 @@ namespace w3c_sw {
   case 14:
 
 /* Line 678 of lalr1.cc  */
-#line 502 "lib/MapSetParser/MapSetParser.ypp"
+#line 504 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->stemURI = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -515,7 +515,7 @@ namespace w3c_sw {
   case 16:
 
 /* Line 678 of lalr1.cc  */
-#line 507 "lib/MapSetParser/MapSetParser.ypp"
+#line 509 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.sharedVarsSet = true;
     }
@@ -524,7 +524,7 @@ namespace w3c_sw {
   case 17:
 
 /* Line 678 of lalr1.cc  */
-#line 511 "lib/MapSetParser/MapSetParser.ypp"
+#line 513 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.lastRuleTermSet = false;
     }
@@ -533,7 +533,7 @@ namespace w3c_sw {
   case 18:
 
 /* Line 678 of lalr1.cc  */
-#line 517 "lib/MapSetParser/MapSetParser.ypp"
+#line 519 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
     }
@@ -542,7 +542,7 @@ namespace w3c_sw {
   case 19:
 
 /* Line 678 of lalr1.cc  */
-#line 520 "lib/MapSetParser/MapSetParser.ypp"
+#line 522 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.root->sharedVars = MapSet::e_VARNAMES;
     }
@@ -551,7 +551,7 @@ namespace w3c_sw {
   case 20:
 
 /* Line 678 of lalr1.cc  */
-#line 523 "lib/MapSetParser/MapSetParser.ypp"
+#line 525 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.root->sharedVars = MapSet::e_DRACONIAN;
     }
@@ -560,7 +560,7 @@ namespace w3c_sw {
   case 21:
 
 /* Line 678 of lalr1.cc  */
-#line 529 "lib/MapSetParser/MapSetParser.ypp"
+#line 531 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = NULL;
     }
@@ -569,7 +569,7 @@ namespace w3c_sw {
   case 23:
 
 /* Line 678 of lalr1.cc  */
-#line 536 "lib/MapSetParser/MapSetParser.ypp"
+#line 538 "lib/MapSetParser/MapSetParser.ypp"
     {
 	RuleTerm nextRuleTerm = RuleTerm((yysemantic_stack_[(4) - (2)].p_TTerm), (yysemantic_stack_[(4) - (4)].p_TTerm));
 	if (driver.lastRuleTermSet)
@@ -584,7 +584,7 @@ namespace w3c_sw {
   case 32:
 
 /* Line 678 of lalr1.cc  */
-#line 571 "lib/MapSetParser/MapSetParser.ypp"
+#line 573 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->keyMap[(yysemantic_stack_[(3) - (1)].p_RDFLiteral)->getLexicalValue()] = (yysemantic_stack_[(3) - (3)].p_RDFLiteral)->getLexicalValue();
     }
@@ -593,7 +593,7 @@ namespace w3c_sw {
   case 35:
 
 /* Line 678 of lalr1.cc  */
-#line 582 "lib/MapSetParser/MapSetParser.ypp"
+#line 584 "lib/MapSetParser/MapSetParser.ypp"
     {
 	static_cast<MapSet*>(driver.root)->primaryKey = (yysemantic_stack_[(3) - (2)].p_RDFLiteral);
     }
@@ -602,7 +602,7 @@ namespace w3c_sw {
   case 41:
 
 /* Line 678 of lalr1.cc  */
-#line 605 "lib/MapSetParser/MapSetParser.ypp"
+#line 607 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
@@ -611,7 +611,7 @@ namespace w3c_sw {
   case 42:
 
 /* Line 678 of lalr1.cc  */
-#line 611 "lib/MapSetParser/MapSetParser.ypp"
+#line 613 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -620,7 +620,7 @@ namespace w3c_sw {
   case 43:
 
 /* Line 678 of lalr1.cc  */
-#line 613 "lib/MapSetParser/MapSetParser.ypp"
+#line 615 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -629,7 +629,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 615 "lib/MapSetParser/MapSetParser.ypp"
+#line 617 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -639,7 +639,17 @@ namespace w3c_sw {
   case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 623 "lib/MapSetParser/MapSetParser.ypp"
+#line 625 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  (yyval.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = NULL;
+      }
+    break;
+
+  case 46:
+
+/* Line 678 of lalr1.cc  */
+#line 628 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -647,118 +657,101 @@ namespace w3c_sw {
       }
     break;
 
-  case 46:
-
-/* Line 678 of lalr1.cc  */
-#line 627 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	  if ((yysemantic_stack_[(5) - (5)].p_BindingClause) != NULL)
-	      (yysemantic_stack_[(5) - (3)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(5) - (5)].p_BindingClause), (yysemantic_stack_[(5) - (3)].p_WhereClause)->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (2)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(5) - (1)].p_Project).distinctness, (yysemantic_stack_[(5) - (1)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(5) - (3)].p_WhereClause), (yysemantic_stack_[(5) - (4)].p_SolutionModifier))));
-      }
-    break;
-
   case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 635 "lib/MapSetParser/MapSetParser.ypp"
+#line 632 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_BindingClause) = NULL;
-    }
+	  if ((yysemantic_stack_[(6) - (6)].p_BindingClause) != NULL)
+	      (yysemantic_stack_[(6) - (4)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(6) - (6)].p_BindingClause), (yysemantic_stack_[(6) - (4)].p_WhereClause)->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(6) - (2)].p_Project).distinctness, (yysemantic_stack_[(6) - (2)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(6) - (4)].p_WhereClause), (yysemantic_stack_[(6) - (5)].p_SolutionModifier))));
+	  driver.curGraphName = (yysemantic_stack_[(6) - (1)].p_TTerm);
+      }
     break;
 
-  case 49:
+  case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 643 "lib/MapSetParser/MapSetParser.ypp"
+#line 641 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Project).distinctness = (yysemantic_stack_[(3) - (2)].p_distinctness);
-	(yyval.p_Project).varSet = (yysemantic_stack_[(3) - (3)].p_VarSet);
+	(yyval.p_BindingClause) = NULL;
     }
     break;
 
   case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 651 "lib/MapSetParser/MapSetParser.ypp"
+#line 649 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yyval.p_Project).distinctness = (yysemantic_stack_[(3) - (2)].p_distinctness);
+	(yyval.p_Project).varSet = (yysemantic_stack_[(3) - (3)].p_VarSet);
     }
     break;
 
   case 51:
 
 /* Line 678 of lalr1.cc  */
-#line 654 "lib/MapSetParser/MapSetParser.ypp"
+#line 657 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_reduced;
+	(yyval.p_distinctness) = DIST_distinct;
     }
     break;
 
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 661 "lib/MapSetParser/MapSetParser.ypp"
+#line 660 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yyval.p_distinctness) = DIST_reduced;
     }
     break;
 
-  case 54:
+  case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 669 "lib/MapSetParser/MapSetParser.ypp"
+#line 667 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Variable) = (yysemantic_stack_[(2) - (2)].p_Variable);
+	(yyval.p_distinctness) = DIST_all;
     }
     break;
 
   case 55:
 
 /* Line 678 of lalr1.cc  */
-#line 676 "lib/MapSetParser/MapSetParser.ypp"
+#line 675 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Variable) = NULL;
+	(yyval.p_Variable) = (yysemantic_stack_[(2) - (2)].p_Variable);
     }
     break;
 
-  case 57:
+  case 56:
 
 /* Line 678 of lalr1.cc  */
-#line 684 "lib/MapSetParser/MapSetParser.ypp"
+#line 682 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	(yyval.p_Variable) = NULL;
     }
     break;
 
   case 58:
 
 /* Line 678 of lalr1.cc  */
-#line 691 "lib/MapSetParser/MapSetParser.ypp"
+#line 690 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
     }
     break;
 
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 694 "lib/MapSetParser/MapSetParser.ypp"
+#line 697 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
     }
     break;
 
   case 60:
-
-/* Line 678 of lalr1.cc  */
-#line 697 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
-    }
-    break;
-
-  case 61:
 
 /* Line 678 of lalr1.cc  */
 #line 700 "lib/MapSetParser/MapSetParser.ypp"
@@ -767,83 +760,101 @@ namespace w3c_sw {
     }
     break;
 
-  case 62:
+  case 61:
 
 /* Line 678 of lalr1.cc  */
 #line 703 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+    }
+    break;
+
+  case 62:
+
+/* Line 678 of lalr1.cc  */
+#line 706 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
     }
     break;
 
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 706 "lib/MapSetParser/MapSetParser.ypp"
+#line 709 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
     }
     break;
 
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 709 "lib/MapSetParser/MapSetParser.ypp"
+#line 712 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
     }
     break;
 
-  case 66:
+  case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 718 "lib/MapSetParser/MapSetParser.ypp"
+#line 715 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
     }
     break;
 
   case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 721 "lib/MapSetParser/MapSetParser.ypp"
+#line 724 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+    }
+    break;
+
+  case 68:
+
+/* Line 678 of lalr1.cc  */
+#line 727 "lib/MapSetParser/MapSetParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
     (yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
 }
     break;
 
-  case 68:
-
-/* Line 678 of lalr1.cc  */
-#line 729 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
-    }
-    break;
-
   case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 732 "lib/MapSetParser/MapSetParser.ypp"
+#line 735 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_VarSet) = new StarVarSet();
+	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
     }
     break;
 
   case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 739 "lib/MapSetParser/MapSetParser.ypp"
+#line 738 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curOp = NULL;
-      }
+	(yyval.p_VarSet) = new StarVarSet();
+    }
     break;
 
   case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 741 "lib/MapSetParser/MapSetParser.ypp"
+#line 745 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.curOp = NULL;
+      }
+    break;
+
+  case 72:
+
+/* Line 678 of lalr1.cc  */
+#line 747 "lib/MapSetParser/MapSetParser.ypp"
     {
 	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
 	if ((yysemantic_stack_[(8) - (8)].p_BindingClause) != NULL)
@@ -853,58 +864,49 @@ namespace w3c_sw {
     }
     break;
 
-  case 72:
-
-/* Line 678 of lalr1.cc  */
-#line 751 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
-    }
-    break;
-
   case 73:
 
 /* Line 678 of lalr1.cc  */
 #line 757 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = NULL;
+	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
     }
     break;
 
-  case 75:
+  case 74:
 
 /* Line 678 of lalr1.cc  */
-#line 765 "lib/MapSetParser/MapSetParser.ypp"
+#line 763 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
+	(yyval.p_TTerm) = NULL;
     }
     break;
 
   case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 768 "lib/MapSetParser/MapSetParser.ypp"
+#line 771 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
-	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
+	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
     break;
 
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 776 "lib/MapSetParser/MapSetParser.ypp"
+#line 774 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_DatasetClause) = (yysemantic_stack_[(2) - (2)].p_DatasetClause);
+	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
+	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
     }
     break;
 
-  case 80:
+  case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 788 "lib/MapSetParser/MapSetParser.ypp"
+#line 782 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
+	(yyval.p_DatasetClause) = (yysemantic_stack_[(2) - (2)].p_DatasetClause);
     }
     break;
 
@@ -913,7 +915,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 794 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
+	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
     }
     break;
 
@@ -922,14 +924,23 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 800 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
     }
     break;
 
   case 83:
 
 /* Line 678 of lalr1.cc  */
-#line 807 "lib/MapSetParser/MapSetParser.ypp"
+#line 806 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 84:
+
+/* Line 678 of lalr1.cc  */
+#line 813 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
@@ -937,93 +948,84 @@ namespace w3c_sw {
     }
     break;
 
-  case 86:
+  case 87:
 
 /* Line 678 of lalr1.cc  */
-#line 821 "lib/MapSetParser/MapSetParser.ypp"
+#line 827 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_SolutionModifier) = new SolutionModifier((yysemantic_stack_[(4) - (1)].p_ExpressionAliaseList), (yysemantic_stack_[(4) - (2)].p_Expressions), (yysemantic_stack_[(4) - (3)].p_OrderConditions), (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).limit, (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).offset); // !!!
     }
     break;
 
-  case 87:
+  case 88:
 
 /* Line 678 of lalr1.cc  */
-#line 828 "lib/MapSetParser/MapSetParser.ypp"
+#line 834 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
     }
     break;
 
-  case 89:
+  case 90:
 
 /* Line 678 of lalr1.cc  */
-#line 836 "lib/MapSetParser/MapSetParser.ypp"
+#line 842 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = NULL;
     }
     break;
 
-  case 91:
+  case 92:
 
 /* Line 678 of lalr1.cc  */
-#line 844 "lib/MapSetParser/MapSetParser.ypp"
+#line 850 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_OrderConditions) = NULL;
     }
     break;
 
-  case 93:
+  case 94:
 
 /* Line 678 of lalr1.cc  */
-#line 852 "lib/MapSetParser/MapSetParser.ypp"
+#line 858 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
 	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
     }
     break;
 
-  case 95:
-
-/* Line 678 of lalr1.cc  */
-#line 860 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(3) - (3)].p_ExpressionAliaseList);
-    }
-    break;
-
   case 96:
 
 /* Line 678 of lalr1.cc  */
-#line 867 "lib/MapSetParser/MapSetParser.ypp"
+#line 866 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(3) - (3)].p_ExpressionAliaseList);
     }
     break;
 
   case 97:
 
 /* Line 678 of lalr1.cc  */
-#line 870 "lib/MapSetParser/MapSetParser.ypp"
+#line 873 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
     }
     break;
 
   case 98:
 
 /* Line 678 of lalr1.cc  */
-#line 877 "lib/MapSetParser/MapSetParser.ypp"
+#line 876 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
+	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
     }
     break;
 
   case 99:
 
 /* Line 678 of lalr1.cc  */
-#line 880 "lib/MapSetParser/MapSetParser.ypp"
+#line 883 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
     }
@@ -1032,18 +1034,18 @@ namespace w3c_sw {
   case 100:
 
 /* Line 678 of lalr1.cc  */
-#line 883 "lib/MapSetParser/MapSetParser.ypp"
+#line 886 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
     }
     break;
 
   case 101:
 
 /* Line 678 of lalr1.cc  */
-#line 886 "lib/MapSetParser/MapSetParser.ypp"
+#line 889 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
     }
     break;
 
@@ -1052,8 +1054,8 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 892 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (2)].p_Expressions);
-}
+	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+    }
     break;
 
   case 103:
@@ -1061,140 +1063,140 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 898 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
-    }
+	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (2)].p_Expressions);
+}
     break;
 
   case 104:
 
 /* Line 678 of lalr1.cc  */
-#line 901 "lib/MapSetParser/MapSetParser.ypp"
+#line 904 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
+    }
+    break;
+
+  case 105:
+
+/* Line 678 of lalr1.cc  */
+#line 907 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
-  case 106:
-
-/* Line 678 of lalr1.cc  */
-#line 913 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(3) - (3)].p_OrderConditions);
-    }
-    break;
-
   case 107:
 
 /* Line 678 of lalr1.cc  */
-#line 920 "lib/MapSetParser/MapSetParser.ypp"
+#line 919 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
-	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
+	(yyval.p_OrderConditions) = (yysemantic_stack_[(3) - (3)].p_OrderConditions);
     }
     break;
 
   case 108:
 
 /* Line 678 of lalr1.cc  */
-#line 924 "lib/MapSetParser/MapSetParser.ypp"
+#line 926 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
+	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
+    }
+    break;
+
+  case 109:
+
+/* Line 678 of lalr1.cc  */
+#line 930 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
 	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
     }
     break;
 
-  case 110:
+  case 111:
 
 /* Line 678 of lalr1.cc  */
-#line 934 "lib/MapSetParser/MapSetParser.ypp"
+#line 940 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
     }
     break;
 
-  case 111:
-
-/* Line 678 of lalr1.cc  */
-#line 942 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_e_ASCorDESC) = ORDER_Asc;
-    }
-    break;
-
   case 112:
 
 /* Line 678 of lalr1.cc  */
-#line 945 "lib/MapSetParser/MapSetParser.ypp"
+#line 948 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Desc;
+	(yyval.p_e_ASCorDESC) = ORDER_Asc;
     }
     break;
 
   case 113:
 
 /* Line 678 of lalr1.cc  */
-#line 953 "lib/MapSetParser/MapSetParser.ypp"
+#line 951 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_e_ASCorDESC) = ORDER_Desc;
+    }
+    break;
+
+  case 114:
+
+/* Line 678 of lalr1.cc  */
+#line 959 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(2) - (1)].p_e_ASCorDESC);
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
-  case 115:
-
-/* Line 678 of lalr1.cc  */
-#line 962 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
-    }
-    break;
-
   case 116:
 
 /* Line 678 of lalr1.cc  */
-#line 969 "lib/MapSetParser/MapSetParser.ypp"
+#line 968 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).offset;
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
   case 117:
 
 /* Line 678 of lalr1.cc  */
-#line 973 "lib/MapSetParser/MapSetParser.ypp"
+#line 975 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).offset;
+	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).limit;
+	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).offset;
     }
     break;
 
   case 118:
 
 /* Line 678 of lalr1.cc  */
-#line 981 "lib/MapSetParser/MapSetParser.ypp"
+#line 979 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).limit;
+	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).offset;
+    }
+    break;
+
+  case 119:
+
+/* Line 678 of lalr1.cc  */
+#line 987 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
     }
     break;
 
-  case 120:
+  case 121:
 
 /* Line 678 of lalr1.cc  */
-#line 989 "lib/MapSetParser/MapSetParser.ypp"
+#line 995 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
-    }
-    break;
-
-  case 122:
-
-/* Line 678 of lalr1.cc  */
-#line 996 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
     }
     break;
 
@@ -1203,35 +1205,35 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1002 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+	(yyval.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
     }
     break;
 
   case 124:
 
 /* Line 678 of lalr1.cc  */
-#line 1009 "lib/MapSetParser/MapSetParser.ypp"
+#line 1008 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.startBindingSet();
-      }
+	(yyval.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+    }
     break;
 
   case 125:
 
 /* Line 678 of lalr1.cc  */
-#line 1011 "lib/MapSetParser/MapSetParser.ypp"
+#line 1015 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_BindingClause) = new BindingClause(driver.endBindingSet());
+	driver.startBindingSet();
       }
     break;
 
-  case 127:
+  case 126:
 
 /* Line 678 of lalr1.cc  */
-#line 1019 "lib/MapSetParser/MapSetParser.ypp"
+#line 1017 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
-    }
+	  (yyval.p_BindingClause) = new BindingClause(driver.endBindingSet());
+      }
     break;
 
   case 128:
@@ -1239,16 +1241,16 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1025 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.addBindingValue((yysemantic_stack_[(1) - (1)].p_TTerm));
+	driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
     }
     break;
 
   case 129:
 
 /* Line 678 of lalr1.cc  */
-#line 1028 "lib/MapSetParser/MapSetParser.ypp"
+#line 1031 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.addBindingValue((yysemantic_stack_[(2) - (2)].p_TTerm));
+	driver.addBindingValue((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
@@ -1257,78 +1259,78 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1034 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.startBindingRow(); // @@ push down to _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star?
-      }
+	driver.addBindingValue((yysemantic_stack_[(2) - (2)].p_TTerm));
+    }
     break;
 
   case 131:
 
 /* Line 678 of lalr1.cc  */
-#line 1036 "lib/MapSetParser/MapSetParser.ypp"
+#line 1040 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  driver.endBindingRow();
+	driver.startBindingRow(); // @@ push down to _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star?
       }
     break;
 
   case 132:
 
 /* Line 678 of lalr1.cc  */
-#line 1039 "lib/MapSetParser/MapSetParser.ypp"
+#line 1042 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  driver.endBindingRow();
+      }
+    break;
+
+  case 133:
+
+/* Line 678 of lalr1.cc  */
+#line 1045 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.startBindingRow();
 	driver.endBindingRow();
     }
     break;
 
-  case 135:
-
-/* Line 678 of lalr1.cc  */
-#line 1051 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
   case 136:
 
 /* Line 678 of lalr1.cc  */
-#line 1054 "lib/MapSetParser/MapSetParser.ypp"
+#line 1057 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 137:
 
 /* Line 678 of lalr1.cc  */
-#line 1057 "lib/MapSetParser/MapSetParser.ypp"
+#line 1060 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
     break;
 
   case 138:
 
 /* Line 678 of lalr1.cc  */
-#line 1060 "lib/MapSetParser/MapSetParser.ypp"
+#line 1063 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
   case 139:
 
 /* Line 678 of lalr1.cc  */
-#line 1063 "lib/MapSetParser/MapSetParser.ypp"
+#line 1066 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = TTerm::Unbound;
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
   case 140:
 
 /* Line 678 of lalr1.cc  */
-#line 1066 "lib/MapSetParser/MapSetParser.ypp"
+#line 1069 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = TTerm::Unbound;
     }
@@ -1337,25 +1339,52 @@ namespace w3c_sw {
   case 141:
 
 /* Line 678 of lalr1.cc  */
-#line 1069 "lib/MapSetParser/MapSetParser.ypp"
+#line 1072 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yyval.p_TTerm) = TTerm::Unbound;
     }
     break;
 
   case 142:
 
 /* Line 678 of lalr1.cc  */
-#line 1076 "lib/MapSetParser/MapSetParser.ypp"
+#line 1075 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curBGP = NULL;
-      }
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+    }
     break;
 
   case 143:
 
 /* Line 678 of lalr1.cc  */
-#line 1078 "lib/MapSetParser/MapSetParser.ypp"
+#line 1081 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Silence) = SILENT_No;
+    }
+    break;
+
+  case 144:
+
+/* Line 678 of lalr1.cc  */
+#line 1084 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Silence) = SILENT_Yes;
+}
+    break;
+
+  case 145:
+
+/* Line 678 of lalr1.cc  */
+#line 1091 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.curBGP = NULL;
+      }
+    break;
+
+  case 146:
+
+/* Line 678 of lalr1.cc  */
+#line 1093 "lib/MapSetParser/MapSetParser.ypp"
     {
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
@@ -1363,19 +1392,19 @@ namespace w3c_sw {
       }
     break;
 
-  case 165:
+  case 168:
 
 /* Line 678 of lalr1.cc  */
-#line 1160 "lib/MapSetParser/MapSetParser.ypp"
+#line 1175 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curOp = driver.curOp ? driver.makeConjunction(driver.ensureGraphPattern(), (yysemantic_stack_[(1) - (1)].p_BindingClause)) : (yysemantic_stack_[(1) - (1)].p_BindingClause);
     }
     break;
 
-  case 166:
+  case 169:
 
 /* Line 678 of lalr1.cc  */
-#line 1166 "lib/MapSetParser/MapSetParser.ypp"
+#line 1181 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -1383,10 +1412,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 167:
+  case 170:
 
 /* Line 678 of lalr1.cc  */
-#line 1170 "lib/MapSetParser/MapSetParser.ypp"
+#line 1185 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.ensureGraphPattern());
 	  if (driver.curFilter) {
@@ -1398,55 +1427,23 @@ namespace w3c_sw {
       }
     break;
 
-  case 168:
+  case 171:
 
 /* Line 678 of lalr1.cc  */
-#line 1182 "lib/MapSetParser/MapSetParser.ypp"
+#line 1197 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
-      }
-    break;
-
-  case 169:
-
-/* Line 678 of lalr1.cc  */
-#line 1186 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	  (yyval.p_ParserFilter) = driver.saveFilter();
-      }
-    break;
-
-  case 170:
-
-/* Line 678 of lalr1.cc  */
-#line 1188 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	  (yyval.p_TTerm) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
-      }
-    break;
-
-  case 171:
-
-/* Line 678 of lalr1.cc  */
-#line 1191 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.curOp));
-	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_TTerm);
       }
     break;
 
   case 172:
 
 /* Line 678 of lalr1.cc  */
-#line 1199 "lib/MapSetParser/MapSetParser.ypp"
+#line 1201 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
-	driver.curOp = NULL;
+	  (yyval.p_ParserFilter) = driver.saveFilter();
       }
     break;
 
@@ -1455,27 +1452,31 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1203 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_ParserFilter) = driver.saveFilter();
+	  (yyval.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
       }
     break;
 
   case 174:
 
 /* Line 678 of lalr1.cc  */
-#line 1205 "lib/MapSetParser/MapSetParser.ypp"
+#line 1206 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  driver.restoreFilter((yysemantic_stack_[(5) - (3)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(5) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(5) - (4)].p_TTerm), driver.curOp, driver.atomFactory, false));
+	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_ParserFilter));
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.curOp));
+	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_TTerm);
       }
     break;
 
   case 175:
 
 /* Line 678 of lalr1.cc  */
-#line 1212 "lib/MapSetParser/MapSetParser.ypp"
+#line 1214 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curOp = new Bind(driver.ensureGraphPattern(), (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Variable));
-    }
+	driver.restoreFilter(NULL);
+	(yyval.p_TableOperation) = driver.curOp;
+	driver.curOp = NULL;
+      }
     break;
 
   case 176:
@@ -1483,70 +1484,67 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1218 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
-	driver.curOp = NULL;
+	  (yyval.p_ParserFilter) = driver.saveFilter();
       }
     break;
 
   case 177:
 
 /* Line 678 of lalr1.cc  */
-#line 1222 "lib/MapSetParser/MapSetParser.ypp"
+#line 1220 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_ParserFilter) = driver.saveFilter();
+	  (yyval.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = NULL;
       }
     break;
 
   case 178:
 
 /* Line 678 of lalr1.cc  */
-#line 1224 "lib/MapSetParser/MapSetParser.ypp"
+#line 1223 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (3)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (2)].p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
+	  driver.restoreFilter((yysemantic_stack_[(7) - (3)].p_ParserFilter));
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(7) - (6)].p_TTerm), driver.curOp, (yysemantic_stack_[(7) - (5)].p_Silence), driver.atomFactory, false));
+	  driver.curGraphName = (yysemantic_stack_[(7) - (4)].p_TTerm);
       }
     break;
 
   case 179:
 
 /* Line 678 of lalr1.cc  */
-#line 1232 "lib/MapSetParser/MapSetParser.ypp"
+#line 1231 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
-	driver.curOp = NULL;
-      }
+	driver.curOp = new Bind(driver.ensureGraphPattern(), (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Variable));
+    }
     break;
 
   case 180:
 
 /* Line 678 of lalr1.cc  */
-#line 1236 "lib/MapSetParser/MapSetParser.ypp"
+#line 1237 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_ParserFilter) = driver.saveFilter();
+	driver.restoreFilter(NULL);
+	(yyval.p_TableOperation) = driver.curOp;
+	driver.curOp = NULL;
       }
     break;
 
   case 181:
 
 /* Line 678 of lalr1.cc  */
-#line 1238 "lib/MapSetParser/MapSetParser.ypp"
+#line 1241 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (2)].p_ParserFilter));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (1)].p_TableOperation), driver.curOp);
+	  (yyval.p_ParserFilter) = driver.saveFilter();
       }
     break;
 
   case 182:
 
 /* Line 678 of lalr1.cc  */
-#line 1246 "lib/MapSetParser/MapSetParser.ypp"
+#line 1243 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.ensureGraphPattern();
-	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
-	driver.curOp = NULL;
+	  driver.restoreFilter((yysemantic_stack_[(4) - (3)].p_ParserFilter));
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (2)].p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
       }
     break;
 
@@ -1555,15 +1553,57 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1251 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  driver.restoreFilter(NULL);
-	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.ensureGraphPattern());
+	driver.restoreFilter(NULL);
+	(yyval.p_TableOperation) = driver.curOp;
+	driver.curOp = NULL;
+      }
+    break;
+
+  case 184:
+
+/* Line 678 of lalr1.cc  */
+#line 1255 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  (yyval.p_ParserFilter) = driver.saveFilter();
+      }
+    break;
+
+  case 185:
+
+/* Line 678 of lalr1.cc  */
+#line 1257 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  driver.restoreFilter((yysemantic_stack_[(4) - (2)].p_ParserFilter));
+	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (1)].p_TableOperation), driver.curOp);
       }
     break;
 
   case 186:
 
 /* Line 678 of lalr1.cc  */
-#line 1264 "lib/MapSetParser/MapSetParser.ypp"
+#line 1265 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.ensureGraphPattern();
+	driver.restoreFilter(NULL);
+	(yyval.p_TableOperation) = driver.curOp;
+	driver.curOp = NULL;
+      }
+    break;
+
+  case 187:
+
+/* Line 678 of lalr1.cc  */
+#line 1270 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  driver.restoreFilter(NULL);
+	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.ensureGraphPattern());
+      }
+    break;
+
+  case 190:
+
+/* Line 678 of lalr1.cc  */
+#line 1283 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
@@ -1573,296 +1613,296 @@ namespace w3c_sw {
     }
     break;
 
-  case 190:
-
-/* Line 678 of lalr1.cc  */
-#line 1280 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
-    }
-    break;
-
-  case 191:
-
-/* Line 678 of lalr1.cc  */
-#line 1288 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_ArgList) = NULL;
-    }
-    break;
-
-  case 192:
-
-/* Line 678 of lalr1.cc  */
-#line 1292 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expressions) = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(3) - (3)].p_Expression));
-      }
-    break;
-
-  case 193:
-
-/* Line 678 of lalr1.cc  */
-#line 1295 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	  (yyval.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
-	  driver.curExprList = (yysemantic_stack_[(6) - (4)].p_Expressions);
-      }
-    break;
-
   case 194:
 
 /* Line 678 of lalr1.cc  */
-#line 1302 "lib/MapSetParser/MapSetParser.ypp"
+#line 1299 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
     }
     break;
 
   case 195:
 
 /* Line 678 of lalr1.cc  */
-#line 1305 "lib/MapSetParser/MapSetParser.ypp"
+#line 1307 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yyval.p_ArgList) = NULL;
     }
     break;
 
   case 196:
 
 /* Line 678 of lalr1.cc  */
-#line 1312 "lib/MapSetParser/MapSetParser.ypp"
+#line 1311 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
-    }
+	(yyval.p_Expressions) = driver.curExprList;
+	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(3) - (3)].p_Expression));
+      }
+    break;
+
+  case 197:
+
+/* Line 678 of lalr1.cc  */
+#line 1314 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	  (yyval.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
+	  driver.curExprList = (yysemantic_stack_[(6) - (4)].p_Expressions);
+      }
     break;
 
   case 198:
 
 /* Line 678 of lalr1.cc  */
-#line 1320 "lib/MapSetParser/MapSetParser.ypp"
+#line 1321 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_distinctness) = DIST_all;
     }
     break;
 
   case 199:
 
 /* Line 678 of lalr1.cc  */
-#line 1334 "lib/MapSetParser/MapSetParser.ypp"
+#line 1324 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expressions) = NULL;
+	(yyval.p_distinctness) = DIST_all;
     }
     break;
 
   case 200:
 
 /* Line 678 of lalr1.cc  */
-#line 1337 "lib/MapSetParser/MapSetParser.ypp"
+#line 1331 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    }
+    break;
+
+  case 202:
+
+/* Line 678 of lalr1.cc  */
+#line 1339 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+    }
+    break;
+
+  case 203:
+
+/* Line 678 of lalr1.cc  */
+#line 1353 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expressions) = NULL;
+    }
+    break;
+
+  case 204:
+
+/* Line 678 of lalr1.cc  */
+#line 1356 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(2) - (2)].p_Expression));
       }
     break;
 
-  case 201:
+  case 205:
 
 /* Line 678 of lalr1.cc  */
-#line 1340 "lib/MapSetParser/MapSetParser.ypp"
+#line 1359 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_Expressions) = driver.curExprList;
 	  driver.curExprList = (yysemantic_stack_[(5) - (3)].p_Expressions);
       }
     break;
 
-  case 202:
+  case 206:
 
 /* Line 678 of lalr1.cc  */
-#line 1348 "lib/MapSetParser/MapSetParser.ypp"
+#line 1367 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curBGP = NULL;
       }
     break;
 
-  case 203:
+  case 207:
 
 /* Line 678 of lalr1.cc  */
-#line 1350 "lib/MapSetParser/MapSetParser.ypp"
+#line 1369 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_BasicGraphPattern) = driver.curBGP;
       }
     break;
 
-  case 210:
+  case 214:
 
 /* Line 678 of lalr1.cc  */
-#line 1378 "lib/MapSetParser/MapSetParser.ypp"
+#line 1397 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
-  case 212:
+  case 216:
 
 /* Line 678 of lalr1.cc  */
-#line 1381 "lib/MapSetParser/MapSetParser.ypp"
+#line 1400 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
-  case 228:
+  case 232:
 
 /* Line 678 of lalr1.cc  */
-#line 1441 "lib/MapSetParser/MapSetParser.ypp"
+#line 1460 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.ensureBasicGraphPattern();
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
     break;
 
-  case 229:
+  case 233:
 
 /* Line 678 of lalr1.cc  */
-#line 1448 "lib/MapSetParser/MapSetParser.ypp"
+#line 1467 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
-  case 230:
+  case 234:
 
 /* Line 678 of lalr1.cc  */
-#line 1452 "lib/MapSetParser/MapSetParser.ypp"
+#line 1471 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
-  case 231:
-
-/* Line 678 of lalr1.cc  */
-#line 1460 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
-      }
-    break;
-
-  case 233:
-
-/* Line 678 of lalr1.cc  */
-#line 1463 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
-      }
-    break;
-
   case 235:
 
 /* Line 678 of lalr1.cc  */
-#line 1469 "lib/MapSetParser/MapSetParser.ypp"
+#line 1479 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+      }
+    break;
+
+  case 237:
+
+/* Line 678 of lalr1.cc  */
+#line 1482 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
     break;
 
   case 239:
 
 /* Line 678 of lalr1.cc  */
-#line 1480 "lib/MapSetParser/MapSetParser.ypp"
+#line 1488 "lib/MapSetParser/MapSetParser.ypp"
     {
 	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
     break;
 
-  case 248:
+  case 243:
 
 /* Line 678 of lalr1.cc  */
-#line 1508 "lib/MapSetParser/MapSetParser.ypp"
+#line 1499 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+      }
+    break;
+
+  case 252:
+
+/* Line 678 of lalr1.cc  */
+#line 1527 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
-  case 255:
+  case 259:
 
 /* Line 678 of lalr1.cc  */
-#line 1535 "lib/MapSetParser/MapSetParser.ypp"
+#line 1554 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 257:
+  case 261:
 
 /* Line 678 of lalr1.cc  */
-#line 1542 "lib/MapSetParser/MapSetParser.ypp"
+#line 1561 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 260:
+  case 264:
 
 /* Line 678 of lalr1.cc  */
-#line 1553 "lib/MapSetParser/MapSetParser.ypp"
+#line 1572 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 262:
+  case 266:
 
 /* Line 678 of lalr1.cc  */
-#line 1560 "lib/MapSetParser/MapSetParser.ypp"
+#line 1579 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 275:
+  case 279:
 
 /* Line 678 of lalr1.cc  */
-#line 1596 "lib/MapSetParser/MapSetParser.ypp"
+#line 1615 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
-  case 276:
+  case 280:
 
 /* Line 678 of lalr1.cc  */
-#line 1599 "lib/MapSetParser/MapSetParser.ypp"
+#line 1618 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     }
     break;
 
-  case 277:
+  case 281:
 
 /* Line 678 of lalr1.cc  */
-#line 1602 "lib/MapSetParser/MapSetParser.ypp"
+#line 1621 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 278:
+  case 282:
 
 /* Line 678 of lalr1.cc  */
-#line 1605 "lib/MapSetParser/MapSetParser.ypp"
+#line 1624 "lib/MapSetParser/MapSetParser.ypp"
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
     break;
 
-  case 297:
+  case 301:
 
 /* Line 678 of lalr1.cc  */
-#line 1663 "lib/MapSetParser/MapSetParser.ypp"
+#line 1682 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -1870,10 +1910,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 298:
+  case 302:
 
 /* Line 678 of lalr1.cc  */
-#line 1667 "lib/MapSetParser/MapSetParser.ypp"
+#line 1686 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  (yyval.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -1881,10 +1921,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 299:
+  case 303:
 
 /* Line 678 of lalr1.cc  */
-#line 1676 "lib/MapSetParser/MapSetParser.ypp"
+#line 1695 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
 	    (yyval.p_TTerm) = driver.createBNode();
@@ -1908,67 +1948,39 @@ namespace w3c_sw {
     }
     break;
 
-  case 300:
-
-/* Line 678 of lalr1.cc  */
-#line 1701 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_listModifier) = LIST_members;
-    }
-    break;
-
-  case 301:
-
-/* Line 678 of lalr1.cc  */
-#line 1704 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_listModifier) = LIST_starts;
-    }
-    break;
-
-  case 302:
-
-/* Line 678 of lalr1.cc  */
-#line 1707 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_listModifier) = LIST_ends;
-    }
-    break;
-
-  case 303:
-
-/* Line 678 of lalr1.cc  */
-#line 1710 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_listModifier) = LIST_any;
-    }
-    break;
-
   case 304:
 
 /* Line 678 of lalr1.cc  */
-#line 1713 "lib/MapSetParser/MapSetParser.ypp"
+#line 1720 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_listModifier) = LIST_unordered;
+	(yyval.p_listModifier) = LIST_members;
     }
     break;
 
   case 305:
 
 /* Line 678 of lalr1.cc  */
-#line 1720 "lib/MapSetParser/MapSetParser.ypp"
+#line 1723 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_listModifier) = LIST_exact;
+	(yyval.p_listModifier) = LIST_starts;
+    }
+    break;
+
+  case 306:
+
+/* Line 678 of lalr1.cc  */
+#line 1726 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_listModifier) = LIST_ends;
     }
     break;
 
   case 307:
 
 /* Line 678 of lalr1.cc  */
-#line 1728 "lib/MapSetParser/MapSetParser.ypp"
+#line 1729 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
-	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yyval.p_listModifier) = LIST_any;
     }
     break;
 
@@ -1977,128 +1989,117 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1732 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
-	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
+	(yyval.p_listModifier) = LIST_unordered;
+    }
+    break;
+
+  case 309:
+
+/* Line 678 of lalr1.cc  */
+#line 1739 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_listModifier) = LIST_exact;
     }
     break;
 
   case 311:
 
 /* Line 678 of lalr1.cc  */
-#line 1744 "lib/MapSetParser/MapSetParser.ypp"
+#line 1747 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
+	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
-  case 313:
+  case 312:
 
 /* Line 678 of lalr1.cc  */
 #line 1751 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
+	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
     }
     break;
 
-  case 314:
+  case 315:
 
 /* Line 678 of lalr1.cc  */
-#line 1754 "lib/MapSetParser/MapSetParser.ypp"
+#line 1763 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
   case 317:
 
 /* Line 678 of lalr1.cc  */
-#line 1765 "lib/MapSetParser/MapSetParser.ypp"
+#line 1770 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
     break;
 
   case 318:
 
 /* Line 678 of lalr1.cc  */
-#line 1768 "lib/MapSetParser/MapSetParser.ypp"
+#line 1773 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
-  case 319:
+  case 321:
 
 /* Line 678 of lalr1.cc  */
-#line 1771 "lib/MapSetParser/MapSetParser.ypp"
+#line 1784 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 320:
-
-/* Line 678 of lalr1.cc  */
-#line 1774 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 322:
 
 /* Line 678 of lalr1.cc  */
-#line 1778 "lib/MapSetParser/MapSetParser.ypp"
+#line 1787 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+    }
+    break;
+
+  case 323:
+
+/* Line 678 of lalr1.cc  */
+#line 1790 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
   case 324:
 
 /* Line 678 of lalr1.cc  */
-#line 1789 "lib/MapSetParser/MapSetParser.ypp"
+#line 1793 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
-    }
-    break;
-
-  case 325:
-
-/* Line 678 of lalr1.cc  */
-#line 1798 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
   case 326:
 
 /* Line 678 of lalr1.cc  */
-#line 1805 "lib/MapSetParser/MapSetParser.ypp"
+#line 1797 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
-    }
-    break;
-
-  case 327:
-
-/* Line 678 of lalr1.cc  */
-#line 1808 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
     break;
 
   case 328:
 
 /* Line 678 of lalr1.cc  */
-#line 1816 "lib/MapSetParser/MapSetParser.ypp"
+#line 1808 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
 	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
     }
@@ -2107,7 +2108,7 @@ namespace w3c_sw {
   case 329:
 
 /* Line 678 of lalr1.cc  */
-#line 1825 "lib/MapSetParser/MapSetParser.ypp"
+#line 1817 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -2116,7 +2117,7 @@ namespace w3c_sw {
   case 330:
 
 /* Line 678 of lalr1.cc  */
-#line 1832 "lib/MapSetParser/MapSetParser.ypp"
+#line 1824 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -2125,17 +2126,56 @@ namespace w3c_sw {
   case 331:
 
 /* Line 678 of lalr1.cc  */
-#line 1835 "lib/MapSetParser/MapSetParser.ypp"
+#line 1827 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
+  case 332:
+
+/* Line 678 of lalr1.cc  */
+#line 1835 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
+	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
+	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+    }
+    break;
+
   case 333:
 
 /* Line 678 of lalr1.cc  */
-#line 1847 "lib/MapSetParser/MapSetParser.ypp"
+#line 1844 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    }
+    break;
+
+  case 334:
+
+/* Line 678 of lalr1.cc  */
+#line 1851 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+    }
+    break;
+
+  case 335:
+
+/* Line 678 of lalr1.cc  */
+#line 1854 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+    }
+    break;
+
+  case 337:
+
+/* Line 678 of lalr1.cc  */
+#line 1866 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_GeneralComparator)) {
 	    (yysemantic_stack_[(2) - (2)].p_GeneralComparator)->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
@@ -2145,91 +2185,91 @@ namespace w3c_sw {
     }
     break;
 
-  case 334:
-
-/* Line 678 of lalr1.cc  */
-#line 1858 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_GeneralComparator) = NULL;
-    }
-    break;
-
-  case 336:
-
-/* Line 678 of lalr1.cc  */
-#line 1865 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_GeneralComparator) = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
-  case 337:
-
-/* Line 678 of lalr1.cc  */
-#line 1868 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_GeneralComparator) = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
   case 338:
 
 /* Line 678 of lalr1.cc  */
-#line 1871 "lib/MapSetParser/MapSetParser.ypp"
+#line 1877 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_GeneralComparator) = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
-  case 339:
-
-/* Line 678 of lalr1.cc  */
-#line 1874 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_GeneralComparator) = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_GeneralComparator) = NULL;
     }
     break;
 
   case 340:
 
 /* Line 678 of lalr1.cc  */
-#line 1877 "lib/MapSetParser/MapSetParser.ypp"
+#line 1884 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_GeneralComparator) = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_GeneralComparator) = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 341:
 
 /* Line 678 of lalr1.cc  */
-#line 1880 "lib/MapSetParser/MapSetParser.ypp"
+#line 1887 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_GeneralComparator) = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_GeneralComparator) = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 342:
 
 /* Line 678 of lalr1.cc  */
-#line 1883 "lib/MapSetParser/MapSetParser.ypp"
+#line 1890 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_GeneralComparator) = new NaryIn((yysemantic_stack_[(2) - (2)].p_Expressions));
+	(yyval.p_GeneralComparator) = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 343:
 
 /* Line 678 of lalr1.cc  */
-#line 1886 "lib/MapSetParser/MapSetParser.ypp"
+#line 1893 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_GeneralComparator) = new NaryNotIn((yysemantic_stack_[(3) - (3)].p_Expressions));
+	(yyval.p_GeneralComparator) = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+    }
+    break;
+
+  case 344:
+
+/* Line 678 of lalr1.cc  */
+#line 1896 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_GeneralComparator) = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 345:
 
 /* Line 678 of lalr1.cc  */
-#line 1897 "lib/MapSetParser/MapSetParser.ypp"
+#line 1899 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_GeneralComparator) = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+    }
+    break;
+
+  case 346:
+
+/* Line 678 of lalr1.cc  */
+#line 1902 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_GeneralComparator) = new NaryIn((yysemantic_stack_[(2) - (2)].p_Expressions));
+    }
+    break;
+
+  case 347:
+
+/* Line 678 of lalr1.cc  */
+#line 1905 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_GeneralComparator) = new NaryNotIn((yysemantic_stack_[(3) - (3)].p_Expressions));
+    }
+    break;
+
+  case 349:
+
+/* Line 678 of lalr1.cc  */
+#line 1916 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticSum((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -2237,55 +2277,28 @@ namespace w3c_sw {
     }
     break;
 
-  case 346:
-
-/* Line 678 of lalr1.cc  */
-#line 1906 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
-    }
-    break;
-
-  case 347:
-
-/* Line 678 of lalr1.cc  */
-#line 1909 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
-    }
-    break;
-
-  case 348:
-
-/* Line 678 of lalr1.cc  */
-#line 1916 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
-    }
-    break;
-
-  case 349:
-
-/* Line 678 of lalr1.cc  */
-#line 1919 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
   case 350:
 
 /* Line 678 of lalr1.cc  */
-#line 1926 "lib/MapSetParser/MapSetParser.ypp"
+#line 1925 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = NULL;
+	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+    }
+    break;
+
+  case 351:
+
+/* Line 678 of lalr1.cc  */
+#line 1928 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
     break;
 
   case 352:
 
 /* Line 678 of lalr1.cc  */
-#line 1934 "lib/MapSetParser/MapSetParser.ypp"
+#line 1935 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -2294,16 +2307,43 @@ namespace w3c_sw {
   case 353:
 
 /* Line 678 of lalr1.cc  */
-#line 1937 "lib/MapSetParser/MapSetParser.ypp"
+#line 1938 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 354:
 
 /* Line 678 of lalr1.cc  */
-#line 1941 "lib/MapSetParser/MapSetParser.ypp"
+#line 1945 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = NULL;
+    }
+    break;
+
+  case 356:
+
+/* Line 678 of lalr1.cc  */
+#line 1953 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    }
+    break;
+
+  case 357:
+
+/* Line 678 of lalr1.cc  */
+#line 1956 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+    }
+    break;
+
+  case 358:
+
+/* Line 678 of lalr1.cc  */
+#line 1960 "lib/MapSetParser/MapSetParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expression) == NULL)
 	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
@@ -2316,29 +2356,29 @@ namespace w3c_sw {
     }
     break;
 
-  case 355:
+  case 359:
 
 /* Line 678 of lalr1.cc  */
-#line 1955 "lib/MapSetParser/MapSetParser.ypp"
+#line 1974 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
     break;
 
-  case 356:
+  case 360:
 
 /* Line 678 of lalr1.cc  */
-#line 1958 "lib/MapSetParser/MapSetParser.ypp"
+#line 1977 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
-  case 357:
+  case 361:
 
 /* Line 678 of lalr1.cc  */
-#line 1966 "lib/MapSetParser/MapSetParser.ypp"
+#line 1985 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticProduct((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -2346,600 +2386,600 @@ namespace w3c_sw {
     }
     break;
 
-  case 358:
+  case 362:
 
 /* Line 678 of lalr1.cc  */
-#line 1975 "lib/MapSetParser/MapSetParser.ypp"
+#line 1994 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
     break;
 
-  case 359:
+  case 363:
 
 /* Line 678 of lalr1.cc  */
-#line 1978 "lib/MapSetParser/MapSetParser.ypp"
+#line 1997 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
-  case 360:
+  case 364:
 
 /* Line 678 of lalr1.cc  */
-#line 1985 "lib/MapSetParser/MapSetParser.ypp"
+#line 2004 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
-  case 361:
+  case 365:
 
 /* Line 678 of lalr1.cc  */
-#line 1988 "lib/MapSetParser/MapSetParser.ypp"
+#line 2007 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
-  case 362:
+  case 366:
 
 /* Line 678 of lalr1.cc  */
-#line 1991 "lib/MapSetParser/MapSetParser.ypp"
+#line 2010 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
-  case 367:
+  case 371:
 
 /* Line 678 of lalr1.cc  */
-#line 2001 "lib/MapSetParser/MapSetParser.ypp"
+#line 2020 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
-    }
-    break;
-
-  case 368:
-
-/* Line 678 of lalr1.cc  */
-#line 2004 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
-    }
-    break;
-
-  case 369:
-
-/* Line 678 of lalr1.cc  */
-#line 2007 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
-    }
-    break;
-
-  case 370:
-
-/* Line 678 of lalr1.cc  */
-#line 2010 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
   case 372:
 
 /* Line 678 of lalr1.cc  */
-#line 2017 "lib/MapSetParser/MapSetParser.ypp"
+#line 2023 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
     break;
 
   case 373:
 
 /* Line 678 of lalr1.cc  */
-#line 2023 "lib/MapSetParser/MapSetParser.ypp"
+#line 2026 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     }
     break;
 
   case 374:
 
 /* Line 678 of lalr1.cc  */
-#line 2026 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
-    }
-    break;
-
-  case 375:
-
-/* Line 678 of lalr1.cc  */
 #line 2029 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
     break;
 
   case 376:
 
 /* Line 678 of lalr1.cc  */
-#line 2032 "lib/MapSetParser/MapSetParser.ypp"
+#line 2036 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
     }
     break;
 
   case 377:
 
 /* Line 678 of lalr1.cc  */
-#line 2035 "lib/MapSetParser/MapSetParser.ypp"
+#line 2042 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 378:
 
 /* Line 678 of lalr1.cc  */
-#line 2038 "lib/MapSetParser/MapSetParser.ypp"
+#line 2045 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 379:
 
 /* Line 678 of lalr1.cc  */
-#line 2041 "lib/MapSetParser/MapSetParser.ypp"
+#line 2048 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
     break;
 
   case 380:
 
 /* Line 678 of lalr1.cc  */
-#line 2045 "lib/MapSetParser/MapSetParser.ypp"
+#line 2051 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(2) - (2)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 381:
 
 /* Line 678 of lalr1.cc  */
-#line 2048 "lib/MapSetParser/MapSetParser.ypp"
+#line 2054 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     }
     break;
 
   case 382:
 
 /* Line 678 of lalr1.cc  */
-#line 2051 "lib/MapSetParser/MapSetParser.ypp"
+#line 2057 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 383:
 
 /* Line 678 of lalr1.cc  */
-#line 2054 "lib/MapSetParser/MapSetParser.ypp"
+#line 2060 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ciel, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 384:
 
 /* Line 678 of lalr1.cc  */
-#line 2057 "lib/MapSetParser/MapSetParser.ypp"
+#line 2064 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(2) - (2)].p_Expression), NULL, NULL));
     }
     break;
 
   case 385:
 
 /* Line 678 of lalr1.cc  */
-#line 2060 "lib/MapSetParser/MapSetParser.ypp"
+#line 2067 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
     break;
 
   case 386:
 
 /* Line 678 of lalr1.cc  */
-#line 2063 "lib/MapSetParser/MapSetParser.ypp"
+#line 2070 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+    }
+    break;
+
+  case 387:
+
+/* Line 678 of lalr1.cc  */
+#line 2073 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ciel, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 388:
 
 /* Line 678 of lalr1.cc  */
-#line 2067 "lib/MapSetParser/MapSetParser.ypp"
+#line 2076 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 389:
 
 /* Line 678 of lalr1.cc  */
-#line 2070 "lib/MapSetParser/MapSetParser.ypp"
+#line 2079 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 390:
 
 /* Line 678 of lalr1.cc  */
-#line 2073 "lib/MapSetParser/MapSetParser.ypp"
+#line 2082 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
-    }
-    break;
-
-  case 391:
-
-/* Line 678 of lalr1.cc  */
-#line 2076 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
     }
     break;
 
   case 392:
 
 /* Line 678 of lalr1.cc  */
-#line 2079 "lib/MapSetParser/MapSetParser.ypp"
+#line 2086 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 393:
 
 /* Line 678 of lalr1.cc  */
-#line 2082 "lib/MapSetParser/MapSetParser.ypp"
+#line 2089 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 394:
 
 /* Line 678 of lalr1.cc  */
-#line 2085 "lib/MapSetParser/MapSetParser.ypp"
+#line 2092 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 395:
 
 /* Line 678 of lalr1.cc  */
-#line 2088 "lib/MapSetParser/MapSetParser.ypp"
+#line 2095 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 396:
 
 /* Line 678 of lalr1.cc  */
-#line 2091 "lib/MapSetParser/MapSetParser.ypp"
+#line 2098 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 397:
 
 /* Line 678 of lalr1.cc  */
-#line 2094 "lib/MapSetParser/MapSetParser.ypp"
+#line 2101 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 398:
 
 /* Line 678 of lalr1.cc  */
-#line 2097 "lib/MapSetParser/MapSetParser.ypp"
+#line 2104 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 399:
 
 /* Line 678 of lalr1.cc  */
-#line 2100 "lib/MapSetParser/MapSetParser.ypp"
+#line 2107 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 400:
 
 /* Line 678 of lalr1.cc  */
-#line 2103 "lib/MapSetParser/MapSetParser.ypp"
+#line 2110 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 401:
 
 /* Line 678 of lalr1.cc  */
-#line 2106 "lib/MapSetParser/MapSetParser.ypp"
+#line 2113 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 402:
 
 /* Line 678 of lalr1.cc  */
-#line 2109 "lib/MapSetParser/MapSetParser.ypp"
+#line 2116 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 403:
 
 /* Line 678 of lalr1.cc  */
-#line 2112 "lib/MapSetParser/MapSetParser.ypp"
+#line 2119 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 404:
 
 /* Line 678 of lalr1.cc  */
-#line 2115 "lib/MapSetParser/MapSetParser.ypp"
+#line 2122 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 405:
 
 /* Line 678 of lalr1.cc  */
-#line 2118 "lib/MapSetParser/MapSetParser.ypp"
+#line 2125 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 406:
 
 /* Line 678 of lalr1.cc  */
-#line 2121 "lib/MapSetParser/MapSetParser.ypp"
+#line 2128 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
     break;
 
   case 407:
 
 /* Line 678 of lalr1.cc  */
-#line 2124 "lib/MapSetParser/MapSetParser.ypp"
+#line 2131 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 408:
 
 /* Line 678 of lalr1.cc  */
-#line 2127 "lib/MapSetParser/MapSetParser.ypp"
+#line 2134 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 409:
 
 /* Line 678 of lalr1.cc  */
-#line 2130 "lib/MapSetParser/MapSetParser.ypp"
+#line 2137 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
-	w3c_sw_NEED_IMPL("COALESCE");
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 410:
 
 /* Line 678 of lalr1.cc  */
-#line 2134 "lib/MapSetParser/MapSetParser.ypp"
+#line 2140 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 411:
 
 /* Line 678 of lalr1.cc  */
-#line 2137 "lib/MapSetParser/MapSetParser.ypp"
+#line 2143 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 412:
 
 /* Line 678 of lalr1.cc  */
-#line 2140 "lib/MapSetParser/MapSetParser.ypp"
+#line 2146 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 413:
 
 /* Line 678 of lalr1.cc  */
-#line 2143 "lib/MapSetParser/MapSetParser.ypp"
+#line 2149 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
+	w3c_sw_NEED_IMPL("COALESCE");
     }
     break;
 
   case 414:
 
 /* Line 678 of lalr1.cc  */
-#line 2146 "lib/MapSetParser/MapSetParser.ypp"
+#line 2153 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
     }
     break;
 
   case 415:
 
 /* Line 678 of lalr1.cc  */
-#line 2149 "lib/MapSetParser/MapSetParser.ypp"
+#line 2156 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
     break;
 
   case 416:
 
 /* Line 678 of lalr1.cc  */
-#line 2152 "lib/MapSetParser/MapSetParser.ypp"
+#line 2159 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
     break;
 
   case 417:
 
 /* Line 678 of lalr1.cc  */
-#line 2155 "lib/MapSetParser/MapSetParser.ypp"
+#line 2162 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
     break;
 
   case 418:
 
 /* Line 678 of lalr1.cc  */
-#line 2158 "lib/MapSetParser/MapSetParser.ypp"
+#line 2165 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+    }
+    break;
+
+  case 419:
+
+/* Line 678 of lalr1.cc  */
+#line 2168 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+    }
+    break;
+
+  case 420:
+
+/* Line 678 of lalr1.cc  */
+#line 2171 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+    }
+    break;
+
+  case 421:
+
+/* Line 678 of lalr1.cc  */
+#line 2174 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
     break;
 
   case 422:
 
 /* Line 678 of lalr1.cc  */
-#line 2169 "lib/MapSetParser/MapSetParser.ypp"
+#line 2177 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+    }
+    break;
+
+  case 426:
+
+/* Line 678 of lalr1.cc  */
+#line 2188 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
-    }
-    break;
-
-  case 423:
-
-/* Line 678 of lalr1.cc  */
-#line 2172 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = NULL;
-    }
-    break;
-
-  case 424:
-
-/* Line 678 of lalr1.cc  */
-#line 2179 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
-    }
-    break;
-
-  case 425:
-
-/* Line 678 of lalr1.cc  */
-#line 2186 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = NULL;
     }
     break;
 
   case 427:
 
 /* Line 678 of lalr1.cc  */
-#line 2193 "lib/MapSetParser/MapSetParser.ypp"
+#line 2191 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yyval.p_Expression) = NULL;
     }
     break;
 
   case 428:
 
 /* Line 678 of lalr1.cc  */
-#line 2199 "lib/MapSetParser/MapSetParser.ypp"
+#line 2198 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
-	w3c_sw_NEED_IMPL("EXISTS");
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
     break;
 
   case 429:
 
 /* Line 678 of lalr1.cc  */
-#line 2206 "lib/MapSetParser/MapSetParser.ypp"
+#line 2205 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL)));
-	w3c_sw_NEED_IMPL("EXISTS");
-    }
-    break;
-
-  case 430:
-
-/* Line 678 of lalr1.cc  */
-#line 2213 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression)));
+	(yyval.p_Expression) = NULL;
     }
     break;
 
   case 431:
 
 /* Line 678 of lalr1.cc  */
-#line 2216 "lib/MapSetParser/MapSetParser.ypp"
+#line 2212 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(5) - (1)].p_URI), (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression)));
+	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
     break;
 
   case 432:
 
 /* Line 678 of lalr1.cc  */
-#line 2220 "lib/MapSetParser/MapSetParser.ypp"
+#line 2218 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
+	w3c_sw_NEED_IMPL("EXISTS");
+    }
+    break;
+
+  case 433:
+
+/* Line 678 of lalr1.cc  */
+#line 2225 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL)));
+	w3c_sw_NEED_IMPL("EXISTS");
+    }
+    break;
+
+  case 434:
+
+/* Line 678 of lalr1.cc  */
+#line 2232 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression)));
+    }
+    break;
+
+  case 435:
+
+/* Line 678 of lalr1.cc  */
+#line 2235 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(5) - (1)].p_URI), (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression)));
+    }
+    break;
+
+  case 436:
+
+/* Line 678 of lalr1.cc  */
+#line 2239 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expressions) = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(4) - (4)].p_Expression));
       }
     break;
 
-  case 433:
+  case 437:
 
 /* Line 678 of lalr1.cc  */
-#line 2223 "lib/MapSetParser/MapSetParser.ypp"
+#line 2242 "lib/MapSetParser/MapSetParser.ypp"
     {
 	  // x = new ArgList($2, driver.curExprList);
 	  delete driver.curExprList;
@@ -2949,76 +2989,49 @@ namespace w3c_sw {
     }
     break;
 
-  case 434:
+  case 438:
 
 /* Line 678 of lalr1.cc  */
-#line 2233 "lib/MapSetParser/MapSetParser.ypp"
+#line 2252 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
 	driver.countStar = true;
     }
     break;
 
-  case 436:
-
-/* Line 678 of lalr1.cc  */
-#line 2241 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_URI) = TTerm::FUNC_sum;
-    }
-    break;
-
-  case 437:
-
-/* Line 678 of lalr1.cc  */
-#line 2244 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_URI) = TTerm::FUNC_min;
-    }
-    break;
-
-  case 438:
-
-/* Line 678 of lalr1.cc  */
-#line 2247 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_URI) = TTerm::FUNC_max;
-    }
-    break;
-
-  case 439:
-
-/* Line 678 of lalr1.cc  */
-#line 2250 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_URI) = TTerm::FUNC_avg;
-    }
-    break;
-
   case 440:
 
 /* Line 678 of lalr1.cc  */
-#line 2253 "lib/MapSetParser/MapSetParser.ypp"
+#line 2260 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_URI) = TTerm::FUNC_sample;
+	(yyval.p_URI) = TTerm::FUNC_sum;
     }
     break;
 
   case 441:
 
 /* Line 678 of lalr1.cc  */
-#line 2259 "lib/MapSetParser/MapSetParser.ypp"
+#line 2263 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_string), NULL, NULL);
+	(yyval.p_URI) = TTerm::FUNC_min;
     }
     break;
 
   case 442:
 
 /* Line 678 of lalr1.cc  */
-#line 2265 "lib/MapSetParser/MapSetParser.ypp"
+#line 2266 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_RDFLiteral) = NULL;
+	(yyval.p_URI) = TTerm::FUNC_max;
+    }
+    break;
+
+  case 443:
+
+/* Line 678 of lalr1.cc  */
+#line 2269 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_URI) = TTerm::FUNC_avg;
     }
     break;
 
@@ -3027,6 +3040,33 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 2272 "lib/MapSetParser/MapSetParser.ypp"
     {
+	(yyval.p_URI) = TTerm::FUNC_sample;
+    }
+    break;
+
+  case 445:
+
+/* Line 678 of lalr1.cc  */
+#line 2278 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_string), NULL, NULL);
+    }
+    break;
+
+  case 446:
+
+/* Line 678 of lalr1.cc  */
+#line 2284 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_RDFLiteral) = NULL;
+    }
+    break;
+
+  case 448:
+
+/* Line 678 of lalr1.cc  */
+#line 2291 "lib/MapSetParser/MapSetParser.ypp"
+    {
 	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
 	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
 	else
@@ -3034,58 +3074,58 @@ namespace w3c_sw {
     }
     break;
 
-  case 445:
-
-/* Line 678 of lalr1.cc  */
-#line 2282 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_ArgList) = NULL;
-    }
-    break;
-
-  case 447:
-
-/* Line 678 of lalr1.cc  */
-#line 2290 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
-    }
-    break;
-
-  case 448:
-
-/* Line 678 of lalr1.cc  */
-#line 2298 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
-    }
-    break;
-
   case 449:
 
 /* Line 678 of lalr1.cc  */
-#line 2305 "lib/MapSetParser/MapSetParser.ypp"
+#line 2301 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
-    }
-    break;
-
-  case 450:
-
-/* Line 678 of lalr1.cc  */
-#line 2309 "lib/MapSetParser/MapSetParser.ypp"
-    {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yyval.p_ArgList) = NULL;
     }
     break;
 
   case 451:
 
 /* Line 678 of lalr1.cc  */
+#line 2309 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
+	delete (yysemantic_stack_[(2) - (1)].p_string);
+    }
+    break;
+
+  case 452:
+
+/* Line 678 of lalr1.cc  */
 #line 2317 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+    }
+    break;
+
+  case 453:
+
+/* Line 678 of lalr1.cc  */
+#line 2324 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_uri_or_langtag).uri = NULL;
+	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
+    }
+    break;
+
+  case 454:
+
+/* Line 678 of lalr1.cc  */
+#line 2328 "lib/MapSetParser/MapSetParser.ypp"
+    {
+	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_uri_or_langtag).langtag = NULL;
+    }
+    break;
+
+  case 455:
+
+/* Line 678 of lalr1.cc  */
+#line 2336 "lib/MapSetParser/MapSetParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -3095,7 +3135,7 @@ namespace w3c_sw {
 
 
 /* Line 678 of lalr1.cc  */
-#line 3099 "lib/MapSetParser/MapSetParser.cpp"
+#line 3139 "lib/MapSetParser/MapSetParser.cpp"
 	default:
           break;
       }
@@ -3300,88 +3340,88 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const short int MapSetParser::yypact_ninf_ = -660;
+  const short int MapSetParser::yypact_ninf_ = -649;
   const short int
   MapSetParser::yypact_[] =
   {
-      -660,    64,    59,  -660,   -73,  -660,  -660,  -660,  -660,   351,
-      73,   -49,   132,   132,   132,   132,   132,  -105,    44,    53,
-      57,    30,  -660,  -660,  -660,  -660,  -660,   132,  -660,  -660,
-    -660,  -660,  -660,   -62,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,   132,  -660,    63,  -660,  -660,  -660,  -660,
-    -660,   523,  -660,    57,   523,  -660,  -660,    85,   -51,   132,
-    -105,  -660,  -660,  -660,  -660,    66,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,    79,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,    91,  -660,  -660,  -660,  -660,
-      60,  1261,  -660,  -660,   -26,  -660,  -660,   122,  -660,  -660,
-    -660,  1192,  -660,  -660,   132,  -660,  -660,  -660,  -660,  -660,
-    -660,   109,  -660,   129,  -660,  -660,  -660,  -660,   123,  -660,
-      11,  -660,    19,  -660,  1192,  -660,  -660,    19,  1237,    19,
-     -10,  -660,  -660,    84,   150,  -660,   137,  1237,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  1327,  -660,  -660,  -660,
-    -105,  -660,  -660,  -660,  -660,  -660,   172,   189,   113,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  1815,
-    -660,  -660,  -660,  1918,   199,  -660,   683,   176,   178,  1452,
-     162,   198,   203,   -15,    -4,   205,   207,   212,   150,   217,
-     230,   232,   241,   242,   243,   253,   255,   258,   261,   264,
-      -4,   265,   266,   275,   155,   282,   157,   284,   286,   287,
-     289,   290,   292,   293,   294,   296,   300,   301,   304,   305,
-     306,   308,   309,   323,   325,   329,   330,   332,   334,  1815,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,    -2,  -660,
-    1452,  1918,  -660,  -660,  -660,  -660,  -660,   213,   140,  -660,
-     174,  -660,  -660,   278,  -660,  -660,  -660,   333,  -660,  -660,
-      19,  -660,  1237,  -660,  1573,  1573,  1573,   336,  -660,  -660,
-    -660,  -660,   339,  -660,  -660,   291,  -660,  -660,  -660,  -660,
-     175,  -660,  -660,  -660,  -660,  -660,  -660,  -660,   340,  -660,
-    -660,  -660,  -660,    -2,   150,  1452,  1452,  1452,  -660,  -660,
-    1452,  -660,  -660,  1452,  1452,  1452,  -660,  1452,  1452,  1452,
-    1452,   -49,  1452,  1452,  1452,  1452,  1452,  1452,  -660,  1452,
-    1452,  1452,  -660,  1452,  -660,  1452,  1452,  1452,  1452,  1452,
-    1452,  1452,  1452,  1452,  1452,  1452,  1452,  1452,  1452,  1452,
-    1452,  1452,  1452,  1452,  1452,  1452,  1452,  -660,   364,  -660,
-    -660,   -18,   342,  -660,   839,   240,   246,  -660,  -660,   356,
-     358,  -660,  -660,  -660,  1168,   349,  -660,   254,  1192,  -660,
-    -660,    19,    90,  -660,  -660,  1237,  -660,  -660,  -660,  -660,
-     364,   364,   -49,  -660,   352,   338,   341,  1452,  1452,  1452,
-    1452,  1452,  1452,   328,    -4,  -660,  -660,   126,    12,   364,
-    -660,  -660,  -660,   359,   362,   363,  -660,   348,   350,   357,
-     366,   367,   361,   370,   371,   365,   372,   375,   376,   377,
-     388,   403,   404,   405,   406,   407,   408,   410,   392,   411,
-     412,   413,   409,   414,   415,   416,   417,   418,   419,   420,
-     421,   422,   423,   424,   427,   429,   431,  -660,  1452,  -660,
-    -660,  -660,  -660,  -660,   839,  -660,   425,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  1452,  -660,
-    -660,  1694,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-      84,  -660,  -660,  -660,  -660,  1918,   434,  -660,  -660,   432,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,   179,  -660,    26,    42,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,   119,  -660,  -660,  -660,  -660,  1027,
-    1452,  -660,  -660,  1452,  -660,  1452,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,    -4,  -660,  1452,  1452,    12,  -660,  -660,
-    -660,  1452,  1452,  -660,  1452,  -660,  -660,  -660,  -660,  1452,
-    1452,  1452,  -660,  -660,  1452,  -660,  -660,  1452,  -660,  -660,
-    -660,  -660,  1452,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    1452,  -660,  -660,  -660,  1452,  -660,  -660,  -660,  1452,  -660,
-    -660,  -660,  -660,  -660,  -660,  1452,  -660,  -660,  -660,  -660,
-      -5,  -660,  -660,   291,  -660,   189,  -660,  -660,   150,  -660,
-    -660,  1452,  -660,  1192,   150,   436,   -22,  -660,    50,  -660,
-    -660,  -660,  -660,  -660,  -660,  1237,   378,   426,  -660,   -29,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,   437,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,   438,     7,
-     433,   439,   442,   444,   445,   440,   446,   440,   447,   451,
-    -660,  -660,  -660,  -660,  -660,   452,  -660,   103,   103,  -660,
-     150,   385,  -660,  -660,  -660,  -660,   453,  -660,  -660,  -660,
-    -660,  -660,   179,  -660,   179,  -660,   353,  -660,  -660,    -8,
-    -660,   449,  -660,  -660,  1452,  -660,  1452,  -660,  -660,  -660,
-    -660,  -660,   455,  -660,   456,  -660,  -660,     8,   400,  -660,
-    -660,   150,  -660,   -49,   457,  -660,   402,   458,  -660,  -660,
-     465,  -660,   -16,  -660,   430,  -660,   466,  -660,   468,  -660,
-    -660,  -660,  -660,  -660,   276,  -660,  -660,  -660,  -660,  -660,
-    -660,   150,  -660,   469,  -660,  -660,   -22,  -660,    90,  -660,
-    -660,  -660,  -660,   473,   461,  -660,  -660,  -660,  -660,  -660,
-    -660,   150,  -660,  -660,  -660,  -660,  -660,   132,  -660,  1237,
-    -660,  -660
+      -649,    60,    52,  -649,   -96,  -649,  -649,  -649,  -649,   351,
+      90,   -90,    39,    39,    39,    39,    39,    46,    66,    74,
+      78,    32,  -649,  -649,  -649,  -649,  -649,    39,  -649,  -649,
+    -649,  -649,  -649,   -70,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,    39,  -649,    92,  -649,  -649,  -649,  -649,
+    -649,   333,  -649,    78,   333,  -649,  -649,   106,   -26,    39,
+      46,  -649,  -649,  -649,  -649,   100,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,   123,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,   129,  -649,  -649,  -649,  -649,
+       2,   892,  -649,  -649,    26,  -649,  -649,   128,  -649,  -649,
+    -649,   232,  -649,  -649,    39,  -649,  -649,  -649,  -649,  -649,
+    -649,   136,  -649,   145,  -649,  -649,  -649,  -649,   157,  -649,
+      20,  -649,    75,  -649,   232,  -649,  -649,    75,  1317,    75,
+     -12,  -649,  -649,   122,   177,  -649,   163,  1317,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  1282,  -649,  -649,  -649,
+      46,  -649,  -649,  -649,  -649,  -649,   194,   190,   131,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  1805,
+    -649,  -649,  -649,  1908,   202,  -649,  1118,   178,   187,  1442,
+     162,   201,   205,   -16,   -15,   210,   211,   212,   177,   213,
+     215,   217,   219,   222,   223,   233,   234,   238,   243,   245,
+     -15,   246,   247,   249,   124,   251,   126,   253,   256,   257,
+     258,   262,   263,   266,   267,   268,   269,   271,   273,   275,
+     276,   277,   282,   286,   287,   289,   290,   291,   292,  1805,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,   -14,  -649,
+    1442,  1908,  -649,  -649,  -649,  -649,  -649,   307,    63,  -649,
+    -649,   318,   303,  -649,  -649,  -649,   298,  -649,  -649,    75,
+    -649,  1317,  -649,  1563,  1563,  1563,   304,  -649,  -649,  -649,
+    -649,   306,  -649,  -649,   259,  -649,  -649,  -649,  -649,   373,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,   324,  -649,  -649,
+    -649,  -649,   -14,   177,  1442,  1442,  1442,  -649,  -649,  1442,
+    -649,  -649,  1442,  1442,  1442,  -649,  1442,  1442,  1442,  1442,
+     -90,  1442,  1442,  1442,  1442,  1442,  1442,  -649,  1442,  1442,
+    1442,  -649,  1442,  -649,  1442,  1442,  1442,  1442,  1442,  1442,
+    1442,  1442,  1442,  1442,  1442,  1442,  1442,  1442,  1442,  1442,
+    1442,  1442,  1442,  1442,  1442,  1442,  -649,   325,  -649,  -649,
+     -27,   326,  -649,  1258,   220,   224,  -649,  -649,   317,   341,
+      94,  -649,  -649,    18,   232,  -649,  -649,    75,   160,  -649,
+    -649,  1317,  -649,  -649,  -649,  -649,   325,   325,   -90,  -649,
+     330,   320,   344,  1442,  1442,  1442,  1442,  1442,  1442,   305,
+     -15,  -649,  -649,   186,     7,   325,  -649,  -649,  -649,   359,
+     360,   361,  -649,   355,   356,   358,   367,   368,   362,   374,
+     375,   365,   378,   382,   384,   385,   387,   386,   396,   397,
+     400,   401,   402,   403,   404,   411,   413,   414,   407,   416,
+     417,   418,   415,   419,   421,   424,   425,   426,   427,   420,
+     429,   430,   431,  -649,  1442,  -649,  -649,  -649,  -649,  -649,
+    1258,  -649,   433,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  1094,   435,  -649,  -649,
+    -649,  -649,  1908,   456,  -649,  -649,   454,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,    10,  -649,
+      59,    49,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,    14,  -649,  -649,  -649,  -649,   853,  1442,  -649,  -649,
+    1442,  -649,  1442,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+     -15,  -649,  1442,  1442,     7,  -649,  -649,  -649,  1442,  1442,
+    -649,  1442,  -649,  -649,  -649,  -649,  1442,  1442,  1442,  -649,
+    -649,  1442,  -649,  -649,  1442,  -649,  -649,  -649,  -649,  1442,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  1442,  -649,  -649,
+    -649,  1442,  -649,  -649,  -649,  1442,  -649,  -649,  -649,  -649,
+    -649,  -649,  1442,  -649,  -649,  -649,  -649,   -21,  -649,  -649,
+    -649,  1442,  -649,  -649,  1684,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,   122,  -649,  -649,   177,  -649,  -649,  1442,
+    -649,   232,   177,   459,   111,  -649,    84,  -649,  -649,  -649,
+    -649,  -649,  -649,  1317,   398,   438,  -649,    -7,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,   463,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,   465,    16,   458,   467,
+     468,   469,   470,   464,   471,   464,   473,   474,  -649,  -649,
+    -649,  -649,  -649,   259,  -649,   190,   117,  -649,  -649,   177,
+     428,  -649,  -649,  -649,  -649,   476,  -649,  -649,  -649,  -649,
+    -649,    10,  -649,    10,  -649,   376,  -649,  -649,    -1,  -649,
+     472,  -649,  -649,  1442,  -649,  1442,  -649,  -649,  -649,  -649,
+    -649,   479,  -649,   482,  -649,  -649,    28,  1585,   483,  -649,
+    -649,   511,  -649,   -90,   480,  -649,   432,   478,  -649,  -649,
+     491,  -649,   -17,  -649,   455,  -649,   492,  -649,   493,  -649,
+    -649,  -649,  -649,  -649,   731,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,   177,  -649,   117,   495,  -649,  -649,   111,  -649,
+     160,  -649,  -649,  -649,  -649,   494,   481,  -649,  -649,  -649,
+    -649,  -649,   177,  -649,   177,  -649,  -649,  -649,  -649,  -649,
+      39,  -649,  -649,  1317,  -649,  -649
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -3392,113 +3432,113 @@ namespace w3c_sw {
   {
          2,     0,    37,     1,     0,     4,    39,    38,    41,     6,
       36,     0,     0,     0,     0,     0,     0,     0,    27,     0,
-       0,     3,     5,    42,    40,   315,   316,     0,   467,   469,
-     468,   470,     9,   451,    10,    11,    12,    13,   471,   474,
-     473,    14,   472,     0,    15,    29,    28,    18,    20,    19,
-      16,    21,    24,    17,     0,     7,    74,     0,     0,     0,
-       0,   449,   450,   452,   447,     0,    33,    26,    30,   465,
-     466,   456,   457,   458,   459,   460,   461,   462,   463,   464,
-     475,   476,   322,     0,    22,   318,   319,   453,   454,   455,
-     320,   317,   321,    25,    72,     0,    43,     8,   448,    35,
-       0,     0,   202,    70,     0,    31,    34,     0,    23,   311,
-     312,   204,    75,    44,     0,   300,   301,   302,   303,   304,
-     297,     0,   205,   208,   212,   296,   295,   306,     0,   210,
-      84,    32,     0,   203,   204,   209,   206,   222,   305,     0,
-       0,    85,    76,    87,     0,   230,     0,   305,   229,   313,
-     314,   207,   223,   213,   221,   310,   305,   307,   309,   211,
-       0,    77,    78,    79,    80,    82,     0,    47,    89,    88,
-     142,    83,   298,   219,   226,   228,   299,   308,    81,     0,
-     124,    71,    48,     0,    91,    90,   147,   214,   224,     0,
+       0,     3,     5,    42,    40,   319,   320,     0,   471,   473,
+     472,   474,     9,   455,    10,    11,    12,    13,   475,   478,
+     477,    14,   476,     0,    15,    29,    28,    18,    20,    19,
+      16,    21,    24,    17,     0,     7,    75,     0,     0,     0,
+       0,   453,   454,   456,   451,     0,    33,    26,    30,   469,
+     470,   460,   461,   462,   463,   464,   465,   466,   467,   468,
+     479,   480,   326,     0,    22,   322,   323,   457,   458,   459,
+     324,   321,   325,    25,    73,     0,    43,     8,   452,    35,
+       0,     0,   206,    71,     0,    31,    34,     0,    23,   315,
+     316,   208,    76,    44,     0,   304,   305,   306,   307,   308,
+     301,     0,   209,   212,   216,   300,   299,   310,     0,   214,
+      85,    32,     0,   207,   208,   213,   210,   226,   309,     0,
+       0,    86,    77,    88,     0,   234,     0,   309,   233,   317,
+     318,   211,   227,   217,   225,   314,   309,   311,   313,   215,
+       0,    78,    79,    80,    81,    83,     0,    48,    90,    89,
+     145,    84,   302,   223,   230,   232,   303,   312,    82,     0,
+     125,    72,    49,     0,    92,    91,   150,   218,   228,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    95,
-      96,    99,   101,    98,   419,   387,   420,   421,     0,   126,
-       0,   102,   103,   105,   189,   187,   188,     0,    93,    92,
-      52,   144,    45,     0,   145,   152,   148,   156,   233,   231,
-     216,   220,   305,   227,     0,     0,     0,     0,   436,   437,
-     438,   439,     0,   440,   370,    55,   323,   326,   330,   332,
-     334,   344,   355,   358,   363,   364,   365,   371,     0,   366,
-     367,   368,   369,   445,     0,     0,     0,     0,   423,   380,
-       0,   199,   409,     0,     0,     0,   428,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   386,     0,
-       0,     0,   381,     0,   402,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    96,
+      97,   100,   102,    99,   423,   391,   424,   425,     0,   127,
+       0,   103,   104,   106,   193,   191,   192,     0,    94,    93,
+     147,     0,     0,   148,   155,   151,   159,   237,   235,   220,
+     224,   309,   231,     0,     0,     0,     0,   440,   441,   442,
+     443,     0,   444,   374,    56,   327,   330,   334,   336,   338,
+     348,   359,   362,   367,   368,   369,   375,     0,   370,   371,
+     372,   373,   449,     0,     0,     0,     0,   427,   384,     0,
+     203,   413,     0,     0,     0,   432,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   390,     0,     0,
+       0,   385,     0,   406,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    97,   194,   191,
-     190,     0,     0,   104,     0,     0,     0,    86,    94,   118,
-     120,    50,    51,    53,     0,    84,   143,   146,   147,   157,
-     154,   222,     0,   217,   218,   305,   225,   361,   362,   360,
-     194,   194,     0,    56,     0,   324,   328,     0,     0,     0,
-       0,     0,     0,     0,     0,   333,   335,   345,   357,   194,
-     446,   444,   429,     0,     0,     0,   200,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,    98,   198,   195,   194,
+       0,     0,   105,     0,     0,     0,    87,    95,   119,   121,
+      53,    46,   146,   149,   150,   160,   157,   226,     0,   221,
+     222,   309,   229,   365,   366,   364,   198,   198,     0,    57,
+       0,   328,   332,     0,     0,     0,     0,     0,     0,     0,
+       0,   337,   339,   349,   361,   198,   450,   448,   433,     0,
+       0,     0,   204,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   195,     0,   133,
-     127,   372,   111,   112,   106,   107,     0,   109,   110,   114,
-     115,   122,   123,   116,   119,   117,   121,    69,     0,    65,
-      66,    68,    49,    61,    58,    60,    59,    62,    63,    64,
-      87,   168,   172,   166,   176,     0,     0,   165,   153,   149,
-     159,   161,   162,   164,   160,   158,   180,   163,   155,   246,
-     234,     0,   276,     0,     0,   232,   235,   237,   238,   247,
-     249,   252,   261,   256,   259,   274,   248,   275,   215,     0,
-       0,    54,   100,     0,   327,     0,   331,   336,   337,   338,
-     339,   340,   341,     0,   342,     0,     0,   350,   356,   346,
-     347,     0,     0,   359,     0,   378,   379,   422,   197,     0,
-       0,     0,   373,   374,     0,   376,   377,     0,   414,   415,
-     416,   417,     0,   418,   403,   395,   408,   401,   385,   407,
-       0,   400,   384,   399,     0,   406,   398,   391,     0,   383,
-     397,   390,   382,   389,   405,     0,   388,   404,   396,   192,
-       0,   108,   113,    55,    67,    47,   169,   173,     0,   177,
-     186,     0,   150,   147,     0,     0,   284,   292,     0,   277,
-     279,   286,   288,   291,   262,   305,   250,   254,   270,     0,
-     272,   271,   258,   260,   263,   434,   435,     0,   432,   325,
-     329,   343,   352,   353,   351,   354,   348,   349,     0,     0,
-       0,     0,     0,     0,     0,   425,     0,   425,     0,     0,
-     197,   125,   130,   132,   134,     0,    46,     0,     0,   167,
-       0,     0,   151,   184,   278,   285,     0,   281,   290,   293,
-     289,   244,     0,   253,     0,   257,     0,   294,   273,     0,
-     430,   442,   431,   201,     0,   198,     0,   411,   412,   375,
-     413,   426,     0,   392,     0,   393,   394,     0,     0,    57,
-     170,     0,   178,     0,   181,   287,   283,   236,   251,   255,
-       0,   267,     0,   268,     0,   443,     0,   196,     0,   424,
-     427,   193,   139,   140,     0,   128,   141,   136,   137,   138,
-     135,     0,   174,     0,   182,   185,     0,   282,   241,   245,
-     269,   264,   266,     0,     0,   433,   410,   131,   129,   171,
-     175,     0,   280,   239,   242,   243,   265,     0,   183,   305,
-     441,   240
+       0,     0,     0,   199,     0,   134,   128,   376,   112,   113,
+     107,   108,     0,   110,   111,   115,   116,   123,   124,   117,
+     120,   118,   122,    51,    52,    54,     0,    85,   171,   175,
+     169,   180,     0,     0,   168,   156,   152,   162,   164,   165,
+     167,   163,   161,   184,   166,   158,   250,   238,     0,   280,
+       0,     0,   236,   239,   241,   242,   251,   253,   256,   265,
+     260,   263,   278,   252,   279,   219,     0,     0,    55,   101,
+       0,   331,     0,   335,   340,   341,   342,   343,   344,   345,
+       0,   346,     0,     0,   354,   360,   350,   351,     0,     0,
+     363,     0,   382,   383,   426,   201,     0,     0,     0,   377,
+     378,     0,   380,   381,     0,   418,   419,   420,   421,     0,
+     422,   407,   399,   412,   405,   389,   411,     0,   404,   388,
+     403,     0,   410,   402,   395,     0,   387,   401,   394,   386,
+     393,   409,     0,   392,   408,   400,   196,     0,   109,   114,
+      70,     0,    66,    67,    69,    50,    62,    59,    61,    60,
+      63,    64,    65,    88,   172,   176,     0,   181,   190,     0,
+     153,   150,     0,     0,   288,   296,     0,   281,   283,   290,
+     292,   295,   266,   309,   254,   258,   274,     0,   276,   275,
+     262,   264,   267,   438,   439,     0,   436,   329,   333,   347,
+     356,   357,   355,   358,   352,   353,     0,     0,     0,     0,
+       0,     0,     0,   429,     0,   429,     0,     0,   201,   126,
+     131,   133,   135,    56,    68,    48,     0,   177,   170,     0,
+       0,   154,   188,   282,   289,     0,   285,   294,   297,   293,
+     248,     0,   257,     0,   261,     0,   298,   277,     0,   434,
+     446,   435,   205,     0,   202,     0,   415,   416,   379,   417,
+     430,     0,   396,     0,   397,   398,     0,     0,     0,    47,
+     173,   143,   182,     0,   185,   291,   287,   240,   255,   259,
+       0,   271,     0,   272,     0,   447,     0,   200,     0,   428,
+     431,   197,   140,   141,     0,   129,   142,   137,   138,   139,
+     136,    58,     0,   144,     0,     0,   186,   189,     0,   286,
+     245,   249,   273,   268,   270,     0,     0,   437,   414,   132,
+     130,   174,     0,   179,     0,   284,   243,   246,   247,   269,
+       0,   178,   187,   309,   445,   244
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const short int
   MapSetParser::yypgoto_[] =
   {
-      -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,   463,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,   -88,  -660,  -660,  -660,
-    -660,   -84,  -660,    40,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,   368,   148,  -660,    34,  -660,
-    -660,  -660,  -660,  -660,  -660,   288,  -660,  -660,   274,  -660,
-    -660,    62,  -660,  -660,  -660,  -660,  -660,  -660,   159,   161,
-     154,  -660,  -660,  -660,  -660,  -660,  -660,  -202,  -196,  -660,
-    -660,  -660,  -370,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,  -660,
-    -352,  -158,   235,  -660,  -343,  -585,  -127,  -197,  -660,  -660,
-    -660,   401,  -660,  -660,  -660,  -660,  -660,  -660,   -77,  -660,
-    -660,  -660,  -660,  -660,   158,  -376,  -660,  -660,   268,   271,
-    -660,  -660,  -660,  -660,  -660,  -206,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,    32,  -660,  -660,  -660,  -138,  -660,
-    -660,    54,  -660,  -120,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,  -660,  -660,  -660,  -660,  -660,  -660,  -590,  -660,  -660,
-    -659,  -110,  -660,  -660,  -660,  -660,  -660,  -660,  -107,   -91,
-    -469,   -11,    35,   460,  -660,  -660,  -660,    36,  -660,  -660,
-      37,  -660,  -660,  -660,   -86,  -660,  -660,    24,  -660,  -660,
-    -660,  -331,  -660,  -326,  -161,  -167,  -164,  -660,  -660,   -87,
-    -660,  -660,  -660,  -344,  -660,  -660,  -660,  -660,  -660,  -660,
-    -660,    -9,  -660,  -660,  -660,   -40,  -660,   167,   168,   120,
-    -191,    23,  -660,  -660
+      -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,   489,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -122,  -649,  -649,
+    -649,  -649,  -119,  -649,   -48,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,   389,    73,  -649,   -52,
+    -649,  -649,  -649,  -649,  -649,  -649,   314,  -649,  -649,   308,
+    -649,  -649,    95,  -649,  -649,  -649,  -649,  -649,  -649,   185,
+     188,   184,  -649,  -649,  -649,  -649,  -649,  -649,  -176,  -649,
+    -190,  -649,  -649,  -649,  -361,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -649,  -649,  -649,  -336,  -177,   260,  -649,  -347,  -547,   -98,
+    -198,  -649,  -649,  -649,   434,  -649,  -649,  -649,  -649,  -649,
+    -649,   -83,  -649,  -649,  -649,  -649,  -649,   189,  -372,  -649,
+    -649,   293,   294,  -649,  -649,  -649,  -649,  -649,  -189,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,    67,  -649,  -649,
+    -649,  -114,  -649,  -649,    68,  -649,  -113,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,  -649,
+    -595,  -649,  -649,  -648,  -110,  -649,  -649,  -649,  -649,  -649,
+    -649,  -105,   -91,  -634,   -11,    31,   520,  -649,  -649,  -649,
+      51,  -649,  -649,    53,  -649,  -649,  -649,    57,  -649,  -649,
+      42,  -649,  -649,  -649,  -350,  -649,  -348,   -39,  -157,  -168,
+    -649,  -649,   -82,  -649,  -649,  -649,  -459,  -649,  -649,  -649,
+    -649,  -649,  -649,  -649,    -9,  -649,  -649,  -649,    33,  -649,
+     174,   175,    58,  -191,    47,  -649,  -649
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
@@ -3507,462 +3547,460 @@ namespace w3c_sw {
   {
         -1,     1,     2,     9,    21,    22,    50,    83,    52,    53,
       44,    45,    67,    68,   106,   100,    46,     5,     6,    10,
-       7,    24,    58,   104,   261,   375,   181,   262,   373,   374,
-     393,   394,   479,   480,   481,   482,    55,   112,    56,    57,
-     130,   142,   161,   162,   163,   164,   143,   144,   167,   168,
-     184,   258,   367,   169,   239,   240,   185,   251,   252,   259,
-     464,   465,   466,   467,   468,   368,   473,   475,   369,   370,
-     182,   249,   361,   734,   664,   708,   600,   735,   171,   186,
-     263,   264,   265,   613,   498,   377,   266,   379,   380,   499,
-     500,   608,   501,   606,   667,   741,   502,   607,   668,   503,
-     504,   609,   670,   505,   506,   614,   745,   761,   714,   507,
-     253,   254,   360,   660,   458,   695,   649,   312,   558,   103,
-     111,   121,   122,   135,   136,   123,   139,   137,   152,   383,
-     384,   271,   187,   153,   154,   173,   273,   188,   174,   147,
-     267,   382,   381,   515,   625,   516,   764,   769,   765,   749,
-     717,   510,   517,   518,   519,   520,   683,   626,   521,   685,
-     627,   522,   632,   523,   633,   752,   723,   688,   634,   524,
-     525,   619,   747,   716,   675,   676,   620,   621,   679,   622,
-     689,   155,   125,   132,   126,   127,   128,   156,   175,   158,
-     148,   284,   110,   285,   286,   534,   395,   287,   536,   396,
-     288,   289,   405,   406,   290,   291,   547,   553,   645,   548,
-     407,   292,   408,   293,   294,   295,   296,   309,   244,   702,
-     245,   246,   247,   297,   691,   637,   298,   725,   726,   299,
-     411,   300,    62,    63,    64,   301,    87,    88,    89,   302,
-      33,   303,    42,    92
+       7,    24,    58,   104,   260,   261,   477,   181,   371,   475,
+     476,   389,   390,   592,   593,   594,   595,    55,   112,    56,
+      57,   130,   142,   161,   162,   163,   164,   143,   144,   167,
+     168,   184,   258,   366,   169,   239,   240,   185,   251,   252,
+     259,   460,   461,   462,   463,   464,   367,   469,   471,   368,
+     369,   182,   249,   360,   734,   662,   707,   587,   735,   744,
+     171,   186,   262,   263,   264,   611,   485,   373,   265,   375,
+     376,   486,   487,   606,   488,   604,   666,   742,   489,   605,
+     667,   711,   490,   491,   607,   669,   492,   493,   612,   747,
+     764,   714,   494,   253,   254,   359,   658,   454,   694,   647,
+     311,   545,   103,   111,   121,   122,   135,   136,   123,   139,
+     137,   152,   379,   380,   270,   187,   153,   154,   173,   272,
+     188,   174,   147,   266,   378,   377,   502,   623,   503,   767,
+     773,   768,   751,   717,   497,   504,   505,   506,   507,   682,
+     624,   508,   684,   625,   509,   630,   510,   631,   754,   723,
+     687,   632,   511,   512,   617,   749,   716,   674,   675,   618,
+     619,   678,   620,   688,   155,   125,   132,   126,   127,   128,
+     156,   175,   158,   148,   283,   110,   284,   285,   521,   391,
+     286,   523,   392,   287,   288,   401,   402,   289,   290,   534,
+     540,   643,   535,   403,   291,   404,   292,   293,   294,   295,
+     308,   244,   701,   245,   246,   247,   296,   690,   635,   297,
+     725,   726,   298,   407,   299,    62,    63,    64,   300,    87,
+      88,    89,   301,    33,   302,    42,    92
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
      number is the opposite.  If zero, do what YYDEFACT says.  */
-  const short int MapSetParser::yytable_ninf_ = -306;
+  const short int MapSetParser::yytable_ninf_ = -310;
   const short int
   MapSetParser::yytable_[] =
   {
-        27,   124,   316,    32,    34,    35,    36,    37,   508,   528,
-     108,    86,   469,   328,    86,   243,   255,   160,    59,   256,
-     129,   241,   459,   686,   124,   751,   677,   720,   307,    60,
-     486,   157,   617,   721,    65,   551,   661,   140,   662,   310,
-      41,   358,    85,   129,   722,    85,    54,   529,   530,   177,
-      97,   693,   731,   141,   -73,   146,    38,    39,    40,   694,
-     694,    86,   159,   753,     3,    47,   554,    48,    49,   616,
-     701,    86,   701,   145,    91,   243,   268,    91,     4,   552,
-     617,   241,   618,    98,   255,   511,    84,   256,     8,    94,
-     109,   107,    85,    23,    86,   269,   512,    51,    86,    43,
-     109,   105,    85,    66,   678,   131,    61,    86,   412,    95,
-     513,    96,   469,   387,   388,   389,    86,    25,    26,   687,
-     101,   149,    99,   109,    91,    85,   149,   109,   149,    85,
-     618,   102,   687,   511,    91,   113,   109,   486,    85,    38,
-      39,    40,   628,   610,   512,   109,    86,    85,    25,    26,
-     133,    38,    39,    40,   308,   150,   762,    91,   513,   629,
-     150,    91,   150,   165,   663,   311,   138,   359,   242,   114,
-      91,    90,   365,   366,    90,   109,   134,    85,   166,    91,
-      38,    39,    40,   165,   630,    25,    26,    38,    39,    40,
-     170,   545,   546,   172,   514,   371,   372,   255,   710,   711,
-     256,   179,   248,    38,    39,    40,   248,   544,   183,    91,
-     485,    38,    39,    40,   642,   643,   483,    28,    29,    30,
-      31,    90,   511,   180,   631,   646,   647,   257,   242,   270,
-     272,    90,    86,   512,   397,   398,   399,   400,   401,   402,
-     304,   305,   364,   672,   403,   404,   306,   513,   313,   681,
-     314,    38,    39,    40,    90,   315,    25,    26,    90,   149,
-     317,   109,   248,    85,    38,    39,    40,    90,   268,    25,
-      26,   491,   492,   318,   248,   319,    90,    74,    75,    76,
-      77,    78,    79,   514,   320,   321,   322,   269,   180,    28,
-      29,    30,    31,   150,  -179,    91,   323,   255,   324,   602,
-     256,   325,   493,   494,   326,   495,    90,   327,   329,   330,
-     424,   537,   538,   539,   540,   541,   542,   485,   331,   376,
-     757,   732,   733,   483,   332,   333,   334,   335,   255,   336,
-     337,   256,   338,   339,   488,   340,   341,   342,    86,   343,
-      38,    39,    40,   344,   345,    86,   641,   346,   347,   348,
-     460,   349,   350,   470,    11,    12,    13,    14,    15,    16,
-      17,    18,    19,   484,    20,   487,   351,   109,   352,    85,
-     149,   526,   353,   354,   109,   355,    85,   356,   496,   390,
-     378,   531,   391,   409,   392,   457,   461,   248,   471,   366,
-     365,   141,    90,   771,   472,   533,   532,   248,   543,   535,
-     559,    91,   560,   555,   150,   527,   556,   557,    91,   561,
-     562,   563,   669,   564,   565,   566,   568,   567,   673,   569,
-     570,   571,    69,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    28,    29,    30,    31,    38,    39,    40,
-     572,   488,    25,    26,   580,   732,   733,   573,   574,   575,
-     576,   577,   578,   470,   579,   581,   582,   583,   585,   586,
-     587,   584,   589,   590,   591,   592,   593,   594,   250,   588,
-     484,   596,   487,   597,   712,   598,   595,   611,   713,   612,
-     674,   690,   692,   697,   682,   696,   698,   248,   699,   700,
-     703,   705,   694,   684,   489,   706,   709,   715,    90,   729,
-     730,   687,   724,   268,   248,    90,   750,   744,   746,   754,
-     755,   748,   756,   760,   766,   742,    93,   666,   248,   665,
-     767,   604,   269,   490,   605,   363,   601,   357,   178,   476,
-     474,   497,   758,   707,   527,   151,   623,   527,   410,   509,
-     386,   385,   763,   615,   718,   759,    69,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    28,    29,    30,
-      31,    38,    39,    40,   719,   768,    25,    26,   624,   639,
-     704,   644,   640,    86,   549,   550,   770,     0,     0,     0,
-       0,     0,     0,     0,     0,    86,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,   489,   109,     0,    85,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,   109,     0,    85,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    91,     0,     0,   623,
-       0,   680,     0,     0,     0,     0,     0,     0,    91,     0,
-       0,     0,     0,     0,     0,     0,   149,   149,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   738,    69,
-      70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
-      28,    29,    30,    31,    38,    39,    40,    80,    81,     0,
-     150,   150,    82,     0,   738,     0,     0,   736,     0,   737,
-       0,     0,   743,     0,     0,   527,     0,   527,   260,     0,
-     362,     0,     0,     0,     0,     0,     0,     0,   115,   116,
-     117,   118,   119,   736,     0,   737,  -305,     0,     0,    86,
-       0,   740,     0,    90,     0,     0,     0,   526,   120,     0,
-       0,     0,     0,     0,     0,    90,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   740,   109,     0,
-      85,     0,     0,     0,     0,   413,   414,   415,     0,   623,
-     416,   527,     0,   417,   418,   419,     0,   420,   421,   422,
-     423,     0,   425,   426,   427,   428,   429,   430,     0,   431,
-     432,   433,    91,   434,     0,   435,   436,   437,   438,   439,
-     440,   441,   442,   443,   444,   445,   446,   447,   448,   449,
-     450,   451,   452,   453,   454,   455,   456,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   739,    69,
+        27,   124,   241,    32,    34,    35,    36,    37,   315,   515,
+     108,   243,   327,   495,   455,   256,   160,   599,    59,   676,
+     129,   659,    60,   660,   124,   753,   255,   465,   306,   309,
+     357,   538,   710,   157,    65,   478,   479,   720,   626,   516,
+     517,   721,    85,   129,   105,    85,   685,   140,    54,   146,
+      97,   177,   722,   180,   498,   627,   159,   -74,   541,  -183,
+       3,   692,   241,   141,    41,   499,     8,   480,   481,   693,
+     482,   243,     4,   731,   755,   539,   267,    25,    26,   500,
+     628,   693,    84,   256,    86,    94,    47,    86,    48,    49,
+     109,   107,    85,   498,   255,   268,   364,   365,    91,    61,
+     109,    91,    85,   614,   499,   131,   700,    98,   700,    90,
+     762,    23,    90,   408,   615,   501,   473,   474,   500,    51,
+     629,   149,    43,   109,   465,    85,   149,   109,   149,    85,
+     145,    95,   686,    66,    86,   599,   109,    96,    85,   677,
+      25,    26,   686,   483,    86,   109,   608,    85,    91,   661,
+      38,    39,    40,   765,   307,   310,   358,    99,    91,    90,
+      28,    29,    30,    31,   616,   101,   615,    86,   242,    90,
+     102,    86,    38,    39,    40,   109,   114,    85,   133,   150,
+      86,    91,   640,   641,   150,    91,   150,   165,   113,    86,
+     644,   645,    90,   134,    91,   256,    90,    28,    29,    30,
+      31,   138,   531,    91,   498,    90,   255,   165,    38,    39,
+      40,    38,    39,    40,    90,   499,   616,   166,   170,    86,
+     172,    38,    39,    40,   179,   180,   248,   183,   242,   500,
+     248,   257,   269,    91,   383,   384,   385,    38,    39,    40,
+     271,   303,    25,    26,    90,   304,    38,    39,    40,   305,
+     671,   680,   532,   533,   312,   313,   314,   316,   149,   317,
+     109,   318,    85,   319,   267,   501,   320,   321,   115,   116,
+     117,   118,   119,    38,    39,    40,  -309,   322,   323,    38,
+      39,    40,   324,   268,    25,    26,   248,   325,   120,   326,
+     328,   329,   256,   330,   331,   332,   333,   334,   248,   596,
+     335,   336,   337,   255,    86,   589,   338,   339,   598,   420,
+     340,   341,   342,   343,   256,   344,   150,   345,    91,   346,
+     347,   348,    38,    39,    40,   255,   349,    25,    26,    90,
+     350,   351,   639,   352,   353,   354,   355,   363,    74,    75,
+      76,    77,    78,    79,   370,   372,   374,   453,   386,   456,
+     387,   365,   466,   388,    11,    12,    13,    14,    15,    16,
+      17,    18,    19,   109,    20,    85,   149,   513,   405,   467,
+     109,   457,    85,   468,   364,   519,   530,   518,   520,    69,
       70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
       28,    29,    30,    31,    38,    39,    40,    80,    81,    25,
-      26,     0,    82,     0,   739,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,   462,
-     463,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   250,     0,     0,     0,     0,     0,     0,    90,
+      26,   775,    82,   522,   542,   543,   544,    86,   546,   547,
+     248,   548,   549,   550,    86,   551,   668,   596,   554,   552,
+     553,    91,   672,   555,   150,   514,   598,   556,    91,   557,
+     558,   560,    90,   393,   394,   395,   396,   397,   398,    90,
+     559,   561,   562,   399,   400,   563,   564,   565,   566,   466,
+     524,   525,   526,   527,   528,   529,   568,   567,   569,   570,
+     571,   572,   573,   574,   576,   597,   577,   600,   575,   578,
+     579,   580,   581,   582,   583,   584,   585,   250,   141,   712,
+      69,    70,    71,    72,    73,    74,    75,    76,    77,    78,
+      79,    28,    29,    30,    31,    38,    39,    40,    80,    81,
+     609,   267,   610,    82,   673,   681,   683,   248,   689,   601,
+     691,   695,   696,   697,   698,   699,   702,   693,   704,   705,
+     268,   715,   713,   248,   729,   686,   724,   730,   741,   248,
+     743,   746,   750,   752,   602,   756,   769,   757,   758,   748,
+     763,   770,    93,   709,   708,   514,   664,   621,   514,   178,
+     603,   665,   761,   356,   472,   588,   470,   484,   760,   362,
+     706,   766,   406,   381,   382,   613,   496,   718,   151,   622,
+     719,   637,   771,   703,   772,   638,   642,   536,   537,   774,
+       0,     0,     0,   597,     0,   600,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   190,     0,
-     191,   192,   193,   194,   195,   196,   197,   198,   599,   199,
+     109,     0,    85,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   109,     0,    85,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   601,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,   248,     0,     0,    86,     0,     0,     0,     0,     0,
+       0,     0,   602,     0,     0,   149,    86,     0,    91,     0,
+       0,   621,     0,   679,     0,     0,     0,     0,     0,    90,
+      91,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    90,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   736,     0,   737,     0,
+       0,     0,   745,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,   150,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,   736,     0,   737,     0,     0,   514,     0,
+     514,     0,     0,   149,     0,     0,     0,     0,     0,   513,
+     738,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,   740,     0,     0,     0,     0,     0,
+       0,     0,   109,     0,    85,   739,     0,   738,     0,     0,
+     361,     0,     0,     0,     0,     0,   759,   732,   733,     0,
+       0,   740,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,   150,   739,     0,     0,   621,     0,   514,     0,     0,
+       0,     0,     0,     0,     0,     0,    86,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      91,     0,     0,     0,   409,   410,   411,     0,     0,   412,
+       0,    90,   413,   414,   415,     0,   416,   417,   418,   419,
+       0,   421,   422,   423,   424,   425,   426,     0,   427,   428,
+     429,     0,   430,     0,   431,   432,   433,   434,   435,   436,
+     437,   438,   439,   440,   441,   442,   443,   444,   445,   446,
+     447,   448,   449,   450,   451,   452,     0,   633,    69,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    28,
+      29,    30,    31,    38,    39,    40,     0,   250,    25,    26,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,   273,
+     274,     0,   275,   190,     0,   191,   192,   193,   194,   195,
+     196,   197,   198,     0,   199,   200,   201,   202,   203,   204,
+     205,   206,   207,   208,   209,     0,   210,     0,     0,     0,
+     276,   277,   278,   279,   280,   281,   282,   211,     0,     0,
+       0,     0,     0,     0,     0,   212,     0,   213,     0,     0,
+     214,   215,     0,   216,   586,   217,   218,   219,     0,   220,
+     221,     0,   222,     0,   223,   224,   225,   226,   227,   228,
+     229,   230,   231,   232,   233,   234,   235,   236,   237,   238,
+      69,    70,    71,    72,    73,    74,    75,    76,    77,    78,
+      79,    28,    29,    30,    31,    38,    39,    40,     0,     0,
+      25,    26,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,   634,   636,     0,    69,
+      70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
+      28,    29,    30,    31,    38,    39,    40,    80,    81,    25,
+      26,   646,    82,     0,     0,     0,   648,   649,   650,     0,
+       0,   651,     0,     0,   652,     0,     0,     0,     0,   653,
+       0,     0,     0,     0,     0,     0,     0,   654,     0,     0,
+       0,   655,     0,     0,     0,   656,     0,     0,     0,     0,
+       0,     0,   657,     0,     0,     0,     0,     0,     0,     0,
+       0,   663,     0,     0,     0,     0,     0,     0,   590,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,   670,
+       0,     0,     0,     0,     0,     0,     0,     0,   591,     0,
+       0,     0,     0,     0,   -45,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,   115,   116,   117,   118,   119,     0,
+       0,     0,  -309,     0,   190,     0,   191,   192,   193,   194,
+     195,   196,   197,   198,   120,   199,   200,   201,   202,   203,
+     204,   205,   206,   207,   208,   209,     0,   210,     0,     0,
+       0,   276,   277,   278,   279,   280,   281,   282,   211,     0,
+       0,     0,     0,     0,     0,     0,   212,     0,   213,     0,
+       0,   214,   215,   727,   216,   728,   217,   218,   219,     0,
+     220,   221,     0,   222,     0,   223,   224,   225,   226,   227,
+     228,   229,   230,   231,   232,   233,   234,   235,   236,   237,
+     238,    69,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    28,    29,    30,    31,    38,    39,    40,     0,
+       0,    25,    26,     0,     0,    69,    70,    71,    72,    73,
+      74,    75,    76,    77,    78,    79,    28,    29,    30,    31,
+      38,    39,    40,    80,    81,    25,    26,     0,    82,   458,
+     459,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   250,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,   115,   116,
+     117,   118,   119,     0,     0,     0,     0,   176,   190,     0,
+     191,   192,   193,   194,   195,   196,   197,   198,   120,   199,
      200,   201,   202,   203,   204,   205,   206,   207,   208,   209,
-       0,   210,     0,     0,     0,     0,     0,     0,   603,     0,
+       0,   210,     0,   115,   116,   117,   118,   119,     0,     0,
        0,     0,   211,     0,     0,     0,     0,     0,     0,     0,
-     212,     0,   213,     0,     0,   214,   215,     0,   216,     0,
+     212,     0,   213,   120,     0,   214,   215,     0,   216,     0,
      217,   218,   219,     0,   220,   221,     0,   222,     0,   223,
      224,   225,   226,   227,   228,   229,   230,   231,   232,   233,
-     234,   235,   236,   237,   238,     0,     0,     0,     0,   636,
-     638,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-      38,    39,    40,     0,     0,    25,    26,     0,     0,     0,
-       0,     0,     0,     0,   648,     0,     0,     0,     0,   650,
-     651,   652,     0,     0,   653,     0,     0,   654,     0,     0,
-       0,     0,   655,     0,     0,     0,     0,     0,     0,     0,
-     656,     0,     0,     0,   657,     0,     0,     0,   658,     0,
-     635,     0,     0,     0,     0,   659,     0,     0,     0,     0,
+     234,   235,   236,   237,   238,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     250,   671,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   274,   275,     0,   276,   190,     0,   191,   192,
-     193,   194,   195,   196,   197,   198,     0,   199,   200,   201,
-     202,   203,   204,   205,   206,   207,   208,   209,     0,   210,
-       0,     0,     0,   277,   278,   279,   280,   281,   282,   283,
-     211,     0,     0,     0,     0,     0,     0,     0,   212,     0,
-     213,     0,     0,   214,   215,     0,   216,     0,   217,   218,
-     219,     0,   220,   221,   727,   222,   728,   223,   224,   225,
-     226,   227,   228,   229,   230,   231,   232,   233,   234,   235,
-     236,   237,   238,    69,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    28,    29,    30,    31,    38,    39,
-      40,   477,     0,    25,    26,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,   478,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   115,   116,   117,
-     118,   119,     0,     0,     0,  -305,     0,   190,     0,   191,
-     192,   193,   194,   195,   196,   197,   198,   120,   199,   200,
-     201,   202,   203,   204,   205,   206,   207,   208,   209,     0,
-     210,     0,     0,     0,   277,   278,   279,   280,   281,   282,
-     283,   211,   115,   116,   117,   118,   119,     0,     0,   212,
-       0,   213,     0,     0,   214,   215,     0,   216,     0,   217,
-     218,   219,   120,   220,   221,     0,   222,     0,   223,   224,
-     225,   226,   227,   228,   229,   230,   231,   232,   233,   234,
-     235,   236,   237,   238,    69,    70,    71,    72,    73,    74,
+      38,    39,    40,     0,     0,    25,    26,     0,     0,    69,
+      70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
+      28,    29,    30,    31,    38,    39,    40,    80,    81,    25,
+      26,     0,    82,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,    69,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    28,    29,    30,    31,    38,
-      39,    40,     0,     0,    25,    26,     0,     0,    69,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    28,
-      29,    30,    31,    38,    39,    40,    80,    81,    25,    26,
-       0,    82,   115,   116,   117,   118,   119,     0,     0,     0,
-       0,   176,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   120,    69,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    28,    29,    30,    31,    38,    39,
-      40,    80,    81,    25,    26,     0,    82,    69,    70,    71,
-      72,    73,    74,    75,    76,    77,    78,    79,    28,    29,
-      30,    31,    38,    39,    40,    80,    81,    25,    26,     0,
-      82,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      39,    40,    80,    81,    25,    26,   250,    82,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    69,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    28,    29,    30,    31,    38,    39,
-      40,    80,    81,    25,    26,   250,    82,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   274,   275,     0,
-     276,   190,     0,   191,   192,   193,   194,   195,   196,   197,
-     198,     0,   199,   200,   201,   202,   203,   204,   205,   206,
-     207,   208,   209,     0,   210,     0,     0,     0,   277,   278,
-     279,   280,   281,   282,   283,   211,     0,     0,     0,     0,
-       0,     0,     0,   212,     0,   213,     0,     0,   214,   215,
-       0,   216,     0,   217,   218,   219,     0,   220,   221,     0,
-     222,     0,   223,   224,   225,   226,   227,   228,   229,   230,
-     231,   232,   233,   234,   235,   236,   237,   238,    69,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    28,
-      29,    30,    31,    38,    39,    40,   250,     0,    25,    26,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,   190,     0,   191,   192,   193,   194,   195,   196,
+       0,     0,     0,     0,     0,     0,     0,     0,   273,   274,
+       0,   275,   190,     0,   191,   192,   193,   194,   195,   196,
      197,   198,     0,   199,   200,   201,   202,   203,   204,   205,
-     206,   207,   208,   209,     0,   210,     0,     0,     0,   277,
-     278,   279,   280,   281,   282,   283,   211,     0,     0,     0,
+     206,   207,   208,   209,     0,   210,     0,     0,     0,   276,
+     277,   278,   279,   280,   281,   282,   211,     0,     0,     0,
        0,     0,     0,     0,   212,     0,   213,     0,     0,   214,
      215,     0,   216,     0,   217,   218,   219,     0,   220,   221,
        0,   222,     0,   223,   224,   225,   226,   227,   228,   229,
      230,   231,   232,   233,   234,   235,   236,   237,   238,    69,
       70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
-      28,    29,    30,    31,    38,    39,    40,   478,     0,    25,
+      28,    29,    30,    31,    38,    39,    40,   250,     0,    25,
       26,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,   190,     0,   191,   192,   193,   194,   195,
+       0,   732,   733,   190,     0,   191,   192,   193,   194,   195,
      196,   197,   198,     0,   199,   200,   201,   202,   203,   204,
      205,   206,   207,   208,   209,     0,   210,     0,     0,     0,
-     277,   278,   279,   280,   281,   282,   283,   211,     0,     0,
+     276,   277,   278,   279,   280,   281,   282,   211,     0,     0,
        0,     0,     0,     0,     0,   212,     0,   213,     0,     0,
      214,   215,     0,   216,     0,   217,   218,   219,     0,   220,
      221,     0,   222,     0,   223,   224,   225,   226,   227,   228,
      229,   230,   231,   232,   233,   234,   235,   236,   237,   238,
       69,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    28,    29,    30,    31,    38,    39,    40,   189,     0,
-      25,    26,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,   190,     0,   191,   192,   193,   194,
+      79,    28,    29,    30,    31,    38,    39,    40,   591,     0,
+      25,    26,    69,    70,    71,    72,    73,    74,    75,    76,
+      77,    78,    79,    28,    29,    30,    31,    38,    39,    40,
+       0,     0,    25,    26,   190,     0,   191,   192,   193,   194,
      195,   196,   197,   198,     0,   199,   200,   201,   202,   203,
      204,   205,   206,   207,   208,   209,     0,   210,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   211,     0,
+       0,   276,   277,   278,   279,   280,   281,   282,   211,     0,
        0,     0,     0,     0,     0,     0,   212,     0,   213,     0,
        0,   214,   215,     0,   216,     0,   217,   218,   219,     0,
      220,   221,     0,   222,     0,   223,   224,   225,   226,   227,
      228,   229,   230,   231,   232,   233,   234,   235,   236,   237,
-     238,   250,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    38,    39,    40,     0,
-       0,    25,    26,     0,     0,     0,     0,   190,     0,   191,
-     192,   193,   194,   195,   196,   197,   198,     0,   199,   200,
-     201,   202,   203,   204,   205,   206,   207,   208,   209,     0,
-     210,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,   211,     0,     0,     0,     0,     0,     0,     0,   212,
-       0,   213,     0,     0,   214,   215,     0,   216,     0,   217,
-     218,   219,     0,   220,   221,     0,   222,     0,   223,   224,
-     225,   226,   227,   228,   229,   230,   231,   232,   233,   234,
-     235,   236,   237,   238,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    38,
-      39,    40
+     238,    69,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    28,    29,    30,    31,    38,    39,    40,   189,
+       0,    25,    26,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,   190,     0,   191,   192,   193,
+     194,   195,   196,   197,   198,     0,   199,   200,   201,   202,
+     203,   204,   205,   206,   207,   208,   209,     0,   210,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,   211,
+       0,     0,     0,     0,     0,     0,     0,   212,     0,   213,
+       0,     0,   214,   215,     0,   216,     0,   217,   218,   219,
+       0,   220,   221,     0,   222,     0,   223,   224,   225,   226,
+     227,   228,   229,   230,   231,   232,   233,   234,   235,   236,
+     237,   238,   250,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    38,    39,    40,
+       0,     0,    25,    26,     0,     0,     0,     0,   190,     0,
+     191,   192,   193,   194,   195,   196,   197,   198,     0,   199,
+     200,   201,   202,   203,   204,   205,   206,   207,   208,   209,
+       0,   210,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   211,     0,     0,     0,     0,     0,     0,     0,
+     212,     0,   213,     0,     0,   214,   215,     0,   216,     0,
+     217,   218,   219,     0,   220,   221,     0,   222,     0,   223,
+     224,   225,   226,   227,   228,   229,   230,   231,   232,   233,
+     234,   235,   236,   237,   238,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      38,    39,    40
   };
 
   /* YYCHECK.  */
   const short int
   MapSetParser::yycheck_[] =
   {
-        11,   111,   198,    12,    13,    14,    15,    16,   378,   385,
-     101,    51,   364,   210,    54,   179,   183,    27,    27,   183,
-     111,   179,    40,    52,   134,    41,   616,   686,    43,    91,
-     374,   138,    54,    41,    43,    23,    41,    26,    43,    43,
-      17,    43,    51,   134,    52,    54,    16,   390,   391,   156,
-      59,    44,    44,    42,    24,   132,   161,   162,   163,    52,
-      52,   101,   139,   722,     0,    12,   409,    14,    15,    43,
-     655,   111,   657,    54,    51,   239,   186,    54,    19,    67,
-      54,   239,   104,    60,   251,    43,    51,   251,   161,    54,
-     101,   100,   101,    20,   134,   186,    54,    40,   138,    55,
-     111,    41,   111,    40,    54,   114,   168,   147,   304,    24,
-      68,   162,   464,   274,   275,   276,   156,   166,   167,   148,
-      41,   132,    56,   134,   101,   134,   137,   138,   139,   138,
-     104,    40,   148,    43,   111,   161,   147,   481,   147,   161,
-     162,   163,    23,   495,    54,   156,   186,   156,   166,   167,
-      41,   161,   162,   163,   169,   132,   746,   134,    68,    40,
-     137,   138,   139,   140,   169,   169,    43,   169,   179,    47,
-     147,    51,    32,    33,    54,   186,    47,   186,    94,   156,
-     161,   162,   163,   160,    65,   166,   167,   161,   162,   163,
-      40,    65,    66,    56,   104,    21,    22,   364,   667,   668,
-     364,    29,   179,   161,   162,   163,   183,   404,    95,   186,
-     374,   161,   162,   163,   545,   546,   374,   157,   158,   159,
-     160,   101,    43,    34,   105,   551,   552,    28,   239,    53,
-      52,   111,   272,    54,    59,    60,    61,    62,    63,    64,
-      78,    43,    29,   613,    69,    70,    43,    68,    43,   625,
-      43,   161,   162,   163,   134,    43,   166,   167,   138,   270,
-      43,   272,   239,   272,   161,   162,   163,   147,   378,   166,
-     167,    17,    18,    43,   251,    43,   156,   151,   152,   153,
-     154,   155,   156,   104,    43,    43,    43,   378,    34,   157,
-     158,   159,   160,   270,    40,   272,    43,   464,    43,   466,
-     464,    43,    48,    49,    43,    51,   186,    43,    43,    43,
-     321,   397,   398,   399,   400,   401,   402,   481,    43,    41,
-      44,    45,    46,   481,   169,    43,   169,    43,   495,    43,
-      43,   495,    43,    43,   374,    43,    43,    43,   378,    43,
-     161,   162,   163,    43,    43,   385,   543,    43,    43,    43,
-     361,    43,    43,   364,     3,     4,     5,     6,     7,     8,
-       9,    10,    11,   374,    13,   374,    43,   378,    43,   378,
-     381,   382,    43,    43,   385,    43,   385,    43,   124,    43,
-      47,   392,    43,    43,    93,    21,    44,   364,   148,    33,
-      32,    42,   272,   769,   148,    57,    44,   374,    70,    58,
-      52,   378,    52,    44,   381,   382,    44,    44,   385,    52,
-      44,    44,   608,    52,    44,    44,    44,    52,   614,    44,
-      44,    44,   146,   147,   148,   149,   150,   151,   152,   153,
-     154,   155,   156,   157,   158,   159,   160,   161,   162,   163,
-      52,   481,   166,   167,    52,    45,    46,    44,    44,    44,
-      44,    44,    44,   464,    44,    44,    44,    44,    44,    44,
-      44,    52,    44,    44,    44,    44,    44,    44,    43,    52,
-     481,    44,   481,    44,   670,    44,    52,    43,    93,    47,
-      44,    44,    44,    44,   106,    52,    44,   464,    44,    44,
-      44,    44,    52,    67,   374,    44,    44,    44,   378,    44,
-      44,   148,    53,   613,   481,   385,    41,    50,   106,    79,
-      44,    53,    44,    44,    41,   711,    53,   605,   495,   603,
-      59,   481,   613,   375,   490,   251,   464,   239,   160,   370,
-     369,   377,   734,   660,   511,   134,   513,   514,   303,   381,
-     272,   270,   748,   511,   682,   741,   146,   147,   148,   149,
-     150,   151,   152,   153,   154,   155,   156,   157,   158,   159,
-     160,   161,   162,   163,   684,   761,   166,   167,   514,   533,
-     657,   547,   535,   613,   407,   407,   767,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,   625,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,   481,   613,    -1,   613,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,   625,    -1,   625,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,   613,    -1,    -1,   616,
-      -1,   618,    -1,    -1,    -1,    -1,    -1,    -1,   625,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,   667,   668,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   708,   146,
-     147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
-     157,   158,   159,   160,   161,   162,   163,   164,   165,    -1,
-     667,   668,   169,    -1,   734,    -1,    -1,   708,    -1,   708,
-      -1,    -1,   713,    -1,    -1,   682,    -1,   684,    25,    -1,
-     250,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    35,    36,
-      37,    38,    39,   734,    -1,   734,    43,    -1,    -1,   769,
-      -1,   708,    -1,   613,    -1,    -1,    -1,   748,    55,    -1,
-      -1,    -1,    -1,    -1,    -1,   625,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,   734,   769,    -1,
-     769,    -1,    -1,    -1,    -1,   305,   306,   307,    -1,   746,
-     310,   748,    -1,   313,   314,   315,    -1,   317,   318,   319,
-     320,    -1,   322,   323,   324,   325,   326,   327,    -1,   329,
-     330,   331,   769,   333,    -1,   335,   336,   337,   338,   339,
-     340,   341,   342,   343,   344,   345,   346,   347,   348,   349,
-     350,   351,   352,   353,   354,   355,   356,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   708,   146,
-     147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
-     157,   158,   159,   160,   161,   162,   163,   164,   165,   166,
-     167,    -1,   169,    -1,   734,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    30,
-      31,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    43,    -1,    -1,    -1,    -1,    -1,    -1,   769,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    69,    -1,
-      71,    72,    73,    74,    75,    76,    77,    78,   458,    80,
-      81,    82,    83,    84,    85,    86,    87,    88,    89,    90,
-      -1,    92,    -1,    -1,    -1,    -1,    -1,    -1,   478,    -1,
-      -1,    -1,   103,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-     111,    -1,   113,    -1,    -1,   116,   117,    -1,   119,    -1,
-     121,   122,   123,    -1,   125,   126,    -1,   128,    -1,   130,
-     131,   132,   133,   134,   135,   136,   137,   138,   139,   140,
-     141,   142,   143,   144,   145,    -1,    -1,    -1,    -1,   529,
-     530,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-     161,   162,   163,    -1,    -1,   166,   167,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,   554,    -1,    -1,    -1,    -1,   559,
-     560,   561,    -1,    -1,   564,    -1,    -1,   567,    -1,    -1,
-      -1,    -1,   572,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-     580,    -1,    -1,    -1,   584,    -1,    -1,    -1,   588,    -1,
-      23,    -1,    -1,    -1,    -1,   595,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      43,   611,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    65,    66,    -1,    68,    69,    -1,    71,    72,
-      73,    74,    75,    76,    77,    78,    -1,    80,    81,    82,
-      83,    84,    85,    86,    87,    88,    89,    90,    -1,    92,
-      -1,    -1,    -1,    96,    97,    98,    99,   100,   101,   102,
-     103,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   111,    -1,
-     113,    -1,    -1,   116,   117,    -1,   119,    -1,   121,   122,
-     123,    -1,   125,   126,   694,   128,   696,   130,   131,   132,
-     133,   134,   135,   136,   137,   138,   139,   140,   141,   142,
-     143,   144,   145,   146,   147,   148,   149,   150,   151,   152,
-     153,   154,   155,   156,   157,   158,   159,   160,   161,   162,
-     163,    23,    -1,   166,   167,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    43,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    35,    36,    37,
-      38,    39,    -1,    -1,    -1,    43,    -1,    69,    -1,    71,
-      72,    73,    74,    75,    76,    77,    78,    55,    80,    81,
-      82,    83,    84,    85,    86,    87,    88,    89,    90,    -1,
-      92,    -1,    -1,    -1,    96,    97,    98,    99,   100,   101,
-     102,   103,    35,    36,    37,    38,    39,    -1,    -1,   111,
-      -1,   113,    -1,    -1,   116,   117,    -1,   119,    -1,   121,
-     122,   123,    55,   125,   126,    -1,   128,    -1,   130,   131,
-     132,   133,   134,   135,   136,   137,   138,   139,   140,   141,
-     142,   143,   144,   145,   146,   147,   148,   149,   150,   151,
-     152,   153,   154,   155,   156,   157,   158,   159,   160,   161,
-     162,   163,    -1,    -1,   166,   167,    -1,    -1,   146,   147,
+        11,   111,   179,    12,    13,    14,    15,    16,   198,   381,
+     101,   179,   210,   374,    41,   183,    28,   476,    27,   614,
+     111,    42,    92,    44,   134,    42,   183,   363,    44,    44,
+      44,    24,   666,   138,    43,    17,    18,   685,    24,   386,
+     387,    42,    51,   134,    42,    54,    53,    27,    16,   132,
+      59,   156,    53,    35,    44,    41,   139,    25,   405,    41,
+       0,    45,   239,    43,    17,    55,   162,    49,    50,    53,
+      52,   239,    20,    45,   722,    68,   186,   167,   168,    69,
+      66,    53,    51,   251,    51,    54,    12,    54,    14,    15,
+     101,   100,   101,    44,   251,   186,    33,    34,    51,   169,
+     111,    54,   111,    44,    55,   114,   653,    60,   655,    51,
+     744,    21,    54,   303,    55,   105,    22,    23,    69,    41,
+     106,   132,    56,   134,   460,   134,   137,   138,   139,   138,
+      55,    25,   149,    41,   101,   594,   147,   163,   147,    55,
+     167,   168,   149,   125,   111,   156,   482,   156,   101,   170,
+     162,   163,   164,   748,   170,   170,   170,    57,   111,   101,
+     158,   159,   160,   161,   105,    42,    55,   134,   179,   111,
+      41,   138,   162,   163,   164,   186,    48,   186,    42,   132,
+     147,   134,   532,   533,   137,   138,   139,   140,   162,   156,
+     538,   539,   134,    48,   147,   363,   138,   158,   159,   160,
+     161,    44,   400,   156,    44,   147,   363,   160,   162,   163,
+     164,   162,   163,   164,   156,    55,   105,    95,    41,   186,
+      57,   162,   163,   164,    30,    35,   179,    96,   239,    69,
+     183,    29,    54,   186,   273,   274,   275,   162,   163,   164,
+      53,    79,   167,   168,   186,    44,   162,   163,   164,    44,
+     611,   623,    66,    67,    44,    44,    44,    44,   269,    44,
+     271,    44,   271,    44,   374,   105,    44,    44,    36,    37,
+      38,    39,    40,   162,   163,   164,    44,    44,    44,   162,
+     163,   164,    44,   374,   167,   168,   239,    44,    56,    44,
+      44,    44,   460,    44,   170,    44,   170,    44,   251,   476,
+      44,    44,    44,   460,   271,   462,    44,    44,   476,   320,
+      44,    44,    44,    44,   482,    44,   269,    44,   271,    44,
+      44,    44,   162,   163,   164,   482,    44,   167,   168,   271,
+      44,    44,   530,    44,    44,    44,    44,    30,   152,   153,
+     154,   155,   156,   157,    26,    42,    48,    22,    44,   360,
+      44,    34,   363,    94,     3,     4,     5,     6,     7,     8,
+       9,    10,    11,   374,    13,   374,   377,   378,    44,   149,
+     381,    45,   381,   149,    33,    45,    71,   388,    58,   147,
      148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
      158,   159,   160,   161,   162,   163,   164,   165,   166,   167,
-      -1,   169,    35,    36,    37,    38,    39,    -1,    -1,    -1,
-      -1,    44,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    55,   146,   147,   148,   149,   150,   151,   152,
-     153,   154,   155,   156,   157,   158,   159,   160,   161,   162,
-     163,   164,   165,   166,   167,    -1,   169,   146,   147,   148,
+     168,   773,   170,    59,    45,    45,    45,   374,    53,    53,
+     363,    53,    45,    45,   381,    53,   606,   594,    53,    45,
+      45,   374,   612,    45,   377,   378,   594,    45,   381,    45,
+      45,    45,   374,    60,    61,    62,    63,    64,    65,   381,
+      53,    45,    45,    70,    71,    45,    45,    45,    45,   460,
+     393,   394,   395,   396,   397,   398,    45,    53,    45,    45,
+      53,    45,    45,    45,    45,   476,    45,   476,    53,    45,
+      45,    45,    45,    53,    45,    45,    45,    44,    43,   669,
+     147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
+     157,   158,   159,   160,   161,   162,   163,   164,   165,   166,
+      44,   611,    48,   170,    45,   107,    68,   460,    45,   476,
+      45,    53,    45,    45,    45,    45,    45,    53,    45,    45,
+     611,    45,    94,   476,    45,   149,    54,    45,    45,   482,
+      19,    51,    54,    42,   476,    80,    42,    45,    45,   107,
+      45,    60,    53,   665,   663,   498,   594,   500,   501,   160,
+     477,   603,   742,   239,   369,   460,   368,   373,   734,   251,
+     658,   750,   302,   269,   271,   498,   377,   681,   134,   501,
+     683,   520,   762,   655,   764,   522,   534,   403,   403,   770,
+      -1,    -1,    -1,   594,    -1,   594,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     611,    -1,   611,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   623,    -1,   623,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,   594,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,   594,    -1,    -1,   611,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   594,    -1,    -1,   666,   623,    -1,   611,    -1,
+      -1,   614,    -1,   616,    -1,    -1,    -1,    -1,    -1,   611,
+     623,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,   623,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   707,    -1,   707,    -1,
+      -1,    -1,   713,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,   666,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,   734,    -1,   734,    -1,    -1,   681,    -1,
+     683,    -1,    -1,   744,    -1,    -1,    -1,    -1,    -1,   750,
+     707,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,   707,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   773,    -1,   773,   707,    -1,   734,    -1,    -1,
+     250,    -1,    -1,    -1,    -1,    -1,    45,    46,    47,    -1,
+      -1,   734,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,   744,   734,    -1,    -1,   748,    -1,   750,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   773,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     773,    -1,    -1,    -1,   304,   305,   306,    -1,    -1,   309,
+      -1,   773,   312,   313,   314,    -1,   316,   317,   318,   319,
+      -1,   321,   322,   323,   324,   325,   326,    -1,   328,   329,
+     330,    -1,   332,    -1,   334,   335,   336,   337,   338,   339,
+     340,   341,   342,   343,   344,   345,   346,   347,   348,   349,
+     350,   351,   352,   353,   354,   355,    -1,    24,   147,   148,
      149,   150,   151,   152,   153,   154,   155,   156,   157,   158,
-     159,   160,   161,   162,   163,   164,   165,   166,   167,    -1,
-     169,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     159,   160,   161,   162,   163,   164,    -1,    44,   167,   168,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,   146,   147,   148,   149,   150,   151,   152,
-     153,   154,   155,   156,   157,   158,   159,   160,   161,   162,
-     163,   164,   165,   166,   167,    43,   169,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    65,    66,    -1,
-      68,    69,    -1,    71,    72,    73,    74,    75,    76,    77,
-      78,    -1,    80,    81,    82,    83,    84,    85,    86,    87,
-      88,    89,    90,    -1,    92,    -1,    -1,    -1,    96,    97,
-      98,    99,   100,   101,   102,   103,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,   111,    -1,   113,    -1,    -1,   116,   117,
-      -1,   119,    -1,   121,   122,   123,    -1,   125,   126,    -1,
-     128,    -1,   130,   131,   132,   133,   134,   135,   136,   137,
-     138,   139,   140,   141,   142,   143,   144,   145,   146,   147,
-     148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
-     158,   159,   160,   161,   162,   163,    43,    -1,   166,   167,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    69,    -1,    71,    72,    73,    74,    75,    76,
-      77,    78,    -1,    80,    81,    82,    83,    84,    85,    86,
-      87,    88,    89,    90,    -1,    92,    -1,    -1,    -1,    96,
-      97,    98,    99,   100,   101,   102,   103,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,   111,    -1,   113,    -1,    -1,   116,
-     117,    -1,   119,    -1,   121,   122,   123,    -1,   125,   126,
-      -1,   128,    -1,   130,   131,   132,   133,   134,   135,   136,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    66,
+      67,    -1,    69,    70,    -1,    72,    73,    74,    75,    76,
+      77,    78,    79,    -1,    81,    82,    83,    84,    85,    86,
+      87,    88,    89,    90,    91,    -1,    93,    -1,    -1,    -1,
+      97,    98,    99,   100,   101,   102,   103,   104,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,   112,    -1,   114,    -1,    -1,
+     117,   118,    -1,   120,   454,   122,   123,   124,    -1,   126,
+     127,    -1,   129,    -1,   131,   132,   133,   134,   135,   136,
      137,   138,   139,   140,   141,   142,   143,   144,   145,   146,
      147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
-     157,   158,   159,   160,   161,   162,   163,    43,    -1,   166,
-     167,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    69,    -1,    71,    72,    73,    74,    75,
-      76,    77,    78,    -1,    80,    81,    82,    83,    84,    85,
-      86,    87,    88,    89,    90,    -1,    92,    -1,    -1,    -1,
-      96,    97,    98,    99,   100,   101,   102,   103,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,   111,    -1,   113,    -1,    -1,
-     116,   117,    -1,   119,    -1,   121,   122,   123,    -1,   125,
-     126,    -1,   128,    -1,   130,   131,   132,   133,   134,   135,
+     157,   158,   159,   160,   161,   162,   163,   164,    -1,    -1,
+     167,   168,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   516,   517,    -1,   147,
+     148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
+     158,   159,   160,   161,   162,   163,   164,   165,   166,   167,
+     168,   541,   170,    -1,    -1,    -1,   546,   547,   548,    -1,
+      -1,   551,    -1,    -1,   554,    -1,    -1,    -1,    -1,   559,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,   567,    -1,    -1,
+      -1,   571,    -1,    -1,    -1,   575,    -1,    -1,    -1,    -1,
+      -1,    -1,   582,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,   591,    -1,    -1,    -1,    -1,    -1,    -1,    24,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   609,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    44,    -1,
+      -1,    -1,    -1,    -1,    26,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    36,    37,    38,    39,    40,    -1,
+      -1,    -1,    44,    -1,    70,    -1,    72,    73,    74,    75,
+      76,    77,    78,    79,    56,    81,    82,    83,    84,    85,
+      86,    87,    88,    89,    90,    91,    -1,    93,    -1,    -1,
+      -1,    97,    98,    99,   100,   101,   102,   103,   104,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   112,    -1,   114,    -1,
+      -1,   117,   118,   693,   120,   695,   122,   123,   124,    -1,
+     126,   127,    -1,   129,    -1,   131,   132,   133,   134,   135,
      136,   137,   138,   139,   140,   141,   142,   143,   144,   145,
      146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
-     156,   157,   158,   159,   160,   161,   162,   163,    43,    -1,
-     166,   167,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    69,    -1,    71,    72,    73,    74,
-      75,    76,    77,    78,    -1,    80,    81,    82,    83,    84,
-      85,    86,    87,    88,    89,    90,    -1,    92,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   103,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,   111,    -1,   113,    -1,
-      -1,   116,   117,    -1,   119,    -1,   121,   122,   123,    -1,
-     125,   126,    -1,   128,    -1,   130,   131,   132,   133,   134,
-     135,   136,   137,   138,   139,   140,   141,   142,   143,   144,
-     145,    43,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,   161,   162,   163,    -1,
-      -1,   166,   167,    -1,    -1,    -1,    -1,    69,    -1,    71,
-      72,    73,    74,    75,    76,    77,    78,    -1,    80,    81,
-      82,    83,    84,    85,    86,    87,    88,    89,    90,    -1,
-      92,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,   103,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   111,
-      -1,   113,    -1,    -1,   116,   117,    -1,   119,    -1,   121,
-     122,   123,    -1,   125,   126,    -1,   128,    -1,   130,   131,
+     156,   157,   158,   159,   160,   161,   162,   163,   164,    -1,
+      -1,   167,   168,    -1,    -1,   147,   148,   149,   150,   151,
+     152,   153,   154,   155,   156,   157,   158,   159,   160,   161,
+     162,   163,   164,   165,   166,   167,   168,    -1,   170,    31,
+      32,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    44,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    36,    37,
+      38,    39,    40,    -1,    -1,    -1,    -1,    45,    70,    -1,
+      72,    73,    74,    75,    76,    77,    78,    79,    56,    81,
+      82,    83,    84,    85,    86,    87,    88,    89,    90,    91,
+      -1,    93,    -1,    36,    37,    38,    39,    40,    -1,    -1,
+      -1,    -1,   104,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     112,    -1,   114,    56,    -1,   117,   118,    -1,   120,    -1,
+     122,   123,   124,    -1,   126,   127,    -1,   129,    -1,   131,
      132,   133,   134,   135,   136,   137,   138,   139,   140,   141,
-     142,   143,   144,   145,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   161,
-     162,   163
+     142,   143,   144,   145,   146,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     162,   163,   164,    -1,    -1,   167,   168,    -1,    -1,   147,
+     148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
+     158,   159,   160,   161,   162,   163,   164,   165,   166,   167,
+     168,    -1,   170,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,   147,   148,   149,   150,   151,   152,
+     153,   154,   155,   156,   157,   158,   159,   160,   161,   162,
+     163,   164,   165,   166,   167,   168,    44,   170,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    66,    67,
+      -1,    69,    70,    -1,    72,    73,    74,    75,    76,    77,
+      78,    79,    -1,    81,    82,    83,    84,    85,    86,    87,
+      88,    89,    90,    91,    -1,    93,    -1,    -1,    -1,    97,
+      98,    99,   100,   101,   102,   103,   104,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,   112,    -1,   114,    -1,    -1,   117,
+     118,    -1,   120,    -1,   122,   123,   124,    -1,   126,   127,
+      -1,   129,    -1,   131,   132,   133,   134,   135,   136,   137,
+     138,   139,   140,   141,   142,   143,   144,   145,   146,   147,
+     148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
+     158,   159,   160,   161,   162,   163,   164,    44,    -1,   167,
+     168,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    46,    47,    70,    -1,    72,    73,    74,    75,    76,
+      77,    78,    79,    -1,    81,    82,    83,    84,    85,    86,
+      87,    88,    89,    90,    91,    -1,    93,    -1,    -1,    -1,
+      97,    98,    99,   100,   101,   102,   103,   104,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,   112,    -1,   114,    -1,    -1,
+     117,   118,    -1,   120,    -1,   122,   123,   124,    -1,   126,
+     127,    -1,   129,    -1,   131,   132,   133,   134,   135,   136,
+     137,   138,   139,   140,   141,   142,   143,   144,   145,   146,
+     147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
+     157,   158,   159,   160,   161,   162,   163,   164,    44,    -1,
+     167,   168,   147,   148,   149,   150,   151,   152,   153,   154,
+     155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
+      -1,    -1,   167,   168,    70,    -1,    72,    73,    74,    75,
+      76,    77,    78,    79,    -1,    81,    82,    83,    84,    85,
+      86,    87,    88,    89,    90,    91,    -1,    93,    -1,    -1,
+      -1,    97,    98,    99,   100,   101,   102,   103,   104,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   112,    -1,   114,    -1,
+      -1,   117,   118,    -1,   120,    -1,   122,   123,   124,    -1,
+     126,   127,    -1,   129,    -1,   131,   132,   133,   134,   135,
+     136,   137,   138,   139,   140,   141,   142,   143,   144,   145,
+     146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
+     156,   157,   158,   159,   160,   161,   162,   163,   164,    44,
+      -1,   167,   168,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    70,    -1,    72,    73,    74,
+      75,    76,    77,    78,    79,    -1,    81,    82,    83,    84,
+      85,    86,    87,    88,    89,    90,    91,    -1,    93,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   104,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,   112,    -1,   114,
+      -1,    -1,   117,   118,    -1,   120,    -1,   122,   123,   124,
+      -1,   126,   127,    -1,   129,    -1,   131,   132,   133,   134,
+     135,   136,   137,   138,   139,   140,   141,   142,   143,   144,
+     145,   146,    44,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,   162,   163,   164,
+      -1,    -1,   167,   168,    -1,    -1,    -1,    -1,    70,    -1,
+      72,    73,    74,    75,    76,    77,    78,    79,    -1,    81,
+      82,    83,    84,    85,    86,    87,    88,    89,    90,    91,
+      -1,    93,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   104,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     112,    -1,   114,    -1,    -1,   117,   118,    -1,   120,    -1,
+     122,   123,   124,    -1,   126,   127,    -1,   129,    -1,   131,
+     132,   133,   134,   135,   136,   137,   138,   139,   140,   141,
+     142,   143,   144,   145,   146,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+     162,   163,   164
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -3970,84 +4008,84 @@ namespace w3c_sw {
   const unsigned short int
   MapSetParser::yystos_[] =
   {
-         0,   171,   172,     0,    19,   187,   188,   190,   161,   173,
-     189,     3,     4,     5,     6,     7,     8,     9,    10,    11,
-      13,   174,   175,    20,   191,   166,   167,   361,   157,   158,
-     159,   160,   401,   410,   401,   401,   401,   401,   161,   162,
-     163,   411,   412,    55,   180,   181,   186,    12,    14,    15,
-     176,    40,   178,   179,    16,   206,   208,   209,   192,   401,
-      91,   168,   402,   403,   404,   401,    40,   182,   183,   146,
-     147,   148,   149,   150,   151,   152,   153,   154,   155,   156,
-     164,   165,   169,   177,   362,   401,   405,   406,   407,   408,
-     409,   411,   413,   178,   362,    24,   162,   401,   411,    56,
-     185,    41,    40,   289,   193,    41,   184,   401,   359,   361,
-     362,   290,   207,   161,    47,    35,    36,    37,    38,    39,
-      55,   291,   292,   295,   351,   352,   354,   355,   356,   359,
-     210,   401,   353,    41,    47,   293,   294,   297,    43,   296,
-      26,    42,   211,   216,   217,    54,   298,   309,   360,   361,
-     411,   291,   298,   303,   304,   351,   357,   358,   359,   298,
-      27,   212,   213,   214,   215,   411,    94,   218,   219,   223,
-      40,   248,    56,   305,   308,   358,    44,   358,   215,    29,
-      34,   196,   240,    95,   220,   226,   249,   302,   307,    43,
-      69,    71,    72,    73,    74,    75,    76,    77,    78,    80,
-      81,    82,    83,    84,    85,    86,    87,    88,    89,    90,
-      92,   103,   111,   113,   116,   117,   119,   121,   122,   123,
-     125,   126,   128,   130,   131,   132,   133,   134,   135,   136,
-     137,   138,   139,   140,   141,   142,   143,   144,   145,   224,
-     225,   281,   361,   386,   388,   390,   391,   392,   411,   241,
-      43,   227,   228,   280,   281,   385,   386,    28,   221,   229,
-      25,   194,   197,   250,   251,   252,   256,   310,   351,   359,
-      53,   301,    52,   306,    65,    66,    68,    96,    97,    98,
-      99,   100,   101,   102,   361,   363,   364,   367,   370,   371,
-     374,   375,   381,   383,   384,   385,   386,   393,   396,   399,
-     401,   405,   409,   411,    78,    43,    43,    43,   169,   387,
-      43,   169,   287,    43,    43,    43,   248,    43,    43,    43,
-      43,    43,    43,    43,    43,    43,    43,    43,   287,    43,
-      43,    43,   169,    43,   169,    43,    43,    43,    43,    43,
-      43,    43,    43,    43,    43,    43,    43,    43,    43,    43,
-      43,    43,    43,    43,    43,    43,    43,   225,    43,   169,
-     282,   242,   363,   228,    29,    32,    33,   222,   235,   238,
-     239,    21,    22,   198,   199,   195,    41,   255,    47,   257,
-     258,   312,   311,   299,   300,   309,   308,   384,   384,   384,
-      43,    43,    93,   200,   201,   366,   369,    59,    60,    61,
-      62,    63,    64,    69,    70,   372,   373,   380,   382,    43,
-     282,   400,   248,   363,   363,   363,   363,   363,   363,   363,
-     363,   363,   363,   363,   361,   363,   363,   363,   363,   363,
-     363,   363,   363,   363,   363,   363,   363,   363,   363,   363,
-     363,   363,   363,   363,   363,   363,   363,   363,   363,   363,
-     363,   363,   363,   363,   363,   363,   363,    21,   284,    40,
-     361,    44,    30,    31,   230,   231,   232,   233,   234,   280,
-     361,   148,   148,   236,   239,   237,   238,    23,    43,   202,
-     203,   204,   205,   281,   361,   386,   393,   401,   405,   409,
-     216,    17,    18,    48,    49,    51,   124,   240,   254,   259,
-     260,   262,   266,   269,   270,   273,   274,   279,   252,   304,
-     321,    43,    54,    68,   104,   313,   315,   322,   323,   324,
-     325,   328,   331,   333,   339,   340,   361,   411,   305,   284,
-     284,   361,    44,    57,   365,    58,   368,   374,   374,   374,
-     374,   374,   374,    70,   287,    65,    66,   376,   379,   407,
-     408,    23,    67,   377,   284,    44,    44,    44,   288,    52,
-      52,    52,    44,    44,    52,    44,    44,    52,    44,    44,
-      44,    44,    52,    44,    44,    44,    44,    44,    44,    44,
-      52,    44,    44,    44,    52,    44,    44,    44,    52,    44,
-      44,    44,    44,    44,    44,    52,    44,    44,    44,   363,
-     246,   231,   385,   363,   203,   218,   263,   267,   261,   271,
-     280,    43,    47,   253,   275,   324,    43,    54,   104,   341,
-     346,   347,   349,   411,   331,   314,   327,   330,    23,    40,
-      65,   105,   332,   334,   338,    23,   363,   395,   363,   367,
-     370,   287,   381,   381,   377,   378,   383,   383,   363,   286,
-     363,   363,   363,   363,   363,   363,   363,   363,   363,   363,
-     283,    41,    43,   169,   244,   201,   196,   264,   268,   248,
-     272,   363,   252,   248,    44,   344,   345,   347,    54,   348,
-     411,   305,   106,   326,    67,   329,    52,   148,   337,   350,
-      44,   394,    44,    44,    52,   285,    52,    44,    44,    44,
-      44,   285,   389,    44,   389,    44,    44,   286,   245,    44,
-     360,   360,   248,    93,   278,    44,   343,   320,   328,   333,
-     350,    41,    52,   336,    53,   397,   398,   363,   363,    44,
-      44,    44,    45,    46,   243,   247,   361,   401,   405,   409,
-     411,   265,   248,   361,    50,   276,   106,   342,    53,   319,
-      41,    41,   335,   350,    79,    44,    44,    44,   247,   248,
-      44,   277,   347,   315,   316,   318,    41,    59,   248,   317,
-     410,   305
+         0,   172,   173,     0,    20,   188,   189,   191,   162,   174,
+     190,     3,     4,     5,     6,     7,     8,     9,    10,    11,
+      13,   175,   176,    21,   192,   167,   168,   365,   158,   159,
+     160,   161,   405,   414,   405,   405,   405,   405,   162,   163,
+     164,   415,   416,    56,   181,   182,   187,    12,    14,    15,
+     177,    41,   179,   180,    16,   208,   210,   211,   193,   405,
+      92,   169,   406,   407,   408,   405,    41,   183,   184,   147,
+     148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
+     165,   166,   170,   178,   366,   405,   409,   410,   411,   412,
+     413,   415,   417,   179,   366,    25,   163,   405,   415,    57,
+     186,    42,    41,   293,   194,    42,   185,   405,   363,   365,
+     366,   294,   209,   162,    48,    36,    37,    38,    39,    40,
+      56,   295,   296,   299,   355,   356,   358,   359,   360,   363,
+     212,   405,   357,    42,    48,   297,   298,   301,    44,   300,
+      27,    43,   213,   218,   219,    55,   302,   313,   364,   365,
+     415,   295,   302,   307,   308,   355,   361,   362,   363,   302,
+      28,   214,   215,   216,   217,   415,    95,   220,   221,   225,
+      41,   251,    57,   309,   312,   362,    45,   362,   217,    30,
+      35,   198,   242,    96,   222,   228,   252,   306,   311,    44,
+      70,    72,    73,    74,    75,    76,    77,    78,    79,    81,
+      82,    83,    84,    85,    86,    87,    88,    89,    90,    91,
+      93,   104,   112,   114,   117,   118,   120,   122,   123,   124,
+     126,   127,   129,   131,   132,   133,   134,   135,   136,   137,
+     138,   139,   140,   141,   142,   143,   144,   145,   146,   226,
+     227,   285,   365,   390,   392,   394,   395,   396,   415,   243,
+      44,   229,   230,   284,   285,   389,   390,    29,   223,   231,
+     195,   196,   253,   254,   255,   259,   314,   355,   363,    54,
+     305,    53,   310,    66,    67,    69,    97,    98,    99,   100,
+     101,   102,   103,   365,   367,   368,   371,   374,   375,   378,
+     379,   385,   387,   388,   389,   390,   397,   400,   403,   405,
+     409,   413,   415,    79,    44,    44,    44,   170,   391,    44,
+     170,   291,    44,    44,    44,   251,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,   291,    44,    44,
+      44,   170,    44,   170,    44,    44,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,   227,    44,   170,   286,
+     244,   367,   230,    30,    33,    34,   224,   237,   240,   241,
+      26,   199,    42,   258,    48,   260,   261,   316,   315,   303,
+     304,   313,   312,   388,   388,   388,    44,    44,    94,   202,
+     203,   370,   373,    60,    61,    62,    63,    64,    65,    70,
+      71,   376,   377,   384,   386,    44,   286,   404,   251,   367,
+     367,   367,   367,   367,   367,   367,   367,   367,   367,   367,
+     365,   367,   367,   367,   367,   367,   367,   367,   367,   367,
+     367,   367,   367,   367,   367,   367,   367,   367,   367,   367,
+     367,   367,   367,   367,   367,   367,   367,   367,   367,   367,
+     367,   367,   367,    22,   288,    41,   365,    45,    31,    32,
+     232,   233,   234,   235,   236,   284,   365,   149,   149,   238,
+     241,   239,   240,    22,    23,   200,   201,   197,    17,    18,
+      49,    50,    52,   125,   242,   257,   262,   263,   265,   269,
+     273,   274,   277,   278,   283,   255,   308,   325,    44,    55,
+      69,   105,   317,   319,   326,   327,   328,   329,   332,   335,
+     337,   343,   344,   365,   415,   309,   288,   288,   365,    45,
+      58,   369,    59,   372,   378,   378,   378,   378,   378,   378,
+      71,   291,    66,    67,   380,   383,   411,   412,    24,    68,
+     381,   288,    45,    45,    45,   292,    53,    53,    53,    45,
+      45,    53,    45,    45,    53,    45,    45,    45,    45,    53,
+      45,    45,    45,    45,    45,    45,    45,    53,    45,    45,
+      45,    53,    45,    45,    45,    53,    45,    45,    45,    45,
+      45,    45,    53,    45,    45,    45,   367,   248,   233,   389,
+      24,    44,   204,   205,   206,   207,   285,   365,   390,   397,
+     405,   409,   413,   218,   266,   270,   264,   275,   284,    44,
+      48,   256,   279,   328,    44,    55,   105,   345,   350,   351,
+     353,   415,   335,   318,   331,   334,    24,    41,    66,   106,
+     336,   338,   342,    24,   367,   399,   367,   371,   374,   291,
+     385,   385,   381,   382,   387,   387,   367,   290,   367,   367,
+     367,   367,   367,   367,   367,   367,   367,   367,   287,    42,
+      44,   170,   246,   367,   205,   220,   267,   271,   251,   276,
+     367,   255,   251,    45,   348,   349,   351,    55,   352,   415,
+     309,   107,   330,    68,   333,    53,   149,   341,   354,    45,
+     398,    45,    45,    53,   289,    53,    45,    45,    45,    45,
+     289,   393,    45,   393,    45,    45,   290,   247,   203,   198,
+     364,   272,   251,    94,   282,    45,   347,   324,   332,   337,
+     354,    42,    53,   340,    54,   401,   402,   367,   367,    45,
+      45,    45,    46,    47,   245,   249,   365,   405,   409,   413,
+     415,    45,   268,    19,   250,   365,    51,   280,   107,   346,
+      54,   323,    42,    42,   339,   354,    80,    45,    45,    45,
+     249,   251,   364,    45,   281,   351,   319,   320,   322,    42,
+      60,   251,   251,   321,   414,   309
   };
 
 #if YYDEBUG
@@ -4072,7 +4110,8 @@ namespace w3c_sw {
      385,   386,   387,   388,   389,   390,   391,   392,   393,   394,
      395,   396,   397,   398,   399,   400,   401,   402,   403,   404,
      405,   406,   407,   408,   409,   410,   411,   412,   413,   414,
-     415,   416,   417,   418,   419,   420,   421,   422,   423,   424
+     415,   416,   417,   418,   419,   420,   421,   422,   423,   424,
+     425
   };
 #endif
 
@@ -4080,54 +4119,55 @@ namespace w3c_sw {
   const unsigned short int
   MapSetParser::yyr1_[] =
   {
-         0,   170,   172,   171,   173,   173,   174,   174,   175,   175,
-     175,   175,   175,   175,   175,   175,   175,   175,   176,   176,
-     176,   177,   177,   178,   179,   179,   180,   181,   181,   182,
-     182,   183,   184,   185,   185,   186,   187,   188,   188,   189,
-     189,   190,   192,   193,   191,   195,   194,   196,   196,   197,
-     198,   198,   199,   199,   200,   201,   201,   202,   203,   203,
-     203,   203,   203,   203,   203,   203,   204,   204,   205,   205,
-     207,   206,   208,   209,   209,   210,   210,   211,   212,   212,
-     213,   214,   215,   216,   217,   217,   218,   219,   219,   220,
-     220,   221,   221,   222,   222,   223,   224,   224,   225,   225,
-     225,   225,   226,   227,   227,   228,   229,   230,   230,   231,
-     231,   232,   232,   233,   234,   234,   235,   235,   236,   236,
-     237,   237,   238,   239,   241,   240,   242,   242,   243,   243,
-     245,   244,   244,   246,   246,   247,   247,   247,   247,   247,
-     247,   247,   249,   248,   250,   250,   251,   252,   252,   253,
-     253,   254,   255,   255,   256,   257,   258,   258,   259,   259,
-     259,   259,   259,   259,   259,   259,   261,   260,   263,   264,
-     265,   262,   267,   268,   266,   269,   271,   272,   270,   274,
-     275,   273,   277,   276,   278,   278,   279,   280,   280,   280,
-     281,   282,   283,   282,   284,   284,   285,   286,   286,   287,
-     288,   287,   290,   289,   291,   291,   292,   293,   294,   294,
-     296,   295,   297,   295,   298,   299,   300,   300,   301,   302,
-     302,   303,   304,   304,   305,   306,   307,   307,   308,   309,
-     309,   311,   310,   312,   310,   314,   313,   315,   315,   317,
-     316,   318,   318,   319,   320,   320,   321,   322,   323,   324,
-     325,   326,   327,   327,   328,   329,   330,   330,   331,   332,
-     332,   333,   333,   334,   335,   335,   336,   336,   337,   337,
-     338,   338,   338,   338,   339,   340,   340,   340,   340,   341,
-     342,   343,   343,   344,   345,   345,   346,   346,   347,   348,
-     348,   349,   349,   349,   350,   351,   351,   353,   352,   354,
-     355,   355,   355,   355,   355,   356,   356,   357,   357,   358,
-     358,   359,   359,   360,   360,   361,   361,   362,   362,   362,
-     362,   362,   362,   363,   364,   365,   366,   366,   367,   368,
-     369,   369,   370,   371,   372,   372,   373,   373,   373,   373,
-     373,   373,   373,   373,   374,   375,   376,   376,   377,   377,
-     378,   378,   379,   379,   379,   380,   380,   381,   382,   382,
-     383,   383,   383,   383,   384,   384,   384,   384,   384,   384,
-     384,   384,   385,   386,   386,   386,   386,   386,   386,   386,
-     386,   386,   386,   386,   386,   386,   386,   386,   386,   386,
-     386,   386,   386,   386,   386,   386,   386,   386,   386,   386,
-     386,   386,   386,   386,   386,   386,   386,   386,   386,   386,
-     386,   386,   386,   386,   386,   386,   386,   386,   386,   386,
-     386,   386,   387,   387,   388,   389,   389,   390,   391,   392,
-     393,   393,   394,   393,   395,   395,   396,   396,   396,   396,
-     396,   397,   398,   398,   399,   400,   400,   401,   402,   403,
-     403,   404,   404,   405,   405,   405,   406,   406,   406,   407,
-     407,   407,   408,   408,   408,   409,   409,   410,   410,   410,
-     410,   411,   411,   412,   412,   413,   413
+         0,   171,   173,   172,   174,   174,   175,   175,   176,   176,
+     176,   176,   176,   176,   176,   176,   176,   176,   177,   177,
+     177,   178,   178,   179,   180,   180,   181,   182,   182,   183,
+     183,   184,   185,   186,   186,   187,   188,   189,   189,   190,
+     190,   191,   193,   194,   192,   196,   197,   195,   198,   198,
+     199,   200,   200,   201,   201,   202,   203,   203,   204,   205,
+     205,   205,   205,   205,   205,   205,   205,   206,   206,   207,
+     207,   209,   208,   210,   211,   211,   212,   212,   213,   214,
+     214,   215,   216,   217,   218,   219,   219,   220,   221,   221,
+     222,   222,   223,   223,   224,   224,   225,   226,   226,   227,
+     227,   227,   227,   228,   229,   229,   230,   231,   232,   232,
+     233,   233,   234,   234,   235,   236,   236,   237,   237,   238,
+     238,   239,   239,   240,   241,   243,   242,   244,   244,   245,
+     245,   247,   246,   246,   248,   248,   249,   249,   249,   249,
+     249,   249,   249,   250,   250,   252,   251,   253,   253,   254,
+     255,   255,   256,   256,   257,   258,   258,   259,   260,   261,
+     261,   262,   262,   262,   262,   262,   262,   262,   262,   264,
+     263,   266,   267,   268,   265,   270,   271,   272,   269,   273,
+     275,   276,   274,   278,   279,   277,   281,   280,   282,   282,
+     283,   284,   284,   284,   285,   286,   287,   286,   288,   288,
+     289,   290,   290,   291,   292,   291,   294,   293,   295,   295,
+     296,   297,   298,   298,   300,   299,   301,   299,   302,   303,
+     304,   304,   305,   306,   306,   307,   308,   308,   309,   310,
+     311,   311,   312,   313,   313,   315,   314,   316,   314,   318,
+     317,   319,   319,   321,   320,   322,   322,   323,   324,   324,
+     325,   326,   327,   328,   329,   330,   331,   331,   332,   333,
+     334,   334,   335,   336,   336,   337,   337,   338,   339,   339,
+     340,   340,   341,   341,   342,   342,   342,   342,   343,   344,
+     344,   344,   344,   345,   346,   347,   347,   348,   349,   349,
+     350,   350,   351,   352,   352,   353,   353,   353,   354,   355,
+     355,   357,   356,   358,   359,   359,   359,   359,   359,   360,
+     360,   361,   361,   362,   362,   363,   363,   364,   364,   365,
+     365,   366,   366,   366,   366,   366,   366,   367,   368,   369,
+     370,   370,   371,   372,   373,   373,   374,   375,   376,   376,
+     377,   377,   377,   377,   377,   377,   377,   377,   378,   379,
+     380,   380,   381,   381,   382,   382,   383,   383,   383,   384,
+     384,   385,   386,   386,   387,   387,   387,   387,   388,   388,
+     388,   388,   388,   388,   388,   388,   389,   390,   390,   390,
+     390,   390,   390,   390,   390,   390,   390,   390,   390,   390,
+     390,   390,   390,   390,   390,   390,   390,   390,   390,   390,
+     390,   390,   390,   390,   390,   390,   390,   390,   390,   390,
+     390,   390,   390,   390,   390,   390,   390,   390,   390,   390,
+     390,   390,   390,   390,   390,   390,   391,   391,   392,   393,
+     393,   394,   395,   396,   397,   397,   398,   397,   399,   399,
+     400,   400,   400,   400,   400,   401,   402,   402,   403,   404,
+     404,   405,   406,   407,   407,   408,   408,   409,   409,   409,
+     410,   410,   410,   411,   411,   411,   412,   412,   412,   413,
+     413,   414,   414,   414,   414,   415,   415,   416,   416,   417,
+     417
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -4138,50 +4178,51 @@ namespace w3c_sw {
        2,     2,     2,     2,     2,     2,     2,     2,     1,     1,
        1,     0,     1,     4,     1,     2,     2,     0,     1,     0,
        1,     3,     3,     0,     2,     3,     2,     0,     1,     0,
-       2,     2,     0,     0,     5,     0,     5,     0,     1,     3,
-       1,     1,     0,     1,     2,     0,     1,     4,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     2,     1,     1,
-       0,     8,     2,     0,     1,     0,     2,     2,     1,     1,
-       1,     2,     1,     2,     0,     1,     4,     0,     1,     0,
-       1,     0,     1,     0,     1,     3,     1,     2,     1,     1,
-       4,     1,     2,     1,     2,     1,     3,     1,     2,     1,
-       1,     1,     1,     2,     1,     1,     2,     2,     0,     1,
-       0,     1,     2,     2,     0,     6,     0,     2,     1,     2,
-       0,     4,     1,     0,     2,     1,     1,     1,     1,     1,
-       1,     1,     0,     4,     1,     1,     2,     0,     1,     0,
-       1,     3,     0,     2,     2,     2,     0,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     0,     3,     0,     0,
-       0,     6,     0,     0,     5,     6,     0,     0,     4,     0,
-       0,     4,     0,     3,     0,     2,     2,     1,     1,     1,
-       2,     1,     0,     6,     0,     1,     2,     0,     2,     1,
-       0,     5,     0,     4,     0,     1,     2,     2,     0,     1,
-       0,     3,     0,     3,     3,     2,     0,     1,     2,     0,
-       2,     1,     0,     1,     2,     2,     0,     2,     1,     1,
-       1,     0,     3,     0,     3,     0,     4,     1,     1,     0,
-       3,     0,     1,     2,     0,     2,     1,     1,     1,     1,
-       2,     2,     0,     2,     2,     2,     0,     2,     2,     0,
-       1,     1,     2,     1,     1,     2,     2,     1,     2,     3,
-       1,     1,     1,     2,     1,     1,     1,     2,     3,     1,
-       2,     0,     2,     2,     0,     1,     1,     3,     1,     1,
-       1,     1,     1,     2,     1,     1,     1,     0,     4,     4,
-       1,     1,     1,     1,     1,     0,     1,     1,     2,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       2,     2,     0,     0,     5,     0,     0,     6,     0,     1,
+       3,     1,     1,     0,     1,     2,     0,     1,     4,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     2,     1,
+       1,     0,     8,     2,     0,     1,     0,     2,     2,     1,
+       1,     1,     2,     1,     2,     0,     1,     4,     0,     1,
+       0,     1,     0,     1,     0,     1,     3,     1,     2,     1,
+       1,     4,     1,     2,     1,     2,     1,     3,     1,     2,
+       1,     1,     1,     1,     2,     1,     1,     2,     2,     0,
+       1,     0,     1,     2,     2,     0,     6,     0,     2,     1,
+       2,     0,     4,     1,     0,     2,     1,     1,     1,     1,
+       1,     1,     1,     0,     1,     0,     4,     1,     1,     2,
+       0,     1,     0,     1,     3,     0,     2,     2,     2,     0,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     0,
+       3,     0,     0,     0,     6,     0,     0,     0,     7,     6,
+       0,     0,     4,     0,     0,     4,     0,     3,     0,     2,
+       2,     1,     1,     1,     2,     1,     0,     6,     0,     1,
+       2,     0,     2,     1,     0,     5,     0,     4,     0,     1,
+       2,     2,     0,     1,     0,     3,     0,     3,     3,     2,
+       0,     1,     2,     0,     2,     1,     0,     1,     2,     2,
+       0,     2,     1,     1,     1,     0,     3,     0,     3,     0,
+       4,     1,     1,     0,     3,     0,     1,     2,     0,     2,
        1,     1,     1,     1,     2,     2,     0,     2,     2,     2,
-       0,     2,     1,     2,     0,     1,     2,     2,     2,     2,
-       2,     2,     2,     3,     1,     2,     1,     1,     2,     2,
-       0,     1,     2,     2,     2,     0,     2,     2,     0,     2,
-       2,     2,     2,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     3,     4,     4,     6,     4,     4,     4,     4,
-       2,     2,     4,     4,     4,     4,     2,     1,     4,     4,
-       4,     4,     6,     6,     6,     4,     4,     4,     4,     4,
-       4,     4,     2,     4,     4,     4,     4,     4,     4,     2,
-       8,     6,     6,     6,     4,     4,     4,     4,     4,     1,
-       1,     1,     3,     1,     7,     0,     1,     7,     2,     3,
-       5,     5,     0,     7,     1,     1,     1,     1,     1,     1,
-       1,     4,     0,     1,     2,     0,     1,     2,     2,     1,
-       1,     0,     1,     1,     1,     1,     1,     1,     1,     1,
+       0,     2,     2,     0,     1,     1,     2,     1,     1,     2,
+       2,     1,     2,     3,     1,     1,     1,     2,     1,     1,
+       1,     2,     3,     1,     2,     0,     2,     2,     0,     1,
+       1,     3,     1,     1,     1,     1,     1,     2,     1,     1,
+       1,     0,     4,     4,     1,     1,     1,     1,     1,     0,
+       1,     1,     2,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     2,     2,
+       0,     2,     2,     2,     0,     2,     1,     2,     0,     1,
+       2,     2,     2,     2,     2,     2,     2,     3,     1,     2,
+       1,     1,     2,     2,     0,     1,     2,     2,     2,     0,
+       2,     2,     0,     2,     2,     2,     2,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     3,     4,     4,     6,
+       4,     4,     4,     4,     2,     2,     4,     4,     4,     4,
+       2,     1,     4,     4,     4,     4,     6,     6,     6,     4,
+       4,     4,     4,     4,     4,     4,     2,     4,     4,     4,
+       4,     4,     4,     2,     8,     6,     6,     6,     4,     4,
+       4,     4,     4,     1,     1,     1,     3,     1,     7,     0,
+       1,     7,     2,     3,     5,     5,     0,     7,     1,     1,
+       1,     1,     1,     1,     1,     4,     0,     1,     2,     0,
+       1,     2,     2,     1,     1,     0,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -4194,24 +4235,24 @@ namespace w3c_sw {
   "IT_SERVER", "IT_USER", "IT_PASSWORD", "IT_DATABASE", "IT_STEMURI",
   "IT_PRIMARYKEY", "IT_SHAREDVARS", "IT_PROMISCUOUS", "IT_INTERSECTION",
   "IT_DRACONIAN", "IT_VARNAMES", "IT_LABEL", "IT_GRAPH", "IT_SERVICE",
-  "IT_BASE", "IT_PREFIX", "IT_DISTINCT", "IT_REDUCED", "GT_TIMES",
-  "IT_CONSTRUCT", "IT_SELECT", "IT_FROM", "IT_NAMED", "IT_ORDER", "IT_BY",
-  "IT_ASC", "IT_DESC", "IT_LIMIT", "IT_OFFSET", "IT_BINDINGS",
-  "IT_MEMBERS", "IT_STARTS", "IT_ENDS", "IT_ANY", "IT_UNORDERED",
-  "GT_LCURLEY", "GT_RCURLEY", "IT_WHERE", "GT_LPAREN", "GT_RPAREN",
-  "IT_UNDEF", "GT_MINUS_MINUS", "GT_DOT", "IT_OPTIONAL", "IT_MINUS",
-  "IT_UNION", "IT_FILTER", "GT_COMMA", "GT_SEMI", "IT_a", "GT_LBRACKET",
-  "GT_RBRACKET", "GT_OR", "GT_AND", "GT_EQUAL", "GT_NEQUAL", "GT_LT",
-  "GT_GT", "GT_LE", "GT_GE", "GT_PLUS", "GT_MINUS", "GT_DIVIDE", "GT_NOT",
-  "IT_NOT", "IT_IN", "IT_IRI", "IT_URI", "IT_BNODE", "IT_COALESCE",
-  "IT_IF", "IT_STRLANG", "IT_STRDT", "IT_EXISTS", "IT_SEPARATOR", "IT_STR",
-  "IT_LANG", "IT_LANGMATCHES", "IT_DATATYPE", "IT_BOUND", "IT_sameTerm",
-  "IT_isIRI", "IT_isURI", "IT_isBLANK", "IT_isLITERAL", "IT_REGEX",
-  "GT_DTYPE", "IT_CONCAT", "IT_AS", "IT_GROUP", "IT_HAVING", "IT_COUNT",
-  "IT_SUM", "IT_MIN", "IT_MAX", "IT_AVG", "IT_GROUP_CONCAT", "IT_SAMPLE",
-  "IT_isNUMERIC", "GT_CARROT", "GT_OPT", "GT_PIPE", "IT_WITH",
-  "IT_DEFAULT", "IT_ALL", "IT_USING", "IT_MD5", "IT_TO", "IT_YEAR",
-  "IT_ADD", "IT_COPY", "IT_RAND", "IT_SHA512",
+  "IT_SILENT", "IT_BASE", "IT_PREFIX", "IT_DISTINCT", "IT_REDUCED",
+  "GT_TIMES", "IT_CONSTRUCT", "IT_SELECT", "IT_FROM", "IT_NAMED",
+  "IT_ORDER", "IT_BY", "IT_ASC", "IT_DESC", "IT_LIMIT", "IT_OFFSET",
+  "IT_BINDINGS", "IT_MEMBERS", "IT_STARTS", "IT_ENDS", "IT_ANY",
+  "IT_UNORDERED", "GT_LCURLEY", "GT_RCURLEY", "IT_WHERE", "GT_LPAREN",
+  "GT_RPAREN", "IT_UNDEF", "GT_MINUS_MINUS", "GT_DOT", "IT_OPTIONAL",
+  "IT_MINUS", "IT_UNION", "IT_FILTER", "GT_COMMA", "GT_SEMI", "IT_a",
+  "GT_LBRACKET", "GT_RBRACKET", "GT_OR", "GT_AND", "GT_EQUAL", "GT_NEQUAL",
+  "GT_LT", "GT_GT", "GT_LE", "GT_GE", "GT_PLUS", "GT_MINUS", "GT_DIVIDE",
+  "GT_NOT", "IT_NOT", "IT_IN", "IT_IRI", "IT_URI", "IT_BNODE",
+  "IT_COALESCE", "IT_IF", "IT_STRLANG", "IT_STRDT", "IT_EXISTS",
+  "IT_SEPARATOR", "IT_STR", "IT_LANG", "IT_LANGMATCHES", "IT_DATATYPE",
+  "IT_BOUND", "IT_sameTerm", "IT_isIRI", "IT_isURI", "IT_isBLANK",
+  "IT_isLITERAL", "IT_REGEX", "GT_DTYPE", "IT_CONCAT", "IT_AS", "IT_GROUP",
+  "IT_HAVING", "IT_COUNT", "IT_SUM", "IT_MIN", "IT_MAX", "IT_AVG",
+  "IT_GROUP_CONCAT", "IT_SAMPLE", "IT_isNUMERIC", "GT_CARROT", "GT_OPT",
+  "GT_PIPE", "IT_WITH", "IT_DEFAULT", "IT_ALL", "IT_USING", "IT_MD5",
+  "IT_TO", "IT_YEAR", "IT_ADD", "IT_COPY", "IT_RAND", "IT_SHA512",
   "GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE",
   "IT_NOW",
   "GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA",
@@ -4237,7 +4278,7 @@ namespace w3c_sw {
   "_Q_O_QRDFLiteral_E_S_QGT_DOT_E_S_QRDFLiteral_E_C_E_Star",
   "DefaultPrimaryKey", "Prologue", "_QBaseDecl_E_Opt",
   "_QPrefixDecl_E_Star", "BaseDecl", "PrefixDecl", "$@2", "$@3",
-  "SubSelect", "@4", "_QBindingsClause_E_Opt", "SelectClause",
+  "SubSelect", "@4", "@5", "_QBindingsClause_E_Opt", "SelectClause",
   "_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C",
   "_Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt", "_O_QIT_AS_E_S_QVar_E_C",
   "_Q_O_QIT_AS_E_S_QVar_E_C_E_Opt",
@@ -4245,7 +4286,7 @@ namespace w3c_sw {
   "_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C",
   "_Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus",
   "_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C",
-  "ConstructQuery", "$@5", "_O_QIT_LABEL_E_S_QGraphTerm_E_C",
+  "ConstructQuery", "$@6", "_O_QIT_LABEL_E_S_QGraphTerm_E_C",
   "_Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt", "_QDatasetClause_E_Star",
   "DatasetClause", "_O_QDefaultGraphClause_E_Or_QNamedGraphClause_E_C",
   "DefaultGraphClause", "NamedGraphClause", "SourceSelector",
@@ -4258,38 +4299,38 @@ namespace w3c_sw {
   "_O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C",
   "_O_QConstraint_E_Or_QVar_E_C", "LimitOffsetClauses",
   "_QOffsetClause_E_Opt", "_QLimitClause_E_Opt", "LimitClause",
-  "OffsetClause", "BindingsClause", "$@6", "_QVar_E_Star",
+  "OffsetClause", "BindingsClause", "$@7", "_QVar_E_Star",
   "_QBindingValue_E_Plus",
   "_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C",
-  "$@7",
+  "$@8",
   "_Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star",
-  "BindingValue", "GroupGraphPattern", "$@8",
+  "BindingValue", "_QIT_SILENT_E_Opt", "GroupGraphPattern", "$@9",
   "_O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C", "GroupGraphPatternSub",
   "_QTriplesBlock_E_Opt", "_QGT_DOT_E_Opt",
   "_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C",
   "_Q_O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C_E_Star",
   "TriplesBlock", "_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C",
   "_Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt", "GraphPatternNotTriples",
-  "OptionalGraphPattern", "@9", "GraphGraphPattern", "@10", "@11", "@12",
-  "ServiceGraphPattern", "@13", "@14", "Bind", "MinusGraphPattern", "@15",
-  "@16", "GroupOrUnionGraphPattern", "@17", "@18",
-  "_O_QIT_UNION_E_S_QGroupGraphPattern_E_C", "@19",
+  "OptionalGraphPattern", "@10", "GraphGraphPattern", "@11", "@12", "@13",
+  "ServiceGraphPattern", "@14", "@15", "@16", "Bind", "MinusGraphPattern",
+  "@17", "@18", "GroupOrUnionGraphPattern", "@19", "@20",
+  "_O_QIT_UNION_E_S_QGroupGraphPattern_E_C", "@21",
   "_Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star", "Filter",
-  "Constraint", "FunctionCall", "ArgList", "@20", "_QIT_DISTINCT_E_Opt",
+  "Constraint", "FunctionCall", "ArgList", "@22", "_QIT_DISTINCT_E_Opt",
   "_O_QGT_COMMA_E_S_QExpression_E_C",
-  "_Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star", "ExpressionList", "@21",
-  "ConstructTemplate", "$@22", "_QConstructTriples_E_Opt",
+  "_Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star", "ExpressionList", "@23",
+  "ConstructTemplate", "$@24", "_QConstructTriples_E_Opt",
   "ConstructTriples", "_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C",
   "_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt", "TriplesSameSubject",
-  "$@23", "$@24", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
+  "$@25", "$@26", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
   "_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C",
   "_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star", "PropertyList",
   "_QPropertyListNotEmpty_E_Opt", "ObjectList",
   "_O_QGT_COMMA_E_S_QObject_E_C", "_Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star",
-  "Object", "Verb", "TriplesSameSubjectPath", "$@25", "$@26",
-  "PropertyListNotEmptyPath", "$@27", "_O_QVerbPath_E_Or_QVerbSimple_E_C",
-  "_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C", "$@28",
+  "Object", "Verb", "TriplesSameSubjectPath", "$@27", "$@28",
+  "PropertyListNotEmptyPath", "$@29", "_O_QVerbPath_E_Or_QVerbSimple_E_C",
+  "_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C", "$@30",
   "_Q_O_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C",
   "_Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star",
@@ -4312,7 +4353,7 @@ namespace w3c_sw {
   "_O_QPathOneInPropertySet_E_Or_QGT_LPAREN_E_S_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_Opt_S_QGT_RPAREN_E_C",
   "PathOneInPropertySet", "_O_QIRIref_E_Or_QIT_a_E_C",
   "_O_QIRIref_E_Or_QIT_a_E_Or_QGT_CARROT_E_S_QIRIref_E_Or_QIT_a_E_C",
-  "Integer", "TriplesNode", "BlankNodePropertyList", "@29", "Generator",
+  "Integer", "TriplesNode", "BlankNodePropertyList", "@31", "Generator",
   "_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C",
   "_Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt",
   "_QGraphNode_E_Plus", "GraphNode", "VarOrTerm", "VarOrIRIref", "Var",
@@ -4334,7 +4375,7 @@ namespace w3c_sw {
   "BuiltInCall",
   "_O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C",
   "RegexExpression", "_Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt",
-  "SubstringExpression", "ExistsFunc", "NotExistsFunc", "Aggregate", "@30",
+  "SubstringExpression", "ExistsFunc", "NotExistsFunc", "Aggregate", "@32",
   "_O_QGT_TIMES_E_Or_QExpression_E_C",
   "_O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C",
   "_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C",
@@ -4354,134 +4395,135 @@ namespace w3c_sw {
   const MapSetParser::rhs_number_type
   MapSetParser::yyrhs_[] =
   {
-       171,     0,    -1,    -1,   172,   187,   173,   174,    -1,    -1,
-     173,   175,    -1,    -1,   174,   206,    -1,     3,   361,   401,
-     401,    -1,     4,   401,    -1,     5,   401,    -1,     6,   401,
-      -1,     7,   401,    -1,     8,   401,    -1,     9,   411,    -1,
-      10,   180,    -1,    11,   176,    -1,    13,   179,    -1,    12,
-      -1,    15,    -1,    14,    -1,    -1,   362,    -1,    40,   177,
-      41,   359,    -1,   178,    -1,   179,   178,    -1,   181,   182,
-      -1,    -1,   186,    -1,    -1,   183,    -1,    40,   185,    41,
-      -1,   401,    47,   401,    -1,    -1,   185,   184,    -1,    55,
-     401,    56,    -1,   188,   189,    -1,    -1,   190,    -1,    -1,
-     189,   191,    -1,    19,   161,    -1,    -1,    -1,    20,   192,
-     162,   193,   161,    -1,    -1,   197,   195,   216,   218,   196,
-      -1,    -1,   240,    -1,    25,   199,   205,    -1,    21,    -1,
-      22,    -1,    -1,   198,    -1,    93,   361,    -1,    -1,   200,
-      -1,    43,   363,   201,    44,    -1,   361,    -1,   393,    -1,
-     386,    -1,   281,    -1,   401,    -1,   405,    -1,   409,    -1,
-     202,    -1,   203,    -1,   204,   203,    -1,   204,    -1,    23,
-      -1,    -1,   209,    24,   289,   207,   210,   216,   218,   196,
-      -1,    16,   362,    -1,    -1,   208,    -1,    -1,   210,   211,
-      -1,    26,   212,    -1,   213,    -1,   214,    -1,   215,    -1,
-      27,   215,    -1,   411,    -1,   217,   248,    -1,    -1,    42,
-      -1,   219,   220,   221,   222,    -1,    -1,   223,    -1,    -1,
-     226,    -1,    -1,   229,    -1,    -1,   235,    -1,    94,    29,
-     224,    -1,   225,    -1,   224,   225,    -1,   386,    -1,   281,
-      -1,    43,   363,   201,    44,    -1,   361,    -1,    95,   227,
-      -1,   228,    -1,   227,   228,    -1,   280,    -1,    28,    29,
-     230,    -1,   231,    -1,   230,   231,    -1,   233,    -1,   234,
-      -1,    30,    -1,    31,    -1,   232,   385,    -1,   280,    -1,
-     361,    -1,   238,   236,    -1,   239,   237,    -1,    -1,   239,
-      -1,    -1,   238,    -1,    32,   148,    -1,    33,   148,    -1,
-      -1,    34,   241,   242,    40,   246,    41,    -1,    -1,   242,
-     361,    -1,   247,    -1,   243,   247,    -1,    -1,    43,   245,
-     243,    44,    -1,   169,    -1,    -1,   246,   244,    -1,   411,
-      -1,   401,    -1,   405,    -1,   409,    -1,    45,    -1,    46,
-      -1,   361,    -1,    -1,    40,   249,   250,    41,    -1,   194,
-      -1,   251,    -1,   252,   255,    -1,    -1,   256,    -1,    -1,
-      47,    -1,   259,   253,   252,    -1,    -1,   255,   254,    -1,
-     310,   258,    -1,    47,   252,    -1,    -1,   257,    -1,   273,
-      -1,   260,    -1,   270,    -1,   262,    -1,   266,    -1,   279,
-      -1,   269,    -1,   240,    -1,    -1,    48,   261,   248,    -1,
-      -1,    -1,    -1,    17,   263,   264,   360,   265,   248,    -1,
-      -1,    -1,    18,   267,   268,   360,   248,    -1,   124,    43,
-     363,    93,   361,    44,    -1,    -1,    -1,    49,   271,   272,
-     248,    -1,    -1,    -1,   274,   275,   248,   278,    -1,    -1,
-      50,   277,   248,    -1,    -1,   278,   276,    -1,    51,   280,
-      -1,   385,    -1,   386,    -1,   281,    -1,   411,   282,    -1,
-     169,    -1,    -1,    43,   284,   363,   283,   286,    44,    -1,
-      -1,    21,    -1,    52,   363,    -1,    -1,   286,   285,    -1,
-     169,    -1,    -1,    43,   363,   288,   286,    44,    -1,    -1,
-      40,   290,   291,    41,    -1,    -1,   292,    -1,   295,   294,
-      -1,    47,   291,    -1,    -1,   293,    -1,    -1,   359,   296,
-     298,    -1,    -1,   351,   297,   303,    -1,   309,   305,   302,
-      -1,   309,   305,    -1,    -1,   299,    -1,    53,   300,    -1,
-      -1,   302,   301,    -1,   304,    -1,    -1,   298,    -1,   308,
-     307,    -1,    52,   308,    -1,    -1,   307,   306,    -1,   358,
-      -1,   360,    -1,    54,    -1,    -1,   359,   311,   313,    -1,
-      -1,   351,   312,   321,    -1,    -1,   315,   314,   305,   320,
-      -1,   322,    -1,   323,    -1,    -1,   315,   317,   305,    -1,
-      -1,   316,    -1,    53,   318,    -1,    -1,   320,   319,    -1,
-     304,    -1,   324,    -1,   361,    -1,   325,    -1,   328,   327,
-      -1,   106,   328,    -1,    -1,   327,   326,    -1,   333,   330,
-      -1,    67,   333,    -1,    -1,   330,   329,    -1,   339,   332,
-      -1,    -1,   334,    -1,   331,    -1,   104,   331,    -1,   338,
-      -1,    41,    -1,   350,    41,    -1,    52,   335,    -1,    41,
-      -1,   350,   336,    -1,    52,   350,    41,    -1,    23,    -1,
-     105,    -1,    65,    -1,    40,   337,    -1,   340,    -1,   411,
-      -1,    54,    -1,    68,   341,    -1,    43,   324,    44,    -1,
-     346,    -1,   106,   347,    -1,    -1,   343,   342,    -1,   347,
-     343,    -1,    -1,   344,    -1,   347,    -1,    43,   345,    44,
-      -1,   349,    -1,   411,    -1,    54,    -1,   411,    -1,    54,
-      -1,   104,   348,    -1,   148,    -1,   354,    -1,   352,    -1,
-      -1,    55,   353,   298,    56,    -1,   356,    43,   357,    44,
-      -1,    35,    -1,    36,    -1,    37,    -1,    38,    -1,    39,
-      -1,    -1,   355,    -1,   358,    -1,   357,   358,    -1,   359,
-      -1,   351,    -1,   361,    -1,   362,    -1,   361,    -1,   411,
-      -1,   166,    -1,   167,    -1,   411,    -1,   401,    -1,   405,
-      -1,   409,    -1,   413,    -1,   169,    -1,   364,    -1,   367,
-     366,    -1,    57,   367,    -1,    -1,   366,   365,    -1,   370,
-     369,    -1,    58,   370,    -1,    -1,   369,   368,    -1,   371,
-      -1,   374,   372,    -1,    -1,   373,    -1,    59,   374,    -1,
-      60,   374,    -1,    61,   374,    -1,    62,   374,    -1,    63,
-     374,    -1,    64,   374,    -1,    70,   287,    -1,    69,    70,
-     287,    -1,   375,    -1,   381,   380,    -1,   407,    -1,   408,
-      -1,    23,   383,    -1,    67,   383,    -1,    -1,   377,    -1,
-      65,   381,    -1,    66,   381,    -1,   376,   378,    -1,    -1,
-     380,   379,    -1,   383,   382,    -1,    -1,   382,   377,    -1,
-      68,   384,    -1,    65,   384,    -1,    66,   384,    -1,   384,
-      -1,   385,    -1,   386,    -1,   399,    -1,   401,    -1,   405,
-      -1,   409,    -1,   361,    -1,   393,    -1,    43,   363,    44,
-      -1,    80,    43,   363,    44,    -1,    81,    43,   363,    44,
-      -1,    82,    43,   363,    52,   363,    44,    -1,    83,    43,
-     363,    44,    -1,    84,    43,   361,    44,    -1,    71,    43,
-     363,    44,    -1,    72,    43,   363,    44,    -1,    73,   387,
-      -1,   116,   169,    -1,   139,    43,   363,    44,    -1,   136,
-      43,   363,    44,    -1,   128,    43,   363,    44,    -1,   122,
-      43,   363,    44,    -1,    92,   287,    -1,   390,    -1,   143,
-      43,   363,    44,    -1,   140,    43,   363,    44,    -1,   138,
-      43,   363,    44,    -1,   134,    43,   363,    44,    -1,   125,
-      43,   363,    52,   363,    44,    -1,   135,    43,   363,    52,
-     363,    44,    -1,   142,    43,   363,    52,   363,    44,    -1,
-     113,    43,   363,    44,    -1,   145,    43,   363,    44,    -1,
-     137,    43,   363,    44,    -1,   133,    43,   363,    44,    -1,
-     130,    43,   363,    44,    -1,   126,    43,   363,    44,    -1,
-     121,    43,   363,    44,    -1,   119,   169,    -1,   111,    43,
-     363,    44,    -1,   144,    43,   363,    44,    -1,   141,    43,
-     363,    44,    -1,   132,    43,   363,    44,    -1,   123,    43,
-     363,    44,    -1,   117,    43,   363,    44,    -1,    74,   287,
-      -1,    75,    43,   363,    52,   363,    52,   363,    44,    -1,
-      76,    43,   363,    52,   363,    44,    -1,    77,    43,   363,
-      52,   363,    44,    -1,    85,    43,   363,    52,   363,    44,
-      -1,    86,    43,   363,    44,    -1,    87,    43,   363,    44,
-      -1,    88,    43,   363,    44,    -1,    89,    43,   363,    44,
-      -1,   103,    43,   363,    44,    -1,   388,    -1,   391,    -1,
-     392,    -1,    43,   363,    44,    -1,   169,    -1,    90,    43,
-     363,    52,   363,   389,    44,    -1,    -1,   285,    -1,   131,
-      43,   363,    52,   363,   389,    44,    -1,    78,   248,    -1,
-      69,    78,   248,    -1,    96,    43,   284,   395,    44,    -1,
-     396,    43,   284,   363,    44,    -1,    -1,   101,    43,   284,
-     363,   394,   398,    44,    -1,    23,    -1,   363,    -1,    97,
-      -1,    98,    -1,    99,    -1,   100,    -1,   102,    -1,    53,
-      79,    59,   410,    -1,    -1,   397,    -1,   411,   400,    -1,
-      -1,   282,    -1,   410,   404,    -1,    91,   411,    -1,   168,
-      -1,   402,    -1,    -1,   403,    -1,   406,    -1,   407,    -1,
-     408,    -1,   148,    -1,   149,    -1,   150,    -1,   151,    -1,
-     152,    -1,   153,    -1,   154,    -1,   155,    -1,   156,    -1,
-     146,    -1,   147,    -1,   157,    -1,   159,    -1,   158,    -1,
-     160,    -1,   161,    -1,   412,    -1,   163,    -1,   162,    -1,
-     164,    -1,   165,    -1
+       172,     0,    -1,    -1,   173,   188,   174,   175,    -1,    -1,
+     174,   176,    -1,    -1,   175,   208,    -1,     3,   365,   405,
+     405,    -1,     4,   405,    -1,     5,   405,    -1,     6,   405,
+      -1,     7,   405,    -1,     8,   405,    -1,     9,   415,    -1,
+      10,   181,    -1,    11,   177,    -1,    13,   180,    -1,    12,
+      -1,    15,    -1,    14,    -1,    -1,   366,    -1,    41,   178,
+      42,   363,    -1,   179,    -1,   180,   179,    -1,   182,   183,
+      -1,    -1,   187,    -1,    -1,   184,    -1,    41,   186,    42,
+      -1,   405,    48,   405,    -1,    -1,   186,   185,    -1,    56,
+     405,    57,    -1,   189,   190,    -1,    -1,   191,    -1,    -1,
+     190,   192,    -1,    20,   162,    -1,    -1,    -1,    21,   193,
+     163,   194,   162,    -1,    -1,    -1,   196,   199,   197,   218,
+     220,   198,    -1,    -1,   242,    -1,    26,   201,   207,    -1,
+      22,    -1,    23,    -1,    -1,   200,    -1,    94,   365,    -1,
+      -1,   202,    -1,    44,   367,   203,    45,    -1,   365,    -1,
+     397,    -1,   390,    -1,   285,    -1,   405,    -1,   409,    -1,
+     413,    -1,   204,    -1,   205,    -1,   206,   205,    -1,   206,
+      -1,    24,    -1,    -1,   211,    25,   293,   209,   212,   218,
+     220,   198,    -1,    16,   366,    -1,    -1,   210,    -1,    -1,
+     212,   213,    -1,    27,   214,    -1,   215,    -1,   216,    -1,
+     217,    -1,    28,   217,    -1,   415,    -1,   219,   251,    -1,
+      -1,    43,    -1,   221,   222,   223,   224,    -1,    -1,   225,
+      -1,    -1,   228,    -1,    -1,   231,    -1,    -1,   237,    -1,
+      95,    30,   226,    -1,   227,    -1,   226,   227,    -1,   390,
+      -1,   285,    -1,    44,   367,   203,    45,    -1,   365,    -1,
+      96,   229,    -1,   230,    -1,   229,   230,    -1,   284,    -1,
+      29,    30,   232,    -1,   233,    -1,   232,   233,    -1,   235,
+      -1,   236,    -1,    31,    -1,    32,    -1,   234,   389,    -1,
+     284,    -1,   365,    -1,   240,   238,    -1,   241,   239,    -1,
+      -1,   241,    -1,    -1,   240,    -1,    33,   149,    -1,    34,
+     149,    -1,    -1,    35,   243,   244,    41,   248,    42,    -1,
+      -1,   244,   365,    -1,   249,    -1,   245,   249,    -1,    -1,
+      44,   247,   245,    45,    -1,   170,    -1,    -1,   248,   246,
+      -1,   415,    -1,   405,    -1,   409,    -1,   413,    -1,    46,
+      -1,    47,    -1,   365,    -1,    -1,    19,    -1,    -1,    41,
+     252,   253,    42,    -1,   195,    -1,   254,    -1,   255,   258,
+      -1,    -1,   259,    -1,    -1,    48,    -1,   262,   256,   255,
+      -1,    -1,   258,   257,    -1,   314,   261,    -1,    48,   255,
+      -1,    -1,   260,    -1,   277,    -1,   263,    -1,   274,    -1,
+     265,    -1,   269,    -1,   283,    -1,   273,    -1,   242,    -1,
+      -1,    49,   264,   251,    -1,    -1,    -1,    -1,    17,   266,
+     267,   364,   268,   251,    -1,    -1,    -1,    -1,    18,   270,
+     271,   272,   250,   364,   251,    -1,   125,    44,   367,    94,
+     365,    45,    -1,    -1,    -1,    50,   275,   276,   251,    -1,
+      -1,    -1,   278,   279,   251,   282,    -1,    -1,    51,   281,
+     251,    -1,    -1,   282,   280,    -1,    52,   284,    -1,   389,
+      -1,   390,    -1,   285,    -1,   415,   286,    -1,   170,    -1,
+      -1,    44,   288,   367,   287,   290,    45,    -1,    -1,    22,
+      -1,    53,   367,    -1,    -1,   290,   289,    -1,   170,    -1,
+      -1,    44,   367,   292,   290,    45,    -1,    -1,    41,   294,
+     295,    42,    -1,    -1,   296,    -1,   299,   298,    -1,    48,
+     295,    -1,    -1,   297,    -1,    -1,   363,   300,   302,    -1,
+      -1,   355,   301,   307,    -1,   313,   309,   306,    -1,   313,
+     309,    -1,    -1,   303,    -1,    54,   304,    -1,    -1,   306,
+     305,    -1,   308,    -1,    -1,   302,    -1,   312,   311,    -1,
+      53,   312,    -1,    -1,   311,   310,    -1,   362,    -1,   364,
+      -1,    55,    -1,    -1,   363,   315,   317,    -1,    -1,   355,
+     316,   325,    -1,    -1,   319,   318,   309,   324,    -1,   326,
+      -1,   327,    -1,    -1,   319,   321,   309,    -1,    -1,   320,
+      -1,    54,   322,    -1,    -1,   324,   323,    -1,   308,    -1,
+     328,    -1,   365,    -1,   329,    -1,   332,   331,    -1,   107,
+     332,    -1,    -1,   331,   330,    -1,   337,   334,    -1,    68,
+     337,    -1,    -1,   334,   333,    -1,   343,   336,    -1,    -1,
+     338,    -1,   335,    -1,   105,   335,    -1,   342,    -1,    42,
+      -1,   354,    42,    -1,    53,   339,    -1,    42,    -1,   354,
+     340,    -1,    53,   354,    42,    -1,    24,    -1,   106,    -1,
+      66,    -1,    41,   341,    -1,   344,    -1,   415,    -1,    55,
+      -1,    69,   345,    -1,    44,   328,    45,    -1,   350,    -1,
+     107,   351,    -1,    -1,   347,   346,    -1,   351,   347,    -1,
+      -1,   348,    -1,   351,    -1,    44,   349,    45,    -1,   353,
+      -1,   415,    -1,    55,    -1,   415,    -1,    55,    -1,   105,
+     352,    -1,   149,    -1,   358,    -1,   356,    -1,    -1,    56,
+     357,   302,    57,    -1,   360,    44,   361,    45,    -1,    36,
+      -1,    37,    -1,    38,    -1,    39,    -1,    40,    -1,    -1,
+     359,    -1,   362,    -1,   361,   362,    -1,   363,    -1,   355,
+      -1,   365,    -1,   366,    -1,   365,    -1,   415,    -1,   167,
+      -1,   168,    -1,   415,    -1,   405,    -1,   409,    -1,   413,
+      -1,   417,    -1,   170,    -1,   368,    -1,   371,   370,    -1,
+      58,   371,    -1,    -1,   370,   369,    -1,   374,   373,    -1,
+      59,   374,    -1,    -1,   373,   372,    -1,   375,    -1,   378,
+     376,    -1,    -1,   377,    -1,    60,   378,    -1,    61,   378,
+      -1,    62,   378,    -1,    63,   378,    -1,    64,   378,    -1,
+      65,   378,    -1,    71,   291,    -1,    70,    71,   291,    -1,
+     379,    -1,   385,   384,    -1,   411,    -1,   412,    -1,    24,
+     387,    -1,    68,   387,    -1,    -1,   381,    -1,    66,   385,
+      -1,    67,   385,    -1,   380,   382,    -1,    -1,   384,   383,
+      -1,   387,   386,    -1,    -1,   386,   381,    -1,    69,   388,
+      -1,    66,   388,    -1,    67,   388,    -1,   388,    -1,   389,
+      -1,   390,    -1,   403,    -1,   405,    -1,   409,    -1,   413,
+      -1,   365,    -1,   397,    -1,    44,   367,    45,    -1,    81,
+      44,   367,    45,    -1,    82,    44,   367,    45,    -1,    83,
+      44,   367,    53,   367,    45,    -1,    84,    44,   367,    45,
+      -1,    85,    44,   365,    45,    -1,    72,    44,   367,    45,
+      -1,    73,    44,   367,    45,    -1,    74,   391,    -1,   117,
+     170,    -1,   140,    44,   367,    45,    -1,   137,    44,   367,
+      45,    -1,   129,    44,   367,    45,    -1,   123,    44,   367,
+      45,    -1,    93,   291,    -1,   394,    -1,   144,    44,   367,
+      45,    -1,   141,    44,   367,    45,    -1,   139,    44,   367,
+      45,    -1,   135,    44,   367,    45,    -1,   126,    44,   367,
+      53,   367,    45,    -1,   136,    44,   367,    53,   367,    45,
+      -1,   143,    44,   367,    53,   367,    45,    -1,   114,    44,
+     367,    45,    -1,   146,    44,   367,    45,    -1,   138,    44,
+     367,    45,    -1,   134,    44,   367,    45,    -1,   131,    44,
+     367,    45,    -1,   127,    44,   367,    45,    -1,   122,    44,
+     367,    45,    -1,   120,   170,    -1,   112,    44,   367,    45,
+      -1,   145,    44,   367,    45,    -1,   142,    44,   367,    45,
+      -1,   133,    44,   367,    45,    -1,   124,    44,   367,    45,
+      -1,   118,    44,   367,    45,    -1,    75,   291,    -1,    76,
+      44,   367,    53,   367,    53,   367,    45,    -1,    77,    44,
+     367,    53,   367,    45,    -1,    78,    44,   367,    53,   367,
+      45,    -1,    86,    44,   367,    53,   367,    45,    -1,    87,
+      44,   367,    45,    -1,    88,    44,   367,    45,    -1,    89,
+      44,   367,    45,    -1,    90,    44,   367,    45,    -1,   104,
+      44,   367,    45,    -1,   392,    -1,   395,    -1,   396,    -1,
+      44,   367,    45,    -1,   170,    -1,    91,    44,   367,    53,
+     367,   393,    45,    -1,    -1,   289,    -1,   132,    44,   367,
+      53,   367,   393,    45,    -1,    79,   251,    -1,    70,    79,
+     251,    -1,    97,    44,   288,   399,    45,    -1,   400,    44,
+     288,   367,    45,    -1,    -1,   102,    44,   288,   367,   398,
+     402,    45,    -1,    24,    -1,   367,    -1,    98,    -1,    99,
+      -1,   100,    -1,   101,    -1,   103,    -1,    54,    80,    60,
+     414,    -1,    -1,   401,    -1,   415,   404,    -1,    -1,   286,
+      -1,   414,   408,    -1,    92,   415,    -1,   169,    -1,   406,
+      -1,    -1,   407,    -1,   410,    -1,   411,    -1,   412,    -1,
+     149,    -1,   150,    -1,   151,    -1,   152,    -1,   153,    -1,
+     154,    -1,   155,    -1,   156,    -1,   157,    -1,   147,    -1,
+     148,    -1,   158,    -1,   160,    -1,   159,    -1,   161,    -1,
+     162,    -1,   416,    -1,   164,    -1,   163,    -1,   165,    -1,
+     166,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -4493,104 +4535,106 @@ namespace w3c_sw {
       25,    28,    31,    34,    37,    40,    43,    46,    49,    51,
       53,    55,    56,    58,    63,    65,    68,    71,    72,    74,
       75,    77,    81,    85,    86,    89,    93,    96,    97,    99,
-     100,   103,   106,   107,   108,   114,   115,   121,   122,   124,
-     128,   130,   132,   133,   135,   138,   139,   141,   146,   148,
-     150,   152,   154,   156,   158,   160,   162,   164,   167,   169,
-     171,   172,   181,   184,   185,   187,   188,   191,   194,   196,
-     198,   200,   203,   205,   208,   209,   211,   216,   217,   219,
-     220,   222,   223,   225,   226,   228,   232,   234,   237,   239,
-     241,   246,   248,   251,   253,   256,   258,   262,   264,   267,
-     269,   271,   273,   275,   278,   280,   282,   285,   288,   289,
-     291,   292,   294,   297,   300,   301,   308,   309,   312,   314,
-     317,   318,   323,   325,   326,   329,   331,   333,   335,   337,
-     339,   341,   343,   344,   349,   351,   353,   356,   357,   359,
-     360,   362,   366,   367,   370,   373,   376,   377,   379,   381,
-     383,   385,   387,   389,   391,   393,   395,   396,   400,   401,
-     402,   403,   410,   411,   412,   418,   425,   426,   427,   432,
-     433,   434,   439,   440,   444,   445,   448,   451,   453,   455,
-     457,   460,   462,   463,   470,   471,   473,   476,   477,   480,
-     482,   483,   489,   490,   495,   496,   498,   501,   504,   505,
-     507,   508,   512,   513,   517,   521,   524,   525,   527,   530,
-     531,   534,   536,   537,   539,   542,   545,   546,   549,   551,
-     553,   555,   556,   560,   561,   565,   566,   571,   573,   575,
-     576,   580,   581,   583,   586,   587,   590,   592,   594,   596,
-     598,   601,   604,   605,   608,   611,   614,   615,   618,   621,
-     622,   624,   626,   629,   631,   633,   636,   639,   641,   644,
-     648,   650,   652,   654,   657,   659,   661,   663,   666,   670,
-     672,   675,   676,   679,   682,   683,   685,   687,   691,   693,
-     695,   697,   699,   701,   704,   706,   708,   710,   711,   716,
-     721,   723,   725,   727,   729,   731,   732,   734,   736,   739,
-     741,   743,   745,   747,   749,   751,   753,   755,   757,   759,
-     761,   763,   765,   767,   769,   772,   775,   776,   779,   782,
-     785,   786,   789,   791,   794,   795,   797,   800,   803,   806,
-     809,   812,   815,   818,   822,   824,   827,   829,   831,   834,
-     837,   838,   840,   843,   846,   849,   850,   853,   856,   857,
-     860,   863,   866,   869,   871,   873,   875,   877,   879,   881,
-     883,   885,   887,   891,   896,   901,   908,   913,   918,   923,
-     928,   931,   934,   939,   944,   949,   954,   957,   959,   964,
-     969,   974,   979,   986,   993,  1000,  1005,  1010,  1015,  1020,
-    1025,  1030,  1035,  1038,  1043,  1048,  1053,  1058,  1063,  1068,
-    1071,  1080,  1087,  1094,  1101,  1106,  1111,  1116,  1121,  1126,
-    1128,  1130,  1132,  1136,  1138,  1146,  1147,  1149,  1157,  1160,
-    1164,  1170,  1176,  1177,  1185,  1187,  1189,  1191,  1193,  1195,
-    1197,  1199,  1204,  1205,  1207,  1210,  1211,  1213,  1216,  1219,
-    1221,  1223,  1224,  1226,  1228,  1230,  1232,  1234,  1236,  1238,
+     100,   103,   106,   107,   108,   114,   115,   116,   123,   124,
+     126,   130,   132,   134,   135,   137,   140,   141,   143,   148,
+     150,   152,   154,   156,   158,   160,   162,   164,   166,   169,
+     171,   173,   174,   183,   186,   187,   189,   190,   193,   196,
+     198,   200,   202,   205,   207,   210,   211,   213,   218,   219,
+     221,   222,   224,   225,   227,   228,   230,   234,   236,   239,
+     241,   243,   248,   250,   253,   255,   258,   260,   264,   266,
+     269,   271,   273,   275,   277,   280,   282,   284,   287,   290,
+     291,   293,   294,   296,   299,   302,   303,   310,   311,   314,
+     316,   319,   320,   325,   327,   328,   331,   333,   335,   337,
+     339,   341,   343,   345,   346,   348,   349,   354,   356,   358,
+     361,   362,   364,   365,   367,   371,   372,   375,   378,   381,
+     382,   384,   386,   388,   390,   392,   394,   396,   398,   400,
+     401,   405,   406,   407,   408,   415,   416,   417,   418,   426,
+     433,   434,   435,   440,   441,   442,   447,   448,   452,   453,
+     456,   459,   461,   463,   465,   468,   470,   471,   478,   479,
+     481,   484,   485,   488,   490,   491,   497,   498,   503,   504,
+     506,   509,   512,   513,   515,   516,   520,   521,   525,   529,
+     532,   533,   535,   538,   539,   542,   544,   545,   547,   550,
+     553,   554,   557,   559,   561,   563,   564,   568,   569,   573,
+     574,   579,   581,   583,   584,   588,   589,   591,   594,   595,
+     598,   600,   602,   604,   606,   609,   612,   613,   616,   619,
+     622,   623,   626,   629,   630,   632,   634,   637,   639,   641,
+     644,   647,   649,   652,   656,   658,   660,   662,   665,   667,
+     669,   671,   674,   678,   680,   683,   684,   687,   690,   691,
+     693,   695,   699,   701,   703,   705,   707,   709,   712,   714,
+     716,   718,   719,   724,   729,   731,   733,   735,   737,   739,
+     740,   742,   744,   747,   749,   751,   753,   755,   757,   759,
+     761,   763,   765,   767,   769,   771,   773,   775,   777,   780,
+     783,   784,   787,   790,   793,   794,   797,   799,   802,   803,
+     805,   808,   811,   814,   817,   820,   823,   826,   830,   832,
+     835,   837,   839,   842,   845,   846,   848,   851,   854,   857,
+     858,   861,   864,   865,   868,   871,   874,   877,   879,   881,
+     883,   885,   887,   889,   891,   893,   895,   899,   904,   909,
+     916,   921,   926,   931,   936,   939,   942,   947,   952,   957,
+     962,   965,   967,   972,   977,   982,   987,   994,  1001,  1008,
+    1013,  1018,  1023,  1028,  1033,  1038,  1043,  1046,  1051,  1056,
+    1061,  1066,  1071,  1076,  1079,  1088,  1095,  1102,  1109,  1114,
+    1119,  1124,  1129,  1134,  1136,  1138,  1140,  1144,  1146,  1154,
+    1155,  1157,  1165,  1168,  1172,  1178,  1184,  1185,  1193,  1195,
+    1197,  1199,  1201,  1203,  1205,  1207,  1212,  1213,  1215,  1218,
+    1219,  1221,  1224,  1227,  1229,  1231,  1232,  1234,  1236,  1238,
     1240,  1242,  1244,  1246,  1248,  1250,  1252,  1254,  1256,  1258,
-    1260,  1262,  1264,  1266,  1268,  1270,  1272
+    1260,  1262,  1264,  1266,  1268,  1270,  1272,  1274,  1276,  1278,
+    1280
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   MapSetParser::yyrline_[] =
   {
-         0,   460,   460,   460,   466,   468,   472,   474,   478,   487,
-     490,   493,   496,   499,   502,   505,   507,   511,   517,   520,
-     523,   529,   532,   536,   548,   549,   553,   556,   558,   561,
-     563,   567,   571,   576,   578,   582,   589,   593,   595,   599,
-     601,   605,   611,   613,   611,   623,   623,   635,   638,   643,
-     651,   654,   661,   664,   669,   676,   679,   684,   691,   694,
-     697,   700,   703,   706,   709,   713,   718,   721,   729,   732,
-     739,   739,   751,   757,   760,   765,   768,   776,   783,   784,
-     788,   794,   800,   807,   814,   816,   821,   828,   831,   836,
-     839,   844,   847,   852,   856,   860,   867,   870,   877,   880,
-     883,   886,   892,   898,   901,   908,   913,   920,   924,   932,
-     934,   942,   945,   953,   961,   962,   969,   973,   981,   984,
-     989,   992,   996,  1002,  1009,  1009,  1017,  1019,  1025,  1028,
-    1034,  1034,  1039,  1045,  1047,  1051,  1054,  1057,  1060,  1063,
-    1066,  1069,  1076,  1076,  1087,  1088,  1093,  1097,  1099,  1107,
-    1109,  1114,  1118,  1121,  1137,  1142,  1146,  1149,  1153,  1154,
-    1155,  1156,  1157,  1158,  1159,  1160,  1166,  1166,  1182,  1186,
-    1188,  1182,  1199,  1203,  1199,  1212,  1218,  1222,  1218,  1232,
-    1236,  1232,  1246,  1246,  1258,  1260,  1264,  1274,  1275,  1276,
-    1280,  1288,  1292,  1292,  1302,  1305,  1312,  1318,  1320,  1334,
-    1337,  1337,  1348,  1348,  1356,  1358,  1363,  1368,  1372,  1374,
-    1378,  1378,  1381,  1381,  1388,  1393,  1397,  1399,  1404,  1408,
-    1410,  1415,  1419,  1421,  1426,  1431,  1435,  1437,  1441,  1448,
-    1452,  1460,  1460,  1463,  1463,  1469,  1469,  1475,  1476,  1480,
-    1480,  1485,  1487,  1491,  1494,  1496,  1500,  1504,  1508,  1514,
-    1518,  1522,  1525,  1527,  1531,  1535,  1540,  1542,  1548,  1551,
-    1553,  1559,  1560,  1566,  1570,  1571,  1575,  1576,  1580,  1581,
-    1585,  1586,  1587,  1588,  1592,  1596,  1599,  1602,  1605,  1611,
-    1615,  1618,  1620,  1624,  1627,  1629,  1633,  1634,  1638,  1642,
-    1643,  1647,  1648,  1649,  1653,  1658,  1659,  1663,  1663,  1676,
-    1701,  1704,  1707,  1710,  1713,  1720,  1723,  1728,  1732,  1739,
-    1740,  1744,  1747,  1751,  1754,  1760,  1761,  1765,  1768,  1771,
-    1774,  1777,  1778,  1784,  1789,  1798,  1805,  1808,  1816,  1825,
-    1832,  1835,  1842,  1847,  1858,  1861,  1865,  1868,  1871,  1874,
-    1877,  1880,  1883,  1886,  1892,  1897,  1906,  1909,  1916,  1919,
-    1926,  1929,  1934,  1937,  1941,  1955,  1958,  1966,  1975,  1978,
-    1985,  1988,  1991,  1994,  1998,  1999,  2000,  2001,  2004,  2007,
-    2010,  2013,  2017,  2023,  2026,  2029,  2032,  2035,  2038,  2041,
-    2045,  2048,  2051,  2054,  2057,  2060,  2063,  2066,  2067,  2070,
-    2073,  2076,  2079,  2082,  2085,  2088,  2091,  2094,  2097,  2100,
-    2103,  2106,  2109,  2112,  2115,  2118,  2121,  2124,  2127,  2130,
-    2134,  2137,  2140,  2143,  2146,  2149,  2152,  2155,  2158,  2161,
-    2162,  2163,  2169,  2172,  2179,  2186,  2189,  2193,  2199,  2206,
-    2213,  2216,  2220,  2220,  2233,  2237,  2241,  2244,  2247,  2250,
-    2253,  2259,  2265,  2268,  2272,  2282,  2285,  2290,  2298,  2305,
-    2309,  2317,  2321,  2325,  2326,  2327,  2331,  2332,  2333,  2337,
-    2338,  2339,  2343,  2344,  2345,  2349,  2350,  2354,  2355,  2356,
-    2357,  2361,  2362,  2366,  2367,  2371,  2372
+         0,   462,   462,   462,   468,   470,   474,   476,   480,   489,
+     492,   495,   498,   501,   504,   507,   509,   513,   519,   522,
+     525,   531,   534,   538,   550,   551,   555,   558,   560,   563,
+     565,   569,   573,   578,   580,   584,   591,   595,   597,   601,
+     603,   607,   613,   615,   613,   625,   628,   625,   641,   644,
+     649,   657,   660,   667,   670,   675,   682,   685,   690,   697,
+     700,   703,   706,   709,   712,   715,   719,   724,   727,   735,
+     738,   745,   745,   757,   763,   766,   771,   774,   782,   789,
+     790,   794,   800,   806,   813,   820,   822,   827,   834,   837,
+     842,   845,   850,   853,   858,   862,   866,   873,   876,   883,
+     886,   889,   892,   898,   904,   907,   914,   919,   926,   930,
+     938,   940,   948,   951,   959,   967,   968,   975,   979,   987,
+     990,   995,   998,  1002,  1008,  1015,  1015,  1023,  1025,  1031,
+    1034,  1040,  1040,  1045,  1051,  1053,  1057,  1060,  1063,  1066,
+    1069,  1072,  1075,  1081,  1084,  1091,  1091,  1102,  1103,  1108,
+    1112,  1114,  1122,  1124,  1129,  1133,  1136,  1152,  1157,  1161,
+    1164,  1168,  1169,  1170,  1171,  1172,  1173,  1174,  1175,  1181,
+    1181,  1197,  1201,  1203,  1197,  1214,  1218,  1220,  1214,  1231,
+    1237,  1241,  1237,  1251,  1255,  1251,  1265,  1265,  1277,  1279,
+    1283,  1293,  1294,  1295,  1299,  1307,  1311,  1311,  1321,  1324,
+    1331,  1337,  1339,  1353,  1356,  1356,  1367,  1367,  1375,  1377,
+    1382,  1387,  1391,  1393,  1397,  1397,  1400,  1400,  1407,  1412,
+    1416,  1418,  1423,  1427,  1429,  1434,  1438,  1440,  1445,  1450,
+    1454,  1456,  1460,  1467,  1471,  1479,  1479,  1482,  1482,  1488,
+    1488,  1494,  1495,  1499,  1499,  1504,  1506,  1510,  1513,  1515,
+    1519,  1523,  1527,  1533,  1537,  1541,  1544,  1546,  1550,  1554,
+    1559,  1561,  1567,  1570,  1572,  1578,  1579,  1585,  1589,  1590,
+    1594,  1595,  1599,  1600,  1604,  1605,  1606,  1607,  1611,  1615,
+    1618,  1621,  1624,  1630,  1634,  1637,  1639,  1643,  1646,  1648,
+    1652,  1653,  1657,  1661,  1662,  1666,  1667,  1668,  1672,  1677,
+    1678,  1682,  1682,  1695,  1720,  1723,  1726,  1729,  1732,  1739,
+    1742,  1747,  1751,  1758,  1759,  1763,  1766,  1770,  1773,  1779,
+    1780,  1784,  1787,  1790,  1793,  1796,  1797,  1803,  1808,  1817,
+    1824,  1827,  1835,  1844,  1851,  1854,  1861,  1866,  1877,  1880,
+    1884,  1887,  1890,  1893,  1896,  1899,  1902,  1905,  1911,  1916,
+    1925,  1928,  1935,  1938,  1945,  1948,  1953,  1956,  1960,  1974,
+    1977,  1985,  1994,  1997,  2004,  2007,  2010,  2013,  2017,  2018,
+    2019,  2020,  2023,  2026,  2029,  2032,  2036,  2042,  2045,  2048,
+    2051,  2054,  2057,  2060,  2064,  2067,  2070,  2073,  2076,  2079,
+    2082,  2085,  2086,  2089,  2092,  2095,  2098,  2101,  2104,  2107,
+    2110,  2113,  2116,  2119,  2122,  2125,  2128,  2131,  2134,  2137,
+    2140,  2143,  2146,  2149,  2153,  2156,  2159,  2162,  2165,  2168,
+    2171,  2174,  2177,  2180,  2181,  2182,  2188,  2191,  2198,  2205,
+    2208,  2212,  2218,  2225,  2232,  2235,  2239,  2239,  2252,  2256,
+    2260,  2263,  2266,  2269,  2272,  2278,  2284,  2287,  2291,  2301,
+    2304,  2309,  2317,  2324,  2328,  2336,  2340,  2344,  2345,  2346,
+    2350,  2351,  2352,  2356,  2357,  2358,  2362,  2363,  2364,  2368,
+    2369,  2373,  2374,  2375,  2376,  2380,  2381,  2385,  2386,  2390,
+    2391
   };
 
   // Print the state stack on the debug stream.
@@ -4672,7 +4716,7 @@ namespace w3c_sw {
      135,   136,   137,   138,   139,   140,   141,   142,   143,   144,
      145,   146,   147,   148,   149,   150,   151,   152,   153,   154,
      155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
-     165,   166,   167,   168,   169
+     165,   166,   167,   168,   169,   170
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -4681,15 +4725,15 @@ namespace w3c_sw {
   }
 
   const int MapSetParser::yyeof_ = 0;
-  const int MapSetParser::yylast_ = 2081;
-  const int MapSetParser::yynnts_ = 244;
+  const int MapSetParser::yylast_ = 2072;
+  const int MapSetParser::yynnts_ = 247;
   const int MapSetParser::yyempty_ = -2;
   const int MapSetParser::yyfinal_ = 3;
   const int MapSetParser::yyterror_ = 1;
   const int MapSetParser::yyerrcode_ = 256;
-  const int MapSetParser::yyntokens_ = 170;
+  const int MapSetParser::yyntokens_ = 171;
 
-  const unsigned int MapSetParser::yyuser_token_number_max_ = 424;
+  const unsigned int MapSetParser::yyuser_token_number_max_ = 425;
   const MapSetParser::token_number_type MapSetParser::yyundef_token_ = 2;
 
 
@@ -4699,11 +4743,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1054 of lalr1.cc  */
-#line 4703 "lib/MapSetParser/MapSetParser.cpp"
+#line 4747 "lib/MapSetParser/MapSetParser.cpp"
 
 
 /* Line 1056 of lalr1.cc  */
-#line 2378 "lib/MapSetParser/MapSetParser.ypp"
+#line 2397 "lib/MapSetParser/MapSetParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,

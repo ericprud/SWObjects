@@ -1987,6 +1987,7 @@ public:
 class ServiceGraphPattern : public TableOperationOnOperation {
 private:
     const TTerm* m_VarOrIRIref;
+    e_Silence m_Silence;
     AtomFactory* atomFactory;
     bool lexicalCompare;
 public:
@@ -1995,9 +1996,10 @@ public:
     static size_t defaultFederationRowLimit;
     static bool useFilters;
 
-    ServiceGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) : 
+    ServiceGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* atomFactory, bool lexicalCompare) : 
 	TableOperationOnOperation(p_GroupGraphPattern), 
-	m_VarOrIRIref(p_TTerm), atomFactory(atomFactory), 
+	m_VarOrIRIref(p_TTerm), m_Silence(p_Silence),
+	atomFactory(atomFactory), 
 	lexicalCompare(lexicalCompare) // use STR(?foo) = ?bar instead of ?foo = ?bar
     {  }
     virtual void express(Expressor* p_expressor) const;
@@ -2010,7 +2012,7 @@ public:
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, atomFactory, lexicalCompare); }
+    virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, m_Silence, atomFactory, lexicalCompare); }
 };
 class OptionalGraphPattern : public TableOperationOnOperation {
 protected:
@@ -2307,6 +2309,9 @@ protected:
 public:
     SubSelect (const Select* p_Select) : TableOperation(), m_Select(p_Select) {  }
     ~SubSelect() { delete m_Select; }
+    const Select* getSelect () const {
+	return m_Select;
+    }
     virtual void bindVariables(RdfDB*, ResultSet* rs) const;
     virtual TableOperation* getDNF () const {
 	w3c_sw_NEED_IMPL("getDNF{SUBSELECT(...)}");
@@ -3375,7 +3380,7 @@ public:
     virtual void optionalGraphPattern(const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) = 0;
     virtual void minusGraphPattern(const MinusGraphPattern* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void graphGraphPattern(const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) = 0;
-    virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) = 0;
+    virtual void serviceGraphPattern(const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* atomFactory, bool lexicalCompare) = 0;
     virtual void expressionAlias(const ExpressionAlias* const, const Expression* expr, const Bindable* label) = 0;
     virtual void expressionAliasList(const ExpressionAliasList* const self, const ProductionVector<const ExpressionAlias*>* p_Expressions) = 0;
     virtual void posList(const TTermList* const self, const ProductionVector<const TTerm*>* p_TTerms) = 0;
@@ -3488,7 +3493,7 @@ public:
 	p_TTerm->express(this);
 	p_GroupGraphPattern->express(this);
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence /* p_Silence */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	p_TTerm->express(this);
 	p_GroupGraphPattern->express(this);
     }
@@ -3742,7 +3747,7 @@ public:
     virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 	w3c_sw_NEED_IMPL("graphGraphPattern");
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	w3c_sw_NEED_IMPL("serviceGraphPattern");
     }
     virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {

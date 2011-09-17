@@ -243,7 +243,7 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
-	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 		const TTerm* oldGraphName = graphName;
 		graphName = p_TTerm;
 		const TableOperation* parent = currentBGP;

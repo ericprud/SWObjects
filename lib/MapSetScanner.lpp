@@ -116,6 +116,7 @@ IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
 GT_COMMA		","
 GT_SEMI		";"
+IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
 IT_a		"a"
 GT_PIPE		"|"
 GT_DIVIDE		"/"
@@ -294,6 +295,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_FILTER}		{return token::IT_FILTER;}
 {GT_COMMA}		{return token::GT_COMMA;}
 {GT_SEMI}		{return token::GT_SEMI;}
+{IT_SILENT}		{return token::IT_SILENT;}
 {IT_a}		{return token::IT_a;}
 {GT_PIPE}		{return token::GT_PIPE;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}

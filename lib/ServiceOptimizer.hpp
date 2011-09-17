@@ -21,7 +21,7 @@ namespace w3c_sw {
 		    RHS_serviceGraphPattern_Opt (AtomFactory* atomFactory, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, bool lex, std::map<const TTerm*, int> order)
 			: RHS_serviceGraphPattern(atomFactory, p_TTerm, p_GroupGraphPattern, lex), order(order)
 		    {  }
-		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory*, bool) {
+		    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence, AtomFactory*, bool) {
 			ret = l_TTerm != p_TTerm ? order[l_TTerm] < order[p_TTerm] ? SORT_lt : SORT_gt : _tableOperationOnOperation(p_GroupGraphPattern);
 		    }
 		};
@@ -31,8 +31,8 @@ namespace w3c_sw {
 		    : OperationSorter(atomFactory, rhs), order(order)
 		{  }
 
-		virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* atomFactory, bool lexicalCompare) {
-		    RHS_serviceGraphPattern_Opt slave(atomFactory, p_TTerm, p_GroupGraphPattern, lexicalCompare, order);
+		virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* atomFactory, bool lexicalCompare) {
+		    RHS_serviceGraphPattern_Opt slave(atomFactory, p_TTerm, p_GroupGraphPattern, p_Silence, lexicalCompare, order);
 		    rhs->express(&slave);
 		    ret = slave.ret;
 		}

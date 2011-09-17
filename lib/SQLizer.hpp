@@ -754,7 +754,7 @@ namespace w3c_sw {
 	    curTableOperation = p_GroupGraphPattern;
 	    curTableOperation->express(this);
 	}
-	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence /* p_Silence */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	    w3c_sw_FAIL("don't do federation with ServiceGraphPatterns yet");
 	    p_TTerm->express(this);
 	    curTableOperation = p_GroupGraphPattern;

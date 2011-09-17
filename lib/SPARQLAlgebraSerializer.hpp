@@ -336,11 +336,13 @@ public:
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern(p_TTerm, p_GroupGraphPattern);
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	lead();
 	ret << "service(";
 	p_TTerm->express(this);
 	ret << ", ";
+	if (p_Silence)
+	    ret << "(silence true), ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern(p_TTerm, p_GroupGraphPattern);
 	ret << ")";

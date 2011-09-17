@@ -270,6 +270,7 @@ public:
     Select* p_Select;
     e_distinctness p_distinctness;
     e_listModifier p_listModifier;
+    e_Silence p_Silence;
     TTermList* p_TTermList;
     ExpressionAliasList* p_ExpressionAliaseList;
     ExpressionAlias* p_ExpressionAlias;
@@ -311,7 +312,7 @@ public:
 /* Language tokens */
 %token IT_REWRITEVAR IT_DRIVER IT_SERVER IT_USER IT_PASSWORD IT_DATABASE IT_STEMURI IT_PRIMARYKEY IT_SHAREDVARS
        IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES IT_LABEL
-       IT_GRAPH IT_SERVICE IT_BASE IT_PREFIX IT_DISTINCT
+       IT_GRAPH IT_SERVICE IT_SILENT IT_BASE IT_PREFIX IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_SELECT IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
        IT_ENDS IT_ANY IT_UNORDERED GT_LCURLEY GT_RCURLEY IT_WHERE
@@ -353,6 +354,7 @@ public:
 		       _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _QIT_DISTINCT_E_Opt
 %type <p_listModifier> _O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C
 		       _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt
+%type <p_Silence> _QIT_SILENT_E_Opt
 
  //%type <p_URIs> _QIRIref_E_Plus
 %type <p_VarSet>  _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C
@@ -1075,6 +1077,15 @@ BindingValue:
     }
 ;
 
+_QIT_SILENT_E_Opt:
+    {
+	$$ = SILENT_No;
+    }
+  | IT_SILENT	{
+	$$ = SILENT_Yes;
+}
+;
+
 GroupGraphPattern:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
@@ -1209,9 +1220,9 @@ ServiceGraphPattern:
       } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
-      } VarOrIRIref GroupGraphPattern	{
+      } _QIT_SILENT_E_Opt VarOrIRIref GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.curOp, driver.atomFactory, false));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
 	  driver.curGraphName = $<p_TTerm>4;
       }
 ;

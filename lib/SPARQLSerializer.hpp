@@ -293,13 +293,15 @@ public:
 	if (braces)
 	    ret << " }";
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	bool braces = needBraces;
 	needBraces = false;
 	if (braces)
 	    ret << "{ ";
 	lead();
 	ret << "SERVICE " << p_TTerm->toString();
+	if (p_Silence == SILENT_Yes)
+	    ret << "SILENT ";
 	if (debug & DEBUG_graphs) ret << ' ' << self;
 	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
 	if (braces)

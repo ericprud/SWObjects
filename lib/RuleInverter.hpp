@@ -263,7 +263,7 @@ namespace w3c_sw {
 	    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */) {
 		w3c_sw_FAIL("don't know how to deal with a graphGraphPattern in a stem query");
 	    }
-	    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */, e_Silence /* p_Silence */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 		w3c_sw_FAIL("don't know how to deal with a serviceGraphPattern in a stem query");
 	    }
 	};

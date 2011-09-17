@@ -393,7 +393,7 @@ void GraphGraphPattern::express (Expressor* p_expressor) const {
     p_expressor->graphGraphPattern(this, m_VarOrIRIref, m_TableOperation);
 }
 void ServiceGraphPattern::express (Expressor* p_expressor) const {
-    p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, atomFactory, lexicalCompare);
+    p_expressor->serviceGraphPattern(this, m_VarOrIRIref, m_TableOperation, m_Silence, atomFactory, lexicalCompare);
 }
 void ExpressionAlias::express (Expressor* p_expressor) const {
     p_expressor->expressionAlias(this, expr, label);
@@ -1886,7 +1886,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
 	island.erase(island.begin());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end(); it++) {
-	    ResultSet disjoint(rs->getAtomFactory());
+	    ResultSet disjoint(*rs);
 	    (*it)->bindVariables(db, &disjoint);
 #if 0
 	    for (std::vector<const Filter*>::const_iterator it = m_Filters.begin();
@@ -2156,14 +2156,24 @@ compared against
 	/* Copy graph pattern for inclusion in a new Select. */
 	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
 	op->express(&dup);
-	const Operation* query = new Select(DIST_distinct, vars.l,
-					    new ProductionVector<const DatasetClause*>(),
-					    new WhereClause(dup.last.tableOperation),
-					    new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
+	const Operation* query;
+	const SubSelect* subsel = dynamic_cast<const SubSelect*>(dup.last.tableOperation);
+	if (subsel == NULL) {
+	    query = new Select(DIST_distinct, vars.l,
+			       new ProductionVector<const DatasetClause*>(),
+			       new WhereClause(dup.last.tableOperation),
+			       new SolutionModifier(NULL, NULL, NULL, LIMIT_None, OFFSET_None)); // !!! groupBy, having
+	} else {
+	    query = subsel->getSelect();
+	}
 
 	/* Query parms for GET or POST */
 	SWWEBagent::ParameterList p;
-	p.set("Accept", "application/sparql-results+xml");
+	p.set("Accept", 
+	      /* 1. */ "application/binary-rdf-results-table,application/x-binary-rdf-results-table,"
+	      /* .9 */ "application/sparql-results+xml;q=.9,text/sparql-results;q=.9,"
+	      /* .8 */ "application/xml;q=.8,application/html+xml;q=.8,"
+	      /* .7 */ "text/html;q=.7");
 
 	const VariableList* knownVars = rs->getKnownVars();
 	std::vector<const TTerm*> varsIntersection(vars.vars.size() + knownVars->size());
@@ -2233,24 +2243,50 @@ compared against
     void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
-	    _constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent);
+	    try {
+		_constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent);
+	    } catch (std::exception& e) {
+		if (m_Silence == SILENT_Yes)
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
+		else
+		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + e.what();
+	    } catch (std::string& s) {
+		if (m_Silence == SILENT_Yes)
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
+		else
+		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
+	    }
 	else {
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
 	    if (graphVar != NULL) {
 		for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
 		    const URI* graph = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
-		    if (graph != NULL) {
-			ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
-			_constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent);
-			for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
-			    rs->insert(outerRow, *innerRow);
-			    innerRow = single->erase(innerRow);
+		    try {
+			if (graph != NULL) {
+			    ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
+			    _constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent);
+			    for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
+				rs->insert(outerRow, *innerRow);
+				innerRow = single->erase(innerRow);
+			    }
+			} else {
+			    // treat like a TypeError; no result
 			}
-		    } else {
-			// treat like a TypeError; no result
+			delete *outerRow;
+			outerRow = rs->erase(outerRow);
+		    } catch (std::exception& e) {
+			if (m_Silence == SILENT_Yes) {
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
+			    ++outerRow;
+			} else
+			    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + e.what();
+		    } catch (std::string& s) {
+			if (m_Silence == SILENT_Yes) {
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
+			    ++outerRow;
+			} else
+			    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
 		    }
-		    delete *outerRow;
-		    outerRow = rs->erase(outerRow);
 		}
 	    } else
 		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
@@ -2293,7 +2329,7 @@ compared against
     }
 
     void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(*rs); // no AtomFactory
+	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "OPTIONAL produced\n" << *rs;

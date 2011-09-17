@@ -1667,9 +1667,9 @@ ServiceGraphPattern:
       } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
-      } VarOrIRIref GroupGraphPattern	{
+      } _QIT_SILENT_E_Opt VarOrIRIref GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.curOp, driver.atomFactory, false));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
 	  driver.curGraphName = $<p_TTerm>4;
       }
 ;

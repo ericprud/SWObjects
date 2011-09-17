@@ -128,9 +128,10 @@ public:
 	} else
 	    p_GroupGraphPattern->express(this);
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	if (sparqlx) {
 	    xml->open("ServiceGraphPattern");
+	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    p_TTerm->express(this);
 	    p_GroupGraphPattern->express(this);
 	    xml->close();
@@ -282,25 +283,25 @@ public:
     }
     virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	xml->open("Clear");
-	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	p__QGraphIRI_E_Opt->express(this);
 	xml->close();
     }
     virtual void create (const Create* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	xml->open("Create");
-	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
     }
     virtual void drop (const Drop* const, e_Silence p_Silence, const URI* p_GraphIRI) {
 	xml->open("Drop");
-	if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	p_GraphIRI->express(this);
 	xml->close();
     }
     virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
 	xml->open("Add"); {
-	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
 		from->express(this);
 	    } xml->close();
@@ -311,7 +312,7 @@ public:
     }
     virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
 	xml->open("Move"); {
-	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
 		from->express(this);
 	    } xml->close();
@@ -322,7 +323,7 @@ public:
     }
     virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
 	xml->open("Copy"); {
-	    if (p_Silence != SILENT_Yes) xml->attribute("silent", "YES");
+	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
 		from->express(this);
 	    } xml->close();
