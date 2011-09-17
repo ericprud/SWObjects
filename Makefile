@@ -348,7 +348,7 @@ unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
 
 release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
-	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -Lboost-log/stage/lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat -lmysqlclient -lz -lmysqlclient -lz  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
+	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat -lmysqlclient -lz -lmysqlclient -lz  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
 
 ##### apache #####
 
@@ -509,7 +509,12 @@ SWIG ?= swig
 #   2. in  va_list * temp = reinterpret_cast< va_list * >(argp3);
 #          arg3 = *temp;
 #      arg3 = *temp => va_copy(arg3, *temp)
-SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g;'
+SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g; s{( +)(arg\d) = \*\(reinterpret_cast< va_list \* >\((argp\d)\)\)}{$$1va_list * temp = reinterpret_cast< va_list * >($$3);\n$$1va_copy($$2, *temp)}g'
+
+SWIG_SUBST_LUA = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s+arg(\d)\s+;)(.*?)(arg\2 = \*argp\2)}{\1\3va_copy(arg\2, *argp\2)}sg'
+
+SWIG_SUBST_PHP = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s+arg(\d)\s+;)(.*?)(arg\2 = \*tmp\2)}{\1\3va_copy(arg\2, *tmp\2)}sg'
+
 
 SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o lib/JSONresultsParser/JSONresultsParser.o lib/JSONresultsScanner.o
 SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLfedParser/SPARQLfedParser.hpp lib/TurtleSParser/TurtleSParser.hpp lib/TrigSParser/TrigSParser.hpp interface/WEBagent.hpp lib/JSONresultsParser/JSONresultsParser.hpp
@@ -524,7 +529,7 @@ swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx $(PYTHON_INC) $(INCLUDES)
 
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -Lboost-log/stage/lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 # The _SWObjects.so target can be built with the python distutils package,
 # but it's noisier and doesn't re-use the object files in lib:
@@ -534,7 +539,7 @@ swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS)
 # 	mv _SWObjects.so swig/python/
 
 python-test: swig/python/_SWObjects.so
-	(cd swig/python/ && python t_SWObjects.py)
+	(cd swig/python/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib python t_SWObjects.py)
 
 python-clean:
 	$(RM) -f swig/python/SWObjects.* swig/python/SWObjects_wrap.* swig/python/_SWObjects.so
@@ -546,13 +551,13 @@ SWIG-CLEAN += python-clean
 swig/java/src/AtomFactory.java swig/java/src/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	-$(RM) swig/java/src/*.java
 	$(SWIG) -o swig/java/src/SWObjects_wrap.cxx -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
-	$(SWIG_SUBST) swig/java/src/SWObjects_wrap.cxx
+	$(SWIG_SUBST_LUA) swig/java/src/SWObjects_wrap.cxx
 
 swig/java/src/SWObjects_wrap.o: swig/java/src/SWObjects_wrap.cxx
-	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o $@ $< -I$(JAVA_HOME)/include
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o $@ $< -I$(JAVA_HOME)/include $(INCLUDES)
 
 swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 swig/java/SWObjects.jar: swig/java/src/AtomFactory.java # there are zillions of class files, use AtomFactory as an indicator
 	-$(RM) $@
@@ -563,7 +568,7 @@ swig/java/t_SWObjects.class: swig/java/t_SWObjects.java swig/java/SWObjects.jar
 	javac -d swig/java -classpath .:/usr/share/java/hamcrest-core.jar:/usr/share/java/junit4.jar:swig/java/SWObjects.jar $<
 
 java-test: swig/java/libSWObjects.so swig/java/t_SWObjects.class
-	LD_LIBRARY_PATH=swig/java java -classpath .:/usr/share/java/hamcrest-core.jar:/usr/share/java/junit4.jar:swig/java:swig/java/SWObjects.jar org.junit.runner.JUnitCore t_SWObjects
+	LD_LIBRARY_PATH=$(BOOST_TARGET)lib:swig/java java -classpath .:/usr/share/java/hamcrest-core.jar:/usr/share/java/junit4.jar:swig/java:swig/java/SWObjects.jar org.junit.runner.JUnitCore t_SWObjects
 
 java-clean:
 	$(RM) -f swig/java/libSWObjects.so swig/java/class/* swig/java/src/* swig/java/t_SWObjects.class
@@ -577,13 +582,13 @@ swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG_SUBST) $@
 
 swig/perl/SWObjects_wrap.o: swig/perl/SWObjects_wrap.cxx
-	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(PERL_HOME)/CORE
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(PERL_HOME)/CORE $(INCLUDES)
 
-swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $(SWIG_OBJS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 perl-test: swig/perl/libSWObjects.so
-	(cd swig/perl/ && perl t_SWObjects.t)
+	(cd swig/perl/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib perl t_SWObjects.t)
 
 perl-clean:
 	$(RM) -f swig/perl/SWObjects.* swig/perl/SWObjects_wrap.* swig/perl/libSWObjects.so
@@ -595,16 +600,16 @@ SWIG-CLEAN += perl-clean
 # Lua
 swig/lua/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -lua -I. -Ilib -Iinterface $<
-	$(SWIG_SUBST) $@
+	$(SWIG_SUBST_LUA) $@
 
 swig/lua/SWObjects_wrap.o: swig/lua/SWObjects_wrap.cxx
-	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(LUA_HOME)
+	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(LUA_HOME) $(INCLUDES)
 
 swig/lua/SWObjects.so: swig/lua/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 lua-test: swig/lua/SWObjects.so
-	(cd swig/lua/ && shake t_SWObjects.lua)
+	(cd swig/lua/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib shake t_SWObjects.lua)
 
 lua-clean:
 	$(RM) -f swig/lua/SWObjects.* swig/lua/SWObjects_wrap.* swig/lua/libSWObjects.so
@@ -616,16 +621,16 @@ SWIG-CLEAN += lua-clean
  # Php
 swig/php/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -DYYDEBUG=0 -o $@ -c++ -php -I. -Ilib -Iinterface $<
-	$(SWIG_SUBST) $@
+	$(SWIG_SUBST_PHP) $@
 
 swig/php/SWObjects_wrap.o: swig/php/SWObjects_wrap.cxx
-	g++ $(OPTIM) -DHAVE_LIBEXPAT=1 -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/php/SWObjects_wrap.o swig/php/SWObjects_wrap.cxx -I$(PHP_HOME)
+	g++ $(OPTIM) -DHAVE_LIBEXPAT=1 -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/php/SWObjects_wrap.o swig/php/SWObjects_wrap.cxx -I$(PHP_HOME) $(INCLUDES)
 
 swig/php/SWObjects.so: swig/php/SWObjects_wrap.o $(SWIG_OBJS)
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS)
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
 
 php-test: swig/php/SWObjects.so
-	(cd swig/php/ && php -d extension=./SWObjects.so t_SWObjects.php)
+	(cd swig/php/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib php -d extension=./SWObjects.so t_SWObjects.php)
 
 php-clean:
 	$(RM) -f swig/php/SWObjects.* swig/php/SWObjects_wrap.* swig/php/_SWObjects.so
