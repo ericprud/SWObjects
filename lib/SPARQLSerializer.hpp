@@ -299,10 +299,10 @@ public:
 	if (braces)
 	    ret << "{ ";
 	lead();
-	ret << "SERVICE " << p_TTerm->toString();
+	ret << "SERVICE " << p_TTerm->toString() << ' ';
 	if (p_Silence == SILENT_Yes)
 	    ret << "SILENT ";
-	if (debug & DEBUG_graphs) ret << ' ' << self;
+	if (debug & DEBUG_graphs) ret << self << ' ';
 	_nestedGraphPattern (p_TTerm, p_GroupGraphPattern);
 	if (braces)
 	    ret << " }";
