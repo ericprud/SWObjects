@@ -1,5 +1,12 @@
 /**
- * activate with: LoadModule sparul_module /tmp/sparql11/apache/.libs/mod_sparul.so
+ * activate with:
+ *   LoadModule sparul_module /tmp/sparql11/apache/.libs/mod_sparul.so
+ * superstitious dev cycle:
+ *   rm -rf apache/.libs apache/mod_sparul.o && CODEA=~/checkouts/codea CCL=~/checkouts/ccl make -k -j 8 install-mod_sparul
+ *  (which, if you're not root, will fail with a Permission denied, but it does create the .so)
+ *   LD_LIBRARY_PATH=/tmp/sparql11/boost-log/stage/lib apachectl stop
+ *   LD_LIBRARY_PATH=/tmp/sparql11/boost-log/stage/lib apachectl start
+ *   reload
  */
 
 #include "codea_hookmap.h"
@@ -31,8 +38,11 @@ public:
 
     static int Handler( request_rec* r ) {
 
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "mod_sparul: %s", 
-                     "abcd");
+	/* Set "LogLevel debug" in /etc/apache2/sites-available/default
+	 * to see something in /var/log/apache2/error.log
+	 */
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+		     "mod_sparul Handler serving <%s>.", r->uri);
 
 	if (!strcmp(r->handler, "sparul-soundoff")) {
 
