@@ -1,3 +1,7 @@
+/**
+ * activate with: LoadModule sparul_module /tmp/sparql11/apache/.libs/mod_sparul.so
+ */
+
 #include "codea_hookmap.h"
 #include "codea_hooks.h"
 #include "codea_log.h"
@@ -7,6 +11,7 @@
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "SPARQLSerializer.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
+#include "version.h"
 
 //#include <fstream>
 //#include <iostream>
@@ -25,6 +30,40 @@ public:
     static const tag_t& GetTag() { return SPARUL_tag; }
 
     static int Handler( request_rec* r ) {
+
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "mod_sparul: %s", 
+                     "abcd");
+
+	if (!strcmp(r->handler, "sparul-soundoff")) {
+
+	    /* Add this to /etc/apache2/apache2.conf:
+	    <Location /soundoff>
+	      SetHandler sparul-soundoff
+	    </Location>
+	    and GET http://localhost/soundoff for instant gratification. */
+
+	    ap_set_content_type(r, "text/html");
+	    if (r->header_only)
+		return OK;
+
+	    ap_rputs(DOCTYPE_HTML_3_2, r);
+	    ap_rputs("<html>\n", r);
+	    ap_rputs(" <head>\n<title>mod_sparul Module Content-Handler Output\n</title>\n</head>\n", r);
+	    ap_rputs(" <body>\n", r);
+	    ap_rputs("  <h1><samp>mod_sparul</samp> Module Content-Handler Output\n</h1>\n", r);
+	    ap_rputs("  <p>\n", r);
+	    ap_rprintf(r, "  Apache HTTP Server version: \"%s\"<br />\n",
+		       ap_get_server_banner());
+	    ap_rprintf(r, "  Server built: %s<br />\n", ap_get_server_built());
+	    ap_rprintf(r, "  Module built: %s %s<br />\n", __DATE__, __TIME__);
+	    ap_rprintf(r, "  SWObjects Revision: %s modified %s by %s<br />\n",
+		       SVN_Revision, SVN_Last_Changed_Date, SVN_Last_Changed_Author);
+	    ap_rprintf(r, "  %s<br />\n", SVN_URL);
+	    ap_rputs("  </p>\n", r);;
+	    ap_rputs(" </body>\n", r);
+	    ap_rputs("</html>\n", r);
+	    return OK;
+	}
         const char *ctype;
         ctype = apr_table_get(r->headers_in, "Content-Type");
         if (r->method_number == M_POST && ctype != NULL
@@ -84,7 +123,7 @@ public:
             return OK;
         }
 
-        return DECLINED;
+	return DECLINED;
     }
 };
 
@@ -95,3 +134,4 @@ CODEA_HANDLER( SPARULHooks::Handler, 0, 0, APR_HOOK_MIDDLE )
 CODEA_END_HOOK_MAP( sparul )
 
 CODEA_PUBLISH_MODULE( sparul, 0, 0, 0, 0, 0 )
+
