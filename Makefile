@@ -356,16 +356,19 @@ release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
 apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
 	($(ECHO) $@ \\; $(CXX) -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 
-apache/mod_sparul.so: $(LIB) apache/mod_sparul.dep
-	gcc -fPIC -Wall `$(APXS) -q CFLAGS` -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(INCLUDES) -c apache/mod_sparul.cpp -o apache/mod_sparul.o; \
+apache/mod_sparul.o: $(LIB) apache/mod_sparul.dep
+	gcc -fPIC -Wall `$(APXS) -q CFLAGS` -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(INCLUDES) -c apache/mod_sparul.cpp -o apache/mod_sparul.o
+
+# Using the freaky libtool .la file (which also builds .libs/mod_sparul.so , which is what we really want).
+apache/mod_sparul.la: $(LIB) apache/mod_sparul.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
 	$(APXS) -I$(CODEA) -I$(CCL) -I$(APR) -c apache/mod_sparul.o $(CODEA)/codea_hooks.o lib/libSWObjects.a $(LDFLAGS)
+
+# Gets libtool to $(cp .libs/mod_sparul.so /usr/lib/apache2/modules/mod_sparul.so).
+install-mod_sparul: apache/mod_sparul.la
+	$(APXS) -i -n sparul_module apache/mod_sparul.la
 
 clean-mod_sparul:
 	rm -f apache/mod_sparul.{o,so,la} apache/.libs/mod_sparul.*
-
-install-mod_sparul: apache/mod_sparul.so
-	$(APXS) -i -n sparul_module apache/.libs/mod_sparul.so
-
 
 ##### packaged tests ####
 
