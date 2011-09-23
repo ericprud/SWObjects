@@ -364,6 +364,7 @@ apache/mod_sparul.la: $(LIB) apache/mod_sparul.o $(BOOST_TARGET)lib/lib$(BOOST_L
 	$(APXS) -I$(CODEA) -I$(CCL) -I$(APR) -c apache/mod_sparul.o $(CODEA)/codea_hooks.o lib/libSWObjects.a $(LDFLAGS)
 
 # Gets libtool to $(cp .libs/mod_sparul.so /usr/lib/apache2/modules/mod_sparul.so).
+# Will need write privs on /usr/lib/apache2/modules/mod_sparul.{so,la} .
 install-mod_sparul: apache/mod_sparul.la
 	$(APXS) -i -n sparul_module apache/mod_sparul.la
 
