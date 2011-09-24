@@ -20,6 +20,15 @@
 namespace w3c_sw {
 
     namespace webserver {
+
+	struct server_config {
+	    bool allowBareNewline;
+	    server_config (bool allowBareNewline) :
+		allowBareNewline(allowBareNewline)
+	    {  }
+	    bool request_allowBareNewline () { return allowBareNewline; }
+	};
+
 	struct header
 	{
 	    std::string name;
@@ -532,7 +541,7 @@ namespace w3c_sw {
     class WEBserver {
     public:
 	virtual ~WEBserver () {  }
-	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler) = 0;
+	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, webserver::server_config* config) = 0;
     };
 
     class WebHandler : public w3c_sw::webserver::request_handler {

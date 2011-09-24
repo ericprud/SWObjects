@@ -708,7 +708,8 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	tmpss << serverPort;
 	const char* bindMe = "0.0.0.0";
 	try {
-	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler);
+	    sw::webserver::server_config config(false);
+	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, &config);
 	} catch (boost::system::system_error e) {
 	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
 	}
