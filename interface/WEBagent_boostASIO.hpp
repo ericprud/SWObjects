@@ -92,7 +92,7 @@ namespace w3c_sw {
 		    /* .9 */ "application/sparql-results+xml;q=.9,text/sparql-results;q=.9,"
 		    /* .8 */ "application/xml;q=.8,application/html+xml;q=.8,"
 		    /* .7 */ "text/html;q=.7"
-		    "\n"; // !! Boy does this need to be a parameter...
+		    "\r\n"; // !! Boy does this need to be a parameter...
 
 		request_stream << authString;
 		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
