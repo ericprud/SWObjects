@@ -448,7 +448,16 @@ bool GlobalLoadDataOrResults (const sw::TTerm* graph,
     }
 }
 
-struct MyServer : WEBSERVER { // sw::WEBserver_asio
+struct ServerConfig {
+    struct Request {
+	bool allowBareNewlines_;
+
+	Request () : allowBareNewlines_(true) {  }
+	bool allowBareNewlines () { return allowBareNewlines_; }
+    } request;
+};
+
+struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
 	size_t exploreTripleCountLimit;
@@ -658,6 +667,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 #if HTTP_SERVER == SWOb_ASIO
     boost::mutex executeMutex;    
 #endif /* HTTP_SERVER == SWOb_ASIO */
+    ServerConfig config;
 
     MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
 	      std::string pkAttribute)
@@ -708,8 +718,7 @@ struct MyServer : WEBSERVER { // sw::WEBserver_asio
 	tmpss << serverPort;
 	const char* bindMe = "0.0.0.0";
 	try {
-	    sw::webserver::server_config config(false);
-	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, &config);
+	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config);
 	} catch (boost::system::system_error e) {
 	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
 	}
@@ -1931,6 +1940,7 @@ int main(int ac, char* av[])
 	     (std::string("max number of results to send to a remote service, default ")
 	      + boost::lexical_cast<std::string>(sw::ServiceGraphPattern::defaultFederationRowLimit)).c_str()
 	     )
+            ("server-strict-HTTP", "HTTP server will expect strict conformance with HTTP specification, e.g. \\r\\n request line separators.")
             ;
 
         po::options_description sqlOpts("SQL options");
@@ -2000,6 +2010,11 @@ int main(int ac, char* av[])
 	    size_t rows = vm["federation-row-limit"].as<size_t>();
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Limiting result set federation to" << rows << " rows.\n";
 	    sw::ServiceGraphPattern::defaultFederationRowLimit = rows;
+	}
+
+	if (vm.count("server-strict-HTTP")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "HTTP server will expect strict conformance with HTTP specification.\n";
+	    TheServer.config.request.allowBareNewlines_ = false;
 	}
 
         if (vm.count("utf-8")) {

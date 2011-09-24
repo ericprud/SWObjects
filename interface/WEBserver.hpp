@@ -1,3 +1,30 @@
+/** WEBserver : a simple threaded HTTP web server.
+ * parses HTTP requests and invokes WebHandler::handle_request with valid requests.
+ *
+ * Example:
+ * struct ServerConfig {
+ *     struct Request {
+ * 	bool allowBareNewline () { return false_; }
+ *     } request;
+ * };
+ * 
+ * struct MyServer : w3c_sw::WEBserver<ServerConfig> {
+ *     class MyHandler : public w3c_sw::WebHandler {
+ *         void handle_request(w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep);
+ *     };
+ * };
+ * 
+ * int main (int, char*[]) {
+ *     ServerConfig c;
+ *     MyServer s(&c);
+ *     MyHandler h;
+ *     s.serve("localhost", "8088", 5, h, c);
+ * }
+ *
+ * copyright 2011 ericP
+ * Released to public domain under Apache license.
+ */
+
 #include <sstream>
 
 #if HTTP_SERVER == SWOb_ASIO
@@ -20,14 +47,6 @@
 namespace w3c_sw {
 
     namespace webserver {
-
-	struct server_config {
-	    bool allowBareNewline;
-	    server_config (bool allowBareNewline) :
-		allowBareNewline(allowBareNewline)
-	    {  }
-	    bool request_allowBareNewline () { return allowBareNewline; }
-	};
 
 	struct header
 	{
@@ -538,10 +557,17 @@ namespace w3c_sw {
 
     }
 
+
+    /** WEBserver : a simple threaded HTTP web server.
+     * parses HTTP requests and invokes WebHandler::handle_request with valid requests.
+     * See example above.
+     */
+
+    template <class server_config>
     class WEBserver {
     public:
 	virtual ~WEBserver () {  }
-	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, webserver::server_config* config) = 0;
+	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, server_config& config) = 0;
     };
 
     class WebHandler : public w3c_sw::webserver::request_handler {

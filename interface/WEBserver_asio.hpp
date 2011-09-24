@@ -51,15 +51,16 @@ namespace w3c_sw {
     namespace webserver {
 
 	/// Parser for incoming requests.
+	template <class server_config>
 	class request_parser
 	{
 	public:
 	    // HTTP technically doesn't allow bare newlines like
 	    // "GET /foo HTTP/1.1\nHost: bar", but everybody expects it.
-	    bool allowBareNewline;
+	    server_config& config;
 
 	    /// Construct ready to parse the request method.
-	    request_parser(server_config* config);
+	    request_parser(server_config& config);
 
 	    /// Reset to initial parser state.
 	    void reset();
@@ -126,16 +127,19 @@ namespace w3c_sw {
 	    size_t body_size;
 	};
 
-	inline request_parser::request_parser(server_config* config)
-	    : allowBareNewline(config->request_allowBareNewline()), state_(method_start), body_size(0)
+	template <class server_config>
+	inline request_parser<server_config>::request_parser(server_config& config)
+	    : config(config), state_(method_start), body_size(0)
 	{  }
 
-	inline void request_parser::reset()
+	template <class server_config>
+	inline void request_parser<server_config>::reset()
 	{
 	    state_ = method_start;
 	}
 
-	inline boost::tribool request_parser::consume(request& req, char input)
+	template <class server_config>
+	inline boost::tribool request_parser<server_config>::consume(request& req, char input)
 	{
 	    switch (state_)
 		{
@@ -258,7 +262,7 @@ namespace w3c_sw {
 			state_ = expecting_newline_1;
 			return boost::indeterminate;
 		    }
-		    else if (allowBareNewline && input == '\n') {
+		    else if (config.request.allowBareNewlines() && input == '\n') {
 			state_ = header_line_start;
 			return boost::indeterminate;
 		    }
@@ -282,7 +286,7 @@ namespace w3c_sw {
 			state_ = expecting_newline_3;
 			return boost::indeterminate;
 		    }
-		    else if (allowBareNewline && input == '\n') {
+		    else if (config.request.allowBareNewlines() && input == '\n') {
 			if (body_size == 0)
 			    return true;
 			else {
@@ -304,7 +308,7 @@ namespace w3c_sw {
 			return boost::indeterminate;
 		    }
 		case header_lws:
-		    if (input == '\r' || (allowBareNewline && input == '\n')) {
+		    if (input == '\r' || (config.request.allowBareNewlines() && input == '\n')) {
 			if (req.headers.back().name == "Content-Length") {
 			    std::istringstream is(req.headers.back().value);
 			    is >> body_size;
@@ -348,7 +352,7 @@ namespace w3c_sw {
 			return false;
 		    }
 		case header_value:
-		    if (input == '\r' || (allowBareNewline && input == '\n')) {
+		    if (input == '\r' || (config.request.allowBareNewlines() && input == '\n')) {
 			if (req.headers.back().name == "Content-Length") {
 			    std::istringstream is(req.headers.back().value);
 			    is >> body_size;
@@ -398,17 +402,20 @@ namespace w3c_sw {
 		}
 	}
 
-	inline bool request_parser::is_char(int c)
+	template <class server_config>
+	inline bool request_parser<server_config>::is_char(int c)
 	{
 	    return c >= 0 && c <= 127;
 	}
 
-	inline bool request_parser::is_ctl(int c)
+	template <class server_config>
+	inline bool request_parser<server_config>::is_ctl(int c)
 	{
 	    return (c >= 0 && c <= 31) || (c == 127);
 	}
 
-	inline bool request_parser::is_tspecial(int c)
+	template <class server_config>
+	inline bool request_parser<server_config>::is_tspecial(int c)
 	{
 	    switch (c)
 		{
@@ -422,7 +429,8 @@ namespace w3c_sw {
 		}
 	}
 
-	inline bool request_parser::is_digit(int c)
+	template <class server_config>
+	inline bool request_parser<server_config>::is_digit(int c)
 	{
 	    return c >= '0' && c <= '9';
 	}
@@ -456,15 +464,16 @@ namespace w3c_sw {
 	/// inline void request_handler::handle_request(request& req, reply& rep) was here
 
 	/// Represents a single connection from a client.
+	template <class server_config>
 	class connection
-	    : public boost::enable_shared_from_this<connection>,
+	    : public boost::enable_shared_from_this<connection<server_config> >,
 	      private boost::noncopyable
 	{
 	public:
 	    /// Construct a connection with the given io_service.
 	    explicit connection(boost::asio::io_service& io_service,
 				request_handler& handler,
-				server_config* config);
+				server_config& config);
 	    ~connection();
 
 	    /// Get the socket associated with the connection.
@@ -497,17 +506,16 @@ namespace w3c_sw {
 	    request* request_;
 
 	    /// The parser for the incoming request.
-	    request_parser request_parser_;
+	    request_parser<server_config> request_parser_;
 
 	    /// The reply to be sent back to the client.
 	    reply reply_;
 	};
 
-	typedef boost::shared_ptr<connection> connection_ptr;
-
-	inline connection::connection(boost::asio::io_service& io_service,
-				      request_handler& handler,
-				      server_config* config)
+	template <class server_config>
+	inline connection<server_config>::connection(boost::asio::io_service& io_service,
+						     request_handler& handler,
+						     server_config& config)
 	    : strand_(io_service),
 	      socket_(io_service),
 	      request_handler_(handler),
@@ -515,23 +523,27 @@ namespace w3c_sw {
 	      request_parser_(config),
 	      reply_() {  }
 
-	inline connection::~connection() {
+	template <class server_config>
+	inline connection<server_config>::~connection() {
 	    delete request_;
 	}
 
-	inline boost::asio::ip::tcp::socket& connection::socket() {
+	template <class server_config>
+	inline boost::asio::ip::tcp::socket& connection<server_config>::socket() {
 	    return socket_;
 	}
 
-	inline void connection::start() {
+	template <class server_config>
+	inline void connection<server_config>::start() {
 	    socket_.async_read_some(boost::asio::buffer(buffer_),
 		    strand_.wrap(
-			 boost::bind(&connection::handle_read, shared_from_this(),
+			 boost::bind(&connection<server_config>::handle_read, connection<server_config>::shared_from_this(),
 				     boost::asio::placeholders::error,
 				     boost::asio::placeholders::bytes_transferred)));
 	}
 
-	inline void connection::handle_read(const boost::system::error_code& e,
+	template <class server_config>
+	inline void connection<server_config>::handle_read(const boost::system::error_code& e,
 					    std::size_t bytes_transferred) {
 	    if (!e) {
 		boost::tribool result;
@@ -558,19 +570,19 @@ namespace w3c_sw {
 
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
-			  boost::bind(&connection::handle_write, shared_from_this(),
+			  boost::bind(&connection<server_config>::handle_write, connection<server_config>::shared_from_this(),
 				      boost::asio::placeholders::error)));
 		    //strand_.service_.owner_.impl_.stopped_ = true; stop_all_threads()
 		} else if (!result) {
 		    reply_ = reply::stock_reply(reply::bad_request);
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     strand_.wrap(
-			  boost::bind(&connection::handle_write, shared_from_this(),
+			  boost::bind(&connection<server_config>::handle_write, connection<server_config>::shared_from_this(),
 				      boost::asio::placeholders::error)));
 		} else {
 		    socket_.async_read_some(boost::asio::buffer(buffer_),
 			    strand_.wrap(
-				 boost::bind(&connection::handle_read, shared_from_this(),
+				 boost::bind(&connection<server_config>::handle_read, connection<server_config>::shared_from_this(),
 					     boost::asio::placeholders::error,
 					     boost::asio::placeholders::bytes_transferred)));
 		}
@@ -582,7 +594,8 @@ namespace w3c_sw {
 	    // handler returns. The connection class's destructor closes the socket.
 	}
 
-	inline void connection::handle_write(const boost::system::error_code& e)
+	template <class server_config>
+	inline void connection<server_config>::handle_write(const boost::system::error_code& e)
 	{
 	    if (!e) {
 		// Initiate graceful connection closure.
@@ -599,6 +612,7 @@ namespace w3c_sw {
 
 
 	/// The top-level class of the HTTP server.
+	template <class server_config>
 	class server
 	    : private boost::noncopyable
 	{
@@ -609,7 +623,7 @@ namespace w3c_sw {
 			    const std::string& port,
 			    std::size_t thread_pool_size, 
 			    request_handler& request_handler_,
-			    server_config* config);
+			    server_config& config);
 
 	    /// Run the server's io_service loop.
 	    void run();
@@ -621,7 +635,7 @@ namespace w3c_sw {
 	    /// Handle completion of an asynchronous accept operation.
 	    void handle_accept(const boost::system::error_code& e);
 
-	    server_config* config;
+	    server_config& config;
 
 	    /// The number of threads that will call io_service::run().
 	    std::size_t thread_pool_size_;
@@ -633,21 +647,22 @@ namespace w3c_sw {
 	    boost::asio::ip::tcp::acceptor acceptor_;
 
 	    /// The next connection to be accepted.
-	    connection_ptr new_connection_;
+	    boost::shared_ptr<connection<server_config> > new_connection_;
 
 	    /// The handler for all incoming requests.
 	    request_handler& request_handler_;
 	};
 
-	inline server::server(const std::string& address, 
-			      const std::string& port,
-			      std::size_t thread_pool_size, 
-			      request_handler& request_handler_,
-			      server_config* config)
+	template <class server_config>
+	inline server<server_config>::server(const std::string& address, 
+					     const std::string& port,
+					     std::size_t thread_pool_size, 
+					     request_handler& request_handler_,
+					     server_config& config)
 	    : config(config),
 	      thread_pool_size_(thread_pool_size),
 	      acceptor_(io_service_),
-	      new_connection_(new connection(io_service_, request_handler_, config)),
+	      new_connection_(new connection<server_config>(io_service_, request_handler_, config)),
 	      request_handler_(request_handler_)
 	{
 	    // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
@@ -663,7 +678,8 @@ namespace w3c_sw {
 					       boost::asio::placeholders::error));
 	}
 
-	inline void server::run() {
+	template <class server_config>
+	inline void server<server_config>::run() {
 	    // Create a pool of threads to run all of the io_services.
 	    std::vector<boost::shared_ptr<boost::thread> > threads;
 	    for (std::size_t i = 0; i < thread_pool_size_; ++i) {
@@ -677,14 +693,16 @@ namespace w3c_sw {
 		threads[i]->join();
 	}
 
-	inline void server::stop() {
+	template <class server_config>
+	inline void server<server_config>::stop() {
 	    io_service_.stop();
 	}
 
-	inline void server::handle_accept(const boost::system::error_code& e) {
+	template <class server_config>
+	inline void server<server_config>::handle_accept(const boost::system::error_code& e) {
 	    if (!e) {
 		new_connection_->start();
-		new_connection_.reset(new connection(io_service_, request_handler_, config));
+		new_connection_.reset(new connection<server_config>(io_service_, request_handler_, config));
 		acceptor_.async_accept(new_connection_->socket(),
 				       boost::bind(&server::handle_accept, this,
 						   boost::asio::placeholders::error));
@@ -699,7 +717,8 @@ namespace w3c_sw {
      * TODO:
      *   Would w3c_sw::webserver::asio be better than w3c_sw::WEBserver_asio ?
      */
-    class WEBserver_asio : public WEBserver {
+    template <class server_config>
+    class WEBserver_asio : public WEBserver<server_config> {
 #if defined(_WIN32)
 	static boost::function0<void> console_ctrl_function;
 
@@ -719,12 +738,12 @@ namespace w3c_sw {
 
 #endif // defined(_WIN32)
     protected:
-	w3c_sw::webserver::server* server;
+	w3c_sw::webserver::server<server_config>* server;
     public:
 	WEBserver_asio () : server(NULL) {  }
 	void stop () { server->stop(); }
 	void serve (const char* address, const char* port, std::size_t num_threads,
-		    webserver::request_handler& handler, webserver::server_config* config) {
+		    webserver::request_handler& handler, server_config& config) {
 
 #if defined(_WIN32)
 
@@ -748,9 +767,9 @@ namespace w3c_sw {
 	    pthread_sigmask(SIG_BLOCK, &new_mask, &old_mask);
 
 	    // Run server in background thread.
-	    w3c_sw::webserver::server s(address, port, num_threads, handler, config);
+	    w3c_sw::webserver::server<server_config> s(address, port, num_threads, handler, config);
 	    server = &s;
-	    boost::thread t(boost::bind(&w3c_sw::webserver::server::run, &s));
+	    boost::thread t(boost::bind(&w3c_sw::webserver::server<server_config>::run, &s));
 
 	    // Restore previous signals.
 	    pthread_sigmask(SIG_SETMASK, &old_mask, 0);
