@@ -8,7 +8,8 @@
 #include <fstream>
 #include <iterator>
 
-#include "SWObjects.hpp"
+#define NEEDDEF_W3C_SW_SAXPARSER 1
+#include "SWObjects.hpp" // #includes interface/SAXparser.hpp
 
 namespace sw = w3c_sw;
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
@@ -24,23 +25,10 @@ namespace sw = w3c_sw;
 #include "XMLSerializer.hpp"
 #include "SQLizer.hpp"
 
-#if XML_PARSER == SWOb_LIBXML2
-  #include "../interface/SAXparser_libxml.hpp"
-  sw::SAXparser_libxml P;
-#elif XML_PARSER == SWOb_EXPAT1
-  #include "../interface/SAXparser_expat.hpp"
-  sw::SAXparser_expat P;
-#elif XML_PARSER == SWOb_MSXML3
-  #include "../interface/SAXparser_msxml3.hpp"
-  sw::SAXparser_msxml3 P;
-#else
-  #warning DAWG tests require an XML parser
-#endif
-
 std::string UserName;
 std::string PassWord;
 #if HTTP_CLIENT == SWOb_ASIO
-  #include "../interface/WEBagent_boostASIO.hpp"
+  #include "../interface/WEBagent.hpp"
   std::string basicAuthHeader (std::string username, std::string password) {
       return std::string("Authorization: Basic ")
 	  + sw::SWWEBagent::base64encode(username + ":" + password)
@@ -62,18 +50,8 @@ std::string PassWord;
 sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #endif /* HTTP_CLIENT == SWOb_ASIO */
 
-#if HTTP_SERVER == SWOb_ASIO
- #include "../interface/WEBserver_asio.hpp"
-#elif HTTP_SERVER == SWOb_DLIB
- #include "../interface/WEBserver_dlib.hpp"
-#else
- #ifdef _MSC_VER
-  #pragma message ("unable to serve HTTP without an HTTP server.")
- #else /* !_MSC_VER */
-  #warning unable to serve HTTP without an HTTP server.
- #endif /* !_MSC_VER */
- #include "../interface/WEBserver_dummy.hpp"
-#endif
+#define NEEDDEF_W3C_SW_WEBSERVER 1
+#include "../interface/WEBserver.hpp"
 
 #include "../interface/SQLclient.hpp" // Needed when no SQL clients are linked in.
 #ifdef SQL_CLIENT_MYSQL
@@ -105,50 +83,6 @@ namespace io = boost::iostreams;
 #ifdef BOOST_PROCESS
 #include <boost/process.hpp>
 #endif /* BOOST_PROCESS */
-
-std::string genTempFile (std::string dir, std::istream& istr) {
-#ifdef _MSC_VER
-    TCHAR buffer[MAX_PATH+1];
-    DWORD len = ::GetTempPath(MAX_PATH, &buffer[0]);
-               
-    std::wstring directory(buffer, len);
-    TCHAR prefix[] = TEXT("SWObj");
-
-    if (!GetTempFileName(directory.c_str(), prefix, 0, buffer))
-	throw ::GetLastError();
-
-    size_t dlen(wcsnlen(directory.c_str(), MAX_PATH));
-    size_t flen(wcsnlen(buffer, MAX_PATH));
-    std::wstring file(buffer); // +dlen);
-
-    std::string filename;
-    for (std::wstring::const_iterator it = file.begin();
-	 it != file.end(); ++it)
-	filename += (char)*it;
-    int fileHandle = POSIX_open(filename.c_str(), POSIX_trunkwrite, POSIX_USER_RW);
-#else /* !_MSC_VER */
-    char buf[] = "SWObjXXXXXX";
-    int fileHandle = mkstemp(buf);
-    std::string filename(buf);
-#endif /* !_MSC_VER */
-    std::istreambuf_iterator<char> i(istr), e;
-    std::string input(i, e);
-    io::stream_buffer<sw::FileHandleDevice> ofs(fileHandle, filename);
-    std::ostream os(&ofs);
-    os << input;
-    os.flush();
-    ofs.close();
-    POSIX_close(fileHandle);
-
-    return filename;
-}
-
-class DBHandlers : public sw::RdfDB::HandlerSet {
-    virtual bool parse(std::string mediaType, std::vector<std::string> args,
-		       sw::BasicGraphPattern* target, sw::IStreamContext& istr,
-		       std::string nameStr, std::string baseURI,
-		       sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap);
-};
 
 	unsigned char favicon[] = {
 0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
@@ -333,7 +267,7 @@ struct loadEntry {
 
 typedef std::vector<loadEntry> loadList;
 
-struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
+struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined to be e.g. w3c_sw::WEBserver_asio
     const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
 	std::string baseURIstring = base ? base->getLexicalValue() : "";
 	std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
@@ -753,6 +687,124 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	}
     };
 
+    struct DBHandlers : public sw::RdfDB::HandlerSet {
+	MyServer& server;
+	DBHandlers (MyServer& server) : server(server) {  }
+	bool parse (std::string mediaType, std::vector<std::string> args,
+		    sw::BasicGraphPattern* target, sw::IStreamContext& istr,
+		    std::string nameStr, std::string baseURI,
+		    sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
+	    const char* env = ::getenv("XSLT");
+	    if (env == NULL)
+		return sw::RdfDB::HandlerSet::parse(mediaType, args,
+						    target, istr,
+						    nameStr, baseURI,
+						    atomFactory, nsMap);
+
+	    // break up $XSLT
+	    std::vector<std::string> tokens;
+	    {
+		std::string buf;
+		std::stringstream ss(env);
+		while (ss >> buf)
+		    tokens.push_back(buf);
+	    }
+
+	    std::vector<std::string> createdFiles;
+	    for (std::vector<std::string>::iterator iToken = tokens.begin();
+		 iToken != tokens.end(); ++iToken) {
+		if (*iToken == "%DATA") {
+		    *iToken = genTempFile(".", *istr);
+		    createdFiles.push_back(*iToken);
+		} else if (*iToken == "%STYLESHEET") {
+		    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+						&Agent);
+		    *iToken = genTempFile(".", *xsltIstr);
+		    createdFiles.push_back(*iToken);
+		}
+	    }
+
+#ifdef BOOST_PROCESS
+	    std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
+
+	    namespace bp = ::boost::process; 
+
+	    bp::context ctx;
+	    ctx.stdout_behavior = bp::capture_stream();
+	    bp::child c = bp::launch(exec, tokens, ctx);
+	    bp::pistream &pis = c.get_stdout();
+#else /* !BOOST_PROCESS */
+	    std::stringstream cmd;
+	    for (std::vector<std::string>::const_iterator iToken = tokens.begin();
+		 iToken != tokens.end(); ++iToken) {
+		if (iToken != tokens.begin())
+		    cmd << " ";
+		cmd << *iToken;
+	    }
+	    BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
+	    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
+	    assert(p != NULL);
+	    char buf[100];
+	    std::string s  = "execution failure";
+	    s = "";
+
+	    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+	     */
+	    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+		s += std::string(buf, buf + count);
+	    POSIX_pclose(p);
+	    std::stringstream pis(s);
+#endif /* !BOOST_PROCESS */
+	    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
+		 iCreatedFile != createdFiles.end(); ++iCreatedFile)
+		if (POSIX_unlink(iCreatedFile->c_str()) != 0)
+		    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
+	    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
+	    return server.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
+	    //     return sw::RdfDB::HandlerSet::parse(mediaType, args,
+	    // 					target, istr,
+	    // 					nameStr, baseURI,
+	    // 					atomFactory, nsMap);
+	}
+
+	static std::string genTempFile (std::string dir, std::istream& istr) {
+#ifdef _MSC_VER
+	    TCHAR buffer[MAX_PATH+1];
+	    DWORD len = ::GetTempPath(MAX_PATH, &buffer[0]);
+               
+	    std::wstring directory(buffer, len);
+	    TCHAR prefix[] = TEXT("SWObj");
+
+	    if (!GetTempFileName(directory.c_str(), prefix, 0, buffer))
+		throw ::GetLastError();
+
+	    size_t dlen(wcsnlen(directory.c_str(), MAX_PATH));
+	    size_t flen(wcsnlen(buffer, MAX_PATH));
+	    std::wstring file(buffer); // +dlen);
+
+	    std::string filename;
+	    for (std::wstring::const_iterator it = file.begin();
+		 it != file.end(); ++it)
+		filename += (char)*it;
+	    int fileHandle = POSIX_open(filename.c_str(), POSIX_trunkwrite, POSIX_USER_RW);
+#else /* !_MSC_VER */
+	    char buf[] = "SWObjXXXXXX";
+	    int fileHandle = mkstemp(buf);
+	    std::string filename(buf);
+#endif /* !_MSC_VER */
+	    std::istreambuf_iterator<char> i(istr), e;
+	    std::string input(i, e);
+	    io::stream_buffer<sw::FileHandleDevice> ofs(fileHandle, filename);
+	    std::ostream os(&ofs);
+	    os << input;
+	    os.flush();
+	    ofs.close();
+	    POSIX_close(fileHandle);
+
+	    return filename;
+	}
+    };
+
     /** FilesystemRdfDB - a TargetedRdfDB which may be backed by files in the
      * filesystem.
      *
@@ -789,7 +841,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	std::set<MappedPath> dirty;
 
 	FilesystemRdfDB (MyServer& server)
-	    : sw::TargetedRdfDB(&Agent, &P, &server.rdfDBHandlers), server(server)
+	    : sw::TargetedRdfDB(&Agent, &server.xmlParser, &server.rdfDBHandlers), server(server)
 	{  }
 
 	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
@@ -863,6 +915,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
     NamespaceRelay nsRelay;
     DBHandlers rdfDBHandlers;
     FilesystemRdfDB db;
+    W3C_SW_SAXPARSER xmlParser;
     sw::ResultSet resultSet;
     bool runOnce;
     bool inPlace;
@@ -910,7 +963,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 
     MyServer (std::string pkAttribute)
 	: atomFactory(), nsRelay(nsAccumulator),
-	  db(*this),
+	  rdfDBHandlers(*this), db(*this),
 	  resultSet(&atomFactory), runOnce(false), inPlace(false),
 	  done(false), served(0), stemURI(""), serviceURI(""),
 	  defaultGraphURI(""), printQuery(false), 
@@ -1140,7 +1193,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		o << " into result set.\n";
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
-	    sw::ResultSet loaded(&atomFactory, &P, istr);
+	    sw::ResultSet loaded(&atomFactory, &xmlParser, istr);
 	    rs.joinIn(&loaded);
 	    return true;
 	} else if (istr.mediaType.match("text/sparql-results") ||
@@ -1193,83 +1246,6 @@ void loadEntry::loadGraph () {
 			    &Agent);
 
     ResultSetsLoaded = TheServer.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.resultSet, &TheServer.db);
-}
-
-bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
-			sw::BasicGraphPattern* target, sw::IStreamContext& istr,
-			std::string nameStr, std::string baseURI,
-			sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
-    const char* env = ::getenv("XSLT");
-    if (env == NULL)
-	return sw::RdfDB::HandlerSet::parse(mediaType, args,
-					    target, istr,
-					    nameStr, baseURI,
-					    atomFactory, nsMap);
-
-    // break up $XSLT
-    std::vector<std::string> tokens;
-    {
-	std::string buf;
-	std::stringstream ss(env);
-	while (ss >> buf)
-	    tokens.push_back(buf);
-    }
-
-    std::vector<std::string> createdFiles;
-    for (std::vector<std::string>::iterator iToken = tokens.begin();
-	 iToken != tokens.end(); ++iToken) {
-	if (*iToken == "%DATA") {
-	    *iToken = genTempFile(".", *istr);
-	    createdFiles.push_back(*iToken);
-	} else if (*iToken == "%STYLESHEET") {
-	    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-					&Agent);
-	    *iToken = genTempFile(".", *xsltIstr);
-	    createdFiles.push_back(*iToken);
-	}
-    }
-
-#ifdef BOOST_PROCESS
-    std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
-
-    namespace bp = ::boost::process; 
-
-    bp::context ctx;
-    ctx.stdout_behavior = bp::capture_stream();
-    bp::child c = bp::launch(exec, tokens, ctx);
-    bp::pistream &pis = c.get_stdout();
-#else /* !BOOST_PROCESS */
-    std::stringstream cmd;
-    for (std::vector<std::string>::const_iterator iToken = tokens.begin();
-	 iToken != tokens.end(); ++iToken) {
-	if (iToken != tokens.begin())
-	    cmd << " ";
-	cmd << *iToken;
-    }
-    BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
-    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
-    assert(p != NULL);
-    char buf[100];
-    std::string s  = "execution failure";
-    s = "";
-
-    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
-     */
-    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
-	s += std::string(buf, buf + count);
-    POSIX_pclose(p);
-    std::stringstream pis(s);
-#endif /* !BOOST_PROCESS */
-    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
-	 iCreatedFile != createdFiles.end(); ++iCreatedFile)
-	if (POSIX_unlink(iCreatedFile->c_str()) != 0)
-	    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
-    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
-    return TheServer.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
-//     return sw::RdfDB::HandlerSet::parse(mediaType, args,
-// 					target, istr,
-// 					nameStr, baseURI,
-// 					atomFactory, nsMap);
 }
 
 // std::ostream& operator<< (std::ostream& os, sw::NamespaceMap map) {
@@ -2260,7 +2236,7 @@ int main(int ac, char* av[])
 		TheServer.startServer(handler, ServerURI, serverPort);
 	    }
 
-	    sw::RdfDB constructed(&P); // For operations which create a new database.
+	    sw::RdfDB constructed(&TheServer.xmlParser); // For operations which create a new database.
 
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
@@ -2285,7 +2261,7 @@ int main(int ac, char* av[])
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml") || 
 			iptr.mediaType.match("application/sparql-results+json")) {
-			reference = new sw::ResultSet(&TheServer.atomFactory, &P, iptr);
+			reference = new sw::ResultSet(&TheServer.atomFactory, &TheServer.xmlParser, iptr);
 		    } else if (iptr.mediaType.match("text/sparql-results")) {
 			sw::TTerm::String2BNode str2b;
 			reference = new sw::ResultSet(&TheServer.atomFactory, iptr, false, str2b);

@@ -2,28 +2,35 @@
  * parses HTTP requests and invokes WebHandler::handle_request with valid requests.
  *
  * Example:
+ * 
+ * ************************************************************
+ * #define NEEDDEF_W3C_SW_WEBSERVER
+ * #include "../interface/WEBserver.hpp"
+ * 
  * struct ServerConfig {
  *     struct Request {
- * 	bool allowBareNewline () { return false_; }
+ * 	bool allowBareNewlines () { return false; }
  *     } request;
  * };
  * 
- * struct MyServer : w3c_sw::WEBserver<ServerConfig> {
- *     class MyHandler : public w3c_sw::WebHandler {
- *         void handle_request(w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep);
- *     };
+ * class MyHandler : public w3c_sw::WebHandler {
+ *     void handle_request(w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep);
  * };
  * 
  * int main (int, char*[]) {
  *     ServerConfig c;
- *     MyServer s(&c);
+ *     W3C_SW_WEBSERVER<ServerConfig> s;
  *     MyHandler h;
  *     s.serve("localhost", "8088", 5, h, c);
  * }
+ * ************************************************************
  *
  * copyright 2011 ericP
  * Released to public domain under Apache license.
  */
+
+#ifndef INCLUDED_interface_WEBserver_hpp
+# define INCLUDED_interface_WEBserver_hpp
 
 #include <sstream>
 
@@ -697,5 +704,17 @@ namespace w3c_sw {
 
 } // namespace w3c_sw
 
-#define NEEDDEF_WEBSERVER 1
+#if HTTP_SERVER == SWOb_ASIO
+ #include "../interface/WEBserver_asio.hpp"
+#elif HTTP_SERVER == SWOb_DLIB
+ #include "../interface/WEBserver_dlib.hpp"
+#else
+ #ifdef _MSC_VER
+  #pragma message ("unable to serve HTTP without an HTTP server.")
+ #else /* !_MSC_VER */
+  #warning unable to serve HTTP without an HTTP server.
+ #endif /* !_MSC_VER */
+ #include "../interface/WEBserver_dummy.hpp"
+#endif
 
+#endif /* ! defined INCLUDED_interface_WEBserver_hpp */

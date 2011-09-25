@@ -6,8 +6,8 @@
  * implementation names.
  */
 
-#ifndef WEB_AGENT_H
-#define WEB_AGENT_H
+#ifndef WEB_interface_WEBagent_hpp
+ #define WEB_interface_WEBagent_hpp
 
 #include <string>
 #include "SWObjects.hpp"
@@ -159,5 +159,10 @@ namespace w3c_sw {
 
 } // namespace w3c_sw
 
-#endif // !WEB_AGENT_H
+#if HTTP_CLIENT == SWOb_ASIO
+  #include "../interface/WEBagent_boostASIO.hpp"
+#else
+  #warning No web client to include.
+#endif
 
+#endif /* !WEB_interface_WEBagent_hpp */

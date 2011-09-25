@@ -138,7 +138,7 @@ end
 }
 BOOST_AUTO_TEST_SUITE_END(/* subselect */)
 
-BOOST_AUTO_TEST_SUITE( bind )
+BOOST_AUTO_TEST_SUITE( bindings_and_bind )
 BOOST_AUTO_TEST_CASE( _1 ) {
     /* name: 
      * 

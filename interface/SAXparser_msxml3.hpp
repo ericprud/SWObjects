@@ -4,7 +4,8 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
-#pragma once
+#ifndef INLCUDED_interface_SAXparser_msxml3_hpp
+ #define INLCUDED_interface_SAXparser_msxml3_hpp
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
@@ -353,10 +354,11 @@ namespace w3c_sw {
 
     };
 
-#ifdef NEEDDEF_SAXPARSER
-  #define SAXPARSER SAXparser_msxml3
-  #undef NEEDDEF_SAXPARSER
-#endif /* NEEDDEF_SAXPARSER */
+#ifdef NEEDDEF_W3C_SW_SAXPARSER
+  #define W3C_SW_SAXPARSER w3c_sw::SAXparser_msxml3
+  #undef NEEDDEF_W3C_SW_SAXPARSER
+#endif /* NEEDDEF_W3C_SW_SAXPARSER */
 
 }
 
+#endif /* INLCUDED_interface_SAXparser_msxml3_hpp */

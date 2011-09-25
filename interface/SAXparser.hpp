@@ -8,7 +8,9 @@
  * implementation names.
  */
 
-#pragma once
+#ifndef INCLUDED_interface_SAXparser_hpp
+ #define INCLUDED_interface_SAXparser_hpp
+
 #include <stack>
 #include "SWObjects.hpp"
 
@@ -207,7 +209,6 @@ namespace w3c_sw {
 	    parse(istr, &handler);
 	}
 	static SWSAXparser* makeSAXparser();
-#define NEEDDEF_SAXPARSER 1
     };
 
 
@@ -383,3 +384,14 @@ namespace w3c_sw {
 
 }
 
+#if XML_PARSER == SWOb_LIBXML2
+  #include "../interface/SAXparser_libxml.hpp"
+#elif XML_PARSER == SWOb_EXPAT1
+  #include "../interface/SAXparser_expat.hpp"
+#elif XML_PARSER == SWOb_MSXML3
+  #include "../interface/SAXparser_msxml3.hpp"
+#else
+  #warning No XML parser to include
+#endif
+
+#endif /* INCLUDED_interface_SAXparser_hpp */

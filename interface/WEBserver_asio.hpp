@@ -1,6 +1,9 @@
 /*
  */
 
+#ifndef INCLUDED_interface_WEBserver_asio_hpp
+# define INCLUDED_interface_WEBserver_asio_hpp
+
 #include "../interface/WEBserver.hpp"
 #include <iostream>
 #include <iomanip>
@@ -799,8 +802,9 @@ namespace w3c_sw {
 
 } // namespace w3c_sw
 
-#ifdef NEEDDEF_WEBSERVER
-  #undef NEEDDEF_WEBSERVER
-  #define WEBSERVER w3c_sw::WEBserver_asio
-#endif /* NEEDDEF_WEBSERVER */
+#ifdef NEEDDEF_W3C_SW_WEBSERVER
+  #undef NEEDDEF_W3C_SW_WEBSERVER
+  #define W3C_SW_WEBSERVER w3c_sw::WEBserver_asio
+#endif /* NEEDDEF_W3C_SW_WEBSERVER */
 
+#endif /* INCLUDED_interface_WEBserver_asio_hpp */

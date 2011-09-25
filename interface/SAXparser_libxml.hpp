@@ -4,6 +4,9 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
+#ifndef INCLUDED_interface_SAXparser_libxml_hpp
+ #define INCLUDED_interface_SAXparser_libxml_hpp
+
 #pragma once
 #include <string.h>
 #include <map>
@@ -244,10 +247,11 @@ namespace w3c_sw {
 	}
     };
 
-#ifdef NEEDDEF_SAXPARSER
-  #define SAXPARSER SAXparser_libxml
-  #undef NEEDDEF_SAXPARSER
-#endif /* NEEDDEF_SAXPARSER */
+#ifdef NEEDDEF_W3C_SW_SAXPARSER
+  #define W3C_SW_SAXPARSER w3c_sw::SAXparser_libxml
+  #undef NEEDDEF_W3C_SW_SAXPARSER
+#endif /* NEEDDEF_W3C_SW_SAXPARSER */
 
 }
 
+#endif /* INCLUDED_interface_SAXparser_libxml_hpp */

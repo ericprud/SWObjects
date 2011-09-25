@@ -4,7 +4,9 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
-#pragma once
+#ifndef INLCUDED_interface_SAXparser_expat_hpp
+ #define INLCUDED_interface_SAXparser_expat_hpp
+
 #include <fstream>
 #include <stack>
 #include <map>
@@ -207,11 +209,11 @@ namespace w3c_sw {
  	    self.insulator->characters((const char*)s, 0, len, nsMap);
 	}
     };
-
-#ifdef NEEDDEF_SAXPARSER
-  #undef NEEDDEF_SAXPARSER
-  #define SAXPARSER SAXparser_expat
-#endif /* NEEDDEF_SAXPARSER */
+#ifdef NEEDDEF_W3C_SW_SAXPARSER
+  #undef NEEDDEF_W3C_SW_SAXPARSER
+  #define W3C_SW_SAXPARSER w3c_sw::SAXparser_expat
+#endif /* NEEDDEF_W3C_SW_SAXPARSER */
 
 }
 
+#endif /* INLCUDED_interface_SAXparser_expat_hpp */

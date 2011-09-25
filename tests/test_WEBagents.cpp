@@ -18,18 +18,8 @@
 
 #include "SWObjects.hpp"
 
-#if HTTP_SERVER == SWOb_ASIO
- #include "../interface/WEBserver_asio.hpp"
-#elif HTTP_SERVER == SWOb_DLIB
- #include "../interface/WEBserver_dlib.hpp"
-#else
- #ifdef _MSC_VER
-  #pragma message ("unable to test HTTP server.")
- #else /* !_MSC_VER */
-  #warning unable to test HTTP server.
- #endif /* !_MSC_VER */
- #include "../interface/WEBserver_dummy.hpp"
-#endif
+#define NEEDDEF_W3C_SW_WEBSERVER
+#include "../interface/WEBserver.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).
@@ -40,8 +30,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+struct ServerConfig {
+    struct Request {
+	bool allowBareNewlines () { return false; }
+    } request;
+};
+
 class MyHandler : public w3c_sw::webserver::request_handler {
-    WEBSERVER& server;
+    W3C_SW_WEBSERVER<ServerConfig>& server;
     bool runOnce;
 
     inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
@@ -168,7 +164,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 	}
     }
 public:
-    MyHandler (const std::string& doc_root, WEBSERVER& server, bool runOnce) : 
+    MyHandler (const std::string& doc_root, W3C_SW_WEBSERVER<ServerConfig>& server, bool runOnce) : 
 	w3c_sw::webserver::request_handler(doc_root), server(server), runOnce(runOnce)
     {  }
 };
@@ -178,11 +174,12 @@ BOOST_AUTO_TEST_CASE( a ) {
     const char* port = SERVER_PORT;
     size_t num_threads = 1;
     try	{
-	WEBSERVER s;
+	W3C_SW_WEBSERVER<ServerConfig> s;
+	ServerConfig config;
 	MyHandler h(".", s, true);
 	if (boost::unit_test::framework::master_test_suite().argc > 1 && 
 	    std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
-	    s.serve(address, port, num_threads, h);
+	    s.serve(address, port, num_threads, h, config);
     }
     catch (std::exception& e)	{
 	std::cerr << "exception: " << e.what() << "\n";
