@@ -111,6 +111,7 @@ namespace w3c_sw {
 	    /// The status of the reply.
 	    enum status_type
 		{
+		    declined = -1,
 		    ok = 200,
 		    created = 201,
 		    accepted = 202,
@@ -547,7 +548,7 @@ namespace w3c_sw {
 	    virtual ~request_handler () {  }
 
 	    /// Handle a request and produce a reply.
-	    virtual void handle_request(request& req, reply& rep) = 0;
+	    virtual webserver::reply::status_type handle_request(request& req, reply& rep) = 0;
 
 	protected:
 	    /// The directory containing the files to be served.
@@ -565,15 +566,15 @@ namespace w3c_sw {
     }
 
 
-    /** WEBserver : a simple threaded HTTP web server.
+    /** web_server : a simple threaded HTTP web server.
      * parses HTTP requests and invokes WebHandler::handle_request with valid requests.
      * See example above.
      */
 
     template <class server_config>
-    class WEBserver {
+    class web_server {
     public:
-	virtual ~WEBserver () {  }
+	virtual ~web_server () {  }
 	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, server_config& config) = 0;
     };
 

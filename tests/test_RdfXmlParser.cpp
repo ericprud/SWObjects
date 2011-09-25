@@ -11,29 +11,25 @@
 
 #include <map>
 #include <vector>
+
+#define NEEDDEF_W3C_SW_SAXPARSER
+#define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "RdfXmlParser.hpp"
 
-#if XML_PARSER == SWOb_LIBXML2
-  #include "../interface/SAXparser_libxml.hpp"
-  w3c_sw::SAXparser_libxml P;
-#elif XML_PARSER == SWOb_EXPAT1
-  #include "../interface/SAXparser_expat.hpp"
-  w3c_sw::SAXparser_expat P;
-#elif XML_PARSER == SWOb_MSXML3
-  #include "../interface/SAXparser_msxml3.hpp"
-  w3c_sw::SAXparser_msxml3 P;
+#if HTTP_CLIENT != SWOb_DISABLED
+  W3C_SW_WEBAGENT<> WebClient;
+#else /* HTTP_CLIENT == SWOb_DISABLED */
+  #warning unable to test RDF/XML over HTTP
+#endif /* HTTP_CLIENT == SWOb_DISABLED */
+
+#if XML_PARSER != SWOb_DISABLED
+  W3C_SW_SAXPARSER P;
 #else
-  #warning DAWG tests require an XML parser
+  #error RDF/XML tests require an XML parser
 #endif
 
-#if HTTP_CLIENT == SWOb_ASIO
-  #include "../interface/WEBagent_boostASIO.hpp"
-  w3c_sw::WEBagent_boostASIO WebClient;
-#else /* ! HTTP_CLIENT == SWOb_ASIO */
-  #warning unable to test RdfXml over HTTP
-#endif /* ! HTTP_CLIENT == SWOb_ASIO */
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).

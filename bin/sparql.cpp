@@ -8,10 +8,10 @@
 #include <fstream>
 #include <iterator>
 
-#define NEEDDEF_W3C_SW_SAXPARSER 1
-#include "SWObjects.hpp" // #includes interface/SAXparser.hpp
+#define NEEDDEF_W3C_SW_SAXPARSER
+#define NEEDDEF_W3C_SW_WEBAGENT
+#include "SWObjects.hpp" // #includes interface/WEBagent && interface/SAXparser
 
-namespace sw = w3c_sw;
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
 #include "MapSetParser/MapSetParser.hpp"
@@ -25,11 +25,8 @@ namespace sw = w3c_sw;
 #include "XMLSerializer.hpp"
 #include "SQLizer.hpp"
 
-#include "../interface/WEBagent.hpp"
-
-#define NEEDDEF_W3C_SW_WEBSERVER 1
+#define NEEDDEF_W3C_SW_WEBSERVER
 #include "../interface/WEBserver.hpp"
-
 /* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple
  * SQL clients. */
 #include "../interface/SQLclient.hpp"
@@ -45,6 +42,7 @@ namespace fs = boost::filesystem;
 #include <boost/iostreams/stream.hpp>
 namespace io = boost::iostreams;
 
+namespace sw = w3c_sw;
 
 #include <fstream>
 #ifdef BOOST_PROCESS
@@ -256,7 +254,8 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 
     protected:
 
-	void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
+	sw::webserver::reply::status_type
+	handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
 	    std::string query;
 	    try {
 		std::string path(req.getPath());
@@ -555,28 +554,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		    sout.write((char*)favicon, sizeof(favicon));
 		    rep.addHeader("Content-Type", "image/x-icon");
 		} else {
-		    head(sout, "Not Found");
-
-		    sout << 
-			"    <p>path: " << path << "</p>\n"
-			"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
-			 << std::endl;
-		    rep.status = sw::webserver::reply::not_found;
-
-		    sout << "    <h2>Client Headers</h2>\n"
-			"    <ul>";
-		    // Why not dump the HTTP headers? Sure...
-		    for (w3c_sw::webserver::request::headerset::const_iterator it = req.headers.begin();
-			 it != req.headers.end(); ++it)
-			sout << "      <li>" << it->name 
-			     << ": " << it->value 
-			     << "</li>\n" << std::endl;
-		    sout << "    </ul>\n" << std::endl;
-		    sout << DBsummary();
-
-		    foot(sout);
+		    return sw::webserver::reply::declined;
 		}
 		rep.content = sout.str();
+		return sw::webserver::reply::ok;
 	    }
 	    catch (SimpleMessageException& e) {
 		rep.status = sw::webserver::reply::bad_request;
@@ -587,6 +568,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	    } catch (std::string& e) {
 		errorMessage(rep, query, e);
 	    }
+	    return sw::webserver::reply::internal_server_error;
 	}
 
 	void errorMessage (w3c_sw::webserver::reply& rep, std::string query, std::string what) {
@@ -911,10 +893,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #endif /* HTTP_SERVER == SWOb_ASIO */
     sw::GRDDLmap grddlMap;
     ServerConfig config;
-#if HTTP_CLIENT == SWOb_ASIO
+#if HTTP_CLIENT != SWOb_DISABLED
     sw::console_auth_prompter webClient_authPrompter;
-    sw::WEBagent_boostASIO<sw::console_auth_prompter> webClient;
-#endif /* HTTP_CLIENT == SWOb_ASIO */
+    W3C_SW_WEBAGENT<sw::console_auth_prompter> webClient;
+#endif /* HTTP_CLIENT != SWOb_DISABLED */
     const sw::TTerm* baseURI;
     std::string baseUriMessage () {
 	return (baseURI == NULL)
@@ -942,9 +924,9 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory),
-#if HTTP_CLIENT == SWOb_ASIO
+#if HTTP_CLIENT != SWOb_DISABLED
 	  webClient(webClient_authPrompter),
-#endif /* HTTP_CLIENT == SWOb_ASIO */
+#endif /* HTTP_CLIENT != SWOb_DISABLED */
 	  noExec(false), useODBC(false)
     {  }
     void startServer (MyHandler& handler, std::string url, int serverPort) {

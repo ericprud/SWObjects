@@ -40,7 +40,8 @@ class MyHandler : public w3c_sw::webserver::request_handler {
     W3C_SW_WEBSERVER<ServerConfig>& server;
     bool runOnce;
 
-    inline void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
+    inline w3c_sw::webserver::reply::status_type
+    handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
 	/* caution: early returns */
 
 	try {
@@ -75,14 +76,14 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		rep.headers[0].value = boost::lexical_cast<std::string>((unsigned)rep.content.size());
 		rep.headers[1].name = "Content-Type";
 		rep.headers[1].value = "text/plain";
-		return;
+		return w3c_sw::webserver::reply::ok;
 	    }
 
 	    // Request path must be absolute and not contain "..".
 	    if (request_path.empty() || request_path[0] != '/'
 		|| request_path.find("..") != std::string::npos) {
 		rep = w3c_sw::webserver::reply::stock_reply(w3c_sw::webserver::reply::bad_request);
-		return;
+		return w3c_sw::webserver::reply::bad_request;
 	    }
 
 	    // If path ends in slash, scan the directory.
@@ -126,7 +127,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
 		rep.headers[1].name = "Content-Type";
 		rep.headers[1].value = "text/html";
-		return;
+		return w3c_sw::webserver::reply::ok;
 	    }
 
 	    // Determine the file extension.
@@ -142,7 +143,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 	    std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 	    if (!is) {
 		rep = w3c_sw::webserver::reply::stock_reply(w3c_sw::webserver::reply::not_found);
-		return;
+		return w3c_sw::webserver::reply::not_found;
 	    }
 
 	    // Fill out the reply to be sent to the client.
@@ -162,6 +163,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 	catch (w3c_sw::webserver::reply& e) {
 	    rep = e;
 	}
+	return w3c_sw::webserver::reply::internal_server_error;
     }
 public:
     MyHandler (const std::string& doc_root, W3C_SW_WEBSERVER<ServerConfig>& server, bool runOnce) : 

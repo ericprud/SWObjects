@@ -44,13 +44,13 @@ namespace w3c_sw {
     };
 
     template <class auth_manager = console_auth_prompter>
-    class WEBagent_boostASIO : public SWWEBagent {
+    class web_agent_asio : public SWWEBagent {
     public:
 	auth_manager& authManager;
-	WEBagent_boostASIO (auth_manager authManager = auth_manager())
+	web_agent_asio (auth_manager authManager = auth_manager())
 	    : SWWEBagent(), authManager(authManager)
 	{  }
-	~WEBagent_boostASIO () {  }
+	~web_agent_asio () {  }
 	virtual boost::shared_ptr<IStreamContext> _execute (std::string method,
 #if REGEX_LIB == SWOb_DISABLED
 				 std::string host, std::string port, std::string path
@@ -119,7 +119,7 @@ namespace w3c_sw {
 		    "\r\n"; // !! Boy does this need to be a parameter...
 
 		request_stream << authString;
-		request_stream << "User-Agent: WEBagent_boostASIO 0.1\r\n";
+		request_stream << "User-Agent: web_agent_asio 0.1\r\n";
 		if (reqBody.size() != 0) {
 		    request_stream << "Content-Type: application/x-www-form-urlencoded\r\n";
 		    request_stream << "Content-Length: " << reqBody.size() << "\r\n";
@@ -240,5 +240,10 @@ namespace w3c_sw {
     };
 
 } /* namespace w3c_sw */
+
+#ifdef NEEDDEF_W3C_SW_WEBAGENT
+  #undef NEEDDEF_W3C_SW_WEBAGENT
+  #define W3C_SW_WEBAGENT w3c_sw::web_agent_asio
+#endif /* NEEDDEF_W3C_SW_WEBAGENT */
 
 #endif /* !INCLUDED_interface_WEBagent_boostASIO_hpp */

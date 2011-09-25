@@ -70,14 +70,12 @@
 
 namespace w3c_sw {
 
-    /* WEBserver_asio implements the WEBserver interface. This is the intended
+    /* web_server_dlib implements the web_server interface. This is the intended
      * interface to user code.
-     * TODO:
-     *   Would w3c_sw::webserver::asio be better than w3c_sw::WEBserver_asio ?
      */
-    class WEBserver_dlib : public dlib::server::http_1a_c, public WEBserver {
+    class web_server_dlib : public dlib::server::http_1a_c, public web_server {
     protected:
-	static WEBserver_dlib* TheServer;
+	static web_server_dlib* TheServer;
 	static void thread () {
 #if DLIB_TIGHT_LOOP
 	    std::cout << "a POST to <" << ServiceURLstr << "> with query=stop will terminate the server." << std::endl;
@@ -110,7 +108,7 @@ namespace w3c_sw {
 	}
 
     public:
-	WEBserver_dlib () { TheServer = this; }
+	web_server_dlib () { TheServer = this; }
 	void serve (const char* /* address */, const char* ports, std::size_t /* num_threads */, webserver::request_handler& handler) {
 	    this->handler = &handler;
 	    int port;
@@ -122,13 +120,13 @@ namespace w3c_sw {
 	}
     };
 
-    WEBserver_dlib* WEBserver_dlib::TheServer;
+    web_server_dlib* web_server_dlib::TheServer;
 
 } // namespace w3c_sw
 
 #ifdef NEEDDEF_W3C_SW_WEBSERVER
   #undef NEEDDEF_W3C_SW_WEBSERVER
-  #define W3C_SW_WEBSERVER w3c_sw::WEBserver_dlib
+  #define W3C_SW_WEBSERVER w3c_sw::web_server_dlib
 #endif /* NEEDDEF_W3C_SW_WEBSERVER */
 
 #endif /* INCLUDED_interface_WEBserver_dlib_hpp */

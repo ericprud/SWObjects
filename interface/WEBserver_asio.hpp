@@ -555,7 +555,32 @@ namespace w3c_sw {
 
 		if (result) {
 		    try {
-			request_handler_.handle_request(*request_, reply_);
+			webserver::reply::status_type stat
+			    = request_handler_.handle_request(*request_, reply_);
+			if (stat == webserver::reply::declined) {
+			    std::ostringstream sout;
+			    WebHandler::head(sout, "Not Found");
+
+			    std::string path(request_->getPath());
+			    sout << 
+				"    <p>path: " << path << "</p>\n"
+				"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
+				 << std::endl;
+			    reply_.status = webserver::reply::not_found;
+
+			    sout << "    <h2>Client Headers</h2>\n"
+				"    <ul>";
+			    // Why not dump the HTTP headers? Sure...
+			    for (webserver::request::headerset::const_iterator it = request_->headers.begin();
+				 it != request_->headers.end(); ++it)
+				sout << "      <li>" << it->name 
+				     << ": " << it->value 
+				     << "</li>\n" << std::endl;
+			    sout << "    </ul>\n" << std::endl;
+
+			    WebHandler::foot(sout);
+			    reply_.content = sout.str();
+			}
 		    } catch (webserver::reply rep) {
 			reply_ = rep;
 		    }
@@ -721,7 +746,7 @@ namespace w3c_sw {
      *   Would w3c_sw::webserver::asio be better than w3c_sw::WEBserver_asio ?
      */
     template <class server_config>
-    class WEBserver_asio : public WEBserver<server_config> {
+    class web_server_asio : public web_server<server_config> {
 #if defined(_WIN32)
 	static boost::function0<void> console_ctrl_function;
 
@@ -743,7 +768,7 @@ namespace w3c_sw {
     protected:
 	w3c_sw::webserver::server<server_config>* server;
     public:
-	WEBserver_asio () : server(NULL) {  }
+	web_server_asio () : server(NULL) {  }
 	void stop () { server->stop(); }
 	void serve (const char* address, const char* port, std::size_t num_threads,
 		    webserver::request_handler& handler, server_config& config) {
@@ -797,14 +822,14 @@ namespace w3c_sw {
     };
 
 #if defined(_WIN32)
-    boost::function0<void> WEBserver_asio::console_ctrl_function = NULL;
+    boost::function0<void> web_server_asio::console_ctrl_function = NULL;
 #endif // defined(_WIN32)
 
 } // namespace w3c_sw
 
 #ifdef NEEDDEF_W3C_SW_WEBSERVER
   #undef NEEDDEF_W3C_SW_WEBSERVER
-  #define W3C_SW_WEBSERVER w3c_sw::WEBserver_asio
+  #define W3C_SW_WEBSERVER w3c_sw::web_server_asio
 #endif /* NEEDDEF_W3C_SW_WEBSERVER */
 
 #endif /* INCLUDED_interface_WEBserver_asio_hpp */
