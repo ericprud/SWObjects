@@ -53,19 +53,9 @@ sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #define NEEDDEF_W3C_SW_WEBSERVER 1
 #include "../interface/WEBserver.hpp"
 
-#include "../interface/SQLclient.hpp" // Needed when no SQL clients are linked in.
-#ifdef SQL_CLIENT_MYSQL
-  #include "../interface/SQLclient_MySQL.hpp"
-#endif /* SQL_CLIENT_MYSQL */
-
-#ifdef SQL_CLIENT_ORACLE
-  #include "../interface/SQLclient_Oracle.hpp"
-#endif /* SQL_CLIENT_ORACLE */
-
-#ifdef SQL_CLIENT_ODBC
-  #include "../interface/SQLclient_ODBC.hpp"
-#endif /* SQL_CLIENT_ODBC */
-
+/* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple
+ * SQL clients. */
+#include "../interface/SQLclient.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or include config.h manually) */

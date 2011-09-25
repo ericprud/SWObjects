@@ -3,8 +3,8 @@
  * $Id: RdfDB.hpp,v 1.5 2008-10-14 12:02:57 eric Exp $
  */
 
-#ifndef SQL_CLIENT_H
-#define SQL_CLIENT_H
+#ifndef INCLUDED_interface_SQLclient_hpp
+ #define INCLUDED_interface_SQLclient_hpp
 
 #define PREFIX_XSI "http://www.w3.org/2001/XMLSchema#"
 #define PREFIX_SWO "http://swobjects.sourceforge.net/ns#"
@@ -105,5 +105,17 @@ namespace w3c_sw {
 
 } // namespace w3c_sw
 
-#endif // !SQL_CLIENT_H
+#ifdef SQL_CLIENT_MYSQL
+  #include "../interface/SQLclient_MySQL.hpp"
+#endif /* SQL_CLIENT_MYSQL */
+
+#ifdef SQL_CLIENT_ORACLE
+  #include "../interface/SQLclient_Oracle.hpp"
+#endif /* SQL_CLIENT_ORACLE */
+
+#ifdef SQL_CLIENT_ODBC
+  #include "../interface/SQLclient_ODBC.hpp"
+#endif /* SQL_CLIENT_ODBC */
+
+#endif // !INCLUDED_interface_SQLclient_hpp
 

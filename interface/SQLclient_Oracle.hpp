@@ -1,4 +1,4 @@
-/* SQLclient_MySQL.hpp: implementation of SQLclient for Oracle.
+/* SQLclient_Oracle.hpp: implementation of SQLclient for Oracle.
 
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
 
@@ -148,8 +148,8 @@ int main(int argc, char **argv)
 
  */
 
-#ifndef SQL_CLIENT_ORACLE_H
-#define SQL_CLIENT_ORACLE_H
+#ifndef INCLUDED_interface_SQLclient_Oracle_hpp
+ #define INCLUDED_interface_SQLclient_Oracle_hpp
 
 #include "../interface/SQLclient.hpp"
 
@@ -297,5 +297,10 @@ namespace w3c_sw {
 
 } /* namespace w3c_sw */
 
-#endif // !SQL_CLIENT_ORACLE_H
+#ifdef NEEDDEF_W3C_SW_SQLCLIENT
+  #undef NEEDDEF_W3C_SW_SQLCLIENT
+  #define W3C_SW_SQLCLIENT w3c_sw::SQLclient_Oracle
+#endif /* NEEDDEF_W3C_SW_SQLCLIENT */
+
+#endif // !INCLUDED_interface_SQLclient_Oracle_hpp
 

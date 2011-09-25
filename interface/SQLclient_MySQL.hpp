@@ -3,8 +3,8 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
-#ifndef SQL_CLIENT_MYSQL_H
-#define SQL_CLIENT_MYSQL_H
+#ifndef INCLUDED_interface_SQLclient_MySQL_hpp
+#define INCLUDED_interface_SQLclient_MySQL_hpp
 
 #include "../interface/SQLclient.hpp"
 
@@ -197,5 +197,10 @@ namespace w3c_sw {
 
 } /* namespace w3c_sw */
 
-#endif // !SQL_CLIENT_MYSQL_H
+#ifdef NEEDDEF_W3C_SW_SQLCLIENT
+  #undef NEEDDEF_W3C_SW_SQLCLIENT
+  #define W3C_SW_SQLCLIENT w3c_sw::SQLclient_MySQL
+#endif /* NEEDDEF_W3C_SW_SQLCLIENT */
+
+#endif // !INCLUDED_interface_SQLclient_MySQL_hpp
 
