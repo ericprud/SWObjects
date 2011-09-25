@@ -6,8 +6,8 @@
  * implementation names.
  */
 
-#ifndef WEB_interface_WEBagent_hpp
- #define WEB_interface_WEBagent_hpp
+#ifndef INCLUDED_interface_WEBagent_hpp
+ #define INCLUDED_interface_WEBagent_hpp
 
 #include <string>
 #include "SWObjects.hpp"
@@ -165,4 +165,4 @@ namespace w3c_sw {
   #warning No web client to include.
 #endif
 
-#endif /* !WEB_interface_WEBagent_hpp */
+#endif /* !INCLUDED_interface_WEBagent_hpp */
