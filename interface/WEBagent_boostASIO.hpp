@@ -4,7 +4,9 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
-#pragma once
+#ifndef INCLUDED_interface_WEBagent_boostASIO_hpp
+ #define INCLUDED_interface_WEBagent_boostASIO_hpp
+
 #include <stack>
 #include <map>
 #include <boost/regex.hpp>
@@ -15,15 +17,38 @@ using boost::asio::ip::tcp;
 
 namespace w3c_sw {
 
-    class WEBagent_boostASIO : public SWWEBagent {
-    public:
+    struct console_auth_prompter {
 	typedef std::string AuthHandler(std::string url, std::string realm);
 	typedef std::string AuthPreempt(std::string url);
-	AuthHandler* authHandler;
-	AuthPreempt* authPreempt;
-	WEBagent_boostASIO (AuthHandler authHandler = NULL,
-			    AuthPreempt authPreempt = NULL)
-	    : SWWEBagent(), authHandler(authHandler), authPreempt(authPreempt)
+
+	std::string userName;
+	std::string password;
+	std::string basicAuthHeader (std::string username, std::string password) {
+	    return std::string("Authorization: Basic ")
+		+ SWWEBagent::base64encode(username + ":" + password)
+		+ "\n";
+	}
+	// w3c_sw::console_auth_prompter::AuthHandler authHandler;
+	std::string authHandler (std::string url, std::string realm) {
+	    std::cout << "GET " + url + " wants a stinkin' password for realm \"" + realm + "\"" << std::endl;
+	    std::cout << "username: "; std::string username; std::cin >> username;
+	    std::cout << "password: "; std::string password; std::cin >> password;
+	    return basicAuthHeader(username, password);
+	}
+	// w3c_sw::console_auth_prompter::AuthPreempt authPreempt;
+	std::string authPreempt (std::string /* url */) {
+	    if (userName.empty())
+		return "";
+	    return basicAuthHeader(userName, password);
+	}
+    };
+
+    template <class auth_manager = console_auth_prompter>
+    class WEBagent_boostASIO : public SWWEBagent {
+    public:
+	auth_manager& authManager;
+	WEBagent_boostASIO (auth_manager authManager = auth_manager())
+	    : SWWEBagent(), authManager(authManager)
 	{  }
 	~WEBagent_boostASIO () {  }
 	virtual boost::shared_ptr<IStreamContext> _execute (std::string method,
@@ -63,8 +88,7 @@ namespace w3c_sw {
 	    std::ostringstream body;
 	    std::string authString;
 
-	    if (authPreempt != NULL)
-		authString = (*authPreempt)(url);
+	    authString = authManager.authPreempt(url);
 	    do {
 		// Form the request. We specify the "Connection: close" header so that the
 		// server will close the socket after transmitting the response. This will
@@ -174,11 +198,8 @@ namespace w3c_sw {
 		    while (boost::asio::read(socket, response,
 					     boost::asio::transfer_at_least(1), error))
 			;
-		    if (authHandler != NULL) {
-			authString = (*authHandler)(url, realm);
-			redo = true;
-		    } else
-			throw method + " " + url + " requires auth in " + realm + " realm";
+		    authString = authManager.authHandler(url, realm);
+		    redo = true;
 		}
 		case 200: {
 		    // Write whatever content we already have to output.
@@ -219,3 +240,5 @@ namespace w3c_sw {
     };
 
 } /* namespace w3c_sw */
+
+#endif /* !INCLUDED_interface_WEBagent_boostASIO_hpp */

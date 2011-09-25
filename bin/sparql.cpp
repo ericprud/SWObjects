@@ -25,30 +25,7 @@ namespace sw = w3c_sw;
 #include "XMLSerializer.hpp"
 #include "SQLizer.hpp"
 
-std::string UserName;
-std::string PassWord;
-#if HTTP_CLIENT == SWOb_ASIO
-  #include "../interface/WEBagent.hpp"
-  std::string basicAuthHeader (std::string username, std::string password) {
-      return std::string("Authorization: Basic ")
-	  + sw::SWWEBagent::base64encode(username + ":" + password)
-	  + "\n";
-  }
-  sw::WEBagent_boostASIO::AuthHandler authHandler;
-  std::string authHandler (std::string url, std::string realm) {
-      std::cout << "GET " + url + " wants a stinkin' password for realm \"" + realm + "\"" << std::endl;
-      std::cout << "username: "; std::string username; std::cin >> username;
-      std::cout << "password: "; std::string password; std::cin >> password;
-      return basicAuthHeader(username, password);
-  }
-  sw::WEBagent_boostASIO::AuthPreempt authPreempt;
-  std::string authPreempt (std::string /* url */) {
-      if (UserName.empty())
-	  return "";
-      return basicAuthHeader(UserName, PassWord);
-  }
-sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
-#endif /* HTTP_CLIENT == SWOb_ASIO */
+#include "../interface/WEBagent.hpp"
 
 #define NEEDDEF_W3C_SW_WEBSERVER 1
 #include "../interface/WEBserver.hpp"
@@ -73,6 +50,51 @@ namespace io = boost::iostreams;
 #ifdef BOOST_PROCESS
 #include <boost/process.hpp>
 #endif /* BOOST_PROCESS */
+
+class NamespaceAccumulator : public sw::NamespaceMap {
+public:
+    std::string toString (const char* mediaType = NULL) {
+	std::stringstream sstr;
+	if (mediaType == NULL)
+	    for (sw::NamespaceMap::const_iterator it = begin();
+		 it != end(); ++it)
+		sstr << it->first << "=> " << it->second->toString() << "\n";
+	return sstr.str();
+    }
+};
+class NamespaceRelay : public sw::NamespaceMap {
+    sw::NamespaceMap& relay;
+public:
+    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
+    virtual void set (std::string prefix, const sw::URI* uri) {
+	sw::NamespaceMap::set(prefix, uri);
+	relay.set(prefix, uri);
+    }
+};
+
+struct ServerConfig {
+    struct Request {
+	bool allowBareNewlines_;
+
+	Request () : allowBareNewlines_(true) {  }
+	bool allowBareNewlines () { return allowBareNewlines_; }
+    } request;
+};
+
+struct loadEntry {
+    const sw::TTerm* graphName;
+    const sw::TTerm* resource;
+    const sw::TTerm* baseURI;
+    sw::MediaType mediaType;
+    
+    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
+	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
+    loadEntry (const loadEntry& ref)
+	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
+    void loadGraph ();
+};
+
+typedef std::vector<loadEntry> loadList;
 
 	unsigned char favicon[] = {
 0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
@@ -212,51 +234,6 @@ namespace io = boost::iostreams;
 "    }\n"
 	    ;
 
-class NamespaceAccumulator : public sw::NamespaceMap {
-public:
-    std::string toString (const char* mediaType = NULL) {
-	std::stringstream sstr;
-	if (mediaType == NULL)
-	    for (sw::NamespaceMap::const_iterator it = begin();
-		 it != end(); ++it)
-		sstr << it->first << "=> " << it->second->toString() << "\n";
-	return sstr.str();
-    }
-};
-class NamespaceRelay : public sw::NamespaceMap {
-    sw::NamespaceMap& relay;
-public:
-    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
-    virtual void set (std::string prefix, const sw::URI* uri) {
-	sw::NamespaceMap::set(prefix, uri);
-	relay.set(prefix, uri);
-    }
-};
-
-struct ServerConfig {
-    struct Request {
-	bool allowBareNewlines_;
-
-	Request () : allowBareNewlines_(true) {  }
-	bool allowBareNewlines () { return allowBareNewlines_; }
-    } request;
-};
-
-struct loadEntry {
-    const sw::TTerm* graphName;
-    const sw::TTerm* resource;
-    const sw::TTerm* baseURI;
-    sw::MediaType mediaType;
-    
-    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
-	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
-    loadEntry (const loadEntry& ref)
-	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
-    void loadGraph ();
-};
-
-typedef std::vector<loadEntry> loadList;
-
 struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined to be e.g. w3c_sw::WEBserver_asio
     const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
 	std::string baseURIstring = base ? base->getLexicalValue() : "";
@@ -276,6 +253,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	    // hard-code explore*CountLimit
 	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
+
     protected:
 
 	void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
@@ -708,7 +686,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		    createdFiles.push_back(*iToken);
 		} else if (*iToken == "%STYLESHEET") {
 		    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-						&Agent);
+						&server.webClient);
 		    *iToken = genTempFile(".", *xsltIstr);
 		    createdFiles.push_back(*iToken);
 		}
@@ -831,7 +809,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	std::set<MappedPath> dirty;
 
 	FilesystemRdfDB (MyServer& server)
-	    : sw::TargetedRdfDB(&Agent, &server.xmlParser, &server.rdfDBHandlers), server(server)
+	    : sw::TargetedRdfDB(&server.webClient, &server.xmlParser, &server.rdfDBHandlers), server(server)
 	{  }
 
 	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
@@ -870,7 +848,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
 		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << server.baseUriMessage() << ".\n";
 		    try {
-			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &Agent);
+			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &server.webClient);
 			loadData(finalEnsureGraph(name), istr, server.uriString(server.baseURI), 
 				 server.baseURI ? server.uriString(server.baseURI) : outres, &server.atomFactory);
 		    } catch (std::string&) {
@@ -891,7 +869,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		 it != dirty.end(); ++it) {
 		sw::OStreamContext optr(it->path, sw::OStreamContext::FILE,
 					server.dataMediaType.c_str(),
-					&Agent);
+					&server.webClient);
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
 		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &server.nsAccumulator);
 	    }
@@ -933,6 +911,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #endif /* HTTP_SERVER == SWOb_ASIO */
     sw::GRDDLmap grddlMap;
     ServerConfig config;
+#if HTTP_CLIENT == SWOb_ASIO
+    sw::console_auth_prompter webClient_authPrompter;
+    sw::WEBagent_boostASIO<sw::console_auth_prompter> webClient;
+#endif /* HTTP_CLIENT == SWOb_ASIO */
     const sw::TTerm* baseURI;
     std::string baseUriMessage () {
 	return (baseURI == NULL)
@@ -959,7 +941,11 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	  defaultGraphURI(""), printQuery(false), 
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
-	  queryMapper(&atomFactory), noExec(false), useODBC(false)
+	  queryMapper(&atomFactory),
+#if HTTP_CLIENT == SWOb_ASIO
+	  webClient(webClient_authPrompter),
+#endif /* HTTP_CLIENT == SWOb_ASIO */
+	  noExec(false), useODBC(false)
     {  }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = atomFactory.getURI(path);
@@ -1129,10 +1115,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		    boost::shared_ptr<sw::IStreamContext> istr;
 		    switch (sw::ServiceGraphPattern::defaultHTTPmethod) {
 		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
-			istr = Agent.get(serviceURI.c_str(), p);
+			istr = webClient.get(serviceURI.c_str(), p);
 			break;
 		    case sw::ServiceGraphPattern::HTTP_METHOD_POST:
-			istr = Agent.post(serviceURI.c_str(), p);
+			istr = webClient.post(serviceURI.c_str(), p);
 			break;
 		    default:
 			throw "program flow exception -- unknown defaultHTTPmethod";
@@ -1233,7 +1219,7 @@ void loadEntry::loadGraph () {
     std::string nameStr = resource->getLexicalValue();
     sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
 			    mediaType ? mediaType.get().c_str() : NULL, 
-			    &Agent);
+			    &TheServer.webClient);
 
     ResultSetsLoaded = TheServer.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.resultSet, &TheServer.db);
 }
@@ -1663,14 +1649,14 @@ struct userName {};
 void validate (boost::any&, const std::vector<std::string>& values, userName*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    UserName = s;
+    TheServer.webClient_authPrompter.userName = s;
 }
 /* Set Password when parsed. */
 struct passWord {};
 void validate (boost::any&, const std::vector<std::string>& values, passWord*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    PassWord = s;
+    TheServer.webClient_authPrompter.password = s;
 }
 /* Assign an HTTP header when parsed. */
 struct HeaderPair {
@@ -1762,7 +1748,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
 	sw::IStreamContext::STRING : 
 	sw::IStreamContext::STDIN;
-    sw::IStreamContext iptr(querySpec, opts, NULL, &Agent);
+    sw::IStreamContext iptr(querySpec, opts, NULL, &TheServer.webClient);
     try {
 	return TheServer.sparqlParser.parse(iptr);
     } catch (sw::ParserException& e) {
@@ -2163,7 +2149,7 @@ int main(int ac, char* av[])
 		    (dynamic_cast<const sw::RDFLiteral*>(it->resource) != NULL) ? 
 		    sw::IStreamContext::STRING : 
 		    sw::IStreamContext::STDIN;
-		sw::IStreamContext istr(nameStr, opts, NULL, &Agent);
+		sw::IStreamContext istr(nameStr, opts, NULL, &TheServer.webClient);
 		sw::MapSet* ms = TheServer.mapSetParser.parse(istr); // throws if it fails to parse
 		// could catch and re-throw std::string("error when parsing map ").append(nameStr);
 
@@ -2246,7 +2232,7 @@ int main(int ac, char* av[])
 		    const sw::TTerm* cmp = TheServer.htparseWrapper(vm["compare"].as<std::string>(), TheServer.argBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
-					    NULL, &Agent);
+					    NULL, &TheServer.webClient);
 
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml") || 
@@ -2288,7 +2274,7 @@ int main(int ac, char* av[])
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
 					TheServer.dataMediaType.c_str(),
-					&Agent);
+					&TheServer.webClient);
 		bool mustDumpDb = Query == NULL && ResultSetsLoaded == false;
 		if (!mustDumpDb && TheServer.resultSet.resultType != sw::ResultSet::RESULT_Graphs && 
 		    !TheServer.dataMediaType)
