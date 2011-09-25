@@ -8,7 +8,6 @@
 #include <fstream>
 #include <iterator>
 
-#ifndef TEST_CLI
 #include "SWObjects.hpp"
 
 namespace sw = w3c_sw;
@@ -62,7 +61,6 @@ std::string PassWord;
   }
 sw::WEBagent_boostASIO Agent(&authHandler, authPreempt);
 #endif /* HTTP_CLIENT == SWOb_ASIO */
-#endif /* !TEST_CLI */
 
 #if HTTP_SERVER == SWOb_ASIO
  #include "../interface/WEBserver_asio.hpp"
@@ -102,49 +100,6 @@ namespace fs = boost::filesystem;
 #include <boost/iostreams/stream.hpp>
 namespace io = boost::iostreams;
 
-
-#if TEST_CLI
-/* Simulate HTParse interface (with bogus results, but good enough for testing CLI). */
-namespace sw {
-    namespace libwww {
-	typedef enum {PARSE_all} e_PARSE_opts;
-	std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts /* wanted */)
-	{
-	    std::string ret;
-	    if (rel)
-		ret = *rel;
-	    return ret.append(name);
-	}
-    };
-};
-#endif
-
-const sw::TTerm* CwdURI;
-const sw::TTerm* BaseURI;
-std::string BaseUriMessage () {
-    return (BaseURI == NULL)
-	? std::string(" with no base URI")
-	: std::string(" with base URI ") + BaseURI->getLexicalValue();
-}
-std::string UriString (const sw::TTerm* uri) {
-    return (uri == NULL)
-	? ""
-	: std::string(uri->getLexicalValue());
-}
-
-const sw::TTerm* ArgBaseURI;
-bool NoExec = false;
-bool Quiet = false;
-bool ResultSetsLoaded = false;
-const sw::TTerm* NamedGraphName = NULL;
-const sw::TTerm* Query; // URI is a guery ref; RDFLiteral is a query string.
-typedef std::vector<const sw::TTerm*> mapList;
-mapList Maps;
-sw::MediaType DataMediaType;
-std::map<std::string, std::string> HTTPHeaders;
-
-#ifndef TEST_CLI
-sw::AtomFactory F;
 
 #include <fstream>
 #ifdef BOOST_PROCESS
@@ -194,8 +149,6 @@ class DBHandlers : public sw::RdfDB::HandlerSet {
 		       std::string nameStr, std::string baseURI,
 		       sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap);
 };
-
-DBHandlers  RdfDBHandlers;
 
 	unsigned char favicon[] = {
 0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
@@ -335,36 +288,6 @@ DBHandlers  RdfDBHandlers;
 "    }\n"
 	    ;
 
-bool UseODBC = false;
-
-class SQLClientWrapper : public sw::SQLclient {
-    sw::SQLclient * const client;
-public:
-    SQLClientWrapper (std::string driver) : client(makeClient(driver)) {  }
-    ~SQLClientWrapper () { delete client; }
-    static sw::SQLclient* makeClient (std::string driver) {
-#ifdef SQL_CLIENT_ODBC
-	if (UseODBC) return new sw::SQLclient_ODBC(driver);
-#endif
-#ifdef SQL_CLIENT_MYSQL
-	if (driver == "mysql") return new sw::SQLclient_MySQL();
-#endif
-#ifdef SQL_CLIENT_ORACLE
-	if (driver == "oracle") return new sw::SQLclient_Oracle();
-#endif
-	throw driver + " driver not linked in.";
-    }
-    virtual void connect(std::string server, std::string database, std::string user) {
-	client->connect(server, database, user);
-    }
-    virtual void connect(std::string server, std::string database, std::string user, std::string password) {
-	client->connect(server, database, user, password);
-    }
-    virtual Result* executeQuery(std::string query) {
-	return client->executeQuery(query);
-    }
-};
-
 class NamespaceAccumulator : public sw::NamespaceMap {
 public:
     std::string toString (const char* mediaType = NULL) {
@@ -386,68 +309,6 @@ public:
     }
 };
 
-sw::ResultSet rs(&F);
-sw::GRDDLmap GrddlMap;
-NamespaceAccumulator NsAccumulator;
-NamespaceRelay NsRelay(NsAccumulator);
-
-bool GlobalLoadDataOrResults (const sw::TTerm* graph,
-			      std::string nameStr,
-			      const sw::TTerm* baseURI,
-			      sw::IStreamContext& istr,
-			      sw::ResultSet& rs,
-			      sw::RdfDB* db) {
-    /**
-     * Look for a couple of sparql-specific non-standard "media types".
-     */
-    if (istr.mediaType.match("application/sparql-results+xml")) {
-	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-	    std::stringstream o;
-	    o << "Reading SPARQL XML Result Set " << nameStr;
-	    if (baseURI != NULL)
-		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-	    o << " into result set.\n";
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	}
-	sw::ResultSet loaded(&F, &P, istr);
-	rs.joinIn(&loaded);
-	return true;
-    } else if (istr.mediaType.match("text/sparql-results") ||
-	       istr.mediaType.match("application/sparql-results+json") ||
-	       istr.mediaType.match("application/binary-rdf-results-table") ||
-	       istr.mediaType.match("application/x-binary-rdf-results-table")) {
-	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-	    std::stringstream o;
-	    o << "Reading data table " << nameStr;
-	    if (baseURI != NULL)
-		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-	    o << " into result set.\n";
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	}
-	sw::TTerm::String2BNode bnodeMap;
-	sw::ResultSet loaded(&F, istr, false, bnodeMap);
-	rs.joinIn(&loaded);
-	return true;
-    } else {
-	/**
-	 * All other media types are loaded via RdfDB::loadData.
-	 */
-	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
-	    std::stringstream o;
-	    o << "Reading " << nameStr;
-	    if (baseURI != NULL)
-		o << " with base URI <" << BaseURI->getLexicalValue() << ">";
-	    if (istr.mediaType)
-		o << " with media type " << *istr.mediaType;
-	    o << " into " << graph->toString() << ".\n";
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
-	}
-	db->loadData(db->ensureGraph(graph), istr, UriString(baseURI), 
-		     baseURI ? UriString(baseURI) : nameStr, &F, &NsAccumulator, &GrddlMap);
-	return false;
-    }
-}
-
 struct ServerConfig {
     struct Request {
 	bool allowBareNewlines_;
@@ -457,7 +318,28 @@ struct ServerConfig {
     } request;
 };
 
+struct loadEntry {
+    const sw::TTerm* graphName;
+    const sw::TTerm* resource;
+    const sw::TTerm* baseURI;
+    sw::MediaType mediaType;
+    
+    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
+	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
+    loadEntry (const loadEntry& ref)
+	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
+    void loadGraph ();
+};
+
+typedef std::vector<loadEntry> loadList;
+
 struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
+    const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
+	std::string baseURIstring = base ? base->getLexicalValue() : "";
+	std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
+	return atomFactory.getURI(t.c_str());
+    }
+
     class MyHandler : public sw::WebHandler {
 	MyServer& server;
 	size_t exploreTripleCountLimit;
@@ -472,7 +354,339 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	{  }
     protected:
 
-	void handle_request(w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep);
+	void handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
+	    std::string query;
+	    try {
+		std::string path(req.getPath());
+		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
+		std::ostringstream sout;
+		loadList queryLoadList;
+		const sw::BasicGraphPattern* getGraph = server.db.getGraph(server.atomFactory.getURI(path));
+
+		if (req.method == "PUT") {
+		    const sw::URI* into = server.atomFactory.getURI(req.getPath());
+		    sw::BasicGraphPattern* bgp = server.db.ensureGraph(into);
+		    sw::IStreamContext istr(req.body, sw::IStreamContext::STRING, req.content_type.c_str());
+		    sw::NamespaceMap map;
+		    server.db.loadData(bgp, istr, req.getPath(), "", &server.atomFactory, &map);
+
+		    rep.status = sw::webserver::reply::ok;
+		    head(sout, "Q&amp;D SPARQL Server PUT Successful");
+		    sout << 
+			"    <p>Uploaded " << bgp->size() << " triples into " << uriLink(into) << "</p>\n";
+		    sout << DBsummary();
+
+		    rep.addHeader("Content-Type", "text/html");
+		    foot(sout);
+		} else if (getGraph != NULL) {
+		    sw::webserver::request::parmmap::const_iterator parm;
+		    if (req.method == "GET"
+			|| (req.method == "POST" && req.content_type.compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
+			parm = req.parms.find("query");
+			if (parm != req.parms.end())
+			    query = parm->second;
+		    } else if (req.method == "POST" && req.content_type.compare(0, 24, "application/sparql-query") == 0)
+			query = req.body;
+		    if (query == "" && path != server.path) {
+			rep.status = sw::webserver::reply::ok;
+			std::string body = getGraph->toString(sw::MediaType("text/turtle"));
+			sout.write(body.c_str(), body.size());
+			rep.addHeader("Content-Type", "text/turtle");
+			rep.addHeader("MS-Author-Via", "SPARQL");
+		    } else {
+			parm = req.parms.find("default-graph-uri");
+			if (parm != req.parms.end() && parm->second != "") {
+			    const sw::TTerm* abs(server.htparseWrapper(parm->second, server.argBaseURI));
+			    queryLoadList.push_back(loadEntry(NULL, abs, server.baseURI, server.dataMediaType));
+			    std::cerr << "default graph: " << parm->second << std::endl;
+			}
+			parm = req.parms.find("named-graph-uri");
+			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
+			    const sw::TTerm* abs(server.htparseWrapper(parm->second, server.argBaseURI));
+			    queryLoadList.push_back(loadEntry(abs, abs, server.baseURI, server.dataMediaType));
+			    std::cerr << "named graph: " << parm->second << std::endl;
+			    ++parm;
+			}
+			if (query == "stop") {
+			    head(sout, "Done!");
+			    sout << "    <p>Served " << server.served << " queries.</p>\n";
+			    foot(sout);
+
+			    server.done = true;
+			} else {
+			    sw::IStreamContext istr(query, sw::IStreamContext::STRING);
+			    try {
+				sw::Operation* op = server.sparqlParser.parse(istr);
+				if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
+				    head(sout, "Query Error");
+
+				    sout << "    <p>Query</p>\n"
+					"    <pre>" << sw::XMLSerializer::escapeCharData(query) << "</pre>\n"
+					"    <p>is screwed up.</p>\n"
+					 << std::endl;
+				    std::cerr << "400: " << query << std::endl;
+				    rep.status = sw::webserver::reply::bad_request;
+
+				    foot(sout);
+				} else {
+				    parm = req.parms.find("media");
+				    bool humanReader = (parm != req.parms.end()
+							&& (parm->second == "html"
+							    || parm->second == "edit"
+							    || parm->second == "tablesorter"));
+
+				    sw::ResultSet rs(&server.atomFactory);
+				    sw::RdfDB constructed; // For operations which create a new database.
+				    rs.setRdfDB(dynamic_cast<sw::Construct*>(op) != NULL && !server.inPlace ? &constructed : &server.db);
+				    std::string language;
+				    std::string newQuery(query);
+
+				    try {
+					for (loadList::iterator it = queryLoadList.begin();
+					     it != queryLoadList.end(); ++it)
+					    it->loadGraph();
+					if (path != server.path)
+					    server.db.setTarget(server.atomFactory.getURI(path));
+					server.executeQuery(op, rs, language, newQuery);
+					if (humanReader &&
+					    (dynamic_cast<sw::GraphChange*>(op) != NULL || 
+					     dynamic_cast<sw::OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
+					    /** 
+					     * For a nice human interface, we can do
+					     * another query to report the resulting
+					     * database.
+					     */
+					    delete op;
+					    rs.clear();
+					    op = server.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
+					    op->execute(&server.db, &rs);
+					}
+					server.db.setTarget(NULL);
+					delete op;
+				    } catch (sw::ParserException& ex) {
+					delete op;
+					std::cerr << ex.what() << std::endl;
+					throw sw::WebHandler::SimpleMessageException(ex);
+				    } catch (std::string ex) {
+					delete op;
+					std::cerr << ex << std::endl;
+					throw sw::WebHandler::SimpleMessageException(sw::XMLSerializer::escapeCharData(ex));
+				    }
+				    const sw::VariableVector cols = rs.getOrderedVars();
+
+				    sw::XMLSerializer xml("  ");
+				    if (humanReader) {
+					std::string headStr =
+					    "    <style type=\"text/css\" media=\"screen\">\n"
+					    "/*<![CDATA[*/\n" + CSS_common
+					    ;
+					if (parm->second == "html"
+					    || parm->second == "edit")
+					    headStr += CSS_Results;
+					headStr +=
+					    "/*]]>*/\n"
+					    "    </style>\n"
+					    "\n"
+					    ;
+					if (parm->second == "tablesorter")
+					    headStr += Javascript_TableSorter_remote;
+					headStr +=
+					    "    <script language=\"javascript\" type=\"text/javascript\">\n"
+					    "<!--\n"
+					    ;
+					if (parm->second == "tablesorter")
+					    headStr +=
+						"    $(function() {\n"
+						;
+					else
+					    headStr +=
+						"    window.onload=function(){\n"
+						;
+					headStr += Javascript_ToggleDisplay_init;
+				
+					if (parm->second == "tablesorter")
+					    headStr += Javascript_TableSorter_init;
+					if (parm->second == "tablesorter")
+					    headStr +=
+						"    });\n"
+						;
+					else
+					    headStr +=
+						"    };\n"
+						;
+					headStr += Javascript_ToggleDisplay_defn +
+					    "-->\n"
+					    "    </script>\n"
+					    ;
+					head(sout, "SPARQL Query Results", headStr);
+					/*
+					  <div id="requery">
+					  <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
+					  ?s ?p ?o
+					  }</pre>
+					  <form action="/as/df">
+					  <p>
+					  <input id="query" name="query" type="hidden" value=""/>
+					  <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
+					  </p>
+					  </form>
+					  </div>
+					*/
+					/** construct XHTML body with query and results. */
+					xml.open("div"); {
+					    xml.attribute("id", "requery");
+					    sw::XMLSerializer::Attributes preAttrs;
+					    preAttrs["id"] = "edit";
+					    preAttrs["contenteditable"] = "true";
+					    preAttrs["style"] = "display:block; float:left;";
+					    xml.leaf("pre", newQuery, preAttrs);
+					    xml.open("form"); {
+						xml.attribute("action", path);
+						xml.attribute("method", "get");
+						xml.open("p"); {
+						    sw::XMLSerializer::Attributes queryAttrs;
+						    queryAttrs["type"] = "hidden";
+						    queryAttrs["value"] = "";
+						    queryAttrs["id"] = "query";
+						    queryAttrs["name"] = "query";
+						    xml.empty("input", queryAttrs);
+
+						    sw::XMLSerializer::Attributes mediaAttrs;
+						    mediaAttrs["type"] = "hidden";
+						    mediaAttrs["value"] = "edit";
+						    mediaAttrs["name"] = "media";
+						    xml.empty("input", mediaAttrs);
+
+						    sw::XMLSerializer::Attributes submitAttrs;
+						    submitAttrs["type"] = "submit";
+						    submitAttrs["value"] = "re-query";
+						    submitAttrs["onclick"] = "copy('edit', 'query')";
+						    submitAttrs["style"] = "margin: 2em;";
+						    xml.empty("input", submitAttrs);
+						} xml.close(); // p
+					    } xml.close(); // form
+					} xml.close(); // div
+
+					sw::XMLSerializer::Attributes resultsAttrs;
+					resultsAttrs["id"] = "results";
+					resultsAttrs["class"] = "tablesorter";
+					rs.toHtmlTable(&xml, resultsAttrs, path == server.path ? "" : path);
+
+					/** construct reply from headers and XHTML body */
+					rep.status = sw::webserver::reply::ok;
+					rep.addHeader("Content-Type", 
+						      "text/html; charset=UTF-8");
+					sout << xml.str();
+					foot(sout);
+
+				    } else if (parm != req.parms.end() && parm->second == "textplain") {
+					head(sout, "SPARQL Query Results");
+
+					// cute lexical representation of xml nesting:
+					xml.leaf("pre", newQuery);
+					rep.status = sw::webserver::reply::ok;
+					rep.addHeader("Content-Type", 
+						      "text/html; charset=UTF-8");
+
+					sw::XMLSerializer rsSerializer("  ");
+					rs.toXml(&rsSerializer);
+					std::string source(rsSerializer.str());
+					xml.leaf("pre", rsSerializer.str());
+
+					sout << xml.str();
+					foot(sout);
+				    } else { /* !htmlResults */
+					rep.status = sw::webserver::reply::ok;
+					rep.addHeader("Content-Type", 
+						      rs.resultType == sw::ResultSet::RESULT_Graphs
+						      ? "text/turtle; charset=UTF-8"
+						      : "application/sparql-results+xml; charset=UTF-8");
+					rs.toXml(&xml);
+					sout << xml.str();
+				    } /* !htmlResults */
+
+				    ++server.served;
+				    if (server.runOnce)
+					server.done = true;
+				}
+			    } catch (sw::ParserException& ex) {
+				std::cerr << ex.what() << std::endl;
+				throw sw::WebHandler::SimpleMessageException(ex);
+			    }
+			}
+		    }
+		} else if (path == "") {
+		    rep.status = sw::webserver::reply::ok;
+		    head(sout, "Q&amp;D SPARQL Server");
+		    const char* method =
+			sw::ServiceGraphPattern::defaultHTTPmethod == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
+			"post";
+		    sout << 
+			"    <form action='" << server.path << "' method='" << method << "'><p>\n"
+			"      Query: <textarea name='query' rows='25' cols='80'></textarea> <input type='submit' /><br />\n"
+			"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
+			"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><span id=\"addGraph\" onclick='\n"
+			"        var b = document.createElement(\"br\");\n"
+			"        this.parentNode.insertBefore(b, this);\n"
+			"        var t = document.createTextNode(\"named graph: \");\n"
+			"        this.parentNode.insertBefore(t, this);\n"
+			"        var i = document.createElement(\"input\");\n"
+			"        i.setAttribute(\"type\", \"text\");\n"
+			"        i.setAttribute(\"name\", \"named-graph-uri\");\n"
+			"        i.setAttribute(\"size\", \"50\");\n"
+			"        this.parentNode.insertBefore(i, this);\n"
+			"        '> +</span><br />\n"
+			"      <input type='radio' name='media' value='xmlres' />SPARQL XML Results\n"
+			"      <input type='radio' name='media' value='html' checked='checked' />HTML Results\n"
+			"      <input type='radio' name='media' value='tablesorter' />JQuery Tablesorter\n"
+			"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
+			"    </p></form>\n"
+			"    <form action='" << server.path << "' method='post'><p>\n"
+			"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
+			"    </p></form>\n";
+		    sout << DBsummary();
+
+		    rep.addHeader("Content-Type", "text/html");
+		    foot(sout);
+		} else if (path == "favicon.ico") {
+		    rep.status = sw::webserver::reply::ok;
+		    sout.write((char*)favicon, sizeof(favicon));
+		    rep.addHeader("Content-Type", "image/x-icon");
+		} else {
+		    head(sout, "Not Found");
+
+		    sout << 
+			"    <p>path: " << path << "</p>\n"
+			"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
+			 << std::endl;
+		    rep.status = sw::webserver::reply::not_found;
+
+		    sout << "    <h2>Client Headers</h2>\n"
+			"    <ul>";
+		    // Why not dump the HTTP headers? Sure...
+		    for (w3c_sw::webserver::request::headerset::const_iterator it = req.headers.begin();
+			 it != req.headers.end(); ++it)
+			sout << "      <li>" << it->name 
+			     << ": " << it->value 
+			     << "</li>\n" << std::endl;
+		    sout << "    </ul>\n" << std::endl;
+		    sout << DBsummary();
+
+		    foot(sout);
+		}
+		rep.content = sout.str();
+	    }
+	    catch (SimpleMessageException& e) {
+		rep.status = sw::webserver::reply::bad_request;
+		rep.addHeader("Content-Type", "text/html");
+		rep.content = e.what();
+	    } catch (std::exception& e) {
+		errorMessage(rep, query, e.what());
+	    } catch (std::string& e) {
+		errorMessage(rep, query, e);
+	    }
+	}
+
 	void errorMessage (w3c_sw::webserver::reply& rep, std::string query, std::string what) {
 	    std::ostringstream sout;
 
@@ -539,7 +753,6 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	}
     };
 
-
     /** FilesystemRdfDB - a TargetedRdfDB which may be backed by files in the
      * filesystem.
      *
@@ -572,10 +785,11 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		return *name < *(r.name) || path < r.path;
 	    }
 	};
+	MyServer& server;
 	std::set<MappedPath> dirty;
 
-	FilesystemRdfDB (sw::SWWEBagent* webAgent, sw::SWSAXparser* xmlParser, sw::RdfDB::HandlerSet* handler)
-	    : sw::TargetedRdfDB(webAgent, xmlParser, handler)
+	FilesystemRdfDB (MyServer& server)
+	    : sw::TargetedRdfDB(&Agent, &P, &server.rdfDBHandlers), server(server)
 	{  }
 
 	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
@@ -612,11 +826,11 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
 
 		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << BaseUriMessage() << ".\n";
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << server.baseUriMessage() << ".\n";
 		    try {
 			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &Agent);
-			loadData(finalEnsureGraph(name), istr, UriString(BaseURI), 
-				 BaseURI ? UriString(BaseURI) : outres, &F);
+			loadData(finalEnsureGraph(name), istr, server.uriString(server.baseURI), 
+				 server.baseURI ? server.uriString(server.baseURI) : outres, &server.atomFactory);
 		    } catch (std::string&) {
 		    }
 		    dirty.insert(MappedPath(name, outres));
@@ -634,17 +848,24 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	    for (std::set<MappedPath>::const_iterator it = dirty.begin();
 		 it != dirty.end(); ++it) {
 		sw::OStreamContext optr(it->path, sw::OStreamContext::FILE,
-					DataMediaType.c_str(),
+					server.dataMediaType.c_str(),
 					&Agent);
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
-		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &NsAccumulator);
+		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &server.nsAccumulator);
 	    }
 	    clearGraphLog();
 	}
 
     };
+
+    sw::AtomFactory atomFactory;
+    NamespaceAccumulator nsAccumulator;
+    NamespaceRelay nsRelay;
+    DBHandlers rdfDBHandlers;
     FilesystemRdfDB db;
+    sw::ResultSet resultSet;
     bool runOnce;
+    bool inPlace;
     bool done;
     int served;
     std::string path;
@@ -652,8 +873,8 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
     std::string serviceURI;
     std::string defaultGraphURI;
     bool printQuery;
-    sw::AtomFactory& atomFactory;
-    sw::SPARQLfedDriver& sparqlParser;
+    sw::SPARQLfedDriver sparqlParser;
+    sw::TurtleSDriver turtleParser;
     std::string pkAttribute;
     sw::KeyMap keyMap;
     sw::MapSetDriver mapSetParser;
@@ -667,16 +888,35 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 #if HTTP_SERVER == SWOb_ASIO
     boost::mutex executeMutex;    
 #endif /* HTTP_SERVER == SWOb_ASIO */
+    sw::GRDDLmap grddlMap;
     ServerConfig config;
+    const sw::TTerm* baseURI;
+    std::string baseUriMessage () {
+	return (baseURI == NULL)
+	    ? std::string(" with no base URI")
+	    : std::string(" with base URI ") + baseURI->getLexicalValue();
+    }
+    std::string uriString (const sw::TTerm* uri) {
+	return (uri == NULL)
+	    ? ""
+	    : std::string(uri->getLexicalValue());
+    }
 
-    MyServer (sw::AtomFactory& atomFactory, sw::SPARQLfedDriver& sparqlParser,
-	      std::string pkAttribute)
-	: db(&Agent, &P, &RdfDBHandlers),
-	  runOnce(false), done(false), served(0), stemURI(""),
-	  serviceURI(""), defaultGraphURI(""),
-	  printQuery(false), atomFactory(atomFactory), sparqlParser(sparqlParser),
+    const sw::TTerm* argBaseURI;
+    bool noExec;
+    sw::MediaType dataMediaType;
+    bool useODBC;
+
+
+    MyServer (std::string pkAttribute)
+	: atomFactory(), nsRelay(nsAccumulator),
+	  db(*this),
+	  resultSet(&atomFactory), runOnce(false), inPlace(false),
+	  done(false), served(0), stemURI(""), serviceURI(""),
+	  defaultGraphURI(""), printQuery(false), 
+	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
-	  queryMapper(&atomFactory)
+	  queryMapper(&atomFactory), noExec(false), useODBC(false)
     {  }
     void startServer (MyHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = atomFactory.getURI(path);
@@ -728,6 +968,34 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	return SQLDriver + "://" + SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
     }
 
+    class SQLClientWrapper : public sw::SQLclient {
+	sw::SQLclient * const client;
+    public:
+	SQLClientWrapper (std::string driver, bool useODBC) : client(makeClient(driver, useODBC)) {  }
+	~SQLClientWrapper () { delete client; }
+	static sw::SQLclient* makeClient (std::string driver, bool useODBC) {
+#ifdef SQL_CLIENT_ODBC
+	    if (useODBC) return new sw::SQLclient_ODBC(driver);
+#endif
+#ifdef SQL_CLIENT_MYSQL
+	    if (driver == "mysql") return new sw::SQLclient_MySQL();
+#endif
+#ifdef SQL_CLIENT_ORACLE
+	    if (driver == "oracle") return new sw::SQLclient_Oracle();
+#endif
+	    throw driver + " driver not linked in.";
+	}
+	virtual void connect(std::string server, std::string database, std::string user) {
+	    client->connect(server, database, user);
+	}
+	virtual void connect(std::string server, std::string database, std::string user, std::string password) {
+	    client->connect(server, database, user, password);
+	}
+	virtual Result* executeQuery(std::string query) {
+	    return client->executeQuery(query);
+	}
+    };
+
     bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
 	language = "SPARQL";
 	const sw::Operation* delMe = rs.getConstrainedOperation(query);
@@ -766,7 +1034,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
-	    bool doSQLquery = NoExec == false && 
+	    bool doSQLquery = noExec == false && 
 		(!SQLDriver.empty() || !SQLServer.empty()
 		 || !SQLDatabase.empty() || !SQLUser.empty());
 	    BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "SQL: " << std::endl;
@@ -782,7 +1050,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		    "Unable to connect to " << sqlConnectString() << " .\n"
 		    "No SQL client libraries linked in.\n";
 #else /* !SQL_CLIENT_NONE */
-		SQLClientWrapper sqlClient(SQLDriver);
+		SQLClientWrapper sqlClient(SQLDriver, useODBC);
 		sw::SQLclient::Result* res;
 		try {
 		    if (SQLPassword.empty())
@@ -814,7 +1082,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << "Service query: " << std::endl;
 		    std::cout << serviceURI << " " << p << std::endl;
 		}
-		if (NoExec == false) {
+		if (noExec == false) {
 		    boost::shared_ptr<sw::IStreamContext> istr;
 		    switch (sw::ServiceGraphPattern::defaultHTTPmethod) {
 		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
@@ -826,7 +1094,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		    default:
 			throw "program flow exception -- unknown defaultHTTPmethod";
 		    }
-		    if (!GlobalLoadDataOrResults(sw::DefaultGraph, serviceURI, BaseURI, *istr, rs, rs.getRdfDB()))
+		    if (!loadDataOrResults(sw::DefaultGraph, serviceURI, baseURI, *istr, rs, rs.getRdfDB()))
 			rs.resultType = sw::ResultSet::RESULT_Graphs;
 		    executed = true;
 		}
@@ -835,7 +1103,7 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 		    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Final query: " << ".\n";
 		    std::cout << query->toString() << std::endl;
 		}
-		if (NoExec == false) {
+		if (noExec == false) {
 #if HTTP_SERVER == SWOb_ASIO
 		    boost::mutex::scoped_lock lock(executeMutex);
 		    /* Is this how one implements a single-writer lock with a shared_mutex?
@@ -853,374 +1121,78 @@ struct MyServer : WEBSERVER<ServerConfig> { // sw::WEBserver_asio
 	    delete delMe;
 	return executed;
     }
-};
 
-sw::SPARQLfedDriver SparqlParser("", &F);
-sw::TurtleSDriver TurtleParser("", &F);
-
-MyServer TheServer(F, SparqlParser, "ID");
-
-struct loadEntry {
-    const sw::TTerm* graphName;
-    const sw::TTerm* resource;
-    const sw::TTerm* baseURI;
-    sw::MediaType mediaType;
-    
-    loadEntry (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType)
-	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
-    loadEntry (const loadEntry& ref)
-	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
-    void loadGraph () {
-	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
-	std::string nameStr = resource->getLexicalValue();
-	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
-				mediaType ? mediaType.get().c_str() : NULL, 
-				&Agent);
-
-	ResultSetsLoaded = GlobalLoadDataOrResults (graph, nameStr, baseURI, istr, rs, &TheServer.db);
-    }
-};
-typedef std::vector<loadEntry> loadList;
-
-const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
-    std::string baseURIstring = base ? base->getLexicalValue() : "";
-    std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
-    return F.getURI(t.c_str());
-}
-
-bool InPlace = false;
-
-inline void MyServer::MyHandler::handle_request (w3c_sw::webserver::request& req, w3c_sw::webserver::reply& rep) {
-    std::string query;
-    try {
-	std::string path(req.getPath());
-	path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
-	std::ostringstream sout;
-	loadList queryLoadList;
-	const sw::BasicGraphPattern* getGraph = server.db.getGraph(server.atomFactory.getURI(path));
-
-	if (req.method == "PUT") {
-	    const sw::URI* into = server.atomFactory.getURI(req.getPath());
-	    sw::BasicGraphPattern* bgp = server.db.ensureGraph(into);
-	    sw::IStreamContext istr(req.body, sw::IStreamContext::STRING, req.content_type.c_str());
-	    sw::NamespaceMap map;
-	    server.db.loadData(bgp, istr, req.getPath(), "", &server.atomFactory, &map);
-
-	    rep.status = sw::webserver::reply::ok;
-	    head(sout, "Q&amp;D SPARQL Server PUT Successful");
-	    sout << 
-		"    <p>Uploaded " << bgp->size() << " triples into " << uriLink(into) << "</p>\n";
-	    sout << DBsummary();
-
-	    rep.addHeader("Content-Type", "text/html");
-	    foot(sout);
-	} else if (getGraph != NULL) {
-	    sw::webserver::request::parmmap::const_iterator parm;
-	    if (req.method == "GET"
-		|| (req.method == "POST" && req.content_type.compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
-		    parm = req.parms.find("query");
-		    if (parm != req.parms.end())
-			query = parm->second;
-	    } else if (req.method == "POST" && req.content_type.compare(0, 24, "application/sparql-query") == 0)
-		query = req.body;
-	    if (query == "" && path != server.path) {
-		rep.status = sw::webserver::reply::ok;
-		std::string body = getGraph->toString(sw::MediaType("text/turtle"));
-		sout.write(body.c_str(), body.size());
-		rep.addHeader("Content-Type", "text/turtle");
-		rep.addHeader("MS-Author-Via", "SPARQL");
-	    } else {
-		parm = req.parms.find("default-graph-uri");
-		if (parm != req.parms.end() && parm->second != "") {
-		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
-		    std::cerr << "default graph: " << parm->second << std::endl;
-		}
-		parm = req.parms.find("named-graph-uri");
-		while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
-		    const sw::TTerm* abs(htparseWrapper(parm->second, ArgBaseURI));
-		    queryLoadList.push_back(loadEntry(abs, abs, BaseURI, DataMediaType));
-		    std::cerr << "named graph: " << parm->second << std::endl;
-		    ++parm;
-		}
-		if (query == "stop") {
-		    head(sout, "Done!");
-		    sout << "    <p>Served " << server.served << " queries.</p>\n";
-		    foot(sout);
-
-		    server.done = true;
-		} else {
-		    sw::IStreamContext istr(query, sw::IStreamContext::STRING);
-		    try {
-			sw::Operation* op = server.sparqlParser.parse(istr);
-			if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
-			    head(sout, "Query Error");
-
-			    sout << "    <p>Query</p>\n"
-				"    <pre>" << sw::XMLSerializer::escapeCharData(query) << "</pre>\n"
-				"    <p>is screwed up.</p>\n"
-				 << std::endl;
-			    std::cerr << "400: " << query << std::endl;
-			    rep.status = sw::webserver::reply::bad_request;
-
-			    foot(sout);
-			} else {
-			    parm = req.parms.find("media");
-			    bool humanReader = (parm != req.parms.end()
-						&& (parm->second == "html"
-						    || parm->second == "edit"
-						    || parm->second == "tablesorter"));
-
-			    sw::ResultSet rs(&server.atomFactory);
-			    sw::RdfDB constructed; // For operations which create a new database.
-			    rs.setRdfDB(dynamic_cast<sw::Construct*>(op) != NULL && !InPlace ? &constructed : &TheServer.db);
-			    std::string language;
-			    std::string newQuery(query);
-
-			    try {
-				for (loadList::iterator it = queryLoadList.begin();
-				     it != queryLoadList.end(); ++it)
-				    it->loadGraph();
-				if (path != server.path)
-				    server.db.setTarget(F.getURI(path));
-				server.executeQuery(op, rs, language, newQuery);
-				if (humanReader &&
-				    (dynamic_cast<sw::GraphChange*>(op) != NULL || 
-				     dynamic_cast<sw::OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
-				    /** 
-				     * For a nice human interface, we can do
-				     * another query to report the resulting
-				     * database.
-				     */
-				    delete op;
-				    rs.clear();
-				    op = SparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
-				    op->execute(&server.db, &rs);
-				}
-				server.db.setTarget(NULL);
-				delete op;
-			    } catch (sw::ParserException& ex) {
-				delete op;
-				std::cerr << ex.what() << std::endl;
-				throw sw::WebHandler::SimpleMessageException(ex);
-			    } catch (std::string ex) {
-				delete op;
-				std::cerr << ex << std::endl;
-				throw sw::WebHandler::SimpleMessageException(sw::XMLSerializer::escapeCharData(ex));
-			    }
-			    const sw::VariableVector cols = rs.getOrderedVars();
-
-			    sw::XMLSerializer xml("  ");
-			    if (humanReader) {
-				std::string headStr =
-				    "    <style type=\"text/css\" media=\"screen\">\n"
-				    "/*<![CDATA[*/\n" + CSS_common
-				    ;
-				if (parm->second == "html"
-				    || parm->second == "edit")
-				    headStr += CSS_Results;
-				headStr +=
-				    "/*]]>*/\n"
-				    "    </style>\n"
-				    "\n"
-				    ;
-				if (parm->second == "tablesorter")
-				    headStr += Javascript_TableSorter_remote;
-				headStr +=
-				    "    <script language=\"javascript\" type=\"text/javascript\">\n"
-				    "<!--\n"
-				    ;
-				if (parm->second == "tablesorter")
-				    headStr +=
-					"    $(function() {\n"
-					;
-				else
-				    headStr +=
-					"    window.onload=function(){\n"
-					;
-				headStr += Javascript_ToggleDisplay_init;
-				
-				if (parm->second == "tablesorter")
-				    headStr += Javascript_TableSorter_init;
-				if (parm->second == "tablesorter")
-				    headStr +=
-					"    });\n"
-					;
-				else
-				    headStr +=
-					"    };\n"
-					;
-				headStr += Javascript_ToggleDisplay_defn +
-				    "-->\n"
-				    "    </script>\n"
-				    ;
-				head(sout, "SPARQL Query Results", headStr);
-				/*
-    <div id="requery">
-      <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
-  ?s ?p ?o
-}</pre>
-      <form action="/as/df">
-        <p>
-          <input id="query" name="query" type="hidden" value=""/>
-          <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
-        </p>
-      </form>
-    </div>
-				*/
-				/** construct XHTML body with query and results. */
-				xml.open("div"); {
-				    xml.attribute("id", "requery");
-				    sw::XMLSerializer::Attributes preAttrs;
-				    preAttrs["id"] = "edit";
-				    preAttrs["contenteditable"] = "true";
-				    preAttrs["style"] = "display:block; float:left;";
-				    xml.leaf("pre", newQuery, preAttrs);
-				    xml.open("form"); {
-					xml.attribute("action", path);
-					xml.attribute("method", "get");
-					xml.open("p"); {
-					    sw::XMLSerializer::Attributes queryAttrs;
-					    queryAttrs["type"] = "hidden";
-					    queryAttrs["value"] = "";
-					    queryAttrs["id"] = "query";
-					    queryAttrs["name"] = "query";
-					    xml.empty("input", queryAttrs);
-
-					    sw::XMLSerializer::Attributes mediaAttrs;
-					    mediaAttrs["type"] = "hidden";
-					    mediaAttrs["value"] = "edit";
-					    mediaAttrs["name"] = "media";
-					    xml.empty("input", mediaAttrs);
-
-					    sw::XMLSerializer::Attributes submitAttrs;
-					    submitAttrs["type"] = "submit";
-					    submitAttrs["value"] = "re-query";
-					    submitAttrs["onclick"] = "copy('edit', 'query')";
-					    submitAttrs["style"] = "margin: 2em;";
-					    xml.empty("input", submitAttrs);
-					} xml.close(); // p
-				    } xml.close(); // form
-				} xml.close(); // div
-
-				sw::XMLSerializer::Attributes resultsAttrs;
-				resultsAttrs["id"] = "results";
-				resultsAttrs["class"] = "tablesorter";
-				rs.toHtmlTable(&xml, resultsAttrs, path == server.path ? "" : path);
-
-				/** construct reply from headers and XHTML body */
-				rep.status = sw::webserver::reply::ok;
-				rep.addHeader("Content-Type", 
-					      "text/html; charset=UTF-8");
-				sout << xml.str();
-				foot(sout);
-
-			    } else if (parm != req.parms.end() && parm->second == "textplain") {
-				head(sout, "SPARQL Query Results");
-
-				// cute lexical representation of xml nesting:
-				xml.leaf("pre", newQuery);
-				rep.status = sw::webserver::reply::ok;
-				rep.addHeader("Content-Type", 
-					      "text/html; charset=UTF-8");
-
-				sw::XMLSerializer rsSerializer("  ");
-				rs.toXml(&rsSerializer);
-				std::string source(rsSerializer.str());
-				xml.leaf("pre", rsSerializer.str());
-
-				sout << xml.str();
-				foot(sout);
-			    } else { /* !htmlResults */
-				rep.status = sw::webserver::reply::ok;
-				rep.addHeader("Content-Type", 
-					      rs.resultType == sw::ResultSet::RESULT_Graphs
-					      ? "text/turtle; charset=UTF-8"
-					      : "application/sparql-results+xml; charset=UTF-8");
-				rs.toXml(&xml);
-				sout << xml.str();
-			    } /* !htmlResults */
-
-			    ++server.served;
-			    if (server.runOnce)
-				server.done = true;
-			}
-		    } catch (sw::ParserException& ex) {
-			std::cerr << ex.what() << std::endl;
-			throw sw::WebHandler::SimpleMessageException(ex);
-		    }
-		}
+    bool loadDataOrResults (const sw::TTerm* graph,
+			    std::string nameStr,
+			    const sw::TTerm* baseURI,
+			    sw::IStreamContext& istr,
+			    sw::ResultSet& rs,
+			    sw::RdfDB* db) {
+	/**
+	 * Look for a couple of sparql-specific non-standard "media types".
+	 */
+	if (istr.mediaType.match("application/sparql-results+xml")) {
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading SPARQL XML Result Set " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	    }
-	} else if (path == "") {
-	    rep.status = sw::webserver::reply::ok;
-	    head(sout, "Q&amp;D SPARQL Server");
-	    const char* method =
-		sw::ServiceGraphPattern::defaultHTTPmethod == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
-		"post";
-	    sout << 
-		"    <form action='" << server.path << "' method='" << method << "'><p>\n"
-		"      Query: <textarea name='query' rows='25' cols='80'></textarea> <input type='submit' /><br />\n"
-		"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
-		"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><span id=\"addGraph\" onclick='\n"
-		"        var b = document.createElement(\"br\");\n"
-		"        this.parentNode.insertBefore(b, this);\n"
-		"        var t = document.createTextNode(\"named graph: \");\n"
-		"        this.parentNode.insertBefore(t, this);\n"
-		"        var i = document.createElement(\"input\");\n"
-		"        i.setAttribute(\"type\", \"text\");\n"
-		"        i.setAttribute(\"name\", \"named-graph-uri\");\n"
-		"        i.setAttribute(\"size\", \"50\");\n"
-		"        this.parentNode.insertBefore(i, this);\n"
-		"        '> +</span><br />\n"
-		"      <input type='radio' name='media' value='xmlres' />SPARQL XML Results\n"
-		"      <input type='radio' name='media' value='html' checked='checked' />HTML Results\n"
-		"      <input type='radio' name='media' value='tablesorter' />JQuery Tablesorter\n"
-		"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
-		"    </p></form>\n"
-		"    <form action='" << server.path << "' method='post'><p>\n"
-		"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
-		"    </p></form>\n";
-	    sout << DBsummary();
-
-	    rep.addHeader("Content-Type", "text/html");
-	    foot(sout);
-	} else if (path == "favicon.ico") {
-	    rep.status = sw::webserver::reply::ok;
-	    sout.write((char*)favicon, sizeof(favicon));
-	    rep.addHeader("Content-Type", "image/x-icon");
+	    sw::ResultSet loaded(&atomFactory, &P, istr);
+	    rs.joinIn(&loaded);
+	    return true;
+	} else if (istr.mediaType.match("text/sparql-results") ||
+		   istr.mediaType.match("application/sparql-results+json") ||
+		   istr.mediaType.match("application/binary-rdf-results-table") ||
+		   istr.mediaType.match("application/x-binary-rdf-results-table")) {
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading data table " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    }
+	    sw::TTerm::String2BNode bnodeMap;
+	    sw::ResultSet loaded(&atomFactory, istr, false, bnodeMap);
+	    rs.joinIn(&loaded);
+	    return true;
 	} else {
-	    head(sout, "Not Found");
-
-	    sout << 
-		"    <p>path: " << path << "</p>\n"
-		"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
-		 << std::endl;
-	    rep.status = sw::webserver::reply::not_found;
-
-	    sout << "    <h2>Client Headers</h2>\n"
-		"    <ul>";
-	    // Why not dump the HTTP headers? Sure...
-	    for (w3c_sw::webserver::request::headerset::const_iterator it = req.headers.begin();
-		 it != req.headers.end(); ++it)
-		sout << "      <li>" << it->name 
-		     << ": " << it->value 
-		     << "</li>\n" << std::endl;
-	    sout << "    </ul>\n" << std::endl;
-	    sout << DBsummary();
-
-	    foot(sout);
+	    /**
+	     * All other media types are loaded via RdfDB::loadData.
+	     */
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		if (istr.mediaType)
+		    o << " with media type " << *istr.mediaType;
+		o << " into " << graph->toString() << ".\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    }
+	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
+			 baseURI ? uriString(baseURI) : nameStr, &atomFactory, &nsAccumulator, &grddlMap);
+	    return false;
 	}
-	rep.content = sout.str();
     }
-    catch (SimpleMessageException& e) {
-	rep.status = sw::webserver::reply::bad_request;
-	rep.addHeader("Content-Type", "text/html");
-	rep.content = e.what();
-    } catch (std::exception& e) {
-	errorMessage(rep, query, e.what());
-    } catch (std::string& e) {
-	errorMessage(rep, query, e);
-    }
+
+};
+
+MyServer TheServer("ID");
+bool Quiet = false;
+bool ResultSetsLoaded = false;
+
+void loadEntry::loadGraph () {
+    const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
+    std::string nameStr = resource->getLexicalValue();
+    sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
+			    mediaType ? mediaType.get().c_str() : NULL, 
+			    &Agent);
+
+    ResultSetsLoaded = TheServer.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.resultSet, &TheServer.db);
 }
 
 bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
@@ -1307,8 +1279,6 @@ bool DBHandlers::parse (std::string mediaType, std::vector<std::string> args,
 loadList LoadList;
 loadList MapList;
 loadEntry Output(NULL, NULL, NULL, sw::MediaType());
-
-#endif /* TEST_CLI */
 
 boost::shared_ptr< sw::Logger::Sink_t > LogSink;
 
@@ -1421,6 +1391,8 @@ void validate (boost::any& v, const std::vector<std::string>& values, loggingFil
     }
 }
 
+const sw::TTerm* Query; // URI is a guery ref; RDFLiteral is a query string.
+
 /* Set Query to an RDFLiteral when parsed. */
 struct queryString {};
 void validate (boost::any&, const std::vector<std::string>& values, queryString*, int)
@@ -1431,7 +1403,7 @@ void validate (boost::any&, const std::vector<std::string>& values, queryString*
 	    ::VALIDATION_ERROR(std::string("query string: \"").
 			       append(s).append("\" is redundant against ").
 			       append(Query->getLexicalValue()));
-    Query = F.getRDFLiteral(s);
+    Query = TheServer.atomFactory.getRDFLiteral(s);
 }
 
 /* URI to serve as a SPARQL server. */
@@ -1479,32 +1451,32 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml";
     } else {
 	if (s == "" || s == "guess")
-	    DataMediaType = sw::MediaType();
+	    TheServer.dataMediaType = sw::MediaType();
 	else if (!s.compare("guess"))
-	    DataMediaType = "text/plain";
+	    TheServer.dataMediaType = "text/plain";
 	else if (!s.compare("ntriples"))
-	    DataMediaType = "text/ntriples";
+	    TheServer.dataMediaType = "text/ntriples";
 	else if (!s.compare("turtle"))
-	    DataMediaType = "text/turtle";
+	    TheServer.dataMediaType = "text/turtle";
 	else if (!s.compare("trig"))
-	    DataMediaType = "text/trig";
+	    TheServer.dataMediaType = "text/trig";
 	else if (!s.compare("rdfa") || !s.compare("html"))
-	    DataMediaType = "text/html";
+	    TheServer.dataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
-	    DataMediaType = "application/rdf+xml";
+	    TheServer.dataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
-	    DataMediaType = "application/sparql-results+xml";
+	    TheServer.dataMediaType = "application/sparql-results+xml";
 	else if (!s.compare("sparqlj"))
-	    DataMediaType = "application/sparql-results+json";
+	    TheServer.dataMediaType = "application/sparql-results+json";
 	else if (!s.compare("xml"))
-	    DataMediaType = "application/xml";
+	    TheServer.dataMediaType = "application/xml";
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
-	if (!DataMediaType)
+	if (!TheServer.dataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data language mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *DataMediaType << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *TheServer.dataMediaType << ".\n";
     }
 }
 struct langType { };
@@ -1515,7 +1487,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/sparql-results+json, application/xml";
     } else {
 	if (s == "" || s == "guess") {
-	    DataMediaType = sw::MediaType(); // no media type
+	    TheServer.dataMediaType = sw::MediaType(); // no media type
 	} else {
 	    if (!Quiet && s.compare("text/plain")
 		&& s.compare("text/ntriples") && s.compare("text/turtle")
@@ -1526,15 +1498,16 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 		&& s.compare("application/xml"))
 		std::cerr << "proceeding with unknown media type \"" << s << "\"";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
-	    DataMediaType = s;
+	    TheServer.dataMediaType = s;
 	}
-	if (!DataMediaType)
+	if (!TheServer.dataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *DataMediaType << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *TheServer.dataMediaType << ".\n";
     }
 }
 
+const sw::TTerm* CwdURI;
 void validateBase(const std::vector<std::string>& values, const sw::TTerm** setMe, const sw::TTerm* copySource, const char* argName) {
     const std::string& s = po::validators::get_single_string(values);
     if (s == "?") {
@@ -1543,7 +1516,7 @@ void validateBase(const std::vector<std::string>& values, const sw::TTerm** setM
 	*setMe = 
 	    (s == ".") ? CwdURI : 
 	    (s == ":") ? copySource : 
-	    htparseWrapper(s, *setMe);
+	    TheServer.htparseWrapper(s, *setMe);
 	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
     }
 }
@@ -1555,15 +1528,15 @@ struct relURI {};
 struct baseURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, baseURI*, int)
 {
-    validateBase(values, &BaseURI, ArgBaseURI, "base");
-    SparqlParser.setBase(BaseURI->getLexicalValue());
+    validateBase(values, &TheServer.baseURI, TheServer.argBaseURI, "base");
+    TheServer.sparqlParser.setBase(TheServer.baseURI->getLexicalValue());
 }
 
 /* Overload of relURI to validate --arg-base arguments. */
 struct argBaseURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, argBaseURI*, int)
 {
-    validateBase(values, &ArgBaseURI, BaseURI, "argument base");
+    validateBase(values, &TheServer.argBaseURI, TheServer.baseURI, "argument base");
 }
 
 /* Overload of relURI to validate --output arguments. */
@@ -1571,9 +1544,9 @@ struct outPut : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, outPut*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
-    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << BaseUriMessage() << ".\n";
+    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
+    Output = loadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
+    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << TheServer.baseUriMessage() << ".\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -1582,19 +1555,19 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 {
     const std::string& s = po::validators::get_single_string(values);
     if (s == ".") {
-	InPlace = true;
+	TheServer.inPlace = true;
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
     } else {
-	const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-	LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
-	Output = loadEntry(NULL, abs, BaseURI, DataMediaType);
+	const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
+	LoadList.push_back(loadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType));
+	Output = loadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	    std::stringstream o;
 	    o << "Replacing data from " << abs->getLexicalValue();
-	    if (BaseURI != NULL)
-		o << " with base URI " << BaseURI->getLexicalValue() << ".\n";
-	    if (DataMediaType)
-		o << " with media type " << *DataMediaType;
+	    if (TheServer.baseURI != NULL)
+		o << " with base URI " << TheServer.baseURI->getLexicalValue() << ".\n";
+	    if (TheServer.dataMediaType)
+		o << " with media type " << *TheServer.dataMediaType;
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	}
     }
@@ -1605,15 +1578,15 @@ struct dataURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, dataURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    LoadList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
+    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
+    LoadList.push_back(loadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType));
     if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default data from " << abs->getLexicalValue();
-	if (BaseURI != NULL)
-	    o << " with base URI " << BaseURI->getLexicalValue();
-	if (DataMediaType)
-	    o << " with media type " << *DataMediaType;
+	if (TheServer.baseURI != NULL)
+	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
+	if (TheServer.dataMediaType)
+	    o << " with media type " << *TheServer.dataMediaType;
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
     }
@@ -1648,7 +1621,7 @@ void validate (boost::any&, const std::vector<std::string>& values, xmlTransform
     std::string transformS = s.substr(start + 1, end - start - 1);
 
     std::string mediaTypeS = s.substr(end + 1);
-    GrddlMap.insert(nsS, tagS, transformS, mediaTypeS);
+    TheServer.grddlMap.insert(nsS, tagS, transformS, mediaTypeS);
 }
 
 /* Overload of relURI to validate --mapset arguments. */
@@ -1656,13 +1629,13 @@ struct mapURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(htparseWrapper(s, ArgBaseURI));
-    MapList.push_back(loadEntry(NULL, abs, BaseURI, DataMediaType));
+    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
+    MapList.push_back(loadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from " << abs->getLexicalValue();
-	if (BaseURI != NULL)
-	    o << " with base URI " << BaseURI->getLexicalValue();
+	if (TheServer.baseURI != NULL)
+	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
@@ -1673,39 +1646,42 @@ struct mapString {};
 void validate (boost::any&, const std::vector<std::string>& values, mapString*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    MapList.push_back(loadEntry(NULL, F.getRDFLiteral(s), BaseURI, DataMediaType));
+    MapList.push_back(loadEntry(NULL, TheServer.atomFactory.getRDFLiteral(s), TheServer.baseURI, TheServer.dataMediaType));
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from command line";
-	if (BaseURI != NULL)
-	    o << " with base URI " << BaseURI->getLexicalValue();
+	if (TheServer.baseURI != NULL)
+	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
 }
 
+const sw::TTerm* NamedGraphName = NULL;
 /* Overload of relURI to validate --graph arguments. */
 struct graphURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, graphURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    NamedGraphName = s == "." ? F.getURI(".") : htparseWrapper(s, ArgBaseURI);
+    NamedGraphName = s == "." ? TheServer.atomFactory.getURI(".") : TheServer.htparseWrapper(s, TheServer.argBaseURI);
 }
 
+typedef std::vector<const sw::TTerm*> mapList;
+mapList Maps;
 /* Overload of relURI to validate --graph 2nd args, query and map arguments. */
 struct orderedURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, orderedURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* vald = htparseWrapper(s, ArgBaseURI);
+    const sw::TTerm* vald = TheServer.htparseWrapper(s, TheServer.argBaseURI);
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
-	LoadList.push_back(loadEntry(NamedGraphName, vald, BaseURI, DataMediaType));
+	LoadList.push_back(loadEntry(NamedGraphName, vald, TheServer.baseURI, TheServer.dataMediaType));
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
 	    << "Reading named graph " << NamedGraphName->toString()
 	    << " from " << vald->getLexicalValue()
-	    << BaseUriMessage() << ".\n";
+	    << TheServer.baseUriMessage() << ".\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL && ServerURI.empty()) {
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
@@ -1744,6 +1720,8 @@ HeaderPair parseHeaderPair (const std::vector<std::string>& values)
 	throw boost::program_options::VALIDATION_ERROR(std::string("no ':' found in HTTP header pair \"").append(s).append("\""));
     return HeaderPair(s.substr(0, pos), s.substr(pos+2));
 }
+
+std::map<std::string, std::string> HTTPHeaders;
 struct headerAssign {};
 void validate (boost::any&, const std::vector<std::string>& values, headerAssign*, int)
 {
@@ -1769,7 +1747,7 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
      */
     size_t p = s.find("odbc:");
     if (p == 0) {
-	UseODBC = true;
+	TheServer.useODBC = true;
 	TheServer.SQLDriver = s.substr(5);
 	return;
     }
@@ -1820,7 +1798,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 	sw::IStreamContext::STDIN;
     sw::IStreamContext iptr(querySpec, opts, NULL, &Agent);
     try {
-	return SparqlParser.parse(iptr);
+	return TheServer.sparqlParser.parse(iptr);
     } catch (sw::ParserException& e) {
 	throw e;
     } catch (std::exception& e) {
@@ -1845,12 +1823,12 @@ int main(int ac, char* av[])
 	}
 
 	MyServer::MyHandler handler(TheServer);
-	Output = loadEntry(NULL, F.getURI("-"), NULL, sw::MediaType());
+	Output = loadEntry(NULL, TheServer.atomFactory.getURI("-"), NULL, sw::MediaType());
 
 	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
 
 	CwdURI = 
-	    F.getURI(std::string("file://localhost")
+	    TheServer.atomFactory.getURI(std::string("file://localhost")
 		     .append(fs::current_path().string())
 		     .append("/"));
 
@@ -2034,7 +2012,7 @@ int main(int ac, char* av[])
 
         if (vm.count("no-exec")) {
 	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Execution suppressed.\n";
-            NoExec = true;
+            TheServer.noExec = true;
         }
 
         if (vm.count("quiet")) {
@@ -2119,7 +2097,7 @@ int main(int ac, char* av[])
 		"       sparql [opts] --server URL mapURI*\n\n"
 		"get started with: sparql --Help tutorial\n" << 
 		queryHelp << cursory;
-            NoExec = true;
+            TheServer.noExec = true;
         }
 
         if (vm.count("Help")) {
@@ -2153,7 +2131,7 @@ int main(int ac, char* av[])
 		if (matched == false)
 		    std::cout << "Unknown help topic: " << *it << "\n";
 	    }
-            NoExec = true;
+            TheServer.noExec = true;
         }
 
 #include "version.h"
@@ -2163,11 +2141,11 @@ int main(int ac, char* av[])
 		"Revision " SVN_Revision " modified " SVN_Last_Changed_Date " by " SVN_Last_Changed_Author ".\n"
 		SVN_URL "\n";
 	else {
-	    if (NoExec == false) {
+	    if (TheServer.noExec == false) {
 		if (vm.count("description")) {
 		    sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		    s.mediaType = "text/turtle";
-		    TheServer.db.loadData(TheServer.db.ensureGraph(sw::DefaultGraph), s, UriString(BaseURI), UriString(BaseURI), &F, &NsRelay);
+		    TheServer.db.loadData(TheServer.db.ensureGraph(sw::DefaultGraph), s, TheServer.uriString(TheServer.baseURI), TheServer.uriString(TheServer.baseURI), &TheServer.atomFactory, &TheServer.nsRelay);
 		}
 
 		if (vm.count("desc-graph")) {
@@ -2176,7 +2154,7 @@ int main(int ac, char* av[])
 			 it != descs.end(); ++it) {
 			sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 			s.mediaType = "text/turtle";
-			TheServer.db.loadData(TheServer.db.ensureGraph(F.getURI(*it)), s, UriString(BaseURI), UriString(BaseURI), &F);
+			TheServer.db.loadData(TheServer.db.ensureGraph(TheServer.atomFactory.getURI(*it)), s, TheServer.uriString(TheServer.baseURI), TheServer.uriString(TheServer.baseURI), &TheServer.atomFactory);
 		    }
 		}
 
@@ -2287,19 +2265,19 @@ int main(int ac, char* av[])
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
 		    throw std::string("Mapping rules found with no query to map.");
-		rs.setRdfDB(&TheServer.db);
+		TheServer.resultSet.setRdfDB(&TheServer.db);
 	    } else {
 		sw::Operation* query = parseQuery(Query);
-		rs.setRdfDB(dynamic_cast<sw::Construct*>(query) != NULL && !InPlace ? &constructed : &TheServer.db);
+		TheServer.resultSet.setRdfDB(dynamic_cast<sw::Construct*>(query) != NULL && !TheServer.inPlace ? &constructed : &TheServer.db);
 
 		std::string language; // not used here
 		std::string finalQuery; // not used here
-		if (!TheServer.executeQuery(query, rs, language, finalQuery))
+		if (!TheServer.executeQuery(query, TheServer.resultSet, language, finalQuery))
 		    Output.resource = NULL;
 		delete query;
 
 		if (vm.count("compare")) {
-		    const sw::TTerm* cmp = htparseWrapper(vm["compare"].as<std::string>(), ArgBaseURI);
+		    const sw::TTerm* cmp = TheServer.htparseWrapper(vm["compare"].as<std::string>(), TheServer.argBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
 					    NULL, &Agent);
@@ -2307,26 +2285,26 @@ int main(int ac, char* av[])
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml") || 
 			iptr.mediaType.match("application/sparql-results+json")) {
-			reference = new sw::ResultSet(&F, &P, iptr);
+			reference = new sw::ResultSet(&TheServer.atomFactory, &P, iptr);
 		    } else if (iptr.mediaType.match("text/sparql-results")) {
 			sw::TTerm::String2BNode str2b;
-			reference = new sw::ResultSet(&F, iptr, false, str2b);
+			reference = new sw::ResultSet(&TheServer.atomFactory, iptr, false, str2b);
 		    } else {
 			sw::RdfDB resGraph;
 			if (iptr.mediaType.match("text/ntriples") || 
 			    iptr.mediaType.match("text/turtle")) {
-			    TurtleParser.setGraph(resGraph.ensureGraph(NULL));
-			    TurtleParser.parse(iptr);
-			    TurtleParser.clear("");
+			    TheServer.turtleParser.setGraph(resGraph.ensureGraph(NULL));
+			    TheServer.turtleParser.parse(iptr);
+			    TheServer.turtleParser.clear("");
 			} else {
 			    throw std::string("media-type \"").append(iptr.mediaType.toString()).append("\" unknown.");
 			}
 			reference = 
-			    rs.resultType == sw::ResultSet::RESULT_Graphs ?
-			    new sw::ResultSet(&F, &resGraph) :
-			    new sw::ResultSet(&F, &resGraph, "");
+			    TheServer.resultSet.resultType == sw::ResultSet::RESULT_Graphs ?
+			    new sw::ResultSet(&TheServer.atomFactory, &resGraph) :
+			    new sw::ResultSet(&TheServer.atomFactory, &resGraph, "");
 		    }
-		    if (rs == *reference) {
+		    if (TheServer.resultSet == *reference) {
 			if (!Quiet)
 			    std::cout << "matched\n";
 			ret = 0;
@@ -2334,7 +2312,7 @@ int main(int ac, char* av[])
 			if (Quiet)
 			    ret = 1;
 			else
-			    std::cout << rs << "!=\n" << *reference << "\n";
+			    std::cout << TheServer.resultSet << "!=\n" << *reference << "\n";
 		    }
 		    delete reference;
 		    Output.resource = NULL; // No other output reqired.
@@ -2343,14 +2321,14 @@ int main(int ac, char* av[])
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
-					DataMediaType.c_str(),
+					TheServer.dataMediaType.c_str(),
 					&Agent);
 		bool mustDumpDb = Query == NULL && ResultSetsLoaded == false;
-		if (!mustDumpDb && rs.resultType != sw::ResultSet::RESULT_Graphs && 
-		    !DataMediaType)
+		if (!mustDumpDb && TheServer.resultSet.resultType != sw::ResultSet::RESULT_Graphs && 
+		    !TheServer.dataMediaType)
 		    optr.mediaType = "text/sparql-results";
-		*optr << rs.toString(optr.mediaType.c_str(),
-				     &NsAccumulator, mustDumpDb);
+		*optr << TheServer.resultSet.toString(optr.mediaType.c_str(),
+						      &TheServer.nsAccumulator, mustDumpDb);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@
 	}
