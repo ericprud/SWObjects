@@ -186,3 +186,24 @@ BOOST_AUTO_TEST_CASE( a ) {
     }
 }
 
+#ifdef NOT_YET
+  std::string basicAuthHeader (std::string username, std::string password) {
+      return std::string("Authorization: Basic ")
+	  + sw::SWWEBagent::base64encode(username + ":" + password)
+	  + "\n";
+  }
+// sw::WEBagent_boostASIO::AuthHandler authHandler;
+  std::string authHandler (std::string url, std::string realm) {
+      std::cout << "GET " + url + " wants a password for realm \"" + realm + "\"" << std::endl;
+      std::cout << "username: "; std::string username; std::cin >> username;
+      std::cout << "password: "; std::string password; std::cin >> password;
+      return basicAuthHeader(username, password);
+  }
+// sw::WEBagent_boostASIO::AuthPreempt authPreempt;
+  std::string authPreempt (std::string /* url */) {
+      if (UserName.empty())
+	  return "";
+      return basicAuthHeader(UserName, PassWord);
+  }
+
+#endif /* NOT_YET */
