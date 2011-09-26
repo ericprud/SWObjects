@@ -742,8 +742,6 @@ namespace w3c_sw {
 
     /* WEBserver_asio implements the WEBserver interface. This is the intended
      * interface to user code.
-     * TODO:
-     *   Would w3c_sw::webserver::asio be better than w3c_sw::WEBserver_asio ?
      */
     template <class server_config>
     class web_server_asio : public web_server<server_config> {
@@ -766,7 +764,7 @@ namespace w3c_sw {
 
 #endif // defined(_WIN32)
     protected:
-	w3c_sw::webserver::server<server_config>* server;
+	webserver::server<server_config>* server;
     public:
 	web_server_asio () : server(NULL) {  }
 	void stop () { server->stop(); }
@@ -776,11 +774,11 @@ namespace w3c_sw {
 #if defined(_WIN32)
 
 	    // Initialise server.
-	    w3c_sw::webserver::server s(address, port, num_threads, handler, config);
+	    webserver::server s(address, port, num_threads, handler, config);
 	    server = &s;
 
 	    // Set console control handler to allow server to be stopped.
-	    console_ctrl_function = boost::bind(&w3c_sw::webserver::server::stop, &s);
+	    console_ctrl_function = boost::bind(&webserver::server::stop, &s);
 	    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 
 	    // Run the server until stopped.
@@ -795,9 +793,9 @@ namespace w3c_sw {
 	    pthread_sigmask(SIG_BLOCK, &new_mask, &old_mask);
 
 	    // Run server in background thread.
-	    w3c_sw::webserver::server<server_config> s(address, port, num_threads, handler, config);
+	    webserver::server<server_config> s(address, port, num_threads, handler, config);
 	    server = &s;
-	    boost::thread t(boost::bind(&w3c_sw::webserver::server<server_config>::run, &s));
+	    boost::thread t(boost::bind(&webserver::server<server_config>::run, &s));
 
 	    // Restore previous signals.
 	    pthread_sigmask(SIG_SETMASK, &old_mask, 0);

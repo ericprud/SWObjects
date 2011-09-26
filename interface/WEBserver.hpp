@@ -182,12 +182,12 @@ namespace w3c_sw {
 				*out += static_cast<char>(value);
 				i += 2;
 			    } else {
-				throw w3c_sw::webserver::reply::
-				    stock_reply(w3c_sw::webserver::reply::bad_request);
+				throw webserver::reply::
+				    stock_reply(webserver::reply::bad_request);
 			    }
 			} else {
-			    throw w3c_sw::webserver::reply::
-				stock_reply(w3c_sw::webserver::reply::bad_request);
+			    throw webserver::reply::
+				stock_reply(webserver::reply::bad_request);
 			}
 		    } else if (in[i] == '+') {
 			*out += ' ';
@@ -210,8 +210,8 @@ namespace w3c_sw {
 			if (++end != in.size()) {
 			    end = in.find_first_of("=", end);
 			    if (end == std::string::npos)
-				throw w3c_sw::webserver::reply::
-				    stock_reply(w3c_sw::webserver::reply::bad_request);
+				throw webserver::reply::
+				    stock_reply(webserver::reply::bad_request);
 			}
 		    } else if (end == uri.size())
 			goto done;
@@ -235,8 +235,8 @@ namespace w3c_sw {
 		    out = &parm;
 		    end = in.find_first_of("=", end);
 		    if (end == std::string::npos)
-			throw w3c_sw::webserver::reply::
-			    stock_reply(w3c_sw::webserver::reply::bad_request);
+			throw webserver::reply::
+			    stock_reply(webserver::reply::bad_request);
 		    ++i;
 		    break;
 		}
@@ -578,10 +578,10 @@ namespace w3c_sw {
 	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, server_config& config) = 0;
     };
 
-    class WebHandler : public w3c_sw::webserver::request_handler {
+    class WebHandler : public webserver::request_handler {
     public:
 	WebHandler (const std::string& doc_root)
-	    : w3c_sw::webserver::request_handler(doc_root)
+	    : webserver::request_handler(doc_root)
 	{  }
 	static std::string escapeHTML (std::string escapeMe) { // @@ same as lib/XMLSerializer::escapeCharData
 	    std::string ret = escapeMe;
