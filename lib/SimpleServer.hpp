@@ -8,9 +8,10 @@
 
 namespace w3c_sw {
 
-    template <class server_type, class data_loader>
+    template <class engine_type, class data_loader>
     class SimpleInterface : public sw::WebHandler {
-	server_type& server;
+	engine_type& engine;
+	std::string servicePath;
 	size_t exploreTripleCountLimit;
 	size_t exploreGraphCountLimit;
 
@@ -22,9 +23,9 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_defn;
 
     public:
-	SimpleInterface (server_type& server) : 
+	SimpleInterface (engine_type& engine, std::string servicePath) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
-	    server(server),
+	    engine(engine), servicePath(servicePath),
 	    // hard-code explore*CountLimit
 	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
@@ -39,14 +40,14 @@ namespace w3c_sw {
 		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
 		std::ostringstream sout;
 		data_loader queryLoadList;
-		const sw::BasicGraphPattern* getGraph = server.db.getGraph(server.atomFactory.getURI(path));
+		const sw::BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(path));
 
 		if (req.method == "PUT") {
-		    const sw::URI* into = server.atomFactory.getURI(req.getPath());
-		    sw::BasicGraphPattern* bgp = server.db.ensureGraph(into);
+		    const sw::URI* into = engine.atomFactory.getURI(req.getPath());
+		    sw::BasicGraphPattern* bgp = engine.db.ensureGraph(into);
 		    sw::IStreamContext istr(req.body, sw::IStreamContext::STRING, req.content_type.c_str());
 		    sw::NamespaceMap map;
-		    server.db.loadData(bgp, istr, req.getPath(), "", &server.atomFactory, &map);
+		    engine.db.loadData(bgp, istr, req.getPath(), "", &engine.atomFactory, &map);
 
 		    rep.status = sw::webserver::reply::ok;
 		    head(sout, "Q&amp;D SPARQL Server PUT Successful");
@@ -65,7 +66,7 @@ namespace w3c_sw {
 			    query = parm->second;
 		    } else if (req.method == "POST" && req.content_type.compare(0, 24, "application/sparql-query") == 0)
 			query = req.body;
-		    if (query == "" && path != server.path) {
+		    if (query == "" && path != servicePath) {
 			rep.status = sw::webserver::reply::ok;
 			std::string body = getGraph->toString(sw::MediaType("text/turtle"));
 			sout.write(body.c_str(), body.size());
@@ -74,27 +75,27 @@ namespace w3c_sw {
 		    } else {
 			parm = req.parms.find("default-graph-uri");
 			if (parm != req.parms.end() && parm->second != "") {
-			    const sw::TTerm* abs(server.htparseWrapper(parm->second, server.argBaseURI));
-			    queryLoadList.enqueue(NULL, abs, server.baseURI, server.dataMediaType);
+			    const sw::TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
+			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
 			    std::cerr << "default graph: " << parm->second << std::endl;
 			}
 			parm = req.parms.find("named-graph-uri");
 			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
-			    const sw::TTerm* abs(server.htparseWrapper(parm->second, server.argBaseURI));
-			    queryLoadList.enqueue(abs, abs, server.baseURI, server.dataMediaType);
+			    const sw::TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
+			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
 			    std::cerr << "named graph: " << parm->second << std::endl;
 			    ++parm;
 			}
 			if (query == "stop") {
 			    head(sout, "Done!");
-			    sout << "    <p>Served " << server.served << " queries.</p>\n";
+			    sout << "    <p>Served " << engine.served << " queries.</p>\n";
 			    foot(sout);
 
-			    server.done = true;
+			    engine.done = true;
 			} else {
 			    sw::IStreamContext istr(query, sw::IStreamContext::STRING);
 			    try {
-				sw::Operation* op = server.sparqlParser.parse(istr);
+				sw::Operation* op = engine.sparqlParser.parse(istr);
 				if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
 				    head(sout, "Query Error");
 
@@ -113,17 +114,17 @@ namespace w3c_sw {
 							    || parm->second == "edit"
 							    || parm->second == "tablesorter"));
 
-				    sw::ResultSet rs(&server.atomFactory);
+				    sw::ResultSet rs(&engine.atomFactory);
 				    sw::RdfDB constructed; // For operations which create a new database.
-				    rs.setRdfDB(dynamic_cast<sw::Construct*>(op) != NULL && !server.inPlace ? &constructed : &server.db);
+				    rs.setRdfDB(dynamic_cast<sw::Construct*>(op) != NULL && !engine.inPlace ? &constructed : &engine.db);
 				    std::string language;
 				    std::string newQuery(query);
 
 				    try {
 					queryLoadList.loadAll();
-					if (path != server.path)
-					    server.db.setTarget(server.atomFactory.getURI(path));
-					server.executeQuery(op, rs, language, newQuery);
+					if (path != servicePath)
+					    engine.db.setTarget(engine.atomFactory.getURI(path));
+					engine.executeQuery(op, rs, language, newQuery);
 					if (humanReader &&
 					    (dynamic_cast<sw::GraphChange*>(op) != NULL || 
 					     dynamic_cast<sw::OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
@@ -134,10 +135,10 @@ namespace w3c_sw {
 					     */
 					    delete op;
 					    rs.clear();
-					    op = server.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
-					    op->execute(&server.db, &rs);
+					    op = engine.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
+					    op->execute(&engine.db, &rs);
 					}
-					server.db.setTarget(NULL);
+					engine.db.setTarget(NULL);
 					delete op;
 				    } catch (sw::ParserException& ex) {
 					delete op;
@@ -246,7 +247,7 @@ namespace w3c_sw {
 					sw::XMLSerializer::Attributes resultsAttrs;
 					resultsAttrs["id"] = "results";
 					resultsAttrs["class"] = "tablesorter";
-					rs.toHtmlTable(&xml, resultsAttrs, path == server.path ? "" : path);
+					rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : path);
 
 					/** construct reply from headers and XHTML body */
 					rep.status = sw::webserver::reply::ok;
@@ -281,9 +282,9 @@ namespace w3c_sw {
 					sout << xml.str();
 				    } /* !htmlResults */
 
-				    ++server.served;
-				    if (server.runOnce)
-					server.done = true;
+				    ++engine.served;
+				    if (engine.runOnce)
+					engine.done = true;
 				}
 			    } catch (sw::ParserException& ex) {
 				std::cerr << ex.what() << std::endl;
@@ -298,7 +299,7 @@ namespace w3c_sw {
 			sw::ServiceGraphPattern::defaultHTTPmethod == sw::ServiceGraphPattern::HTTP_METHOD_GET ? "get" :
 			"post";
 		    sout << 
-			"    <form action='" << server.path << "' method='" << method << "'><p>\n"
+			"    <form action='" << servicePath << "' method='" << method << "'><p>\n"
 			"      Query: <textarea name='query' rows='25' cols='80'></textarea> <input type='submit' /><br />\n"
 			"      default graph: <input type='text' name='default-graph-uri' size='50' /><br />\n"
 			"      named graph:   <input type='text' name=  'named-graph-uri' size='50' /><span id=\"addGraph\" onclick='\n"
@@ -317,8 +318,8 @@ namespace w3c_sw {
 			"      <input type='radio' name='media' value='tablesorter' />JQuery Tablesorter\n"
 			"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
 			"    </p></form>\n"
-			"    <form action='" << server.path << "' method='post'><p>\n"
-			"      server status: running, " << server.served << " served. <input name='query' type='submit' value='stop'/>\n"
+			"    <form action='" << servicePath << "' method='post'><p>\n"
+			"      server status: running, " << engine.served << " served. <input name='query' type='submit' value='stop'/>\n"
 			"    </p></form>\n";
 		    sout << DBsummary();
 
@@ -368,16 +369,16 @@ namespace w3c_sw {
 		</ul>
 	    */
 	    std::stringstream sout;
-	    size_t triples = server.db.size();
+	    size_t triples = engine.db.size();
 	    sout << "    <h2>Database Summary</h2>\n";
 	    if (triples < 1000) {
-		std::set<const sw::TTerm*>graphs = server.db.getGraphNames();
+		std::set<const sw::TTerm*>graphs = engine.db.getGraphNames();
 		sout << "    <p>" << triples << " triples in " << graphs.size() << " graphs";
 		if (graphs.size() <= exploreGraphCountLimit) {
 		    sout << ":</p>\n    <ul>\n";
 		    for (std::set<const sw::TTerm*>::const_iterator g = graphs.begin();
 			 g != graphs.end(); ++g) {
-			size_t graphSize = server.db.ensureGraph(*g)->size();
+			size_t graphSize = engine.db.ensureGraph(*g)->size();
 			std::stringstream query;
 			query << "SELECT ?s ?p ?o {\n  ";
 			query << "?s ?p ?o";
@@ -394,7 +395,7 @@ namespace w3c_sw {
 			sw::SWWEBagent::ParameterList p;
 			p.set("query", query.str());
 			p.set("media", "edit");
-			sout << escapeHTML(*g == sw::DefaultGraph ? server.path : (*g)->getLexicalValue()) << "?" << escapeHTML(p.str());
+			sout << escapeHTML(*g == sw::DefaultGraph ? servicePath : (*g)->getLexicalValue()) << "?" << escapeHTML(p.str());
 			sout << "'>" << graphSize << " triples</a>.";
 			sout << "</li>\n";
 		    }
@@ -408,8 +409,8 @@ namespace w3c_sw {
 	}
     };
 
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::CSS_common =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::CSS_common =
 "code {\n"
 "  font-weight: bold;\n"
 "  }\n"
@@ -426,8 +427,8 @@ namespace w3c_sw {
 "  }\n"
 "\n"
 	    ;
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::CSS_Results =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::CSS_Results =
 "#results {\n"
 "  font-family:\"Trebuchet MS\", Arial, Helvetica, sans-serif;\n"
 "  width:100%;\n"
@@ -451,14 +452,14 @@ namespace w3c_sw {
 "  background-color:#EAF2D3;\n"
 "  }\n"
 	    ;
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::Javascript_TableSorter_remote =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::Javascript_TableSorter_remote =
 "    <link rel=\"stylesheet\" href=\"http://tablesorter.com/themes/blue/style.css\" type=\"text/css\" media=\"print, projection, screen\" />\n"
 "    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery-latest.js\"></script>\n"
 "    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery.tablesorter.js\"></script>\n"
 	    ;
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::Javascript_ToggleDisplay_init =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::Javascript_ToggleDisplay_init =
 "	toggleDisplay('requery');\n"
 "	var query = document.getElementById('requery');\n"
 "	var p = document.createElement('p');\n"
@@ -469,12 +470,12 @@ namespace w3c_sw {
 "	p.appendChild(input);\n"
 "	p.appendChild(document.createTextNode(\" display query\"));\n"
 	  ;
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::Javascript_TableSorter_init =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::Javascript_TableSorter_init =
 "	$(\"#results\").tablesorter({widgets: ['zebra']});\n"
 	  ;
-    template <class server_type, class data_loader>
-	std::string SimpleInterface<server_type, data_loader>::Javascript_ToggleDisplay_defn =
+    template <class engine_type, class data_loader>
+	std::string SimpleInterface<engine_type, data_loader>::Javascript_ToggleDisplay_defn =
 "    function toggleDisplay(element){\n"
 "	s = document.getElementById(element).style\n"
 "	if(s.display == 'none')\n"

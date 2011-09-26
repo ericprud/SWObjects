@@ -123,7 +123,7 @@ struct ServerConfig {
 0x00,0x00,0x00,0x00,0x49,0x45,0x4e,0x44,0xae,0x42,0x60,0x82,
 	};
 
-struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined to be e.g. w3c_sw::WEBserver_asio
+struct MyEngine {
     const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
 	std::string baseURIstring = base ? base->getLexicalValue() : "";
 	std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
@@ -131,8 +131,8 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     }
 
     struct DBHandlers : public sw::RdfDB::HandlerSet {
-	MyServer& server;
-	DBHandlers (MyServer& server) : server(server) {  }
+	MyEngine& engine;
+	DBHandlers (MyEngine& engine) : engine(engine) {  }
 	bool parse (std::string mediaType, std::vector<std::string> args,
 		    sw::BasicGraphPattern* target, sw::IStreamContext& istr,
 		    std::string nameStr, std::string baseURI,
@@ -161,7 +161,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		    createdFiles.push_back(*iToken);
 		} else if (*iToken == "%STYLESHEET") {
 		    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
-						&server.webClient);
+						&engine.webClient);
 		    *iToken = genTempFile(".", *xsltIstr);
 		    createdFiles.push_back(*iToken);
 		}
@@ -203,7 +203,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		if (POSIX_unlink(iCreatedFile->c_str()) != 0)
 		    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
-	    return server.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
+	    return engine.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
 	    //     return sw::RdfDB::HandlerSet::parse(mediaType, args,
 	    // 					target, istr,
 	    // 					nameStr, baseURI,
@@ -280,11 +280,11 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		return *name < *(r.name) || path < r.path;
 	    }
 	};
-	MyServer& server;
+	MyEngine& engine;
 	std::set<MappedPath> dirty;
 
-	FilesystemRdfDB (MyServer& server)
-	    : sw::TargetedRdfDB(&server.webClient, &server.xmlParser, &server.rdfDBHandlers), server(server)
+	FilesystemRdfDB (MyEngine& engine)
+	    : sw::TargetedRdfDB(&engine.webClient, &engine.xmlParser, &engine.rdfDBHandlers), engine(engine)
 	{  }
 
 	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
@@ -321,11 +321,11 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
 
 		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
-		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << server.baseUriMessage() << ".\n";
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << engine.baseUriMessage() << ".\n";
 		    try {
-			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &server.webClient);
-			loadData(finalEnsureGraph(name), istr, server.uriString(server.baseURI), 
-				 server.baseURI ? server.uriString(server.baseURI) : outres, &server.atomFactory);
+			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &engine.webClient);
+			loadData(finalEnsureGraph(name), istr, engine.uriString(engine.baseURI), 
+				 engine.baseURI ? engine.uriString(engine.baseURI) : outres, &engine.atomFactory);
 		    } catch (std::string&) {
 		    }
 		    dirty.insert(MappedPath(name, outres));
@@ -343,10 +343,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	    for (std::set<MappedPath>::const_iterator it = dirty.begin();
 		 it != dirty.end(); ++it) {
 		sw::OStreamContext optr(it->path, sw::OStreamContext::FILE,
-					server.dataMediaType.c_str(),
-					&server.webClient);
+					engine.dataMediaType.c_str(),
+					&engine.webClient);
 		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
-		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &server.nsAccumulator);
+		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &engine.nsAccumulator);
 	    }
 	    clearGraphLog();
 	}
@@ -364,7 +364,6 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     bool inPlace;
     bool done;
     int served;
-    std::string path;
     std::string stemURI;
     std::string serviceURI;
     std::string defaultGraphURI;
@@ -385,7 +384,6 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     boost::mutex executeMutex;    
 #endif /* HTTP_SERVER == SWOb_ASIO */
     sw::GRDDLmap grddlMap;
-    ServerConfig config;
 #if HTTP_CLIENT != SWOb_DISABLED
     sw::console_auth_prompter webClient_authPrompter;
     W3C_SW_WEBAGENT<sw::console_auth_prompter> webClient;
@@ -408,7 +406,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     bool useODBC;
 
 
-    MyServer (std::string pkAttribute)
+    MyEngine (std::string pkAttribute)
 	: atomFactory(), nsRelay(nsAccumulator),
 	  rdfDBHandlers(*this), db(*this),
 	  resultSet(&atomFactory), runOnce(false), inPlace(false),
@@ -422,52 +420,6 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
 	  noExec(false), useODBC(false)
     {  }
-    void startServer (sw::WebHandler& handler, std::string url, int serverPort) {
-	const sw::URI* serviceURI = atomFactory.getURI(path);
-	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);
-	serviceGraph->addTriplePattern(atomFactory.getTriple(
-		    serviceURI, 
-		    atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-		    atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
-	{
-	    char buf[1024];
-	    buf[0] = 0;
-#if _MSC_VER
-	    TCHAR szDirectory[MAX_PATH];	
-	    szDirectory[0] = 0;
-	    if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
-		std::wstring wstr(szDirectory);
-		size_t len = (int)wstr.length();
-		std::string str = "/";
-		unsigned int i = 0;
-		for (std::wstring::iterator it = wstr.begin();
-		     i < len; ++it, ++i)
-		    str += (char)(*it == '\\' ? '/' : *it);
-		strncpy(buf, str.c_str(), sizeof(buf)-1);
-	    }
-#else /* !_MSV_VER */
-	    getcwd(buf, sizeof(buf)-1);
-#endif /* !_MSV_VER */
-	    if (buf[0]) {
-		std::cout << "Working directory: " << buf << " ." << std::endl;
-		std::string base = std::string("file://localhost") + buf;
-		serviceGraph->addTriplePattern(atomFactory.getTriple(
-		    serviceURI, 
-		    atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
-		    atomFactory.getURI(base)));
-	    }
-	}
-
-	std::stringstream tmpss;
-	tmpss << serverPort;
-	const char* bindMe = "0.0.0.0";
-	try {
-	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config);
-	} catch (boost::system::system_error e) {
-	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
-	}
-    }
-
     std::string sqlConnectString () const {
 	return SQLDriver + "://" + SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
     }
@@ -489,11 +441,11 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #endif
 	    throw driver + " driver not linked in.";
 	}
-	virtual void connect(std::string server, std::string database, std::string user) {
-	    client->connect(server, database, user);
+	virtual void connect(std::string engine, std::string database, std::string user) {
+	    client->connect(engine, database, user);
 	}
-	virtual void connect(std::string server, std::string database, std::string user, std::string password) {
-	    client->connect(server, database, user, password);
+	virtual void connect(std::string engine, std::string database, std::string user, std::string password) {
+	    client->connect(engine, database, user, password);
 	}
 	virtual Result* executeQuery(std::string query) {
 	    return client->executeQuery(query);
@@ -685,6 +637,61 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 
 };
 
+struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined to be e.g. w3c_sw::WEBserver_asio
+    MyEngine engine;
+    ServerConfig config;
+    std::string path;
+    MyServer (std::string pkAttribute) : engine(pkAttribute)
+    {  }
+    void runServer (sw::WebHandler& handler, std::string url, int serverPort) {
+	const sw::URI* serviceURI = engine.atomFactory.getURI(path);
+	sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
+	serviceGraph->addTriplePattern(engine.atomFactory.getTriple(
+		    serviceURI, 
+		    engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
+		    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
+	{
+	    char buf[1024];
+	    buf[0] = 0;
+#if _MSC_VER
+	    TCHAR szDirectory[MAX_PATH];	
+	    szDirectory[0] = 0;
+	    if (::GetCurrentDirectory(sizeof(szDirectory) - 1, szDirectory)) {
+		std::wstring wstr(szDirectory);
+		size_t len = (int)wstr.length();
+		std::string str = "/";
+		unsigned int i = 0;
+		for (std::wstring::iterator it = wstr.begin();
+		     i < len; ++it, ++i)
+		    str += (char)(*it == '\\' ? '/' : *it);
+		strncpy(buf, str.c_str(), sizeof(buf)-1);
+	    }
+#else /* !_MSV_VER */
+	    getcwd(buf, sizeof(buf)-1);
+#endif /* !_MSV_VER */
+	    if (buf[0]) {
+		std::cout << "Working directory: " << buf << " ." << std::endl;
+		std::string base = std::string("file://localhost") + buf;
+		serviceGraph->addTriplePattern(engine.atomFactory.getTriple(
+		    serviceURI, 
+		    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
+		    engine.atomFactory.getURI(base)));
+	    }
+	}
+
+	std::stringstream tmpss;
+	tmpss << serverPort;
+	const char* bindMe = "0.0.0.0";
+	try {
+	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config);
+	} catch (boost::system::system_error e) {
+	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
+	}
+    }
+
+};
+
+
 MyServer TheServer("ID");
 bool Quiet = false;
 bool ResultSetsLoaded = false;
@@ -704,9 +711,9 @@ struct MyLoadEntry {
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
 				mediaType ? mediaType.get().c_str() : NULL, 
-				&TheServer.webClient);
+				&TheServer.engine.webClient);
 
-	ResultSetsLoaded = TheServer.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.resultSet, &TheServer.db);
+	ResultSetsLoaded = TheServer.engine.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.engine.resultSet, &TheServer.engine.db);
     }
 };
 
@@ -852,7 +859,7 @@ void validate (boost::any&, const std::vector<std::string>& values, queryString*
 	    ::VALIDATION_ERROR(std::string("query string: \"").
 			       append(s).append("\" is redundant against ").
 			       append(Query->getLexicalValue()));
-    Query = TheServer.atomFactory.getRDFLiteral(s);
+    Query = TheServer.engine.atomFactory.getRDFLiteral(s);
 }
 
 /* URI to serve as a SPARQL server. */
@@ -879,8 +886,8 @@ void validate (boost::any&, const std::vector<std::string>& values, pathmapArg*,
     const boost::regex pathMapPattern("^s\\{(.*?)\\}\\{(.*?)\\}$");
     boost::cmatch matches;
     if (boost::regex_match(s.c_str(), matches, pathMapPattern))
-	TheServer.db.pathMaps.push_back
-	    (MyServer::FilesystemRdfDB::PathMap
+	TheServer.engine.db.pathMaps.push_back
+	    (MyEngine::FilesystemRdfDB::PathMap
 	     (boost::regex(std::string(matches[1])), matches[2]));
     else
 	throw boost::program_options::VALIDATION_ERROR
@@ -900,32 +907,32 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml";
     } else {
 	if (s == "" || s == "guess")
-	    TheServer.dataMediaType = sw::MediaType();
+	    TheServer.engine.dataMediaType = sw::MediaType();
 	else if (!s.compare("guess"))
-	    TheServer.dataMediaType = "text/plain";
+	    TheServer.engine.dataMediaType = "text/plain";
 	else if (!s.compare("ntriples"))
-	    TheServer.dataMediaType = "text/ntriples";
+	    TheServer.engine.dataMediaType = "text/ntriples";
 	else if (!s.compare("turtle"))
-	    TheServer.dataMediaType = "text/turtle";
+	    TheServer.engine.dataMediaType = "text/turtle";
 	else if (!s.compare("trig"))
-	    TheServer.dataMediaType = "text/trig";
+	    TheServer.engine.dataMediaType = "text/trig";
 	else if (!s.compare("rdfa") || !s.compare("html"))
-	    TheServer.dataMediaType = "text/html";
+	    TheServer.engine.dataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
-	    TheServer.dataMediaType = "application/rdf+xml";
+	    TheServer.engine.dataMediaType = "application/rdf+xml";
 	else if (!s.compare("sparqlx"))
-	    TheServer.dataMediaType = "application/sparql-results+xml";
+	    TheServer.engine.dataMediaType = "application/sparql-results+xml";
 	else if (!s.compare("sparqlj"))
-	    TheServer.dataMediaType = "application/sparql-results+json";
+	    TheServer.engine.dataMediaType = "application/sparql-results+json";
 	else if (!s.compare("xml"))
-	    TheServer.dataMediaType = "application/xml";
+	    TheServer.engine.dataMediaType = "application/xml";
 	else {
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
-	if (!TheServer.dataMediaType)
+	if (!TheServer.engine.dataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data language mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *TheServer.dataMediaType << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *TheServer.engine.dataMediaType << ".\n";
     }
 }
 struct langType { };
@@ -936,7 +943,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	std::cout << "data mediatype options: \"\", text/plain, text/ntriples, text/turtle, text/trig, text/html, application/rdf+xml, application/sparql-results+xml, application/sparql-results+json, application/xml";
     } else {
 	if (s == "" || s == "guess") {
-	    TheServer.dataMediaType = sw::MediaType(); // no media type
+	    TheServer.engine.dataMediaType = sw::MediaType(); // no media type
 	} else {
 	    if (!Quiet && s.compare("text/plain")
 		&& s.compare("text/ntriples") && s.compare("text/turtle")
@@ -947,12 +954,12 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 		&& s.compare("application/xml"))
 		std::cerr << "proceeding with unknown media type \"" << s << "\"";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
-	    TheServer.dataMediaType = s;
+	    TheServer.engine.dataMediaType = s;
 	}
-	if (!TheServer.dataMediaType)
+	if (!TheServer.engine.dataMediaType)
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *TheServer.dataMediaType << ".\n";
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *TheServer.engine.dataMediaType << ".\n";
     }
 }
 
@@ -965,7 +972,7 @@ void validateBase(const std::vector<std::string>& values, const sw::TTerm** setM
 	*setMe = 
 	    (s == ".") ? CwdURI : 
 	    (s == ":") ? copySource : 
-	    TheServer.htparseWrapper(s, *setMe);
+	    TheServer.engine.htparseWrapper(s, *setMe);
 	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
     }
 }
@@ -977,15 +984,15 @@ struct relURI {};
 struct baseURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, baseURI*, int)
 {
-    validateBase(values, &TheServer.baseURI, TheServer.argBaseURI, "base");
-    TheServer.sparqlParser.setBase(TheServer.baseURI->getLexicalValue());
+    validateBase(values, &TheServer.engine.baseURI, TheServer.engine.argBaseURI, "base");
+    TheServer.engine.sparqlParser.setBase(TheServer.engine.baseURI->getLexicalValue());
 }
 
 /* Overload of relURI to validate --arg-base arguments. */
 struct argBaseURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, argBaseURI*, int)
 {
-    validateBase(values, &TheServer.argBaseURI, TheServer.baseURI, "argument base");
+    validateBase(values, &TheServer.engine.argBaseURI, TheServer.engine.baseURI, "argument base");
 }
 
 /* Overload of relURI to validate --output arguments. */
@@ -993,9 +1000,9 @@ struct outPut : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, outPut*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
-    Output = MyLoadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
-    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << TheServer.baseUriMessage() << ".\n";
+    const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
+    Output = MyLoadEntry(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
+    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << TheServer.engine.baseUriMessage() << ".\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -1004,19 +1011,19 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 {
     const std::string& s = po::validators::get_single_string(values);
     if (s == ".") {
-	TheServer.inPlace = true;
+	TheServer.engine.inPlace = true;
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
     } else {
-	const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
-	LoadList.enqueue(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
-	Output = MyLoadEntry(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
+	const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
+	LoadList.enqueue(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
+	Output = MyLoadEntry(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
 	if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	    std::stringstream o;
 	    o << "Replacing data from " << abs->getLexicalValue();
-	    if (TheServer.baseURI != NULL)
-		o << " with base URI " << TheServer.baseURI->getLexicalValue() << ".\n";
-	    if (TheServer.dataMediaType)
-		o << " with media type " << *TheServer.dataMediaType;
+	    if (TheServer.engine.baseURI != NULL)
+		o << " with base URI " << TheServer.engine.baseURI->getLexicalValue() << ".\n";
+	    if (TheServer.engine.dataMediaType)
+		o << " with media type " << *TheServer.engine.dataMediaType;
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
 	}
     }
@@ -1027,15 +1034,15 @@ struct dataURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, dataURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
-    LoadList.enqueue(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
+    const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
+    LoadList.enqueue(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
     if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default data from " << abs->getLexicalValue();
-	if (TheServer.baseURI != NULL)
-	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
-	if (TheServer.dataMediaType)
-	    o << " with media type " << *TheServer.dataMediaType;
+	if (TheServer.engine.baseURI != NULL)
+	    o << " with base URI " << TheServer.engine.baseURI->getLexicalValue();
+	if (TheServer.engine.dataMediaType)
+	    o << " with media type " << *TheServer.engine.dataMediaType;
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
     }
@@ -1070,7 +1077,7 @@ void validate (boost::any&, const std::vector<std::string>& values, xmlTransform
     std::string transformS = s.substr(start + 1, end - start - 1);
 
     std::string mediaTypeS = s.substr(end + 1);
-    TheServer.grddlMap.insert(nsS, tagS, transformS, mediaTypeS);
+    TheServer.engine.grddlMap.insert(nsS, tagS, transformS, mediaTypeS);
 }
 
 /* Overload of relURI to validate --mapset arguments. */
@@ -1078,13 +1085,13 @@ struct mapURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* abs(TheServer.htparseWrapper(s, TheServer.argBaseURI));
-    MapList.enqueue(NULL, abs, TheServer.baseURI, TheServer.dataMediaType);
+    const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
+    MapList.enqueue(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from " << abs->getLexicalValue();
-	if (TheServer.baseURI != NULL)
-	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
+	if (TheServer.engine.baseURI != NULL)
+	    o << " with base URI " << TheServer.engine.baseURI->getLexicalValue();
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
@@ -1095,12 +1102,12 @@ struct mapString {};
 void validate (boost::any&, const std::vector<std::string>& values, mapString*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    MapList.enqueue(NULL, TheServer.atomFactory.getRDFLiteral(s), TheServer.baseURI, TheServer.dataMediaType);
+    MapList.enqueue(NULL, TheServer.engine.atomFactory.getRDFLiteral(s), TheServer.engine.baseURI, TheServer.engine.dataMediaType);
     if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
 	std::stringstream o;
 	o << "Queued reading default map from command line";
-	if (TheServer.baseURI != NULL)
-	    o << " with base URI " << TheServer.baseURI->getLexicalValue();
+	if (TheServer.engine.baseURI != NULL)
+	    o << " with base URI " << TheServer.engine.baseURI->getLexicalValue();
 	o << ".\n";
 	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
     }
@@ -1112,7 +1119,7 @@ struct graphURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, graphURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    NamedGraphName = s == "." ? TheServer.atomFactory.getURI(".") : TheServer.htparseWrapper(s, TheServer.argBaseURI);
+    NamedGraphName = s == "." ? TheServer.engine.atomFactory.getURI(".") : TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI);
 }
 
 typedef std::vector<const sw::TTerm*> mapList;
@@ -1122,15 +1129,15 @@ struct orderedURI : public relURI {};
 void validate (boost::any&, const std::vector<std::string>& values, orderedURI*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    const sw::TTerm* vald = TheServer.htparseWrapper(s, TheServer.argBaseURI);
+    const sw::TTerm* vald = TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI);
     if (NamedGraphName != NULL) {
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
-	LoadList.enqueue(NamedGraphName, vald, TheServer.baseURI, TheServer.dataMediaType);
+	LoadList.enqueue(NamedGraphName, vald, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
 	    << "Reading named graph " << NamedGraphName->toString()
 	    << " from " << vald->getLexicalValue()
-	    << TheServer.baseUriMessage() << ".\n";
+	    << TheServer.engine.baseUriMessage() << ".\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL && ServerURI.empty()) {
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
@@ -1146,14 +1153,14 @@ struct userName {};
 void validate (boost::any&, const std::vector<std::string>& values, userName*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    TheServer.webClient_authPrompter.userName = s;
+    TheServer.engine.webClient_authPrompter.userName = s;
 }
 /* Set Password when parsed. */
 struct passWord {};
 void validate (boost::any&, const std::vector<std::string>& values, passWord*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
-    TheServer.webClient_authPrompter.password = s;
+    TheServer.engine.webClient_authPrompter.password = s;
 }
 /* Assign an HTTP header when parsed. */
 struct HeaderPair {
@@ -1196,8 +1203,8 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
      */
     size_t p = s.find("odbc:");
     if (p == 0) {
-	TheServer.useODBC = true;
-	TheServer.SQLDriver = s.substr(5);
+	TheServer.engine.useODBC = true;
+	TheServer.engine.SQLDriver = s.substr(5);
 	return;
     }
 
@@ -1213,15 +1220,15 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
     if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
 	if (matches[1] != "mysql" && matches[1] != "oracle")
 	    throw std::string("only mysql or oracle SQL service is currently supported -- saw ") + matches[1];
-	TheServer.SQLDriver = matches[1];
+	TheServer.engine.SQLDriver = matches[1];
 	if (matches[2].matched)
-	    TheServer.SQLUser = matches[2];
+	    TheServer.engine.SQLUser = matches[2];
 	if (matches[3].matched)
-	    TheServer.SQLPassword = matches[3];
-	TheServer.SQLServer = matches[4];
+	    TheServer.engine.SQLPassword = matches[3];
+	TheServer.engine.SQLServer = matches[4];
 	if (matches[5].matched)
-	    TheServer.SQLPort = matches[5];
-	TheServer.SQLDatabase = matches[6];
+	    TheServer.engine.SQLPort = matches[5];
+	TheServer.engine.SQLDatabase = matches[6];
     } else { 
 	throw boost::program_options::VALIDATION_ERROR(s + " did not match expression " + odbcPattern.str());
     }
@@ -1245,9 +1252,9 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 	(dynamic_cast<const sw::RDFLiteral*>(query) != NULL) ? 
 	sw::IStreamContext::STRING : 
 	sw::IStreamContext::STDIN;
-    sw::IStreamContext iptr(querySpec, opts, NULL, &TheServer.webClient);
+    sw::IStreamContext iptr(querySpec, opts, NULL, &TheServer.engine.webClient);
     try {
-	return TheServer.sparqlParser.parse(iptr);
+	return TheServer.engine.sparqlParser.parse(iptr);
     } catch (sw::ParserException& e) {
 	throw e;
     } catch (std::exception& e) {
@@ -1271,20 +1278,12 @@ int main(int ac, char* av[])
 	    setLogLevels(logs, 0);
 	}
 
-	sw::ChainedHandler handler;
-
-	sw::SimpleInterface<MyServer, MyLoadList> dynamicHandler(TheServer);
-	handler.add_handler(&dynamicHandler);
-	sw::StaticHandler stat;
-	stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
-	handler.add_handler(&stat);
-
-	Output = MyLoadEntry(NULL, TheServer.atomFactory.getURI("-"), NULL, sw::MediaType());
+	Output = MyLoadEntry(NULL, TheServer.engine.atomFactory.getURI("-"), NULL, sw::MediaType());
 
 	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
 
 	CwdURI = 
-	    TheServer.atomFactory.getURI(std::string("file://localhost")
+	    TheServer.engine.atomFactory.getURI(std::string("file://localhost")
 		     .append(fs::current_path().string())
 		     .append("/"));
 
@@ -1468,7 +1467,7 @@ int main(int ac, char* av[])
 
         if (vm.count("no-exec")) {
 	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Execution suppressed.\n";
-            TheServer.noExec = true;
+            TheServer.engine.noExec = true;
         }
 
         if (vm.count("quiet")) {
@@ -1553,7 +1552,7 @@ int main(int ac, char* av[])
 		"       sparql [opts] --server URL mapURI*\n\n"
 		"get started with: sparql --Help tutorial\n" << 
 		queryHelp << cursory;
-            TheServer.noExec = true;
+            TheServer.engine.noExec = true;
         }
 
         if (vm.count("Help")) {
@@ -1587,7 +1586,7 @@ int main(int ac, char* av[])
 		if (matched == false)
 		    std::cout << "Unknown help topic: " << *it << "\n";
 	    }
-            TheServer.noExec = true;
+            TheServer.engine.noExec = true;
         }
 
 #include "version.h"
@@ -1597,11 +1596,11 @@ int main(int ac, char* av[])
 		"Revision " SVN_Revision " modified " SVN_Last_Changed_Date " by " SVN_Last_Changed_Author ".\n"
 		SVN_URL "\n";
 	else {
-	    if (TheServer.noExec == false) {
+	    if (TheServer.engine.noExec == false) {
 		if (vm.count("description")) {
 		    sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 		    s.mediaType = "text/turtle";
-		    TheServer.db.loadData(TheServer.db.ensureGraph(sw::DefaultGraph), s, TheServer.uriString(TheServer.baseURI), TheServer.uriString(TheServer.baseURI), &TheServer.atomFactory, &TheServer.nsRelay);
+		    TheServer.engine.db.loadData(TheServer.engine.db.ensureGraph(sw::DefaultGraph), s, TheServer.engine.uriString(TheServer.engine.baseURI), TheServer.engine.uriString(TheServer.engine.baseURI), &TheServer.engine.atomFactory, &TheServer.engine.nsRelay);
 		}
 
 		if (vm.count("desc-graph")) {
@@ -1610,7 +1609,7 @@ int main(int ac, char* av[])
 			 it != descs.end(); ++it) {
 			sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
 			s.mediaType = "text/turtle";
-			TheServer.db.loadData(TheServer.db.ensureGraph(TheServer.atomFactory.getURI(*it)), s, TheServer.uriString(TheServer.baseURI), TheServer.uriString(TheServer.baseURI), &TheServer.atomFactory);
+			TheServer.engine.db.loadData(TheServer.engine.db.ensureGraph(TheServer.engine.atomFactory.getURI(*it)), s, TheServer.engine.uriString(TheServer.engine.baseURI), TheServer.engine.uriString(TheServer.engine.baseURI), &TheServer.engine.atomFactory);
 		    }
 		}
 
@@ -1622,27 +1621,27 @@ int main(int ac, char* av[])
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
 
 		if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::support)) {
-		    size_t size = TheServer.db.size();
+		    size_t size = TheServer.engine.db.size();
 		    if (size > sw::RdfDB::DebugEnumerateLimit) {
-			size_t graphCount = TheServer.db.getGraphNames().size();
+			size_t graphCount = TheServer.engine.db.getGraphNames().size();
 			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "Loaded " << size
 				     << " triple" << (size == 1 ? "" : "s")
 				     << " into "
 				     << graphCount << " graph" << (graphCount == 1 ? "" : "s")
 				     << ".\n";
 		    } else
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "<loadedData>\n" << TheServer.db << "</loadedData>\n";
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "<loadedData>\n" << TheServer.engine.db << "</loadedData>\n";
 		}
 	    }
 
 	    if (vm.count("stem"))
-		TheServer.stemURI = vm["stem"].as<std::string>();
+		TheServer.engine.stemURI = vm["stem"].as<std::string>();
 	    if (vm.count("service"))
-		TheServer.serviceURI = vm["service"].as<std::string>();
+		TheServer.engine.serviceURI = vm["service"].as<std::string>();
 	    if (vm.count("default-graph-uri"))
-		TheServer.defaultGraphURI = vm["default-graph-uri"].as<std::string>();
+		TheServer.engine.defaultGraphURI = vm["default-graph-uri"].as<std::string>();
 	    if (vm.count("pipe"))
-		TheServer.printQuery = true;
+		TheServer.engine.printQuery = true;
 
 	    for (MyLoadList::iterator it = MapList.begin();
 		 it != MapList.end(); ++it) {
@@ -1651,24 +1650,24 @@ int main(int ac, char* av[])
 		    (dynamic_cast<const sw::RDFLiteral*>(it->resource) != NULL) ? 
 		    sw::IStreamContext::STRING : 
 		    sw::IStreamContext::STDIN;
-		sw::IStreamContext istr(nameStr, opts, NULL, &TheServer.webClient);
-		sw::MapSet* ms = TheServer.mapSetParser.parse(istr); // throws if it fails to parse
+		sw::IStreamContext istr(nameStr, opts, NULL, &TheServer.engine.webClient);
+		sw::MapSet* ms = TheServer.engine.mapSetParser.parse(istr); // throws if it fails to parse
 		// could catch and re-throw std::string("error when parsing map ").append(nameStr);
 
-		if (ms->driver) TheServer.SQLDriver = ms->driver->getLexicalValue();
-		if (ms->server) TheServer.SQLServer = ms->server->getLexicalValue();
-		if (ms->user) TheServer.SQLUser = ms->user->getLexicalValue();
-		if (ms->password) TheServer.SQLPassword = ms->password->getLexicalValue();
-		if (ms->database) TheServer.SQLDatabase = ms->database->getLexicalValue();
-		if (ms->stemURI) TheServer.stemURI = ms->stemURI->getLexicalValue();
-		TheServer.queryMapper.sharedVars = ms->sharedVars;
+		if (ms->driver) TheServer.engine.SQLDriver = ms->driver->getLexicalValue();
+		if (ms->server) TheServer.engine.SQLServer = ms->server->getLexicalValue();
+		if (ms->user) TheServer.engine.SQLUser = ms->user->getLexicalValue();
+		if (ms->password) TheServer.engine.SQLPassword = ms->password->getLexicalValue();
+		if (ms->database) TheServer.engine.SQLDatabase = ms->database->getLexicalValue();
+		if (ms->stemURI) TheServer.engine.stemURI = ms->stemURI->getLexicalValue();
+		TheServer.engine.queryMapper.sharedVars = ms->sharedVars;
 		for (sw::MapSet::ConstructList::const_iterator it = ms->maps.begin();
 		     it != ms->maps.end(); ++it)
-		    TheServer.queryMapper.addRule(it->constr, it->label);
-		TheServer.queryMapper.nodeShare = ms->nodeShare;
+		    TheServer.engine.queryMapper.addRule(it->constr, it->label);
+		TheServer.engine.queryMapper.nodeShare = ms->nodeShare;
 
-		if (ms->primaryKey) TheServer.pkAttribute = ms->primaryKey->getLexicalValue();
-		TheServer.keyMap = ms->keyMap;
+		if (ms->primaryKey) TheServer.engine.pkAttribute = ms->primaryKey->getLexicalValue();
+		TheServer.engine.keyMap = ms->keyMap;
 		delete ms;
 	    }
 
@@ -1679,14 +1678,14 @@ int main(int ac, char* av[])
 		    throw std::string("Rule file ").append(": ").
 			append((*it)->getLexicalValue()).
 			append(" was not a SPARQL CONSTRUCT");
-		TheServer.queryMapper.addRule(c, *it);
+		TheServer.engine.queryMapper.addRule(c, *it);
 		delete rule;
 	    }
 
 	    if (!ServerURI.empty()) {
 		/* Act as a SPARQL server. */
 		if (vm.count("once"))
-		    TheServer.runOnce = true;
+		    TheServer.engine.runOnce = true;
 		int serverPort = 8888;
 
 #if REGEX_LIB == SWOb_BOOST
@@ -1711,54 +1710,61 @@ int main(int ac, char* av[])
 		TheServer.path = "SPARQL";
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
-		TheServer.startServer(handler, ServerURI, serverPort);
+		sw::ChainedHandler handler;
+		sw::SimpleInterface<MyEngine, MyLoadList> dynamicHandler(TheServer.engine, TheServer.path);
+		handler.add_handler(&dynamicHandler);
+		sw::StaticHandler stat;
+		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
+		handler.add_handler(&stat);
+
+		TheServer.runServer(handler, ServerURI, serverPort);
 	    }
 
-	    sw::RdfDB constructed(&TheServer.xmlParser); // For operations which create a new database.
+	    sw::RdfDB constructed(&TheServer.engine.xmlParser); // For operations which create a new database.
 
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
 		    throw std::string("Mapping rules found with no query to map.");
-		TheServer.resultSet.setRdfDB(&TheServer.db);
+		TheServer.engine.resultSet.setRdfDB(&TheServer.engine.db);
 	    } else {
 		sw::Operation* query = parseQuery(Query);
-		TheServer.resultSet.setRdfDB(dynamic_cast<sw::Construct*>(query) != NULL && !TheServer.inPlace ? &constructed : &TheServer.db);
+		TheServer.engine.resultSet.setRdfDB(dynamic_cast<sw::Construct*>(query) != NULL && !TheServer.engine.inPlace ? &constructed : &TheServer.engine.db);
 
 		std::string language; // not used here
 		std::string finalQuery; // not used here
-		if (!TheServer.executeQuery(query, TheServer.resultSet, language, finalQuery))
+		if (!TheServer.engine.executeQuery(query, TheServer.engine.resultSet, language, finalQuery))
 		    Output.resource = NULL;
 		delete query;
 
 		if (vm.count("compare")) {
-		    const sw::TTerm* cmp = TheServer.htparseWrapper(vm["compare"].as<std::string>(), TheServer.argBaseURI);
+		    const sw::TTerm* cmp = TheServer.engine.htparseWrapper(vm["compare"].as<std::string>(), TheServer.engine.argBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
-					    NULL, &TheServer.webClient);
+					    NULL, &TheServer.engine.webClient);
 
 		    sw::ResultSet* reference;
 		    if (iptr.mediaType.match("application/sparql-results+xml") || 
 			iptr.mediaType.match("application/sparql-results+json")) {
-			reference = new sw::ResultSet(&TheServer.atomFactory, &TheServer.xmlParser, iptr);
+			reference = new sw::ResultSet(&TheServer.engine.atomFactory, &TheServer.engine.xmlParser, iptr);
 		    } else if (iptr.mediaType.match("text/sparql-results")) {
 			sw::TTerm::String2BNode str2b;
-			reference = new sw::ResultSet(&TheServer.atomFactory, iptr, false, str2b);
+			reference = new sw::ResultSet(&TheServer.engine.atomFactory, iptr, false, str2b);
 		    } else {
 			sw::RdfDB resGraph;
 			if (iptr.mediaType.match("text/ntriples") || 
 			    iptr.mediaType.match("text/turtle")) {
-			    TheServer.turtleParser.setGraph(resGraph.ensureGraph(NULL));
-			    TheServer.turtleParser.parse(iptr);
-			    TheServer.turtleParser.clear("");
+			    TheServer.engine.turtleParser.setGraph(resGraph.ensureGraph(NULL));
+			    TheServer.engine.turtleParser.parse(iptr);
+			    TheServer.engine.turtleParser.clear("");
 			} else {
 			    throw std::string("media-type \"").append(iptr.mediaType.toString()).append("\" unknown.");
 			}
 			reference = 
-			    TheServer.resultSet.resultType == sw::ResultSet::RESULT_Graphs ?
-			    new sw::ResultSet(&TheServer.atomFactory, &resGraph) :
-			    new sw::ResultSet(&TheServer.atomFactory, &resGraph, "");
+			    TheServer.engine.resultSet.resultType == sw::ResultSet::RESULT_Graphs ?
+			    new sw::ResultSet(&TheServer.engine.atomFactory, &resGraph) :
+			    new sw::ResultSet(&TheServer.engine.atomFactory, &resGraph, "");
 		    }
-		    if (TheServer.resultSet == *reference) {
+		    if (TheServer.engine.resultSet == *reference) {
 			if (!Quiet)
 			    std::cout << "matched\n";
 			ret = 0;
@@ -1766,7 +1772,7 @@ int main(int ac, char* av[])
 			if (Quiet)
 			    ret = 1;
 			else
-			    std::cout << TheServer.resultSet << "!=\n" << *reference << "\n";
+			    std::cout << TheServer.engine.resultSet << "!=\n" << *reference << "\n";
 		    }
 		    delete reference;
 		    Output.resource = NULL; // No other output reqired.
@@ -1775,14 +1781,14 @@ int main(int ac, char* av[])
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
 		sw::OStreamContext optr(outres, sw::OStreamContext::STDOUT,
-					TheServer.dataMediaType.c_str(),
-					&TheServer.webClient);
+					TheServer.engine.dataMediaType.c_str(),
+					&TheServer.engine.webClient);
 		bool mustDumpDb = Query == NULL && ResultSetsLoaded == false;
-		if (!mustDumpDb && TheServer.resultSet.resultType != sw::ResultSet::RESULT_Graphs && 
-		    !TheServer.dataMediaType)
+		if (!mustDumpDb && TheServer.engine.resultSet.resultType != sw::ResultSet::RESULT_Graphs && 
+		    !TheServer.engine.dataMediaType)
 		    optr.mediaType = "text/sparql-results";
-		*optr << TheServer.resultSet.toString(optr.mediaType.c_str(),
-						      &TheServer.nsAccumulator, mustDumpDb);
+		*optr << TheServer.engine.resultSet.toString(optr.mediaType.c_str(),
+						      &TheServer.engine.nsAccumulator, mustDumpDb);
 	    }
 	    //std::cerr << NsAccumulator.toString(); // @@
 	}
