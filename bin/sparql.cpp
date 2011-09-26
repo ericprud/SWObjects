@@ -549,10 +549,6 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 
 		    rep.addHeader("Content-Type", "text/html");
 		    foot(sout);
-		} else if (path == "favicon.ico") {
-		    rep.status = sw::webserver::reply::ok;
-		    sout.write((char*)favicon, sizeof(favicon));
-		    rep.addHeader("Content-Type", "image/x-icon");
 		} else {
 		    return sw::webserver::reply::declined;
 		}
@@ -929,7 +925,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
 	  noExec(false), useODBC(false)
     {  }
-    void startServer (MyHandler& handler, std::string url, int serverPort) {
+    void startServer (sw::WebHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = atomFactory.getURI(path);
 	sw::BasicGraphPattern* serviceGraph = db.ensureGraph(serviceURI);
 	serviceGraph->addTriplePattern(atomFactory.getTriple(
@@ -1756,7 +1752,14 @@ int main(int ac, char* av[])
 	    setLogLevels(logs, 0);
 	}
 
-	MyServer::MyHandler handler(TheServer);
+	sw::ChainedHandler handler;
+
+	MyServer::MyHandler dynamicHandler(TheServer);
+	handler.add_handler(&dynamicHandler);
+	sw::StaticHandler stat;
+	stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
+	handler.add_handler(&stat);
+
 	Output = loadEntry(NULL, TheServer.atomFactory.getURI("-"), NULL, sw::MediaType());
 
 	sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;

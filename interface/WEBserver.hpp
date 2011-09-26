@@ -703,6 +703,77 @@ namespace w3c_sw {
 
     };
 
+
+    class StaticHandler : public WebHandler {
+
+    public:
+	StaticHandler () : 
+	    WebHandler(".") // @@ docroot is irrelevant -- create a docserver
+	{  }
+
+	struct ResourceDescription {
+	    std::string path;
+	    std::string media_type;
+	    size_t size;
+	    const char* data;
+	    ResourceDescription () {  }
+	    ResourceDescription (std::string path, std::string media_type, size_t size, const char* data)
+		: path(path), media_type(media_type), size(size), data(data)
+	    {  }
+	};
+
+	bool addContent (std::string path, std::string media_type, size_t size, const char* data) {
+	    bool ret = descriptions.find(path) != descriptions.end();
+	    descriptions[path] = ResourceDescription(path, media_type, size, data);
+	    return ret;
+	}
+
+    protected:
+	std::map<std::string, ResourceDescription> descriptions;
+
+	webserver::reply::status_type
+	handle_request (webserver::request& req, webserver::reply& rep) {
+	    std::string path(req.getPath());
+	    std::map<std::string, ResourceDescription>::iterator it = descriptions.find(path);
+	    if (it == descriptions.end())
+		return webserver::reply::declined;
+	    rep.status = webserver::reply::ok;
+	    rep.addHeader("Content-Type", it->second.media_type);
+	    std::ostringstream sout;
+	    sout.write(it->second.data, it->second.size);
+	    rep.content = sout.str();
+	    return webserver::reply::ok;
+	}
+
+    };
+
+
+    class ChainedHandler : public WebHandler {
+
+    public:
+	ChainedHandler () : 
+	    WebHandler(".") // @@ docroot is irrelevant -- create a docserver
+	{  }
+
+	void add_handler (webserver::request_handler* h) {
+	    request_handlers.push_back(h);
+	}
+
+    protected:
+	std::vector<request_handler*> request_handlers;
+
+	webserver::reply::status_type
+	handle_request (webserver::request& req, webserver::reply& rep) {
+	    webserver::reply::status_type stat = webserver::reply::declined;
+	    for (std::vector<request_handler*>::const_iterator h = request_handlers.begin();
+		 stat == webserver::reply::declined && h != request_handlers.end(); ++h)
+		stat = (*h)->handle_request(req, rep);
+	    return stat;
+	}
+
+    };
+
+
 } // namespace w3c_sw
 
 #if HTTP_SERVER == SWOb_ASIO
