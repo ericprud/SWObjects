@@ -511,6 +511,541 @@ namespace w3c_sw {
 "    }\n"
 	    ;
 
+class NamespaceAccumulator : public sw::NamespaceMap {
+public:
+    std::string toString (const char* mediaType = NULL) {
+	std::stringstream sstr;
+	if (mediaType == NULL)
+	    for (sw::NamespaceMap::const_iterator it = begin();
+		 it != end(); ++it)
+		sstr << it->first << "=> " << it->second->toString() << "\n";
+	return sstr.str();
+    }
+};
+class NamespaceRelay : public sw::NamespaceMap {
+    sw::NamespaceMap& relay;
+public:
+    NamespaceRelay (sw::NamespaceMap& relay) : relay(relay) {  }
+    virtual void set (std::string prefix, const sw::URI* uri) {
+	sw::NamespaceMap::set(prefix, uri);
+	relay.set(prefix, uri);
+    }
+};
+
+struct SimpleEngine {
+    const sw::TTerm* htparseWrapper (std::string s, const sw::TTerm* base) {
+	std::string baseURIstring = base ? base->getLexicalValue() : "";
+	std::string t = libwww::HTParse(s, &baseURIstring, libwww::PARSE_all); // !! maybe with PARSE_less ?
+	return atomFactory.getURI(t.c_str());
+    }
+
+    struct DBHandlers : public sw::RdfDB::HandlerSet {
+	SimpleEngine& engine;
+	DBHandlers (SimpleEngine& engine) : engine(engine) {  }
+	bool parse (std::string mediaType, std::vector<std::string> args,
+		    sw::BasicGraphPattern* target, sw::IStreamContext& istr,
+		    std::string nameStr, std::string baseURI,
+		    sw::AtomFactory* atomFactory, sw::NamespaceMap* nsMap) {
+	    const char* env = ::getenv("XSLT");
+	    if (env == NULL)
+		return sw::RdfDB::HandlerSet::parse(mediaType, args,
+						    target, istr,
+						    nameStr, baseURI,
+						    atomFactory, nsMap);
+
+	    // break up $XSLT
+	    std::vector<std::string> tokens;
+	    {
+		std::string buf;
+		std::stringstream ss(env);
+		while (ss >> buf)
+		    tokens.push_back(buf);
+	    }
+
+	    std::vector<std::string> createdFiles;
+	    for (std::vector<std::string>::iterator iToken = tokens.begin();
+		 iToken != tokens.end(); ++iToken) {
+		if (*iToken == "%DATA") {
+		    *iToken = genTempFile(".", *istr);
+		    createdFiles.push_back(*iToken);
+		} else if (*iToken == "%STYLESHEET") {
+		    sw::IStreamContext xsltIstr(args[0], sw::IStreamContext::NONE, NULL, 
+						&engine.webClient);
+		    *iToken = genTempFile(".", *xsltIstr);
+		    createdFiles.push_back(*iToken);
+		}
+	    }
+
+#ifdef BOOST_PROCESS
+	    std::string exec = $tokens[0]; // "/usr/bin/xsltproc"; // POSIX_cat;
+
+	    namespace bp = ::boost::process; 
+
+	    bp::context ctx;
+	    ctx.stdout_behavior = bp::capture_stream();
+	    bp::child c = bp::launch(exec, tokens, ctx);
+	    bp::pistream &pis = c.get_stdout();
+#else /* !BOOST_PROCESS */
+	    std::stringstream cmd;
+	    for (std::vector<std::string>::const_iterator iToken = tokens.begin();
+		 iToken != tokens.end(); ++iToken) {
+		if (iToken != tokens.begin())
+		    cmd << " ";
+		cmd << *iToken;
+	    }
+	    BOOST_LOG_SEV(sw::Logger::ProcessLog::get(), sw::Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
+	    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
+	    assert(p != NULL);
+	    char buf[100];
+	    std::string s  = "execution failure";
+	    s = "";
+
+	    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
+	     */
+	    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+		s += std::string(buf, buf + count);
+	    POSIX_pclose(p);
+	    std::stringstream pis(s);
+#endif /* !BOOST_PROCESS */
+	    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
+		 iCreatedFile != createdFiles.end(); ++iCreatedFile)
+		if (POSIX_unlink(iCreatedFile->c_str()) != 0)
+		    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
+	    sw::IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
+	    return engine.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
+	    //     return sw::RdfDB::HandlerSet::parse(mediaType, args,
+	    // 					target, istr,
+	    // 					nameStr, baseURI,
+	    // 					atomFactory, nsMap);
+	}
+
+	static std::string genTempFile (std::string dir, std::istream& istr) {
+#ifdef _MSC_VER
+	    TCHAR buffer[MAX_PATH+1];
+	    DWORD len = ::GetTempPath(MAX_PATH, &buffer[0]);
+               
+	    std::wstring directory(buffer, len);
+	    TCHAR prefix[] = TEXT("SWObj");
+
+	    if (!GetTempFileName(directory.c_str(), prefix, 0, buffer))
+		throw ::GetLastError();
+
+	    size_t dlen(wcsnlen(directory.c_str(), MAX_PATH));
+	    size_t flen(wcsnlen(buffer, MAX_PATH));
+	    std::wstring file(buffer); // +dlen);
+
+	    std::string filename;
+	    for (std::wstring::const_iterator it = file.begin();
+		 it != file.end(); ++it)
+		filename += (char)*it;
+	    int fileHandle = POSIX_open(filename.c_str(), POSIX_trunkwrite, POSIX_USER_RW);
+#else /* !_MSC_VER */
+	    char buf[] = "SWObjXXXXXX";
+	    int fileHandle = mkstemp(buf);
+	    std::string filename(buf);
+#endif /* !_MSC_VER */
+	    std::istreambuf_iterator<char> i(istr), e;
+	    std::string input(i, e);
+	    io::stream_buffer<sw::FileHandleDevice> ofs(fileHandle, filename);
+	    std::ostream os(&ofs);
+	    os << input;
+	    os.flush();
+	    ofs.close();
+	    POSIX_close(fileHandle);
+
+	    return filename;
+	}
+    };
+
+    /** FilesystemRdfDB - a TargetedRdfDB which may be backed by files in the
+     * filesystem.
+     *
+     * pathMap: a mapping from paths patterns to filesystem paths, similar to,
+     * but more expressive than, an apache Alias.
+     */
+    struct FilesystemRdfDB : public sw::TargetedRdfDB {
+
+#if REGEX_LIB != SWOb_DISABLED
+	struct PathMap {
+	    boost::regex from;
+	    std::string to;
+	    PathMap (const boost::regex from, const std::string to)
+		: from(from), to(to)
+	    {  }
+// 	    bool operator< (const PathMap& r) const {
+// 		return from < r.from || to < r.to;
+// 	    }
+	};
+	std::vector<PathMap> pathMaps;
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+	struct MappedPath {
+	    const sw::TTerm* name;
+	    const std::string path;
+	    MappedPath (const sw::TTerm* name, const std::string path)
+		: name(name), path(path)
+	    {  }
+	    bool operator< (const MappedPath& r) const {
+		return *name < *(r.name) || path < r.path;
+	    }
+	};
+	SimpleEngine& engine;
+	std::set<MappedPath> dirty;
+
+	FilesystemRdfDB (SimpleEngine& engine)
+	    : sw::TargetedRdfDB(&engine.webClient, &engine.xmlParser, &engine.rdfDBHandlers), engine(engine)
+	{  }
+
+	/** finalEnsureGraph - force calling RdfDB::findGraph(name) so we don't
+	 *  endlessly recurse when findGraph gets a graph in which to load data.
+	 */
+	sw::BasicGraphPattern* finalEnsureGraph (const sw::TTerm* name) {
+	    if (name == NULL)
+		name = sw::DefaultGraph;
+	    sw::BasicGraphPattern* ret = sw::RdfDB::findGraph(name);
+	    if (ret == NULL) {
+		if (name == sw::DefaultGraph)
+		    ret = new sw::DefaultGraphPattern();
+		else
+		    ret = new sw::NamedGraphPattern(name);
+		graphs[name] = ret;
+		return ret;
+	    } else {
+		return ret;
+	    }
+	}
+
+#if REGEX_LIB != SWOb_DISABLED
+	virtual sw::BasicGraphPattern* findGraph (const sw::TTerm* name) {
+	    if (name == NULL)
+		name = sw::DefaultGraph;
+	    if (name == sw::DefaultGraph && defaultTarget != NULL)
+		name = defaultTarget;
+	    const sw::URI* u = dynamic_cast<const sw::URI*>(name);
+	    if (u != NULL) {
+		std::string outres = u->getLexicalValue();
+		bool matched;
+		for (std::vector<PathMap>::const_iterator it = pathMaps.begin();
+		     it != pathMaps.end(); ++it)
+		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
+
+		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
+		    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Reading " << name->toString() << " from " << outres << engine.baseUriMessage() << ".\n";
+		    try {
+			sw::IStreamContext istr(outres, sw::IStreamContext::FILE, NULL, &engine.webClient);
+			loadData(finalEnsureGraph(name), istr, engine.uriString(engine.baseURI), 
+				 engine.baseURI ? engine.uriString(engine.baseURI) : outres, &engine.atomFactory);
+		    } catch (std::string&) {
+		    }
+		    dirty.insert(MappedPath(name, outres));
+		}
+	    }
+	    return RdfDB::findGraph(name);
+	}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+	void clearGraphLog () {
+	    dirty.clear();
+	}
+
+	void synch () {
+	    for (std::set<MappedPath>::const_iterator it = dirty.begin();
+		 it != dirty.end(); ++it) {
+		sw::OStreamContext optr(it->path, sw::OStreamContext::FILE,
+					engine.dataMediaType.c_str(),
+					&engine.webClient);
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
+		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &engine.nsAccumulator);
+	    }
+	    clearGraphLog();
+	}
+
+    };
+
+    sw::AtomFactory atomFactory;
+    NamespaceAccumulator nsAccumulator;
+    NamespaceRelay nsRelay;
+    DBHandlers rdfDBHandlers;
+    FilesystemRdfDB db;
+    W3C_SW_SAXPARSER xmlParser;
+    sw::ResultSet resultSet;
+    bool runOnce;
+    bool inPlace;
+    bool done;
+    int served;
+    std::string stemURI;
+    std::string serviceURI;
+    std::string defaultGraphURI;
+    bool printQuery;
+    sw::SPARQLfedDriver sparqlParser;
+    sw::TurtleSDriver turtleParser;
+    std::string pkAttribute;
+    sw::KeyMap keyMap;
+    sw::MapSetDriver mapSetParser;
+    sw::ChainingMapper queryMapper;
+    std::string SQLDriver;
+    std::string SQLUser;
+    std::string SQLPassword;
+    std::string SQLServer;
+    std::string SQLPort;
+    std::string SQLDatabase;
+#if HTTP_SERVER == SWOb_ASIO
+    boost::mutex executeMutex;    
+#endif /* HTTP_SERVER == SWOb_ASIO */
+    sw::GRDDLmap grddlMap;
+#if HTTP_CLIENT != SWOb_DISABLED
+    sw::console_auth_prompter webClient_authPrompter;
+    W3C_SW_WEBAGENT<sw::console_auth_prompter> webClient;
+#endif /* HTTP_CLIENT != SWOb_DISABLED */
+    const sw::TTerm* baseURI;
+    std::string baseUriMessage () {
+	return (baseURI == NULL)
+	    ? std::string(" with no base URI")
+	    : std::string(" with base URI ") + baseURI->getLexicalValue();
+    }
+    std::string uriString (const sw::TTerm* uri) {
+	return (uri == NULL)
+	    ? ""
+	    : std::string(uri->getLexicalValue());
+    }
+
+    const sw::TTerm* argBaseURI;
+    bool noExec;
+    sw::MediaType dataMediaType;
+    bool useODBC;
+
+
+    SimpleEngine (std::string pkAttribute)
+	: atomFactory(), nsRelay(nsAccumulator),
+	  rdfDBHandlers(*this), db(*this),
+	  resultSet(&atomFactory), runOnce(false), inPlace(false),
+	  done(false), served(0), stemURI(""), serviceURI(""),
+	  defaultGraphURI(""), printQuery(false), 
+	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
+	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
+	  queryMapper(&atomFactory),
+#if HTTP_CLIENT != SWOb_DISABLED
+	  webClient(webClient_authPrompter),
+#endif /* HTTP_CLIENT != SWOb_DISABLED */
+	  noExec(false), useODBC(false)
+    {  }
+    std::string sqlConnectString () const {
+	return SQLDriver + "://" + SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
+    }
+
+    class SQLClientWrapper : public sw::SQLclient {
+	sw::SQLclient * const client;
+    public:
+	SQLClientWrapper (std::string driver, bool useODBC) : client(makeClient(driver, useODBC)) {  }
+	~SQLClientWrapper () { delete client; }
+	static sw::SQLclient* makeClient (std::string driver, bool useODBC) {
+#ifdef SQL_CLIENT_ODBC
+	    if (useODBC) return new sw::SQLclient_ODBC(driver);
+#endif
+#ifdef SQL_CLIENT_MYSQL
+	    if (driver == "mysql") return new sw::SQLclient_MySQL();
+#endif
+#ifdef SQL_CLIENT_ORACLE
+	    if (driver == "oracle") return new sw::SQLclient_Oracle();
+#endif
+	    throw driver + " driver not linked in.";
+	}
+	virtual void connect(std::string engine, std::string database, std::string user) {
+	    client->connect(engine, database, user);
+	}
+	virtual void connect(std::string engine, std::string database, std::string user, std::string password) {
+	    client->connect(engine, database, user, password);
+	}
+	virtual Result* executeQuery(std::string query) {
+	    return client->executeQuery(query);
+	}
+    };
+
+    bool executeQuery (const sw::Operation* query, sw::ResultSet& rs, std::string& language, std::string& finalQuery) {
+	language = "SPARQL";
+	const sw::Operation* delMe = rs.getConstrainedOperation(query);
+	if (delMe != NULL)
+	    query = delMe;
+
+	if (queryMapper.getRuleCount() > 0) {
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
+	    const sw::Operation* transformed(queryMapper.map(query));
+	    if (delMe != NULL)
+		delete delMe;
+	    query = delMe = transformed;
+	}
+
+	if (sw::Logger::Logging(sw::Logger::RewriteLog_level, sw::Logger::info)) {
+	    sw::SPARQLAlgebraSerializer s;
+	    query->express(&s);
+	    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::support) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	}
+
+	bool executed = false;
+// 	if (rs.size() > 0 && (!serviceURI.empty() || !stemURI.empty())) {
+// 	    const sw::Operation* t = rs.getConstrainedOperation (query);
+// 	    if (t != NULL) {
+// 		if (delMe != NULL)
+// 		    delete delMe;
+// 		query = delMe = t;
+// 	    }
+// 	}
+	if (!stemURI.empty()) {
+	    language = "SQL";
+	    char predicateDelims[]={'#',' ',' '};
+	    char nodeDelims[]={'/','.',' '};
+	    std::string drv = SQLDriver.find("oracle") == 0 ? "oracle" : SQLDriver;
+	    sw::SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
+	    query->express(&sqlizer);
+	    finalQuery = sqlizer.getSQLstring();
+
+	    bool doSQLquery = noExec == false && 
+		(!SQLDriver.empty() || !SQLServer.empty()
+		 || !SQLDatabase.empty() || !SQLUser.empty());
+	    BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "SQL: " << std::endl;
+	    if (printQuery || doSQLquery == false) {
+		BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "Final query: " << ".\n";
+		std::cout << finalQuery << std::endl;
+	    } else
+		BOOST_LOG_SEV(sw::Logger::SQLLog::get(), sw::Logger::info) << "SQL Query: " << finalQuery << std::endl;
+
+	    if (doSQLquery == true) {
+#ifdef SQL_CLIENT_NONE
+		std::cerr <<
+		    "Unable to connect to " << sqlConnectString() << " .\n"
+		    "No SQL client libraries linked in.\n";
+#else /* !SQL_CLIENT_NONE */
+		SQLClientWrapper sqlClient(SQLDriver, useODBC);
+		sw::SQLclient::Result* res;
+		try {
+		    if (SQLPassword.empty())
+			sqlClient.connect(SQLServer, SQLDatabase, SQLUser); // @@ wrap password with Optional to enable --password=''
+		    else
+			sqlClient.connect(SQLServer, SQLDatabase, SQLUser, SQLPassword);
+		}
+		catch (std::string ex) {
+		    throw std::string("unable to connect to ") + sqlConnectString() + ": " + ex;
+		}
+		try {
+		    res = sqlClient.executeQuery(finalQuery);
+		}
+ 		catch (std::string ex) {
+		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
+		}
+		sw::SqlResultSet rs2(&atomFactory, res);
+		rs.joinIn(&rs2);
+		executed = true;
+#endif /* !SQL_CLIENT_NONE */
+	    }
+	} else {
+	    if (!serviceURI.empty()) {
+		sw::SWWEBagent::ParameterList p;
+		p.set("query", query->toString());
+		if (!defaultGraphURI.empty())
+		    p.set("default-graph-uri", defaultGraphURI);
+		if (printQuery) {
+		    BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << "Service query: " << std::endl;
+		    std::cout << serviceURI << " " << p << std::endl;
+		}
+		if (noExec == false) {
+		    boost::shared_ptr<sw::IStreamContext> istr;
+		    switch (sw::ServiceGraphPattern::defaultHTTPmethod) {
+		    case sw::ServiceGraphPattern::HTTP_METHOD_GET:
+			istr = webClient.get(serviceURI.c_str(), p);
+			break;
+		    case sw::ServiceGraphPattern::HTTP_METHOD_POST:
+			istr = webClient.post(serviceURI.c_str(), p);
+			break;
+		    default:
+			throw "program flow exception -- unknown defaultHTTPmethod";
+		    }
+		    if (!loadDataOrResults(sw::DefaultGraph, serviceURI, baseURI, *istr, rs, rs.getRdfDB()))
+			rs.resultType = sw::ResultSet::RESULT_Graphs;
+		    executed = true;
+		}
+	    } else {
+		if (printQuery) {
+		    BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << "Final query: " << ".\n";
+		    std::cout << query->toString() << std::endl;
+		}
+		if (noExec == false) {
+#if HTTP_SERVER == SWOb_ASIO
+		    boost::mutex::scoped_lock lock(executeMutex);
+		    /* Is this how one implements a single-writer lock with a shared_mutex?
+		     *   if query->readOnly() executeMutex.lock_shared(); */
+#endif /* HTTP_SERVER == SWOb_ASIO */
+		    db.clearGraphLog();
+		    query->execute(&db, &rs);
+		    db.synch();
+		    //executeMutex.unlock_shared();
+		    executed = true;
+		}
+	    }
+	}
+	if (delMe != NULL)
+	    delete delMe;
+	return executed;
+    }
+
+    bool loadDataOrResults (const sw::TTerm* graph,
+			    std::string nameStr,
+			    const sw::TTerm* baseURI,
+			    sw::IStreamContext& istr,
+			    sw::ResultSet& rs,
+			    sw::RdfDB* db) {
+	/**
+	 * Look for a couple of sparql-specific non-standard "media types".
+	 */
+	if (istr.mediaType.match("application/sparql-results+xml")) {
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading SPARQL XML Result Set " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    }
+	    sw::ResultSet loaded(&atomFactory, &xmlParser, istr);
+	    rs.joinIn(&loaded);
+	    return true;
+	} else if (istr.mediaType.match("text/sparql-results") ||
+		   istr.mediaType.match("application/sparql-results+json") ||
+		   istr.mediaType.match("application/binary-rdf-results-table") ||
+		   istr.mediaType.match("application/x-binary-rdf-results-table")) {
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading data table " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		o << " into result set.\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    }
+	    sw::TTerm::String2BNode bnodeMap;
+	    sw::ResultSet loaded(&atomFactory, istr, false, bnodeMap);
+	    rs.joinIn(&loaded);
+	    return true;
+	} else {
+	    /**
+	     * All other media types are loaded via RdfDB::loadData.
+	     */
+	    if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::info)) {
+		std::stringstream o;
+		o << "Reading " << nameStr;
+		if (baseURI != NULL)
+		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
+		if (istr.mediaType)
+		    o << " with media type " << *istr.mediaType;
+		o << " into " << graph->toString() << ".\n";
+		BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    }
+	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
+			 baseURI ? uriString(baseURI) : nameStr, &atomFactory, &nsAccumulator, &grddlMap);
+	    return false;
+	}
+    }
+
+};
+
 } /* namespace w3c_sw */
 
 #endif /* !INCLUDED_lib_SimpleServer_hpp */
