@@ -765,9 +765,22 @@ namespace w3c_sw {
 #endif // defined(_WIN32)
     protected:
 	webserver::server<server_config>* server;
+
     public:
 	web_server_asio () : server(NULL) {  }
-	void stop () { server->stop(); }
+	void stop () {
+	    // politely HUP the process as if it were a ^C'd.
+	    kill(getpid(), SIGHUP);
+	    /*
+	    could do this more elegantly:
+	    serve set's member boost::thread* masterThread;
+	    stop calls:
+	    server->stop();
+	    masterThread->join();
+	    server = NULL;
+	    masterThread = NULL;
+	    */
+	}
 	void serve (const char* address, const char* port, std::size_t num_threads,
 		    webserver::request_handler& handler, server_config& config) {
 
@@ -806,6 +819,7 @@ namespace w3c_sw {
 	    sigaddset(&wait_mask, SIGINT);
 	    sigaddset(&wait_mask, SIGQUIT);
 	    sigaddset(&wait_mask, SIGTERM);
+	    sigaddset(&wait_mask, SIGHUP); // "polite" way to stop the server.
 	    pthread_sigmask(SIG_BLOCK, &wait_mask, 0);
 	    int sig = 0;
 	    sigwait(&wait_mask, &sig);

@@ -106,8 +106,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     sw::SimpleEngine engine;
     ServerConfig config;
     std::string path;
+    std::string stopCommand;
     MyServer (std::string pkAttribute) : engine(pkAttribute)
     {  }
+    std::string getStopCommand () { return stopCommand; }
     void runServer (sw::WebHandler& handler, std::string url, int serverPort) {
 	const sw::URI* serviceURI = engine.atomFactory.getURI(path);
 	sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
@@ -832,6 +834,7 @@ int main(int ac, char* av[])
             ("header+", po::value<headerAppend>(), 
 	     "append earlier value of header.")
             ("once", "SPARQL server handles one request.")
+            ("stop", po::value<std::string>(), "query string to stop the server.")
             ("post", "use POST (while GET is obviously superior) for SPARQL services.")
             ("federation-use-filters", "use FILTERs to convey constraints to SPARQL services.")
             ("federation-row-limit", po::value<size_t>(),
@@ -1151,6 +1154,8 @@ int main(int ac, char* av[])
 		/* Act as a SPARQL server. */
 		if (vm.count("once"))
 		    TheServer.engine.runOnce = true;
+		if (vm.count("stop"))
+		    TheServer.stopCommand = vm["stop"].as<std::string>();
 		int serverPort = 8888;
 
 #if REGEX_LIB == SWOb_BOOST
@@ -1176,7 +1181,7 @@ int main(int ac, char* av[])
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
 		sw::ChainedHandler handler;
-		sw::SimpleInterface<sw::SimpleEngine, MyLoadList> dynamicHandler(TheServer.engine, TheServer.path);
+		sw::SimpleInterface<sw::SimpleEngine, MyLoadList, MyServer> dynamicHandler(TheServer.engine, TheServer.path, &TheServer);
 		handler.add_handler(&dynamicHandler);
 		sw::StaticHandler stat;
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);

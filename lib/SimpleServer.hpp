@@ -8,10 +8,11 @@
 
 namespace w3c_sw {
 
-    template <class engine_type, class data_loader>
+    template <class engine_type, class data_loader, class controller_type>
     class SimpleInterface : public WebHandler {
 	engine_type& engine;
 	std::string servicePath;
+	controller_type* controller;
 	size_t exploreTripleCountLimit;
 	size_t exploreGraphCountLimit;
 
@@ -23,9 +24,9 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_defn;
 
     public:
-	SimpleInterface (engine_type& engine, std::string servicePath) : 
+	SimpleInterface (engine_type& engine, std::string servicePath, controller_type* controller) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
-	    engine(engine), servicePath(servicePath),
+	    engine(engine), servicePath(servicePath), controller(controller), 
 	    // hard-code explore*CountLimit
 	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
@@ -86,12 +87,13 @@ namespace w3c_sw {
 			    std::cerr << "named graph: " << parm->second << std::endl;
 			    ++parm;
 			}
-			if (query == "stop") {
+			if (!controller->getStopCommand().empty() && query == controller->getStopCommand()) {
 			    head(sout, "Done!");
 			    sout << "    <p>Served " << engine.served << " queries.</p>\n";
 			    foot(sout);
 
 			    engine.done = true;
+			    controller->stop();
 			} else {
 			    IStreamContext istr(query, IStreamContext::STRING);
 			    try {
@@ -283,8 +285,10 @@ namespace w3c_sw {
 				    } /* !htmlResults */
 
 				    ++engine.served;
-				    if (engine.runOnce)
+				    if (engine.runOnce) {
 					engine.done = true;
+					controller->stop();
+				    }
 				}
 			    } catch (ParserException& ex) {
 				std::cerr << ex.what() << std::endl;
@@ -319,7 +323,10 @@ namespace w3c_sw {
 			"      <input type='radio' name='media' value='textplain' />SPARQL XML Results in text/html\n"
 			"    </p></form>\n"
 			"    <form action='" << servicePath << "' method='post'><p>\n"
-			"      server status: running, " << engine.served << " served. <input name='query' type='submit' value='stop'/>\n"
+			"      server status: running, " << engine.served << " served. ";
+		    if (!controller->getStopCommand().empty())
+			sout << "<input name='query' type='submit' value='" << controller->getStopCommand() << "'/>";
+		    sout << "\n"
 			"    </p></form>\n";
 		    sout << DBsummary();
 
@@ -409,8 +416,8 @@ namespace w3c_sw {
 	}
     };
 
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::CSS_common =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::CSS_common =
 "code {\n"
 "  font-weight: bold;\n"
 "  }\n"
@@ -427,8 +434,8 @@ namespace w3c_sw {
 "  }\n"
 "\n"
 	    ;
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::CSS_Results =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::CSS_Results =
 "#results {\n"
 "  font-family:\"Trebuchet MS\", Arial, Helvetica, sans-serif;\n"
 "  width:100%;\n"
@@ -452,14 +459,14 @@ namespace w3c_sw {
 "  background-color:#EAF2D3;\n"
 "  }\n"
 	    ;
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::Javascript_TableSorter_remote =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::Javascript_TableSorter_remote =
 "    <link rel=\"stylesheet\" href=\"http://tablesorter.com/themes/blue/style.css\" type=\"text/css\" media=\"print, projection, screen\" />\n"
 "    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery-latest.js\"></script>\n"
 "    <script type=\"text/javascript\" src=\"http://tablesorter.com/jquery.tablesorter.js\"></script>\n"
 	    ;
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::Javascript_ToggleDisplay_init =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::Javascript_ToggleDisplay_init =
 "	toggleDisplay('requery');\n"
 "	var query = document.getElementById('requery');\n"
 "	var p = document.createElement('p');\n"
@@ -470,12 +477,12 @@ namespace w3c_sw {
 "	p.appendChild(input);\n"
 "	p.appendChild(document.createTextNode(\" display query\"));\n"
 	  ;
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::Javascript_TableSorter_init =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::Javascript_TableSorter_init =
 "	$(\"#results\").tablesorter({widgets: ['zebra']});\n"
 	  ;
-    template <class engine_type, class data_loader>
-	std::string SimpleInterface<engine_type, data_loader>::Javascript_ToggleDisplay_defn =
+    template <class engine_type, class data_loader, class controller_type>
+	std::string SimpleInterface<engine_type, data_loader, controller_type>::Javascript_ToggleDisplay_defn =
 "    function toggleDisplay(element){\n"
 "	s = document.getElementById(element).style\n"
 "	if(s.display == 'none')\n"

@@ -60,7 +60,7 @@ namespace w3c_sw {
     class web_agent_asio : public SWWEBagent {
     public:
 	auth_manager* authManager;
-	web_agent_asio (auth_manager* authManager)
+	web_agent_asio (auth_manager* authManager = NULL)
 	    : SWWEBagent(), authManager(authManager)
 	{  }
 	~web_agent_asio () {  }
