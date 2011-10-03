@@ -140,7 +140,7 @@ namespace w3c_sw {
 	    std::vector<header> headers;
 
 	    void setContentType (std::string s) {
-		addHeader("Content-Type", "text/html");
+		addHeader("Content-Type", s);
 	    }
 	    void addHeader (std::string name, std::string value) {
 		headers.push_back(header(name, value));
