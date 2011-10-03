@@ -23,6 +23,19 @@ namespace w3c_sw {
 
 	std::string userName;
 	std::string password;
+
+	console_auth_prompter ()
+	    : userName(""), password("")
+	{  }
+
+	console_auth_prompter (const console_auth_prompter& ref)
+	    : userName(ref.userName), password(ref.password)
+	{  }
+
+	console_auth_prompter (std::string userName, std::string password)
+	    : userName(userName), password(password)
+	{  }
+
 	std::string basicAuthHeader (std::string username, std::string password) {
 	    return std::string("Authorization: Basic ")
 		+ SWWEBagent::base64encode(username + ":" + password)
@@ -46,8 +59,8 @@ namespace w3c_sw {
     template <class auth_manager = console_auth_prompter>
     class web_agent_asio : public SWWEBagent {
     public:
-	auth_manager& authManager;
-	web_agent_asio (auth_manager authManager = auth_manager())
+	auth_manager* authManager;
+	web_agent_asio (auth_manager* authManager)
 	    : SWWEBagent(), authManager(authManager)
 	{  }
 	~web_agent_asio () {  }
@@ -88,7 +101,7 @@ namespace w3c_sw {
 	    std::ostringstream body;
 	    std::string authString;
 
-	    authString = authManager.authPreempt(url);
+	    authString = authManager != NULL ? authManager->authPreempt(url) : "";
 	    do {
 		// Form the request. We specify the "Connection: close" header so that the
 		// server will close the socket after transmitting the response. This will
@@ -198,7 +211,10 @@ namespace w3c_sw {
 		    while (boost::asio::read(socket, response,
 					     boost::asio::transfer_at_least(1), error))
 			;
-		    authString = authManager.authHandler(url, realm);
+		    if (authManager != NULL)
+			authString = authManager->authHandler(url, realm);
+		    else
+			throw std::string() + "authentication required for \"" + url + "\" in realm \"" + realm + "\".";
 		    redo = true;
 		}
 		case 200: {

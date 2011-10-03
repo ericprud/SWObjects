@@ -75,12 +75,15 @@ namespace w3c_sw {
 	struct request
 	{
 	    std::string method;
+	    std::string getMethod () { return method; }
 	    std::string uri;
+	    std::string getUri () { return uri; }
 	    int http_version_major;
 	    int http_version_minor;
 	    typedef std::vector<header> headerset;
 	    headerset headers;
 	    std::string body;
+	    std::string getBody () { return body; }
 	    virtual std::string getPath() const = 0;
 	    request () : content_length(0), content_type("") {  };
 	    virtual ~request () {  }
@@ -90,6 +93,7 @@ namespace w3c_sw {
 	    parmmap parms;
 	    size_t content_length;
 	    std::string content_type;
+	    std::string getContentType () { return content_type; }
 	    std::string str () const {
 		std::stringstream ss;
 		ss << method << " " << uri << " HTTP/" << http_version_major << "." << http_version_minor << "\n";
@@ -128,11 +132,16 @@ namespace w3c_sw {
 		    not_implemented = 501,
 		    bad_gateway = 502,
 		    service_unavailable = 503
-		} status;
+		};
+	    status_type status;
+	    void setStatus (status_type s) { status = s; }
 
 	    /// The headers to be included in the reply.
 	    std::vector<header> headers;
 
+	    void setContentType (std::string s) {
+		addHeader("Content-Type", "text/html");
+	    }
 	    void addHeader (std::string name, std::string value) {
 		headers.push_back(header(name, value));
 	    }
