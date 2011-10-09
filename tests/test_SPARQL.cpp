@@ -5,11 +5,13 @@
 
 #include <iostream>
 #include <fstream>
+#define NEEDDEF_W3C_SW_SAXPARSER
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 
 #define BOOST_TEST_MODULE SPARQL
 #include <boost/test/unit_test.hpp>
+#include <stdio.h>
 
 w3c_sw::AtomFactory F;
 
@@ -32,8 +34,10 @@ struct ExecResults {
 
 	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
 	 */
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);)
+	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
 	    s += std::string(buf, buf + count);
+	    ::fflush(p);
+	}
 	pclose(p);
     }
 };
@@ -352,20 +356,9 @@ BOOST_AUTO_TEST_CASE( escapes ) {
 		      "}\n");
 }
 
-#if XML_PARSER == SWOb_LIBXML2
-    #include "../interface/SAXparser_libxml.hpp"
-    w3c_sw::SAXparser_libxml P;
-#elif XML_PARSER == SWOb_EXPAT1
-    #include "../interface/SAXparser_expat.hpp"
-    w3c_sw::SAXparser_expat P;
-#elif XML_PARSER == SWOb_MSXML3
-    #include "../interface/SAXparser_msxml3.hpp"
-    w3c_sw::SAXparser_msxml3 P;
-#else
-    #warning DAWG tests require an XML parser
-#endif
-
 #if XML_PARSER != SWOb_DISABLED
+W3C_SW_SAXPARSER P;
+
 BOOST_AUTO_TEST_CASE( empty_ask ) {
     ExecResults invocation("../bin/sparql -l sparqlx -e 'ASK {}'");
     w3c_sw::IStreamContext sptr(invocation.s, w3c_sw::IStreamContext::STRING, "application/sparql-results+xml");
@@ -381,4 +374,377 @@ BOOST_AUTO_TEST_CASE( empty_construct ) {
 		      "{\n"
 		      "}\n");
 }
+
+struct ServerInteraction {
+    std::string clientS, serverS, serverURL;
+
+    ServerInteraction (std::string serverParams,
+			     std::string clientParams) {
+	int port = 31533;
+	{
+	    std::stringstream ss;
+	    ss << "http://localhost:" << port << "/SPARQL";
+	    serverURL = ss.str();
+	}
+	std::string exe = "../bin/sparql";
+	char line[80];
+
+	/* Start the server and wait for it to listen.
+	 */
+	std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
+			      exe + " " + serverParams + 
+			      " --once --serve " + serverURL);
+	// w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
+	FILE *serverPipe = popen(serverCmd.c_str(), "r");
+	if (serverPipe == NULL)
+	    throw std::string("popen") + strerror(errno);
+	if (fgets(line, sizeof line, serverPipe) == NULL ||
+	    strncmp("Working directory:", line, 18))
+	    throw std::string("server didn't print a status line");
+	serverS += line;
+	wait_connect("127.0.0.1", port);
+
+
+	/* Start the client and demand at least one line of output.
+	 */
+	std::string clientCmd(exe + " --service " + serverURL +
+			      " " + clientParams);
+	// w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
+	FILE *clientPipe = popen(clientCmd.c_str(), "r");
+	for (int tryNo = 0; tryNo < 2; ++tryNo)
+	    if (fgets(line, sizeof line, clientPipe) == NULL) {
+		if (errno != EINTR)
+		    throw std::string("no response from client process: ") + strerror(errno);
+	    } else {
+		clientS += line;
+		break;
+	    }
+
+	/* Read and close the client and server pipes.
+	 */
+	readToExhaustion(clientPipe, clientS, "client pipe");
+	readToExhaustion(serverPipe, serverS, "server pipe");
+    }
+
+    /** wait_connect - busywait trying to connect to a port.
+     */
+    static void wait_connect(std::string ip, int port) {
+	sockaddr_in clientService;
+	clientService.sin_family = AF_INET;
+	clientService.sin_addr.s_addr = inet_addr(ip.c_str());
+	clientService.sin_port = htons(port);
+
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	assert(sockfd != -1);
+
+	time_t start, finish;
+	time(&start);
+	for (;;) {
+	    // assert(sockfd != -1);
+	    if (connect(sockfd, (struct sockaddr *) &clientService, sizeof(clientService)) < 0) {
+	    	// w3c_sw_LINEN << " still can't connect: " << strerror(errno) << "\n";
+	    } else {
+	    	time(&finish);
+	    	// w3c_sw_LINEN << "Connected after " << (finish - start) << " seconds.\n";
+	    	close(sockfd);
+	    	break;
+	    }
+	}
+    }
+
+    /** wait_connect - busywait grepping for port in lsof.
+     * (An alternative to wait_connect.)
+     */
+    static void wait_lsof(int port) {
+	std::stringstream ss;
+	ss << "lsof -nP -iTCP -sTCP:LISTEN | grep " << port;
+	char buf[80];
+	for (;;) {
+	    struct sigaction child, old;
+	    child.sa_handler = SIG_IGN;
+	    sigaction(SIGCHLD, &child, &old);
+	    FILE* readyPipe = popen(ss.str().c_str(), "r");
+	    if (fgets(buf, sizeof buf, readyPipe) != NULL)
+		break;
+	    else
+		w3c_sw_LINEN << "not yet\n";
+	    sigaction(SIGCHLD, &old, NULL);
+	    if (pclose(readyPipe) == -1 && errno != ECHILD)
+		throw std::string("pclose(readyPipe)") + strerror(errno);
+	}
+	w3c_sw_LINEN << "running\n";
+    }
+
+    /** readToExhaustion - read and close an iostream.
+     */
+    static void readToExhaustion (FILE* stream, std::string& str, const char* title) {
+	char line[80];
+	while (fgets(line, sizeof line, stream) != NULL)
+	    str += line;
+	if (pclose(stream) == -1 && errno != ECHILD)
+	    throw std::string() + "pclose(" + title +")" + strerror(errno);
+    }
+
+};
+
+struct ServerTableQuery : ServerInteraction {
+    w3c_sw::ResultSet expected, got;
+
+    ServerTableQuery (std::string serverParams,
+		      std::string clientParams,
+		      std::string expectedStr)
+	: ServerInteraction (serverParams, clientParams), expected(&F), got(&F)
+    {
+	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
+	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
+	// w3c_sw_LINEN << "clientS: " << clientS << std::endl;
+	got = w3c_sw::ResultSet(&F, clientIS, false, cliNodes);
+	// w3c_sw_LINEN << "got:\n" << got << std::endl;
+	w3c_sw::IStreamContext expectedIS(expectedStr, w3c_sw::IStreamContext::STRING, "text/sparql-results");
+	// w3c_sw_LINEN << "expected: " << expectedStr << std::endl;
+	expected = w3c_sw::ResultSet(&F, expectedIS, false, srvNodes);
+	// w3c_sw_LINEN << "expected:\n" << expected << std::endl;
+    }
+};
+
+/* Simple SELECT.
+ */
+BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
+    ServerTableQuery i("-D", "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+		       "| ?s | ?p                                                | ?o                                       |\n"
+		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
+		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
+		       );
+    BOOST_CHECK_EQUAL(i.expected, i.got);
+}
+
+/* SELECT with results in utf-8 box chars.
+ */
+BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
+    ServerTableQuery i("-D", "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+		       "| ?s | ?p                                                | ?o                                       |\n"
+		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
+		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
+		       );
+    BOOST_CHECK_EQUAL(i.expected, i.got);
+}
+
+/* POSTed SELECT.
+ */
+BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
+    ServerTableQuery i("-D", "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+		       "| ?s | ?p                                                | ?o                                       |\n"
+		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
+		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
+		       );
+    BOOST_CHECK_EQUAL(i.expected, i.got);
+}
+
+#include "TrigSParser/TrigSParser.hpp"
+
+struct ServerGraphQuery : ServerInteraction {
+    w3c_sw::RdfDB expected, got;
+
+    ServerGraphQuery (std::string serverParams,
+		      std::string clientParams,
+		      std::string expectedStr)
+	: ServerInteraction (serverParams, clientParams)
+    {
+
+	{
+	    std::stringstream tss(clientS);
+	    w3c_sw::IStreamContext tstream ("got:", tss, "text/trig");
+	    w3c_sw::TrigSDriver parser("", &F);
+	    parser.parse(tstream, &got, NULL);
+	}
+
+	{
+	    std::stringstream ess (expectedStr);
+	    w3c_sw::IStreamContext estream ("expected:", ess, "text/trig");
+	    w3c_sw::TrigSDriver parser(serverURL, &F);
+	    parser.parse(estream, &expected, NULL);
+	}
+    }
+};
+
+/* Simple CONSTRUCT.
+ */
+BOOST_AUTO_TEST_CASE( D_CONSTRUCT_SPO ) {
+    ServerGraphQuery i("-D", "-e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
+		       "{\n"
+		       "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+		       "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n"
+		       "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
+		       "}");
+    BOOST_CHECK_EQUAL(i.expected, i.got);
+}
+
+
+#if 0
+#if THREADING != SWOb_DISABLED
+
+#include <boost/bind.hpp>
+#include <boost/thread/thread.hpp>
+#include <iostream>
+ 
+struct Agent {
+    std::string exec;
+    std::string& s;
+
+    Agent(std::string exec, std::string& s) : exec(exec), s(s) { }
+
+    void operator()()
+    {
+	ExecResults tested(exec.c_str());
+	s = tested.s;
+    }
+};
+
+    int port = 31533;
+    std::string serverURL;
+    {
+	std::stringstream ss;
+	ss << "http://localhost:" << port << "/SPARQL";
+	serverURL = ss.str();
+    }
+
+    std::string exe = "../bin/sparql";
+
+    std::string serverS;
+    boost::thread server(Agent(exe + " -D --once"
+			       " --serve " + serverURL,
+			       serverS));
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    ::sleep(1);
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    ::sleep(3);
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    ::sleep(5);
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    std::string clientS;
+    boost::thread client(Agent(exe + " --service " + serverURL +
+			       " -e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
+			       clientS));
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    client.join();
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+    server.join();
+    w3c_sw_LINEN << "serverS: " << serverS << std::endl;
+
+    w3c_sw::RdfDB expected, got;
+    {
+	std::stringstream tss(clientS);
+	w3c_sw::IStreamContext tstream ("got:", tss, "text/trig");
+	w3c_sw::TrigSDriver parser("", &F);
+	parser.parse(tstream, &got, NULL);
+    }
+
+    {
+	std::stringstream ess
+	    ("{\n"
+	     "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+	     "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n"
+	     "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
+	     "}");
+	w3c_sw::IStreamContext estream ("expected:", ess, "text/trig");
+	w3c_sw::TrigSDriver parser(serverURL, &F);
+	parser.parse(estream, &expected, NULL);
+    }
+#endif /* THREADING != SWOb_DISABLED */
+#endif /* 0 */
+
+#if 0
+struct NetCatInteraction {
+    std::string clientS, serverS, serverURL;
+
+    NetCatInteraction (std::string serverParams,
+		       std::string clientParams) {
+	int port = 3333;
+	{
+	    std::stringstream ss;
+	    ss << port;
+	    serverURL = ss.str();
+	}
+
+	std::string exe = "/bin/nc";
+
+	std::string serverCmd("/bin/echo -e line1\\\\nline2 | (sleep 3 && echo starting && "
+			      + exe + " " + serverParams + 
+			      " -l " + serverURL +")");
+
+	char line[800];
+
+	FILE *serverPipe = popen(serverCmd.c_str(), "r");
+	if (serverPipe == NULL)
+	    throw std::string("popen") + strerror(errno);
+
+	if (fgets(line, sizeof line, serverPipe) == NULL ||
+	    strcmp("starting\n", line))
+	    throw std::string("server didn't print a status line");
+	serverS += line;
+
+	std::string clientCmd(exe + " 127.0.0.1 " + serverURL + "  && echo done");
+	w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
+	w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
+	FILE *clientPipe = popen(clientCmd.c_str(), "r");
+
+	int& argc = boost::unit_test::framework::master_test_suite().argc;
+	char** argv = boost::unit_test::framework::master_test_suite().argv;
+	w3c_sw_LINEN << "argc: " << argc << "\n";
+	for (int i = 1; i < argc; ++i)
+	    if (std::string("sleep") == argv[i])
+		sleep(1);
+
+	if (fgets(line, sizeof line, clientPipe) == NULL)
+	    throw std::string("client was speechless");
+	clientS += line;
+
+	w3c_sw_LINEN << "clientS: " << clientS << std::endl;
+
+	while (fgets(line, sizeof line, clientPipe) != NULL)
+	    clientS += line;
+	w3c_sw_LINEN << "clientS: " << clientS << std::endl;
+	if (pclose(clientPipe) == -1 && errno != ECHILD)
+	    throw std::string("pclose") + strerror(errno);
+
+	while (fgets(line, sizeof line, serverPipe) != NULL)
+	    serverS += line;
+	if (pclose(serverPipe) == -1 && errno != ECHILD)
+	    throw std::string("pclose") + strerror(errno);
+    }
+};
+
+int toy (int argc, char* argv[]) {
+    char line[80];
+    FILE* server = popen("/bin/echo -e line1\\\\nline2 | (sleep 3 && echo starting && nc -l 3333)", "r");
+    if (fgets(line, sizeof line, server) == NULL ||
+	strcmp("starting\n", line)) {
+	fprintf(stderr, "server didn't print a starting line");
+	return -1;
+    }
+
+    FILE* client = popen("nc 127.0.0.1 3333 && echo done", "r");
+    if (fgets(line, sizeof line, client) == NULL) {
+	fprintf(stderr, "client was speachless");
+	return -2;
+    }
+    fprintf(stderr, "%s", line);
+    while (fgets(line, sizeof line, client) != NULL) {
+	fprintf(stderr, "%s", line);
+    }
+    if (pclose(client) == -1 && errno != ECHILD) {
+	perror("pclose(client):");
+	return -3;
+    }
+    if (pclose(server) == -1 && errno != ECHILD) {
+	perror("pclose(server):");
+	return -4;
+    }
+    return 0;
+}
+
+#endif /* 0 */
 
