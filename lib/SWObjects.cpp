@@ -1940,7 +1940,7 @@ compared against
     size_t ServiceGraphPattern::defaultFederationRowLimit = 1000; // don't try to federation more than 1000 rows.
     bool ServiceGraphPattern::useFilters = false;
 
-    bool BasicGraphPattern::operator== (const BasicGraphPattern& ref) const {
+    bool BasicGraphPattern::onto (const BasicGraphPattern& ref) const {
 	ResultSet rs(NULL);
 	bindVariables(&rs, &ref);
 	// std::cerr << "rs: \n" << rs;

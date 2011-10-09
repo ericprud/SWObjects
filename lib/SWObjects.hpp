@@ -1775,7 +1775,10 @@ protected:
 
 public:
 
-    bool operator==(const BasicGraphPattern& ref) const;
+    bool onto(const BasicGraphPattern& ref) const;
+    bool operator== (const BasicGraphPattern& ref) const {
+	return onto(ref) && ref.onto(*this);
+    }
     /* Controls for operator==(BasicGraphPatter&)
      */
     static std::ostream* DiffStream;	// << diff strings to DiffStream .
