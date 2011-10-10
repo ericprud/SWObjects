@@ -88,6 +88,7 @@ namespace w3c_sw {
 			    ++parm;
 			}
 			if (!controller->getStopCommand().empty() && query == controller->getStopCommand()) {
+			    rep.status = webserver::reply::ok;
 			    head(sout, "Done!");
 			    sout << "    <p>Served " << engine.served << " queries.</p>\n";
 			    foot(sout);
