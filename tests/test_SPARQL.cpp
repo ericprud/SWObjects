@@ -376,63 +376,44 @@ BOOST_AUTO_TEST_CASE( empty_construct ) {
 }
 
 struct ServerInteraction {
-    std::string clientS, serverS, serverURL;
+    std::string exe, path;
+    int port; std::string hostIP;
+    std::string serverS, serverURL;
+    FILE *serverPipe;
 
-    ServerInteraction (std::string serverParams,
-			     std::string clientParams) {
-	int port = 31533;
+    ServerInteraction (std::string serverParams)
+	: exe("../bin/sparql"), path("/SPARQL"), port(31533), hostIP("127.0.0.1")
+    {
 	{
 	    std::stringstream ss;
-	    ss << "http://localhost:" << port << "/SPARQL";
+	    ss << "http://localhost:" << port << path;
 	    serverURL = ss.str();
 	}
-	std::string exe = "../bin/sparql";
 	char line[80];
 
 	/* Start the server and wait for it to listen.
 	 */
 	std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
 			      exe + " " + serverParams + 
-			      " --once --serve " + serverURL);
+			      " --serve " + serverURL);
 	// w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
-	FILE *serverPipe = popen(serverCmd.c_str(), "r");
+	serverPipe = popen(serverCmd.c_str(), "r");
 	if (serverPipe == NULL)
 	    throw std::string("popen") + strerror(errno);
 	if (fgets(line, sizeof line, serverPipe) == NULL ||
 	    strncmp("Working directory:", line, 18))
 	    throw std::string("server didn't print a status line");
 	serverS += line;
-	wait_connect("127.0.0.1", port);
-
-
-	/* Start the client and demand at least one line of output.
-	 */
-	std::string clientCmd(exe + " --service " + serverURL +
-			      " " + clientParams);
-	// w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
-	FILE *clientPipe = popen(clientCmd.c_str(), "r");
-	for (int tryNo = 0; tryNo < 2; ++tryNo)
-	    if (fgets(line, sizeof line, clientPipe) == NULL) {
-		if (errno != EINTR)
-		    throw std::string("no response from client process: ") + strerror(errno);
-	    } else {
-		clientS += line;
-		break;
-	    }
-
-	/* Read and close the client and server pipes.
-	 */
-	readToExhaustion(clientPipe, clientS, "client pipe");
-	readToExhaustion(serverPipe, serverS, "server pipe");
+	wait_connect(hostIP, port);
     }
 
     /** wait_connect - busywait trying to connect to a port.
      */
     static void wait_connect(std::string ip, int port) {
-	sockaddr_in clientService;
-	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr(ip.c_str());
-	clientService.sin_port = htons(port);
+	sockaddr_in remote;
+	remote.sin_family = AF_INET;
+	remote.sin_addr.s_addr = inet_addr(ip.c_str());
+	remote.sin_port = htons(port);
 
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	assert(sockfd != -1);
@@ -441,7 +422,7 @@ struct ServerInteraction {
 	time(&start);
 	for (;;) {
 	    // assert(sockfd != -1);
-	    if (connect(sockfd, (struct sockaddr *) &clientService, sizeof(clientService)) < 0) {
+	    if (connect(sockfd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
 	    	// w3c_sw_LINEN << " still can't connect: " << strerror(errno) << "\n";
 	    } else {
 	    	time(&finish);
@@ -487,13 +468,45 @@ struct ServerInteraction {
 
 };
 
-struct ServerTableQuery : ServerInteraction {
+struct ClientServerInteraction : ServerInteraction {
+    std::string clientS;
+
+    ClientServerInteraction (std::string serverParams,
+			     std::string clientParams)
+	: ServerInteraction(serverParams)
+    {
+	char line[80];
+
+	/* Start the client and demand at least one line of output.
+	 */
+	std::string clientCmd(exe + " --service " + serverURL +
+			      " " + clientParams);
+	// w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
+	FILE *clientPipe = popen(clientCmd.c_str(), "r");
+	for (int tryNo = 0; tryNo < 2; ++tryNo)
+	    if (fgets(line, sizeof line, clientPipe) == NULL) {
+		if (errno != EINTR)
+		    throw std::string("no response from client process: ") + strerror(errno);
+	    } else {
+		clientS += line;
+		break;
+	    }
+
+	/* Read and close the client and server pipes.
+	 */
+	readToExhaustion(clientPipe, clientS, "client pipe");
+	readToExhaustion(serverPipe, serverS, "server pipe");
+    }
+
+};
+
+struct ServerTableQuery : ClientServerInteraction {
     w3c_sw::ResultSet expected, got;
 
     ServerTableQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: ServerInteraction (serverParams, clientParams), expected(&F), got(&F)
+	: ClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
     {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
@@ -510,7 +523,8 @@ struct ServerTableQuery : ServerInteraction {
 /* Simple SELECT.
  */
 BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
-    ServerTableQuery i("-D", "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+    ServerTableQuery i("-D --once",
+		       "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
 		       "| ?s | ?p                                                | ?o                                       |\n"
 		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
 		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
@@ -522,7 +536,8 @@ BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
 /* SELECT with results in utf-8 box chars.
  */
 BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
-    ServerTableQuery i("-D", "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+    ServerTableQuery i("-D --once",
+		       "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
 		       "| ?s | ?p                                                | ?o                                       |\n"
 		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
 		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
@@ -534,7 +549,8 @@ BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
 /* POSTed SELECT.
  */
 BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
-    ServerTableQuery i("-D", "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
+    ServerTableQuery i("-D --once",
+		       "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
 		       "| ?s | ?p                                                | ?o                                       |\n"
 		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
 		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
@@ -543,17 +559,94 @@ BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
+
+struct HttpServerInteraction : ServerInteraction {
+    int clientfd;
+
+    HttpServerInteraction (std::string serverParams,
+			   std::string query)
+	: ServerInteraction (serverParams)
+    {
+	sockaddr_in remote;
+	remote.sin_family = AF_INET;
+	remote.sin_addr.s_addr = inet_addr(hostIP.c_str());
+	remote.sin_port = htons(port);
+
+	clientfd = socket(AF_INET, SOCK_STREAM, 0);
+	assert(clientfd != -1);
+
+	if (connect(clientfd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
+	    std::stringstream ss;
+	    ss << "failed to connect to "
+	       << hostIP << ":" << port << " - error: " << strerror(errno);
+	    throw ss.str();
+	}
+
+	std::stringstream reqSS;
+	reqSS << "POST " << path << " HTTP/1.1\r\n"
+	      << "Host: localhost:" << port << "\r\n"
+	      << "Content-Length: " << query.size() << "\r\n"
+	      << "Content-Type: application/x-www-form-urlencoded\r\n"
+	      << "\r\n"
+	      << query;
+
+	std::string req = reqSS.str();
+	const char* ptr = req.c_str();
+	for (size_t i = 0; i < req.size(); ) {
+	    ssize_t wrote = write(clientfd, ptr+i, req.size() - i);
+	    if (wrote == -1) {
+		std::stringstream ss;
+		ss << "failed to write " << req.size() - i << " bytes to "
+		   << hostIP << ":" << port << " - error: " << strerror(errno);
+		throw ss.str();
+	    }
+	    i += wrote;
+	}
+    }
+
+    ~HttpServerInteraction () {
+	close(clientfd);
+	if (pclose(serverPipe) == -1 && errno != ECHILD)
+	    throw std::string() + "pclose(server pipe)" + strerror(errno);
+	// Could call
+	//   readToExhaustion(serverPipe, serverS, "server pipe");
+	// but there's no reason to read from serverPipe.
+    }
+};
+
+/* POSTed STOP.
+ */
+BOOST_AUTO_TEST_CASE( D_post_STOP ) {
+    HttpServerInteraction i("-D --stop STOP", "query=STOP");
+    std::string response;
+    char line[80];
+    for (;;) {
+	ssize_t red = read(i.clientfd, line, sizeof line);
+	if (red == 0)
+	    break;
+	if (red < 0) {
+		std::stringstream ss;
+		ss << "failed to read " << (sizeof line) << " bytes from "
+		   << i.hostIP << ":" << i.port << " - error: " << strerror(errno);
+		throw ss.str();
+	}
+	response += std::string(line, red);
+    }
+    BOOST_CHECK_EQUAL(response.substr(0, 15), "HTTP/1.0 200 OK");
+    BOOST_CHECK(response.find("Done!") != std::string::npos);
+}
+
+
 #include "TrigSParser/TrigSParser.hpp"
 
-struct ServerGraphQuery : ServerInteraction {
+struct ServerGraphQuery : ClientServerInteraction {
     w3c_sw::RdfDB expected, got;
 
     ServerGraphQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: ServerInteraction (serverParams, clientParams)
+	: ClientServerInteraction (serverParams, clientParams)
     {
-
 	{
 	    std::stringstream tss(clientS);
 	    w3c_sw::IStreamContext tstream ("got:", tss, "text/trig");
@@ -573,7 +666,8 @@ struct ServerGraphQuery : ServerInteraction {
 /* Simple CONSTRUCT.
  */
 BOOST_AUTO_TEST_CASE( D_CONSTRUCT_SPO ) {
-    ServerGraphQuery i("-D", "-e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
+    ServerGraphQuery i("-D --once",
+		       "-e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
 		       "{\n"
 		       "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
 		       "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n"
