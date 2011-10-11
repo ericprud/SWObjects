@@ -336,13 +336,13 @@ namespace w3c_sw {
 		} else {
 		    return webserver::reply::declined;
 		}
-		rep.content = sout.str();
+		rep.setContent(sout.str());
 		return webserver::reply::ok;
 	    }
 	    catch (SimpleMessageException& e) {
 		rep.status = webserver::reply::bad_request;
 		rep.setContentType("text/html");
-		rep.content = e.what();
+		rep.setContent(e.what());
 	    } catch (std::exception& e) {
 		errorMessage(rep, query, e.what());
 	    } catch (std::string& e) {
@@ -362,7 +362,7 @@ namespace w3c_sw {
 		"    <p>yeilded</p>\n"
 		"    <pre>" << escapeHTML(what) << "</pre>\n"; 
 	    foot(sout);
-	    rep.content = sout.str();
+	    rep.setContent(sout.str());
 	}
 	std::string uriLink (const URI* target) {
 	    return std::string() + "&lt;<a href=\"" + escapeHTML(target->getLexicalValue()) + "\">" + escapeHTML(target->getLexicalValue()) + "</a>&gt;";
@@ -654,7 +654,7 @@ struct SimpleEngine {
 #endif /* !_MSC_VER */
 	    std::istreambuf_iterator<char> i(istr), e;
 	    std::string input(i, e);
-	    io::stream_buffer<FileHandleDevice> ofs(fileHandle, filename);
+	    boost::iostreams::stream_buffer<FileHandleDevice> ofs(fileHandle, filename);
 	    std::ostream os(&ofs);
 	    os << input;
 	    os.flush();
@@ -732,7 +732,6 @@ struct SimpleEngine {
 	    const URI* u = dynamic_cast<const URI*>(name);
 	    if (u != NULL) {
 		std::string outres = u->getLexicalValue();
-		bool matched;
 		for (std::vector<PathMap>::const_iterator it = pathMaps.begin();
 		     it != pathMaps.end(); ++it)
 		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);

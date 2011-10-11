@@ -148,6 +148,9 @@ namespace w3c_sw {
 
 	    /// The content to be sent in the reply.
 	    std::string content;
+	    void setContent (std::string s) {
+		content = s;
+	    }
 
 	    /// Convert the reply into a vector of buffers. The buffers do not own the
 	    /// underlying memory blocks, therefore the reply object must remain valid and
