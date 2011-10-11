@@ -40,7 +40,6 @@ namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 #include <boost/regex.hpp>
 #include <boost/iostreams/stream.hpp>
-namespace io = boost::iostreams;
 
 namespace sw = w3c_sw;
 
@@ -174,12 +173,12 @@ struct MyLoadEntry {
     MyLoadEntry (const MyLoadEntry& ref)
 	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
     void loadGraph () {
-	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
 				mediaType ? mediaType.get().c_str() : NULL, 
 				&TheServer.engine.webClient);
 
+	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
 	ResultSetsLoaded = TheServer.engine.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.engine.resultSet, &TheServer.engine.db);
     }
 };
