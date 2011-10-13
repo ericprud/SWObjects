@@ -11,8 +11,9 @@ namespace w3c_sw {
     template <class engine_type, class data_loader, class controller_type>
     class SimpleInterface : public WebHandler {
 	engine_type& engine;
-	std::string servicePath;
 	controller_type* controller;
+	std::string servicePath;
+	std::string interfacePath;
 	size_t exploreTripleCountLimit;
 	size_t exploreGraphCountLimit;
 
@@ -24,9 +25,9 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_defn;
 
     public:
-	SimpleInterface (engine_type& engine, std::string servicePath, controller_type* controller) : 
+	SimpleInterface (engine_type& engine, controller_type* controller, std::string servicePath, std::string interfacePath) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
-	    engine(engine), servicePath(servicePath), controller(controller), 
+	    engine(engine), controller(controller), servicePath(servicePath), interfacePath(interfacePath),
 	    // hard-code explore*CountLimit
 	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
@@ -67,7 +68,7 @@ namespace w3c_sw {
 			    query = parm->second;
 		    } else if (req.getMethod() == "POST" && req.getContentType().compare(0, 24, "application/sparql-query") == 0)
 			query = req.getBody();
-		    if (query == "" && path != servicePath) {
+		    if (query == interfacePath && path != servicePath) {
 			rep.status = webserver::reply::ok;
 			std::string body = getGraph->toString(MediaType("text/turtle"));
 			sout.write(body.c_str(), body.size());
@@ -250,7 +251,7 @@ namespace w3c_sw {
 					XMLSerializer::Attributes resultsAttrs;
 					resultsAttrs["id"] = "results";
 					resultsAttrs["class"] = "tablesorter";
-					rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : path);
+					rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : std::string("") + "/" + path);
 
 					/** construct reply from headers and XHTML body */
 					rep.status = webserver::reply::ok;
@@ -297,7 +298,7 @@ namespace w3c_sw {
 			    }
 			}
 		    }
-		} else if (path == "") {
+		} else if (path == interfacePath) {
 		    rep.status = webserver::reply::ok;
 		    head(sout, "Q&amp;D SPARQL Server");
 		    const char* method =

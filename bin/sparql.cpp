@@ -104,19 +104,24 @@ struct ServerConfig {
 struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined to be e.g. w3c_sw::WEBserver_asio
     sw::SimpleEngine engine;
     ServerConfig config;
-    std::string path;
     std::string stopCommand;
     MyServer (std::string pkAttribute) : engine(pkAttribute)
     {  }
     std::string getStopCommand () { return stopCommand; }
-    void runServer (sw::WebHandler& handler, std::string url, int serverPort) {
-	const sw::URI* serviceURI = engine.atomFactory.getURI(path);
-	sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
-	serviceGraph->addTriplePattern(engine.atomFactory.getTriple(
-		    serviceURI, 
-		    engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-		    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
-	{
+
+    /** runServer - start an HTTP server
+     * servicePath: (optional) add some service description about the service.
+     */
+    void runServer (sw::WebHandler& handler, int serverPort, std::string servicePath = "") {
+
+	if (!servicePath.empty()) {
+	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath);
+	    sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
+	    serviceGraph->addTriplePattern(engine.atomFactory.getTriple
+					   (serviceURI, 
+					    engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
+					    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
+
 	    char buf[1024];
 	    buf[0] = 0;
 #if _MSC_VER
@@ -1156,7 +1161,7 @@ int main(int ac, char* av[])
 		if (vm.count("stop"))
 		    TheServer.stopCommand = vm["stop"].as<std::string>();
 		int serverPort = 8888;
-
+		std::string servicePath;
 #if REGEX_LIB == SWOb_BOOST
 		boost::regex re;
 		boost::cmatch matches;
@@ -1174,19 +1179,22 @@ int main(int ac, char* av[])
 		std::string ports(matches[PORT].first, matches[PORT].second);
 		std::istringstream portss(ports);
 		portss >> serverPort;
-		TheServer.path = std::string(matches[PATH].first + 1, matches[PATH].second);
+		servicePath = std::string(matches[PATH].first + 1, matches[PATH].second);
 #else /* !REGEX_LIB == SWOb_BOOST */
-		TheServer.path = "SPARQL";
+		servicePath = "SPARQL";
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
 		sw::ChainedHandler handler;
-		sw::SimpleInterface<sw::SimpleEngine, MyLoadList, MyServer> dynamicHandler(TheServer.engine, TheServer.path, &TheServer);
+		sw::SimpleInterface<sw::SimpleEngine, MyLoadList, MyServer>
+		    // p3 is a controller, which, do to current limitations in
+		    // web_server_asio, is the same as the server.
+		    dynamicHandler(TheServer.engine, &TheServer, servicePath, "");
 		handler.add_handler(&dynamicHandler);
 		sw::StaticHandler stat;
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
 		handler.add_handler(&stat);
 
-		TheServer.runServer(handler, ServerURI, serverPort);
+		TheServer.runServer(handler, serverPort, servicePath);
 	    }
 
 	    sw::RdfDB constructed(&TheServer.engine.xmlParser); // For operations which create a new database.
