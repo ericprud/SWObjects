@@ -563,7 +563,7 @@ namespace w3c_sw {
 
 			    std::string path(request_->getPath());
 			    sout << 
-				"    <p>path: " << path << "</p>\n"
+				"    <p>path: " << WebHandler::escapeHTML(path) << "</p>\n"
 				"    <p>Try the <a href=\"/\">query interface</a>.</p>\n"
 				 << std::endl;
 			    reply_.status = webserver::reply::not_found;
@@ -573,8 +573,8 @@ namespace w3c_sw {
 			    // Why not dump the HTTP headers? Sure...
 			    for (webserver::request::headerset::const_iterator it = request_->headers.begin();
 				 it != request_->headers.end(); ++it)
-				sout << "      <li>" << it->name 
-				     << ": " << it->value 
+				sout << "      <li>" << WebHandler::escapeHTML(it->name) 
+				     << ": " << WebHandler::escapeHTML(it->value) 
 				     << "</li>\n" << std::endl;
 			    sout << "    </ul>\n" << std::endl;
 
