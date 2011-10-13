@@ -354,16 +354,20 @@ namespace w3c_sw {
 	    last.operation = new Modify(del, ins, last.whereClause);
 	}
 	virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
-	    last.whereClause = NULL;
-	    if (p_WhereClause != NULL)
+	    WhereClause* where = NULL;
+	    if (p_WhereClause != NULL) {
 		p_WhereClause->express(this);
-	    WhereClause* where = last.whereClause;
+		where = last.whereClause;
+	    }
 	    p_GraphTemplate->express(this);
 	    last.operation = new Insert(last.tableOperation, where);
 	}
 	virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
-	    p_WhereClause->express(this);
-	    WhereClause* where = last.whereClause;
+	    WhereClause* where = NULL;
+	    if (p_WhereClause != NULL) {
+		p_WhereClause->express(this);
+		where = last.whereClause;
+	    }
 	    p_GraphTemplate->express(this);
 	    last.operation = new Delete(last.tableOperation, where);
 	}
