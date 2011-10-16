@@ -112,15 +112,17 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     /** runServer - start an HTTP server
      * servicePath: (optional) add some service description about the service.
      */
-    void runServer (sw::WebHandler& handler, int serverPort, std::string servicePath = "") {
+    void runServer (sw::WebHandler& handler, int serverPort, std::string servicePath = "", bool addServiceDesc = true) {
 
 	if (!servicePath.empty()) {
 	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath);
-	    sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
-	    serviceGraph->addTriplePattern(engine.atomFactory.getTriple
-					   (serviceURI, 
-					    engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-					    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
+	    sw::BasicGraphPattern* serviceGraph = addServiceDesc ? engine.db.ensureGraph(serviceURI) : NULL;
+	    if (serviceGraph != NULL)
+		serviceGraph->addTriplePattern
+		    (engine.atomFactory.getTriple
+		     (serviceURI, 
+		      engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
+		      engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
 
 	    char buf[1024];
 	    buf[0] = 0;
@@ -143,10 +145,12 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	    if (buf[0]) {
 		std::cout << "Working directory: " << buf << " ." << std::endl;
 		std::string base = std::string("file://localhost") + buf;
-		serviceGraph->addTriplePattern(engine.atomFactory.getTriple(
-		    serviceURI, 
-		    engine.atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
-		    engine.atomFactory.getURI(base)));
+		if (serviceGraph != NULL)
+		    serviceGraph->addTriplePattern
+			(engine.atomFactory.getTriple
+			 (serviceURI, 
+			  engine.atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
+			  engine.atomFactory.getURI(base)));
 	    }
 	}
 
@@ -1194,7 +1198,7 @@ int main(int ac, char* av[])
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
 		handler.add_handler(&stat);
 
-		TheServer.runServer(handler, serverPort, servicePath);
+		TheServer.runServer(handler, serverPort, servicePath); // To add no service triples, add ", false".
 	    }
 
 	    sw::RdfDB constructed(&TheServer.engine.xmlParser); // For operations which create a new database.

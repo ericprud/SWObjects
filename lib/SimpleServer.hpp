@@ -59,7 +59,7 @@ namespace w3c_sw {
 
 		    rep.setContentType("text/html");
 		    foot(sout);
-		} else if (getGraph != NULL) {
+		} else if (path == servicePath || getGraph != NULL) {
 		    webserver::request::parmmap::const_iterator parm;
 		    if (req.getMethod() == "GET"
 			|| (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
