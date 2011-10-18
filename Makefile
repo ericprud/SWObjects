@@ -41,7 +41,12 @@ WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
-# Apache module stuff
+# Apache modules:
+# 
+# One can override APXS to point to a debug build of apache which will reference
+# a config_vars.mk with CFLAGS and EXTRACFLAGS containing -g, e.g.
+# APXS='perl ../apache/apache2-2.2.17/support/apxs' make -k apache/mod_sparul.la -Wapache/mod_sparul.cpp
+# $(apache2-2.2.17$ ./configure --enable-maintainer-mode) will create such a config_vars.mk
 APXS ?= apxs2
 CODEA ?= ../codea
 CCL ?= ../ccl
