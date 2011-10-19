@@ -377,12 +377,14 @@ BOOST_AUTO_TEST_CASE( empty_construct ) {
 
 struct ServerInteraction {
     std::string exe, path;
-    int port; std::string hostIP;
+    std::string hostIP;
+    int port;
     std::string serverS, serverURL;
     FILE *serverPipe;
 
     ServerInteraction (std::string serverParams)
-	: exe("../bin/sparql"), path("/SPARQL"), port(31533), hostIP("127.0.0.1")
+	: exe("../bin/sparql"), path("/SPARQL"), hostIP("127.0.0.1"), 
+	  port(nextOpenPort("127.0.0.1", 31533, 32767))
     {
 	{
 	    std::stringstream ss;
@@ -404,12 +406,32 @@ struct ServerInteraction {
 	    strncmp("Working directory:", line, 18))
 	    throw std::string("server didn't print a status line");
 	serverS += line;
-	wait_connect(hostIP, port);
+	waitConnect(hostIP, port);
     }
 
-    /** wait_connect - busywait trying to connect to a port.
+    static int nextOpenPort (std::string ip, int start, int end) {
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockaddr_in remote;
+	remote.sin_family = AF_INET;
+	remote.sin_addr.s_addr = inet_addr(ip.c_str());
+
+	for (int port = start; port <= end; ++port) {
+	    remote.sin_port = htons(port);
+	    int ret = bind(sockfd, (struct sockaddr *) &remote, sizeof(remote));
+	    // w3c_sw_LINEN << " bind(" << port << ") = " << ret << " : " << strerror(errno) << "\n";
+	    if (ret != -1) {
+		close (sockfd);
+		return port;
+	    }
+	}
+	std::stringstream ss;
+	ss << "Unable to find an available port between " << start << " and " << end << ".";
+	throw ss.str();
+    }
+
+    /** waitConnect - busywait trying to connect to a port.
      */
-    static void wait_connect(std::string ip, int port) {
+    static void waitConnect (std::string ip, int port) {
 	sockaddr_in remote;
 	remote.sin_family = AF_INET;
 	remote.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -418,14 +440,11 @@ struct ServerInteraction {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	assert(sockfd != -1);
 
-	time_t start, finish;
-	time(&start);
 	for (;;) {
 	    // assert(sockfd != -1);
 	    if (connect(sockfd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
 	    	// w3c_sw_LINEN << " still can't connect: " << strerror(errno) << "\n";
 	    } else {
-	    	time(&finish);
 	    	// w3c_sw_LINEN << "Connected after " << (finish - start) << " seconds.\n";
 	    	close(sockfd);
 	    	break;
@@ -433,10 +452,10 @@ struct ServerInteraction {
 	}
     }
 
-    /** wait_connect - busywait grepping for port in lsof.
-     * (An alternative to wait_connect.)
+    /** waitLsof - busywait grepping for port in lsof.
+     * (An alternative to waitLsof.)
      */
-    static void wait_lsof(int port) {
+    static void waitLsof (int port) {
 	std::stringstream ss;
 	ss << "lsof -nP -iTCP -sTCP:LISTEN | grep " << port;
 	char buf[80];
