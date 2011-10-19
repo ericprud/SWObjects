@@ -384,7 +384,7 @@ struct ServerInteraction {
 
     ServerInteraction (std::string serverParams)
 	: exe("../bin/sparql"), path("/SPARQL"), hostIP("127.0.0.1"), 
-	  port(nextOpenPort("127.0.0.1", 31533, 32767))
+	  port(firstOpenPort("127.0.0.1", 31533, 32767))
     {
 	{
 	    std::stringstream ss;
@@ -409,7 +409,7 @@ struct ServerInteraction {
 	waitConnect(hostIP, port);
     }
 
-    static int nextOpenPort (std::string ip, int start, int end) {
+    static int firstOpenPort (std::string ip, int start, int end) {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	sockaddr_in remote;
 	remote.sin_family = AF_INET;
