@@ -325,6 +325,7 @@ namespace w3c_sw {
 	std::string defaultPKAttr;
 	KeyMap keyMap;
 	std::string driver;
+	const Expression* bindingExpression;
 
     public:
 	//static std::ostream** ErrorStream;
@@ -811,14 +812,33 @@ namespace w3c_sw {
 		}
 	}
 	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
-	    assert (false);
+	    const VariableList* knownVars = p_ResultSet->getKnownVars();
+	    const std::set<const TTerm*> s(knownVars->begin(), knownVars->end());
+	    bindingExpression = p_ResultSet->getFederationExpression(s, false);
 	}
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    w3c_sw_START("p_GroupGraphPattern");
 	    Consequents consequents(p_GroupGraphPattern, selectVars);
 	    consequentsP = &consequents;
 	    curTableOperation = p_GroupGraphPattern;
+
+	    bindingExpression = NULL;
 	    curTableOperation->express(this);
+	    if (bindingExpression != NULL) {
+		mode = MODE_constraint;
+		try {
+		    bindingExpression->express(this);
+		    curQuery->addConstraint(curConstraint);
+		} catch (nonLocalIdentifierException& e) {
+		    SPARQLSerializer ss;
+		    bindingExpression->express(&ss);
+		    std::cerr
+			<< "filter {" << ss.str() << "}"
+			<< " is not handled by stem " << stem
+			<< " because " << e.what() << std::endl;
+		}
+		delete bindingExpression;
+	    }
 	}
 	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
 	    w3c_sw_NEED_IMPL("SQLizer(operationSet)");
