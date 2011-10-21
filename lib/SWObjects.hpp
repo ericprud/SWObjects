@@ -3533,9 +3533,7 @@ public:
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++)
 		p_OrderConditions->at(i).expression->express(this);
     }
-    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
-	w3c_sw_NEED_IMPL("RecursiveExpressor::bindingClause");
-    }
+    virtual void bindingClause(const BindingClause* const, const ResultSet* p_ResultSet);
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	p_GroupGraphPattern->express(this);
     }

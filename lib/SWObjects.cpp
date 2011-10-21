@@ -529,6 +529,13 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
+void RecursiveExpressor::bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+    const VariableList* vars = p_ResultSet->getKnownVars();
+    for (VariableList::const_iterator it = vars->begin();
+	 it != vars->end(); ++it)
+	(*it)->express(this);
+}
+
 #define XSDCONST(lname) { URI("http://www.w3.org/2001/XMLSchema#" #lname), NULL }
 #define XPATHCONST(lname) { URI("http://www.w3.org/2005/xpath-functions#" #lname), #lname }
 #define XPATHCNST2(lname, op) { URI("http://www.w3.org/2005/xpath-functions#" #lname), op }
@@ -2176,17 +2183,25 @@ compared against
 	      /* .7 */ "text/html;q=.7");
 
 	const VariableList* knownVars = rs->getKnownVars();
+	// for (std::set<const TTerm*>::const_iterator known = vars.vars.begin(); known != vars.vars.end(); ++known)
+	//     w3c_sw_LINEN << "pattern " << op->toString() << " has " << (*known)->toString() << "\n";
+	// for (VariableList::const_iterator known = knownVars->begin(); known != knownVars->end(); ++known)
+	//     w3c_sw_LINEN << "rs " << *rs << " has " << (*known)->toString() << "\n";
 	std::vector<const TTerm*> varsIntersection(vars.vars.size() + knownVars->size());
 	std::vector<const TTerm*>::iterator end =
 	    std::set_intersection (vars.vars.begin(), vars.vars.end(),
 				   knownVars->begin(), knownVars->end(),
 				   varsIntersection.begin());
 	varsIntersection.resize(end - varsIntersection.begin());
+	// for (std::vector<const TTerm*>::const_iterator isect = varsIntersection.begin(); isect != varsIntersection.end(); ++isect)
+	//     w3c_sw_LINEN << "intersection " << (*isect)->toString() << "\n";
 
 	if (rs->empty()
 	    || varsIntersection.size() == 0
 	    || rs->size() > ServiceGraphPattern::defaultFederationRowLimit) {
 	    p.set("query", query->toString());
+	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		<< "Querying <" << service->getLexicalValue() << "> for\n" << query->toString() << "\n";
 	} else if (ServiceGraphPattern::useFilters) {
 	    /*
 	     * Constrain query with any existing result bindings.
@@ -2195,15 +2210,16 @@ compared against
 	    const Operation* rsConstrained =
 		rs->getConstrainedOperation(query);
 	    p.set("query", rsConstrained->toString());
+	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		<< "Querying <" << service->getLexicalValue() << "> for\n" << rsConstrained->toString() << "\n";
 	    delete rsConstrained;
 	} else {
 	    // ... or some FILTERs on the operation.
 	    p.set("query", query->toString() + rs->getBindingsString(varsIntersection));
+	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		<< "Querying <" << service->getLexicalValue() << "> for\n" << query->toString() + rs->getBindingsString(varsIntersection) << "\n";
 	}
 	delete query;
-
-	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
-	    << "Querying <" << service->getLexicalValue() << "> for\n" << p;
 
 	/* Do an HTTP GET and parse results into a ResultSet. */
 	boost::shared_ptr<IStreamContext> istr;

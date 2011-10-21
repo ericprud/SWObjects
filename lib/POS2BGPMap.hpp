@@ -256,6 +256,13 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
+	    virtual void bindingClause (const BindingClause* const self, const ResultSet* p_ResultSet) {
+		_BindingStrength oldOptState = optState;
+		optState = _Binding_SELECT;
+		RecursiveExpressor::bindingClause(self, p_ResultSet);
+		optState = oldOptState;
+	    }
+
 	    /* Add _Binding_SELECT where necessary. */
 	    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
 		_BindingStrength oldOptState = optState;
