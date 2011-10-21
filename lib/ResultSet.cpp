@@ -809,7 +809,8 @@ namespace w3c_sw {
 	return xml;
     }
 
-    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) { // Early returns
+    XMLSerializer* ResultSet::toHtmlTable (XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath) const {
+	// Early returns
 	if (resultType != RESULT_Tabular) {
 	    xml->leaf("pre", toString(MediaType("text/turtle")));
 	    return xml;

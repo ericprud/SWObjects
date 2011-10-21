@@ -782,7 +782,9 @@ namespace w3c_sw {
 		throw(std::runtime_error("ConstructResultSet has no AtomFactory."));
 	    return atomFactory;
 	}
-	std::string toString(NamespaceMap* namespaces = NULL) const;
+	// Easy toString function to call from debugger.
+	std::string toString() const { return toString("text/sparql-results"); }
+	std::string toString(NamespaceMap* namespaces) const;
 	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) const {
 	    if (preferDb || resultType == RESULT_Graphs) {
 		// text/ntriples , text/turtle , text/trig
@@ -802,7 +804,7 @@ namespace w3c_sw {
 	    return size() == 1 && (*results.begin())->size() == 0;
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
-	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "");
+	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "") const;
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }
 	ResultSetIterator end () { return results.end(); }
