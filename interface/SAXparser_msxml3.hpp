@@ -20,27 +20,6 @@ using namespace MSXML2;
 
 namespace w3c_sw {
 
-    std::string to8bit (wchar_t __RPC_FAR *wchar, int len) {
-	std::wstring wstr(wchar);
-	if (len == -1)
-	    len = (int)wstr.length();
-	std::string str;
-	int i = 0;
-	for (std::wstring::iterator it = wstr.begin();
-	     i < len; ++it, ++i)
-	    str += (char)*it;
-	return str;
-    }
-
-    std::wstring to16bit (const char* p) {
-	std::string str(p);
-	std::wstring wstr;
-	for (std::string::iterator it = str.begin();
-	     it != str.end(); ++it)
-	    wstr += (wchar_t)*it;
-	return wstr;
-    }
-
     class SAXparser_msxml3 : public NSdInsulatedSAXparser {
     protected:
 	struct NsSet {
@@ -129,9 +108,9 @@ namespace w3c_sw {
 	    virtual HRESULT STDMETHODCALLTYPE endDocument( void)
 	    {return S_OK;}
         
-	    virtual HRESULT STDMETHODCALLTYPE startPrefixMapping(wchar_t __RPC_FAR *pwchPrefix,
+	    virtual HRESULT STDMETHODCALLTYPE startPrefixMapping(unsigned short *pwchPrefix,
 								 int cchPrefix,
-								 wchar_t __RPC_FAR *pwchUri,
+								 unsigned short *pwchUri,
 								 int cchUri) {
 		/* Cheasy re-use of std::stack<NSmapImpl>nsz to record single additons to map. */
 		NSmapImpl nsframe(h->nsz.top());
@@ -140,17 +119,17 @@ namespace w3c_sw {
 		return S_OK;
 	    }
         
-	    virtual HRESULT STDMETHODCALLTYPE endPrefixMapping(wchar_t __RPC_FAR *pwchPrefix,
+	    virtual HRESULT STDMETHODCALLTYPE endPrefixMapping(unsigned short *pwchPrefix,
 							       int cchPrefix) {
 		h->nsz.pop();
 		return S_OK;
 	    }
         
-	    HRESULT STDMETHODCALLTYPE startElement(wchar_t __RPC_FAR *pwchNamespaceUri,
+	    HRESULT STDMETHODCALLTYPE startElement(unsigned short *pwchNamespaceUri,
 						   int cchNamespaceUri,
-						   wchar_t __RPC_FAR *pwchLocalName,
+						   unsigned short *pwchLocalName,
 						   int cchLocalName,
-						   wchar_t __RPC_FAR *pwchRawName,
+						   unsigned short *pwchRawName,
 						   int cchRawName,
 						   ISAXAttributes __RPC_FAR *pAttributes)
 	    {
@@ -163,11 +142,11 @@ namespace w3c_sw {
 		return S_OK;
 	    }
 
-	    HRESULT STDMETHODCALLTYPE endElement(wchar_t __RPC_FAR *pwchNamespaceUri,
+	    HRESULT STDMETHODCALLTYPE endElement(unsigned short *pwchNamespaceUri,
 						 int cchNamespaceUri,
-						 wchar_t __RPC_FAR *pwchLocalName,
+						 unsigned short *pwchLocalName,
 						 int cchLocalName,
-						 wchar_t __RPC_FAR *pwchRawName,
+						 unsigned short *pwchRawName,
 						 int cchRawName)
 	    {
 		SimpleNsMap nsMap(h->nsz.top());
@@ -177,7 +156,7 @@ namespace w3c_sw {
 		return S_OK;
 	    }
 
-	    virtual HRESULT STDMETHODCALLTYPE characters(wchar_t __RPC_FAR *pwchChars,
+	    virtual HRESULT STDMETHODCALLTYPE characters(unsigned short *pwchChars,
 							 int cchChars)
 	    {
 		SimpleNsMap nsMap(h->nsz.top());
@@ -186,19 +165,19 @@ namespace w3c_sw {
 	    }
 
 	    virtual HRESULT STDMETHODCALLTYPE ignorableWhitespace( 
-								  wchar_t __RPC_FAR *pwchChars,
+								  unsigned short *pwchChars,
 								  int cchChars)
 	    {return S_OK;}
         
 	    virtual HRESULT STDMETHODCALLTYPE processingInstruction( 
-								    wchar_t __RPC_FAR *pwchTarget,
+								    unsigned short *pwchTarget,
 								    int cchTarget,
-								    wchar_t __RPC_FAR *pwchData,
+								    unsigned short *pwchData,
 								    int cchData)
 	    {return S_OK;}
         
 	    virtual HRESULT STDMETHODCALLTYPE skippedEntity( 
-							    wchar_t __RPC_FAR *pwchName,
+							    unsigned short *pwchName,
 							    int cchName)
 	    {return S_OK;}
 	};
@@ -351,6 +330,25 @@ namespace w3c_sw {
 	// 	      file + "\".\n" );
 	//     }
 	// }
+
+	static std::string to8bit (unsigned short *wchar, int len) {
+	    // Cast unsigned short* to LPCWSTR, which is a, i guess, short*.
+	    // v-- WC_ERR_INVALID_CHARS
+	    int size = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)wchar, len, NULL, 0, NULL, NULL);
+	    std::string ret;
+	    ret.resize(size);
+	    WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)wchar, len, &ret[0], size, NULL, NULL);
+	    return ret;
+	}
+
+	static std::wstring to16bit (const char* p) {
+	    std::string str(p);
+	    std::wstring wstr;
+	    for (std::string::iterator it = str.begin();
+		 it != str.end(); ++it)
+		wstr += (wchar_t)*it;
+	    return wstr;
+	}
 
     };
 
