@@ -15,55 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_07B9B349A5424BE7BF0D6DF1447748B2"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_28668CBDAF6248C1BEC750A04695CEA5"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_48D92FDC6F9B48D8B0A5BC3FC30860DF"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_4D5F48B2E5B240ACB4DCD42C6E90BBC6"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_60B6719C7F4A43AB9FB4CAB1EA3C7C79"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_69576F571A2A4FDDB5A9358955DE6D42"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_9E4DBC22905145EBB6E9226D5BADD66A"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C82B9DFFC1E941EE8F52D134C0EC0396"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E2DF28931C124B2BB500A1F363FA11CE"
+        "MsmKey" = "8:_A045B5D9C95E4C07B6C214B066E02EF0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -92,6 +50,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -151,112 +122,12 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_07B9B349A5424BE7BF0D6DF1447748B2"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_date_time-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_date_time-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_28668CBDAF6248C1BEC750A04695CEA5"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_program_options-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_program_options-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_48D92FDC6F9B48D8B0A5BC3FC30860DF"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_regex-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_regex-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4D5F48B2E5B240ACB4DCD42C6E90BBC6"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_system-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_system-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60B6719C7F4A43AB9FB4CAB1EA3C7C79"
-            {
-            "SourcePath" = "8:C:\\Program Files\\MySQL\\MySQL Server 5.1\\lib\\opt\\libmysql.dll"
-            "TargetName" = "8:libmysql.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_69576F571A2A4FDDB5A9358955DE6D42"
             {
-            "SourcePath" = "8:Z:\\release\\SPARQL.exe"
+            "SourcePath" = "8:..\\Release\\SPARQL.exe"
             "TargetName" = "8:SPARQL.exe"
             "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
+            "Folder" = "8:_254D809D339C4917BAC94D2F90C58B4B"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -271,52 +142,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9E4DBC22905145EBB6E9226D5BADD66A"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A045B5D9C95E4C07B6C214B066E02EF0"
             {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_filesystem-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_filesystem-vc90-mt-1_42.dll"
+            "SourcePath" = "8:C:\\Program Files (x86)\\MySQL\\MySQL Server 5.5\\lib\\libmysql.dll"
+            "TargetName" = "8:libmysql.dll"
             "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C82B9DFFC1E941EE8F52D134C0EC0396"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_unit_test_framework-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_unit_test_framework-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E2DF28931C124B2BB500A1F363FA11CE"
-            {
-            "SourcePath" = "8:C:\\Program Files\\boost\\boost_1_42\\lib\\boost_iostreams-vc90-mt-1_42.dll"
-            "TargetName" = "8:boost_iostreams-vc90-mt-1_42.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_5C1D8B40B48D47488C58000344EE1F82"
+            "Folder" = "8:_254D809D339C4917BAC94D2F90C58B4B"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -399,7 +230,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SPARQL"
         "ProductCode" = "8:{7666DBFE-6AB6-4EAD-ADE8-529B362C7323}"
-        "PackageCode" = "8:{1BD5D602-2B6B-4F42-9D17-A2BB1869AF3B}"
+        "PackageCode" = "8:{62832E68-6C5B-4BEA-A64C-D79968990A9E}"
         "UpgradeCode" = "8:{9CF3093F-3D4E-4812-9846-94445FCA3D8A}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"

@@ -163,6 +163,28 @@
 			Name="grammar"
 			>
 			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\lib\MapSetParser\MapSetParser.ypp"
 				>
 				<FileConfiguration
@@ -186,6 +208,28 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.ypp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="BisonParser"
+						Defines="true"
+						OutputFile="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SQLParser\SQLParser.ypp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -250,50 +294,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.ypp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="BisonParser"
-						Defines="true"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="BisonParser"
-						Defines="true"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SQLParser\SQLParser.ypp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="BisonParser"
-						Defines="true"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="BisonParser"
-						Defines="true"
-						OutputFile="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Source Files"
@@ -303,6 +303,46 @@
 			<File
 				RelativePath="..\..\lib\exs.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsScanner.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\MapSetParser\MapSetParser.cpp"
@@ -326,46 +366,6 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\MapSetScanner.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SQLParser\SQLParser.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SQLScanner.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -449,8 +449,56 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\lib\SQLParser\SQLParser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SQLScanner.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\lib\SWObjects.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Detect64BitPortabilityProblems="false"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\TrigSParser\TrigSParser.cpp"
@@ -532,46 +580,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\JSONresultsScanner.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						WarningLevel="2"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -591,6 +599,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\JSONresultsScanner.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\location.hpp"
 				>
 			</File>
@@ -600,14 +616,6 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\MapSetScanner.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\SQLParser\SQLParser.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\SQLScanner.hpp"
 				>
 			</File>
 			<File
@@ -659,6 +667,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\SQLParser\SQLParser.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\SQLScanner.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\stack.hpp"
 				>
 			</File>
@@ -684,14 +700,6 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\TurtleSScanner.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\JSONresultsScanner.hpp"
 				>
 			</File>
 			<File
