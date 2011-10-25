@@ -22,14 +22,11 @@
 #if defined(_WIN32)
   #include <boost/function.hpp>
   #include <boost/thread/win32/mutex.hpp>
-  namespace boost {
-    typedef boost::asio::detail::thread thread;
-  }
 #else // !defined(_WIN32)
   #include <boost/thread.hpp>
   #include <pthread.h>
-  #include <signal.h>
 #endif // !defined(_WIN32)
+#include <signal.h>
 
 #if defined(_WIN32)
 /* count on WIN32's thread-local storage and steal gmtime_r from
@@ -770,7 +767,7 @@ namespace w3c_sw {
 	web_server_asio () : server(NULL) {  }
 	void stop () {
 	    // politely HUP the process as if it were a ^C'd.
-	    kill(getpid(), SIGHUP);
+	    ::raise(SIGINT); // no SIGHUP on Windows.
 	    /*
 	    could do this more elegantly:
 	    serve set's member boost::thread* masterThread;
@@ -787,11 +784,11 @@ namespace w3c_sw {
 #if defined(_WIN32)
 
 	    // Initialise server.
-	    webserver::server s(address, port, num_threads, handler, config);
+	    webserver::server<server_config> s(address, port, num_threads, handler, config);
 	    server = &s;
 
 	    // Set console control handler to allow server to be stopped.
-	    console_ctrl_function = boost::bind(&webserver::server::stop, &s);
+	    console_ctrl_function = boost::bind(&webserver::server<server_config>::stop, &s);
 	    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 
 	    // Run the server until stopped.
@@ -834,7 +831,8 @@ namespace w3c_sw {
     };
 
 #if defined(_WIN32)
-    boost::function0<void> web_server_asio::console_ctrl_function = NULL;
+    template <class server_config>
+    boost::function0<void> web_server_asio<server_config>::console_ctrl_function = NULL;
 #endif // defined(_WIN32)
 
 } // namespace w3c_sw
