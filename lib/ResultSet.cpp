@@ -441,7 +441,8 @@ namespace w3c_sw {
 			: FunctionState (groupIndexRef, TTerm::FUNC_count) {  }
 		    ~CountState () {  }
 		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */) const {
-			return atomFactory->getNumericRDFLiteral(mitoa(++(((CountState*)this)->counts[groupIndexRef])), ((CountState*)this)->counts[groupIndexRef]);
+			int c = ++((CountState*)this)->counts[groupIndexRef];
+			return atomFactory->getNumericRDFLiteral(mitoa(c), c);
 		    }
 		};
 		struct SumState : public FunctionState { // FunctionCall for virtual eval
