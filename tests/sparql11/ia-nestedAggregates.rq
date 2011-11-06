@@ -1,0 +1,27 @@
+PREFIX : <http://example.org/>
+SELECT ?ia ?one ?two ?three ?pool
+FROM <ia-nestedAggregates.ttl>
+{
+  {
+      SELECT ?ia ?one ?two ?three (COUNT(*) AS ?viewCount)
+      {
+        ?ia :feature1 ?one ; :feature2 ?two ; :feature3 ?three ; :seenIn ?seenIn
+      }
+      GROUP BY ?ia ?one ?two ?three
+  }
+  FILTER (?viewCount=1)
+
+  {
+    SELECT ?one ?two ?three ?viewCount2 (COUNT(*) AS ?pool)
+    {
+      { SELECT ?ia ?one ?two ?three (COUNT(*) AS ?viewCount2) {
+        ?ia :feature1 ?one ; :feature2 ?two ; :feature3 ?three ; :seenIn ?seenIn
+        }
+        GROUP BY ?ia ?one ?two ?three
+      }
+      FILTER (?viewCount2=1)
+    }
+    GROUP BY ?one ?two ?three ?viewCount2
+  }
+}
+ORDER by ?one ?two ?three ?ia

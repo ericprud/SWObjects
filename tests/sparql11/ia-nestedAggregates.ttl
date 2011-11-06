@@ -1,0 +1,6 @@
+@prefix : <http://example.org/> .
+<IA1abc1c>  :feature1 "a" ; :feature2 "b" ; :feature3 "c" ; :seenIn "CC" .
+<IA1abc1m>  :feature1 "a" ; :feature2 "b" ; :feature3 "c" ; :seenIn "MLO" .
+<IA2abc1cm> :feature1 "a" ; :feature2 "b" ; :feature3 "c" ; :seenIn "CC" , "MLO" .
+<IA2abc2cm> :feature1 "a" ; :feature2 "b" ; :feature3 "c" ; :seenIn "CC" , "MLO" .
+<IA1abd1c>  :feature1 "a" ; :feature2 "b" ; :feature3 "d" ; :seenIn "CC" .

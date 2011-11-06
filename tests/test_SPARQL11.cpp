@@ -45,6 +45,24 @@ end
      */
     GRAPH_TEST(NULL, "sparql11/count-star.rq", "sparql11/count-star.srx");
 }
+BOOST_AUTO_TEST_CASE( nestedAggregates ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++--------+
+| ?count |
+|      3 |
++--------+
+     */
+    GRAPH_TEST(NULL, "sparql11/ia-nestedAggregates.rq", "sparql11/ia-nestedAggregates.srt");
+}
 BOOST_AUTO_TEST_CASE( groupBy_v ) {
     /* name: 
      * 
