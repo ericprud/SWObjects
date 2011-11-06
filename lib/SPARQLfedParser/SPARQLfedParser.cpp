@@ -726,7 +726,7 @@ namespace w3c_sw {
 	      (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(7) - (7)].p_BindingClause), (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern);
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (4)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(7) - (3)].p_Project).distinctness, (yysemantic_stack_[(7) - (3)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(7) - (5)].p_WhereClause), (yysemantic_stack_[(7) - (6)].p_SolutionModifier))));
 	  driver.curGraphName = (yysemantic_stack_[(7) - (2)].p_TTerm);
-	  driver.countStar = (yysemantic_stack_[(7) - (1)].p_TTerm);
+	  driver.countStar = (yysemantic_stack_[(7) - (1)].p_parentCountStar);
       }
     break;
 
