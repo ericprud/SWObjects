@@ -313,7 +313,8 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
 	    p_SolutionModifier->express(this);
-	    last.operation = new Select(p_distinctness, varSet, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier);
+	    SolutionModifier* solutionModifier = last.solutionModifier;
+	    last.operation = new Select(p_distinctness, varSet, _DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
 	virtual void subSelect (const SubSelect* const, const Select* p_Select) {
 	    p_Select->express(this);
@@ -325,7 +326,8 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
 	    p_SolutionModifier->express(this);
-	    last.operation = new Construct(dynamic_cast<DefaultGraphPattern*>(construct), _DatasetClauses(p_DatasetClauses), where, last.solutionModifier);
+	    SolutionModifier* solutionModifier = last.solutionModifier;
+	    last.operation = new Construct(dynamic_cast<DefaultGraphPattern*>(construct), _DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
 	virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_VarSet->express(this);
@@ -333,7 +335,8 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
 	    p_SolutionModifier->express(this);
-	    last.operation = new Describe(varSet, _DatasetClauses(p_DatasetClauses), where, last.solutionModifier);
+	    SolutionModifier* solutionModifier = last.solutionModifier;
+	    last.operation = new Describe(varSet, _DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
 	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
 	    p_WhereClause->express(this);
