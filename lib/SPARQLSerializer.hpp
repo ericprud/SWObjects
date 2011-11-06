@@ -552,7 +552,10 @@ public:
 	else
 	    p_IRIref->express(this);
 	ret << "(";
-	p_ArgList->express(this);
+	if (p_IRIref == TTerm::FUNC_count && p_ArgList->size() == 0)
+	    ret << "*";
+	else
+	    p_ArgList->express(this);
 	ret << ")";
     }
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
