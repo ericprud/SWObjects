@@ -385,7 +385,7 @@ namespace w3c_sw {
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
-
+    bool p_parentCountStar;
 
 
 

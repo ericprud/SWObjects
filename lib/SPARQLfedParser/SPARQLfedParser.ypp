@@ -307,7 +307,7 @@ public:
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
-
+    bool p_parentCountStar;
 }
 
 %{
@@ -726,9 +726,13 @@ PrefixDecl:
 
 SelectQuery:
     // SelectClause DatasetClause* WhereClause SolutionModifier
-    SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	driver.lastWhereClause = $3;
-	$$ = new Select($1.distinctness, $1.varSet, $2, $3, $4);
+    {
+	$<p_parentCountStar>$ = driver.countStar;
+	driver.countStar = false;
+    } SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	driver.lastWhereClause = $4;
+	$$ = new Select($2.distinctness, $2.varSet, $3, $4, $5);
+	driver.countStar = $<p_parentCountStar>1;
     }
 ;
 
@@ -746,6 +750,9 @@ _QDatasetClause_E_Star:
 SubSelect:
     // SelectClause WhereClause SolutionModifier BindingsClause?
     {
+	$<p_parentCountStar>$ = driver.countStar;
+	driver.countStar = false;
+    } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
       } SelectClause {
@@ -753,10 +760,11 @@ SubSelect:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } WhereClause SolutionModifier _QBindingsClause_E_Opt	{
-	  if ($6 != NULL)
-	      $4->m_GroupGraphPattern = driver.makeConjunction($6, $4->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>3, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
-	  driver.curGraphName = $<p_TTerm>1;
+	  if ($7 != NULL)
+	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>4, new SubSelect(new Select($3.distinctness, $3.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
+	  driver.curGraphName = $<p_TTerm>2;
+	  driver.countStar = $<p_TTerm>1;
       }
 ;
 
@@ -2896,7 +2904,7 @@ namespace w3c_sw {
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curResultSet(NULL), curResult(NULL), curExprList(NULL), 
-	countStar(false), root(NULL), unnestTree(false)
+	root(NULL), unnestTree(false)
 {
 }
 
