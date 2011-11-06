@@ -766,8 +766,13 @@ namespace w3c_sw {
     public:
 	web_server_asio () : server(NULL) {  }
 	void stop () {
-	    // politely HUP the process as if it were a ^C'd.
+	    // politely HUP the process.
+#if defined(_WIN32)
 	    ::raise(SIGINT); // no SIGHUP on Windows.
+#else /* !defined(_WIN32) */
+	    ::kill(::getpid(), SIGHUP);
+	    // note that ::raise(sig) == pthread_kill(pthread_self(), sig)
+#endif /* !defined(_WIN32) */
 	    /*
 	    could do this more elegantly:
 	    serve set's member boost::thread* masterThread;
