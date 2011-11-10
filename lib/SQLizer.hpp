@@ -963,7 +963,9 @@ namespace w3c_sw {
 	    if (iri == TTerm::FUNC_bound)
 		curConstraint = new sql::NullConstraint(curConstraint);
 	    else if (iri == TTerm::FUNC_concat)
-		curConstraint = new sql::ConcatConstraint(sqlArgs.begin(), sqlArgs.end());
+		curConstraint = new sql::HomologConstraint("CONCAT", sqlArgs.begin(), sqlArgs.end());
+	    else if (iri == TTerm::FUNC_substring)
+		curConstraint = new sql::HomologConstraint("SUBSTR", sqlArgs.begin(), sqlArgs.end());
 	    else
 		iri->express(this);
 	}

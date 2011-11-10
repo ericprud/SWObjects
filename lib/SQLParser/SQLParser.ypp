@@ -908,7 +908,7 @@ BrackettedExpression:
 BuiltInCall:
     IT_CONCAT GT_LPAREN Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star GT_RPAREN	{
 	$4->insert($4->begin(), $3);
-	$$ = new sql::ConcatConstraint($4->begin(), $4->end());
+	$$ = new sql::HomologConstraint("CONCAT", $4->begin(), $4->end());
 	delete $4;
 }
   |

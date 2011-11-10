@@ -56,7 +56,7 @@ namespace w3c_sw {
 	class ArithmeticInverse;
 	class ArithmeticSum;
 	class ArithmeticNegation;
-	class ConcatConstraint;
+	class HomologConstraint;
 	class RegexConstraint;
 
 	struct EquivSet;
@@ -94,7 +94,7 @@ namespace w3c_sw {
 	    virtual bool finalEq (const ArithmeticInverse&) const { return false; }
 	    virtual bool finalEq (const ArithmeticSum&) const { return false; }
 	    virtual bool finalEq (const ArithmeticNegation&) const { return false; }
-	    virtual bool finalEq (const ConcatConstraint&) const { return false; }
+	    virtual bool finalEq (const HomologConstraint&) const { return false; }
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
 	    virtual bool operator==(const Expression&) const = 0;
 	};
@@ -731,11 +731,13 @@ namespace w3c_sw {
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_TTerm; }
 	};
-	class ConcatConstraint : public NaryExpression {
+	class HomologConstraint : public NaryExpression {
+	    std::string sqlOp;
 	public:
-	    ConcatConstraint (std::vector<const sql::Expression*>::const_iterator start,
-			      std::vector<const sql::Expression*>::const_iterator end)
-		: NaryExpression(start, end)
+	    HomologConstraint (std::string sqlOp,
+			       std::vector<const sql::Expression*>::const_iterator start,
+			       std::vector<const sql::Expression*>::const_iterator end)
+		: NaryExpression(start, end), sqlOp(sqlOp)
 	    {  }
 	    virtual Expression* clone () const {
 		std::vector<const Expression*> v;
@@ -743,10 +745,10 @@ namespace w3c_sw {
 		     it != args.end(); it++) {
 		    v.push_back((*it)->clone());
 		}
-		return new ConcatConstraint(v.begin(), v.end());
+		return new HomologConstraint(sqlOp, v.begin(), v.end());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
-	    virtual bool finalEq (const ConcatConstraint& l) const {
+	    virtual bool finalEq (const HomologConstraint& l) const {
 		return l.NaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
@@ -754,7 +756,7 @@ namespace w3c_sw {
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
 	    virtual std::string toString (std::string pad, e_PREC prec, std::string driver = "") const {
-		return std::string("CONCAT(")
+		return sqlOp + "("
 		    + NaryExpression::toString("", PREC_Low, driver) + ")";
 	    }
 	};
