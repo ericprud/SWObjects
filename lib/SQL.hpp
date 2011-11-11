@@ -731,6 +731,9 @@ namespace w3c_sw {
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_TTerm; }
 	};
+	/** HomologConstraint - Nary functions which have the same parameter
+	 * semantics in XPath and SQL.
+	 */
 	class HomologConstraint : public NaryExpression {
 	    std::string sqlOp;
 	public:

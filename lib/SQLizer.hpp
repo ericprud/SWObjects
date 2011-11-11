@@ -36,7 +36,9 @@ namespace w3c_sw {
 	    int nextOptAlias;
 
 	public:
-	    SQLQueryGenerator (SQLQueryGenerator* parent) : query(new sql::SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0) {  }
+	    SQLQueryGenerator (SQLQueryGenerator* parent)
+		: query(new sql::SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0)
+	    {  }
 	    ~SQLQueryGenerator () {
 		for (std::map<std::string, sql::Expression*>::iterator it = attachments.begin();
 		     it != attachments.end(); ++it)
@@ -326,6 +328,7 @@ namespace w3c_sw {
 	KeyMap keyMap;
 	std::string driver;
 	const Expression* bindingExpression;
+	std::map<const TTerm*, const char*> sparql2sqlHomologs;
 
     public:
 	//static std::ostream** ErrorStream;
@@ -334,7 +337,34 @@ namespace w3c_sw {
 	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
 	    driver(driver)
-	{  }
+	{
+	    struct H {
+		const TTerm* t;
+		const char* s;
+	    };
+	    H homologs[] = {
+		{TTerm::FUNC_string_length, "LENGTH"},
+		{TTerm::FUNC_upper_case, "UCASE"},
+		{TTerm::FUNC_lower_case, "LCASE"},
+		{TTerm::FUNC_substring, "SUBSTR"},
+		{TTerm::FUNC_concat, "CONCAT"},
+		{TTerm::FUNC_numeric_abs, "ABS"},
+		{TTerm::FUNC_numeric_round, "ROUND"},
+		{TTerm::FUNC_numeric_ciel, "CEILING"},
+		{TTerm::FUNC_numeric_floor, "FLOOR"},
+		{TTerm::FUNC_rand, "RAND"},
+		{TTerm::FUNC_now, "NOW"},
+		{TTerm::FUNC_year_from_dateTime, "YEAR"},
+		{TTerm::FUNC_month_from_dateTime, "MONTH"},
+		{TTerm::FUNC_day_from_dateTime, "DAY"},
+		{TTerm::FUNC_md5, "MD5"},
+		{TTerm::FUNC_sha1, "SHA1"},
+	    };
+	    for (H* h = homologs;
+		 h < homologs + (sizeof(homologs)/sizeof(homologs[0]));
+		 ++h)
+		sparql2sqlHomologs.insert(std::pair<const TTerm*, const char*>(h->t, h->s));
+	}
 	~SQLizer () {
 	    delete curQuery;
 	}
@@ -960,14 +990,69 @@ namespace w3c_sw {
 		(*arg)->express(this);
 		sqlArgs.push_back(curConstraint);
 	    }
-	    if (iri == TTerm::FUNC_bound)
+
+	    std::map<const TTerm*, const char*>::const_iterator sqlHomolog;
+	    if ((sqlHomolog = this->sparql2sqlHomologs.find(iri)) != sparql2sqlHomologs.end())
+		curConstraint = new sql::HomologConstraint(sqlHomolog->second, sqlArgs.begin(), sqlArgs.end());
+
+	    else if (iri == TTerm::FUNC_bound)
 		curConstraint = new sql::NullConstraint(curConstraint);
-	    else if (iri == TTerm::FUNC_concat)
-		curConstraint = new sql::HomologConstraint("CONCAT", sqlArgs.begin(), sqlArgs.end());
-	    else if (iri == TTerm::FUNC_substring)
-		curConstraint = new sql::HomologConstraint("SUBSTR", sqlArgs.begin(), sqlArgs.end());
-	    else
-		iri->express(this);
+	    else {
+
+		// TTerm::FUNC_if
+		// TTerm::FUNC_coalesce
+		// TTerm::FUNC_exists
+		// TTerm::FUNC_sameTerm			NA
+		// TTerm::FUNC_in
+		// TTerm::FUNC_isIRI			N/A
+		// TTerm::FUNC_isURI			N/A
+		// TTerm::FUNC_isBlank			N/A
+		// TTerm::FUNC_isLiteral		N/A
+		// TTerm::FUNC_isNumeric		N/A
+		// TTerm::FUNC_str			N/A
+		// TTerm::FUNC_lang			N/A
+		// TTerm::FUNC_datatype			N/A
+		// TTerm::FUNC_iri			N/A
+		// TTerm::FUNC_uri			N/A
+		// TTerm::FUNC_bnode			N/A
+		// TTerm::FUNC_strdt			N/A
+		// TTerm::FUNC_strlang			N/A
+		// TTerm::FUNC_starts_with		LIKE("p1%")
+		// TTerm::FUNC_ends_with		LIKE("%p1")
+		// TTerm::FUNC_contains			LIKE("%p1%")
+		// TTerm::FUNC_encode_for_uri
+		// TTerm::FUNC_langMatches
+		// TTerm::FUNC_matches
+		// TTerm::FUNC_hours_from_dateTime	MID(p1,12,2)
+		// TTerm::FUNC_minutes_from_dateTime	MID(p1,15,2)
+		// TTerm::FUNC_seconds_from_dateTime	MID(p1,18,2)
+		// TTerm::FUNC_timezone_from_dateTime
+		// TTerm::FUNC_tz
+		// TTerm::FUNC_sha224			SHA2(224, p1)
+		// TTerm::FUNC_sha256			SHA2(256, p1)
+		// TTerm::FUNC_sha384			SHA2(384, p1)
+		// TTerm::FUNC_sha512			SHA2(512, p1)
+		// TTerm::FUNC_count
+		// TTerm::FUNC_sum
+		// TTerm::FUNC_min
+		// TTerm::FUNC_max
+		// TTerm::FUNC_avg
+		// TTerm::FUNC_group_concat
+		// TTerm::FUNC_sample
+		// TTerm::FUNC_group_group
+		// TTerm::FUNC_group_regex
+
+		std::stringstream ss;
+		ss << "SQLizer::functionCall: conversion for " << iri->toString() << "(";
+		for (std::vector<const sql::Expression*>::const_iterator it = sqlArgs.begin();
+		     it != sqlArgs.end(); ++it) {
+		    if (it != sqlArgs.begin())
+			ss << ", ";
+		    ss << (*it)->toString();
+		}
+		ss  << ")";
+		throw(NotImplemented(ss.str()));
+	    }
 	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    w3c_sw_MARK;
