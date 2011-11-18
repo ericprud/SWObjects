@@ -561,10 +561,17 @@ namespace w3c_sw {
 
     void ResultSet::restrictResults (const Expression* expression) { // no longer called "restrict" 'cause it screws up php.
 
+	if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
+	    SPARQLSerializer s;
+	    expression->express(&s);
+	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << "Filtering on " << s.str();
+	}
 	for (ResultSetIterator it = begin(); it != end(); ) {
-	    if (atomFactory->eval(expression, *it) == true)
+	    if (atomFactory->eval(expression, *it) == true) {
+		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "    keep " << (*it)->toString();
 		++it;
-	    else {
+	    } else {
+		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::support ) << "  strike " << (*it)->toString();
 		delete *it;
 		it = erase(it);
 	    }

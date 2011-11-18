@@ -110,12 +110,12 @@ namespace w3c_sw {
 
 	std::string toString () const {
 	    std::stringstream s;
-	    s << "{";
+	    s << "(";
 	    for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); ++it)
 		s << (it == bindings.begin() ? "" : ", ")
 		  << it->first->toString() << "="
 		  << it->second.tterm->toString();
-	    s << "}";
+	    s << ")";
 	    return s.str();
 	}
 
