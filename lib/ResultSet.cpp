@@ -365,7 +365,8 @@ namespace w3c_sw {
 	    return exprAlias->label;
     }
 
-    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) {
+    void ResultSet::project (ProductionVector<const ExpressionAlias*> const * projection, ExpressionAliasList* groupBy,
+			     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions) {
 	// std::cerr << "start\n" << *this;
 	/* List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
@@ -392,8 +393,8 @@ namespace w3c_sw {
 	Pos2Expr pos2expr;
 
 	/* Walk the select list to populate pos2expr. */
-	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = exprs->begin();
-	     varExpr != exprs->end(); ++varExpr) {
+	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = projection->begin();
+	     varExpr != projection->end(); ++varExpr) {
 	    const TTerm* label(_getLabel(*varExpr, atomFactory));
 
 	    /* Add new alias name. */
@@ -498,7 +499,7 @@ namespace w3c_sw {
 
 	for (ResultSetIterator row = begin() ; row != end(); ) {
 
-	    ResultSetIterator aggregateRow;
+	    ResultSetIterator aggregateRowIt;
 	    if (groupBy != NULL) {
 		/* eval groupIndex args, add to result */
 		groupIndex = "";
@@ -514,41 +515,75 @@ namespace w3c_sw {
 		 */
 		Group2Row::iterator curAgg(group2row.find(groupIndex));
 		if (curAgg == group2row.end()) {
-		    group2row[groupIndex] = aggregateRow = row;
+		    group2row[groupIndex] = aggregateRowIt = row;
 		    row++;
 		} else {
-		    aggregateRow = curAgg->second;
+		    aggregateRowIt = curAgg->second;
 		    delete *row;
 		    row = erase(row);
 		}
 	    } else {
-		aggregateRow = row;
+		aggregateRowIt = row;
 		row++;
 	    }
 
-	    /* calc project, update idx */
+	    Result* aggregateRow = *aggregateRowIt;
+
+	    /* calculate projection, update idx */
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
-		const TTerm* val = pos2expr[*knownVar]->eval(*aggregateRow, atomFactory, NULL);
-		if (val != TTerm::Unbound)
-		    (*aggregateRow)->set(*knownVar, val, false, true); // !! WG decision on overwrite
-	    }
-
-	    /* Eliminate unselect attributes */
-	    for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
-		 delMe != delMes.end(); ++delMe)
-		if ((*aggregateRow)->find(*delMe) != (*aggregateRow)->end())
-		    (*aggregateRow)->erase((*aggregateRow)->find(*delMe));
-
-	    /* Test against HAVING constraints */
-	    if (having != NULL) {
-		for (std::vector<const w3c_sw::Expression*>::const_iterator it = having->begin();
-		     it != having->end(); ++it)
-		    if (atomFactory->eval(*it, *aggregateRow) != true) {
-			delete *aggregateRow;
-			row = erase(aggregateRow);
+		try {
+		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, NULL);
+		    if (val != TTerm::Unbound)
+			aggregateRow->set(*knownVar, val, false, true); // !! WG decision on overwrite
+		} catch (TypeError& e) {
+		    if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
+			SPARQLSerializer s;
+			pos2expr[*knownVar]->express(&s);
+			BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
+			    << "Error evaluating " << s.str() << " on " << aggregateRow->toString();
 		    }
+		}
 	    }
+
+	    if (orderConditions == NULL)
+		/* Eliminate unselect attributes. */
+		for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
+		     delMe != delMes.end(); ++delMe)
+		    if (aggregateRow->find(*delMe) != aggregateRow->end())
+			aggregateRow->erase(aggregateRow->find(*delMe));
+	}
+
+	/* Enforce HAVING constraints. */
+	if (having != NULL)
+	    for (ResultSetIterator row = begin() ; row != end(); )
+		for (std::vector<const w3c_sw::Expression*>::const_iterator expr = having->begin();
+		     expr != having->end(); ++expr)
+		    if (atomFactory->eval(*expr, *row) != true) {
+			if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
+			    SPARQLSerializer s;
+			    (*expr)->express(&s);
+			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
+				<< "Evaluating " << s.str() << " removes row " << (*row)->toString();
+			}
+			delete *row;
+			row = erase(row);
+		    } else {
+			++row;
+		    }
+
+
+	if (orderConditions != NULL) {
+	    ResultComp resultComp(orderConditions, atomFactory);
+	    results.sort(resultComp);
+	    /* Eliminate unselect attributes. */
+	    for (ResultSetIterator row = begin() ; row != end(); ++row)
+		for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
+		     delMe != delMes.end(); ++delMe) {
+		    BindingSetIterator attr = (*row)->find(*delMe);
+		    if (attr != (*row)->end())
+			(*row)->erase(attr);
+		}
 	}
 
 	/* Clean up new'd expressions. */
@@ -564,7 +599,7 @@ namespace w3c_sw {
 	if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 	    SPARQLSerializer s;
 	    expression->express(&s);
-	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << "Filtering on " << s.str();
+	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "Filtering on " << s.str();
 	}
 	for (ResultSetIterator it = begin(); it != end(); ) {
 	    if (atomFactory->eval(expression, *it) == true) {
@@ -578,18 +613,11 @@ namespace w3c_sw {
 	}
     }
 
-    void ResultSet::order (std::vector<s_OrderConditionPair>* orderConditions) {
-	ResultComp resultComp(orderConditions, atomFactory);
-	results.sort(resultComp);
-    }
-
-
     void ResultSet::order () {
-	std::set<const Result*> unordered;
-	AscendingOrder resultComp(getOrderedVars(), &unordered);
-	results.sort(resultComp);
+    	std::set<const Result*> unordered;
+    	AscendingOrder resultComp(getOrderedVars(), &unordered);
+    	results.sort(resultComp);
     }
-
 
     void ResultSet::trim (e_distinctness distinctness, int limit, int offset) {
 	if (distinctness == DIST_distinct)

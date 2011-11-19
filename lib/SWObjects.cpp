@@ -1317,13 +1317,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	TTerm::e_TYPE dt = l->getTypeOrder();
 	if (dt == TTerm::TYPE_Err)
-	    throw std::string(typeid(*l).name()) + " is not a known datatype.";
+	    throw l->toString() + " does not have an order-able datatype.";
 	++it;
 	while (it != args.end()) {
 	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator);
 	    TTerm::e_TYPE dtr = r->getTypeOrder();
 	    if (dtr == TTerm::TYPE_Err)
-		throw std::string(typeid(*r).name()) + " is not a known datatype.";
+		throw r->toString() + " does not have an order-able datatype.";
 	    if (dtr > dt)
 		dt = dtr;
 	    switch (dt) {
@@ -1353,7 +1353,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		break;
 	    }
 	    default:
-		throw std::string(typeid(*r).name()) + " is not a numeric datatype: " + r->toString();
+		throw r->toString() + " does not have a numeric datatype: " + r->toString();
 	    }
 	    ++it;
 	}
@@ -1428,10 +1428,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	if (m_SolutionModifier != NULL) {
-	    m_SolutionModifier->order(rs); // @@ need to do two passes if order by can reference ?x AS ?y
-	    m_VarSet->project(rs, m_SolutionModifier->groupBy, m_SolutionModifier->having);
+	    m_VarSet->project(rs, m_SolutionModifier->groupBy, m_SolutionModifier->having,
+			      m_SolutionModifier->m_OrderConditions);
 	} else
-	    m_VarSet->project(rs, NULL, NULL);
+	    m_VarSet->project(rs, NULL, NULL, NULL);
 	if (m_SolutionModifier == NULL)
 	    rs->trim(m_distinctness, -1, -1);
 	else
@@ -1815,16 +1815,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
-    void ExpressionAliasList::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having) const {
-	rs->project(&m_Expressions, groupBy, having);
+    void ExpressionAliasList::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having,
+				       std::vector<s_OrderConditionPair>* orderConditions) const {
+	rs->project(&m_Expressions, groupBy, having, orderConditions);
     }
 
-    void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */) const {
-    }
-
-    void SolutionModifier::order (ResultSet* rs) {
-	if (m_OrderConditions != NULL)
-	    rs->order(m_OrderConditions);
+    void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */,
+			      std::vector<s_OrderConditionPair>* /* orderConditions */) const {
     }
 
     void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
@@ -2183,7 +2180,7 @@ compared against
 	      /* .7 */ "text/html;q=.7");
 
 	const VariableList* knownVars = rs->getKnownVars();
-	// for (std::set<const TTerm*>::const_iterator known = vars.vars.begin(); known != vars.vars.end(); ++known)
+	// for (VariableList::const_iterator known = vars.vars.begin(); known != vars.vars.end(); ++known)
 	//     w3c_sw_LINEN << "pattern " << op->toString() << " has " << (*known)->toString() << "\n";
 	// for (VariableList::const_iterator known = knownVars->begin(); known != knownVars->end(); ++known)
 	//     w3c_sw_LINEN << "rs " << *rs << " has " << (*known)->toString() << "\n";

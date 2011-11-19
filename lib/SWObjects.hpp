@@ -1098,8 +1098,10 @@ public:
 	/* Compare literals. */
 	const RDFLiteral* l = dynamic_cast<const RDFLiteral*> (this);
 	const RDFLiteral* r = dynamic_cast<const RDFLiteral*> (&rtterm);
-	if (l == NULL || r == NULL)
-	    throw TypeError(toString(), rtterm.toString());
+	if (l == NULL)
+	    throw TypeError(toString(), std::string() + "cmp(" + toString() + ", " + rtterm.toString() + ")");
+	if (r == NULL)
+	    throw TypeError(rtterm.toString(), std::string() + "cmp(" + toString() + ", " + rtterm.toString() + ")");
 
 	const URI* ldt = l->getDatatype();
 	const URI* rdt = r->getDatatype();
@@ -2069,7 +2071,8 @@ protected:
 public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
-    virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const = 0;
+    virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
+			 std::vector<s_OrderConditionPair>* orderConditions) const = 0;
 };
 
 class ExpressionAlias : public Base {
@@ -2105,7 +2108,8 @@ public:
 	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
-    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
+			  std::vector<s_OrderConditionPair>* orderConditions) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -2119,7 +2123,8 @@ public:
 	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
 	return pref == NULL ? false : true;
     }
-    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having) const;
+    virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
+			  std::vector<s_OrderConditionPair>* orderConditions) const;
 };
 
 class DatasetClause : public Base {
@@ -2176,7 +2181,6 @@ public:
 	delete groupBy;
 	delete having;
     }
-    void order(ResultSet* rs);
     virtual void express(Expressor* p_expressor) const;
     bool operator== (const SolutionModifier& ref) const {
 	if (m_limit != ref.m_limit ||

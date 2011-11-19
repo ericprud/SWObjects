@@ -497,6 +497,8 @@ namespace w3c_sw {
 
 	virtual ~ResultSet();
 
+	/** AscendingOrder - compare functor to order on @vars
+	 */
 #if !defined(SWIG)
 	// not available in SWIG; broke java, presume not needed for others.
 	struct AscendingOrder {
@@ -768,9 +770,13 @@ namespace w3c_sw {
 	}
 
 
-	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having);
+	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy,
+		     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions);
 	void restrictResults(const Expression* expression); // no longer called "restrict" 'cause it screws up php.
-	void order(std::vector<s_OrderConditionPair>* orderConditions);
+
+	/** order - canonicalize order on knownVars.
+	 * used for test repeatability.
+	 */
 	void order();
 	bool isOrdered () const { return ordered; }
 	void trim(e_distinctness distinctness, int offset, int limit);
