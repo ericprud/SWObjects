@@ -277,7 +277,7 @@ namespace w3c_sw {
 		}
 		last.solutionModifier = new SolutionModifier(n_groupBy, n_having, l_s_OrderConditionPairs, p_limit, p_offset);
 	    } else {
-		last.solutionModifier = new SolutionModifier(n_groupBy, NULL, NULL, p_limit, p_offset);
+		last.solutionModifier = new SolutionModifier(n_groupBy, n_having, NULL, p_limit, p_offset);
 	    }
 	}
 	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
