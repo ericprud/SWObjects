@@ -705,6 +705,9 @@ Binding:
   | BindingValue GT_H_2192_ BindingValue	{
 	driver.addBinding($1, $3); 
     }
+  | BindingValue GT_EQUAL BindingValue	{
+	driver.addBinding($1, $3); 
+    }
 ;
 
 BaseDecl:
@@ -1210,6 +1213,9 @@ BindingValue:
 	$$ = $1;
     }
   | IT_UNDEF	{
+	$$ = TTerm::Unbound;
+    }
+  | GT_MINUS_MINUS	{
 	$$ = TTerm::Unbound;
     }
   | Var	{

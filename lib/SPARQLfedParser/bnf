@@ -7,7 +7,7 @@
 [0X]    Prologue                   ::= BaseDecl? PrefixDecl* LoadResults*
 
 [0RS]   LoadResults                ::= (RSREF '=')? Result
-[0RS]   Result			   ::= ABox | UBox | CurlySet
+[0RS]   Result			   ::= ABox | UBox | CurlySet | SourceSelector
 
 [0RS]   ABox			   ::= ABoxTop ABoxHeader ABoxRow* ABoxBottom
          			     | ABoxHeader ABoxRow* "."
@@ -29,6 +29,7 @@
 [0RS]   Map 			   ::= '(' (Binding ','?)* ')'
 [0RS]   Binding			   ::= BindingValue '->' BindingValue
                   		     | BindingValue '→' BindingValue
+                  		     | BindingValue '=' BindingValue
 
 [0]     BaseDecl                   ::= 'BASE' IRI_REF
 [0]     PrefixDecl                 ::= 'PREFIX' PNAME_NS IRI_REF
