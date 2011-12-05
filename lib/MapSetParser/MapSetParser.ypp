@@ -1322,7 +1322,7 @@ _QIT_DISTINCT_E_Opt:
 	$$ = DIST_all;
     }
   | IT_DISTINCT	{
-	$$ = DIST_all;
+	$$ = DIST_distinct;
     }
 ;
 

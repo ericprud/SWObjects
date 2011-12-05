@@ -1665,7 +1665,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 1324 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yyval.p_distinctness) = DIST_distinct;
     }
     break;
 

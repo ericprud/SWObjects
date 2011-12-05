@@ -1788,7 +1788,7 @@ _QIT_DISTINCT_E_Opt:
 	$$ = DIST_all;
     }
   | IT_DISTINCT	{
-	$$ = DIST_all;
+	$$ = DIST_distinct;
     }
 ;
 
@@ -2706,11 +2706,12 @@ Aggregate:
 	$<p_Expressions>$ = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>($4);
       } _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
-	  // x = new ArgList($2, driver.curExprList);
-	  delete driver.curExprList;
+	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4));
+	  // // x = new ArgList($2, driver.curExprList);
+	  // delete driver.curExprList;
 	  driver.curExprList = $<p_Expressions>5;
-	  w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
-	  // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
+	  // w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
+	  // // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
     }
 ;
 
