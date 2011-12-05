@@ -1,0 +1,535 @@
+/* $Id: SPARQLalgebraScanner.lpp,v 1.4 2008-10-03 07:06:03 eric Exp $ -*- mode: c++ -*- */
+/* from yacker grammar http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPScanner.ll */
+/** Flex scanner for SPARQL algebra */
+
+%{ /*** C/C++ Declarations ***/
+
+#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#include "SPARQLalgebraScanner.hpp"
+
+/* import the parser's token type into a local typedef */
+typedef w3c_sw::SPARQLalgebraParser::token token;
+typedef w3c_sw::SPARQLalgebraParser::token_type token_type;
+
+/* Work around an incompatibility in flex (at least versions 2.5.31 through
+ * 2.5.33): it generates code that does not conform to C89.  See Debian bug
+ * 333231 <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.  */
+// #undef yywrap	// ##flex2.5
+// #define yywrap() 1	// ##flex2.5
+
+/* By default yylex returns int, we use token_type. Unfortunately yyterminate
+ * by default returns 0, which is not of token_type. */
+#define yyterminate() return token::__EOF__
+
+/* This disables inclusion of unistd.h, which is not available under Visual C++
+ * on Win32. The C++ scanner uses STL streams instead. */
+#define YY_NO_UNISTD_H
+
+%}
+
+/*** Flex Declarations and Options ***/
+
+/* enable c++ scanner class generation */
+%option c++
+
+/* change the name of the scanner class. results in "SPARQLalgebraFlexLexer" */
+%option prefix="SPARQLalgebra"
+/* consider using class instead
+ * %option yyclass="SPARQLalgebraScanner"
+ * void SPARQLalgebraFlexLexer::LexerError( yyconst char msg[] )
+ */
+
+/* the manual says "somewhat more optimized" */
+%option batch
+
+/* enable scanner to generate debug output. disable this for release
+ * versions. */
+%option debug
+
+%option nodefault
+%option warn
+
+/* no support for include files is planned */
+%option noyywrap nounput
+
+/* enables the use of start condition stacks */
+%option stack
+
+/* The following paragraph suffices to track locations accurately. Each time
+ * yylex is invoked, the begin position is moved onto the end position. */
+%{
+#define YY_USER_ACTION  yylloc->columns(yyleng);
+#define YY_FATAL_ERROR(msg) do {		\
+    throw msg;   \
+} while(0)
+%}
+
+/* START patterns for SPARQLalgebra terminals */
+GT_LPAREN		"("
+GT_RPAREN		")"
+IT_base		"base"
+IT_prefix		"prefix"
+IT_project		"project"
+IT_extend		"extend"
+IT_distinct		"distinct"
+IT_reduced		"reduced"
+IT_group		"group"
+IT_filter		"filter"
+IT_order		"order"
+IT_asc		"asc"
+IT_desc		"desc"
+IT_slice		"slice"
+IT__		"_"
+IT_load		"load"
+IT_clear		"clear"
+IT_silent		"silent"
+IT_drop		"drop"
+IT_create		"create"
+IT_add		"add"
+IT_move		"move"
+IT_copy		"copy"
+IT_insertdata		"insertdata"
+IT_deletedata		"deletedata"
+IT_deletewhere		"deletewhere"
+IT_modify		"modify"
+IT_delete		"delete"
+IT_insert		"insert"
+IT_default		"default"
+IT_named		"named"
+IT_all		"all"
+IT_quads		"quads"
+IT_bgp		"bgp"
+IT_table		"table"
+IT_unit		"unit"
+IT_path		"path"
+IT_join		"join"
+IT_sequence		"sequence"
+IT_exprlist		"exprlist"
+IT_triple		"triple"
+IT_leftjoin		"leftjoin"
+IT_graph		"graph"
+IT_service		"service"
+IT_minus		"minus"
+IT_union		"union"
+GT_COMMA		","
+IT_alt		"alt"
+IT_seq		"seq"
+IT_reverse		"reverse"
+IT_mod		"mod"
+GT_path_OPT		"path?"
+GT_path_TIMES		"path*"
+GT_path_PLUS		"path+"
+IT_a		"a"
+IT_notoneof		"notoneof"
+GT_OR		"||"
+GT_AND		"&&"
+GT_EQUAL		"="
+GT_NEQUAL		"!="
+GT_LT		"<"
+GT_GT		">"
+GT_LE		"<="
+GT_GE		">="
+IT_in		"in"
+GT_PLUS		"+"
+GT_MINUS		"-"
+GT_TIMES		"*"
+GT_DIVIDE		"/"
+GT_NOT		"!"
+IT_str		"str"
+IT_lang		"lang"
+IT_langmatches		"langmatches"
+IT_datatype		"datatype"
+IT_bound		"bound"
+IT_iri		"iri"
+IT_uri		"uri"
+IT_bnode		"bnode"
+IT_RAND		[Rr][Aa][Nn][Dd]
+IT_abs		"abs"
+IT_ceil		"ceil"
+IT_floor		"floor"
+IT_round		"round"
+IT_concat		"concat"
+IT_strlen		"strlen"
+IT_ucase		"ucase"
+IT_lcase		"lcase"
+IT_encode_for_uri		"encode_for_uri"
+IT_contains		"contains"
+IT_strstarts		"strstarts"
+IT_strends		"strends"
+IT_year		"year"
+IT_month		"month"
+IT_day		"day"
+IT_hours		"hours"
+IT_minutes		"minutes"
+IT_seconds		"seconds"
+IT_timezone		"timezone"
+IT_now		"now"
+IT_md5		"md5"
+IT_sha1		"sha1"
+IT_sha224		"sha224"
+IT_sha256		"sha256"
+IT_sha384		"sha384"
+IT_sha512		"sha512"
+IT_coalesce		"coalesce"
+IT_if		"if"
+IT_strlang		"strlang"
+IT_strdt		"strdt"
+IT_sameterm		"sameterm"
+IT_isiri		"isiri"
+IT_isuri		"isuri"
+IT_isblank		"isblank"
+IT_isliteral		"isliteral"
+IT_isnumeric		"isnumeric"
+IT_regex		"regex"
+IT_substr		"substr"
+IT_exists		"exists"
+IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
+IT_DISTINCT		[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+IT_SUM		[Ss][Uu][Mm]
+IT_MIN		[Mm][Ii][Nn]
+IT_MAX		[Mm][Aa][Xx]
+IT_AVG		[Aa][Vv][Gg]
+IT_SAMPLE		[Ss][Aa][Mm][Pp][Ll][Ee]
+IT_GROUP_CONCAT		"GROUP_CONCAT"
+IT_separator		"separator"
+GT_DTYPE		"^^"
+IT_true		"true"
+IT_false		"false"
+IRI_REF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
+LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
+INTEGER		([0-9])+
+POSITION		"?""."({INTEGER})
+DECIMAL		(([0-9])+"."([0-9])*)|("."([0-9])+)
+INTEGER_POSITIVE		"+"({INTEGER})
+DECIMAL_POSITIVE		"+"({DECIMAL})
+INTEGER_NEGATIVE		"-"({INTEGER})
+DECIMAL_NEGATIVE		"-"({DECIMAL})
+EXPONENT		[Ee]([+-])?([0-9])+
+DOUBLE		(([0-9])+"."([0-9])*({EXPONENT}))|(("."(([0-9]))+({EXPONENT}))|((([0-9]))+({EXPONENT})))
+DOUBLE_NEGATIVE		"-"({DOUBLE})
+DOUBLE_POSITIVE		"+"({DOUBLE})
+ECHAR		"\\"[\"'\\bfnrt]
+STRING_LITERAL_LONG2		"\"\"\""((((("\"")|("\"\"")))?(([\x00-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({ECHAR})))))*"\"\"\""
+STRING_LITERAL_LONG1		"'''"((((("'")|("''")))?(([\x00-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({ECHAR})))))*"'''"
+STRING_LITERAL2		"\""(((([\x00-\t\x0B-\x0C\x0E-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"\""
+STRING_LITERAL1		"'"(((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"'"
+WS		(" ")|(("\t")|(("\r")|("\n")))
+NIL		"("(({WS}))*")"
+ANON		"\["(({WS}))*"\]"
+PN_CHARS_BASE		([A-Z])|(([a-z])|(((\xC3[\x80-\x96]))|(((\xC3[\x98-\xB6]))|(((\xC3[\xB8-\xBF])|([\xC4-\xCB][\x80-\xBF]))|(((\xCD[\xB0-\xBD]))|(((\xCD\xBF)|([\xCE-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|(\xE1([\x80-\xBF][\x80-\xBF])))|(((\xE2(\x80[\x8C-\x8D])))|(((\xE2(\x81[\xB0-\xBF])|([\x82-\x85][\x80-\xBF])|(\x86[\x80-\x8F])))|(((\xE2([\xB0-\xBE][\x80-\xBF])|(\xBF[\x80-\xAF])))|(((\xE3(\x80[\x81-\xBF])|([\x81-\xBF][\x80-\xBF]))|([\xE4-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF])))|(((\xEF([\xA4-\xB6][\x80-\xBF])|(\xB7[\x80-\x8F])))|(((\xEF(\xB7[\xB0-\xBF])|([\xB8-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))|((\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]))))))))))))))
+PN_CHARS_U		(({PN_CHARS_BASE}))|("_")
+VARNAME		((({PN_CHARS_U}))|([0-9]))(((({PN_CHARS_U}))|(([0-9])|((\xC2\xB7)|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80))))))))*
+VAR2		"$"({VARNAME})
+VAR1		"?"({VARNAME})
+PN_CHARS		(({PN_CHARS_U}))|(("-")|(([0-9])|((\xC2\xB7)|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))
+PN_PREFIX		({PN_CHARS_BASE})(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
+PNAME_NS		(({PN_PREFIX}))?":"
+PN_LOCAL		((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
+BLANK_NODE_LABEL		"_:"({PN_LOCAL})
+PNAME_LN		({PNAME_NS})({PN_LOCAL})
+PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
+
+/* END patterns for SPARQLalgebra terminals */
+
+/* START semantic actions for SPARQLalgebra terminals */
+%%
+{PASSED_TOKENS}		{ /* yylloc->step(); @@ needed? useful? */ }
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
+{IT_base}		{return token::IT_base;}
+{IT_prefix}		{return token::IT_prefix;}
+{IT_project}		{return token::IT_project;}
+{IT_extend}		{return token::IT_extend;}
+{IT_distinct}		{return token::IT_distinct;}
+{IT_reduced}		{return token::IT_reduced;}
+{IT_group}		{return token::IT_group;}
+{IT_filter}		{return token::IT_filter;}
+{IT_order}		{return token::IT_order;}
+{IT_asc}		{return token::IT_asc;}
+{IT_desc}		{return token::IT_desc;}
+{IT_slice}		{return token::IT_slice;}
+{IT__}		{return token::IT__;}
+{IT_load}		{return token::IT_load;}
+{IT_clear}		{return token::IT_clear;}
+{IT_silent}		{return token::IT_silent;}
+{IT_drop}		{return token::IT_drop;}
+{IT_create}		{return token::IT_create;}
+{IT_add}		{return token::IT_add;}
+{IT_move}		{return token::IT_move;}
+{IT_copy}		{return token::IT_copy;}
+{IT_insertdata}		{return token::IT_insertdata;}
+{IT_deletedata}		{return token::IT_deletedata;}
+{IT_deletewhere}		{return token::IT_deletewhere;}
+{IT_modify}		{return token::IT_modify;}
+{IT_delete}		{return token::IT_delete;}
+{IT_insert}		{return token::IT_insert;}
+{IT_default}		{return token::IT_default;}
+{IT_named}		{return token::IT_named;}
+{IT_all}		{return token::IT_all;}
+{IT_quads}		{return token::IT_quads;}
+{IT_bgp}		{return token::IT_bgp;}
+{IT_table}		{return token::IT_table;}
+{IT_unit}		{return token::IT_unit;}
+{IT_path}		{return token::IT_path;}
+{IT_join}		{return token::IT_join;}
+{IT_sequence}		{return token::IT_sequence;}
+{IT_exprlist}		{return token::IT_exprlist;}
+{IT_triple}		{return token::IT_triple;}
+{IT_leftjoin}		{return token::IT_leftjoin;}
+{IT_graph}		{return token::IT_graph;}
+{IT_service}		{return token::IT_service;}
+{IT_minus}		{return token::IT_minus;}
+{IT_union}		{return token::IT_union;}
+{GT_COMMA}		{return token::GT_COMMA;}
+{IT_alt}		{return token::IT_alt;}
+{IT_seq}		{return token::IT_seq;}
+{IT_reverse}		{return token::IT_reverse;}
+{IT_mod}		{return token::IT_mod;}
+{GT_path_OPT}		{return token::GT_path_OPT;}
+{GT_path_TIMES}		{return token::GT_path_TIMES;}
+{GT_path_PLUS}		{return token::GT_path_PLUS;}
+{IT_a}		{return token::IT_a;}
+{IT_notoneof}		{return token::IT_notoneof;}
+{GT_OR}		{return token::GT_OR;}
+{GT_AND}		{return token::GT_AND;}
+{GT_EQUAL}		{return token::GT_EQUAL;}
+{GT_NEQUAL}		{return token::GT_NEQUAL;}
+{GT_LT}		{return token::GT_LT;}
+{GT_GT}		{return token::GT_GT;}
+{GT_LE}		{return token::GT_LE;}
+{GT_GE}		{return token::GT_GE;}
+{IT_in}		{return token::IT_in;}
+{GT_PLUS}		{return token::GT_PLUS;}
+{GT_MINUS}		{return token::GT_MINUS;}
+{GT_TIMES}		{return token::GT_TIMES;}
+{GT_DIVIDE}		{return token::GT_DIVIDE;}
+{GT_NOT}		{return token::GT_NOT;}
+{IT_str}		{return token::IT_str;}
+{IT_lang}		{return token::IT_lang;}
+{IT_langmatches}		{return token::IT_langmatches;}
+{IT_datatype}		{return token::IT_datatype;}
+{IT_bound}		{return token::IT_bound;}
+{IT_iri}		{return token::IT_iri;}
+{IT_uri}		{return token::IT_uri;}
+{IT_bnode}		{return token::IT_bnode;}
+{IT_RAND}		{return token::IT_RAND;}
+{IT_abs}		{return token::IT_abs;}
+{IT_ceil}		{return token::IT_ceil;}
+{IT_floor}		{return token::IT_floor;}
+{IT_round}		{return token::IT_round;}
+{IT_concat}		{return token::IT_concat;}
+{IT_strlen}		{return token::IT_strlen;}
+{IT_ucase}		{return token::IT_ucase;}
+{IT_lcase}		{return token::IT_lcase;}
+{IT_encode_for_uri}		{return token::IT_encode_for_uri;}
+{IT_contains}		{return token::IT_contains;}
+{IT_strstarts}		{return token::IT_strstarts;}
+{IT_strends}		{return token::IT_strends;}
+{IT_year}		{return token::IT_year;}
+{IT_month}		{return token::IT_month;}
+{IT_day}		{return token::IT_day;}
+{IT_hours}		{return token::IT_hours;}
+{IT_minutes}		{return token::IT_minutes;}
+{IT_seconds}		{return token::IT_seconds;}
+{IT_timezone}		{return token::IT_timezone;}
+{IT_now}		{return token::IT_now;}
+{IT_md5}		{return token::IT_md5;}
+{IT_sha1}		{return token::IT_sha1;}
+{IT_sha224}		{return token::IT_sha224;}
+{IT_sha256}		{return token::IT_sha256;}
+{IT_sha384}		{return token::IT_sha384;}
+{IT_sha512}		{return token::IT_sha512;}
+{IT_coalesce}		{return token::IT_coalesce;}
+{IT_if}		{return token::IT_if;}
+{IT_strlang}		{return token::IT_strlang;}
+{IT_strdt}		{return token::IT_strdt;}
+{IT_sameterm}		{return token::IT_sameterm;}
+{IT_isiri}		{return token::IT_isiri;}
+{IT_isuri}		{return token::IT_isuri;}
+{IT_isblank}		{return token::IT_isblank;}
+{IT_isliteral}		{return token::IT_isliteral;}
+{IT_isnumeric}		{return token::IT_isnumeric;}
+{IT_regex}		{return token::IT_regex;}
+{IT_substr}		{return token::IT_substr;}
+{IT_exists}		{return token::IT_exists;}
+{IT_COUNT}		{return token::IT_COUNT;}
+{IT_DISTINCT}		{return token::IT_DISTINCT;}
+{IT_SUM}		{return token::IT_SUM;}
+{IT_MIN}		{return token::IT_MIN;}
+{IT_MAX}		{return token::IT_MAX;}
+{IT_AVG}		{return token::IT_AVG;}
+{IT_SAMPLE}		{return token::IT_SAMPLE;}
+{IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}
+{IT_separator}		{return token::IT_separator;}
+{GT_DTYPE}		{return token::GT_DTYPE;}
+{IT_true}		{return token::IT_true;}
+{IT_false}		{return token::IT_false;}
+{IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
+{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{BLANK_NODE_LABEL}	{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{VAR1}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
+{VAR2}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
+{LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
+{INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
+{DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
+{DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
+{INTEGER_POSITIVE}	{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
+{DECIMAL_POSITIVE}	{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
+{DOUBLE_POSITIVE}	{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
+{INTEGER_NEGATIVE}	{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
+{DECIMAL_NEGATIVE}	{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
+{DOUBLE_NEGATIVE}	{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
+{STRING_LITERAL1}	{return unescape(yylval, 1, token::STRING_LITERAL1);}
+{STRING_LITERAL2}	{return unescape(yylval, 1, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}	{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}	{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
+{NIL}			{return token::NIL;}
+{ANON}			{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
+
+<<EOF>>			{ yyterminate();}
+%%
+/* END semantic actions for SPARQLalgebra terminals */
+
+/* START SPARQLalgebraScanner */
+namespace w3c_sw {
+
+SPARQLalgebraScanner::SPARQLalgebraScanner (SPARQLalgebraDriver* driver, std::istream* in, std::ostream* out) : SPARQLalgebraFlexLexer(in, out), driver(driver) {  }
+SPARQLalgebraScanner::~SPARQLalgebraScanner () {  }
+
+SPARQLalgebraParser::token_type SPARQLalgebraScanner::typedLiteral (SPARQLalgebraParser::semantic_type*& yylval, SPARQLalgebraParser::token_type tok) {
+    std::istringstream is(yytext);
+
+    switch (tok) {
+    case token::INTEGER:
+    case token::INTEGER_POSITIVE:
+    case token::INTEGER_NEGATIVE:
+	int i;
+	is >> i;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
+	return tok;
+    case token::DECIMAL:
+    case token::DECIMAL_POSITIVE:
+    case token::DECIMAL_NEGATIVE:
+	float f;
+	is >> f;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
+	return tok;
+    case token::DOUBLE:
+    case token::DOUBLE_POSITIVE:
+    case token::DOUBLE_NEGATIVE:
+	double d;
+	is >> d;
+	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
+	return tok;
+    default: throw(new std::exception());
+    }
+}
+
+SPARQLalgebraParser::token_type SPARQLalgebraScanner::unescape (SPARQLalgebraParser::semantic_type*& yylval, size_t skip, SPARQLalgebraParser::token_type tok){
+    std::string* space = new std::string;
+    for (size_t i = skip; i < yyleng-skip; i++) {
+	if (yytext[i] == '\\') {
+	    switch (yytext[++i]) {
+	    case 't': (*space) += '\t'; break;
+	    case 'n': (*space) += '\n'; break;
+	    case 'r': (*space) += '\r'; break;
+	    case 'b': (*space) += '\b'; break;
+	    case 'f': (*space) += '\f'; break;
+	    case '"': (*space) += '\"'; break;
+	    case '\'': (*space) += '\''; break;
+	    case '\\': (*space) += '\\'; break;
+	    default: throw(new std::exception());
+	    }
+	} else {
+	    (*space) += yytext[i];
+	}
+    }
+    yylval->p_string = space;
+    return tok;
+}
+
+
+const URI* SPARQLalgebraScanner::resolvePrefix (const char* yytext){
+    std::string ret(yytext);
+    size_t index = ret.find(':');
+    if (index == std::string::npos)
+	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+    const URI* nspace = driver->getNamespace(ret.substr(0, index), true);
+    if (nspace == NULL) {
+	std::stringstream err;
+	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
+	throw(std::runtime_error(err.str()));
+    }
+    ret.replace(0, index+1, nspace->getLexicalValue());
+    return resolveBase(ret.c_str(), false);
+}
+
+void SPARQLalgebraScanner::set_debug(bool b)
+{
+    yy_flex_debug = b;
+}
+
+/* END SPARQLalgebraScanner */
+
+const URI* SPARQLalgebraScanner::resolveBase (const char* p_rel, bool stripDelims) {
+    std::string stripped(p_rel);
+    if (stripDelims) {
+	stripped.replace(0, 1, "");
+	stripped.replace(stripped.size()-1, 1, "");
+    }
+    return driver->getAbsoluteURI(stripped.c_str());
+
+#if 0
+    // was a transliteration of _generic.pm
+    static const boost::regex re_scheme("^([a-zA-Z][a-zA-Z0-9.+-]*):");
+    static const boost::regex re_authority("^((?:[a-zA-Z][a-zA-Z0-9.+-]*)?)(?://([^/?\\#]*))?(.*)$");
+    static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
+
+    boost::smatch what;
+    URI* baseURI = driver->getBase();
+    std::string base;
+    if (baseURI != NULL)
+	std::string base = baseURI->getLexicalValue();
+    std::string base_scheme;
+    if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
+	base_scheme = what[1];
+    if (boost::regex_search(self, what, re_scheme) &&
+	what[1] != base_schema)
+	return driver->getURI(self.c_str());
+    if (base.size() == 0)
+	throw(std::runtime_error(((std::string)"no base declared while resolving relative URI ").append(abs)));
+
+    std::string abs(self);
+    if (!boost::regex_search(base, what, re_scheme))
+	throw(std::runtime_error(((std::string)"resolving against base URI with no scheme ").append(base)));
+    // !!! abs->scheme = base_scheme
+    if (false) ; // ...
+
+    if (!boost::regex_search(base, what, re_authority))
+	throw(std::runtime_error(((std::string)"resolving against base URI with no authority ").append(base)));
+    std::string base_authority(what[2]);
+
+    if (!boost::regex_search(rel, what, re_path))
+	throw(std::runtime_error(((std::string)"oddly failed to match re_path on ").append(rel)));
+    std::string rel_path(what[2]);
+    if (rel_path.find("/") == 0) return driver->getURI(abs.c_str());
+
+#endif
+}
+} // END namespace w3c_sw
+
+/* This implementation of SPARQLalgebraFlexLexer::yylex() is required to fill the
+ * vtable of the class SPARQLalgebraFlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the SPARQLalgebraScanner class instead. */
+
+#ifdef yylex
+#undef yylex
+#endif
+
+int SPARQLalgebraFlexLexer::yylex()
+{
+    std::cerr << "in SPARQLalgebraFlexLexer::yylex() !" << std::endl;
+    return 0;
+}
+

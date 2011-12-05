@@ -344,6 +344,11 @@ public:
 	    delete *it;
     }
 
+    void push_front (T v) {
+	assert(v != NULL); // @DEBUG
+	assert(v != (void*)this); // @DEBUG
+	data.insert(data.begin(), v);
+    }
     void push_back (T v) {
 	assert(v != NULL); // @DEBUG
 	assert(v != (void*)this); // @DEBUG
@@ -1914,6 +1919,10 @@ protected:
 
 public:
     Filter (const TableOperation* op) : TableOperationOnOperation(op) {  }
+    Filter (const TableOperation* op,
+	    std::vector<const Expression*>::iterator begin,
+	    std::vector<const Expression*>::iterator end)
+	: TableOperationOnOperation(op), m_Expressions(begin, end) {  }
     ~Filter () {  }
 
     //size_t filters () { return m_Filters.size(); }
@@ -2799,6 +2808,7 @@ public:
 class BooleanNE : public BooleanComparator {
 public:
     BooleanNE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanNE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "!="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
@@ -2814,6 +2824,7 @@ public:
 class BooleanLT : public BooleanComparator {
 public:
     BooleanLT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanLT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
@@ -2829,6 +2840,7 @@ public:
 class BooleanGT : public BooleanComparator {
 public:
     BooleanGT (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanGT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
@@ -2844,6 +2856,7 @@ public:
 class BooleanLE : public BooleanComparator {
 public:
     BooleanLE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanLE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
@@ -2859,6 +2872,7 @@ public:
 class BooleanGE : public BooleanComparator {
 public:
     BooleanGE (const Expression* p_Expression) : BooleanComparator(p_Expression) {  }
+    BooleanGE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">="; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {

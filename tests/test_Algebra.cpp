@@ -15,6 +15,8 @@
 #include <boost/lexical_cast.hpp>
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLSerializer.hpp"
+#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
@@ -26,6 +28,7 @@ using namespace w3c_sw;
 
 AtomFactory F;
 SPARQLfedDriver sparqlParser("", &F);
+SPARQLalgebraDriver algebraParser("", &F);
 
 std::string algebrize (std::string sparql, SPARQLAlgebraSerializer::e_ALGEBRA algebra) {
     /* Parse query. */
@@ -69,6 +72,24 @@ BOOST_AUTO_TEST_CASE( algebra__filter_nested_2 ) {
   )\n\
 )\n\
 ");
+}
+
+BOOST_AUTO_TEST_CASE( algebra_parser ) {
+    std::string algebra = "(project (?s) (bgp (triple ?s <p> 'o')))";
+    std::string sparql = "SELECT ?s WHERE { ?s <p> 'p' }";
+    IStreamContext aistr(algebra, IStreamContext::STRING);
+    Operation* alg = (Operation*)algebraParser.parse(aistr);
+    algebraParser.clear(); // clear out namespaces and base URI.
+
+    /* Parse query. */
+    IStreamContext sistr(sparql, IStreamContext::STRING);
+    Operation* spr = sparqlParser.parse(sistr);
+    sparqlParser.clear(); // clear out namespaces and base URI.
+
+    BOOST_CHECK_EQUAL(*alg, *spr);
+
+    delete alg;
+    delete spr;
 }
 
 BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
