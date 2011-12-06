@@ -77,7 +77,6 @@ class SPARQLalgebraDriver : public YaccDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
-    BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
     // const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
@@ -90,18 +89,10 @@ protected:
     bool countStar;
     WhereClause* lastWhereClause;
 
-    void ensureBasicGraphPattern ( ) {
-	if (curBGP == NULL) {
-	    curBGP = curGraphName == NULL ? 
-		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
-		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
-	}
-    }
-
     BasicGraphPattern* ensureGraphPattern ( ) {
-	if (curBGP == NULL)
-	    ensureBasicGraphPattern();
-	return curBGP;
+	return curGraphName == NULL ? 
+	    static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
+	    static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
     }
 
     ParserFilter* saveFilter () {
@@ -223,7 +214,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 227 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 218 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 #include <string>
@@ -237,7 +228,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 241 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 232 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
   class position;
   class location;
 
@@ -247,7 +238,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 251 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 242 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 #include "location.hh"
 
@@ -295,7 +286,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 299 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 290 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
   /// A Bison parser.
   class SPARQLalgebraParser
@@ -307,7 +298,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 233 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 224 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
 
     const NumericRDFLiteral* p_NumericRDFLiteral;
     const Operation* p_Operation;
@@ -348,7 +339,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 352 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 343 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -370,154 +361,156 @@ namespace w3c_sw {
      IT_group = 264,
      IT_filter = 265,
      IT_order = 266,
-     IT_bgp = 267,
-     IT_triple = 268,
-     IT_join = 269,
-     IT_sequence = 270,
-     IT_leftjoin = 271,
-     IT_union = 272,
-     IT_unit = 273,
-     IT_reverse = 274,
-     IT_named = 275,
-     IT_modify = 276,
-     IT_graph = 277,
-     IT_substr = 278,
-     IT_all = 279,
-     IT_lcase = 280,
-     IT_ucase = 281,
-     IT_sha256 = 282,
-     IT_round = 283,
-     IT_path = 284,
-     IT_seconds = 285,
-     IT_str = 286,
-     IT_create = 287,
-     IT_asc = 288,
-     IT_desc = 289,
-     IT_floor = 290,
-     IT_minutes = 291,
-     IT_alt = 292,
-     IT_bound = 293,
-     IT_minus = 294,
-     IT_in = 295,
-     IT_hours = 296,
-     IT_concat = 297,
-     GT_AND = 298,
-     IT_default = 299,
-     IT_a = 300,
-     TriplesSameSubject = 301,
-     IT_if = 302,
-     IT_regex = 303,
-     GT_path_PLUS = 304,
-     IT_add = 305,
-     GT_GE = 306,
-     IT_ceil = 307,
-     IT_load = 308,
-     GT_path_TIMES = 309,
-     IT_separator = 310,
-     GT_GT = 311,
-     IT_insert = 312,
-     IT_isnumeric = 313,
-     IT_bnode = 314,
-     GT_path_OPT = 315,
-     IT_abs = 316,
-     IT_coalesce = 317,
-     GT_RCURLEY = 318,
-     IT_DISTINCT = 319,
-     IT_strlen = 320,
-     IT_contains = 321,
-     GT_NOT = 322,
-     IT_isliteral = 323,
-     IT_uri = 324,
-     GT_NEQUAL = 325,
-     IT_service = 326,
-     GT_PLUS = 327,
-     IT_MIN = 328,
-     IT_isblank = 329,
-     IT_drop = 330,
-     IT_delete = 331,
-     IT_slice = 332,
-     IT_sha512 = 333,
-     IT_MAX = 334,
-     IT_SUM = 335,
-     IT_COUNT = 336,
-     IT_strlang = 337,
-     GT_TIMES = 338,
-     IT_AVG = 339,
-     IT_table = 340,
-     IT_strstarts = 341,
-     IT_iri = 342,
-     IT_sha384 = 343,
-     IT_now = 344,
-     IT_move = 345,
-     IT_deletewhere = 346,
-     IT_SAMPLE = 347,
-     NIL = 348,
-     IT_day = 349,
-     IT_isuri = 350,
-     GT_RPAREN = 351,
-     IT_encode_for_uri = 352,
-     IT_GROUP_CONCAT = 353,
-     IT_timezone = 354,
-     IT_copy = 355,
-     IT_exprlist = 356,
-     IT_strdt = 357,
-     GT_LPAREN = 358,
-     IT_strends = 359,
-     IT_deletedata = 360,
-     IT_month = 361,
-     GT_OR = 362,
-     IT_exists = 363,
-     GT_COMMA = 364,
-     GT_LE = 365,
-     IT_sameterm = 366,
-     IT_quads = 367,
-     IT_notoneof = 368,
-     IT_year = 369,
-     GT_EQUAL = 370,
-     IT_seq = 371,
-     GT_LT = 372,
-     GT_LCURLEY = 373,
-     IT_langmatches = 374,
-     IT_insertdata = 375,
-     IT_clear = 376,
-     GT_DOT = 377,
-     IT_isiri = 378,
-     IT_silent = 379,
-     IT__ = 380,
-     IT_datatype = 381,
-     IT_mod = 382,
-     IT_sha224 = 383,
-     GT_MINUS = 384,
-     GT_DIVIDE = 385,
-     GT_DTYPE = 386,
-     IT_lang = 387,
-     IT_sha1 = 388,
-     IT_md5 = 389,
-     IT_RAND = 390,
-     IT_true = 391,
-     IT_false = 392,
-     INTEGER = 393,
-     DECIMAL = 394,
-     DOUBLE = 395,
-     INTEGER_POSITIVE = 396,
-     DECIMAL_POSITIVE = 397,
-     DOUBLE_POSITIVE = 398,
-     INTEGER_NEGATIVE = 399,
-     DECIMAL_NEGATIVE = 400,
-     DOUBLE_NEGATIVE = 401,
-     STRING_LITERAL1 = 402,
-     STRING_LITERAL_LONG1 = 403,
-     STRING_LITERAL2 = 404,
-     STRING_LITERAL_LONG2 = 405,
-     IRI_REF = 406,
-     PNAME_NS = 407,
-     PNAME_LN = 408,
-     BLANK_NODE_LABEL = 409,
-     ANON = 410,
-     POSITION = 411,
-     VAR1 = 412,
-     VAR2 = 413,
-     LANGTAG = 414
+     IT_ask = 267,
+     IT_bgp = 268,
+     IT_triple = 269,
+     IT_join = 270,
+     IT_sequence = 271,
+     IT_leftjoin = 272,
+     IT_optional = 273,
+     IT_union = 274,
+     IT_unit = 275,
+     IT_reverse = 276,
+     IT_named = 277,
+     IT_modify = 278,
+     IT_graph = 279,
+     IT_substr = 280,
+     IT_all = 281,
+     IT_lcase = 282,
+     IT_ucase = 283,
+     IT_sha256 = 284,
+     IT_round = 285,
+     IT_path = 286,
+     IT_seconds = 287,
+     IT_str = 288,
+     IT_create = 289,
+     IT_asc = 290,
+     IT_desc = 291,
+     IT_floor = 292,
+     IT_minutes = 293,
+     IT_alt = 294,
+     IT_bound = 295,
+     IT_minus = 296,
+     IT_in = 297,
+     IT_hours = 298,
+     IT_concat = 299,
+     GT_AND = 300,
+     IT_default = 301,
+     IT_a = 302,
+     TriplesSameSubject = 303,
+     IT_if = 304,
+     IT_regex = 305,
+     GT_path_PLUS = 306,
+     IT_add = 307,
+     GT_GE = 308,
+     IT_ceil = 309,
+     IT_load = 310,
+     GT_path_TIMES = 311,
+     IT_separator = 312,
+     GT_GT = 313,
+     IT_insert = 314,
+     IT_isnumeric = 315,
+     IT_bnode = 316,
+     GT_path_OPT = 317,
+     IT_abs = 318,
+     IT_coalesce = 319,
+     GT_RCURLEY = 320,
+     IT_DISTINCT = 321,
+     IT_strlen = 322,
+     IT_contains = 323,
+     GT_NOT = 324,
+     IT_isliteral = 325,
+     IT_uri = 326,
+     GT_NEQUAL = 327,
+     IT_service = 328,
+     GT_PLUS = 329,
+     IT_MIN = 330,
+     IT_isblank = 331,
+     IT_drop = 332,
+     IT_delete = 333,
+     IT_slice = 334,
+     IT_sha512 = 335,
+     IT_MAX = 336,
+     IT_SUM = 337,
+     IT_COUNT = 338,
+     IT_strlang = 339,
+     GT_TIMES = 340,
+     IT_AVG = 341,
+     IT_table = 342,
+     IT_strstarts = 343,
+     IT_iri = 344,
+     IT_sha384 = 345,
+     IT_now = 346,
+     IT_move = 347,
+     IT_deletewhere = 348,
+     IT_SAMPLE = 349,
+     NIL = 350,
+     IT_day = 351,
+     IT_isuri = 352,
+     GT_RPAREN = 353,
+     IT_encode_for_uri = 354,
+     IT_GROUP_CONCAT = 355,
+     IT_timezone = 356,
+     IT_copy = 357,
+     IT_exprlist = 358,
+     IT_strdt = 359,
+     GT_LPAREN = 360,
+     IT_strends = 361,
+     IT_deletedata = 362,
+     IT_month = 363,
+     GT_OR = 364,
+     IT_exists = 365,
+     GT_COMMA = 366,
+     GT_LE = 367,
+     IT_sameterm = 368,
+     IT_quads = 369,
+     IT_notoneof = 370,
+     IT_year = 371,
+     GT_EQUAL = 372,
+     IT_seq = 373,
+     GT_LT = 374,
+     GT_LCURLEY = 375,
+     IT_langmatches = 376,
+     IT_insertdata = 377,
+     IT_clear = 378,
+     GT_DOT = 379,
+     IT_isiri = 380,
+     IT_silent = 381,
+     IT__ = 382,
+     IT_datatype = 383,
+     IT_mod = 384,
+     IT_sha224 = 385,
+     GT_MINUS = 386,
+     GT_DIVIDE = 387,
+     GT_DTYPE = 388,
+     IT_lang = 389,
+     IT_sha1 = 390,
+     IT_md5 = 391,
+     IT_RAND = 392,
+     IT_true = 393,
+     IT_false = 394,
+     INTEGER = 395,
+     DECIMAL = 396,
+     DOUBLE = 397,
+     INTEGER_POSITIVE = 398,
+     DECIMAL_POSITIVE = 399,
+     DOUBLE_POSITIVE = 400,
+     INTEGER_NEGATIVE = 401,
+     DECIMAL_NEGATIVE = 402,
+     DOUBLE_NEGATIVE = 403,
+     STRING_LITERAL1 = 404,
+     STRING_LITERAL_LONG1 = 405,
+     STRING_LITERAL2 = 406,
+     STRING_LITERAL_LONG2 = 407,
+     IRI_REF = 408,
+     PNAME_NS = 409,
+     PNAME_LN = 410,
+     BLANK_NODE_LABEL = 411,
+     ANON = 412,
+     POSITION = 413,
+     VAR1 = 414,
+     VAR2 = 415,
+     LANGTAG = 416
    };
 
     };
@@ -694,7 +687,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 698 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 691 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 

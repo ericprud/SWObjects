@@ -67,6 +67,7 @@ typedef w3c_sw::SPARQLalgebraParser::token_type token_type;
 /* START patterns for SPARQLalgebra terminals */
 GT_LPAREN		"("
 GT_RPAREN		")"
+IT_ask		"ask"
 IT_base		"base"
 IT_prefix		"prefix"
 IT_project		"project"
@@ -107,6 +108,7 @@ IT_sequence		"sequence"
 IT_exprlist		"exprlist"
 IT_triple		"triple"
 IT_leftjoin		"leftjoin"
+IT_optional		"optional"
 IT_graph		"graph"
 IT_service		"service"
 IT_minus		"minus"
@@ -236,6 +238,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {PASSED_TOKENS}		{ /* yylloc->step(); @@ needed? useful? */ }
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
+{IT_ask}		{return token::IT_ask;}
 {IT_base}		{return token::IT_base;}
 {IT_prefix}		{return token::IT_prefix;}
 {IT_project}		{return token::IT_project;}
@@ -276,6 +279,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_exprlist}		{return token::IT_exprlist;}
 {IT_triple}		{return token::IT_triple;}
 {IT_leftjoin}		{return token::IT_leftjoin;}
+{IT_optional}		{return token::IT_optional;}
 {IT_graph}		{return token::IT_graph;}
 {IT_service}		{return token::IT_service;}
 {IT_minus}		{return token::IT_minus;}

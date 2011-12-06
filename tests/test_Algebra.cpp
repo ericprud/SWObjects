@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE( algebra__filter_nested_2 ) {
 }
 
 BOOST_AUTO_TEST_CASE( algebra_parser ) {
-    std::string algebra = "(project (?s) (bgp (triple ?s <p> 'o')))";
-    std::string sparql = "SELECT ?s WHERE { ?s <p> 'p' }";
+    std::string algebra = "(project (?s) (join (bgp (triple ?s <p> 'o')) (optional (bgp (triple ?s <p2> ?o2)))))";
+    std::string sparql = "SELECT ?s WHERE { ?s <p> 'o' OPTIONAL { ?s <p2> ?o2 } }";
     IStreamContext aistr(algebra, IStreamContext::STRING);
     Operation* alg = (Operation*)algebraParser.parse(aistr);
     algebraParser.clear(); // clear out namespaces and base URI.
@@ -106,10 +106,7 @@ BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
 	}
 	c->addTableOperation(new OptionalGraphPattern(new DefaultGraphPattern()), false);
 	Ask* a = new Ask(new ProductionVector<const DatasetClause*>, new WhereClause(c));
-	SPARQLAlgebraSerializer alg(SPARQLAlgebraSerializer::ALGEBRA_simple);
-	a->express(&alg);
-	delete c;
-	std::string measured = alg.str();
+
 	std::string expected("(ask\n\
   (join\n\
     (bgp (triple <s> <p> 0))\n\
@@ -121,6 +118,16 @@ BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
   )\n\
 )\n\
 ");
+
+	IStreamContext aistr(expected, IStreamContext::STRING);
+	Operation* alg = (Operation*)algebraParser.parse(aistr);
+	algebraParser.clear(); // clear out namespaces and base URI.
+	BOOST_CHECK_EQUAL(*alg, *a);
+
+	SPARQLAlgebraSerializer serializer(SPARQLAlgebraSerializer::ALGEBRA_simple);
+	a->express(&serializer);
+	delete c;
+	std::string measured = serializer.str();
 	BOOST_CHECK_EQUAL(measured, expected);
     } catch (std::string& s) {
 	BOOST_ERROR ( s );

@@ -84,7 +84,6 @@ class SPARQLalgebraDriver : public YaccDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
-    BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
     // const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
@@ -97,18 +96,10 @@ protected:
     bool countStar;
     WhereClause* lastWhereClause;
 
-    void ensureBasicGraphPattern ( ) {
-	if (curBGP == NULL) {
-	    curBGP = curGraphName == NULL ? 
-		static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
-		static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
-	}
-    }
-
     BasicGraphPattern* ensureGraphPattern ( ) {
-	if (curBGP == NULL)
-	    ensureBasicGraphPattern();
-	return curBGP;
+	return curGraphName == NULL ? 
+	    static_cast<BasicGraphPattern*>(new DefaultGraphPattern()) : 
+	    static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
     }
 
     ParserFilter* saveFilter () {
@@ -274,7 +265,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_base IT_prefix IT_project IT_extend IT_distinct IT_reduced IT_group IT_filter IT_order IT_bgp IT_triple IT_join IT_sequence IT_leftjoin IT_union IT_unit IT_reverse IT_named IT_modify IT_graph IT_substr IT_all IT_lcase IT_ucase IT_sha256 IT_round IT_path IT_seconds IT_str IT_create IT_asc IT_desc IT_floor IT_minutes IT_alt IT_bound IT_minus IT_in IT_hours IT_concat GT_AND IT_default IT_a TriplesSameSubject IT_if IT_regex GT_path_PLUS IT_add GT_GE IT_ceil IT_load GT_path_TIMES IT_separator GT_GT IT_insert IT_isnumeric IT_bnode GT_path_OPT IT_abs IT_coalesce GT_RCURLEY IT_DISTINCT IT_strlen IT_contains GT_NOT IT_isliteral IT_uri GT_NEQUAL IT_service GT_PLUS IT_MIN IT_isblank IT_drop IT_delete IT_slice IT_sha512 IT_MAX IT_SUM IT_COUNT IT_strlang GT_TIMES IT_AVG IT_table IT_strstarts IT_iri IT_sha384 IT_now IT_move IT_deletewhere IT_SAMPLE NIL IT_day IT_isuri GT_RPAREN IT_encode_for_uri IT_GROUP_CONCAT IT_timezone IT_copy IT_exprlist IT_strdt GT_LPAREN IT_strends IT_deletedata IT_month GT_OR IT_exists GT_COMMA GT_LE IT_sameterm IT_quads IT_notoneof IT_year GT_EQUAL IT_seq GT_LT GT_LCURLEY IT_langmatches IT_insertdata IT_clear GT_DOT IT_isiri IT_silent IT__ IT_datatype IT_mod IT_sha224 GT_MINUS GT_DIVIDE GT_DTYPE IT_lang IT_sha1 IT_md5 IT_RAND 
+%token IT_base IT_prefix IT_project IT_extend IT_distinct IT_reduced IT_group IT_filter IT_order IT_ask IT_bgp IT_triple IT_join IT_sequence IT_leftjoin IT_optional IT_union IT_unit IT_reverse IT_named IT_modify IT_graph IT_substr IT_all IT_lcase IT_ucase IT_sha256 IT_round IT_path IT_seconds IT_str IT_create IT_asc IT_desc IT_floor IT_minutes IT_alt IT_bound IT_minus IT_in IT_hours IT_concat GT_AND IT_default IT_a TriplesSameSubject IT_if IT_regex GT_path_PLUS IT_add GT_GE IT_ceil IT_load GT_path_TIMES IT_separator GT_GT IT_insert IT_isnumeric IT_bnode GT_path_OPT IT_abs IT_coalesce GT_RCURLEY IT_DISTINCT IT_strlen IT_contains GT_NOT IT_isliteral IT_uri GT_NEQUAL IT_service GT_PLUS IT_MIN IT_isblank IT_drop IT_delete IT_slice IT_sha512 IT_MAX IT_SUM IT_COUNT IT_strlang GT_TIMES IT_AVG IT_table IT_strstarts IT_iri IT_sha384 IT_now IT_move IT_deletewhere IT_SAMPLE NIL IT_day IT_isuri GT_RPAREN IT_encode_for_uri IT_GROUP_CONCAT IT_timezone IT_copy IT_exprlist IT_strdt GT_LPAREN IT_strends IT_deletedata IT_month GT_OR IT_exists GT_COMMA GT_LE IT_sameterm IT_quads IT_notoneof IT_year GT_EQUAL IT_seq GT_LT GT_LCURLEY IT_langmatches IT_insertdata IT_clear GT_DOT IT_isiri IT_silent IT__ IT_datatype IT_mod IT_sha224 GT_MINUS GT_DIVIDE GT_DTYPE IT_lang IT_sha1 IT_md5 IT_RAND 
 %token <p_BooleanRDFLiteral> IT_true IT_false
 %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE
 			     DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE
@@ -295,7 +286,7 @@ public:
 %type <p_OrderConditions> _QOrderCondition_E_Plus
 %type <p_OrderConditionPair> OrderCondition _O_QGT_LPAREN_E_S_QIT_asc_E_Or_QIT_desc_E_S_QExpression_E_S_QGT_RPAREN_E_C
 %type <p_ExpressionAliaseList> _QVar_E_Star
-%type <p_op> WhereClause GroupGraphPatternNoSub Filter OptionalGraphPattern GraphGraphPattern ServiceGraphPattern MinusGraphPattern GroupOrUnionGraphPattern GroupGraphPatternSub QuadData QuadPattern Quads _O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C QuadsNotTriples TriplesTemplate
+%type <p_op> AskQuery WhereClause GroupGraphPatternNoSub Filter OptionalGraphPattern GraphGraphPattern ServiceGraphPattern MinusGraphPattern GroupOrUnionGraphPattern GroupGraphPatternSub QuadData QuadPattern Quads _O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C QuadsNotTriples TriplesTemplate
 %type <p_conj> _QGroupGraphPatternNoSub_E_Plus _Q_O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C_E_Star _QGroupGraphPatternSub_E_Plus
 %type <p_BasicGraphPattern> _QMyTriple_E_Plus
 %type <p_TriplePattern> MyTriple
@@ -373,6 +364,12 @@ UsingOpt:
     GT_LPAREN _QUsingClause_E_Plus SliceOpt GT_RPAREN	{
 	$$ = new Select($3.distinctness, $3.varSet, $2, $3.p_WhereClause, $3.p_SolutionModifier);
     }
+  | GT_LPAREN _QUsingClause_E_Plus AskQuery GT_RPAREN	{
+	$$ = new Ask($2, new WhereClause($3));
+    }
+  | AskQuery	{
+	$$ = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause($1));
+    }
   | SliceOpt	{
 	$$ = new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $1.p_WhereClause, $1.p_SolutionModifier);
     }
@@ -446,6 +443,12 @@ GroupOpt:
 ;
 
 /* [0]     Query                      ::= ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery ) BindingsClause? */
+
+AskQuery:
+    GT_LPAREN IT_ask WhereClause GT_RPAREN	{
+	$$ = $3;
+    }
+;
 
 BaseDecl:
     IT_base IRI_REF	{
@@ -928,7 +931,7 @@ _Q_O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C_E_Star:
 	$$ = new ParserTableConjunction();
     }
   | _Q_O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C_E_Star _O_QQuadsNotTriples_E_Or_QTriplesTemplate_E_C	{
-      $1->addTableOperation($2, false);
+	$1->addTableOperation($2, false);
 	$$ = $1;
     }
 ;
@@ -989,9 +992,11 @@ _O_QIT_join_E_Or_QIT_sequence_E_C:
 _QGroupGraphPatternNoSub_E_Plus:
     GroupGraphPatternNoSub	{
 	$$ = new ParserTableConjunction();
+	$$->addTableOperation($1, driver.unnestTree);
     }
   | _QGroupGraphPatternNoSub_E_Plus GroupGraphPatternNoSub	{
-	$$->addTableOperation($1, driver.unnestTree);
+	$1->addTableOperation($2, driver.unnestTree);
+	$$ = $1;
     }
 ;
 
@@ -1008,7 +1013,7 @@ GroupGraphPatternSub:
   | MinusGraphPattern	
   | GroupOrUnionGraphPattern	
   | GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN	{
-	throw new std::string("GroupGraphPatternNoSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
+	throw new std::string("GroupGraphPatternSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
 	$$ = driver.ensureGraphPattern();
     }
   | SubSelect	{
@@ -1022,7 +1027,7 @@ _QGroupGraphPatternSub_E_Plus:
 	$$->addTableOperation($1, driver.unnestTree);
     }
   | _QGroupGraphPatternSub_E_Plus GroupGraphPatternSub	{
-      $1->addTableOperation($2, driver.unnestTree);
+	$1->addTableOperation($2, driver.unnestTree);
 	$$ = $1;
     }
 ;
@@ -1059,10 +1064,29 @@ MyTriple:
 
 OptionalGraphPattern:
     GT_LPAREN IT_leftjoin GroupGraphPatternNoSub GroupGraphPatternNoSub _QExprList_E_Opt GT_RPAREN	{
-	TableConjunction* ret = new TableConjunction();
-	ret->addTableOperation($3, driver.unnestTree);
-	ret->addTableOperation($4, driver.unnestTree);
-	$$ = ret;
+	OptionalGraphPattern* opt = new OptionalGraphPattern($4);
+	TableConjunction* conj = new TableConjunction();
+	conj->addTableOperation($3, driver.unnestTree);
+	conj->addTableOperation(opt, driver.unnestTree);
+	if ($5 != NULL) {
+	    for (std::vector<const Expression*>::const_iterator it = $5->begin();
+		 it != $5->end(); ++it)
+		opt->addExpression(*it);
+	    $5->clear();
+	    delete $5;
+	}
+	$$ = conj;
+    }
+  | GT_LPAREN IT_optional GroupGraphPatternNoSub _QExprList_E_Opt GT_RPAREN	{
+	OptionalGraphPattern* opt = new OptionalGraphPattern($3);
+	if ($4 != NULL) {
+	    for (std::vector<const Expression*>::const_iterator it = $4->begin();
+		 it != $4->end(); ++it)
+		opt->addExpression(*it);
+	    $4->clear();
+	    delete $4;
+	}
+	$$ = opt;
     }
 ;
 
@@ -1813,7 +1837,7 @@ namespace w3c_sw {
 
     SPARQLalgebraDriver::SPARQLalgebraDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), 
+	curFilter(NULL), 
 	curResultSet(NULL), curResult(NULL), curExprList(NULL), 
 	root(NULL), unnestTree(false)
 {
@@ -1826,7 +1850,6 @@ namespace w3c_sw {
 const Operation* SPARQLalgebraDriver::parse (IStreamContext& in)
 {
     root = NULL;
-    curBGP = NULL;
     curGraphName = NULL;
     streamname = in.nameStr;
 
