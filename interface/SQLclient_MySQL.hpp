@@ -97,9 +97,7 @@ namespace w3c_sw {
 		    case MYSQL_TYPE_YEAR:
 			f.type = Field::TYPE_dateTime;
 			break;
-		    case MYSQL_TYPE_STRING:
-			f.type = Field::TYPE_string;
-			break;
+		    case MYSQL_TYPE_STRING: // used to be Field::TYPE_string;
 		    case MYSQL_TYPE_VARCHAR:
 		    case MYSQL_TYPE_BLOB:
 		    case MYSQL_TYPE_VAR_STRING:
