@@ -310,6 +310,7 @@ namespace w3c_sw {
 	    return sql::AliasAttr(alias, keyMap.find(relation) == keyMap.end() ? defaultPKAttr : keyMap[relation]);
 	}
 
+	AtomFactory* atomFactory;
 	std::string stem;
 	/*	AliasContext* curAliases; */
 	typedef enum {MODE_outside, MODE_subject, MODE_predicate, MODE_object, MODE_selectVar, MODE_constraint, MODE_overrun} e_Mode;
@@ -323,7 +324,17 @@ namespace w3c_sw {
 	VarSet* selectVars;
 	char* predicateDelims;
 	char* nodeDelims;
-	sql::Expression* curConstraint;
+
+	/* Keep track of which evaluation can be translated to SQL
+	 */
+	typedef enum { EVALUATION_immediate, EVALUATION_deferred } e_EVALUATION;
+	e_EVALUATION evaluation;
+	size_t exprLevel; // depth of expression nesting
+	sql::Expression* curConstraint; // evaluations expressible in SQL
+	const Expression* curExpression; // evaluations which require creation of ...
+	std::set<const Variable*> intermediates; // ... an intermediate variable ..
+	std::map<const Variable*, const Expression*> postEvals; // ... and later variable evaluation.
+
 	std::string defaultPKAttr;
 	KeyMap keyMap;
 	std::string driver;
@@ -333,8 +344,8 @@ namespace w3c_sw {
     public:
 	//static std::ostream** ErrorStream;
 
-	SQLizer (std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver) : 
-	    stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
+	SQLizer (AtomFactory* atomFactory, std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver) : 
+	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
 	    driver(driver)
 	{
@@ -697,9 +708,20 @@ namespace w3c_sw {
 	virtual void bind (const Bind* const, const TableOperation* p_op, const w3c_sw::Expression* expr, const Variable* label) {
 	    p_op->express(this);
 	    mode = MODE_constraint;
+	    e_EVALUATION oldEval = evaluation;
+	    evaluation = EVALUATION_immediate;
+	    exprLevel = 0;
 	    expr->express(this);
-	    curQuery->projectVariable(label->getLexicalValue(), curConstraint);
-	    curConstraint = NULL;
+	    if (evaluation == EVALUATION_immediate) {
+		// The desired variable can be projected directly from SQL.
+		curQuery->projectVariable(label->getLexicalValue(), curConstraint);
+		curConstraint = NULL;
+	    } else {
+		// The variable is assigned to some type or via some function not native to SQL.
+		postEvals[label] = curExpression;
+	    }
+	    // else expr resulted in a deferred expression.
+	    evaluation = oldEval;
 	}
 	void _BasicGraphPattern (const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    w3c_sw_MARK;
@@ -984,20 +1006,53 @@ namespace w3c_sw {
 	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
 	    w3c_sw_MARK;
 	    // args->express(this);
+	    bool defer = false;
 	    std::vector<const sql::Expression*> sqlArgs;
+	    ++exprLevel;
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator arg = args->begin();
 		 arg != args->end(); ++arg) {
+
+		e_EVALUATION oldEval = evaluation;
+		evaluation = EVALUATION_immediate;
 		(*arg)->express(this);
+		if (evaluation == EVALUATION_deferred)
+		    defer = true;
+		evaluation = oldEval;
+
 		sqlArgs.push_back(curConstraint);
 	    }
+	    --exprLevel;
 
 	    std::map<const TTerm*, const char*>::const_iterator sqlHomolog;
 	    if ((sqlHomolog = this->sparql2sqlHomologs.find(iri)) != sparql2sqlHomologs.end())
 		curConstraint = new sql::HomologConstraint(sqlHomolog->second, sqlArgs.begin(), sqlArgs.end());
-
 	    else if (iri == TTerm::FUNC_bound)
 		curConstraint = new sql::NullConstraint(curConstraint);
-	    else {
+	    else if ((iri == TTerm::FUNC_str && exprLevel != 0) ||	// casts to strings
+		     iri == TTerm::FUNC_bnode ||			// casts to bnodes
+		     iri == TTerm::FUNC_iri) {				// casts to iris
+
+		// Keep current constraint but add deferred evaluation.
+		evaluation = EVALUATION_deferred;
+
+		// Lean on bnode's assurance of a unique lexical identifier.
+		TTerm::String2BNode t;
+		const BNode* b = atomFactory->getBNode
+		    (std::string("_") + boost::lexical_cast<std::string>(this), t);
+
+		// Ignore BNode; create a Variable to hold the returned value.
+		const Variable* v = atomFactory->getVariable(b->getLexicalValue());
+		intermediates.insert(v); // project out of results later.
+		curQuery->projectVariable(v->getLexicalValue(), curConstraint);
+		curQuery->selectVariable(v->getLexicalValue());
+
+		// Record an expression to create the IRI/BNode/String later.
+		curExpression = new FunctionCallExpression
+		    (new FunctionCall(iri, new TTermExpression(v), NULL, NULL));
+
+	    } else if (iri == TTerm::FUNC_str) {
+		// SQL does this automatically (and has no syntax for it).
+	    } else {
 
 		// TTerm::FUNC_if
 		// TTerm::FUNC_coalesce
@@ -1148,6 +1203,40 @@ namespace w3c_sw {
 	virtual void numberExpression (const w3c_sw::NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {
 	    w3c_sw_MARK;
 	    p_NumericRDFLiteral->express(this);
+	}
+
+	/* postEval - clean up a result set with e.g. variable bindings to
+	 * non-SQL terms.
+	 * Remove a temporary variables from result set.
+	 */
+	void postEval (ResultSet* rs) {
+	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		<< "pre postEval:\n" << *rs;
+
+	    for (std::map<const Variable*, const Expression*>::const_iterator exp = postEvals.begin();
+		 exp != postEvals.end(); ++exp)
+		    rs->addKnownVar(exp->first);
+
+	    TreatAsVar b;
+	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row) {
+
+		// Evaluate postEval expressions.
+		for (std::map<const Variable*, const Expression*>::const_iterator exp = postEvals.begin();
+		     exp != postEvals.end(); ++exp)
+		    try {
+			(*row)->set(exp->first, exp->second->eval(*row, rs->getAtomFactory(), &b), false);
+		    } catch (SafeEvaluationError&) {
+			// no binding
+		    }
+
+		// Remove intermediate variables.
+		for (std::set<const Variable*>::const_iterator delMe = intermediates.begin();
+		     delMe != intermediates.end(); ++delMe)
+		    (*row)->erase((*row)->find(*delMe));
+	    }
+
+	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		<< "post postEval:\n" << *rs;
 	}
     };
 

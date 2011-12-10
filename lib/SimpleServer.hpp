@@ -904,7 +904,7 @@ struct SimpleEngine {
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
 	    std::string drv = SQLDriver.find("oracle") == 0 ? "oracle" : SQLDriver;
-	    SQLizer sqlizer(stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
+	    SQLizer sqlizer(&atomFactory, stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
@@ -942,6 +942,7 @@ struct SimpleEngine {
 		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		SqlResultSet rs2(&atomFactory, res);
+		sqlizer.postEval(&rs2);
 		rs.joinIn(&rs2);
 		executed = true;
 #endif /* !SQL_CLIENT_NONE */
