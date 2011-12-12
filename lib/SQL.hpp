@@ -953,11 +953,26 @@ namespace w3c_sw {
 	class SQLQuery { // !!! public SQLQueryBase
 	public:
 
-	    std::vector<Join*> joins;
+	    struct JoinList : public std::vector<Join*> {
+		JoinList () {  }
+		JoinList (std::vector<Join*>& joins) : std::vector<Join*>(joins) {  }
+		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	    };
+	    JoinList joins;
 
-	    std::vector<const Expression*> constraints;
-	    std::vector<const Expression*> orderBy;
-	    std::vector<AliasedSelect*> selects;
+	    struct Constraints : public std::vector<const Expression*> {
+		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	    };
+	    Constraints  constraints;
+	    struct OrderBy : public std::vector<const Expression*> {
+		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	    };
+	    OrderBy orderBy;
+	    struct Selects : public std::vector<AliasedSelect*> {
+		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	    };
+
+	    Selects selects;
 	    bool distinct;
 	    int limit, offset;
 
@@ -1003,13 +1018,7 @@ namespace w3c_sw {
 		s << pad << "SELECT ";
 		if (distinct) s << "DISTINCT ";
 
-		/* SELECT attributes */
-		for (std::vector<AliasedSelect*>::const_iterator it = selects.begin();
-		     it != selects.end(); ++it) {
-		    if (it != selects.begin()) s << ", ";
-		    s << (*it)->toString(pad, driver);
-		}
-		if (selects.begin() == selects.end()) s << "NULL";
+		selects.print(s, pad, driver);
 
 		/* JOINs */
 		std::string where;
@@ -1031,16 +1040,7 @@ namespace w3c_sw {
 		if (where.length() != 0)
 		    s << std::endl << pad << " WHERE " << where;
 
-		/* ORDER BY */
-		if (orderBy.begin() != orderBy.end()) {
-		    s << std::endl << pad << " ORDER BY ";
-		    for (std::vector<const Expression*>::const_iterator it = orderBy.begin();
-			 it != orderBy.end(); ++it) {
-			if (it != orderBy.begin())
-			    s << ", ";
-			s << (*it)->toString(pad, PREC_High, driver);
-		    }
-		}
+		orderBy.print(s, pad, driver);
 
 		if (driver.find("oracle") == 0) {
 		    if (offset != -1) s << std::endl << pad << "rownum > " << offset;
@@ -1055,6 +1055,35 @@ namespace w3c_sw {
 
 	    void add (Join* join) { joins.push_back(join); }
 	};
+
+	inline std::ostream& SQLQuery::Selects::print (std::ostream& s, std::string pad, std::string driver) const {
+	    /* SELECT attributes */
+	    for (std::vector<AliasedSelect*>::const_iterator it = begin();
+		 it != end(); ++it) {
+		if (it != begin()) s << ", ";
+		s << (*it)->toString(pad, driver);
+	    }
+	    if (begin() == end()) s << "NULL";
+	    return s;
+	}
+
+	inline std::ostream& SQLQuery::OrderBy::print (std::ostream& s, std::string pad, std::string driver) const {
+	    /* ORDER BY */
+	    if (begin() != end()) {
+		s << std::endl << pad << " ORDER BY ";
+		for (std::vector<const Expression*>::const_iterator it = begin();
+		     it != end(); ++it) {
+		    if (it != begin())
+			s << ", ";
+		    s << (*it)->toString(pad, PREC_High, driver);
+		}
+	    }
+	    return s;
+	}
+
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Selects& selects) {
+	    return selects.print(os);
+	}
 
 	struct EquivSet {
 	    std::map<std::string, std::set<std::string> > equivs;
@@ -1105,15 +1134,44 @@ namespace w3c_sw {
 	}
 
 	inline bool SQLQuery::finalEq (const SQLQuery& ref) const { // not needed in SQLQueryBase
-	    return
-		distinct == ref.distinct
-		&& limit == ref.limit
-		&& offset == ref.offset
+	    const char* f = "SQL Query inequivalence in ";
+	    if (!(distinct == ref.distinct)) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "distinct: " << distinct << "!=" << ref.distinct << "\n";
+		return false;
+	    }
+	    if (!(limit == ref.limit)) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "limit: " << limit << "!=" << ref.limit << "\n";
+		return false;
+	    }
+	    if (!(offset == ref.offset)) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "offset: " << offset << "!=" << ref.offset << "\n";
+		return false;
+	    }
 		// && ptrequal(selects.begin(), selects.end(), ref.selects.begin())
-		&& EquivSet(constraints).sameValues(selects, ref.selects)
-		&& ptrequal(joins.begin(), joins.end(), ref.joins.begin())
-		&& ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())
-		&& ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin());
+	    if (!EquivSet(constraints).sameValues(selects, ref.selects)) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "selects:\n" << selects << "\n != \n" << ref.selects << "\n";
+		return false;
+	    }
+	    if (!ptrequal(joins.begin(), joins.end(), ref.joins.begin())) {
+		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		//     << f << "joins: " << joins->toString() << "!=" << ref.selects->toString() << "\n";
+		return false;
+	    }
+	    if (!ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())) {
+		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		//     << f << "constraints: " << constraints->toString() << "!=" << ref.constraints->toString() << "\n";
+		return false;
+	    }
+	    if (!ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin())) {
+		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		//     << f << "orderBy: " << orderBy->toString() << "!=" << ref.orderBy->toString() << "\n";
+		return false;
+	    }
+	    return true;
 	}
 
 	inline std::ostream& operator<< (std::ostream& os, SQLQuery const& my) {
