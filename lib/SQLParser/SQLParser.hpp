@@ -329,38 +329,40 @@ namespace w3c_sw {
      GT_DIVIDE = 286,
      GT_NOT = 287,
      IT_CONCAT = 288,
-     IT_REGEX = 289,
-     GT_SEMI = 290,
-     IT_CREATE = 291,
-     IT_TABLE = 292,
-     GT_LPAREN = 293,
-     GT_RPAREN = 294,
-     GT_COMMA = 295,
-     IT_FOREIGN = 296,
-     IT_KEY = 297,
-     IT_REFERENCES = 298,
-     IT_PRIMARY = 299,
-     IT_INT = 300,
-     IT_DOUBLE = 301,
-     IT_DATE = 302,
-     IT_DATETIME = 303,
-     IT_STRING = 304,
-     NAME = 305,
-     INTEGER = 306,
-     INTEGER_POSITIVE = 307,
-     INTEGER_NEGATIVE = 308,
-     DECIMAL = 309,
-     DECIMAL_POSITIVE = 310,
-     DECIMAL_NEGATIVE = 311,
-     DOUBLE = 312,
-     DOUBLE_POSITIVE = 313,
-     DOUBLE_NEGATIVE = 314,
-     STRING_LITERAL1 = 315,
-     STRING_LITERAL2 = 316,
-     STRING_LITERAL_LONG1 = 317,
-     STRING_LITERAL_LONG2 = 318,
-     IT_true = 319,
-     IT_false = 320
+     IT_LCASE = 289,
+     IT_UCASE = 290,
+     IT_REGEX = 291,
+     GT_SEMI = 292,
+     IT_CREATE = 293,
+     IT_TABLE = 294,
+     GT_LPAREN = 295,
+     GT_RPAREN = 296,
+     GT_COMMA = 297,
+     IT_FOREIGN = 298,
+     IT_KEY = 299,
+     IT_REFERENCES = 300,
+     IT_PRIMARY = 301,
+     IT_INT = 302,
+     IT_DOUBLE = 303,
+     IT_DATE = 304,
+     IT_DATETIME = 305,
+     IT_STRING = 306,
+     NAME = 307,
+     INTEGER = 308,
+     INTEGER_POSITIVE = 309,
+     INTEGER_NEGATIVE = 310,
+     DECIMAL = 311,
+     DECIMAL_POSITIVE = 312,
+     DECIMAL_NEGATIVE = 313,
+     DOUBLE = 314,
+     DOUBLE_POSITIVE = 315,
+     DOUBLE_NEGATIVE = 316,
+     STRING_LITERAL1 = 317,
+     STRING_LITERAL2 = 318,
+     STRING_LITERAL_LONG1 = 319,
+     STRING_LITERAL_LONG2 = 320,
+     IT_true = 321,
+     IT_false = 322
    };
 
     };
@@ -454,7 +456,7 @@ namespace w3c_sw {
     /// - if positive, shift that token.
     /// - if negative, reduce the rule which number is the opposite.
     /// - if zero, do what YYDEFACT says.
-    static const unsigned char yytable_[];
+    static const short int yytable_[];
     static const signed char yytable_ninf_;
 
     static const short int yycheck_[];
@@ -537,7 +539,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 541 "lib/SQLParser/SQLParser.hpp"
+#line 543 "lib/SQLParser/SQLParser.hpp"
 
 
 

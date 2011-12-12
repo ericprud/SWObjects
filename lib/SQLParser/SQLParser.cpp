@@ -759,7 +759,7 @@ namespace w3c_sw {
 #line 520 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AliasedSelect) = (yysemantic_stack_[(2) - (2)].p_AliasedSelect);
-}
+    }
     break;
 
   case 47:
@@ -768,71 +768,81 @@ namespace w3c_sw {
 #line 526 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
-}
+    }
     break;
 
   case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 530 "lib/SQLParser/SQLParser.ypp"
+#line 529 "lib/SQLParser/SQLParser.ypp"
     {
-    (yysemantic_stack_[(2) - (1)].p_AttributeList)->push_back((yysemantic_stack_[(2) - (2)].p_AliasedSelect));
-    (yyval.p_AttributeList) = (yysemantic_stack_[(2) - (1)].p_AttributeList);
-}
+	(yysemantic_stack_[(2) - (1)].p_AttributeList)->push_back((yysemantic_stack_[(2) - (2)].p_AliasedSelect));
+	(yyval.p_AttributeList) = (yysemantic_stack_[(2) - (1)].p_AttributeList);
+    }
     break;
 
   case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 537 "lib/SQLParser/SQLParser.ypp"
+#line 536 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AliasedSelect) = new sql::AliasedSelect((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_NAME) ? *(yysemantic_stack_[(2) - (2)].p_NAME) : (yysemantic_stack_[(2) - (1)].p_Expression)->toString());
 	delete (yysemantic_stack_[(2) - (2)].p_NAME);
-}
+    }
     break;
 
   case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 544 "lib/SQLParser/SQLParser.ypp"
+#line 543 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
-}
+	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
+    }
     break;
 
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 551 "lib/SQLParser/SQLParser.ypp"
+#line 550 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_NAME) = NULL;
-}
+	(yyval.p_NAME) = NULL;
+    }
     break;
 
   case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 555 "lib/SQLParser/SQLParser.ypp"
+#line 553 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
-}
+	(yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
+      }
     break;
 
   case 54:
 
 /* Line 678 of lalr1.cc  */
-#line 561 "lib/SQLParser/SQLParser.ypp"
+#line 559 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(*(yysemantic_stack_[(3) - (1)].p_NAME), *(yysemantic_stack_[(3) - (3)].p_NAME)));
 	delete (yysemantic_stack_[(3) - (1)].p_NAME);
 	delete (yysemantic_stack_[(3) - (3)].p_NAME);
-}
+    }
     break;
 
-  case 57:
+  case 55:
 
 /* Line 678 of lalr1.cc  */
-#line 577 "lib/SQLParser/SQLParser.ypp"
+#line 564 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr("", *(yysemantic_stack_[(1) - (1)].p_NAME)));
+	delete (yysemantic_stack_[(1) - (1)].p_NAME);
+    }
+    break;
+
+  case 58:
+
+/* Line 678 of lalr1.cc  */
+#line 579 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (2)].p_TableList).joins->insert((yysemantic_stack_[(2) - (2)].p_TableList).joins->begin(), (yysemantic_stack_[(2) - (1)].p_tableAlias).relation != NULL
 		   ? (sql::Join*)new sql::TableJoin(*(yysemantic_stack_[(2) - (1)].p_tableAlias).relation, *(yysemantic_stack_[(2) - (1)].p_tableAlias).alias, false)
@@ -845,19 +855,10 @@ namespace w3c_sw {
 }
     break;
 
-  case 58:
-
-/* Line 678 of lalr1.cc  */
-#line 590 "lib/SQLParser/SQLParser.ypp"
-    {
-    (yyval.p_bool) = false;
-}
-    break;
-
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 594 "lib/SQLParser/SQLParser.ypp"
+#line 592 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_bool) = false;
 }
@@ -866,43 +867,52 @@ namespace w3c_sw {
   case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 598 "lib/SQLParser/SQLParser.ypp"
+#line 596 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_bool) = true;
+    (yyval.p_bool) = false;
 }
     break;
 
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 604 "lib/SQLParser/SQLParser.ypp"
+#line 600 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    (yyval.p_bool) = true;
 }
     break;
 
   case 62:
 
 /* Line 678 of lalr1.cc  */
-#line 610 "lib/SQLParser/SQLParser.ypp"
+#line 606 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_Expression) = NULL;
+    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
     break;
 
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 614 "lib/SQLParser/SQLParser.ypp"
+#line 612 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(1) - (1)].p_Expression);
+    (yyval.p_Expression) = NULL;
 }
     break;
 
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 620 "lib/SQLParser/SQLParser.ypp"
+#line 616 "lib/SQLParser/SQLParser.ypp"
+    {
+    (yyval.p_Expression) = (yysemantic_stack_[(1) - (1)].p_Expression);
+}
+    break;
+
+  case 65:
+
+/* Line 678 of lalr1.cc  */
+#line 622 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (3)].p_tableAlias).relation != NULL) {
 	    (yyval.p_JoinExpression).join = new sql::TableJoin(*(yysemantic_stack_[(4) - (3)].p_tableAlias).relation, *(yysemantic_stack_[(4) - (3)].p_tableAlias).alias, (yysemantic_stack_[(4) - (1)].p_bool));
@@ -915,20 +925,20 @@ namespace w3c_sw {
 }
     break;
 
-  case 65:
+  case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 633 "lib/SQLParser/SQLParser.ypp"
+#line 635 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = new std::vector<sql::Join*>();
 	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();
 }
     break;
 
-  case 66:
+  case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 638 "lib/SQLParser/SQLParser.ypp"
+#line 640 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_TableList).joins->push_back((yysemantic_stack_[(2) - (2)].p_JoinExpression).join);
     if ((yysemantic_stack_[(2) - (2)].p_JoinExpression).expr != NULL)
@@ -937,10 +947,10 @@ namespace w3c_sw {
 }
     break;
 
-  case 67:
+  case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 647 "lib/SQLParser/SQLParser.ypp"
+#line 649 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = (yysemantic_stack_[(2) - (1)].p_NAME);
 	(yyval.p_tableAlias).subselect = NULL;
@@ -948,10 +958,10 @@ namespace w3c_sw {
 }
     break;
 
-  case 68:
+  case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 652 "lib/SQLParser/SQLParser.ypp"
+#line 654 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = NULL;
 	(yyval.p_tableAlias).subselect = (yysemantic_stack_[(4) - (2)].p_Select);
@@ -959,10 +969,10 @@ namespace w3c_sw {
 }
     break;
 
-  case 69:
+  case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 657 "lib/SQLParser/SQLParser.ypp"
+#line 659 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = NULL;
 	(yyval.p_tableAlias).subselect = (yysemantic_stack_[(5) - (2)].p_Select);
@@ -970,37 +980,37 @@ namespace w3c_sw {
 }
     break;
 
-  case 70:
+  case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 665 "lib/SQLParser/SQLParser.ypp"
+#line 667 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
-}
-    break;
-
-  case 72:
-
-/* Line 678 of lalr1.cc  */
-#line 672 "lib/SQLParser/SQLParser.ypp"
-    {
-    (yyval.p_NAME) = NULL;
 }
     break;
 
   case 73:
 
 /* Line 678 of lalr1.cc  */
-#line 676 "lib/SQLParser/SQLParser.ypp"
+#line 674 "lib/SQLParser/SQLParser.ypp"
+    {
+    (yyval.p_NAME) = NULL;
+}
+    break;
+
+  case 74:
+
+/* Line 678 of lalr1.cc  */
+#line 678 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
 }
     break;
 
-  case 75:
+  case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 687 "lib/SQLParser/SQLParser.ypp"
+#line 689 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1008,41 +1018,41 @@ namespace w3c_sw {
 	} else
 	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
 	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
-    }
-    break;
-
-  case 76:
-
-/* Line 678 of lalr1.cc  */
-#line 699 "lib/SQLParser/SQLParser.ypp"
-    {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 706 "lib/SQLParser/SQLParser.ypp"
+#line 701 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
   case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 709 "lib/SQLParser/SQLParser.ypp"
+#line 708 "lib/SQLParser/SQLParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
     break;
 
   case 79:
 
 /* Line 678 of lalr1.cc  */
-#line 717 "lib/SQLParser/SQLParser.ypp"
+#line 711 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+    }
+    break;
+
+  case 80:
+
+/* Line 678 of lalr1.cc  */
+#line 719 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1053,38 +1063,38 @@ namespace w3c_sw {
     }
     break;
 
-  case 80:
-
-/* Line 678 of lalr1.cc  */
-#line 729 "lib/SQLParser/SQLParser.ypp"
-    {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
-    }
-    break;
-
   case 81:
 
 /* Line 678 of lalr1.cc  */
-#line 736 "lib/SQLParser/SQLParser.ypp"
+#line 731 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
   case 82:
 
 /* Line 678 of lalr1.cc  */
-#line 739 "lib/SQLParser/SQLParser.ypp"
+#line 738 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+    }
+    break;
+
+  case 83:
+
+/* Line 678 of lalr1.cc  */
+#line 741 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
-  case 84:
+  case 85:
 
 /* Line 678 of lalr1.cc  */
-#line 751 "lib/SQLParser/SQLParser.ypp"
+#line 753 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) != NULL) {
@@ -1102,91 +1112,91 @@ namespace w3c_sw {
     }
     break;
 
-  case 85:
-
-/* Line 678 of lalr1.cc  */
-#line 770 "lib/SQLParser/SQLParser.ypp"
-    {
-	(yyval.p_BooleanComparator) = new sql::BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
   case 86:
 
 /* Line 678 of lalr1.cc  */
-#line 773 "lib/SQLParser/SQLParser.ypp"
+#line 772 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_BooleanComparator) = new sql::BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 87:
 
 /* Line 678 of lalr1.cc  */
-#line 776 "lib/SQLParser/SQLParser.ypp"
+#line 775 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_BooleanComparator) = new sql::BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 88:
 
 /* Line 678 of lalr1.cc  */
-#line 779 "lib/SQLParser/SQLParser.ypp"
+#line 778 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_BooleanComparator) = new sql::BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 89:
 
 /* Line 678 of lalr1.cc  */
-#line 782 "lib/SQLParser/SQLParser.ypp"
+#line 781 "lib/SQLParser/SQLParser.ypp"
     {
-        (yyval.p_BooleanComparator) = new sql::BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_BooleanComparator) = new sql::BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 90:
 
 /* Line 678 of lalr1.cc  */
-#line 785 "lib/SQLParser/SQLParser.ypp"
+#line 784 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+        (yyval.p_BooleanComparator) = new sql::BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 91:
 
 /* Line 678 of lalr1.cc  */
-#line 788 "lib/SQLParser/SQLParser.ypp"
+#line 787 "lib/SQLParser/SQLParser.ypp"
     {
-      (yyval.p_BooleanComparator) = new sql::IsNullProxy;
-}
+	(yyval.p_BooleanComparator) = new sql::BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+    }
     break;
 
   case 92:
 
 /* Line 678 of lalr1.cc  */
-#line 791 "lib/SQLParser/SQLParser.ypp"
+#line 790 "lib/SQLParser/SQLParser.ypp"
     {
-      (yyval.p_BooleanComparator) = new sql::IsNotNullProxy;
+      (yyval.p_BooleanComparator) = new sql::IsNullProxy;
 }
     break;
 
   case 93:
 
 /* Line 678 of lalr1.cc  */
-#line 798 "lib/SQLParser/SQLParser.ypp"
+#line 793 "lib/SQLParser/SQLParser.ypp"
+    {
+      (yyval.p_BooleanComparator) = new sql::IsNotNullProxy;
+}
+    break;
+
+  case 94:
+
+/* Line 678 of lalr1.cc  */
+#line 800 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = NULL;
     }
     break;
 
-  case 96:
+  case 97:
 
 /* Line 678 of lalr1.cc  */
-#line 811 "lib/SQLParser/SQLParser.ypp"
+#line 813 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1197,47 +1207,47 @@ namespace w3c_sw {
     }
     break;
 
-  case 97:
+  case 98:
 
 /* Line 678 of lalr1.cc  */
-#line 823 "lib/SQLParser/SQLParser.ypp"
+#line 825 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
-  case 98:
+  case 99:
 
 /* Line 678 of lalr1.cc  */
-#line 826 "lib/SQLParser/SQLParser.ypp"
+#line 828 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
-    }
-    break;
-
-  case 101:
-
-/* Line 678 of lalr1.cc  */
-#line 835 "lib/SQLParser/SQLParser.ypp"
-    {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
     break;
 
   case 102:
 
 /* Line 678 of lalr1.cc  */
-#line 838 "lib/SQLParser/SQLParser.ypp"
+#line 837 "lib/SQLParser/SQLParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
     break;
 
   case 103:
 
 /* Line 678 of lalr1.cc  */
-#line 846 "lib/SQLParser/SQLParser.ypp"
+#line 840 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+    }
+    break;
+
+  case 104:
+
+/* Line 678 of lalr1.cc  */
+#line 848 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1248,130 +1258,152 @@ namespace w3c_sw {
     }
     break;
 
-  case 104:
-
-/* Line 678 of lalr1.cc  */
-#line 858 "lib/SQLParser/SQLParser.ypp"
-    {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
-    }
-    break;
-
   case 105:
 
 /* Line 678 of lalr1.cc  */
-#line 861 "lib/SQLParser/SQLParser.ypp"
+#line 860 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = new sql::ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
   case 106:
 
 /* Line 678 of lalr1.cc  */
-#line 868 "lib/SQLParser/SQLParser.ypp"
+#line 863 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yyval.p_Expression) = new sql::ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 107:
 
 /* Line 678 of lalr1.cc  */
-#line 871 "lib/SQLParser/SQLParser.ypp"
+#line 870 "lib/SQLParser/SQLParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
     break;
 
   case 108:
 
 /* Line 678 of lalr1.cc  */
-#line 878 "lib/SQLParser/SQLParser.ypp"
+#line 873 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = new sql::BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
     }
     break;
 
   case 109:
 
 /* Line 678 of lalr1.cc  */
-#line 881 "lib/SQLParser/SQLParser.ypp"
+#line 880 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yyval.p_Expression) = new sql::BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 110:
 
 /* Line 678 of lalr1.cc  */
-#line 884 "lib/SQLParser/SQLParser.ypp"
+#line 883 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
     break;
 
-  case 118:
+  case 111:
 
 /* Line 678 of lalr1.cc  */
-#line 897 "lib/SQLParser/SQLParser.ypp"
+#line 886 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = new sql::ReallyNullConstraint();
+	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
     break;
 
   case 119:
 
 /* Line 678 of lalr1.cc  */
-#line 903 "lib/SQLParser/SQLParser.ypp"
+#line 899 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
-}
+	(yyval.p_Expression) = new sql::ReallyNullConstraint();
+    }
     break;
 
   case 120:
 
 /* Line 678 of lalr1.cc  */
-#line 909 "lib/SQLParser/SQLParser.ypp"
+#line 905 "lib/SQLParser/SQLParser.ypp"
     {
-	(yysemantic_stack_[(5) - (4)].p_Expressions)->insert((yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expression));
-	(yyval.p_Expression) = new sql::HomologConstraint("CONCAT", (yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (4)].p_Expressions)->end());
-	delete (yysemantic_stack_[(5) - (4)].p_Expressions);
+    (yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
 }
     break;
 
   case 121:
 
 /* Line 678 of lalr1.cc  */
-#line 916 "lib/SQLParser/SQLParser.ypp"
+#line 911 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expression) = new sql::RegexConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression));
+	(yysemantic_stack_[(5) - (4)].p_Expressions)->insert((yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expression));
+	(yyval.p_Expression) = new sql::HomologConstraint("CONCAT", (yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (4)].p_Expressions)->end());
+	delete (yysemantic_stack_[(5) - (4)].p_Expressions);
     }
     break;
 
   case 122:
 
 /* Line 678 of lalr1.cc  */
-#line 922 "lib/SQLParser/SQLParser.ypp"
+#line 916 "lib/SQLParser/SQLParser.ypp"
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
-}
+	std::vector<const sql::Expression*> v;
+	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
+	(yyval.p_Expression) = new sql::HomologConstraint("LCASE", v.begin(), v.end());
+    }
     break;
 
   case 123:
 
 /* Line 678 of lalr1.cc  */
-#line 928 "lib/SQLParser/SQLParser.ypp"
+#line 921 "lib/SQLParser/SQLParser.ypp"
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
-}
+	std::vector<const sql::Expression*> v;
+	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
+	(yyval.p_Expression) = new sql::HomologConstraint("UCASE", v.begin(), v.end());
+    }
     break;
 
   case 124:
 
 /* Line 678 of lalr1.cc  */
+#line 926 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yyval.p_Expression) = new sql::RegexConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression));
+    }
+    break;
+
+  case 125:
+
+/* Line 678 of lalr1.cc  */
 #line 932 "lib/SQLParser/SQLParser.ypp"
+    {
+    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+}
+    break;
+
+  case 126:
+
+/* Line 678 of lalr1.cc  */
+#line 938 "lib/SQLParser/SQLParser.ypp"
+    {
+	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+}
+    break;
+
+  case 127:
+
+/* Line 678 of lalr1.cc  */
+#line 942 "lib/SQLParser/SQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
     (yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1381,7 +1413,7 @@ namespace w3c_sw {
 
 
 /* Line 678 of lalr1.cc  */
-#line 1385 "lib/SQLParser/SQLParser.cpp"
+#line 1417 "lib/SQLParser/SQLParser.cpp"
 	default:
           break;
       }
@@ -1586,32 +1618,33 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const short int SQLParser::yypact_ninf_ = -167;
+  const short int SQLParser::yypact_ninf_ = -188;
   const short int
   SQLParser::yypact_[] =
   {
-         3,     0,   -16,    28,  -167,   -12,  -167,  -167,  -167,   135,
-     135,   135,    -7,    37,    44,  -167,  -167,  -167,  -167,  -167,
-    -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,
-    -167,    36,  -167,  -167,    72,    -5,  -167,  -167,  -167,  -167,
-     107,  -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,
-    -167,  -167,  -167,    33,  -167,    52,  -167,  -167,    88,  -167,
-    -167,  -167,    44,    44,    54,   -33,  -167,     2,    73,    66,
-      66,  -167,  -167,  -167,  -167,   108,   106,     5,    44,    44,
-      44,    44,    44,    44,  -167,  -167,    59,     6,  -167,    92,
-    -167,  -167,   121,  -167,  -167,   102,  -167,   121,    -4,   138,
-    -167,   118,    95,  -167,   128,    44,  -167,  -167,  -167,    44,
-    -167,    44,  -167,   126,  -167,  -167,  -167,  -167,  -167,  -167,
-    -167,    44,    44,  -167,  -167,  -167,    44,    44,  -167,   111,
-    -167,  -167,     4,    44,   113,    33,  -167,  -167,  -167,    44,
-    -167,  -167,     1,    99,  -167,   103,  -167,  -167,  -167,  -167,
-    -167,  -167,  -167,  -167,  -167,  -167,   -26,  -167,    44,  -167,
-     114,    17,  -167,  -167,  -167,   143,  -167,   142,  -167,  -167,
-    -167,   117,   119,  -167,    23,  -167,  -167,    33,  -167,  -167,
-     -33,   122,   122,    40,  -167,  -167,  -167,  -167,  -167,  -167,
-    -167,   149,    66,   120,  -167,  -167,   -26,  -167,    44,  -167,
-    -167,  -167,    33,  -167,  -167,    46,   122,  -167,    66,  -167,
-    -167,  -167
+         1,    41,   -23,    18,  -188,   -15,  -188,  -188,  -188,   188,
+     188,   188,     7,    20,    38,    39,   142,    63,  -188,  -188,
+    -188,  -188,  -188,  -188,  -188,  -188,  -188,  -188,  -188,  -188,
+    -188,  -188,  -188,    74,  -188,  -188,  -188,    78,    -6,  -188,
+    -188,  -188,  -188,     0,  -188,  -188,  -188,  -188,  -188,  -188,
+    -188,  -188,  -188,  -188,  -188,  -188,    36,  -188,    52,  -188,
+    -188,    86,  -188,  -188,  -188,   142,   142,   142,   142,    50,
+     -33,  -188,    -4,    73,    64,    64,  -188,  -188,  -188,  -188,
+     102,   103,    10,   142,   142,   142,   142,   142,   142,  -188,
+    -188,     4,    -1,  -188,  -188,    82,  -188,  -188,   118,  -188,
+    -188,    81,    83,    84,  -188,   118,     2,   120,  -188,    96,
+      75,  -188,   111,   142,  -188,  -188,  -188,   142,  -188,   142,
+    -188,   109,  -188,  -188,  -188,  -188,  -188,  -188,  -188,   142,
+     142,  -188,  -188,  -188,   142,   142,  -188,    92,  -188,  -188,
+      15,  -188,  -188,   142,    94,    36,  -188,  -188,  -188,   142,
+    -188,  -188,    -2,    85,  -188,    87,  -188,  -188,  -188,  -188,
+    -188,  -188,  -188,  -188,  -188,  -188,   -31,  -188,   142,  -188,
+      95,     3,  -188,  -188,  -188,   127,  -188,   128,  -188,  -188,
+    -188,    97,    99,  -188,    35,  -188,  -188,    36,  -188,  -188,
+     -33,   104,   104,    25,  -188,  -188,  -188,  -188,  -188,  -188,
+    -188,   132,    64,   101,  -188,  -188,   -31,  -188,   142,  -188,
+    -188,  -188,    36,  -188,  -188,    27,   104,  -188,    64,  -188,
+    -188,  -188
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -1620,27 +1653,28 @@ namespace w3c_sw {
   const unsigned char
   SQLParser::yydefact_[] =
   {
-         0,     0,     0,     0,     7,     4,    28,    45,   118,     0,
-       0,     0,     0,     0,     0,    56,   128,   131,   134,   129,
-     132,   135,   130,   133,   136,   139,   140,   141,   142,   137,
-     138,    35,    47,   117,     0,    52,    74,    77,    81,    83,
-      93,    95,   101,   106,   111,   112,   113,   115,   125,   126,
-     127,   116,   114,     0,     1,     4,     5,     2,    26,   109,
-     110,   108,     0,     0,     0,     0,    36,    39,    44,     0,
-       0,    55,    53,    49,    51,    75,    79,     0,     0,     0,
-       0,     0,     0,     0,    94,    84,    96,   103,     9,     5,
-       3,     8,     0,    29,   123,     0,   119,     0,    72,    32,
-      65,     0,     0,    40,    42,     0,    48,    54,    50,     0,
-      78,     0,    82,     0,    91,    85,    86,    87,    88,    89,
-      90,     0,     0,   102,    99,   100,     0,     0,   107,     0,
-       6,    27,     0,     0,     0,     0,    71,    73,    67,     0,
-      33,    34,    57,     0,    37,     0,    43,    30,    46,    76,
-      80,    92,    97,    98,   104,   105,     0,   120,     0,   124,
-       0,     0,    70,    31,    58,     0,    59,     0,    66,    38,
-      41,     0,     0,    12,     0,   122,   121,     0,    68,    60,
+         0,     0,     0,     0,     7,     4,    28,    45,   119,     0,
+       0,     0,     0,     0,     0,     0,     0,    56,   131,   134,
+     137,   132,   135,   138,   133,   136,   139,   142,   143,   144,
+     145,   140,   141,    35,    47,   118,    55,     0,    52,    75,
+      78,    82,    84,    94,    96,   102,   107,   112,   113,   114,
+     116,   128,   129,   130,   117,   115,     0,     1,     4,     5,
+       2,    26,   110,   111,   109,     0,     0,     0,     0,     0,
+       0,    36,    39,    44,     0,     0,    56,    53,    49,    51,
+      76,    80,     0,     0,     0,     0,     0,     0,     0,    95,
+      85,    97,   104,    57,     9,     5,     3,     8,     0,    29,
+     126,     0,     0,     0,   120,     0,    73,    32,    66,     0,
+       0,    40,    42,     0,    48,    54,    50,     0,    79,     0,
+      83,     0,    92,    86,    87,    88,    89,    90,    91,     0,
+       0,   103,   100,   101,     0,     0,   108,     0,     6,    27,
+       0,   122,   123,     0,     0,     0,    72,    74,    68,     0,
+      33,    34,    58,     0,    37,     0,    43,    30,    46,    77,
+      81,    93,    98,    99,   105,   106,     0,   121,     0,   127,
+       0,     0,    71,    31,    59,     0,    60,     0,    67,    38,
+      41,     0,     0,    12,     0,   125,   124,     0,    69,    61,
        0,     0,     0,     0,    17,    18,    19,    20,    21,    14,
-      69,    62,     0,     0,    16,    10,     0,    13,     0,    63,
-      64,    24,     0,    11,    61,     0,     0,    22,     0,    25,
+      70,    63,     0,     0,    16,    10,     0,    13,     0,    64,
+      65,    24,     0,    11,    62,     0,     0,    22,     0,    25,
       15,    23
   };
 
@@ -1648,85 +1682,95 @@ namespace w3c_sw {
   const short int
   SQLParser::yypgoto_[] =
   {
-      -167,  -167,   109,  -167,  -167,    76,  -167,  -167,  -167,   -30,
-    -167,  -166,  -167,  -167,    70,  -167,  -167,    78,  -167,  -167,
-    -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,  -167,    67,
-    -167,  -167,  -167,   -34,   -51,  -167,  -167,  -167,  -167,  -167,
-    -167,    -9,  -167,  -167,   -14,  -167,  -167,  -167,    68,  -167,
-    -167,    64,  -167,  -167,  -167,    58,  -167,  -167,  -167,   -31,
-    -167,  -167,    -6,    -1,  -167,  -167,  -167,  -167,  -167,  -167,
-      90,    93,  -167,  -167
+      -188,  -188,    89,  -188,  -188,    53,  -188,  -188,  -188,   -57,
+    -188,  -187,  -188,  -188,    45,  -188,  -188,    55,  -188,  -188,
+    -188,  -188,  -188,  -188,  -188,  -188,  -188,  -188,  -188,    42,
+    -188,  -188,  -188,   -37,   -53,  -188,  -188,  -188,  -188,  -188,
+    -188,   -39,  -188,  -188,   -16,  -188,  -188,  -188,    37,  -188,
+    -188,    43,  -188,  -188,  -188,    26,  -188,  -188,  -188,   -94,
+    -188,  -188,   -90,    32,  -188,  -188,  -188,  -188,  -188,  -188,
+      65,    66,  -188,  -188
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   SQLParser::yydefgoto_[] =
   {
-        -1,     3,    57,    91,    55,     4,   129,   197,   183,   173,
-     189,   193,   209,   205,     5,    93,    58,     6,   140,   141,
-      66,    67,   103,   104,   146,   147,    31,   106,    68,    32,
-      72,    73,    33,   174,    34,    99,   167,   199,   200,   168,
-     142,   100,   137,   138,    35,    36,   110,    75,    37,   112,
-      76,    38,    39,    84,    85,    40,    41,   123,    86,    42,
-     128,    87,    43,    44,    45,    46,   159,   132,    47,    48,
-      49,    50,    51,    52
+        -1,     3,    60,    97,    58,     4,   137,   207,   193,   183,
+     199,   203,   219,   215,     5,    99,    61,     6,   150,   151,
+      71,    72,   111,   112,   156,   157,    33,   114,    73,    34,
+      77,    78,    35,    36,    37,   107,   177,   209,   210,   178,
+     152,   108,   147,   148,    38,    39,   118,    80,    40,   120,
+      81,    41,    42,    89,    90,    43,    44,   131,    91,    45,
+     136,    92,    46,    47,    48,    49,   169,   140,    50,    51,
+      52,    53,    54,    55
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
      number is the opposite.  If zero, do what YYDEFACT says.  */
-  const signed char SQLParser::yytable_ninf_ = -1;
-  const unsigned char
+  const signed char SQLParser::yytable_ninf_ = -58;
+  const short int
   SQLParser::yytable_[] =
   {
-        64,    74,    88,    70,   135,    97,     1,     7,    59,    60,
-      61,   164,   165,   126,    98,   171,   194,    15,   172,   101,
-     102,    53,     8,    56,    71,   177,   113,   114,    54,     9,
-      10,    62,    11,    12,    13,   107,   108,   127,    14,     2,
-     210,   166,    65,   157,   158,    71,    15,   136,    94,    95,
-      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,     8,    15,   184,   185,
-     186,   187,   188,     9,    10,    63,    11,    12,    13,   195,
-     196,    69,    14,    15,   162,   207,   208,    89,   121,   122,
-     152,   153,    92,    96,    15,    16,    17,    18,    19,    20,
-      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-     178,    17,    18,   105,    20,    21,    71,    23,    24,   160,
-     154,   155,   111,   109,     1,   163,   190,    77,     2,    98,
-      78,    79,    80,    81,    82,    83,   115,   116,   117,   118,
-     119,   120,   133,   139,   175,   143,   144,   145,   151,   156,
-     169,   206,   161,   176,   170,   179,   180,     8,   201,   181,
-     192,   182,   198,   202,    90,   130,   203,   134,    12,    13,
-     131,   191,   148,    14,   211,   150,   124,   149,     0,   125,
-       0,     0,     0,     0,   204,    15,    16,    17,    18,    19,
-      20,    21,    22,    23,    24,    25,    26,    27,    28,    29,
-      30
+        69,    79,    75,    94,     1,   204,   134,   105,   174,   175,
+     145,   187,   181,   109,   110,   182,    56,   106,    57,    93,
+      82,    76,    59,    83,    84,    85,    86,    87,    88,   220,
+     135,   121,   122,   129,   130,   162,   163,   115,   116,     2,
+     176,    62,    63,    64,   164,   165,    76,    65,     7,   100,
+     101,   102,   103,   146,    93,    93,   167,   168,    19,    20,
+      66,    22,    23,     8,    25,    26,   205,   206,   217,   218,
+       9,    10,   -57,    11,    12,    13,    14,    15,    67,    68,
+      70,    16,   194,   195,   196,   197,   198,    74,    93,    95,
+      98,   104,   172,    17,    18,    19,    20,    21,    22,    23,
+      24,    25,    26,    27,    28,    29,    30,    31,    32,   123,
+     124,   125,   126,   127,   128,   113,    76,   117,   188,   119,
+       2,     1,   141,   153,   142,   149,   143,   170,   154,   184,
+     155,   161,   166,   173,   200,   171,   186,   106,   179,   189,
+     180,   191,   190,   192,   202,   208,   212,    96,   138,   213,
+     144,   201,   185,   139,   159,   158,   132,   133,     0,   216,
+       0,     0,   160,     0,     8,   211,     0,     0,     0,   184,
+       0,     9,    10,     0,    11,    12,    13,    14,    15,     0,
+       0,   221,    16,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   214,     0,    17,    18,    19,    20,    21,    22,
+      23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
+       8,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    12,    13,    14,    15,     0,     0,     0,    16,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      17,    18,    19,    20,    21,    22,    23,    24,    25,    26,
+      27,    28,    29,    30,    31,    32
   };
 
   /* YYCHECK.  */
   const short int
   SQLParser::yycheck_[] =
   {
-        14,    35,    53,     8,     8,    38,     3,     7,     9,    10,
-      11,    10,    11,     7,    65,    41,   182,    50,    44,    17,
-      18,    37,    22,    35,    50,     8,    21,    22,     0,    29,
-      30,    38,    32,    33,    34,    69,    70,    31,    38,    36,
-     206,    40,     6,    39,    40,    50,    50,    98,    62,    63,
-      50,    51,    52,    53,    54,    55,    56,    57,    58,    59,
-      60,    61,    62,    63,    64,    65,    22,    50,    45,    46,
-      47,    48,    49,    29,    30,    38,    32,    33,    34,    39,
-      40,     9,    38,    50,   135,    39,    40,    35,    29,    30,
-     121,   122,     4,    39,    50,    51,    52,    53,    54,    55,
-      56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-     161,    52,    53,    40,    55,    56,    50,    58,    59,   133,
-     126,   127,    16,    15,     3,   139,   177,    20,    36,   180,
-      23,    24,    25,    26,    27,    28,    78,    79,    80,    81,
-      82,    83,    40,     5,   158,    27,    51,    19,    22,    38,
-      51,   202,    39,    39,    51,    12,    14,    22,   192,    42,
-      38,    42,    13,    43,    55,    89,   196,    97,    33,    34,
-      92,   180,   105,    38,   208,   111,    86,   109,    -1,    86,
-      -1,    -1,    -1,    -1,   198,    50,    51,    52,    53,    54,
-      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
-      65
+        16,    38,     8,    56,     3,   192,     7,    40,    10,    11,
+       8,     8,    43,    17,    18,    46,    39,    70,     0,    52,
+      20,    52,    37,    23,    24,    25,    26,    27,    28,   216,
+      31,    21,    22,    29,    30,   129,   130,    74,    75,    38,
+      42,     9,    10,    11,   134,   135,    52,    40,     7,    65,
+      66,    67,    68,   106,    52,    52,    41,    42,    54,    55,
+      40,    57,    58,    22,    60,    61,    41,    42,    41,    42,
+      29,    30,     9,    32,    33,    34,    35,    36,    40,    40,
+       6,    40,    47,    48,    49,    50,    51,     9,    52,    37,
+       4,    41,   145,    52,    53,    54,    55,    56,    57,    58,
+      59,    60,    61,    62,    63,    64,    65,    66,    67,    83,
+      84,    85,    86,    87,    88,    42,    52,    15,   171,    16,
+      38,     3,    41,    27,    41,     5,    42,   143,    53,   166,
+      19,    22,    40,   149,   187,    41,    41,   190,    53,    12,
+      53,    44,    14,    44,    40,    13,    45,    58,    95,   206,
+     105,   190,   168,    98,   117,   113,    91,    91,    -1,   212,
+      -1,    -1,   119,    -1,    22,   202,    -1,    -1,    -1,   206,
+      -1,    29,    30,    -1,    32,    33,    34,    35,    36,    -1,
+      -1,   218,    40,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   208,    -1,    52,    53,    54,    55,    56,    57,
+      58,    59,    60,    61,    62,    63,    64,    65,    66,    67,
+      22,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    33,    34,    35,    36,    -1,    -1,    -1,    40,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      52,    53,    54,    55,    56,    57,    58,    59,    60,    61,
+      62,    63,    64,    65,    66,    67
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1734,28 +1778,29 @@ namespace w3c_sw {
   const unsigned char
   SQLParser::yystos_[] =
   {
-         0,     3,    36,    67,    71,    80,    83,     7,    22,    29,
-      30,    32,    33,    34,    38,    50,    51,    52,    53,    54,
+         0,     3,    38,    69,    73,    82,    85,     7,    22,    29,
+      30,    32,    33,    34,    35,    36,    40,    52,    53,    54,
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
-      65,    92,    95,    98,   100,   110,   111,   114,   117,   118,
-     121,   122,   125,   128,   129,   130,   131,   134,   135,   136,
-     137,   138,   139,    37,     0,    70,    35,    68,    82,   129,
-     129,   129,    38,    38,   110,     6,    86,    87,    94,     9,
-       8,    50,    96,    97,    99,   113,   116,    20,    23,    24,
-      25,    26,    27,    28,   119,   120,   124,   127,   100,    35,
-      68,    69,     4,    81,   110,   110,    39,    38,   100,   101,
-     107,    17,    18,    88,    89,    40,    93,    99,    99,    15,
-     112,    16,   115,    21,    22,   121,   121,   121,   121,   121,
-     121,    29,    30,   123,   136,   137,     7,    31,   126,    72,
-      71,    83,   133,    40,    80,     8,   100,   108,   109,     5,
-      84,    85,   106,    27,    51,    19,    90,    91,    95,   114,
-     117,    22,   125,   125,   128,   128,    38,    39,    40,   132,
-     110,    39,   100,   110,    10,    11,    40,   102,   105,    51,
-      51,    41,    44,    75,    99,   110,    39,     8,   100,    12,
-      14,    42,    42,    74,    45,    46,    47,    48,    49,    76,
-     100,   107,    38,    77,    77,    39,    40,    73,    13,   103,
-     104,    99,    43,    75,   110,    79,   100,    39,    40,    78,
-      77,    99
+      65,    66,    67,    94,    97,   100,   101,   102,   112,   113,
+     116,   119,   120,   123,   124,   127,   130,   131,   132,   133,
+     136,   137,   138,   139,   140,   141,    39,     0,    72,    37,
+      70,    84,   131,   131,   131,    40,    40,    40,    40,   112,
+       6,    88,    89,    96,     9,     8,    52,    98,    99,   101,
+     115,   118,    20,    23,    24,    25,    26,    27,    28,   121,
+     122,   126,   129,    52,   102,    37,    70,    71,     4,    83,
+     112,   112,   112,   112,    41,    40,   102,   103,   109,    17,
+      18,    90,    91,    42,    95,   101,   101,    15,   114,    16,
+     117,    21,    22,   123,   123,   123,   123,   123,   123,    29,
+      30,   125,   138,   139,     7,    31,   128,    74,    73,    85,
+     135,    41,    41,    42,    82,     8,   102,   110,   111,     5,
+      86,    87,   108,    27,    53,    19,    92,    93,    97,   116,
+     119,    22,   127,   127,   130,   130,    40,    41,    42,   134,
+     112,    41,   102,   112,    10,    11,    42,   104,   107,    53,
+      53,    43,    46,    77,   101,   112,    41,     8,   102,    12,
+      14,    44,    44,    76,    47,    48,    49,    50,    51,    78,
+     102,   109,    40,    79,    79,    41,    42,    75,    13,   105,
+     106,   101,    45,    77,   112,    81,   102,    41,    42,    80,
+      79,   101
   };
 
 #if YYDEBUG
@@ -1770,7 +1815,7 @@ namespace w3c_sw {
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
      295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
      305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320
+     315,   316,   317,   318,   319,   320,   321,   322
   };
 #endif
 
@@ -1778,21 +1823,21 @@ namespace w3c_sw {
   const unsigned char
   SQLParser::yyr1_[] =
   {
-         0,    66,    67,    67,    68,    68,    69,    70,    70,    72,
-      71,    73,    74,    74,    75,    75,    75,    76,    76,    76,
-      76,    76,    77,    78,    79,    79,    80,    81,    82,    82,
-      83,    84,    85,    85,    86,    87,    87,    88,    88,    89,
-      89,    90,    91,    91,    92,    92,    93,    94,    94,    95,
-      96,    96,    97,    97,    98,    99,   100,   101,   102,   102,
-     102,   103,   104,   104,   105,   106,   106,   107,   107,   107,
-     108,   108,   109,   109,   110,   111,   112,   113,   113,   114,
-     115,   116,   116,   117,   118,   119,   119,   119,   119,   119,
-     119,   119,   119,   120,   120,   121,   122,   123,   123,   123,
-     123,   124,   124,   125,   126,   126,   127,   127,   128,   128,
-     128,   128,   129,   129,   129,   129,   129,   129,   129,   130,
-     131,   131,   132,   133,   133,   134,   134,   134,   135,   135,
-     135,   136,   136,   136,   137,   137,   137,   138,   138,   139,
-     139,   139,   139
+         0,    68,    69,    69,    70,    70,    71,    72,    72,    74,
+      73,    75,    76,    76,    77,    77,    77,    78,    78,    78,
+      78,    78,    79,    80,    81,    81,    82,    83,    84,    84,
+      85,    86,    87,    87,    88,    89,    89,    90,    90,    91,
+      91,    92,    93,    93,    94,    94,    95,    96,    96,    97,
+      98,    98,    99,    99,   100,   100,   101,   102,   103,   104,
+     104,   104,   105,   106,   106,   107,   108,   108,   109,   109,
+     109,   110,   110,   111,   111,   112,   113,   114,   115,   115,
+     116,   117,   118,   118,   119,   120,   121,   121,   121,   121,
+     121,   121,   121,   121,   122,   122,   123,   124,   125,   125,
+     125,   125,   126,   126,   127,   128,   128,   129,   129,   130,
+     130,   130,   130,   131,   131,   131,   131,   131,   131,   131,
+     132,   133,   133,   133,   133,   134,   135,   135,   136,   136,
+     136,   137,   137,   137,   138,   138,   138,   139,   139,   139,
+     140,   140,   141,   141,   141,   141
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1804,16 +1849,16 @@ namespace w3c_sw {
        1,     1,     4,     2,     0,     2,     2,     2,     0,     2,
        5,     2,     0,     1,     3,     0,     1,     2,     3,     0,
        1,     2,     0,     1,     2,     1,     2,     0,     2,     2,
-       2,     1,     0,     1,     3,     1,     1,     2,     1,     1,
-       2,     2,     0,     1,     4,     0,     2,     2,     4,     5,
-       2,     1,     0,     1,     1,     2,     2,     0,     2,     2,
-       2,     0,     2,     1,     2,     2,     2,     2,     2,     2,
-       2,     2,     3,     0,     1,     1,     2,     2,     2,     1,
-       1,     0,     2,     2,     2,     2,     0,     2,     2,     2,
-       2,     1,     1,     1,     1,     1,     1,     1,     1,     3,
-       5,     6,     2,     0,     2,     1,     1,     1,     1,     1,
+       2,     1,     0,     1,     3,     1,     1,     1,     2,     1,
+       1,     2,     2,     0,     1,     4,     0,     2,     2,     4,
+       5,     2,     1,     0,     1,     1,     2,     2,     0,     2,
+       2,     2,     0,     2,     1,     2,     2,     2,     2,     2,
+       2,     2,     2,     3,     0,     1,     1,     2,     2,     2,
+       1,     1,     0,     2,     2,     2,     2,     0,     2,     2,
+       2,     2,     1,     1,     1,     1,     1,     1,     1,     1,
+       3,     5,     4,     4,     6,     2,     0,     2,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1
+       1,     1,     1,     1,     1,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1827,15 +1872,15 @@ namespace w3c_sw {
   "IT_LEFT", "IT_OUTER", "IT_ON", "IT_JOIN", "IT_OR", "IT_AND",
   "IT_ROWNUM", "IT_LIMIT", "IT_OFFSET", "IT_IS", "IT_NOT", "IT_NULL",
   "GT_EQUAL", "GT_NEQUAL", "GT_LT", "GT_GT", "GT_LE", "GT_GE", "GT_PLUS",
-  "GT_MINUS", "GT_DIVIDE", "GT_NOT", "IT_CONCAT", "IT_REGEX", "GT_SEMI",
-  "IT_CREATE", "IT_TABLE", "GT_LPAREN", "GT_RPAREN", "GT_COMMA",
-  "IT_FOREIGN", "IT_KEY", "IT_REFERENCES", "IT_PRIMARY", "IT_INT",
-  "IT_DOUBLE", "IT_DATE", "IT_DATETIME", "IT_STRING", "NAME", "INTEGER",
-  "INTEGER_POSITIVE", "INTEGER_NEGATIVE", "DECIMAL", "DECIMAL_POSITIVE",
-  "DECIMAL_NEGATIVE", "DOUBLE", "DOUBLE_POSITIVE", "DOUBLE_NEGATIVE",
-  "STRING_LITERAL1", "STRING_LITERAL2", "STRING_LITERAL_LONG1",
-  "STRING_LITERAL_LONG2", "IT_true", "IT_false", "$accept", "Statement",
-  "_QGT_SEMI_E_Opt", "_O_QGT_SEMI_E_S_QCreate_E_C",
+  "GT_MINUS", "GT_DIVIDE", "GT_NOT", "IT_CONCAT", "IT_LCASE", "IT_UCASE",
+  "IT_REGEX", "GT_SEMI", "IT_CREATE", "IT_TABLE", "GT_LPAREN", "GT_RPAREN",
+  "GT_COMMA", "IT_FOREIGN", "IT_KEY", "IT_REFERENCES", "IT_PRIMARY",
+  "IT_INT", "IT_DOUBLE", "IT_DATE", "IT_DATETIME", "IT_STRING", "NAME",
+  "INTEGER", "INTEGER_POSITIVE", "INTEGER_NEGATIVE", "DECIMAL",
+  "DECIMAL_POSITIVE", "DECIMAL_NEGATIVE", "DOUBLE", "DOUBLE_POSITIVE",
+  "DOUBLE_NEGATIVE", "STRING_LITERAL1", "STRING_LITERAL2",
+  "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2", "IT_true", "IT_false",
+  "$accept", "Statement", "_QGT_SEMI_E_Opt", "_O_QGT_SEMI_E_S_QCreate_E_C",
   "_Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star", "Create", "$@1",
   "_O_QGT_COMMA_E_S_QFieldOrKey_E_C",
   "_Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star", "FieldOrKey",
@@ -1885,43 +1930,44 @@ namespace w3c_sw {
   const SQLParser::rhs_number_type
   SQLParser::yyrhs_[] =
   {
-        67,     0,    -1,    80,    68,    -1,    71,    70,    68,    -1,
-      -1,    35,    -1,    35,    71,    -1,    -1,    70,    69,    -1,
-      -1,    36,    37,   100,    72,    38,    75,    74,    39,    -1,
-      40,    75,    -1,    -1,    74,    73,    -1,    99,    76,    -1,
-      41,    42,    77,    43,   100,    77,    -1,    44,    42,    77,
-      -1,    45,    -1,    46,    -1,    47,    -1,    48,    -1,    49,
-      -1,    38,    99,    79,    39,    -1,    40,    99,    -1,    -1,
-      79,    78,    -1,    83,    82,    -1,     4,    83,    -1,    -1,
-      82,    81,    -1,     3,    92,    87,    89,    91,    -1,     5,
-     110,    -1,    -1,    84,    -1,     6,   101,    85,    -1,    -1,
-      86,    -1,    18,    51,    -1,    17,    27,    51,    -1,    -1,
-      88,    -1,    19,    51,    -1,    -1,    90,    -1,    95,    94,
-      -1,     7,    -1,    40,    95,    -1,    -1,    94,    93,    -1,
-     110,    97,    -1,     8,    99,    -1,    99,    -1,    -1,    96,
-      -1,   100,     9,    99,    -1,    50,    -1,    50,    -1,   107,
-     106,    -1,    10,    -1,    40,    -1,    11,    12,    -1,    13,
-     110,    -1,    -1,   103,    -1,   102,    14,   107,   104,    -1,
-      -1,   106,   105,    -1,   100,   109,    -1,    38,    80,    39,
-     100,    -1,    38,    80,    39,     8,   100,    -1,     8,   100,
-      -1,   100,    -1,    -1,   108,    -1,   111,    -1,   114,   113,
-      -1,    15,   114,    -1,    -1,   113,   112,    -1,   117,   116,
-      -1,    16,   117,    -1,    -1,   116,   115,    -1,   118,    -1,
-     121,   120,    -1,    23,   121,    -1,    24,   121,    -1,    25,
-     121,    -1,    26,   121,    -1,    27,   121,    -1,    28,   121,
-      -1,    20,    22,    -1,    20,    21,    22,    -1,    -1,   119,
-      -1,   122,    -1,   125,   124,    -1,    29,   125,    -1,    30,
-     125,    -1,   136,    -1,   137,    -1,    -1,   124,   123,    -1,
-     128,   127,    -1,     7,   128,    -1,    31,   128,    -1,    -1,
-     127,   126,    -1,    32,   129,    -1,    29,   129,    -1,    30,
-     129,    -1,   129,    -1,   130,    -1,   131,    -1,   139,    -1,
-     134,    -1,   138,    -1,    98,    -1,    22,    -1,    38,   110,
-      39,    -1,    33,    38,   110,   133,    39,    -1,    34,    38,
-     110,    40,   110,    39,    -1,    40,   110,    -1,    -1,   133,
-     132,    -1,   135,    -1,   136,    -1,   137,    -1,    51,    -1,
-      54,    -1,    57,    -1,    52,    -1,    55,    -1,    58,    -1,
-      53,    -1,    56,    -1,    59,    -1,    64,    -1,    65,    -1,
-      60,    -1,    61,    -1,    62,    -1,    63,    -1
+        69,     0,    -1,    82,    70,    -1,    73,    72,    70,    -1,
+      -1,    37,    -1,    37,    73,    -1,    -1,    72,    71,    -1,
+      -1,    38,    39,   102,    74,    40,    77,    76,    41,    -1,
+      42,    77,    -1,    -1,    76,    75,    -1,   101,    78,    -1,
+      43,    44,    79,    45,   102,    79,    -1,    46,    44,    79,
+      -1,    47,    -1,    48,    -1,    49,    -1,    50,    -1,    51,
+      -1,    40,   101,    81,    41,    -1,    42,   101,    -1,    -1,
+      81,    80,    -1,    85,    84,    -1,     4,    85,    -1,    -1,
+      84,    83,    -1,     3,    94,    89,    91,    93,    -1,     5,
+     112,    -1,    -1,    86,    -1,     6,   103,    87,    -1,    -1,
+      88,    -1,    18,    53,    -1,    17,    27,    53,    -1,    -1,
+      90,    -1,    19,    53,    -1,    -1,    92,    -1,    97,    96,
+      -1,     7,    -1,    42,    97,    -1,    -1,    96,    95,    -1,
+     112,    99,    -1,     8,   101,    -1,   101,    -1,    -1,    98,
+      -1,   102,     9,   101,    -1,   101,    -1,    52,    -1,    52,
+      -1,   109,   108,    -1,    10,    -1,    42,    -1,    11,    12,
+      -1,    13,   112,    -1,    -1,   105,    -1,   104,    14,   109,
+     106,    -1,    -1,   108,   107,    -1,   102,   111,    -1,    40,
+      82,    41,   102,    -1,    40,    82,    41,     8,   102,    -1,
+       8,   102,    -1,   102,    -1,    -1,   110,    -1,   113,    -1,
+     116,   115,    -1,    15,   116,    -1,    -1,   115,   114,    -1,
+     119,   118,    -1,    16,   119,    -1,    -1,   118,   117,    -1,
+     120,    -1,   123,   122,    -1,    23,   123,    -1,    24,   123,
+      -1,    25,   123,    -1,    26,   123,    -1,    27,   123,    -1,
+      28,   123,    -1,    20,    22,    -1,    20,    21,    22,    -1,
+      -1,   121,    -1,   124,    -1,   127,   126,    -1,    29,   127,
+      -1,    30,   127,    -1,   138,    -1,   139,    -1,    -1,   126,
+     125,    -1,   130,   129,    -1,     7,   130,    -1,    31,   130,
+      -1,    -1,   129,   128,    -1,    32,   131,    -1,    29,   131,
+      -1,    30,   131,    -1,   131,    -1,   132,    -1,   133,    -1,
+     141,    -1,   136,    -1,   140,    -1,   100,    -1,    22,    -1,
+      40,   112,    41,    -1,    33,    40,   112,   135,    41,    -1,
+      34,    40,   112,    41,    -1,    35,    40,   112,    41,    -1,
+      36,    40,   112,    42,   112,    41,    -1,    42,   112,    -1,
+      -1,   135,   134,    -1,   137,    -1,   138,    -1,   139,    -1,
+      53,    -1,    56,    -1,    59,    -1,    54,    -1,    57,    -1,
+      60,    -1,    55,    -1,    58,    -1,    61,    -1,    66,    -1,
+      67,    -1,    62,    -1,    63,    -1,    64,    -1,    65,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1934,16 +1980,16 @@ namespace w3c_sw {
       57,    59,    61,    66,    69,    70,    73,    76,    79,    80,
       83,    89,    92,    93,    95,    99,   100,   102,   105,   109,
      110,   112,   115,   116,   118,   121,   123,   126,   127,   130,
-     133,   136,   138,   139,   141,   145,   147,   149,   152,   154,
-     156,   159,   162,   163,   165,   170,   171,   174,   177,   182,
-     188,   191,   193,   194,   196,   198,   201,   204,   205,   208,
-     211,   214,   215,   218,   220,   223,   226,   229,   232,   235,
-     238,   241,   244,   248,   249,   251,   253,   256,   259,   262,
-     264,   266,   267,   270,   273,   276,   279,   280,   283,   286,
-     289,   292,   294,   296,   298,   300,   302,   304,   306,   308,
-     312,   318,   325,   328,   329,   332,   334,   336,   338,   340,
-     342,   344,   346,   348,   350,   352,   354,   356,   358,   360,
-     362,   364,   366
+     133,   136,   138,   139,   141,   145,   147,   149,   151,   154,
+     156,   158,   161,   164,   165,   167,   172,   173,   176,   179,
+     184,   190,   193,   195,   196,   198,   200,   203,   206,   207,
+     210,   213,   216,   217,   220,   222,   225,   228,   231,   234,
+     237,   240,   243,   246,   250,   251,   253,   255,   258,   261,
+     264,   266,   268,   269,   272,   275,   278,   281,   282,   285,
+     288,   291,   294,   296,   298,   300,   302,   304,   306,   308,
+     310,   314,   320,   325,   330,   337,   340,   341,   344,   346,
+     348,   350,   352,   354,   356,   358,   360,   362,   364,   366,
+     368,   370,   372,   374,   376,   378
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
@@ -1954,17 +2000,17 @@ namespace w3c_sw {
      309,   319,   322,   324,   328,   334,   339,   345,   349,   353,
      357,   361,   367,   375,   381,   385,   393,   405,   411,   415,
      422,   439,   445,   449,   453,   462,   467,   471,   476,   484,
-     488,   492,   500,   504,   508,   514,   520,   526,   530,   537,
-     544,   547,   551,   555,   561,   569,   573,   577,   590,   594,
-     598,   604,   610,   614,   620,   633,   638,   647,   652,   657,
-     665,   668,   672,   676,   682,   687,   699,   706,   709,   717,
-     729,   736,   739,   746,   751,   770,   773,   776,   779,   782,
-     785,   788,   791,   798,   802,   806,   811,   823,   826,   829,
-     830,   835,   838,   846,   858,   861,   868,   871,   878,   881,
-     884,   887,   891,   892,   893,   894,   895,   896,   897,   903,
-     909,   916,   922,   928,   932,   939,   940,   941,   945,   946,
-     947,   951,   952,   953,   957,   958,   959,   963,   964,   968,
-     969,   970,   971
+     488,   492,   500,   504,   508,   514,   520,   526,   529,   536,
+     543,   546,   550,   553,   559,   564,   571,   575,   579,   592,
+     596,   600,   606,   612,   616,   622,   635,   640,   649,   654,
+     659,   667,   670,   674,   678,   684,   689,   701,   708,   711,
+     719,   731,   738,   741,   748,   753,   772,   775,   778,   781,
+     784,   787,   790,   793,   800,   804,   808,   813,   825,   828,
+     831,   832,   837,   840,   848,   860,   863,   870,   873,   880,
+     883,   886,   889,   893,   894,   895,   896,   897,   898,   899,
+     905,   911,   916,   921,   926,   932,   938,   942,   949,   950,
+     951,   955,   956,   957,   961,   962,   963,   967,   968,   969,
+     973,   974,   978,   979,   980,   981
   };
 
   // Print the state stack on the debug stream.
@@ -2036,7 +2082,7 @@ namespace w3c_sw {
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
       45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
-      65
+      65,    66,    67
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -2045,15 +2091,15 @@ namespace w3c_sw {
   }
 
   const int SQLParser::yyeof_ = 0;
-  const int SQLParser::yylast_ = 200;
+  const int SQLParser::yylast_ = 255;
   const int SQLParser::yynnts_ = 74;
   const int SQLParser::yyempty_ = -2;
-  const int SQLParser::yyfinal_ = 54;
+  const int SQLParser::yyfinal_ = 57;
   const int SQLParser::yyterror_ = 1;
   const int SQLParser::yyerrcode_ = 256;
-  const int SQLParser::yyntokens_ = 66;
+  const int SQLParser::yyntokens_ = 68;
 
-  const unsigned int SQLParser::yyuser_token_number_max_ = 320;
+  const unsigned int SQLParser::yyuser_token_number_max_ = 322;
   const SQLParser::token_number_type SQLParser::yyundef_token_ = 2;
 
 
@@ -2063,11 +2109,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1054 of lalr1.cc  */
-#line 2067 "lib/SQLParser/SQLParser.cpp"
+#line 2113 "lib/SQLParser/SQLParser.cpp"
 
 
 /* Line 1056 of lalr1.cc  */
-#line 976 "lib/SQLParser/SQLParser.ypp"
+#line 986 "lib/SQLParser/SQLParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
@@ -2083,7 +2129,7 @@ namespace w3c_sw {
 SQLDriver::SQLDriver(class sqlContext& _context)
     : YaccDriver("", NULL), trace_scanning(false),
       trace_parsing(false),
-      context(_context)
+      context(_context), root(NULL)
 {
 }
 

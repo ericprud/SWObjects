@@ -115,6 +115,9 @@ GT_MINUS		"-"
 GT_DIVIDE		"/"
 GT_NOT		"!"
 IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
+IT_LCASE		[Ll][Cc][Aa][Ss][Ee]
+IT_UCASE		[Uu][Cc][Aa][Ss][Ee]
+IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
 IT_true		"true"
 IT_false		"false"
 NAME		[A-Za-z_][A-Za-z0-9_]*
@@ -189,6 +192,9 @@ LINEFEED		(\r\n|\r|\n)
 {GT_DIVIDE}		{return token::GT_DIVIDE;}
 {GT_NOT}		{return token::GT_NOT;}
 {IT_CONCAT}		{return token::IT_CONCAT;}
+{IT_LCASE}		{return token::IT_LCASE;}
+{IT_UCASE}		{return token::IT_UCASE;}
+{IT_REGEX}		{return token::IT_REGEX;}
 {IT_true}		{return token::IT_true;}
 {IT_false}		{return token::IT_false;}
 {NAME}			{yylval->p_NAME = new std::string(yytext); return token::NAME;}
@@ -209,8 +215,8 @@ LINEFEED		(\r\n|\r|\n)
 <<EOF>>			{ yyterminate();}
 .			{
     std::stringstream s;
-    s << "unexpected input '" << yytext << "' at " << *yylloc;
-    throw s.str();
+    s << "unexpected input: '" << yytext << "'";
+    driver->error(*yylloc, s.str());
 }
 
 %%

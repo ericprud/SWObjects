@@ -209,7 +209,7 @@ public:
 %token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES IT_AS GT_DOT
        IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_ROWNUM IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
-       GT_NOT IT_CONCAT IT_REGEX
+       GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX
 
 %token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_STRING
 
@@ -519,42 +519,40 @@ AttributeList:
 _O_QGT_COMMA_E_S_QNamedAttribute_E_C:
     GT_COMMA NamedAttribute	{
 	$$ = $2;
-}
+    }
 ;
 
 _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star:
     {
 	$$ = new std::vector<sql::AliasedSelect*>();
-}
-
-    | _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QNamedAttribute_E_C	{
-    $1->push_back($2);
-    $$ = $1;
-}
+    }
+  | _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QNamedAttribute_E_C	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 NamedAttribute:
     Expression _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt	{
 	$$ = new sql::AliasedSelect($1, $2 ? *$2 : $1->toString());
 	delete $2;
-}
+    }
 ;
 
 _O_QIT_AS_E_S_QAttribute_E_C:
     IT_AS Attribute	{
-    $$ = $2;
-}
-    | Attribute	
+	$$ = $2;
+    }
+  | Attribute	
 ;
 
 _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt:
     {
-    $$ = NULL;
-}
-
-    | _O_QIT_AS_E_S_QAttribute_E_C	{
-    $$ = $1;
-}
+	$$ = NULL;
+    }
+  | _O_QIT_AS_E_S_QAttribute_E_C	{
+	$$ = $1;
+      }
 ;
 
 FQAttribute:
@@ -562,7 +560,11 @@ FQAttribute:
 	$$ = new sql::AliasAttrConstraint(sql::AliasAttr(*$1, *$3));
 	delete $1;
 	delete $3;
-}
+    }
+  | Attribute	{
+	$$ = new sql::AliasAttrConstraint(sql::AliasAttr("", *$1));
+	delete $1;
+    }
 ;
 
 Attribute:
@@ -910,10 +912,18 @@ BuiltInCall:
 	$4->insert($4->begin(), $3);
 	$$ = new sql::HomologConstraint("CONCAT", $4->begin(), $4->end());
 	delete $4;
-}
-  |
-    // 'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
-    IT_REGEX GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+    }
+  | IT_LCASE GT_LPAREN Expression GT_RPAREN	{
+	std::vector<const sql::Expression*> v;
+	v.push_back($3);
+	$$ = new sql::HomologConstraint("LCASE", v.begin(), v.end());
+    }
+  | IT_UCASE GT_LPAREN Expression GT_RPAREN	{
+	std::vector<const sql::Expression*> v;
+	v.push_back($3);
+	$$ = new sql::HomologConstraint("UCASE", v.begin(), v.end());
+    }
+  | IT_REGEX GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
 	$$ = new sql::RegexConstraint($3, $5);
     }
 ;
@@ -988,7 +998,7 @@ namespace w3c_sw {
 SQLDriver::SQLDriver(class sqlContext& _context)
     : YaccDriver("", NULL), trace_scanning(false),
       trace_parsing(false),
-      context(_context)
+      context(_context), root(NULL)
 {
 }
 
