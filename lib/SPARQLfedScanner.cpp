@@ -4336,24 +4336,24 @@ YY_RULE_SETUP
 case 164:
 YY_RULE_SETUP
 #line 420 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL1);}
+{return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 165:
 YY_RULE_SETUP
 #line 421 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL2);}
+{return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 166:
 /* rule 166 can match eol */
 YY_RULE_SETUP
 #line 422 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
+{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 167:
 /* rule 167 can match eol */
 YY_RULE_SETUP
 #line 423 "lib/SPARQLfedScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
+{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case 168:
 /* rule 168 can match eol */
@@ -5492,9 +5492,12 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
     }
 }
 
-SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semantic_type*& yylval, size_t skip, SPARQLfedParser::token_type tok){
+SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semantic_type*& yylval, SPARQLfedParser::location_type*& yylloc, size_t skip, SPARQLfedParser::token_type tok){
     std::string* space = new std::string;
+    // bool foundNewLine = false;
     for (size_t i = skip; i < yyleng-skip; i++) {
+	// if (foundNewLine)
+	//     yylloc->step();
 	if (yytext[i] == '\\') {
 	    switch (yytext[++i]) {
 	    case 't': (*space) += '\t'; break;
@@ -5508,6 +5511,11 @@ SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semanti
 	    default: throw(new std::exception());
 	    }
 	} else {
+	    if ((yytext[i] == '\r' && (i == yyleng-skip -1 || yytext[i+1] != '\n'))
+		|| yytext[i] == '\n') {
+		yylloc->end.lines(1);
+		// foundNewLine = true;
+	    }
 	    (*space) += yytext[i];
 	}
     }
