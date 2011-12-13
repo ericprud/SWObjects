@@ -787,80 +787,13 @@ namespace w3c_sw {
 	class TableJoin;
 	class SubqueryJoin;
 	class Join {
-	    class ForeignKeyJoinConstraint;
-	    class IntegerJoinConstraint;
-	    class StringJoinConstraint;
-	    class JoinConstraint {
-	    protected:
-		std::string myAttr;
-	    public:
-		JoinConstraint (std::string myAttr) : myAttr(myAttr) {  }
-		virtual ~JoinConstraint () {  }
-		bool baseEq (const JoinConstraint& r) const {
-		    return myAttr == r.myAttr;
-		}
-		bool finalEq (const ForeignKeyJoinConstraint&) const { return false; }
-		bool finalEq (const IntegerJoinConstraint&) const { return false; }
-		bool finalEq (const StringJoinConstraint&) const { return false; }
-		virtual bool operator==(const JoinConstraint&) const = 0;
-		virtual std::string toString(std::string alias, std::string pad = "", std::string driver = "") = 0;
-	    };
-	    class ForeignKeyJoinConstraint : public JoinConstraint {
-		std::string otherAlias;
-		std::string otherAttr;
-	    public:
-		ForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) : JoinConstraint(myAttr), otherAlias(otherAlias), otherAttr(otherAttr) {  }
-		virtual bool finalEq (const ForeignKeyJoinConstraint& l) const {
-		    return l.otherAlias == otherAlias && l.otherAttr == otherAttr;
-		}	    
-		virtual bool operator== (const JoinConstraint& r) const {
-		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
-		}
-		virtual std::string toString (std::string alias, std::string, std::string) {
-		    std::stringstream s;
-		    s << alias << "." << myAttr << "=" << otherAlias << "." << otherAttr;
-		    return s.str();
-		}
-	    };
-	    class IntegerJoinConstraint : public JoinConstraint {
-		int value;
-	    public:
-		IntegerJoinConstraint (std::string myAttr, int value) : JoinConstraint(myAttr), value(value) {  }
-		virtual bool finalEq (const IntegerJoinConstraint& l) const {
-		    return l.value == value;
-		}	    
-		virtual bool operator== (const JoinConstraint& r) const {
-		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
-		}
-		virtual std::string toString (std::string alias, std::string, std::string) {
-		    std::stringstream s;
-		    s << alias << "." << myAttr << "=" << value;
-		    return s.str();
-		}
-	    };
-	    class StringJoinConstraint : public JoinConstraint {
-		std::string value;
-	    public:
-		StringJoinConstraint (std::string myAttr, std::string value) : JoinConstraint(myAttr), value(value) {  }
-		virtual bool finalEq (const StringJoinConstraint& l) const {
-		    return l.value == value;
-		}	    
-		virtual bool operator== (const JoinConstraint& r) const {
-		    return JoinConstraint::baseEq(r) && r.finalEq(*this);
-		}
-		virtual std::string toString (std::string alias, std::string, std::string) {
-		    std::stringstream s;
-		    s << alias << "." << myAttr << "=\"" << value << "\"";
-		    return s.str();
-		}
-	    };
 	    std::string alias;
 	    bool optional;
-	    std::vector<JoinConstraint*> constraints;
+	    std::vector<Expression*> constraints;
 	public:
 	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
 	    virtual ~Join () {
-		for (std::vector<JoinConstraint*>::iterator it = constraints.begin();
+		for (std::vector<Expression*>::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    delete *it;
 	    }
@@ -884,11 +817,11 @@ namespace w3c_sw {
 		    s << getRelationText(pad) << " AS " << alias;
 
 		std::stringstream on;
-		for (std::vector<JoinConstraint*>::const_iterator it = constraints.begin();
+		for (std::vector<Expression*>::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			on << " AND ";
-		    on << (*it)->toString(alias, pad, driver);
+		    on << (*it)->toString(pad, PREC_High, driver);
 		}
 		std::string onStr = on.str();
 		if (!onStr.empty()) {
@@ -901,13 +834,16 @@ namespace w3c_sw {
 	    }
 	    void addForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
 		if (alias != otherAlias || myAttr != otherAttr)
-		    constraints.push_back(new ForeignKeyJoinConstraint(myAttr, otherAlias, otherAttr));
+		    constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
+							new AliasAttrConstraint(AliasAttr(otherAlias, otherAttr))));
 	    }
 	    void addConstantJoinConstraint (std::string myAttr, int value) {
-		constraints.push_back(new IntegerJoinConstraint(myAttr, value));
+		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
+						    new IntConstraint(value)));
 	    }
 	    void addConstantJoinConstraint (std::string myAttr, std::string value) {
-		constraints.push_back(new StringJoinConstraint(myAttr, value));
+		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
+						    new LiteralConstraint(value)));
 	    }
 	};
 
