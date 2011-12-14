@@ -808,7 +808,7 @@ namespace w3c_sw {
 	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
 	    virtual bool operator==(const Join& ref) const = 0;
 	    std::string str () const { return toString(); } // for debugger invocation
-	    std::string toString (std::string* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
+	    std::string toString (std::vector<const Expression*>* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		if (driver.find("oracle") == 0)
@@ -816,20 +816,15 @@ namespace w3c_sw {
 		else
 		    s << getRelationText(pad) << " AS " << alias;
 
-		std::stringstream on;
-		for (std::vector<Expression*>::const_iterator it = constraints.begin();
-		     it != constraints.end(); ++it) {
-		    if (it != constraints.begin())
-			on << " AND ";
-		    on << (*it)->toString(pad, PREC_High, driver);
-		}
-		std::string onStr = on.str();
-		if (!onStr.empty()) {
-		    if (captureConstraints == NULL)
-			s << " ON " << onStr;
-		    else
-			*captureConstraints = onStr;
-		}
+		if (captureConstraints != NULL)
+		    std::copy(constraints.begin(), constraints.end(), std::back_inserter(*captureConstraints));
+
+		else 
+		    for (std::vector<Expression*>::const_iterator it = constraints.begin();
+			 it != constraints.end(); ++it)
+			s << (it == constraints.begin() ? " ON " : " AND ")
+			  << (*it)->toString(pad, PREC_High, driver);
+
 		return s.str();
 	    }
 	    void addForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
@@ -892,7 +887,9 @@ namespace w3c_sw {
 	    struct JoinList : public std::vector<Join*> {
 		JoinList () {  }
 		JoinList (std::vector<Join*>& joins) : std::vector<Join*>(joins) {  }
-		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+		std::ostream& print (std::ostream& s,
+				     std::vector<const Expression*>* captureConstraints = NULL,
+				     std::string pad = "", std::string driver = "") const;
 	    };
 	    JoinList joins;
 
@@ -957,24 +954,12 @@ namespace w3c_sw {
 		selects.print(s, pad, driver);
 
 		/* JOINs */
-		std::string where;
-		for (std::vector<Join*>::const_iterator it = joins.begin();
-		     it != joins.end(); ++it)
-		    if (it == joins.begin())
-			s << std::endl << pad << "       FROM " << (*it)->toString(&where, pad, driver);
-		    else
-			s << (*it)->toString(NULL, pad, driver);
+		Constraints where;
+		joins.print(s, &where, pad, driver);
 
 		/* WHERE */
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
-		     it != constraints.end(); ++it) {
-		    if (where.length() != 0)
-			where += " AND ";
-		    where += (*it)->toString(pad, PREC_High, driver);
-		}
-
-		if (where.length() != 0)
-		    s << std::endl << pad << " WHERE " << where;
+		std::copy(constraints.begin(), constraints.end(), std::back_inserter(where));
+		where.print(s, pad, driver);
 
 		orderBy.print(s, pad, driver);
 
@@ -1002,6 +987,33 @@ namespace w3c_sw {
 	    if (begin() == end()) s << "NULL";
 	    return s;
 	}
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Selects& selects) {
+	    return selects.print(os);
+	}
+
+	inline std::ostream& SQLQuery::JoinList::print (std::ostream& s, std::vector<const Expression*>* captureConstraints, std::string pad, std::string driver) const {
+	    for (std::vector<Join*>::const_iterator it = begin();
+		 it != end(); ++it)
+		if (it == begin())
+		    s << std::endl << pad << "       FROM " << (*it)->toString(captureConstraints, pad, driver);
+		else
+		    s << (*it)->toString(NULL, pad, driver);
+	    return s;
+	}
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::JoinList& joinList) {
+	    return joinList.print(os);
+	}
+
+	inline std::ostream& SQLQuery::Constraints::print (std::ostream& s, std::string pad, std::string driver) const {
+	    for (std::vector<const Expression*>::const_iterator it = begin();
+		 it != end(); ++it)
+		s << (it == begin() ? " WHERE " : " AND ")
+		  <<(*it)->toString(pad, PREC_High, driver);
+	    return s;
+	}
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Constraints& constraints) {
+	    return constraints.print(os);
+	}
 
 	inline std::ostream& SQLQuery::OrderBy::print (std::ostream& s, std::string pad, std::string driver) const {
 	    /* ORDER BY */
@@ -1016,9 +1028,8 @@ namespace w3c_sw {
 	    }
 	    return s;
 	}
-
-	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Selects& selects) {
-	    return selects.print(os);
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::OrderBy& orderBy) {
+	    return orderBy.print(os);
 	}
 
 	struct EquivSet {
@@ -1086,25 +1097,25 @@ namespace w3c_sw {
 		    << f << "offset: " << offset << "!=" << ref.offset << "\n";
 		return false;
 	    }
-		// && ptrequal(selects.begin(), selects.end(), ref.selects.begin())
+	    //  !ptrequal(selects.begin(), selects.end(), ref.selects.begin())
 	    if (!EquivSet(constraints).sameValues(selects, ref.selects)) {
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << f << "selects:\n" << selects << "\n != \n" << ref.selects << "\n";
 		return false;
 	    }
 	    if (!ptrequal(joins.begin(), joins.end(), ref.joins.begin())) {
-		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		//     << f << "joins: " << joins->toString() << "!=" << ref.selects->toString() << "\n";
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "joins:\n" << joins << "\n != \n" << ref.joins << "\n";
 		return false;
 	    }
 	    if (!ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())) {
-		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		//     << f << "constraints: " << constraints->toString() << "!=" << ref.constraints->toString() << "\n";
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "constraints:\n" << constraints << "\n != \n" << ref.constraints << "\n";
 		return false;
 	    }
 	    if (!ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin())) {
-		// BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		//     << f << "orderBy: " << orderBy->toString() << "!=" << ref.orderBy->toString() << "\n";
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << f << "orderBy:\n" << orderBy << "\n != \n" << ref.orderBy << "\n";
 		return false;
 	    }
 	    return true;
