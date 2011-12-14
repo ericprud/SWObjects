@@ -98,17 +98,26 @@ namespace w3c_sw {
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
 	    virtual bool operator==(const Expression&) const = 0;
 	};
+	struct ConstraintList : public std::vector<const Expression*> {
+	    ConstraintList () {  }
+	    ConstraintList (const_iterator start,
+			    const_iterator end)
+		: std::vector<const Expression*>(start, end)
+	    {  }
+	    std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	};
+
 	class JunctionConstraint : public Expression {
 	public:
-	    std::vector<const Expression*> constraints;
+	    ConstraintList constraints;
 	public:
 	    JunctionConstraint () : Expression(), constraints() {  }
-	    JunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
-				std::vector<const sql::Expression*>::const_iterator end)
+	    JunctionConstraint (ConstraintList::const_iterator start,
+				ConstraintList::const_iterator end)
 		: constraints(start, end)
 	    {  }
 	    virtual ~JunctionConstraint () {
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++)
 		    delete *it;
 	    }
@@ -117,7 +126,7 @@ namespace w3c_sw {
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    if (it != constraints.begin()) s << getJunctionString();
 		    s << (*it)->toString(pad, getPrecedence(), driver);
@@ -133,9 +142,9 @@ namespace w3c_sw {
 		//     if ( !(**mit == **rit) )
 		// 	return false;
 
-		std::vector<const Expression*> copy(ref.constraints.begin(), ref.constraints.end());
-		std::vector<const Expression*>::const_iterator mit;
-		std::vector<const Expression*>::iterator rit;
+		ConstraintList copy(ref.constraints.begin(), ref.constraints.end());
+		ConstraintList::const_iterator mit;
+		ConstraintList::iterator rit;
 		for (mit = constraints.begin(), rit = copy.begin(); mit != constraints.end(); ) {
 		    while (!(**mit == **rit) && rit != copy.end())
 			++rit;
@@ -152,13 +161,13 @@ namespace w3c_sw {
 	class ConjunctionConstraint : public JunctionConstraint {
 	public:
 	    ConjunctionConstraint () : JunctionConstraint() {  }
-	    ConjunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
-				   std::vector<const sql::Expression*>::const_iterator end)
+	    ConjunctionConstraint (ConstraintList::const_iterator start,
+				   ConstraintList::const_iterator end)
 		: JunctionConstraint(start, end)
 	    {  }
 	    virtual Expression* clone () const {
 		ConjunctionConstraint* ret = new ConjunctionConstraint();
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    ret->addConstraint((*it)->clone());
 		}
@@ -177,13 +186,13 @@ namespace w3c_sw {
 	class DisjunctionConstraint : public JunctionConstraint {
 	public:
 	    DisjunctionConstraint () {  }
-	    DisjunctionConstraint (std::vector<const sql::Expression*>::const_iterator start,
-				   std::vector<const sql::Expression*>::const_iterator end)
+	    DisjunctionConstraint (ConstraintList::const_iterator start,
+				   ConstraintList::const_iterator end)
 		: JunctionConstraint(start, end)
 	    {  }
 	    virtual Expression* clone () const {
 		DisjunctionConstraint* ret = new DisjunctionConstraint();
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
 		    ret->addConstraint((*it)->clone());
 		}
@@ -200,14 +209,14 @@ namespace w3c_sw {
 	};
 	class BooleanJunction : public Expression { // @@ delme?
 	public:
-	    std::vector<const Expression*> m_Expressions;
-	    BooleanJunction (std::vector<const Expression*>* p_Expressions) : m_Expressions(*p_Expressions) {  }
+	    ConstraintList m_Expressions;
+	    BooleanJunction (ConstraintList* p_Expressions) : m_Expressions(*p_Expressions) {  }
 	    virtual Expression* clone() const = 0;
 	    virtual const char* getInfixNotation() const = 0;
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
-		for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+		for (ConstraintList::const_iterator it = m_Expressions.begin();
 		     it != m_Expressions.end(); it++) {
 		    if (it != m_Expressions.begin()) s << getInfixNotation();
 		    s << (*it)->toString(pad, getPrecedence(), driver);
@@ -218,8 +227,8 @@ namespace w3c_sw {
 	    bool operator== (const BooleanJunction& ref) const {
 		if (m_Expressions.size() != ref.m_Expressions.size())
 		    return false;
-		std::vector<const Expression*>::const_iterator mit = m_Expressions.begin();
-		std::vector<const Expression*>::const_iterator rit = ref.m_Expressions.begin();
+		ConstraintList::const_iterator mit = m_Expressions.begin();
+		ConstraintList::const_iterator rit = ref.m_Expressions.begin();
 		for ( ; mit != m_Expressions.end(); ++mit, ++rit)
 		    if ( !(**mit == **rit) )
 			return false;
@@ -239,7 +248,7 @@ namespace w3c_sw {
 // 	    virtual const char* getInfixNotation () const { return "&&"; }
 // 	};
 	class ArithOperation : public Expression {
-	    std::vector<Expression*> constraints;
+	    ConstraintList constraints;
 	    std::string sqlOperator;
 	    e_PREC prec;
 
@@ -247,13 +256,13 @@ namespace w3c_sw {
 	    ArithOperation (std::string sqlOperator, e_PREC prec) : 
 		Expression(), sqlOperator(sqlOperator), prec(prec) {  }
 	    virtual ~ArithOperation () {
-		for (std::vector<Expression*>::iterator it = constraints.begin();
+		for (ConstraintList::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    delete *it;
 	    }
 	    virtual Expression* clone () const {
 		ArithOperation* ret = new ArithOperation(sqlOperator, prec);
-		for (std::vector<Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    ret->push_back((*it)->clone());
 		return ret;
@@ -269,7 +278,7 @@ namespace w3c_sw {
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (prec < parentPrec) s << "(";
-		for (std::vector<Expression*>::const_iterator it = constraints.begin();
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    if (it != constraints.begin())
 			s << " " <<  sqlOperator << " ";
@@ -423,15 +432,15 @@ namespace w3c_sw {
 	};
 	class NaryExpression : public Expression {
 	protected:
-	    std::vector<const Expression*> args;
+	    ConstraintList args;
 	public:
-	    NaryExpression (std::vector<const sql::Expression*>::const_iterator start,
-			    std::vector<const sql::Expression*>::const_iterator end)
+	    NaryExpression (ConstraintList::const_iterator start,
+			    ConstraintList::const_iterator end)
 		: args(start, end)
 	    {  }
-	    NaryExpression (std::vector<const Expression*>* args) : Expression(), args(*args) {  }
+	    NaryExpression (ConstraintList* args) : Expression(), args(*args) {  }
 	    ~NaryExpression () {
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); ++it)
 		    delete *it;
 	    }
@@ -443,7 +452,7 @@ namespace w3c_sw {
 	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); ++it) {
 		    if (it != args.begin())
 			s << getInfixOperator();
@@ -474,13 +483,13 @@ namespace w3c_sw {
 	};
 	class ArithmeticProduct : public NaryExpression {
 	public:
-	    ArithmeticProduct (std::vector<const sql::Expression*>::const_iterator start,
-			       std::vector<const sql::Expression*>::const_iterator end)
+	    ArithmeticProduct (ConstraintList::const_iterator start,
+			       ConstraintList::const_iterator end)
 		: NaryExpression(start, end)
 	    {  }
 	    virtual Expression* clone () const {
-		std::vector<const Expression*> v;
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		ConstraintList v;
+		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); it++) {
 		    v.push_back((*it)->clone());
 		}
@@ -512,13 +521,13 @@ namespace w3c_sw {
 	};
 	class ArithmeticSum : public NaryExpression {
 	public:
-	    ArithmeticSum (std::vector<const sql::Expression*>::const_iterator start,
-			   std::vector<const sql::Expression*>::const_iterator end)
+	    ArithmeticSum (ConstraintList::const_iterator start,
+			   ConstraintList::const_iterator end)
 		: NaryExpression(start, end)
 	    {  }
 	    virtual Expression* clone () const {
-		std::vector<const Expression*> v;
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		ConstraintList v;
+		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); it++) {
 		    v.push_back((*it)->clone());
 		}
@@ -738,13 +747,13 @@ namespace w3c_sw {
 	    std::string sqlOp;
 	public:
 	    HomologConstraint (std::string sqlOp,
-			       std::vector<const sql::Expression*>::const_iterator start,
-			       std::vector<const sql::Expression*>::const_iterator end)
+			       ConstraintList::const_iterator start,
+			       ConstraintList::const_iterator end)
 		: NaryExpression(start, end), sqlOp(sqlOp)
 	    {  }
 	    virtual Expression* clone () const {
-		std::vector<const Expression*> v;
-		for (std::vector<const Expression*>::const_iterator it = args.begin();
+		ConstraintList v;
+		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); it++) {
 		    v.push_back((*it)->clone());
 		}
@@ -789,11 +798,11 @@ namespace w3c_sw {
 	class Join {
 	    std::string alias;
 	    bool optional;
-	    std::vector<Expression*> constraints;
+	    ConstraintList constraints;
 	public:
 	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
 	    virtual ~Join () {
-		for (std::vector<Expression*>::iterator it = constraints.begin();
+		for (ConstraintList::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
 		    delete *it;
 	    }
@@ -808,7 +817,7 @@ namespace w3c_sw {
 	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
 	    virtual bool operator==(const Join& ref) const = 0;
 	    std::string str () const { return toString(); } // for debugger invocation
-	    std::string toString (std::vector<const Expression*>* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
+	    std::string toString (ConstraintList* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
 		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		if (driver.find("oracle") == 0)
@@ -820,7 +829,7 @@ namespace w3c_sw {
 		    std::copy(constraints.begin(), constraints.end(), std::back_inserter(*captureConstraints));
 
 		else 
-		    for (std::vector<Expression*>::const_iterator it = constraints.begin();
+		    for (ConstraintList::const_iterator it = constraints.begin();
 			 it != constraints.end(); ++it)
 			s << (it == constraints.begin() ? " ON " : " AND ")
 			  << (*it)->toString(pad, PREC_High, driver);
@@ -888,16 +897,13 @@ namespace w3c_sw {
 		JoinList () {  }
 		JoinList (std::vector<Join*>& joins) : std::vector<Join*>(joins) {  }
 		std::ostream& print (std::ostream& s,
-				     std::vector<const Expression*>* captureConstraints = NULL,
+				     ConstraintList* captureConstraints = NULL,
 				     std::string pad = "", std::string driver = "") const;
 	    };
 	    JoinList joins;
 
-	    struct Constraints : public std::vector<const Expression*> {
-		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
-	    };
-	    Constraints  constraints;
-	    struct OrderBy : public std::vector<const Expression*> {
+	    ConstraintList  constraints;
+	    struct OrderBy : public ConstraintList {
 		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
 	    };
 	    OrderBy orderBy;
@@ -926,11 +932,11 @@ namespace w3c_sw {
 		    delete *iJoins;
 		}
 
-		for (std::vector<const Expression*>::iterator iConstraints = constraints.begin();
+		for (ConstraintList::iterator iConstraints = constraints.begin();
 		     iConstraints != constraints.end(); ++iConstraints)
 		    delete *iConstraints;
 
-		for (std::vector<const Expression*>::iterator iOrderBy = orderBy.begin();
+		for (ConstraintList::iterator iOrderBy = orderBy.begin();
 		     iOrderBy != orderBy.end(); ++iOrderBy)
 		    delete *iOrderBy;
 	    }
@@ -954,7 +960,7 @@ namespace w3c_sw {
 		selects.print(s, pad, driver);
 
 		/* JOINs */
-		Constraints where;
+		ConstraintList where;
 		joins.print(s, &where, pad, driver);
 
 		/* WHERE */
@@ -991,7 +997,7 @@ namespace w3c_sw {
 	    return selects.print(os);
 	}
 
-	inline std::ostream& SQLQuery::JoinList::print (std::ostream& s, std::vector<const Expression*>* captureConstraints, std::string pad, std::string driver) const {
+	inline std::ostream& SQLQuery::JoinList::print (std::ostream& s, ConstraintList* captureConstraints, std::string pad, std::string driver) const {
 	    for (std::vector<Join*>::const_iterator it = begin();
 		 it != end(); ++it)
 		if (it == begin())
@@ -1004,14 +1010,14 @@ namespace w3c_sw {
 	    return joinList.print(os);
 	}
 
-	inline std::ostream& SQLQuery::Constraints::print (std::ostream& s, std::string pad, std::string driver) const {
-	    for (std::vector<const Expression*>::const_iterator it = begin();
+	inline std::ostream& ConstraintList::print (std::ostream& s, std::string pad, std::string driver) const {
+	    for (ConstraintList::const_iterator it = begin();
 		 it != end(); ++it)
 		s << (it == begin() ? " WHERE " : " AND ")
 		  <<(*it)->toString(pad, PREC_High, driver);
 	    return s;
 	}
-	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Constraints& constraints) {
+	inline std::ostream& operator<< (std::ostream& os, const ConstraintList& constraints) {
 	    return constraints.print(os);
 	}
 
@@ -1019,7 +1025,7 @@ namespace w3c_sw {
 	    /* ORDER BY */
 	    if (begin() != end()) {
 		s << std::endl << pad << " ORDER BY ";
-		for (std::vector<const Expression*>::const_iterator it = begin();
+		for (ConstraintList::const_iterator it = begin();
 		     it != end(); ++it) {
 		    if (it != begin())
 			s << ", ";
@@ -1034,8 +1040,8 @@ namespace w3c_sw {
 
 	struct EquivSet {
 	    std::map<std::string, std::set<std::string> > equivs;
-	    EquivSet (const std::vector<const Expression*> constraints) {
-		for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+	    EquivSet (const ConstraintList constraints) {
+		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); ++it) {
 		    (*it)->getEquivs(*this);
 		}
@@ -1070,7 +1076,7 @@ namespace w3c_sw {
 	};
 
 	inline void ConjunctionConstraint::getEquivs (struct EquivSet& equivs) const {
-	    for (std::vector<const Expression*>::const_iterator it = constraints.begin();
+	    for (ConstraintList::const_iterator it = constraints.begin();
 		 it != constraints.end(); ++it)
 		(*it)->getEquivs(equivs);
 	}
