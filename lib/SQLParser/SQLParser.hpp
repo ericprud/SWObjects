@@ -165,7 +165,7 @@ public:
     sql::schema::Relation* curCreate;
     sql::schema::Database tables;
 };
-    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::Relation* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 

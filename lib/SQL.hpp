@@ -10,6 +10,29 @@ namespace w3c_sw {
 
     namespace sql {
 
+	/**
+	 * enforce type consistency for
+	 *   Relation - a table name.
+	 *   RelVar - a table alias.
+	 *   Attribute - a table column name.
+	 *   AttrAlias - an alias for a selected Attribute.
+	 */
+	struct Relation : public std::string {
+	    Relation (std::string s) : std::string(s) {  }
+	};
+	struct RelVar : public std::string {
+	    RelVar (std::string s) : std::string(s) {  }
+	};
+	struct Attribute : public std::string {
+	    Attribute (std::string s) : std::string(s) {  }
+	};
+	// struct AttrAlias : public std::string {  }; select foo as bar;
+
+	struct AliasMappingSet {
+	    struct Mapping : public std::map<RelVar, RelVar> {
+	    };
+	};
+
 	typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		      PREC_And, 
 		      PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
@@ -19,10 +42,10 @@ namespace w3c_sw {
 
 	class AliasAttr {
 	public:
-	    std::string alias;
-	    std::string attr;
+	    RelVar alias;
+	    Attribute attr;
 	    //	    AliasAttr () {  }
-	    AliasAttr (std::string alias, std::string attr) : alias(alias), attr(attr) {  }
+	    AliasAttr (RelVar alias, Attribute attr) : alias(alias), attr(attr) {  }
 	    virtual ~AliasAttr () {  }
 	    virtual bool operator== (const AliasAttr& ref) const {
 		return alias == ref.alias && attr == ref.attr;
@@ -796,11 +819,11 @@ namespace w3c_sw {
 	class TableJoin;
 	class SubqueryJoin;
 	class Join {
-	    std::string alias;
+	    RelVar alias;
 	    bool optional;
 	    ConstraintList constraints;
 	public:
-	    Join (std::string alias, bool optional) : alias(alias), optional(optional) {  }
+	    Join (RelVar alias, bool optional) : alias(alias), optional(optional) {  }
 	    virtual ~Join () {
 		for (ConstraintList::iterator it = constraints.begin();
 		     it != constraints.end(); ++it)
@@ -836,27 +859,27 @@ namespace w3c_sw {
 
 		return s.str();
 	    }
-	    void addForeignKeyJoinConstraint (std::string myAttr, std::string otherAlias, std::string otherAttr) {
+	    void addForeignKeyJoinConstraint (Attribute myAttr, RelVar otherAlias, Attribute otherAttr) {
 		if (alias != otherAlias || myAttr != otherAttr)
 		    constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
 							new AliasAttrConstraint(AliasAttr(otherAlias, otherAttr))));
 	    }
-	    void addConstantJoinConstraint (std::string myAttr, int value) {
+	    void addConstantJoinConstraint (Attribute myAttr, int value) {
 		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
 						    new IntConstraint(value)));
 	    }
-	    void addConstantJoinConstraint (std::string myAttr, std::string value) {
+	    void addConstantJoinConstraint (Attribute myAttr, std::string value) {
 		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
 						    new LiteralConstraint(value)));
 	    }
 	};
 
 	class TableJoin : public Join {
-	    std::string relation;
+	    Relation relation;
 	protected:
 	    virtual std::string getRelationText (std::string) const { return relation; }
 	public:
-	    TableJoin (std::string relation, std::string alias, bool optional) : Join(alias, optional), relation(relation) {  }
+	    TableJoin (Relation relation, RelVar alias, bool optional) : Join(alias, optional), relation(relation) {  }
 	    virtual bool finalEq (const TableJoin& l) const {
 		return l.relation == relation;
 	    }	    
@@ -1174,7 +1197,7 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	public:
-	    SubqueryJoin (SQLQuery* subquery, std::string alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
+	    SubqueryJoin (SQLQuery* subquery, RelVar alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
 	    virtual bool finalEq (const SubqueryJoin& l) const {
 		return *l.subquery == *subquery;
 	    }	    

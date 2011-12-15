@@ -167,7 +167,7 @@ public:
     sql::schema::Relation* curCreate;
     sql::schema::Database tables;
 };
-    typedef struct {std::string* relation; sql::SQLQuery* subselect; std::string* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::Relation* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
@@ -557,12 +557,12 @@ _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt:
 
 FQAttribute:
     Relation GT_DOT Attribute	{
-	$$ = new sql::AliasAttrConstraint(sql::AliasAttr(*$1, *$3));
+	$$ = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(*$1), sql::Attribute(*$3)));
 	delete $1;
 	delete $3;
     }
   | Attribute	{
-	$$ = new sql::AliasAttrConstraint(sql::AliasAttr("", *$1));
+      $$ = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(""), sql::Attribute(*$1)));
 	delete $1;
     }
 ;
@@ -647,19 +647,27 @@ _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTabl
 
 TableAlias:
     Relation _Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt	{
-	$$.relation = $1;
+	$$.relation = new sql::Relation(*$1);
 	$$.subselect = NULL;
-	$$.alias = $2 ? $2 : new std::string(*$1);
+	if ($2) {
+	    $$.alias = new sql::RelVar(*$2);
+	    delete $2;
+	} else {
+	    $$.alias = new sql::RelVar(*$1);
+	}
+	delete $1;
 }
     | GT_LPAREN SelectUnion GT_RPAREN Relation	{
 	$$.relation = NULL;
 	$$.subselect = $2;
-	$$.alias = $4;
+	$$.alias = new sql::RelVar(*$4);
+	delete $4;
 }
     | GT_LPAREN SelectUnion GT_RPAREN IT_AS Relation	{
 	$$.relation = NULL;
 	$$.subselect = $2;
-	$$.alias = $5;
+	$$.alias = new sql::RelVar(*$5);
+	delete $5;
 }
 ;
 

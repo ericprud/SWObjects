@@ -345,7 +345,7 @@ namespace w3c_sw {
 	//static std::ostream** ErrorStream;
 
 	SQLizer (AtomFactory* atomFactory, std::string stem, char predicateDelims[], char nodeDelims[], std::string defaultPKAttr, KeyMap keyMap, std::string driver) : 
-	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr("bogusAlias", "bogusAttr"), selectVars(NULL), 
+	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr(sql::RelVar("bogusAlias"), sql::Attribute("bogusAttr")), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
 	    driver(driver)
 	{
