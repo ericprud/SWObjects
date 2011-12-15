@@ -167,7 +167,7 @@ public:
     sql::schema::Relation* curCreate;
     sql::schema::Database tables;
 };
-    typedef struct {sql::Relation* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
@@ -196,7 +196,7 @@ public:
     const sql::Expression* p_Expression;
     std::vector<const sql::Expression*>* p_Expressions;
 
-    std::vector<std::string>* p_Attributes;
+    std::vector<sql::Attribute>* p_Attributes;
     sql::schema::e_TYPE p_SchemaDatatype;
 }
 
@@ -307,12 +307,12 @@ _Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star:
 
 Create:
     IT_CREATE IT_TABLE Relation	{
-    driver.curCreate = new sql::schema::Relation(*$3);
+	driver.curCreate = new sql::schema::Relation(*$3);
       } GT_LPAREN FieldOrKey _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star GT_RPAREN	{
-      driver.tables[*$3] = driver.curCreate;
-      delete $3;
-      driver.curCreate = NULL;
-}
+	  driver.tables[*$3] = driver.curCreate;
+	  delete $3;
+	  driver.curCreate = NULL;
+      }
 ;
 
 _O_QGT_COMMA_E_S_QFieldOrKey_E_C:
@@ -379,14 +379,13 @@ _O_QGT_COMMA_E_S_QAttribute_E_C:
 
 _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
     {
-    $$ = new std::vector<std::string>();
-}
-
-    | _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QAttribute_E_C	{
-    $1->push_back(*$2);
-    delete $2;
-    $$ = $1;
-}
+	$$ = new std::vector<sql::Attribute>();
+    }
+  | _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star _O_QGT_COMMA_E_S_QAttribute_E_C	{
+	$1->push_back(*$2);
+	delete $2;
+	$$ = $1;
+    }
 ;
 
 SelectUnion:
@@ -647,7 +646,7 @@ _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTabl
 
 TableAlias:
     Relation _Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt	{
-	$$.relation = new sql::Relation(*$1);
+	$$.relation = new sql::RelationName(*$1);
 	$$.subselect = NULL;
 	if ($2) {
 	    $$.alias = new sql::RelVar(*$2);

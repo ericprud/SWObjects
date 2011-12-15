@@ -12,13 +12,13 @@ namespace w3c_sw {
 
 	/**
 	 * enforce type consistency for
-	 *   Relation - a table name.
+	 *   RelationName - a table name.
 	 *   RelVar - a table alias.
 	 *   Attribute - a table column name.
 	 *   AttrAlias - an alias for a selected Attribute.
 	 */
-	struct Relation : public std::string {
-	    Relation (std::string s) : std::string(s) {  }
+	struct RelationName : public std::string {
+	    RelationName (std::string s) : std::string(s) {  }
 	};
 	struct RelVar : public std::string {
 	    RelVar (std::string s) : std::string(s) {  }
@@ -26,11 +26,14 @@ namespace w3c_sw {
 	struct Attribute : public std::string {
 	    Attribute (std::string s) : std::string(s) {  }
 	};
-	// struct AttrAlias : public std::string {  }; select foo as bar;
+	struct AttrAlias : public std::string { // select foo as bar;
+	    AttrAlias (std::string s) : std::string(s) {  }
+	};
 
 	struct AliasMappingSet {
 	    struct Mapping : public std::map<RelVar, RelVar> {
 	    };
+	    std::list<Mapping> list;
 	};
 
 	typedef enum {PREC_Low, PREC_Or = PREC_Low, 
@@ -875,11 +878,11 @@ namespace w3c_sw {
 	};
 
 	class TableJoin : public Join {
-	    Relation relation;
+	    RelationName relation;
 	protected:
 	    virtual std::string getRelationText (std::string) const { return relation; }
 	public:
-	    TableJoin (Relation relation, RelVar alias, bool optional) : Join(alias, optional), relation(relation) {  }
+	    TableJoin (RelationName relation, RelVar alias, bool optional) : Join(alias, optional), relation(relation) {  }
 	    virtual bool finalEq (const TableJoin& l) const {
 		return l.relation == relation;
 	    }	    
@@ -893,9 +896,9 @@ namespace w3c_sw {
 	    friend struct EquivSet;
 	protected:
 	    const Expression* exp;
-	    std::string alias;
+	    AttrAlias alias;
 	public:
-	    AliasedSelect (const Expression* exp, std::string alias) : exp(exp), alias(alias) {  }
+	    AliasedSelect (const Expression* exp, AttrAlias alias) : exp(exp), alias(alias) {  }
 	    virtual ~AliasedSelect () {
 		delete exp;
 	    }
@@ -1061,6 +1064,9 @@ namespace w3c_sw {
 	    return orderBy.print(os);
 	}
 
+	/**
+	 * !! document me
+	 */
 	struct EquivSet {
 	    std::map<std::string, std::set<std::string> > equivs;
 	    EquivSet (const ConstraintList constraints) {
@@ -1246,9 +1252,9 @@ namespace w3c_sw {
 // 	    }
 
 	    struct Field : public FieldOrKey {
-		std::string name;
+		Attribute name;
 		e_TYPE type;
-		Field (std::string name, e_TYPE type) : name(name), type(type)
+		Field (Attribute name, e_TYPE type) : name(name), type(type)
 		{  }
 		virtual bool operator== (const FieldOrKey& ref) const {
 		    const Field* refp = dynamic_cast<const Field*>(&ref);
@@ -1270,8 +1276,8 @@ namespace w3c_sw {
 	    };
 
 	    struct Key : public FieldOrKey {
-		std::vector<std::string>* attrs;
-		Key (std::vector<std::string>* attrs) : attrs(attrs)
+		std::vector<Attribute>* attrs;
+		Key (std::vector<Attribute>* attrs) : attrs(attrs)
 		{  }
 		virtual ~Key () { delete attrs; }
 		bool Key_equals (const FieldOrKey& ref) const {
@@ -1279,8 +1285,8 @@ namespace w3c_sw {
 		    if (refp == NULL
 			|| attrs->size() != refp->attrs->size())
 			return false;
-		    std::vector<std::string>::const_iterator left = attrs->begin();
-		    std::vector<std::string>::const_iterator right = refp->attrs->begin();
+		    std::vector<Attribute>::const_iterator left = attrs->begin();
+		    std::vector<Attribute>::const_iterator right = refp->attrs->begin();
 		    for (;
 			 left != attrs->end(); ++left, ++right)
 			if (*left != *right)
@@ -1290,7 +1296,7 @@ namespace w3c_sw {
 	    };
 
 	    struct PrimaryKey : public Key {
-		PrimaryKey (std::vector<std::string>* attrs) : Key(attrs)
+		PrimaryKey (std::vector<Attribute>* attrs) : Key(attrs)
 		{  }
 		virtual ~PrimaryKey () {  }
 		virtual bool operator== (const FieldOrKey& ref) const {
@@ -1300,7 +1306,7 @@ namespace w3c_sw {
 		virtual std::string str () const {
 		    std::stringstream ss;
 		    ss << "PRIMARY KEY (";
-		    for (std::vector<std::string>::const_iterator it = attrs->begin();
+		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
 			 it != attrs->end(); ++it) {
 			if (it != attrs->begin())
 			    ss << ", ";
@@ -1312,11 +1318,11 @@ namespace w3c_sw {
 	    };
 
 	    struct ForeignKey : public Key {
-		std::string targetRel;
-		std::vector<std::string>* relAttrs;
-		ForeignKey (std::vector<std::string>* myAttrs,
-			    std::string targetRel,
-			    std::vector<std::string>* relAttrs)
+		RelationName targetRel;
+		std::vector<Attribute>* relAttrs;
+		ForeignKey (std::vector<Attribute>* myAttrs,
+			    RelationName targetRel,
+			    std::vector<Attribute>* relAttrs)
 		    : Key(myAttrs), targetRel(targetRel), relAttrs(relAttrs)
 		{  }
 		virtual ~ForeignKey () { delete relAttrs; }
@@ -1326,8 +1332,8 @@ namespace w3c_sw {
 			|| targetRel != refp->targetRel
 			|| !Key_equals(ref))
 			return false;
-		    std::vector<std::string>::const_iterator left = relAttrs->begin();
-		    std::vector<std::string>::const_iterator right = refp->relAttrs->begin();
+		    std::vector<Attribute>::const_iterator left = relAttrs->begin();
+		    std::vector<Attribute>::const_iterator right = refp->relAttrs->begin();
 		    for (;
 			 left != relAttrs->end(); ++left, ++right)
 			if (*left != *right)
@@ -1337,14 +1343,14 @@ namespace w3c_sw {
 		virtual std::string str () const {
 		    std::stringstream ss;
 		    ss << "FOREIGN KEY (";
-		    for (std::vector<std::string>::const_iterator it = attrs->begin();
+		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
 			 it != attrs->end(); ++it) {
 			if (it != attrs->begin())
 			    ss << ", ";
 			ss << *it;
 		    }
 		    ss << ") REFERENCES " << targetRel << "(";
-		    for (std::vector<std::string>::const_iterator it = relAttrs->begin();
+		    for (std::vector<Attribute>::const_iterator it = relAttrs->begin();
 			 it != relAttrs->end(); ++it) {
 			if (it != relAttrs->begin())
 			    ss << ", ";
@@ -1367,19 +1373,50 @@ namespace w3c_sw {
 		    struct FKParticipation {
 			const ForeignKey* key;
 			size_t position;
+			FKParticipation (ForeignKey* key, size_t position)
+			    : key(key), position(position)
+			{  }
 		    };
 
-		    std::string name;
+		    Attribute name;
 		    e_TYPE type;
 		    PKParticipation pk;
-		    std::map<const ForeignKey*, FKParticipation> fks;
+		    struct FKs : public std::map<const ForeignKey*, FKParticipation> {
+			void addForeignKey(ForeignKey* foreignKey, size_t posn) {
+			    std::map<const ForeignKey*, FKParticipation>::iterator fk
+				= find(foreignKey);
+			    if (fk != end())
+				throw std::string() + "Foreign key already assigned.";
+			    insert(std::pair<const ForeignKey*, FKParticipation>
+				   (foreignKey, FKParticipation(foreignKey, posn)));
+			}
+		    };
+		    FKs fks;
+
+		    // FieldInfo (Attribute name, e_TYPE type)
+		    // 	: name(name), type(type)
+		    // {  }		    
+		    FieldInfo (const Field* field)
+			: name(field->name), type(field->type)
+		    {  }		    
 		};
 
-		std::string name;
+		RelationName name;
 		std::vector<const FieldOrKey*> ordered;
-		std::map<std::string, FieldInfo> fields;
+		struct Fields : public std::map<Attribute, FieldInfo> {
+		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
+			std::map<Attribute, FieldInfo>::iterator f = find(attr);
+			f->second.pk.key = primaryKey;
+			f->second.pk.position = posn;
+		    }
+		    void addForeignKey(Attribute attr, ForeignKey* foreignKey, size_t posn) {
+			std::map<Attribute, FieldInfo>::iterator f = find(attr);
+			f->second.fks.addForeignKey(foreignKey, posn);
+		    }
+		};
+		Fields fields;
 
-		Relation (std::string name) : name(name)
+		Relation (RelationName name) : name(name)
 		{  }
 
 		~Relation () {
@@ -1417,30 +1454,23 @@ namespace w3c_sw {
 
 		void addField (const Field* field) {
 		    ordered.push_back(field);
-		    fields[field->name].name = field->name;
-		    fields[field->name].name = field->type;
+		    fields.insert(std::pair<Attribute, FieldInfo>(field->name, FieldInfo(field)));
 		}
 
 		void addPrimaryKey (PrimaryKey* primaryKey) {
 		    ordered.push_back(primaryKey);
 		    size_t posn = 0;
-		    for (std::vector<std::string>::const_iterator attr = primaryKey->attrs->begin();
-			 attr != primaryKey->attrs->end(); ++attr, ++posn) {
-			// fields[*attr].name = primaryKey->name;
-			fields[*attr].pk.key = primaryKey;
-			fields[*attr].pk.position = posn;
-		    }
+		    for (std::vector<Attribute>::const_iterator attr = primaryKey->attrs->begin();
+			 attr != primaryKey->attrs->end(); ++attr, ++posn)
+			fields.addPrimaryKey(*attr, primaryKey, posn);
 		}
 
 		void addForeignKey (ForeignKey* foreignKey) {
 		    ordered.push_back(foreignKey);
 		    size_t posn = 0;
-		    for (std::vector<std::string>::const_iterator attr = foreignKey->attrs->begin();
-			 attr != foreignKey->attrs->end(); ++attr, ++posn) {
-			// fields[*attr].name = foreignKey->name;
-			fields[*attr].fks[foreignKey].key = foreignKey;
-			fields[*attr].fks[foreignKey].position = posn;
-		    }
+		    for (std::vector<Attribute>::const_iterator attr = foreignKey->attrs->begin();
+			 attr != foreignKey->attrs->end(); ++attr, ++posn)
+			fields.addForeignKey(*attr, foreignKey, posn);
 		}
 
 	    };
@@ -1449,20 +1479,20 @@ namespace w3c_sw {
 		return ostr << ref.str();
 	    }
 
-	    struct Database : public std::map<std::string, Relation*> {
+	    struct Database : public std::map<RelationName, Relation*> {
 
 		void clear () {
-		    for (std::map<std::string, Relation*>::iterator it = begin();
+		    for (/*std::map<RelationName, Relation*>::!!*/iterator it = begin();
 			 it != end(); ++it)
 			delete it->second;
-		    std::map<std::string, Relation*>::clear();
+		    std::map<RelationName, Relation*>::clear();
 		}
 
 		bool operator== (const Database& ref) const {
 		    if (size() != ref.size())
 			return false;
-		    std::map<std::string, Relation*>::const_iterator left = begin();
-		    std::map<std::string, Relation*>::const_iterator right = ref.begin();
+		    std::map<RelationName, Relation*>::const_iterator left = begin();
+		    std::map<RelationName, Relation*>::const_iterator right = ref.begin();
 		    for (;
 			 left != end(); ++left, ++right)
 			if (left->first != right->first
@@ -1473,7 +1503,7 @@ namespace w3c_sw {
 
 		std::string str () const {
 		    std::stringstream ss;
-		    for (std::map<std::string, Relation*>::const_iterator it = begin();
+		    for (std::map<RelationName, Relation*>::const_iterator it = begin();
 			 it != end(); ++it) {
 			std::string s = it->first;
 			const Relation& r = *it->second;

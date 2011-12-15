@@ -165,7 +165,7 @@ public:
     sql::schema::Relation* curCreate;
     sql::schema::Database tables;
 };
-    typedef struct {sql::Relation* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
+    typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
     typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
     typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
@@ -279,7 +279,7 @@ namespace w3c_sw {
     const sql::Expression* p_Expression;
     std::vector<const sql::Expression*>* p_Expressions;
 
-    std::vector<std::string>* p_Attributes;
+    std::vector<sql::Attribute>* p_Attributes;
     sql::schema::e_TYPE p_SchemaDatatype;
 
 
