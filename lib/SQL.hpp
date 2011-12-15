@@ -1011,8 +1011,7 @@ namespace w3c_sw {
 
 	inline std::ostream& SQLQuery::Selects::print (std::ostream& s, std::string pad, std::string driver) const {
 	    /* SELECT attributes */
-	    for (std::vector<AliasedSelect*>::const_iterator it = begin();
-		 it != end(); ++it) {
+	    for (const_iterator it = begin(); it != end(); ++it) {
 		if (it != begin()) s << ", ";
 		s << (*it)->toString(pad, driver);
 	    }
@@ -1024,8 +1023,7 @@ namespace w3c_sw {
 	}
 
 	inline std::ostream& SQLQuery::JoinList::print (std::ostream& s, ConstraintList* captureConstraints, std::string pad, std::string driver) const {
-	    for (std::vector<Join*>::const_iterator it = begin();
-		 it != end(); ++it)
+	    for (const_iterator it = begin(); it != end(); ++it)
 		if (it == begin())
 		    s << std::endl << pad << "       FROM " << (*it)->toString(captureConstraints, pad, driver);
 		else
@@ -1037,8 +1035,7 @@ namespace w3c_sw {
 	}
 
 	inline std::ostream& ConstraintList::print (std::ostream& s, std::string pad, std::string driver) const {
-	    for (ConstraintList::const_iterator it = begin();
-		 it != end(); ++it)
+	    for (const_iterator it = begin(); it != end(); ++it)
 		s << (it == begin() ? " WHERE " : " AND ")
 		  <<(*it)->toString(pad, PREC_High, driver);
 	    return s;
@@ -1051,8 +1048,7 @@ namespace w3c_sw {
 	    /* ORDER BY */
 	    if (begin() != end()) {
 		s << std::endl << pad << " ORDER BY ";
-		for (ConstraintList::const_iterator it = begin();
-		     it != end(); ++it) {
+		for (const_iterator it = begin(); it != end(); ++it) {
 		    if (it != begin())
 			s << ", ";
 		    s << (*it)->toString(pad, PREC_High, driver);
@@ -1383,8 +1379,7 @@ namespace w3c_sw {
 		    PKParticipation pk;
 		    struct FKs : public std::map<const ForeignKey*, FKParticipation> {
 			void addForeignKey(ForeignKey* foreignKey, size_t posn) {
-			    std::map<const ForeignKey*, FKParticipation>::iterator fk
-				= find(foreignKey);
+			    iterator fk = find(foreignKey);
 			    if (fk != end())
 				throw std::string() + "Foreign key already assigned.";
 			    insert(std::pair<const ForeignKey*, FKParticipation>
@@ -1405,12 +1400,12 @@ namespace w3c_sw {
 		std::vector<const FieldOrKey*> ordered;
 		struct Fields : public std::map<Attribute, FieldInfo> {
 		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
-			std::map<Attribute, FieldInfo>::iterator f = find(attr);
+			iterator f = find(attr);
 			f->second.pk.key = primaryKey;
 			f->second.pk.position = posn;
 		    }
 		    void addForeignKey(Attribute attr, ForeignKey* foreignKey, size_t posn) {
-			std::map<Attribute, FieldInfo>::iterator f = find(attr);
+			iterator f = find(attr);
 			f->second.fks.addForeignKey(foreignKey, posn);
 		    }
 		};
@@ -1482,8 +1477,7 @@ namespace w3c_sw {
 	    struct Database : public std::map<RelationName, Relation*> {
 
 		void clear () {
-		    for (/*std::map<RelationName, Relation*>::!!*/iterator it = begin();
-			 it != end(); ++it)
+		    for (iterator it = begin(); it != end(); ++it)
 			delete it->second;
 		    std::map<RelationName, Relation*>::clear();
 		}
@@ -1491,8 +1485,8 @@ namespace w3c_sw {
 		bool operator== (const Database& ref) const {
 		    if (size() != ref.size())
 			return false;
-		    std::map<RelationName, Relation*>::const_iterator left = begin();
-		    std::map<RelationName, Relation*>::const_iterator right = ref.begin();
+		    const_iterator left = begin();
+		    const_iterator right = ref.begin();
 		    for (;
 			 left != end(); ++left, ++right)
 			if (left->first != right->first
@@ -1503,7 +1497,7 @@ namespace w3c_sw {
 
 		std::string str () const {
 		    std::stringstream ss;
-		    for (std::map<RelationName, Relation*>::const_iterator it = begin();
+		    for (const_iterator it = begin();
 			 it != end(); ++it) {
 			std::string s = it->first;
 			const Relation& r = *it->second;
