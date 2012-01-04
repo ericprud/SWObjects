@@ -214,97 +214,11 @@ MyLoadEntry Output(NULL, NULL, NULL, sw::MediaType());
 boost::shared_ptr< sw::Logger::Sink_t > LogSink;
 
 /* Set Debug when parsed. */
-inline void addLogLabel (std::vector<std::string>& logs, std::set<std::string>& visitedLogs, std::string label) {
-    if (label == "*") {
-	for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
-	     it != sw::Logger::Labels.end(); ++it)
-	    if (visitedLogs.find(*it) == visitedLogs.end()) {
-		logs.push_back(*it);
-		visitedLogs.insert(*it);
-	    }
-    } else {
-	sw::Logger::getLabelLevel(label);
-	logs.push_back(label);
-	visitedLogs.insert(label);
-    }
-}
-
-inline void setLogLevels (const std::vector<std::string>& logs, int level) {
-    for (std::vector<std::string>::const_iterator it = logs.begin();
-	 it != logs.end(); ++it) {
-	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(level);
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
-    }
-}
-
 struct debugLevel { };
 void validate (boost::any& v, const std::vector<std::string>& values, debugLevel*, int)
 {
     const std::string& parm = po::validators::get_single_string(values);
-
-    std::set<std::string> visitedLogs;
-    std::vector<std::string> curLogList;
-    size_t start = 0;
-    do {
-	size_t next = parm.find_first_of(",:", start);
-	if (next == std::string::npos) {
-	    if (start == 0) {
-		try {
-		    int l = boost::lexical_cast<int>(parm.substr(start));
-		    addLogLabel(curLogList, visitedLogs, "*");
-		    setLogLevels(curLogList, l);
-		    curLogList.clear();
-		} catch (boost::bad_lexical_cast&) { }
-	    } else {
-		addLogLabel(curLogList, visitedLogs, parm.substr(start));
-		setLogLevels(curLogList, 1);
-		curLogList.clear();
-	    }
-	} else {
-	    addLogLabel(curLogList, visitedLogs, parm.substr(start, next - start));
-	    if (parm[next] == ':') {
-		start = next + 1;
-		next = parm.find_first_of(",:", start);
-		std::string is
-		    = next == std::string::npos
-		    ? parm.substr(start)
-		    : parm.substr(start, next - start);
-		if (next != std::string::npos)
-		    ++next;
-		int l;		
-		try {
-		    l = boost::lexical_cast<int>(is);
-		} catch (boost::bad_lexical_cast& e) {
-		    std::stringstream ss;
-		    ss << "invalid int \"" << is << "\" at offeset " << start << " in \"" << parm << "\".";
-		    throw ss.str();
-		}
-		setLogLevels(curLogList, l);
-		curLogList.clear();
-	    } else
-		++next;
-	}
-	start = next;
-    } while (start != std::string::npos);
-
-    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
-
-    // Add a global scope attribute
-    if (false)
-	core->add_global_attribute(sw::Logger::ATTR_Scope,
-				   boost::log::attributes::named_scope());
-    if (false)
-	core->add_global_attribute(sw::Logger::ATTR_ThreadID,
-				   boost::log::attributes::current_thread_id());
-
-
-    // Add some attributes too
-    if (false)
-	core->add_global_attribute(sw::Logger::ATTR_Timestamp,
-				   boost::log::attributes::utc_clock());
-    if (false)
-	core->add_global_attribute(sw::Logger::ATTR_LineId,
-				   boost::log::attributes::counter< unsigned int >());
+    sw::Logger::parseLevelString(parm);
 }
 
 struct loggingFile { };
@@ -712,7 +626,6 @@ void validate (boost::any&, const std::vector<std::string>& values, sqlService*,
 #endif /* REGEX_LIB != SWOb_DISABLED */
 
 
-
 std::string adjustPath (std::string nameStr) {
     if (nameStr.substr(0, 7) == "file://") {
 	size_t slash = nameStr.find_first_of('/', 7);
@@ -743,14 +656,10 @@ int main(int ac, char* av[])
 {
     int ret = 0; /* no errors */
     try {
-	{ /* Set logs at log level 0 */
+	{ /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
 	    LogSink = sw::Logger::prepare();
-	    sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
-
-	    std::vector<std::string> logs;
-	    std::set<std::string> visitedLogs;
-	    addLogLabel(logs, visitedLogs, "*");
-	    setLogLevels(logs, 0);
+	    sw::Logger::addStream(LogSink, boost::shared_ptr<std::ostream>
+				  (&std::clog, boost::log::empty_deleter()));
 	}
 
 	Output = MyLoadEntry(NULL, TheServer.engine.atomFactory.getURI("-"), NULL, sw::MediaType());
@@ -770,7 +679,7 @@ int main(int ac, char* av[])
 	     po::value< std::vector<std::string> >()->composing(), 
 	     "general, results, uri, query, data, http, sql, tutorial, all")
             ("debug", po::value<debugLevel>(), 
-	     "debugging level")
+	     "debugging level, e.g. \"*:1,SQL,Service:3,Process:-1\"")
             ("logging-file", po::value<loggingFile>(), 
 	     "log file for debug output")
 	    ("DbDebugEnumerateLimit", po::value<size_t>(),

@@ -1,5 +1,18 @@
-/* Logging: Boost Log library.
-
+/** Logging: SWObjects logging using the Boost Log library.
+ * 
+ * Enable logging to e.g. std::clog with:
+ *   boost::shared_ptr<Logger::Sink_t> logSink= Logger::prepare();
+ *   Logger::addStream(logSink, boost::shared_ptr<std::ostream>
+ *		       (&std::clog, boost::log::empty_deleter()));
+ * and set specific levels manually:
+ *   Logger::getLabelLevel("Default")= Logger::severity_level(Logger::engineer);
+ * or with the built-in parser:
+ *   parseLevelString("*:1,IO:3");
+ * 
+ * Boost unit_tests may prepare the logger by invoking the macro
+ *   w3c_sw_PREPARE_TEST_LOGGER("--log");
+ * and passing command like arguments like "--debug *:1,IO:3".
+ * 
  * $Id: Logging.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
@@ -8,6 +21,8 @@
 
 #include "config.h"
 #include "prfxbuf.hpp"
+
+#include <set>
 
 // #include <stdexcept>
 // #include <string>
@@ -254,6 +269,149 @@ namespace w3c_sw {
 		throw std::string("Invalid log label \"") + label +"\". Try one of (" + getLabels() + ").";
 	    return *it->second;
 	}
+
+	/** Logging level control interface functions for main.
+	 * Note parseLevelString("*:1,IO:3") and
+	 * prepare(argc, argv, "--log", &std::clog) below.
+	 */
+
+	/** addLogLabel - add lable to logs and visitedLogs
+	 */
+	inline void addLogLabel (std::vector<std::string>& logs, std::set<std::string>& visitedLogs, std::string label) {
+	    if (label == "*") {
+		for (std::vector<const char*>::const_iterator it = w3c_sw::Logger::Labels.begin();
+		     it != w3c_sw::Logger::Labels.end(); ++it)
+		    if (visitedLogs.find(*it) == visitedLogs.end()) {
+			logs.push_back(*it);
+			visitedLogs.insert(*it);
+		    }
+	    } else {
+		w3c_sw::Logger::getLabelLevel(label);
+		logs.push_back(label);
+		visitedLogs.insert(label);
+	    }
+	}
+
+	/** setLogLevels - for each @logs, set the logging level to @level
+	 */
+	inline void setLogLevels (const std::vector<std::string>& logs, int level) {
+	    for (std::vector<std::string>::const_iterator it = logs.begin();
+		 it != logs.end(); ++it) {
+		w3c_sw::Logger::getLabelLevel(*it) = w3c_sw::Logger::severity_level(level);
+		BOOST_LOG_SEV(w3c_sw::Logger::DefaultLog::get(), w3c_sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
+	    }
+	}
+
+	/** parseLevelString - parse a string like "SQL,Service:3,Process:-1"
+	 * into a set of visitedLogs and set those log levels.
+	 */
+	inline void parseLevelString (const std::string parm) {
+	    std::set<std::string> visitedLogs;
+	    std::vector<std::string> curLogList;
+	    size_t start = 0;
+	    do {
+		size_t next = parm.find_first_of(",:", start);
+		if (next == std::string::npos) {
+		    if (start == 0) {
+			try {
+			    int l = boost::lexical_cast<int>(parm.substr(start));
+			    addLogLabel(curLogList, visitedLogs, "*");
+			    setLogLevels(curLogList, l);
+			    curLogList.clear();
+			} catch (boost::bad_lexical_cast&) { }
+		    } else {
+			addLogLabel(curLogList, visitedLogs, parm.substr(start));
+			setLogLevels(curLogList, 1);
+			curLogList.clear();
+		    }
+		} else {
+		    addLogLabel(curLogList, visitedLogs, parm.substr(start, next - start));
+		    if (parm[next] == ':') {
+			start = next + 1;
+			next = parm.find_first_of(",:", start);
+			std::string is
+			    = next == std::string::npos
+			    ? parm.substr(start)
+			    : parm.substr(start, next - start);
+			if (next != std::string::npos)
+			    ++next;
+			int l;		
+			try {
+			    l = boost::lexical_cast<int>(is);
+			} catch (boost::bad_lexical_cast& e) {
+			    std::stringstream ss;
+			    ss << "invalid int \"" << is << "\" at offeset " << start << " in \"" << parm << "\".";
+			    throw ss.str();
+			}
+			setLogLevels(curLogList, l);
+			curLogList.clear();
+		    } else
+			++next;
+		}
+		start = next;
+	    } while (start != std::string::npos);
+
+	    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+
+	    // Add a global scope attribute
+	    if (false)
+		core->add_global_attribute(w3c_sw::Logger::ATTR_Scope,
+					   boost::log::attributes::named_scope());
+	    if (false)
+		core->add_global_attribute(w3c_sw::Logger::ATTR_ThreadID,
+					   boost::log::attributes::current_thread_id());
+
+	    // Add some attributes too
+	    if (false)
+		core->add_global_attribute(w3c_sw::Logger::ATTR_Timestamp,
+					   boost::log::attributes::utc_clock());
+	    if (false)
+		core->add_global_attribute(w3c_sw::Logger::ATTR_LineId,
+					   boost::log::attributes::counter< unsigned int >());
+	}
+
+	/** prepare - a simple prepare interface for scanning a set of
+	 * main-style argv arguments for a given logging flag.
+	 * 
+	 * @argc - a count of arguments.
+	 * @argv - an array of arguments.
+	 * @flag - the flag to look for.
+	 * @os - where to send the logging output.
+	 */
+	inline bool prepare (int argc, char** argv, const char* flag,
+			     std::ostream* os = &std::clog) {
+	    bool ret = false;
+
+	    boost::shared_ptr< Logger::Sink_t > LogSink;
+	    LogSink = Logger::prepare();
+	    Logger::addStream(LogSink, boost::shared_ptr< std::ostream >
+			      (os, boost::log::empty_deleter()));
+
+	    for (int c = 0; c < argc - 1; ++c)
+		if (!strcmp(argv[c], flag)) {
+		    Logger::parseLevelString(argv[c+1]);
+		    ret = true;
+		}
+
+	    return ret;
+	}
+
+	/** w3c_sw_PREPARE_TEST_LOGGER - set up a logger based on boost
+	 *  unit_test arguments.
+	 * 
+	 * @FLAG - a command line flag, like "--log", to provide logging
+	 * arguments. Note, you must avoid arguments which boost::unit_test
+	 * swallows, like "-d".
+	 */
+#define w3c_sw_PREPARE_TEST_LOGGER(FLAG) \
+struct PrepareBoostTestLogger { \
+    PrepareBoostTestLogger ()   { \
+	w3c_sw::Logger::prepare(boost::unit_test::framework::master_test_suite().argc-1, \
+				boost::unit_test::framework::master_test_suite().argv+1, \
+				FLAG); \
+    } \
+}; \
+BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 
     } /* namespace Logger */
 
