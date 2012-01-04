@@ -43,7 +43,7 @@ struct EqTest {
 };
 
 BOOST_AUTO_TEST_SUITE( op_equals )
-BOOST_AUTO_TEST_CASE( SelExprEq11 ) {
+BOOST_AUTO_TEST_CASE( SelExprEq1_1 ) {
     EqTest t("SELECT 1=1",
 	     " sElEcT 1 = 1 ");
     BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
@@ -72,6 +72,103 @@ BOOST_AUTO_TEST_CASE( SelUnorderedAttrs ) {
     EqTest t("SELECT relvar1.attr1 AS sel1, relvar1.attr2 AS sel2 FROM tbl1 AS relvar1",
 	     "SELECT relvar1.attr2 AS sel2, relvar1.attr1 AS sel1 FROM tbl1 AS relvar1");
     BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( TwoRVs ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2",
+	     "\
+SELECT rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3,\n\
+       rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( LeftOuter ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3\n\
+  FROM tbl1 AS rv1\n\
+       LEFT OUTER JOIN tbl1 AS rv2 ON rv2.attr1=rv1.attr3",
+	     "\
+SELECT rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3,\n\
+       rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1\n\
+       LEFT OUTER JOIN tbl1 AS rv2 ON rv2.attr1=rv1.attr3");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( InnerOuter ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2 ON rv2.attr1=rv1.attr3",
+	     "\
+SELECT rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3,\n\
+       rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1\n\
+       LEFT OUTER JOIN tbl1 AS rv2 ON rv2.attr1=rv1.attr3");
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( LeftOuterUnmapped ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv2.attr2 AS sel2\n\
+  FROM tbl1 AS rv1\n\
+       LEFT OUTER JOIN tbl1 AS rv2 ON rv2.attr1=rv1.attr3",
+	     "\
+SELECT rvB.attr2 AS sel2,\n\
+       rvA.attr1 AS sel1\n\
+  FROM tbl1 AS rvA\n\
+       LEFT OUTER JOIN tbl1 AS rvB ON rvB.attr1=rvA.attr3");
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( InnerWhereMapped ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv2.attr2 AS sel2\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl2 AS rv2 WHERE rv2.attr1=rv1.attr3",
+	     "\
+SELECT rvB.attr2 AS sel2,\n\
+       rvA.attr1 AS sel1\n\
+  FROM tbl1 AS rvA\n\
+       INNER JOIN tbl2 AS rvB WHERE rvB.attr1=rvA.attr3");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( InnerOnMapped ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv2.attr2 AS sel2\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl2 AS rv2 ON rv2.attr1=rv1.attr3",
+	     "\
+SELECT rvB.attr2 AS sel2,\n\
+       rvA.attr1 AS sel1\n\
+  FROM tbl1 AS rvA\n\
+       INNER JOIN tbl2 AS rvB ON rvB.attr1=rvA.attr3");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( LeftOuterMapped ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv2.attr2 AS sel2\n\
+  FROM tbl1 AS rv1\n\
+       LEFT OUTER JOIN tbl2 AS rv2 ON rv2.attr1=rv1.attr3",
+	     "\
+SELECT rvB.attr2 AS sel2,\n\
+       rvA.attr1 AS sel1\n\
+  FROM tbl1 AS rvA\n\
+       LEFT OUTER JOIN tbl2 AS rvB ON rvB.attr1=rvA.attr3");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
 }
 BOOST_AUTO_TEST_CASE( ThreeRVs ) {
     EqTest t("\
@@ -114,6 +211,21 @@ SELECT rv1.attr2 AS sel2,\n\
   FROM tbl1 AS rv1\n\
        INNER JOIN tbl1 AS rv2\n\
        INNER JOIN tbl3 AS rv3");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SubSelSame ) {
+    EqTest t("SELECT op1.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS op1",
+	     "SELECT op1.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS op1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SubSel_1_X ) {
+    EqTest t("SELECT op1.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS op1",
+	     "SELECT opX.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS opX");
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SubSelMapped_1_X ) {
+    EqTest t("SELECT op1.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS op1",
+	     "SELECT opX.sel1 AS sel1 FROM (SELECT rv1.attr1 AS sel1 FROM tbl1 AS rv1) AS opX");
     BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
 }
 
