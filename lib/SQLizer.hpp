@@ -17,6 +17,18 @@
 
 namespace w3c_sw {
 
+    inline std::ostream& operator<< (std::ostream& os, Expression const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.str();
+    }
+
+    inline std::ostream& operator<< (std::ostream& os, FunctionCall const& my) {
+	SPARQLSerializer s;
+	my.express(&s);
+	return os << s.str();
+    }
+
     class SQLizer : public Expressor {
 
 	class SQLSubselectGenerator;
@@ -60,7 +72,8 @@ namespace w3c_sw {
 		if (it == attachments.end())
 		    attachments[lexicalValue] = new sql::AliasAttrConstraint(aattr);
 		else
-		    constrain(aattr, dynamic_cast<sql::AliasAttrConstraint*>(attachments[lexicalValue])->aattr);
+		    constrain(aattr, dynamic_cast<sql::AliasAttrConstraint*>
+			      (attachments[lexicalValue])->getAliasAttr());
 	    }
 	    sql::Expression* getVariableConstraint (std::string lexicalValue) {
 		std::map<std::string, sql::Expression*>::iterator it = attachments.find(lexicalValue);
@@ -71,7 +84,7 @@ namespace w3c_sw {
 	    }
 	    void selectVariable (std::string lexicalValue) {
 		if (attachments.find(lexicalValue) == attachments.end())
-		    attachments[lexicalValue] = new sql::ReallyNullConstraint();
+		    attachments[lexicalValue] = new sql::IsNullConstraint();
 		//std::cerr << "selectVariable " << lexicalValue << " attached to " << attachments[lexicalValue]->toString() << std::endl;
 		query->selects.push_back(new sql::AliasedSelect(attachments[lexicalValue]->clone(), lexicalValue));
 	    }
@@ -1003,7 +1016,7 @@ namespace w3c_sw {
 	    w3c_sw_FAIL("argList");
 	}
 	// !!!
-	virtual void functionCall (const FunctionCall* const, const URI* iri, const ArgList* args) {
+	virtual void functionCall (const FunctionCall* const self, const URI* iri, const ArgList* args) {
 	    w3c_sw_MARK;
 	    // args->express(this);
 	    bool defer = false;
@@ -1027,7 +1040,7 @@ namespace w3c_sw {
 	    if ((sqlHomolog = this->sparql2sqlHomologs.find(iri)) != sparql2sqlHomologs.end())
 		curConstraint = new sql::HomologConstraint(sqlHomolog->second, sqlArgs.begin(), sqlArgs.end());
 	    else if (iri == TTerm::FUNC_bound)
-		curConstraint = new sql::NullConstraint(curConstraint);
+		curConstraint = new sql::NotNullConstraint(curConstraint);
 	    else if ((iri == TTerm::FUNC_str && exprLevel != 0) ||	// casts to strings
 		     iri == TTerm::FUNC_bnode ||			// casts to bnodes
 		     iri == TTerm::FUNC_iri) {				// casts to iris
@@ -1108,16 +1121,20 @@ namespace w3c_sw {
 		ss  << ")";
 		throw(NotImplemented(ss.str()));
 	    }
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    w3c_sw_MARK;
 	    p_FunctionCall->express(this);
 	}
 	/* Expressions */
-	virtual void booleanNegation (const w3c_sw::BooleanNegation* const, const w3c_sw::Expression* p_Expression) {
+	virtual void booleanNegation (const w3c_sw::BooleanNegation* const self, const w3c_sw::Expression* p_Expression) {
 	    w3c_sw_MARK;
 	    p_Expression->express(this);
 	    curConstraint = new sql::NegationConstraint(curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
 	virtual void arithmeticNegation (const w3c_sw::ArithmeticNegation* const, const w3c_sw::Expression* p_Expression) {
 	    w3c_sw_MARK;
@@ -1127,7 +1144,7 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    p_Expression->express(this);
 	}
-	virtual void booleanConjunction (const w3c_sw::BooleanConjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	virtual void booleanConjunction (const w3c_sw::BooleanConjunction* const self, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
 	    sql::ConjunctionConstraint* conj = new sql::ConjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
@@ -1136,8 +1153,10 @@ namespace w3c_sw {
 		conj->addConstraint(curConstraint);
 	    }
 	    curConstraint = conj;
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	virtual void booleanDisjunction (const BooleanDisjunction* const self, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
 	    sql::DisjunctionConstraint* disj = new sql::DisjunctionConstraint();
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
@@ -1146,55 +1165,81 @@ namespace w3c_sw {
 		disj->addConstraint(curConstraint);
 	    }
 	    curConstraint = disj;
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	void _arithOp (std::string sqlOperator, const ProductionVector<const w3c_sw::Expression*>* p_Expressions, sql::e_PREC prec) {
-	    sql::ArithOperation* c = new sql::ArithOperation(sqlOperator, prec);
+	sql::ConstraintList _list (const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
+	    sql::ConstraintList c;
 	    for (std::vector<const w3c_sw::Expression*>::const_iterator it = p_Expressions->begin();
 		 it != p_Expressions->end(); ++it) {
 		(*it)->express(this);
-		c->push_back(curConstraint);
+		c.push_back(curConstraint);
 	    }
-	    curConstraint = c;
+	    return c;
 	}
 	virtual void arithmeticSum (const w3c_sw::ArithmeticSum* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    _arithOp("+", p_Expressions, sql::PREC_Plus);
+	    sql::ConstraintList c = _list(p_Expressions);
+	    curConstraint = new sql::ArithmeticSum(c.begin(), c.end());
 	}
 	virtual void arithmeticProduct (const w3c_sw::ArithmeticProduct* const, const ProductionVector<const w3c_sw::Expression*>* p_Expressions) {
 	    w3c_sw_MARK;
-	    _arithOp("*", p_Expressions, sql::PREC_Times);
+	    sql::ConstraintList c = _list(p_Expressions);
+	    curConstraint = new sql::ArithmeticProduct(c.begin(), c.end());
 	}
-	void _boolConstraint (const w3c_sw::Expression* p_left, std::string sqlOperator, const w3c_sw::Expression* p_right, sql::e_PREC prec) {
-	    sql::ArithOperation* c = new sql::ArithOperation(sqlOperator, prec);
+	virtual void booleanEQ (const w3c_sw::BooleanEQ* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	    w3c_sw_MARK;
 	    p_left->express(this);
-	    c->push_back(curConstraint);
+	    sql::Expression* l = curConstraint;
 	    p_right->express(this);
-	    c->push_back(curConstraint);
-	    curConstraint = c;
+	    curConstraint = new sql::BooleanEQ(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanEQ (const w3c_sw::BooleanEQ* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanNE (const w3c_sw::BooleanNE* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "=", p_right, sql::PREC_EQ);
+	    p_left->express(this);
+	    sql::Expression* l = curConstraint;
+	    p_right->express(this);
+	    curConstraint = new sql::BooleanNE(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanNE (const w3c_sw::BooleanNE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanLT (const w3c_sw::BooleanLT* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "!=", p_right, sql::PREC_NE);
+	    p_left->express(this);
+	    sql::Expression* l = curConstraint;
+	    p_right->express(this);
+	    curConstraint = new sql::BooleanLT(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanLT (const w3c_sw::BooleanLT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanGT (const w3c_sw::BooleanGT* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "<", p_right, sql::PREC_LT);
+	    p_left->express(this);
+	    sql::Expression* l = curConstraint;
+	    p_right->express(this);
+	    curConstraint = new sql::BooleanGT(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanGT (const w3c_sw::BooleanGT* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanLE (const w3c_sw::BooleanLE* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, ">", p_right, sql::PREC_GT);
+	    p_left->express(this);
+	    sql::Expression* l = curConstraint;
+	    p_right->express(this);
+	    curConstraint = new sql::BooleanLE(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void booleanLE (const w3c_sw::BooleanLE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
+	virtual void booleanGE (const w3c_sw::BooleanGE* const self, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
 	    w3c_sw_MARK;
-	    _boolConstraint(p_left, "<=", p_right, sql::PREC_LE);
-	}
-	virtual void booleanGE (const w3c_sw::BooleanGE* const, const w3c_sw::Expression* p_left, const w3c_sw::Expression* p_right) {
-	    w3c_sw_MARK;
-	    _boolConstraint(p_left, ">=", p_right, sql::PREC_GE);
+	    p_left->express(this);
+	    sql::Expression* l = curConstraint;
+	    p_right->express(this);
+	    curConstraint = new sql::BooleanGE(l, curConstraint);
+	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
 	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {
 	    w3c_sw_MARK;

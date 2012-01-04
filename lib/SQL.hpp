@@ -1,3 +1,21 @@
+/**
+ * SQL expression structure with equivalence method "mapsTo" which allows for
+ * relvar (table alias) mappings, e.g.
+ *    SELECT * FROM tbl1 AS rv1, tbl2 AS rv2 WHERE (rv1.attr1 = rv2.attr2)
+ *   is equivalent to
+ *    SELECT * FROM tbl1 AS rvA, tbl2 AS rvB WHERE (rvA.attr1 = rvB.attr2)
+ *   with (rv1->rvA, rv2->rvB)
+ *
+ * Expression have a method mapsTo(const Expression& right). In order to compare
+ * final Expression subtypes, there mapsTo calls right->finalMapsTo(*this) which
+ * invokes either a default virtual method which returns false, or a specific
+ * overload which compares final types, eg. BooleanEQ::finalMapsTo(BooleanEQ*).
+ * (This uses the vtable for what would be an enumerated union in C).
+ *
+ * Copyright 2011 Eric Prud'hommeaux for W3C.
+ * Released into the public domain under MIT and Apache open source licenses.
+ */
+
 #ifndef INCLUDE_SQL_HPP
  #define INCLUDE_SQL_HPP
 
@@ -30,12 +48,155 @@ namespace w3c_sw {
 	    AttrAlias (std::string s) : std::string(s) {  }
 	};
 
-	struct AliasMappingSet {
-	    struct Mapping : public std::map<RelVar, RelVar> {
-	    };
-	    std::list<Mapping> list;
+	struct OnezFine {
+	    bool operator() ()  { return true; }
 	};
 
+	template <typename T>
+	struct dereferencer {
+	    const std::vector<T*>& ptrs;
+	    dereferencer(const std::vector<T*>& ptrs) : ptrs(ptrs) {  }
+	    T& operator[] (size_t s) { return *ptrs[s]; }
+	    size_t size () const { return ptrs.size(); }
+	};
+
+
+	/**
+	 * test if "SELECT rv1.attr1 FROM t1 AS rv1" == "SELECT rv2.attr1 FROM t1 AS rv2"
+	 */
+	namespace AliasMapping {
+	    struct Row : public std::map<RelVar, RelVar> {
+		std::string str () const {
+		    std::stringstream s;
+		    s << "  " << size() << " bindings: ( ";
+		    for (const_iterator binding = begin(); binding != end(); ++binding)
+			s << binding->first << "->" << binding->second << " ";
+		    s << ")";
+		    return s.str();
+		}
+	    };
+	    struct List : std::list<Row> {
+		List (size_t s) : std::list<Row>(s) {  }
+		List (int rows, int cols, ...) {
+		    va_list args;
+		    va_start(args, cols);
+		    for (int r = 0; r < rows; ++r) {
+			Row m;
+			for (int c = 0; c < cols; ++c) {
+			    RelVar l(va_arg(args, const char*));
+			    RelVar r(va_arg(args, const char*));
+			    m.insert(std::make_pair(l, r));
+			}
+			push_back(m);
+		    }
+		    va_end(args);
+		}
+		std::string str () const {
+		    std::stringstream s;
+		    s << size() << " rows: {\n";
+		    for (const_iterator row = begin(); row != end(); ++row)
+			s << row->str() << "\n";
+			s << "}\n";
+			return s.str();
+		}
+		List () : std::list<Row>(1) {  }
+		List (AliasMapping::Row& row) : std::list<Row>(0) {
+		    std::list<Row>::insert(end(), AliasMapping::Row(row));
+		}
+		void operator+= (const List& r) {
+		    for (const_iterator it = r.begin(); it != r.end(); ++it)
+			push_back(*it);
+		}
+		virtual bool matches (const RelVar& key, const RelVar& value) {
+		    bool ret = false;
+		    for (iterator row = begin();
+			 row != end();) {
+			Row::iterator m = row->find(key);
+			if (m != row->end()) {
+			    if (m->second == value) {
+				ret = true;
+				++row;
+			    } else {
+				row = erase(row);
+			    }
+			} else {
+			    row->insert(make_pair(key, value));
+			    ret = true;
+			    ++row;
+			}
+		    }
+		    return ret;
+		}
+		bool fail () {
+		    clear();
+		    return false;
+		}
+
+		/** Exploring the ways one conjunction can map onto another
+		 * requires testing all of the permutations of those
+		 * combinations.  permute iterates over calls to the internal
+		 * permute1 method.
+		 * 
+		 * Note that this algorithm enables recursive traversal of lists
+		 * of solutions. Other algorithms would require a (costly) trie
+		 * of working result sets for any tree of permutations.
+		 */
+
+		/** permute - recursive function to explore the ways two
+		 * ExprSets can be combined.
+		 * @Mappable - can bool mapsTo(const Mappable& right, Editor);
+		 */
+		template <typename Mappable>
+		bool permute (std::set<Mappable*> l, std::set<Mappable*> r) {
+		    // Knock off a couple simple ones:
+		    if (l.size() != r.size())
+			return false;
+		    if (l.size() == 0)
+			return true;
+
+		    bool ret = false;
+		    const Mappable* left = *l.begin();
+		    l.erase(left);
+
+		    List newMap;
+		    newMap.erase(newMap.begin());
+		    for (typename std::set<Mappable*>::const_iterator rit = r.begin();
+			 rit != r.end(); ++rit) {
+			std::set<Mappable*> rcopy(r);
+			const Mappable* right = *rit; rcopy.erase(right);
+
+			List m2(*this);
+			bool matched = left->mapsTo(*right, m2);
+			// w3c_sw_LINEN << (matched ? "matched" : "no match") << "\n";
+			ret |= matched;
+			if (matched) {
+			    if (l.size() > 0)
+				m2.permute(l, rcopy);
+			    newMap += m2;
+			}
+		    }
+
+		    *this = newMap;
+		    return ret;
+		}
+
+		/** orderedMap - test each element in a container.
+		 * 
+		 * @Mappable - can bool mapsTo(const Mappable& right, Editor);
+		 */
+		template<typename LEFT, typename RIGHT>
+		inline bool orderedMap(LEFT lit, LEFT end, RIGHT rit) {
+		    for (; lit != end; ++lit, ++rit)
+			if (!((*lit)->mapsTo(**rit, *this)))
+			    return false;
+		    return true;
+		}
+	    };
+	} // namespace AliasMapping
+
+	/** e_PREC - operator precedence levels
+	 * Useful to keep unnecessary ()s out of expression serializations.
+	 */
 	typedef enum {PREC_Low, PREC_Or = PREC_Low, 
 		      PREC_And, 
 		      PREC_EQ, PREC_NE, PREC_LT, PREC_GT, PREC_LE, PREC_GE, 
@@ -43,6 +204,9 @@ namespace w3c_sw {
 		      PREC_Times, PREC_Divide, 
 		      PREC_Not, PREC_TTerm, PREC_Neg, PREC_High = PREC_Neg} e_PREC;
 
+	/** AliasAttr - attribute in a relvar. In SQL, this looks like
+	 *   SELECT tableAlias1.attribute1
+	 */
 	class AliasAttr {
 	public:
 	    RelVar alias;
@@ -50,6 +214,12 @@ namespace w3c_sw {
 	    //	    AliasAttr () {  }
 	    AliasAttr (RelVar alias, Attribute attr) : alias(alias), attr(attr) {  }
 	    virtual ~AliasAttr () {  }
+	    virtual bool mapsTo (const AliasAttr& ref, AliasMapping::List& map) const {
+		if (attr == ref.attr)
+		    return map.matches(alias, ref.alias);
+		else
+		    return map.fail();
+	    }
 	    virtual bool operator== (const AliasAttr& ref) const {
 		return alias == ref.alias && attr == ref.attr;
 	    }
@@ -61,14 +231,14 @@ namespace w3c_sw {
 	class DisjunctionConstraint;
 	class ConjunctionConstraint;
 	class AliasAttrConstraint;
-	class ReallyNullConstraint;
+	class IsNullConstraint;
 	class IntConstraint;
 	class FloatConstraint;
 	class DoubleConstraint;
 	class LiteralConstraint;
 	class BoolConstraint;
 	//class BooleanConjunction;
-	class NullConstraint;
+	class NotNullConstraint;
 	class NegationConstraint;
 	class ArithOperation;
 	class BooleanEQ;
@@ -93,19 +263,28 @@ namespace w3c_sw {
 	    virtual ~Expression () {  }
 	    virtual Expression* clone() const = 0;
 	    std::string str () const { return toString(); }
+	    bool logNotMappable (const Expression& r) const {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " doesn't map to " << r.toString();
+		return false;
+	    }
+	    bool logNotEqual (const Expression& r) const {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " != " << r.toString();
+		return false;
+	    }
 	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
-	    virtual void getEquivs (struct EquivSet&) const {  }
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
 	    virtual bool finalEq (const ConjunctionConstraint&) const { return false; }
-	    virtual bool finalEq (const ReallyNullConstraint&) const { return false; }
+	    virtual bool finalEq (const IsNullConstraint&) const { return false; }
 	    virtual bool finalEq (const IntConstraint&) const { return false; }
 	    virtual bool finalEq (const FloatConstraint&) const { return false; }
 	    virtual bool finalEq (const DoubleConstraint&) const { return false; }
 	    virtual bool finalEq (const LiteralConstraint&) const { return false; }
 	    virtual bool finalEq (const BoolConstraint&) const { return false; }
 	    //virtual bool finalEq (const BooleanConjunction&) const { return false; }
-	    virtual bool finalEq (const NullConstraint&) const { return false; }
+	    virtual bool finalEq (const NotNullConstraint&) const { return false; }
 	    virtual bool finalEq (const NegationConstraint&) const { return false; }
 	    virtual bool finalEq (const AliasAttrConstraint&) const { return false; }
 	    virtual bool finalEq (const ArithOperation&) const { return false; }
@@ -122,8 +301,39 @@ namespace w3c_sw {
 	    virtual bool finalEq (const ArithmeticNegation&) const { return false; }
 	    virtual bool finalEq (const HomologConstraint&) const { return false; }
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
+	    virtual bool mapsTo(const Expression&, AliasMapping::List&) const = 0;
 	    virtual bool operator==(const Expression&) const = 0;
+
+	    virtual bool finalMapsTo (const DisjunctionConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ConjunctionConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const IsNullConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const IntConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const FloatConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const DoubleConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const LiteralConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BoolConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    //virtual bool finalMapsTo (const BooleanConjunction&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const NotNullConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const NegationConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const AliasAttrConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ArithOperation&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanEQ&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanNE&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanLT&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanGT&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanLE&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanGE&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const BooleanNegation&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ArithmeticProduct&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ArithmeticInverse&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ArithmeticSum&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const ArithmeticNegation&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const HomologConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const RegexConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	};
+
+	/** ConstraintList - ordered list of Expressions.
+	 */
 	struct ConstraintList : public std::vector<const Expression*> {
 	    ConstraintList () {  }
 	    ConstraintList (const_iterator start,
@@ -149,7 +359,7 @@ namespace w3c_sw {
 	    }
 	    virtual Expression* clone() const = 0;
 	    void addConstraint (Expression* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		for (ConstraintList::const_iterator it = constraints.begin();
@@ -160,27 +370,24 @@ namespace w3c_sw {
 		if (getPrecedence() < parentPrec) s << ")";
 		return s.str();
 	    }
-	    bool finalEq (const JunctionConstraint& ref) const {
-		if (constraints.size() != ref.constraints.size())
-		    return false;
 
-		// for ( ; mit != constraints.end(); ++mit, ++rit)
-		//     if ( !(**mit == **rit) )
-		// 	return false;
-
-		ConstraintList copy(ref.constraints.begin(), ref.constraints.end());
-		ConstraintList::const_iterator mit;
-		ConstraintList::iterator rit;
-		for (mit = constraints.begin(), rit = copy.begin(); mit != constraints.end(); ) {
-		    while (!(**mit == **rit) && rit != copy.end())
-			++rit;
-		    if (rit == copy.end())
-			return false; // didn't find it in our copy.
-		    copy.erase(rit);
-		    rit = copy.begin();
-		    ++mit;
-		}
-		return true;
+	    /** test the permutations of this (the right-hand argument to the
+	     * comparison function) and l (the left-hand argument).
+	     */
+	    virtual bool baseMapsTo (const JunctionConstraint& r, AliasMapping::List& map) const {
+		return constraints.size() == r.constraints.size()
+		    && map.permute(std::set<const Expression*>(  constraints.begin(),   constraints.end()),
+				   std::set<const Expression*>(r.constraints.begin(), r.constraints.end()))
+		    ? true : logNotMappable(r);
+	    }
+	    virtual bool baseEq (const JunctionConstraint& r) const {
+		if (constraints.size() != r.constraints.size())
+		    return logNotEqual(r);
+		dereferencer<const Expression> vld(  constraints);
+		dereferencer<const Expression> vrd(r.constraints);
+		OnezFine of;
+		return permute::equals(vld, vrd, of)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string getJunctionString() const = 0;
 	};
@@ -201,13 +408,20 @@ namespace w3c_sw {
 	    }
 	    virtual std::string getJunctionString () const { return " AND "; }
 	    virtual e_PREC getPrecedence () const { return PREC_And; }
+	    virtual bool finalMapsTo (const ConjunctionConstraint& l, AliasMapping::List& map) const {
+		return l.JunctionConstraint::baseMapsTo(*this, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const ConjunctionConstraint& l) const {
-		return JunctionConstraint::finalEq(l);
+		return l.JunctionConstraint::baseEq(*this);
 	    }
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
-	    virtual void getEquivs(struct EquivSet&) const;
 	};
 	class DisjunctionConstraint : public JunctionConstraint {
 	public:
@@ -226,94 +440,24 @@ namespace w3c_sw {
 	    }
 	    virtual std::string getJunctionString () const { return " OR "; }
 	    virtual e_PREC getPrecedence () const { return PREC_Or; }
+	    virtual bool finalMapsTo (const DisjunctionConstraint& l, AliasMapping::List& map) const {
+		return l.JunctionConstraint::baseMapsTo(*this, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const DisjunctionConstraint& l) const {
-		return JunctionConstraint::finalEq(l);
+		return l.JunctionConstraint::baseEq(*this);
 	    }
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	};
-	class BooleanJunction : public Expression { // @@ delme?
-	public:
-	    ConstraintList m_Expressions;
-	    BooleanJunction (ConstraintList* p_Expressions) : m_Expressions(*p_Expressions) {  }
-	    virtual Expression* clone() const = 0;
-	    virtual const char* getInfixNotation() const = 0;
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (getPrecedence() < parentPrec) s << "(";
-		for (ConstraintList::const_iterator it = m_Expressions.begin();
-		     it != m_Expressions.end(); it++) {
-		    if (it != m_Expressions.begin()) s << getInfixNotation();
-		    s << (*it)->toString(pad, getPrecedence(), driver);
-		}
-		if (getPrecedence() < parentPrec) s << ")";
-		return s.str();
-	    }
-	    bool operator== (const BooleanJunction& ref) const {
-		if (m_Expressions.size() != ref.m_Expressions.size())
-		    return false;
-		ConstraintList::const_iterator mit = m_Expressions.begin();
-		ConstraintList::const_iterator rit = ref.m_Expressions.begin();
-		for ( ; mit != m_Expressions.end(); ++mit, ++rit)
-		    if ( !(**mit == **rit) )
-			return false;
-		return true;
-	    }
-	};
-// 	class BooleanConjunction : public BooleanJunction {
-// 	public:
-// 	    BooleanConjunction (const Expression* l, const Expression* r) : BooleanJunction(l, r) {  }
-// 	    virtual e_PREC getPrecedence () const { return PREC_And; }
-// 	    virtual bool finalEq (const BooleanConjunction& l) const {
-// 		return l.BooleanJunction::operator==(*this);
-// 	    }	    
-// 	    virtual bool operator== (const Expression& r) const {
-// 		return r.finalEq(*this);
-// 	    }
-// 	    virtual const char* getInfixNotation () const { return "&&"; }
-// 	};
-	class ArithOperation : public Expression {
-	    ConstraintList constraints;
-	    std::string sqlOperator;
-	    e_PREC prec;
 
-	public:
-	    ArithOperation (std::string sqlOperator, e_PREC prec) : 
-		Expression(), sqlOperator(sqlOperator), prec(prec) {  }
-	    virtual ~ArithOperation () {
-		for (ConstraintList::iterator it = constraints.begin();
-		     it != constraints.end(); ++it)
-		    delete *it;
-	    }
-	    virtual Expression* clone () const {
-		ArithOperation* ret = new ArithOperation(sqlOperator, prec);
-		for (ConstraintList::const_iterator it = constraints.begin();
-		     it != constraints.end(); ++it)
-		    ret->push_back((*it)->clone());
-		return ret;
-	    }
-	    void push_back (Expression* constraint) { constraints.push_back(constraint); }
-	    virtual e_PREC getPrecedence () const { return PREC_Neg; }
-	    virtual bool finalEq (const ArithOperation& l) const {
-		return l.constraints == constraints && l.sqlOperator == sqlOperator;
-	    }	    
-	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
-	    }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (prec < parentPrec) s << "(";
-		for (ConstraintList::const_iterator it = constraints.begin();
-		     it != constraints.end(); ++it) {
-		    if (it != constraints.begin())
-			s << " " <<  sqlOperator << " ";
-		    s << (*it)->toString(pad, prec, driver);
-		}
-		if (prec < parentPrec) s << ")";
-		return s.str();
-	    }
-	};
+	/** BooleanComparator - base for e.g. BooleanEQ, BooleanLT, etc.
+	 */
 	class BooleanComparator : public Expression {
 	protected:
 	    const Expression* left;
@@ -325,7 +469,7 @@ namespace w3c_sw {
 	    virtual Expression* clone() const = 0;
 	    virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 	    virtual const char* getComparisonNotation() const = 0;
-	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		if (getPrecedence() < parentPrec) s << "(";
 		s << left->toString(pad, getPrecedence(), driver);
@@ -343,15 +487,32 @@ namespace w3c_sw {
 		return new BooleanEQ(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_EQ; }
+	    /** Test l.left.mapsTo(this->left) && l.right.mapsTo(right), or,
+		l.left.mapsTo(this->right) && l.right.mapsTo(left)
+	     */
+	    virtual bool finalMapsTo (const BooleanEQ& l, AliasMapping::List& map) const {
+		AliasMapping::List& newMap(map);
+		bool ret = false;
+		ret |= (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+		ret |= (l.left->mapsTo(*right, newMap)
+			&& l.right->mapsTo(*left, newMap));
+		map += newMap;
+		return ret;
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanEQ& l) const {
 		return (*l.left == *left  && *l.right == *right) // unordered
 		    || (*l.left == *right && *l.right == *left);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return "="; };
-	    void getEquivs(struct EquivSet& equivs) const;
 	};
 	class BooleanNE : public BooleanComparator {
 	public:
@@ -361,12 +522,30 @@ namespace w3c_sw {
 		return new BooleanNE(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_NE; }
+	    /** Test l.left.mapsTo(this->left) && l.right.mapsTo(right), or,
+		l.left.mapsTo(this->right) && l.right.mapsTo(left)
+	     */
+	    virtual bool finalMapsTo (const BooleanNE& l, AliasMapping::List& map) const {
+		AliasMapping::List& newMap(map);
+		bool ret = false;
+		ret |= (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+		ret |= (l.left->mapsTo(*right, newMap)
+			&& l.right->mapsTo(*left, newMap));
+		map += newMap;
+		return ret;
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanNE& l) const {
 		return (*l.left == *left  && *l.right == *right) // unordered
 		    || (*l.left == *right && *l.right == *left);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return "!="; };
 	};
@@ -378,11 +557,20 @@ namespace w3c_sw {
 		return new BooleanLT(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
+	    virtual bool finalMapsTo (const BooleanLT& l, AliasMapping::List& map) const {
+		return (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanLT& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return "<"; };
 	};
@@ -394,11 +582,20 @@ namespace w3c_sw {
 		return new BooleanGT(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool finalMapsTo (const BooleanGT& l, AliasMapping::List& map) const {
+		return (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanGT& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return ">"; };
 	};
@@ -410,11 +607,20 @@ namespace w3c_sw {
 		return new BooleanLE(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_LT; }
+	    virtual bool finalMapsTo (const BooleanLE& l, AliasMapping::List& map) const {
+		return (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanLE& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return "<="; };
 	};
@@ -426,11 +632,20 @@ namespace w3c_sw {
 		return new BooleanGE(left, right);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool finalMapsTo (const BooleanGE& l, AliasMapping::List& map) const {
+		return (l.left->mapsTo(*left, map)
+			&& l.right->mapsTo(*right, map));
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const BooleanGE& l) const {
 		return *l.left == *left && *l.right == *right;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getComparisonNotation () const { return ">="; };
 	};
@@ -443,6 +658,9 @@ namespace w3c_sw {
 		delete arg;
 	    }
 	    virtual Expression* clone() const = 0;
+	    bool baseMapsTo (const UnaryExpression& r, AliasMapping::List& map) const {
+		return arg->mapsTo(*r.arg, map);
+	    }
 	    bool baseEq (const UnaryExpression& r) const {
 		return *arg == *r.arg;
 	    }
@@ -471,6 +689,16 @@ namespace w3c_sw {
 		    delete *it;
 	    }
 	    virtual Expression* clone() const = 0;
+	    bool baseMapsTo (const NaryExpression& r, AliasMapping::List& map) const {
+		if (args.size() != r.args.size())
+		    return map.fail();
+		ConstraintList::const_iterator lit =   args.begin();
+		ConstraintList::const_iterator rit = r.args.begin();
+		for (; lit != args.end(); ++lit, ++rit)
+		    if (!(*lit)->mapsTo(**rit, map))
+			return map.fail();
+		return true;
+	    }
 	    bool baseEq (const NaryExpression& r) const {
 		return ptrequal(args.begin(), args.end(), r.args.begin());
 	    }
@@ -488,6 +716,28 @@ namespace w3c_sw {
 		return s.str();
 	    }
 	};
+	class UnorderedExpression : public NaryExpression {
+	public:
+	    UnorderedExpression (ConstraintList::const_iterator begin,
+				 ConstraintList::const_iterator end)
+		: NaryExpression (begin, end)
+	    {  }
+	    UnorderedExpression (ConstraintList* args)
+		: NaryExpression (args)
+	    {  }
+	    bool baseMapsTo (const UnorderedExpression& r, AliasMapping::List& map) const {
+		return map.permute(std::set<const Expression*>(  args.begin(),   args.end()),
+				   std::set<const Expression*>(r.args.begin(), r.args.end()));
+	    }
+
+	    bool baseEq (const UnorderedExpression& r) const {
+		dereferencer<const Expression> vld(  args);
+		dereferencer<const Expression> vrd(r.args);
+		OnezFine of;
+		return permute::equals(vld, vrd, of);
+		// return permute::equals(args.begin(), args.end(), r.args.begin());
+	    }
+	};
 	class BooleanNegation : public UnaryExpression {
 	public:
 	    BooleanNegation (const Expression* arg) : UnaryExpression(arg) {  }
@@ -495,23 +745,27 @@ namespace w3c_sw {
 		return new BooleanNegation(arg->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const BooleanNegation& l, AliasMapping::List& map) const {
+		return l.UnaryExpression::baseMapsTo(*this, map);
+	    }	    
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const BooleanNegation& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getPrefixOperator () const { return "!"; }
-	    virtual std::string toString (std::string, e_PREC, std::string driver = "") const {
-		return std::string("CONCAT")
-		    + UnaryExpression::toString("", PREC_Low, driver);
-	    }
 	};
-	class ArithmeticProduct : public NaryExpression {
+	class ArithmeticProduct : public UnorderedExpression {
 	public:
 	    ArithmeticProduct (ConstraintList::const_iterator start,
 			       ConstraintList::const_iterator end)
-		: NaryExpression(start, end)
+		: UnorderedExpression(start, end)
 	    {  }
 	    virtual Expression* clone () const {
 		ConstraintList v;
@@ -522,11 +776,19 @@ namespace w3c_sw {
 		return new ArithmeticProduct(v.begin(), v.end());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const ArithmeticProduct& l, AliasMapping::List& map) const {
+		return l.UnorderedExpression::baseMapsTo(*this, map);
+	    }	    
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const ArithmeticProduct& l) const {
-		return l.NaryExpression::baseEq(*this);
+		return l.UnorderedExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getInfixOperator () const { return " * "; }
 	};
@@ -537,19 +799,27 @@ namespace w3c_sw {
 		return new ArithmeticInverse(arg->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const ArithmeticInverse& l, AliasMapping::List& map) const {
+		return l.UnaryExpression::baseMapsTo(*this, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const ArithmeticInverse& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getPrefixOperator () const { return "1/"; }
 	};
-	class ArithmeticSum : public NaryExpression {
+	class ArithmeticSum : public UnorderedExpression {
 	public:
 	    ArithmeticSum (ConstraintList::const_iterator start,
 			   ConstraintList::const_iterator end)
-		: NaryExpression(start, end)
+		: UnorderedExpression(start, end)
 	    {  }
 	    virtual Expression* clone () const {
 		ConstraintList v;
@@ -560,11 +830,19 @@ namespace w3c_sw {
 		return new ArithmeticSum(v.begin(), v.end());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const ArithmeticSum& l, AliasMapping::List& map) const {
+		return l.UnorderedExpression::baseMapsTo(*this, map);
+	    }	    
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const ArithmeticSum& l) const {
-		return l.NaryExpression::baseEq(*this);
+		return l.UnorderedExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getInfixOperator () const { return " + "; }
 	};
@@ -575,11 +853,19 @@ namespace w3c_sw {
 		return new ArithmeticNegation(arg->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const ArithmeticNegation& l, AliasMapping::List& map) const {
+		return l.UnaryExpression::baseMapsTo(*this, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const ArithmeticNegation& l) const {
 		return l.UnaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getPrefixOperator () const { return "-"; }
 	};
@@ -591,11 +877,19 @@ namespace w3c_sw {
 		return new LiteralConstraint(value);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const LiteralConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const LiteralConstraint& l) const {
 		return l.value == value;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
@@ -612,11 +906,19 @@ namespace w3c_sw {
 		return new IntConstraint(value);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const IntConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const IntConstraint& l) const {
 		return l.value == value;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
@@ -633,11 +935,19 @@ namespace w3c_sw {
 		return new FloatConstraint(value);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const FloatConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const FloatConstraint& l) const {
 		return l.value == value;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
@@ -653,11 +963,19 @@ namespace w3c_sw {
 		return new DoubleConstraint(value);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const DoubleConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const DoubleConstraint& l) const {
 		return l.value == value;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
@@ -673,47 +991,71 @@ namespace w3c_sw {
 		return new BoolConstraint(value);
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const BoolConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const BoolConstraint& l) const {
 		return l.value == value;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		return value ? "true" : "false";
 	    }
 	};
-	class ReallyNullConstraint : public Expression {
+	class IsNullConstraint : public Expression {
 	public:
-	    ReallyNullConstraint () : Expression() {  }
+	    IsNullConstraint () : Expression() {  }
 	    virtual Expression* clone () const {
-		return new ReallyNullConstraint();
+		return new IsNullConstraint();
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
-	    virtual bool finalEq (const ReallyNullConstraint&) const {
+	    virtual bool finalMapsTo (const IsNullConstraint& l, AliasMapping::List& map) const {
+		return true;
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
+	    virtual bool finalEq (const IsNullConstraint&) const {
 		return true;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		return "NULL";
 	    }
 	};
-	class NullConstraint : public Expression {
+	class NotNullConstraint : public Expression {
 	    const Expression* tterm;
 	public:
-	    NullConstraint (const Expression* tterm) : Expression(), tterm(tterm) {  }
-	    ~NullConstraint () { delete tterm; }
+	    NotNullConstraint (const Expression* tterm) : Expression(), tterm(tterm) {  }
+	    ~NotNullConstraint () { delete tterm; }
 	    virtual Expression* clone () const {
-		return new NullConstraint(tterm->clone());
+		return new NotNullConstraint(tterm->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
-	    virtual bool finalEq (const NullConstraint&) const {
+	    virtual bool finalMapsTo (const NotNullConstraint& l, AliasMapping::List& map) const {
+		return true;
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
+	    virtual bool finalEq (const NotNullConstraint&) const {
 		return true;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string) const {
 		std::stringstream s;
@@ -731,31 +1073,51 @@ namespace w3c_sw {
 		return new NegationConstraint(negated->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_Neg; }
+	    virtual bool finalMapsTo (const NegationConstraint& l, AliasMapping::List& map) const {
+		return l.negated->mapsTo(*negated, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
 	    virtual bool finalEq (const NegationConstraint& l) const {
 		return *l.negated == *negated;
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string pad, e_PREC parentPrec, std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		std::stringstream s;
 		s << "!(" << negated->toString(pad, parentPrec, driver) << ")";
 		return s.str();
 	    }
 	};
+
+	/** AliasAttrConstraint - use of an AliasAttr as an Expression.
+	 */
 	class AliasAttrConstraint : public Expression {
-	public: // !!!
+	protected:
 	    AliasAttr aattr;
 	public:
 	    AliasAttrConstraint (AliasAttr aattr) : Expression(), aattr(aattr) {  }
+	    AliasAttr getAliasAttr () { return aattr; }
 	    virtual Expression* clone () const {
 		return new AliasAttrConstraint(aattr);
+	    }
+	    virtual bool finalMapsTo (const AliasAttrConstraint& l, AliasMapping::List& map) const {
+		return l.aattr.mapsTo(aattr, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
 	    }
 	    virtual bool finalEq (const AliasAttrConstraint& l) const {
 		return l.aattr == aattr;
 	    }
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string, e_PREC, std::string driver = "") const {
 		std::stringstream s;
@@ -766,6 +1128,7 @@ namespace w3c_sw {
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_TTerm; }
 	};
+
 	/** HomologConstraint - Nary functions which have the same parameter
 	 * semantics in XPath and SQL.
 	 */
@@ -786,16 +1149,24 @@ namespace w3c_sw {
 		return new HomologConstraint(sqlOp, v.begin(), v.end());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const HomologConstraint& l, AliasMapping::List& map) const {
+		return l.NaryExpression::baseMapsTo(*this, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const HomologConstraint& l) const {
 		return l.NaryExpression::baseEq(*this);
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
-	    virtual std::string toString (std::string pad, e_PREC prec, std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
 		return sqlOp + "("
-		    + NaryExpression::toString("", PREC_Low, driver) + ")";
+		    + NaryExpression::toString("", parentPrec, driver) + ")";
 	    }
 	};
 
@@ -808,14 +1179,22 @@ namespace w3c_sw {
 		return new RegexConstraint(text->clone(), pattern->clone());
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const RegexConstraint& l, AliasMapping::List& map) const {
+		return l.text->mapsTo(*text, map) && l.pattern->mapsTo(*pattern, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const RegexConstraint& l) const {
 		return l.text == text && l.pattern == pattern; // @@ does this compare by ref? by val?
 	    }	    
 	    virtual bool operator== (const Expression& r) const {
-		return r.finalEq(*this);
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string pad, e_PREC prec, std::string driver = "") const {
-		return std::string("REGEX(") + text->toString(pad, prec, driver) + ", " + pattern->toString() + ")";
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
+		return std::string("REGEX(") + text->toString(pad, parentPrec, driver) + ", " + pattern->toString() + ")";
 	    }
 	};
 
@@ -834,10 +1213,36 @@ namespace w3c_sw {
 	    }
 	    std::string debug_getAlias () { return alias; }
 	    virtual std::string getRelationText (std::string pad = "") const = 0;
-	    bool baseEq (const Join& ref) const {
-		return alias == ref.alias
-		    && optional == ref.optional
-		    && ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin());
+
+	    // dupes from Expression
+	    bool logNotMappable (const Join& r) const {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " doesn't map to " << r.toString();
+		return false;
+	    }
+	    bool logNotEqual (const Join& r) const {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " != " << r.toString();
+		return false;
+	    }
+
+	    virtual bool baseMapsTo(const Join& r, AliasMapping::List& map) const {
+		if (!map.matches(alias, r.alias))
+		    return false;
+		if (optional != r.optional) {
+		    logNotMappable(r);
+		    return map.fail();
+		}
+		return map.permute(std::set<const Expression*>(  constraints.begin(),   constraints.end()),
+				   std::set<const Expression*>(r.constraints.begin(), r.constraints.end()));
+	    }
+	    virtual bool finalMapsTo (const TableJoin&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const SubqueryJoin&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool mapsTo(const Join&, AliasMapping::List&) const = 0;
+	    bool baseEq (const Join& r) const {
+		return alias == r.alias
+		    && optional == r.optional
+		    && ptrequal(constraints.begin(), constraints.end(), r.constraints.begin());
 	    }
 	    virtual bool finalEq (const TableJoin&) const { return false; }
 	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
@@ -883,11 +1288,20 @@ namespace w3c_sw {
 	    virtual std::string getRelationText (std::string) const { return relation; }
 	public:
 	    TableJoin (RelationName relation, RelVar alias, bool optional) : Join(alias, optional), relation(relation) {  }
+	    virtual bool finalMapsTo (const TableJoin& l, AliasMapping::List& map) const {
+		return l.relation == relation ? true : map.fail();
+	    }	    
+	    virtual bool mapsTo (const Join& r, AliasMapping::List& map) const {
+		return Join::baseMapsTo(r, map) && r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
 	    virtual bool finalEq (const TableJoin& l) const {
-		return l.relation == relation;
+		return l.relation == relation
+		    ? true : l.logNotEqual(*this);
 	    }	    
 	    virtual bool operator== (const Join& r) const {
-		return Join::baseEq(r) && r.finalEq(*this);
+		return Join::baseEq(r) && r.finalEq(*this)
+		    ? true : logNotEqual(r);
 	    }
 	    virtual ~TableJoin () {  }
 	};
@@ -902,8 +1316,22 @@ namespace w3c_sw {
 	    virtual ~AliasedSelect () {
 		delete exp;
 	    }
-	    virtual bool operator== (const AliasedSelect& ref) const { // virt in case of subclassing
-		return *exp == *ref.exp && alias == ref.alias;
+	    virtual bool mapsTo (const AliasedSelect& r, AliasMapping::List& map) const {
+		if (exp->mapsTo(*r.exp, map)
+		    && (alias == r.alias))
+		    return true;
+		// dupe from Expression and Join
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " doesn't map to " << r.toString();
+		return map.fail();
+	    }
+	    virtual bool operator== (const AliasedSelect& r) const { // virt in case of subclassing
+		if (*exp == *r.exp && alias == r.alias)
+		    return true;
+		// dupe from Expression and Join
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << toString() << " != " << r.toString();
+		return false;
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
 	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
@@ -937,6 +1365,15 @@ namespace w3c_sw {
 		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
 	    };
 
+	    struct MappedEquivalence {
+		const SQLQuery& q;
+		MappedEquivalence (const SQLQuery& q) : q(q) {  }
+		bool operator== (const SQLQuery& r) const {
+		    AliasMapping::List m;
+		    return q.mapsTo(r, m);
+		}
+	    };
+
 	    Selects selects;
 	    bool distinct;
 	    int limit, offset;
@@ -967,16 +1404,22 @@ namespace w3c_sw {
 		    delete *iOrderBy;
 	    }
 
-	    bool finalEq(const SQLQuery& ref) const;
+	    bool finalMapsTo(const SQLQuery& r, AliasMapping::List& map) const;
+	    virtual bool finalMapsTo (const SQLUnion& r, AliasMapping::List& map) const { return false; }
+	    virtual bool finalMapsTo (const SQLOptional& r, AliasMapping::List& map) const { return false; }
+	    virtual bool mapsTo (const SQLQuery& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map);
+	    }
+	    bool finalEq(const SQLQuery& r) const;
 	    virtual bool finalEq (const SQLUnion&) const { return false; }
 	    virtual bool finalEq (const SQLOptional&) const { return false; }
-	    // virtual bool operator==(const Join& ref) const = 0; //!!! for SQLQueryBase
-	    virtual bool operator== (const SQLQuery& ref) const {
-		return ref.finalEq(*this);
+	    // virtual bool operator==(const Join& r) const = 0; //!!! for SQLQueryBase
+	    virtual bool operator== (const SQLQuery& r) const {
+		return r.finalEq(*this);
 	    }
 
 	    std::string str () const { // easy to call from debugger.
-		return toString("");
+		return toString();
 	    }
 	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
 		std::stringstream s;
@@ -1060,100 +1503,123 @@ namespace w3c_sw {
 	    return orderBy.print(os);
 	}
 
-	/**
-	 * !! document me
-	 */
-	struct EquivSet {
-	    std::map<std::string, std::set<std::string> > equivs;
-	    EquivSet (const ConstraintList constraints) {
-		for (ConstraintList::const_iterator it = constraints.begin();
-		     it != constraints.end(); ++it) {
-		    (*it)->getEquivs(*this);
-		}
+	inline bool SQLQuery::finalMapsTo (const SQLQuery& r, AliasMapping::List& map) const {
+	    // w3c_sw_LINEN << "map: " << map.str() << "\n";
+	    const char* f = "SQL Query non-isomorphism in ";
+	    if (!(distinct == r.distinct)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "distinct: " << distinct << "!=" << r.distinct << "\n";
+		map.fail();
+		return false;
 	    }
-	    void _insert (std::string k1, std::string k2) {
-		equivs[k1].insert(k2);
-		equivs[k2].insert(k1);
+	    if (!(limit == r.limit)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "limit: " << limit << "!=" << r.limit << "\n";
+		map.fail();
+		return false;
 	    }
-	    struct AliasedSelectSorter {
-		bool operator() (const AliasedSelect*l, const AliasedSelect*r) {
-		    return l->alias.compare(r->alias) < 0;
-		}
-	    };
-	    bool sameValues (const std::vector<AliasedSelect*> lvec, const std::vector<AliasedSelect*> rvec) {
-		AliasedSelectSorter sorter;
-		std::vector<AliasedSelect*> lsort(lvec.begin(), lvec.end());
-		std::vector<AliasedSelect*> rsort(rvec.begin(), rvec.end());
-		std::sort(lsort.begin(), lsort.end(), sorter);
-		std::sort(rsort.begin(), rsort.end(), sorter);
-
-		std::vector<AliasedSelect*>::const_iterator l = lsort.begin();
-		std::vector<AliasedSelect*>::const_iterator r = rsort.begin();
-		while (l != lsort.end() && r != rsort.end()) {
-		    if (!(**l == **r) && ((*l)->alias != (*r)->alias
-					  || equivs[(*l)->exp->toString()].find((*r)->exp->toString()) == equivs[(*l)->exp->toString()].end()))
-			return false;
-		    ++l;
-		    ++r;
-		}
-		return true;
+	    if (!(offset == r.offset)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "offset: " << offset << "!=" << r.offset << "\n";
+		map.fail();
+		return false;
 	    }
-	};
-
-	inline void ConjunctionConstraint::getEquivs (struct EquivSet& equivs) const {
-	    for (ConstraintList::const_iterator it = constraints.begin();
-		 it != constraints.end(); ++it)
-		(*it)->getEquivs(equivs);
+	    // if (!ptrequal(selects.begin(), selects.end(), r.selects.begin())) {
+	    if (!map.permute(std::set<const AliasedSelect*>(  selects.begin(),   selects.end()),
+			     std::set<const AliasedSelect*>(r.selects.begin(), r.selects.end()))) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "selects:\n" << selects << "\n does not map to \n" << r.selects << "\n";
+		return false;
+	    }
+	    if (!map.orderedMap(joins.begin(), joins.end(), r.joins.begin())) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "joins:\n" << joins << "\n does not map to \n" << r.joins << "\n";
+		return false;
+	    }
+	    if (!map.permute(std::set<const Expression*>(  constraints.begin(),   constraints.end()),
+			     std::set<const Expression*>(r.constraints.begin(), r.constraints.end()))) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "constraints:\n" << constraints << "\n does not map to \n" << r.constraints << "\n";
+		return false;
+	    }
+	    if (!map.orderedMap(orderBy.begin(), orderBy.end(), r.orderBy.begin())) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "orderBy:\n" << orderBy << "\n does not map to \n" << r.orderBy << "\n";
+		return false;
+	    }
+	    return true;
 	}
-	inline void BooleanEQ::getEquivs (struct EquivSet& equivs) const {
-	    if (dynamic_cast<const AliasAttrConstraint*>(left) != NULL
-		&& dynamic_cast<const AliasAttrConstraint*>(right) != NULL)
-		equivs._insert(left->toString(), right->toString());
-	}
-
-	inline bool SQLQuery::finalEq (const SQLQuery& ref) const { // not needed in SQLQueryBase
+	inline bool SQLQuery::finalEq (const SQLQuery& r) const { // not needed in SQLQueryBase
 	    const char* f = "SQL Query inequivalence in ";
-	    if (!(distinct == ref.distinct)) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "distinct: " << distinct << "!=" << ref.distinct << "\n";
+	    if (!(distinct == r.distinct)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "distinct: " << distinct << "!=" << r.distinct << "\n";
 		return false;
 	    }
-	    if (!(limit == ref.limit)) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "limit: " << limit << "!=" << ref.limit << "\n";
+	    if (!(limit == r.limit)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "limit: " << limit << "!=" << r.limit << "\n";
 		return false;
 	    }
-	    if (!(offset == ref.offset)) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "offset: " << offset << "!=" << ref.offset << "\n";
+	    if (!(offset == r.offset)) {
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    << f << "offset: " << offset << "!=" << r.offset << "\n";
 		return false;
 	    }
-	    //  !ptrequal(selects.begin(), selects.end(), ref.selects.begin())
-	    if (!EquivSet(constraints).sameValues(selects, ref.selects)) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "selects:\n" << selects << "\n != \n" << ref.selects << "\n";
-		return false;
+	    // if (!ptrequal(selects.begin(), selects.end(), r.selects.begin())) {
+	    // if (!EquivSet(selects).sameValues(selects, r.selects)) {
+	    {
+		dereferencer<AliasedSelect> vld(selects);
+		dereferencer<AliasedSelect> vrd(r.selects);
+		OnezFine of;
+		if (!permute::equals(vld, vrd, of)) {
+		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			<< f << "selects:\n" << selects << "\n != \n" << r.selects << "\n";
+		    return false;
+		}
 	    }
-	    if (!ptrequal(joins.begin(), joins.end(), ref.joins.begin())) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "joins:\n" << joins << "\n != \n" << ref.joins << "\n";
-		return false;
+	    // if (!ptrequal(joins.begin(), joins.end(), r.joins.begin())) {
+	    {
+		dereferencer<Join> vld(joins);
+		dereferencer<Join> vrd(r.joins);
+		OnezFine of;
+		if (!permute::equals(vld, vrd, of)) {
+		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			<< f << "joins:\n" << joins << "\n != \n" << r.joins << "\n";
+		    return false;
+		}
 	    }
-	    if (!ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "constraints:\n" << constraints << "\n != \n" << ref.constraints << "\n";
-		return false;
+	    // if (!ptrequal(constraints.begin(), constraints.end(), r.constraints.begin())) {
+	    {
+		dereferencer<const Expression> vld(constraints);
+		dereferencer<const Expression> vrd(r.constraints);
+		OnezFine of;
+		if (!permute::equals(vld, vrd, of)) {
+		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			<< f << "constraints:\n" << constraints << "\n != \n" << r.constraints << "\n";
+		    return false;
+		}
 	    }
-	    if (!ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin())) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << f << "orderBy:\n" << orderBy << "\n != \n" << ref.orderBy << "\n";
-		return false;
+	    // if (!ptrequal(orderBy.begin(), orderBy.end(), r.orderBy.begin())) {
+	    {
+		dereferencer<const Expression> vld(orderBy);
+		dereferencer<const Expression> vrd(r.orderBy);
+		OnezFine of;
+		if (!permute::equals(vld, vrd, of)) {
+		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			<< f << "orderBy:\n" << orderBy << "\n != \n" << r.orderBy << "\n";
+		    return false;
+		}
 	    }
 	    return true;
 	}
 
 	inline std::ostream& operator<< (std::ostream& os, SQLQuery const& my) {
 	    return os << my.str();
+	}
+
+	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::MappedEquivalence& m) {
+	    return os << m.q;
 	}
 
 	class SQLDisjoint;
@@ -1169,6 +1635,12 @@ namespace w3c_sw {
 		for (std::vector<SQLQuery*>::iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it)
 		    delete *it;
+	    }
+	    virtual bool finalMapsTo (const SQLUnion& l, AliasMapping::List& map) const {
+		return map.orderedMap(l.disjoints.begin(), l.disjoints.end(), disjoints.begin());
+	    }	    
+	    virtual bool mapsTo (const SQLQuery& r, AliasMapping::List& map) const {
+		return SQLQuery::mapsTo(r, map) && r.finalMapsTo(*this, map);
 	    }
 	    virtual bool finalEq (const SQLUnion& l) const {
 		return ptrequal(l.disjoints.begin(), l.disjoints.end(), disjoints.begin());
@@ -1200,6 +1672,12 @@ namespace w3c_sw {
 	    }
 	public:
 	    SubqueryJoin (SQLQuery* subquery, RelVar alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
+	    virtual bool finalMapsTo (const SubqueryJoin& l, AliasMapping::List& map) const {
+		return l.subquery->mapsTo(*subquery, map) ? true : map.fail();
+	    }	    
+	    virtual bool mapsTo (const Join& r, AliasMapping::List& map) const {
+		return Join::baseMapsTo(r, map) && r.finalMapsTo(*this, map);
+	    }
 	    virtual bool finalEq (const SubqueryJoin& l) const {
 		return *l.subquery == *subquery;
 	    }	    
@@ -1237,7 +1715,7 @@ namespace w3c_sw {
 		int i;
 		FieldOrKey () : i(7) {  }
 		virtual ~FieldOrKey () {  }
-		virtual bool operator==(const FieldOrKey& ref) const = 0;
+		virtual bool operator==(const FieldOrKey& r) const = 0;
 		virtual std::string str() const = 0;
 	    };
 
@@ -1487,8 +1965,7 @@ namespace w3c_sw {
 			return false;
 		    const_iterator left = begin();
 		    const_iterator right = ref.begin();
-		    for (;
-			 left != end(); ++left, ++right)
+		    for (; left != end(); ++left, ++right)
 			if (left->first != right->first
 			    || !(*left->second == *right->second))
 			    return false;

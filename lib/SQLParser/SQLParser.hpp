@@ -91,6 +91,9 @@ namespace w3c_sw {
 		return new IsNullProxy();
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool mapsTo (const Expression&, AliasMapping::List&) const {
+		throw "ProgramFlowException";
+	    }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
 	    }	    
@@ -176,7 +179,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 180 "lib/SQLParser/SQLParser.hpp"
+#line 183 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -190,7 +193,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 194 "lib/SQLParser/SQLParser.hpp"
+#line 197 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -200,7 +203,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 204 "lib/SQLParser/SQLParser.hpp"
+#line 207 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -248,7 +251,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 252 "lib/SQLParser/SQLParser.hpp"
+#line 255 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -260,7 +263,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 181 "lib/SQLParser/SQLParser.ypp"
+#line 184 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -285,7 +288,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 289 "lib/SQLParser/SQLParser.hpp"
+#line 292 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -539,7 +542,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 543 "lib/SQLParser/SQLParser.hpp"
+#line 546 "lib/SQLParser/SQLParser.hpp"
 
 
 

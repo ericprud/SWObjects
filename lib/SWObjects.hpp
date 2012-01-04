@@ -319,6 +319,202 @@ inline bool ptrequal(LEFT lit, LEFT end, RIGHT rit) {
     return true;
 }
 
+namespace permute {
+
+    const int UnsetValue = -1; // Must be -1 for { ++level; if (level == 0) } to work.
+
+    /** permute::equals - perform permutation equivalence test.
+     * 
+     * @indexes - a []-addressable "array" which will hold the indexes of the
+     *            order of elements in @r required to matche @l.
+     * @l, @r - []-addressable "arrays" of items testable with ==.
+     * @f - a functor to call when a permutation of l matches r.
+     *      @f returns true to force an early return from walking permutations.
+     * 
+     * Algorithm taken from <http://www.cut-the-knot.org/do_you_know/AllPerm.shtml>.
+     */
+    template <typename Index, typename EquatableContainer, typename Functor>
+    bool equals(Index& indexes, EquatableContainer& l, EquatableContainer& r,
+		Functor& f, int digit = 0, int level = -1) {
+	if (level == -1)
+	    for (int i = 0; i < (int)l.size(); ++i)
+		indexes[i] = UnsetValue;
+	++level;
+	indexes[digit] = level - 1;
+	if (level == 0 || l[digit] == r[level - 1]) { // false truncates this branch of the permutation tree.
+	    if (level == (int)l.size()) {
+		if (f())
+		    return true; // functor says we're done.
+	    } else
+		for (int i = 0; i < (int)l.size(); ++i)
+		    if (indexes[i] == UnsetValue)
+			if (equals(indexes, l, r, f, i, level))
+			    return true;
+	}
+	--level;
+	indexes[digit] = UnsetValue;
+	return false;
+    }
+
+    /** permute::equals - perform permutation equivalence test.
+     * 
+     * @l, @r - []-addressable "arrays" of items testable with ==.
+     * @f - a functor to call when a permutation of l matches r.
+     *      @f returns true to force an early return from walking permutations.
+     */
+    template <typename EquatableContainer, typename Functor>
+    bool equals(EquatableContainer& l,
+    		EquatableContainer& r, Functor& f) {
+	int* indexes = new int[l.size()];
+    	bool ret = equals(indexes, l, r, f, 0, -1);
+	delete[] indexes;
+	return ret;
+    }
+
+    namespace test {
+	struct PermutationList : public std::set<std::vector<int> > {
+	    PermutationList () {  }
+	    PermutationList (int rows, int cols, ...) {
+		va_list args;
+		va_start(args, cols);
+		for (int r = 0; r < rows; ++r) {
+		    std::vector<int> v(cols);
+		    for (int c = 0; c < cols; ++c)
+			v[c] = va_arg(args, int);
+		    insert(v);
+		}
+		va_end(args);
+	    }
+	    std::ostream& print(std::ostream& os) const {
+		os << "{";
+		for (std::set<std::vector<int> >::const_iterator s = begin();
+		     s != end(); ++s) {
+		    if (s != begin())
+			os << "\n ";
+		    os << "(";
+		    for (std::vector<int>::const_iterator v = s->begin();
+			 v != s->end(); ++v) {
+			if (v != s->begin())
+			    os << ", ";
+			os << *v;
+		    }
+		    os << ")";
+		}
+		os << "}";
+		return os;
+	    }
+	};
+	inline std::ostream& operator<< (std::ostream& os, const PermutationList f) {
+	    return f.print(os);
+	}
+
+	struct ByVector : PermutationList {
+	    std::vector<int>& indexes;
+	    // PermutationList found;
+	    ByVector (std::vector<int>& indexes) : indexes(indexes) {  }
+	    bool operator() ()  {
+		std::vector<int> f(indexes.size());
+		for (size_t i = 0; i < indexes.size(); ++i)
+		    f[i] = indexes[i];
+		insert(f);
+		return false;
+	    }
+	};
+
+	struct ByArray : PermutationList {
+	    int* indexes;
+	    int size;
+	    ByArray (int indexes[], int size) : indexes(indexes), size(size) {  }
+	    bool operator() ()  {
+		std::vector<int> f(size);
+		for (int i = 0; i < size; ++i)
+		    f[i] = indexes[i];
+		insert(f);
+		return true;
+	    }
+	};
+
+	struct EQ {
+	    char i;
+	    EQ (char i) : i(i) {  }
+	    //    void operator= (const EQ& r) { i = r.i; }
+	    bool operator== (const EQ& r) const { return i == r.i; }
+	    bool operator!= (const EQ& r) const { return i != r.i; }
+	    //    bool operator< (const EQ& r) const { return this < &r; }
+	    bool operator< (const EQ& r) const { return i < r.i; }
+	    std::ostream& print (std::ostream& os) const { return os << i; }
+	};
+	inline std::ostream& operator<< (std::ostream& os, const EQ& eq) {
+	    return eq.print(os);
+	}
+
+	struct dereferencer {
+	    const std::vector<const EQ*>& ptrs;
+	    dereferencer(const std::vector<const EQ*>& ptrs) : ptrs(ptrs) {  }
+	    const EQ& operator[] (size_t s) { return *ptrs[s]; }
+	    size_t size () const { return ptrs.size(); }
+	};
+
+	inline int All () {
+	    char il[] = {'a', 'b', 'c', 'a', 'e', 'f', 'g', 'h'};
+	    char ir[] = {'a', 'c', 'b', 'a', 'e', 'f', 'h', 'g'};
+	    std::vector<EQ> vl(il, il+8);
+	    std::vector<EQ> vr(ir, ir+8);
+
+	    PermutationList oneRow(1, 8,
+				   0,2,1,3,4,5,7,6);
+	    PermutationList twoRows(2, 8,
+				    0,2,1,3,4,5,7,6,
+				    3,2,1,0,4,5,7,6);
+
+	    {
+		std::vector<int> indexes(8);
+		ByVector bv(indexes);
+		equals(indexes, vl, vr, bv);
+		assert(twoRows == bv);
+	    }
+
+	    {
+		int idx[8];
+		ByArray ba(idx, 8);
+		equals(idx, vl, vr, ba);
+		assert(oneRow == ba);
+	    }
+
+	    {
+		int* idx = new int[8];
+		ByArray ba(idx, 8);
+		equals(idx, vl, vr, ba);
+		assert(oneRow == ba);
+		delete[] idx;
+	    }
+
+	    {
+		std::vector<const EQ*> vlp(8);
+		std::vector<const EQ*> vrp(8);
+		for (int i = 0; i < 8; ++i)
+		    vlp[i] = new EQ(il[i]);
+		for (int i = 0; i < 8; ++i)
+		    vrp[i] = new EQ(ir[i]);
+
+		int idx[8];
+		ByArray ba(idx, 8);
+		dereferencer vld(vlp);
+		dereferencer vrd(vrp);
+		equals(idx, vld, vrd, ba);
+		assert(oneRow == ba);
+
+		for (int i = 0; i < 8; ++i)
+		    delete vlp[i];
+		for (int i = 0; i < 8; ++i)
+		    delete vrp[i];
+	    }
+
+	    return 4; // I see three tests above.
+	}
+    } // namespace test
+} // namespace permute
+
 /* Vector implementing Base. */
 template <typename T> struct VectorOps {
   template<typename U> 

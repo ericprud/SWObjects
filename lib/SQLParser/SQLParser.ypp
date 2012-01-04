@@ -93,6 +93,9 @@ namespace w3c_sw {
 		return new IsNullProxy();
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_GT; }
+	    virtual bool mapsTo (const Expression&, AliasMapping::List&) const {
+		throw "ProgramFlowException";
+	    }
 	    virtual bool finalEq (const BooleanGE&) const {
 		throw "ProgramFlowException";
 	    }	    
@@ -761,10 +764,10 @@ RelationalExpression:
 	if ($2) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>($2) != NULL) {
 		delete $2;
-		$$ = new sql::NegationConstraint(new sql::NullConstraint(dynamic_cast<const sql::Expression*>($1))); // new sql::ReallyNullConstraint();
+		$$ = new sql::NegationConstraint(new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>($1))); // new sql::IsNullConstraint();
 	    } else if (dynamic_cast<sql::IsNullProxy*>($2) != NULL) {
 		delete $2;
-		$$ = new sql::NullConstraint(dynamic_cast<const sql::Expression*>($1));
+		$$ = new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>($1));
 	    } else {
 		$2->setLeftParm($1);
 		$$ = $2; // !!!
@@ -904,7 +907,7 @@ PrimaryExpression:
   | BooleanLiteral
   | FQAttribute
   | IT_NULL	{
-	$$ = new sql::ReallyNullConstraint();
+	$$ = new sql::IsNullConstraint();
     }
 ;
 
