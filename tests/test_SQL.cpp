@@ -18,41 +18,10 @@
  */
 #ifndef MANUAL_TEST
   #include <boost/test/unit_test.hpp>
+  w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,SQL,IO:3"
 #endif
 
 using namespace w3c_sw;
-
-#if 0
-template<typename LEFT, typename RIGHT>
-inline bool DEBUGptrequal(LEFT lit, LEFT end, RIGHT rit) {
-    LINE;
-    for (; lit != end; ++lit, ++rit) {
-	LINE;
-	sql::AliasedSelect* l = *lit;
-	sql::AliasedSelect* r = *rit;
-	LINE << l->str() << std::endl;
-	LINE << r->str() << std::endl;
-	if (!(**lit == **rit)) {
-	    LINE;
-	    return false;
-	}
-    }
-    LINE;
-    return true;
-}
-
-bool w3c_sw::sql::SQLQuery::finalEq (const SQLQuery& ref) const {
-    // The many ifs make it easy to follow in a debugger.
-    if (distinct != ref.distinct) return false;
-    if (limit != ref.limit) return false;
-    if (offset != ref.offset) return false;
-    if (!ptrequal(selects.begin(), selects.end(), ref.selects.begin())) return false;
-    if (!ptrequal(joins.begin(), joins.end(), ref.joins.begin())) return false;
-    if (!ptrequal(constraints.begin(), constraints.end(), ref.constraints.begin())) return false;
-    if (!ptrequal(orderBy.begin(), orderBy.end(), ref.orderBy.begin())) return false;
-    return true;
-}
-#endif
 
 struct EqTest {
     sqlContext context;
@@ -79,6 +48,75 @@ BOOST_AUTO_TEST_CASE( SelExprEq11 ) {
 	     " sElEcT 1 = 1 ");
     BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
 }
+BOOST_AUTO_TEST_CASE( SelExprEql1_2_3 ) {
+    EqTest t("SELECT 1+2=3",
+	     "SELECT 1+2=3");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprEql3_1_2_AS_x ) {
+    EqTest t("SELECT 1+2=3 AS x",
+	     "SELECT 3=1+2 AS x");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprEql3_2_1_AS_x ) {
+    EqTest t("SELECT 1+2=3 AS x",
+	     "SELECT 3=2+1 AS x");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelExprEql3_2_1 ) {
+    EqTest t("SELECT 1+2=3",  // implies AS `1+2=3`
+	     "SELECT 3=1+2"); // implies AS `3=1+2`
+    BOOST_CHECK_MESSAGE( !(*t.q1 == *t.q2), *t.q1 << " == " << *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( SelUnorderedAttrs ) {
+    EqTest t("SELECT relvar1.attr1 AS sel1, relvar1.attr2 AS sel2 FROM tbl1 AS relvar1",
+	     "SELECT relvar1.attr2 AS sel2, relvar1.attr1 AS sel1 FROM tbl1 AS relvar1");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( ThreeRVs ) {
+    EqTest t("\
+SELECT rv1.attr1 AS sel1,\n\
+       rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3 + rv3.attr4 AS sel3\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2\n\
+       INNER JOIN tbl3 AS rv3",
+	     "\
+SELECT rv1.attr2 AS sel2,\n\
+       rv1.attr1 + rv1.attr2 + rv2.attr3 + rv3.attr4 AS sel3,\n\
+       rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2\n\
+       INNER JOIN tbl3 AS rv3");
+    BOOST_CHECK_EQUAL( *t.q1, *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( OneMappedRV ) {
+    EqTest t("\
+SELECT rvA.attr1 AS sel1\n\
+  FROM tbl1 AS rvA",
+	     "\
+SELECT rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
+}
+BOOST_AUTO_TEST_CASE( ThreeMappedRVs ) {
+    EqTest t("\
+SELECT rvA.attr1 AS sel1,\n\
+       rvA.attr2 AS sel2,\n\
+       rvA.attr1 + rvA.attr2 + rvB.attr3 + rvC.attr4 AS sel3\n\
+  FROM tbl1 AS rvA\n\
+       INNER JOIN tbl1 AS rvB\n\
+       INNER JOIN tbl3 AS rvC",
+	     "\
+SELECT rv1.attr2 AS sel2,\n\
+       rv1.attr2 + rv2.attr3 + rv1.attr1 + rv3.attr4 AS sel3,\n\
+       rv1.attr1 AS sel1\n\
+  FROM tbl1 AS rv1\n\
+       INNER JOIN tbl1 AS rv2\n\
+       INNER JOIN tbl3 AS rv3");
+    BOOST_CHECK_EQUAL( sql::SQLQuery::MappedEquivalence(*t.q1), *t.q2 );
+}
+
 BOOST_AUTO_TEST_CASE( SelExprEq11X ) {
     EqTest t("SELECT 1=1",
 	     "SELECT 1=2");
@@ -365,5 +403,54 @@ BOOST_AUTO_TEST_CASE( bsbm_ddl ) {
     BOOST_CHECK_EQUAL(ddl1Driver.tables, ddl2Driver.tables);
     ddl2Driver.tables.clear();
     ddl1Driver.tables.clear();
+}
+
+// #include "SWObjects.hpp"
+#include "ResultSet.hpp"
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "QueryMapper.hpp" // @@ include defn for KeyMap for SQLizer
+#include "SQLizer.hpp"
+
+AtomFactory F;
+char predicateDelims[]={'#',' ',' '};
+char nodeDelims[]={'/','.',' '};
+const char* pkAttribute = "ID";
+KeyMap keyMap;
+const char* drv = "mysql";
+
+BOOST_AUTO_TEST_CASE( sqlizer_1 ) {
+    SPARQLfedDriver sparqlParser("", &F);
+    const Operation* query = sparqlParser.parse("\
+PREFIX people: <http://example.com/swat4ls_demo/people#>\n\
+PREFIX addresses: <http://example.com/swat4ls_demo/addresses#>\n\
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>\n\
+\n\
+SELECT ?person ?city ?cityuri ?city_lower WHERE {\n\
+    ?person people:fname \"Bob\" ;\n\
+            people:addr ?address .\n\
+    ?address addresses:city ?city .\n\
+    BIND(IRI(concat(\"http://dbpedia.org/resource/\", ?city)) as ?cityuri)\n\
+    BIND(fn:lower-case(?city) as ?city_lower)\n\
+}");
+    SQLizer sqlizer(&F, "http://example.com/swat4ls_demo/", predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
+    query->express(&sqlizer);
+
+    sqlContext context;
+
+    SQLDriver tested(context);
+    tested.parse(sqlizer.getSQLstring());
+
+    SQLDriver expected(context);
+    expected.parse("\
+SELECT \n\
+    person.ID AS person, \n\
+    address.city AS city, \n\
+    CONCAT(\"http://dbpedia.org/resource/\", address.city) AS cityuri, \n\
+    LCASE(address.city) AS city_lower\n\
+  FROM people AS person\n\
+       INNER JOIN addresses AS address \n\
+         ON address.ID=person.addr\n\
+ WHERE person.fname=\"Bob\"");
+    //    BOOST_CHECK_EQUAL(sql::SQLQuery::MappedEquivalence(*expected.root), *tested.root);
 }
 

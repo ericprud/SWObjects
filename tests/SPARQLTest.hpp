@@ -39,6 +39,7 @@
  * (or define BOOST_*_DYN_LINK manually).
  */
 #include <boost/test/unit_test.hpp>
+w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
 /* included/unit_test.hpp produces an object that doesn't require linking to
  * boost_unit_test_framework. It's prettier if you disable 4273 in MSVC.

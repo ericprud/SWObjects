@@ -19,6 +19,7 @@
 
 #ifndef MANUAL_TEST
   #include <boost/test/unit_test.hpp>
+  w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Rewrite:3"
 #endif
 
 using namespace w3c_sw;
@@ -894,3 +895,40 @@ BOOST_AUTO_TEST_SUITE_END()
 	std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
 */
 
+#if PARSE_ASDF
+/** parseSQL and xform read from asdf.sql and asdf.rq respectively and
+ * serialize the compile tree.
+ */
+BOOST_AUTO_TEST_CASE( parseSQL ) {
+    sqlContext context;
+    SQLDriver sqlParser(context);
+    try {
+	IStreamContext sis("asdf.sql", IStreamContext::FILE);
+	sql::SQLQuery* s = sqlParser.parse(sis);
+	w3c_sw_LINEN << *s << std::endl;
+    } catch (NotImplemented& e) {
+	std::cerr << e.what() << "\n";
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );
+    } catch (std::string& s) {
+	BOOST_ERROR ( s );
+    } catch (std::exception& s) {
+	BOOST_ERROR ( s.what() );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( xform ) {
+	IStreamContext sis("asdf.rq", IStreamContext::FILE);
+	Operation* sparql = sparqlParser.parse(sis);
+	char predicateDelims[]={'#',' ',' '};
+	char nodeDelims[]={'/','.',' '};
+	SQLizer izer(&f, "http://stem.example/path/", predicateDelims, nodeDelims, "id", KeyMap(), "");
+	sparql->express(&izer);
+	w3c_sw_LINEN << izer.getSQLstring() << std::endl;
+	IStreamContext generated(izer.getSQLstring(), IStreamContext::STRING);
+	sqlContext context;
+	SQLDriver sqlParser(context);
+	sql::SQLQuery* s = sqlParser.parse(generated);
+	w3c_sw_LINEN << *s << std::endl;
+	// SPARQLfedDriver sparqlParser("", &f);
+}
+#endif /* PARSE_ASDF */

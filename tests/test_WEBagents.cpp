@@ -26,6 +26,7 @@
  */
 #define BOOST_TEST_MODULE WEBagents
 #include <boost/test/unit_test.hpp>
+w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:3"
 //#include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
