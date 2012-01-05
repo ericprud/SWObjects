@@ -75,21 +75,33 @@ IT_TABLE		[Tt][Aa][Bb][Ll][Ee]
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_COMMA		","
+IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
+IT_INTO		[Ii][Nn][Tt][Oo]
+IT_VALUES		[Vv][Aa][Ll][Uu][Ee][Ss]
+IT_DEFAULT		[Dd][Ee][Ff][Aa][Uu][Ll][Tt]
+GT_EQUAL		"="
 IT_FOREIGN		[Ff][Oo][Rr][Ee][Ii][Gg][Nn]
 IT_KEY		[Kk][Ee][Yy]
 IT_REFERENCES		[Rr][Ee][Ff][Ee][Rr][Ee][Nn][Cc][Ee][Ss]
 IT_PRIMARY		[Pp][Rr][Ii][Mm][Aa][Rr][Yy]
 IT_INT		[Ii][Nn][Tt]
+IT_INTEGER		[Ii][Nn][Tt][Ee][Gg][Ee][Rr]
 IT_DOUBLE		[Dd][Oo][Uu][Bb][Ll][Ee]
 IT_DATE		[Dd][Aa][Tt][Ee]
 IT_DATETIME		[Dd][Aa][Tt][Ee][Tt][Ii][Mm][Ee]
 IT_STRING		[Ss][Tt][Rr][Ii][Nn][Gg]
-IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
+IT_VARCHAR		[Vv][Aa][Rr][Cc][Hh][Aa][Rr]
+IT_CONSTRAINT		[Cc][Oo][Nn][Ss][Tt][Rr][Aa][Ii][Nn][Tt]
+IT_UNIQUE		[Uu][Nn][Ii][Qq][Uu][Ee]
+IT_NOT		[Nn][Oo][Tt]
+IT_NULL		[Nn][Uu][Ll][Ll]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
+IT_SELECT		[Ss][Ee][Ll][Ee][Cc][Tt]
 IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
 IT_FROM		[Ff][Rr][Oo][Mm]
-IT_ROWNUM		[Rr][Oo][Ww][Nn][Uu][Mm]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
+IT_ROWNUM		[Rr][Oo][Ww][Nn][Uu][Mm]
+GT_LE		"<="
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 GT_TIMES		"*"
 IT_AS		[Aa][Ss]
@@ -101,15 +113,11 @@ IT_ON		[Oo][Nn]
 IT_JOIN		[Jj][Oo][Ii][Nn]
 IT_OR		[Oo][Rr]
 IT_AND		[Aa][Nn][Dd]
-GT_EQUAL		"="
 GT_NEQUAL		"!="
 GT_LT		"<"
 GT_GT		">"
-GT_LE		"<="
 GT_GE		">="
 IT_IS		[Ii][Ss]
-IT_NULL		[Nn][Uu][Ll][Ll]
-IT_NOT		[Nn][Oo][Tt]
 GT_PLUS		"+"
 GT_MINUS		"-"
 GT_DIVIDE		"/"
@@ -137,7 +145,7 @@ STRING_LITERAL_LONG1		"'''"((((("'")|("''")))?(([\x00-&(-\[\]-\x7F]|([\xC2-\xDF]
 STRING_LITERAL2		"\""(((([\x00-\t\x0B-\x0C\x0E-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"\""
 STRING_LITERAL1		"'"(((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))|(({ECHAR}))))*"'"
 /*" for syntax hilighting */
-PASSED_TOKENS		([\t ])+
+PASSED_TOKENS		(([\t\n\r ])+)|("--"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 LINEFEED		(\r\n|\r|\n)
 
 /* END patterns for SQL terminals */
@@ -152,21 +160,33 @@ LINEFEED		(\r\n|\r|\n)
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_COMMA}		{return token::GT_COMMA;}
+{IT_INSERT}		{return token::IT_INSERT;}
+{IT_INTO}		{return token::IT_INTO;}
+{IT_VALUES}		{return token::IT_VALUES;}
+{IT_DEFAULT}		{return token::IT_DEFAULT;}
+{GT_EQUAL}		{return token::GT_EQUAL;}
 {IT_FOREIGN}		{return token::IT_FOREIGN;}
 {IT_KEY}		{return token::IT_KEY;}
 {IT_REFERENCES}		{return token::IT_REFERENCES;}
 {IT_PRIMARY}		{return token::IT_PRIMARY;}
 {IT_INT}		{return token::IT_INT;}
+{IT_INTEGER}		{return token::IT_INTEGER;}
 {IT_DOUBLE}		{return token::IT_DOUBLE;}
 {IT_DATE}		{return token::IT_DATE;}
 {IT_DATETIME}		{return token::IT_DATETIME;}
 {IT_STRING}		{return token::IT_STRING;}
-{IT_SELECT}		{return token::IT_SELECT;}
+{IT_VARCHAR}		{return token::IT_VARCHAR;}
+{IT_CONSTRAINT}		{return token::IT_CONSTRAINT;}
+{IT_UNIQUE}		{return token::IT_UNIQUE;}
+{IT_NOT}		{return token::IT_NOT;}
+{IT_NULL}		{return token::IT_NULL;}
 {IT_UNION}		{return token::IT_UNION;}
+{IT_SELECT}		{return token::IT_SELECT;}
 {IT_WHERE}		{return token::IT_WHERE;}
 {IT_FROM}		{return token::IT_FROM;}
-{IT_ROWNUM}		{return token::IT_ROWNUM;}
 {IT_LIMIT}		{return token::IT_LIMIT;}
+{IT_ROWNUM}		{return token::IT_ROWNUM;}
+{GT_LE}		{return token::GT_LE;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {GT_TIMES}		{return token::GT_TIMES;}
 {IT_AS}		{return token::IT_AS;}
@@ -178,15 +198,11 @@ LINEFEED		(\r\n|\r|\n)
 {IT_JOIN}		{return token::IT_JOIN;}
 {IT_OR}		{return token::IT_OR;}
 {IT_AND}		{return token::IT_AND;}
-{GT_EQUAL}		{return token::GT_EQUAL;}
 {GT_NEQUAL}		{return token::GT_NEQUAL;}
 {GT_LT}		{return token::GT_LT;}
 {GT_GT}		{return token::GT_GT;}
-{GT_LE}		{return token::GT_LE;}
 {GT_GE}		{return token::GT_GE;}
 {IT_IS}		{return token::IT_IS;}
-{IT_NULL}		{return token::IT_NULL;}
-{IT_NOT}		{return token::IT_NOT;}
 {GT_PLUS}		{return token::GT_PLUS;}
 {GT_MINUS}		{return token::GT_MINUS;}
 {GT_DIVIDE}		{return token::GT_DIVIDE;}

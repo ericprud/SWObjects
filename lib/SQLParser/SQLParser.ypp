@@ -168,6 +168,7 @@ public:
     sql::SQLQuery* root;
 
     sql::schema::Relation* curCreate;
+    bool curIsPrimary;
     sql::schema::Database tables;
 };
     typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
@@ -212,9 +213,9 @@ public:
 %token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES IT_AS GT_DOT
        IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_ROWNUM IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
-       GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX
+       GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX IT_INTEGER IT_VALUES IT_VARCHAR IT_UNIQUE IT_INSERT IT_DEFAULT IT_CONSTRAINT
 
-%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_STRING
+%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_STRING IT_INTO
 
 %token <p_NAME> NAME
 
@@ -225,7 +226,7 @@ public:
 %token <p_Expression> IT_true IT_false
 
 /* Productions */
-%type <p_NAME> Relation _O_QIT_AS_E_S_QRelation_E_C _Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt Attribute _O_QIT_AS_E_S_QAttribute_E_C _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt
+%type <p_NAME> Relation _O_QIT_AS_E_Opt_S_QRelation_E_C _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt Attribute _O_QIT_AS_E_Opt_S_QAttribute_E_C _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt
 %type <p_Select> SelectUnion Select _O_QIT_UNION_E_S_QSelect_E_C
 %type <p_Selects> _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star
 %type <p_Expression> _O_QIT_WHERE_E_S_QExpression_E_C _Q_O_QIT_WHERE_E_S_QExpression_E_C_E_Opt
@@ -258,12 +259,12 @@ public:
 %type <p_Expression> NumericLiteralNegative
 %type <p_Expression> BooleanLiteral
 %type <p_Expression> String
-%type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
+%type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
 %type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
 
 %type <p_NAME> _O_QGT_COMMA_E_S_QAttribute_E_C
 %type <p_Attributes> AttrList _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
-%type <p_SchemaDatatype> _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C
+%type <p_SchemaDatatype> _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C
 
 /* END TokenBlock */
 
@@ -288,30 +289,34 @@ public:
  /*** BEGIN sql - Change the grammar rules below ***/
 Statement:
     SelectUnion _QGT_SEMI_E_Opt	{
-    driver.root = $1;
-}
-
-    | Create _Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star _QGT_SEMI_E_Opt	
+	driver.root = $1;
+    }
+  | Update _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star _QGT_SEMI_E_Opt	
 ;
 
 _QGT_SEMI_E_Opt:
     
-    | GT_SEMI	
+  | GT_SEMI	
 ;
 
-_O_QGT_SEMI_E_S_QCreate_E_C:
-    GT_SEMI Create	
+_O_QGT_SEMI_E_S_QUpdate_E_C:
+    GT_SEMI Update	
 ;
 
-_Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star:
+_Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star:
     
-    | _Q_O_QGT_SEMI_E_S_QCreate_E_C_E_Star _O_QGT_SEMI_E_S_QCreate_E_C	
+  | _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star _O_QGT_SEMI_E_S_QUpdate_E_C	
+;
+
+Update:
+    Create	
+  | Insert	
 ;
 
 Create:
     IT_CREATE IT_TABLE Relation	{
 	driver.curCreate = new sql::schema::Relation(*$3);
-      } GT_LPAREN FieldOrKey _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star GT_RPAREN	{
+      } GT_LPAREN FieldOrKey _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star GT_RPAREN _QParam_E_Star	{
 	  driver.tables[*$3] = driver.curCreate;
 	  delete $3;
 	  driver.curCreate = NULL;
@@ -324,46 +329,147 @@ _O_QGT_COMMA_E_S_QFieldOrKey_E_C:
 
 _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star:
     
-    | _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star _O_QGT_COMMA_E_S_QFieldOrKey_E_C	
+  | _Q_O_QGT_COMMA_E_S_QFieldOrKey_E_C_E_Star _O_QGT_COMMA_E_S_QFieldOrKey_E_C	
+;
+
+_QParam_E_Star:
+    
+  | _QParam_E_Star Param	
+;
+
+Insert:
+    IT_INSERT IT_INTO Relation _QAttrList_E_Opt _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C	{
+	w3c_sw_LINEN << "ignoring INSERTs\n";
+    }
+;
+
+_QAttrList_E_Opt:
+    
+  | AttrList	
+;
+
+_O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C:
+    IT_VALUES ConstList	
+  | SelectUnion	
+;
+
+Param:
+    _O_QNAME_E_Or_QIT_DEFAULT_E_C _Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt	{
+	w3c_sw_LINEN << "ignoring INSERTs\n";
+    }
+;
+
+_O_QNAME_E_Or_QIT_DEFAULT_E_C:
+    NAME	
+  | IT_DEFAULT	
+;
+
+_O_QGT_EQUAL_E_S_QNAME_E_C:
+    GT_EQUAL NAME	
+;
+
+_Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt:
+    
+  | _O_QGT_EQUAL_E_S_QNAME_E_C	
 ;
 
 FieldOrKey:
-    Attribute _O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C	{
-    sql::schema::Field* f = new sql::schema::Field(*$1, $2);
-    delete $1;
-    driver.curCreate->addField(f);
-}
-
-    | IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
-    driver.curCreate->addForeignKey(new sql::schema::ForeignKey($3, *$5, $6));
-    delete $5;
-}
-
-    | IT_PRIMARY IT_KEY AttrList	{
-    driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey($3));
-}
+    Attribute _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt _QLinkDetails_E_Star	{
+	sql::schema::Field* f = new sql::schema::Field(*$1, $2);
+	driver.curCreate->addField(f);
+	if (driver.curIsPrimary) {
+	    driver.curIsPrimary = false;
+	    std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	    attrs->push_back(*$1);
+	    driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey(attrs));
+	}
+	delete $1;
+    }
+  | _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
+      driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, $7));
+      delete $6;
+    }
+  | IT_PRIMARY IT_KEY AttrList	{
+      driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey($3));
+    }
+  | _QIT_UNIQUE_E_Opt IT_KEY Attribute AttrList	{
+	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
+    }
 ;
 
-_O_QIT_INT_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_C:
+_O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C:
     IT_INT	{
-    $$ = sql::schema::TYPE_int;
-}
+	$$ = sql::schema::TYPE_int;
+    }
+  | IT_INTEGER	{
+      $$ = sql::schema::TYPE_int;
+    }
+  | IT_DOUBLE	{
+      $$ = sql::schema::TYPE_double;
+    }
+  | IT_DATE	{
+      $$ = sql::schema::TYPE_date;
+    }
+  | IT_DATETIME	{
+      $$ = sql::schema::TYPE_datetime;
+    }
+  | IT_STRING	{
+      $$ = sql::schema::TYPE_string;
+    }
+  | IT_VARCHAR	{
+      $$ = sql::schema::TYPE_string;
+    }
+;
 
-    | IT_DOUBLE	{
-    $$ = sql::schema::TYPE_double;
-}
+_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C:
+    GT_LPAREN INTEGER GT_RPAREN	{
+	w3c_sw_LINEN << "ignoring precision\n";
+    }
+;
 
-    | IT_DATE	{
-    $$ = sql::schema::TYPE_date;
-}
+_Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt:
+    
+  | _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C	
+;
 
-    | IT_DATETIME	{
-    $$ = sql::schema::TYPE_datetime;
-}
+_QLinkDetails_E_Star:
+    
+  | _QLinkDetails_E_Star LinkDetails	
+;
 
-    | IT_STRING	{
-    $$ = sql::schema::TYPE_string;
-}
+_O_QIT_CONSTRAINT_E_S_QAttribute_E_C:
+    IT_CONSTRAINT Attribute	{
+	w3c_sw_LINEN << "ignoring constraint name\n";
+    }
+;
+
+_Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt:
+    
+  | _O_QIT_CONSTRAINT_E_S_QAttribute_E_C	
+;
+
+_QIT_UNIQUE_E_Opt:
+    
+  | IT_UNIQUE	
+;
+
+LinkDetails:
+    IT_PRIMARY IT_KEY	{
+	driver.curIsPrimary = true;
+    }
+  | IT_DEFAULT Constant	{
+	w3c_sw_LINEN << "ignoring DEFAULT\n";
+    }
+  | IT_NOT IT_NULL	{
+	w3c_sw_LINEN << "ignoring NOT NULL\n";
+    }
+;
+
+Constant:
+    IT_NULL	
+  | String	
+  | NumericLiteral	
+  | BooleanLiteral	
 ;
 
 AttrList:
@@ -391,6 +497,19 @@ _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
     }
 ;
 
+ConstList:
+    GT_LPAREN Constant _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star GT_RPAREN	
+;
+
+_O_QGT_COMMA_E_S_QConstant_E_C:
+    GT_COMMA Constant	
+;
+
+_Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star:
+    
+  | _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star _O_QGT_COMMA_E_S_QConstant_E_C	
+;
+
 SelectUnion:
     Select _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star	{
 	if ($2->size() > 0) {
@@ -411,17 +530,16 @@ _O_QIT_UNION_E_S_QSelect_E_C:
 
 _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star:
     {
-    $$ = new std::vector<sql::SQLQuery*>();
-}
-
-    | _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star _O_QIT_UNION_E_S_QSelect_E_C	{
-    $1->push_back($2);
-    $$ = $1;
-}
+	$$ = new std::vector<sql::SQLQuery*>();
+    }
+  | _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star _O_QIT_UNION_E_S_QSelect_E_C	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 Select:
-    IT_SELECT AttributeList _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt _Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt	{
+    IT_SELECT AttributeList _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt _Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt	{
 	driver.root = $$ = new sql::SQLQuery($3.joins);
 	delete $3.joins;
 	for (std::vector<sql::AliasedSelect*>::const_iterator it = $2->begin(); it != $2->end(); ++it)
@@ -445,10 +563,9 @@ _O_QIT_WHERE_E_S_QExpression_E_C:
 
 _Q_O_QIT_WHERE_E_S_QExpression_E_C_E_Opt:
     {
-    $$ = NULL;
-}
-
-    | _O_QIT_WHERE_E_S_QExpression_E_C
+	$$ = NULL;
+    }
+  | _O_QIT_WHERE_E_S_QExpression_E_C	
 ;
 
 _O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C:
@@ -462,32 +579,30 @@ _O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C:
 
 _Q_O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C_E_Opt:
     {
-    $$.joins = new std::vector<sql::Join*>();;
-    $$.exprs = new std::vector<const sql::Expression*>();;
-}
-
-    | _O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C
+	$$.joins = new std::vector<sql::Join*>();;
+	$$.exprs = new std::vector<const sql::Expression*>();;
+    }
+  | _O_QIT_FROM_E_S_QTableList_E_S_QIT_WHERE_E_S_QExpression_E_Opt_C	
 ;
 
-_O_QIT_LIMIT_E_S_QINTEGER_E_C:
+_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C:
     IT_LIMIT INTEGER	{
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
 	$$ = i->getValue();
 	delete $2;
-}
-    | IT_ROWNUM GT_LE INTEGER	{
+    }
+  | IT_ROWNUM GT_LE INTEGER	{
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($3);
 	$$ = i->getValue();
 	delete $3;
-}
+    }
 ;
 
-_Q_O_QIT_LIMIT_E_S_QINTEGER_E_C_E_Opt:
+_Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt:
     {
-    $$ = -1;
-}
-
-    | _O_QIT_LIMIT_E_S_QINTEGER_E_C	
+	$$ = -1;
+    }
+  | _O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C	
 ;
 
 _O_QIT_OFFSET_E_S_QINTEGER_E_C:
@@ -500,10 +615,9 @@ _O_QIT_OFFSET_E_S_QINTEGER_E_C:
 
 _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt:
     {
-    $$ = -1;
-}
-
-    | _O_QIT_OFFSET_E_S_QINTEGER_E_C	
+	$$ = -1;
+    }
+  | _O_QIT_OFFSET_E_S_QINTEGER_E_C	
 ;
 
 AttributeList:
@@ -511,11 +625,10 @@ AttributeList:
 	$2->insert($2->begin(), $1);
 	$$ = new std::vector<sql::AliasedSelect*>($2->begin(), $2->end());
 	delete $2;
-}
-
-    | GT_TIMES	{
+    }
+  | GT_TIMES	{
 	$$ = new std::vector<sql::AliasedSelect*>();
-}
+      }
 ;
 
 _O_QGT_COMMA_E_S_QNamedAttribute_E_C:
@@ -535,24 +648,28 @@ _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star:
 ;
 
 NamedAttribute:
-    Expression _Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt	{
+    Expression _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt	{
 	$$ = new sql::AliasedSelect($1, $2 ? *$2 : $1->toString());
 	delete $2;
     }
 ;
 
-_O_QIT_AS_E_S_QAttribute_E_C:
-    IT_AS Attribute	{
-	$$ = $2;
-    }
-  | Attribute	
+_QIT_AS_E_Opt:
+    
+  | IT_AS	
 ;
 
-_Q_O_QIT_AS_E_S_QAttribute_E_C_E_Opt:
+_O_QIT_AS_E_Opt_S_QAttribute_E_C:
+    _QIT_AS_E_Opt Attribute	{
+	$$ = $2;
+    }
+;
+
+_Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt:
     {
 	$$ = NULL;
     }
-  | _O_QIT_AS_E_S_QAttribute_E_C	{
+  | _O_QIT_AS_E_Opt_S_QAttribute_E_C	{
 	$$ = $1;
       }
 ;
@@ -570,11 +687,11 @@ FQAttribute:
 ;
 
 Attribute:
-      NAME
+    NAME	
 ;
 
 Relation:
-    NAME
+    NAME	
 ;
 
 TableList:
@@ -592,16 +709,14 @@ TableList:
 
 _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C:
     IT_INNER	{
-    $$ = false;
-}
-
-    | GT_COMMA	{
-    $$ = false;
-}
-
-    | IT_LEFT IT_OUTER	{
-    $$ = true;
-}
+	$$ = false;
+    }
+  | GT_COMMA	{
+	$$ = false;
+      }
+  | IT_LEFT IT_OUTER	{
+	$$ = true;
+    }
 ;
 
 _O_QIT_ON_E_S_QExpression_E_C:
@@ -612,12 +727,11 @@ _O_QIT_ON_E_S_QExpression_E_C:
 
 _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt:
     {
-    $$ = NULL;
-}
-
-    | _O_QIT_ON_E_S_QExpression_E_C	{
-    $$ = $1;
-}
+	$$ = NULL;
+    }
+  | _O_QIT_ON_E_S_QExpression_E_C	{
+	$$ = $1;
+      }
 ;
 
 _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C:
@@ -637,18 +751,17 @@ _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTabl
     {
 	$$.joins = new std::vector<sql::Join*>();
 	$$.exprs = new std::vector<const sql::Expression*>();
-}
-
-    | _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C	{
-    $1.joins->push_back($2.join);
-    if ($2.expr != NULL)
-	$1.exprs->push_back($2.expr);
-    $$ = $1;
-}
+    }
+  | _Q_O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C_E_Star _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C	{
+	$1.joins->push_back($2.join);
+	if ($2.expr != NULL)
+	    $1.exprs->push_back($2.expr);
+	$$ = $1;
+    }
 ;
 
 TableAlias:
-    Relation _Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt	{
+    Relation _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt	{
 	$$.relation = new sql::RelationName(*$1);
 	$$.subselect = NULL;
 	if ($2) {
@@ -658,36 +771,28 @@ TableAlias:
 	    $$.alias = new sql::RelVar(*$1);
 	}
 	delete $1;
-}
-    | GT_LPAREN SelectUnion GT_RPAREN Relation	{
-	$$.relation = NULL;
-	$$.subselect = $2;
-	$$.alias = new sql::RelVar(*$4);
-	delete $4;
-}
-    | GT_LPAREN SelectUnion GT_RPAREN IT_AS Relation	{
+    }
+  | GT_LPAREN SelectUnion GT_RPAREN IT_AS Relation	{
 	$$.relation = NULL;
 	$$.subselect = $2;
 	$$.alias = new sql::RelVar(*$5);
 	delete $5;
-}
+    }
 ;
 
-_O_QIT_AS_E_S_QRelation_E_C:
-    IT_AS Relation	{
-    $$ = $2;
-}
-    | Relation
+_O_QIT_AS_E_Opt_S_QRelation_E_C:
+    _QIT_AS_E_Opt Relation	{
+	$$ = $2;
+    }
 ;
 
-_Q_O_QIT_AS_E_S_QRelation_E_C_E_Opt:
+_Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt:
     {
     $$ = NULL;
-}
-
-    | _O_QIT_AS_E_S_QRelation_E_C	{
-    $$ = $1;
-}
+    }
+  | _O_QIT_AS_E_Opt_S_QRelation_E_C	{
+	$$ = $1;
+    }
 ;
 
 Expression:
@@ -777,6 +882,14 @@ RelationalExpression:
     }
 ;
 
+// ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
+_QRightRelationalExpression_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | RightRelationalExpression	
+;
+
 // '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression
 RightRelationalExpression:
     GT_EQUAL NumericExpression	{
@@ -805,15 +918,6 @@ RightRelationalExpression:
 }
 ;
 
-// ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression )?
-_QRightRelationalExpression_E_Opt:
-    {
-	$$ = NULL;
-    }
-
-  | RightRelationalExpression	
-;
-
 NumericExpression:
     AdditiveExpression	
 ;
@@ -838,8 +942,8 @@ _O_QGT_PLUS_E_S_QMultiplicativeExpression_E_Or_QGT_MINUS_E_S_QMultiplicativeExpr
   | GT_MINUS MultiplicativeExpression	{
 	$$ = new sql::ArithmeticNegation($2);
     }
-  | NumericLiteralPositive
-  | NumericLiteralNegative
+  | NumericLiteralPositive	
+  | NumericLiteralNegative	
 ;
 
 // ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | NumericLiteralPositive | NumericLiteralNegative )*
@@ -900,12 +1004,12 @@ UnaryExpression:
 ;
 
 PrimaryExpression:
-    BrackettedExpression
-  | BuiltInCall
-  | String
-  | NumericLiteral
-  | BooleanLiteral
-  | FQAttribute
+    BrackettedExpression	
+  | BuiltInCall	
+  | String	
+  | NumericLiteral	
+  | BooleanLiteral	
+  | FQAttribute	
   | IT_NULL	{
 	$$ = new sql::IsNullConstraint();
     }
@@ -947,48 +1051,47 @@ _O_QGT_COMMA_E_S_QExpression_E_C:
 _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star:
     {
 	$$ = new std::vector<const sql::Expression*>();
-}
-
-    | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _O_QGT_COMMA_E_S_QExpression_E_C	{
-    $1->push_back($2);
-    $$ = $1;
-}
+    }
+  | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _O_QGT_COMMA_E_S_QExpression_E_C	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 NumericLiteral:
-      NumericLiteralUnsigned
-    | NumericLiteralPositive
-    | NumericLiteralNegative
+    NumericLiteralUnsigned	
+  | NumericLiteralPositive	
+  | NumericLiteralNegative	
 ;
 
 NumericLiteralUnsigned:
-      INTEGER
-    | DECIMAL
-    | DOUBLE
+    INTEGER	
+  | DECIMAL	
+  | DOUBLE	
 ;
 
 NumericLiteralPositive:
-      INTEGER_POSITIVE
-    | DECIMAL_POSITIVE
-    | DOUBLE_POSITIVE
+    INTEGER_POSITIVE	
+  | DECIMAL_POSITIVE	
+  | DOUBLE_POSITIVE	
 ;
 
 NumericLiteralNegative:
-      INTEGER_NEGATIVE
-    | DECIMAL_NEGATIVE
-    | DOUBLE_NEGATIVE
+    INTEGER_NEGATIVE	
+  | DECIMAL_NEGATIVE	
+  | DOUBLE_NEGATIVE	
 ;
 
 BooleanLiteral:
-      IT_true
-    | IT_false
+    IT_true	
+  | IT_false	
 ;
 
 String:
-      STRING_LITERAL1
-    | STRING_LITERAL2
-    | STRING_LITERAL_LONG1
-    | STRING_LITERAL_LONG2
+    STRING_LITERAL1	
+  | STRING_LITERAL2	
+  | STRING_LITERAL_LONG1	
+  | STRING_LITERAL_LONG2	
 ;
 
  /*** END sql - Change the grammar rules above ***/
@@ -1007,8 +1110,8 @@ namespace w3c_sw {
 
 SQLDriver::SQLDriver(class sqlContext& _context)
     : YaccDriver("", NULL), trace_scanning(false),
-      trace_parsing(false),
-      context(_context), root(NULL)
+      trace_parsing(false), context(_context),
+      root(NULL), curIsPrimary(false)
 {
 }
 
