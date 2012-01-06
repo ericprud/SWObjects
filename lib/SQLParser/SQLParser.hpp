@@ -166,6 +166,7 @@ public:
     sql::SQLQuery* root;
 
     sql::schema::Relation* curCreate;
+    bool curIsPrimary;
     sql::schema::Database tables;
 };
     typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
@@ -179,7 +180,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 183 "lib/SQLParser/SQLParser.hpp"
+#line 184 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -193,7 +194,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 197 "lib/SQLParser/SQLParser.hpp"
+#line 198 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -203,7 +204,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 207 "lib/SQLParser/SQLParser.hpp"
+#line 208 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -251,7 +252,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 255 "lib/SQLParser/SQLParser.hpp"
+#line 256 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -263,7 +264,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 184 "lib/SQLParser/SQLParser.ypp"
+#line 185 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -288,7 +289,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 292 "lib/SQLParser/SQLParser.hpp"
+#line 293 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -335,37 +336,45 @@ namespace w3c_sw {
      IT_LCASE = 289,
      IT_UCASE = 290,
      IT_REGEX = 291,
-     GT_SEMI = 292,
-     IT_CREATE = 293,
-     IT_TABLE = 294,
-     GT_LPAREN = 295,
-     GT_RPAREN = 296,
-     GT_COMMA = 297,
-     IT_FOREIGN = 298,
-     IT_KEY = 299,
-     IT_REFERENCES = 300,
-     IT_PRIMARY = 301,
-     IT_INT = 302,
-     IT_DOUBLE = 303,
-     IT_DATE = 304,
-     IT_DATETIME = 305,
-     IT_STRING = 306,
-     NAME = 307,
-     INTEGER = 308,
-     INTEGER_POSITIVE = 309,
-     INTEGER_NEGATIVE = 310,
-     DECIMAL = 311,
-     DECIMAL_POSITIVE = 312,
-     DECIMAL_NEGATIVE = 313,
-     DOUBLE = 314,
-     DOUBLE_POSITIVE = 315,
-     DOUBLE_NEGATIVE = 316,
-     STRING_LITERAL1 = 317,
-     STRING_LITERAL2 = 318,
-     STRING_LITERAL_LONG1 = 319,
-     STRING_LITERAL_LONG2 = 320,
-     IT_true = 321,
-     IT_false = 322
+     IT_INTEGER = 292,
+     IT_VALUES = 293,
+     IT_VARCHAR = 294,
+     IT_UNIQUE = 295,
+     IT_INSERT = 296,
+     IT_DEFAULT = 297,
+     IT_CONSTRAINT = 298,
+     GT_SEMI = 299,
+     IT_CREATE = 300,
+     IT_TABLE = 301,
+     GT_LPAREN = 302,
+     GT_RPAREN = 303,
+     GT_COMMA = 304,
+     IT_FOREIGN = 305,
+     IT_KEY = 306,
+     IT_REFERENCES = 307,
+     IT_PRIMARY = 308,
+     IT_INT = 309,
+     IT_DOUBLE = 310,
+     IT_DATE = 311,
+     IT_DATETIME = 312,
+     IT_STRING = 313,
+     IT_INTO = 314,
+     NAME = 315,
+     INTEGER = 316,
+     INTEGER_POSITIVE = 317,
+     INTEGER_NEGATIVE = 318,
+     DECIMAL = 319,
+     DECIMAL_POSITIVE = 320,
+     DECIMAL_NEGATIVE = 321,
+     DOUBLE = 322,
+     DOUBLE_POSITIVE = 323,
+     DOUBLE_NEGATIVE = 324,
+     STRING_LITERAL1 = 325,
+     STRING_LITERAL2 = 326,
+     STRING_LITERAL_LONG1 = 327,
+     STRING_LITERAL_LONG2 = 328,
+     IT_true = 329,
+     IT_false = 330
    };
 
     };
@@ -542,7 +551,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 546 "lib/SQLParser/SQLParser.hpp"
+#line 555 "lib/SQLParser/SQLParser.hpp"
 
 
 

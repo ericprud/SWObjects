@@ -341,6 +341,11 @@ namespace w3c_sw {
 		: std::vector<const Expression*>(start, end)
 	    {  }
 	    std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+	    std::string toString (std::string pad = "", std::string driver = "") const {
+		std::stringstream ss;
+		print(ss, pad, driver);
+		return ss.str();
+	    }
 	};
 
 	class JunctionConstraint : public Expression {
@@ -1101,7 +1106,7 @@ namespace w3c_sw {
 	    AliasAttr aattr;
 	public:
 	    AliasAttrConstraint (AliasAttr aattr) : Expression(), aattr(aattr) {  }
-	    AliasAttr getAliasAttr () { return aattr; }
+	    AliasAttr getAliasAttr () const { return aattr; }
 	    virtual Expression* clone () const {
 		return new AliasAttrConstraint(aattr);
 	    }
@@ -1217,7 +1222,7 @@ namespace w3c_sw {
 	    // dupes from Expression
 	    bool logNotMappable (const Join& r) const {
 		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
-		    << toString() << " doesn't map to " << r.toString();
+		    << toString() << "\ndoesn't map to" << r.toString();
 		return false;
 	    }
 	    bool logNotEqual (const Join& r) const {
@@ -1875,7 +1880,8 @@ namespace w3c_sw {
 		};
 
 		RelationName name;
-		std::vector<const FieldOrKey*> ordered;
+		std::vector<const FieldOrKey*> orderedFields;
+		const PrimaryKey* primaryKey;
 		struct Fields : public std::map<Attribute, FieldInfo> {
 		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
 			iterator f = find(attr);
@@ -1889,26 +1895,27 @@ namespace w3c_sw {
 		};
 		Fields fields;
 
-		Relation (RelationName name) : name(name)
+		Relation (RelationName name) : name(name), primaryKey(NULL)
 		{  }
 
 		~Relation () {
-		    for (std::vector<const FieldOrKey*>::iterator it = ordered.begin();
-			 it != ordered.end(); ++it)
+		    for (std::vector<const FieldOrKey*>::iterator it = orderedFields.begin();
+			 it != orderedFields.end(); ++it)
 			delete *it;
-		    ordered.clear();
+		    orderedFields.clear();
 		    fields.clear();
+		    // The primaryKey was already deleted with orderedFields.
 		}
 
 		bool operator== (const Relation& ref) const {
 		    if (name != ref.name
-			|| ordered.size() != ref.ordered.size()
+			|| orderedFields.size() != ref.orderedFields.size()
 			|| fields.size() != ref.fields.size())
 			return false;
-		    std::vector<const FieldOrKey*>::const_iterator left = ordered.begin();
-		    std::vector<const FieldOrKey*>::const_iterator right = ref.ordered.begin();
+		    std::vector<const FieldOrKey*>::const_iterator left = orderedFields.begin();
+		    std::vector<const FieldOrKey*>::const_iterator right = ref.orderedFields.begin();
 		    for (;
-			 left != ordered.end(); ++left, ++right)
+			 left != orderedFields.end(); ++left, ++right)
 			if (!(**left == **right))
 			    return false;
 		    return true;
@@ -1916,9 +1923,9 @@ namespace w3c_sw {
 
 		std::string str () const {
 		    std::stringstream ss;
-		    for (std::vector<const FieldOrKey*>::const_iterator it = ordered.begin();
-			 it != ordered.end(); ++it) {
-			if (it != ordered.begin())
+		    for (std::vector<const FieldOrKey*>::const_iterator it = orderedFields.begin();
+			 it != orderedFields.end(); ++it) {
+			if (it != orderedFields.begin())
 			    ss << ",\n";
 			ss << "  " << (*it)->str();
 		    }
@@ -1926,12 +1933,13 @@ namespace w3c_sw {
 		}
 
 		void addField (const Field* field) {
-		    ordered.push_back(field);
+		    orderedFields.push_back(field);
 		    fields.insert(std::pair<Attribute, FieldInfo>(field->name, FieldInfo(field)));
 		}
 
-		void addPrimaryKey (PrimaryKey* primaryKey) {
-		    ordered.push_back(primaryKey);
+		void setPrimaryKey (PrimaryKey* primaryKey) {
+		    orderedFields.push_back(primaryKey);
+		    this->primaryKey = primaryKey;
 		    size_t posn = 0;
 		    for (std::vector<Attribute>::const_iterator attr = primaryKey->attrs->begin();
 			 attr != primaryKey->attrs->end(); ++attr, ++posn)
@@ -1939,7 +1947,7 @@ namespace w3c_sw {
 		}
 
 		void addForeignKey (ForeignKey* foreignKey) {
-		    ordered.push_back(foreignKey);
+		    orderedFields.push_back(foreignKey);
 		    size_t posn = 0;
 		    for (std::vector<Attribute>::const_iterator attr = foreignKey->attrs->begin();
 			 attr != foreignKey->attrs->end(); ++attr, ++posn)

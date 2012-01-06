@@ -337,6 +337,7 @@ namespace w3c_sw {
 	VarSet* selectVars;
 	char* predicateDelims;
 	char* nodeDelims;
+	sql::schema::Database* tables;
 
 	/* Keep track of which evaluation can be translated to SQL
 	 */
@@ -352,7 +353,37 @@ namespace w3c_sw {
 	KeyMap keyMap;
 	std::string driver;
 	const Expression* bindingExpression;
-	std::map<const TTerm*, const char*> sparql2sqlHomologs;
+	struct Sparql2sqlHomologs : public std::map<const TTerm*, const char*> {
+	    Sparql2sqlHomologs () {
+		struct H {
+		    const TTerm* t;
+		    const char* s;
+		};
+		H homologs[] = {
+		    {TTerm::FUNC_string_length, "LENGTH"},
+		    {TTerm::FUNC_upper_case, "UCASE"},
+		    {TTerm::FUNC_lower_case, "LCASE"},
+		    {TTerm::FUNC_substring, "SUBSTR"},
+		    {TTerm::FUNC_concat, "CONCAT"},
+		    {TTerm::FUNC_numeric_abs, "ABS"},
+		    {TTerm::FUNC_numeric_round, "ROUND"},
+		    {TTerm::FUNC_numeric_ciel, "CEILING"},
+		    {TTerm::FUNC_numeric_floor, "FLOOR"},
+		    {TTerm::FUNC_rand, "RAND"},
+		    {TTerm::FUNC_now, "NOW"},
+		    {TTerm::FUNC_year_from_dateTime, "YEAR"},
+		    {TTerm::FUNC_month_from_dateTime, "MONTH"},
+		    {TTerm::FUNC_day_from_dateTime, "DAY"},
+		    {TTerm::FUNC_md5, "MD5"},
+		    {TTerm::FUNC_sha1, "SHA1"},
+		};
+		for (H* h = homologs;
+		     h < homologs + (sizeof(homologs)/sizeof(homologs[0]));
+		     ++h)
+		    insert(std::pair<const TTerm*, const char*>(h->t, h->s));
+	    }
+	};
+	Sparql2sqlHomologs sparql2sqlHomologs;
 
     public:
 	//static std::ostream** ErrorStream;
@@ -361,33 +392,19 @@ namespace w3c_sw {
 	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr(sql::RelVar("bogusAlias"), sql::Attribute("bogusAttr")), selectVars(NULL), 
 	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), defaultPKAttr(defaultPKAttr), keyMap(keyMap),
 	    driver(driver)
+	{  }
+	SQLizer (AtomFactory* atomFactory, std::string stem, char predicateDelims[], char nodeDelims[], sql::schema::Database* tables, std::string driver) : 
+	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr(sql::RelVar("bogusAlias"), sql::Attribute("bogusAttr")), selectVars(NULL), 
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), tables(tables), keyMap(keyMap),
+	    driver(driver)
 	{
-	    struct H {
-		const TTerm* t;
-		const char* s;
-	    };
-	    H homologs[] = {
-		{TTerm::FUNC_string_length, "LENGTH"},
-		{TTerm::FUNC_upper_case, "UCASE"},
-		{TTerm::FUNC_lower_case, "LCASE"},
-		{TTerm::FUNC_substring, "SUBSTR"},
-		{TTerm::FUNC_concat, "CONCAT"},
-		{TTerm::FUNC_numeric_abs, "ABS"},
-		{TTerm::FUNC_numeric_round, "ROUND"},
-		{TTerm::FUNC_numeric_ciel, "CEILING"},
-		{TTerm::FUNC_numeric_floor, "FLOOR"},
-		{TTerm::FUNC_rand, "RAND"},
-		{TTerm::FUNC_now, "NOW"},
-		{TTerm::FUNC_year_from_dateTime, "YEAR"},
-		{TTerm::FUNC_month_from_dateTime, "MONTH"},
-		{TTerm::FUNC_day_from_dateTime, "DAY"},
-		{TTerm::FUNC_md5, "MD5"},
-		{TTerm::FUNC_sha1, "SHA1"},
-	    };
-	    for (H* h = homologs;
-		 h < homologs + (sizeof(homologs)/sizeof(homologs[0]));
-		 ++h)
-		sparql2sqlHomologs.insert(std::pair<const TTerm*, const char*>(h->t, h->s));
+	    // populate keyMap from tables (std::map<sql::RelationName, sql::schema::Relation*>)
+	    for (sql::schema::Database::const_iterator rel = tables->begin();
+		 rel != tables->end(); ++rel)
+		if (rel->second->primaryKey != NULL)
+		    for (std::vector<sql::Attribute>::const_iterator attr = rel->second->primaryKey->attrs->begin();
+			 attr != rel->second->primaryKey->attrs->end(); ++attr) // !! , ++posn
+			keyMap[rel->first] = *attr; // !! posn
 	}
 	~SQLizer () {
 	    delete curQuery;

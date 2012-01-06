@@ -381,7 +381,7 @@ FieldOrKey:
 	    driver.curIsPrimary = false;
 	    std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	    attrs->push_back(*$1);
-	    driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey(attrs));
+	    driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
 	}
 	delete $1;
     }
@@ -390,7 +390,7 @@ FieldOrKey:
       delete $6;
     }
   | IT_PRIMARY IT_KEY AttrList	{
-      driver.curCreate->addPrimaryKey(new sql::schema::PrimaryKey($3));
+      driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey($3));
     }
   | _QIT_UNIQUE_E_Opt IT_KEY Attribute AttrList	{
 	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
@@ -423,7 +423,7 @@ _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or
 
 _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C:
     GT_LPAREN INTEGER GT_RPAREN	{
-	w3c_sw_LINEN << "ignoring precision\n";
+	// @@ w3c_sw_LINEN << "ignoring precision\n";
     }
 ;
 
@@ -649,8 +649,14 @@ _Q_O_QGT_COMMA_E_S_QNamedAttribute_E_C_E_Star:
 
 NamedAttribute:
     Expression _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt	{
-	$$ = new sql::AliasedSelect($1, $2 ? *$2 : $1->toString());
-	delete $2;
+	if ($2 == NULL) {
+	    // "SELECT a.dname FROM DEPT AS a" yields a field calld `dname` (i.e. elides the alias).
+	    const sql::AliasAttrConstraint* a = dynamic_cast<const sql::AliasAttrConstraint*>($1);
+	    $$ = new sql::AliasedSelect($1, a ? a->getAliasAttr().attr : $1->toString());
+	} else {
+	    $$ = new sql::AliasedSelect($1, *$2);
+	    delete $2;
+	}
     }
 ;
 
@@ -834,7 +840,7 @@ ConditionalAndExpression:
     ValueLogical _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star	{
 	if ($2->size() > 0) {
 	    $2->insert($2->begin(), $1);
-	    $$ = new sql::DisjunctionConstraint($2->begin(), $2->end());
+	    $$ = new sql::ConjunctionConstraint($2->begin(), $2->end());
 	} else
 	    $$ = $1;
 	delete $2;
@@ -1017,8 +1023,8 @@ PrimaryExpression:
 
 BrackettedExpression:
     GT_LPAREN Expression GT_RPAREN	{
-    $$ = $2;
-}
+	$$ = $2;
+    }
 ;
 
 BuiltInCall:

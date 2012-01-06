@@ -566,3 +566,52 @@ SELECT \n\
     //    BOOST_CHECK_EQUAL(sql::SQLQuery::MappedEquivalence(*expected.root), *tested.root);
 }
 
+BOOST_AUTO_TEST_CASE( sqlize_HR ) {
+    sqlContext context;
+    SQLDriver ddl1Driver(context);
+    IStreamContext ddl1Str("r2rml/ddl.sql", IStreamContext::FILE);
+    ddl1Driver.parse(ddl1Str);
+
+    SPARQLfedDriver sparqlParser("", &F);
+    const Operation* query = sparqlParser.parse("\
+SELECT ?job ?dname ?loc ?type ?object\n\
+ WHERE {\n\
+  ?e <EMP#job> ?job ;\n\
+     <EMP#ename> \"SMITH\" ;\n\
+     <EMP#deptno> ?d .\n\
+  ?d <DEPT#dname> ?dname ;\n\
+     <DEPT#loc> ?loc .\n\
+  ?l <LIKES#id> ?e ;\n\
+     <LIKES#likeType> ?type ;\n\
+     <LIKES#likeObj> ?object\n\
+ }");
+    SQLizer sqlizer(&F, "", predicateDelims, nodeDelims, &ddl1Driver.tables, drv);
+    query->express(&sqlizer);
+    ddl1Driver.tables.clear();
+
+    SQLDriver tested(context);
+    std::string error;
+    try {
+	tested.parse(sqlizer.getSQLstring());
+    } catch (std::string& e) {
+	error = e;
+    } catch (std::exception& e) {
+	error = e.what();
+    } catch (...) {
+	error = "unknown error:";
+    }
+    if (!error.empty()) {
+	w3c_sw_LINEN << error << std::endl;
+	BOOST_REQUIRE(error.empty());
+    }
+
+    SQLDriver expected(context);
+    expected.parse("\
+SELECT e.job AS job, d.dname AS dname, d.loc AS loc, l.likeType AS type, l.likeObj AS object\n\
+  FROM EMP AS e\n\
+       INNER JOIN DEPT AS d ON d.deptno=e.deptno AND d.deptno=e.deptno\n\
+       INNER JOIN LIKES AS l ON l.id=e.empno\n\
+ WHERE e.ename=\"SMITH\";");
+    BOOST_CHECK_EQUAL(sql::SQLQuery::MappedEquivalence(*expected.root), *tested.root);
+}
+
