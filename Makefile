@@ -163,7 +163,7 @@ else
 endif
 
 
-.PHONY: all dep lib test
+.PHONY: all dep lib test NOGEN
 all:   lib test
 
 
@@ -267,7 +267,6 @@ $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a: $(BOOST_LOG_OBJ_FILEPATHS)
 	ar rcvs $@ $(BOOST_LOG_OBJ_FILEPATHS)
 
-.PHONY: lib NOGEN
 lib: dep $(LIB)
 
 .SECONDARY:
@@ -299,7 +298,6 @@ GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
 NOGEN:
 	touch $(GENERATED)
 	ln -s win/FlexLexer.h
-
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
@@ -406,6 +404,7 @@ unitTESTexes := $(TESTNAMELIST)
 TEST_ARGS ?= ""
 
 t_SPARQL: bin/sparql
+t_DM: bin/dm-materialize
 
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
@@ -439,12 +438,12 @@ t_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
 v_%: tests/test_%
-	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp
 
 # "manual" (non-boost) tests, synthesized from the boost tests.
 m_%: tests/man_%
-	( cd tests && valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 
 
 ### Query Map tests tests:
