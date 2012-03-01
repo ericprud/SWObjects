@@ -104,32 +104,36 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient_MySQL
 int main (int argc, const char* argv[]) {
     sqlContext sqlParserContext;
     SQLDriver sqlParser(sqlParserContext);
-    IStreamContext ddlStream(argv[1], IStreamContext::FILE);
     try {
+	IStreamContext ddlStream(argv[1], IStreamContext::FILE);
 	sqlParser.parse(ddlStream);
 	// std::cout << sqlParser.tables;
+
+	SQLclient_MySQL sqlDriver;
+	sqlDriver.connect("", "DM", "root");
+	// dump(sqlDriver, "SELECT ID, fname, addr FROM People");
+	// dump(sqlDriver, "SHOW TABLES");
+
+	RowNodes rowNodes;
+	AtomFactory atomFactory;
+	DefaultGraphPattern bgp;
+	for (sql::schema::Database::const_iterator it = sqlParser.tables.begin();
+	     it != sqlParser.tables.end(); ++it)
+	    try {
+		dumpTable(rowNodes, *it->second, sqlDriver, atomFactory, &bgp);
+	    } catch (std::string& s) {
+		std::cerr << s << "\n";
+	    }
+
+	std::cout << bgp.toString("text/turtle");
     } catch (ParserException& e) {
 	std::cerr << e.what();
 	return 1;
+    } catch (std::string& s) {
+	std::cerr << "string exception: " << s << std::endl;
+	return 1;
     }
 
-    SQLclient_MySQL sqlDriver;
-    sqlDriver.connect("", "DM", "root");
-    // dump(sqlDriver, "SELECT ID, fname, addr FROM People");
-    // dump(sqlDriver, "SHOW TABLES");
-
-    RowNodes rowNodes;
-    AtomFactory atomFactory;
-    DefaultGraphPattern bgp;
-    for (sql::schema::Database::const_iterator it = sqlParser.tables.begin();
-	 it != sqlParser.tables.end(); ++it)
-	try {
-	    dumpTable(rowNodes, *it->second, sqlDriver, atomFactory, &bgp);
-	} catch (std::string& s) {
-	    std::cerr << s << "\n";
-	}
-
-    std::cout << bgp.toString("text/turtle");
     return 0;
 }
 
