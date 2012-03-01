@@ -2765,7 +2765,7 @@ SQLParser::token_type SQLScanner::typedLiteral (SQLParser::semantic_type*& yylva
     }
 }
 
-    SQLParser::token_type SQLScanner::unescape (SQLParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, SQLParser::token_type tok){
+    SQLParser::token_type SQLScanner::unescape (SQLParser::semantic_type*& yylval, w3c_sw::location* yylloc, size_t skip, SQLParser::token_type tok) {
     std::string space;
     for (size_t i = skip; i < yyleng-skip; i++) {
 	if (yytext[i] == '\\') {
@@ -2789,7 +2789,8 @@ SQLParser::token_type SQLScanner::typedLiteral (SQLParser::semantic_type*& yylva
 	    space += yytext[i];
 	}
     }
-    yylval->p_Expression = new sql::LiteralConstraint(space);
+    yylval->p_NAME = new std::string(space);
+    // yylval->p_Expression = new sql::LiteralConstraint(space);
     return tok;
 }
 
