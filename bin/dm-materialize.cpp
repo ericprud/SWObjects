@@ -19,7 +19,7 @@ const char* Quote = "`";
 
 void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient_MySQL& sqlDriver, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
     // DefaultGraphPattern* ret = new DefaultGraphPattern();
-    std::cout << table.name << "\n";
+    // std::cout << table.name << "\n";
     std::stringstream dumpQuery;
     dumpQuery << "SELECT ";
     for (sql::schema::Relation::Fields::const_iterator it = table.fields.begin();
@@ -32,7 +32,9 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient_MySQL
     SQLclient::Result* res = sqlDriver.executeQuery(dumpQuery.str());
 
     SqlResultSet rs2(&atomFactory, res);
-    std::cout << rs2;
+    // std::cout << rs2;
+
+    const TTerm* rdfType = atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
     for (ResultSetConstIterator row = rs2.begin(); row != rs2.end(); ++row) {
 	const TTerm* s;
@@ -53,7 +55,8 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient_MySQL
 	/* row type triple */
 	bgp->addTriplePattern
 	    (atomFactory.getTriple
-	     (s, atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), atomFactory.getURI(table.name)));
+	     (s, rdfType, atomFactory.getURI(table.name)));
+
 	/* literal triples */
 	const VariableList* vars = rs2.getKnownVars();
 	for (VariableListConstIterator var = vars->begin(); var != vars->end(); ++var) {
@@ -126,7 +129,7 @@ int main (int argc, const char* argv[]) {
 	    std::cerr << s << "\n";
 	}
 
-    std::cout << "bgp: " << bgp;
+    std::cout << bgp.toString("text/turtle");
     return 0;
 }
 

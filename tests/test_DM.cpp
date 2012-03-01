@@ -8,12 +8,16 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+#include "TurtleSParser/TurtleSParser.hpp"
+#include "interface/SQLclient_MySQL.hpp"
 
 #define BOOST_TEST_MODULE dm-materialize
 #include <boost/test/unit_test.hpp>
 #include <stdio.h>
 
+#define BASE_URI ""
 w3c_sw::AtomFactory F;
+w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
 
 struct ExecResults {
     std::string s;
@@ -62,8 +66,25 @@ struct BooleanResultSet : public w3c_sw::ResultSet {
 
 BOOST_AUTO_TEST_SUITE( invoke )
 BOOST_AUTO_TEST_CASE( a ) {
+    std::ifstream createStream("rdb2rdf-tests/D017-I18NnoSpecialChars/create.sql");
+    std::istreambuf_iterator<char> createStream_i(createStream), e;
+    std::string create(createStream_i, e);
+
+    /* MySQL uses backquotes: */
+    size_t p;
+    while ((p = create.find_first_of("\"")) != std::string::npos)
+	create[p] = '`';
+
+    w3c_sw::SQLclient_MySQL sqlDriver;
+    sqlDriver.connect("", "DM", "root");
+
     ExecResults tested("../bin/dm-materialize rdb2rdf-tests/D017-I18NnoSpecialChars/create.sql");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "t\n");
+    w3c_sw::DefaultGraphPattern test;
+    TurtleParser.parse(tested.s, &test);
+    w3c_sw::DefaultGraphPattern expect;
+    w3c_sw::IStreamContext expStream("rdb2rdf-tests/D017-I18NnoSpecialChars/directGraph.nt",
+				     w3c_sw::IStreamContext::FILE);
+    TurtleParser.parse(expStream, &expect);
+    BOOST_CHECK_EQUAL(expect, test);
 }
 BOOST_AUTO_TEST_SUITE_END(/* invoke */)
