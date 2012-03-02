@@ -28,6 +28,34 @@ namespace w3c_sw {
 
     namespace sql {
 
+	struct Serializer {
+	    virtual std::string name(std::string s) = 0;
+	    virtual std::string as() = 0;
+	    virtual std::string limit(int l) = 0;
+	    virtual std::string offset(int o) = 0;
+	};
+	template<int dummy>
+	struct SQLSerializer_dummyTemplate : public Serializer {
+	    virtual std::string name (std::string s) {
+		return std::string() + (true ? "\"" : "") + s + (true ? "\"" : "");
+	    }
+	    virtual std::string as () { return "AS "; }
+	    virtual std::string limit (int l) {
+		std::stringstream ss;
+		ss << "LIMIT " << l;
+		return ss.str();
+	    }
+	    virtual std::string offset (int o) {
+		std::stringstream ss;
+		ss << "OFFSET " << o;
+		return ss.str();
+	    }
+	    static SQLSerializer_dummyTemplate<dummy> It;
+	};
+	template<int dummy>
+	SQLSerializer_dummyTemplate<dummy> SQLSerializer_dummyTemplate<dummy>::It;
+	typedef SQLSerializer_dummyTemplate<0> SQLSerializer;
+
 	/**
 	 * enforce type consistency for
 	 *   RelationName - a table name.
@@ -67,12 +95,12 @@ namespace w3c_sw {
 	namespace AliasMapping {
 	    struct Row : public std::map<RelVar, RelVar> {
 		std::string str () const {
-		    std::stringstream s;
-		    s << "  " << size() << " bindings: ( ";
+		    std::stringstream ss;
+		    ss << "  " << size() << " bindings: ( ";
 		    for (const_iterator binding = begin(); binding != end(); ++binding)
-			s << binding->first << "->" << binding->second << " ";
-		    s << ")";
-		    return s.str();
+			ss << binding->first << "->" << binding->second << " ";
+		    ss << ")";
+		    return ss.str();
 		}
 	    };
 	    struct List : std::list<Row> {
@@ -92,12 +120,12 @@ namespace w3c_sw {
 		    va_end(args);
 		}
 		std::string str () const {
-		    std::stringstream s;
-		    s << size() << " rows: {\n";
+		    std::stringstream ss;
+		    ss << size() << " rows: {\n";
 		    for (const_iterator row = begin(); row != end(); ++row)
-			s << row->str() << "\n";
-			s << "}\n";
-			return s.str();
+			ss << row->str() << "\n";
+		    ss << "}\n";
+		    return ss.str();
 		}
 		List () : std::list<Row>(1) {  }
 		List (AliasMapping::Row& row) : std::list<Row>(0) {
@@ -224,7 +252,9 @@ namespace w3c_sw {
 		return alias == ref.alias && attr == ref.attr;
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
-	    virtual std::string toString () const { return alias + "." + attr; }
+	    virtual std::string toString (Serializer& s = SQLSerializer::It) const {
+		return alias + "." + attr;
+	    }
 	};
 
 	/* Implementable subclassed of Constraint:  */
@@ -273,7 +303,7 @@ namespace w3c_sw {
 		    << toString() << " != " << r.toString();
 		return false;
 	    }
-	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const = 0;
+	    virtual std::string toString(std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
 	    virtual e_PREC getPrecedence() const = 0;
 	    virtual bool finalEq (const DisjunctionConstraint&) const { return false; }
 	    virtual bool finalEq (const ConjunctionConstraint&) const { return false; }
@@ -340,10 +370,10 @@ namespace w3c_sw {
 			    const_iterator end)
 		: std::vector<const Expression*>(start, end)
 	    {  }
-	    std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
-	    std::string toString (std::string pad = "", std::string driver = "") const {
+	    std::ostream& print(std::ostream& os, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
+	    std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
-		print(ss, pad, driver);
+		print(ss, pad, driver, s);
 		return ss.str();
 	    }
 	};
@@ -364,16 +394,16 @@ namespace w3c_sw {
 	    }
 	    virtual Expression* clone() const = 0;
 	    void addConstraint (Expression* constraint) { constraints.push_back(constraint); }
-	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (getPrecedence() < parentPrec) s << "(";
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		if (getPrecedence() < parentPrec) ss << "(";
 		for (ConstraintList::const_iterator it = constraints.begin();
 		     it != constraints.end(); it++) {
-		    if (it != constraints.begin()) s << getJunctionString();
-		    s << (*it)->toString(pad, getPrecedence(), driver);
+		    if (it != constraints.begin()) ss << getJunctionString();
+		    ss << (*it)->toString(pad, getPrecedence(), driver, s);
 		}
-		if (getPrecedence() < parentPrec) s << ")";
-		return s.str();
+		if (getPrecedence() < parentPrec) ss << ")";
+		return ss.str();
 	    }
 
 	    /** test the permutations of this (the right-hand argument to the
@@ -474,14 +504,14 @@ namespace w3c_sw {
 	    virtual Expression* clone() const = 0;
 	    virtual void setLeftParm (const Expression* p_left) { left = p_left; }
 	    virtual const char* getComparisonNotation() const = 0;
-	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (getPrecedence() < parentPrec) s << "(";
-		s << left->toString(pad, getPrecedence(), driver);
-		s << getComparisonNotation();
-		s << right->toString(pad, getPrecedence(), driver);
-		if (getPrecedence() < parentPrec) s << ")";
-		return s.str();
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		if (getPrecedence() < parentPrec) ss << "(";
+		ss << left->toString(pad, getPrecedence(), driver, s);
+		ss << getComparisonNotation();
+		ss << right->toString(pad, getPrecedence(), driver, s);
+		if (getPrecedence() < parentPrec) ss << ")";
+		return ss.str();
 	    }
 	};
 	class BooleanEQ : public BooleanComparator {
@@ -670,13 +700,13 @@ namespace w3c_sw {
 		return *arg == *r.arg;
 	    }
 	    virtual const char* getPrefixOperator() const = 0;
-	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (getPrecedence() < parentPrec) s << "(";
-		s << getPrefixOperator();
-		s << arg->toString();
-		if (getPrecedence() < parentPrec) s << ")";
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		if (getPrecedence() < parentPrec) ss << "(";
+		ss << getPrefixOperator();
+		ss << arg->toString(pad, parentPrec, driver, s);
+		if (getPrecedence() < parentPrec) ss << ")";
+		return ss.str();
 	    }
 	};
 	class NaryExpression : public Expression {
@@ -708,17 +738,17 @@ namespace w3c_sw {
 		return ptrequal(args.begin(), args.end(), r.args.begin());
 	    }
 	    virtual const char* getInfixOperator() const = 0;
-	    virtual std::string toString (std::string, e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		if (getPrecedence() < parentPrec) s << "(";
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		if (getPrecedence() < parentPrec) ss << "(";
 		for (ConstraintList::const_iterator it = args.begin();
 		     it != args.end(); ++it) {
 		    if (it != args.begin())
-			s << getInfixOperator();
-		    s << (*it)->toString();
+			ss << getInfixOperator();
+		    ss << (*it)->toString(pad, parentPrec, driver, s);
 		}
-		if (getPrecedence() < parentPrec) s << ")";
-		return s.str();
+		if (getPrecedence() < parentPrec) ss << ")";
+		return ss.str();
 	    }
 	};
 	class UnorderedExpression : public NaryExpression {
@@ -896,10 +926,10 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
-		std::stringstream s;
-		s << "\"" << value << "\"";
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << "\"" << value << "\"";
+		return ss.str();
 	    }
 	};
 	class IntConstraint : public Expression {
@@ -925,10 +955,10 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
-		std::stringstream s;
-		s << value;
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << value;
+		return ss.str();
 	    }
 	    int getValue () const { return value; }
 	};
@@ -954,10 +984,10 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
-		std::stringstream s;
-		s << value;
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << value;
+		return ss.str();
 	    }
 	};
 	class DoubleConstraint : public Expression {
@@ -982,10 +1012,10 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
-		std::stringstream s;
-		s << value;
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << value;
+		return ss.str();
 	    }
 	};
 	class BoolConstraint : public Expression {
@@ -1010,7 +1040,7 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return value ? "true" : "false";
 	    }
 	};
@@ -1035,7 +1065,7 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return "NULL";
 	    }
 	};
@@ -1062,11 +1092,11 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string) const {
-		std::stringstream s;
-		s << tterm->toString();
-		s << " IS NOT NULL";
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << tterm->toString();
+		ss << " IS NOT NULL";
+		return ss.str();
 	    }
 	};
 	class NegationConstraint : public Expression {
@@ -1092,10 +1122,10 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		std::stringstream s;
-		s << "!(" << negated->toString(pad, parentPrec, driver) << ")";
-		return s.str();
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << "!(" << negated->toString(pad, parentPrec, driver, s) << ")";
+		return ss.str();
 	    }
 	};
 
@@ -1124,12 +1154,12 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string, e_PREC, std::string driver = "") const {
-		std::stringstream s;
-		s << aattr.alias;
-		s << ".";
-		s << aattr.attr;
-		return s.str();
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << aattr.alias;
+		ss << ".";
+		ss << aattr.attr;
+		return ss.str();
 	    }
 	    virtual e_PREC getPrecedence () const { return PREC_TTerm; }
 	};
@@ -1169,9 +1199,9 @@ namespace w3c_sw {
 		    ? true : logNotEqual(r);
 	    }
 	    virtual const char* getInfixOperator () const { return ", "; }
-	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return sqlOp + "("
-		    + NaryExpression::toString("", parentPrec, driver) + ")";
+		    + NaryExpression::toString("", parentPrec, driver, s) + ")";
 	    }
 	};
 
@@ -1198,8 +1228,8 @@ namespace w3c_sw {
 		return r.finalEq(*this)
 		    ? true : logNotEqual(r);
 	    }
-	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "") const {
-		return std::string("REGEX(") + text->toString(pad, parentPrec, driver) + ", " + pattern->toString() + ")";
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return std::string("REGEX(") + text->toString(pad, parentPrec, driver, s) + ", " + pattern->toString() + ")";
 	    }
 	};
 
@@ -1217,7 +1247,7 @@ namespace w3c_sw {
 		    delete *it;
 	    }
 	    std::string debug_getAlias () { return alias; }
-	    virtual std::string getRelationText (std::string pad = "") const = 0;
+	    virtual std::string getRelationText (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
 
 	    // dupes from Expression
 	    bool logNotMappable (const Join& r) const {
@@ -1253,13 +1283,13 @@ namespace w3c_sw {
 	    virtual bool finalEq (const SubqueryJoin&) const { return false; }
 	    virtual bool operator==(const Join& ref) const = 0;
 	    std::string str () const { return toString(); } // for debugger invocation
-	    std::string toString (ConstraintList* captureConstraints = NULL, std::string pad = "", std::string driver = "") const {
-		std::stringstream s;
-		if (captureConstraints == NULL) s << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
+	    std::string toString (ConstraintList* captureConstraints = NULL, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		if (captureConstraints == NULL) ss << std::endl << pad << "            " << (optional ? "LEFT OUTER JOIN " : "INNER JOIN ");
 		if (driver.find("oracle") == 0)
-		    s << getRelationText(pad) << " " << alias;
+		    ss << getRelationText(pad, driver, s) << " " << alias;
 		else
-		    s << getRelationText(pad) << " AS " << alias;
+		    ss << getRelationText(pad, driver, s) << " " << s.as() << alias;
 
 		if (captureConstraints != NULL)
 		    std::copy(constraints.begin(), constraints.end(), std::back_inserter(*captureConstraints));
@@ -1267,10 +1297,10 @@ namespace w3c_sw {
 		else 
 		    for (ConstraintList::const_iterator it = constraints.begin();
 			 it != constraints.end(); ++it)
-			s << (it == constraints.begin() ? " ON " : " AND ")
-			  << (*it)->toString(pad, PREC_High, driver);
+			ss << (it == constraints.begin() ? " ON " : " AND ")
+			   << (*it)->toString(pad, PREC_High, driver, s);
 
-		return s.str();
+		return ss.str();
 	    }
 	    void addForeignKeyJoinConstraint (Attribute myAttr, RelVar otherAlias, Attribute otherAttr) {
 		if (alias != otherAlias || myAttr != otherAttr)
@@ -1290,7 +1320,7 @@ namespace w3c_sw {
 	class TableJoin : public Join {
 	    RelationName relation;
 	protected:
-	    virtual std::string getRelationText (std::string) const { return relation; }
+	    virtual std::string getRelationText (std::string pad, std::string driver = "", Serializer& s = SQLSerializer::It) const { return relation; }
 	public:
 	    TableJoin (RelationName relation, RelVar alias, bool optional) : Join(alias, optional), relation(relation) {  }
 	    virtual bool finalMapsTo (const TableJoin& l, AliasMapping::List& map) const {
@@ -1339,11 +1369,11 @@ namespace w3c_sw {
 		return false;
 	    }
 	    std::string str () const { return toString(); } // for debugger invocation
-	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		if (driver.find("oracle") == 0)
-		    return exp->toString(pad, PREC_High, driver) + " " + alias;
+		    return exp->toString(pad, PREC_High, driver, s) + " " + alias;
 		else
-		    return exp->toString(pad, PREC_High, driver) + " AS " + alias;
+		    return exp->toString(pad, PREC_High, driver, s) + " " + s.as() + alias;
 	    }
 	};
 
@@ -1355,19 +1385,20 @@ namespace w3c_sw {
 	    struct JoinList : public std::vector<Join*> {
 		JoinList () {  }
 		JoinList (std::vector<Join*>& joins) : std::vector<Join*>(joins) {  }
-		std::ostream& print (std::ostream& s,
+		std::ostream& print (std::ostream& os,
 				     ConstraintList* captureConstraints = NULL,
-				     std::string pad = "", std::string driver = "") const;
+				     std::string pad = "", std::string driver = "",
+				     Serializer& s = SQLSerializer::It) const;
 	    };
 	    JoinList joins;
 
 	    ConstraintList  constraints;
 	    struct OrderBy : public ConstraintList {
-		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+		std::ostream& print(std::ostream& os, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
 	    };
 	    OrderBy orderBy;
 	    struct Selects : public std::vector<AliasedSelect*> {
-		std::ostream& print(std::ostream& s, std::string pad = "", std::string driver = "") const;
+		std::ostream& print(std::ostream& os, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
 	    };
 
 	    struct MappedEquivalence {
@@ -1426,83 +1457,83 @@ namespace w3c_sw {
 	    std::string str () const { // easy to call from debugger.
 		return toString();
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
-		std::stringstream s;
-		s << pad << "SELECT ";
-		if (distinct) s << "DISTINCT ";
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << pad << "SELECT ";
+		if (distinct) ss << "DISTINCT ";
 
-		selects.print(s, pad, driver);
+		selects.print(ss, pad, driver, s);
 
 		/* JOINs */
 		ConstraintList where;
-		joins.print(s, &where, pad, driver);
+		joins.print(ss, &where, pad, driver, s);
 
 		/* WHERE */
 		std::copy(constraints.begin(), constraints.end(), std::back_inserter(where));
-		where.print(s, pad, driver);
+		where.print(ss, pad, driver, s);
 
-		orderBy.print(s, pad, driver);
+		orderBy.print(ss, pad, driver, s);
 
 		if (driver.find("oracle") == 0) {
-		    if (offset != -1) s << std::endl << pad << "rownum > " << offset;
-		    if (limit != -1) s << std::endl << pad << " rownum <= " << limit;
+		    if (offset != -1) ss << std::endl << pad << "rownum > " << offset;
+		    if (limit != -1) ss << std::endl << pad << " rownum <= " << limit;
 		} else {
-		    if (limit != -1) s << std::endl << pad << " LIMIT " << limit;
-		    if (offset != -1) s << std::endl << pad << "OFFSET " << offset;
+		    if (offset != -1) ss << std::endl << pad << " " << s.offset(offset);
+		    if (limit != -1) ss << std::endl << pad << " " << s.limit(limit);
 		}
 
-		return s.str();
+		return ss.str();
 	    }
 
 	    void add (Join* join) { joins.push_back(join); }
 	};
 
-	inline std::ostream& SQLQuery::Selects::print (std::ostream& s, std::string pad, std::string driver) const {
+	inline std::ostream& SQLQuery::Selects::print (std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
 	    /* SELECT attributes */
 	    for (const_iterator it = begin(); it != end(); ++it) {
-		if (it != begin()) s << ", ";
-		s << (*it)->toString(pad, driver);
+		if (it != begin()) os << ", ";
+		os << (*it)->toString(pad, driver, s);
 	    }
-	    if (begin() == end()) s << "NULL";
-	    return s;
+	    if (begin() == end()) os << "NULL";
+	    return os;
 	}
 	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::Selects& selects) {
 	    return selects.print(os);
 	}
 
-	inline std::ostream& SQLQuery::JoinList::print (std::ostream& s, ConstraintList* captureConstraints, std::string pad, std::string driver) const {
+	inline std::ostream& SQLQuery::JoinList::print (std::ostream& os, ConstraintList* captureConstraints, std::string pad, std::string driver, Serializer& s) const {
 	    for (const_iterator it = begin(); it != end(); ++it)
 		if (it == begin())
-		    s << std::endl << pad << "       FROM " << (*it)->toString(captureConstraints, pad, driver);
+		    os << std::endl << pad << "       FROM " << (*it)->toString(captureConstraints, pad, driver, s);
 		else
-		    s << (*it)->toString(NULL, pad, driver);
-	    return s;
+		    os << (*it)->toString(NULL, pad, driver, s);
+	    return os;
 	}
 	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::JoinList& joinList) {
 	    return joinList.print(os);
 	}
 
-	inline std::ostream& ConstraintList::print (std::ostream& s, std::string pad, std::string driver) const {
+	inline std::ostream& ConstraintList::print (std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
 	    for (const_iterator it = begin(); it != end(); ++it)
-		s << (it == begin() ? " WHERE " : " AND ")
-		  <<(*it)->toString(pad, PREC_High, driver);
-	    return s;
+		os << (it == begin() ? " WHERE " : " AND ")
+		   <<(*it)->toString(pad, PREC_High, driver, s);
+	    return os;
 	}
 	inline std::ostream& operator<< (std::ostream& os, const ConstraintList& constraints) {
 	    return constraints.print(os);
 	}
 
-	inline std::ostream& SQLQuery::OrderBy::print (std::ostream& s, std::string pad, std::string driver) const {
+	inline std::ostream& SQLQuery::OrderBy::print (std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
 	    /* ORDER BY */
 	    if (begin() != end()) {
-		s << std::endl << pad << " ORDER BY ";
+		os << std::endl << pad << " ORDER BY ";
 		for (const_iterator it = begin(); it != end(); ++it) {
 		    if (it != begin())
-			s << ", ";
-		    s << (*it)->toString(pad, PREC_High, driver);
+			os << ", ";
+		    os << (*it)->toString(pad, PREC_High, driver, s);
 		}
 	    }
-	    return s;
+	    return os;
 	}
 	inline std::ostream& operator<< (std::ostream& os, const SQLQuery::OrderBy& orderBy) {
 	    return orderBy.print(os);
@@ -1653,16 +1684,16 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this); // !!! no Join::baseEq(r) && 
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
-		std::stringstream s;
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
 		std::string newPad = pad + "    ";
 		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it) {
 		    if (it != disjoints.begin())
-			s << std::endl << pad << "  UNION" << std::endl;
-		    s << (*it)->toString(newPad, driver);
+			ss << std::endl << pad << "  UNION" << std::endl;
+		    ss << (*it)->toString(newPad, driver, s);
 		}
-		return s.str();
+		return ss.str();
 	    }
 
 	};
@@ -1670,10 +1701,10 @@ namespace w3c_sw {
 	class SubqueryJoin : public Join {
 	    SQLQuery* subquery;
 	protected:
-	    virtual std::string getRelationText (std::string pad = "") const {
-		std::stringstream s;
-		s << "(" << std::endl << subquery->toString(pad) << std::endl << pad << "             )";
-		return s.str();
+	    virtual std::string getRelationText (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << "(" << std::endl << subquery->toString(pad, driver, s) << std::endl << pad << "             )";
+		return ss.str();
 	    }
 	public:
 	    SubqueryJoin (SQLQuery* subquery, RelVar alias, bool optional) : Join(alias, optional), subquery(subquery) {  }
@@ -1702,9 +1733,9 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "") const {
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::string newPad = pad + "    ";
-		return SQLQuery::toString(newPad, driver);
+		return SQLQuery::toString(newPad, driver, s);
 	    }
 	};
 
@@ -1714,14 +1745,14 @@ namespace w3c_sw {
 	 */
 	namespace schema {
 
-	    typedef enum {TYPE_error, TYPE_int, TYPE_double, TYPE_date, TYPE_datetime, TYPE_string} e_TYPE;
+	    typedef enum {TYPE_error, TYPE_int, TYPE_double, TYPE_date, TYPE_datetime, TYPE_char, TYPE_varchar} e_TYPE;
 
 	    struct FieldOrKey {
 		int i;
 		FieldOrKey () : i(7) {  }
 		virtual ~FieldOrKey () {  }
 		virtual bool operator==(const FieldOrKey& r) const = 0;
-		virtual std::string str() const = 0;
+		virtual std::string toString(std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
 	    };
 
 //	    I don't know what the prob was, but calling this got oddly circular:
@@ -1731,9 +1762,11 @@ namespace w3c_sw {
 // 	    }
 
 	    struct Field : public FieldOrKey {
+		#define SQL_PRECISION_unspecified -1
 		Attribute name;
 		e_TYPE type;
-		Field (Attribute name, e_TYPE type) : name(name), type(type)
+		int precision;
+		Field (Attribute name, e_TYPE type, int precision) : name(name), type(type), precision(precision)
 		{  }
 		virtual bool operator== (const FieldOrKey& ref) const {
 		    const Field* refp = dynamic_cast<const Field*>(&ref);
@@ -1743,16 +1776,29 @@ namespace w3c_sw {
 			&& type == refp->type;
 		}
 
-		virtual std::string str () const {
-		    return name + " " + (type == TYPE_error ? "ERROR" :
-					 type == TYPE_int ? "INT" :
-					 type == TYPE_double ? "DOUBLE" :
-					 type == TYPE_date ? "DATE" :
-					 type == TYPE_datetime ? "DATETIME" :
-					 type == TYPE_string ? "STRING" :
-					 "???" ) + "";
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		    std::stringstream ss;
+		    ss << s.name(name) << " ";
+		    ss <<
+			(type == TYPE_error ? "ERROR" :
+			 type == TYPE_int ? "INT" :
+			 type == TYPE_double ? "DOUBLE" :
+			 type == TYPE_date ? "DATE" :
+			 type == TYPE_datetime ? "DATETIME" :
+			 type == TYPE_char ? "CHAR" :
+			 type == TYPE_varchar ? "VARCHAR" :
+			 "???");
+		    if (precision != SQL_PRECISION_unspecified)
+			ss << "(" << precision << ")";
+		    return ss.str();
 		}
 	    };
+
+// #ifndef w3c_sw_sql_schema_PRECISION_unspecified
+// 	    const int Field::PRECISION_unspecified = -1;
+//   #define w3c_sw_sql_schema_PRECISION_unspecified
+// #endif /* w3c_sw_sql_schema_PRECISION_unspecified */
+
 
 	    struct Key : public FieldOrKey {
 		std::vector<Attribute>* attrs;
@@ -1782,14 +1828,14 @@ namespace w3c_sw {
 		    const PrimaryKey* refp = dynamic_cast<const PrimaryKey*>(&ref);
 		    return (refp != NULL && Key_equals(ref));
 		}
-		virtual std::string str () const {
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    ss << "PRIMARY KEY (";
 		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
 			 it != attrs->end(); ++it) {
 			if (it != attrs->begin())
 			    ss << ", ";
-			ss << *it;
+			ss << s.name(*it);
 		    }
 		    ss << ")";
 		    return ss.str();
@@ -1819,21 +1865,21 @@ namespace w3c_sw {
 			    return false;
 		    return true;
 		}
-		virtual std::string str () const {
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    ss << "FOREIGN KEY (";
 		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
 			 it != attrs->end(); ++it) {
 			if (it != attrs->begin())
 			    ss << ", ";
-			ss << *it;
+			ss << s.name(*it);
 		    }
-		    ss << ") REFERENCES " << targetRel << "(";
+		    ss << ") REFERENCES " << s.name(targetRel) << "(";
 		    for (std::vector<Attribute>::const_iterator it = relAttrs->begin();
 			 it != relAttrs->end(); ++it) {
 			if (it != relAttrs->begin())
 			    ss << ", ";
-			ss << *it;
+			ss << s.name(*it);
 		    }
 		    ss << ")";
 		    return ss.str();
@@ -1921,13 +1967,13 @@ namespace w3c_sw {
 		    return true;
 		}
 
-		std::string str () const {
+		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    for (std::vector<const FieldOrKey*>::const_iterator it = orderedFields.begin();
 			 it != orderedFields.end(); ++it) {
 			if (it != orderedFields.begin())
 			    ss << ",\n";
-			ss << "  " << (*it)->str();
+			ss << "  " << (*it)->toString(pad, driver, s);
 		    }
 		    return ss.str();
 		}
@@ -1957,7 +2003,7 @@ namespace w3c_sw {
 	    };
 
 	    inline std::ostream& operator<< (std::ostream& ostr, Relation const& ref) {
-		return ostr << ref.str();
+		return ostr << ref.toString();
 	    }
 
 	    struct Database : public std::map<RelationName, Relation*> {
@@ -1980,23 +2026,73 @@ namespace w3c_sw {
 		    return true;
 		}
 
-		std::string str () const {
+		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    for (const_iterator it = begin();
 			 it != end(); ++it) {
-			std::string s = it->first;
+			std::string n = it->first;
 			const Relation& r = *it->second;
-			ss << "CREATE TABLE " << s << " (\n" << r << "\n);\n";
+			ss << "CREATE TABLE " << s.name(n) << " (\n" << r.toString(pad, driver, s) << "\n);\n";
 		    }
 		    return ss.str();
 		}
 	    };
 
 	    inline std::ostream& operator<< (std::ostream& ostr, Database const& ref) {
-		return ostr << ref.str();
+		return ostr << ref.toString();
 	    }
 
 	} // namespace schema
+
+	struct RValue {
+	    virtual std::string toString(std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
+	};
+	struct RSelection : public RValue {
+	    SQLQuery* select;
+	    RSelection (SQLQuery* select) : select(select) {  }
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return select->toString(pad, driver, s);
+	    }
+	};
+	struct RConstants : public RValue {
+	    std::vector<const sql::Expression*>* constants;
+	    RConstants (std::vector<const sql::Expression*>* constants) : constants(constants) {  }
+	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		for (std::vector<const sql::Expression*>::const_iterator it = constants->begin();
+		     it != constants->end(); ++it) {
+		    if (it != constants->begin())
+			ss << ", ";
+		    ss << (*it)->toString(pad, PREC_High, driver, s);
+		}
+		return ss.str();
+	    }
+	};
+	struct Insert {
+	    sql::RelationName relName;
+	    std::vector<Attribute>* attributes;
+	    RValue* rvalue;
+	    Insert (RelationName relName, std::vector<sql::Attribute>* attributes, RValue* rvalue)
+		: relName(relName), attributes(attributes), rvalue(rvalue)
+	    {  }
+
+	    std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		ss << "INSERT INTO " << s.name(relName) << " (";
+		for (std::vector<Attribute>::const_iterator it = attributes->begin();
+		     it != attributes->end(); ++it) {
+		    if (it != attributes->begin())
+			ss << ", ";
+		    ss << s.name(*it);
+		}
+		ss << ") VALUES (" << rvalue->toString(pad, driver, s) << ")";
+		return ss.str();
+	    }
+	};
+
+	inline std::ostream& operator<< (std::ostream& ostr, Insert const& ref) {
+	    return ostr << ref.toString();
+	}
 
     } // namespace sql
 } // namespace w3c_sw

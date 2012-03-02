@@ -170,10 +170,12 @@ public:
     sql::schema::Relation* curCreate;
     bool curIsPrimary;
     sql::schema::Database tables;
+    std::vector<const sql::Insert*> inserts;
 };
-    typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
-    typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
-    typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
+
+typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
+typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
+typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
 } // namespace w3c_sw
 
@@ -186,6 +188,7 @@ public:
     /* Productions */
     std::string* p_NAME;
     sql::SQLQuery* p_Select;
+    sql::RValue* p_RValue;
     std::vector<sql::SQLQuery*>* p_Selects;
     // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
@@ -230,6 +233,7 @@ public:
 /* Productions */
 %type <p_NAME> Relation _O_QIT_AS_E_Opt_S_QRelation_E_C _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt Attribute _O_QIT_AS_E_Opt_S_QAttribute_E_C _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt
 %type <p_Select> SelectUnion Select _O_QIT_UNION_E_S_QSelect_E_C
+%type <p_RValue> _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C
 %type <p_Selects> _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star
 %type <p_Expression> _O_QIT_WHERE_E_S_QExpression_E_C _Q_O_QIT_WHERE_E_S_QExpression_E_C_E_Opt
 	_O_QIT_ON_E_S_QExpression_E_C _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt
@@ -262,10 +266,13 @@ public:
 %type <p_Expression> BooleanLiteral
 %type <p_Expression> String
 %type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
+	_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt
 %type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
 
 %type <p_NAME> _O_QGT_COMMA_E_S_QAttribute_E_C
-%type <p_Attributes> AttrList _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
+%type <p_Attributes> AttrList _QAttrList_E_Opt _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
+%type <p_Expression> Constant _O_QGT_COMMA_E_S_QConstant_E_C
+%type <p_Expressions> ConstList _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star
 %type <p_SchemaDatatype> _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C
 
 /* END TokenBlock */
@@ -341,23 +348,31 @@ _QParam_E_Star:
 
 Insert:
     IT_INSERT IT_INTO Relation _QAttrList_E_Opt _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C	{
-	w3c_sw_LINEN << "ignoring INSERTs\n";
+	driver.curCreate = new sql::schema::Relation(*$3);
+	driver.inserts.push_back(new sql::Insert(*$3, $4, $5));
+	delete $3;
     }
 ;
 
 _QAttrList_E_Opt:
-    
+    {
+	$$ = NULL;
+    }
   | AttrList	
 ;
 
 _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C:
-    IT_VALUES ConstList	
-  | SelectUnion	
+    IT_VALUES ConstList	{
+	$$ = new sql::RConstants($2);
+    }
+  | SelectUnion	{
+	$$ = new sql::RSelection($1);
+    }
 ;
 
 Param:
     _O_QNAME_E_Or_QIT_DEFAULT_E_C _Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt	{
-	w3c_sw_LINEN << "ignoring INSERTs\n";
+	w3c_sw_LINEN << "ignoring parameters\n";
     }
 ;
 
@@ -377,7 +392,7 @@ _Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt:
 
 FieldOrKey:
     Attribute _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt _QLinkDetails_E_Star	{
-	sql::schema::Field* f = new sql::schema::Field(*$1, $2);
+	sql::schema::Field* f = new sql::schema::Field(*$1, $2, $3);
 	driver.curCreate->addField(f);
 	if (driver.curIsPrimary) {
 	    driver.curIsPrimary = false;
@@ -416,21 +431,25 @@ _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or
       $$ = sql::schema::TYPE_datetime;
     }
   | IT_STRING	{
-      $$ = sql::schema::TYPE_string;
+      $$ = sql::schema::TYPE_char; // !!! need char type
     }
   | IT_VARCHAR	{
-      $$ = sql::schema::TYPE_string;
+      $$ = sql::schema::TYPE_varchar;
     }
 ;
 
 _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C:
     GT_LPAREN INTEGER GT_RPAREN	{
-	// @@ w3c_sw_LINEN << "ignoring precision\n";
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
+	$$ = i->getValue();
+	delete $2;
     }
 ;
 
 _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt:
-    
+    {
+	$$ = SQL_PRECISION_unspecified;
+    }
   | _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C	
 ;
 
@@ -468,7 +487,9 @@ LinkDetails:
 ;
 
 Constant:
-    IT_NULL	
+    IT_NULL	{
+	$$ = new sql::IsNullConstraint();
+    }
   | String	
   | NumericLiteral	
   | BooleanLiteral	
@@ -476,15 +497,15 @@ Constant:
 
 AttrList:
     GT_LPAREN Attribute _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star GT_RPAREN	{
-    $3->insert($3->begin(), *$2);
-    delete $2;
-    $$ = $3;
+	$3->insert($3->begin(), *$2);
+	delete $2;
+	$$ = $3;
 }
 ;
 
 _O_QGT_COMMA_E_S_QAttribute_E_C:
     GT_COMMA Attribute	{
-    $$ = $2;
+	$$ = $2;
 }
 ;
 
@@ -500,16 +521,26 @@ _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star:
 ;
 
 ConstList:
-    GT_LPAREN Constant _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star GT_RPAREN	
+    GT_LPAREN Constant _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star GT_RPAREN	{
+	$3->insert($3->begin(), $2);
+	$$ = $3;
+}
 ;
 
 _O_QGT_COMMA_E_S_QConstant_E_C:
-    GT_COMMA Constant	
+    GT_COMMA Constant	{
+	$$ = $2;
+    }
 ;
 
 _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star:
-    
-  | _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star _O_QGT_COMMA_E_S_QConstant_E_C	
+    {
+	$$ = new std::vector<const sql::Expression*>();
+    }
+  | _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star _O_QGT_COMMA_E_S_QConstant_E_C	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 SelectUnion:
@@ -922,7 +953,7 @@ RightRelationalExpression:
     }
   | IT_IS IT_NULL	{
       $$ = new sql::IsNullProxy;
-}
+    }
   | IT_IS IT_NOT IT_NULL	{
       $$ = new sql::IsNotNullProxy;
 }

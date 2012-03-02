@@ -168,10 +168,12 @@ public:
     sql::schema::Relation* curCreate;
     bool curIsPrimary;
     sql::schema::Database tables;
+    std::vector<const sql::Insert*> inserts;
 };
-    typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
-    typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
-    typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
+
+typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
+typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
+typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
 
 } // namespace w3c_sw
 
@@ -180,7 +182,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 184 "lib/SQLParser/SQLParser.hpp"
+#line 186 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -194,7 +196,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 198 "lib/SQLParser/SQLParser.hpp"
+#line 200 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -204,7 +206,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 208 "lib/SQLParser/SQLParser.hpp"
+#line 210 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -252,7 +254,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 256 "lib/SQLParser/SQLParser.hpp"
+#line 258 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -264,11 +266,12 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 185 "lib/SQLParser/SQLParser.ypp"
+#line 187 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
     sql::SQLQuery* p_Select;
+    sql::RValue* p_RValue;
     std::vector<sql::SQLQuery*>* p_Selects;
     // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
@@ -289,7 +292,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 293 "lib/SQLParser/SQLParser.hpp"
+#line 296 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -551,7 +554,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 555 "lib/SQLParser/SQLParser.hpp"
+#line 558 "lib/SQLParser/SQLParser.hpp"
 
 
 
