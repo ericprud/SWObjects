@@ -283,7 +283,7 @@ namespace w3c_sw {
 	virtual void connect (std::string server, std::string database, std::string user, std::string password) {
 	    _connect(server, database, user, password.c_str());
 	}
-	virtual Result* executeQuery (std::string query) {
+	virtual Result* executeQuery (std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
 	    if (mysql_query(sock, query.c_str()))
 		throw std::string("error calling mysql_query: ") + mysql_error(sock);
 	    MYSQL_RES *result;

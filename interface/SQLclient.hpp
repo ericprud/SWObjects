@@ -17,6 +17,9 @@ namespace w3c_sw {
     public:
 	class Result {
 	public:
+	    typedef enum {
+		RESULT_none = 0
+	    } e_RESULT;
 	    virtual ~Result () {  }
 	    struct Field {
 		typedef enum {
@@ -37,19 +40,32 @@ namespace w3c_sw {
 		std::string name;
 		static std::string typeNames[];
 	    };
+
+	    struct Fixup {
+		virtual std::string operator()(std::string lexval) = 0;
+	    };
+	    template <int dummy>
+	    struct Fixups_dummyTemplate : public std::multimap<int, boost::shared_ptr<Fixup> > {
+		iterator insert (int colNo, Fixup* fixup) {
+		    return std::multimap<int, boost::shared_ptr<Fixup> >::insert
+			(std::make_pair(colNo, boost::shared_ptr<Fixup>(fixup)));
+		}
+		static Fixups_dummyTemplate<dummy> Empty;
+	    };
+	    typedef Fixups_dummyTemplate<0> Fixups;
+
 	    typedef std::vector<Field> ColumnSet;
 	    virtual ColumnSet cols() = 0;
-	    struct value {
-	    };
 	    typedef std::vector<OptString> Row;
 	    virtual Row nextRow() = 0;
 	    Row end () { return Row(); } // count on operator!= to say that two empty Row's are ==
 	};
+
 	SQLclient () {  }
 	virtual ~SQLclient () {  }
 	virtual void connect(std::string server, std::string database, std::string user) = 0;
 	virtual void connect(std::string server, std::string database, std::string user, std::string password) = 0;
-	virtual Result* executeQuery(std::string query) = 0;
+	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) = 0;
     };
 
     std::string SQLclient::Result::Field::typeNames[] = {
@@ -102,6 +118,9 @@ namespace w3c_sw {
 	    }
 	}
     };
+
+    template <int dummy>
+    SQLclient::Result::Fixups_dummyTemplate<dummy> SQLclient::Result::Fixups_dummyTemplate<dummy>::Empty;
 
 } // namespace w3c_sw
 

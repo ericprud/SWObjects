@@ -865,8 +865,8 @@ struct SimpleEngine {
 	virtual void connect(std::string engine, std::string database, std::string user, std::string password) {
 	    client->connect(engine, database, user, password);
 	}
-	virtual Result* executeQuery(std::string query) {
-	    return client->executeQuery(query);
+	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
+	    return client->executeQuery(query, fixups);
 	}
     };
 

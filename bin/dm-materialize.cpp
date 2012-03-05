@@ -7,32 +7,47 @@
 #include "SQLParser/SQLParser.hpp"
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+#define NEEDDEF_W3C_SW_SQLCLIENT
 #include "interface/SQLclient_MySQL.hpp"
 
 using namespace w3c_sw;
 
-void dump(SQLclient_MySQL& sqlDriver, std::string cmd);
+void dump(SQLclient& sqlDriver, std::string cmd);
 
 typedef std::map<std::string, const TTerm*> TableRowNodes;
 typedef std::map<sql::RelationName, TableRowNodes> RowNodes;
 const char* Quote = "`";
 
-void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient_MySQL& sqlDriver, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
+void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlDriver, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
     // DefaultGraphPattern* ret = new DefaultGraphPattern();
-    // std::cout << table.name << "\n";
+    // w3c_sw_LINEN << table << "\n";
     std::stringstream dumpQuery;
     dumpQuery << "SELECT ";
+
+    /* fixup for various DBs */
+    
+    int colNo = 0;
+    SQLclient::Result::Fixups fixups;
+    std::vector<boost::shared_ptr<SQLclient::Result::Fixup> > holder;
     for (sql::schema::Relation::Fields::const_iterator it = table.fields.begin();
 	 it != table.fields.end(); ++it) {
 	if (it != table.fields.begin())
 	    dumpQuery << ", ";
 	dumpQuery << Quote << it->second.name << Quote;
+
+#ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
+	if (it->second.type == sql::schema::TYPE_char &&
+	    it->second.precision != SQL_PRECISION_unspecified)
+	    fixups.insert(colNo, new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
+#endif /* W3C_SW_MYSQL_SQLCLIENT */
+
+	++colNo;
     }
     dumpQuery << " FROM " << Quote << table.name << Quote;
-    SQLclient::Result* res = sqlDriver.executeQuery(dumpQuery.str());
+    SQLclient::Result* res = sqlDriver.executeQuery(dumpQuery.str(), fixups);
 
     SqlResultSet rs2(&atomFactory, res);
-    // std::cout << rs2;
+    // w3c_sw_LINEN << rs2;
 
     const TTerm* rdfType = atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
@@ -107,9 +122,15 @@ int main (int argc, const char* argv[]) {
     try {
 	IStreamContext ddlStream(argv[1], IStreamContext::FILE);
 	sqlParser.parse(ddlStream);
-	// std::cout << sqlParser.tables;
 
-	SQLclient_MySQL sqlDriver;
+#if 0 /* debugging dump */
+	w3c_sw_LINEN << sqlParser.tables;
+	for (std::vector<const sql::Insert*>::const_iterator it = sqlParser.inserts.begin();
+	     it != sqlParser.inserts.end(); ++it)
+	    w3c_sw_LINEN << **it << std::endl;
+#endif /* 0 - debugging dump */
+
+	W3C_SW_SQLCLIENT sqlDriver;
 	sqlDriver.connect("", "DM", "root");
 	// dump(sqlDriver, "SELECT ID, fname, addr FROM People");
 	// dump(sqlDriver, "SHOW TABLES");
@@ -137,7 +158,7 @@ int main (int argc, const char* argv[]) {
     return 0;
 }
 
-void dump (SQLclient_MySQL& sqlDriver, std::string cmd) {
+void dump (SQLclient& sqlDriver, std::string cmd) {
 
     SQLclient::Result* res = sqlDriver.executeQuery(cmd.c_str());
 

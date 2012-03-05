@@ -6,6 +6,12 @@
 #ifndef INCLUDED_interface_SQLclient_MySQL_hpp
 #define INCLUDED_interface_SQLclient_MySQL_hpp
 
+#ifdef NEEDDEF_W3C_SW_SQLCLIENT
+  #undef NEEDDEF_W3C_SW_SQLCLIENT
+  #define W3C_SW_MYSQL_SQLCLIENT 1
+  #define W3C_SW_SQLCLIENT ::w3c_sw::SQLclient_MySQL
+#endif /* NEEDDEF_W3C_SW_SQLCLIENT */
+
 #include "../interface/SQLclient.hpp"
 
 #ifdef WIN32
@@ -46,17 +52,29 @@ namespace w3c_sw {
 	class Result : public SQLclient::Result {
 	protected:
 	    MYSQL_RES *result;
+	    Result::Fixups& fixups;
 	    MYSQL_FIELD *fields;
 	    int num_fields;
 	    ColumnSet colSet;
 	    Row row;
 	public:
 
+	    struct CharTrailingChars : public Fixup {
+		int precision;
+		CharTrailingChars (int precision) : precision(precision) {  }
+		virtual std::string operator() (std::string lexval) {
+		    return lexval + std::string(precision - lexval.size(), ' ');
+		}
+	    };
+
+	    Result (e_RESULT, Result::Fixups& fixups) : result(NULL), fixups(fixups) {  }
 	    /**
 	     * SQLclient_MySQL::Result constructor.
 	     * @result: MySQL result handle returned from mysql_query.
 	     */
-	    Result (MYSQL_RES *result) : result(result) {
+	    Result (MYSQL_RES *result, Result::Fixups& fixups)
+		: result(result), fixups(fixups)
+	    {
 		num_fields = mysql_num_fields(result);
 		fields = mysql_fetch_fields(result);
 		for(int i = 0; i < num_fields; i++) {
@@ -152,6 +170,11 @@ namespace w3c_sw {
 			default:
 			    break;
 			}
+			for (Result::Fixups::const_iterator it = fixups.find(i); it != fixups.end() && it->first == i; ++it) {
+			    boost::shared_ptr<Result::Fixup> p = it->second;
+			    Result::Fixup& f = *p;
+			    lexval = f(lexval);
+			}
 			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
 		    } else {
 			ret.push_back(OptString());
@@ -182,25 +205,21 @@ namespace w3c_sw {
 	 * @param query		the query string to send to the engine.
 	 * @return		an SQLclient#Result with the table results of #query.
 	 */
-	virtual Result* executeQuery (std::string query) {
+	virtual Result* executeQuery (std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
 	    if (mysql_query(sock, query.c_str()))
 		throw std::string("error calling mysql_query: ") + mysql_error(sock);
 	    MYSQL_RES *result;
-	    if (!(result = mysql_store_result(sock)))
-		throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
+	    if ((result = mysql_store_result(sock)) == NULL)
+		return new Result(Result::RESULT_none, fixups);
+	    return new Result(result, fixups);
+		// throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
 // 		throw std::string("mysql://") + user + "@" + server + "/" + database +
 // 				  "could not retrieve results of [[\n" + query + "\n]]";
 
-	    return new Result(result);
 	}
     };
 
 } /* namespace w3c_sw */
-
-#ifdef NEEDDEF_W3C_SW_SQLCLIENT
-  #undef NEEDDEF_W3C_SW_SQLCLIENT
-  #define W3C_SW_SQLCLIENT w3c_sw::SQLclient_MySQL
-#endif /* NEEDDEF_W3C_SW_SQLCLIENT */
 
 #endif // !INCLUDED_interface_SQLclient_MySQL_hpp
 

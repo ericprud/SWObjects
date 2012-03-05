@@ -23,11 +23,14 @@
 #include <sstream>
 #include <vector>
 #include "SWObjects.hpp"
+#include <boost/shared_ptr.hpp>
 
 namespace w3c_sw {
 
     namespace sql {
 
+	/** abstract class for serializing SQL.
+	 */
 	struct Serializer {
 	    virtual std::string name(std::string s) = 0;
 	    virtual std::string as() = 0;
@@ -55,6 +58,26 @@ namespace w3c_sw {
 	template<int dummy>
 	SQLSerializer_dummyTemplate<dummy> SQLSerializer_dummyTemplate<dummy>::It;
 	typedef SQLSerializer_dummyTemplate<0> SQLSerializer;
+
+	/* Serializers for popular SQL engines. */
+	struct MySQLSerializer : public SQLSerializer {
+	    virtual std::string name (std::string s) {
+		return std::string() + (true ? "`" : "") + s + (true ? "`" : "");
+	    }
+	};
+	struct OracleSerializer : public SQLSerializer {
+	    virtual std::string as () { return ""; }
+	    virtual std::string offset (int o) {
+		std::stringstream ss;
+		ss << "rownum > " << o;
+		return ss.str();
+	    }
+	    virtual std::string limit (int l) {
+		std::stringstream ss;
+		ss << "rownum <= " << l;
+		return ss.str();
+	    }
+	};
 
 	/**
 	 * enforce type consistency for
@@ -1761,45 +1784,6 @@ namespace w3c_sw {
 // 		return ostr << ref.str();
 // 	    }
 
-	    struct Field : public FieldOrKey {
-		#define SQL_PRECISION_unspecified -1
-		Attribute name;
-		e_TYPE type;
-		int precision;
-		Field (Attribute name, e_TYPE type, int precision) : name(name), type(type), precision(precision)
-		{  }
-		virtual bool operator== (const FieldOrKey& ref) const {
-		    const Field* refp = dynamic_cast<const Field*>(&ref);
-		    if (refp == NULL)
-			return false;
-		    return name == refp->name
-			&& type == refp->type;
-		}
-
-		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		    std::stringstream ss;
-		    ss << s.name(name) << " ";
-		    ss <<
-			(type == TYPE_error ? "ERROR" :
-			 type == TYPE_int ? "INT" :
-			 type == TYPE_double ? "DOUBLE" :
-			 type == TYPE_date ? "DATE" :
-			 type == TYPE_datetime ? "DATETIME" :
-			 type == TYPE_char ? "CHAR" :
-			 type == TYPE_varchar ? "VARCHAR" :
-			 "???");
-		    if (precision != SQL_PRECISION_unspecified)
-			ss << "(" << precision << ")";
-		    return ss.str();
-		}
-	    };
-
-// #ifndef w3c_sw_sql_schema_PRECISION_unspecified
-// 	    const int Field::PRECISION_unspecified = -1;
-//   #define w3c_sw_sql_schema_PRECISION_unspecified
-// #endif /* w3c_sw_sql_schema_PRECISION_unspecified */
-
-
 	    struct Key : public FieldOrKey {
 		std::vector<Attribute>* attrs;
 		Key (std::vector<Attribute>* attrs) : attrs(attrs)
@@ -1886,49 +1870,75 @@ namespace w3c_sw {
 		}
 	    };
 
-	    struct Relation {
-
-		struct FieldInfo {
-
-		    struct PKParticipation {
-			const PrimaryKey* key;
-			size_t position;
-		    };
-
-		    struct FKParticipation {
-			const ForeignKey* key;
-			size_t position;
-			FKParticipation (ForeignKey* key, size_t position)
-			    : key(key), position(position)
-			{  }
-		    };
-
-		    Attribute name;
-		    e_TYPE type;
-		    PKParticipation pk;
-		    struct FKs : public std::map<const ForeignKey*, FKParticipation> {
-			void addForeignKey(ForeignKey* foreignKey, size_t posn) {
-			    iterator fk = find(foreignKey);
-			    if (fk != end())
-				throw std::string() + "Foreign key already assigned.";
-			    insert(std::pair<const ForeignKey*, FKParticipation>
-				   (foreignKey, FKParticipation(foreignKey, posn)));
-			}
-		    };
-		    FKs fks;
-
-		    // FieldInfo (Attribute name, e_TYPE type)
-		    // 	: name(name), type(type)
-		    // {  }		    
-		    FieldInfo (const Field* field)
-			: name(field->name), type(field->type)
-		    {  }		    
+	    struct Field : public FieldOrKey {
+		struct PKParticipation {
+		    const PrimaryKey* key;
+		    size_t position;
 		};
+
+		struct FKParticipation {
+		    const ForeignKey* key;
+		    size_t position;
+		    FKParticipation (ForeignKey* key, size_t position)
+			: key(key), position(position)
+		    {  }
+		};
+
+		struct FKs : public std::map<const ForeignKey*, FKParticipation> {
+		    void addForeignKey(ForeignKey* foreignKey, size_t posn) {
+			iterator fk = find(foreignKey);
+			if (fk != end())
+			    throw std::string() + "Foreign key already assigned.";
+			insert(std::make_pair(foreignKey, FKParticipation(foreignKey, posn)));
+		    }
+		};
+		#define SQL_PRECISION_unspecified -1
+		Attribute name;
+		e_TYPE type;
+		int precision;
+		PKParticipation pk;
+		FKs fks;
+
+		Field (Attribute name, e_TYPE type, int precision) : name(name), type(type), precision(precision)
+		{  }
+		virtual bool operator== (const FieldOrKey& ref) const {
+		    const Field* refp = dynamic_cast<const Field*>(&ref);
+		    if (refp == NULL)
+			return false;
+		    return name == refp->name
+			&& type == refp->type;
+		}
+
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		    std::stringstream ss;
+		    ss << s.name(name) << " ";
+		    ss <<
+			(type == TYPE_error ? "ERROR" :
+			 type == TYPE_int ? "INT" :
+			 type == TYPE_double ? "DOUBLE" :
+			 type == TYPE_date ? "DATE" :
+			 type == TYPE_datetime ? "DATETIME" :
+			 type == TYPE_char ? "CHAR" :
+			 type == TYPE_varchar ? "VARCHAR" :
+			 "???");
+		    if (precision != SQL_PRECISION_unspecified)
+			ss << "(" << precision << ")";
+		    return ss.str();
+		}
+	    };
+
+// #ifndef w3c_sw_sql_schema_PRECISION_unspecified
+// 	    const int Field::PRECISION_unspecified = -1;
+//   #define w3c_sw_sql_schema_PRECISION_unspecified
+// #endif /* w3c_sw_sql_schema_PRECISION_unspecified */
+
+
+	    struct Relation {
 
 		RelationName name;
 		std::vector<const FieldOrKey*> orderedFields;
 		const PrimaryKey* primaryKey;
-		struct Fields : public std::map<Attribute, FieldInfo> {
+		struct Fields : public std::map<Attribute, Field> {
 		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
 			iterator f = find(attr);
 			f->second.pk.key = primaryKey;
@@ -1969,18 +1979,20 @@ namespace w3c_sw {
 
 		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
+		    ss << "CREATE TABLE " << s.name(name) << " (\n";
 		    for (std::vector<const FieldOrKey*>::const_iterator it = orderedFields.begin();
 			 it != orderedFields.end(); ++it) {
 			if (it != orderedFields.begin())
 			    ss << ",\n";
 			ss << "  " << (*it)->toString(pad, driver, s);
 		    }
+		    ss << "\n)";
 		    return ss.str();
 		}
 
 		void addField (const Field* field) {
 		    orderedFields.push_back(field);
-		    fields.insert(std::pair<Attribute, FieldInfo>(field->name, FieldInfo(field)));
+		    fields.insert(std::make_pair(field->name, *field)); // @@ reference instead of copy?
 		}
 
 		void setPrimaryKey (PrimaryKey* primaryKey) {
@@ -2029,11 +2041,8 @@ namespace w3c_sw {
 		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    for (const_iterator it = begin();
-			 it != end(); ++it) {
-			std::string n = it->first;
-			const Relation& r = *it->second;
-			ss << "CREATE TABLE " << s.name(n) << " (\n" << r.toString(pad, driver, s) << "\n);\n";
-		    }
+			 it != end(); ++it)
+			ss << it->second->toString(pad, driver, s) << ";\n";
 		    return ss.str();
 		}
 	    };

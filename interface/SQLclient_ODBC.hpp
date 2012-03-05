@@ -215,7 +215,7 @@ namespace w3c_sw {
 	 * executeQuery - Execute a generic SQL query.
 	 * @param query		the query string to send to the engine.
 	 */
-	virtual Result* executeQuery (std::string query) {
+	virtual Result* executeQuery (std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
 	    SQLHSTMT stmt;
 
 	    if (!SQL_SUCCEEDED(::SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt)))
