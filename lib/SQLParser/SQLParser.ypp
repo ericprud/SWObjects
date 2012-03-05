@@ -218,7 +218,7 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX IT_INTEGER IT_VALUES IT_VARCHAR IT_UNIQUE IT_INSERT IT_DEFAULT IT_CONSTRAINT
 
-%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_STRING IT_INTO
+%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_CHAR IT_INTO
 
 %token <p_NAME> NAME
        /* STRING_LITERAL2 used for ""'d SQL names */
@@ -430,8 +430,8 @@ _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or
   | IT_DATETIME	{
       $$ = sql::schema::TYPE_datetime;
     }
-  | IT_STRING	{
-      $$ = sql::schema::TYPE_char; // !!! need char type
+  | IT_CHAR	{
+      $$ = sql::schema::TYPE_char;
     }
   | IT_VARCHAR	{
       $$ = sql::schema::TYPE_varchar;
@@ -1133,18 +1133,18 @@ String:
 	$$ = new sql::LiteralConstraint(*$1);
 	delete $1;
     }
-  | STRING_LITERAL2	{
-	$$ = new sql::LiteralConstraint(*$1);
-	delete $1;
-    }
-  | STRING_LITERAL_LONG1	{
-	$$ = new sql::LiteralConstraint(*$1);
-	delete $1;
-    }
-  | STRING_LITERAL_LONG2	{
-	$$ = new sql::LiteralConstraint(*$1);
-	delete $1;
-    }
+  // | STRING_LITERAL2	{
+  // 	$$ = new sql::LiteralConstraint(*$1);
+  // 	delete $1;
+  //   }
+  // | STRING_LITERAL_LONG1	{
+  // 	$$ = new sql::LiteralConstraint(*$1);
+  // 	delete $1;
+  //   }
+  // | STRING_LITERAL_LONG2	{
+  // 	$$ = new sql::LiteralConstraint(*$1);
+  // 	delete $1;
+  //   }
 ;
 
  /*** END sql - Change the grammar rules above ***/

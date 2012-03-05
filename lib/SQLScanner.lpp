@@ -89,7 +89,7 @@ IT_INTEGER		[Ii][Nn][Tt][Ee][Gg][Ee][Rr]
 IT_DOUBLE		[Dd][Oo][Uu][Bb][Ll][Ee]
 IT_DATE		[Dd][Aa][Tt][Ee]
 IT_DATETIME		[Dd][Aa][Tt][Ee][Tt][Ii][Mm][Ee]
-IT_STRING		[Ss][Tt][Rr][Ii][Nn][Gg]
+IT_CHAR		[Cc][Hh][Aa][Rr]
 IT_VARCHAR		[Vv][Aa][Rr][Cc][Hh][Aa][Rr]
 IT_CONSTRAINT		[Cc][Oo][Nn][Ss][Tt][Rr][Aa][Ii][Nn][Tt]
 IT_UNIQUE		[Uu][Nn][Ii][Qq][Uu][Ee]
@@ -174,7 +174,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_DOUBLE}		{return token::IT_DOUBLE;}
 {IT_DATE}		{return token::IT_DATE;}
 {IT_DATETIME}		{return token::IT_DATETIME;}
-{IT_STRING}		{return token::IT_STRING;}
+{IT_CHAR}		{return token::IT_CHAR;}
 {IT_VARCHAR}		{return token::IT_VARCHAR;}
 {IT_CONSTRAINT}		{return token::IT_CONSTRAINT;}
 {IT_UNIQUE}		{return token::IT_UNIQUE;}

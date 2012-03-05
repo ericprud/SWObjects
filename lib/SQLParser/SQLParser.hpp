@@ -360,7 +360,7 @@ namespace w3c_sw {
      IT_DOUBLE = 310,
      IT_DATE = 311,
      IT_DATETIME = 312,
-     IT_STRING = 313,
+     IT_CHAR = 313,
      IT_INTO = 314,
      NAME = 315,
      STRING_LITERAL1 = 316,
