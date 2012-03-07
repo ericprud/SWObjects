@@ -174,6 +174,7 @@ public:
 typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
 typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
 typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
+typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 
 } // namespace w3c_sw
 
@@ -182,7 +183,7 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
 
 
 /* Line 35 of lalr1.cc  */
-#line 186 "lib/SQLParser/SQLParser.hpp"
+#line 187 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -196,7 +197,7 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 200 "lib/SQLParser/SQLParser.hpp"
+#line 201 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -206,7 +207,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 210 "lib/SQLParser/SQLParser.hpp"
+#line 211 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -254,7 +255,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 258 "lib/SQLParser/SQLParser.hpp"
+#line 259 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -266,7 +267,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 187 "lib/SQLParser/SQLParser.ypp"
+#line 188 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -287,12 +288,13 @@ namespace w3c_sw {
     std::vector<const sql::Expression*>* p_Expressions;
 
     std::vector<sql::Attribute>* p_Attributes;
-    sql::schema::e_TYPE p_SchemaDatatype;
+    sql::e_TYPE p_SchemaDatatype;
+    l_TypeSize p_TypeSize;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 296 "lib/SQLParser/SQLParser.hpp"
+#line 298 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -358,26 +360,52 @@ namespace w3c_sw {
      IT_PRIMARY = 308,
      IT_INT = 309,
      IT_DOUBLE = 310,
-     IT_DATE = 311,
-     IT_DATETIME = 312,
-     IT_CHAR = 313,
-     IT_INTO = 314,
-     NAME = 315,
-     STRING_LITERAL1 = 316,
-     STRING_LITERAL2 = 317,
-     STRING_LITERAL_LONG1 = 318,
-     STRING_LITERAL_LONG2 = 319,
-     INTEGER = 320,
-     INTEGER_POSITIVE = 321,
-     INTEGER_NEGATIVE = 322,
-     DECIMAL = 323,
-     DECIMAL_POSITIVE = 324,
-     DECIMAL_NEGATIVE = 325,
-     DOUBLE = 326,
-     DOUBLE_POSITIVE = 327,
-     DOUBLE_NEGATIVE = 328,
-     IT_true = 329,
-     IT_false = 330
+     IT_FLOAT = 311,
+     IT_REAL = 312,
+     IT_DATE = 313,
+     IT_DATETIME = 314,
+     IT_TIMESTAMP = 315,
+     IT_CHAR = 316,
+     IT_BOOLEAN = 317,
+     IT_BINARY = 318,
+     IT_INTO = 319,
+     IT_INTERVAL = 320,
+     IT_WRITE = 321,
+     IT_TABLES = 322,
+     IT_READ = 323,
+     IT_LARGE = 324,
+     IT_SMALLINT = 325,
+     IT_TIME = 326,
+     IT_BIGINT = 327,
+     IT_VARYING = 328,
+     IT_EXISTS = 329,
+     IT_UNLOCK = 330,
+     IT_NATIONAL = 331,
+     IT_DECIMAL = 332,
+     IT_NUMERIC = 333,
+     IT_LOCK = 334,
+     IT_CHARACTER = 335,
+     IT_PRECISION = 336,
+     IT_IF = 337,
+     IT_DROP = 338,
+     IT_OBJECT = 339,
+     IT_CAST = 340,
+     NAME = 341,
+     STRING_LITERAL1 = 342,
+     STRING_LITERAL2 = 343,
+     STRING_LITERAL_LONG1 = 344,
+     STRING_LITERAL_LONG2 = 345,
+     INTEGER = 346,
+     INTEGER_POSITIVE = 347,
+     INTEGER_NEGATIVE = 348,
+     DECIMAL = 349,
+     DECIMAL_POSITIVE = 350,
+     DECIMAL_NEGATIVE = 351,
+     DOUBLE = 352,
+     DOUBLE_POSITIVE = 353,
+     DOUBLE_NEGATIVE = 354,
+     IT_TRUE = 355,
+     IT_FALSE = 356
    };
 
     };
@@ -472,7 +500,7 @@ namespace w3c_sw {
     /// - if negative, reduce the rule which number is the opposite.
     /// - if zero, do what YYDEFACT says.
     static const short int yytable_[];
-    static const signed char yytable_ninf_;
+    static const short int yytable_ninf_;
 
     static const short int yycheck_[];
 
@@ -554,7 +582,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 558 "lib/SQLParser/SQLParser.hpp"
+#line 586 "lib/SQLParser/SQLParser.hpp"
 
 
 

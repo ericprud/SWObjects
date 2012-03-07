@@ -59,10 +59,26 @@ namespace w3c_sw {
 	    Row row;
 	public:
 
+	    struct IntToBoolean : public Fixup {
+		IntToBoolean () {  }
+		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
+		    sqlType = Field::TYPE_boolean;
+		    return lexval == "1" ? "TRUE" : "FALSE";
+		}
+	    };
+
+	    struct LiteralToBinary : public Fixup {
+		LiteralToBinary () {  }
+		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
+		    sqlType = Field::TYPE_binary;
+		    return lexval;
+		}
+	    };
+
 	    struct CharTrailingChars : public Fixup {
 		int precision;
 		CharTrailingChars (int precision) : precision(precision) {  }
-		virtual std::string operator() (std::string lexval) {
+		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
 		    return lexval + std::string(precision - lexval.size(), ' ');
 		}
 	    };
@@ -82,6 +98,7 @@ namespace w3c_sw {
 		    // Create a field to store the name and RDF type of this column.
 		    Field f;
 		    f.name = fields[i].name;
+		    w3c_sw_LINEN << "fields[" << i << "].type(" << fields[i].name << "): " << fields[i].type << std::endl;
 		    switch (fields[i].type) {
 		    case MYSQL_TYPE_DECIMAL:
 			f.type = Field::TYPE_decimal;
@@ -106,6 +123,12 @@ namespace w3c_sw {
 			break;
 		    case MYSQL_TYPE_INT24:
 			f.type = Field::TYPE_integer;
+			break;
+		    case MYSQL_TYPE_DATE:
+			f.type = Field::TYPE_date;
+			break;
+		    case MYSQL_TYPE_TIME:
+			f.type = Field::TYPE_time;
 			break;
 		    case MYSQL_TYPE_NULL:
 			f.type = Field::TYPE__null;
@@ -136,7 +159,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual ColumnSet cols () { return colSet; }
+	    virtual ColumnSet& cols () { return colSet; }
 
 	    /**
 	     * nextRow: create a Row record for the next fetchable row.
@@ -161,9 +184,9 @@ namespace w3c_sw {
 			case MYSQL_TYPE_DATETIME:
 			    lexval.replace(lexval.find_first_of(' '), 1, "T");
 			    break;
-			case MYSQL_TYPE_TIMESTAMP:
-			    lexval = "0-0-0T" + lexval;
-			    break;
+			// case MYSQL_TYPE_TIMESTAMP:
+			//     lexval = "0-0-0T" + lexval;
+			//     break;
 			case MYSQL_TYPE_YEAR:
 			    lexval = lexval = "-0-0T00:00";
 			    break;
@@ -173,9 +196,9 @@ namespace w3c_sw {
 			for (Result::Fixups::const_iterator it = fixups.find(i); it != fixups.end() && it->first == i; ++it) {
 			    boost::shared_ptr<Result::Fixup> p = it->second;
 			    Result::Fixup& f = *p;
-			    lexval = f(lexval);
+			    lexval = f(lexval, colSet[i].type);
 			}
-			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
+			ret.push_back(OptString(lexval.c_str()));
 		    } else {
 			ret.push_back(OptString());
 		    }

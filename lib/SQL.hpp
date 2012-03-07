@@ -79,6 +79,54 @@ namespace w3c_sw {
 	    }
 	};
 
+	/* 'NATIONAL'? 'CHARACTER' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARCHAR'
+	 * 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')?
+	 * 'NUMERIC' | 'DECIMAL'
+	 * 'SMALLINT' | ('INTEGER' | 'INT') | 'BIGINT'
+	 * 'FLOAT' | 'REAL' | 'DOUBLE' 'PRECISION'
+	 * 'BOOLEAN'
+	 * 'DATE'
+	 * 'TIME'
+	 * 'TIMESTAMP' | 'DATETIME'
+	 * 'INTERVAL'
+	 */
+	typedef enum {TYPE_error,
+		      TYPE_char, TYPE_varchar,
+		      TYPE_binary,
+		      TYPE_decimal,
+		      TYPE_int,
+		      TYPE_float,
+		      TYPE_real,
+		      TYPE_double,
+		      TYPE_boolean,
+		      TYPE_date,
+		      TYPE_time,
+		      TYPE_datetime, TYPE_timestamp,
+		      TYPE_interval} e_TYPE;
+
+#define SQL_PRECISION_unspecified -1
+	inline std::string typeString (e_TYPE type, int precision) {
+	    std::stringstream ss;
+	    ss << 
+		(type == TYPE_error ? "ERROR" :
+		 type == TYPE_char ? "CHAR" : type == TYPE_varchar ? "VARCHAR" :
+		 type == TYPE_binary ? "BINARY" :
+		 type == TYPE_decimal ? "DECIMAL" :
+		 type == TYPE_int ? "INT" :
+		 type == TYPE_float ? "FLOAT" :
+		 type == TYPE_real ? "REAL" :
+		 type == TYPE_double ? "DOUBLE" :
+		 type == TYPE_boolean ? "BOOLEAN" :
+		 type == TYPE_date ? "DATE" :
+		 type == TYPE_time ? "TIME" :
+		 type == TYPE_timestamp ? "TIMESTAMP" : type == TYPE_datetime ? "DATETIME" :
+		 type == TYPE_interval ? "INTERVAL" :
+		 "???");
+	    if (precision != SQL_PRECISION_unspecified)
+		ss << "(" << precision << ")";
+	    return ss.str();
+	}
+
 	/**
 	 * enforce type consistency for
 	 *   RelationName - a table name.
@@ -307,6 +355,7 @@ namespace w3c_sw {
 	class ArithmeticNegation;
 	class HomologConstraint;
 	class RegexConstraint;
+	class CastConstraint;
 
 	struct EquivSet;
 	class Expression {
@@ -354,6 +403,7 @@ namespace w3c_sw {
 	    virtual bool finalEq (const ArithmeticNegation&) const { return false; }
 	    virtual bool finalEq (const HomologConstraint&) const { return false; }
 	    virtual bool finalEq (const RegexConstraint&) const { return false; }
+	    virtual bool finalEq (const CastConstraint&) const { return false; }
 	    virtual bool mapsTo(const Expression&, AliasMapping::List&) const = 0;
 	    virtual bool operator==(const Expression&) const = 0;
 
@@ -383,6 +433,7 @@ namespace w3c_sw {
 	    virtual bool finalMapsTo (const ArithmeticNegation&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const HomologConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const RegexConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const CastConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	};
 
 	/** ConstraintList - ordered list of Expressions.
@@ -1252,7 +1303,39 @@ namespace w3c_sw {
 		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		return std::string("REGEX(") + text->toString(pad, parentPrec, driver, s) + ", " + pattern->toString() + ")";
+		return std::string() + "REGEX(" + text->toString(pad, parentPrec, driver, s) + ", " + pattern->toString() + ")";
+	    }
+	};
+
+	class CastConstraint : public Expression {
+	    const Expression* exp;
+	    e_TYPE type;
+	    int precision;
+	public:
+	    CastConstraint (const Expression* exp, e_TYPE type, int precision) : Expression(), exp(exp), type(type), precision(precision) {  }
+	    virtual Expression* clone () const {
+		return new CastConstraint(exp->clone(), type, precision);
+	    }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const CastConstraint& l, AliasMapping::List& map) const {
+		return l.type == type && l.precision == precision && l.exp->mapsTo(*exp, map);
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }
+	    virtual bool finalEq (const CastConstraint& l) const {
+		return l.type == type && l.precision == precision && l.exp == exp; // @@ does this compare by ref? by val?
+	    }	    
+	    virtual bool operator== (const Expression& r) const {
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
+	    }
+	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return std::string()
+		    + "CAST(" + exp->toString()
+		    + " AS " + typeString(type, precision)
+		    + ")";
 	    }
 	};
 
@@ -1768,8 +1851,6 @@ namespace w3c_sw {
 	 */
 	namespace schema {
 
-	    typedef enum {TYPE_error, TYPE_int, TYPE_double, TYPE_date, TYPE_datetime, TYPE_char, TYPE_varchar} e_TYPE;
-
 	    struct FieldOrKey {
 		int i;
 		FieldOrKey () : i(7) {  }
@@ -1892,7 +1973,6 @@ namespace w3c_sw {
 			insert(std::make_pair(foreignKey, FKParticipation(foreignKey, posn)));
 		    }
 		};
-		#define SQL_PRECISION_unspecified -1
 		Attribute name;
 		e_TYPE type;
 		int precision;
@@ -1910,20 +1990,7 @@ namespace w3c_sw {
 		}
 
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		    std::stringstream ss;
-		    ss << s.name(name) << " ";
-		    ss <<
-			(type == TYPE_error ? "ERROR" :
-			 type == TYPE_int ? "INT" :
-			 type == TYPE_double ? "DOUBLE" :
-			 type == TYPE_date ? "DATE" :
-			 type == TYPE_datetime ? "DATETIME" :
-			 type == TYPE_char ? "CHAR" :
-			 type == TYPE_varchar ? "VARCHAR" :
-			 "???");
-		    if (precision != SQL_PRECISION_unspecified)
-			ss << "(" << precision << ")";
-		    return ss.str();
+		    return s.name(name) + " " + typeString(type, precision);
 		}
 	    };
 

@@ -1,5 +1,5 @@
 /* $Id: Langname_Parser.yy,v 1.8 2008/04/21 01:46:20 eric Exp SQLParser.yy 19 2007-08-19 20:36:24Z tb $ -*- mode: c++ -*- */
-/* from yacker grammar http://www.w3.org/2005/01/yacker?name=sql */
+/* from yacker grammar http://www.w3.org/2005/01/yacker/uploads/sql?lang=perl */
 /** \file SQLParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
@@ -176,6 +176,7 @@ public:
 typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
 typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
 typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
+typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 
 } // namespace w3c_sw
 
@@ -204,7 +205,8 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
     std::vector<const sql::Expression*>* p_Expressions;
 
     std::vector<sql::Attribute>* p_Attributes;
-    sql::schema::e_TYPE p_SchemaDatatype;
+    sql::e_TYPE p_SchemaDatatype;
+    l_TypeSize p_TypeSize;
 }
 
 %{
@@ -218,7 +220,10 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX IT_INTEGER IT_VALUES IT_VARCHAR IT_UNIQUE IT_INSERT IT_DEFAULT IT_CONSTRAINT
 
-%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_DATE IT_DATETIME IT_CHAR IT_INTO
+%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_FLOAT IT_REAL IT_DATE IT_DATETIME IT_TIMESTAMP IT_CHAR IT_BOOLEAN IT_BINARY IT_INTO
+
+%token IT_INTERVAL IT_WRITE IT_TABLES IT_READ IT_LARGE IT_SMALLINT IT_TIME IT_BIGINT IT_VARYING IT_EXISTS IT_UNLOCK IT_NATIONAL IT_DECIMAL IT_NUMERIC IT_LOCK IT_CHARACTER IT_PRECISION IT_IF IT_DROP IT_OBJECT IT_CAST
+
 
 %token <p_NAME> NAME
        /* STRING_LITERAL2 used for ""'d SQL names */
@@ -228,12 +233,12 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
 %token <p_Expression> DECIMAL DECIMAL_POSITIVE DECIMAL_NEGATIVE
 %token <p_Expression> DOUBLE DOUBLE_POSITIVE DOUBLE_NEGATIVE
  // %token <p_Expression> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
-%token <p_Expression> IT_true IT_false
+%token <p_Expression> IT_TRUE IT_FALSE
 
 /* Productions */
 %type <p_NAME> Relation _O_QIT_AS_E_Opt_S_QRelation_E_C _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt Attribute _O_QIT_AS_E_Opt_S_QAttribute_E_C _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt
 %type <p_Select> SelectUnion Select _O_QIT_UNION_E_S_QSelect_E_C
-%type <p_RValue> _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C
+%type <p_RValue> _O_QIT_VALUES_E_S_QConstList_E_S_QGT_COMMA_E_S_QConstList_E_Star_Or_QSelectUnion_E_C
 %type <p_Selects> _Q_O_QIT_UNION_E_S_QSelect_E_C_E_Star
 %type <p_Expression> _O_QIT_WHERE_E_S_QExpression_E_C _Q_O_QIT_WHERE_E_S_QExpression_E_C_E_Opt
 	_O_QIT_ON_E_S_QExpression_E_C _Q_O_QIT_ON_E_S_QExpression_E_C_E_Opt
@@ -267,13 +272,14 @@ typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expressio
 %type <p_Expression> String
 %type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
 	_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt
-%type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
+%type <p_TypeSize> Sized
+%type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt
 
 %type <p_NAME> _O_QGT_COMMA_E_S_QAttribute_E_C
 %type <p_Attributes> AttrList _QAttrList_E_Opt _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
 %type <p_Expression> Constant _O_QGT_COMMA_E_S_QConstant_E_C
 %type <p_Expressions> ConstList _Q_O_QGT_COMMA_E_S_QConstant_E_C_E_Star
-%type <p_SchemaDatatype> _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C
+%type <p_SchemaDatatype> Type
 
 /* END TokenBlock */
 
@@ -300,7 +306,7 @@ Statement:
     SelectUnion _QGT_SEMI_E_Opt	{
 	driver.root = $1;
     }
-  | Update _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star _QGT_SEMI_E_Opt	
+  | Change _Q_O_QGT_SEMI_E_S_QChange_E_C_E_Star _QGT_SEMI_E_Opt	
 ;
 
 _QGT_SEMI_E_Opt:
@@ -308,18 +314,48 @@ _QGT_SEMI_E_Opt:
   | GT_SEMI	
 ;
 
-_O_QGT_SEMI_E_S_QUpdate_E_C:
-    GT_SEMI Update	
+_O_QGT_SEMI_E_S_QChange_E_C:
+    GT_SEMI Change	
 ;
 
-_Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star:
+_Q_O_QGT_SEMI_E_S_QChange_E_C_E_Star:
     
-  | _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Star _O_QGT_SEMI_E_S_QUpdate_E_C	
+  | _Q_O_QGT_SEMI_E_S_QChange_E_C_E_Star _O_QGT_SEMI_E_S_QChange_E_C	
 ;
 
-Update:
+Change:
     Create	
   | Insert	
+  | Drop	
+  | Lock	
+;
+
+Drop:
+    IT_DROP IT_TABLE _Q_O_QIT_IF_E_S_QIT_EXISTS_E_C_E_Opt Relation	
+;
+
+_O_QIT_IF_E_S_QIT_EXISTS_E_C:
+    IT_IF IT_EXISTS	
+;
+
+_Q_O_QIT_IF_E_S_QIT_EXISTS_E_C_E_Opt:
+    
+  | _O_QIT_IF_E_S_QIT_EXISTS_E_C	
+;
+
+Lock:
+    IT_LOCK IT_TABLES Relation _Q_O_QIT_READ_E_Or_QIT_WRITE_E_C_E_Opt	
+  | IT_UNLOCK IT_TABLES	
+;
+
+_O_QIT_READ_E_Or_QIT_WRITE_E_C:
+    IT_READ	
+  | IT_WRITE	
+;
+
+_Q_O_QIT_READ_E_Or_QIT_WRITE_E_C_E_Opt:
+    
+  | _O_QIT_READ_E_Or_QIT_WRITE_E_C	
 ;
 
 Create:
@@ -347,7 +383,7 @@ _QParam_E_Star:
 ;
 
 Insert:
-    IT_INSERT IT_INTO Relation _QAttrList_E_Opt _O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C	{
+    IT_INSERT IT_INTO Relation _QAttrList_E_Opt _O_QIT_VALUES_E_S_QConstList_E_S_QGT_COMMA_E_S_QConstList_E_Star_Or_QSelectUnion_E_C	{
 	driver.curCreate = new sql::schema::Relation(*$3);
 	driver.inserts.push_back(new sql::Insert(*$3, $4, $5));
 	delete $3;
@@ -361,8 +397,19 @@ _QAttrList_E_Opt:
   | AttrList	
 ;
 
-_O_QIT_VALUES_E_S_QConstList_E_Or_QSelectUnion_E_C:
-    IT_VALUES ConstList	{
+_O_QGT_COMMA_E_S_QConstList_E_C:
+    GT_COMMA ConstList	{
+	w3c_sw_LINEN << "ignoring non-standard inserts\n";
+    }
+;
+
+_Q_O_QGT_COMMA_E_S_QConstList_E_C_E_Star:
+    
+  | _Q_O_QGT_COMMA_E_S_QConstList_E_C_E_Star _O_QGT_COMMA_E_S_QConstList_E_C	
+;
+
+_O_QIT_VALUES_E_S_QConstList_E_S_QGT_COMMA_E_S_QConstList_E_Star_Or_QSelectUnion_E_C:
+    IT_VALUES ConstList _Q_O_QGT_COMMA_E_S_QConstList_E_C_E_Star	{
 	$$ = new sql::RConstants($2);
     }
   | SelectUnion	{
@@ -391,8 +438,8 @@ _Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt:
 ;
 
 FieldOrKey:
-    Attribute _O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt _QLinkDetails_E_Star	{
-	sql::schema::Field* f = new sql::schema::Field(*$1, $2, $3);
+    Attribute Sized _QLinkDetails_E_Star	{
+	sql::schema::Field* f = new sql::schema::Field(*$1, $2.type, $2.size);
 	driver.curCreate->addField(f);
 	if (driver.curIsPrimary) {
 	    driver.curIsPrimary = false;
@@ -412,45 +459,6 @@ FieldOrKey:
   | _QIT_UNIQUE_E_Opt IT_KEY Attribute AttrList	{
 	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
     }
-;
-
-_O_QIT_INT_E_Or_QIT_INTEGER_E_Or_QIT_DOUBLE_E_Or_QIT_DATE_E_Or_QIT_DATETIME_E_Or_QIT_STRING_E_Or_QIT_VARCHAR_E_C:
-    IT_INT	{
-	$$ = sql::schema::TYPE_int;
-    }
-  | IT_INTEGER	{
-      $$ = sql::schema::TYPE_int;
-    }
-  | IT_DOUBLE	{
-      $$ = sql::schema::TYPE_double;
-    }
-  | IT_DATE	{
-      $$ = sql::schema::TYPE_date;
-    }
-  | IT_DATETIME	{
-      $$ = sql::schema::TYPE_datetime;
-    }
-  | IT_CHAR	{
-      $$ = sql::schema::TYPE_char;
-    }
-  | IT_VARCHAR	{
-      $$ = sql::schema::TYPE_varchar;
-    }
-;
-
-_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C:
-    GT_LPAREN INTEGER GT_RPAREN	{
-	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
-	$$ = i->getValue();
-	delete $2;
-    }
-;
-
-_Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt:
-    {
-	$$ = SQL_PRECISION_unspecified;
-    }
-  | _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C	
 ;
 
 _QLinkDetails_E_Star:
@@ -474,6 +482,108 @@ _QIT_UNIQUE_E_Opt:
   | IT_UNIQUE	
 ;
 
+Sized:
+    Type _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt	{
+	$$.type = $1;
+	$$.size = $2;
+    }
+;
+
+_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C:
+    GT_LPAREN INTEGER GT_RPAREN	{
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>($2);
+	$$ = i->getValue();
+	delete $2;
+    }
+;
+
+_Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt:
+    {
+	$$ = SQL_PRECISION_unspecified;
+    }
+  | _O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C	
+;
+
+Type:
+    _QIT_NATIONAL_E_Opt IT_CHARACTER _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt	{
+	$$ = $3 ? sql::TYPE_varchar : sql::TYPE_char;
+    }
+  | IT_VARCHAR	{
+	$$ = sql::TYPE_varchar;
+    }
+  | IT_BINARY _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt	{
+	$$ = sql::TYPE_binary;
+    }
+  | IT_NUMERIC	{
+	$$ = sql::TYPE_int;
+    }
+  | IT_DECIMAL	{
+	$$ = sql::TYPE_int;
+    }
+  | IT_SMALLINT	{
+	$$ = sql::TYPE_int;
+    }
+  | _O_QIT_INTEGER_E_Or_QIT_INT_E_C	{
+	$$ = sql::TYPE_int;
+    }
+  | IT_BIGINT	{
+	$$ = sql::TYPE_int;
+    }
+  | IT_FLOAT	{
+      $$ = sql::TYPE_float;
+    }
+  | IT_REAL	{
+      $$ = sql::TYPE_real;
+    }
+  | IT_DOUBLE IT_PRECISION	{
+      $$ = sql::TYPE_double;
+    }
+  | IT_BOOLEAN	{
+      $$ = sql::TYPE_boolean;
+    }
+  | IT_DATE	{
+      $$ = sql::TYPE_date;
+    }
+  | IT_TIME	{
+      $$ = sql::TYPE_time;
+    }
+  | IT_TIMESTAMP	{
+      $$ = sql::TYPE_timestamp;
+    }
+  | IT_DATETIME	{
+      $$ = sql::TYPE_datetime;
+    }
+  | IT_INTERVAL	{
+      $$ = sql::TYPE_interval;
+    }
+;
+
+_QIT_NATIONAL_E_Opt:
+    
+  | IT_NATIONAL	
+;
+
+_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C:
+    IT_VARYING	{
+	$$ = true;
+    }
+  | IT_LARGE IT_OBJECT	{
+	$$ = false;
+    }
+;
+
+_Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt:
+    {
+	$$ = false;
+    }
+  | _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C	
+;
+
+_O_QIT_INTEGER_E_Or_QIT_INT_E_C:
+    IT_INTEGER	
+  | IT_INT	
+;
+
 LinkDetails:
     IT_PRIMARY IT_KEY	{
 	driver.curIsPrimary = true;
@@ -493,6 +603,9 @@ Constant:
   | String	
   | NumericLiteral	
   | BooleanLiteral	
+  | IT_CAST GT_LPAREN Constant IT_AS Sized GT_RPAREN	{
+	$$ = new sql::CastConstraint($3, $5.type, $5.size);
+    }
 ;
 
 AttrList:
@@ -1124,8 +1237,8 @@ NumericLiteralNegative:
 ;
 
 BooleanLiteral:
-    IT_true	
-  | IT_false	
+    IT_TRUE	
+  | IT_FALSE	
 ;
 
 String:

@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_SUITE( invoke )
 
 BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows) { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue) { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue") }
-//BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes) { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes") } SEGV
+BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes) { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes") }
 BOOST_AUTO_TEST_CASE(_1table2columns1row) { DMTEST("rdb2rdf-tests/D004-1table2columns1row") }
 //BOOST_AUTO_TEST_CASE(_2tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey") } SEGV
 BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars) { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars") }

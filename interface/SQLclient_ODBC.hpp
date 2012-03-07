@@ -143,7 +143,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    virtual ColumnSet cols () { return colSet; }
+	    virtual ColumnSet& cols () { return colSet; }
 
 	    /**
 	     * nextRow: create a Row record for the next fetchable row.

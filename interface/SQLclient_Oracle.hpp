@@ -224,7 +224,7 @@ namespace w3c_sw {
 			f.type = Field::TYPE_dateTime;
 			break;
 		    case MYSQL_TYPE_STRING:
-			f.type = Field::TYPE_string;
+			f.type = Field::TYPE__literal;
 			break;
 		    case MYSQL_TYPE_VARCHAR:
 		    case MYSQL_TYPE_BLOB:
@@ -242,7 +242,7 @@ namespace w3c_sw {
 		    colSet.push_back(f);
 		}
 	    }
-	    virtual ColumnSet cols () { return colSet; }
+	    virtual ColumnSet& cols () { return colSet; }
 	    virtual Row nextRow () {
 		Row ret;
 		MYSQL_ROW row;
