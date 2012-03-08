@@ -35,6 +35,7 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
 	    dumpQuery << ", ";
 	dumpQuery << Quote << it->second.name << Quote;
 
+
 #ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
 	if (it->second.type == sql::TYPE_binary)
 	    fixups.insert(colNo, new SQLclient_MySQL::Result::LiteralToBinary());
@@ -55,7 +56,7 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
     SQLclient::Result* res = sqlDriver.executeQuery(dumpQuery.str(), fixups);
 
     SqlResultSet rs2(&atomFactory, res);
-    w3c_sw_LINEN << rs2;
+    // w3c_sw_LINEN << rs2;
 
     const TTerm* rdfType = atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 

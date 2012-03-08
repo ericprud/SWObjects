@@ -14,7 +14,7 @@
 
 #define BOOST_TEST_MODULE dm-materialize
 #include <boost/test/unit_test.hpp>
-#include <stdio.h>
+w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
 #define BASE_URI ""
 w3c_sw::AtomFactory F;
