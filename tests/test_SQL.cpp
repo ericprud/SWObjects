@@ -574,7 +574,7 @@ BOOST_AUTO_TEST_CASE( sqlize_HR ) {
 
     SPARQLfedDriver sparqlParser("", &F);
     const Operation* query = sparqlParser.parse("\
-SELECT ?job ?dname ?loc ?type ?object\n\
+SELECT ?job ?dname ?loc ?type ?obj\n\
  WHERE {\n\
   ?e <EMP#job> ?job ;\n\
      <EMP#ename> \"SMITH\" ;\n\
@@ -583,7 +583,7 @@ SELECT ?job ?dname ?loc ?type ?object\n\
      <DEPT#loc> ?loc .\n\
   ?l <LIKES#id> ?e ;\n\
      <LIKES#likeType> ?type ;\n\
-     <LIKES#likeObj> ?object\n\
+     <LIKES#likeObj> ?obj\n\
  }");
     SQLizer sqlizer(&F, "", predicateDelims, nodeDelims, &ddl1Driver.tables, drv);
     query->express(&sqlizer);
@@ -607,7 +607,7 @@ SELECT ?job ?dname ?loc ?type ?object\n\
 
     SQLDriver expected(context);
     expected.parse("\
-SELECT e.job AS job, d.dname AS dname, d.loc AS loc, l.likeType AS type, l.likeObj AS object\n\
+SELECT e.job AS job, d.dname AS dname, d.loc AS loc, l.likeType AS type, l.likeObj AS obj\n\
   FROM EMP AS e\n\
        INNER JOIN DEPT AS d ON d.deptno=e.deptno AND d.deptno=e.deptno\n\
        INNER JOIN LIKES AS l ON l.id=e.empno\n\
