@@ -1120,6 +1120,8 @@ public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Decimal; }
     virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
     virtual void express(Expressor* p_expressor) const;
+    // <DECIMAL> ::= ([0-9])+ "." ([0-9])+
+    //             | "." ([0-9])+
 };
 class DoubleRDFLiteral : public NumericRDFLiteral {
     friend class AtomFactory;
@@ -1134,6 +1136,9 @@ public:
     virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
+    // <DOUBLE> ::= ([0-9])+ "." ([0-9])+ EXPONENT
+    //            | "." (( [0-9] ))+ EXPONENT
+    //            | (( [0-9] ))+ EXPONENT
     virtual std::string toString () const {
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
@@ -1624,7 +1629,8 @@ protected:
     class MakeNumericRDFLiteral {
     public:
 	virtual ~MakeNumericRDFLiteral () {  }
-	virtual const NumericRDFLiteral* makeIt(std::string p_String, const URI* p_URI) = 0;
+	virtual std::string indexIt() const = 0;
+	virtual const NumericRDFLiteral* makeIt(std::string p_String, const URI* p_URI) const = 0;
     };
 
 protected:
@@ -1637,7 +1643,7 @@ protected:
     TriplePatternMap	triples;
     static pURI_str	operatorNames_static;
 
-    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, MakeNumericRDFLiteral* maker);
+    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, const MakeNumericRDFLiteral& maker);
 
     /** URI and Boolean contants are kept in separate hashes to avoid
 	a dependency on the initialization order of globals. In

@@ -1111,12 +1111,17 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
-	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
+	    virtual std::string indexIt () const {
+		std::stringstream ss; // @@ could be cheaper
+		ss << m_value;
+		return ss.str();
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new IntegerRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeIntegerRDFLiteral maker(p_value);
-	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(p_String, "integer", &maker);
+	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(p_String, "integer", maker);
 	return ret;
     }
 
@@ -1124,12 +1129,17 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
+	    virtual std::string indexIt () const {
+		std::stringstream ss; // @@ could be cheaper
+		ss << m_value;
+		return ss.str();
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new DecimalRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDecimalRDFLiteral maker(p_value);
-	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(p_String, "decimal", &maker);
+	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(p_String, "decimal", maker);
 	return ret;
     }
 
@@ -1137,12 +1147,17 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
-	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
+	    virtual std::string indexIt () const {
+		std::stringstream ss; // @@ could be cheaper
+		ss << m_value;
+		return ss.str();
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new FloatRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeFloatRDFLiteral maker(p_value);
-	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(p_String, "float", &maker);
+	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(p_String, "float", maker);
 	return ret;
     }
 
@@ -1150,12 +1165,23 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
-	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) {
+	    virtual std::string indexIt () const {
+		std::stringstream ss; // @@ could be cheaper
+
+		// ss << std::scientific << m_value; yields e.g. 1.230000E04
+		int ex = log10(m_value);
+		if (m_value < 1)
+		    --ex;
+		ss << m_value/exp(ex*log(10)/log10(10)) << "E" << ex;
+
+		return ss.str();
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new DoubleRDFLiteral(p_String, p_URI, m_value);
 	    }
 	};
 	MakeDoubleRDFLiteral maker(p_value);
-	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(p_String, "double", &maker);
+	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(p_String, "double", maker);
 	return ret;
     }
 
@@ -1191,25 +1217,39 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return (BooleanRDFLiteral*)vi->second; // shameful downcast
     }
 
-    const NumericRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, const char* type, MakeNumericRDFLiteral* maker) {
+    const NumericRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, const char* type, const MakeNumericRDFLiteral& maker) {
 
-	std::string str;
-	str += XSD;
-	str += type;
-	const URI* uri = getURI(str);
+	std::string uriStr(XSD);
+	uriStr += type;
+	const URI* uri = getURI(uriStr);
 
-	std::stringstream buf;
-	buf << '"' << p_String << '"';
-	if (uri)
-	    buf << "^^<" << uri->getLexicalValue() << ">";
-	std::string key(buf.str());
+	// First look for the lexical value as given.
+	std::string key = std::string() + '"' + p_String + '"' + "^^<" + uriStr + ">";
 	RDFLiteralMap::const_iterator vi = rdfLiterals_static.find(key);
 	if (vi == rdfLiterals_static.end()) {
 	    vi = rdfLiterals.find(key);
 	    if (vi == rdfLiterals.end()) {
-		const NumericRDFLiteral* ret = maker->makeIt(p_String, uri);
-		rdfLiterals[key] = ret;
-		return ret;
+
+		if (CanonicalRDFLiteral::format == CanonicalRDFLiteral::CANON_roundTrip) {
+		    // Run expensive maker->indexIt() only when necessary.
+		    // Presumes that hash lookups are < half as expensive as indexIt().
+		    key = std::string() + '"' + maker.indexIt() + '"' + "^^<" + uriStr + ">";
+		    vi = rdfLiterals_static.find(key);
+		    if (vi == rdfLiterals_static.end()) {
+			vi = rdfLiterals.find(key);
+			if (vi == rdfLiterals.end()) {
+
+			    // Create a new numeric object.
+			    const NumericRDFLiteral* ret = maker.makeIt(p_String, uri);
+			    rdfLiterals[key] = ret;
+			    return ret;
+			}
+		    }
+		} else {
+			    const NumericRDFLiteral* ret = maker.makeIt(p_String, uri);
+			    rdfLiterals[key] = ret;
+			    return ret;
+		}
 	    }
 	}
 	return (const NumericRDFLiteral*)vi->second; // shameful downcast
