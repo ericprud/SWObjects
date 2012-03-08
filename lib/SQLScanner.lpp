@@ -94,7 +94,6 @@ IT_REFERENCES		[Rr][Ee][Ff][Ee][Rr][Ee][Nn][Cc][Ee][Ss]
 IT_PRIMARY		[Pp][Rr][Ii][Mm][Aa][Rr][Yy]
 IT_CONSTRAINT		[Cc][Oo][Nn][Ss][Tt][Rr][Aa][Ii][Nn][Tt]
 IT_UNIQUE		[Uu][Nn][Ii][Qq][Uu][Ee]
-IT_CHARACTER		[Cc][Hh][Aa][Rr][Aa][Cc][Tt][Ee][Rr]
 IT_VARCHAR		[Vv][Aa][Rr][Cc][Hh][Aa][Rr]
 IT_BINARY		[Bb][Ii][Nn][Aa][Rr][Yy]
 IT_NUMERIC		[Nn][Uu][Mm][Ee][Rr][Ii][Cc]
@@ -112,6 +111,8 @@ IT_TIMESTAMP		[Tt][Ii][Mm][Ee][Ss][Tt][Aa][Mm][Pp]
 IT_DATETIME		[Dd][Aa][Tt][Ee][Tt][Ii][Mm][Ee]
 IT_INTERVAL		[Ii][Nn][Tt][Ee][Rr][Vv][Aa][Ll]
 IT_NATIONAL		[Nn][Aa][Tt][Ii][Oo][Nn][Aa][Ll]
+IT_CHARACTER		[Cc][Hh][Aa][Rr][Aa][Cc][Tt][Ee][Rr]
+IT_CHAR		[Cc][Hh][Aa][Rr]
 IT_VARYING		[Vv][Aa][Rr][Yy][Ii][Nn][Gg]
 IT_LARGE		[Ll][Aa][Rr][Gg][Ee]
 IT_OBJECT		[Oo][Bb][Jj][Ee][Cc][Tt]
@@ -151,7 +152,7 @@ IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_LCASE		[Ll][Cc][Aa][Ss][Ee]
 IT_UCASE		[Uu][Cc][Aa][Ss][Ee]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
-IT_TRUE		[Tr][Rr][Uu][Ee]
+IT_TRUE		[Tt][Rr][Uu][Ee]
 IT_FALSE		[Ff][Aa][Ll][Ss][Ee]
 NAME		[A-Za-z_][A-Za-z0-9_]*
 INTEGER		[0-9]+
@@ -204,7 +205,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_PRIMARY}		{return token::IT_PRIMARY;}
 {IT_CONSTRAINT}		{return token::IT_CONSTRAINT;}
 {IT_UNIQUE}		{return token::IT_UNIQUE;}
-{IT_CHARACTER}		{return token::IT_CHARACTER;}
 {IT_VARCHAR}		{return token::IT_VARCHAR;}
 {IT_BINARY}		{return token::IT_BINARY;}
 {IT_NUMERIC}		{return token::IT_NUMERIC;}
@@ -222,6 +222,8 @@ LINEFEED		(\r\n|\r|\n)
 {IT_DATETIME}		{return token::IT_DATETIME;}
 {IT_INTERVAL}		{return token::IT_INTERVAL;}
 {IT_NATIONAL}		{return token::IT_NATIONAL;}
+{IT_CHARACTER}		{return token::IT_CHARACTER;}
+{IT_CHAR}		{return token::IT_CHAR;}
 {IT_VARYING}		{return token::IT_VARYING;}
 {IT_LARGE}		{return token::IT_LARGE;}
 {IT_OBJECT}		{return token::IT_OBJECT;}
