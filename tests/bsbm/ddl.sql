@@ -3,7 +3,7 @@ CREATE TABLE offer (
   product INT,
   producer INT,
   vendor INT,
-  price DOUBLE,
+  price DOUBLE PRECISION,
   validFrom DATETIME,
   validTo DATETIME,
   deliveryDays INT,
