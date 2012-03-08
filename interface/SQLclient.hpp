@@ -23,15 +23,15 @@ namespace w3c_sw {
 	    virtual ~Result () {  }
 	    struct Field {
 		typedef enum {
-/* 'NATIONAL'? 'CHARACTER' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARCHAR'
- * 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')?
- * 'NUMERIC' | 'DECIMAL'
- * 'SMALLINT' | ('INTEGER' | 'INT') | 'BIGINT'
- * 'FLOAT' | 'REAL' | 'DOUBLE' 'PRECISION'
- * 'BOOLEAN'
- * 'DATE'
- * 'TIME'
- * 'TIMESTAMP' | 'DATETIME'
+/* plain    | 'NATIONAL'? 'CHARACTER' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARCHAR'
+ * Base64   | 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')?
+ * decimal  | 'NUMERIC' | 'DECIMAL'
+ * integer  | 'SMALLINT' | ('INTEGER' | 'INT') | 'BIGINT'
+ * double   | 'FLOAT' | 'REAL' | 'DOUBLE' 'PRECISION'
+ * boolean  | 'BOOLEAN'
+ * date     | 'DATE'
+ * time     | 'TIME'
+ * datetime | 'TIMESTAMP' | 'DATETIME'
  * 'INTERVAL'
  */
 
@@ -178,7 +178,25 @@ namespace w3c_sw {
 				lexval = base64_encode(lexval);
 			    if (cols[i].type == SQLclient::Result::Field::TYPE_boolean)
 				lexval = lexval == "TRUE" ? "true" : "false";
+			    if (cols[i].type == SQLclient::Result::Field::TYPE_float || 
+				cols[i].type == SQLclient::Result::Field::TYPE_real || 
+				cols[i].type == SQLclient::Result::Field::TYPE_double) {
+				std::stringstream input(lexval);
+				double val;
+				input >> val;
+
+				// canonical << std::scientific << val; yields e.g. 1.230000E04
+				std::stringstream canonical;
+				int ex = log10(val);
+				if (val < 1)
+				    --ex;
+				canonical << val/exp(ex*log(10)/log10(10)) << "E" << ex;
+
+				lexval = canonical.str();
+			    }
+
 			    const TTerm* val = atomFactory->getRDFLiteral(lexval, dtpos, NULL);
+			    // w3c_sw_LINEN << "val(" << val << "): " << val->toString() << " of dtpos: " << dtpos->toString() << std::endl;
 			    set(result, vars[i], val, false);
 			}
 		    }

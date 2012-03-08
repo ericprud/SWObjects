@@ -98,7 +98,7 @@ namespace w3c_sw {
 		    // Create a field to store the name and RDF type of this column.
 		    Field f;
 		    f.name = fields[i].name;
-		    w3c_sw_LINEN << "fields[" << i << "].type(" << fields[i].name << "): " << fields[i].type << std::endl;
+		    // w3c_sw_LINEN << "fields[" << i << "].type(" << fields[i].name << "): " << fields[i].type << std::endl;
 		    switch (fields[i].type) {
 		    case MYSQL_TYPE_DECIMAL:
 			f.type = Field::TYPE_decimal;
