@@ -18,6 +18,57 @@ typedef std::map<std::string, const TTerm*> TableRowNodes;
 typedef std::map<sql::RelationName, TableRowNodes> RowNodes;
 const char* Quote = "`";
 
+std::string replace (std::string replaceMe, char from, const char* to) {
+    for (size_t i = 0; i < replaceMe.size(); ++i)
+	if (replaceMe[i] == from)
+	    replaceMe.replace(i, 1, to);
+    return replaceMe;
+}
+
+// { string s("a.日_c"); cout << f((unsigned char*)s.c_str(), s.size()); } string f 
+//                      (const unsigned char s[], size_t size) { string ret; for (size_t i = 0; i < size; ++i) if 
+//                      (!((s[i] >= 0x41 && s[i] <= 0x5a) || (s[i] >= 0x61 && s[i] <= 0x7a) || (s[i] >  0x7f))) { 
+//                      stringstream ss; ss << '%' << hex << (int)s[i]; ret += ss.str(); } else ret += s[i]; return 
+//                      ret; }
+
+std::string IRIsafe (std::string s) {
+    unsigned char* segment = (unsigned char*) s.c_str();
+    size_t size = s.size();
+    std::string ret;
+    // pecent-encode everything outside of rfc3987:iunreserved.
+    // iunreserved = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
+    //               41-5a,61-7a / 30-39 / 2d / 2e / 5f / 7e / >7f
+    for (size_t i = 0; i < size; ++i) {
+	if (!((segment[i] >= 0x41 && segment[i] <= 0x5a) ||
+	      (segment[i] >= 0x61 && segment[i] <= 0x7a) ||
+	      (segment[i] >= 0x30 && segment[i] <= 0x39) ||
+	      (segment[i] == 0x2d) ||
+	      (segment[i] == 0x2e) ||
+	      (segment[i] == 0x5f) ||
+	      (segment[i] == 0x7e) ||
+	      (segment[i] >  0x7f))) {
+	    std::stringstream ss;
+	    ss << '%' << std::hex << (int)segment[i];
+	    ret += ss.str();
+	} else {
+	    ret += segment[i];
+	}
+    }
+    return ret;
+}
+
+std::string attrname (std::string name) {
+    name = IRIsafe(name);
+    name = replace(name, '-', "%3D");
+    return name;
+}
+
+std::string attrvalue (std::string value) {
+    value = IRIsafe(value);
+    value = replace(value, '.', "%2E");
+    return value;
+}
+
 void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlDriver, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
     // DefaultGraphPattern* ret = new DefaultGraphPattern();
     // w3c_sw_LINEN << table << "\n";
@@ -66,12 +117,12 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
 	    s = atomFactory.createBNode();
 	} else {
 	    std::stringstream node;
-	    node << table.name << "/";
+	    node << IRIsafe(table.name) << "/";
 	    for (std::vector<sql::Attribute>::const_iterator a = table.primaryKey->attrs->begin();
 		 a != table.primaryKey->attrs->end(); ++a) {
 		if (a != table.primaryKey->attrs->begin())
 		    node << ".";
-		node << *a << "-" << (*row)->get(atomFactory.getVariable(*a))->getLexicalValue();
+		node << attrname(*a) << "-" << attrvalue((*row)->get(atomFactory.getVariable(*a))->getLexicalValue());
 	    }
 	    s = atomFactory.getURI(node.str());
 	}
@@ -79,13 +130,13 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
 	/* row type triple */
 	bgp->addTriplePattern
 	    (atomFactory.getTriple
-	     (s, rdfType, atomFactory.getURI(table.name)));
+	     (s, rdfType, atomFactory.getURI(IRIsafe(table.name))));
 
 	/* literal triples */
 	const VariableList* vars = rs2.getKnownVars();
 	for (VariableListConstIterator var = vars->begin(); var != vars->end(); ++var) {
 	    if ((*row)->get(*var) != NULL) {
-		const TTerm* p = atomFactory.getURI(table.name + "#" + (*var)->getLexicalValue());
+		const TTerm* p = atomFactory.getURI(IRIsafe(table.name) + "#" + IRIsafe((*var)->getLexicalValue()));
 		bgp->addTriplePattern
 		    (atomFactory.getTriple
 		     (s, p, (*row)->get(*var)));
@@ -107,12 +158,15 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
 		std::vector<sql::Attribute>::const_iterator attr = key->attrs->begin();
 		std::vector<sql::Attribute>::const_iterator relAttr = key->relAttrs->begin();
 		while (attr != key->attrs->end()) {
+		    const TTerm* val = (*row)->get(atomFactory.getVariable(*attr));
+		    if (val == NULL)
+			goto skipTriple;
 		    if (attr != key->attrs->begin()) {
 			pstr << ".";
 			ostr << ".";
 		    }
-		    pstr << *attr;
-		    ostr << *relAttr << "-" << (*row)->get(atomFactory.getVariable(*attr))->getLexicalValue();
+		    pstr << IRIsafe(*attr);
+		    ostr << attrname(*relAttr) << "-" << attrvalue(val->getLexicalValue());
 		    ++attr;
 		    ++relAttr;
 		}
@@ -120,6 +174,8 @@ void dumpTable(RowNodes& rowNodes, sql::schema::Relation& table, SQLclient& sqlD
 		bgp->addTriplePattern
 		    (atomFactory.getTriple
 		     (s, atomFactory.getURI(pstr.str()), atomFactory.getURI(ostr.str())));
+	    skipTriple:
+		;
 	    }
 	}
     }
