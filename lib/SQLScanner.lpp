@@ -138,6 +138,7 @@ IT_OUTER		[Oo][Uu][Tt][Ee][Rr]
 IT_ON		[Oo][Nn]
 IT_JOIN		[Jj][Oo][Ii][Nn]
 IT_OR		[Oo][Rr]
+GT_OR		"||"
 IT_AND		[Aa][Nn][Dd]
 GT_NEQUAL		"!="
 GT_LT		"<"
@@ -249,6 +250,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_ON}		{return token::IT_ON;}
 {IT_JOIN}		{return token::IT_JOIN;}
 {IT_OR}		{return token::IT_OR;}
+{GT_OR}		{return token::GT_OR;}
 {IT_AND}		{return token::IT_AND;}
 {GT_NEQUAL}		{return token::GT_NEQUAL;}
 {GT_LT}		{return token::GT_LT;}

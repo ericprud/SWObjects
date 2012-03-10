@@ -168,6 +168,7 @@ public:
     sql::SQLQuery* root;
 
     sql::schema::Relation* curCreate;
+    std::string* curAttributeName;
     bool curIsPrimary;
     sql::schema::Database tables;
     std::vector<const sql::Insert*> inserts;
@@ -216,7 +217,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 /* START TokenBlock */
 /* Terminals */
 %token IT_SELECT IT_UNION IT_WHERE IT_FROM GT_TIMES IT_AS GT_DOT
-       IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN IT_OR IT_AND IT_ROWNUM IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
+       IT_INNER IT_LEFT IT_OUTER IT_ON IT_JOIN GT_OR IT_OR IT_AND IT_ROWNUM IT_LIMIT IT_OFFSET IT_IS IT_NOT IT_NULL
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX IT_INTEGER IT_VALUES IT_VARCHAR IT_UNIQUE IT_INSERT IT_DEFAULT IT_CONSTRAINT
 
@@ -250,8 +251,8 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 %type <p_Expression> FQAttribute
 %type <p_tableAlias> TableAlias
 %type <p_JoinExpression> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_S_QIT_JOIN_E_S_QTableAlias_E_S_QIT_ON_E_S_QExpression_E_Opt_C
-%type <p_Expression> Expression ConditionalAndExpression ConditionalOrExpression _O_QIT_OR_E_S_QConditionalAndExpression_E_C _O_QIT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression
-%type <p_Expressions> _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star
+%type <p_Expression> Expression _O_QGT_OR_E_S_QConditionalOrExpression_E_C ConditionalOrExpression ConditionalAndExpression _O_QIT_OR_E_S_QConditionalAndExpression_E_C _O_QIT_AND_E_S_QValueLogical_E_C ValueLogical RelationalExpression
+%type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalOrExpression_E_C_E_Star _Q_O_QIT_OR_E_S_QConditionalAndExpression_E_C_E_Star _Q_O_QIT_AND_E_S_QValueLogical_E_C_E_Star
 %type <p_BooleanComparator> RightRelationalExpression _QRightRelationalExpression_E_Opt
 %type <p_Expression> NumericExpression
 %type <p_Expression> AdditiveExpression
@@ -438,9 +439,13 @@ _Q_O_QGT_EQUAL_E_S_QNAME_E_C_E_Opt:
 ;
 
 FieldOrKey:
-    Attribute Sized _QLinkDetails_E_Star	{
-	sql::schema::Field* f = new sql::schema::Field(*$1, $2.type, $2.size);
+    Attribute {
+	driver.curAttributeName = $1;
+    } Sized {
+	sql::schema::Field* f = new sql::schema::Field(*$1, $3.type, $3.size);
 	driver.curCreate->addField(f);
+    } _QLinkDetails_E_Star	{
+	driver.curAttributeName = NULL;
 	if (driver.curIsPrimary) {
 	    driver.curIsPrimary = false;
 	    std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
@@ -448,7 +453,7 @@ FieldOrKey:
 	    driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
 	}
 	delete $1;
-    }
+      }
   | _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
       driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, $7));
       delete $6;
@@ -598,6 +603,16 @@ LinkDetails:
     }
   | IT_NOT IT_NULL	{
 	w3c_sw_LINEN << "ignoring NOT NULL\n";
+    }
+  | IT_UNIQUE	{
+	w3c_sw_LINEN << "ignoring UNIQUE\n";
+    }
+  | IT_REFERENCES Relation AttrList	{
+	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	attrs->push_back(sql::Attribute(*driver.curAttributeName));
+	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *$2, $3);
+	driver.curCreate->addForeignKey(fk);
+	delete $2;
     }
 ;
 
@@ -955,7 +970,30 @@ _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt:
 ;
 
 Expression:
-    ConditionalOrExpression	
+    ConditionalOrExpression _Q_O_QGT_OR_E_S_QConditionalOrExpression_E_C_E_Star	{
+	if ($2->size() > 0) {
+	    $2->insert($2->begin(), $1);
+	    $$ = new sql::HomologConstraint("CONCAT", $2->begin(), $2->end());
+	} else
+	    $$ = $1;
+	delete $2;
+    }
+;
+
+_O_QGT_OR_E_S_QConditionalOrExpression_E_C:
+    GT_OR ConditionalOrExpression	{
+	$$ = $2;
+    }
+;
+
+_Q_O_QGT_OR_E_S_QConditionalOrExpression_E_C_E_Star:
+    {
+	$$ = new std::vector<const sql::Expression*>();
+    }
+  | _Q_O_QGT_OR_E_S_QConditionalOrExpression_E_C_E_Star _O_QGT_OR_E_S_QConditionalOrExpression_E_C	{
+	$1->push_back($2);
+	$$ = $1;
+    }
 ;
 
 ConditionalOrExpression:
@@ -1280,9 +1318,9 @@ void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
 namespace w3c_sw {
 
 SQLDriver::SQLDriver(class sqlContext& _context)
-    : YaccDriver("", NULL), trace_scanning(false),
-      trace_parsing(false), context(_context),
-      root(NULL), curIsPrimary(false)
+    : YaccDriver("", NULL), trace_scanning(false), trace_parsing(false),
+      context(_context), root(NULL), curCreate(NULL),
+      curAttributeName(NULL), curIsPrimary(false)
 {
 }
 

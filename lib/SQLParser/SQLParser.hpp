@@ -166,6 +166,7 @@ public:
     sql::SQLQuery* root;
 
     sql::schema::Relation* curCreate;
+    std::string* curAttributeName;
     bool curIsPrimary;
     sql::schema::Database tables;
     std::vector<const sql::Insert*> inserts;
@@ -183,7 +184,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 
 
 /* Line 35 of lalr1.cc  */
-#line 187 "lib/SQLParser/SQLParser.hpp"
+#line 188 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -197,7 +198,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 201 "lib/SQLParser/SQLParser.hpp"
+#line 202 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -207,7 +208,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 211 "lib/SQLParser/SQLParser.hpp"
+#line 212 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -255,7 +256,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 259 "lib/SQLParser/SQLParser.hpp"
+#line 260 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -267,7 +268,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 188 "lib/SQLParser/SQLParser.ypp"
+#line 189 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -294,7 +295,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 298 "lib/SQLParser/SQLParser.hpp"
+#line 299 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -319,93 +320,94 @@ namespace w3c_sw {
      IT_OUTER = 267,
      IT_ON = 268,
      IT_JOIN = 269,
-     IT_OR = 270,
-     IT_AND = 271,
-     IT_ROWNUM = 272,
-     IT_LIMIT = 273,
-     IT_OFFSET = 274,
-     IT_IS = 275,
-     IT_NOT = 276,
-     IT_NULL = 277,
-     GT_EQUAL = 278,
-     GT_NEQUAL = 279,
-     GT_LT = 280,
-     GT_GT = 281,
-     GT_LE = 282,
-     GT_GE = 283,
-     GT_PLUS = 284,
-     GT_MINUS = 285,
-     GT_DIVIDE = 286,
-     GT_NOT = 287,
-     IT_CONCAT = 288,
-     IT_LCASE = 289,
-     IT_UCASE = 290,
-     IT_REGEX = 291,
-     IT_INTEGER = 292,
-     IT_VALUES = 293,
-     IT_VARCHAR = 294,
-     IT_UNIQUE = 295,
-     IT_INSERT = 296,
-     IT_DEFAULT = 297,
-     IT_CONSTRAINT = 298,
-     GT_SEMI = 299,
-     IT_CREATE = 300,
-     IT_TABLE = 301,
-     GT_LPAREN = 302,
-     GT_RPAREN = 303,
-     GT_COMMA = 304,
-     IT_FOREIGN = 305,
-     IT_KEY = 306,
-     IT_REFERENCES = 307,
-     IT_PRIMARY = 308,
-     IT_INT = 309,
-     IT_DOUBLE = 310,
-     IT_FLOAT = 311,
-     IT_REAL = 312,
-     IT_DATE = 313,
-     IT_DATETIME = 314,
-     IT_TIMESTAMP = 315,
-     IT_CHAR = 316,
-     IT_BOOLEAN = 317,
-     IT_BINARY = 318,
-     IT_INTO = 319,
-     IT_INTERVAL = 320,
-     IT_WRITE = 321,
-     IT_TABLES = 322,
-     IT_READ = 323,
-     IT_LARGE = 324,
-     IT_SMALLINT = 325,
-     IT_TIME = 326,
-     IT_BIGINT = 327,
-     IT_VARYING = 328,
-     IT_EXISTS = 329,
-     IT_UNLOCK = 330,
-     IT_NATIONAL = 331,
-     IT_DECIMAL = 332,
-     IT_NUMERIC = 333,
-     IT_LOCK = 334,
-     IT_CHARACTER = 335,
-     IT_PRECISION = 336,
-     IT_IF = 337,
-     IT_DROP = 338,
-     IT_OBJECT = 339,
-     IT_CAST = 340,
-     NAME = 341,
-     STRING_LITERAL1 = 342,
-     STRING_LITERAL2 = 343,
-     STRING_LITERAL_LONG1 = 344,
-     STRING_LITERAL_LONG2 = 345,
-     INTEGER = 346,
-     INTEGER_POSITIVE = 347,
-     INTEGER_NEGATIVE = 348,
-     DECIMAL = 349,
-     DECIMAL_POSITIVE = 350,
-     DECIMAL_NEGATIVE = 351,
-     DOUBLE = 352,
-     DOUBLE_POSITIVE = 353,
-     DOUBLE_NEGATIVE = 354,
-     IT_TRUE = 355,
-     IT_FALSE = 356
+     GT_OR = 270,
+     IT_OR = 271,
+     IT_AND = 272,
+     IT_ROWNUM = 273,
+     IT_LIMIT = 274,
+     IT_OFFSET = 275,
+     IT_IS = 276,
+     IT_NOT = 277,
+     IT_NULL = 278,
+     GT_EQUAL = 279,
+     GT_NEQUAL = 280,
+     GT_LT = 281,
+     GT_GT = 282,
+     GT_LE = 283,
+     GT_GE = 284,
+     GT_PLUS = 285,
+     GT_MINUS = 286,
+     GT_DIVIDE = 287,
+     GT_NOT = 288,
+     IT_CONCAT = 289,
+     IT_LCASE = 290,
+     IT_UCASE = 291,
+     IT_REGEX = 292,
+     IT_INTEGER = 293,
+     IT_VALUES = 294,
+     IT_VARCHAR = 295,
+     IT_UNIQUE = 296,
+     IT_INSERT = 297,
+     IT_DEFAULT = 298,
+     IT_CONSTRAINT = 299,
+     GT_SEMI = 300,
+     IT_CREATE = 301,
+     IT_TABLE = 302,
+     GT_LPAREN = 303,
+     GT_RPAREN = 304,
+     GT_COMMA = 305,
+     IT_FOREIGN = 306,
+     IT_KEY = 307,
+     IT_REFERENCES = 308,
+     IT_PRIMARY = 309,
+     IT_INT = 310,
+     IT_DOUBLE = 311,
+     IT_FLOAT = 312,
+     IT_REAL = 313,
+     IT_DATE = 314,
+     IT_DATETIME = 315,
+     IT_TIMESTAMP = 316,
+     IT_CHAR = 317,
+     IT_BOOLEAN = 318,
+     IT_BINARY = 319,
+     IT_INTO = 320,
+     IT_INTERVAL = 321,
+     IT_WRITE = 322,
+     IT_TABLES = 323,
+     IT_READ = 324,
+     IT_LARGE = 325,
+     IT_SMALLINT = 326,
+     IT_TIME = 327,
+     IT_BIGINT = 328,
+     IT_VARYING = 329,
+     IT_EXISTS = 330,
+     IT_UNLOCK = 331,
+     IT_NATIONAL = 332,
+     IT_DECIMAL = 333,
+     IT_NUMERIC = 334,
+     IT_LOCK = 335,
+     IT_CHARACTER = 336,
+     IT_PRECISION = 337,
+     IT_IF = 338,
+     IT_DROP = 339,
+     IT_OBJECT = 340,
+     IT_CAST = 341,
+     NAME = 342,
+     STRING_LITERAL1 = 343,
+     STRING_LITERAL2 = 344,
+     STRING_LITERAL_LONG1 = 345,
+     STRING_LITERAL_LONG2 = 346,
+     INTEGER = 347,
+     INTEGER_POSITIVE = 348,
+     INTEGER_NEGATIVE = 349,
+     DECIMAL = 350,
+     DECIMAL_POSITIVE = 351,
+     DECIMAL_NEGATIVE = 352,
+     DOUBLE = 353,
+     DOUBLE_POSITIVE = 354,
+     DOUBLE_NEGATIVE = 355,
+     IT_TRUE = 356,
+     IT_FALSE = 357
    };
 
     };
@@ -582,7 +584,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 586 "lib/SQLParser/SQLParser.hpp"
+#line 588 "lib/SQLParser/SQLParser.hpp"
 
 
 
