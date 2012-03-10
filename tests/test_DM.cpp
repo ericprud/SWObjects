@@ -122,7 +122,7 @@ struct DMTest {
 BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows) { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue) { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes) { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes") }
-BOOST_AUTO_TEST_CASE(_1table2columns1row) { DMTEST("rdb2rdf-tests/D004-1table2columns1row") }
+BOOST_AUTO_TEST_CASE(_1table2columns1row_4) { DMTEST("rdb2rdf-tests/D004-1table2columns1row") }
 BOOST_AUTO_TEST_CASE(_2tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey") }
 BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars) { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey2columns1row) { DMTEST("rdb2rdf-tests/D007-1table1primarykey2columns1row") }
@@ -130,14 +130,14 @@ BOOST_AUTO_TEST_CASE(_1table1column1row) { DMTEST("rdb2rdf-tests/D001-1table1col
 BOOST_AUTO_TEST_CASE(_1table1primarykey1column1row) { DMTEST("rdb2rdf-tests/D006-1table1primarykey1column1row") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey3colums3rows) { DMTEST("rdb2rdf-tests/D010-1table1primarykey3colums3rows") }
 BOOST_AUTO_TEST_CASE(_1table3columns1row) { DMTEST("rdb2rdf-tests/D003-1table3columns1row") }
-//BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey") } // UNIQUE
-//BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls) { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls") }
+BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey") } // UNIQUE
+BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls) { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls") }
 BOOST_AUTO_TEST_CASE(_1table3columns1composityeprimarykey3rows2languages) { DMTEST("rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages") }
-//BOOST_AUTO_TEST_CASE(_M2MRelations) { DMTEST("rdb2rdf-tests/D011-M2MRelations") }
-//BOOST_AUTO_TEST_CASE(_1table1column0rows) { DMTEST("rdb2rdf-tests/D000-1table1column0rows") }
-//BOOST_AUTO_TEST_CASE(_1table2columns1row) { DMTEST("rdb2rdf-tests/D002-1table2columns1row") }
-//BOOST_AUTO_TEST_CASE(_1table1compositeprimarykey3columns1row) { DMTEST("rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row") }
-//BOOST_AUTO_TEST_CASE(_1table3columns3rows2duplicates) { DMTEST("rdb2rdf-tests/D005-1table3columns3rows2duplicates") }
+BOOST_AUTO_TEST_CASE(_M2MRelations) { DMTEST("rdb2rdf-tests/D011-M2MRelations") }
+BOOST_AUTO_TEST_CASE(_1table1column0rows) { DMTEST("rdb2rdf-tests/D000-1table1column0rows") }
+//BOOST_AUTO_TEST_CASE(_1table2columns1row_2) { DMTEST("rdb2rdf-tests/D002-1table2columns1row") }
+BOOST_AUTO_TEST_CASE(_1table1compositeprimarykey3columns1row) { DMTEST("rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row") }
+BOOST_AUTO_TEST_CASE(_1table3columns3rows2duplicates) { DMTEST("rdb2rdf-tests/D005-1table3columns3rows2duplicates") }
 
 
 #if 0    

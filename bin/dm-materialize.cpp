@@ -32,8 +32,8 @@ std::string replace (std::string replaceMe, char from, const char* to) {
 //                      ret; }
 
 std::string IRIsafe (std::string s) {
-    unsigned char* segment = (unsigned char*) s.c_str();
-    size_t size = s.size();
+    const unsigned char* segment = (unsigned char*) s.c_str();
+    const size_t size = s.size();
     std::string ret;
     // pecent-encode everything outside of rfc3987:iunreserved.
     // iunreserved = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
