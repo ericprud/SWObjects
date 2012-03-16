@@ -402,8 +402,8 @@ namespace w3c_sw {
 	    for (sql::schema::Database::const_iterator rel = tables->begin();
 		 rel != tables->end(); ++rel)
 		if (rel->second->primaryKey != NULL)
-		    for (std::vector<sql::Attribute>::const_iterator attr = rel->second->primaryKey->attrs->begin();
-			 attr != rel->second->primaryKey->attrs->end(); ++attr) // !! , ++posn
+		    for (std::vector<sql::Attribute>::const_iterator attr = rel->second->primaryKey->begin();
+			 attr != rel->second->primaryKey->end(); ++attr) // !! , ++posn
 			keyMap[rel->first] = *attr; // !! posn
 	}
 	~SQLizer () {

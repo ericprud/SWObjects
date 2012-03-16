@@ -1865,11 +1865,22 @@ namespace w3c_sw {
 // 		return ostr << ref.str();
 // 	    }
 
-	    struct Key : public FieldOrKey {
+	    class Key : public FieldOrKey {
 		std::vector<Attribute>* attrs;
+
+	    public:
 		Key (std::vector<Attribute>* attrs) : attrs(attrs)
 		{  }
 		virtual ~Key () { delete attrs; }
+		bool operator== (const Key& ref) const {
+		    std::vector<Attribute>::const_iterator left = attrs->begin();
+		    std::vector<Attribute>::const_iterator right = ref.attrs->begin();
+		    for (;
+			 left != attrs->end(); ++left, ++right)
+			if (*left != *right)
+			    return false;
+		    return true;
+		}
 		bool Key_equals (const FieldOrKey& ref) const {
 		    const Key* refp = dynamic_cast<const Key*>(&ref);
 		    if (refp == NULL
@@ -1883,6 +1894,14 @@ namespace w3c_sw {
 			    return false;
 		    return true;
 		}
+		std::vector<Attribute>::iterator begin () { return attrs->begin(); }
+		std::vector<Attribute>::iterator end () { return attrs->end(); }
+		std::vector<Attribute>::const_iterator begin () const { return attrs->begin(); }
+		std::vector<Attribute>::const_iterator end () const { return attrs->end(); }
+		size_t size () const { return attrs->size(); }
+		const Attribute& at (size_t i) const { return attrs->at(i); }
+		virtual bool operator== (const FieldOrKey& ref) const { throw; }
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const { throw; }
 	    };
 
 	    struct PrimaryKey : public Key {
@@ -1896,9 +1915,9 @@ namespace w3c_sw {
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    ss << "PRIMARY KEY (";
-		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
-			 it != attrs->end(); ++it) {
-			if (it != attrs->begin())
+		    for (std::vector<Attribute>::const_iterator it = begin();
+			 it != end(); ++it) {
+			if (it != begin())
 			    ss << ", ";
 			ss << s.name(*it);
 		    }
@@ -1909,10 +1928,10 @@ namespace w3c_sw {
 
 	    struct ForeignKey : public Key {
 		RelationName targetRel;
-		std::vector<Attribute>* relAttrs;
+		Key* relAttrs;
 		ForeignKey (std::vector<Attribute>* myAttrs,
 			    RelationName targetRel,
-			    std::vector<Attribute>* relAttrs)
+			    Key* relAttrs)
 		    : Key(myAttrs), targetRel(targetRel), relAttrs(relAttrs)
 		{  }
 		virtual ~ForeignKey () { delete relAttrs; }
@@ -1933,9 +1952,9 @@ namespace w3c_sw {
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    ss << "FOREIGN KEY (";
-		    for (std::vector<Attribute>::const_iterator it = attrs->begin();
-			 it != attrs->end(); ++it) {
-			if (it != attrs->begin())
+		    for (std::vector<Attribute>::const_iterator it = begin();
+			 it != end(); ++it) {
+			if (it != begin())
 			    ss << ", ";
 			ss << s.name(*it);
 		    }
@@ -2005,6 +2024,7 @@ namespace w3c_sw {
 		RelationName name;
 		std::vector<const FieldOrKey*> orderedFields;
 		const PrimaryKey* primaryKey;
+		std::set<const Key*> keys;
 		struct Fields : public std::map<Attribute, Field> {
 		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
 			iterator f = find(attr);
@@ -2066,16 +2086,16 @@ namespace w3c_sw {
 		    orderedFields.push_back(primaryKey);
 		    this->primaryKey = primaryKey;
 		    size_t posn = 0;
-		    for (std::vector<Attribute>::const_iterator attr = primaryKey->attrs->begin();
-			 attr != primaryKey->attrs->end(); ++attr, ++posn)
+		    for (std::vector<Attribute>::const_iterator attr = primaryKey->begin();
+			 attr != primaryKey->end(); ++attr, ++posn)
 			fields.addPrimaryKey(*attr, primaryKey, posn);
 		}
 
 		void addForeignKey (ForeignKey* foreignKey) {
 		    orderedFields.push_back(foreignKey);
 		    size_t posn = 0;
-		    for (std::vector<Attribute>::const_iterator attr = foreignKey->attrs->begin();
-			 attr != foreignKey->attrs->end(); ++attr, ++posn)
+		    for (std::vector<Attribute>::const_iterator attr = foreignKey->begin();
+			 attr != foreignKey->end(); ++attr, ++posn)
 			fields.addForeignKey(*attr, foreignKey, posn);
 		}
 

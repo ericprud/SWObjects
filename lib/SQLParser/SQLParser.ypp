@@ -455,7 +455,7 @@ FieldOrKey:
 	delete $1;
       }
   | _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
-      driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, $7));
+      driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, new sql::schema::Key($7)));
       delete $6;
     }
   | IT_PRIMARY IT_KEY AttrList	{
@@ -615,7 +615,7 @@ LinkDetails:
   | IT_REFERENCES Relation AttrList	{
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(sql::Attribute(*driver.curAttributeName));
-	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *$2, $3);
+	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *$2, new sql::schema::Key($3));
 	driver.curCreate->addForeignKey(fk);
 	delete $2;
     }

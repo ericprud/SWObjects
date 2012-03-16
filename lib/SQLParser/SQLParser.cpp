@@ -560,7 +560,7 @@ namespace w3c_sw {
 /* Line 678 of lalr1.cc  */
 #line 457 "lib/SQLParser/SQLParser.ypp"
     {
-      driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yysemantic_stack_[(7) - (4)].p_Attributes), *(yysemantic_stack_[(7) - (6)].p_NAME), (yysemantic_stack_[(7) - (7)].p_Attributes)));
+      driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yysemantic_stack_[(7) - (4)].p_Attributes), *(yysemantic_stack_[(7) - (6)].p_NAME), new sql::schema::Key((yysemantic_stack_[(7) - (7)].p_Attributes))));
       delete (yysemantic_stack_[(7) - (6)].p_NAME);
     }
     break;
@@ -845,7 +845,7 @@ namespace w3c_sw {
     {
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(sql::Attribute(*driver.curAttributeName));
-	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *(yysemantic_stack_[(3) - (2)].p_NAME), (yysemantic_stack_[(3) - (3)].p_Attributes));
+	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *(yysemantic_stack_[(3) - (2)].p_NAME), new sql::schema::Key((yysemantic_stack_[(3) - (3)].p_Attributes)));
 	driver.curCreate->addForeignKey(fk);
 	delete (yysemantic_stack_[(3) - (2)].p_NAME);
     }
