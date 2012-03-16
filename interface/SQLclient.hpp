@@ -69,37 +69,9 @@ namespace w3c_sw {
 
 	    typedef std::vector<Field> ColumnSet;
 	    virtual ColumnSet& cols() = 0;
-	    typedef std::vector<OptString> Row;
-	    virtual Row nextRow() = 0;
-	    Row end () { return Row(); } // count on operator!= to say that two empty Row's are ==
-	};
+	    struct Row : public std::vector<OptString> {
 
-	SQLclient () {  }
-	virtual ~SQLclient () {  }
-	virtual void connect(std::string server, std::string database, std::string user) = 0;
-	virtual void connect(std::string server, std::string database, std::string user, std::string password) = 0;
-	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) = 0;
-    };
-
-    /* SQL type to XSD type mapping: http://www.w3.org/2001/sw/rdb2rdf/r2rml/#table-type-mapping */
-    std::string SQLclient::Result::Field::typeNames[] = {
-	PREFIX_SWO "_err", 
-	"", /* PREFIX_SWO "_literal", */
-	PREFIX_XSI "base64Binary", 
-	PREFIX_XSI "decimal", 
-	PREFIX_XSI "integer", PREFIX_XSI "integer", PREFIX_XSI "integer", 
-	PREFIX_XSI "double", PREFIX_XSI "double", PREFIX_XSI "double", 
-	PREFIX_XSI "boolean", 
-	PREFIX_XSI "date", 
-	PREFIX_XSI "time", 
-	PREFIX_XSI "dateTime", PREFIX_XSI "dateTime", 
-	PREFIX_SWO "_null", 
-	PREFIX_SWO "_unknown", 
-    };
-
-    class SqlResultSet : public ResultSet {
-    public:
-	std::string base64_encode(std::string encodeMe) {
+		static std::string base64_encode(std::string encodeMe) {
 	    // http://www.adp-gmbh.ch/cpp/common/base64.html
 	    static const std::string base64_chars = 
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -149,6 +121,72 @@ namespace w3c_sw {
 
   return ret;
 	}
+		const TTerm* getTTerm (size_t i, ColumnSet& cols, AtomFactory* atomFactory) {
+		    std::string lexval(at(i).get());
+		    Field::Type type = cols[i].type;
+		    if (type == SQLclient::Result::Field::TYPE__err || 
+			type == SQLclient::Result::Field::TYPE__unknown)
+			throw std::string("field value \"") + lexval + "\" has unknown datatype";// + type;
+
+		    if (type != SQLclient::Result::Field::TYPE__null) {
+			if (type == SQLclient::Result::Field::TYPE_binary)
+			    lexval = base64_encode(lexval);
+			if (type == SQLclient::Result::Field::TYPE_boolean)
+			    lexval = lexval == "TRUE" ? "true" : "false";
+			if (type == SQLclient::Result::Field::TYPE_float || 
+			    type == SQLclient::Result::Field::TYPE_real || 
+			    type == SQLclient::Result::Field::TYPE_double) {
+			    std::stringstream input(lexval);
+			    double val;
+			    input >> val;
+
+			    // canonical << std::scientific << val; yields e.g. 1.230000E04
+			    std::stringstream canonical;
+			    int ex = log10(val);
+			    if (val < 1)
+				--ex;
+			    canonical << val/exp(ex*log(10)/log10(10)) << "E" << ex;
+
+			    lexval = canonical.str();
+			}
+
+			std::string dt = Field::typeNames[type];
+			const URI* dtpos = dt.size() > 0 ? atomFactory->getURI(dt.c_str()) : NULL;
+			return atomFactory->getRDFLiteral(lexval, dtpos, NULL);
+			// w3c_sw_LINEN << "val(" << val << "): " << val->toString() << " of dtpos: " << dtpos->toString() << std::endl;
+		    } else
+			return NULL;
+		}
+	    };
+	    virtual Row nextRow() = 0;
+	    Row end () { return Row(); } // count on operator!= to say that two empty Row's are ==
+	};
+
+	SQLclient () {  }
+	virtual ~SQLclient () {  }
+	virtual void connect(std::string server, std::string database, std::string user) = 0;
+	virtual void connect(std::string server, std::string database, std::string user, std::string password) = 0;
+	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) = 0;
+    };
+
+    /* SQL type to XSD type mapping: http://www.w3.org/2001/sw/rdb2rdf/r2rml/#table-type-mapping */
+    std::string SQLclient::Result::Field::typeNames[] = {
+	PREFIX_SWO "_err", 
+	"", /* PREFIX_SWO "_literal", */
+	PREFIX_XSI "base64Binary", 
+	PREFIX_XSI "decimal", 
+	PREFIX_XSI "integer", PREFIX_XSI "integer", PREFIX_XSI "integer", 
+	PREFIX_XSI "double", PREFIX_XSI "double", PREFIX_XSI "double", 
+	PREFIX_XSI "boolean", 
+	PREFIX_XSI "date", 
+	PREFIX_XSI "time", 
+	PREFIX_XSI "dateTime", PREFIX_XSI "dateTime", 
+	PREFIX_SWO "_null", 
+	PREFIX_SWO "_unknown", 
+    };
+
+    class SqlResultSet : public ResultSet {
+    public:
 	SqlResultSet (AtomFactory* atomFactory, SQLclient::Result* res) : ResultSet(atomFactory) {
 	    erase(begin());
 	    SQLclient::Result::ColumnSet& cols = res->cols();
@@ -165,41 +203,8 @@ namespace w3c_sw {
 	    while ((row = res->nextRow()) != res->end()) { // !!! use iterator
 		Result* result = new Result(this);
 		for(size_t i = 0; i < cols.size(); i++)
-		    if (row[i].is_initialized()) {
-			std::string dt = SQLclient::Result::Field::typeNames[cols[i].type];
-			std::string lexval(row[i].get());
-			if (cols[i].type == SQLclient::Result::Field::TYPE__err || 
-			    cols[i].type == SQLclient::Result::Field::TYPE__unknown)
-			    throw std::string("field value \"") + lexval + "\" has unknown datatype";// + cols[i].type;
-
-			if (cols[i].type != SQLclient::Result::Field::TYPE__null) {
-			    const URI* dtpos = dt.size() > 0 ? atomFactory->getURI(dt.c_str()) : NULL;
-			    if (cols[i].type == SQLclient::Result::Field::TYPE_binary)
-				lexval = base64_encode(lexval);
-			    if (cols[i].type == SQLclient::Result::Field::TYPE_boolean)
-				lexval = lexval == "TRUE" ? "true" : "false";
-			    if (cols[i].type == SQLclient::Result::Field::TYPE_float || 
-				cols[i].type == SQLclient::Result::Field::TYPE_real || 
-				cols[i].type == SQLclient::Result::Field::TYPE_double) {
-				std::stringstream input(lexval);
-				double val;
-				input >> val;
-
-				// canonical << std::scientific << val; yields e.g. 1.230000E04
-				std::stringstream canonical;
-				int ex = log10(val);
-				if (val < 1)
-				    --ex;
-				canonical << val/exp(ex*log(10)/log10(10)) << "E" << ex;
-
-				lexval = canonical.str();
-			    }
-
-			    const TTerm* val = atomFactory->getRDFLiteral(lexval, dtpos, NULL);
-			    // w3c_sw_LINEN << "val(" << val << "): " << val->toString() << " of dtpos: " << dtpos->toString() << std::endl;
-			    set(result, vars[i], val, false);
-			}
-		    }
+		    if (row[i].is_initialized())
+			set(result, vars[i], row.getTTerm(i, cols, atomFactory), false);
 		insert(end(), result);
 	    }
 	}
