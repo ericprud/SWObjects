@@ -461,7 +461,7 @@ FieldOrKey:
   | IT_PRIMARY IT_KEY AttrList	{
       driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey($3));
     }
-  | _QIT_UNIQUE_E_Opt IT_KEY Attribute AttrList	{
+  | IT_UNIQUE _QIT_KEY_E_Opt _QAttribute_E_Opt AttrList	{
 	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
     }
 ;
@@ -482,9 +482,14 @@ _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt:
   | _O_QIT_CONSTRAINT_E_S_QAttribute_E_C	
 ;
 
-_QIT_UNIQUE_E_Opt:
+_QIT_KEY_E_Opt:
     
-  | IT_UNIQUE	
+  | IT_KEY	
+;
+
+_QAttribute_E_Opt:
+    
+  | Attribute	
 ;
 
 Sized:
