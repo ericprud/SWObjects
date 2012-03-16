@@ -64,6 +64,7 @@ std::ostream& operator== (std::ostream& o, ExecResults& tested) {
 struct DMTest {
     w3c_sw::DefaultGraphPattern expect;
     w3c_sw::DefaultGraphPattern test;
+    std::string execStr;
     DMTest () {  }
     DMTest (const char* create, const char* output) {
 	w3c_sw::IStreamContext ddlStream(create, w3c_sw::IStreamContext::FILE);
@@ -81,7 +82,8 @@ struct DMTest {
 	    w3c_sw::SQLclient::Result* res = SQLDriver.executeQuery((*it)->toString("", "", Serializer) + ";");
 	}
 
-	ExecResults tested((std::string() + "../bin/dm-materialize " + create).c_str());
+	execStr.append("../bin/dm-materialize ").append(create);
+	ExecResults tested(execStr.c_str());
 	TurtleParser.parse(tested.s, &test);
 	w3c_sw::IStreamContext expStream(output, w3c_sw::IStreamContext::FILE);
 	TurtleParser.parse(expStream, &expect);
@@ -97,56 +99,53 @@ struct DMTest {
 	    for (w3c_sw::sql::schema::Database::const_iterator it = SQLParser.tables.begin();
 		 it != SQLParser.tables.end(); ++it)
 		w3c_sw::SQLclient::Result* res = SQLDriver.executeQuery(std::string() + "DROP TABLE " + Serializer.name(it->first) + ";");
+	else
+	    std::cerr << "failed to execute: " << execStr << "\n";
 
 	SQLParser.tables.clear();
 	SQLParser.inserts.clear();
     }
 };
 
-#define DMTEST(NAME)				\
-    DMTest h;					\
-    try {					\
-	h = DMTest(NAME "/create.sql",		\
-		   NAME "/directGraph.nt");	\
-    } catch (std::string& s) {			\
-	w3c_sw_LINEN << s << std::endl;		\
-    }						\
-    BOOST_CHECK_EQUAL(h.expect, h.test);
+#define DMTEST(NAME)						\
+    DMTest h;							\
+    try {							\
+	h = DMTest(NAME "create.sql",				\
+		   NAME "directGraph.nt");			\
+	BOOST_CHECK_EQUAL(h.expect, h.test);			\
+    } catch (w3c_sw::ParserException& p) {			\
+	BOOST_FAIL(std::string("ParserException:") + p.what());	\
+    } catch (std::string& s) {					\
+	BOOST_FAIL(std::string("std::string exception:") + s);	\
+    } catch (std::exception& e) {				\
+	BOOST_FAIL(std::string("std::exception:") + e.what());	\
+    } catch (...) {						\
+	BOOST_FAIL("unknown exception");			\
+    }								\
 
 
-// BOOST_AUTO_TEST_SUITE( bad )
-// BOOST_AUTO_TEST_CASE(a) { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows") }
-// BOOST_AUTO_TEST_CASE(b) { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey") }
-// BOOST_AUTO_TEST_SUITE_END(/* bad */)
+BOOST_AUTO_TEST_SUITE( committed )
+BOOST_AUTO_TEST_CASE(_1table1column0rows)                                 { DMTEST("rdb2rdf-tests/D000-1table1column0rows/") }
+BOOST_AUTO_TEST_CASE(_1table1column1row)                                  { DMTEST("rdb2rdf-tests/D001-1table1column1row/") }
+BOOST_AUTO_TEST_CASE(_1table2columns1row_2)                               { DMTEST("rdb2rdf-tests/D002-1table2columns1row/") }
+BOOST_AUTO_TEST_CASE(_1table3columns1row)                                 { DMTEST("rdb2rdf-tests/D003-1table3columns1row/") }
+BOOST_AUTO_TEST_CASE(_1table2columns1row_4)                               { DMTEST("rdb2rdf-tests/D004-1table2columns1row/") }
+BOOST_AUTO_TEST_CASE(_1table3columns3rows2duplicates)                     { DMTEST("rdb2rdf-tests/D005-1table3columns3rows2duplicates/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey1column1row)                       { DMTEST("rdb2rdf-tests/D006-1table1primarykey1column1row/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey2columns1row)                      { DMTEST("rdb2rdf-tests/D007-1table1primarykey2columns1row/") }
+BOOST_AUTO_TEST_CASE(_1table1compositeprimarykey3columns1row)             { DMTEST("rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row/") }
+BOOST_AUTO_TEST_CASE(_2tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey3colums3rows)                      { DMTEST("rdb2rdf-tests/D010-1table1primarykey3colums3rows/") }
+BOOST_AUTO_TEST_CASE(_M2MRelations)                                       { DMTEST("rdb2rdf-tests/D011-M2MRelations/") }
+BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls)                           { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue)           { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue/") }
+// BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey/") }
+BOOST_AUTO_TEST_CASE(_1table3columns1composityeprimarykey3rows2languages) { DMTEST("rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes)        { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes/") }
+BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars)                                 { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars/") }
+BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows)                     { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows/") }
+BOOST_AUTO_TEST_SUITE_END(/* committed */)
 
-BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows) { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue) { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes) { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes") }
-BOOST_AUTO_TEST_CASE(_1table2columns1row_4) { DMTEST("rdb2rdf-tests/D004-1table2columns1row") }
-BOOST_AUTO_TEST_CASE(_2tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey") }
-BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars) { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey2columns1row) { DMTEST("rdb2rdf-tests/D007-1table1primarykey2columns1row") }
-BOOST_AUTO_TEST_CASE(_1table1column1row) { DMTEST("rdb2rdf-tests/D001-1table1column1row") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey1column1row) { DMTEST("rdb2rdf-tests/D006-1table1primarykey1column1row") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey3colums3rows) { DMTEST("rdb2rdf-tests/D010-1table1primarykey3colums3rows") }
-BOOST_AUTO_TEST_CASE(_1table3columns1row) { DMTEST("rdb2rdf-tests/D003-1table3columns1row") }
-BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey) { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey") } // UNIQUE
-BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls) { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls") }
-BOOST_AUTO_TEST_CASE(_1table3columns1composityeprimarykey3rows2languages) { DMTEST("rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages") }
-BOOST_AUTO_TEST_CASE(_M2MRelations) { DMTEST("rdb2rdf-tests/D011-M2MRelations") }
-BOOST_AUTO_TEST_CASE(_1table1column0rows) { DMTEST("rdb2rdf-tests/D000-1table1column0rows") }
-//BOOST_AUTO_TEST_CASE(_1table2columns1row_2) { DMTEST("rdb2rdf-tests/D002-1table2columns1row") }
-BOOST_AUTO_TEST_CASE(_1table1compositeprimarykey3columns1row) { DMTEST("rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row") }
-BOOST_AUTO_TEST_CASE(_1table3columns3rows2duplicates) { DMTEST("rdb2rdf-tests/D005-1table3columns3rows2duplicates") }
-
-
-#if 0    
-    std::ifstream createStream(create);
-    std::istreambuf_iterator<char> createStream_i(createStream), e;
-    std::string create(createStream_i, e);
-
-    /* MySQL uses backquotes: */
-    size_t p;
-    while ((p = create.find_first_of("\"")) != std::string::npos)
-	create[p] = '`';
-#endif
+BOOST_AUTO_TEST_SUITE( ericPz )
+// BOOST_AUTO_TEST_CASE(ref_no_pk) { DMTEST("rdb2rdf-tests/ref-no-pk/") }
+BOOST_AUTO_TEST_SUITE_END(/* ericPz */)
