@@ -47,12 +47,12 @@
 /* User implementation prologue.  */
 
 /* Line 317 of lalr1.cc  */
-#line 213 "lib/SQLParser/SQLParser.ypp"
+#line 212 "lib/SQLParser/SQLParser.ypp"
 
 #include "SQLScanner.hpp"
 
 /* Line 317 of lalr1.cc  */
-#line 291 "lib/SQLParser/SQLParser.ypp"
+#line 290 "lib/SQLParser/SQLParser.ypp"
 
 #include <stdarg.h>
 #include "SQL.hpp"
@@ -438,7 +438,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 678 of lalr1.cc  */
-#line 307 "lib/SQLParser/SQLParser.ypp"
+#line 306 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (1)].p_Select);
     }
@@ -447,7 +447,7 @@ namespace w3c_sw {
   case 23:
 
 /* Line 678 of lalr1.cc  */
-#line 363 "lib/SQLParser/SQLParser.ypp"
+#line 362 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.curCreate = new sql::schema::Relation(*(yysemantic_stack_[(3) - (3)].p_NAME));
       }
@@ -456,7 +456,7 @@ namespace w3c_sw {
   case 24:
 
 /* Line 678 of lalr1.cc  */
-#line 365 "lib/SQLParser/SQLParser.ypp"
+#line 364 "lib/SQLParser/SQLParser.ypp"
     {
 	  driver.tables[*(yysemantic_stack_[(9) - (3)].p_NAME)] = driver.curCreate;
 	  delete (yysemantic_stack_[(9) - (3)].p_NAME);
@@ -467,7 +467,7 @@ namespace w3c_sw {
   case 30:
 
 /* Line 678 of lalr1.cc  */
-#line 387 "lib/SQLParser/SQLParser.ypp"
+#line 386 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.curCreate = new sql::schema::Relation(*(yysemantic_stack_[(5) - (3)].p_NAME));
 	driver.inserts.push_back(new sql::Insert(*(yysemantic_stack_[(5) - (3)].p_NAME), (yysemantic_stack_[(5) - (4)].p_Attributes), (yysemantic_stack_[(5) - (5)].p_RValue)));
@@ -478,7 +478,7 @@ namespace w3c_sw {
   case 31:
 
 /* Line 678 of lalr1.cc  */
-#line 395 "lib/SQLParser/SQLParser.ypp"
+#line 394 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Attributes) = NULL;
     }
@@ -487,7 +487,7 @@ namespace w3c_sw {
   case 33:
 
 /* Line 678 of lalr1.cc  */
-#line 402 "lib/SQLParser/SQLParser.ypp"
+#line 401 "lib/SQLParser/SQLParser.ypp"
     {
 	w3c_sw_LINEN << "ignoring non-standard inserts\n";
     }
@@ -496,7 +496,7 @@ namespace w3c_sw {
   case 36:
 
 /* Line 678 of lalr1.cc  */
-#line 413 "lib/SQLParser/SQLParser.ypp"
+#line 412 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_RValue) = new sql::RConstants((yysemantic_stack_[(3) - (2)].p_Expressions));
     }
@@ -505,7 +505,7 @@ namespace w3c_sw {
   case 37:
 
 /* Line 678 of lalr1.cc  */
-#line 416 "lib/SQLParser/SQLParser.ypp"
+#line 415 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_RValue) = new sql::RSelection((yysemantic_stack_[(1) - (1)].p_Select));
     }
@@ -514,7 +514,7 @@ namespace w3c_sw {
   case 38:
 
 /* Line 678 of lalr1.cc  */
-#line 422 "lib/SQLParser/SQLParser.ypp"
+#line 421 "lib/SQLParser/SQLParser.ypp"
     {
 	w3c_sw_LINEN << "ignoring parameters\n";
     }
@@ -523,7 +523,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 442 "lib/SQLParser/SQLParser.ypp"
+#line 441 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.curAttributeName = (yysemantic_stack_[(1) - (1)].p_NAME);
     }
@@ -532,7 +532,7 @@ namespace w3c_sw {
   case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 444 "lib/SQLParser/SQLParser.ypp"
+#line 443 "lib/SQLParser/SQLParser.ypp"
     {
 	sql::schema::Field* f = new sql::schema::Field(*(yysemantic_stack_[(3) - (1)].p_NAME), (yysemantic_stack_[(3) - (3)].p_TypeSize).type, (yysemantic_stack_[(3) - (3)].p_TypeSize).size);
 	driver.curCreate->addField(f);
@@ -542,51 +542,45 @@ namespace w3c_sw {
   case 46:
 
 /* Line 678 of lalr1.cc  */
-#line 447 "lib/SQLParser/SQLParser.ypp"
+#line 446 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.curAttributeName = NULL;
-	if (driver.curIsPrimary) {
-	    driver.curIsPrimary = false;
-	    std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
-	    attrs->push_back(*(yysemantic_stack_[(5) - (1)].p_NAME));
-	    driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
-	}
 	delete (yysemantic_stack_[(5) - (1)].p_NAME);
-      }
+    }
     break;
 
   case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 457 "lib/SQLParser/SQLParser.ypp"
+#line 450 "lib/SQLParser/SQLParser.ypp"
     {
-      driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yysemantic_stack_[(7) - (4)].p_Attributes), *(yysemantic_stack_[(7) - (6)].p_NAME), new sql::schema::Key((yysemantic_stack_[(7) - (7)].p_Attributes))));
-      delete (yysemantic_stack_[(7) - (6)].p_NAME);
+	driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yysemantic_stack_[(7) - (4)].p_Attributes), *(yysemantic_stack_[(7) - (6)].p_NAME), new sql::schema::Key((yysemantic_stack_[(7) - (7)].p_Attributes))));
+	delete (yysemantic_stack_[(7) - (6)].p_NAME);
     }
     break;
 
   case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 461 "lib/SQLParser/SQLParser.ypp"
+#line 454 "lib/SQLParser/SQLParser.ypp"
     {
-      driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey((yysemantic_stack_[(3) - (3)].p_Attributes)));
+	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey((yysemantic_stack_[(3) - (3)].p_Attributes)));
     }
     break;
 
   case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 464 "lib/SQLParser/SQLParser.ypp"
+#line 457 "lib/SQLParser/SQLParser.ypp"
     {
-	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
+	driver.curCreate->addUniqueKey(new sql::schema::Key((yysemantic_stack_[(4) - (4)].p_Attributes)));
     }
     break;
 
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 475 "lib/SQLParser/SQLParser.ypp"
+#line 468 "lib/SQLParser/SQLParser.ypp"
     {
 	w3c_sw_LINEN << "ignoring constraint name\n";
     }
@@ -595,7 +589,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 678 of lalr1.cc  */
-#line 496 "lib/SQLParser/SQLParser.ypp"
+#line 489 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TypeSize).type = (yysemantic_stack_[(2) - (1)].p_SchemaDatatype);
 	(yyval.p_TypeSize).size = (yysemantic_stack_[(2) - (2)].p_int);
@@ -605,7 +599,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 503 "lib/SQLParser/SQLParser.ypp"
+#line 496 "lib/SQLParser/SQLParser.ypp"
     {
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(3) - (2)].p_Expression));
 	(yyval.p_int) = i->getValue();
@@ -616,7 +610,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 511 "lib/SQLParser/SQLParser.ypp"
+#line 504 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_int) = SQL_PRECISION_unspecified;
     }
@@ -625,7 +619,7 @@ namespace w3c_sw {
   case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 518 "lib/SQLParser/SQLParser.ypp"
+#line 511 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = (yysemantic_stack_[(3) - (3)].p_bool) ? sql::TYPE_varchar : sql::TYPE_char;
     }
@@ -634,7 +628,7 @@ namespace w3c_sw {
   case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 521 "lib/SQLParser/SQLParser.ypp"
+#line 514 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_varchar;
     }
@@ -643,7 +637,7 @@ namespace w3c_sw {
   case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 524 "lib/SQLParser/SQLParser.ypp"
+#line 517 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_binary;
     }
@@ -652,7 +646,7 @@ namespace w3c_sw {
   case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 527 "lib/SQLParser/SQLParser.ypp"
+#line 520 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_int;
     }
@@ -661,7 +655,7 @@ namespace w3c_sw {
   case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 530 "lib/SQLParser/SQLParser.ypp"
+#line 523 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_int;
     }
@@ -670,7 +664,7 @@ namespace w3c_sw {
   case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 533 "lib/SQLParser/SQLParser.ypp"
+#line 526 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_int;
     }
@@ -679,7 +673,7 @@ namespace w3c_sw {
   case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 536 "lib/SQLParser/SQLParser.ypp"
+#line 529 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_int;
     }
@@ -688,7 +682,7 @@ namespace w3c_sw {
   case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 539 "lib/SQLParser/SQLParser.ypp"
+#line 532 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_SchemaDatatype) = sql::TYPE_int;
     }
@@ -697,7 +691,7 @@ namespace w3c_sw {
   case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 542 "lib/SQLParser/SQLParser.ypp"
+#line 535 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_float;
     }
@@ -706,7 +700,7 @@ namespace w3c_sw {
   case 72:
 
 /* Line 678 of lalr1.cc  */
-#line 545 "lib/SQLParser/SQLParser.ypp"
+#line 538 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_real;
     }
@@ -715,7 +709,7 @@ namespace w3c_sw {
   case 73:
 
 /* Line 678 of lalr1.cc  */
-#line 548 "lib/SQLParser/SQLParser.ypp"
+#line 541 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_double;
     }
@@ -724,7 +718,7 @@ namespace w3c_sw {
   case 74:
 
 /* Line 678 of lalr1.cc  */
-#line 551 "lib/SQLParser/SQLParser.ypp"
+#line 544 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_boolean;
     }
@@ -733,7 +727,7 @@ namespace w3c_sw {
   case 75:
 
 /* Line 678 of lalr1.cc  */
-#line 554 "lib/SQLParser/SQLParser.ypp"
+#line 547 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_date;
     }
@@ -742,7 +736,7 @@ namespace w3c_sw {
   case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 557 "lib/SQLParser/SQLParser.ypp"
+#line 550 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_time;
     }
@@ -751,7 +745,7 @@ namespace w3c_sw {
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 560 "lib/SQLParser/SQLParser.ypp"
+#line 553 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_timestamp;
     }
@@ -760,7 +754,7 @@ namespace w3c_sw {
   case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 563 "lib/SQLParser/SQLParser.ypp"
+#line 556 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_datetime;
     }
@@ -769,7 +763,7 @@ namespace w3c_sw {
   case 79:
 
 /* Line 678 of lalr1.cc  */
-#line 566 "lib/SQLParser/SQLParser.ypp"
+#line 559 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_SchemaDatatype) = sql::TYPE_interval;
     }
@@ -778,7 +772,7 @@ namespace w3c_sw {
   case 84:
 
 /* Line 678 of lalr1.cc  */
-#line 582 "lib/SQLParser/SQLParser.ypp"
+#line 575 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = true;
     }
@@ -787,7 +781,7 @@ namespace w3c_sw {
   case 85:
 
 /* Line 678 of lalr1.cc  */
-#line 585 "lib/SQLParser/SQLParser.ypp"
+#line 578 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = false;
     }
@@ -796,7 +790,7 @@ namespace w3c_sw {
   case 86:
 
 /* Line 678 of lalr1.cc  */
-#line 591 "lib/SQLParser/SQLParser.ypp"
+#line 584 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = false;
     }
@@ -805,16 +799,18 @@ namespace w3c_sw {
   case 90:
 
 /* Line 678 of lalr1.cc  */
-#line 603 "lib/SQLParser/SQLParser.ypp"
+#line 596 "lib/SQLParser/SQLParser.ypp"
     {
-	driver.curIsPrimary = true;
+	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	attrs->push_back(*driver.curAttributeName);
+	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
     }
     break;
 
   case 91:
 
 /* Line 678 of lalr1.cc  */
-#line 606 "lib/SQLParser/SQLParser.ypp"
+#line 601 "lib/SQLParser/SQLParser.ypp"
     {
 	w3c_sw_LINEN << "ignoring DEFAULT\n";
     }
@@ -823,7 +819,7 @@ namespace w3c_sw {
   case 92:
 
 /* Line 678 of lalr1.cc  */
-#line 609 "lib/SQLParser/SQLParser.ypp"
+#line 604 "lib/SQLParser/SQLParser.ypp"
     {
 	w3c_sw_LINEN << "ignoring NOT NULL\n";
     }
@@ -832,16 +828,18 @@ namespace w3c_sw {
   case 93:
 
 /* Line 678 of lalr1.cc  */
-#line 612 "lib/SQLParser/SQLParser.ypp"
+#line 607 "lib/SQLParser/SQLParser.ypp"
     {
-	w3c_sw_LINEN << "ignoring UNIQUE\n";
+	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	attrs->push_back(*driver.curAttributeName);
+	driver.curCreate->addUniqueKey(new sql::schema::Key(attrs));
     }
     break;
 
   case 94:
 
 /* Line 678 of lalr1.cc  */
-#line 615 "lib/SQLParser/SQLParser.ypp"
+#line 612 "lib/SQLParser/SQLParser.ypp"
     {
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(sql::Attribute(*driver.curAttributeName));
@@ -854,7 +852,7 @@ namespace w3c_sw {
   case 95:
 
 /* Line 678 of lalr1.cc  */
-#line 625 "lib/SQLParser/SQLParser.ypp"
+#line 622 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::IsNullConstraint();
     }
@@ -863,7 +861,7 @@ namespace w3c_sw {
   case 99:
 
 /* Line 678 of lalr1.cc  */
-#line 631 "lib/SQLParser/SQLParser.ypp"
+#line 628 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::CastConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_TypeSize).type, (yysemantic_stack_[(6) - (5)].p_TypeSize).size);
     }
@@ -872,7 +870,7 @@ namespace w3c_sw {
   case 100:
 
 /* Line 678 of lalr1.cc  */
-#line 637 "lib/SQLParser/SQLParser.ypp"
+#line 634 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(4) - (3)].p_Attributes)->insert((yysemantic_stack_[(4) - (3)].p_Attributes)->begin(), *(yysemantic_stack_[(4) - (2)].p_NAME));
 	delete (yysemantic_stack_[(4) - (2)].p_NAME);
@@ -883,7 +881,7 @@ namespace w3c_sw {
   case 101:
 
 /* Line 678 of lalr1.cc  */
-#line 645 "lib/SQLParser/SQLParser.ypp"
+#line 642 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
 }
@@ -892,7 +890,7 @@ namespace w3c_sw {
   case 102:
 
 /* Line 678 of lalr1.cc  */
-#line 651 "lib/SQLParser/SQLParser.ypp"
+#line 648 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Attributes) = new std::vector<sql::Attribute>();
     }
@@ -901,7 +899,7 @@ namespace w3c_sw {
   case 103:
 
 /* Line 678 of lalr1.cc  */
-#line 654 "lib/SQLParser/SQLParser.ypp"
+#line 651 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Attributes)->push_back(*(yysemantic_stack_[(2) - (2)].p_NAME));
 	delete (yysemantic_stack_[(2) - (2)].p_NAME);
@@ -912,7 +910,7 @@ namespace w3c_sw {
   case 104:
 
 /* Line 678 of lalr1.cc  */
-#line 662 "lib/SQLParser/SQLParser.ypp"
+#line 659 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(4) - (3)].p_Expressions)->insert((yysemantic_stack_[(4) - (3)].p_Expressions)->begin(), (yysemantic_stack_[(4) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
@@ -922,7 +920,7 @@ namespace w3c_sw {
   case 105:
 
 /* Line 678 of lalr1.cc  */
-#line 669 "lib/SQLParser/SQLParser.ypp"
+#line 666 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -931,7 +929,7 @@ namespace w3c_sw {
   case 106:
 
 /* Line 678 of lalr1.cc  */
-#line 675 "lib/SQLParser/SQLParser.ypp"
+#line 672 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -940,7 +938,7 @@ namespace w3c_sw {
   case 107:
 
 /* Line 678 of lalr1.cc  */
-#line 678 "lib/SQLParser/SQLParser.ypp"
+#line 675 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -950,7 +948,7 @@ namespace w3c_sw {
   case 108:
 
 /* Line 678 of lalr1.cc  */
-#line 685 "lib/SQLParser/SQLParser.ypp"
+#line 682 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Selects)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Selects)->insert((yysemantic_stack_[(2) - (2)].p_Selects)->begin(), (yysemantic_stack_[(2) - (1)].p_Select));
@@ -965,7 +963,7 @@ namespace w3c_sw {
   case 109:
 
 /* Line 678 of lalr1.cc  */
-#line 697 "lib/SQLParser/SQLParser.ypp"
+#line 694 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Select) = (yysemantic_stack_[(2) - (2)].p_Select);
 }
@@ -974,7 +972,7 @@ namespace w3c_sw {
   case 110:
 
 /* Line 678 of lalr1.cc  */
-#line 703 "lib/SQLParser/SQLParser.ypp"
+#line 700 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Selects) = new std::vector<sql::SQLQuery*>();
     }
@@ -983,7 +981,7 @@ namespace w3c_sw {
   case 111:
 
 /* Line 678 of lalr1.cc  */
-#line 706 "lib/SQLParser/SQLParser.ypp"
+#line 703 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Selects)->push_back((yysemantic_stack_[(2) - (2)].p_Select));
 	(yyval.p_Selects) = (yysemantic_stack_[(2) - (1)].p_Selects);
@@ -993,7 +991,7 @@ namespace w3c_sw {
   case 112:
 
 /* Line 678 of lalr1.cc  */
-#line 713 "lib/SQLParser/SQLParser.ypp"
+#line 710 "lib/SQLParser/SQLParser.ypp"
     {
 	driver.root = (yyval.p_Select) = new sql::SQLQuery((yysemantic_stack_[(5) - (3)].p_TableList).joins);
 	delete (yysemantic_stack_[(5) - (3)].p_TableList).joins;
@@ -1013,7 +1011,7 @@ namespace w3c_sw {
   case 113:
 
 /* Line 678 of lalr1.cc  */
-#line 730 "lib/SQLParser/SQLParser.ypp"
+#line 727 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -1022,7 +1020,7 @@ namespace w3c_sw {
   case 114:
 
 /* Line 678 of lalr1.cc  */
-#line 736 "lib/SQLParser/SQLParser.ypp"
+#line 733 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -1031,7 +1029,7 @@ namespace w3c_sw {
   case 116:
 
 /* Line 678 of lalr1.cc  */
-#line 743 "lib/SQLParser/SQLParser.ypp"
+#line 740 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = (yysemantic_stack_[(3) - (2)].p_TableList).joins;
 	(yyval.p_TableList).exprs = (yysemantic_stack_[(3) - (2)].p_TableList).exprs;
@@ -1043,7 +1041,7 @@ namespace w3c_sw {
   case 117:
 
 /* Line 678 of lalr1.cc  */
-#line 752 "lib/SQLParser/SQLParser.ypp"
+#line 749 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = new std::vector<sql::Join*>();;
 	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();;
@@ -1053,7 +1051,7 @@ namespace w3c_sw {
   case 119:
 
 /* Line 678 of lalr1.cc  */
-#line 760 "lib/SQLParser/SQLParser.ypp"
+#line 757 "lib/SQLParser/SQLParser.ypp"
     {
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_int) = i->getValue();
@@ -1064,7 +1062,7 @@ namespace w3c_sw {
   case 120:
 
 /* Line 678 of lalr1.cc  */
-#line 765 "lib/SQLParser/SQLParser.ypp"
+#line 762 "lib/SQLParser/SQLParser.ypp"
     {
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(3) - (3)].p_Expression));
 	(yyval.p_int) = i->getValue();
@@ -1075,7 +1073,7 @@ namespace w3c_sw {
   case 121:
 
 /* Line 678 of lalr1.cc  */
-#line 773 "lib/SQLParser/SQLParser.ypp"
+#line 770 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_int) = -1;
     }
@@ -1084,7 +1082,7 @@ namespace w3c_sw {
   case 123:
 
 /* Line 678 of lalr1.cc  */
-#line 780 "lib/SQLParser/SQLParser.ypp"
+#line 777 "lib/SQLParser/SQLParser.ypp"
     {
 	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_int) = i->getValue();
@@ -1095,7 +1093,7 @@ namespace w3c_sw {
   case 124:
 
 /* Line 678 of lalr1.cc  */
-#line 788 "lib/SQLParser/SQLParser.ypp"
+#line 785 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_int) = -1;
     }
@@ -1104,7 +1102,7 @@ namespace w3c_sw {
   case 126:
 
 /* Line 678 of lalr1.cc  */
-#line 795 "lib/SQLParser/SQLParser.ypp"
+#line 792 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (2)].p_AttributeList)->insert((yysemantic_stack_[(2) - (2)].p_AttributeList)->begin(), (yysemantic_stack_[(2) - (1)].p_AliasedSelect));
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>((yysemantic_stack_[(2) - (2)].p_AttributeList)->begin(), (yysemantic_stack_[(2) - (2)].p_AttributeList)->end());
@@ -1115,7 +1113,7 @@ namespace w3c_sw {
   case 127:
 
 /* Line 678 of lalr1.cc  */
-#line 800 "lib/SQLParser/SQLParser.ypp"
+#line 797 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
       }
@@ -1124,7 +1122,7 @@ namespace w3c_sw {
   case 128:
 
 /* Line 678 of lalr1.cc  */
-#line 806 "lib/SQLParser/SQLParser.ypp"
+#line 803 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AliasedSelect) = (yysemantic_stack_[(2) - (2)].p_AliasedSelect);
     }
@@ -1133,7 +1131,7 @@ namespace w3c_sw {
   case 129:
 
 /* Line 678 of lalr1.cc  */
-#line 812 "lib/SQLParser/SQLParser.ypp"
+#line 809 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
     }
@@ -1142,7 +1140,7 @@ namespace w3c_sw {
   case 130:
 
 /* Line 678 of lalr1.cc  */
-#line 815 "lib/SQLParser/SQLParser.ypp"
+#line 812 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_AttributeList)->push_back((yysemantic_stack_[(2) - (2)].p_AliasedSelect));
 	(yyval.p_AttributeList) = (yysemantic_stack_[(2) - (1)].p_AttributeList);
@@ -1152,7 +1150,7 @@ namespace w3c_sw {
   case 131:
 
 /* Line 678 of lalr1.cc  */
-#line 822 "lib/SQLParser/SQLParser.ypp"
+#line 819 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_NAME) == NULL) {
 	    // "SELECT a.dname FROM DEPT AS a" yields a field calld `dname` (i.e. elides the alias).
@@ -1168,7 +1166,7 @@ namespace w3c_sw {
   case 134:
 
 /* Line 678 of lalr1.cc  */
-#line 840 "lib/SQLParser/SQLParser.ypp"
+#line 837 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
     }
@@ -1177,7 +1175,7 @@ namespace w3c_sw {
   case 135:
 
 /* Line 678 of lalr1.cc  */
-#line 846 "lib/SQLParser/SQLParser.ypp"
+#line 843 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = NULL;
     }
@@ -1186,7 +1184,7 @@ namespace w3c_sw {
   case 136:
 
 /* Line 678 of lalr1.cc  */
-#line 849 "lib/SQLParser/SQLParser.ypp"
+#line 846 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
       }
@@ -1195,7 +1193,7 @@ namespace w3c_sw {
   case 137:
 
 /* Line 678 of lalr1.cc  */
-#line 855 "lib/SQLParser/SQLParser.ypp"
+#line 852 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(*(yysemantic_stack_[(3) - (1)].p_NAME)), sql::Attribute(*(yysemantic_stack_[(3) - (3)].p_NAME))));
 	delete (yysemantic_stack_[(3) - (1)].p_NAME);
@@ -1206,7 +1204,7 @@ namespace w3c_sw {
   case 138:
 
 /* Line 678 of lalr1.cc  */
-#line 860 "lib/SQLParser/SQLParser.ypp"
+#line 857 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(""), sql::Attribute(*(yysemantic_stack_[(1) - (1)].p_NAME))));
 	delete (yysemantic_stack_[(1) - (1)].p_NAME);
@@ -1216,7 +1214,7 @@ namespace w3c_sw {
   case 143:
 
 /* Line 678 of lalr1.cc  */
-#line 877 "lib/SQLParser/SQLParser.ypp"
+#line 874 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (2)].p_TableList).joins->insert((yysemantic_stack_[(2) - (2)].p_TableList).joins->begin(), (yysemantic_stack_[(2) - (1)].p_tableAlias).relation != NULL
 		   ? (sql::Join*)new sql::TableJoin(*(yysemantic_stack_[(2) - (1)].p_tableAlias).relation, *(yysemantic_stack_[(2) - (1)].p_tableAlias).alias, false)
@@ -1232,7 +1230,7 @@ namespace w3c_sw {
   case 144:
 
 /* Line 678 of lalr1.cc  */
-#line 890 "lib/SQLParser/SQLParser.ypp"
+#line 887 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = false;
     }
@@ -1241,7 +1239,7 @@ namespace w3c_sw {
   case 145:
 
 /* Line 678 of lalr1.cc  */
-#line 893 "lib/SQLParser/SQLParser.ypp"
+#line 890 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = false;
       }
@@ -1250,7 +1248,7 @@ namespace w3c_sw {
   case 146:
 
 /* Line 678 of lalr1.cc  */
-#line 896 "lib/SQLParser/SQLParser.ypp"
+#line 893 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_bool) = true;
     }
@@ -1259,7 +1257,7 @@ namespace w3c_sw {
   case 147:
 
 /* Line 678 of lalr1.cc  */
-#line 902 "lib/SQLParser/SQLParser.ypp"
+#line 899 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -1268,7 +1266,7 @@ namespace w3c_sw {
   case 148:
 
 /* Line 678 of lalr1.cc  */
-#line 908 "lib/SQLParser/SQLParser.ypp"
+#line 905 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -1277,7 +1275,7 @@ namespace w3c_sw {
   case 149:
 
 /* Line 678 of lalr1.cc  */
-#line 911 "lib/SQLParser/SQLParser.ypp"
+#line 908 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(1) - (1)].p_Expression);
       }
@@ -1286,7 +1284,7 @@ namespace w3c_sw {
   case 150:
 
 /* Line 678 of lalr1.cc  */
-#line 917 "lib/SQLParser/SQLParser.ypp"
+#line 914 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (3)].p_tableAlias).relation != NULL) {
 	    (yyval.p_JoinExpression).join = new sql::TableJoin(*(yysemantic_stack_[(4) - (3)].p_tableAlias).relation, *(yysemantic_stack_[(4) - (3)].p_tableAlias).alias, (yysemantic_stack_[(4) - (1)].p_bool));
@@ -1302,7 +1300,7 @@ namespace w3c_sw {
   case 151:
 
 /* Line 678 of lalr1.cc  */
-#line 930 "lib/SQLParser/SQLParser.ypp"
+#line 927 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_TableList).joins = new std::vector<sql::Join*>();
 	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();
@@ -1312,7 +1310,7 @@ namespace w3c_sw {
   case 152:
 
 /* Line 678 of lalr1.cc  */
-#line 934 "lib/SQLParser/SQLParser.ypp"
+#line 931 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TableList).joins->push_back((yysemantic_stack_[(2) - (2)].p_JoinExpression).join);
 	if ((yysemantic_stack_[(2) - (2)].p_JoinExpression).expr != NULL)
@@ -1324,7 +1322,7 @@ namespace w3c_sw {
   case 153:
 
 /* Line 678 of lalr1.cc  */
-#line 943 "lib/SQLParser/SQLParser.ypp"
+#line 940 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = new sql::RelationName(*(yysemantic_stack_[(2) - (1)].p_NAME));
 	(yyval.p_tableAlias).subselect = NULL;
@@ -1341,7 +1339,7 @@ namespace w3c_sw {
   case 154:
 
 /* Line 678 of lalr1.cc  */
-#line 954 "lib/SQLParser/SQLParser.ypp"
+#line 951 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_tableAlias).relation = NULL;
 	(yyval.p_tableAlias).subselect = (yysemantic_stack_[(5) - (2)].p_Select);
@@ -1353,7 +1351,7 @@ namespace w3c_sw {
   case 155:
 
 /* Line 678 of lalr1.cc  */
-#line 963 "lib/SQLParser/SQLParser.ypp"
+#line 960 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
     }
@@ -1362,7 +1360,7 @@ namespace w3c_sw {
   case 156:
 
 /* Line 678 of lalr1.cc  */
-#line 969 "lib/SQLParser/SQLParser.ypp"
+#line 966 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_NAME) = NULL;
     }
@@ -1371,7 +1369,7 @@ namespace w3c_sw {
   case 157:
 
 /* Line 678 of lalr1.cc  */
-#line 972 "lib/SQLParser/SQLParser.ypp"
+#line 969 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
     }
@@ -1380,7 +1378,7 @@ namespace w3c_sw {
   case 158:
 
 /* Line 678 of lalr1.cc  */
-#line 978 "lib/SQLParser/SQLParser.ypp"
+#line 975 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1394,7 +1392,7 @@ namespace w3c_sw {
   case 159:
 
 /* Line 678 of lalr1.cc  */
-#line 989 "lib/SQLParser/SQLParser.ypp"
+#line 986 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1403,7 +1401,7 @@ namespace w3c_sw {
   case 160:
 
 /* Line 678 of lalr1.cc  */
-#line 995 "lib/SQLParser/SQLParser.ypp"
+#line 992 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1412,7 +1410,7 @@ namespace w3c_sw {
   case 161:
 
 /* Line 678 of lalr1.cc  */
-#line 998 "lib/SQLParser/SQLParser.ypp"
+#line 995 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1422,7 +1420,7 @@ namespace w3c_sw {
   case 162:
 
 /* Line 678 of lalr1.cc  */
-#line 1006 "lib/SQLParser/SQLParser.ypp"
+#line 1003 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1436,7 +1434,7 @@ namespace w3c_sw {
   case 163:
 
 /* Line 678 of lalr1.cc  */
-#line 1018 "lib/SQLParser/SQLParser.ypp"
+#line 1015 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1445,7 +1443,7 @@ namespace w3c_sw {
   case 164:
 
 /* Line 678 of lalr1.cc  */
-#line 1025 "lib/SQLParser/SQLParser.ypp"
+#line 1022 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1454,7 +1452,7 @@ namespace w3c_sw {
   case 165:
 
 /* Line 678 of lalr1.cc  */
-#line 1028 "lib/SQLParser/SQLParser.ypp"
+#line 1025 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1464,7 +1462,7 @@ namespace w3c_sw {
   case 166:
 
 /* Line 678 of lalr1.cc  */
-#line 1036 "lib/SQLParser/SQLParser.ypp"
+#line 1033 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1478,7 +1476,7 @@ namespace w3c_sw {
   case 167:
 
 /* Line 678 of lalr1.cc  */
-#line 1048 "lib/SQLParser/SQLParser.ypp"
+#line 1045 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1487,7 +1485,7 @@ namespace w3c_sw {
   case 168:
 
 /* Line 678 of lalr1.cc  */
-#line 1055 "lib/SQLParser/SQLParser.ypp"
+#line 1052 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1496,7 +1494,7 @@ namespace w3c_sw {
   case 169:
 
 /* Line 678 of lalr1.cc  */
-#line 1058 "lib/SQLParser/SQLParser.ypp"
+#line 1055 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1506,7 +1504,7 @@ namespace w3c_sw {
   case 171:
 
 /* Line 678 of lalr1.cc  */
-#line 1070 "lib/SQLParser/SQLParser.ypp"
+#line 1067 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) {
 	    if (dynamic_cast<sql::IsNotNullProxy*>((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) != NULL) {
@@ -1527,7 +1525,7 @@ namespace w3c_sw {
   case 172:
 
 /* Line 678 of lalr1.cc  */
-#line 1089 "lib/SQLParser/SQLParser.ypp"
+#line 1086 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = NULL;
     }
@@ -1536,7 +1534,7 @@ namespace w3c_sw {
   case 174:
 
 /* Line 678 of lalr1.cc  */
-#line 1097 "lib/SQLParser/SQLParser.ypp"
+#line 1094 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1545,7 +1543,7 @@ namespace w3c_sw {
   case 175:
 
 /* Line 678 of lalr1.cc  */
-#line 1100 "lib/SQLParser/SQLParser.ypp"
+#line 1097 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1554,7 +1552,7 @@ namespace w3c_sw {
   case 176:
 
 /* Line 678 of lalr1.cc  */
-#line 1103 "lib/SQLParser/SQLParser.ypp"
+#line 1100 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1563,7 +1561,7 @@ namespace w3c_sw {
   case 177:
 
 /* Line 678 of lalr1.cc  */
-#line 1106 "lib/SQLParser/SQLParser.ypp"
+#line 1103 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1572,7 +1570,7 @@ namespace w3c_sw {
   case 178:
 
 /* Line 678 of lalr1.cc  */
-#line 1109 "lib/SQLParser/SQLParser.ypp"
+#line 1106 "lib/SQLParser/SQLParser.ypp"
     {
         (yyval.p_BooleanComparator) = new sql::BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1581,7 +1579,7 @@ namespace w3c_sw {
   case 179:
 
 /* Line 678 of lalr1.cc  */
-#line 1112 "lib/SQLParser/SQLParser.ypp"
+#line 1109 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_BooleanComparator) = new sql::BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1590,7 +1588,7 @@ namespace w3c_sw {
   case 180:
 
 /* Line 678 of lalr1.cc  */
-#line 1115 "lib/SQLParser/SQLParser.ypp"
+#line 1112 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_BooleanComparator) = new sql::IsNullProxy;
     }
@@ -1599,7 +1597,7 @@ namespace w3c_sw {
   case 181:
 
 /* Line 678 of lalr1.cc  */
-#line 1118 "lib/SQLParser/SQLParser.ypp"
+#line 1115 "lib/SQLParser/SQLParser.ypp"
     {
       (yyval.p_BooleanComparator) = new sql::IsNotNullProxy;
 }
@@ -1608,7 +1606,7 @@ namespace w3c_sw {
   case 183:
 
 /* Line 678 of lalr1.cc  */
-#line 1129 "lib/SQLParser/SQLParser.ypp"
+#line 1126 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1622,7 +1620,7 @@ namespace w3c_sw {
   case 184:
 
 /* Line 678 of lalr1.cc  */
-#line 1141 "lib/SQLParser/SQLParser.ypp"
+#line 1138 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1631,7 +1629,7 @@ namespace w3c_sw {
   case 185:
 
 /* Line 678 of lalr1.cc  */
-#line 1144 "lib/SQLParser/SQLParser.ypp"
+#line 1141 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1640,7 +1638,7 @@ namespace w3c_sw {
   case 188:
 
 /* Line 678 of lalr1.cc  */
-#line 1153 "lib/SQLParser/SQLParser.ypp"
+#line 1150 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1649,7 +1647,7 @@ namespace w3c_sw {
   case 189:
 
 /* Line 678 of lalr1.cc  */
-#line 1156 "lib/SQLParser/SQLParser.ypp"
+#line 1153 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1659,7 +1657,7 @@ namespace w3c_sw {
   case 190:
 
 /* Line 678 of lalr1.cc  */
-#line 1164 "lib/SQLParser/SQLParser.ypp"
+#line 1161 "lib/SQLParser/SQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
 	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
@@ -1673,7 +1671,7 @@ namespace w3c_sw {
   case 191:
 
 /* Line 678 of lalr1.cc  */
-#line 1176 "lib/SQLParser/SQLParser.ypp"
+#line 1173 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1682,7 +1680,7 @@ namespace w3c_sw {
   case 192:
 
 /* Line 678 of lalr1.cc  */
-#line 1179 "lib/SQLParser/SQLParser.ypp"
+#line 1176 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1691,7 +1689,7 @@ namespace w3c_sw {
   case 193:
 
 /* Line 678 of lalr1.cc  */
-#line 1186 "lib/SQLParser/SQLParser.ypp"
+#line 1183 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1700,7 +1698,7 @@ namespace w3c_sw {
   case 194:
 
 /* Line 678 of lalr1.cc  */
-#line 1189 "lib/SQLParser/SQLParser.ypp"
+#line 1186 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1710,7 +1708,7 @@ namespace w3c_sw {
   case 195:
 
 /* Line 678 of lalr1.cc  */
-#line 1196 "lib/SQLParser/SQLParser.ypp"
+#line 1193 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1719,7 +1717,7 @@ namespace w3c_sw {
   case 196:
 
 /* Line 678 of lalr1.cc  */
-#line 1199 "lib/SQLParser/SQLParser.ypp"
+#line 1196 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1728,7 +1726,7 @@ namespace w3c_sw {
   case 197:
 
 /* Line 678 of lalr1.cc  */
-#line 1202 "lib/SQLParser/SQLParser.ypp"
+#line 1199 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -1737,7 +1735,7 @@ namespace w3c_sw {
   case 205:
 
 /* Line 678 of lalr1.cc  */
-#line 1215 "lib/SQLParser/SQLParser.ypp"
+#line 1212 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::IsNullConstraint();
     }
@@ -1746,7 +1744,7 @@ namespace w3c_sw {
   case 206:
 
 /* Line 678 of lalr1.cc  */
-#line 1221 "lib/SQLParser/SQLParser.ypp"
+#line 1218 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
     }
@@ -1755,7 +1753,7 @@ namespace w3c_sw {
   case 207:
 
 /* Line 678 of lalr1.cc  */
-#line 1227 "lib/SQLParser/SQLParser.ypp"
+#line 1224 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(5) - (4)].p_Expressions)->insert((yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expression));
 	(yyval.p_Expression) = new sql::HomologConstraint("CONCAT", (yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (4)].p_Expressions)->end());
@@ -1766,7 +1764,7 @@ namespace w3c_sw {
   case 208:
 
 /* Line 678 of lalr1.cc  */
-#line 1232 "lib/SQLParser/SQLParser.ypp"
+#line 1229 "lib/SQLParser/SQLParser.ypp"
     {
 	std::vector<const sql::Expression*> v;
 	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
@@ -1777,7 +1775,7 @@ namespace w3c_sw {
   case 209:
 
 /* Line 678 of lalr1.cc  */
-#line 1237 "lib/SQLParser/SQLParser.ypp"
+#line 1234 "lib/SQLParser/SQLParser.ypp"
     {
 	std::vector<const sql::Expression*> v;
 	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
@@ -1788,7 +1786,7 @@ namespace w3c_sw {
   case 210:
 
 /* Line 678 of lalr1.cc  */
-#line 1242 "lib/SQLParser/SQLParser.ypp"
+#line 1239 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::RegexConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression));
     }
@@ -1797,7 +1795,7 @@ namespace w3c_sw {
   case 211:
 
 /* Line 678 of lalr1.cc  */
-#line 1248 "lib/SQLParser/SQLParser.ypp"
+#line 1245 "lib/SQLParser/SQLParser.ypp"
     {
     (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
 }
@@ -1806,7 +1804,7 @@ namespace w3c_sw {
   case 212:
 
 /* Line 678 of lalr1.cc  */
-#line 1254 "lib/SQLParser/SQLParser.ypp"
+#line 1251 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
     }
@@ -1815,7 +1813,7 @@ namespace w3c_sw {
   case 213:
 
 /* Line 678 of lalr1.cc  */
-#line 1257 "lib/SQLParser/SQLParser.ypp"
+#line 1254 "lib/SQLParser/SQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1825,7 +1823,7 @@ namespace w3c_sw {
   case 228:
 
 /* Line 678 of lalr1.cc  */
-#line 1293 "lib/SQLParser/SQLParser.ypp"
+#line 1290 "lib/SQLParser/SQLParser.ypp"
     {
 	(yyval.p_Expression) = new sql::LiteralConstraint(*(yysemantic_stack_[(1) - (1)].p_NAME));
 	delete (yysemantic_stack_[(1) - (1)].p_NAME);
@@ -1835,7 +1833,7 @@ namespace w3c_sw {
 
 
 /* Line 678 of lalr1.cc  */
-#line 1839 "lib/SQLParser/SQLParser.cpp"
+#line 1837 "lib/SQLParser/SQLParser.cpp"
 	default:
           break;
       }
@@ -2547,29 +2545,29 @@ namespace w3c_sw {
   const unsigned short int
   SQLParser::yyrline_[] =
   {
-         0,   307,   307,   310,   313,   315,   319,   322,   324,   328,
-     329,   330,   331,   335,   339,   342,   344,   348,   349,   353,
-     354,   357,   359,   363,   363,   373,   376,   378,   381,   383,
-     387,   395,   398,   402,   407,   409,   413,   416,   422,   428,
-     429,   433,   436,   438,   442,   444,   442,   457,   461,   464,
-     469,   471,   475,   480,   482,   485,   487,   490,   492,   496,
-     503,   511,   514,   518,   521,   524,   527,   530,   533,   536,
-     539,   542,   545,   548,   551,   554,   557,   560,   563,   566,
-     571,   573,   577,   578,   582,   585,   591,   594,   598,   599,
-     603,   606,   609,   612,   615,   625,   628,   629,   630,   631,
-     637,   645,   651,   654,   662,   669,   675,   678,   685,   697,
-     703,   706,   713,   730,   736,   739,   743,   752,   756,   760,
-     765,   773,   776,   780,   788,   791,   795,   800,   806,   812,
-     815,   822,   834,   836,   840,   846,   849,   855,   860,   867,
-     868,   872,   873,   877,   890,   893,   896,   902,   908,   911,
-     917,   930,   934,   943,   954,   963,   969,   972,   978,   989,
-     995,   998,  1006,  1018,  1025,  1028,  1036,  1048,  1055,  1058,
-    1065,  1070,  1089,  1092,  1097,  1100,  1103,  1106,  1109,  1112,
-    1115,  1118,  1124,  1129,  1141,  1144,  1147,  1148,  1153,  1156,
-    1164,  1176,  1179,  1186,  1189,  1196,  1199,  1202,  1205,  1209,
-    1210,  1211,  1212,  1213,  1214,  1215,  1221,  1227,  1232,  1237,
-    1242,  1248,  1254,  1257,  1264,  1265,  1266,  1270,  1271,  1272,
-    1276,  1277,  1278,  1282,  1283,  1284,  1288,  1289,  1293
+         0,   306,   306,   309,   312,   314,   318,   321,   323,   327,
+     328,   329,   330,   334,   338,   341,   343,   347,   348,   352,
+     353,   356,   358,   362,   362,   372,   375,   377,   380,   382,
+     386,   394,   397,   401,   406,   408,   412,   415,   421,   427,
+     428,   432,   435,   437,   441,   443,   441,   450,   454,   457,
+     462,   464,   468,   473,   475,   478,   480,   483,   485,   489,
+     496,   504,   507,   511,   514,   517,   520,   523,   526,   529,
+     532,   535,   538,   541,   544,   547,   550,   553,   556,   559,
+     564,   566,   570,   571,   575,   578,   584,   587,   591,   592,
+     596,   601,   604,   607,   612,   622,   625,   626,   627,   628,
+     634,   642,   648,   651,   659,   666,   672,   675,   682,   694,
+     700,   703,   710,   727,   733,   736,   740,   749,   753,   757,
+     762,   770,   773,   777,   785,   788,   792,   797,   803,   809,
+     812,   819,   831,   833,   837,   843,   846,   852,   857,   864,
+     865,   869,   870,   874,   887,   890,   893,   899,   905,   908,
+     914,   927,   931,   940,   951,   960,   966,   969,   975,   986,
+     992,   995,  1003,  1015,  1022,  1025,  1033,  1045,  1052,  1055,
+    1062,  1067,  1086,  1089,  1094,  1097,  1100,  1103,  1106,  1109,
+    1112,  1115,  1121,  1126,  1138,  1141,  1144,  1145,  1150,  1153,
+    1161,  1173,  1176,  1183,  1186,  1193,  1196,  1199,  1202,  1206,
+    1207,  1208,  1209,  1210,  1211,  1212,  1218,  1224,  1229,  1234,
+    1239,  1245,  1251,  1254,  1261,  1262,  1263,  1267,  1268,  1269,
+    1273,  1274,  1275,  1279,  1280,  1281,  1285,  1286,  1290
   };
 
   // Print the state stack on the debug stream.
@@ -2671,11 +2669,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1054 of lalr1.cc  */
-#line 2675 "lib/SQLParser/SQLParser.cpp"
+#line 2673 "lib/SQLParser/SQLParser.cpp"
 
 
 /* Line 1056 of lalr1.cc  */
-#line 1313 "lib/SQLParser/SQLParser.ypp"
+#line 1310 "lib/SQLParser/SQLParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
@@ -2691,7 +2689,7 @@ namespace w3c_sw {
 SQLDriver::SQLDriver(class sqlContext& _context)
     : YaccDriver("", NULL), trace_scanning(false), trace_parsing(false),
       context(_context), root(NULL), curCreate(NULL),
-      curAttributeName(NULL), curIsPrimary(false)
+      curAttributeName(NULL)
 {
 }
 

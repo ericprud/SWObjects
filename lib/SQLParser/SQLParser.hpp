@@ -167,7 +167,6 @@ public:
 
     sql::schema::Relation* curCreate;
     std::string* curAttributeName;
-    bool curIsPrimary;
     sql::schema::Database tables;
     std::vector<const sql::Insert*> inserts;
 };
@@ -184,7 +183,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 
 
 /* Line 35 of lalr1.cc  */
-#line 188 "lib/SQLParser/SQLParser.hpp"
+#line 187 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -198,7 +197,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 202 "lib/SQLParser/SQLParser.hpp"
+#line 201 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -208,7 +207,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 212 "lib/SQLParser/SQLParser.hpp"
+#line 211 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -256,7 +255,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 260 "lib/SQLParser/SQLParser.hpp"
+#line 259 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -268,7 +267,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 189 "lib/SQLParser/SQLParser.ypp"
+#line 188 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -295,7 +294,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 299 "lib/SQLParser/SQLParser.hpp"
+#line 298 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -584,7 +583,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 588 "lib/SQLParser/SQLParser.hpp"
+#line 587 "lib/SQLParser/SQLParser.hpp"
 
 
 

@@ -169,7 +169,6 @@ public:
 
     sql::schema::Relation* curCreate;
     std::string* curAttributeName;
-    bool curIsPrimary;
     sql::schema::Database tables;
     std::vector<const sql::Insert*> inserts;
 };
@@ -446,23 +445,17 @@ FieldOrKey:
 	driver.curCreate->addField(f);
     } _QLinkDetails_E_Star	{
 	driver.curAttributeName = NULL;
-	if (driver.curIsPrimary) {
-	    driver.curIsPrimary = false;
-	    std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
-	    attrs->push_back(*$1);
-	    driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
-	}
 	delete $1;
-      }
+    }
   | _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
-      driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, new sql::schema::Key($7)));
-      delete $6;
+	driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, new sql::schema::Key($7)));
+	delete $6;
     }
   | IT_PRIMARY IT_KEY AttrList	{
-      driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey($3));
+	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey($3));
     }
   | IT_UNIQUE _QIT_KEY_E_Opt _QAttribute_E_Opt AttrList	{
-	w3c_sw_LINEN << "ignoring UNIQUE KEYs\n";
+	driver.curCreate->addUniqueKey(new sql::schema::Key($4));
     }
 ;
 
@@ -601,7 +594,9 @@ _O_QIT_INTEGER_E_Or_QIT_INT_E_C:
 
 LinkDetails:
     IT_PRIMARY IT_KEY	{
-	driver.curIsPrimary = true;
+	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	attrs->push_back(*driver.curAttributeName);
+	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
     }
   | IT_DEFAULT Constant	{
 	w3c_sw_LINEN << "ignoring DEFAULT\n";
@@ -610,7 +605,9 @@ LinkDetails:
 	w3c_sw_LINEN << "ignoring NOT NULL\n";
     }
   | IT_UNIQUE	{
-	w3c_sw_LINEN << "ignoring UNIQUE\n";
+	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
+	attrs->push_back(*driver.curAttributeName);
+	driver.curCreate->addUniqueKey(new sql::schema::Key(attrs));
     }
   | IT_REFERENCES Relation AttrList	{
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
@@ -1325,7 +1322,7 @@ namespace w3c_sw {
 SQLDriver::SQLDriver(class sqlContext& _context)
     : YaccDriver("", NULL), trace_scanning(false), trace_parsing(false),
       context(_context), root(NULL), curCreate(NULL),
-      curAttributeName(NULL), curIsPrimary(false)
+      curAttributeName(NULL)
 {
 }
 
