@@ -1985,17 +1985,39 @@ namespace w3c_sw {
 	    };
 
 	    struct Field : public FieldOrKey {
-		struct PKParticipation {
-		    const PrimaryKey* key;
+		struct Participation {
 		    size_t position;
+		    Participation (size_t position) : position(position) {  }
 		};
 
-		struct FKParticipation {
-		    const ForeignKey* key;
-		    size_t position;
-		    FKParticipation (ForeignKey* key, size_t position)
-			: key(key), position(position)
+		struct KeyParticipation : public Participation {
+		    const Key* key;
+		    KeyParticipation (Key* key, size_t position)
+			: Participation(position), key(key)
 		    {  }
+		};
+
+		struct PKParticipation : public Participation {
+		    const PrimaryKey* key;
+		    PKParticipation (PrimaryKey* key, size_t position)
+			: Participation(position), key(key)
+		    {  }
+		};
+
+		struct FKParticipation : public Participation {
+		    const ForeignKey* key;
+		    FKParticipation (ForeignKey* key, size_t position)
+			: Participation(position), key(key)
+		    {  }
+		};
+
+		struct Keys : public std::map<const Key*, KeyParticipation> {
+		    void addUniqueKey(Key* uniqueKey, size_t posn) {
+			iterator fk = find(uniqueKey);
+			if (fk != end())
+			    throw std::string() + "Unique key already assigned.";
+			insert(std::make_pair(uniqueKey, KeyParticipation(uniqueKey, posn)));
+		    }
 		};
 
 		struct FKs : public std::map<const ForeignKey*, FKParticipation> {
@@ -2006,13 +2028,19 @@ namespace w3c_sw {
 			insert(std::make_pair(foreignKey, FKParticipation(foreignKey, posn)));
 		    }
 		};
+
 		Attribute name;
 		e_TYPE type;
 		int precision;
-		PKParticipation pk;
+	    protected: // manage this stuff via the method calls.
+		boost::optional<PKParticipation> pk;
+		Keys keys;
 		FKs fks;
 
-		Field (Attribute name, e_TYPE type, int precision) : name(name), type(type), precision(precision)
+	    public:
+
+		Field (Attribute name, e_TYPE type, int precision)
+		    : name(name), type(type), precision(precision)
 		{  }
 		virtual bool operator== (const FieldOrKey& ref) const {
 		    const Field* refp = dynamic_cast<const Field*>(&ref);
@@ -2020,6 +2048,18 @@ namespace w3c_sw {
 			return false;
 		    return name == refp->name
 			&& type == refp->type;
+		}
+
+		void setPkPosition (PrimaryKey* primaryKey, size_t posn) {
+		    pk = PKParticipation(primaryKey, posn);
+		}
+
+		void addUniqueKey (Key* uniqueKey, size_t posn) {
+		    keys.addUniqueKey(uniqueKey, posn);
+		}
+
+		void addForeignKey (ForeignKey* foreignKey, size_t posn) {
+		    fks.addForeignKey(foreignKey, posn);
 		}
 
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
@@ -2042,17 +2082,15 @@ namespace w3c_sw {
 		struct Fields : public std::map<Attribute, Field> {
 		    void addPrimaryKey(Attribute attr, PrimaryKey* primaryKey, size_t posn) {
 			iterator f = find(attr);
-			f->second.pk.key = primaryKey;
-			f->second.pk.position = posn;
+			f->second.setPkPosition(primaryKey, posn);
 		    }
 		    void addUniqueKey(Attribute attr, Key* uniqueKey, size_t posn) {
-			// iterator f = find(attr);
-			// f->second.pk.key = uniqueKey;
-			// f->second.pk.position = posn;
+			iterator f = find(attr);
+			f->second.addUniqueKey(uniqueKey, posn);
 		    }
 		    void addForeignKey(Attribute attr, ForeignKey* foreignKey, size_t posn) {
 			iterator f = find(attr);
-			f->second.fks.addForeignKey(foreignKey, posn);
+			f->second.addForeignKey(foreignKey, posn);
 		    }
 		};
 		Fields fields;
