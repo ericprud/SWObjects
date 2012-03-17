@@ -1900,8 +1900,22 @@ namespace w3c_sw {
 		std::vector<Attribute>::const_iterator end () const { return attrs->end(); }
 		size_t size () const { return attrs->size(); }
 		const Attribute& at (size_t i) const { return attrs->at(i); }
-		virtual bool operator== (const FieldOrKey& ref) const { throw; }
-		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const { throw; }
+		virtual bool operator== (const FieldOrKey& ref) const {
+		    const Key* refp = dynamic_cast<const Key*>(&ref);
+		    return (refp != NULL && Key_equals(ref));
+		}
+		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		    std::stringstream ss;
+		    ss << "KEY (";
+		    for (std::vector<Attribute>::const_iterator it = begin();
+			 it != end(); ++it) {
+			if (it != begin())
+			    ss << ", ";
+			ss << s.name(*it);
+		    }
+		    ss << ")";
+		    return ss.str();
+		}
 	    };
 
 	    struct PrimaryKey : public Key {
@@ -2031,6 +2045,11 @@ namespace w3c_sw {
 			f->second.pk.key = primaryKey;
 			f->second.pk.position = posn;
 		    }
+		    void addUniqueKey(Attribute attr, Key* uniqueKey, size_t posn) {
+			// iterator f = find(attr);
+			// f->second.pk.key = uniqueKey;
+			// f->second.pk.position = posn;
+		    }
 		    void addForeignKey(Attribute attr, ForeignKey* foreignKey, size_t posn) {
 			iterator f = find(attr);
 			f->second.fks.addForeignKey(foreignKey, posn);
@@ -2089,6 +2108,15 @@ namespace w3c_sw {
 		    for (std::vector<Attribute>::const_iterator attr = primaryKey->begin();
 			 attr != primaryKey->end(); ++attr, ++posn)
 			fields.addPrimaryKey(*attr, primaryKey, posn);
+		}
+
+		void addUniqueKey (Key* uniqueKey) {
+		    orderedFields.push_back(uniqueKey);
+		    keys.insert(uniqueKey);
+		    size_t posn = 0;
+		    for (std::vector<Attribute>::const_iterator attr = uniqueKey->begin();
+			 attr != uniqueKey->end(); ++attr, ++posn)
+			fields.addUniqueKey(*attr, uniqueKey, posn);
 		}
 
 		void addForeignKey (ForeignKey* foreignKey) {
