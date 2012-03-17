@@ -18,6 +18,7 @@ void dump(SQLclient& sqlDriver, std::string cmd);
 struct Materializer {
     typedef std::map<std::string, const TTerm*> TableRowNodes;
     typedef std::map<sql::RelationName, TableRowNodes> RowNodes;
+    RowNodes rowNodes;
     SQLclient& sqlDriver;
     const char* Quote;
     size_t nextTableAlias, nextAttrAlias;
@@ -26,7 +27,6 @@ struct Materializer {
 	: sqlDriver(sqlDriver), Quote("`"), nextTableAlias(0), nextAttrAlias(0)
     {  }
     void operator() (sql::schema::Database& db, DefaultGraphPattern* bgp) {
-	RowNodes rowNodes;
 	std::vector<sql::schema::Relation*> orderedTables;
 	for (sql::schema::Database::const_iterator it = db.begin();
 	     it != db.end(); ++it)
@@ -35,7 +35,7 @@ struct Materializer {
 	for (std::vector<sql::schema::Relation*>::const_iterator it = orderedTables.begin();
 	     it != orderedTables.end(); ++it) {
 	    sql::schema::Relation& table = **it;
-	    dumpTable(table, db, rowNodes, sqlDriver, atomFactory, bgp);
+	    dumpTable(table, db, atomFactory, bgp);
 	}
     }
     static std::string replace (std::string replaceMe, char from, const char* to) {
@@ -101,31 +101,99 @@ struct Materializer {
 	}
     };
 
-    struct LiteralAttribute {
-	size_t colNo;
-	const TTerm* p;
-	LiteralAttribute (size_t colNo, const TTerm* p)
-	    : colNo(colNo), p(p)
-	{  }
+    struct TripleMaker {
+	virtual void doIt(SQLclient::Result* res, SQLclient::Result::Row& row, sql::schema::Database& db,
+			  BasicGraphPattern* bgp, const TTerm* s, AtomFactory* atomFactory) const = 0;
     };
 
-    struct ReferenceAttribute {
+    struct TypeTripleMaker : public TripleMaker {
+	const TTerm* p;
+	const TTerm* type;
+	TypeTripleMaker (const TTerm* p, const TTerm* type)
+	    : p(p), type(type)
+	{  }
+	void doIt (SQLclient::Result* res, SQLclient::Result::Row& row, sql::schema::Database& db,
+		   BasicGraphPattern* bgp, const TTerm* s, AtomFactory* atomFactory) const {
+	    bgp->addTriplePattern
+		(atomFactory->getTriple
+		 (s, p, type));
+	    // w3c_sw_LINEN << s->toString() << " " << rdfType->toString() << " " << type->toString() << "\n";
+	}
+    };
+
+    struct LiteralTripleMaker : public TripleMaker {
+	size_t colNo;
+	const TTerm* p;
+	LiteralTripleMaker (size_t colNo, const TTerm* p)
+	    : colNo(colNo), p(p)
+	{  }
+	void doIt (SQLclient::Result* res, SQLclient::Result::Row& row, sql::schema::Database& db,
+		   BasicGraphPattern* bgp, const TTerm* s, AtomFactory* atomFactory) const {
+	    if (row[colNo].is_initialized()) {
+		const TTerm* o = row.getTTerm(colNo, res->cols(), atomFactory);
+		bgp->addTriplePattern
+		    (atomFactory->getTriple
+		     (s, p, o));
+		// w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
+	    }
+	}
+    };
+
+    struct ReferenceTripleMaker : public TripleMaker {
 	std::string p;
 	sql::RelationName targetRel;
 	std::vector<size_t>  colNos;
-	std::vector<std::string> safeNames;
-	ReferenceAttribute (std::string tableName, sql::RelationName targetRel) : p(tableName + "#ref-"), targetRel(targetRel) {  }
+	std::vector<std::string> attrNames;
+	ReferenceTripleMaker (std::string tableName, sql::RelationName targetRel) : p(tableName + "#ref-"), targetRel(targetRel) {  }
 	void insert(size_t colNo, std::string fromAttr, std::string toAttr) {
 	    if (colNos.size() > 0)
 		p += ".";
 	    p += IRIsafe(fromAttr);
 	    colNos.push_back(colNo);
-	    safeNames.push_back(attrname(toAttr));
+	    attrNames.push_back(attrname(toAttr));
 	}
 	size_t size () const { return colNos.size(); }
+	void doIt (SQLclient::Result* res, SQLclient::Result::Row& row, sql::schema::Database& db,
+		   BasicGraphPattern* bgp, const TTerm* s, AtomFactory* atomFactory) const {
+	    // const TTerm* p = atomFactory->getURI(p);
+	    const sql::schema::Relation& refdTable = *db[targetRel];
+	    const TTerm* o = NULL;
+	    if (refdTable.primaryKey == NULL) {
+		o = atomFactory->createBNode();
+		// Populate NowNodes index with generated bnode.
+		for (std::set<const sql::schema::Key*>::const_iterator key = refdTable.keys.begin();
+		     key != refdTable.keys.end(); ++key)
+		    for (std::vector<sql::Attribute>::const_iterator attr = (*key)->begin();
+			 attr != (*key)->end(); ++attr) {
+			// w3c_sw_LINEN << ", " << Quote << *attr << Quote << std::endl;
+			// << " AS " << Quote << thatTableAlias << *attr << Quote
+			;
+			; // const TTerm* l = row.getTTerm(colNo, res->cols(), &atomFactory);
+		    }
+	    } else {
+		std::string oStr = targetRel + "/";
+		for (size_t i = 0; i < size(); ++i) {
+		    if (!row[colNos[i]].is_initialized()) {
+			oStr = "";
+			break;
+		    }
+		    if (i != 0)
+			oStr += ".";
+		    oStr += attrname(attrNames[i]) + "-" + attrvalue(row[colNos[i]].get());
+		}
+		if (oStr.size() > 0) {
+		    o = atomFactory->getURI(oStr);
+		}
+	    }
+	    if (o)
+		bgp->addTriplePattern
+		    (atomFactory->getTriple
+		     (s, atomFactory->getURI(p), o));
+	    // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
+	}
     };
 
-    void dumpTable (sql::schema::Relation& table, sql::schema::Database& db, RowNodes& rowNodes, SQLclient& sqlDriver, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
+    void dumpTable (sql::schema::Relation& table, sql::schema::Database& db, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
 
 	std::string thisTableAlias = newTableAlias();
 	// w3c_sw_LINEN << table << "\n";
@@ -141,12 +209,19 @@ struct Materializer {
 	PkCols pkCols;
 	if (table.primaryKey != NULL)
 	    pkCols.resize(table.primaryKey->size());
-	std::vector<LiteralAttribute> literalAttributes;
+
+	std::vector<boost::shared_ptr<TripleMaker> > tripleMakers;
+
+	tripleMakers.push_back(boost::shared_ptr<TypeTripleMaker>
+			       (new TypeTripleMaker(atomFactory.getURI
+						    ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+						    atomFactory.getURI(IRIsafe(table.name)))));
+
 	for (sql::schema::Relation::Fields::const_iterator it = table.fields.begin();
 	     it != table.fields.end(); ++it) {
 	    std::string attrAlias = newAttrAlias();
 	    const TTerm* p = atomFactory.getURI(IRIsafe(table.name) + "#" + IRIsafe(it->second.name));
-	    literalAttributes.push_back(LiteralAttribute(colNo, p));
+	    tripleMakers.push_back(boost::shared_ptr<LiteralTripleMaker>(new LiteralTripleMaker(colNo, p)));
 	    if (table.primaryKey != NULL)
 		for (size_t i = 0; i < table.primaryKey->size(); ++i)
 		    if (it->second.name == table.primaryKey->at(i))
@@ -176,12 +251,12 @@ struct Materializer {
 	}
 	joins << " FROM " << Quote << table.name << Quote << " AS " << thisTableAlias;
 
-	std::vector<ReferenceAttribute> referenceAttributes;
+	std::vector<ReferenceTripleMaker> referenceAttributes;
 	for (std::vector<const sql::schema::FieldOrKey*>::iterator it = table.orderedFields.begin();
 	     it != table.orderedFields.end(); ++it) {
 	    const sql::schema::ForeignKey* fk = dynamic_cast<const sql::schema::ForeignKey*>(*it);
 	    if (fk != NULL) {
-		ReferenceAttribute queuedAttr(IRIsafe(table.name), fk->targetRel);
+		ReferenceTripleMaker* queuedAttr = new ReferenceTripleMaker(IRIsafe(table.name), fk->targetRel);
 		std::string thatTableAlias = newTableAlias();
 		const sql::schema::Relation& refdTable = *db[fk->targetRel];
 		joins << " LEFT OUTER JOIN " << Quote << fk->targetRel << Quote << " AS " << thatTableAlias << " ON ";
@@ -192,11 +267,12 @@ struct Materializer {
 			joins << " AND ";
 		    joins << thisTableAlias << "." << Quote << fk->at(i) << Quote << "="
 			  << thatTableAlias << "." << Quote << fk->relAttrs->at(i) << Quote;
-		    queuedAttr.insert(colNo++, fk->at(i), fk->relAttrs->at(i));
+		    queuedAttr->insert(colNo++, fk->at(i), fk->relAttrs->at(i));
 		}
 		if (fk->size() > 1)
 		    joins << ")";
 		if (refdTable.primaryKey == NULL) {
+		    // Select all keys which will get the generated bnode.
 		    for (std::set<const sql::schema::Key*>::const_iterator key = refdTable.keys.begin();
 			 key != refdTable.keys.end(); ++key)
 			for (std::vector<sql::Attribute>::const_iterator attr = (*key)->begin();
@@ -214,7 +290,7 @@ struct Materializer {
 			
 		    }
 		}
-		referenceAttributes.push_back(queuedAttr);
+		tripleMakers.push_back(boost::shared_ptr<ReferenceTripleMaker>(queuedAttr));
 	    }
 	}
 
@@ -239,110 +315,10 @@ struct Materializer {
 		s = atomFactory.getURI(node);
 	    }
 
-	    bgp->addTriplePattern
-		(atomFactory.getTriple
-		 (s, rdfType, type));
-	    // w3c_sw_LINEN << s->toString() << " " << rdfType->toString() << " " << type->toString() << "\n";
-		
-	    for (std::vector<LiteralAttribute>::const_iterator lit = literalAttributes.begin();
-		 lit != literalAttributes.end(); ++lit) {
-		if (row[lit->colNo].is_initialized()) {
-		    const TTerm* o = row.getTTerm(lit->colNo, res->cols(), &atomFactory);
-		    bgp->addTriplePattern
-			(atomFactory.getTriple
-			 (s, lit->p, o));
-		    // w3c_sw_LINEN << s->toString() << " " << lit->p->toString() << " " << o->toString() << " .\n";
-		}
-	    }
-
-	    for (std::vector<ReferenceAttribute>::const_iterator rit = referenceAttributes.begin();
-		 rit != referenceAttributes.end(); ++rit) {
-		const TTerm* p = atomFactory.getURI(rit->p);
-		std::string oStr = rit->targetRel + "/";
-		for (size_t i = 0; i < rit->size(); ++i) {
-		    if (!row[rit->colNos[i]].is_initialized()) {
-			oStr = "";
-			break;
-		    }
-		    if (i != 0)
-			oStr += ".";
-		    oStr += attrname(rit->safeNames[i]) + "-" + attrvalue(row[rit->colNos[i]].get());
-		}
-		if (oStr.size() > 0) {
-		    const TTerm* o = atomFactory.getURI(oStr);
-		    bgp->addTriplePattern
-			(atomFactory.getTriple
-			 (s, p, o));
-		    // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
-		}
-	    }
+	    for (std::vector<boost::shared_ptr<TripleMaker> >::const_iterator tmit = tripleMakers.begin();
+		 tmit != tripleMakers.end(); ++tmit)
+		(*tmit)->doIt(res, row, db, bgp, s, &atomFactory);
 	}
-
-	SqlResultSet rs2(&atomFactory, res);
-	// w3c_sw_LINEN << rs2;
-
-	// for (ResultSetConstIterator row = rs2.begin(); row != rs2.end(); ++row) {
-	//     const TTerm* s;
-	//     if (table.primaryKey == NULL) {
-	// 	s = atomFactory.createBNode();
-	//     } else {
-	// 	std::stringstream node;
-	// 	node << IRIsafe(table.name) << "/";
-	// 	for (std::vector<sql::Attribute>::const_iterator a = table.primaryKey->attrs->begin();
-	// 	     a != table.primaryKey->attrs->end(); ++a) {
-	// 	    if (a != table.primaryKey->attrs->begin())
-	// 		node << ".";
-	// 	    node << attrname(*a) << "-" << attrvalue((*row)->get(atomFactory.getVariable(*a))->getLexicalValue());
-	// 	}
-	// 	s = atomFactory.getURI(node.str());
-	//     }
-
-	//     /* row type triple */
-	//     bgp->addTriplePattern
-	// 	(atomFactory.getTriple
-	// 	 (s, rdfType, atomFactory.getURI(IRIsafe(table.name))));
-
-	//     /* literal triples */
-	//     for (std::vector<LiteralAttribute>::const_iterator it = literalAttributes.begin();
-	// 	 it != literalAttributes.end(); ++it)
-	// 	if ((*row)->get(it->alias) != NULL) {
-	// 	    bgp->addTriplePattern
-	// 		(atomFactory.getTriple
-	// 		 (s, it->p, (*row)->get(it->alias)));
-	// 	}
-
-	//     /* reference triples */
-	//     for (std::vector<ReferenceAttribute>::const_iterator it = ReferencesAttributes.begin();
-	// 	 it != refrenceAttributes.end(); ++it) {
-	// 	const sql::schema::ForeignKey* key = dynamic_cast<const sql::schema::ForeignKey*>(*it);
-	// 	if (key != NULL) {
-
-	// 	    std::stringstream ostr;
-	// 	    ostr << key->targetRel << "/";
-
-	// 	    std::vector<sql::Attribute>::const_iterator attr = key->attrs->begin();
-	// 	    std::vector<sql::Attribute>::const_iterator relAttr = key->relAttrs->begin();
-	// 	    while (attr != key->attrs->end()) {
-	// 		const TTerm* val = (*row)->get(atomFactory.getVariable(*attr));
-	// 		if (val == NULL)
-	// 		    goto skipTriple;
-	// 		if (attr != key->attrs->begin()) {
-	// 		    ostr << ".";
-	// 		}
-	// 		pstr << IRIsafe(*attr);
-	// 		ostr << attrname(*relAttr) << "-" << attrvalue(val->getLexicalValue());
-	// 		++attr;
-	// 		++relAttr;
-	// 	    }
-
-	// 	    bgp->addTriplePattern
-	// 		(atomFactory.getTriple
-	// 		 (s, atomFactory.getURI(pstr.str()), atomFactory.getURI(ostr.str())));
-	// 	skipTriple:
-	// 	    ;
-	// 	}
-	//     }
-	// }
 	nextTableAlias = 0;
 	nextAttrAlias = 0;
     }
