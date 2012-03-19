@@ -147,8 +147,10 @@ BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows)                     { DMTE
 BOOST_AUTO_TEST_SUITE_END(/* committed */)
 
 BOOST_AUTO_TEST_SUITE( ericPz )
-BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/ref-no-pk/") }
-BOOST_AUTO_TEST_CASE(ref_not_pk) { DMTEST("rdb2rdf-tests/ref-not-pk/") }
+BOOST_AUTO_TEST_CASE(ref_no_pk)      { DMTEST("rdb2rdf-tests/ref-no-pk/") }
+BOOST_AUTO_TEST_CASE(ref_not_pk)     { DMTEST("rdb2rdf-tests/ref-not-pk/") }
+BOOST_AUTO_TEST_CASE(ref_some_nulls) { DMTEST("rdb2rdf-tests/ref-some-nulls/") }
+BOOST_AUTO_TEST_CASE(ref_all_nulls)  { DMTEST("rdb2rdf-tests/ref-all-nulls/") }
 BOOST_AUTO_TEST_SUITE_END(/* ericPz */)
 
 BOOST_AUTO_TEST_SUITE( spec )
