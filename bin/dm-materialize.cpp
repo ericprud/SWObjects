@@ -321,8 +321,16 @@ struct Materializer {
 		for (size_t i = 0; i < fk->size(); ++i) {
 		    if (i != 0)
 			joins << " AND ";
-		    joins << thisTableAlias << "." << Quote << fk->at(i) << Quote << "="
-			  << thatTableAlias << "." << Quote << fk->relAttrs->at(i) << Quote;
+		    sql::AliasAttr from(thisTableAlias, fk->at(i));
+		    sql::AliasAttr to(thatTableAlias, fk->relAttrs->at(i));
+		    joins << "("
+			  << Serializer.Serializer::name(from) << "="
+			  << Serializer.Serializer::name(to)
+			  << " OR ("
+			  << Serializer.Serializer::name(from) << " IS NULL AND "
+			  << Serializer.Serializer::name(to) << " IS NULL"
+			  << ")"
+			  << ")";
 		}
 		if (fk->size() > 1)
 		    joins << ")";
