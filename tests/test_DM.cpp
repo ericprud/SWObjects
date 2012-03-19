@@ -152,5 +152,5 @@ BOOST_AUTO_TEST_CASE(ref_not_pk) { DMTEST("rdb2rdf-tests/ref-not-pk/") }
 BOOST_AUTO_TEST_SUITE_END(/* ericPz */)
 
 BOOST_AUTO_TEST_SUITE( spec )
-//BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/spec-ref-no-pk/") }
+BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/spec-ref-no-pk/") }
 BOOST_AUTO_TEST_SUITE_END(/* spec */)
