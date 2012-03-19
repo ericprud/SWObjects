@@ -182,11 +182,9 @@ namespace w3c_sw {
 			// Perform necessary SQL-to-RDF lexical transformations:
 			switch (fields[i].type) {
 			case MYSQL_TYPE_DATETIME:
+			case MYSQL_TYPE_TIMESTAMP: // always a datetime? otherwise lexval = "0-0-0T" + lexval?
 			    lexval.replace(lexval.find_first_of(' '), 1, "T");
 			    break;
-			// case MYSQL_TYPE_TIMESTAMP:
-			//     lexval = "0-0-0T" + lexval;
-			//     break;
 			case MYSQL_TYPE_YEAR:
 			    lexval = lexval = "-0-0T00:00";
 			    break;

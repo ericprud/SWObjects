@@ -140,14 +140,21 @@ namespace w3c_sw {
 			    double val;
 			    input >> val;
 
-			    // canonical << std::scientific << val; yields e.g. 1.230000E04
-			    std::stringstream canonical;
-			    int ex = log10(val);
-			    if (val < 1)
-				--ex;
-			    canonical << val/exp(ex*log(10)/log10(10)) << "E" << ex;
+			    if (val == 0) {
+				lexval = "0.0E0";
+			    } else {
+				// canonical << std::scientific << val; yields e.g. 1.230000E04
+				std::stringstream canonical;
+				int ex = log10(val);
+				if (val < 1)
+				    --ex;
+				canonical << val/exp(ex*log(10)/log10(10));
+				if (canonical.str().find('.') == std::string::npos)
+				    canonical << ".0";
+				canonical << "E" << ex;
 
-			    lexval = canonical.str();
+				lexval = canonical.str();
+			    }
 			}
 
 			std::string dt = Field::typeNames[type];
