@@ -31,11 +31,13 @@ namespace w3c_sw {
 
 	/** abstract class for serializing SQL.
 	 */
+	struct AliasAttr;
 	struct Serializer {
 	    virtual std::string name(std::string s) = 0;
 	    virtual std::string as() = 0;
 	    virtual std::string limit(int l) = 0;
 	    virtual std::string offset(int o) = 0;
+	    virtual std::string name(AliasAttr aa);
 	};
 	template<int dummy>
 	struct SQLSerializer_dummyTemplate : public Serializer {
@@ -327,6 +329,10 @@ namespace w3c_sw {
 		return alias + "." + attr;
 	    }
 	};
+
+	inline std::string Serializer::name (AliasAttr aa) {
+	    return name(aa.alias) + "." + name(aa.attr);
+	}
 
 	/* Implementable subclassed of Constraint:  */
 	class DisjunctionConstraint;
