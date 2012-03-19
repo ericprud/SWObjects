@@ -111,7 +111,7 @@ struct DMTest {
     DMTest h;							\
     try {							\
 	h = DMTest(NAME "create.sql",				\
-		   NAME "directGraph.nt");			\
+		   NAME "directGraph.ttl");			\
 	BOOST_CHECK_EQUAL(h.expect, h.test);			\
     } catch (w3c_sw::ParserException& p) {			\
 	BOOST_FAIL(std::string("ParserException:") + p.what());	\
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(_1table1primarykey3colums3rows)                      { DMTE
 BOOST_AUTO_TEST_CASE(_M2MRelations)                                       { DMTEST("rdb2rdf-tests/D011-M2MRelations/") }
 BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls)                           { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls/") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue)           { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue/") }
-// BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey/") }
+BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey/") }
 BOOST_AUTO_TEST_CASE(_1table3columns1composityeprimarykey3rows2languages) { DMTEST("rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages/") }
 BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes)        { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes/") }
 BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars)                                 { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars/") }
@@ -147,5 +147,10 @@ BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows)                     { DMTE
 BOOST_AUTO_TEST_SUITE_END(/* committed */)
 
 BOOST_AUTO_TEST_SUITE( ericPz )
-// BOOST_AUTO_TEST_CASE(ref_no_pk) { DMTEST("rdb2rdf-tests/ref-no-pk/") }
+BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/ref-no-pk/") }
+BOOST_AUTO_TEST_CASE(ref_not_pk) { DMTEST("rdb2rdf-tests/ref-not-pk/") }
 BOOST_AUTO_TEST_SUITE_END(/* ericPz */)
+
+BOOST_AUTO_TEST_SUITE( spec )
+//BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/spec-ref-no-pk/") }
+BOOST_AUTO_TEST_SUITE_END(/* spec */)

@@ -20,6 +20,9 @@ struct Materializer {
     typedef std::map<std::string, const TTerm*> TableRowNodes;
     typedef std::map<sql::RelationName, TableRowNodes> RowNodes;
     RowNodes rowNodes;
+    struct Values2BNode : public std::map<std::string, const BNode*> {
+    };
+    std::map<const sql::schema::Key*, Values2BNode> allmaps;
     SQLclient& sqlDriver;
     const char* Quote;
     size_t nextTableAlias;
@@ -142,35 +145,37 @@ struct Materializer {
 	std::string p;
 	sql::RelationName targetRel;
 	std::vector<size_t>  colNos;
-	std::vector<std::string> attrNames;
 	ReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
-			      const std::vector<size_t>& colNos,
-			      const sql::schema::ForeignKey* from, const sql::schema::Key* to)
-	    : TripleMaker(atomFactory), p(tableName + "#ref-"), targetRel(targetRel)
+			      const sql::schema::ForeignKey* from, const sql::schema::Key* to,
+			      const std::vector<size_t>& colNos)
+	    : TripleMaker(atomFactory), p(tableName + "#ref-"), targetRel(targetRel), colNos(colNos)
 	{ reference(colNos, from, to); }
 	void reference (const std::vector<size_t>& colNos,
 			const sql::schema::ForeignKey* from, const sql::schema::Key* to) {
-	    this->colNos = colNos;
-	    for (size_t i = 0; i < colNos.size(); ++i) {
+	    for (size_t i = 0; i < from->size(); ++i) {
 		if (i > 0)
 		    p += ".";
 		p += IRIsafe(from->at(i));
-		attrNames.push_back(attrname(to->at(i)));
 	    }
 	}
 	size_t size () const { return colNos.size(); }
     };
     struct PKReferenceTripleMaker : public ReferenceTripleMaker {
+	std::vector<std::string> attrNames;
 	PKReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
+				const sql::schema::ForeignKey* from, const sql::schema::Key* to,
 				const std::vector<size_t>& colNos,
-				const sql::schema::ForeignKey* from, const sql::schema::Key* to)
-	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, colNos, from, to)
-	{  }
+				const sql::schema::PrimaryKey* pk)
+	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, from, to, colNos)
+	{
+	    for (size_t i = 0; i < pk->size(); ++i)
+		attrNames.push_back(attrname(pk->at(i)));
+	}
 	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
 	    std::string oStr = targetRel + "/";
 	    for (size_t i = 0; i < size(); ++i) {
-		if (!row[colNos[i]].is_initialized()) {
+		if (!(row[colNos[i]].is_initialized())) {
 		    oStr = "";
 		    break;
 		}
@@ -187,35 +192,35 @@ struct Materializer {
     };
 
     struct NoPKReferenceTripleMaker : public ReferenceTripleMaker {
-	struct KeySelects {
-	};
-	sql::schema::Relation& refdTable;
-	KeySelects keySelects;
+	Values2BNode& v2b;
 	NoPKReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
-				  const std::vector<size_t>& colNos,
 				  const sql::schema::ForeignKey* from, const sql::schema::Key* to,
-				  sql::schema::Relation& refdTable, KeySelects keySelects)
-	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, colNos, from, to),
-	      refdTable(refdTable), keySelects(keySelects)
+				  const std::vector<size_t>& colNos,
+				  Values2BNode& v2b)
+	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, from, to, colNos),
+	      v2b(v2b)
 	{  }
 	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
-	    // const TTerm* p = atomFactory->getURI(p);
-	    const TTerm* o = atomFactory->createBNode();
+	    std::string key;
+	    for (size_t i = 0; i < size(); ++i)
+		key
+		    += row[colNos[i]].is_initialized()
+		    ? attrvalue(row[colNos[i]].get())
+		    : "NULL";
+
+	    Values2BNode::iterator it = v2b.find(key);
+	    const BNode* o;
+	    if (it == v2b.end()) {
+		o = atomFactory->createBNode();
+		v2b.insert(std::pair<std::string, const BNode*>(key, o));
+		// v2b[key] = o;
+	    } else
+		o = v2b[key];
 	    bgp->addTriplePattern
 		(atomFactory->getTriple
 		 (s, atomFactory->getURI(p), o));
-	    // Populate NowNodes index with generated bnode.
-	    for (std::set<const sql::schema::Key*>::const_iterator key = refdTable.keys.begin();
-		 key != refdTable.keys.end(); ++key)
-		for (std::vector<sql::Attribute>::const_iterator attr = (*key)->begin();
-		     attr != (*key)->end(); ++attr) {
-		    // w3c_sw_LINEN << ", " << Quote << *attr << Quote << std::endl;
-		    // << " AS " << Quote << thatTableAlias << *attr << Quote
-		    ;
-		    ; // const TTerm* l = row.getTTerm(colNo, res->cols(), &atomFactory);
-		}
-	    // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
+	    // // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
 	}
     };
 
@@ -250,7 +255,8 @@ struct Materializer {
 	/* fixup for various DBs */
 	SQLclient::Result::Fixups fixups;
 
-	size_t colNo = 0;
+	std::vector<size_t> rowIndexColNos;
+
 	for (sql::schema::Relation::Fields::const_iterator it = table.fields.begin();
 	     it != table.fields.end(); ++it) {
 
@@ -261,13 +267,23 @@ struct Materializer {
 
 	    tripleMakers.push_back(new LiteralTripleMaker(&atomFactory, selectList.lastColumn(), p));
 
-	    if (table.primaryKey != NULL)
+	    if (table.primaryKey != NULL) {
 		// Find out if this field participates in a primary key.
 		for (size_t i = 0; i < table.primaryKey->size(); ++i)
 		    if (it->second.name == table.primaryKey->at(i)) {
 			pkCols[i] = selectList.lastColumn(); // subject node will use this column.
 			break;
 		    }
+	    } else if (table.keys.size() != 0) {
+		// Find out if this field participates in the indexing key.
+		const sql::schema::Key* rowIndexKey = *(table.keys.begin());
+		rowIndexColNos.resize(rowIndexKey->size());
+		for (size_t i = 0; i < rowIndexKey->size(); ++i)
+		    if (it->second.name == rowIndexKey->at(i)) {
+			rowIndexColNos[i] = selectList.lastColumn(); // subject node will use this column.
+			break;
+		    }
+	    }
 
 #ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
 	    if (it->second.type == sql::TYPE_binary)
@@ -286,7 +302,6 @@ struct Materializer {
 			      new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
 #endif /* W3C_SW_MYSQL_SQLCLIENT */
 
-	    ++colNo;
 	}
 	joins << " FROM " << Quote << table.name << Quote << " AS " << thisTableAlias;
 
@@ -308,36 +323,30 @@ struct Materializer {
 			joins << " AND ";
 		    joins << thisTableAlias << "." << Quote << fk->at(i) << Quote << "="
 			  << thatTableAlias << "." << Quote << fk->relAttrs->at(i) << Quote;
-		    fkColumns.push_back(colNo++);
 		}
 		if (fk->size() > 1)
 		    joins << ")";
 
+		const sql::schema::Key* rowIndexKey
+		    = refdTable.primaryKey == NULL
+		    ? *(refdTable.keys.begin())
+		    : refdTable.primaryKey;
+		for (std::vector<sql::Attribute>::const_iterator attr = rowIndexKey->begin();
+		     attr != rowIndexKey->end(); ++attr) {
+		    sql::AliasAttr refdAttr(thatTableAlias, *attr);
+		    selectList.push_back(refdAttr);
+		    fkColumns.push_back(selectList.lastColumn());
+		}
+
 		if (refdTable.primaryKey == NULL) {
-		    NoPKReferenceTripleMaker::KeySelects keySelects;
-		    // Select all keys which will get the generated bnode.
-		    for (std::set<const sql::schema::Key*>::const_iterator key = refdTable.keys.begin();
-			 key != refdTable.keys.end(); ++key) {
-			std::vector<size_t> keyCols;
-			for (std::vector<sql::Attribute>::const_iterator attr = (*key)->begin();
-			     attr != (*key)->end(); ++attr) {
-			    sql::AliasAttr refdAttr(thatTableAlias, *attr);
-			    selectList.push_back(refdAttr);
-			    keyCols.push_back(colNo++);
-			}
-		    }
 		    tripleMakers.push_back(new NoPKReferenceTripleMaker
-					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fkColumns, fk, fk->relAttrs,
-					    *db[fk->targetRel], keySelects));
+					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
+					    fkColumns, allmaps[rowIndexKey]));
 		// } else if (*refdTable.primaryKey == *fk->relAttrs) { // no need to join
 		} else {
 		    tripleMakers.push_back(new PKReferenceTripleMaker
-					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fkColumns, fk, fk->relAttrs));
-		    for (std::vector<sql::Attribute>::const_iterator attr = refdTable.primaryKey->begin();
-			 attr != refdTable.primaryKey->end(); ++attr) {
-			sql::AliasAttr refdAttr(thatTableAlias, *attr);
-			selectList.push_back(refdAttr);
-		    }
+					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
+					    fkColumns, refdTable.primaryKey));
 		}
 	    }
 	}
@@ -360,7 +369,29 @@ struct Materializer {
 	    std::string node = IRIsafe(table.name) + "/";
 	    const TTerm* s;
 	    if (table.primaryKey == NULL) {
-		s = atomFactory.createBNode();
+		if (table.keys.size() == 0) {
+		    s = atomFactory.createBNode();
+		} else {
+		    const sql::schema::Key* rowIndexKey = *(table.keys.begin());
+		    Values2BNode& v2b = allmaps[rowIndexKey];
+		    std::string key;
+		    for (size_t i = 0; i < rowIndexColNos.size(); ++i)
+			key
+			    += row[rowIndexColNos[i]].is_initialized()
+			    ? attrvalue(row[rowIndexColNos[i]].get())
+			    : "NULL";
+
+		    Values2BNode::iterator it = v2b.find(key);
+		    const BNode* b;
+		    if (it == v2b.end()) {
+			b = atomFactory.createBNode();
+			v2b.insert(std::pair<std::string, const BNode*>(key, b));
+			// v2b[key] = b;
+		    } else {
+			b = v2b[key];
+		    }
+		    s = b;
+		}
 	    } else {
 		for (size_t i = 0; i < table.primaryKey->size(); ++i) {
 		    if (i != 0)
