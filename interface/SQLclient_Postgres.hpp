@@ -13,13 +13,7 @@
 #endif /* NEEDDEF_W3C_SW_SQLCLIENT */
 
 #include <stdexcept>
-
-#if 0
 #include "../interface/SQLclient.hpp"
-#else
-#include "SQLclient.hpp"
-#endif
-
 #include <postgresql/libpq-fe.h>
 
 namespace w3c_sw {
@@ -113,7 +107,7 @@ namespace w3c_sw {
 	     * @result: Postgres result handle returned from PQexec.
 	     */
 	    Result (PGresult* result, Result::Fixups& fixups)
-		: result(result), fixups(fixups), num_rows(PQnfields(result)), cur_row(0), num_fields(PQnfields(result))
+		: result(result), fixups(fixups), num_rows(PQntuples(result)), cur_row(0), num_fields(PQnfields(result))
 	    {
 		for(int i = 0; i < num_fields; i++) {
 
@@ -205,7 +199,7 @@ namespace w3c_sw {
 	     */
 	    virtual Row nextRow () {
 		Row ret;
-		if (cur_row > num_rows)
+		if (cur_row == num_rows)
 		    return ret; // returns SQLclient::Result.end()
 
 		// For each column:
