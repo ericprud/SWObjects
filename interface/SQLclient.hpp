@@ -6,6 +6,8 @@
 #ifndef INCLUDED_interface_SQLclient_hpp
  #define INCLUDED_interface_SQLclient_hpp
 
+#include <boost/shared_ptr.hpp>
+
 #define PREFIX_XSI "http://www.w3.org/2001/XMLSchema#"
 #define PREFIX_SWO "http://swobjects.sourceforge.net/ns#"
 
