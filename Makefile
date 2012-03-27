@@ -133,6 +133,12 @@ ifeq ($(findstring MYSQL, $(SQL_CLIENTS)), MYSQL)
   SQL_CLIENT_LIB+= -lmysqlclient -lz
 endif
 
+ifeq ($(findstring POSTGRES, $(SQL_CLIENTS)), POSTGRES)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_POSTGRES "\n"
+  SOME_SQL_CLIENT = 1
+  SQL_CLIENT_LIB+= -lpq
+endif
+
 ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_ORACLE "\n"
   SOME_SQL_CLIENT = 1
@@ -351,7 +357,7 @@ unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
 
 release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
-	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat -lmysqlclient -lz -lmysqlclient -lz  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
+	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat $(SQL_CLIENT_LIB)  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
 
 ##### apache #####
 

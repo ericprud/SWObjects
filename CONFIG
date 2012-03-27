@@ -53,7 +53,7 @@ HTTP_SERVER= ASIO
 #   ODBC
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
-SQL_CLIENTS= MYSQL|ORACLE|ODBC
+SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
 
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###

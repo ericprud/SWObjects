@@ -611,7 +611,7 @@ SELECT e.job AS job, d.dname AS dname, d.loc AS loc, l.likeType AS type, l.likeO
   FROM EMP AS e\n\
        INNER JOIN DEPT AS d ON d.deptno=e.deptno AND d.deptno=e.deptno\n\
        INNER JOIN LIKES AS l ON l.id=e.empno\n\
- WHERE e.ename=\"SMITH\";");
+ WHERE e.ename='SMITH';");
     BOOST_CHECK_EQUAL(sql::SQLQuery::MappedEquivalence(*expected.root), *tested.root);
 }
 

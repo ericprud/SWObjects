@@ -29,58 +29,7 @@ namespace w3c_sw {
 
     namespace sql {
 
-	/** abstract class for serializing SQL.
-	 */
-	struct AliasAttr;
-	struct Serializer {
-	    virtual std::string name(std::string s) = 0;
-	    virtual std::string as() = 0;
-	    virtual std::string limit(int l) = 0;
-	    virtual std::string offset(int o) = 0;
-	    virtual std::string name(AliasAttr aa);
-	};
-	template<int dummy>
-	struct SQLSerializer_dummyTemplate : public Serializer {
-	    virtual std::string name (std::string s) {
-		return std::string() + (true ? "\"" : "") + s + (true ? "\"" : "");
-	    }
-	    virtual std::string as () { return "AS "; }
-	    virtual std::string limit (int l) {
-		std::stringstream ss;
-		ss << "LIMIT " << l;
-		return ss.str();
-	    }
-	    virtual std::string offset (int o) {
-		std::stringstream ss;
-		ss << "OFFSET " << o;
-		return ss.str();
-	    }
-	    static SQLSerializer_dummyTemplate<dummy> It;
-	};
-	template<int dummy>
-	SQLSerializer_dummyTemplate<dummy> SQLSerializer_dummyTemplate<dummy>::It;
-	typedef SQLSerializer_dummyTemplate<0> SQLSerializer;
-
-	/* Serializers for popular SQL engines. */
-	struct MySQLSerializer : public SQLSerializer {
-	    virtual std::string name (std::string s) {
-		return std::string() + (true ? "`" : "") + s + (true ? "`" : "");
-	    }
-	};
-	struct OracleSerializer : public SQLSerializer {
-	    virtual std::string as () { return ""; }
-	    virtual std::string offset (int o) {
-		std::stringstream ss;
-		ss << "rownum > " << o;
-		return ss.str();
-	    }
-	    virtual std::string limit (int l) {
-		std::stringstream ss;
-		ss << "rownum <= " << l;
-		return ss.str();
-	    }
-	};
-
+	/* SQL types: */
 	/* 'NATIONAL'? 'CHARACTER' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARCHAR'
 	 * 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')?
 	 * 'NUMERIC' | 'DECIMAL'
@@ -105,29 +54,96 @@ namespace w3c_sw {
 		      TYPE_time,
 		      TYPE_datetime, TYPE_timestamp,
 		      TYPE_interval} e_TYPE;
-
 #define SQL_PRECISION_unspecified -1
-	inline std::string typeString (e_TYPE type, int precision) {
-	    std::stringstream ss;
-	    ss << 
-		(type == TYPE_error ? "ERROR" :
-		 type == TYPE_char ? "CHAR" : type == TYPE_varchar ? "VARCHAR" :
-		 type == TYPE_binary ? "BINARY" :
-		 type == TYPE_decimal ? "DECIMAL" :
-		 type == TYPE_int ? "INT" :
-		 type == TYPE_float ? "FLOAT" :
-		 type == TYPE_real ? "REAL" :
-		 type == TYPE_double ? "DOUBLE" :
-		 type == TYPE_boolean ? "BOOLEAN" :
-		 type == TYPE_date ? "DATE" :
-		 type == TYPE_time ? "TIME" :
-		 type == TYPE_timestamp ? "TIMESTAMP" : type == TYPE_datetime ? "DATETIME" :
-		 type == TYPE_interval ? "INTERVAL" :
-		 "???");
-	    if (precision != SQL_PRECISION_unspecified)
-		ss << "(" << precision << ")";
-	    return ss.str();
-	}
+
+	/** abstract class for serializing SQL.
+	 */
+	struct AliasAttr;
+	struct Serializer {
+	    virtual std::string name(std::string s) = 0;
+	    virtual std::string name(AliasAttr aa);
+	    virtual std::string literal(std::string s) = 0;
+	    virtual std::string typeString(e_TYPE type, int precision) = 0;
+	    virtual std::string as() = 0;
+	    virtual std::string limit(int l) = 0;
+	    virtual std::string offset(int o) = 0;
+	};
+	template<int dummy>
+	struct SQLSerializer_dummyTemplate : public Serializer {
+	    virtual std::string name (std::string s) {
+		return std::string() + (true ? "\"" : "") + s + (true ? "\"" : "");
+	    }
+	    virtual std::string literal (std::string s) {
+		return std::string() + (true ? "'" : "") + s + (true ? "'" : "");
+	    }
+	    virtual std::string typeString (e_TYPE type, int precision) {
+		std::stringstream ss;
+		ss << 
+		    (type == TYPE_error ? "ERROR" :
+		     type == TYPE_char ? "CHAR" : type == TYPE_varchar ? "VARCHAR" :
+		     type == TYPE_binary ? "BINARY" :
+		     type == TYPE_decimal ? "DECIMAL" :
+		     type == TYPE_int ? "INT" :
+		     type == TYPE_float ? "FLOAT" :
+		     type == TYPE_real ? "REAL" :
+		     type == TYPE_double ? "DOUBLE" :
+		     type == TYPE_boolean ? "BOOLEAN" :
+		     type == TYPE_date ? "DATE" :
+		     type == TYPE_time ? "TIME" :
+		     type == TYPE_timestamp ? "TIMESTAMP" : type == TYPE_datetime ? "DATETIME" :
+		     type == TYPE_interval ? "INTERVAL" :
+		     "???");
+		if (precision != SQL_PRECISION_unspecified)
+		    ss << "(" << precision << ")";
+		return ss.str();
+	    }
+	    virtual std::string as () { return "AS "; }
+	    virtual std::string limit (int l) {
+		std::stringstream ss;
+		ss << "LIMIT " << l;
+		return ss.str();
+	    }
+	    virtual std::string offset (int o) {
+		std::stringstream ss;
+		ss << "OFFSET " << o;
+		return ss.str();
+	    }
+	    static SQLSerializer_dummyTemplate<dummy> It;
+	};
+	template<int dummy>
+	SQLSerializer_dummyTemplate<dummy> SQLSerializer_dummyTemplate<dummy>::It;
+	typedef SQLSerializer_dummyTemplate<0> SQLSerializer;
+
+	/* Serializers for popular SQL engines. */
+	struct MySQLSerializer : public SQLSerializer {
+	    virtual std::string name (std::string s) {
+		return std::string() + (true ? "`" : "") + s + (true ? "`" : "");
+	    }
+	    virtual std::string literal (std::string s) {
+		return std::string() + (true ? "\"" : "") + s + (true ? "\"" : "");
+	    }
+	};
+	struct PostgresSerializer : public SQLSerializer {
+	    virtual std::string typeString (e_TYPE type, int precision) {
+		return
+		    type == TYPE_binary
+		    ? "BYTEA"
+		    : SQLSerializer::typeString(type, precision);
+	    }
+	};
+	struct OracleSerializer : public SQLSerializer {
+	    virtual std::string as () { return ""; }
+	    virtual std::string offset (int o) {
+		std::stringstream ss;
+		ss << "rownum > " << o;
+		return ss.str();
+	    }
+	    virtual std::string limit (int l) {
+		std::stringstream ss;
+		ss << "rownum <= " << l;
+		return ss.str();
+	    }
+	};
 
 	/**
 	 * enforce type consistency for
@@ -1008,7 +1024,7 @@ namespace w3c_sw {
 	    }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
-		ss << "\"" << value << "\"";
+		ss << s.literal(value);
 		return ss.str();
 	    }
 	};
@@ -1340,7 +1356,7 @@ namespace w3c_sw {
 	    virtual std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return std::string()
 		    + "CAST(" + exp->toString()
-		    + " AS " + typeString(type, precision)
+		    + " AS " + s.typeString(type, precision)
 		    + ")";
 	    }
 	};
@@ -1912,7 +1928,7 @@ namespace w3c_sw {
 		}
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
-		    ss << "KEY (";
+		    ss << "UNIQUE (";
 		    for (std::vector<Attribute>::const_iterator it = begin();
 			 it != end(); ++it) {
 			if (it != begin())
@@ -2069,7 +2085,7 @@ namespace w3c_sw {
 		}
 
 		virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		    return s.name(name) + " " + typeString(type, precision);
+		    return s.name(name) + " " + s.typeString(type, precision);
 		}
 	    };
 
@@ -2105,8 +2121,8 @@ namespace w3c_sw {
 		{  }
 
 		~Relation () {
-		    for (std::vector<const FieldOrKey*>::iterator it = orderedFields.begin();
-			 it != orderedFields.end(); ++it)
+		    for (std::vector<const FieldOrKey*>::iterator it = begin();
+			 it != end(); ++it)
 			delete *it;
 		    orderedFields.clear();
 		    fields.clear();
@@ -2115,24 +2131,40 @@ namespace w3c_sw {
 
 		bool operator== (const Relation& ref) const {
 		    if (name != ref.name
-			|| orderedFields.size() != ref.orderedFields.size()
+			|| size() != ref.size()
 			|| fields.size() != ref.fields.size())
 			return false;
-		    std::vector<const FieldOrKey*>::const_iterator left = orderedFields.begin();
-		    std::vector<const FieldOrKey*>::const_iterator right = ref.orderedFields.begin();
+		    std::vector<const FieldOrKey*>::const_iterator left = begin();
+		    std::vector<const FieldOrKey*>::const_iterator right = ref.begin();
 		    for (;
-			 left != orderedFields.end(); ++left, ++right)
+			 left != end(); ++left, ++right)
 			if (!(**left == **right))
 			    return false;
 		    return true;
 		}
 
+		std::vector<const FieldOrKey*>::iterator begin () {
+		    return orderedFields.begin();
+		}
+		std::vector<const FieldOrKey*>::const_iterator begin () const {
+		    return orderedFields.begin();
+		}
+		std::vector<const FieldOrKey*>::iterator end () {
+		    return orderedFields.end();
+		}
+		std::vector<const FieldOrKey*>::const_iterator end () const {
+		    return orderedFields.end();
+		}
+		size_t size () const {
+		    return orderedFields.size();
+		}
+
 		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		    std::stringstream ss;
 		    ss << "CREATE TABLE " << s.name(name) << " (\n";
-		    for (std::vector<const FieldOrKey*>::const_iterator it = orderedFields.begin();
-			 it != orderedFields.end(); ++it) {
-			if (it != orderedFields.begin())
+		    for (std::vector<const FieldOrKey*>::const_iterator it = begin();
+			 it != end(); ++it) {
+			if (it != begin())
 			    ss << ",\n";
 			ss << "  " << (*it)->toString(pad, driver, s);
 		    }

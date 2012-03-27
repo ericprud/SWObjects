@@ -133,11 +133,13 @@ namespace w3c_sw {
 		    if (type != SQLclient::Result::Field::TYPE__null) {
 			if (type == SQLclient::Result::Field::TYPE_binary)
 			    lexval = base64_encode(lexval);
-			if (type == SQLclient::Result::Field::TYPE_boolean)
+			else if (type == SQLclient::Result::Field::TYPE_boolean) {
 			    lexval = lexval == "TRUE" ? "true" : "false";
-			if (type == SQLclient::Result::Field::TYPE_float || 
-			    type == SQLclient::Result::Field::TYPE_real || 
-			    type == SQLclient::Result::Field::TYPE_double) {
+			} else if (type == SQLclient::Result::Field::TYPE_dateTime)
+			    lexval.replace(lexval.find_first_of(' '), 1, "T");
+			else if (type == SQLclient::Result::Field::TYPE_float || 
+				 type == SQLclient::Result::Field::TYPE_real || 
+				 type == SQLclient::Result::Field::TYPE_double) {
 			    std::stringstream input(lexval);
 			    double val;
 			    input >> val;

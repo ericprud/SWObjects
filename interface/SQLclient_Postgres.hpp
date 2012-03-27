@@ -43,6 +43,7 @@ namespace w3c_sw {
 	    if (PQstatus(conn) != CONNECTION_OK)
 		throw std::runtime_error(std::string("Connection failed: ")
 					 + PQerrorMessage(conn));
+	    PQclear(PQexec(conn, "SET client_min_messages=WARNING"));
 	    // if (mysql_set_character_set(&mysql, "utf8"))
 	    // 	throw std::string("couldn't set mysql://") + user + "@" + server + "/" + database + " to use utf8";
 	}
@@ -122,6 +123,10 @@ namespace w3c_sw {
 		    // case MYSQL_TYPE_TINY:
 		    // 	f.type = Field::TYPE_short;
 		    // 	break;
+		    case 16: // bool
+		    case 1000: // _bool
+			f.type = Field::TYPE_boolean;
+			break;
 		    case 21: // int2
 		    case 1005: // _int2
 			f.type = Field::TYPE_short;
@@ -174,6 +179,8 @@ namespace w3c_sw {
 		    case 1043: // varchar
 		    case 17: // bytea
 		    case 1001: // _bytea
+		    case 1042: // bpchar
+		    case 1014: // _bpchar
 		    // case MYSQL_TYPE_BLOB:
 		    // case MYSQL_TYPE_VAR_STRING:
 			f.type = Field::TYPE__literal;
@@ -205,20 +212,17 @@ namespace w3c_sw {
 		// For each column:
 		for(int i = 0; i < num_fields; i++) {
 
-		    if (PQgetvalue(result, cur_row, i)) {
+		    if (!PQgetisnull(result, cur_row, i)) {
 
 			/* retrieve column data as a string */
 			std::string lexval(PQgetvalue(result, cur_row, i));
 
 			// Perform necessary SQL-to-RDF lexical transformations:
 			switch (PQftype(result, i)) {
-			// case MYSQL_TYPE_DATETIME:
-			// case MYSQL_TYPE_TIMESTAMP: // always a datetime? otherwise lexval = "0-0-0T" + lexval?
-			//     lexval.replace(lexval.find_first_of(' '), 1, "T");
-			//     break;
-			// case MYSQL_TYPE_YEAR:
-			//     lexval = lexval = "-0-0T00:00";
-			//     break;
+			case 16: // bool
+			case 1000: // _bool
+			    lexval = (lexval == "t" ? "TRUE" : "FALSE");
+			    break;
 			default:
 			    break;
 			}
@@ -260,7 +264,7 @@ namespace w3c_sw {
 	    PGresult* result = PQexec(conn, query.c_str());
 	    if (PQresultStatus(result) != PGRES_TUPLES_OK &&
 		PQresultStatus(result) != PGRES_COMMAND_OK)
-		throw PGResultException("EXEC failed: ", result);
+		throw PGResultException(std::string() + "EXEC \"" + query + "\" failed: ", result);
 	    return new Result(result, fixups);
 		// throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
 // 		throw std::string("mysql://") + user + "@" + server + "/" + database +
