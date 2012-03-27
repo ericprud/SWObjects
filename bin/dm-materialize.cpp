@@ -24,11 +24,10 @@ struct Materializer {
     };
     std::map<const sql::schema::Key*, Values2BNode> allmaps;
     SQLclient& sqlDriver;
-    const char* Quote;
     size_t nextTableAlias;
 
     Materializer (SQLclient& sqlDriver)
-	: sqlDriver(sqlDriver), Quote("`"), nextTableAlias(0)
+	: sqlDriver(sqlDriver), nextTableAlias(0)
     {  }
     void operator() (sql::schema::Database& db, DefaultGraphPattern* bgp) {
 	std::vector<sql::schema::Relation*> orderedTables;
@@ -285,12 +284,12 @@ struct Materializer {
 		    }
 	    }
 
-#ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
 	    if (it->second.type == sql::TYPE_binary)
 		fixups.insert(selectList.lastColumn(),
 			      new SQLclient_MySQL::Result::LiteralToBinary());
 	    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to base64\n";
 
+#ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
 	    if (it->second.type == sql::TYPE_boolean)
 		fixups.insert(selectList.lastColumn(),
 			      new SQLclient_MySQL::Result::IntToBoolean());
@@ -303,7 +302,7 @@ struct Materializer {
 #endif /* W3C_SW_MYSQL_SQLCLIENT */
 
 	}
-	joins << " FROM " << Quote << table.name << Quote << " AS " << thisTableAlias;
+	joins << " FROM " << Serializer.name(table.name) << " AS " << thisTableAlias;
 
 
 	for (std::vector<const sql::schema::FieldOrKey*>::iterator it = table.orderedFields.begin();
@@ -313,7 +312,7 @@ struct Materializer {
 		// This entry is a forign key.
 		sql::RelVar thatTableAlias = newTableAlias();
 		const sql::schema::Relation& refdTable = *db[fk->targetRel];
-		joins << " LEFT OUTER JOIN " << Quote << fk->targetRel << Quote
+		joins << " LEFT OUTER JOIN " << Serializer.name(fk->targetRel)
 		      << " AS " << thatTableAlias << " ON ";
 		std::vector<size_t> fkColumns;
 		if (fk->size() > 1)
@@ -366,7 +365,7 @@ struct Materializer {
 		selectsString += ", ";
 	    selectsString += Serializer.Serializer::name(*it);
 	}
-
+	// w3c_sw_LINEN << "q: " << (selectsString + joins.str()) << "\n";
 	SQLclient::Result* res = sqlDriver.executeQuery(selectsString + joins.str(), fixups);
 
 	const TTerm* rdfType = atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
