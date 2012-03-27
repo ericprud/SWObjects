@@ -9,6 +9,7 @@
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
+#define NEEDDEF_W3C_SW_SQLCLIENT
 #include "interface/SQLclient_MySQL.hpp"
 #include "SQLParser/SQLParser.hpp"
 
@@ -20,9 +21,9 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMat
 w3c_sw::AtomFactory F;
 w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
 
-/* MySQL */
+/* SQL */
 w3c_sw::sql::MySQLSerializer Serializer;
-w3c_sw::SQLclient_MySQL SQLDriver;
+W3C_SW_SQLCLIENT SQLDriver;
 w3c_sw::sqlContext sqlParserContext;
 w3c_sw::SQLDriver SQLParser(sqlParserContext);
 
@@ -71,15 +72,29 @@ struct DMTest {
 	SQLParser.parse(ddlStream);
 	// w3c_sw_LINEN << SQLParser.tables.toString("", "", Serializer);
 
-	for (w3c_sw::sql::schema::Database::const_iterator it = SQLParser.tables.begin();
-	     it != SQLParser.tables.end(); ++it) {
-	    // w3c_sw_LINEN << it->second->toString("", "", Serializer) << ";" << std::endl;
-	    w3c_sw::SQLclient::Result* res = SQLDriver.executeQuery(it->second->toString("", "", Serializer) + ";");
+	for (w3c_sw::sql::schema::Database::const_iterator table = SQLParser.tables.begin();
+	     table != SQLParser.tables.end(); ++table) {
+	    std::stringstream ss;
+	    ss << "CREATE TABLE " << Serializer.name(table->first) << " (\n";
+	    size_t fieldCount = 0;
+	    for (std::vector<const w3c_sw::sql::schema::FieldOrKey*>::const_iterator it = (*table->second).begin();
+		 it != (*table->second).end(); ++it) {
+		// strip out foreign keys.
+		if (dynamic_cast<const w3c_sw::sql::schema::ForeignKey*>(*it) == NULL) {
+		    if (fieldCount > 0)
+			ss << ",\n";
+		    ++fieldCount;
+		    ss << "  " << (*it)->toString("", "", Serializer);
+		}
+	    }
+	    ss << "\n)";
+	    // w3c_sw_LINEN << ss.str() << ";" << std::endl;
+	    SQLDriver.executeQuery(ss.str() + ";");
 	}
 	for (std::vector<const w3c_sw::sql::Insert*>::const_iterator it = SQLParser.inserts.begin();
 	     it != SQLParser.inserts.end(); ++it) {
 	    // w3c_sw_LINEN << (*it)->toString("", "", Serializer) << ";" << std::endl;
-	    w3c_sw::SQLclient::Result* res = SQLDriver.executeQuery((*it)->toString("", "", Serializer) + ";");
+	    SQLDriver.executeQuery((*it)->toString("", "", Serializer) + ";");
 	}
 
 	execStr.append("../bin/dm-materialize ").append(create);
