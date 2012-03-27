@@ -9,8 +9,14 @@
  * Uncomment (or add) the instantiation of the driver you want to develop
  * and follow the build and invocation instructions just above. Invocations
  * count on a database named "test" containing an SQL table toy:
- *  CREATE TABLE toy (id INT UNSIGNED NOT NULL PRIMARY KEY, name VARCHAR(20), age INT UNSIGNED);
- *  INSERT INTO toy (id, name, age) VALUES (7, "Alice", 30), (8, "Bob", 40), (9, "Eve", 50);
+ * SQL:
+ *   CREATE TABLE toy (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR(20), age INTEGER);
+ *   INSERT INTO toy (id, name, age) VALUES (7, 'Alice', 30);
+ *   INSERT INTO toy (id, name, age) VALUES (8, 'Bob', 40);
+ *   INSERT INTO toy (id, name, age) VALUES (9, 'Eve', 50);
+ * MySQL variant:
+ *   CREATE TABLE toy (id INT UNSIGNED NOT NULL PRIMARY KEY, name VARCHAR(20), age INT UNSIGNED);
+ *   INSERT INTO toy (id, name, age) VALUES (7, "Alice", 30), (8, "Bob", 40), (9, "Eve", 50);
  */
 
 #include <iostream>
@@ -20,6 +26,9 @@
 #include <set>
 #include <map>
 #include <sstream>
+#include <cmath>
+
+#include <boost/optional.hpp>
 
 namespace w3c_sw {
 
@@ -109,9 +118,13 @@ namespace w3c_sw {
 	}
     };
 
+    struct OptString : public boost::optional<std::string> {
+	OptString (std::string ptr) : boost::optional<std::string>(ptr) {  }
+	OptString () : boost::optional<std::string>() {  }
+    };
 } // namespace w3c_sw
 
-#include "SQLclient_MySQL.hpp"
+#include "SQLclient_Postgres.hpp"
 //#include "SQLclient_ODBC.hpp"
 
 int main (int argc, char* argv[]) {
@@ -120,7 +133,7 @@ int main (int argc, char* argv[]) {
 
 // g++ -o SQLclient_main -g SQLclient_main.cpp -lmysqlclient &&
 // SQLclient_main localhost test root "" "SELECT who.name AS name, who.age AS age FROM toy AS who"
-	w3c_sw::SQLclient_MySQL sql;
+	w3c_sw::SQLclient_Postgres sql;
 	sql.connect(argv[1], argv[2], argv[3], argv[4]);
 	w3c_sw::SQLclient::Result* res = sql.executeQuery(argv[5]);
 
