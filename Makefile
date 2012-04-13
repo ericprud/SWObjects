@@ -206,7 +206,7 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
 
@@ -240,7 +240,7 @@ $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 # Imported Boost log verbatim 'cause it's not packaged yet.
 # https://boost-log.svn.sourceforge.net/svnroot/boost-log/trunk/boost-log
 # 587 2011-01-12T17:20:24.416501Z ab6a8de6-4e00-4c3d-a860-8899c17d353f
-BOOST_LOG_CFLAGS= -Wall -ftemplate-depth-128 -O3 -finline-functions -Wno-inline -pthread -fPIC -fno-strict-aliasing
+BOOST_LOG_CFLAGS= -ftemplate-depth-128 -O3 -finline-functions -Wno-inline -pthread -fPIC -fno-strict-aliasing
 BOOST_LOG_DEFINES= -DBOOST_LOG_USE_NATIVE_SYSLOG=1 -DNDEBUG \
 	-DBOOST_ALL_DYN_LINK=1 -DBOOST_LOG_NO_LIB -DBOOST_THREAD_POSIX -DDATE_TIME_INLINE
 LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
@@ -248,13 +248,14 @@ LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
 BOOST_LOG_SRC_DIR=boost-log/
 BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
 BOOST_LOG_LIB=boost_log
-BOOST_LOG_VERSION=1.45.0
+BOOST_LOG_VERSION=1.49.0
 INCLUDES += -Iboost-log
 LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION)
 
-BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /sink_frontends.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /trivial.cpp
+BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /default_sink.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /thread_id.cpp /trivial.cpp /formatter_parser.cpp /parser_utils.cpp /init_from_stream.cpp /timestamp.cpp /init_from_settings.cpp /event.cpp /filter_parser.cpp /default_filter_factory.cpp
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
+BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION) -pthread -lrt
 
 $(BOOST_TARGET)lib:
 	mkdir -p $(BOOST_TARGET)lib
@@ -263,9 +264,7 @@ $(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp | $(BOOST_TARGET)lib
 	$(CXX) $(INCLUDES) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
-	$(CXX) $(LIBS) -o $@ -shared $^ \
-	-lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION) \
-	-pthread 
+	$(CXX) $(LIBS) -o $@ -shared $^ $(BOOST_REQUIRED_LIBS)
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION)
 	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $@
@@ -274,6 +273,33 @@ $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a: $(BOOST_LOG_OBJ_FILEPATHS)
 	ar rcvs $@ $(BOOST_LOG_OBJ_FILEPATHS)
 
 lib: dep $(LIB)
+
+# boost-log examples - note log_all target to build all examples.
+boost-log/libs/log/example/%/main.o: boost-log/libs/log/example/%/main.cpp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	g++ $(WARN) -DBOOST_LOG_USE_NATIVE_SYSLOG=1 $(DEBUG) -g -c -o $@ $< -Iboost-log
+
+boost-log/libs/log/example/%/main: boost-log/libs/log/example/%/main.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	g++ -o $@ $< -Lboost-log/stage/lib -lboost_log $(BOOST_REQUIRED_LIBS)
+
+log-clean:
+	rm -f boost-log/stage/*.o
+	rm -f $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+
+log-copy: # copy boost-log from ../boost-log-trunk, e.g. make log-copy && make -j 8 -k log-all -- ~53s
+	mkdir -p $(BOOST_LOG_SRC_DIR)libs/log/src/
+	cp ../boost-log-trunk/libs/log/src/*.[hc]pp $(BOOST_LOG_SRC_DIR)libs/log/src/
+	(cd ../boost-log-trunk/ && tar --exclude=.svn -cf - boost/log) | (cd $(BOOST_LOG_SRC_DIR) && tar xf -)
+	mkdir -p $(BOOST_LOG_SRC_DIR)libs/log/example/
+	(cd ../boost-log-trunk/libs/log/example/ && tar cf - */*.cpp */settings.txt) | (cd $(BOOST_LOG_SRC_DIR)libs/log/example/  && tar xf -)
+
+# compile and run logging examples, e.g. `make logt_basic_usage`
+logt_%: boost-log/libs/log/example/%/main $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	(cd $(dir $<) && LD_LIBRARY_PATH=../../../../stage/lib ./main)
+
+log-all: logt_trivial logt_basic_usage logt_advanced_usage logt_async_log \
+	logt_bounded_async_log logt_multiple_files logt_multiple_threads \
+	logt_native_syslog logt_rotating_file logt_settings_file \
+	logt_settings_file_formatter_factory logt_syslog # MSC_VER logt_event_log
 
 .SECONDARY:
 
@@ -684,7 +710,7 @@ RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_
 	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.dylib
-	cp boost-log/stage/lib/libboost_log.so.1.45.0 $</libboost_log.so
+	cp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $</libboost_log.so
 	install_name_tool -id @executable_path/../Frameworks/libboost_log.so $</libboost_log.so
 	install_name_tool -change /opt/local/lib/libboost_thread-mt.dylib @executable_path/../Frameworks/libboost_thread-mt.dylib $</libboost_log.so;
 	install_name_tool -change /opt/local/lib/libboost_filesystem-mt.dylib @executable_path/../Frameworks/libboost_filesystem-mt.dylib $</libboost_log.so;

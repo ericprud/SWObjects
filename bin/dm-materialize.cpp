@@ -418,6 +418,7 @@ struct Materializer {
 };
 
 int main (int argc, const char* argv[]) {
+    Logger::prepare();
     sqlContext sqlParserContext;
     SQLDriver sqlParser(sqlParserContext);
     try {

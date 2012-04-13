@@ -46,12 +46,12 @@ namespace w3c_sw {
 	for (unsigned int i = 0; i < LOG_RECORDS_TO_WRITE; ++i) {
 	    switch (log_state) {
 	    case 0: {
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::warning) << "Log record " << i;
+		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::warning) << "Log record " << i << "\nLine 1      ";
 		++log_state;
 		break;
 	    }
 	    case 1: {
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Log record " << i << std::endl << "Line2\nLine3";
+		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Log record " << i;
 		++log_state;
 		break;
 	    }
@@ -68,7 +68,7 @@ namespace w3c_sw {
 	char** argv = boost::unit_test::framework::master_test_suite().argv;
 
 	boost::filesystem::path argv0(argv[0]);
-	boost::filesystem::path logFile(argv0.filename() + "_%2N.log");
+	boost::filesystem::path logFile(argv0.filename().native() + "_%2N.log");
 	std::cout << "logFile: " << logFile << "\n";
 	try {
 

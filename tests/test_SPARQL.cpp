@@ -11,6 +11,7 @@
 
 #define BOOST_TEST_MODULE SPARQL
 #include <boost/test/unit_test.hpp>
+w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:3"
 #include <stdio.h>
 
 w3c_sw::AtomFactory F;

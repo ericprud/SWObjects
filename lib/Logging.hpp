@@ -138,7 +138,7 @@ namespace w3c_sw {
 
 	namespace logging = boost::log;
 
-	inline void myFormatter(std::ostream& strm, logging::record const& rec)
+	inline void myFormatter (std::ostream& strm, logging::record const& rec)
 	{
 	    /**
 	     * Overload prfxbuf to not indent the first line.
@@ -176,11 +176,11 @@ namespace w3c_sw {
 
 	    if (logging::extract< unsigned int >(Logger::ATTR_LineId, rec).is_initialized())
 		prfxstr << format("%08x") % logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
-	    // 	prfxstr << std::hex << std::setw(8) << std::right << logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
+		// prfxstr << std::hex << std::setw(8) << std::right << logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
 
 	    if (logging::extract<std::string>(Logger::ATTR_Channel, rec).is_initialized())
 		prfxstr << format("%-11s") % logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
-	    // 	prfxstr << std::left << std::setw(11) << logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
+		// prfxstr << std::left << std::setw(11) << logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
 
 	    prfxstr << "[-" << logging::extract<severity_level>("Severity", rec).get() << "+] ";
 
@@ -237,7 +237,7 @@ namespace w3c_sw {
 		//		backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, logging::empty_deleter()));
 		core->add_sink(sink);
 
-		backend->set_formatter(&myFormatter);
+		sink->set_formatter(&myFormatter);
 
 	    } // End: Locked backend
 
