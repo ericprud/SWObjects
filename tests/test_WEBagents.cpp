@@ -111,7 +111,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		for ( boost::filesystem::directory_iterator itr( doc_root_ + request_path );
 		      itr != end_itr;
 		      ++itr ) {
-		    std::string name = itr->leaf();
+		    std::string name = itr->path().filename().native();
 		    if (boost::filesystem::is_directory(itr->status()))
 			name += "/";
 		    s << "      <li><a href=\"" << name << "\">" << name << "</a></li>\n";
