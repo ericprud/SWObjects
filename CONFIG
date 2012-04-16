@@ -54,6 +54,7 @@ HTTP_SERVER= ASIO
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
 SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
+SQL_DM_TESTS= mysql://root@/DM postgres://DM:DM@/DM
 
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
@@ -61,7 +62,7 @@ SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
 # e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
 #BOOST_VERSION=-gcc34-mt-1_38
 # or you may need to link to multi-threaded versions of boost libraries:
-BOOST_VERSION=-mt
+BOOST_VERSION=
 
 
 ##### INCLUDES: /some/path... - Directories containing additional headers #####

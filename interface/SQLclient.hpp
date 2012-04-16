@@ -13,6 +13,92 @@
 
 namespace w3c_sw {
 
+    struct SQLConnectInfo {
+	bool useODBC;
+	std::string driver;
+	std::string user;
+	std::string password;
+	std::string server;
+	std::string port;
+	std::string database;
+
+	SQLConnectInfo ()
+	    : useODBC(false)
+	{  }
+
+	SQLConnectInfo (const std::string s)
+	    : useODBC(false)
+	{
+	    parse(s);
+	}
+
+#if REGEX_LIB != SWOb_DISABLED
+	void parse (const std::string s)
+	{
+	    /**
+	     * ODBC drivers patterns are pretty random.
+	     * c.f. http://www.herongyang.com/JDBC/Summary-Connection-URL.html
+	     * We let ODBC work it out.
+	     */
+	    size_t p = s.find("odbc:");
+	    if (p == 0) {
+		useODBC = true;
+		driver = s.substr(5);
+		return;
+	    }
+
+	    const boost::regex odbcPattern("^([^:]+)://"	// 1: protocol ://
+					   "(?:"		//    [
+					   "([^:]+)"		// 2:   user
+					   "(?::([^@]+))?"	// 3:   [ : password ]
+					   "@)?"		//    @ ]
+					   "([^:]*)"		// 4: host -- can be empty
+					   "(?::([0-9]+))?"	// 5: [ port ]
+					   "/(.+)$");		// 6: database
+	    boost::cmatch matches;
+	    if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
+		if (matches[1] != "mysql" && matches[1] != "postgres" && matches[1] != "oracle")
+		    throw std::string("only mysql, postgres or oracle SQL service is currently supported -- saw ") + matches[1];
+		driver = matches[1];
+		if (matches[2].matched)
+		    user = matches[2];
+		if (matches[3].matched)
+		    password = matches[3];
+		server = matches[4];
+		if (matches[5].matched)
+		    port = matches[5];
+		database = matches[6];
+	    } else {
+		throw std::runtime_error(std::string() +
+					 "SQL connection string \"" + s + "\" "
+					 "did not match expression \"" + odbcPattern.str() + "\"");
+	    }
+	}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+
+	bool initialized () {
+	    return !driver.empty()
+		|| !server.empty()
+		|| !database.empty()
+		|| !user.empty();
+	}
+
+
+	std::string sqlConnectString () const {
+	    std::stringstream ss;
+	    ss << driver + "://";
+	    if (!user.empty()) {
+		ss << user;
+		if (!password.empty())
+		    ss << ":" + password;
+		ss << "@";
+	    }
+	    ss << server + "/" + database;
+	    return ss.str();
+	}
+    };
+
     class SQLclient {
     protected:
 	std::string mediaType;
@@ -177,6 +263,14 @@ namespace w3c_sw {
 	virtual ~SQLclient () {  }
 	virtual void connect(std::string server, std::string database, std::string user) = 0;
 	virtual void connect(std::string server, std::string database, std::string user, std::string password) = 0;
+	void connect (const SQLConnectInfo& con) {
+	    if (con.password.empty())
+		// @@ wrap password with Optional to enable --password=''
+		connect(con.server, con.database, con.user);
+	    else
+		connect(con.server, con.database, con.user, con.password);
+	}
+
 	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) = 0;
     };
 
@@ -230,6 +324,10 @@ namespace w3c_sw {
   #include "../interface/SQLclient_MySQL.hpp"
 #endif /* SQL_CLIENT_MYSQL */
 
+#ifdef SQL_CLIENT_POSTGRES
+  #include "../interface/SQLclient_Postgres.hpp"
+#endif /* SQL_CLIENT_POSTGRES */
+
 #ifdef SQL_CLIENT_ORACLE
   #include "../interface/SQLclient_Oracle.hpp"
 #endif /* SQL_CLIENT_ORACLE */
@@ -237,6 +335,85 @@ namespace w3c_sw {
 #ifdef SQL_CLIENT_ODBC
   #include "../interface/SQLclient_ODBC.hpp"
 #endif /* SQL_CLIENT_ODBC */
+
+#include "SQL.hpp"
+
+namespace w3c_sw {
+    struct SQLClientWrapper : public SQLclient {
+	SQLclient* client;
+    public:
+	SQLClientWrapper (const SQLConnectInfo& con)
+	    : client(makeClient(con.driver, con.useODBC))
+	{  }
+	SQLClientWrapper (const SQLClientWrapper& ref)
+	    : client(ref.client)
+	{
+	    ((SQLClientWrapper&)ref).client = NULL; // !! allow wrappers in containers.
+	}
+	~SQLClientWrapper () {
+	    if (client != NULL)
+		delete client;
+	}
+	static SQLclient* makeClient (std::string driver, bool useODBC) {
+#ifdef SQL_CLIENT_ODBC
+	    if (useODBC) return new SQLclient_ODBC(driver);
+#endif
+#ifdef SQL_CLIENT_MYSQL
+	    if (driver == "mysql") return new SQLclient_MySQL();
+#endif
+#ifdef SQL_CLIENT_POSTGRES
+	    if (driver == "postgres") return new SQLclient_Postgres();
+#endif
+#ifdef SQL_CLIENT_ORACLE
+	    if (driver == "oracle") return new SQLclient_Oracle();
+#endif
+	    throw driver + " driver not linked in.";
+	}
+	SQLclient* takeClient () {
+	    SQLclient* ret = client;
+	    client = NULL;
+	    return ret;
+	}
+	virtual void connect(std::string engine, std::string database, std::string user) {
+	    client->connect(engine, database, user);
+	}
+	virtual void connect(std::string engine, std::string database, std::string user, std::string password) {
+	    client->connect(engine, database, user, password);
+	}
+	void connect (const SQLConnectInfo& con) { // @@ need this to compile, despite "public SQLclient".
+	    return SQLclient::connect(con);
+	}
+	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
+	    return client->executeQuery(query, fixups);
+	}
+    };
+
+    struct SQLClientList {
+	struct Connection {
+	    SQLConnectInfo info;
+	    SQLClientWrapper wrap;
+	    sql::Serializer* serializer;
+
+	    Connection (std::string sqlspec)
+		: info(sqlspec), wrap(info), serializer(sql::Serializer::best(info.driver))
+	    {
+		wrap.connect(info);
+	    }
+	};
+	std::vector<Connection> cons;
+	typedef std::vector<Connection>::iterator iterator;
+	iterator begin () { return cons.begin(); }
+	iterator end () { return cons.end(); }
+	void add (std::string sqlspec) {
+	    cons.push_back(Connection(sqlspec));
+	}
+	void executeQuery (std::string query) {
+	    for (std::vector<Connection>::iterator connection = cons.begin();
+		 connection != cons.end(); ++connection)
+		connection->wrap.executeQuery(query);
+	}
+    };
+} // namespace w3c_sw
 
 #endif // !INCLUDED_interface_SQLclient_hpp
 

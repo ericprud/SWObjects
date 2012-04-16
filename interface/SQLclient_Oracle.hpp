@@ -148,10 +148,10 @@ int main(int argc, char **argv)
 
  */
 
+#include "../interface/SQLclient.hpp"
+
 #ifndef INCLUDED_interface_SQLclient_Oracle_hpp
  #define INCLUDED_interface_SQLclient_Oracle_hpp
-
-#include "../interface/SQLclient.hpp"
 
 #ifdef WIN32
   #include <mysql.h>

@@ -7,12 +7,13 @@
 #include "SQLParser/SQLParser.hpp"
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#define NEEDDEF_W3C_SW_SQLCLIENT
-#include "interface/SQLclient_MySQL.hpp"
+/* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple
+ * SQL clients. */
+#include "interface/SQLclient.hpp"
 
 using namespace w3c_sw;
 AtomFactory atomFactory;
-w3c_sw::sql::MySQLSerializer Serializer;
+w3c_sw::sql::Serializer* Serializer = NULL;
 
 void dump(SQLclient& sqlDriver, std::string cmd);
 
@@ -24,10 +25,11 @@ struct Materializer {
     };
     std::map<const sql::schema::Key*, Values2BNode> allmaps;
     SQLclient& sqlDriver;
+    const std::string driverString;
     size_t nextTableAlias;
 
-    Materializer (SQLclient& sqlDriver)
-	: sqlDriver(sqlDriver), nextTableAlias(0)
+    Materializer (SQLclient& sqlDriver, std::string driverString)
+	: sqlDriver(sqlDriver), driverString(driverString), nextTableAlias(0)
     {  }
     void operator() (sql::schema::Database& db, DefaultGraphPattern* bgp) {
 	std::vector<sql::schema::Relation*> orderedTables;
@@ -289,20 +291,22 @@ struct Materializer {
 			      new SQLclient_MySQL::Result::LiteralToBinary());
 	    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to base64\n";
 
-#ifdef W3C_SW_MYSQL_SQLCLIENT // MySQL doesn't preserve trailing spaces on CHAR(n)
-	    if (it->second.type == sql::TYPE_boolean)
-		fixups.insert(selectList.lastColumn(),
-			      new SQLclient_MySQL::Result::IntToBoolean());
-	    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to boolean\n";
+#ifdef SQL_CLIENT_MYSQL
+	    if (driverString == "mysql") {
+		if (it->second.type == sql::TYPE_boolean) // MySQL doesn't preserve trailing spaces on CHAR(n)
+		    fixups.insert(selectList.lastColumn(),
+				  new SQLclient_MySQL::Result::IntToBoolean());
+		// w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to boolean\n";
 
-	    if (it->second.type == sql::TYPE_char &&
-		it->second.precision != SQL_PRECISION_unspecified)
-		fixups.insert(selectList.lastColumn(),
-			      new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
-#endif /* W3C_SW_MYSQL_SQLCLIENT */
+		if (it->second.type == sql::TYPE_char &&
+		    it->second.precision != SQL_PRECISION_unspecified)
+		    fixups.insert(selectList.lastColumn(),
+				  new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
+	    }
+#endif /* SQL_CLIENT_MYSQL */
 
 	}
-	joins << " FROM " << Serializer.name(table.name) << " AS " << thisTableAlias;
+	joins << " FROM " << Serializer->name(table.name) << " AS " << thisTableAlias;
 
 
 	for (std::vector<const sql::schema::FieldOrKey*>::iterator it = table.orderedFields.begin();
@@ -312,7 +316,7 @@ struct Materializer {
 		// This entry is a forign key.
 		sql::RelVar thatTableAlias = newTableAlias();
 		const sql::schema::Relation& refdTable = *db[fk->targetRel];
-		joins << " LEFT OUTER JOIN " << Serializer.name(fk->targetRel)
+		joins << " LEFT OUTER JOIN " << Serializer->name(fk->targetRel)
 		      << " AS " << thatTableAlias << " ON ";
 		std::vector<size_t> fkColumns;
 		if (fk->size() > 1)
@@ -323,11 +327,11 @@ struct Materializer {
 		    sql::AliasAttr from(thisTableAlias, fk->at(i));
 		    sql::AliasAttr to(thatTableAlias, fk->relAttrs->at(i));
 		    joins << "("
-			  << Serializer.Serializer::name(from) << "="
-			  << Serializer.Serializer::name(to)
+			  << Serializer->Serializer::name(from) << "="
+			  << Serializer->Serializer::name(to)
 			  << " OR ("
-			  << Serializer.Serializer::name(from) << " IS NULL AND "
-			  << Serializer.Serializer::name(to) << " IS NULL"
+			  << Serializer->Serializer::name(from) << " IS NULL AND "
+			  << Serializer->Serializer::name(to) << " IS NULL"
 			  << ")"
 			  << ")";
 		}
@@ -363,7 +367,7 @@ struct Materializer {
 	     it != selectList.end(); ++it) {
 	    if (it != selectList.begin())
 		selectsString += ", ";
-	    selectsString += Serializer.Serializer::name(*it);
+	    selectsString += Serializer->Serializer::name(*it);
 	}
 	// w3c_sw_LINEN << "q: " << (selectsString + joins.str()) << "\n";
 	SQLclient::Result* res = sqlDriver.executeQuery(selectsString + joins.str(), fixups);
@@ -422,7 +426,7 @@ int main (int argc, const char* argv[]) {
     sqlContext sqlParserContext;
     SQLDriver sqlParser(sqlParserContext);
     try {
-	IStreamContext ddlStream(argv[1], IStreamContext::FILE);
+	IStreamContext ddlStream(argv[2], IStreamContext::FILE);
 	sqlParser.parse(ddlStream);
 
 #if 0 /* debugging dump */
@@ -432,13 +436,17 @@ int main (int argc, const char* argv[]) {
 	    w3c_sw_LINEN << **it << std::endl;
 #endif /* 0 - debugging dump */
 
-	W3C_SW_SQLCLIENT sqlDriver;
-	sqlDriver.connect("", "DM", "root");
+	SQLConnectInfo connectInfo(argv[1]);
+	SQLClientWrapper sqlWrapper(connectInfo);
+	sqlWrapper.connect(connectInfo);
+	Serializer = sql::Serializer::best(connectInfo.driver);
+	// W3C_SW_SQLCLIENT sqlDriver;
+	// sqlDriver.connect("", "DM", "root");
 	// dump(sqlDriver, "SELECT ID, fname, addr FROM People");
 	// dump(sqlDriver, "SHOW TABLES");
 
 	DefaultGraphPattern bgp;
-	Materializer m(sqlDriver);
+	Materializer m(*sqlWrapper.client, connectInfo.driver);
 	m(sqlParser.tables, &bgp);
 	std::cout << bgp.toString("text/turtle");
     } catch (ParserException& e) {

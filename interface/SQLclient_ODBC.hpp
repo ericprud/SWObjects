@@ -3,10 +3,10 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
+#include "../interface/SQLclient.hpp"
+
 #ifndef INCLUDED_interface_SQLclient_ODBC_hpp
  #define INCLUDED_interface_SQLclient_ODBC_hpp
-
-#include "../interface/SQLclient.hpp"
 
 #include <sql.h>
 #include<sqltypes.h>

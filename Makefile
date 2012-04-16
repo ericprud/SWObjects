@@ -469,6 +469,9 @@ tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOS
 t_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
+t_DM: tests/test_DM
+	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) ../bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) )
+
 v_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp

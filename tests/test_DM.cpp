@@ -1,6 +1,6 @@
-/* test_dm-materialize.cpp - test the ../bin/dm-materialize executable
+/* test_DM.cpp - test the ../bin/dm-materialize executable
  *
- * $Id: test_dm-materialize.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ * $Id: test_DM.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
 #include <iostream>
@@ -9,11 +9,13 @@
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include "TurtleSParser/TurtleSParser.hpp"
-#define NEEDDEF_W3C_SW_SQLCLIENT
-#include "interface/SQLclient_MySQL.hpp"
+/* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple
+ * SQL clients. */
+#include "interface/SQLclient.hpp"
 #include "SQLParser/SQLParser.hpp"
+#define BOOST_TEST_NO_MAIN
 
-#define BOOST_TEST_MODULE dm-materialize
+#define BOOST_TEST_MODULE DM
 #include <boost/test/unit_test.hpp>
 w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
@@ -22,18 +24,40 @@ w3c_sw::AtomFactory F;
 w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
 
 /* SQL */
-w3c_sw::sql::MySQLSerializer Serializer;
-W3C_SW_SQLCLIENT SQLDriver;
 w3c_sw::sqlContext sqlParserContext;
 w3c_sw::SQLDriver SQLParser(sqlParserContext);
+w3c_sw::SQLClientList connections;
 
+std::string usage (const char* argv0) {
+    return std::string()
+	+ "Usage: " + argv0 + " <SQLspec> opts\n"
+	+ "  opts: --keep - don't delete the test tables.\n"
+	+ "        --run_test= - name a test to run.\n"
+	+ "        other boost test args per\n"
+        + "<http://www.boost.org/doc/libs/1_45_0/libs/test/doc/html/utf/user-guide/runtime-config/reference.html>.\n";
+}
 
-struct Init {
-    Init () {
-	SQLDriver.connect("", "DM", "root");
-    }
-};
-Init init;
+bool Keep = false;
+const char* TestProgram;
+
+int BOOST_TEST_CALL_DECL
+main( int argc, char* argv[] )
+{
+    // namespace tst = boost::unit_test::framework;
+    // const int argc = tst::master_test_suite().argc;
+    // char** argv = tst::master_test_suite().argv;
+    if (argc < 3)
+	throw std::runtime_error(usage(argv[0]));
+    TestProgram = argv[1];
+    for (int i = 2; i < argc; ++i)
+	if (std::string(argv[i]) == "")
+	    ;
+	else if (std::string(argv[i]) == "--keep")
+	    Keep = true;
+	else if (std::string(argv[i]).substr(0, 2).compare("--"))
+	    connections.add(argv[i]);
+    return ::boost::unit_test::unit_test_main( &init_unit_test, argc, argv );
+}
 
 struct ExecResults {
     std::string s;
@@ -44,8 +68,7 @@ struct ExecResults {
 	char buf[100];
 	s = "";
 
-	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
-	 */
+	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX. */
 	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
 	    s += std::string(buf, buf + count);
 	    ::fflush(p);
@@ -63,19 +86,24 @@ std::ostream& operator== (std::ostream& o, ExecResults& tested) {
 }
 
 struct DMTest {
+    w3c_sw::SQLClientList::Connection& client;
     w3c_sw::DefaultGraphPattern expect;
     w3c_sw::DefaultGraphPattern test;
     std::string execStr;
-    DMTest () {  }
-    DMTest (const char* create, const char* output) {
+
+    DMTest (w3c_sw::SQLClientList::Connection& client)
+	: client(client), execStr(TestProgram)
+    {  }
+    void run (const char* create, const char* output)
+    {
 	w3c_sw::IStreamContext ddlStream(create, w3c_sw::IStreamContext::FILE);
 	SQLParser.parse(ddlStream);
-	// w3c_sw_LINEN << SQLParser.tables.toString("", "", Serializer);
+	// w3c_sw_LINEN << SQLParser.tables.toString("", "", *client.serializer);
 
 	for (w3c_sw::sql::schema::Database::const_iterator table = SQLParser.tables.begin();
 	     table != SQLParser.tables.end(); ++table) {
 	    std::stringstream ss;
-	    ss << "CREATE TABLE " << Serializer.name(table->first) << " (\n";
+	    ss << "CREATE TABLE " << client.serializer->name(table->first) << " (\n";
 	    size_t fieldCount = 0;
 	    for (std::vector<const w3c_sw::sql::schema::FieldOrKey*>::const_iterator it = (*table->second).begin();
 		 it != (*table->second).end(); ++it) {
@@ -84,36 +112,35 @@ struct DMTest {
 		    if (fieldCount > 0)
 			ss << ",\n";
 		    ++fieldCount;
-		    ss << "  " << (*it)->toString("", "", Serializer);
+		    ss << "  " << (*it)->toString("", "", *client.serializer);
 		}
 	    }
 	    ss << "\n)";
 	    // w3c_sw_LINEN << ss.str() << ";" << std::endl;
-	    SQLDriver.executeQuery(ss.str() + ";");
+	    client.wrap.executeQuery(ss.str() + ";");
 	}
 	for (std::vector<const w3c_sw::sql::Insert*>::const_iterator it = SQLParser.inserts.begin();
 	     it != SQLParser.inserts.end(); ++it) {
-	    // w3c_sw_LINEN << (*it)->toString("", "", Serializer) << ";" << std::endl;
-	    SQLDriver.executeQuery((*it)->toString("", "", Serializer) + ";");
+	    // w3c_sw_LINEN << (*it)->toString("", "", *client.serializer) << ";" << std::endl;
+	    client.wrap.executeQuery((*it)->toString("", "", *client.serializer) + ";");
 	}
 
-	execStr.append("../bin/dm-materialize ").append(create);
+	execStr
+	    += " " + client.info.sqlConnectString()
+	    + " " + create;
+
 	ExecResults tested(execStr.c_str());
+	// w3c_sw_LINEN << "DM graph: " << tested.s << "\n";
 	TurtleParser.parse(tested.s, &test);
 	w3c_sw::IStreamContext expStream(output, w3c_sw::IStreamContext::FILE);
 	TurtleParser.parse(expStream, &expect);
     }
     ~DMTest () {
-	bool keep = false;
-	namespace tst = boost::unit_test::framework;
-	for (int i = 1; i < tst::master_test_suite().argc; ++i)
-	    if (std::string(tst::master_test_suite().argv[i]) == "--keep")
-		keep = true;
-
-	if (!keep || (test.size() > 0 && expect.size() > 0 && expect == test))
+	if (!Keep || (test.size() > 0 && expect.size() > 0 && expect == test))
 	    for (w3c_sw::sql::schema::Database::const_iterator it = SQLParser.tables.begin();
 		 it != SQLParser.tables.end(); ++it)
-		w3c_sw::SQLclient::Result* res = SQLDriver.executeQuery(std::string() + "DROP TABLE " + Serializer.name(it->first) + ";");
+		client.wrap.executeQuery(std::string() + "DROP TABLE "
+					 + client.serializer->name(it->first) + ";");
 	else
 	    std::cerr << "failed to execute: " << execStr << "\n";
 
@@ -123,11 +150,15 @@ struct DMTest {
 };
 
 #define DMTEST(NAME)						\
-    DMTest h;							\
     try {							\
-	h = DMTest(NAME "create.sql",				\
-		   NAME "directGraph.ttl");			\
-	BOOST_CHECK_EQUAL(h.expect, h.test);			\
+	for (std::vector<w3c_sw::SQLClientList::Connection>	\
+	     ::iterator connection = connections.begin();	\
+	     connection != connections.end();			\
+	     ++connection) {					\
+	    DMTest h = DMTest(*connection);			\
+	    h.run(NAME "create.sql", NAME "directGraph.ttl");	\
+	    BOOST_CHECK_EQUAL(h.expect, h.test);		\
+	}							\
     } catch (w3c_sw::ParserException& p) {			\
 	BOOST_FAIL(std::string("ParserException:") + p.what());	\
     } catch (std::string& s) {					\

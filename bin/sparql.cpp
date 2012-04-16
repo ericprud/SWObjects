@@ -584,44 +584,13 @@ void validate (boost::any&, const std::vector<std::string>& values, headerAppend
 struct sqlService {};
 void validate (boost::any&, const std::vector<std::string>& values, sqlService*, int)
 {
-    const std::string& s = po::validators::get_single_string(values);
-    /**
-     * ODBC drivers patterns are pretty random.
-     * c.f. http://www.herongyang.com/JDBC/Summary-Connection-URL.html
-     * We let ODBC work it out.
-     */
-    size_t p = s.find("odbc:");
-    if (p == 0) {
-	TheServer.engine.useODBC = true;
-	TheServer.engine.SQLDriver = s.substr(5);
-	return;
+    const std::string s = po::validators::get_single_string(values);
+    try {
+	TheServer.engine.sqlConnectInfo.parse(s);
+    } catch (std::runtime_error& re) {	
+	// throw boost::program_options::VALIDATION_ERROR(s + " did not match expression " + TheServer.engine.sqlConnectInfo.odbcPattern.str());
+	throw boost::program_options::VALIDATION_ERROR(re.what());
     }
-
-    const boost::regex odbcPattern("^([^:]+)://"	// 1: protocol ://
-				   "(?:"		//    [
-				   "([^:]+)"		// 2:   user
-				   "(?::([^@]+))?"	// 3:   [ : password ]
-				   "@)?"		//    @ ]
-				   "([^:]+)"		// 4: host
-				   "(?::([0-9]+))?"	// 5: [ port ]
-				   "/(.+)$");		// 6: database
-    boost::cmatch matches;
-    if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
-	if (matches[1] != "mysql" && matches[1] != "oracle")
-	    throw std::string("only mysql or oracle SQL service is currently supported -- saw ") + matches[1];
-	TheServer.engine.SQLDriver = matches[1];
-	if (matches[2].matched)
-	    TheServer.engine.SQLUser = matches[2];
-	if (matches[3].matched)
-	    TheServer.engine.SQLPassword = matches[3];
-	TheServer.engine.SQLServer = matches[4];
-	if (matches[5].matched)
-	    TheServer.engine.SQLPort = matches[5];
-	TheServer.engine.SQLDatabase = matches[6];
-    } else { 
-	throw boost::program_options::VALIDATION_ERROR(s + " did not match expression " + odbcPattern.str());
-    }
-
 }
 #endif /* REGEX_LIB != SWOb_DISABLED */
 
@@ -1039,12 +1008,12 @@ int main(int ac, char* av[])
 		sw::MapSet* ms = TheServer.engine.mapSetParser.parse(istr); // throws if it fails to parse
 		// could catch and re-throw std::string("error when parsing map ").append(nameStr);
 
-		if (ms->driver) TheServer.engine.SQLDriver = ms->driver->getLexicalValue();
-		if (ms->server) TheServer.engine.SQLServer = ms->server->getLexicalValue();
-		if (ms->user) TheServer.engine.SQLUser = ms->user->getLexicalValue();
-		if (ms->password) TheServer.engine.SQLPassword = ms->password->getLexicalValue();
-		if (ms->database) TheServer.engine.SQLDatabase = ms->database->getLexicalValue();
-		if (ms->stemURI) TheServer.engine.stemURI = ms->stemURI->getLexicalValue();
+		if (ms->driver)   TheServer.engine.sqlConnectInfo.driver   = ms->driver->getLexicalValue();
+		if (ms->server)   TheServer.engine.sqlConnectInfo.server   = ms->server->getLexicalValue();
+		if (ms->user)     TheServer.engine.sqlConnectInfo.user     = ms->user->getLexicalValue();
+		if (ms->password) TheServer.engine.sqlConnectInfo.password = ms->password->getLexicalValue();
+		if (ms->database) TheServer.engine.sqlConnectInfo.database = ms->database->getLexicalValue();
+		if (ms->stemURI)  TheServer.engine.stemURI = ms->stemURI->getLexicalValue();
 		TheServer.engine.queryMapper.sharedVars = ms->sharedVars;
 		for (sw::MapSet::ConstructList::const_iterator it = ms->maps.begin();
 		     it != ms->maps.end(); ++it)

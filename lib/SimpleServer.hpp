@@ -791,12 +791,7 @@ struct SimpleEngine {
     KeyMap keyMap;
     MapSetDriver mapSetParser;
     ChainingMapper queryMapper;
-    std::string SQLDriver;
-    std::string SQLUser;
-    std::string SQLPassword;
-    std::string SQLServer;
-    std::string SQLPort;
-    std::string SQLDatabase;
+    SQLConnectInfo sqlConnectInfo;
 #if HTTP_SERVER == SWOb_ASIO
     boost::mutex executeMutex;    
 #endif /* HTTP_SERVER == SWOb_ASIO */
@@ -820,8 +815,6 @@ struct SimpleEngine {
     const TTerm* argBaseURI;
     bool noExec;
     MediaType dataMediaType;
-    bool useODBC;
-
 
     SimpleEngine (std::string pkAttribute)
 	: atomFactory(), nsRelay(nsAccumulator),
@@ -836,39 +829,8 @@ struct SimpleEngine {
 	  webClient_authPrompter(),
 	  webClient(&webClient_authPrompter),
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
-	  noExec(false), useODBC(false)
+	  noExec(false)
     {  }
-    std::string sqlConnectString () const {
-	return SQLDriver + "://" + SQLUser + ":" + SQLPassword + "@" + SQLServer + "/" + SQLDatabase;
-    }
-
-    class SQLClientWrapper : public SQLclient {
-	SQLclient * const client;
-    public:
-	SQLClientWrapper (std::string driver, bool useODBC) : client(makeClient(driver, useODBC)) {  }
-	~SQLClientWrapper () { delete client; }
-	static SQLclient* makeClient (std::string driver, bool useODBC) {
-#ifdef SQL_CLIENT_ODBC
-	    if (useODBC) return new SQLclient_ODBC(driver);
-#endif
-#ifdef SQL_CLIENT_MYSQL
-	    if (driver == "mysql") return new SQLclient_MySQL();
-#endif
-#ifdef SQL_CLIENT_ORACLE
-	    if (driver == "oracle") return new SQLclient_Oracle();
-#endif
-	    throw driver + " driver not linked in.";
-	}
-	virtual void connect(std::string engine, std::string database, std::string user) {
-	    client->connect(engine, database, user);
-	}
-	virtual void connect(std::string engine, std::string database, std::string user, std::string password) {
-	    client->connect(engine, database, user, password);
-	}
-	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
-	    return client->executeQuery(query, fixups);
-	}
-    };
 
     bool executeQuery (const Operation* query, ResultSet& rs, std::string& language, std::string& finalQuery) {
 	language = "SPARQL";
@@ -903,14 +865,12 @@ struct SimpleEngine {
 	    language = "SQL";
 	    char predicateDelims[]={'#',' ',' '};
 	    char nodeDelims[]={'/','.',' '};
-	    std::string drv = SQLDriver.find("oracle") == 0 ? "oracle" : SQLDriver;
+	    std::string drv = sqlConnectInfo.driver.find("oracle") == 0 ? "oracle" : sqlConnectInfo.driver;
 	    SQLizer sqlizer(&atomFactory, stemURI, predicateDelims, nodeDelims, pkAttribute, keyMap, drv);
 	    query->express(&sqlizer);
 	    finalQuery = sqlizer.getSQLstring();
 
-	    bool doSQLquery = noExec == false && 
-		(!SQLDriver.empty() || !SQLServer.empty()
-		 || !SQLDatabase.empty() || !SQLUser.empty());
+	    bool doSQLquery = noExec == false && sqlConnectInfo.initialized();
 	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::info) << "SQL: " << std::endl;
 	    if (printQuery || doSQLquery == false) {
 		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::info) << "Final query: " << ".\n";
@@ -924,22 +884,17 @@ struct SimpleEngine {
 		    "Unable to connect to " << sqlConnectString() << " .\n"
 		    "No SQL client libraries linked in.\n";
 #else /* !SQL_CLIENT_NONE */
-		SQLClientWrapper sqlClient(SQLDriver, useODBC);
+		SQLClientWrapper sqlClient(sqlConnectInfo);
 		SQLclient::Result* res;
 		try {
-		    if (SQLPassword.empty())
-			sqlClient.connect(SQLServer, SQLDatabase, SQLUser); // @@ wrap password with Optional to enable --password=''
-		    else
-			sqlClient.connect(SQLServer, SQLDatabase, SQLUser, SQLPassword);
-		}
-		catch (std::string ex) {
-		    throw std::string("unable to connect to ") + sqlConnectString() + ": " + ex;
+		    sqlClient.connect(sqlConnectInfo);
+		} catch (std::string ex) {
+		    throw std::string("unable to connect to ") + sqlConnectInfo.sqlConnectString() + ": " + ex;
 		}
 		try {
 		    res = sqlClient.executeQuery(finalQuery);
-		}
- 		catch (std::string ex) {
-		    throw ex + "\n" + sqlConnectString() + " was unable to execute " + finalQuery;
+		} catch (std::string ex) {
+		    throw ex + "\n" + sqlConnectInfo.sqlConnectString() + " was unable to execute " + finalQuery;
 		}
 		SqlResultSet rs2(&atomFactory, res);
 		sqlizer.postEval(&rs2);

@@ -67,6 +67,7 @@ namespace w3c_sw {
 	    virtual std::string as() = 0;
 	    virtual std::string limit(int l) = 0;
 	    virtual std::string offset(int o) = 0;
+	    static Serializer* best(std::string driver);
 	};
 	template<int dummy>
 	struct SQLSerializer_dummyTemplate : public Serializer {
@@ -144,6 +145,16 @@ namespace w3c_sw {
 		return ss.str();
 	    }
 	};
+	inline Serializer* Serializer::best(std::string driver) {
+	    if (driver == "mysql")
+		return new w3c_sw::sql::MySQLSerializer();
+	    else if (driver == "postgres")
+		return new w3c_sw::sql::PostgresSerializer();
+	    else if (driver == "oracle")
+		return new w3c_sw::sql::OracleSerializer();
+	    else
+		return new w3c_sw::sql::SQLSerializer();
+	}
 
 	/**
 	 * enforce type consistency for

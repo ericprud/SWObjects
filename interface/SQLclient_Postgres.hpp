@@ -3,6 +3,8 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
+#include "../interface/SQLclient.hpp"
+
 #ifndef INCLUDED_interface_SQLclient_Postgres_hpp
 #define INCLUDED_interface_SQLclient_Postgres_hpp
 
@@ -13,7 +15,6 @@
 #endif /* NEEDDEF_W3C_SW_SQLCLIENT */
 
 #include <stdexcept>
-#include "../interface/SQLclient.hpp"
 #include <postgresql/libpq-fe.h>
 
 namespace w3c_sw {

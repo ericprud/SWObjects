@@ -3,6 +3,8 @@
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
+#include "../interface/SQLclient.hpp"
+
 #ifndef INCLUDED_interface_SQLclient_MySQL_hpp
 #define INCLUDED_interface_SQLclient_MySQL_hpp
 
@@ -11,8 +13,6 @@
   #define W3C_SW_MYSQL_SQLCLIENT 1
   #define W3C_SW_SQLCLIENT ::w3c_sw::SQLclient_MySQL
 #endif /* NEEDDEF_W3C_SW_SQLCLIENT */
-
-#include "../interface/SQLclient.hpp"
 
 #ifdef WIN32
   #include <mysql.h>
@@ -39,9 +39,13 @@ namespace w3c_sw {
 	    this->database = database;
 	    this->user = user;
 	    if (!(sock = mysql_real_connect(&mysql, server.c_str(), user.c_str(), password, database.c_str(), 0, NULL, 0)))
-		throw std::string("couldn't connect to mysql://") + user + "@" + server + "/" + database;
+		throw std::runtime_error(std::string()
+					 + "couldn't connect to mysql://" + user
+					 + "@" + server + "/" + database);
 	    if (mysql_set_character_set(&mysql, "utf8"))
-		throw std::string("couldn't set mysql://") + user + "@" + server + "/" + database + " to use utf8";
+		throw std::runtime_error(std::string()
+					 + "couldn't set mysql://" + user
+					 + "@" + server + "/" + database + " to use utf8");
 	}
 
     public:
@@ -204,7 +208,7 @@ namespace w3c_sw {
 	/**
 	 * SQLclient_MySQL constructor.
 	 */
-	SQLclient_MySQL () : SQLclient() { 
+	SQLclient_MySQL () : SQLclient() {
 	    mysql_init(&mysql);
 	}
 
@@ -224,13 +228,13 @@ namespace w3c_sw {
 	 */
 	virtual Result* executeQuery (std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
 	    if (mysql_query(sock, query.c_str()))
-		throw std::string("error calling mysql_query: ") + mysql_error(sock);
+		throw std::runtime_error(std::string() + "error calling mysql_query: " + mysql_error(sock));
 	    MYSQL_RES *result;
 	    if ((result = mysql_store_result(sock)) == NULL)
 		return new Result(Result::RESULT_none, fixups);
 	    return new Result(result, fixups);
-		// throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
-// 		throw std::string("mysql://") + user + "@" + server + "/" + database +
+		// throw std::runtime_error("error calling mysql_store_result: ") + mysql_error(sock);
+// 		throw std::runtime_error("mysql://") + user + "@" + server + "/" + database +
 // 				  "could not retrieve results of [[\n" + query + "\n]]";
 
 	}
