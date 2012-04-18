@@ -57,8 +57,8 @@ namespace w3c_sw {
 	protected:
 	    MYSQL_RES *result;
 	    Result::Fixups& fixups;
-	    MYSQL_FIELD *fields;
-	    int num_fields;
+	    MYSQL_FIELD *fields; // keep a native list of fields to trigger fixups
+	    int columnCount;
 	    ColumnSet colSet;
 	    Row row;
 	public:
@@ -87,7 +87,9 @@ namespace w3c_sw {
 		}
 	    };
 
-	    Result (e_RESULT, Result::Fixups& fixups) : result(NULL), fixups(fixups) {  }
+	    Result (e_RESULT, Result::Fixups& fixups)
+		: result(NULL), fixups(fixups)
+	    {  }
 	    /**
 	     * SQLclient_MySQL::Result constructor.
 	     * @result: MySQL result handle returned from mysql_query.
@@ -95,9 +97,9 @@ namespace w3c_sw {
 	    Result (MYSQL_RES *result, Result::Fixups& fixups)
 		: result(result), fixups(fixups)
 	    {
-		num_fields = mysql_num_fields(result);
+		columnCount = mysql_num_fields(result);
 		fields = mysql_fetch_fields(result);
-		for(int i = 0; i < num_fields; i++) {
+		for(int i = 0; i < columnCount; i++) {
 
 		    // Create a field to store the name and RDF type of this column.
 		    Field f;
@@ -176,7 +178,7 @@ namespace w3c_sw {
 		    return ret; // returns SQLclient::Result.end()
 
 		// For each column:
-		for(int i = 0; i < num_fields; i++) {
+		for(int i = 0; i < columnCount; i++) {
 
 		    if (row[i]) {
 
