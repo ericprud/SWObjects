@@ -257,6 +257,48 @@ namespace w3c_sw {
 	    };
 	    virtual Row nextRow() = 0;
 	    Row end () { return Row(); } // count on operator!= to say that two empty Row's are ==
+	    std::ostream& print (std::ostream& os) {
+		ColumnSet& columns = cols();
+		std::vector<size_t> widths(columns.size());
+		std::vector<std::string> names;
+		std::vector<std::vector<std::string> > values;
+
+		for (size_t i = 0; i < columns.size(); ++i) {
+		    names.push_back(columns[i].name);
+		    widths[i] = columns[i].name.length();
+		}
+
+		Row row;
+		while ((row = nextRow()) != end()) {
+		    values.resize(values.size()+1);
+		    for(size_t i = 0; i < columns.size(); i++) {
+			std::string v
+			    = row[i].is_initialized()
+			    ? row[i].get()
+			    : "NULL";
+			values[values.size()-1][i] = v;
+			if (widths[i] < v.length())
+			    widths[i] = v.length();
+		    }
+		}
+
+		for (size_t i = 0; i < columns.size(); ++i) {
+		    if (i == 0)
+			os << "| ";
+		    os << names[i] << std::string(widths[i] - names[i].length(), ' ') << " |";
+		}
+
+		for (size_t row = 0; row < values.size(); ++row) {
+		    for (size_t col = 0; col < columns.size(); ++col) {
+			if (col == 0)
+			    os << "| ";
+			os << values[row][col] << std::string(widths[col] - values[row][col].length(), ' ') << " |";
+		    }
+		    os << "\n";
+		}
+
+		return os;
+	    }
 	};
 
 	SQLclient () {  }
@@ -273,6 +315,10 @@ namespace w3c_sw {
 
 	virtual Result* executeQuery(std::string query, Result::Fixups& fixups = Result::Fixups::Empty) = 0;
     };
+
+    std::ostream& operator<< (std::ostream& os, SQLclient::Result& rs) {
+	return rs.print(os);
+    }
 
     /* SQL type to XSD type mapping: http://www.w3.org/2001/sw/rdb2rdf/r2rml/#table-type-mapping */
     std::string SQLclient::Result::Field::typeNames[] = {
@@ -297,7 +343,6 @@ namespace w3c_sw {
 	    SQLclient::Result::ColumnSet& cols = res->cols();
 	    std::vector<const TTerm*> vars;
 
-	    /* dump headers in <th/>s */
 	    for (SQLclient::Result::ColumnSet::const_iterator it = cols.begin();
 		 it != cols.end(); ++it)
 		vars.push_back(atomFactory->getVariable(it->name));
