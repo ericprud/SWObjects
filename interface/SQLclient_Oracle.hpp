@@ -1,151 +1,5 @@
 /* SQLclient_Oracle.hpp: implementation of SQLclient for Oracle.
-
  * $Id: SWObjects.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
-
-!!! Actually, this is just a place holder for an Oracle library.
-    The following code sample may help this become reallized.
-
-#include <DbManager.h>
-#include <iostream>
- 
-using namespace std;
- 
-using namespace oracle::occi;
- 
-const string sqlString("select empno, ename, hiredate from emp");
- 
-const string dateFormat("DD-MON-YYYY HH24:MI:SS");
- 
-int main(int argc, char **argv)
-{
-  if (argc != 2)
-  {
-    cerr << "\nUsage: " << argv[0] << " <db-user-name>\n" << endl;
-    exit(1);
-  }
- 
-  string userName = argv[1];
- 
-  // Initialize OracleServices
- 
-  DbManager* dbm = NULL;
- 
-  OracleServices* oras = NULL;
- 
-  Statement *stmt = NULL;
- 
-  ResultSet *resultSet = NULL;
- 
-  try
- 
-  {
- 
-    // Obtain OracleServices object with the default args.
- 
-    // The default args creates OracleServices with an environment of
- 
-    // Environment::OBJECT|Environment::THREADED_MUTEXED
- 
-    dbm = new DbManager(userName);
- 
-    oras = dbm->getOracleServices();
- 
-    // Obtain a cached connection
- 
-    Connection * conn = oras->connection();
- 
-    // Create a statement
- 
-    stmt = conn->createStatement(sqlString);
- 
-    int empno;
- 
-    string ename;
- 
-    Date hireDate;
- 
-    string dateAsString;
- 
-    // Execute query to get a resultset
- 
-    resultSet = stmt->executeQuery();
- 
-    while (resultSet->next())
-    {
-      empno = resultSet->getInt(1);  // get the first column returned by the query;
- 
-      ename = resultSet->getString(2);  // get the second column returned by the query
- 
-      hireDate = resultSet->getDate(3);  // get the third column returned by the query
- 
-      dateAsString="";
- 
-      //You cannot check for null until the data has been read
- 
-      if (resultSet->isNull(1))
- 
-      {
- 
-                cout << "Employee num is null... " << endl;
- 
-      }
- 
-      if (resultSet->isNull(2))
- 
-      {
- 
-                cout << "Employee name is null..." << endl;
- 
-      }
- 
-      if (resultSet->isNull(3))
- 
-      {
- 
-                cout << "Hire date is null..." << endl;
- 
-      }
-      else
-      {
-                dateAsString=hireDate.toText(dateFormat);
-      }
- 
-      cout << empno << "\t" << ename << "\t" << dateAsString << endl;
- 
-    }
- 
-    // Close ResultSet and Statement
- 
-    stmt->closeResultSet(resultSet);
- 
-    conn->terminateStatement(stmt);
-  
- 
-    // Close Connection and OCCI Environment
- 
-    delete dbm;
- 
-  }
- 
-  catch (SQLException& ex)
- 
-  {
- 
-    if (dbm != NULL)
- 
-    {
-        dbm->rollbackActions(ex, stmt, resultSet); // free resources and rollback transaction
- 
-    }
- 
-  }
- 
-   
-  return 0;
- 
-}
-
-
  */
 
 #include "../interface/SQLclient.hpp"
@@ -153,88 +7,73 @@ int main(int argc, char **argv)
 #ifndef INCLUDED_interface_SQLclient_Oracle_hpp
  #define INCLUDED_interface_SQLclient_Oracle_hpp
 
-#ifdef WIN32
-  #include <mysql.h>
- #else
-  #include <mysql/mysql.h>
-#endif
+#include <occi.h>
+
+namespace oocci = oracle::occi;
 
 namespace w3c_sw {
 
     class SQLclient_Oracle : public SQLclient {
     protected:
-	MYSQL mysql, *sock;
+	oocci::Environment *env;
+	oocci::Connection *conn;
+	oocci::Statement *stmt;
 	std::string server, database, user;
 	virtual void _connect (std::string server, std::string database, std::string user, const char* password) {
+	    if (conn != NULL)
+		env->terminateConnection(conn);
 	    this->server = server;
 	    this->database = database;
 	    this->user = user;
-	    if (!(sock = mysql_real_connect(&mysql, server.c_str(), user.c_str(), password, database.c_str(), 0, NULL, 0)))
-		throw std::string("couldn't connect to mysql://") + user + "@" + server + "/" + database;
+	    std::stringstream ss;
+	    ss << "//" << server << "/" << database;
+	    if (!(conn = env->createConnection (user, password, ss.str())))
+		throw std::runtime_error(std::string()
+					 + "couldn't connect to oracle://" + user
+					 + "@" + server + "/" + database);
 	}
 
     public:
 	class Result : public SQLclient::Result {
 	protected:
-	    MYSQL_RES *result;
-	    MYSQL_FIELD *fields;
-	    int num_fields;
+	    oocci::ResultSet* result;
+	    Result::Fixups& fixups;
+	    std::vector<oocci::MetaData> selectcols;
 	    ColumnSet colSet;
 	    Row row;
+
 	public:
-	    Result (MYSQL_RES *result) : result(result) {
-		num_fields = mysql_num_fields(result);
-		fields = mysql_fetch_fields(result);
-		for(int i = 0; i < num_fields; i++) {
+
+	    struct IntegerToDouble : public Fixup {
+		IntegerToDouble () {  }
+		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
+		    sqlType = Field::TYPE_double;
+		    return lexval;
+		}
+	    };
+
+	    Result (e_RESULT, Result::Fixups& fixups)
+		: result(NULL), fixups(fixups)
+	    {  }
+	    Result (oocci::ResultSet* result, Result::Fixups& fixups)
+		: result(result), fixups(fixups), selectcols(result->getColumnListMetaData())
+	    {
+		int columnCount = selectcols.size();
+		for (int i = 0; i < columnCount; i++) {
 		    Field f;
-		    f.name = fields[i].name;
-		    switch (fields[i].type) {
-		    case MYSQL_TYPE_DECIMAL:
-			f.type = Field::TYPE_decimal;
-			break;
-		    case MYSQL_TYPE_TINY:
-			f.type = Field::TYPE_short;
-			break;
-		    case MYSQL_TYPE_SHORT:
-			f.type = Field::TYPE_short;
-			break;
-		    case MYSQL_TYPE_LONG:
-			f.type = Field::TYPE_long;
-			break;
-		    case MYSQL_TYPE_FLOAT:
-			f.type = Field::TYPE_float;
-			break;
-		    case MYSQL_TYPE_DOUBLE:
-			f.type = Field::TYPE_double;
-			break;
-		    case MYSQL_TYPE_LONGLONG:
-			f.type = Field::TYPE_decimal;
-			break;
-		    case MYSQL_TYPE_INT24:
+		    f.name = selectcols[i].getString(oocci::MetaData::ATTR_NAME);
+		    int typeNo = selectcols[i].getInt(oocci::MetaData::ATTR_DATA_TYPE);
+		    switch (typeNo) {
+		    case oocci::OCCI_SQLT_NUM:
 			f.type = Field::TYPE_integer;
 			break;
-		    case MYSQL_TYPE_NULL:
-			f.type = Field::TYPE__null;
-			break;
-		    case MYSQL_TYPE_DATETIME:
-		    case MYSQL_TYPE_TIMESTAMP:
-			f.type = Field::TYPE_dateTime;
-			break;
-		    case MYSQL_TYPE_YEAR:
-			f.type = Field::TYPE_dateTime;
-			break;
-		    case MYSQL_TYPE_STRING:
-			f.type = Field::TYPE__literal;
-			break;
-		    case MYSQL_TYPE_VARCHAR:
-		    case MYSQL_TYPE_BLOB:
-		    case MYSQL_TYPE_VAR_STRING:
+		    case oocci::OCCI_SQLT_CHR:
 			f.type = Field::TYPE__literal;
 			break;
 		    default:
 			if (true) { // do want a switch to allow unknown datatypes?
 			    std::stringstream s;
-			    s << "fields[" << i << "] " << fields[i].name << " of unknown type " << fields[i].type;
+			    s << "fields[" << i << "] " << f.name << " of unknown type " << datatypeCstr(typeNo);
 			    throw s.str();
 			}
 			f.type = Field::TYPE__unknown;
@@ -242,28 +81,114 @@ namespace w3c_sw {
 		    colSet.push_back(f);
 		}
 	    }
+
+	    static const char* datatypeCstr (int type) {
+		switch (type) {
+		case oocci::OCCI_SQLT_CHR: return "OCCI_SQLT_CHR";
+		case oocci::OCCI_SQLT_NUM: return "OCCI_SQLT_NUM";
+		case oocci::OCCIINT: return "OCCIINT";
+		case oocci::OCCIFLOAT: return "OCCIFLOAT";
+		case oocci::OCCIBFLOAT: return "OCCIBFLOAT";
+		case oocci::OCCIBDOUBLE: return "OCCIBDOUBLE";
+		case oocci::OCCIIBFLOAT: return "OCCIIBFLOAT";
+		case oocci::OCCIIBDOUBLE: return "OCCIIBDOUBLE";
+		case oocci::OCCI_SQLT_STR: return "OCCI_SQLT_STR";
+		case oocci::OCCI_SQLT_VNU: return "OCCI_SQLT_VNU";
+		case oocci::OCCI_SQLT_PDN: return "OCCI_SQLT_PDN";
+		case oocci::OCCI_SQLT_LNG: return "OCCI_SQLT_LNG";
+		case oocci::OCCI_SQLT_VCS: return "OCCI_SQLT_VCS";
+		case oocci::OCCI_SQLT_NON: return "OCCI_SQLT_NON";
+		case oocci::OCCI_SQLT_RID: return "OCCI_SQLT_RID";
+		case oocci::OCCI_SQLT_DAT: return "OCCI_SQLT_DAT";
+		case oocci::OCCI_SQLT_VBI: return "OCCI_SQLT_VBI";
+		case oocci::OCCI_SQLT_BIN: return "OCCI_SQLT_BIN";
+		case oocci::OCCI_SQLT_LBI: return "OCCI_SQLT_LBI";
+		case oocci::OCCIUNSIGNED_INT: return "OCCIUNSIGNED_INT";
+		case oocci::OCCI_SQLT_SLS: return "OCCI_SQLT_SLS";
+		case oocci::OCCI_SQLT_LVC: return "OCCI_SQLT_LVC";
+		case oocci::OCCI_SQLT_LVB: return "OCCI_SQLT_LVB";
+		case oocci::OCCI_SQLT_AFC: return "OCCI_SQLT_AFC";
+		case oocci::OCCI_SQLT_AVC: return "OCCI_SQLT_AVC";
+		case oocci::OCCI_SQLT_CUR: return "OCCI_SQLT_CUR";
+		case oocci::OCCI_SQLT_RDD: return "OCCI_SQLT_RDD";
+		case oocci::OCCI_SQLT_LAB: return "OCCI_SQLT_LAB";
+		case oocci::OCCI_SQLT_OSL: return "OCCI_SQLT_OSL";
+		case oocci::OCCI_SQLT_NTY: return "OCCI_SQLT_NTY";
+		case oocci::OCCI_SQLT_REF: return "OCCI_SQLT_REF";
+		case oocci::OCCI_SQLT_CLOB: return "OCCI_SQLT_CLOB";
+		case oocci::OCCI_SQLT_BLOB: return "OCCI_SQLT_BLOB";
+		case oocci::OCCI_SQLT_BFILEE: return "OCCI_SQLT_BFILEE";
+		case oocci::OCCI_SQLT_CFILEE: return "OCCI_SQLT_CFILEE";
+		case oocci::OCCI_SQLT_RSET: return "OCCI_SQLT_RSET";
+		case oocci::OCCI_SQLT_NCO: return "OCCI_SQLT_NCO";
+		case oocci::OCCI_SQLT_VST: return "OCCI_SQLT_VST";
+		case oocci::OCCI_SQLT_ODT: return "OCCI_SQLT_ODT";
+		case oocci::OCCI_SQLT_DATE: return "OCCI_SQLT_DATE";
+		case oocci::OCCI_SQLT_TIME: return "OCCI_SQLT_TIME";
+		case oocci::OCCI_SQLT_TIME_TZ: return "OCCI_SQLT_TIME_TZ";
+		case oocci::OCCI_SQLT_TIMESTAMP: return "OCCI_SQLT_TIMESTAMP";
+		case oocci::OCCI_SQLT_TIMESTAMP_TZ: return "OCCI_SQLT_TIMESTAMP_TZ";
+		case oocci::OCCI_SQLT_INTERVAL_YM: return "OCCI_SQLT_INTERVAL_YM";
+		case oocci::OCCI_SQLT_INTERVAL_DS: return "OCCI_SQLT_INTERVAL_DS";
+		case oocci::OCCI_SQLT_TIMESTAMP_LTZ: return "OCCI_SQLT_TIMESTAMP_LTZ";
+		    // OCCI_SQLT_FILE  == OCCI_SQLT_BFILEE
+		    // OCCI_SQLT_CFILE == OCCI_SQLT_CFILEE
+		    // OCCI_SQLT_BFILE == OCCI_SQLT_BFILEE
+ 
+		case oocci::OCCICHAR: return "OCCICHAR";
+		case oocci::OCCIDOUBLE: return "OCCIDOUBLE";
+		case oocci::OCCIBOOL: return "OCCIBOOL";
+		case oocci::OCCIANYDATA: return "OCCIANYDATA";
+		case oocci::OCCINUMBER: return "OCCINUMBER";
+		case oocci::OCCIBLOB: return "OCCIBLOB";
+		case oocci::OCCIBFILE: return "OCCIBFILE";
+		case oocci::OCCIBYTES: return "OCCIBYTES";
+		case oocci::OCCICLOB: return "OCCICLOB";
+		case oocci::OCCIVECTOR: return "OCCIVECTOR";
+		case oocci::OCCIMETADATA: return "OCCIMETADATA";
+		case oocci::OCCIPOBJECT: return "OCCIPOBJECT";
+		case oocci::OCCIREF: return "OCCIREF";
+		case oocci::OCCIREFANY: return "OCCIREFANY";
+		case oocci::OCCISTRING: return "OCCISTRING";
+		case oocci::OCCISTREAM: return "OCCISTREAM";
+		case oocci::OCCIDATE: return "OCCIDATE";
+		case oocci::OCCIINTERVALDS: return "OCCIINTERVALDS";
+		case oocci::OCCIINTERVALYM: return "OCCIINTERVALYM";
+		case oocci::OCCITIMESTAMP: return "OCCITIMESTAMP";
+		case oocci::OCCIROWID: return "OCCIROWID";
+		case oocci::OCCICURSOR: return "OCCICURSOR";
+		default: return "???";
+		}
+	    }
+
 	    virtual ColumnSet& cols () { return colSet; }
 	    virtual Row nextRow () {
 		Row ret;
-		MYSQL_ROW row;
-		if ((row = mysql_fetch_row(result)) == NULL)
+		if (!result->next())
 		    return ret;
-		for(int i = 0; i < num_fields; i++) {
-		    if (row[i]) {
+		for(int i = 0; (size_t)i < selectcols.size(); i++) {
+		    if (!result->isNull(i+1)) {
 
-			std::string lexval(row[i]);
-			switch (fields[i].type) {
-			case MYSQL_TYPE_DATETIME:
+			std::string lexval(result->getString(i+1));
+			int typeNo = selectcols[i].getInt(oocci::MetaData::ATTR_DATA_TYPE);
+			switch (typeNo) {
+			case oocci::OCCI_SQLT_NUM:
+			case oocci::OCCI_SQLT_CHR:
+			    break;
+			case oocci::OCCI_SQLT_TIMESTAMP:
 			    lexval.replace(lexval.find_first_of(' '), 1, "T");
 			    break;
-			case MYSQL_TYPE_TIMESTAMP:
-			    lexval = "0-0-0T" + lexval;
-			    break;
-			case MYSQL_TYPE_YEAR:
-			    lexval = lexval = "-0-0T00:00";
-			    break;
+			// case OCCI_SQLT_DATE:
+			//     lexval = lexval + "T00:00";
+			//     break;
 			default:
+			    w3c_sw_LINEN << "passing " << datatypeCstr(typeNo) << " \"" << lexval << "\"\n";
 			    break;
+			}
+			for (Result::Fixups::const_iterator it = fixups.find(i); it != fixups.end() && it->first == i; ++it) {
+			    boost::shared_ptr<Result::Fixup> p = it->second;
+			    Result::Fixup& f = *p;
+			    lexval = f(lexval, colSet[i].type);
 			}
 			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
 		    } else {
@@ -273,10 +198,14 @@ namespace w3c_sw {
 		return ret;
 	    }
 	};
-	SQLclient_Oracle () : SQLclient() { 
-	    mysql_init(&mysql);
+	SQLclient_Oracle ()
+	    : SQLclient(), env(oocci::Environment::createEnvironment(oocci::Environment::DEFAULT)), conn(NULL)
+	{  }
+	~SQLclient_Oracle () {
+	    if (conn != NULL)
+		env->terminateConnection(conn);
+	    oocci::Environment::terminateEnvironment(env);
 	}
-	~SQLclient_Oracle () {  }
 	virtual void connect (std::string server, std::string database, std::string user) {
 	    _connect(server, database, user, NULL);
 	}
@@ -284,14 +213,106 @@ namespace w3c_sw {
 	    _connect(server, database, user, password.c_str());
 	}
 	virtual Result* executeQuery (std::string query, Result::Fixups& fixups = Result::Fixups::Empty) {
-	    if (mysql_query(sock, query.c_str()))
-		throw std::string("error calling mysql_query: ") + mysql_error(sock);
-	    MYSQL_RES *result;
-	    if (!(result = mysql_store_result(sock)))
-		throw std::string("error calling mysql_store_result: ") + mysql_error(sock);
-// 		throw std::string("mysql://") + user + "@" + server + "/" + database +
-// 				  "could not retrieve results of [[\n" + query + "\n]]";
-	    return new Result(result);
+	    stmt = conn->createStatement(query);
+	    try {
+		if (query.substr(0,6) == "SELECT") {
+		     // w3c_sw_LINEN << "SQLclient_Oracle::executeQuery " << query << std::endl;
+		    oocci::ResultSet* rset = stmt->executeQuery();
+		     // w3c_sw_LINEN << rset->next() << "\n";
+		     // w3c_sw_LINEN << rset->getString(0) << "\n";
+		    return new Result(rset, fixups);
+		} else {
+		    // w3c_sw_LINEN << "SQLclient_Oracle::executeUpdate " << query << std::endl;
+		    stmt->executeUpdate ();
+		    stmt = conn->createStatement("COMMIT");
+		    stmt->executeUpdate ();
+		    return new Result(Result::RESULT_none, fixups);
+		}
+	    } catch (oocci::SQLException& err) {
+		// w3c_sw_LINEN << err.what() << "\n";
+		throw std::runtime_error(std::string()
+					 + "Oracle error: \"" + err.what() + "\""
+					 + " while executing [[" + query + "]].");
+	    }
+	}
+
+	static const char* datatypeCstr (int type) {
+	    switch (type) {
+	    case oocci::OCCI_SQLT_CHR: return "OCCI_SQLT_CHR";
+	    case oocci::OCCI_SQLT_NUM: return "OCCI_SQLT_NUM";
+	    case oocci::OCCIINT: return "OCCIINT";
+	    case oocci::OCCIFLOAT: return "OCCIFLOAT";
+	    case oocci::OCCIBFLOAT: return "OCCIBFLOAT";
+	    case oocci::OCCIBDOUBLE: return "OCCIBDOUBLE";
+	    case oocci::OCCIIBFLOAT: return "OCCIIBFLOAT";
+	    case oocci::OCCIIBDOUBLE: return "OCCIIBDOUBLE";
+	    case oocci::OCCI_SQLT_STR: return "OCCI_SQLT_STR";
+	    case oocci::OCCI_SQLT_VNU: return "OCCI_SQLT_VNU";
+	    case oocci::OCCI_SQLT_PDN: return "OCCI_SQLT_PDN";
+	    case oocci::OCCI_SQLT_LNG: return "OCCI_SQLT_LNG";
+	    case oocci::OCCI_SQLT_VCS: return "OCCI_SQLT_VCS";
+	    case oocci::OCCI_SQLT_NON: return "OCCI_SQLT_NON";
+	    case oocci::OCCI_SQLT_RID: return "OCCI_SQLT_RID";
+	    case oocci::OCCI_SQLT_DAT: return "OCCI_SQLT_DAT";
+	    case oocci::OCCI_SQLT_VBI: return "OCCI_SQLT_VBI";
+	    case oocci::OCCI_SQLT_BIN: return "OCCI_SQLT_BIN";
+	    case oocci::OCCI_SQLT_LBI: return "OCCI_SQLT_LBI";
+	    case oocci::OCCIUNSIGNED_INT: return "OCCIUNSIGNED_INT";
+	    case oocci::OCCI_SQLT_SLS: return "OCCI_SQLT_SLS";
+	    case oocci::OCCI_SQLT_LVC: return "OCCI_SQLT_LVC";
+	    case oocci::OCCI_SQLT_LVB: return "OCCI_SQLT_LVB";
+	    case oocci::OCCI_SQLT_AFC: return "OCCI_SQLT_AFC";
+	    case oocci::OCCI_SQLT_AVC: return "OCCI_SQLT_AVC";
+	    case oocci::OCCI_SQLT_CUR: return "OCCI_SQLT_CUR";
+	    case oocci::OCCI_SQLT_RDD: return "OCCI_SQLT_RDD";
+	    case oocci::OCCI_SQLT_LAB: return "OCCI_SQLT_LAB";
+	    case oocci::OCCI_SQLT_OSL: return "OCCI_SQLT_OSL";
+	    case oocci::OCCI_SQLT_NTY: return "OCCI_SQLT_NTY";
+	    case oocci::OCCI_SQLT_REF: return "OCCI_SQLT_REF";
+	    case oocci::OCCI_SQLT_CLOB: return "OCCI_SQLT_CLOB";
+	    case oocci::OCCI_SQLT_BLOB: return "OCCI_SQLT_BLOB";
+	    case oocci::OCCI_SQLT_BFILEE: return "OCCI_SQLT_BFILEE";
+	    case oocci::OCCI_SQLT_CFILEE: return "OCCI_SQLT_CFILEE";
+	    case oocci::OCCI_SQLT_RSET: return "OCCI_SQLT_RSET";
+	    case oocci::OCCI_SQLT_NCO: return "OCCI_SQLT_NCO";
+	    case oocci::OCCI_SQLT_VST: return "OCCI_SQLT_VST";
+	    case oocci::OCCI_SQLT_ODT: return "OCCI_SQLT_ODT";
+	    case oocci::OCCI_SQLT_DATE: return "OCCI_SQLT_DATE";
+	    case oocci::OCCI_SQLT_TIME: return "OCCI_SQLT_TIME";
+	    case oocci::OCCI_SQLT_TIME_TZ: return "OCCI_SQLT_TIME_TZ";
+	    case oocci::OCCI_SQLT_TIMESTAMP: return "OCCI_SQLT_TIMESTAMP";
+	    case oocci::OCCI_SQLT_TIMESTAMP_TZ: return "OCCI_SQLT_TIMESTAMP_TZ";
+	    case oocci::OCCI_SQLT_INTERVAL_YM: return "OCCI_SQLT_INTERVAL_YM";
+	    case oocci::OCCI_SQLT_INTERVAL_DS: return "OCCI_SQLT_INTERVAL_DS";
+	    case oocci::OCCI_SQLT_TIMESTAMP_LTZ: return "OCCI_SQLT_TIMESTAMP_LTZ";
+		// OCCI_SQLT_FILE  == OCCI_SQLT_BFILEE
+		// OCCI_SQLT_CFILE == OCCI_SQLT_CFILEE
+		// OCCI_SQLT_BFILE == OCCI_SQLT_BFILEE
+ 
+	    case oocci::OCCICHAR: return "OCCICHAR";
+	    case oocci::OCCIDOUBLE: return "OCCIDOUBLE";
+	    case oocci::OCCIBOOL: return "OCCIBOOL";
+	    case oocci::OCCIANYDATA: return "OCCIANYDATA";
+	    case oocci::OCCINUMBER: return "OCCINUMBER";
+	    case oocci::OCCIBLOB: return "OCCIBLOB";
+	    case oocci::OCCIBFILE: return "OCCIBFILE";
+	    case oocci::OCCIBYTES: return "OCCIBYTES";
+	    case oocci::OCCICLOB: return "OCCICLOB";
+	    case oocci::OCCIVECTOR: return "OCCIVECTOR";
+	    case oocci::OCCIMETADATA: return "OCCIMETADATA";
+	    case oocci::OCCIPOBJECT: return "OCCIPOBJECT";
+	    case oocci::OCCIREF: return "OCCIREF";
+	    case oocci::OCCIREFANY: return "OCCIREFANY";
+	    case oocci::OCCISTRING: return "OCCISTRING";
+	    case oocci::OCCISTREAM: return "OCCISTREAM";
+	    case oocci::OCCIDATE: return "OCCIDATE";
+	    case oocci::OCCIINTERVALDS: return "OCCIINTERVALDS";
+	    case oocci::OCCIINTERVALYM: return "OCCIINTERVALYM";
+	    case oocci::OCCITIMESTAMP: return "OCCITIMESTAMP";
+	    case oocci::OCCIROWID: return "OCCIROWID";
+	    case oocci::OCCICURSOR: return "OCCICURSOR";
+	    default: return "???";
+	    }
 	}
     };
 

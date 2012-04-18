@@ -142,7 +142,7 @@ endif
 ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_ORACLE "\n"
   SOME_SQL_CLIENT = 1
-  SQL_CLIENT_LIB+= -lmysqlclient -lz # !!! update with real oracle library
+  SQL_CLIENT_LIB+= -locci -lclntsh -lnnz11
 endif
 
 ifeq ($(findstring ODBC, $(SQL_CLIENTS)), ODBC)
@@ -470,7 +470,7 @@ t_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
 t_DM: tests/test_DM
-	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) ../bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib:$(LD_LIBRARY_PATH) ./$(notdir $<) ../bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) )
 
 v_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )

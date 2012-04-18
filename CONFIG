@@ -54,7 +54,8 @@ HTTP_SERVER= ASIO
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
 SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
-SQL_DM_TESTS= mysql://root@/DM postgres://DM:DM@/DM
+#SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+SQL_DM_TESTS?= oracle://DM:DM@localhost/ORCL
 
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###

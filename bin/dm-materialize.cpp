@@ -304,9 +304,17 @@ struct Materializer {
 				  new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
 	    }
 #endif /* SQL_CLIENT_MYSQL */
+#ifdef SQL_CLIENT_ORACLE
+	    if (driverString == "oracle") {
+		if (it->second.type == sql::TYPE_float) // I don't know how to detect numeric types from occi.
+		    fixups.insert(selectList.lastColumn(),
+				  new SQLclient_Oracle::Result::IntegerToDouble());
+		    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to double\n";
+	    }
+#endif /* SQL_CLIENT_ORACLE */
 
 	}
-	joins << " FROM " << Serializer->name(table.name) << " AS " << thisTableAlias;
+	joins << " FROM " << Serializer->name(table.name) << " " << Serializer->name(thisTableAlias);
 
 
 	for (std::vector<const sql::schema::FieldOrKey*>::iterator it = table.orderedFields.begin();
@@ -317,7 +325,7 @@ struct Materializer {
 		sql::RelVar thatTableAlias = newTableAlias();
 		const sql::schema::Relation& refdTable = *db[fk->targetRel];
 		joins << " LEFT OUTER JOIN " << Serializer->name(fk->targetRel)
-		      << " AS " << thatTableAlias << " ON ";
+		      << " " << Serializer->name(thatTableAlias) << " ON ";
 		std::vector<size_t> fkColumns;
 		if (fk->size() > 1)
 		    joins << "(";
@@ -449,6 +457,7 @@ int main (int argc, const char* argv[]) {
 	Materializer m(*sqlWrapper.client, connectInfo.driver);
 	m(sqlParser.tables, &bgp);
 	std::cout << bgp.toString("text/turtle");
+	// w3c_sw_LINEN << argv[0] << " " << argv[1] << " " << argv[2] << " produced <<<" << bgp.toString("text/turtle") << ">>>\n";
     } catch (ParserException& e) {
 	std::cerr << e.what();
 	return 1;
