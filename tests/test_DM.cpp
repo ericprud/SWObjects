@@ -90,6 +90,7 @@ struct DMTest {
     w3c_sw::DefaultGraphPattern expect;
     w3c_sw::DefaultGraphPattern test;
     std::string execStr;
+    std::vector<std::string> created;
 
     DMTest (w3c_sw::SQLClientList::Connection& client)
 	: client(client), execStr(TestProgram)
@@ -117,32 +118,38 @@ struct DMTest {
 	    }
 	    ss << "\n)";
 	    // w3c_sw_LINEN << ss.str() << ";" << std::endl;
-	    client.wrap.executeQuery(ss.str() + ";");
+	    client.wrap.executeQuery(ss.str());
+	    created.push_back(table->first);
 	}
 	for (std::vector<const w3c_sw::sql::Insert*>::const_iterator it = SQLParser.inserts.begin();
 	     it != SQLParser.inserts.end(); ++it) {
 	    // w3c_sw_LINEN << (*it)->toString("", "", *client.serializer) << ";" << std::endl;
-	    client.wrap.executeQuery((*it)->toString("", "", *client.serializer) + ";");
+	    client.wrap.executeQuery((*it)->toString(SQLParser.tables, "", "", *client.serializer));
 	}
 
 	execStr
 	    += " " + client.info.sqlConnectString()
 	    + " " + create;
 
+#ifdef DEBUG_SHELL // e.g. -DDEBUG_SHELL=/usr/bin/xterm
+	w3c_sw_LINEN << "now invoke " << execStr.c_str() << "\n";
+	ExecResults tested(DEBUG_SHELL);
+#else
 	ExecResults tested(execStr.c_str());
-	// w3c_sw_LINEN << "DM graph: " << tested.s << "\n";
+#endif
+	// w3c_sw_LINEN << "DM graph: [[[" << tested.s << "]]]\n";
 	TurtleParser.parse(tested.s, &test);
 	w3c_sw::IStreamContext expStream(output, w3c_sw::IStreamContext::FILE);
 	TurtleParser.parse(expStream, &expect);
     }
     ~DMTest () {
 	if (!Keep || (test.size() > 0 && expect.size() > 0 && expect == test))
-	    for (w3c_sw::sql::schema::Database::const_iterator it = SQLParser.tables.begin();
-		 it != SQLParser.tables.end(); ++it)
+	    for (std::vector<std::string>::const_iterator it = created.begin();
+		 it != created.end(); ++it)
 		client.wrap.executeQuery(std::string() + "DROP TABLE "
-					 + client.serializer->name(it->first) + ";");
+					 + client.serializer->name(*it));
 	else
-	    std::cerr << "failed to execute: " << execStr << "\n";
+	    std::cerr << "unexpected results from: " << execStr << "\n";
 
 	SQLParser.tables.clear();
 	SQLParser.inserts.clear();
