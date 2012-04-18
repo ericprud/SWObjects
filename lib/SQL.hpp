@@ -64,6 +64,8 @@ namespace w3c_sw {
 	    virtual std::string name(AliasAttr aa);
 	    virtual std::string literal(std::string s) = 0;
 	    virtual std::string typeString(e_TYPE type, int precision) = 0;
+	    virtual std::string typedValue(e_TYPE type, std::string representation) = 0;
+	    virtual std::string booleanValue(bool value) = 0;
 	    virtual std::string as() = 0;
 	    virtual std::string limit(int l) = 0;
 	    virtual std::string offset(int o) = 0;
@@ -97,6 +99,12 @@ namespace w3c_sw {
 		if (precision != SQL_PRECISION_unspecified)
 		    ss << "(" << precision << ")";
 		return ss.str();
+	    }
+	    virtual std::string typedValue (e_TYPE, std::string representation) {
+		return representation;
+	    }
+	    virtual std::string booleanValue (bool value) {
+		return value ? "true" : "false";
 	    }
 	    virtual std::string as () { return "AS "; }
 	    virtual std::string limit (int l) {
@@ -133,6 +141,27 @@ namespace w3c_sw {
 	    }
 	};
 	struct OracleSerializer : public SQLSerializer {
+	    virtual std::string typeString (e_TYPE type, int precision) {
+		return
+		    type == TYPE_boolean
+		    ? "NUMERIC(1)"
+		    : type == TYPE_binary
+		    ? "BLOB"
+		    : SQLSerializer::typeString(type, precision);
+	    }
+	    virtual std::string typedValue (e_TYPE type, std::string representation) {
+		return
+		    type == TYPE_date
+		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd')"
+		    : type == TYPE_time
+		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd')"
+		    : (type == TYPE_timestamp || type == TYPE_datetime)
+		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd HH24:MI:SS')"
+		    : representation;
+	    }
+	    virtual std::string booleanValue(bool value) {
+		return value ? "1" : "0"; // goes with NUMERIC(1)
+	    }
 	    virtual std::string as () { return ""; }
 	    virtual std::string offset (int o) {
 		std::stringstream ss;
@@ -145,6 +174,7 @@ namespace w3c_sw {
 		return ss.str();
 	    }
 	};
+
 	inline Serializer* Serializer::best(std::string driver) {
 	    if (driver == "mysql")
 		return new w3c_sw::sql::MySQLSerializer();
@@ -1148,7 +1178,7 @@ namespace w3c_sw {
 		    ? true : logNotEqual(r);
 	    }
 	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		return value ? "true" : "false";
+		return s.booleanValue(value);
 	    }
 	};
 	class IsNullConstraint : public Expression {
@@ -1537,7 +1567,10 @@ namespace w3c_sw {
 	    };
 	    OrderBy orderBy;
 	    struct Selects : public std::vector<AliasedSelect*> {
-		std::ostream& print(std::ostream& os, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
+		std::ostream& print(std::ostream& os, std::string pad = "",
+				    std::string driver = "", Serializer& s = SQLSerializer::It) const;
+		std::ostream& print(const std::vector<e_TYPE>& fieldTypes, std::ostream& os,
+				    std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
 	    };
 
 	    struct MappedEquivalence {
@@ -1596,12 +1629,25 @@ namespace w3c_sw {
 	    std::string str () const { // easy to call from debugger.
 		return toString();
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    virtual std::string toString (std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::vector<e_TYPE> fieldTypes;
+		return _toString(fieldTypes, false, pad, driver, s);
+	    }
+	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return _toString(fieldTypes, true, pad, driver, s);
+	    }
+	    virtual std::string _toString (const std::vector<e_TYPE>& fieldTypes, bool typed, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		ss << pad << "SELECT ";
 		if (distinct) ss << "DISTINCT ";
 
-		selects.print(ss, pad, driver, s);
+		if (typed)
+		    selects.print(fieldTypes, ss, pad, driver, s);
+		else
+		    selects.print(ss, pad, driver, s);
 
 		/* JOINs */
 		ConstraintList where;
@@ -1632,6 +1678,20 @@ namespace w3c_sw {
 	    for (const_iterator it = begin(); it != end(); ++it) {
 		if (it != begin()) os << ", ";
 		os << (*it)->toString(pad, driver, s);
+	    }
+	    if (begin() == end()) os << "NULL";
+	    return os;
+	}
+	inline std::ostream& SQLQuery::Selects::print (const std::vector<e_TYPE>& fieldTypes, std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
+	    /* SELECT attributes */
+	    std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+	    for (const_iterator it = begin(); it != end(); ++it) {
+		if (field == fieldTypes.end())
+		    throw std::runtime_error(std::string()
+					     + "no field for "
+					     + (*it)->toString(pad, driver, s));
+		if (it != begin()) os << ", ";
+		os << s.typedValue(*field, (*it)->toString(pad, driver, s));
 	    }
 	    if (begin() == end()) os << "NULL";
 	    return os;
@@ -1823,7 +1883,8 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this); // !!! no Join::baseEq(r) && 
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    virtual std::string toString (std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		std::string newPad = pad + "    ";
 		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
@@ -1831,6 +1892,23 @@ namespace w3c_sw {
 		    if (it != disjoints.begin())
 			ss << std::endl << pad << "  UNION" << std::endl;
 		    ss << (*it)->toString(newPad, driver, s);
+		}
+		return ss.str();
+	    }
+	    virtual std::string toString (std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		std::string newPad = pad + "    ";
+		std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
+		     it != disjoints.end(); ++it) {
+		    if (field == fieldTypes.end())
+			throw std::runtime_error(std::string()
+						 + "no field for "
+						 + (*it)->toString(newPad, driver, s));
+		    if (it != disjoints.begin())
+			ss << std::endl << pad << "  UNION" << std::endl;
+		    ss << s.typedValue(*field, (*it)->toString(newPad, driver, s));
 		}
 		return ss.str();
 	    }
@@ -1872,9 +1950,15 @@ namespace w3c_sw {
 	    virtual bool operator== (const SQLQuery& r) const {
 		return r.finalEq(*this);
 	    }
-	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    virtual std::string toString (std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::string newPad = pad + "    ";
 		return SQLQuery::toString(newPad, driver, s);
+	    }
+	    virtual std::string toString (std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::string newPad = pad + "    ";
+		return SQLQuery::toString(fieldTypes, newPad, driver, s);
 	    }
 	};
 
@@ -2256,25 +2340,51 @@ namespace w3c_sw {
 	} // namespace schema
 
 	struct RValue {
-	    virtual std::string toString(std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
+	    virtual std::string toString(std::string pad = "",
+					 std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
+	    virtual std::string toString(const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					 std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
 	};
 	struct RSelection : public RValue {
 	    SQLQuery* select;
 	    RSelection (SQLQuery* select) : select(select) {  }
-	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    virtual std::string toString (std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return select->toString(pad, driver, s);
+	    }
+	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return select->toString(fieldTypes, pad, driver, s);
 	    }
 	};
 	struct RConstants : public RValue {
 	    std::vector<const sql::Expression*>* constants;
 	    RConstants (std::vector<const sql::Expression*>* constants) : constants(constants) {  }
-	    virtual std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    virtual std::string toString (std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		for (std::vector<const sql::Expression*>::const_iterator it = constants->begin();
 		     it != constants->end(); ++it) {
 		    if (it != constants->begin())
 			ss << ", ";
 		    ss << (*it)->toString(pad, PREC_High, driver, s);
+		}
+		return ss.str();
+	    }
+	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::stringstream ss;
+		std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+		for (std::vector<const sql::Expression*>::const_iterator it = constants->begin();
+		     it != constants->end(); ++it) {
+		    if (field == fieldTypes.end())
+			throw std::runtime_error(std::string()
+						 + "no field for "
+						 + (*it)->toString(pad, PREC_High, driver, s));
+		    if (it != constants->begin())
+			ss << ", ";
+		    ss << s.typedValue(*field, (*it)->toString(pad, PREC_High, driver, s));
+		    ++field;
 		}
 		return ss.str();
 	    }
@@ -2287,7 +2397,8 @@ namespace w3c_sw {
 		: relName(relName), attributes(attributes), rvalue(rvalue)
 	    {  }
 
-	    std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+	    std::string toString (std::string pad = "",
+				  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		ss << "INSERT INTO " << s.name(relName) << " (";
 		for (std::vector<Attribute>::const_iterator it = attributes->begin();
@@ -2297,6 +2408,21 @@ namespace w3c_sw {
 		    ss << s.name(*it);
 		}
 		ss << ") VALUES (" << rvalue->toString(pad, driver, s) << ")";
+		return ss.str();
+	    }
+	    std::string toString (const schema::Database& db, std::string pad = "",
+				  std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::vector<e_TYPE> fieldTypes;
+		std::stringstream ss;
+		ss << "INSERT INTO " << s.name(relName) << " (";
+		for (std::vector<Attribute>::const_iterator it = attributes->begin();
+		     it != attributes->end(); ++it) {
+		    if (it != attributes->begin())
+			ss << ", ";
+		    ss << s.name(*it);
+		    fieldTypes.push_back(db.find(relName)->second->fields.find(*it)->second.type);
+		}
+		ss << ") VALUES (" << rvalue->toString(fieldTypes, pad, driver, s) << ")";
 		return ss.str();
 	    }
 	};
