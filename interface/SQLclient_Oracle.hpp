@@ -68,6 +68,7 @@ namespace w3c_sw {
 			f.type = Field::TYPE_integer;
 			break;
 		    case oocci::OCCI_SQLT_CHR:
+		    case oocci::OCCI_SQLT_AFC:
 			f.type = Field::TYPE__literal;
 			break;
 		    default:
@@ -174,6 +175,7 @@ namespace w3c_sw {
 			switch (typeNo) {
 			case oocci::OCCI_SQLT_NUM:
 			case oocci::OCCI_SQLT_CHR:
+			case oocci::OCCI_SQLT_AFC:
 			    break;
 			case oocci::OCCI_SQLT_TIMESTAMP:
 			    lexval.replace(lexval.find_first_of(' '), 1, "T");
