@@ -19,6 +19,12 @@
 #include <boost/test/unit_test.hpp>
 w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
+#include <sys/types.h>  /* include this before any other sys headers */
+#include <sys/wait.h>   /* header for waitpid() and various macros */
+#include <signal.h>     /* header for signal functions */
+#include <stdio.h>      /* header for fprintf() */
+#include <unistd.h>     /* header for fork() */
+
 #define BASE_URI ""
 w3c_sw::AtomFactory F;
 w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
@@ -40,9 +46,44 @@ std::string usage (const char* argv0) {
 bool Keep = false;
 const char* TestProgram;
 
-int BOOST_TEST_CALL_DECL
-main( int argc, char* argv[] )
-{
+int ChildRet;
+bool ChildRetSet = false;
+struct SigChildGuard {
+    struct sigaction oldact;
+
+    SigChildGuard () {
+	if (sigaction(SIGCHLD, NULL, &oldact) < 0)
+	    throw std::runtime_error("unable to get current SIGCHLD action");
+
+	struct sigaction act;
+	sigemptyset(&act.sa_mask); // clear out act's sigset_t
+
+	act.sa_handler = childHandler;
+	act.sa_flags = SA_NOCLDSTOP; // only catch terminated children
+	if (sigaction(SIGCHLD, &act, NULL) < 0)
+	    throw std::runtime_error("unable to set SIGCHLD action");
+    }
+
+    ~SigChildGuard () {
+	if (sigaction(SIGCHLD, &oldact, NULL) < 0)
+	    throw std::runtime_error("unable to restore old SIGCHLD action");
+    }
+
+    static void childHandler (int signo) {
+	int status, child_val;
+
+	/* Wait for any child without blocking */
+	if (waitpid(-1, &status, WNOHANG) < 0) 
+	    ; // sometimes returns error in linux
+	    // throw std::runtime_error("signal caught but child failed to terminate");
+	if (WIFEXITED(status)) {              /* did child exit normally? */
+	    ChildRet = WEXITSTATUS(status); /* get child's exit status */
+	    ChildRetSet = true;
+	}
+    }
+};
+
+int BOOST_TEST_CALL_DECL main (int argc, char* argv[]) {
     // namespace tst = boost::unit_test::framework;
     // const int argc = tst::master_test_suite().argc;
     // char** argv = tst::master_test_suite().argv;
@@ -62,18 +103,26 @@ main( int argc, char* argv[] )
 struct ExecResults {
     std::string s;
     ExecResults (const char* cmd) {
-	s  = "execution failure";
-	FILE *p = ::popen(cmd, "r");
-	BOOST_REQUIRE(p != NULL);
-	char buf[100];
-	s = "";
+	{
+	    SigChildGuard g;
+	    s  = "execution failure";
+	    FILE *p = ::popen(cmd, "r");
+	    BOOST_REQUIRE(p != NULL);
+	    char buf[100];
+	    s = "";
 
-	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX. */
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
-	    s += std::string(buf, buf + count);
-	    ::fflush(p);
+	    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX. */
+	    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
+		s += std::string(buf, buf + count);
+		::fflush(p);
+	    }
+	    pclose(p);
 	}
-	pclose(p);
+	if (!ChildRetSet)
+	    w3c_sw_LINEN "child hasn't terminated\n";
+	    // throw std::runtime_error("child hasn't terminated");
+	if (ChildRet != 0)
+	    std::cout << "child exited with status " << ChildRet << std::endl; \
     }
 };
 
@@ -117,13 +166,13 @@ struct DMTest {
 		}
 	    }
 	    ss << "\n)";
-	    // w3c_sw_LINEN << ss.str() << ";" << std::endl;
+	    // w3c_sw_LINEN << ss.str() << std::endl;
 	    client.wrap.executeQuery(ss.str());
 	    created.push_back(table->first);
 	}
 	for (std::vector<const w3c_sw::sql::Insert*>::const_iterator it = SQLParser.inserts.begin();
 	     it != SQLParser.inserts.end(); ++it) {
-	    // w3c_sw_LINEN << (*it)->toString("", "", *client.serializer) << ";" << std::endl;
+	    // w3c_sw_LINEN << (*it)->toString("", "", *client.serializer) << std::endl;
 	    client.wrap.executeQuery((*it)->toString(SQLParser.tables, "", "", *client.serializer));
 	}
 
@@ -145,9 +194,11 @@ struct DMTest {
     ~DMTest () {
 	if (!Keep || (test.size() > 0 && expect.size() > 0 && expect == test))
 	    for (std::vector<std::string>::const_iterator it = created.begin();
-		 it != created.end(); ++it)
+		 it != created.end(); ++it) {
+		// w3c_sw_LINEN << "DROP TABLE " << client.serializer->name(*it) << "\n";
 		client.wrap.executeQuery(std::string() + "DROP TABLE "
 					 + client.serializer->name(*it));
+	    }
 	else
 	    std::cerr << "unexpected results from: " << execStr << "\n";
 
