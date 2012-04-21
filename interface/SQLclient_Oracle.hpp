@@ -232,8 +232,11 @@ namespace w3c_sw {
 		}
 	    } catch (oocci::SQLException& err) {
 		// w3c_sw_LINEN << err.what() << "\n";
+		std::string whatStr = err.what();
+		if (whatStr[whatStr.length()-1] == '\n')
+		    whatStr.resize(whatStr.length()-1);
 		throw std::runtime_error(std::string()
-					 + "Oracle error: \"" + err.what() + "\""
+					 + "Oracle error: \"" + whatStr + "\""
 					 + " while executing [[" + query + "]].");
 	    }
 	}
