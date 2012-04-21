@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #define NEEDDEF_W3C_SW_SAXPARSER
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
@@ -13,10 +14,9 @@
  * SQL clients. */
 #include "interface/SQLclient.hpp"
 #include "SQLParser/SQLParser.hpp"
-#define BOOST_TEST_NO_MAIN
 
-#define BOOST_TEST_MODULE DM
-#include <boost/test/unit_test.hpp>
+#undef BOOST_ALL_DYN_LINK // Can't use dynamic linking with init_unit_test_suite()
+#include <boost/test/included/unit_test.hpp>
 w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
 #include <sys/types.h>  /* include this before any other sys headers */
@@ -32,11 +32,21 @@ w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
 /* SQL */
 w3c_sw::sqlContext sqlParserContext;
 w3c_sw::SQLDriver SQLParser(sqlParserContext);
-w3c_sw::SQLClientList connections;
 
 std::string usage (const char* argv0) {
     return std::string()
-	+ "Usage: " + argv0 + " <SQLspec> opts\n"
+	+ "Usage: " + argv0 + " <testlist> <testprogram> <SQLspec>* opts\n"
+	+ "  e.g. ./test_DM tests.txt ./dm-materialize mysql://root@/DM postgres://DMuser:DMpwd@/DM\n"
+	+ "  testlist: file with lines in the form: SQL graph\n"
+	+ "          SQL: filepath or URL to create SQL tables.\n"
+	+ "          graph: filepath or URL to expected results.\n"
+	+ "  testprogram: executable to invoke for each test à la\n"
+	+ "          testprogram SQL SQLspec\n"
+	+ "          e.g. ./bin/dm-materialize D017-I18NnoSpecialChars/create.sql SQLspec mysql://root@/DM\n"
+	+ "  SQLspec: <driver>://<user>[:password]@[host]/<database>\n"
+	+ "          e.g. mysql://root@/DM\n"
+	+ "               postgres://DMuser:DMpwd@/DM\n"
+	+ "               oracle://DMuser:DMpwd@localhost/ORCL\n"
 	+ "  opts: --keep - don't delete the test tables.\n"
 	+ "        --run_test= - name a test to run.\n"
 	+ "        other boost test args per\n"
@@ -46,12 +56,16 @@ std::string usage (const char* argv0) {
 bool Keep = false;
 const char* TestProgram;
 
-int ChildRet;
-bool ChildRetSet = false;
+
+/** SigChildGuard - capture SIGCHLD signals and record the child return value.
+ */
+int ChildRet;		// A global to capture the result from a childHandler
+bool ChildRetSet;	// and a marker for whether it's set.
 struct SigChildGuard {
     struct sigaction oldact;
 
     SigChildGuard () {
+	ChildRetSet = false;
 	if (sigaction(SIGCHLD, NULL, &oldact) < 0)
 	    throw std::runtime_error("unable to get current SIGCHLD action");
 
@@ -76,30 +90,16 @@ struct SigChildGuard {
 	if (waitpid(-1, &status, WNOHANG) < 0) 
 	    ; // sometimes returns error in linux
 	    // throw std::runtime_error("signal caught but child failed to terminate");
-	if (WIFEXITED(status)) {              /* did child exit normally? */
-	    ChildRet = WEXITSTATUS(status); /* get child's exit status */
+	if (WIFEXITED(status)) {            /* If child exited normally   */
+	    ChildRet = WEXITSTATUS(status); /*   get child's exit status. */
 	    ChildRetSet = true;
 	}
     }
 };
 
-int BOOST_TEST_CALL_DECL main (int argc, char* argv[]) {
-    // namespace tst = boost::unit_test::framework;
-    // const int argc = tst::master_test_suite().argc;
-    // char** argv = tst::master_test_suite().argv;
-    if (argc < 3)
-	throw std::runtime_error(usage(argv[0]));
-    TestProgram = argv[1];
-    for (int i = 2; i < argc; ++i)
-	if (std::string(argv[i]) == "")
-	    ;
-	else if (std::string(argv[i]) == "--keep")
-	    Keep = true;
-	else if (std::string(argv[i]).substr(0, 2).compare("--"))
-	    connections.add(argv[i]);
-    return ::boost::unit_test::unit_test_main( &init_unit_test, argc, argv );
-}
 
+/** ExecResults - execute cmd and return the standard output.
+ */
 struct ExecResults {
     std::string s;
     ExecResults (const char* cmd) {
@@ -134,6 +134,10 @@ std::ostream& operator== (std::ostream& o, ExecResults& tested) {
     return o << tested.s;
 }
 
+
+/** DMTest - set up SQL tables, execute a direct mapping dump and
+ *  compare results to a reference graph.
+ */
 struct DMTest {
     w3c_sw::SQLClientList::Connection& client;
     w3c_sw::DefaultGraphPattern expect;
@@ -144,7 +148,7 @@ struct DMTest {
     DMTest (w3c_sw::SQLClientList::Connection& client)
 	: client(client), execStr(TestProgram)
     {  }
-    void run (const char* create, const char* output)
+    void run (const std::string create, const std::string output)
     {
 	w3c_sw::IStreamContext ddlStream(create, w3c_sw::IStreamContext::FILE);
 	SQLParser.parse(ddlStream);
@@ -207,56 +211,150 @@ struct DMTest {
     }
 };
 
-#define DMTEST(NAME)						\
-    try {							\
-	for (std::vector<w3c_sw::SQLClientList::Connection>	\
-	     ::iterator connection = connections.begin();	\
-	     connection != connections.end();			\
-	     ++connection) {					\
-	    DMTest h = DMTest(*connection);			\
-	    h.run(NAME "create.sql", NAME "directGraph.ttl");	\
-	    BOOST_CHECK_EQUAL(h.expect, h.test);		\
-	}							\
-    } catch (w3c_sw::ParserException& p) {			\
-	BOOST_FAIL(std::string("ParserException:") + p.what());	\
-    } catch (std::string& s) {					\
-	BOOST_FAIL(std::string("std::string exception:") + s);	\
-    } catch (std::exception& e) {				\
-	BOOST_FAIL(std::string("std::exception:") + e.what());	\
-    } catch (...) {						\
-	BOOST_FAIL("unknown exception");			\
-    }								\
+
+std::ostream& operator<< (std::ostream& os, const w3c_sw::SQLConnectInfo& info) {
+    os << info.sqlConnectString();
+    return os;
+}
+
+std::ostream& operator<< (std::ostream& os, const w3c_sw::SQLClientList::Connection& con) {
+    // SQLConnectInfo info;
+    // SQLClientWrapper wrap;
+    // sql::Serializer* serializer;
+    os << con.info;
+    return os;
+}
 
 
-BOOST_AUTO_TEST_SUITE( committed )
-BOOST_AUTO_TEST_CASE(_1table1column0rows)                                 { DMTEST("rdb2rdf-tests/D000-1table1column0rows/") }
-BOOST_AUTO_TEST_CASE(_1table1column1row)                                  { DMTEST("rdb2rdf-tests/D001-1table1column1row/") }
-BOOST_AUTO_TEST_CASE(_1table2columns1row_2)                               { DMTEST("rdb2rdf-tests/D002-1table2columns1row/") }
-BOOST_AUTO_TEST_CASE(_1table3columns1row)                                 { DMTEST("rdb2rdf-tests/D003-1table3columns1row/") }
-BOOST_AUTO_TEST_CASE(_1table2columns1row_4)                               { DMTEST("rdb2rdf-tests/D004-1table2columns1row/") }
-BOOST_AUTO_TEST_CASE(_1table3columns3rows2duplicates)                     { DMTEST("rdb2rdf-tests/D005-1table3columns3rows2duplicates/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey1column1row)                       { DMTEST("rdb2rdf-tests/D006-1table1primarykey1column1row/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey2columns1row)                      { DMTEST("rdb2rdf-tests/D007-1table1primarykey2columns1row/") }
-BOOST_AUTO_TEST_CASE(_1table1compositeprimarykey3columns1row)             { DMTEST("rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row/") }
-BOOST_AUTO_TEST_CASE(_2tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D009-2tables1primarykey1foreignkey/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey3colums3rows)                      { DMTEST("rdb2rdf-tests/D010-1table1primarykey3colums3rows/") }
-BOOST_AUTO_TEST_CASE(_M2MRelations)                                       { DMTEST("rdb2rdf-tests/D011-M2MRelations/") }
-BOOST_AUTO_TEST_CASE(_2tables2duplicates0nulls)                           { DMTEST("rdb2rdf-tests/D012-2tables2duplicates0nulls/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey3columns2rows1nullvalue)           { DMTEST("rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue/") }
-BOOST_AUTO_TEST_CASE(_3tables1primarykey1foreignkey)                      { DMTEST("rdb2rdf-tests/D014-3tables1primarykey1foreignkey/") }
-BOOST_AUTO_TEST_CASE(_1table3columns1composityeprimarykey3rows2languages) { DMTEST("rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey10columns3rowsSQLdatatypes)        { DMTEST("rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes/") }
-BOOST_AUTO_TEST_CASE(_I18NnoSpecialChars)                                 { DMTEST("rdb2rdf-tests/D017-I18NnoSpecialChars/") }
-BOOST_AUTO_TEST_CASE(_1table1primarykey2columns3rows)                     { DMTEST("rdb2rdf-tests/D018-1table1primarykey2columns3rows/") }
-BOOST_AUTO_TEST_SUITE_END(/* committed */)
+/** ManifestEntry - Direct Mapping test parameters.
+ */
+struct ManifestEntry {
+    size_t lineNo;
+    std::string sql;
+    std::string refGraph;
+    w3c_sw::SQLClientList::Connection* con;
+    ManifestEntry (size_t lineNo, std::string sql, std::string refGraph, w3c_sw::SQLClientList::Connection* con)
+	: lineNo(lineNo), sql(sql), refGraph(refGraph), con(con)
+    {  }
+    std::ostream& print (std::ostream& os) const {
+	os << lineNo << "(" << *con << ") " << sql << " " << refGraph;
+	return os;
+    }
+};
 
-BOOST_AUTO_TEST_SUITE( ericPz )
-BOOST_AUTO_TEST_CASE(ref_no_pk)      { DMTEST("rdb2rdf-tests/ref-no-pk/") }
-BOOST_AUTO_TEST_CASE(ref_not_pk)     { DMTEST("rdb2rdf-tests/ref-not-pk/") }
-BOOST_AUTO_TEST_CASE(ref_some_nulls) { DMTEST("rdb2rdf-tests/ref-some-nulls/") }
-BOOST_AUTO_TEST_CASE(ref_all_nulls)  { DMTEST("rdb2rdf-tests/ref-all-nulls/") }
-BOOST_AUTO_TEST_SUITE_END(/* ericPz */)
+std::ostream& operator<< (std::ostream& os, const ManifestEntry& ment) {
+    return ment.print(os);
+}
 
-BOOST_AUTO_TEST_SUITE( spec )
-BOOST_AUTO_TEST_CASE(ref_no_pk)  { DMTEST("rdb2rdf-tests/spec-ref-no-pk/") }
-BOOST_AUTO_TEST_SUITE_END(/* spec */)
+
+// EntryList - a global list of test descriptions.
+std::vector<ManifestEntry> EntryList;
+std::vector<ManifestEntry>::const_iterator EntryListit;
+
+std::string ManifestFile;
+
+/** expectGraph - execute the test at the EntryList iterator.
+ */
+void expectGraph () {
+    std::string doing;
+    std::stringstream errorStr;
+    size_t lineNo;
+    try {
+	BOOST_REQUIRE(!(EntryListit == EntryList.end()));
+	const ManifestEntry& ment = *EntryListit++;
+	lineNo = ment.lineNo;
+	doing = std::string() + "setting up " + ment.sql;
+	DMTest h = DMTest(*ment.con);
+	h.run(ment.sql, ment.refGraph);
+	if (!(h.expect == h.test)) {
+	    {
+		std::stringstream ss;
+		ss << "[[" << h.expect << " != " << h.test << "]]\n";
+		doing = ss.str();
+	    }
+	    errorStr << "[[" << h.expect << " != " << h.test << "]]";
+	}
+	doing = std::string() + "tearing down " + ment.sql;
+    } catch (w3c_sw::ParserException& p) {
+	errorStr << "ParserException while " << doing << ":" << p.what();
+    } catch (std::string& s) {
+	errorStr << "std::string exception while " << doing << ":" << s;
+    } catch (std::exception& e) {
+	errorStr << "std::exception exception while " << doing << ":" << e.what();
+    } catch (...) {
+	errorStr << "unknown exception while " << doing;
+    }
+    if (!errorStr.str().empty())
+	::boost::test_tools::tt_detail::check_impl
+	      ((false),
+	       ::boost::unit_test::lazy_ostream::instance() << errorStr.str(),
+	       ManifestFile,
+	       static_cast<std::size_t>(lineNo),
+	       ::boost::test_tools::tt_detail::CHECK,
+	       ::boost::test_tools::tt_detail::CHECK_MSG,
+	       0);
+}
+
+
+// A global list of connections which hold the Connection pointers in
+// the EntryList.
+w3c_sw::SQLClientList connections;
+
+/** init_unit_test_suite - init function called by boost::tests's main.
+ * This reads a manifest and populates the EntryList.
+ */
+boost::unit_test::test_suite*
+init_unit_test_suite (int argc, char* argv[])  {
+
+    if (argc < 3)
+	throw std::runtime_error(usage(argv[0]));
+    ManifestFile = argv[1];
+    std::ifstream testList(ManifestFile.c_str());
+    TestProgram = argv[2];
+
+    // Populate the EntryList from the invocation parameters.
+    for (int i = 3; i < argc; ++i)
+	if (std::string(argv[i]) == "")
+	    ;
+	else if (std::string(argv[i]) == "--keep")
+	    Keep = true;
+	else if (std::string(argv[i]).substr(0, 2).compare("--"))
+	    connections.add(argv[i]);
+
+    // Parse the manifest file and populate EntryList.
+    char buf[1024];
+    size_t lineNo = 0;
+    while (testList.getline(buf, 1024)) {
+	++lineNo;
+	if (buf[0] == '#' || buf[0] == '\0') {
+	    // Skip empty and leading comment characters.
+
+	} else {
+
+	    // Parse two paths from the manifest file line.
+	    std::stringstream ss(buf);
+	    std::string sql, refGraph;
+	    ss >> sql >> refGraph;
+	    for (std::vector<w3c_sw::SQLClientList::Connection>
+		     ::iterator connection = connections.begin();
+		 connection != connections.end(); ++connection) {
+
+		// Add to and entry to EntryList.
+		EntryList.push_back(ManifestEntry(lineNo, sql,
+						  refGraph, &*connection));
+
+		// Tell the boost test harness to add an invocation of
+		// expectGraph.
+		boost::unit_test::framework::master_test_suite().
+		    add(boost::unit_test::make_test_case
+			(boost::unit_test::callback0<>(&expectGraph),
+			 sql + " " + connection->info.sqlConnectString()));
+	    }
+	}
+    }
+
+    // Start the EntryList iterator at top of the list.
+    EntryListit = EntryList.begin();
+    return NULL;
+}
+

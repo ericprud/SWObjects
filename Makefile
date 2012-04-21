@@ -467,10 +467,11 @@ tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOS
 	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
 t_%: tests/test_%
+	# Most of the tests are run from the tests dir to make it easier to find errant files.
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
 t_DM: tests/test_DM
-	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib:$(LD_LIBRARY_PATH) ./$(notdir $<) ../bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) )
+	LD_LIBRARY_PATH=$(BOOST_TARGET)lib:$(LD_LIBRARY_PATH) $< tests/DM-manifest.txt ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
 
 v_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
