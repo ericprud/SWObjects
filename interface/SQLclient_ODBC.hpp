@@ -181,7 +181,7 @@ namespace w3c_sw {
 			    break;
 			}
 
-			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
+			ret.push_back(OptString(lexval, ""));
 		    }
 		}
 		return ret;
