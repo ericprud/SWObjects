@@ -220,20 +220,20 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
        GT_EQUAL GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE
        GT_NOT IT_CONCAT IT_LCASE IT_UCASE IT_REGEX IT_INTEGER IT_VALUES IT_VARCHAR IT_UNIQUE IT_INSERT IT_DEFAULT IT_CONSTRAINT
 
-%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_FLOAT IT_REAL IT_DATE IT_DATETIME IT_TIMESTAMP IT_CHAR IT_BOOLEAN IT_BINARY IT_INTO
+%token GT_SEMI IT_CREATE IT_TABLE GT_LPAREN GT_RPAREN GT_COMMA IT_FOREIGN IT_KEY IT_REFERENCES IT_PRIMARY IT_INT IT_DOUBLE IT_FLOAT IT_REAL IT_DATE IT_DATETIME IT_TIMESTAMP IT_CHAR IT_BOOLEAN IT_BINARY IT_VARBINARY IT_INTO
 
-%token IT_INTERVAL IT_WRITE IT_TABLES IT_READ IT_LARGE IT_SMALLINT IT_TIME IT_BIGINT IT_VARYING IT_EXISTS IT_UNLOCK IT_NATIONAL IT_DECIMAL IT_NUMERIC IT_LOCK IT_CHARACTER IT_PRECISION IT_IF IT_DROP IT_OBJECT IT_CAST
+%token IT_INTERVAL IT_WRITE IT_TABLES IT_READ IT_LARGE IT_SMALLINT IT_TIME IT_BIGINT IT_VARYING IT_EXISTS IT_UNLOCK IT_NATIONAL IT_DECIMAL IT_NUMERIC IT_LOCK IT_CHARACTER IT_PRECISION IT_IF IT_ALTER IT_ADD IT_DROP IT_OBJECT IT_CAST
 
 
 %token <p_NAME> NAME
        /* STRING_LITERAL2 used for ""'d SQL names */
-       STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
+       STRING_LITERAL1 STRING_LITERAL2
 
 %token <p_Expression> INTEGER INTEGER_POSITIVE INTEGER_NEGATIVE
 %token <p_Expression> DECIMAL DECIMAL_POSITIVE DECIMAL_NEGATIVE
 %token <p_Expression> DOUBLE DOUBLE_POSITIVE DOUBLE_NEGATIVE
  // %token <p_Expression> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
-%token <p_Expression> IT_TRUE IT_FALSE
+%token <p_Expression> HEX_LITERAL IT_TRUE IT_FALSE
 
 /* Productions */
 %type <p_NAME> Relation _O_QIT_AS_E_Opt_S_QRelation_E_C _Q_O_QIT_AS_E_Opt_S_QRelation_E_C_E_Opt Attribute _O_QIT_AS_E_Opt_S_QAttribute_E_C _Q_O_QIT_AS_E_Opt_S_QAttribute_E_C_E_Opt
@@ -328,6 +328,16 @@ Change:
   | Insert	
   | Drop	
   | Lock	
+  | Alter	
+;
+
+Alter:
+    IT_ALTER IT_TABLE Relation	{
+	driver.curCreate = driver.tables[*$3];
+	delete $3;
+      } IT_ADD ForeignKey	{
+	  driver.curCreate = NULL;
+    }
 ;
 
 Drop:
@@ -447,10 +457,7 @@ FieldOrKey:
 	driver.curAttributeName = NULL;
 	delete $1;
     }
-  | _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
-	driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, new sql::schema::Key($7)));
-	delete $6;
-    }
+  | ForeignKey	
   | IT_PRIMARY IT_KEY AttrList	{
 	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey($3));
     }
@@ -464,6 +471,22 @@ _QLinkDetails_E_Star:
   | _QLinkDetails_E_Star LinkDetails	
 ;
 
+_QIT_KEY_E_Opt:
+    
+  | IT_KEY	
+;
+
+_QAttribute_E_Opt:
+    
+  | Attribute	
+;
+
+ForeignKey:
+    _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt IT_FOREIGN IT_KEY AttrList IT_REFERENCES Relation AttrList	{
+	driver.curCreate->addForeignKey(new sql::schema::ForeignKey($4, *$6, new sql::schema::Key($7)));
+	delete $6;
+    }
+
 _O_QIT_CONSTRAINT_E_S_QAttribute_E_C:
     IT_CONSTRAINT Attribute	{
 	w3c_sw_LINEN << "ignoring constraint name\n";
@@ -473,16 +496,6 @@ _O_QIT_CONSTRAINT_E_S_QAttribute_E_C:
 _Q_O_QIT_CONSTRAINT_E_S_QAttribute_E_C_E_Opt:
     
   | _O_QIT_CONSTRAINT_E_S_QAttribute_E_C	
-;
-
-_QIT_KEY_E_Opt:
-    
-  | IT_KEY	
-;
-
-_QAttribute_E_Opt:
-    
-  | Attribute	
 ;
 
 Sized:
@@ -515,7 +528,10 @@ Type:
 	$$ = sql::TYPE_varchar;
     }
   | IT_BINARY _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt	{
-	$$ = sql::TYPE_binary;
+	$$ = $2 ? sql::TYPE_varbinary : sql::TYPE_binary;
+    }
+  | IT_VARBINARY	{
+	$$ = sql::TYPE_varbinary;
     }
   | IT_NUMERIC	{
 	$$ = sql::TYPE_int;
@@ -623,6 +639,7 @@ Constant:
 	$$ = new sql::IsNullConstraint();
     }
   | String	
+  | HEX_LITERAL	
   | NumericLiteral	
   | BooleanLiteral	
   | IT_CAST GT_LPAREN Constant IT_AS Sized GT_RPAREN	{
@@ -1205,13 +1222,8 @@ UnaryExpression:
 PrimaryExpression:
     BrackettedExpression	
   | BuiltInCall	
-  | String	
-  | NumericLiteral	
-  | BooleanLiteral	
   | FQAttribute	
-  | IT_NULL	{
-	$$ = new sql::IsNullConstraint();
-    }
+  | Constant	
 ;
 
 BrackettedExpression:

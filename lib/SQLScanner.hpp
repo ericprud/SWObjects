@@ -70,6 +70,7 @@ public:
 
     SQLParser::token_type typedLiteral(SQLParser::semantic_type*&, SQLParser::token_type tok);
     SQLParser::token_type unescape(SQLParser::semantic_type*&, w3c_sw::location* yylloc, size_t skip, SQLParser::token_type tok);
+    SQLParser::token_type makeHexConstraint(SQLParser::semantic_type*& yylval, size_t front, size_t back);
 };
 
 } // namespace w3c_sw
