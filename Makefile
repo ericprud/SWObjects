@@ -294,7 +294,7 @@ log-copy: # copy boost-log from ../boost-log-trunk, e.g. make log-copy && make -
 
 # compile and run logging examples, e.g. `make logt_basic_usage`
 logt_%: boost-log/libs/log/example/%/main $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	(cd $(dir $<) && LD_LIBRARY_PATH=../../../../stage/lib ./main)
+	(cd $(dir $<) && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../../../../stage/lib ./main)
 
 log-all: logt_trivial logt_basic_usage logt_advanced_usage logt_async_log \
 	logt_bounded_async_log logt_multiple_files logt_multiple_threads \
@@ -467,28 +467,28 @@ tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOS
 	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
 
 t_%: tests/test_%
-	# Most of the tests are run from the tests dir to make it easier to find errant files.
-	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
+	@# Most of the tests are run from the tests dir to make it easier to find errant files.
+	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
 t_DM: tests/test_DM
-	LD_LIBRARY_PATH=$(BOOST_TARGET)lib:$(LD_LIBRARY_PATH) $< tests/DM-manifest.txt ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $< tests/DM-manifest.txt ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
 
 v_%: tests/test_%
-	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 # update suppressions with --gen-suppressions=yes and copy to boost-test.supp
 
 # "manual" (non-boost) tests, synthesized from the boost tests.
 m_%: tests/man_%
-	( cd tests && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
+	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 
 
 ### Query Map tests tests:
 
 tests/HealthCare1.results: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	LD_LIBRARY_PATH=$(BOOST_TARGET)lib $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 tests/HealthCare1.valgrind: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
-	LD_LIBRARY_PATH=$(BOOST_TARGET)lib valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib valgrind --leak-check=yes --xml=no $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
 
 transformTESTS=tests/HealthCare1
 
@@ -508,34 +508,34 @@ tests/server_mouseToxicity_remote-all.results: \
 	tests/mouseToxicity/remote-all/MouseToxicity.map
 	# Start servers.
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8881/microArray -m MicroArray.map |\
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8881/microArray -m MicroArray.map |\
 	  tee ../../../$@.ma )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8882/uniprot -m Uniprot.map |\
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8882/uniprot -m Uniprot.map |\
 	  tee ../../../$@.up )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8883/screeningAssay -m ScreeningAssay.map |\
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8883/screeningAssay -m ScreeningAssay.map |\
 	  tee ../../../$@.sa )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8884/chemStructure -m ChemStructure.map |\
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8884/chemStructure -m ChemStructure.map |\
 	  tee ../../../$@.cs )&
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8885/mouseToxicity -m MouseToxicity.map |\
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --debug 1 --once --serve http://localhost:8885/mouseToxicity -m MouseToxicity.map |\
 	  tee ../../../$@.mt )&
 	sleep 1 # give the servers time to start up
 	( cd tests/mouseToxicity/remote-all/ &&\
-	  LD_LIBRARY_PATH=../$(BOOST_TARGET)lib time ../../../bin/sparql ToxicAssoc0.rq )
+	  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib time ../../../bin/sparql ToxicAssoc0.rq )
 
 
 tests/7tm_receptors-flat.results: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --once --serve http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --once --serve http://localhost:8888/7tm_receptors receptors.map > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< q.rq )
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< q.rq )
 
 tests/7tm_receptors-flat.results2: bin/sparql tests/7tm_receptors/flat/q.rq tests/7tm_receptors/flat/receptors.map
-	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< --once --serve --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< --once --serve --serve http://localhost:8888/7tm_receptors --mapset receptors.mapset > ../../../$@ )&
 	sleep 1
-	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=../$(BOOST_TARGET)lib ../../../$< q.rq )
+	( cd tests/7tm_receptors/flat/ && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ../../../$< q.rq )
 
 SPARQL_serverTESTS=tests/server_mouseToxicity_remote-screening-assay
 
@@ -583,7 +583,7 @@ swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TAR
 # 	mv _SWObjects.so swig/python/
 
 python-test: swig/python/_SWObjects.so
-	(cd swig/python/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib python t_SWObjects.py)
+	(cd swig/python/ && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../../$(BOOST_TARGET)lib python t_SWObjects.py)
 
 python-clean:
 	$(RM) -f swig/python/SWObjects.* swig/python/SWObjects_wrap.* swig/python/_SWObjects.so
