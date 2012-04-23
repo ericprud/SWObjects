@@ -31,7 +31,7 @@ namespace w3c_sw {
 
 	/* SQL types: */
 	/* 'NATIONAL'? 'CHARACTER' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARCHAR'
-	 * 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')?
+	 * 'BINARY' ('VARYING' | 'LARGE' 'OBJECT')? | 'VARBINARY'
 	 * 'NUMERIC' | 'DECIMAL'
 	 * 'SMALLINT' | ('INTEGER' | 'INT') | 'BIGINT'
 	 * 'FLOAT' | 'REAL' | 'DOUBLE' 'PRECISION'
@@ -43,7 +43,7 @@ namespace w3c_sw {
 	 */
 	typedef enum {TYPE_error,
 		      TYPE_char, TYPE_varchar,
-		      TYPE_binary,
+		      TYPE_binary, TYPE_varbinary,
 		      TYPE_decimal,
 		      TYPE_int,
 		      TYPE_float,
@@ -65,6 +65,7 @@ namespace w3c_sw {
 	    virtual std::string literal(std::string s) = 0;
 	    virtual std::string typeString(e_TYPE type, int precision) = 0;
 	    virtual std::string typedValue(e_TYPE type, std::string representation) = 0;
+	    virtual std::string hexString(const std::vector<unsigned char>& bytes) = 0;
 	    virtual std::string booleanValue(bool value) = 0;
 	    virtual std::string as() = 0;
 	    virtual std::string limit(int l) = 0;
@@ -84,7 +85,7 @@ namespace w3c_sw {
 		ss << 
 		    (type == TYPE_error ? "ERROR" :
 		     type == TYPE_char ? "CHAR" : type == TYPE_varchar ? "VARCHAR" :
-		     type == TYPE_binary ? "BINARY" :
+		     type == TYPE_binary ? "BINARY" : type == TYPE_varbinary ? "VARBINARY" :
 		     type == TYPE_decimal ? "DECIMAL" :
 		     type == TYPE_int ? "INT" :
 		     type == TYPE_float ? "FLOAT" :
@@ -105,6 +106,15 @@ namespace w3c_sw {
 	    }
 	    virtual std::string booleanValue (bool value) {
 		return value ? "true" : "false";
+	    }
+	    virtual std::string hexString (const std::vector<unsigned char>& bytes) {
+		std::stringstream ss;
+		ss << "X'" << std::hex << std::uppercase;
+		for (std::vector<unsigned char>::const_iterator it = bytes.begin();
+		     it != bytes.end(); ++it)
+		    ss << std::setw(2) << std::setfill('0') << (int)*it;
+		ss << "'";
+		return ss.str();
 	    }
 	    virtual std::string as () { return "AS "; }
 	    virtual std::string limit (int l) {
@@ -135,9 +145,18 @@ namespace w3c_sw {
 	struct PostgresSerializer : public SQLSerializer {
 	    virtual std::string typeString (e_TYPE type, int precision) {
 		return
-		    type == TYPE_binary
+		    type == TYPE_binary || type == TYPE_varbinary
 		    ? "BYTEA"
 		    : SQLSerializer::typeString(type, precision);
+	    }
+	    virtual std::string hexString (const std::vector<unsigned char>& bytes) {
+		std::stringstream ss;
+		ss << "decode('" << std::hex << std::uppercase;
+		for (std::vector<unsigned char>::const_iterator it = bytes.begin();
+		     it != bytes.end(); ++it)
+		    ss << std::setw(2) << std::setfill('0') << (int)*it;
+		ss << "', 'hex')";
+		return ss.str();
 	    }
 	};
 	struct OracleSerializer : public SQLSerializer {
@@ -145,7 +164,7 @@ namespace w3c_sw {
 		return
 		    type == TYPE_boolean
 		    ? "NUMERIC(1)"
-		    : type == TYPE_binary
+		    : type == TYPE_binary || type == TYPE_varbinary
 		    ? "BLOB"
 		    : SQLSerializer::typeString(type, precision);
 	    }
@@ -158,6 +177,15 @@ namespace w3c_sw {
 		    : (type == TYPE_timestamp || type == TYPE_datetime)
 		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd HH24:MI:SS')"
 		    : representation;
+	    }
+	    virtual std::string hexString (const std::vector<unsigned char>& bytes) {
+		std::stringstream ss; // presuming a RAW field, just insert a quoted hex string.
+		ss << "'" << std::hex << std::uppercase;
+		for (std::vector<unsigned char>::const_iterator it = bytes.begin();
+		     it != bytes.end(); ++it)
+		    ss << std::setw(2) << std::setfill('0') << (int)*it;
+		ss << "'";
+		return ss.str();
 	    }
 	    virtual std::string booleanValue(bool value) {
 		return value ? "1" : "0"; // goes with NUMERIC(1)
@@ -400,6 +428,7 @@ namespace w3c_sw {
 	class FloatConstraint;
 	class DoubleConstraint;
 	class LiteralConstraint;
+	class HexConstraint;
 	class BoolConstraint;
 	//class BooleanConjunction;
 	class NotNullConstraint;
@@ -447,6 +476,7 @@ namespace w3c_sw {
 	    virtual bool finalEq (const FloatConstraint&) const { return false; }
 	    virtual bool finalEq (const DoubleConstraint&) const { return false; }
 	    virtual bool finalEq (const LiteralConstraint&) const { return false; }
+	    virtual bool finalEq (const HexConstraint&) const { return false; }
 	    virtual bool finalEq (const BoolConstraint&) const { return false; }
 	    //virtual bool finalEq (const BooleanConjunction&) const { return false; }
 	    virtual bool finalEq (const NotNullConstraint&) const { return false; }
@@ -477,6 +507,7 @@ namespace w3c_sw {
 	    virtual bool finalMapsTo (const FloatConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const DoubleConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const LiteralConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	    virtual bool finalMapsTo (const HexConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const BoolConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    //virtual bool finalMapsTo (const BooleanConjunction&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const NotNullConstraint&, AliasMapping::List& map) const { return map.fail(); }
@@ -1153,6 +1184,32 @@ namespace w3c_sw {
 		std::stringstream ss;
 		ss << value;
 		return ss.str();
+	    }
+	};
+	class HexConstraint : public Expression {
+	    std::vector<unsigned char> bytes;
+	public:
+	    HexConstraint (const std::vector<unsigned char>& bytes) : Expression(), bytes(bytes) {  }
+	    virtual Expression* clone () const {
+		return new HexConstraint(bytes);
+	    }
+	    virtual e_PREC getPrecedence () const { return PREC_High; }
+	    virtual bool finalMapsTo (const HexConstraint& l, AliasMapping::List& map) const {
+		return finalEq(l) ? true : map.fail();
+	    }
+	    virtual bool mapsTo (const Expression& r, AliasMapping::List& map) const {
+		return r.finalMapsTo(*this, map)
+		    ? true : logNotMappable(r);
+	    }	    
+	    virtual bool finalEq (const HexConstraint& l) const {
+		return l.bytes == bytes;
+	    }	    
+	    virtual bool operator== (const Expression& r) const {
+		return r.finalEq(*this)
+		    ? true : logNotEqual(r);
+	    }
+	    virtual std::string toString (std::string pad, e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		return s.hexString(bytes);
 	    }
 	};
 	class BoolConstraint : public Expression {
