@@ -260,10 +260,10 @@ void expectGraph () {
     std::stringstream errorStr;
     size_t lineNo;
     try {
-	BOOST_REQUIRE(!(EntryListit == EntryList.end()));
+	BOOST_ASSERT(!(EntryListit == EntryList.end()));
 	const ManifestEntry& ment = *EntryListit++;
 	lineNo = ment.lineNo;
-	doing = std::string() + "setting up " + ment.sql;
+	doing = "setting up";
 	DMTest h = DMTest(*ment.con);
 	h.run(ment.sql, ment.refGraph);
 	if (!(h.expect == h.test)) {
@@ -274,13 +274,13 @@ void expectGraph () {
 	    }
 	    errorStr << "[[" << h.expect << " != " << h.test << "]]";
 	}
-	doing = std::string() + "tearing down " + ment.sql;
+	doing = "tearing down";
     } catch (w3c_sw::ParserException& p) {
-	errorStr << "ParserException while " << doing << ":" << p.what();
+	errorStr << "ParserException while " << doing << ": " << p.what();
     } catch (std::string& s) {
-	errorStr << "std::string exception while " << doing << ":" << s;
+	errorStr << "std::string exception while " << doing << ": " << s;
     } catch (std::exception& e) {
-	errorStr << "std::exception exception while " << doing << ":" << e.what();
+	errorStr << "std::exception exception while " << doing << ": " << e.what();
     } catch (...) {
 	errorStr << "unknown exception while " << doing;
     }
@@ -335,6 +335,12 @@ init_unit_test_suite (int argc, char* argv[])  {
 	    std::stringstream ss(buf);
 	    std::string sql, refGraph;
 	    ss >> sql >> refGraph;
+
+	    std::stringstream testName;
+	    testName << lineNo;
+	    boost::unit_test::test_suite* suite = BOOST_TEST_SUITE(testName.str());
+	    boost::unit_test::framework::master_test_suite().add(suite);
+
 	    for (std::vector<w3c_sw::SQLClientList::Connection>
 		     ::iterator connection = connections.begin();
 		 connection != connections.end(); ++connection) {
@@ -345,11 +351,10 @@ init_unit_test_suite (int argc, char* argv[])  {
 
 		// Tell the boost test harness to add an invocation of
 		// expectGraph.
-		boost::unit_test::framework::master_test_suite().
-		    add(boost::unit_test::make_test_case
-			(boost::unit_test::callback0<>(&expectGraph),
-			 sql + " " + connection->info.sqlConnectString()));
-	    }
+		suite->add(boost::unit_test::make_test_case
+			   (boost::unit_test::callback0<>(&expectGraph),
+			    connection->info.driver));
+ 	    }
 	}
     }
 
