@@ -177,13 +177,15 @@ namespace w3c_sw {
 		if ((row = mysql_fetch_row(result)) == NULL)
 		    return ret; // returns SQLclient::Result.end()
 
+		unsigned long* lengths = mysql_fetch_lengths(result);
+
 		// For each column:
 		for(int i = 0; i < columnCount; i++) {
 
 		    if (row[i]) {
 
 			/* retrieve column data as a string */
-			std::string lexval(row[i]);
+			std::string lexval(row[i], lengths[i]);
 
 			// Perform necessary SQL-to-RDF lexical transformations:
 			switch (fields[i].type) {
@@ -198,7 +200,7 @@ namespace w3c_sw {
 			    Result::Fixup& f = *p;
 			    lexval = f(lexval, colSet[i].type);
 			}
-			ret.push_back(OptString(lexval.c_str()));
+			ret.push_back(OptString(lexval, ""));
 		    } else {
 			ret.push_back(OptString());
 		    }
