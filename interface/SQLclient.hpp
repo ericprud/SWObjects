@@ -154,6 +154,14 @@ namespace w3c_sw {
 	    };
 	    typedef Fixups_dummyTemplate<0> Fixups;
 
+	    struct IntToBoolean : public Fixup {
+		IntToBoolean () {  }
+		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
+		    sqlType = Field::TYPE_boolean;
+		    return lexval == "1" ? "TRUE" : "FALSE";
+		}
+	    };
+
 
 	    typedef std::vector<Field> ColumnSet;
 	    virtual ColumnSet& cols() = 0;

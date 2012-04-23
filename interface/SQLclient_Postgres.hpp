@@ -76,14 +76,6 @@ namespace w3c_sw {
 	    Row row;
 	public:
 
-	    struct IntToBoolean : public Fixup {
-		IntToBoolean () {  }
-		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
-		    sqlType = Field::TYPE_boolean;
-		    return lexval == "1" ? "TRUE" : "FALSE";
-		}
-	    };
-
 	    struct LiteralToBinary : public Fixup {
 		LiteralToBinary () {  }
 		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
@@ -224,6 +216,35 @@ namespace w3c_sw {
 			case 1000: // _bool
 			    lexval = (lexval == "t" ? "TRUE" : "FALSE");
 			    break;
+			case 2275: // cstring
+			case 1263: // _cstring
+			case 18: // _char
+			case 1002: // char
+			case 1015: // _varchar
+			case 1043: // varchar
+			case 17: // bytea
+			case 1001: // _bytea
+			case 1042: // bpchar
+			case 1014: // _bpchar
+			    {
+				size_t l = lexval.size();
+				size_t esc = lexval.find('\\');
+				std::string built(lexval, 0, esc);
+				while (esc != std::string::npos) {
+				    assert(esc < l - 3);
+				    size_t n = lexval.find('\\', esc+4);
+				    unsigned char b
+					= (lexval[esc+1]-'0')*64
+					+ (lexval[esc+2]-'0')*8
+					+ (lexval[esc+3]-'0');
+				    built
+					.append(std::string(1, b))
+					.append(lexval, esc+4, n-esc-4);
+				    esc = n;
+				}
+				lexval = built;
+			    }
+			    break;
 			default:
 			    break;
 			}
@@ -232,7 +253,7 @@ namespace w3c_sw {
 			    Result::Fixup& f = *p;
 			    lexval = f(lexval, colSet[i].type);
 			}
-			ret.push_back(OptString(lexval.c_str()));
+			ret.push_back(OptString(lexval, ""));
 		    } else {
 			ret.push_back(OptString());
 		    }
