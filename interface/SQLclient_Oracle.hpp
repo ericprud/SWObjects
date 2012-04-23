@@ -67,8 +67,15 @@ namespace w3c_sw {
 		    case oocci::OCCI_SQLT_NUM:
 			f.type = Field::TYPE_integer;
 			break;
+		    case oocci::OCCI_SQLT_DAT:
+			f.type = Field::TYPE_date;
+			break;
+		    case oocci::OCCI_SQLT_TIMESTAMP:
+			f.type = Field::TYPE_dateTime;
+			break;
 		    case oocci::OCCI_SQLT_CHR:
 		    case oocci::OCCI_SQLT_AFC:
+		    case oocci::OCCI_SQLT_BLOB:
 			f.type = Field::TYPE__literal;
 			break;
 		    default:
@@ -172,17 +179,67 @@ namespace w3c_sw {
 
 			std::string lexval(result->getString(i+1));
 			int typeNo = selectcols[i].getInt(oocci::MetaData::ATTR_DATA_TYPE);
+			int year;
+			unsigned int month, day, hour, min, sec, fs;
 			switch (typeNo) {
 			case oocci::OCCI_SQLT_NUM:
 			case oocci::OCCI_SQLT_CHR:
 			case oocci::OCCI_SQLT_AFC:
 			    break;
-			case oocci::OCCI_SQLT_TIMESTAMP:
-			    lexval.replace(lexval.find_first_of(' '), 1, "T");
+			case oocci::OCCI_SQLT_DAT:
+			    // lexval.replace(0, 9, toISOdate(lexval.substr(0, 9)));
+			    {
+				oocci::Date sd = result->getDate(i+1);
+				sd.getDate(year, month, day, hour, min, sec);
+				std::stringstream ss;
+				ss <<        std::setw(4) << std::setfill('0') << year
+				   << '-' << std::setw(2) << std::setfill('0') << month
+				   << '-' << std::setw(2) << std::setfill('0') << day;
+				lexval = ss.str();
+			    }
 			    break;
-			// case OCCI_SQLT_DATE:
-			//     lexval = lexval + "T00:00";
-			//     break;
+			case oocci::OCCI_SQLT_BLOB:
+			    {
+				oocci::Blob b = result->getBlob(i+1);
+				size_t size = b.length();
+				oocci::Stream *instream = b.getStream (1,0);
+				char *buffer = new char[size];
+				memset (buffer, 0, size);
+
+				instream->readBuffer (buffer, size);
+				lexval.append(buffer, size);
+				delete (buffer);
+				b.closeStream (instream);
+			    }
+			    break;
+			case oocci::OCCI_SQLT_TIMESTAMP:
+			    {
+				oocci::Timestamp sd = result->getTimestamp(i+1);
+				sd.getDate(year, month, day);
+				sd.getTime(hour, min, sec, fs);
+				std::stringstream ss;
+				ss <<        std::setw(4) << std::setfill('0') << year
+				   << '-' << std::setw(2) << std::setfill('0') << month
+				   << '-' << std::setw(2) << std::setfill('0') << day
+				   << ' ' << std::setw(2) << std::setfill('0') << hour
+				   << ':' << std::setw(2) << std::setfill('0') << min
+				   << ':' << std::setw(2) << std::setfill('0') << sec;
+				lexval = ss.str();
+			    }
+			    // lexval.replace(0, 9, toISOdate(lexval.substr(0, 9)));
+			    // lexval[10] = ' ';
+			    // if (lexval[20] == 'P') {
+			    // 	lexval[12] += 2;
+			    // 	if (lexval[12] > '9')
+			    // 	    lexval[12] -= 10;
+			    // 	else
+			    // 	    lexval[11] += 1;
+			    // } else if (lexval[11] == '1' && lexval[12] == '2') {
+			    // 	lexval[11] = lexval[12] = '0';
+			    // }
+			    // lexval[13] = lexval[16] = ':';
+			    // lexval.resize(19);
+			    break;
 			default:
 			    w3c_sw_LINEN << "passing " << datatypeCstr(typeNo) << " \"" << lexval << "\"\n";
 			    break;
@@ -192,12 +249,36 @@ namespace w3c_sw {
 			    Result::Fixup& f = *p;
 			    lexval = f(lexval, colSet[i].type);
 			}
-			ret.push_back(OptString(lexval.c_str())); // @@ why do i need 
+			ret.push_back(OptString(lexval, ""));
 		    } else {
 			ret.push_back(OptString());
 		    }
 		}
 		return ret;
+	    }
+	    std::string toISOdate (std::string o) {
+		std::stringstream ss;
+    
+		ss << (o[7] > '7' ? "19" : "20") << o[7] << o[8] << '-'
+		    /*            JA F MaR AP MaY JUN JUL AU S O N D */
+		   << (o [3]==   'J'
+		       ? o[4]==   'A'?"01"
+		       :  o[5]==                   'N'?"06"
+		       :                              "07"
+		       :o[3]==      'F'?"02"
+		       :o[3]==        'M'
+		       ?  o[5]==        'R'?"03"
+		       :                      "05"
+		       :o[3]==            'A'
+		       ? o[4]==            'P'?"04"
+		       :                                  "08"
+		       :o[3]==                              'S'?"09"
+		       :o[3]==                                'O'?"10"
+		       :o[3]==                                  'N'?"11"
+		       :                                           "12"
+		       )
+		   << '-' << o[0] << o[1];
+		return ss.str();
 	    }
 	};
 	SQLclient_Oracle ()
