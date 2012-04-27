@@ -23,6 +23,7 @@ FLEX:=flex
 YACC:=bison
 TEE:=tee
 SED:=sed
+XSLT ?= saxonb-xslt -ext:on
 OPTIM:=-g -O0
 PYTHON_INC:=$(shell python-config --includes)
 PHP_HOME:=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
@@ -470,8 +471,14 @@ t_%: tests/test_%
 	@# Most of the tests are run from the tests dir to make it easier to find errant files.
 	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
 
-t_DM: tests/test_DM
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $< tests/DM-manifest.txt ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
+t_DM: tests/test_DM tests/DM-manifest.txt
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
+
+tests/DM-report.xml: tests/test_DM tests/DM-manifest.txt
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) --output_format=XML --report_level=detailed 2> $@
+
+tests/DM-report-EARL.ttl: tests/DM-report.xml tests/report2earl.xsl
+	$(XSLT) $^ > $@
 
 v_%: tests/test_%
 	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )

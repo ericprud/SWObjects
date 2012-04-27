@@ -1,0 +1,61 @@
+# DM-manifest.txt - list of DirectMapping tests for SWObjects.
+
+# RDB2RDF tests:
+tests/rdb2rdf-tests/D000-1table1column0rows/create.sql			tests/rdb2rdf-tests/D000-1table1column0rows/directGraph.ttl
+tests/rdb2rdf-tests/D001-1table1column1row/create.sql			tests/rdb2rdf-tests/D001-1table1column1row/directGraph.ttl
+tests/rdb2rdf-tests/D002-1table2columns1row/create.sql			tests/rdb2rdf-tests/D002-1table2columns1row/directGraph.ttl
+tests/rdb2rdf-tests/D003-1table3columns1row/create.sql			tests/rdb2rdf-tests/D003-1table3columns1row/directGraph.ttl
+tests/rdb2rdf-tests/D004-1table2columns1row/create.sql			tests/rdb2rdf-tests/D004-1table2columns1row/directGraph.ttl
+tests/rdb2rdf-tests/D005-1table3columns3rows2duplicates/create.sql	tests/rdb2rdf-tests/D005-1table3columns3rows2duplicates/directGraph.ttl
+tests/rdb2rdf-tests/D006-1table1primarykey1column1row/create.sql	tests/rdb2rdf-tests/D006-1table1primarykey1column1row/directGraph.ttl
+tests/rdb2rdf-tests/D007-1table1primarykey2columns1row/create.sql	tests/rdb2rdf-tests/D007-1table1primarykey2columns1row/directGraph.ttl
+tests/rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row/create.sql	tests/rdb2rdf-tests/D008-1table1compositeprimarykey3columns1row/directGraph.ttl
+tests/rdb2rdf-tests/D009-2tables1primarykey1foreignkey/create.sql	tests/rdb2rdf-tests/D009-2tables1primarykey1foreignkey/directGraph.ttl
+tests/rdb2rdf-tests/D010-1table1primarykey3colums3rows/create.sql	tests/rdb2rdf-tests/D010-1table1primarykey3colums3rows/directGraph.ttl
+tests/rdb2rdf-tests/D011-M2MRelations/create.sql			tests/rdb2rdf-tests/D011-M2MRelations/directGraph.ttl
+tests/rdb2rdf-tests/D012-2tables2duplicates0nulls/create.sql		tests/rdb2rdf-tests/D012-2tables2duplicates0nulls/directGraph.ttl
+tests/rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue/create.sql	tests/rdb2rdf-tests/D013-1table1primarykey3columns2rows1nullvalue/directGraph.ttl
+tests/rdb2rdf-tests/D014-3tables1primarykey1foreignkey/create.sql	tests/rdb2rdf-tests/D014-3tables1primarykey1foreignkey/directGraph.ttl
+tests/rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages/create.sql	tests/rdb2rdf-tests/D015-1table3columns1composityeprimarykey3rows2languages/directGraph.ttl
+tests/rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes/create.sql	tests/rdb2rdf-tests/D016-1table1primarykey10columns3rowsSQLdatatypes/directGraph.ttl
+tests/rdb2rdf-tests/D017-I18NnoSpecialChars/create.sql			tests/rdb2rdf-tests/D017-I18NnoSpecialChars/directGraph.ttl
+tests/rdb2rdf-tests/D018-1table1primarykey2columns3rows/create.sql	tests/rdb2rdf-tests/D018-1table1primarykey2columns3rows/directGraph.ttl
+tests/rdb2rdf-tests/D021-2tables2primarykeys1foreignkeyReferencesAllNulls/create.sql	tests/rdb2rdf-tests/D021-2tables2primarykeys1foreignkeyReferencesAllNulls/directGraph.ttl
+tests/rdb2rdf-tests/D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey/create.sql	tests/rdb2rdf-tests/D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey/directGraph.ttl
+tests/rdb2rdf-tests/D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys/create.sql	tests/rdb2rdf-tests/D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys/directGraph.ttl
+tests/rdb2rdf-tests/D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls/create.sql	tests/rdb2rdf-tests/D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls/directGraph.ttl
+tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
+
+# ericPz:
+# tests/rdb2rdf-tests/ref-no-pk/create.sql	tests/rdb2rdf-tests/ref-no-pk/directGraph.ttl
+# tests/rdb2rdf-tests/ref-not-pk/create.sql	tests/rdb2rdf-tests/ref-not-pk/directGraph.ttl
+# tests/rdb2rdf-tests/ref-some-nulls/create.sql	tests/rdb2rdf-tests/ref-some-nulls/directGraph.ttl
+# tests/rdb2rdf-tests/ref-all-nulls/create.sql	tests/rdb2rdf-tests/ref-all-nulls/directGraph.ttl
+
+# spec:
+# tests/rdb2rdf-tests/spec-ref-no-pk/create.sql	tests/rdb2rdf-tests/spec-ref-no-pk/directGraph.ttl

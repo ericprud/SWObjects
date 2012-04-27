@@ -336,9 +336,10 @@ init_unit_test_suite (int argc, char* argv[])  {
 	    std::string sql, refGraph;
 	    ss >> sql >> refGraph;
 
-	    std::stringstream testName;
-	    testName << lineNo;
-	    boost::unit_test::test_suite* suite = BOOST_TEST_SUITE(testName.str());
+	    size_t nameEnd = sql.rfind('/');
+	    size_t nameStart = sql.rfind('/', nameEnd-1);
+	    std::string testName(sql.substr(nameStart+1, nameEnd - nameStart-1)); // could use lineNo
+	    boost::unit_test::test_suite* suite = BOOST_TEST_SUITE(testName);
 	    boost::unit_test::framework::master_test_suite().add(suite);
 
 	    for (std::vector<w3c_sw::SQLClientList::Connection>
