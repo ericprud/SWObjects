@@ -2,13 +2,11 @@
 @prefix doap: <http://usefulinc.com/ns/doap#>.
 @prefix earl: <http://www.w3.org/ns/earl#>.
 @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix xml: <http://www.w3.org/XML/1998/namespace>.
 @prefix swobj: <http://swobjects.svn.sourceforge.net/#>.
 @prefix tests: <http://swobjects.svn.sourceforge.net/viewvc/swobjects/branches/sparql11/tests/>.
 @prefix dct: <http://purl.org/dc/terms/>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdb2rdf: <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#>.
 
 <> foaf:primaryTopic swobj:project ;
 	dct:issued "2012-02-11T19:49:20Z"^^xsd:dateTime ;
@@ -38,7 +36,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D000-1table1column0rows> ;
+	earl:test rdb2rdf:D000-1table1column0rows ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -48,7 +46,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D000-1table1column0rows> ;
+	earl:test rdb2rdf:D000-1table1column0rows ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -58,7 +56,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D000-1table1column0rows> ;
+	earl:test rdb2rdf:D000-1table1column0rows ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -68,7 +66,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D001-1table1column1row> ;
+	earl:test rdb2rdf:D001-1table1column1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -78,7 +76,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D001-1table1column1row> ;
+	earl:test rdb2rdf:D001-1table1column1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -88,7 +86,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D001-1table1column1row> ;
+	earl:test rdb2rdf:D001-1table1column1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -98,7 +96,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D002-1table2columns1row> ;
+	earl:test rdb2rdf:D002-1table2columns1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -108,7 +106,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D002-1table2columns1row> ;
+	earl:test rdb2rdf:D002-1table2columns1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -118,7 +116,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D002-1table2columns1row> ;
+	earl:test rdb2rdf:D002-1table2columns1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -128,7 +126,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D003-1table3columns1row> ;
+	earl:test rdb2rdf:D003-1table3columns1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -138,7 +136,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D003-1table3columns1row> ;
+	earl:test rdb2rdf:D003-1table3columns1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -148,7 +146,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D003-1table3columns1row> ;
+	earl:test rdb2rdf:D003-1table3columns1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -158,7 +156,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D004-1table2columns1row> ;
+	earl:test rdb2rdf:D004-1table2columns1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -168,7 +166,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D004-1table2columns1row> ;
+	earl:test rdb2rdf:D004-1table2columns1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -178,7 +176,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D004-1table2columns1row> ;
+	earl:test rdb2rdf:D004-1table2columns1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -188,7 +186,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D005-1table3columns3rows2duplicates> ;
+	earl:test rdb2rdf:D005-1table3columns3rows2duplicates ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -198,7 +196,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D005-1table3columns3rows2duplicates> ;
+	earl:test rdb2rdf:D005-1table3columns3rows2duplicates ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -208,7 +206,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D005-1table3columns3rows2duplicates> ;
+	earl:test rdb2rdf:D005-1table3columns3rows2duplicates ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -218,7 +216,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D006-1table1primarykey1column1row> ;
+	earl:test rdb2rdf:D006-1table1primarykey1column1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -228,7 +226,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D006-1table1primarykey1column1row> ;
+	earl:test rdb2rdf:D006-1table1primarykey1column1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -238,7 +236,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D006-1table1primarykey1column1row> ;
+	earl:test rdb2rdf:D006-1table1primarykey1column1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -248,7 +246,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D007-1table1primarykey2columns1row> ;
+	earl:test rdb2rdf:D007-1table1primarykey2columns1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -258,7 +256,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D007-1table1primarykey2columns1row> ;
+	earl:test rdb2rdf:D007-1table1primarykey2columns1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -268,7 +266,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D007-1table1primarykey2columns1row> ;
+	earl:test rdb2rdf:D007-1table1primarykey2columns1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -278,7 +276,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D008-1table1compositeprimarykey3columns1row> ;
+	earl:test rdb2rdf:D008-1table1compositeprimarykey3columns1row ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -288,7 +286,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D008-1table1compositeprimarykey3columns1row> ;
+	earl:test rdb2rdf:D008-1table1compositeprimarykey3columns1row ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -298,7 +296,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D008-1table1compositeprimarykey3columns1row> ;
+	earl:test rdb2rdf:D008-1table1compositeprimarykey3columns1row ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -308,7 +306,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D009-2tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D009-2tables1primarykey1foreignkey ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -318,7 +316,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D009-2tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D009-2tables1primarykey1foreignkey ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -328,7 +326,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D009-2tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D009-2tables1primarykey1foreignkey ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -338,7 +336,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D010-1table1primarykey3colums3rows> ;
+	earl:test rdb2rdf:D010-1table1primarykey3colums3rows ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -348,7 +346,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D010-1table1primarykey3colums3rows> ;
+	earl:test rdb2rdf:D010-1table1primarykey3colums3rows ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -358,7 +356,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D010-1table1primarykey3colums3rows> ;
+	earl:test rdb2rdf:D010-1table1primarykey3colums3rows ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -368,7 +366,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D011-M2MRelations> ;
+	earl:test rdb2rdf:D011-M2MRelations ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -378,7 +376,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D011-M2MRelations> ;
+	earl:test rdb2rdf:D011-M2MRelations ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -388,7 +386,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D011-M2MRelations> ;
+	earl:test rdb2rdf:D011-M2MRelations ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -398,7 +396,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D012-2tables2duplicates0nulls> ;
+	earl:test rdb2rdf:D012-2tables2duplicates0nulls ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -408,7 +406,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D012-2tables2duplicates0nulls> ;
+	earl:test rdb2rdf:D012-2tables2duplicates0nulls ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -418,7 +416,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D012-2tables2duplicates0nulls> ;
+	earl:test rdb2rdf:D012-2tables2duplicates0nulls ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -428,7 +426,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D013-1table1primarykey3columns2rows1nullvalue> ;
+	earl:test rdb2rdf:D013-1table1primarykey3columns2rows1nullvalue ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -438,7 +436,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D013-1table1primarykey3columns2rows1nullvalue> ;
+	earl:test rdb2rdf:D013-1table1primarykey3columns2rows1nullvalue ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -448,7 +446,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D013-1table1primarykey3columns2rows1nullvalue> ;
+	earl:test rdb2rdf:D013-1table1primarykey3columns2rows1nullvalue ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -458,7 +456,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D014-3tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D014-3tables1primarykey1foreignkey ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -468,7 +466,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D014-3tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D014-3tables1primarykey1foreignkey ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -478,7 +476,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D014-3tables1primarykey1foreignkey> ;
+	earl:test rdb2rdf:D014-3tables1primarykey1foreignkey ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -488,7 +486,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D015-1table3columns1composityeprimarykey3rows2languages> ;
+	earl:test rdb2rdf:D015-1table3columns1composityeprimarykey3rows2languages ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -498,7 +496,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D015-1table3columns1composityeprimarykey3rows2languages> ;
+	earl:test rdb2rdf:D015-1table3columns1composityeprimarykey3rows2languages ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -508,7 +506,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D015-1table3columns1composityeprimarykey3rows2languages> ;
+	earl:test rdb2rdf:D015-1table3columns1composityeprimarykey3rows2languages ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -518,7 +516,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D016-1table1primarykey10columns3rowsSQLdatatypes> ;
+	earl:test rdb2rdf:D016-1table1primarykey10columns3rowsSQLdatatypes ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -528,7 +526,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D016-1table1primarykey10columns3rowsSQLdatatypes> ;
+	earl:test rdb2rdf:D016-1table1primarykey10columns3rowsSQLdatatypes ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -538,7 +536,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D016-1table1primarykey10columns3rowsSQLdatatypes> ;
+	earl:test rdb2rdf:D016-1table1primarykey10columns3rowsSQLdatatypes ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -548,7 +546,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D017-I18NnoSpecialChars> ;
+	earl:test rdb2rdf:D017-I18NnoSpecialChars ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -558,7 +556,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D017-I18NnoSpecialChars> ;
+	earl:test rdb2rdf:D017-I18NnoSpecialChars ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -568,7 +566,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D017-I18NnoSpecialChars> ;
+	earl:test rdb2rdf:D017-I18NnoSpecialChars ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -578,7 +576,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D018-1table1primarykey2columns3rows> ;
+	earl:test rdb2rdf:D018-1table1primarykey2columns3rows ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -588,7 +586,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D018-1table1primarykey2columns3rows> ;
+	earl:test rdb2rdf:D018-1table1primarykey2columns3rows ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -598,7 +596,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D018-1table1primarykey2columns3rows> ;
+	earl:test rdb2rdf:D018-1table1primarykey2columns3rows ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -608,7 +606,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D021-2tables2primarykeys1foreignkeyReferencesAllNulls> ;
+	earl:test rdb2rdf:D021-2tables2primarykeys1foreignkeyReferencesAllNulls ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -618,7 +616,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D021-2tables2primarykeys1foreignkeyReferencesAllNulls> ;
+	earl:test rdb2rdf:D021-2tables2primarykeys1foreignkeyReferencesAllNulls ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -628,7 +626,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D021-2tables2primarykeys1foreignkeyReferencesAllNulls> ;
+	earl:test rdb2rdf:D021-2tables2primarykeys1foreignkeyReferencesAllNulls ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -638,7 +636,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey> ;
+	earl:test rdb2rdf:D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -648,7 +646,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey> ;
+	earl:test rdb2rdf:D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -658,7 +656,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey> ;
+	earl:test rdb2rdf:D022-2tables1primarykey1foreignkeyReferencesNoPrimaryKey ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -668,7 +666,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys> ;
+	earl:test rdb2rdf:D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -678,7 +676,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys> ;
+	earl:test rdb2rdf:D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -688,7 +686,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys> ;
+	earl:test rdb2rdf:D023-2tables2primarykeys2foreignkeysReferencesToNon-primarykeys ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -698,7 +696,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls> ;
+	earl:test rdb2rdf:D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -708,7 +706,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls> ;
+	earl:test rdb2rdf:D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -718,7 +716,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls> ;
+	earl:test rdb2rdf:D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls ;
 	earl:info "oracle" .
 
 [] a earl:Assertion;
@@ -728,7 +726,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D025-3tables3primarykeys3foreignkeys> ;
+	earl:test rdb2rdf:D025-3tables3primarykeys3foreignkeys ;
 	earl:info "mysql" .
 
 [] a earl:Assertion;
@@ -738,7 +736,7 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D025-3tables3primarykeys3foreignkeys> ;
+	earl:test rdb2rdf:D025-3tables3primarykeys3foreignkeys ;
 	earl:info "postgres" .
 
 [] a earl:Assertion;
@@ -748,5 +746,5 @@ tests:test_DM.cpp
 		earl:outcome earl:passed
 	] ;
 	earl:subject swobj:project ;
-	earl:test <http://www.w3.org/2001/sw/rdb2rdf/test-cases/#D025-3tables3primarykeys3foreignkeys> ;
+	earl:test rdb2rdf:D025-3tables3primarykeys3foreignkeys ;
 	earl:info "oracle" .
