@@ -69,26 +69,18 @@ namespace w3c_sw {
 		    && national == ref.national
 		    && variable == ref.variable;
 	    }
-	    void make ()
-	    { this->name = TYPENAME_error; national = NATIONALITY_domestic; variable = VARIABILITY_fixed; }
-	    void make (e_TYPENAME name)
-	    { this->name = name; national = NATIONALITY_domestic; variable = VARIABILITY_fixed; }
-	    void make (e_TYPENAME name, e_VARIABILITY variable)
-	    { this->name = name; national = NATIONALITY_domestic; this->variable = variable; }
-	    void make (e_TYPENAME name, e_NATIONALITY national, e_VARIABILITY variable)
-	    { this->name = name; this->national = national; this->variable = variable; }
-	    // DataType ()
-	    // 	: name(TYPENAME_error), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
-	    // {  }
-	    // DataType (e_TYPENAME name)
-	    // 	: name(name), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
-	    // {  }
-	    // DataType (e_TYPENAME name, e_VARIABILITY variable)
-	    // 	: name(name), national(NATIONALITY_domestic), variable(variable)
-	    // {  }
-	    // DataType (e_TYPENAME name, e_NATIONALITY national, e_VARIABILITY variable)
-	    // 	: name(name), national(national), variable(variable)
-	    // {  }
+	    DataType ()
+	    	: name(TYPENAME_error), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
+	    {  }
+	    DataType (e_TYPENAME name)
+	    	: name(name), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
+	    {  }
+	    DataType (e_TYPENAME name, e_VARIABILITY variable)
+	    	: name(name), national(NATIONALITY_domestic), variable(variable)
+	    {  }
+	    DataType (e_TYPENAME name, e_NATIONALITY national, e_VARIABILITY variable)
+	    	: name(name), national(national), variable(variable)
+	    {  }
 	};
 #define SQL_PRECISION_unspecified -1
 

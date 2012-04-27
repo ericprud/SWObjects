@@ -82,22 +82,22 @@ public:
 
 namespace w3c_sw {
 
-    namespace sql {
+    namespace parser {
 
-	class IsNullProxy : public BooleanComparator {
+	class IsNullProxy : public sql::BooleanComparator {
 	public:
 	    IsNullProxy () : BooleanComparator(NULL, NULL) {  }
-	    virtual Expression* clone () const {
+	    virtual sql::Expression* clone () const {
 		return new IsNullProxy();
 	    }
-	    virtual e_PREC getPrecedence () const { return PREC_GT; }
-	    virtual bool mapsTo (const Expression&, AliasMapping::List&) const {
+	    virtual sql::e_PREC getPrecedence () const { return sql::PREC_GT; }
+	    virtual bool mapsTo (const sql::Expression&, sql::AliasMapping::List&) const {
 		throw "ProgramFlowException";
 	    }
-	    virtual bool finalEq (const BooleanGE&) const {
+	    virtual bool finalEq (const sql::BooleanGE&) const {
 		throw "ProgramFlowException";
 	    }	    
-	    virtual bool operator== (const Expression&) const {
+	    virtual bool operator== (const sql::Expression&) const {
 		throw "ProgramFlowException";
 	    }
 	    virtual const char* getComparisonNotation () const {
@@ -109,7 +109,33 @@ namespace w3c_sw {
 		return new IsNotNullProxy();
 	    }
 	};
-    }
+
+	struct NoCtorDataType {
+	    sql::DataType::e_TYPENAME name;
+	    sql::DataType::e_NATIONALITY national;
+	    sql::DataType::e_VARIABILITY variable;
+	    bool operator== (const NoCtorDataType& ref) const {
+		return name == ref.name
+		    && national == ref.national
+		    && variable == ref.variable;
+	    }
+	    void make ()
+	    { this->name = sql::DataType::TYPENAME_error; national = sql::DataType::NATIONALITY_domestic; variable = sql::DataType::VARIABILITY_fixed; }
+	    void make (sql::DataType::e_TYPENAME name)
+	    { this->name = name; national = sql::DataType::NATIONALITY_domestic; variable = sql::DataType::VARIABILITY_fixed; }
+	    void make (sql::DataType::e_TYPENAME name, sql::DataType::e_VARIABILITY variable)
+	    { this->name = name; national = sql::DataType::NATIONALITY_domestic; this->variable = variable; }
+	    void make (sql::DataType::e_TYPENAME name, sql::DataType::e_NATIONALITY national, sql::DataType::e_VARIABILITY variable)
+	    { this->name = name; this->national = national; this->variable = variable; }
+	};
+
+	struct DataTypeProxy : sql::DataType {
+	    DataTypeProxy (parser::NoCtorDataType noctor)
+		: sql::DataType(noctor.name, noctor.national, noctor.variable)
+	    {  }
+	};
+    } // namespace parser
+
 /** The SQLDriver class brings together all components. It creates an instance of
  * the SQLParser and SQLScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -174,7 +200,7 @@ public:
 typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
 typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
 typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
-typedef struct {sql::DataType type; int size;} l_TypeSize;
+typedef struct {parser::NoCtorDataType type; int size;} l_TypeSize;
 
 } // namespace w3c_sw
 
@@ -183,7 +209,7 @@ typedef struct {sql::DataType type; int size;} l_TypeSize;
 
 
 /* Line 35 of lalr1.cc  */
-#line 187 "lib/SQLParser/SQLParser.hpp"
+#line 213 "lib/SQLParser/SQLParser.hpp"
 
 
 #include <string>
@@ -197,7 +223,7 @@ typedef struct {sql::DataType type; int size;} l_TypeSize;
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 201 "lib/SQLParser/SQLParser.hpp"
+#line 227 "lib/SQLParser/SQLParser.hpp"
   class position;
   class location;
 
@@ -207,7 +233,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 211 "lib/SQLParser/SQLParser.hpp"
+#line 237 "lib/SQLParser/SQLParser.hpp"
 
 #include "location.hh"
 
@@ -255,7 +281,7 @@ do {							\
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 259 "lib/SQLParser/SQLParser.hpp"
+#line 285 "lib/SQLParser/SQLParser.hpp"
 
   /// A Bison parser.
   class SQLParser
@@ -267,7 +293,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 188 "lib/SQLParser/SQLParser.ypp"
+#line 214 "lib/SQLParser/SQLParser.ypp"
 
     /* Productions */
     std::string* p_NAME;
@@ -290,13 +316,13 @@ namespace w3c_sw {
     std::vector<const sql::Expression*>* p_Expressions;
 
     std::vector<sql::Attribute>* p_Attributes;
-    sql::DataType p_SchemaDatatype;
+    parser::NoCtorDataType p_SchemaDatatype;
     l_TypeSize p_TypeSize;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 300 "lib/SQLParser/SQLParser.hpp"
+#line 326 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -587,7 +613,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 591 "lib/SQLParser/SQLParser.hpp"
+#line 617 "lib/SQLParser/SQLParser.hpp"
 
 
 
