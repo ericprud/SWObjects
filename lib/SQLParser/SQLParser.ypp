@@ -176,7 +176,7 @@ public:
 typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
 typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
 typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
-typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
+typedef struct {sql::DataType type; int size;} l_TypeSize;
 
 } // namespace w3c_sw
 
@@ -194,6 +194,8 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
     // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
     bool p_bool;
+    sql::DataType::e_NATIONALITY p_Nationality;
+    sql::DataType::e_VARIABILITY p_Variability;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
     sql::AliasedSelect* p_AliasedSelect;
     sql::AliasAttr* p_AliasAttr;
@@ -205,7 +207,7 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
     std::vector<const sql::Expression*>* p_Expressions;
 
     std::vector<sql::Attribute>* p_Attributes;
-    sql::e_TYPE p_SchemaDatatype;
+    sql::DataType p_SchemaDatatype;
     l_TypeSize p_TypeSize;
 }
 
@@ -273,7 +275,9 @@ typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
 %type <p_int> _O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C _Q_O_QIT_LIMIT_E_S_QINTEGER_E_Or_QIT_ROWNUM_E_S_QGT_LE_E_S_QINTEGER_E_C_E_Opt _O_QIT_OFFSET_E_S_QINTEGER_E_C _Q_O_QIT_OFFSET_E_S_QINTEGER_E_C_E_Opt
 	_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt
 %type <p_TypeSize> Sized
-%type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt
+%type <p_bool> _O_QIT_INNER_E_Or_QGT_COMMA_E_Or_QIT_LEFT_E_S_QIT_OUTER_E_C
+%type <p_Variability> _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt
+%type <p_Nationality> _QIT_NATIONAL_E_Opt
 
 %type <p_NAME> _O_QGT_COMMA_E_S_QAttribute_E_C
 %type <p_Attributes> AttrList _QAttrList_E_Opt _Q_O_QGT_COMMA_E_S_QAttribute_E_C_E_Star
@@ -522,64 +526,68 @@ _Q_O_QGT_LPAREN_E_S_QINTEGER_E_S_QGT_RPAREN_E_C_E_Opt:
 
 Type:
     _QIT_NATIONAL_E_Opt _O_QIT_CHARACTER_E_Or_QIT_CHAR_E_C _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt	{
-	$$ = $3 ? sql::TYPE_varchar : sql::TYPE_char;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_char, $1, $3);
     }
   | IT_VARCHAR	{
-	$$ = sql::TYPE_varchar;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_char, sql::DataType::VARIABILITY_varying);
     }
   | IT_BINARY _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt	{
-	$$ = $2 ? sql::TYPE_varbinary : sql::TYPE_binary;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_binary, $2);
     }
   | IT_VARBINARY	{
-	$$ = sql::TYPE_varbinary;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_binary, sql::DataType::VARIABILITY_varying);
     }
   | IT_NUMERIC	{
-	$$ = sql::TYPE_int;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_int);
     }
   | IT_DECIMAL	{
-	$$ = sql::TYPE_int;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_int);
     }
   | IT_SMALLINT	{
-	$$ = sql::TYPE_int;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_int);
     }
   | _O_QIT_INTEGER_E_Or_QIT_INT_E_C	{
-	$$ = sql::TYPE_int;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_int);
     }
   | IT_BIGINT	{
-	$$ = sql::TYPE_int;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_int);
     }
   | IT_FLOAT	{
-      $$ = sql::TYPE_float;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_float);
     }
   | IT_REAL	{
-      $$ = sql::TYPE_real;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_real);
     }
   | IT_DOUBLE IT_PRECISION	{
-      $$ = sql::TYPE_double;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_double);
     }
   | IT_BOOLEAN	{
-      $$ = sql::TYPE_boolean;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_boolean);
     }
   | IT_DATE	{
-      $$ = sql::TYPE_date;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_date);
     }
   | IT_TIME	{
-      $$ = sql::TYPE_time;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_time);
     }
   | IT_TIMESTAMP	{
-      $$ = sql::TYPE_timestamp;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_timestamp);
     }
   | IT_DATETIME	{
-      $$ = sql::TYPE_datetime;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_datetime);
     }
   | IT_INTERVAL	{
-      $$ = sql::TYPE_interval;
+	$$.sql::DataType::make(sql::DataType::TYPENAME_interval);
     }
 ;
 
 _QIT_NATIONAL_E_Opt:
-    
-  | IT_NATIONAL	
+    {
+	$$ = sql::DataType::NATIONALITY_domestic;
+    }
+  | IT_NATIONAL	{
+	$$ = sql::DataType::NATIONALITY_national;
+    }
 ;
 
 _O_QIT_CHARACTER_E_Or_QIT_CHAR_E_C:
@@ -589,16 +597,16 @@ _O_QIT_CHARACTER_E_Or_QIT_CHAR_E_C:
 
 _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C:
     IT_VARYING	{
-	$$ = true;
+	$$ = sql::DataType::VARIABILITY_varying;
     }
   | IT_LARGE IT_OBJECT	{
-	$$ = false;
+	$$ = sql::DataType::VARIABILITY_blob;
     }
 ;
 
 _Q_O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C_E_Opt:
     {
-	$$ = false;
+	$$ = sql::DataType::VARIABILITY_fixed;
     }
   | _O_QIT_VARYING_E_Or_QIT_LARGE_E_S_QIT_OBJECT_E_C	
 ;

@@ -286,19 +286,20 @@ struct Materializer {
 		    }
 	    }
 
-	    if (it->second.type == sql::TYPE_binary || it->second.type == sql::TYPE_varbinary)
+	    if (it->second.type.name == sql::DataType::TYPENAME_binary)
 		fixups.insert(selectList.lastColumn(),
 			      new SQLclient_MySQL::Result::LiteralToBinary());
 	    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to base64\n";
 
 #ifdef SQL_CLIENT_MYSQL
 	    if (driverString == "mysql") {
-		if (it->second.type == sql::TYPE_boolean)
+		if (it->second.type.name == sql::DataType::TYPENAME_boolean)
 		    fixups.insert(selectList.lastColumn(),
 				  new SQLclient::Result::IntToBoolean());
 		// w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to boolean\n";
 
-		if (it->second.type == sql::TYPE_char && // MySQL doesn't preserve trailing spaces on CHAR(n)
+		if (it->second.type.name == sql::DataType::TYPENAME_char && // MySQL doesn't preserve trailing spaces on CHAR(n)
+		    it->second.type.variable == sql::DataType::VARIABILITY_fixed &&
 		    it->second.precision != SQL_PRECISION_unspecified)
 		    fixups.insert(selectList.lastColumn(),
 				  new SQLclient_MySQL::Result::CharTrailingChars(it->second.precision));
@@ -306,12 +307,12 @@ struct Materializer {
 #endif /* SQL_CLIENT_MYSQL */
 #ifdef SQL_CLIENT_ORACLE
 	    if (driverString == "oracle") {
-		if (it->second.type == sql::TYPE_boolean)
+		if (it->second.type.name == sql::DataType::TYPENAME_boolean)
 		    fixups.insert(selectList.lastColumn(),
 				  new SQLclient::Result::IntToBoolean());
 
-		if (it->second.type == sql::TYPE_float
-		    || it->second.type == sql::TYPE_real) // I don't know how to detect numeric types from occi.
+		if (it->second.type.name == sql::DataType::TYPENAME_float
+		    || it->second.type.name == sql::DataType::TYPENAME_real) // I don't know how to detect numeric types from occi.
 		    fixups.insert(selectList.lastColumn(),
 				  new SQLclient_Oracle::Result::IntegerToDouble());
 		    // w3c_sw_LINEN << "rewrite " << selectList.lastColumn() << " to double\n";

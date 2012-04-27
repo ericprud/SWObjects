@@ -174,7 +174,7 @@ public:
 typedef struct {sql::RelationName* relation; sql::SQLQuery* subselect; sql::RelVar* alias; bool optional;} l_TableAlias;
 typedef struct {sql::Join* join; const sql::Expression* expr; bool optional;} l_JoinExpression;
 typedef struct {std::vector<sql::Join*>* joins; std::vector<const sql::Expression*>* exprs;} l_TableList;
-typedef struct {sql::e_TYPE type; int size;} l_TypeSize;
+typedef struct {sql::DataType type; int size;} l_TypeSize;
 
 } // namespace w3c_sw
 
@@ -277,6 +277,8 @@ namespace w3c_sw {
     // struct {std::vector<sql::Join*>* joins; sql::Expression* where;} p_fromWhere;
     int p_int;
     bool p_bool;
+    sql::DataType::e_NATIONALITY p_Nationality;
+    sql::DataType::e_VARIABILITY p_Variability;
     std::vector<sql::AliasedSelect*>* p_AttributeList;
     sql::AliasedSelect* p_AliasedSelect;
     sql::AliasAttr* p_AliasAttr;
@@ -288,13 +290,13 @@ namespace w3c_sw {
     std::vector<const sql::Expression*>* p_Expressions;
 
     std::vector<sql::Attribute>* p_Attributes;
-    sql::e_TYPE p_SchemaDatatype;
+    sql::DataType p_SchemaDatatype;
     l_TypeSize p_TypeSize;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 298 "lib/SQLParser/SQLParser.hpp"
+#line 300 "lib/SQLParser/SQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -585,7 +587,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 589 "lib/SQLParser/SQLParser.hpp"
+#line 591 "lib/SQLParser/SQLParser.hpp"
 
 
 

@@ -41,19 +41,55 @@ namespace w3c_sw {
 	 * 'TIMESTAMP' | 'DATETIME'
 	 * 'INTERVAL'
 	 */
-	typedef enum {TYPE_error,
-		      TYPE_char, TYPE_varchar,
-		      TYPE_binary, TYPE_varbinary,
-		      TYPE_decimal,
-		      TYPE_int,
-		      TYPE_float,
-		      TYPE_real,
-		      TYPE_double,
-		      TYPE_boolean,
-		      TYPE_date,
-		      TYPE_time,
-		      TYPE_datetime, TYPE_timestamp,
-		      TYPE_interval} e_TYPE;
+	struct DataType {
+	    typedef enum {TYPENAME_error,
+			  TYPENAME_char,
+			  TYPENAME_binary,
+			  TYPENAME_decimal,
+			  TYPENAME_int,
+			  TYPENAME_float,
+			  TYPENAME_real,
+			  TYPENAME_double,
+			  TYPENAME_boolean,
+			  TYPENAME_date,
+			  TYPENAME_time,
+			  TYPENAME_datetime,
+			  TYPENAME_timestamp,
+			  TYPENAME_interval} e_TYPENAME;
+	    typedef enum {NATIONALITY_domestic,
+			  NATIONALITY_national} e_NATIONALITY;
+	    typedef enum {VARIABILITY_fixed,
+			  VARIABILITY_varying,
+			  VARIABILITY_blob} e_VARIABILITY;
+	    e_TYPENAME name;
+	    e_NATIONALITY national;
+	    e_VARIABILITY variable;
+	    bool operator== (const DataType& ref) const {
+		return name == ref.name
+		    && national == ref.national
+		    && variable == ref.variable;
+	    }
+	    void make ()
+	    { this->name = TYPENAME_error; national = NATIONALITY_domestic; variable = VARIABILITY_fixed; }
+	    void make (e_TYPENAME name)
+	    { this->name = name; national = NATIONALITY_domestic; variable = VARIABILITY_fixed; }
+	    void make (e_TYPENAME name, e_VARIABILITY variable)
+	    { this->name = name; national = NATIONALITY_domestic; this->variable = variable; }
+	    void make (e_TYPENAME name, e_NATIONALITY national, e_VARIABILITY variable)
+	    { this->name = name; this->national = national; this->variable = variable; }
+	    // DataType ()
+	    // 	: name(TYPENAME_error), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
+	    // {  }
+	    // DataType (e_TYPENAME name)
+	    // 	: name(name), national(NATIONALITY_domestic), variable(VARIABILITY_fixed)
+	    // {  }
+	    // DataType (e_TYPENAME name, e_VARIABILITY variable)
+	    // 	: name(name), national(NATIONALITY_domestic), variable(variable)
+	    // {  }
+	    // DataType (e_TYPENAME name, e_NATIONALITY national, e_VARIABILITY variable)
+	    // 	: name(name), national(national), variable(variable)
+	    // {  }
+	};
 #define SQL_PRECISION_unspecified -1
 
 	/** abstract class for serializing SQL.
@@ -63,8 +99,8 @@ namespace w3c_sw {
 	    virtual std::string name(std::string s) = 0;
 	    virtual std::string name(AliasAttr aa);
 	    virtual std::string literal(std::string s) = 0;
-	    virtual std::string typeString(e_TYPE type, int precision) = 0;
-	    virtual std::string typedValue(e_TYPE type, std::string representation) = 0;
+	    virtual std::string typeString(DataType type, int precision) = 0;
+	    virtual std::string typedValue(DataType type, std::string representation) = 0;
 	    virtual std::string hexString(const std::vector<unsigned char>& bytes) = 0;
 	    virtual std::string booleanValue(bool value) = 0;
 	    virtual std::string as() = 0;
@@ -80,28 +116,60 @@ namespace w3c_sw {
 	    virtual std::string literal (std::string s) {
 		return std::string() + (true ? "'" : "") + s + (true ? "'" : "");
 	    }
-	    virtual std::string typeString (e_TYPE type, int precision) {
+	    virtual std::string typeString (DataType type, int precision) {
 		std::stringstream ss;
-		ss << 
-		    (type == TYPE_error ? "ERROR" :
-		     type == TYPE_char ? "CHAR" : type == TYPE_varchar ? "VARCHAR" :
-		     type == TYPE_binary ? "BINARY" : type == TYPE_varbinary ? "VARBINARY" :
-		     type == TYPE_decimal ? "DECIMAL" :
-		     type == TYPE_int ? "INT" :
-		     type == TYPE_float ? "FLOAT" :
-		     type == TYPE_real ? "REAL" :
-		     type == TYPE_double ? "DOUBLE" :
-		     type == TYPE_boolean ? "BOOLEAN" :
-		     type == TYPE_date ? "DATE" :
-		     type == TYPE_time ? "TIME" :
-		     type == TYPE_timestamp ? "TIMESTAMP" : type == TYPE_datetime ? "DATETIME" :
-		     type == TYPE_interval ? "INTERVAL" :
-		     "???");
+		if (type.national == DataType::NATIONALITY_national)
+		    ss << "NATIONAL ";
+		switch (type.name) {
+		case DataType::TYPENAME_error:	   ss << "ERROR"    ; break;
+		case DataType::TYPENAME_char:	   ss << "CHAR"	    ; break;
+		case DataType::TYPENAME_binary:	   ss << "BINARY"   ; break;
+		case DataType::TYPENAME_decimal:   ss << "DECIMAL"  ; break;
+		case DataType::TYPENAME_int:	   ss << "INT"	    ; break;
+		case DataType::TYPENAME_float:	   ss << "FLOAT"    ; break;
+		case DataType::TYPENAME_real:	   ss << "REAL"	    ; break;
+		case DataType::TYPENAME_double:	   ss << "DOUBLE"   ; break;
+		case DataType::TYPENAME_boolean:   ss << "BOOLEAN"  ; break;
+		case DataType::TYPENAME_date:	   ss << "DATE"	    ; break;
+		case DataType::TYPENAME_time:	   ss << "TIME"	    ; break;
+		case DataType::TYPENAME_timestamp: ss << "TIMESTAMP"; break;
+		case DataType::TYPENAME_datetime:  ss << "DATETIME" ; break;
+		case DataType::TYPENAME_interval:  ss << "INTERVAL" ; break;
+		default:
+		    {
+			std::stringstream ss;
+			ss << "unknown DataType: " << type.name;
+			throw std::runtime_error(ss.str());
+		    }
+		}
+		if (type.variable == DataType::VARIABILITY_varying)
+		    ss << " VARYING";
 		if (precision != SQL_PRECISION_unspecified)
 		    ss << "(" << precision << ")";
 		return ss.str();
 	    }
-	    virtual std::string typedValue (e_TYPE, std::string representation) {
+
+	    // typeString_VAR is an explicit variation factored out for all those DBs which don't parse "VARYING":
+	    std::string typeString_VAR (DataType type, int precision) {
+		if (type.variable == DataType::VARIABILITY_varying) {
+		    std::stringstream ss;
+		    if (type.national == DataType::NATIONALITY_national)
+			ss << "NATIONAL ";
+		    switch (type.name) {
+		    case DataType::TYPENAME_char:	ss << "VARCHAR"   << "(" << precision << ")"; break;
+		    case DataType::TYPENAME_binary:	ss << "VARBINARY" << "(" << precision << ")"; break;
+		    default:
+			{
+			    ss << "DataType: " << type.name << " can't be VARYING";
+			    throw std::runtime_error(ss.str());
+			}
+		    }
+		    return ss.str();
+		}
+		return SQLSerializer_dummyTemplate<dummy>::typeString(type, precision);
+	    }
+
+	    virtual std::string typedValue (DataType, std::string representation) {
 		return representation;
 	    }
 	    virtual std::string booleanValue (bool value) {
@@ -141,11 +209,14 @@ namespace w3c_sw {
 	    virtual std::string literal (std::string s) {
 		return std::string() + (true ? "\"" : "") + s + (true ? "\"" : "");
 	    }
+	    virtual std::string typeString (DataType type, int precision) {
+		return SQLSerializer::typeString_VAR(type, precision);
+	    }
 	};
 	struct PostgresSerializer : public SQLSerializer {
-	    virtual std::string typeString (e_TYPE type, int precision) {
+	    virtual std::string typeString (DataType type, int precision) {
 		return
-		    type == TYPE_binary || type == TYPE_varbinary
+		    type.name == DataType::TYPENAME_binary
 		    ? "BYTEA"
 		    : SQLSerializer::typeString(type, precision);
 	    }
@@ -160,21 +231,21 @@ namespace w3c_sw {
 	    }
 	};
 	struct OracleSerializer : public SQLSerializer {
-	    virtual std::string typeString (e_TYPE type, int precision) {
+	    virtual std::string typeString (DataType type, int precision) {
 		return
-		    type == TYPE_boolean
+		    type.name == DataType::TYPENAME_boolean
 		    ? "NUMERIC(1)"
-		    : type == TYPE_binary || type == TYPE_varbinary
+		    : type.name == DataType::TYPENAME_binary
 		    ? "BLOB"
 		    : SQLSerializer::typeString(type, precision);
 	    }
-	    virtual std::string typedValue (e_TYPE type, std::string representation) {
+	    virtual std::string typedValue (DataType type, std::string representation) {
 		return
-		    type == TYPE_date
+		    type.name == DataType::TYPENAME_date
 		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd')"
-		    : type == TYPE_time
+		    : type.name == DataType::TYPENAME_time
 		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd')"
-		    : (type == TYPE_timestamp || type == TYPE_datetime)
+		    : (type.name == DataType::TYPENAME_timestamp || type.name == DataType::TYPENAME_datetime)
 		    ? std::string() + "TO_DATE(" + representation + ", 'yyyy-mm-dd HH24:MI:SS')"
 		    : representation;
 	    }
@@ -1429,10 +1500,10 @@ namespace w3c_sw {
 
 	class CastConstraint : public Expression {
 	    const Expression* exp;
-	    e_TYPE type;
+	    DataType type;
 	    int precision;
 	public:
-	    CastConstraint (const Expression* exp, e_TYPE type, int precision) : Expression(), exp(exp), type(type), precision(precision) {  }
+	    CastConstraint (const Expression* exp, DataType type, int precision) : Expression(), exp(exp), type(type), precision(precision) {  }
 	    virtual Expression* clone () const {
 		return new CastConstraint(exp->clone(), type, precision);
 	    }
@@ -1626,7 +1697,7 @@ namespace w3c_sw {
 	    struct Selects : public std::vector<AliasedSelect*> {
 		std::ostream& print(std::ostream& os, std::string pad = "",
 				    std::string driver = "", Serializer& s = SQLSerializer::It) const;
-		std::ostream& print(const std::vector<e_TYPE>& fieldTypes, std::ostream& os,
+		std::ostream& print(const std::vector<DataType>& fieldTypes, std::ostream& os,
 				    std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
 	    };
 
@@ -1688,14 +1759,14 @@ namespace w3c_sw {
 	    }
 	    virtual std::string toString (std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		std::vector<e_TYPE> fieldTypes;
+		std::vector<DataType> fieldTypes;
 		return _toString(fieldTypes, false, pad, driver, s);
 	    }
-	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString (const std::vector<DataType>& fieldTypes, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return _toString(fieldTypes, true, pad, driver, s);
 	    }
-	    virtual std::string _toString (const std::vector<e_TYPE>& fieldTypes, bool typed, std::string pad = "",
+	    virtual std::string _toString (const std::vector<DataType>& fieldTypes, bool typed, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		ss << pad << "SELECT ";
@@ -1739,9 +1810,9 @@ namespace w3c_sw {
 	    if (begin() == end()) os << "NULL";
 	    return os;
 	}
-	inline std::ostream& SQLQuery::Selects::print (const std::vector<e_TYPE>& fieldTypes, std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
+	inline std::ostream& SQLQuery::Selects::print (const std::vector<DataType>& fieldTypes, std::ostream& os, std::string pad, std::string driver, Serializer& s) const {
 	    /* SELECT attributes */
-	    std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+	    std::vector<DataType>::const_iterator field = fieldTypes.begin();
 	    for (const_iterator it = begin(); it != end(); ++it) {
 		if (field == fieldTypes.end())
 		    throw std::runtime_error(std::string()
@@ -1952,11 +2023,11 @@ namespace w3c_sw {
 		}
 		return ss.str();
 	    }
-	    virtual std::string toString (std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString (std::vector<DataType>& fieldTypes, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
 		std::string newPad = pad + "    ";
-		std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+		std::vector<DataType>::const_iterator field = fieldTypes.begin();
 		for (std::vector<SQLQuery*>::const_iterator it = disjoints.begin();
 		     it != disjoints.end(); ++it) {
 		    if (field == fieldTypes.end())
@@ -2012,7 +2083,7 @@ namespace w3c_sw {
 		std::string newPad = pad + "    ";
 		return SQLQuery::toString(newPad, driver, s);
 	    }
-	    virtual std::string toString (std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString (std::vector<DataType>& fieldTypes, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::string newPad = pad + "    ";
 		return SQLQuery::toString(fieldTypes, newPad, driver, s);
@@ -2204,7 +2275,7 @@ namespace w3c_sw {
 		};
 
 		Attribute name;
-		e_TYPE type;
+		DataType type;
 		int precision;
 	    protected: // manage this stuff via the method calls.
 		boost::optional<PKParticipation> pk;
@@ -2213,7 +2284,7 @@ namespace w3c_sw {
 
 	    public:
 
-		Field (Attribute name, e_TYPE type, int precision)
+		Field (Attribute name, DataType type, int precision)
 		    : name(name), type(type), precision(precision)
 		{  }
 		virtual bool operator== (const FieldOrKey& ref) const {
@@ -2399,7 +2470,7 @@ namespace w3c_sw {
 	struct RValue {
 	    virtual std::string toString(std::string pad = "",
 					 std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
-	    virtual std::string toString(const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString(const std::vector<DataType>& fieldTypes, std::string pad = "",
 					 std::string driver = "", Serializer& s = SQLSerializer::It) const = 0;
 	};
 	struct RSelection : public RValue {
@@ -2409,7 +2480,7 @@ namespace w3c_sw {
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return select->toString(pad, driver, s);
 	    }
-	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString (const std::vector<DataType>& fieldTypes, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		return select->toString(fieldTypes, pad, driver, s);
 	    }
@@ -2428,10 +2499,10 @@ namespace w3c_sw {
 		}
 		return ss.str();
 	    }
-	    virtual std::string toString (const std::vector<e_TYPE>& fieldTypes, std::string pad = "",
+	    virtual std::string toString (const std::vector<DataType>& fieldTypes, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
-		std::vector<e_TYPE>::const_iterator field = fieldTypes.begin();
+		std::vector<DataType>::const_iterator field = fieldTypes.begin();
 		for (std::vector<const sql::Expression*>::const_iterator it = constants->begin();
 		     it != constants->end(); ++it) {
 		    if (field == fieldTypes.end())
@@ -2469,7 +2540,7 @@ namespace w3c_sw {
 	    }
 	    std::string toString (const schema::Database& db, std::string pad = "",
 				  std::string driver = "", Serializer& s = SQLSerializer::It) const {
-		std::vector<e_TYPE> fieldTypes;
+		std::vector<DataType> fieldTypes;
 		std::stringstream ss;
 		ss << "INSERT INTO " << s.name(relName) << " (";
 		for (std::vector<Attribute>::const_iterator it = attributes->begin();
