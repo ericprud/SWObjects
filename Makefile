@@ -210,6 +210,8 @@ LD = $(CXX)
 LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
 VER=0.1
+COMPILE=CPATH=$(CPATH) $(CXX)
+LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX)
 
 #some progressive macports
 #CC=llvm-gcc
@@ -368,6 +370,7 @@ win/version.h: docs/version.h
 ##  git svn fetch --all
 ##  git checkout -b sparql11 remotes/sparql11
 
+
 ##### bin dirs ####
 
 bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
@@ -375,16 +378,17 @@ bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o : bin/%.cpp bin/%.dep config.h docs/version.h
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
-	$(CXX) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
+	$(LINK) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
 
 release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
 	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat $(SQL_CLIENT_LIB)  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
+
 
 ##### apache #####
 
@@ -406,6 +410,7 @@ install-mod_sparul: apache/mod_sparul.la
 
 clean-mod_sparul:
 	rm -f apache/mod_sparul.{o,so,la} apache/.libs/mod_sparul.*
+
 
 ##### packaged tests ####
 
@@ -433,20 +438,54 @@ unitTESTexes := $(TESTNAMELIST)
 #unitTESTS=t_GraphMatch
 #$(error unitTESTS: $(unitTESTS))
 # and control which subtests within a unit are run
-#TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
+
 TEST_ARGS ?= ""
+# e.g. TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
+# e.g. TEST_ARGS=--keep\ --output_format=XML\ --report_level=detailed\ --log_level=all\ --show_progress
 
-t_SPARQL: bin/sparql
-t_DM: bin/dm-materialize
 
+## Rules for all tests ##
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 
-tests/test_%.o: tests/test_%.cpp $(LIB) tests/.dep/test_%.d config.h
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.dep config.h
+	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
 
 tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
+	$(LINK) -o $@ $< $(LDFLAGS) $(TEST_LIB)
+
+t_%: tests/test_%
+	@# Most of the tests are run from the tests dir to make it easier to find errant files.
+	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
+
+
+## Rules specific to certain tests ##
+t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS)
+
+tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	$(COMPILE) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
+
+t_SPARQL: bin/sparql
+
+tests/DM-report.xml: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS) --output_format=XML --report_level=detailed 2> $@
+
+tests/DM-report-EARL.ttl: tests/DM-report.xml tests/report2earl.xsl
+	$(XSLT) $^ > $@
+
+DM-test: tests/DM-report-EARL.ttl bin/sparql
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib bin/sparql -d tests/DM-report-EARL.ttl -e 'PREFIX earl: <http://www.w3.org/ns/earl#> SELECT (substr(str(?name), 47) AS ?t) ?db (if (?result = <http://www.w3.org/ns/earl#passed>, 1, 0) AS ?p) { ?s earl:result [ earl:outcome ?result ] ; earl:test ?name ; earl:info ?db }'
+
+
+## Valgrind tests ##
+v_%: tests/test_%
+	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
+# update suppressions with --gen-suppressions=yes and copy to boost-test.supp
+
+
+## "manual" (non-boost) tests, synthesized from the boost tests ##
+.PHONY: tests/manualHarness.dep
 
 tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
@@ -461,35 +500,11 @@ tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
 tests/man_%: tests/man_%.o $(LIB)
 	$(CXX) -o $@ $< $(LDFLAGS) $(TEST_LIB)
 
-.PHONY: tests/manualHarness.dep
-
-
-tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	$(CXX) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
-
-t_%: tests/test_%
-	@# Most of the tests are run from the tests dir to make it easier to find errant files.
-	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
-
-t_DM: tests/test_DM tests/DM-manifest.txt
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS)
-
-tests/DM-report.xml: tests/test_DM tests/DM-manifest.txt
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ ./bin/dm-materialize $(SQL_DM_TESTS) $(TEST_ARGS) --output_format=XML --report_level=detailed 2> $@
-
-tests/DM-report-EARL.ttl: tests/DM-report.xml tests/report2earl.xsl
-	$(XSLT) $^ > $@
-
-v_%: tests/test_%
-	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
-# update suppressions with --gen-suppressions=yes and copy to boost-test.supp
-
-# "manual" (non-boost) tests, synthesized from the boost tests.
 m_%: tests/man_%
 	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib valgrind --leak-check=yes  --suppressions=boost-test.supp --xml=no --num-callers=32 ./$(notdir $<) $(TEST_ARGS) )
 
 
-### Query Map tests tests:
+## Query Map tests tests ##
 
 tests/HealthCare1.results: bin/sparql tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $< tests/query_HealthCare1.rq tests/ruleMap_HealthCare1.rq --stem http://someClinic.exampe/DB/
@@ -503,7 +518,7 @@ transformTEST_RESULTS=$(transformTESTS:=.results)
 transformVALGRIND=$(transformTEST_RESULTS:.results=.valgrind)
 
 
-### sparql server tests:
+## sparql server tests ##
 
 tests/server_mouseToxicity_remote-all.results: \
 	bin/sparql \
@@ -552,7 +567,8 @@ SPARQL_serverTEST_RESULTS=$(SPARQL_serverTESTS:=.results)
 test: lib $(unitTESTS) $(transformTEST_RESULTS)
 valgrind: lib $(transformVALGRIND)
 
-### Generate SWIG Interfaces ###
+
+##### Generate SWIG Interfaces #####
 
 SWIG ?= swig
 # SWIG output fixups:
@@ -598,7 +614,7 @@ python-clean:
 SWIG-TEST += python-test
 SWIG-CLEAN += python-clean
 
-# Java
+## Java ##
 swig/java/src/AtomFactory.java swig/java/src/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	-$(RM) swig/java/src/*.java
 	$(SWIG) -o swig/java/src/SWObjects_wrap.cxx -c++ -java -I. -Ilib -Iinterface swig/SWObjects.i
@@ -627,7 +643,7 @@ java-clean:
 SWIG-TEST += java-test
 SWIG-CLEAN += java-clean
 
-# Perl
+## Perl ##
 swig/perl/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -perl5 -I. -Ilib -Iinterface $<
 	$(SWIG_SUBST) $@
@@ -648,7 +664,7 @@ SWIG-TEST += perl-test
 SWIG-CLEAN += perl-clean
 
 
-# Lua
+## Lua ##
 swig/lua/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -o $@ -c++ -lua -I. -Ilib -Iinterface $<
 	$(SWIG_SUBST_LUA) $@
@@ -669,7 +685,7 @@ SWIG-TEST += lua-test
 SWIG-CLEAN += lua-clean
 
 
- # Php
+## Php ##
 swig/php/SWObjects_wrap.cxx: swig/SWObjects.i $(SWIG_HEADERS)
 	$(SWIG) -DYYDEBUG=0 -o $@ -c++ -php -I. -Ilib -Iinterface $<
 	$(SWIG_SUBST_PHP) $@
@@ -693,7 +709,7 @@ swig-test: $(SWIG-TEST)
 swig-clean: $(SWIG-CLEAN)
 
 
-# Mac OSX stuff
+##### Mac OSX stuff #####
 Sparql.app/Contents/MacOS:
 	mkdir -p $@
 
@@ -746,7 +762,7 @@ Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 	mkdir tmp_mount && hdiutil mount Sparql.dmg -mountroot tmp_mount && (cd tmp_mount/Sparql/Sparql.app/Contents/MacOS/ && ./Sparql --version); hdiutil detach tmp_mount/Sparql && rmdir tmp_mount
 
 
-# Clean - rm everything we remember to rm.
+##### Clean - rm everything we remember to rm #####
 .PHONY: clean parse-clean meta-clean cleaner
 clean:
 	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \

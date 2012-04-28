@@ -55,6 +55,10 @@ HTTP_SERVER= ASIO
 # @@TODO= add e.g. postgres, oracl client libraries.
 SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
 SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+# connect with:
+#   mysql -u root DM
+#   psql DM
+#   NLS_LANG=_.UTF8 PATH=$PATH:/u01/app/oracle/product/11.2.0/xe/bin/ ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe sqlplus DM/DM@//localhost/ORCL
 
 ##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
 # This is needed on cygwin, which doesn't create symlinks for base names,
@@ -74,6 +78,11 @@ BOOST_VERSION=
 # Note that you may also set INCLUDES, LIBINC, etc on the command line:
 # INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. -lexpat1" make -j 4 t_DAWG
 
+NLS_LANG=_.UTF8
+# Makefile has COMPILE and LINK rules which import CPATH and LIBRARY_PATH
+CPATH=/usr/include/oracle/11.2/client64/
+LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib/
+LD_LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib/
 
 # LINK: STATIC | DYNAMIC - build executables requiring dynamic libraries . ####
 # Needed when building any executables.
