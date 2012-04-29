@@ -332,7 +332,6 @@ GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
 # don't run flex and bison
 NOGEN:
 	touch $(GENERATED)
-	ln -s win/FlexLexer.h
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	$(YACC) -o $(@:.hpp=.cpp) $<
