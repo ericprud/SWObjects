@@ -2213,11 +2213,13 @@ compared against
 
 	/* Query parms for GET or POST */
 	SWWEBagent::ParameterList p;
-	p.set("Accept", 
-	      /* 1. */ "application/binary-rdf-results-table,application/x-binary-rdf-results-table,"
-	      /* .9 */ "application/sparql-results+xml;q=.9,text/sparql-results;q=.9,"
-	      /* .8 */ "application/xml;q=.8,application/html+xml;q=.8,"
-	      /* .7 */ "text/html;q=.7");
+
+	// Sesame seems to ignore HTTP Accept headers but takes an Accept query
+	// parameter with exactly one media type. You can force this with e.g.
+	// -Dw3c_sw_FORCE_SESAME_XML_RESULTS "application/sparql-results+xml"
+#ifdef w3c_sw_FORCE_SESAME_XML_RESULTS
+	p.set("Accept", w3c_sw_FORCE_SESAME_XML_RESULTS);
+#endif
 
 	const VariableList* knownVars = rs->getKnownVars();
 	// for (VariableList::const_iterator known = vars.vars.begin(); known != vars.vars.end(); ++known)
