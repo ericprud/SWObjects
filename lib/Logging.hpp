@@ -234,10 +234,14 @@ namespace w3c_sw {
 
 	    { // Begin: lock backend
 		Sink_t::locked_backend_ptr backend = sink->locked_backend();
-		//		backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, logging::empty_deleter()));
+		// backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, logging::empty_deleter()));
 		core->add_sink(sink);
 
+#if (BOOST_VERSION > 104600) // could use (BOOST_LOG_COMPATIBILITY == "1.46") if cpp compared strings
 		sink->set_formatter(&myFormatter);
+#else
+		backend->set_formatter(&myFormatter);
+#endif
 
 	    } // End: Locked backend
 

@@ -91,7 +91,7 @@ endif
 
 ifeq ($(REGEX), BOOST)
   CONFIG_DEFS+= \\\#define REGEX_LIB	SWOb_BOOST "\n"
-  REGEX_LIB?= -lboost_regex$(BOOST_VERSION) -lpthread
+  REGEX_LIB?= -lboost_regex$(BOOST_SUFFIX) -lpthread
 else
   ifneq ($(REGEX), )
     $(warning $(REGEX_LIB) may not be supported)
@@ -102,7 +102,7 @@ endif
 
 ifeq ($(HTTP_CLIENT), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_ASIO "\n"
-  HTTP_CLIENT_LIB?= -lboost_system$(BOOST_VERSION)
+  HTTP_CLIENT_LIB?= -lboost_system$(BOOST_SUFFIX)
 else ifeq ($(HTTP_CLIENT), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_CLIENT	SWOb_DLIB "\n"
   $(warning DLIB HTTP client code not yet written)
@@ -116,7 +116,7 @@ endif
 
 ifeq ($(HTTP_SERVER), ASIO)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_ASIO "\n"
-  HTTP_SERVER_LIB?= -lboost_system$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) -lpthread
+  HTTP_SERVER_LIB?= -lboost_system$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) -lpthread
 else ifeq ($(HTTP_SERVER), DLIB)
   CONFIG_DEFS+= \\\#define HTTP_SERVER	SWOb_DLIB "\n"
   DLIB= -DDLIB_TIGHT_LOOP=1 -DNO_MAKEFILE
@@ -158,7 +158,7 @@ ifeq ($(SOME_SQL_CLIENT), )
 endif
 
 
-TEST_LIB?= -lboost_unit_test_framework$(BOOST_VERSION)
+TEST_LIB?= -lboost_unit_test_framework$(BOOST_SUFFIX)
 
 
 ifeq ($(LINK), DYNAMIC)
@@ -207,8 +207,9 @@ CXXFLAGS += $(CFLAGS)
 
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
-LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
-LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION)
+#LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
+LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX)
 VER=0.1
 COMPILE=CPATH=$(CPATH) $(CXX)
 LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX)
@@ -248,17 +249,24 @@ BOOST_LOG_DEFINES= -DBOOST_LOG_USE_NATIVE_SYSLOG=1 -DNDEBUG \
 	-DBOOST_ALL_DYN_LINK=1 -DBOOST_LOG_NO_LIB -DBOOST_THREAD_POSIX -DDATE_TIME_INLINE
 LOG_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_LOG_BUILDING_THE_LIB=1
 # not needed currently LOG_SETUP_ARGS=$(BOOST_LOG_CFLAGS) $(BOOST_LOG_DEFINES) -DBOOST_HAS_ICU=1 -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1 -DBOOST_LOG_SETUP_DLL
-BOOST_LOG_SRC_DIR=boost-log/
+
+ifeq ($(BOOST_LOG_COMPATIBILITY),1.42)
+  BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /sink_frontends.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /trivial.cpp
+else
+  BOOST_LOG_COMPATIBILITY = 1.46
+  BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /default_sink.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /thread_id.cpp /trivial.cpp /formatter_parser.cpp /parser_utils.cpp /init_from_stream.cpp /timestamp.cpp /init_from_settings.cpp /event.cpp /filter_parser.cpp /default_filter_factory.cpp
+endif
+
+BOOST_LOG_SRC_DIR=boost-log-$(BOOST_LOG_COMPATIBILITY)/
 BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
 BOOST_LOG_LIB=boost_log
-BOOST_LOG_VERSION=1.49.0
 INCLUDES += -Iboost-log
-LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION)
+LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
 
-BOOST_LOG_SRS_FILES=/attribute_name.cpp /attribute_set.cpp /attribute_values_view.cpp /code_conversion.cpp /core.cpp /record_ostream.cpp /severity_level.cpp /global_logger_storage.cpp /named_scope.cpp /process_id.cpp /timer.cpp /exceptions.cpp /default_sink.cpp /text_ostream_backend.cpp /text_file_backend.cpp /syslog_backend.cpp /thread_specific.cpp /once_block.cpp /threadsafe_queue.cpp /thread_id.cpp /trivial.cpp /formatter_parser.cpp /parser_utils.cpp /init_from_stream.cpp /timestamp.cpp /init_from_settings.cpp /event.cpp /filter_parser.cpp /default_filter_factory.cpp
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
-BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_VERSION) -lboost_filesystem$(BOOST_VERSION) -lboost_system$(BOOST_VERSION) -lboost_date_time$(BOOST_VERSION) -pthread -lrt
+#BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -pthread -lrt
+BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -pthread
 
 $(BOOST_TARGET)lib:
 	mkdir -p $(BOOST_TARGET)lib
@@ -266,11 +274,11 @@ $(BOOST_TARGET)lib:
 $(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp | $(BOOST_TARGET)lib
 	$(CXX) $(INCLUDES) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
-$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION): $(BOOST_LOG_OBJ_FILEPATHS)
+$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY): $(BOOST_LOG_OBJ_FILEPATHS)
 	$(CXX) $(LIBS) -o $@ -shared $^ $(BOOST_REQUIRED_LIBS)
 
-$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION)
-	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $@
+$(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY)
+	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY) $@
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a: $(BOOST_LOG_OBJ_FILEPATHS)
 	ar rcvs $@ $(BOOST_LOG_OBJ_FILEPATHS)
@@ -286,7 +294,7 @@ boost-log/libs/log/example/%/main: boost-log/libs/log/example/%/main.o $(BOOST_T
 
 log-clean:
 	rm -f boost-log/stage/*.o
-	rm -f $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	rm -f $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 
 log-copy: # copy boost-log from ../boost-log-trunk, e.g. make log-copy && make -j 8 -k log-all -- ~53s
 	mkdir -p $(BOOST_LOG_SRC_DIR)libs/log/src/
@@ -373,7 +381,7 @@ win/version.h: docs/version.h
 ##### bin dirs ####
 
 bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
-	($(ECHO) -n $@ bin/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o : bin/%.cpp bin/%.dep config.h docs/version.h
@@ -393,7 +401,7 @@ release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
 
 # TODO: cleanup mod_sparul build, autoconf dependency paths?
 apache/mod_sparul.dep: apache/mod_sparul.cpp config.h
-	($(ECHO) $@ \\; $(CXX) -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) $@ \\; $(CXX) -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(DEFS) $(CXXFLAGS) -MM $<) > $@ || (rm $@; false)
 
 apache/mod_sparul.o: $(LIB) apache/mod_sparul.dep
 	gcc -fPIC -Wall `$(APXS) -q CFLAGS` -I`$(APXS) -q INCLUDEDIR` -I$(CODEA) -I$(CCL) -I$(APR) $(INCLUDES) -c apache/mod_sparul.cpp -o apache/mod_sparul.o
@@ -445,7 +453,7 @@ TEST_ARGS ?= ""
 
 ## Rules for all tests ##
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.dep config.h
 	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
@@ -463,7 +471,7 @@ t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	$(COMPILE) -o $@ $< -lboost_filesystem$(BOOST_VERSION) -lboost_thread$(BOOST_VERSION) $(LDFLAGS) $(TEST_LIB)
+	$(COMPILE) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)
 
 t_SPARQL: bin/sparql
 
@@ -490,7 +498,7 @@ tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
@@ -736,7 +744,7 @@ RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_
 	install_name_tool -change /opt/local/lib/libssl.0.9.8.dylib @executable_path/../Frameworks/libssl.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/../Frameworks/libcrypto.0.9.8.dylib $</libmysqlclient.dylib
 	install_name_tool -change /opt/local/lib/libz.1.dylib @executable_path/../Frameworks/libz.1.dylib $</libmysqlclient.dylib
-	cp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_VERSION) $</libboost_log.so
+	cp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY) $</libboost_log.so
 	install_name_tool -id @executable_path/../Frameworks/libboost_log.so $</libboost_log.so
 	install_name_tool -change /opt/local/lib/libboost_thread-mt.dylib @executable_path/../Frameworks/libboost_thread-mt.dylib $</libboost_log.so;
 	install_name_tool -change /opt/local/lib/libboost_filesystem-mt.dylib @executable_path/../Frameworks/libboost_filesystem-mt.dylib $</libboost_log.so;

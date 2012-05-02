@@ -60,13 +60,16 @@ SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/OR
 #   psql DM
 #   NLS_LANG=_.UTF8 PATH=$PATH:/u01/app/oracle/product/11.2.0/xe/bin/ ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe sqlplus DM/DM@//localhost/ORCL
 
-##### BOOST_VERSION: - Suffix added to select a particular version of Boost ###
+##### BOOST_SUFFIX: - Suffix added to select a particular version of Boost ###
 # This is needed on cygwin, which doesn't create symlinks for base names,
 # e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
-#BOOST_VERSION=-gcc34-mt-1_38
+#BOOST_SUFFIX=-gcc34-mt-1_38
 # or you may need to link to multi-threaded versions of boost libraries:
-BOOST_VERSION=
+BOOST_SUFFIX=
 
+# If you are using a version of BOOST older than 1.42, force the use
+# of the older version of boost log
+#BOOST_LOG_COMPATIBILITY=1.42
 
 ##### INCLUDES: /some/path... - Directories containing additional headers #####
 # You must prefix each directory with "-I" and separate them with spaces.
