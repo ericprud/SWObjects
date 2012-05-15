@@ -163,7 +163,7 @@ namespace w3c_sw {
 #if defined(SWIG)
 	%mutable;
 #endif /* defined(SWIG) */
-	typedef enum {RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
+	typedef enum {RESULT_Error, RESULT_Tabular, RESULT_Boolean, RESULT_Graphs} ResultType;
 	ResultType resultType;
 	static size_t DebugEnumerateLimit;
 
@@ -487,6 +487,9 @@ namespace w3c_sw {
 	};
 #endif /* !defined(SWIG) */
 
+	/** create a ResultSet with a pointer to the passed RdfDB and
+	 * no solutions.
+	 */
 	ResultSet (AtomFactory* atomFactory, RdfDB* db) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(false), db(db), selectOrder(), 
@@ -794,7 +797,11 @@ namespace w3c_sw {
 	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) const {
 	    if (preferDb || resultType == RESULT_Graphs) {
 		// text/ntriples , text/turtle , text/trig
-		return db->toString(mediaType, namespaces);
+		return 
+		    mediaType.match("text/sparql-results") ||
+		    mediaType.match("application/sparql-results+xml")
+		    ? db->toString("text/trig", namespaces) 
+		    : db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results")) {
 		return toString(namespaces);
 	    } else {

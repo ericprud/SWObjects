@@ -85,10 +85,11 @@ namespace w3c_sw {
 				     + sptr.mediaType.get()));
     }
 
-    ResultSet::ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI) : 
-	atomFactory(atomFactory), knownVars(), 
-	results(), ordered(false), db(NULL), selectOrder(), 
-	orderedSelect(false), resultType(RESULT_Tabular) {
+    ResultSet::ResultSet (AtomFactory* atomFactory, RdfDB* db, const char* baseURI)
+	: atomFactory(atomFactory), knownVars(), 
+	  results(), ordered(false), db(NULL), selectOrder(), 
+	  orderedSelect(false), resultType(RESULT_Tabular) {
+
 	SPARQLfedDriver sparqlParser(baseURI, atomFactory);
 	IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
@@ -813,6 +814,8 @@ namespace w3c_sw {
     }
     XMLSerializer* ResultSet::toXml (XMLSerializer* xml) const {
 	switch (resultType) {
+	case RESULT_Error:
+	    throw std::runtime_error("unable to serialize malformed ResultSet.");
 	case RESULT_Graphs:
 	    xml->rawData(toString(MediaType("text/turtle"))); // !! Evolve to RDF/XML serializer.
 	    break;
