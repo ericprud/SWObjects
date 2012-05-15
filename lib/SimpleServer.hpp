@@ -972,6 +972,7 @@ struct SimpleEngine {
 	    }
 	    ResultSet loaded(&atomFactory, &xmlParser, istr);
 	    rs.joinIn(&loaded);
+	    rs.resultType = loaded.resultType;
 	    return true;
 	} else if (istr.mediaType.match("text/sparql-results") ||
 		   istr.mediaType.match("application/sparql-results+json") ||
@@ -988,6 +989,7 @@ struct SimpleEngine {
 	    TTerm::String2BNode bnodeMap;
 	    ResultSet loaded(&atomFactory, istr, false, bnodeMap);
 	    rs.joinIn(&loaded);
+	    rs.resultType = loaded.resultType;
 	    return true;
 	} else {
 	    /**
@@ -1005,6 +1007,7 @@ struct SimpleEngine {
 	    }
 	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
 			 baseURI ? uriString(baseURI) : nameStr, &atomFactory, &nsAccumulator, &grddlMap);
+	    rs.resultType = ResultSet::RESULT_Graphs;
 	    return false;
 	}
     }
