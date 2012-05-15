@@ -671,6 +671,8 @@ int main(int ac, char* av[])
             ("nullterm,0", "terminate lines with \0")
             ("compare", po::value<std::string>(), 
 	     "compare to some expected results.")
+            ("compare-as-result-set", po::value<std::string>(), 
+	     "same as compare but the resultSet is in turtle.")
             ;
     
         po::options_description uriOpts("URI resolution");
@@ -1097,23 +1099,26 @@ int main(int ac, char* av[])
 
 	    }
 	    {
-		if (vm.count("compare")) {
-		    const sw::TTerm* cmp = TheServer.engine.htparseWrapper(vm["compare"].as<std::string>(), TheServer.engine.argBaseURI);
+		bool compareAsResultSet = vm.count("compare-as-result-set") != 0;
+		if (vm.count("compare") || compareAsResultSet) {
+		    std::string resrc = compareAsResultSet
+			? vm["compare-as-result-set"].as<std::string>()
+			: vm["compare"].as<std::string>();
+		    const sw::TTerm* cmp = TheServer.engine.htparseWrapper(resrc, TheServer.engine.argBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
 					    NULL, &TheServer.engine.webClient);
-		    sw::RdfDB refDB;
+		    sw::RdfDB refDB(&TheServer.engine.xmlParser);
 		    // sw::ResultSet reference(&TheServer.engine.atomFactory, &refDB);
 		    sw::ResultSet reference(&TheServer.engine.atomFactory);
 		    reference.setRdfDB(&refDB);
 		    bool refIsResultSet = TheServer.engine.loadDataOrResults
 			(NULL, // turtle and trig default graphs go into rdfDB's default graph.
 			 cmp->getLexicalValue(), TheServer.engine.baseURI, iptr, reference, &refDB);
-		    // Heuristic for when we're comparing against an RDF
-		    // representation of a result set.
-		    if (TheServer.engine.resultSet.resultType == w3c_sw::ResultSet::RESULT_Tabular
-			&& reference.resultType == w3c_sw::ResultSet::RESULT_Graphs) 
+
+		    if (compareAsResultSet) // Comparing against an RDF representation of a result set.
 			reference = sw::ResultSet(&TheServer.engine.atomFactory, reference.getRdfDB(), "");
+
 		    if (TheServer.engine.resultSet == reference) {
 			if (!Quiet)
 			    std::cout << "matched\n";
