@@ -166,12 +166,18 @@ namespace w3c_sw {
 			      AtomFactory* atomFactory, NamespaceMap* nsMap = NULL, GRDDLmap* grddlMap = NULL);
 	virtual void bindVariables(ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch);
 	void express(Expressor* expressor) const;
+
+	/**
+	 * If the mediaType doesn't match some named graphs type ("text/trig"),
+	 * all triples are stuffed into the default graph. (Is this the right
+	 * behavior?)
+	 */
 	std::string toString (MediaType mediaType = MediaType("text/trig"), NamespaceMap* namespaces = NULL) const {
 	    /* simple unordered serializer -
 	       SPARQLSerializer s;
 	       express(&s);
 	       return s.str(); */
-	    if (!mediaType)
+	    if (!mediaType) // !!! not handled by parameter default?
 		mediaType = "text/trig";
 
 	    /* ordered serializer */
