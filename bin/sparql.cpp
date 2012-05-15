@@ -188,7 +188,7 @@ struct MyLoadEntry {
 				&TheServer.engine.webClient);
 
 	const sw::TTerm* graph = graphName ? graphName : sw::DefaultGraph;
-	ResultSetsLoaded = TheServer.engine.loadDataOrResults (graph, nameStr, baseURI, istr, TheServer.engine.resultSet, &TheServer.engine.db);
+	ResultSetsLoaded = TheServer.engine.loadDataOrResults(graph, nameStr, baseURI, istr, TheServer.engine.resultSet, &TheServer.engine.db);
     }
 };
 
@@ -1095,35 +1095,26 @@ int main(int ac, char* av[])
 		    Output.resource = NULL;
 		delete query;
 
+	    }
+	    {
 		if (vm.count("compare")) {
 		    const sw::TTerm* cmp = TheServer.engine.htparseWrapper(vm["compare"].as<std::string>(), TheServer.engine.argBaseURI);
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
 					    NULL, &TheServer.engine.webClient);
-
-		    sw::ResultSet* reference;
-		    if (iptr.mediaType.match("application/sparql-results+xml") || 
-			iptr.mediaType.match("application/sparql-results+json")) {
-			reference = new sw::ResultSet(&TheServer.engine.atomFactory, &TheServer.engine.xmlParser, iptr);
-		    } else if (iptr.mediaType.match("text/sparql-results")) {
-			sw::TTerm::String2BNode str2b;
-			reference = new sw::ResultSet(&TheServer.engine.atomFactory, iptr, false, str2b);
-		    } else {
-			sw::RdfDB resGraph;
-			if (iptr.mediaType.match("text/ntriples") || 
-			    iptr.mediaType.match("text/turtle")) {
-			    TheServer.engine.turtleParser.setGraph(resGraph.ensureGraph(NULL));
-			    TheServer.engine.turtleParser.parse(iptr);
-			    TheServer.engine.turtleParser.clear("");
-			} else {
-			    throw std::string("media-type \"").append(iptr.mediaType.toString()).append("\" unknown.");
-			}
-			reference = 
-			    TheServer.engine.resultSet.resultType == sw::ResultSet::RESULT_Graphs ?
-			    new sw::ResultSet(&TheServer.engine.atomFactory, &resGraph) :
-			    new sw::ResultSet(&TheServer.engine.atomFactory, &resGraph, "");
-		    }
-		    if (TheServer.engine.resultSet == *reference) {
+		    sw::RdfDB refDB;
+		    // sw::ResultSet reference(&TheServer.engine.atomFactory, &refDB);
+		    sw::ResultSet reference(&TheServer.engine.atomFactory);
+		    reference.setRdfDB(&refDB);
+		    bool refIsResultSet = TheServer.engine.loadDataOrResults
+			(NULL, // turtle and trig default graphs go into rdfDB's default graph.
+			 cmp->getLexicalValue(), TheServer.engine.baseURI, iptr, reference, &refDB);
+		    // Heuristic for when we're comparing against an RDF
+		    // representation of a result set.
+		    if (TheServer.engine.resultSet.resultType == w3c_sw::ResultSet::RESULT_Tabular
+			&& reference.resultType == w3c_sw::ResultSet::RESULT_Graphs) 
+			reference = sw::ResultSet(&TheServer.engine.atomFactory, reference.getRdfDB(), "");
+		    if (TheServer.engine.resultSet == reference) {
 			if (!Quiet)
 			    std::cout << "matched\n";
 			ret = 0;
@@ -1131,9 +1122,9 @@ int main(int ac, char* av[])
 			if (Quiet)
 			    ret = 1;
 			else
-			    std::cout << TheServer.engine.resultSet << "!=\n" << *reference << "\n";
+			    std::cout << TheServer.engine.resultSet << "!=\n" << reference << "\n";
 		    }
-		    delete reference;
+//		    delete reference;
 		    Output.resource = NULL; // No other output reqired.
 		}
 	    }
