@@ -1476,6 +1476,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    rs->trim(m_distinctness, -1, -1);
 	else
 	    rs->trim(m_distinctness, m_SolutionModifier->m_limit, m_SolutionModifier->m_offset);
+	rs->resultType = ResultSet::RESULT_Tabular;
 	return rs;
     }
 
