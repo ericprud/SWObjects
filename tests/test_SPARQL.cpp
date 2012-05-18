@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE( Dbe ) {
 
 /* make sure we fail mis-matches */
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
-    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-02.ttl");
+    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare-as-result-set data-r2/triple-match/result-tp-02.ttl");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "+-----------------------------+------------------------------+\n"
 		      "| ?p                          | ?q                           |\n"
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001_002 ) {
 }
 
 BOOST_AUTO_TEST_CASE( triple_match__dawg_triple_pattern_001 ) {
-    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare data-r2/triple-match/result-tp-01.ttl");
+    ExecResults tested("../bin/sparql -d data-r2/triple-match/data-01.ttl data-r2/triple-match/dawg-tp-01.rq --compare-as-result-set data-r2/triple-match/result-tp-01.ttl");
     BOOST_CHECK_EQUAL(tested.s, 
 		      "matched\n");
 }
@@ -255,9 +255,19 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     {   /* Create an simple table dump. */
 	ExecResults creation("../bin/sparql -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
 	BOOST_CHECK_EQUAL(creation.s, "");
+    }
 
+    {
 	/* Check that table dump. */
 	ExecResults cat("../bin/sparql -d SPARQL/D.srt\n");
+	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
+	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
+	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+    }
+ 
+    {
+	/* Check that libteral flat text dump. */
+	ExecResults cat("../bin/sparql -d SPARQL/D.txt\n");
 	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
 	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
 	BOOST_CHECK_EQUAL(cat_measured, cat_expected);

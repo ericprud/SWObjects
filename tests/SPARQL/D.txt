@@ -1,0 +1,4 @@
+?O                                      ?P                                                 ?S
+          <http://swobj.org/sparql/v1>            <http://usefulinc.com/ns/doap#homepage>  <>
+<http://usefulinc.com/ns/doap#Project>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>  <>
+        "a semantic web query toolbox"           <http://usefulinc.com/ns/doap#shortdesc>  <>

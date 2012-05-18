@@ -974,10 +974,13 @@ struct SimpleEngine {
 	    rs.joinIn(&loaded);
 	    rs.resultType = loaded.resultType;
 	    return true;
-	} else if (istr.mediaType.match("text/sparql-results") ||
-		   istr.mediaType.match("application/sparql-results+json") ||
-		   istr.mediaType.match("application/binary-rdf-results-table") ||
-		   istr.mediaType.match("application/x-binary-rdf-results-table")) {
+	} else if // ResultSet media types:
+		(istr.mediaType.match("text/plain") ||
+		 istr.mediaType.match("text/sparql-results") ||
+		 istr.mediaType.match("text/tab-separated-values") ||
+		 istr.mediaType.match("application/sparql-results+json") ||
+		 istr.mediaType.match("application/binary-rdf-results-table") ||
+		 istr.mediaType.match("application/x-binary-rdf-results-table")) {
 	    if (Logger::Logging(Logger::IOLog_level, Logger::info)) {
 		std::stringstream o;
 		o << "Reading data table " << nameStr;

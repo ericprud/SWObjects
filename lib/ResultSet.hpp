@@ -241,9 +241,10 @@ namespace w3c_sw {
 	    /* ... and generate Results for each remaining row. */
 	    int col = 0;
 	    Result* curRow = NULL;
+	    enum {WholeString = 0, BoxChars = 1, CapturedTerm = 2, NullBinding = 3};
 	    const boost::regex srt("^[ \\t\\n]*(?:"		// ignore leading whitespace
 					  "("				// \1: box chars
-				           "(?:[┌┬┐├┼┤└┴┘─┏┳┓┠╋┫┗┻┛━]+"	//   unicode
+				           "(?:[┌┬┐├┼┤└┴┘─┏┳┓┣╋┫┗┻┛━]+"	//   unicode
 				              "|(?:\\+-+)+\\+"		//   ascii
 				            ")[ \\t\\n]*"		//     white space
 					    //"|#[^\\n]+\\n?"	// in-line comments -- too weird?
@@ -259,7 +260,7 @@ namespace w3c_sw {
 					    "|(--|UNDEF)"		// \3: no binding
 					   ")?))");
 	    const boost::regex plain("^[ \\t]*(?:"		// ignore leading whitespace
-					  "(23gj3232jhg2v)"		// disable \1, box chars
+					  "(.^)"			// disable \1, box chars
 					  "|\n|("			// \2: empty if \n
 					   "(?:<[^>]*>)"		// IRI
 					    "|(?:_:[^[:space:]]+)"	// bnode
@@ -270,21 +271,24 @@ namespace w3c_sw {
 					    "|(?:-?[0-9\\.]+)"		// integer
 					    "|(--|UNDEF)"		// no binding
 					   "))");
-	    const boost::regex& expr = sptr.mediaType.match("text/plain") ? plain : srt;
+	    const boost::regex& expr =
+		sptr.mediaType.match("text/plain") ? plain : srt;
 
 	    while (regex_search(start, end, what, expr, flags)) {
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-		    << "matched \"" << std::string(what[0].first, what[0].second) << "\"\n";
-		if (what[1].first != what[1].second) {
+		    << "matched \"" << std::string
+		    (what[WholeString].first, what[WholeString].second) << "\"\n";
+		if (what[BoxChars].first != what[BoxChars].second) {
 		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
-			<< "skipping box chars: \"" << std::string(what[1].first, what[1].second) << "\"\n";
-		} else if (what[2].first == what[2].second) {
+			<< "skipping box chars: \"" << std::string
+			(what[BoxChars].first, what[BoxChars].second) << "\"\n";
+		} else if (what[CapturedTerm].first == what[CapturedTerm].second) {
 		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 			<< "end of header or solution\n";
 		    firstRow = false;
 		    col = 0;
 		    curRow = NULL;
-		} else if (what[3].first != what[3].second) {
+		} else if (what[NullBinding].first != what[NullBinding].second) {
 		    if (firstRow) {
 			const BNode* b = atomFactory->createBNode();
 			BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
@@ -297,10 +301,13 @@ namespace w3c_sw {
 			}
 			BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 			    << headers[col]->toString() << "unbound\n";
-			++col;
+			if (firstRow)
+			    headers.push_back(TTerm::Unbound);
+			else
+			    ++col;
 		    }
 		} else {
-		    std::string term(what[2].first, what[2].second);
+		    std::string term(what[CapturedTerm].first, what[CapturedTerm].second);
 		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 			<< "term text: \"" << term << "\"\n";
 		    const TTerm* tterm = atomFactory->getTTerm(term, nodeMap);
@@ -318,7 +325,7 @@ namespace w3c_sw {
 		}
 
 		/* Start after the end of the stuff we just parsed. */
-		start = what[0].second; 
+		start = what[WholeString].second; 
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << "starting again at: \"" << std::string(start, end).substr(0, 20) << "\"\n";
 	    }
