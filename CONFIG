@@ -53,8 +53,10 @@ HTTP_SERVER= ASIO
 #   ODBC
 #   
 # @@TODO= add e.g. postgres, oracl client libraries.
-SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
-SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+#SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
+SQL_CLIENTS= MYSQL|ODBC|POSTGRES
+#SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
 # connect with:
 #   mysql -u root DM
 #   psql DM
@@ -83,9 +85,16 @@ BOOST_SUFFIX=
 
 NLS_LANG=_.UTF8
 # Makefile has COMPILE and LINK rules which import CPATH and LIBRARY_PATH
-CPATH=/usr/include/oracle/11.2/client64/
-LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib/
-LD_LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib/
+# It's generally better to use INCLUDES and LIBS, though you'll still need LD_LIBRARY_PATH
+#CPATH=
+#LIBRARY_PATH=
+INCLUDES=-I/home/eric/checkouts/libbooost.inst/include/ -I/usr/local/instantclient_11_2/sdk/include/
+LIBS=-L/home/eric/checkouts/libbooost.inst/lib/ -L/usr/local/instantclient_11_2/
+LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/
+
+
+# boost-log on linux requires clock_gettime so need a -lrt after -lboost-log
+LRT=-lrt
 
 # LINK: STATIC | DYNAMIC - build executables requiring dynamic libraries . ####
 # Needed when building any executables.

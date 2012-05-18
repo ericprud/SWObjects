@@ -54,8 +54,8 @@ CCL ?= ../ccl
 APR ?= /usr/include/apr-1.0
 
 INCLUDES += -I${PWD} -I${PWD}/lib -I${PWD}/docs  # . (for config.h) and ./lib (for the rest)
-I2=$(subst /, ,$(BISONOBJ:.o=))
-I3=$(sort $(I2))
+I2=$(subst /, ,$(BISONOBJ:.o=)) # e.g. lib JSONresultsParser JSONresultsParser lib MapSetParser MapSetParser
+I3=$(sort $(I2)) # e.g. JSONresultsParser MapSetParser ... lib
 INCLUDES += $(I3:%=-I${PWD}/%)
 
 PWD ?= $(shell pwd -P)
@@ -143,7 +143,7 @@ endif
 ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_ORACLE "\n"
   SOME_SQL_CLIENT = 1
-  SQL_CLIENT_LIB+= -locci -lclntsh -lnnz11
+  SQL_CLIENT_LIB+= -locci -lclntsh -laio -lnnz11
 endif
 
 ifeq ($(findstring ODBC, $(SQL_CLIENTS)), ODBC)
@@ -211,8 +211,8 @@ LD = $(CXX)
 LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX)
 VER=0.1
-COMPILE=CPATH=$(CPATH) $(CXX)
-LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX)
+COMPILE=CPATH=$(CPATH) $(CXX) $(CFLAGS)
+LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX) $(LDFLAGS)
 
 #some progressive macports
 #CC=llvm-gcc
@@ -259,13 +259,13 @@ endif
 
 BOOST_LOG_SRC_DIR=boost-log-$(BOOST_LOG_COMPATIBILITY)/
 BOOST_TARGET=$(BOOST_LOG_SRC_DIR)stage/
-BOOST_LOG_LIB=boost_log
-INCLUDES += -Iboost-log
-LIBINC	 += -L$(BOOST_TARGET)lib -l$(BOOST_LOG_LIB) -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
+BOOST_LOG_LIB=boost_log-$(BOOST_LOG_COMPATIBILITY)
+INCLUDES += -Iboost-log-$(BOOST_LOG_COMPATIBILITY)
+LINK_BOOST_LOG=-l$(BOOST_LOG_LIB) $(LRT)
+LIBINC	 += -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG) -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
 
 BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
 BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
-#BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -pthread -lrt
 BOOST_REQUIRED_LIBS := -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -pthread
 
 $(BOOST_TARGET)lib:
@@ -275,7 +275,7 @@ $(BOOST_TARGET)%.o: $(BOOST_LOG_SRC_DIR)libs/log/src/%.cpp | $(BOOST_TARGET)lib
 	$(CXX) $(INCLUDES) -Iboost-log $(LOG_ARGS) -c -o $@ $<
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY): $(BOOST_LOG_OBJ_FILEPATHS)
-	$(CXX) $(LIBS) -o $@ -shared $^ $(BOOST_REQUIRED_LIBS)
+	$(CXX) $(LIBS) -o $@ -shared $^ $(LIBS) $(BOOST_REQUIRED_LIBS)
 
 $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY)
 	ln -sf lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY) $@
@@ -290,7 +290,7 @@ boost-log/libs/log/example/%/main.o: boost-log/libs/log/example/%/main.cpp $(BOO
 	g++ $(WARN) -DBOOST_LOG_USE_NATIVE_SYSLOG=1 $(DEBUG) -g -c -o $@ $< -Iboost-log
 
 boost-log/libs/log/example/%/main: boost-log/libs/log/example/%/main.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -o $@ $< -Lboost-log/stage/lib -lboost_log $(BOOST_REQUIRED_LIBS)
+	g++ -o $@ $< -Lboost-log/stage/lib $(LINK_BOOST_LOG) $(BOOST_REQUIRED_LIBS)
 
 log-clean:
 	rm -f boost-log/stage/*.o
@@ -315,24 +315,24 @@ log-all: logt_trivial logt_basic_usage logt_advanced_usage logt_async_log \
 .SECONDARY:
 
 lib/%.dep: lib/%.cpp config.h
-	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 
 # The following doesn't fire, so I have to create the specialied rules below:
 # lib/%/%.dep: lib/%/%.cpp config.h
-# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 
 lib/SPARQLfedParser/SPARQLfedParser.dep: lib/SPARQLfedParser/SPARQLfedParser.cpp config.h
-	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/SPARQLfedParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 lib/MapSetParser/MapSetParser.dep: lib/MapSetParser/MapSetParser.cpp config.h
-	($(ECHO) -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/MapSetParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 lib/TurtleSParser/TurtleSParser.dep: lib/TurtleSParser/TurtleSParser.cpp config.h
-	($(ECHO) -n $@ lib/TurtleSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TurtleSParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
-	($(ECHO) -n $@ lib/TrigSParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TrigSParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
-	($(ECHO) -n $@ lib/SQLParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/SQLParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 lib/JSONresultsParser/JSONresultsParser.dep: lib/JSONresultsParser/JSONresultsParser.cpp config.h
-	($(ECHO) -n $@ lib/JSONresultsParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/JSONresultsParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
@@ -381,11 +381,12 @@ win/version.h: docs/version.h
 ##### bin dirs ####
 
 bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
-	($(ECHO) -n $@ bin/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o : bin/%.cpp bin/%.dep config.h docs/version.h
-	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
+#	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
+	$(COMPILE) -c -o $@ $<
 
 bin/% : bin/%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
 	$(LINK) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
@@ -394,7 +395,7 @@ unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
 
 release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
-	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib -lboost_log -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat $(SQL_CLIENT_LIB)  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
+	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG) -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat $(SQL_CLIENT_LIB)  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
 
 
 ##### apache #####
@@ -453,10 +454,10 @@ TEST_ARGS ?= ""
 
 ## Rules for all tests ##
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 
 tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.dep config.h
-	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
+	$(COMPILE) -c -o $@ $<
 
 tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(LINK) -o $@ $< $(LDFLAGS) $(TEST_LIB)
@@ -498,7 +499,7 @@ tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
@@ -603,7 +604,7 @@ swig/python/SWObjects_wrap.o: swig/python/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/python/SWObjects_wrap.o swig/python/SWObjects_wrap.cxx $(PYTHON_INC) $(INCLUDES)
 
 swig/python/_SWObjects.so: swig/python/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG)
 
 # The _SWObjects.so target can be built with the python distutils package,
 # but it's noisier and doesn't re-use the object files in lib:
@@ -631,7 +632,7 @@ swig/java/src/SWObjects_wrap.o: swig/java/src/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o $@ $< -I$(JAVA_HOME)/include $(INCLUDES)
 
 swig/java/libSWObjects.so: swig/java/src/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG)
 
 swig/java/SWObjects.jar: swig/java/src/AtomFactory.java # there are zillions of class files, use AtomFactory as an indicator
 	-$(RM) $@
@@ -659,7 +660,7 @@ swig/perl/SWObjects_wrap.o: swig/perl/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(PERL_HOME)/CORE $(INCLUDES)
 
 swig/perl/libSWObjects.so: swig/perl/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG)
 
 perl-test: swig/perl/libSWObjects.so
 	(cd swig/perl/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib perl t_SWObjects.t)
@@ -680,7 +681,7 @@ swig/lua/SWObjects_wrap.o: swig/lua/SWObjects_wrap.cxx
 	g++ $(OPTIM) -I. -Ilib/ -Iinterface/ -fPIC -c -o $@ $< -I$(LUA_HOME) $(INCLUDES)
 
 swig/lua/SWObjects.so: swig/lua/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG)
 
 lua-test: swig/lua/SWObjects.so
 	(cd swig/lua/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib shake t_SWObjects.lua)
@@ -701,7 +702,7 @@ swig/php/SWObjects_wrap.o: swig/php/SWObjects_wrap.cxx
 	g++ $(OPTIM) -DHAVE_LIBEXPAT=1 -I. -Ilib/ -Iinterface/ -fPIC -fno-stack-protector -c -o swig/php/SWObjects_wrap.o swig/php/SWObjects_wrap.cxx -I$(PHP_HOME) $(INCLUDES)
 
 swig/php/SWObjects.so: swig/php/SWObjects_wrap.o $(SWIG_OBJS) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib -lboost_log
+	g++ -shared -o $@ $< $(SWIG_OBJS) $(SWIG_LIBS) -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG)
 
 php-test: swig/php/SWObjects.so
 	(cd swig/php/ && LD_LIBRARY_PATH=../../$(BOOST_TARGET)lib php -d extension=./SWObjects.so t_SWObjects.php)
