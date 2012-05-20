@@ -456,7 +456,7 @@ TEST_ARGS ?= ""
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
 	($(ECHO) -n $@ tests/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
 
-tests/test_%.o: tests/test_%.cpp $(LIB) tests/test_%.dep config.h
+tests/test_%.o: tests/test_%.cpp tests/test_%.dep config.h
 	$(COMPILE) -c -o $@ $<
 
 tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
