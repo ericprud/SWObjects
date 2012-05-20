@@ -691,11 +691,20 @@ namespace w3c_sw {
 		// text/ntriples , text/turtle , text/trig
 		return 
 		    mediaType.match("text/sparql-results") ||
-		    mediaType.match("application/sparql-results+xml")
+		    mediaType.match("application/sparql-results+xml") ||
+		    mediaType.match("application/sparql-results+json")
 		    ? db->toString("text/trig", namespaces) 
 		    : db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results")) {
 		return toString(namespaces);
+	    } else if (mediaType.match("text/html")) {
+		XMLSerializer s;
+		XMLSerializer::Attributes resultsAttrs;
+		resultsAttrs["id"] = "results";
+		resultsAttrs["class"] = "tablesorter";
+		toHtmlTable(&s, resultsAttrs, "");
+		std::string ret = s.str();
+		return ret;
 	    } else {
 		// application/sparql-results+xml
 		XMLSerializer s;
