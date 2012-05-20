@@ -670,7 +670,8 @@ int main(int ac, char* av[])
             ("bold", "output bold-bordered utf-8 boxes")
             ("nullterm,0", "terminate lines with \0")
             ("compare", po::value<std::string>(), 
-	     "compare to some expected results.")
+	     "compare to some expected results.\n"
+	     "Try `sparql -d a.ttl --compare b.ttl -q || echo fail` for minimal output")
             ("compare-as-result-set", po::value<std::string>(), 
 	     "same as compare but the resultSet is in turtle.")
             ;
