@@ -1,0 +1,62 @@
+{
+   "head": {
+       "link": [
+           "http://www.w3.org/TR/rdf-sparql-XMLres/example.rq"
+           ],
+       "vars": [
+           "s",
+           "p",
+           "o"
+           ]
+       },
+   "results": {
+       "bindings": [
+               {
+                   "s" : {
+                     "type": "uri",
+                     "value": ""
+                   },
+
+                   "p" : {
+                     "type": "uri",
+                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                   },
+
+                   "o" : {
+                     "type": "uri",
+                     "value": "http://usefulinc.com/ns/doap#Project"
+                   }
+               },{
+                   "s" : {
+                     "type": "uri",
+                     "value": ""
+                   },
+
+                   "p" : {
+                     "type": "uri",
+                     "value": "http://usefulinc.com/ns/doap#homepage"
+                   },
+
+                   "o" : {
+                     "type": "uri",
+                     "value": "http://swobj.org/sparql/v1"
+                   }
+               },{
+                   "s" : {
+                     "type": "uri",
+                     "value": ""
+                   },
+
+                   "p" : {
+                     "type": "uri",
+                     "value": "http://usefulinc.com/ns/doap#shortdesc"
+                   },
+
+                   "o" : {
+                     "type": "literal",
+                     "value": "a semantic web query toolbox"
+                   }
+               }
+           ]
+       }
+   }

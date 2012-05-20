@@ -1,40 +1,40 @@
 <sparql xmlns="http://www.w3.org/2005/sparql-results#">
   <head>
-    <variable name="O"/>
-    <variable name="P"/>
-    <variable name="S"/>
+    <variable name="o"/>
+    <variable name="p"/>
+    <variable name="s"/>
   </head>
   <results>
     <result>
-      <binding name="S">
+      <binding name="s">
         <uri></uri>
       </binding>
-      <binding name="P">
+      <binding name="p">
         <uri>http://usefulinc.com/ns/doap#homepage</uri>
       </binding>
-      <binding name="O">
+      <binding name="o">
         <uri>http://swobj.org/sparql/v1</uri>
       </binding>
     </result>
     <result>
-      <binding name="S">
+      <binding name="s">
         <uri></uri>
       </binding>
-      <binding name="P">
+      <binding name="p">
         <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</uri>
       </binding>
-      <binding name="O">
+      <binding name="o">
         <uri>http://usefulinc.com/ns/doap#Project</uri>
       </binding>
     </result>
     <result>
-      <binding name="S">
+      <binding name="s">
         <uri></uri>
       </binding>
-      <binding name="P">
+      <binding name="p">
         <uri>http://usefulinc.com/ns/doap#shortdesc</uri>
       </binding>
-      <binding name="O">
+      <binding name="o">
         <literal>a semantic web query toolbox</literal>
       </binding>
     </result>

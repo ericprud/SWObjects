@@ -18,11 +18,36 @@ w3c_sw::AtomFactory F;
 
 const char* Doutput =
     "+----+---------------------------------------------------+----------------------------------------+\n"
-    "| ?S | ?P                                                | ?O                                     |\n"
+    "| ?s | ?p                                                | ?o                                     |\n"
     "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
     "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
     "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
     "+----+---------------------------------------------------+----------------------------------------+\n";
+
+const char* Dwide =
+    "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n"
+    "| ?s | ?p                                                | ?o                                     | ?o2                                     |\n"
+    "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> | <http://usefulinc.com/ns/doap#Project2> |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |         \"a semantic web query toolbox2\" |\n"
+    "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n";
+
+const char* Dshort = 
+    "| ?s | ?p                                                | ?o                                       |\n"
+    "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |";
+
+const char* Dtrig = 
+    "{\n"
+    "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+    "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
+    "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
+    "}\n";
+
+const char* Dturtle =
+    "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
+    "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
+    "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n";
 
 struct ExecResults {
     std::string s;
@@ -72,42 +97,22 @@ struct BooleanResultSet : public w3c_sw::ResultSet {
 BOOST_AUTO_TEST_SUITE( tutorial )
 BOOST_AUTO_TEST_CASE( D ) {
     ExecResults tested("../bin/sparql -D");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "{\n"
-		      "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
-		      "}\n");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
 }
 BOOST_AUTO_TEST_CASE( D_trig ) {
     ExecResults tested("../bin/sparql -D -L text/trig");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "{\n"
-		      "  <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
-		      "  <> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\"  .\n"
-		      "}\n");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
 }
 BOOST_AUTO_TEST_CASE( D_turtle ) {
     ExecResults tested("../bin/sparql -D -L text/turtle");
-    BOOST_CHECK_EQUAL(tested.s, 
-		      "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		      "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
-		      "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n");
+    BOOST_CHECK_EQUAL(tested.s, Dturtle);
 }
 BOOST_AUTO_TEST_CASE( D_spo ) {
     ExecResults invocation("../bin/sparql -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
-	expected(&F, 
-		 "+----+---------------------------------------------------+----------------------------------------+\n"
-		 "| ?s | ?p                                                | ?o                                     |\n"
-		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
-		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		 "+----+---------------------------------------------------+----------------------------------------+\n",
-		 false, bnodeMap);
+	expected(&F, Doutput, false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
@@ -115,14 +120,7 @@ BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
     w3c_sw::TTerm::String2BNode bnodeMap;
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
-	expected(&F, 
-		 "+----+---------------------------------------------------+----------------------------------------+\n"
-		 "| ?s | ?p                                                | ?o                                     |\n"
-		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
-		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		 "+----+---------------------------------------------------+----------------------------------------+\n",
-		 false, bnodeMap);
+	expected(&F, Doutput, false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( G_spo ) {
@@ -130,14 +128,7 @@ BOOST_AUTO_TEST_CASE( G_spo ) {
     w3c_sw::TTerm::String2BNode bnodeMap;
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
-	expected(&F, 
-		 "+----+---------------------------------------------------+----------------------------------------+\n"
-		 "| ?s | ?p                                                | ?o                                     |\n"
-		 "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-		 "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
-		 "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		 "+----+---------------------------------------------------+----------------------------------------+\n", 
-		 false, bnodeMap);
+	expected(&F, Doutput, false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp ) {
@@ -250,83 +241,61 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 		      "false\n");
 }
 
+// e.g. PARSE_RESULTS("SPARQL/D.srt", Doutput)
+#define PARSE_RESULTS(TEST, EXPECT) \
+    w3c_sw::TTerm::String2BNode bnodeMap;			\
+    ExecResults cat("../bin/sparql -d " TEST);			\
+    TableResultSet cat_measured(&F, cat.s, false, bnodeMap);	\
+    TableResultSet cat_expected(&F, EXPECT, false, bnodeMap);	\
+    BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+
+// e.g. CREATE_RESULTS("-l sparqlx", "SPARQL/Dt.srx", Doutput)
+#define CREATE_RESULTS(OUTSPEC, OUTPATH, EXPECT) \
+    w3c_sw::TTerm::String2BNode bnodeMap;			\
+    ExecResults creation("../bin/sparql -D -e \"SELECT*{?s ?p ?o}\" " OUTSPEC " -o " OUTPATH); \
+    BOOST_CHECK_EQUAL(creation.s, "");				\
+    ExecResults cat("../bin/sparql -d " OUTPATH);		\
+    TableResultSet cat_measured(&F, cat.s, false, bnodeMap);	\
+    TableResultSet cat_expected(&F, EXPECT, false, bnodeMap);	\
+    BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+
+BOOST_AUTO_TEST_SUITE( parseResults )
 BOOST_AUTO_TEST_CASE( resultsFormat ) {
-    w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
     {   /* Create an simple table dump. */
-	ExecResults creation("../bin/sparql -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srt\n");
+	ExecResults creation("../bin/sparql -D -e \"SELECT*{?s ?p ?o}\" -o SPARQL/Dt.srt");
 	BOOST_CHECK_EQUAL(creation.s, "");
-    }
-
-    {
-	/* Compare against table dump. */
-	ExecResults cat("../bin/sparql -d SPARQL/D.srt\n");
-	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
-	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
-	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
-    }
- 
-    {
-	/* Compare against liberal flat text dump. */
-	ExecResults cat("../bin/sparql -d SPARQL/D.txt\n");
-	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
-	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
-	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
-    }
- 
-    {
-	/* Compare against tab-separated-values. */
-	ExecResults cat("../bin/sparql -d SPARQL/D.tsv");
-	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
-	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
-	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
-    }
- 
-    {
-	/* Compare against CSV. */
-	ExecResults cat("../bin/sparql -d SPARQL/D.csv");
-	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
-	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
-	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
-    }
- 
-    {   /* Create an SRX (SPARQL Xml Results format) */
-	ExecResults creation("../bin/sparql -D -e \"SELECT*{?S?P?O}\" -o SPARQL/Dt.srx\n");
-	BOOST_CHECK_EQUAL(creation.s, "");
-
-	/* Check that SRX. */
-	ExecResults cat("../bin/sparql -d SPARQL/D.srx\n");
-	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
-	TableResultSet
-	    cat_expected(&F, Doutput, false, bnodeMap);
-	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
-    }
- 
-    {
-	ExecResults join("../bin/sparql -d SPARQL/D.srx -d SPARQL/E.srt\n");
-	TableResultSet join_measured(&F, join.s, false, bnodeMap);
-	TableResultSet
-	    join_expected(&F, 
-			  "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n"
-			  "| ?S | ?P                                                | ?O                                     | ?O2                                     |\n"
-			  "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> | <http://usefulinc.com/ns/doap#Project2> |\n"
-			  "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |         \"a semantic web query toolbox2\" |\n"
-			  "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n", 
-			  false, bnodeMap);
-	BOOST_CHECK_EQUAL(join_measured, join_expected);
-    }
-    {
-	ExecResults join("../bin/sparql -d SPARQL/note.srj\n");
-	TableResultSet join_measured(&F, join.s, false, bnodeMap);
-	w3c_sw::IStreamContext istr("SPARQL/note.srj", w3c_sw::IStreamContext::FILE);
-	w3c_sw::ResultSet join_expected(&F, istr, false, bnodeMap);
-	BOOST_CHECK_EQUAL(join_measured, join_expected);
     }
 }
+BOOST_AUTO_TEST_CASE( table ) { PARSE_RESULTS("SPARQL/D.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( flat_text ) { PARSE_RESULTS("SPARQL/D.txt", Doutput) }
+BOOST_AUTO_TEST_CASE( tab_separated ) { PARSE_RESULTS("SPARQL/D.tsv", Doutput) }
+BOOST_AUTO_TEST_CASE( comma_separated ) { PARSE_RESULTS("SPARQL/D.csv", Doutput) }
+BOOST_AUTO_TEST_CASE( xml ) { PARSE_RESULTS("SPARQL/D.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( json ) { PARSE_RESULTS("SPARQL/D.srj", Doutput) }
+BOOST_AUTO_TEST_SUITE( create )
+BOOST_AUTO_TEST_CASE( srx_l ) { CREATE_RESULTS("-l sparqlx", "SPARQL/Dt.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( srx_L ) { CREATE_RESULTS("-L application/sparql-results+xml", "SPARQL/Dt.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_ ) { CREATE_RESULTS("", "SPARQL/Dt.srt", Doutput) } // srt is the default results output format
+BOOST_AUTO_TEST_CASE( srt_l ) { CREATE_RESULTS("-l ''", "SPARQL/Dt.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_L ) { CREATE_RESULTS("-L text/sparql-results", "SPARQL/Dt.srt", Doutput) }
+//BOOST_AUTO_TEST_CASE( srj_L ) { CREATE_RESULTS("-L application/sparql-results+json", "SPARQL/Dt.srj", Doutput) } no json serializer yet
+BOOST_AUTO_TEST_SUITE_END(/* parseResults/create */)
+BOOST_AUTO_TEST_CASE( merge ) { PARSE_RESULTS("SPARQL/D.srt -d SPARQL/E.srt", Dwide) } // works 'cause p1 is concatonated to execution string.
+BOOST_AUTO_TEST_CASE( SRJ_note ) {
+    w3c_sw::TTerm::String2BNode bnodeMap;
+    ExecResults join("../bin/sparql -d SPARQL/note.srj");
+    TableResultSet join_measured(&F, join.s, false, bnodeMap);
+    w3c_sw::IStreamContext istr("SPARQL/note.srj", w3c_sw::IStreamContext::FILE);
+    w3c_sw::ResultSet join_expected(&F, istr, false, bnodeMap);
+    BOOST_CHECK_EQUAL(join_measured, join_expected);
+}
+BOOST_AUTO_TEST_SUITE_END(/* parseResults */)
+
 
 BOOST_AUTO_TEST_CASE( resultsInSparql ) {
     w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
     {
-	ExecResults join("../bin/sparql SPARQL/redundantRows.rq\n");
+	ExecResults join("../bin/sparql SPARQL/redundantRows.rq");
 	TableResultSet join_measured(&F, join.s, false, bnodeMap);
 	TableResultSet
 	    join_expected(&F, 
@@ -342,7 +311,7 @@ BOOST_AUTO_TEST_CASE( resultsInSparql ) {
 	BOOST_CHECK_EQUAL(join_measured, join_expected);
     }
     {
-	ExecResults join("../bin/sparql SPARQL/fiveForms.rq\n");
+	ExecResults join("../bin/sparql SPARQL/fiveForms.rq");
 	TableResultSet join_measured(&F, join.s, false, bnodeMap);
 	TableResultSet
 	    join_expected(&F, 
@@ -570,12 +539,7 @@ struct ServerTableQuery : ClientServerInteraction {
  */
 BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
     ServerTableQuery i("-D --once",
-		       "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
-		       "| ?s | ?p                                                | ?o                                       |\n"
-		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
-		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
-		       );
+		       "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
@@ -583,12 +547,7 @@ BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
  */
 BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
     ServerTableQuery i("-D --once",
-		       "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
-		       "| ?s | ?p                                                | ?o                                       |\n"
-		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
-		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
-		       );
+		       "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
@@ -596,12 +555,7 @@ BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
  */
 BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
     ServerTableQuery i("-D --once",
-		       "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'",
-		       "| ?s | ?p                                                | ?o                                       |\n"
-		       "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
-		       "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-		       "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |"
-		       );
+		       "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
@@ -714,11 +668,7 @@ struct ServerGraphQuery : ClientServerInteraction {
 BOOST_AUTO_TEST_CASE( D_CONSTRUCT_SPO ) {
     ServerGraphQuery i("-D --once",
 		       "-e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
-		       "{\n"
-		       "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-		       "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n"
-		       "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
-		       "}");
+		       Dtrig);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
@@ -783,12 +733,7 @@ struct Agent {
     }
 
     {
-	std::stringstream ess
-	    ("{\n"
-	     "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://usefulinc.com/ns/doap#Project> .\n"
-	     "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n"
-	     "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
-	     "}");
+	std::stringstream ess(Dtrig);
 	w3c_sw::IStreamContext estream ("expected:", ess, "text/trig");
 	w3c_sw::TrigSDriver parser(serverURL, &F);
 	parser.parse(estream, &expected, NULL);
