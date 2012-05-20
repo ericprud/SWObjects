@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
 
     {
-	/* Check that table dump. */
+	/* Compare against table dump. */
 	ExecResults cat("../bin/sparql -d SPARQL/D.srt\n");
 	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
 	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
@@ -266,8 +266,24 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
  
     {
-	/* Check that libteral flat text dump. */
+	/* Compare against liberal flat text dump. */
 	ExecResults cat("../bin/sparql -d SPARQL/D.txt\n");
+	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
+	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
+	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+    }
+ 
+    {
+	/* Compare against tab-separated-values. */
+	ExecResults cat("../bin/sparql -d SPARQL/D.tsv");
+	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
+	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
+	BOOST_CHECK_EQUAL(cat_measured, cat_expected);
+    }
+ 
+    {
+	/* Compare against CSV. */
+	ExecResults cat("../bin/sparql -d SPARQL/D.csv");
 	TableResultSet cat_measured(&F, cat.s, false, bnodeMap);
 	TableResultSet cat_expected(&F, Doutput, false, bnodeMap);
 	BOOST_CHECK_EQUAL(cat_measured, cat_expected);

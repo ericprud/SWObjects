@@ -99,6 +99,7 @@ namespace w3c_sw {
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(DefaultLog, SWObjectsLogger);
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(RewriteLog, SWObjectsLogger, (boost::log::keywords::channel = "Rewrite"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(IOLog, SWObjectsLogger, (boost::log::keywords::channel = "I/O"));
+	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(ParsingLog, SWObjectsLogger, (boost::log::keywords::channel = "Parsing"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(GraphMatchLog, SWObjectsLogger, (boost::log::keywords::channel = "GraphMatch"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(SQLLog, SWObjectsLogger, (boost::log::keywords::channel = "SQL"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(ServiceLog, SWObjectsLogger, (boost::log::keywords::channel = "Service"));
@@ -107,6 +108,7 @@ namespace w3c_sw {
 	extern severity_level DefaultLog_level;
 	extern severity_level RewriteLog_level;
 	extern severity_level IOLog_level;
+	extern severity_level ParsingLog_level;
 	extern severity_level GraphMatchLog_level;
 	extern severity_level SQLLog_level;
 	extern severity_level ServiceLog_level;
@@ -121,6 +123,7 @@ namespace w3c_sw {
 		Labels.push_back("Default"); LabelToLevel["Default"] = &DefaultLog_level; LabelToLevel["default"] = &DefaultLog_level; LabelToLevel["DEFAULT"] = &DefaultLog_level; LabelToLevel[""] = &DefaultLog_level;
 		Labels.push_back("Rewrite"); LabelToLevel["Rewrite"] = &RewriteLog_level; LabelToLevel["rewrite"] = &RewriteLog_level; LabelToLevel["REWRITE"] = &RewriteLog_level;
 		Labels.push_back("IO"); LabelToLevel["IO"] = &IOLog_level; LabelToLevel["io"] = &IOLog_level; LabelToLevel["IO"] = &IOLog_level; LabelToLevel["i/o"] = &IOLog_level; LabelToLevel["I/O"] = &IOLog_level;
+		Labels.push_back("IO"); LabelToLevel["PARSING"] = &ParsingLog_level; LabelToLevel["parsing"] = &ParsingLog_level; LabelToLevel["Parsing"] = &ParsingLog_level; LabelToLevel["PARSE"] = &ParsingLog_level; LabelToLevel["parse"] = &ParsingLog_level;
 		Labels.push_back("GraphMatch"); LabelToLevel["GraphMatch"] = &GraphMatchLog_level; LabelToLevel["graphmatch"] = &GraphMatchLog_level; LabelToLevel["GRAPHMATCH"] = &GraphMatchLog_level;
 		Labels.push_back("SQL"); LabelToLevel["SQL"] = &SQLLog_level; LabelToLevel["sql"] = &SQLLog_level; LabelToLevel["SQL"] = &SQLLog_level;
 		Labels.push_back("Service"); LabelToLevel["Service"] = &ServiceLog_level; LabelToLevel["service"] = &ServiceLog_level; LabelToLevel["SERVICE"] = &ServiceLog_level;
@@ -206,6 +209,7 @@ namespace w3c_sw {
 	inline bool GTDefault (severity_level l) { return l <= DefaultLog_level; }
 	inline bool GTRewrite (severity_level l) { return l <= RewriteLog_level; }
 	inline bool GTIO (severity_level l) { return l <= IOLog_level; }
+	inline bool GTParsing (severity_level l) { return l <= ParsingLog_level; }
 	inline bool GTGraphMatch (severity_level l) { return l <= GraphMatchLog_level; }
 	inline bool GTSQL (severity_level l) { return l <= SQLLog_level; }
 	inline bool GTService (severity_level l) { return l <= ServiceLog_level; }
@@ -226,6 +230,7 @@ namespace w3c_sw {
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == ""          && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTDefault   )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Rewrite"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTRewrite   )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "I/O"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
+		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Parsing"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "GraphMatch"&& boost::log::filters::attr<severity_level>("Severity").satisfies(&GTGraphMatch)) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "SQL"       && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTSQL       )) ||
 		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Service"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTService   )) ||
@@ -432,6 +437,7 @@ BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 	severity_level DefaultLog_level;
 	severity_level RewriteLog_level;
 	severity_level IOLog_level;
+	severity_level ParsingLog_level;
 	severity_level GraphMatchLog_level;
 	severity_level SQLLog_level;
 	severity_level ServiceLog_level;

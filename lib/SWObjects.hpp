@@ -30,6 +30,7 @@
 #define w3c_sw_TOSTRING(x) w3c_sw_STRINGIFY(x)
 #define w3c_sw_LINE w3c_sw_LINEN << "LINE\n"
 #define w3c_sw_LINEN std::cerr << __FILE__ "(" w3c_sw_TOSTRING(__LINE__) "): warning "
+#define w3c_sw_LOCATION __FILE__ ":" w3c_sw_TOSTRING(__LINE__)
 #define w3c_sw_NEED_IMPL(x) throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x)
 #define w3c_sw_IF_IMPL(t, x) if (t) {throw NotImplemented(__FILE__, w3c_sw_TOSTRING(__LINE__), x);}
 
@@ -298,6 +299,9 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 	insert(pair("srj" , "application/sparql-results+json"));
 	insert(pair("rq"  , "text/sparql-query"));
 	insert(pair("txt" , "text/plain"));
+	insert(pair("tsv" , "text/tab-separated-values"));
+	insert(pair("tab" , "text/tab-separated-values"));
+	insert(pair("csv" , "text/csv"));
     }
 };
 
@@ -1693,6 +1697,7 @@ public:
     const BNode* createBNode();
     const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
     const URI* getURI(std::string name);
+    static std::string unescapeStr(std::string);
     const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
     /** getRDFLiteral gets native e.g. integer or boolean types
      */
@@ -1702,6 +1707,30 @@ public:
     const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
     const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
     const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+    const IntegerRDFLiteral* getIntegerLiteral (std::string p_String) {
+	std::stringstream is(p_String);
+	int i;
+	is >> i;
+	return getNumericRDFLiteral(p_String, i);
+    }
+    const DecimalRDFLiteral* getDecimalLiteral (std::string p_String) {
+	std::stringstream is(p_String);
+	float f;
+	is >> f;
+	return getNumericRDFLiteral(p_String, f);
+    }
+    const FloatRDFLiteral*   getFloatLiteral (std::string p_String) {
+	std::stringstream is(p_String);
+	float f;
+	is >> f;
+	return getNumericRDFLiteral(p_String, f, true);
+    }
+    const DoubleRDFLiteral*  getDoubleLiteral (std::string p_String) {
+	std::stringstream is(p_String);
+	double d;
+	is >> d;
+	return getNumericRDFLiteral(p_String, d);
+    }
 
     const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
 

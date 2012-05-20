@@ -927,7 +927,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return vi == operatorNames_static.end() ? NULL : vi->second;
     }
 
-    std::string unescapeStr (std::string p_String) {
+    std::string AtomFactory::unescapeStr (std::string p_String) {
 	std::stringstream ss;
 	std::ostreambuf_iterator<char> out(ss);
 	bool escaped = false;
@@ -954,6 +954,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     }
 
     const TTerm* AtomFactory::getTTerm (std::string posStr, TTerm::String2BNode& nodeMap) {
+	BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer) << "creating RDF term for \"" << posStr << "\"." << std::endl;
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')

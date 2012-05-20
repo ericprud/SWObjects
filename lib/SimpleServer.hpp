@@ -977,6 +977,7 @@ struct SimpleEngine {
 	} else if // ResultSet media types:
 		(istr.mediaType.match("text/plain") ||
 		 istr.mediaType.match("text/sparql-results") ||
+		 istr.mediaType.match("text/csv") ||
 		 istr.mediaType.match("text/tab-separated-values") ||
 		 istr.mediaType.match("application/sparql-results+json") ||
 		 istr.mediaType.match("application/binary-rdf-results-table") ||

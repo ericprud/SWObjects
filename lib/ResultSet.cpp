@@ -174,11 +174,271 @@ namespace w3c_sw {
 	}
     }
 
+    const TTerm* ResultSet::inventColumName (size_t s) {
+	std::stringstream ss;
+	ss << "__col" << s;
+	const TTerm* ret = atomFactory->getVariable(ss.str());
+	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+	    << "adding name for column " << s << ": " << ret->toString() << "\n";
+	return ret;
+    }
+    void ResultSet::parseDelimSeparated (IStreamContext& sptr, bool ordered,
+					 TTerm::String2BNode& nodeMap, 
+					 std::string delimStr, bool atHeaderRow) {
+
+	/* Iterate through the input string. */
+	std::string str((std::istreambuf_iterator<char>(*sptr.p)),
+			std::istreambuf_iterator<char>());
+	std::string::const_iterator start = str.begin(); 
+	std::string::const_iterator end = str.end(); 
+	// boost::smatch what;
+	boost::match_results<std::string::const_iterator> what;
+
+	/* Populate <headers> from the first row ... */
+	std::vector<const TTerm*> headers;
+	/* ... and generate Results for each remaining row. */
+	int col = 0;
+	int lineNo = 1;
+	Result* curRow = NULL;
+	enum {AllParsed = 0, NewLine, Delimiter, BOL, TermText, Variable, IRI, Quoted, Double, Float, Integer, Bare, Empty};
+	boost::regex ctsv("(\\n|\\r\\n?)"
+			    "|(?:("+delimStr+")|(^))"
+			    /* \TermText */ "("
+			     /* \Variable ?abc  */ "\\?([a-zA-Z0-9_-]+)"
+			     /* \IRI <abc>  */     "|<([^>]*)>"
+			     /* \Quoted "abc" */   "|\\\"((?:[^\\\\\"]|\\\\[\"nrtb])*)\\\""
+			     /* \Double 1.2e3 */   "|([+-]?[0-9]*\\.[0-9]*[Ee][+\\-]?[0-9]+)"
+			     /* \Float 1.2   */    "|([+-]?[0-9]*\\.[0-9]*)"
+			     /* \Integer 1     */  "|([+-]?[0-9]+)"
+			     /* \Bare abc   */     "|([a-zA-Z0-9_-]+)" // ^" + delimStr + "
+			     /* \Empty       */    "|()"
+			    ")");
+
+
+	boost::match_flag_type flags = boost::match_perl | boost::match_continuous;
+	while (start != end) {
+	    if (regex_search(start, end, what, ctsv, flags)) {
+		// w3c_sw_LINEN << col << ": looking at \"" << std::string(start, end) << "\"\n";
+		// for (size_t i = 0; i < what.size(); ++i)
+		// 	w3c_sw_LINEN << i << ": \"" << (what[i].matched ? what[i] : std::string("--")) << "\"\n";
+
+		if (what[NewLine].matched) {
+		    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+			<< "ending " << (atHeaderRow ? "header" : "data") << " row " << lineNo << "\n";
+		    atHeaderRow = false;
+		    ++lineNo;
+		    col = 0;
+		    curRow = NULL;
+		} else {
+		    const TTerm* tterm =
+			// If we're looking for variables...
+			atHeaderRow ?
+			(
+			 what[Variable].matched ? (const TTerm*)atomFactory->getVariable(what[Variable]) :
+			 what[Quoted]  .matched ? (const TTerm*)atomFactory->getVariable(AtomFactory::unescapeStr(what[Quoted])) :
+			 what[Empty]   .matched ? (const TTerm*)TTerm::Unbound : // invent a variable later.
+			 (const TTerm*)atomFactory->getVariable(what[TermText]) // Bare et al interpreted as var names.
+			 ) :
+			// If we're looking for data...
+			what[Variable].matched ? (const TTerm*)atomFactory->getVariable(what[Variable]) :
+			what[IRI]     .matched ? (const TTerm*)atomFactory->getURI(what[IRI]) :
+			what[Quoted]  .matched ? (const TTerm*)atomFactory->getRDFLiteral(AtomFactory::unescapeStr(what[Quoted]), NULL, NULL) :
+			what[Double]  .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Double]) :
+			what[Float]   .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Float]) :
+			what[Integer] .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Integer]) :
+			what[Bare]    .matched ? (const TTerm*)atomFactory->getRDFLiteral(what[Bare]) :
+			what[Empty]   .matched ? (const TTerm*)TTerm::Unbound :
+			atomFactory->getRDFLiteral("internal regex error at " w3c_sw_LOCATION);
+
+		    if (atHeaderRow) {
+			if (headers.size() == 0 && what[Delimiter].matched)
+			    headers.push_back(inventColumName(0));
+
+			if (what[Empty].matched) {
+			    headers.push_back(inventColumName(headers.size()));
+			} else {
+			    headers.push_back(tterm);
+			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+				<< "adding name for column " << headers.size() - 1 << ": " << headers[headers.size() - 1]->toString() << "\n";
+			}
+		    } else {
+			// account for the value that should have been at start of line.
+			if (col == 0 && what[Delimiter].matched) {
+			    if (col > (int)headers.size()-1)
+				headers.push_back(inventColumName(headers.size()));
+			    ++col;
+			}
+
+			// no value
+			if (what[Empty].matched) {
+			    if (col > (int)headers.size()-1)
+				headers.push_back(inventColumName(headers.size()));
+			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+				<< "no value for column " << col << ": " << headers[col]->toString() << "\n";
+			    ++col;
+			} else {
+			    int lastCol = col;
+			    if (col > (int)headers.size()-1)
+				headers.push_back(inventColumName(headers.size()));
+			    ++col;
+			    if (curRow == NULL) {
+				curRow = new Result(this);
+				insert(this->end(), curRow);
+			    }
+			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+				<< "value for column " << col << ": " << headers[lastCol]->toString() << " is " << tterm->toString() << "\n";
+			    set(curRow, headers[lastCol], tterm, false);
+			}
+		    }
+		}
+		if (start == what[AllParsed].second)
+		    throw std::runtime_error(std::string() + "unable to match at " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
+		start = what[AllParsed].second;
+	    } else {
+		throw std::runtime_error(std::string() + "unable to match at " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
+	    }
+	}
+
+    }
+
+    void ResultSet::parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
+	// Note, early returns for CSV and TSV formats:
+	if (sptr.mediaType.match("text/tab-separated-values")) {
+	    parseDelimSeparated(sptr, true, nodeMap, "\\t", true);
+	    return;
+	} else if (sptr.mediaType.match("text/csv")) {
+	    parseDelimSeparated(sptr, true, nodeMap, ","  , true);
+	    return;
+	}
+
+
+	/* Iterate through the input string. */
+	std::string str((std::istreambuf_iterator<char>(*sptr.p)),
+			std::istreambuf_iterator<char>());
+	std::string::const_iterator start = str.begin(); 
+	std::string::const_iterator end = str.end(); 
+	boost::match_results<std::string::const_iterator> what;
+
+	/* Ignore leading whitespace and comments. */
+	boost::match_flag_type flags = boost::match_perl|boost::match_single_line;
+	while (regex_search(start, end, what, boost::regex("^[ \\t]*(#[^\\n]*)?\\n"), flags))
+	    start = what[0].second; 
+
+	/* Populate <headers> from the first row ... */
+	bool firstRow = true;
+	std::vector<const TTerm*> headers;
+	/* ... and generate Results for each remaining row. */
+	int col = 0;
+	Result* curRow = NULL;
+	enum {WholeString = 0, BoxChars = 1, CapturedTerm = 2, NullBinding = 3};
+	const boost::regex srt("^[ \\t\\n]*(?:"		// ignore leading whitespace
+			       "("				// \1: box chars
+			       "(?:[┌┬┐├┼┤└┴┘─┏┳┓┣╋┫┗┻┛━]+"	//   unicode
+			       "|(?:\\+-+)+\\+"		//   ascii
+			       ")[ \\t\\n]*"		//     white space
+			       //"|#[^\\n]+\\n?"	// in-line comments -- too weird?
+			       ")"
+			       "|(?:[|│┃][ \\t]*"
+			       "("				// \2: captured term
+			       "(?:<[^>]*>)"		// IRI
+			       "|(?:_:[^[:space:]]+)"	// bnode
+			       "|(?:[?$][^[:space:]]+)"	// variable
+			       "|(?:\\\"(?:[^\\\\\"]|\\\\[\"nrtb])*\\\"" // literal
+			       "(?:\\^\\^<[^>]*>|@[a-z_-]+)?)"
+			       "|(?:[+-]?[0-9]*\\.[0-9]*"
+			       "[Ee][+\\-]?[0-9]+)"	// double
+			       "|(?:[+-]?[0-9]*\\.[0-9]*)"	// float
+			       "|(?:[+-]?[0-9]+)"		// integer
+			       "|(--|UNDEF)"		// \3: no binding
+			       ")?))");
+	const boost::regex plain("^[ \\t]*(?:"		// ignore leading whitespace
+				 "(.^)"			// disable \1, box chars
+				 "|\n|("			// \2: empty if \n
+				 "(?:<[^>]*>)"		// IRI
+				 "|(?:_:[^[:space:]]+)"	// bnode
+				 "|(?:[?$][^[:space:]]+)"	// variable
+				 "|(?:\\\"(?:[^\\\\\"]|\\\\[\"nrtb])*\\\"" // literal
+				 "(?:\\^\\^<[^>]*>|@[a-z_-]+)?)"
+				 "|(?:'[^']*')"		// literal
+				 "|(?:[+-]?[0-9]*\\.[0-9]*"
+				 "[Ee][+\\-]?[0-9]+)"	// double
+				 "|(?:[+-]?[0-9]*\\.[0-9]*)"	// float
+				 "|(?:[+-]?[0-9]+)"		// integer
+				 "|(--|UNDEF)"		// no binding
+				 "))");
+	const boost::regex& expr =
+	    sptr.mediaType.match("text/plain") ? plain : srt;
+
+	while (regex_search(start, end, what, expr, flags)) {
+	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		<< "matched \"" << std::string
+		(what[WholeString].first, what[WholeString].second) << "\"\n";
+	    if (what[BoxChars].first != what[BoxChars].second) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "skipping box chars: \"" << std::string
+		    (what[BoxChars].first, what[BoxChars].second) << "\"\n";
+	    } else if (what[CapturedTerm].first == what[CapturedTerm].second) {
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "end of header or solution\n";
+		firstRow = false;
+		col = 0;
+		curRow = NULL;
+	    } else if (what[NullBinding].first != what[NullBinding].second) {
+		if (firstRow) {
+		    const BNode* b = atomFactory->createBNode();
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< "fresh header variable: " << b->toString() << "\n";
+		    headers.push_back(b);
+		} else {
+		    if (curRow == NULL) {
+			curRow = new Result(this);
+			insert(this->end(), curRow);
+		    }
+		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+			<< headers[col]->toString() << "unbound\n";
+		    ++col;
+		}
+	    } else {
+		std::string term(what[CapturedTerm].first, what[CapturedTerm].second);
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "term text: \"" << term << "\"\n";
+		const TTerm* tterm = atomFactory->getTTerm(term, nodeMap);
+		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    << "term: " << tterm->toString() << "\n";
+		if (firstRow)
+		    headers.push_back(tterm);
+		else {
+		    if (curRow == NULL) {
+			curRow = new Result(this);
+			insert(this->end(), curRow);
+		    }
+		    set(curRow, headers[col++], tterm, false);
+		}
+	    }
+
+	    /* Start after the end of the stuff we just parsed. */
+	    start = what[WholeString].second; 
+	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		<< "starting again at: \"" << std::string(start, end).substr(0, 20) << "\"\n";
+	}
+	if (start != end) {
+	    std::string garbage(start, end);
+	    if (garbage.size() > 20)
+		garbage = garbage.substr(0, 20)+"...";
+	    std::stringstream ss;
+	    ss << "Garbage " << (end - start) << " bytes from end of stream: \""
+	       << garbage << "\"";
+	    throw(std::runtime_error(ss.str()));
+	}
+    }
+
     bool ResultSet::parseText (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
 #if REGEX_LIB != SWOb_DISABLED
 	if (!sptr.mediaType.is_initialized() ||
-	    sptr.mediaType.match("text/sparql-results") || 
-	    sptr.mediaType.match("text/plain")) {
+	    sptr.mediaType.match("text/sparql-results") ||
+	    sptr.mediaType.match("text/plain") ||
+	    sptr.mediaType.match("text/tab-separated-values") ||
+	    sptr.mediaType.match("text/csv")) {
 	    parseTable(sptr, ordered, nodeMap);
 	    return true;
 	} else
