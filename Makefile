@@ -211,8 +211,9 @@ LD = $(CXX)
 LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX)
 VER=0.1
-COMPILE=CPATH=$(CPATH) $(CXX) $(CFLAGS)
-LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX) $(LDFLAGS)
+COMPILE=CPATH=$(CPATH) $(CXX)
+# LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX) $(LDFLAGS)
+LINK=LIBRARY_PATH=$(LIBRARY_PATH) $(CXX)
 
 #some progressive macports
 #CC=llvm-gcc
@@ -314,25 +315,30 @@ log-all: logt_trivial logt_basic_usage logt_advanced_usage logt_async_log \
 
 .SECONDARY:
 
-lib/%.dep: lib/%.cpp config.h
-	($(ECHO) -n $@ lib/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+lib/%.dep: lib/%.cpp config.h $(BISONH) docs/version.h
+	($(ECHO) -n $@ lib/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
+
+lib/%.o : lib/%.cpp lib/%.dep config.h docs/version.h
+	$(COMPILE) -c -o $@ $< $(CFLAGS)
+
+
 
 # The following doesn't fire, so I have to create the specialied rules below:
 # lib/%/%.dep: lib/%/%.cpp config.h
-# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 
 lib/SPARQLfedParser/SPARQLfedParser.dep: lib/SPARQLfedParser/SPARQLfedParser.cpp config.h
-	($(ECHO) -n $@ lib/SPARQLfedParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/SPARQLfedParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 lib/MapSetParser/MapSetParser.dep: lib/MapSetParser/MapSetParser.cpp config.h
-	($(ECHO) -n $@ lib/MapSetParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/MapSetParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 lib/TurtleSParser/TurtleSParser.dep: lib/TurtleSParser/TurtleSParser.cpp config.h
-	($(ECHO) -n $@ lib/TurtleSParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TurtleSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
-	($(ECHO) -n $@ lib/TrigSParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/TrigSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
-	($(ECHO) -n $@ lib/SQLParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/SQLParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 lib/JSONresultsParser/JSONresultsParser.dep: lib/JSONresultsParser/JSONresultsParser.cpp config.h
-	($(ECHO) -n $@ lib/JSONresultsParser/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ lib/JSONresultsParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
 GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
@@ -381,12 +387,11 @@ win/version.h: docs/version.h
 ##### bin dirs ####
 
 bin/%.dep: bin/%.cpp config.h $(BISONH) docs/version.h
-	($(ECHO) -n $@ bin/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ bin/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 DEPEND += $(BINOBJLIST:.o=.dep)
 
 bin/%.o : bin/%.cpp bin/%.dep config.h docs/version.h
-#	$(COMPILE) $(CXXFLAGS) -c -o $@ $<
-	$(COMPILE) -c -o $@ $<
+	$(COMPILE) -c -o $@ $< $(CFLAGS)
 
 bin/% : bin/%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
 	$(LINK) -o $@ $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
@@ -454,10 +459,10 @@ TEST_ARGS ?= ""
 
 ## Rules for all tests ##
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 
 tests/test_%.o: tests/test_%.cpp tests/test_%.dep config.h
-	$(COMPILE) -c -o $@ $<
+	$(COMPILE) -c -o $@ $< $(CFLAGS)
 
 tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(LINK) -o $@ $< $(LDFLAGS) $(TEST_LIB)
@@ -472,7 +477,7 @@ t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	$(COMPILE) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)
+	$(LINK) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)
 
 t_SPARQL: bin/sparql
 
@@ -499,7 +504,7 @@ tests/man_%.cpp: tests/test_%.cpp tests/makeMan.pl tests/manualHarness.cpp
 	perl tests/makeMan.pl $< $@
 
 tests/man_%.dep: tests/man_%.cpp config.h $(BISONH)
-	($(ECHO) -n $@ tests/; $(COMPILE) -MM $<) > $@ || (rm $@; false)
+	($(ECHO) -n $@ tests/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
 DEPEND += $(TESTSOBJLIST:.o=.dep)
 
 tests/man_%.o: tests/man_%.cpp $(LIB) tests/.dep/man_%.d config.h
