@@ -166,7 +166,7 @@ public:
     }
 };
 
-}
+} // namespace w3c_sw
 
 #endif // XMLSerializer_H
 

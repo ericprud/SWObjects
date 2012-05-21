@@ -11,6 +11,7 @@
 #include "BRTparser.hpp"
 #include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
+#include "JSONSerializer.hpp"
 #include <iostream>
 
 namespace w3c_sw {
@@ -1217,6 +1218,56 @@ namespace w3c_sw {
 	    }
 	} xml->close(); // table
 	return xml;
+    }
+
+    std::string ResultSet::toJSON (NamespaceMap* namespaces) const {
+	std::stringstream ss;
+	JSONSerializer jdoc(ss, JSONSerializer::Container_Map, "    "); {
+	    jdoc.openMap("head"); {
+		jdoc.openList("link"); {
+		    jdoc.literal("http://www.w3.org/TR/rdf-sparql-XMLres/example.rq");
+		} jdoc.closeList();
+		jdoc.openList("vars"); {
+		    for (std::set<const TTerm*>::const_iterator var = knownVars.begin();
+			 var != knownVars.end(); ++var) {
+			jdoc.literal((*var)->getLexicalValue());
+		    }
+		} jdoc.closeList();
+	    } jdoc.closeMap();
+	    jdoc.openMap("results"); {
+		jdoc.openList("bindings"); {
+		    for (ResultSetConstIterator row = begin() ; row != end(); ++row) {
+			jdoc.openMap(); {
+			    for (BindingSetConstIterator binding = (*row)->begin();
+				 binding != (*row)->end(); ++binding) {
+				const TTerm* var = binding->first;
+				const TTerm* val = binding->second.tterm;
+				jdoc.openMap(var->getLexicalValue()); {
+				    jdoc.literal("value", val->getLexicalValue());
+				    switch (val->getTypeOrder()) {
+				    case TTerm::TYPE_BNode:
+					jdoc.literal("type", "bnode");
+					break;
+				    case TTerm::TYPE_URI:
+					jdoc.literal("type", "uri");
+					break;
+				    default:
+					const RDFLiteral* lit = dynamic_cast<const RDFLiteral*>(val);
+					jdoc.literal("type", lit->getDatatype() ? "typed-literal" : "literal");
+					if (lit->getDatatype())
+					    jdoc.literal("datatype", lit->getDatatype()->getLexicalValue());
+					if (lit->getLangtag())
+					    jdoc.literal("xml:lang", lit->getLangtag()->getLexicalValue());
+				    }
+				} jdoc.closeMap();
+			    }
+			} jdoc.closeMap();
+		    }
+		} jdoc.closeList();
+	    } jdoc.closeMap();
+	} jdoc.closeMap();
+	ss << "\n";
+	return ss.str();
     }
 
     std::ostream& operator<< (std::ostream& os, ResultSet const& my) {

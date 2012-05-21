@@ -337,6 +337,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    if (!Quiet && s.compare("text/plain")
 		&& s.compare("text/ntriples") && s.compare("text/turtle")
 		&& s.compare("text/trig") && s.compare("text/html")
+		&& s.compare("text/sparql-results")
 		&& s.compare("application/rdf+xml")
 		&& s.compare("application/sparql-results+xml")
 		&& s.compare("application/sparql-results+json")
