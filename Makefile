@@ -287,14 +287,14 @@ $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a: $(BOOST_LOG_OBJ_FILEPATHS)
 lib: dep $(LIB)
 
 # boost-log examples - note log_all target to build all examples.
-boost-log/libs/log/example/%/main.o: boost-log/libs/log/example/%/main.cpp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ $(WARN) -DBOOST_LOG_USE_NATIVE_SYSLOG=1 $(DEBUG) -g -c -o $@ $< -Iboost-log
+$(BOOST_LOG_SRC_DIR)libs/log/example/%/main.o: $(BOOST_LOG_SRC_DIR)libs/log/example/%/main.cpp $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	g++ $(WARN) -DBOOST_LOG_USE_NATIVE_SYSLOG=1 $(DEBUG) -g -c -o $@ $< -I$(BOOST_LOG_SRC_DIR)boost $(INCLUDES)
 
-boost-log/libs/log/example/%/main: boost-log/libs/log/example/%/main.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
-	g++ -o $@ $< -Lboost-log/stage/lib $(LINK_BOOST_LOG) $(BOOST_REQUIRED_LIBS)
+$(BOOST_LOG_SRC_DIR)libs/log/example/%/main: $(BOOST_LOG_SRC_DIR)libs/log/example/%/main.o $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+	g++ -o $@ $< -L$(BOOST_LOG_SRC_DIR)stage/lib $(LINK_BOOST_LOG) $(BOOST_REQUIRED_LIBS)
 
 log-clean:
-	rm -f boost-log/stage/*.o
+	rm -f $(BOOST_LOG_SRC_DIR)stage/*.o
 	rm -f $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 
 log-copy: # copy boost-log from ../boost-log-trunk, e.g. make log-copy && make -j 8 -k log-all -- ~53s
@@ -305,7 +305,7 @@ log-copy: # copy boost-log from ../boost-log-trunk, e.g. make log-copy && make -
 	(cd ../boost-log-trunk/libs/log/example/ && tar cf - */*.cpp */settings.txt) | (cd $(BOOST_LOG_SRC_DIR)libs/log/example/  && tar xf -)
 
 # compile and run logging examples, e.g. `make logt_basic_usage`
-logt_%: boost-log/libs/log/example/%/main $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+logt_%: $(BOOST_LOG_SRC_DIR)libs/log/example/%/main $(BOOST_LOG_SRC_DIR)stage/lib/lib$(BOOST_LOG_LIB).so
 	(cd $(dir $<) && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../../../../stage/lib ./main)
 
 log-all: logt_trivial logt_basic_usage logt_advanced_usage logt_async_log \
