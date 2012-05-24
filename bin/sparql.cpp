@@ -237,6 +237,9 @@ void validate (boost::any& v, const std::vector<std::string>& values, loggingFil
 }
 
 const sw::TTerm* Query; // URI is a guery ref; RDFLiteral is a query string.
+const sw::TTerm* QueryBaseUri;
+sw::MediaType QueryMediaType;
+
 
 /* Set Query to an RDFLiteral when parsed. */
 struct queryString {};
@@ -249,6 +252,9 @@ void validate (boost::any&, const std::vector<std::string>& values, queryString*
 			       append(s).append("\" is redundant against ").
 			       append(Query->getLexicalValue()));
     Query = TheServer.engine.atomFactory.getRDFLiteral(s);
+    QueryBaseUri = TheServer.engine.baseURI;
+    QueryMediaType = TheServer.engine.dataMediaType;
+    TheServer.engine.dataMediaType = sw::MediaType();
 }
 
 /* URI to serve as a SPARQL server. */
@@ -293,7 +299,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, xml";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, sparqlt, sparqlj, xml";
     } else {
 	if (s == "" || s == "guess")
 	    TheServer.engine.dataMediaType = sw::MediaType();
@@ -309,9 +315,11 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    TheServer.engine.dataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
 	    TheServer.engine.dataMediaType = "application/rdf+xml";
-	else if (!s.compare("sparqlx"))
+	else if (!s.compare("sparqlx") || !s.compare("srx"))
 	    TheServer.engine.dataMediaType = "application/sparql-results+xml";
-	else if (!s.compare("sparqlj"))
+	else if (!s.compare("sparqlt") || !s.compare("srt"))
+	    TheServer.engine.dataMediaType = "text/sparql-results";
+	else if (!s.compare("sparqlj") || !s.compare("srj"))
 	    TheServer.engine.dataMediaType = "application/sparql-results+json";
 	else if (!s.compare("xml"))
 	    TheServer.engine.dataMediaType = "application/xml";
@@ -532,6 +540,8 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
     } else if (Query == NULL && ServerURI.empty()) {
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
 	Query = vald;
+	QueryBaseUri = TheServer.engine.baseURI;
+	QueryMediaType = TheServer.engine.dataMediaType;
     } else {
 	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "View: " << vald->getLexicalValue() << ".\n";
 	Maps.push_back(vald);
@@ -704,7 +714,7 @@ int main(int ac, char* av[])
 	     "update arg with the results.\n\"-\" to read from stdin and write to stdout, \".\" manipulate input graphs.")
             ("description,D", 
 	     "read application description graph (see section) into default graph.")
-            ("desc-graph,G", po::value<std::vector <std::string> >(), 
+            ("description-graph,G", po::value<std::vector <std::string> >(), 
 	     "read application description graph into graph arg.")
             ("service", po::value<std::string>(), 
 	     "relay all queries to service URL.")
@@ -778,14 +788,17 @@ int main(int ac, char* av[])
         
         po::positional_options_description p;
         p.add("ordered", -1);
-        
-        po::variables_map vm;
-	po::store(po::command_line_parser(ac, av).
-              options(cmdline_options).positional(p).run(), vm);
 
-	std::ifstream ifs(".sparql.cfg");
-	po::store(parse_config_file(ifs, config_file_options), vm);
-	po::notify(vm);
+	// A variable map for all parsed arguments...
+        po::variables_map vm; {
+	    // ...populated by command line...
+	    po::store(po::command_line_parser(ac, av).
+		      options(cmdline_options).positional(p).run(), vm);
+	    // ...and a config file.
+	    std::ifstream ifs(".sparql.cfg");
+	    po::store(parse_config_file(ifs, config_file_options), vm);
+	    po::notify(vm);
+	}
     
 	if (vm.count("post")) {
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
@@ -903,6 +916,7 @@ int main(int ac, char* av[])
 	    "    +--------+\n"
 	    ;
 
+	// --help
         if (vm.count("help")) {
             std::cout << 
 		"Usage: sparql [opts] queryURI mapURI*\n"
@@ -913,6 +927,7 @@ int main(int ac, char* av[])
             TheServer.engine.noExec = true;
         }
 
+	// --Help   (a bit more urgent and specific).
         if (vm.count("Help")) {
 	    std::vector<std::string> helps(vm["Help"].as< std::vector<std::string> >());
 	    for (std::vector<std::string>::const_iterator it = helps.begin();
@@ -961,8 +976,8 @@ int main(int ac, char* av[])
 		    TheServer.engine.db.loadData(TheServer.engine.db.ensureGraph(sw::DefaultGraph), s, TheServer.engine.uriString(TheServer.engine.baseURI), TheServer.engine.uriString(TheServer.engine.baseURI), &TheServer.engine.atomFactory, &TheServer.engine.nsRelay);
 		}
 
-		if (vm.count("desc-graph")) {
-		    std::vector<std::string> descs(vm["desc-graph"].as< std::vector<std::string> >());
+		if (vm.count("description-graph")) {
+		    std::vector<std::string> descs(vm["description-graph"].as< std::vector<std::string> >());
 		    for (std::vector<std::string>::const_iterator it = descs.begin();
 			 it != descs.end(); ++it) {
 			sw::IStreamContext s(appDescGraph, sw::IStreamContext::STRING);
@@ -982,11 +997,12 @@ int main(int ac, char* av[])
 		    size_t size = TheServer.engine.db.size();
 		    if (size > sw::RdfDB::DebugEnumerateLimit) {
 			size_t graphCount = TheServer.engine.db.getGraphNames().size();
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "Loaded " << size
-				     << " triple" << (size == 1 ? "" : "s")
-				     << " into "
-				     << graphCount << " graph" << (graphCount == 1 ? "" : "s")
-				     << ".\n";
+			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support)
+			    << "Loaded "
+			    << size << " triple" << (size == 1 ? "" : "s")
+			    << " into "
+			    << graphCount << " graph" << (graphCount == 1 ? "" : "s")
+			    << ".\n";
 		    } else
 			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "<loadedData>\n" << TheServer.engine.db << "</loadedData>\n";
 		}
@@ -1095,9 +1111,18 @@ int main(int ac, char* av[])
 
 		std::string language; // not used here
 		std::string finalQuery; // not used here
+
+		// Painful hack to set aside the current engine state and use
+		// the current values as of when the query was validated.
+		const sw::TTerm* oldBaseUri = TheServer.engine.baseURI;
+		sw::MediaType oldMediaType = TheServer.engine.dataMediaType;
+		TheServer.engine.baseURI       = QueryBaseUri;
+		TheServer.engine.dataMediaType = QueryMediaType;
 		if (!TheServer.engine.executeQuery(query, TheServer.engine.resultSet, language, finalQuery))
 		    Output.resource = NULL;
 		delete query;
+		TheServer.engine.baseURI = oldBaseUri;
+		TheServer.engine.dataMediaType = oldMediaType;
 
 	    }
 	    {

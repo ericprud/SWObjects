@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE( escapes ) {
 W3C_SW_SAXPARSER P;
 
 BOOST_AUTO_TEST_CASE( empty_ask ) {
-    ExecResults invocation("../bin/sparql -l sparqlx -e 'ASK {}'");
+    ExecResults invocation("../bin/sparql -e 'ASK {}' -l sparqlx");
     w3c_sw::IStreamContext sptr(invocation.s, w3c_sw::IStreamContext::STRING, "application/sparql-results+xml");
     w3c_sw::ResultSet tested(&F, &P, sptr);
     BooleanResultSet expected(&F, true);

@@ -924,6 +924,8 @@ struct SimpleEngine {
 		    default:
 			throw "program flow exception -- unknown defaultHTTPmethod";
 		    }
+		    if (dataMediaType) // override with command line argument for media type.
+			istr->mediaType = dataMediaType;
 		    if (!loadDataOrResults(DefaultGraph, serviceURI, baseURI, *istr, rs, rs.getRdfDB()))
 			rs.resultType = ResultSet::RESULT_Graphs;
 		    executed = true;
