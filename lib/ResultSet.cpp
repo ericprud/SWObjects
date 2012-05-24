@@ -252,12 +252,18 @@ namespace w3c_sw {
 			atomFactory->getRDFLiteral("internal regex error at " w3c_sw_LOCATION);
 
 		    if (atHeaderRow) {
-			if (headers.size() == 0 && what[Delimiter].matched)
-			    headers.push_back(inventColumName(0));
+			if (headers.size() == 0 && what[Delimiter].matched) {
+			    const TTerm* col0 = inventColumName(0);
+			    addOrderedVar(col0);
+			    headers.push_back(col0);
+			}
 
 			if (what[Empty].matched) {
-			    headers.push_back(inventColumName(headers.size()));
+			    const TTerm* nameless = inventColumName(headers.size());
+			    addOrderedVar(nameless);
+			    headers.push_back(nameless);
 			} else {
+			    addOrderedVar(tterm);
 			    headers.push_back(tterm);
 			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
 				<< "adding name for column " << headers.size() - 1 << ": " << headers[headers.size() - 1]->toString() << "\n";
@@ -389,6 +395,7 @@ namespace w3c_sw {
 		    const BNode* b = atomFactory->createBNode();
 		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 			<< "fresh header variable: " << b->toString() << "\n";
+		    addOrderedVar(b);
 		    headers.push_back(b);
 		} else {
 		    if (curRow == NULL) {
@@ -406,9 +413,10 @@ namespace w3c_sw {
 		const TTerm* tterm = atomFactory->getTTerm(term, nodeMap);
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << "term: " << tterm->toString() << "\n";
-		if (firstRow)
+		if (firstRow) {
+		    addOrderedVar(tterm);
 		    headers.push_back(tterm);
-		else {
+		} else {
 		    if (curRow == NULL) {
 			curRow = new Result(this);
 			insert(this->end(), curRow);
@@ -964,7 +972,7 @@ namespace w3c_sw {
 
     std::string render (const TTerm* p, NamespaceMap* namespaces) {
 	return
-	    p == TTerm::Unbound
+	    (p == NULL || p == TTerm::Unbound) // !! why do we see both?
 	    ? BoxChars::GBoxChars->unbound
 	    : (namespaces == NULL || dynamic_cast<const URI*>(p) == NULL)
 	    ? p->toString()
@@ -998,21 +1006,30 @@ namespace w3c_sw {
 	    VariableList intruders;
 	    lastInKnownVars = count;
 	    for (ResultSetConstIterator row = results.begin() ; row != results.end(); ++row)
-		for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
-		    const TTerm* var = b->first;
-		    if (pos2col.find(var) == pos2col.end()) {
-			/* Error: a variable not listed in knownVars. */
-			pos2col[var] = count++;
-			std::string rendered(render(var, namespaces));
-			widths.push_back(rendered.size());
-			vars.push_back(var);
-			intruders.insert(var);
+		if (orderedSelect) // a formatted rendering takes a subset of the vars.
+		    for (size_t colNo = 0; colNo < cols.size(); ++colNo) {
+			const TTerm* var = vars[colNo];
+			std::string rendered(render((*row)->get(var), namespaces));
+			size_t width = rendered.size();
+			if (width > widths[colNo])
+			    widths[colNo] = width;
 		    }
-		    std::string rendered(render(b->second.tterm, namespaces));
-		    size_t width = rendered.size();
-		    if (width > widths[pos2col[var]])
-			widths[pos2col[var]] = width;
-		}
+		else
+		    for (BindingSetIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
+			const TTerm* var = b->first;
+			if (pos2col.find(var) == pos2col.end()) {
+			    /* Error: a variable not listed in knownVars. */
+			    pos2col[var] = count++;
+			    std::string rendered(render(var, namespaces));
+			    widths.push_back(rendered.size());
+			    vars.push_back(var);
+			    intruders.insert(var);
+			}
+			std::string rendered(render(b->second.tterm, namespaces));
+			size_t width = rendered.size();
+			if (width > widths[pos2col[var]])
+			    widths[pos2col[var]] = width;
+		    }
 	}
 
 	/* Generate ResultSet string. */
@@ -1030,8 +1047,11 @@ namespace w3c_sw {
 	for (i = 0; i < count; i++) {
 	    const TTerm* var = vars[i];
 	    s << (i == 0 ? BoxChars::GBoxChars->rl : i < lastInKnownVars ? BoxChars::GBoxChars->rs : BoxChars::GBoxChars->unlistedVar) << ' ';
-	    size_t width = var->toString().length();
-	    s << var->toString() << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << ' '; // left justified.
+	    int width = (int)var->toString().length();
+	    int tab = (int)widths[i] - width;
+	    // if (tab < 0)
+	    // 	tab = 0; // @@ throw something?
+	    s << var->toString() << STRING(tab, BoxChars::GBoxChars->rb) << ' '; // left justified.
 	}
 	if (count == 0)
 	    s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
@@ -1055,8 +1075,11 @@ namespace w3c_sw {
 		    val = TTerm::Unbound;
 		const std::string str = render(val, namespaces);
 		s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
-		size_t width = str.length();
-		s << STRING(widths[i] - width, BoxChars::GBoxChars->rb) << str << ' '; // right justified.
+		int width = str.length();
+		int tab = (int)widths[i] - width;
+		// if (tab < 0)
+		//     tab = 0; // @@ throw something?
+		s << STRING(tab, BoxChars::GBoxChars->rb) << str << ' '; // right justified.
 	    }
 	    if (count == 0)
 		s << BoxChars::GBoxChars->rl << ' ';
@@ -1245,14 +1268,15 @@ namespace w3c_sw {
     }
     std::string ResultSet::toJSON (NamespaceMap* namespaces) const {
 	std::stringstream ss;
+	const VariableVector vars = getOrderedVars();
 	JSONSerializer jdoc(ss, JSONSerializer::Container_Map, "    "); {
 	    jdoc.openMap("head"); {
 		jdoc.openList("link"); {
 		    jdoc.literal("http://www.w3.org/TR/rdf-sparql-XMLres/example.rq");
 		} jdoc.closeList();
 		jdoc.openList("vars"); {
-		    for (std::set<const TTerm*>::const_iterator var = knownVars.begin();
-			 var != knownVars.end(); ++var) {
+		    for (VariableVector::const_iterator var = vars.begin();
+			 var != vars.end(); ++var) {
 			jdoc.literal((*var)->getLexicalValue());
 		    }
 		} jdoc.closeList();
@@ -1261,28 +1285,29 @@ namespace w3c_sw {
 		jdoc.openList("bindings"); {
 		    for (ResultSetConstIterator row = begin() ; row != end(); ++row) {
 			jdoc.openMap(); {
-			    for (BindingSetConstIterator binding = (*row)->begin();
-				 binding != (*row)->end(); ++binding) {
-				const TTerm* var = binding->first;
-				const TTerm* val = binding->second.tterm;
-				jdoc.openMap(var->getLexicalValue()); {
-				    jdoc.literal("value", val->getLexicalValue());
-				    switch (val->getTypeOrder()) {
-				    case TTerm::TYPE_BNode:
-					jdoc.literal("type", "bnode");
-					break;
-				    case TTerm::TYPE_URI:
-					jdoc.literal("type", "uri");
-					break;
-				    default:
-					const RDFLiteral* lit = dynamic_cast<const RDFLiteral*>(val);
-					jdoc.literal("type", lit->getDatatype() ? "typed-literal" : "literal");
-					if (lit->getDatatype())
-					    jdoc.literal("datatype", lit->getDatatype()->getLexicalValue());
-					if (lit->getLangtag())
-					    jdoc.literal("xml:lang", lit->getLangtag()->getLexicalValue());
-				    }
-				} jdoc.closeMap();
+			    for (VariableVector::const_iterator var = vars.begin();
+				 var != vars.end(); ++var) {
+				const TTerm* val = (*row)->get(*var);
+				if (val != NULL) {
+				    jdoc.openMap((*var)->getLexicalValue()); {
+					jdoc.literal("value", val->getLexicalValue());
+					switch (val->getTypeOrder()) {
+					case TTerm::TYPE_BNode:
+					    jdoc.literal("type", "bnode");
+					    break;
+					case TTerm::TYPE_URI:
+					    jdoc.literal("type", "uri");
+					    break;
+					default:
+					    const RDFLiteral* lit = dynamic_cast<const RDFLiteral*>(val);
+					    jdoc.literal("type", lit->getDatatype() ? "typed-literal" : "literal");
+					    if (lit->getDatatype())
+						jdoc.literal("datatype", lit->getDatatype()->getLexicalValue());
+					    if (lit->getLangtag())
+						jdoc.literal("xml:lang", lit->getLangtag()->getLexicalValue());
+					}
+				    } jdoc.closeMap();
+				}
 			    }
 			} jdoc.closeMap();
 		    }

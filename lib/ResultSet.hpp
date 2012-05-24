@@ -285,7 +285,7 @@ namespace w3c_sw {
 			newState = LINK;
 		    else if (localName == "variable") {
 			newState = VARIABLE;
-			rs->addKnownVar(atomFactory->getVariable(attrs->getValue("", "name")));
+			rs->addOrderedVar(atomFactory->getVariable(attrs->getValue("", "name")));
 		    }
 		    break;
 		case LINK:
@@ -475,11 +475,11 @@ namespace w3c_sw {
 	    }
 	}
 	const VariableList* getKnownVars () const { return &knownVars; }
-	void addKnownVar (const TTerm* var) { knownVars.insert(var); }
-	void addOrderedVar (const TTerm* var) {
-	    addKnownVar(var);
+	bool addKnownVar (const TTerm* var) { return knownVars.insert(var).second; }
+	bool addOrderedVar (const TTerm* var) {
 	    selectOrder.push_back(var);
 	    orderedSelect = true;
+	    return addKnownVar(var);
 	}
 	VariableVector getOrderedVars () const {
 	    VariableVector ret;
@@ -526,7 +526,16 @@ namespace w3c_sw {
 	 *   minus which removes incompatible rows with a non-empty domain union.
 	 */
 	typedef enum {OP_join, OP_outer, OP_minus} e_OP;
-	void joinIn (ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join) { // !!! make const ref
+	void joinIn (const ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join) { // !!! make const ref
+	    // Before we screw with the knownVars, copy any any column ordering from ref to *this.
+	    if (ref->orderedSelect) {
+		orderedSelect = true;
+		for (std::vector<const TTerm*>::const_iterator v = ref->selectOrder.begin();
+		     v != ref->selectOrder.end(); ++v)
+		    if (addKnownVar(*v))
+			addOrderedVar(*v);
+	    }
+
 	    for (ResultSetIterator myRow = results.begin();
 		 myRow != results.end(); ) {
 		bool matchedSomeRow = false;
@@ -687,15 +696,20 @@ namespace w3c_sw {
 	std::string toString() const { return toString("text/sparql-results"); }
 	std::string toString(NamespaceMap* namespaces) const;
 	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) const {
+	    bool tableMediaType =
+		mediaType.match("text/sparql-results") ||
+		mediaType.match("text/csv") ||
+		mediaType.match("text/tab-separated-values") ||
+		mediaType.match("application/sparql-results+json") ||
+		mediaType.match("text/html") ||
+		mediaType.match("application/sparql-results+xml");
 	    if (preferDb || resultType == RESULT_Graphs) {
 		// text/ntriples , text/turtle , text/trig
 		return 
-		    mediaType.match("text/sparql-results") ||
-		    mediaType.match("application/sparql-results+xml") ||
-		    mediaType.match("application/sparql-results+json")
-		    ? db->toString("text/trig", namespaces) 
+		    tableMediaType
+		    ? db->toString("text/trig", namespaces) // default graph media type
 		    : db->toString(mediaType, namespaces);
-	    } else if (mediaType.match("text/sparql-results")) {
+	    } else if (mediaType.match("text/sparql-results") || !tableMediaType) { // default table media type
 		return toString(namespaces);
 	    } else if (mediaType.match("text/csv")) {
 		return toDelimSeparatedValues(',', true, namespaces);

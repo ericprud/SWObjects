@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,20 +36,20 @@
 /* First part of user declarations.  */
 
 
-/* Line 311 of lalr1.cc  */
-#line 43 "lib/JSONresultsParser/JSONresultsParser.cpp"
+/* Line 293 of lalr1.cc  */
+#line 41 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
 
 #include "JSONresultsParser.hpp"
 
 /* User implementation prologue.  */
 
-/* Line 317 of lalr1.cc  */
+/* Line 299 of lalr1.cc  */
 #line 182 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
 
-/* Line 317 of lalr1.cc  */
+/* Line 299 of lalr1.cc  */
 #line 214 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
@@ -63,11 +61,11 @@
 #define yylex driver.lexer->lexWrapper
 
 
-/* Line 317 of lalr1.cc  */
-#line 68 "lib/JSONresultsParser/JSONresultsParser.cpp"
+/* Line 299 of lalr1.cc  */
+#line 66 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -76,6 +74,26 @@
 # ifndef YY_
 #  define YY_(msgid) msgid
 # endif
+#endif
+
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+ do                                                                    \
+   if (N)                                                              \
+     {                                                                 \
+       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
+       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
+     }                                                                 \
+   else                                                                \
+     {                                                                 \
+       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
+     }                                                                 \
+ while (false)
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
@@ -127,14 +145,10 @@ do {					\
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
-/* Line 380 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 namespace w3c_sw {
 
-/* Line 380 of lalr1.cc  */
-#line 137 "lib/JSONresultsParser/JSONresultsParser.cpp"
-#if YYERROR_VERBOSE
+/* Line 382 of lalr1.cc  */
+#line 152 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -173,7 +187,6 @@ namespace w3c_sw {
     return yystr;
   }
 
-#endif
 
   /// Build a parser object.
   JSONresultsParser::JSONresultsParser (class JSONresultsDriver& driver_yyarg)
@@ -274,6 +287,18 @@ namespace w3c_sw {
   }
 #endif
 
+  inline bool
+  JSONresultsParser::yy_pact_value_is_default_ (int yyvalue)
+  {
+    return yyvalue == yypact_ninf_;
+  }
+
+  inline bool
+  JSONresultsParser::yy_table_value_is_error_ (int yyvalue)
+  {
+    return yyvalue == yytable_ninf_;
+  }
+
   int
   JSONresultsParser::parse ()
   {
@@ -295,7 +320,7 @@ namespace w3c_sw {
     /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location_type yyerror_range[2];
+    location_type yyerror_range[3];
 
     /// $$.
     semantic_type yyval;
@@ -309,15 +334,15 @@ namespace w3c_sw {
 
     /* User initialization code.  */
     
-/* Line 553 of lalr1.cc  */
+/* Line 565 of lalr1.cc  */
 #line 43 "lib/JSONresultsParser/JSONresultsParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
 
-/* Line 553 of lalr1.cc  */
-#line 321 "lib/JSONresultsParser/JSONresultsParser.cpp"
+/* Line 565 of lalr1.cc  */
+#line 346 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -345,7 +370,7 @@ namespace w3c_sw {
 
     /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
-    if (yyn == yypact_ninf_)
+    if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
     /* Read a lookahead token.  */
@@ -378,8 +403,8 @@ namespace w3c_sw {
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yyn == 0 || yyn == yytable_ninf_)
-	goto yyerrlab;
+	if (yy_table_value_is_error_ (yyn))
+	  goto yyerrlab;
 	yyn = -yyn;
 	goto yyreduce;
       }
@@ -435,7 +460,7 @@ namespace w3c_sw {
       {
 	  case 2:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 228 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	if (driver.root == NULL)
@@ -447,7 +472,7 @@ namespace w3c_sw {
 
   case 3:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 233 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.root = driver.endBindingSet();
@@ -457,7 +482,7 @@ namespace w3c_sw {
 
   case 10:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 258 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	// throw away link $4
@@ -465,74 +490,75 @@ namespace w3c_sw {
     }
     break;
 
-  case 12:
+  case 11:
 
-/* Line 678 of lalr1.cc  */
-#line 269 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 265 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(4) - (4)].p_str)));
+	delete (yysemantic_stack_[(4) - (4)].p_str);
+    }
+    break;
+
+  case 13:
+
+/* Line 690 of lalr1.cc  */
+#line 272 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(2) - (2)].p_str)));
 	delete (yysemantic_stack_[(2) - (2)].p_str);
     }
     break;
 
-  case 20:
+  case 21:
 
-/* Line 678 of lalr1.cc  */
-#line 298 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 301 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.startBindingRow(false);
       }
     break;
 
-  case 21:
+  case 22:
 
-/* Line 678 of lalr1.cc  */
-#line 300 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 303 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.endBindingRow();
       }
     break;
 
-  case 25:
+  case 26:
 
-/* Line 678 of lalr1.cc  */
-#line 315 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 318 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBinding(driver.getVariable(*(yysemantic_stack_[(5) - (1)].p_str)), (yysemantic_stack_[(5) - (4)].p_TTerm));
 	delete (yysemantic_stack_[(5) - (1)].p_str);
     }
     break;
 
-  case 26:
+  case 27:
 
-/* Line 678 of lalr1.cc  */
-#line 322 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 325 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
     break;
 
-  case 27:
+  case 28:
 
-/* Line 678 of lalr1.cc  */
-#line 325 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 328 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_BNode);
     }
     break;
 
-  case 28:
-
-/* Line 678 of lalr1.cc  */
-#line 328 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
-    }
-    break;
-
   case 29:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 331 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
@@ -541,112 +567,121 @@ namespace w3c_sw {
 
   case 30:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 334 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
+    }
+    break;
+
+  case 31:
+
+/* Line 690 of lalr1.cc  */
+#line 337 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curValue = (yysemantic_stack_[(1) - (1)].p_str);
       }
     break;
 
-  case 31:
+  case 32:
 
-/* Line 678 of lalr1.cc  */
-#line 336 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 339 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curValue = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_TTerm);
       }
     break;
 
-  case 32:
+  case 33:
 
-/* Line 678 of lalr1.cc  */
-#line 340 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 343 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curDatatype = (yysemantic_stack_[(1) - (1)].p_URI);
       }
     break;
 
-  case 33:
+  case 34:
 
-/* Line 678 of lalr1.cc  */
-#line 342 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 345 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curDatatype = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
       }
     break;
 
-  case 34:
+  case 35:
 
-/* Line 678 of lalr1.cc  */
-#line 346 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 349 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curLang = (yysemantic_stack_[(1) - (1)].p_str);
       }
     break;
 
-  case 35:
+  case 36:
 
-/* Line 678 of lalr1.cc  */
-#line 348 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 351 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curLang = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
       }
     break;
 
-  case 36:
+  case 37:
 
-/* Line 678 of lalr1.cc  */
-#line 355 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 358 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 37:
+  case 38:
 
-/* Line 678 of lalr1.cc  */
-#line 362 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 365 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_BNode) = driver.getBNode(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 38:
+  case 39:
 
-/* Line 678 of lalr1.cc  */
-#line 369 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 372 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
     break;
 
-  case 39:
+  case 40:
 
-/* Line 678 of lalr1.cc  */
-#line 375 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 378 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(2) - (2)].p_str);
     }
     break;
 
-  case 40:
+  case 41:
 
-/* Line 678 of lalr1.cc  */
-#line 381 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 384 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = NULL;
     }
     break;
 
-  case 42:
+  case 43:
 
-/* Line 678 of lalr1.cc  */
-#line 388 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 391 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), NULL, (yysemantic_stack_[(3) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(3) - (1)].p_str)) : NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -654,10 +689,10 @@ namespace w3c_sw {
     }
     break;
 
-  case 43:
+  case 44:
 
-/* Line 678 of lalr1.cc  */
-#line 393 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 396 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_str), NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete (yysemantic_stack_[(2) - (1)].p_str);
@@ -665,48 +700,48 @@ namespace w3c_sw {
     }
     break;
 
-  case 44:
+  case 45:
 
-/* Line 678 of lalr1.cc  */
-#line 401 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 404 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
     break;
 
-  case 45:
+  case 46:
 
-/* Line 678 of lalr1.cc  */
-#line 407 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 410 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), (yysemantic_stack_[(3) - (1)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 46:
+  case 47:
 
-/* Line 678 of lalr1.cc  */
-#line 411 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 414 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (1)].p_str), (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (1)].p_str);
     }
     break;
 
-  case 47:
+  case 48:
 
-/* Line 678 of lalr1.cc  */
-#line 418 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 421 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
     }
     break;
 
-  case 48:
+  case 49:
 
-/* Line 678 of lalr1.cc  */
-#line 421 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 424 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(4) - (1)].p_URI), NULL);
       delete driver.curValue;
@@ -714,10 +749,10 @@ namespace w3c_sw {
     }
     break;
 
-  case 49:
+  case 50:
 
-/* Line 678 of lalr1.cc  */
-#line 426 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 429 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(4) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(4) - (1)].p_str)) : NULL);
       delete driver.curValue;
@@ -726,30 +761,30 @@ namespace w3c_sw {
     }
     break;
 
-  case 50:
+  case 51:
 
-/* Line 678 of lalr1.cc  */
-#line 435 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 438 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI(*driver.curValue);
 	delete driver.curValue;
     }
     break;
 
-  case 51:
+  case 52:
 
-/* Line 678 of lalr1.cc  */
-#line 439 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 442 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getBNode(*driver.curValue);
 	delete driver.curValue;
     }
     break;
 
-  case 52:
+  case 53:
 
-/* Line 678 of lalr1.cc  */
-#line 443 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 446 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete driver.curValue;
@@ -757,40 +792,40 @@ namespace w3c_sw {
     }
     break;
 
-  case 53:
+  case 54:
 
-/* Line 678 of lalr1.cc  */
-#line 448 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 451 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete driver.curValue;
     }
     break;
 
-  case 54:
+  case 55:
 
-/* Line 678 of lalr1.cc  */
-#line 455 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 458 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
     }
     break;
 
-  case 55:
+  case 56:
 
-/* Line 678 of lalr1.cc  */
-#line 459 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 462 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
     }
     break;
 
-  case 56:
+  case 57:
 
-/* Line 678 of lalr1.cc  */
-#line 466 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 469 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -798,10 +833,10 @@ namespace w3c_sw {
     }
     break;
 
-  case 57:
+  case 58:
 
-/* Line 678 of lalr1.cc  */
-#line 471 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 474 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -809,137 +844,137 @@ namespace w3c_sw {
     }
     break;
 
-  case 58:
+  case 59:
 
-/* Line 678 of lalr1.cc  */
-#line 479 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 482 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 59:
+  case 60:
 
-/* Line 678 of lalr1.cc  */
-#line 485 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 488 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 60:
+  case 61:
 
-/* Line 678 of lalr1.cc  */
-#line 492 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 495 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 90:
+  case 91:
 
-/* Line 678 of lalr1.cc  */
-#line 569 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 572 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = new std::string("head");
     }
     break;
 
-  case 91:
+  case 92:
 
-/* Line 678 of lalr1.cc  */
-#line 572 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 575 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("vars");
     }
     break;
 
-  case 92:
+  case 93:
 
-/* Line 678 of lalr1.cc  */
-#line 575 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 578 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("results");
     }
     break;
 
-  case 93:
+  case 94:
 
-/* Line 678 of lalr1.cc  */
-#line 578 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 581 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bindings");
     }
     break;
 
-  case 94:
+  case 95:
 
-/* Line 678 of lalr1.cc  */
-#line 581 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 584 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("type");
     }
     break;
 
-  case 95:
+  case 96:
 
-/* Line 678 of lalr1.cc  */
-#line 584 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 587 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("uri");
     }
     break;
 
-  case 96:
+  case 97:
 
-/* Line 678 of lalr1.cc  */
-#line 587 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 590 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bnode");
     }
     break;
 
-  case 97:
+  case 98:
 
-/* Line 678 of lalr1.cc  */
-#line 590 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 593 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("literal");
     }
     break;
 
-  case 98:
+  case 99:
 
-/* Line 678 of lalr1.cc  */
-#line 593 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 596 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("typedLiteral");
     }
     break;
 
-  case 99:
+  case 100:
 
-/* Line 678 of lalr1.cc  */
-#line 596 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 599 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("datatype");
     }
     break;
 
-  case 100:
+  case 101:
 
-/* Line 678 of lalr1.cc  */
-#line 599 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 602 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("lang");
     }
     break;
 
-  case 101:
+  case 102:
 
-/* Line 678 of lalr1.cc  */
-#line 602 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 605 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("value");
     }
@@ -947,11 +982,22 @@ namespace w3c_sw {
 
 
 
-/* Line 678 of lalr1.cc  */
-#line 952 "lib/JSONresultsParser/JSONresultsParser.cpp"
+/* Line 690 of lalr1.cc  */
+#line 987 "lib/JSONresultsParser/JSONresultsParser.cpp"
 	default:
           break;
       }
+    /* User semantic actions sometimes alter yychar, and that requires
+       that yytoken be updated with the new translation.  We take the
+       approach of translating immediately before every use of yytoken.
+       One alternative is translating here after every semantic action,
+       but that translation would be missed if the semantic action
+       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
+       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
+       destructor might then be invoked immediately.  In the case of
+       YYERROR, subsequent parser actions might lead to an incorrect
+       destructor call or verbose syntax error message before the
+       lookahead is translated.  */
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
     yypop_ (yylen);
@@ -975,14 +1021,20 @@ namespace w3c_sw {
   | yyerrlab -- here on detecting error |
   `------------------------------------*/
   yyerrlab:
+    /* Make sure we have latest lookahead translation.  See comments at
+       user semantic actions for why this is necessary.  */
+    yytoken = yytranslate_ (yychar);
+
     /* If not already recovering from an error, report this error.  */
     if (!yyerrstatus_)
       {
 	++yynerrs_;
+	if (yychar == yyempty_)
+	  yytoken = yyempty_;
 	error (yylloc, yysyntax_error_ (yystate, yytoken));
       }
 
-    yyerror_range[0] = yylloc;
+    yyerror_range[1] = yylloc;
     if (yyerrstatus_ == 3)
       {
 	/* If just tried and failed to reuse lookahead token after an
@@ -1017,7 +1069,7 @@ namespace w3c_sw {
     if (false)
       goto yyerrorlab;
 
-    yyerror_range[0] = yylocation_stack_[yylen - 1];
+    yyerror_range[1] = yylocation_stack_[yylen - 1];
     /* Do not reclaim the symbols of the rule which action triggered
        this YYERROR.  */
     yypop_ (yylen);
@@ -1034,7 +1086,7 @@ namespace w3c_sw {
     for (;;)
       {
 	yyn = yypact_[yystate];
-	if (yyn != yypact_ninf_)
+	if (!yy_pact_value_is_default_ (yyn))
 	{
 	  yyn += yyterror_;
 	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
@@ -1049,7 +1101,7 @@ namespace w3c_sw {
 	if (yystate_stack_.height () == 1)
 	YYABORT;
 
-	yyerror_range[0] = yylocation_stack_[0];
+	yyerror_range[1] = yylocation_stack_[0];
 	yydestruct_ ("Error: popping",
 		     yystos_[yystate],
 		     &yysemantic_stack_[0], &yylocation_stack_[0]);
@@ -1058,10 +1110,10 @@ namespace w3c_sw {
 	YY_STACK_PRINT ();
       }
 
-    yyerror_range[1] = yylloc;
+    yyerror_range[2] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
     // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
+    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
@@ -1084,7 +1136,13 @@ namespace w3c_sw {
 
   yyreturn:
     if (yychar != yyempty_)
-      yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
+      {
+        /* Make sure we have latest lookahead translation.  See comments
+           at user semantic actions for why this is necessary.  */
+        yytoken = yytranslate_ (yychar);
+        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
+                     &yylloc);
+      }
 
     /* Do not reclaim the symbols of the rule which action triggered
        this YYABORT or YYACCEPT.  */
@@ -1103,51 +1161,97 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  JSONresultsParser::yysyntax_error_ (int yystate, int tok)
+  JSONresultsParser::yysyntax_error_ (int yystate, int yytoken)
   {
-    std::string res;
-    YYUSE (yystate);
-#if YYERROR_VERBOSE
-    int yyn = yypact_[yystate];
-    if (yypact_ninf_ < yyn && yyn <= yylast_)
+    std::string yyres;
+    // Number of reported tokens (one for the "unexpected", one per
+    // "expected").
+    size_t yycount = 0;
+    // Its maximum.
+    enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
+    // Arguments of yyformat.
+    char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+
+    /* There are many possibilities here to consider:
+       - If this state is a consistent state with a default action, then
+         the only way this function was invoked is if the default action
+         is an error action.  In that case, don't check for expected
+         tokens because there are none.
+       - The only way there can be no lookahead present (in yytoken) is
+         if this state is a consistent state with a default action.
+         Thus, detecting the absence of a lookahead is sufficient to
+         determine that there is no unexpected or expected token to
+         report.  In that case, just report a simple "syntax error".
+       - Don't assume there isn't a lookahead just because this state is
+         a consistent state with a default action.  There might have
+         been a previous inconsistent state, consistent state with a
+         non-default action, or user semantic action that manipulated
+         yychar.
+       - Of course, the expected token list depends on states to have
+         correct lookahead information, and it depends on the parser not
+         to perform extra reductions after fetching a lookahead from the
+         scanner and before detecting a syntax error.  Thus, state
+         merging (from LALR or IELR) and default reductions corrupt the
+         expected token list.  However, the list is correct for
+         canonical LR with one exception: it will still contain any
+         token that will not be accepted due to an error action in a
+         later state.
+    */
+    if (yytoken != yyempty_)
       {
-	/* Start YYX at -YYN if negative to avoid negative indexes in
-	   YYCHECK.  */
-	int yyxbegin = yyn < 0 ? -yyn : 0;
-
-	/* Stay within bounds of both yycheck and yytname.  */
-	int yychecklim = yylast_ - yyn + 1;
-	int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-	int count = 0;
-	for (int x = yyxbegin; x < yyxend; ++x)
-	  if (yycheck_[x + yyn] == x && x != yyterror_)
-	    ++count;
-
-	// FIXME: This method of building the message is not compatible
-	// with internationalization.  It should work like yacc.c does it.
-	// That is, first build a string that looks like this:
-	// "syntax error, unexpected %s or %s or %s"
-	// Then, invoke YY_ on this string.
-	// Finally, use the string as a format to output
-	// yytname_[tok], etc.
-	// Until this gets fixed, this message appears in English only.
-	res = "syntax error, unexpected ";
-	res += yytnamerr_ (yytname_[tok]);
-	if (count < 5)
-	  {
-	    count = 0;
-	    for (int x = yyxbegin; x < yyxend; ++x)
-	      if (yycheck_[x + yyn] == x && x != yyterror_)
-		{
-		  res += (!count++) ? ", expecting " : " or ";
-		  res += yytnamerr_ (yytname_[x]);
-		}
-	  }
+        yyarg[yycount++] = yytname_[yytoken];
+        int yyn = yypact_[yystate];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            /* Start YYX at -YYN if negative to avoid negative indexes in
+               YYCHECK.  In other words, skip the first -YYN actions for
+               this state because they are default actions.  */
+            int yyxbegin = yyn < 0 ? -yyn : 0;
+            /* Stay within bounds of both yycheck and yytname.  */
+            int yychecklim = yylast_ - yyn + 1;
+            int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
+            for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+              if (yycheck_[yyx + yyn] == yyx && yyx != yyterror_
+                  && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+                {
+                  if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
+                    {
+                      yycount = 1;
+                      break;
+                    }
+                  else
+                    yyarg[yycount++] = yytname_[yyx];
+                }
+          }
       }
-    else
-#endif
-      res = YY_("syntax error");
-    return res;
+
+    char const* yyformat = 0;
+    switch (yycount)
+      {
+#define YYCASE_(N, S)                         \
+        case N:                               \
+          yyformat = S;                       \
+        break
+        YYCASE_(0, YY_("syntax error"));
+        YYCASE_(1, YY_("syntax error, unexpected %s"));
+        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+      }
+
+    // Argument number.
+    size_t yyi = 0;
+    for (char const* yyp = yyformat; *yyp; ++yyp)
+      if (yyp[0] == '%' && yyp[1] == 's' && yyi < yycount)
+        {
+          yyres += yytnamerr_ (yyarg[yyi++]);
+          ++yyp;
+        }
+      else
+        yyres += *yyp;
+    return yyres;
   }
 
 
@@ -1157,135 +1261,137 @@ namespace w3c_sw {
   const short int
   JSONresultsParser::yypact_[] =
   {
-         7,  -119,    13,    52,  -119,  -119,  -119,    24,    20,    74,
-      27,  -119,  -119,    54,    51,    97,  -119,    64,  -119,  -119,
-    -119,  -119,    66,    65,    72,    68,    91,   101,  -119,   152,
-     156,  -119,  -119,    92,    98,  -119,  -119,   109,   106,  -119,
-    -119,   107,   107,  -119,   141,  -119,  -119,  -119,  -119,  -119,
+        23,  -119,    48,     8,  -119,  -119,  -119,    46,    52,    59,
+      49,  -119,  -119,    61,    70,    68,  -119,    51,  -119,  -119,
+    -119,  -119,    85,    95,   100,   162,   169,    77,  -119,    88,
+     145,  -119,  -119,   170,   171,  -119,  -119,   174,   175,  -119,
+    -119,    97,    97,  -119,   173,  -119,  -119,  -119,  -119,  -119,
     -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
     -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
-    -119,  -119,  -119,  -119,  -119,   143,  -119,   153,  -119,    23,
-    -119,  -119,   107,  -119,  -119,   107,    34,  -119,  -119,   173,
-     153,  -119,  -119,   165,   181,  -119,   107,  -119,  -119,    70,
-    -119,   180,  -119,  -119,  -119,   125,   182,   183,   184,   185,
-    -119,   188,   189,   190,  -119,  -119,  -119,  -119,   191,   192,
-     193,   194,  -119,   107,   107,   107,   126,   138,   138,   146,
-     146,    -1,    22,  -119,  -119,  -119,  -119,   195,   196,   125,
-    -119,   197,   144,  -119,   198,   148,  -119,  -119,  -119,   199,
-     200,  -119,   201,   202,   154,   154,  -119,  -119,  -119,   199,
-     203,   154,   204,   154,   205,   147,  -119,  -119,   146,   151,
-     146,   144,   148,  -119,   151,   144,   146,   148,   146,  -119,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119
+    -119,  -119,  -119,  -119,  -119,   168,  -119,   179,  -119,  -119,
+    -119,  -119,    16,    97,    41,    97,  -119,  -119,  -119,   177,
+     179,  -119,  -119,  -119,   104,   181,  -119,    97,  -119,  -119,
+     111,  -119,   180,  -119,  -119,  -119,   119,   182,   183,   184,
+     185,  -119,   188,   189,   190,  -119,  -119,  -119,  -119,   191,
+     192,   193,   194,  -119,    97,    97,    97,   127,   129,   129,
+     137,   137,     5,     2,  -119,  -119,  -119,  -119,   195,   196,
+     119,  -119,   197,   135,  -119,   198,   139,  -119,  -119,  -119,
+     199,   200,  -119,   201,   202,   146,   146,  -119,  -119,  -119,
+     199,   203,   146,   204,   146,   205,   138,  -119,  -119,   137,
+     142,   137,   135,   139,  -119,   142,   135,   137,   139,   137,
+    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
+    -119
   };
 
-  /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
-     doesn't specify something else to do.  Zero means the default is an
-     error.  */
+  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
+     YYTABLE doesn't specify something else to do.  Zero means the
+     default is an error.  */
   const unsigned char
   JSONresultsParser::yydefact_[] =
   {
-         0,     2,     0,     0,     1,    61,    62,     0,     0,     0,
-       0,    67,    68,     0,     0,     0,     3,     0,    63,    64,
-      65,    66,     0,     0,     6,     0,     0,     0,     4,     0,
-       0,     7,     9,     0,     0,    69,    70,     0,     0,     8,
-       5,     0,     0,    15,     0,    71,    72,    73,    74,    76,
-      77,    78,    79,    80,    81,    82,    83,    84,    85,    86,
-      87,    89,    88,    90,    91,    92,    93,    95,    96,    94,
-     101,    97,    98,    99,   100,     0,    13,     0,    10,     0,
-      20,    18,     0,    11,    14,     0,     0,    12,    23,     0,
-       0,    16,    19,     0,     0,    17,     0,    21,    24,     0,
-      22,     0,    30,    32,    34,     0,     0,     0,     0,     0,
-      25,     0,     0,     0,    26,    27,    28,    29,     0,     0,
-       0,     0,    75,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    58,    59,    60,    31,     0,     0,     0,
-      33,     0,     0,    35,     0,     0,    36,    37,    38,    40,
-       0,    44,     0,     0,     0,     0,    47,    50,    51,    40,
-       0,     0,     0,     0,     0,     0,    41,    43,     0,     0,
-       0,     0,     0,    52,     0,     0,     0,     0,     0,    39,
-      42,    46,    45,    48,    49,    53,    55,    54,    57,    56
+         0,     2,     0,     0,     1,    62,    63,     0,     0,     0,
+       0,    68,    69,     0,     0,     0,     3,     0,    64,    65,
+      66,    67,     0,     0,     6,     0,     0,     0,     4,     0,
+       0,     7,     9,     0,     0,    70,    71,     0,     0,     8,
+       5,     0,     0,    16,     0,    72,    73,    74,    75,    77,
+      78,    79,    80,    81,    82,    83,    84,    85,    86,    87,
+      88,    90,    89,    91,    92,    93,    94,    96,    97,    95,
+     102,    98,    99,   100,   101,     0,    11,     0,    10,    14,
+      21,    19,     0,     0,     0,     0,    12,    15,    24,     0,
+       0,    17,    20,    13,     0,     0,    18,     0,    22,    25,
+       0,    23,     0,    31,    33,    35,     0,     0,     0,     0,
+       0,    26,     0,     0,     0,    27,    28,    29,    30,     0,
+       0,     0,     0,    76,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,    59,    60,    61,    32,     0,     0,
+       0,    34,     0,     0,    36,     0,     0,    37,    38,    39,
+      41,     0,    45,     0,     0,     0,     0,    48,    51,    52,
+      41,     0,     0,     0,     0,     0,     0,    42,    44,     0,
+       0,     0,     0,     0,    53,     0,     0,     0,     0,     0,
+      40,    43,    47,    46,    49,    50,    54,    56,    55,    58,
+      57
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const short int
   JSONresultsParser::yypgoto_[] =
   {
-      -119,  -119,  -119,  -119,  -119,  -119,  -119,   157,   186,  -119,
-    -119,  -119,  -119,  -119,  -119,    96,  -119,  -119,  -119,   114,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,    53,  -119,
-    -119,  -119,  -119,  -119,  -119,  -119,  -110,  -118,  -115,   208,
-    -119,    -6,   207,   187,   -99,   -93,   -48,   -63,   -41,  -102,
-     -90,   -97,   -92,   -37
+      -119,  -119,  -119,  -119,  -119,  -119,  -119,   156,   158,  -119,
+    -119,  -119,  -119,  -119,  -119,  -119,   120,  -119,  -119,  -119,
+     114,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,    53,
+    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -118,  -108,  -111,
+     209,  -119,    -7,   206,   187,   -99,   -97,   -59,   -64,   -41,
+    -100,   -83,   -98,   -95,   -38
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   JSONresultsParser::yydefgoto_[] =
   {
-        -1,     2,     3,     7,    31,    32,    22,    23,    24,    84,
-      79,    13,    37,    92,    86,    81,    85,    98,    93,    88,
-     101,   111,   112,   113,   114,   115,   116,   166,   167,   148,
-     117,   151,   136,   156,   140,   143,   102,   103,   104,    63,
-      25,    64,    65,    66,    67,    68,   105,    69,   107,    71,
-      72,    73,    74,    89
+        -1,     2,     3,     7,    31,    32,    22,    23,    24,    79,
+      87,    82,    13,    37,    92,    84,    81,    83,    99,    94,
+      88,   102,   112,   113,   114,   115,   116,   117,   167,   168,
+     149,   118,   152,   137,   157,   141,   144,   103,   104,   105,
+      63,    25,    64,    65,    66,    67,    68,   106,    69,   108,
+      71,    72,    73,    74,    89
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If zero, do what YYDEFACT says.  */
+     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
   const signed char JSONresultsParser::yytable_ninf_ = -1;
   const unsigned char
   JSONresultsParser::yytable_[] =
   {
-        70,    70,   108,   120,    75,    76,   118,   109,   137,    26,
-       1,   138,   119,     4,   153,   121,   150,   141,   144,   146,
-     147,   149,   152,    26,    51,    52,    10,    82,     9,   108,
-      15,    83,    59,    60,   109,   108,   106,   159,    90,   109,
-     157,    70,    91,   164,    70,    87,   158,    51,    52,   160,
-     179,   181,   162,    57,    58,    70,   185,    17,   180,    16,
-     182,     5,     6,   106,   106,   106,   187,    27,   189,    29,
-     184,    28,   108,   109,    33,   188,    30,   108,   139,   142,
-     145,   183,    70,    70,    70,   186,   133,   134,   135,    11,
-      12,   106,   106,    49,    50,    51,    52,    34,   106,    41,
-     106,    57,    58,    59,    60,    42,   171,   172,    18,    19,
-      20,    21,    44,   175,    43,   177,     5,     6,    35,    36,
+        70,    70,   109,    75,    76,   110,   121,   119,    26,   120,
+     142,   145,   147,   148,   150,   153,   139,     5,     6,   138,
+      85,   151,    26,   122,    86,   154,     1,    51,    52,   109,
+      51,    52,   110,    57,    58,   109,   107,   110,    59,    60,
+     160,   158,    70,   159,    70,    90,   165,    93,     4,    91,
+       9,   181,    15,   183,    27,   180,    70,   161,    10,   188,
+     163,   190,   182,   107,   107,   107,    16,   186,   140,   143,
+     146,   110,   109,   185,    11,    12,    17,   109,   189,    18,
+      19,    20,    21,    70,    70,    70,   134,   135,   136,   184,
+      28,   107,   107,   187,    35,    36,   172,   173,   107,    29,
+     107,    20,    21,   176,    30,   178,     5,     6,    97,    98,
       20,    21,    11,    12,    35,    36,    45,    46,    47,    48,
       49,    50,    51,    52,    53,    54,    55,    56,    57,    58,
-      59,    60,    61,    62,    45,    46,    47,    48,    77,    49,
-      50,    78,    53,    54,    55,    56,    80,    57,    58,    59,
-      60,    49,    50,    51,    52,    20,    21,    18,    19,    96,
-      97,    51,    52,    55,    56,    53,    54,    49,    50,    94,
-      59,    60,    57,    58,    99,   110,    95,    40,   122,   123,
-     124,   125,   126,   127,   128,   129,   130,   131,   132,   154,
-     155,   161,   163,   165,   168,   169,   170,   174,   176,   178,
-     100,     8,   173,     0,    38,    39,    14
+      59,    60,    61,    62,    49,    50,    51,    52,    45,    46,
+      47,    48,    57,    58,    59,    60,    53,    54,    55,    56,
+      49,    50,    49,    50,    51,    52,    18,    19,    57,    58,
+      59,    60,    51,    52,    55,    56,    53,    54,    33,    49,
+      50,    59,    60,    57,    58,    34,    78,    41,    42,    43,
+      77,    44,    80,    95,   100,   111,    40,    39,   123,   124,
+     125,   126,   127,   128,   129,   130,   131,   132,   133,   155,
+     156,   162,   164,   166,   169,   170,   171,   175,   177,   179,
+      96,   101,     8,   174,    38,    14
   };
 
   /* YYCHECK.  */
-  const short int
+  const unsigned char
   JSONresultsParser::yycheck_[] =
   {
-        41,    42,    99,   105,    41,    42,   105,    99,   126,    15,
-       3,   126,   105,     0,   132,   105,   131,   127,   128,   129,
-     130,   131,   132,    29,    25,    26,     6,     4,     4,   126,
-       3,     8,    33,    34,   126,   132,    99,   139,     4,   131,
-     139,    82,     8,   145,    85,    82,   139,    25,    26,   139,
-     165,   169,   142,    31,    32,    96,   174,     6,   168,     5,
-     170,     9,    10,   126,   127,   128,   176,     3,   178,     4,
-     172,     5,   169,   165,     6,   177,     4,   174,   126,   127,
-     128,   171,   123,   124,   125,   175,   123,   124,   125,    15,
-      16,   154,   155,    23,    24,    25,    26,     6,   161,     7,
-     163,    31,    32,    33,    34,     7,   154,   155,    11,    12,
-      13,    14,     6,   161,     5,   163,     9,    10,    17,    18,
+        41,    42,   100,    41,    42,   100,   106,   106,    15,   106,
+     128,   129,   130,   131,   132,   133,   127,     9,    10,   127,
+       4,   132,    29,   106,     8,   133,     3,    25,    26,   127,
+      25,    26,   127,    31,    32,   133,   100,   132,    33,    34,
+     140,   140,    83,   140,    85,     4,   146,    85,     0,     8,
+       4,   169,     3,   171,     3,   166,    97,   140,     6,   177,
+     143,   179,   170,   127,   128,   129,     5,   175,   127,   128,
+     129,   166,   170,   173,    15,    16,     6,   175,   178,    11,
+      12,    13,    14,   124,   125,   126,   124,   125,   126,   172,
+       5,   155,   156,   176,    17,    18,   155,   156,   162,     4,
+     164,    13,    14,   162,     4,   164,     9,    10,     4,     5,
       13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
       23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
-      33,    34,    35,    36,    19,    20,    21,    22,     7,    23,
-      24,     8,    27,    28,    29,    30,     3,    31,    32,    33,
-      34,    23,    24,    25,    26,    13,    14,    11,    12,     4,
-       5,    25,    26,    29,    30,    27,    28,    23,    24,     6,
-      33,    34,    31,    32,     3,     5,    90,    30,     6,     6,
+      33,    34,    35,    36,    23,    24,    25,    26,    19,    20,
+      21,    22,    31,    32,    33,    34,    27,    28,    29,    30,
+      23,    24,    23,    24,    25,    26,    11,    12,    31,    32,
+      33,    34,    25,    26,    29,    30,    27,    28,     6,    23,
+      24,    33,    34,    31,    32,     6,     8,     7,     7,     5,
+       7,     6,     3,     6,     3,     5,    30,    29,     6,     6,
        6,     6,     4,     4,     4,     4,     4,     4,     4,     4,
        4,     4,     4,     4,     4,     4,     4,     4,     4,     4,
-      96,     3,   159,    -1,    27,    29,     9
+      90,    97,     3,   160,    27,     9
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1293,25 +1399,26 @@ namespace w3c_sw {
   const unsigned char
   JSONresultsParser::yystos_[] =
   {
-         0,     3,    38,    39,     0,     9,    10,    40,    76,     4,
-       6,    15,    16,    48,    79,     3,     5,     6,    11,    12,
-      13,    14,    43,    44,    45,    77,    78,     3,     5,     4,
-       4,    41,    42,     6,     6,    17,    18,    49,    80,    45,
+         0,     3,    38,    39,     0,     9,    10,    40,    77,     4,
+       6,    15,    16,    49,    80,     3,     5,     6,    11,    12,
+      13,    14,    43,    44,    45,    78,    79,     3,     5,     4,
+       4,    41,    42,     6,     6,    17,    18,    50,    81,    45,
       44,     7,     7,     5,     6,    19,    20,    21,    22,    23,
       24,    25,    26,    27,    28,    29,    30,    31,    32,    33,
-      34,    35,    36,    76,    78,    79,    80,    81,    82,    84,
-      85,    86,    87,    88,    89,    90,    90,     7,     8,    47,
-       3,    52,     4,     8,    46,    53,    51,    90,    56,    90,
-       4,     8,    50,    55,     6,    52,     4,     5,    54,     3,
-      56,    57,    73,    74,    75,    83,    84,    85,    88,    89,
-       5,    58,    59,    60,    61,    62,    63,    67,    81,    82,
-      86,    87,     6,     6,     6,     6,     4,     4,     4,     4,
-       4,     4,     4,    90,    90,    90,    69,    74,    75,    83,
-      71,    73,    83,    72,    73,    83,    73,    73,    66,    73,
-      75,    68,    73,    74,     4,     4,    70,    81,    82,    86,
-      87,     4,    87,     4,    86,     4,    64,    65,     4,     4,
-       4,    83,    83,    65,     4,    83,     4,    83,     4,    75,
-      73,    74,    73,    87,    86,    74,    87,    73,    86,    73
+      34,    35,    36,    77,    79,    80,    81,    82,    83,    85,
+      86,    87,    88,    89,    90,    91,    91,     7,     8,    46,
+       3,    53,    48,    54,    52,     4,     8,    47,    57,    91,
+       4,     8,    51,    91,    56,     6,    53,     4,     5,    55,
+       3,    57,    58,    74,    75,    76,    84,    85,    86,    89,
+      90,     5,    59,    60,    61,    62,    63,    64,    68,    82,
+      83,    87,    88,     6,     6,     6,     6,     4,     4,     4,
+       4,     4,     4,     4,    91,    91,    91,    70,    75,    76,
+      84,    72,    74,    84,    73,    74,    84,    74,    74,    67,
+      74,    76,    69,    74,    75,     4,     4,    71,    82,    83,
+      87,    88,     4,    88,     4,    87,     4,    65,    66,     4,
+       4,     4,    84,    84,    66,     4,    84,     4,    84,     4,
+      76,    74,    75,    74,    88,    87,    75,    88,    74,    87,
+      74
   };
 
 #if YYDEBUG
@@ -1332,16 +1439,16 @@ namespace w3c_sw {
   JSONresultsParser::yyr1_[] =
   {
          0,    37,    39,    38,    40,    41,    42,    42,    43,    43,
-      44,    45,    46,    47,    47,    48,    49,    50,    51,    51,
-      53,    52,    54,    55,    55,    56,    57,    57,    57,    57,
-      58,    57,    59,    57,    60,    57,    61,    62,    63,    64,
-      65,    65,    66,    66,    67,    68,    68,    69,    69,    69,
-      70,    70,    70,    70,    71,    71,    72,    72,    73,    74,
-      75,    76,    76,    77,    77,    78,    78,    79,    79,    80,
-      80,    81,    81,    82,    82,    83,    84,    84,    85,    85,
-      86,    86,    87,    87,    88,    88,    89,    89,    90,    90,
-      90,    90,    90,    90,    90,    90,    90,    90,    90,    90,
-      90,    90
+      44,    46,    45,    47,    48,    48,    49,    50,    51,    52,
+      52,    54,    53,    55,    56,    56,    57,    58,    58,    58,
+      58,    59,    58,    60,    58,    61,    58,    62,    63,    64,
+      65,    66,    66,    67,    67,    68,    69,    69,    70,    70,
+      70,    71,    71,    71,    71,    72,    72,    73,    73,    74,
+      75,    76,    77,    77,    78,    78,    79,    79,    80,    80,
+      81,    81,    82,    82,    83,    83,    84,    85,    85,    86,
+      86,    87,    87,    88,    88,    89,    89,    90,    90,    91,
+      91,    91,    91,    91,    91,    91,    91,    91,    91,    91,
+      91,    91,    91
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1349,16 +1456,16 @@ namespace w3c_sw {
   JSONresultsParser::yyr2_[] =
   {
          0,     2,     0,     6,     5,     2,     0,     1,     3,     2,
-       5,     6,     2,     0,     2,     5,     6,     2,     0,     2,
-       0,     5,     2,     0,     2,     5,     2,     2,     2,     2,
-       0,     4,     0,     4,     0,     4,     3,     3,     3,     2,
-       0,     1,     3,     2,     3,     3,     3,     2,     4,     4,
-       1,     1,     2,     3,     4,     4,     4,     4,     3,     3,
-       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     2,     1,     1,     1,     1,
+       5,     0,     7,     2,     0,     2,     5,     6,     2,     0,
+       2,     0,     5,     2,     0,     2,     5,     2,     2,     2,
+       2,     0,     4,     0,     4,     0,     4,     3,     3,     3,
+       2,     0,     1,     3,     2,     3,     3,     3,     2,     4,
+       4,     1,     1,     2,     3,     4,     4,     4,     4,     3,
+       3,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     2,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1
+       1,     1,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1383,13 +1490,13 @@ namespace w3c_sw {
   "$accept", "Top", "$@1", "head", "_O_QGT_COMMA_E_S_Q_link_E_C",
   "_Q_O_QGT_COMMA_E_S_Q_link_E_C_E_Opt",
   "_O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C",
-  "_link", "vars", "_O_QGT_COMMA_E_S_Qword_E_C",
+  "_link", "vars", "$@2", "_O_QGT_COMMA_E_S_Qword_E_C",
   "_Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star", "results", "bindings",
   "_O_QGT_COMMA_E_S_Qsolution_E_C",
-  "_Q_O_QGT_COMMA_E_S_Qsolution_E_C_E_Star", "solution", "$@2",
+  "_Q_O_QGT_COMMA_E_S_Qsolution_E_C_E_Star", "solution", "$@3",
   "_O_QGT_COMMA_E_S_Qbinding_E_C",
-  "_Q_O_QGT_COMMA_E_S_Qbinding_E_C_E_Star", "binding", "RDFterm", "$@3",
-  "$@4", "$@5", "t_uri", "t_bnode", "t_plainLiteral",
+  "_Q_O_QGT_COMMA_E_S_Qbinding_E_C_E_Star", "binding", "RDFterm", "$@4",
+  "$@5", "$@6", "t_uri", "t_bnode", "t_plainLiteral",
   "_O_QGT_COMMA_E_S_Qlang_E_C", "_Q_O_QGT_COMMA_E_S_Qlang_E_C_E_Opt",
   "_O_Qlang_E_S_QGT_COMMA_E_S_Qvalue_E_Or_Qvalue_E_S_QGT_COMMA_E_S_Qlang_E_Opt_C",
   "t_typedLiteral",
@@ -1407,36 +1514,36 @@ namespace w3c_sw {
   const JSONresultsParser::rhs_number_type
   JSONresultsParser::yyrhs_[] =
   {
-        38,     0,    -1,    -1,     3,    39,    40,     4,    48,     5,
-      -1,    76,     6,     3,    43,     5,    -1,     4,    44,    -1,
+        38,     0,    -1,    -1,     3,    39,    40,     4,    49,     5,
+      -1,    77,     6,     3,    43,     5,    -1,     4,    44,    -1,
       -1,    41,    -1,    44,     4,    45,    -1,    45,    42,    -1,
-      77,     6,     7,    90,     8,    -1,    78,     6,     7,    90,
-      47,     8,    -1,     4,    90,    -1,    -1,    47,    46,    -1,
-      79,     6,     3,    49,     5,    -1,    80,     6,     7,    52,
-      51,     8,    -1,     4,    52,    -1,    -1,    51,    50,    -1,
-      -1,     3,    53,    56,    55,     5,    -1,     4,    56,    -1,
-      -1,    55,    54,    -1,    90,     6,     3,    57,     5,    -1,
-      83,    61,    -1,    83,    62,    -1,    83,    63,    -1,    83,
-      67,    -1,    -1,    73,    58,     4,    69,    -1,    -1,    74,
-      59,     4,    71,    -1,    -1,    75,    60,     4,    72,    -1,
-      81,     4,    73,    -1,    82,     4,    73,    -1,    86,     4,
-      66,    -1,     4,    75,    -1,    -1,    64,    -1,    75,     4,
-      73,    -1,    73,    65,    -1,    87,     4,    68,    -1,    74,
-       4,    73,    -1,    73,     4,    74,    -1,    83,    70,    -1,
-      74,     4,    83,    87,    -1,    75,     4,    83,    86,    -1,
-      81,    -1,    82,    -1,    86,    65,    -1,    87,     4,    74,
-      -1,    83,    87,     4,    73,    -1,    73,     4,    83,    87,
-      -1,    83,    86,     4,    73,    -1,    73,     4,    83,    86,
-      -1,    85,     6,    90,    -1,    88,     6,    90,    -1,    89,
-       6,    90,    -1,     9,    -1,    10,    -1,    11,    -1,    12,
-      -1,    13,    -1,    14,    -1,    15,    -1,    16,    -1,    17,
-      -1,    18,    -1,    19,    -1,    20,    -1,    21,    -1,    22,
-      -1,    84,     6,    -1,    23,    -1,    24,    -1,    25,    -1,
-      26,    -1,    27,    -1,    28,    -1,    29,    -1,    30,    -1,
-      31,    -1,    32,    -1,    33,    -1,    34,    -1,    36,    -1,
-      35,    -1,    76,    -1,    78,    -1,    79,    -1,    80,    -1,
-      84,    -1,    81,    -1,    82,    -1,    86,    -1,    87,    -1,
-      88,    -1,    89,    -1,    85,    -1
+      78,     6,     7,    91,     8,    -1,    -1,    79,     6,     7,
+      91,    46,    48,     8,    -1,     4,    91,    -1,    -1,    48,
+      47,    -1,    80,     6,     3,    50,     5,    -1,    81,     6,
+       7,    53,    52,     8,    -1,     4,    53,    -1,    -1,    52,
+      51,    -1,    -1,     3,    54,    57,    56,     5,    -1,     4,
+      57,    -1,    -1,    56,    55,    -1,    91,     6,     3,    58,
+       5,    -1,    84,    62,    -1,    84,    63,    -1,    84,    64,
+      -1,    84,    68,    -1,    -1,    74,    59,     4,    70,    -1,
+      -1,    75,    60,     4,    72,    -1,    -1,    76,    61,     4,
+      73,    -1,    82,     4,    74,    -1,    83,     4,    74,    -1,
+      87,     4,    67,    -1,     4,    76,    -1,    -1,    65,    -1,
+      76,     4,    74,    -1,    74,    66,    -1,    88,     4,    69,
+      -1,    75,     4,    74,    -1,    74,     4,    75,    -1,    84,
+      71,    -1,    75,     4,    84,    88,    -1,    76,     4,    84,
+      87,    -1,    82,    -1,    83,    -1,    87,    66,    -1,    88,
+       4,    75,    -1,    84,    88,     4,    74,    -1,    74,     4,
+      84,    88,    -1,    84,    87,     4,    74,    -1,    74,     4,
+      84,    87,    -1,    86,     6,    91,    -1,    89,     6,    91,
+      -1,    90,     6,    91,    -1,     9,    -1,    10,    -1,    11,
+      -1,    12,    -1,    13,    -1,    14,    -1,    15,    -1,    16,
+      -1,    17,    -1,    18,    -1,    19,    -1,    20,    -1,    21,
+      -1,    22,    -1,    85,     6,    -1,    23,    -1,    24,    -1,
+      25,    -1,    26,    -1,    27,    -1,    28,    -1,    29,    -1,
+      30,    -1,    31,    -1,    32,    -1,    33,    -1,    34,    -1,
+      36,    -1,    35,    -1,    77,    -1,    79,    -1,    80,    -1,
+      81,    -1,    85,    -1,    82,    -1,    83,    -1,    87,    -1,
+      88,    -1,    89,    -1,    90,    -1,    86,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1445,16 +1552,16 @@ namespace w3c_sw {
   JSONresultsParser::yyprhs_[] =
   {
          0,     0,     3,     4,    11,    17,    20,    21,    23,    27,
-      30,    36,    43,    46,    47,    50,    56,    63,    66,    67,
-      70,    71,    77,    80,    81,    84,    90,    93,    96,    99,
-     102,   103,   108,   109,   114,   115,   120,   124,   128,   132,
-     135,   136,   138,   142,   145,   149,   153,   157,   160,   165,
-     170,   172,   174,   177,   181,   186,   191,   196,   201,   205,
-     209,   213,   215,   217,   219,   221,   223,   225,   227,   229,
-     231,   233,   235,   237,   239,   241,   244,   246,   248,   250,
+      30,    36,    37,    45,    48,    49,    52,    58,    65,    68,
+      69,    72,    73,    79,    82,    83,    86,    92,    95,    98,
+     101,   104,   105,   110,   111,   116,   117,   122,   126,   130,
+     134,   137,   138,   140,   144,   147,   151,   155,   159,   162,
+     167,   172,   174,   176,   179,   183,   188,   193,   198,   203,
+     207,   211,   215,   217,   219,   221,   223,   225,   227,   229,
+     231,   233,   235,   237,   239,   241,   243,   246,   248,   250,
      252,   254,   256,   258,   260,   262,   264,   266,   268,   270,
      272,   274,   276,   278,   280,   282,   284,   286,   288,   290,
-     292,   294
+     292,   294,   296
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
@@ -1462,16 +1569,16 @@ namespace w3c_sw {
   JSONresultsParser::yyrline_[] =
   {
          0,   228,   228,   228,   240,   244,   247,   249,   253,   254,
-     258,   265,   269,   275,   277,   281,   285,   289,   292,   294,
-     298,   298,   306,   309,   311,   315,   322,   325,   328,   331,
-     334,   334,   340,   340,   346,   346,   355,   362,   369,   375,
-     381,   384,   388,   393,   401,   407,   411,   418,   421,   426,
-     435,   439,   443,   448,   455,   459,   466,   471,   479,   485,
-     492,   498,   499,   503,   504,   508,   509,   513,   514,   518,
-     519,   523,   524,   528,   529,   533,   537,   538,   542,   543,
-     547,   548,   552,   553,   557,   558,   562,   563,   567,   568,
-     569,   572,   575,   578,   581,   584,   587,   590,   593,   596,
-     599,   602
+     258,   265,   265,   272,   278,   280,   284,   288,   292,   295,
+     297,   301,   301,   309,   312,   314,   318,   325,   328,   331,
+     334,   337,   337,   343,   343,   349,   349,   358,   365,   372,
+     378,   384,   387,   391,   396,   404,   410,   414,   421,   424,
+     429,   438,   442,   446,   451,   458,   462,   469,   474,   482,
+     488,   495,   501,   502,   506,   507,   511,   512,   516,   517,
+     521,   522,   526,   527,   531,   532,   536,   540,   541,   545,
+     546,   550,   551,   555,   556,   560,   561,   565,   566,   570,
+     571,   572,   575,   578,   581,   584,   587,   590,   593,   596,
+     599,   602,   605
   };
 
   // Print the state stack on the debug stream.
@@ -1549,8 +1656,8 @@ namespace w3c_sw {
   }
 
   const int JSONresultsParser::yyeof_ = 0;
-  const int JSONresultsParser::yylast_ = 216;
-  const int JSONresultsParser::yynnts_ = 54;
+  const int JSONresultsParser::yylast_ = 215;
+  const int JSONresultsParser::yynnts_ = 55;
   const int JSONresultsParser::yyempty_ = -2;
   const int JSONresultsParser::yyfinal_ = 4;
   const int JSONresultsParser::yyterror_ = 1;
@@ -1561,17 +1668,14 @@ namespace w3c_sw {
   const JSONresultsParser::token_number_type JSONresultsParser::yyundef_token_ = 2;
 
 
-/* Line 1054 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
-/* Line 1054 of lalr1.cc  */
-#line 1571 "lib/JSONresultsParser/JSONresultsParser.cpp"
+/* Line 1136 of lalr1.cc  */
+#line 1675 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
 
-/* Line 1056 of lalr1.cc  */
-#line 609 "lib/JSONresultsParser/JSONresultsParser.ypp"
+/* Line 1138 of lalr1.cc  */
+#line 612 "lib/JSONresultsParser/JSONresultsParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::JSONresultsParser::error(const JSONresultsParser::location_type& l,

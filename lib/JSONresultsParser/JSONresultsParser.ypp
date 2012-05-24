@@ -262,7 +262,10 @@ _link:
 ;
 
 vars:
-    varsWord GT_COLON GT_LBRACKET word _Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star GT_RBRACKET	
+    varsWord GT_COLON GT_LBRACKET word	{
+	driver.addBindingVar(driver.getVariable(*$4));
+	delete $4;
+    } _Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star GT_RBRACKET	
 ;
 
 _O_QGT_COMMA_E_S_Qword_E_C:
