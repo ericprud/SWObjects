@@ -1220,6 +1220,29 @@ namespace w3c_sw {
 	return xml;
     }
 
+    std::string ResultSet::toDelimSeparatedValues (char separator, bool headerAsLexicals, NamespaceMap* namespaces) const {
+	std::stringstream ret;
+	const VariableVector vars = getOrderedVars();
+	for (VariableVector::const_iterator var = vars.begin();
+	     var != vars.end(); ++var) {
+	    if (var != vars.begin())
+		ret << separator;
+	    ret << (headerAsLexicals ? (*var)->getLexicalValue() : (*var)->toString());
+	}
+	ret << "\n";
+	for (ResultSetConstIterator row = begin() ; row != end(); ++row) {
+	    for (VariableVector::const_iterator var = vars.begin();
+		 var != vars.end(); ++var) {
+		if (var != vars.begin())
+		    ret << separator;
+		const TTerm* val = (*row)->get(*var);
+		if (val != NULL)
+		    ret << val->toString();
+	    }
+	    ret << "\n";
+	}
+	return ret.str();
+    }
     std::string ResultSet::toJSON (NamespaceMap* namespaces) const {
 	std::stringstream ss;
 	JSONSerializer jdoc(ss, JSONSerializer::Container_Map, "    "); {

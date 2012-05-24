@@ -299,7 +299,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 {
     const std::string& s = po::validators::get_single_string(values);
     if (!s.compare("?")) {
-	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlx, sparqlt, sparqlj, xml";
+	std::cout << "data language options: \"\", guess, ntriples, turtle, trig, rdfa, rdfxml, sparqlt, sparqlx, sparqlj, csv, tsv, xml";
     } else {
 	if (s == "" || s == "guess")
 	    TheServer.engine.dataMediaType = sw::MediaType();
@@ -315,12 +315,16 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    TheServer.engine.dataMediaType = "text/html";
 	else if (!s.compare("rdfxml"))
 	    TheServer.engine.dataMediaType = "application/rdf+xml";
-	else if (!s.compare("sparqlx") || !s.compare("srx"))
-	    TheServer.engine.dataMediaType = "application/sparql-results+xml";
 	else if (!s.compare("sparqlt") || !s.compare("srt"))
 	    TheServer.engine.dataMediaType = "text/sparql-results";
+	else if (!s.compare("sparqlx") || !s.compare("srx"))
+	    TheServer.engine.dataMediaType = "application/sparql-results+xml";
 	else if (!s.compare("sparqlj") || !s.compare("srj"))
 	    TheServer.engine.dataMediaType = "application/sparql-results+json";
+	else if (!s.compare("csv"))
+	    TheServer.engine.dataMediaType = "text/csv";
+	else if (!s.compare("tsv"))
+	    TheServer.engine.dataMediaType = "text/tab-separated-values";
 	else if (!s.compare("xml"))
 	    TheServer.engine.dataMediaType = "application/xml";
 	else {
@@ -342,13 +346,18 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	if (s == "" || s == "guess") {
 	    TheServer.engine.dataMediaType = sw::MediaType(); // no media type
 	} else {
-	    if (!Quiet && s.compare("text/plain")
-		&& s.compare("text/ntriples") && s.compare("text/turtle")
-		&& s.compare("text/trig") && s.compare("text/html")
-		&& s.compare("text/sparql-results")
+	    if (!Quiet
+		&& s.compare("text/plain")
+		&& s.compare("text/ntriples")
+		&& s.compare("text/turtle")
+		&& s.compare("text/trig")
+		&& s.compare("text/html")
 		&& s.compare("application/rdf+xml")
+		&& s.compare("text/sparql-results")
 		&& s.compare("application/sparql-results+xml")
 		&& s.compare("application/sparql-results+json")
+		&& s.compare("text/csv")
+		&& s.compare("text/tab-separated-values")
 		&& s.compare("application/xml"))
 		std::cerr << "proceeding with unknown media type \"" << s << "\"";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));

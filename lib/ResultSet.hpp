@@ -697,6 +697,10 @@ namespace w3c_sw {
 		    : db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results")) {
 		return toString(namespaces);
+	    } else if (mediaType.match("text/csv")) {
+		return toDelimSeparatedValues(',', true, namespaces);
+	    } else if (mediaType.match("text/tab-separated-values")) {
+		return toDelimSeparatedValues('\t', false, namespaces);
 	    } else if (mediaType.match("application/sparql-results+json")) {
 		return toJSON(namespaces);
 	    } else if (mediaType.match("text/html")) {
@@ -721,6 +725,7 @@ namespace w3c_sw {
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
 	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "") const;
+	std::string toDelimSeparatedValues(char separator, bool headerAsLexicals, NamespaceMap* namespaces) const;
 	std::string toJSON(NamespaceMap* namespaces) const;
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }

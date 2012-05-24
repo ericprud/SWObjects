@@ -273,12 +273,21 @@ BOOST_AUTO_TEST_CASE( comma_separated ) { PARSE_RESULTS("SPARQL/D.csv", Doutput)
 BOOST_AUTO_TEST_CASE( xml ) { PARSE_RESULTS("SPARQL/D.srx", Doutput) }
 BOOST_AUTO_TEST_CASE( json ) { PARSE_RESULTS("SPARQL/D.srj", Doutput) }
 BOOST_AUTO_TEST_SUITE( create )
-BOOST_AUTO_TEST_CASE( srx_l ) { CREATE_RESULTS("-l sparqlx", "SPARQL/Dt.srx", Doutput) }
-BOOST_AUTO_TEST_CASE( srx_L ) { CREATE_RESULTS("-L application/sparql-results+xml", "SPARQL/Dt.srx", Doutput) }
-BOOST_AUTO_TEST_CASE( srt_ ) { CREATE_RESULTS("", "SPARQL/Dt.srt", Doutput) } // srt is the default results output format
-BOOST_AUTO_TEST_CASE( srt_l ) { CREATE_RESULTS("-l ''", "SPARQL/Dt.srt", Doutput) }
-BOOST_AUTO_TEST_CASE( srt_L ) { CREATE_RESULTS("-L text/sparql-results", "SPARQL/Dt.srt", Doutput) }
-BOOST_AUTO_TEST_CASE( srj_L ) { CREATE_RESULTS("-L application/sparql-results+json", "SPARQL/Dt.srj", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_   ) { CREATE_RESULTS("", "SPARQL/Dt.srt", Doutput) } // srt is the default results output format
+BOOST_AUTO_TEST_CASE( srt_l1 ) { CREATE_RESULTS("-l ''", "SPARQL/Dt.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_l2 ) { CREATE_RESULTS("-l sparqlt", "SPARQL/Dt.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_l3 ) { CREATE_RESULTS("-l srt", "SPARQL/Dt.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( srt_L  ) { CREATE_RESULTS("-L text/sparql-results", "SPARQL/Dt.srt", Doutput) }
+BOOST_AUTO_TEST_CASE( srx_l1 ) { CREATE_RESULTS("-l sparqlx", "SPARQL/Dt.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( srx_l2 ) { CREATE_RESULTS("-l srx", "SPARQL/Dt.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( srx_L  ) { CREATE_RESULTS("-L application/sparql-results+xml", "SPARQL/Dt.srx", Doutput) }
+BOOST_AUTO_TEST_CASE( srj_l1 ) { CREATE_RESULTS("-l sparqlj", "SPARQL/Dt.srj", Doutput) }
+BOOST_AUTO_TEST_CASE( srj_l2 ) { CREATE_RESULTS("-l srj", "SPARQL/Dt.srj", Doutput) }
+BOOST_AUTO_TEST_CASE( srj_L  ) { CREATE_RESULTS("-L application/sparql-results+json", "SPARQL/Dt.srj", Doutput) }
+BOOST_AUTO_TEST_CASE( csv_l  ) { CREATE_RESULTS("-l csv", "SPARQL/Dt.csv", Doutput) }
+BOOST_AUTO_TEST_CASE( csv_L  ) { CREATE_RESULTS("-L text/csv", "SPARQL/Dt.csv", Doutput) }
+BOOST_AUTO_TEST_CASE( tsv_l  ) { CREATE_RESULTS("-l tsv", "SPARQL/Dt.tsv", Doutput) }
+BOOST_AUTO_TEST_CASE( tsv_L  ) { CREATE_RESULTS("-L text/tab-separated-values", "SPARQL/Dt.tsv", Doutput) }
 BOOST_AUTO_TEST_SUITE_END(/* parseResults/create */)
 BOOST_AUTO_TEST_CASE( merge ) { PARSE_RESULTS("SPARQL/D.srt -d SPARQL/E.srt", Dwide) } // works 'cause p1 is concatonated to execution string.
 BOOST_AUTO_TEST_CASE( SRJ_note ) {
