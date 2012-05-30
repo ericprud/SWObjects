@@ -161,6 +161,8 @@ IT_ENCODE_FOR_URI		[Ee][Nn][Cc][Oo][Dd][Ee]'_'[Ff][Oo][Rr]'_'[Uu][Rr][Ii]
 IT_CONTAINS		[Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
 IT_STRSTARTS		[Ss][Tt][Rr][Ss][Tt][Aa][Rr][Tt][Ss]
 IT_STRENDS		[Ss][Tt][Rr][Ee][Nn][Dd][Ss]
+IT_STRBEFORE		[Ss][Tt][Rr][Bb][Ee][Ff][Oo][Rr][Ee]
+IT_STRAFTER		[Ss][Tt][Rr][Aa][Ff][Tt][Ee][Rr]
 IT_YEAR		[Yy][Ee][Aa][Rr]
 IT_MONTH		[Mm][Oo][Nn][Tt][Hh]
 IT_DAY		[Dd][Aa][Yy]
@@ -168,10 +170,12 @@ IT_HOURS		[Hh][Oo][Uu][Rr][Ss]
 IT_MINUTES		[Mm][Ii][Nn][Uu][Tt][Ee][Ss]
 IT_SECONDS		[Ss][Ee][Cc][Oo][Nn][Dd][Ss]
 IT_TIMEZONE		[Tt][Ii][Mm][Ee][Zz][Oo][Nn][Ee]
+IT_TZ		[Tt][Zz]
 IT_NOW		[Nn][Oo][Ww]
+IT_UUID		[Uu][Uu][Ii][Dd]
+IT_STRUUID		[Ss][Tt][Rr][Uu][Uu][Ii][Dd]
 IT_MD5		[Mm][Dd]'5'
 IT_SHA1		[Ss][Hh][Aa]'1'
-IT_SHA224		[Ss][Hh][Aa]'224'
 IT_SHA256		[Ss][Hh][Aa]'256'
 IT_SHA384		[Ss][Hh][Aa]'384'
 IT_SHA512		[Ss][Hh][Aa]'512'
@@ -350,7 +354,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_NOW}		{return token::IT_NOW;}
 {IT_MD5}		{return token::IT_MD5;}
 {IT_SHA1}		{return token::IT_SHA1;}
-{IT_SHA224}		{return token::IT_SHA224;}
 {IT_SHA256}		{return token::IT_SHA256;}
 {IT_SHA384}		{return token::IT_SHA384;}
 {IT_SHA512}		{return token::IT_SHA512;}

@@ -700,7 +700,7 @@ namespace w3c_sw {
 		    NoDelWrapper (std::string& groupIndexRef, const URI* functionName, const FunctionCall* func)
 			: FunctionState (groupIndexRef, functionName), func(func) {  }
 		    ~NoDelWrapper () {  }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const { // !!! SEGVs when non-const
 			return func->eval(r, atomFactory, evaluator);
 		    }
 		};
@@ -712,7 +712,7 @@ namespace w3c_sw {
 			: FunctionState (groupIndexRef, TTerm::FUNC_count) {  }
 		    ~CountState () {  }
 		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */) const {
-			int c = ++((CountState*)this)->counts[groupIndexRef];
+			int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
 			return atomFactory->getNumericRDFLiteral(mitoa(c), c);
 		    }
 		};
@@ -726,16 +726,54 @@ namespace w3c_sw {
 		    ~SumState () { delete expr; }
 		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 			if (vals.find(groupIndexRef) == vals.end()) {
-			    ((SumState*)this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator);
+			    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator);
 			} else {
 			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
 			    std::vector<const Expression*> addends;
-			    TTermExpression valExpr(((SumState*)this)->vals[groupIndexRef]);
+			    TTermExpression valExpr(const_cast<SumState*>(this)->vals[groupIndexRef]);
 			    addends.push_back(&valExpr);
 			    addends.push_back(expr);
-			    ((SumState*)this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
+			    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
 			}
-			return ((SumState*)this)->vals[groupIndexRef];
+			return const_cast<SumState*>(this)->vals[groupIndexRef];
+		    }
+		};
+		struct MinState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const Expression* expr;
+		    std::map<std::string, const TTerm*> vals;
+		public:
+		    MinState (std::string& groupIndexRef, const Expression* expr)
+			: FunctionState (groupIndexRef, TTerm::FUNC_min), expr(expr) {  }
+		    ~MinState () { delete expr; }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+			if (val != NULL) {
+			    if (vals.find(groupIndexRef) == vals.end())
+				const_cast<MinState*>(this)->vals[groupIndexRef] = val;
+			    else if (val->cmp(*const_cast<MinState*>(this)->vals[groupIndexRef]) == SORT_lt)
+				const_cast<MinState*>(this)->vals[groupIndexRef] = val;
+			}
+			return const_cast<MinState*>(this)->vals[groupIndexRef];
+		    }
+		};
+		struct MaxState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const Expression* expr;
+		    std::map<std::string, const TTerm*> vals;
+		public:
+		    MaxState (std::string& groupIndexRef, const Expression* expr)
+			: FunctionState (groupIndexRef, TTerm::FUNC_max), expr(expr) {  }
+		    ~MaxState () { delete expr; }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+			if (val != NULL) {
+			    if (vals.find(groupIndexRef) == vals.end())
+				const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
+			    else if (val->cmp(*const_cast<MaxState*>(this)->vals[groupIndexRef]) == SORT_gt)
+				const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
+			}
+			return const_cast<MaxState*>(this)->vals[groupIndexRef];
 		    }
 		};
 		AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef) {  }
@@ -750,6 +788,12 @@ namespace w3c_sw {
 		    } else if (p_IRIref == TTerm::FUNC_sum) {
 			(*it)->express(this);
 			last.functionCall = new SumState(groupIndexRef, last.expression);
+		    } else if (p_IRIref == TTerm::FUNC_min) {
+			(*it)->express(this);
+			last.functionCall = new MinState(groupIndexRef, last.expression);
+		    } else if (p_IRIref == TTerm::FUNC_max) {
+			(*it)->express(this);
+			last.functionCall = new MaxState(groupIndexRef, last.expression);
 		    } else {
 			/**
 			 * Non-aggregate functions invoked 

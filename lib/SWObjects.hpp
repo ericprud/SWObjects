@@ -822,6 +822,8 @@ public:
     static const URI* FUNC_lower_case;
     static const URI* FUNC_starts_with;
     static const URI* FUNC_ends_with;
+    static const URI* FUNC_substring_before;
+    static const URI* FUNC_substring_after;
     static const URI* FUNC_contains;
     static const URI* FUNC_encode_for_uri;
     static const URI* FUNC_concat;
@@ -841,9 +843,10 @@ public:
     static const URI* FUNC_seconds_from_dateTime;
     static const URI* FUNC_timezone_from_dateTime;
     static const URI* FUNC_tz;
+    static const URI* FUNC_struuid;
+    static const URI* FUNC_uuid;
     static const URI* FUNC_md5;
     static const URI* FUNC_sha1;
-    static const URI* FUNC_sha224;
     static const URI* FUNC_sha256;
     static const URI* FUNC_sha384;
     static const URI* FUNC_sha512;

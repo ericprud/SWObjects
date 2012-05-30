@@ -331,14 +331,14 @@ public:
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE IT_CONCAT
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
-       IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE IT_WITH IT_DEFAULT IT_ALL IT_USING
-       IT_MD5 IT_TO IT_YEAR IT_ADD IT_COPY IT_RAND IT_SHA512
+       IT_isNUMERIC GT_CARROT GT_OPT GT_PIPE IT_WITH IT_DEFAULT IT_ALL IT_USING IT_UUID IT_STRUUID
+       IT_MD5 IT_TO IT_STRBEFORE IT_STRAFTER IT_YEAR IT_ADD IT_COPY IT_RAND IT_SHA512
        GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE
        IT_NOW GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
-       IT_TIMEZONE IT_ROUND IT_SHA384 IT_BIND IT_CONTAINS IT_SECONDS IT_MOVE IT_FLOOR
+       IT_TZ IT_TIMEZONE IT_ROUND IT_SHA384 IT_BIND IT_CONTAINS IT_SECONDS IT_MOVE IT_FLOOR
        GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA
        IT_MINUTES IT_SUBSTR IT_SHA256 IT_HOURS IT_ENCODE_FOR_URI IT_STRSTARTS IT_CEIL
-       IT_DAY IT_LCASE IT_ABS IT_UCASE IT_SHA224 IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
+       IT_DAY IT_LCASE IT_ABS IT_UCASE IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
        IT_PRINT GT_H_2192_ GT_MINUS_GT ABOX_HR ABOX_CELL UBOX_UHR UBOX_LHR GT_H_2502_
        UBOX_UL UBOX_U UBOX_UR UBOX_SEP UBOX_LL UBOX_L UBOX_LR RSREF GT_MINUS_MINUS
 
@@ -574,6 +574,9 @@ Result:
     ABox	
   | UBox	
   | CurlySet	
+  | SourceSelector	{
+	throw std::runtime_error("need to partition out results set part of SimpleEngine::loadDataOrResults");
+    }
 ;
 
 ABox:
@@ -2563,13 +2566,19 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, $3, NULL, NULL));
     }
   | IT_CONTAINS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, $5, NULL));
     }
   | IT_STRSTARTS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, $3, $5, NULL));
     }
   | IT_STRENDS GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, $3, $5, NULL));
+    }
+  | IT_STRBEFORE GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, $3, $5, NULL));
+    }
+  | IT_STRAFTER GT_LPAREN Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, $3, $5, NULL));
     }
   | IT_YEAR GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, $3, NULL, NULL));
@@ -2592,17 +2601,23 @@ BuiltInCall:
   | IT_TIMEZONE GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
     }
+  | IT_TZ GT_LPAREN Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
+    }
   | IT_NOW NIL	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+    }
+  | IT_UUID NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
+    }
+  | IT_STRUUID NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
     }
   | IT_MD5 GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, $3, NULL, NULL));
     }
   | IT_SHA1 GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, $3, NULL, NULL));
-    }
-  | IT_SHA224 GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, $3, NULL, NULL));
     }
   | IT_SHA256 GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, $3, NULL, NULL));

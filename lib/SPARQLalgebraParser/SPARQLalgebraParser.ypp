@@ -265,7 +265,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_base IT_prefix IT_project IT_extend IT_distinct IT_reduced IT_group IT_filter IT_order IT_ask IT_bgp IT_triple IT_join IT_sequence IT_leftjoin IT_optional IT_union IT_unit IT_reverse IT_named IT_modify IT_graph IT_substr IT_all IT_lcase IT_ucase IT_sha256 IT_round IT_path IT_seconds IT_str IT_create IT_asc IT_desc IT_floor IT_minutes IT_alt IT_bound IT_minus IT_in IT_hours IT_concat GT_AND IT_default IT_a TriplesSameSubject IT_if IT_regex GT_path_PLUS IT_add GT_GE IT_ceil IT_load GT_path_TIMES IT_separator GT_GT IT_insert IT_isnumeric IT_bnode GT_path_OPT IT_abs IT_coalesce GT_RCURLEY IT_DISTINCT IT_strlen IT_contains GT_NOT IT_isliteral IT_uri GT_NEQUAL IT_service GT_PLUS IT_MIN IT_isblank IT_drop IT_delete IT_slice IT_sha512 IT_MAX IT_SUM IT_COUNT IT_strlang GT_TIMES IT_AVG IT_table IT_strstarts IT_iri IT_sha384 IT_now IT_move IT_deletewhere IT_SAMPLE NIL IT_day IT_isuri GT_RPAREN IT_encode_for_uri IT_GROUP_CONCAT IT_timezone IT_copy IT_exprlist IT_strdt GT_LPAREN IT_strends IT_deletedata IT_month GT_OR IT_exists GT_COMMA GT_LE IT_sameterm IT_quads IT_notoneof IT_year GT_EQUAL IT_seq GT_LT GT_LCURLEY IT_langmatches IT_insertdata IT_clear GT_DOT IT_isiri IT_silent IT__ IT_datatype IT_mod IT_sha224 GT_MINUS GT_DIVIDE GT_DTYPE IT_lang IT_sha1 IT_md5 IT_RAND 
+%token IT_base IT_prefix IT_project IT_extend IT_distinct IT_reduced IT_group IT_filter IT_order IT_ask IT_bgp IT_triple IT_join IT_sequence IT_leftjoin IT_optional IT_union IT_unit IT_reverse IT_named IT_modify IT_graph IT_substr IT_all IT_lcase IT_ucase IT_sha256 IT_round IT_path IT_seconds IT_str IT_create IT_asc IT_desc IT_floor IT_minutes IT_alt IT_bound IT_minus IT_in IT_hours IT_concat GT_AND IT_default IT_a TriplesSameSubject IT_if IT_regex GT_path_PLUS IT_add GT_GE IT_ceil IT_load GT_path_TIMES IT_separator GT_GT IT_insert IT_isnumeric IT_bnode GT_path_OPT IT_abs IT_coalesce GT_RCURLEY IT_DISTINCT IT_strlen IT_contains GT_NOT IT_isliteral IT_uri GT_NEQUAL IT_service GT_PLUS IT_MIN IT_isblank IT_drop IT_delete IT_slice IT_sha512 IT_MAX IT_SUM IT_COUNT IT_strlang GT_TIMES IT_AVG IT_table IT_strstarts IT_iri IT_sha384 IT_now IT_move IT_deletewhere IT_SAMPLE NIL IT_day IT_isuri GT_RPAREN IT_encode_for_uri IT_GROUP_CONCAT IT_tz IT_timezone IT_copy IT_exprlist IT_strdt GT_LPAREN IT_strends IT_deletedata IT_month GT_OR IT_exists GT_COMMA GT_LE IT_sameterm IT_quads IT_notoneof IT_year GT_EQUAL IT_seq GT_LT GT_LCURLEY IT_langmatches IT_insertdata IT_clear GT_DOT IT_isiri IT_silent IT__ IT_datatype IT_mod GT_MINUS GT_DIVIDE GT_DTYPE IT_lang IT_sha1 IT_uuid IT_struuid IT_md5 IT_strbefore IT_strafter IT_rand 
 %token <p_BooleanRDFLiteral> IT_true IT_false
 %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE
 			     DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE
@@ -1503,7 +1503,7 @@ BuiltInCall:
   | GT_LPAREN IT_bnode _QExpression_E_Opt GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, $3, NULL, NULL));
     }
-  | GT_LPAREN IT_RAND GT_RPAREN	{
+  | GT_LPAREN IT_rand GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
   | GT_LPAREN IT_abs Expression GT_RPAREN	{
@@ -1535,13 +1535,19 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, $3, NULL, NULL));
     }
   | GT_LPAREN IT_contains Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, $3, $5, NULL));
     }
   | GT_LPAREN IT_strstarts Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, $3, $5, NULL));
     }
   | GT_LPAREN IT_strends Expression GT_COMMA Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, $3, $5, NULL));
+    }
+  | GT_LPAREN IT_strbefore Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, $3, $5, NULL));
+    }
+  | GT_LPAREN IT_strafter Expression GT_COMMA Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, $3, $5, NULL));
     }
   | GT_LPAREN IT_year Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, $3, NULL, NULL));
@@ -1564,6 +1570,9 @@ BuiltInCall:
   | GT_LPAREN IT_timezone Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
     }
+  | GT_LPAREN IT_tz Expression GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
+    }
   | GT_LPAREN IT_now GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
@@ -1572,9 +1581,6 @@ BuiltInCall:
     }
   | GT_LPAREN IT_sha1 Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, $3, NULL, NULL));
-    }
-  | GT_LPAREN IT_sha224 Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha224, $3, NULL, NULL));
     }
   | GT_LPAREN IT_sha256 Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, $3, NULL, NULL));

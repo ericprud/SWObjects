@@ -590,6 +590,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	XPATHCNST2   (lower-case, "lcase"),
 	XPATHCNST2   (starts-with, "strStarts"),
 	XPATHCNST2   (ends-with, "strEnds"),
+	XPATHCNST2   (substring-before, "strBefore"),
+	XPATHCNST2   (substring-after, "strAfter"),
 	XPATHCONST   (contains),
 	XPATHCONST   (encode-for-uri),
 	XPATHCONST   (concat),
@@ -609,9 +611,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	XPATHCNST2   (seconds-from-dateTime, "seconds"),
 	XPATHCNST2   (timezone-from-dateTime, "timezone"),
 	OPERATORCONST(tz),
+	OPERATORCONST(uuid),
+	OPERATORCONST(struuid),
 	OPERATORCONST(md5),
 	OPERATORCONST(sha1),
-	OPERATORCONST(sha224),
 	OPERATORCONST(sha256),
 	OPERATORCONST(sha384),
 	OPERATORCONST(sha512),
@@ -672,40 +675,43 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[41].uri;
     const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[42].uri;
     const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[43].uri;
-    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[44].uri;
-    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[45].uri;
-    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[46].uri;
-    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[47].uri;
-    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[48].uri;
-    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[49].uri;
-    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[50].uri;
-    const URI* TTerm::FUNC_numeric_ciel		 = &AtomFactory::_URIConstants[51].uri;
-    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[52].uri;
-    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[53].uri;
-    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[54].uri;
-    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[55].uri;
-    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[56].uri;
-    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[57].uri;
-    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[58].uri;
-    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[59].uri;
-    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[60].uri;
-    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[61].uri;
-    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[62].uri;
-    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[63].uri;
-    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[64].uri;
-    const URI* TTerm::FUNC_sha224		 = &AtomFactory::_URIConstants[65].uri;
-    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[66].uri;
-    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[67].uri;
-    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[68].uri;
-    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[69].uri;
-    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[70].uri;
-    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[71].uri;
-    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[72].uri;
-    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[73].uri;
-    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[74].uri;
-    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[75].uri;
-    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[76].uri;
-    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[77].uri;
+    const URI* TTerm::FUNC_substring_before	 = &AtomFactory::_URIConstants[44].uri;
+    const URI* TTerm::FUNC_substring_after	 = &AtomFactory::_URIConstants[45].uri;
+    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[46].uri;
+    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[47].uri;
+    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[48].uri;
+    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[49].uri;
+    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[50].uri;
+    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[51].uri;
+    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[52].uri;
+    const URI* TTerm::FUNC_numeric_ciel		 = &AtomFactory::_URIConstants[53].uri;
+    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[54].uri;
+    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[55].uri;
+    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[56].uri;
+    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[57].uri;
+    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[58].uri;
+    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[59].uri;
+    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[60].uri;
+    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[61].uri;
+    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[62].uri;
+    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[63].uri;
+    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[64].uri;
+    const URI* TTerm::FUNC_uuid			 = &AtomFactory::_URIConstants[65].uri;
+    const URI* TTerm::FUNC_struuid		 = &AtomFactory::_URIConstants[66].uri;
+    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[67].uri;
+    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[68].uri;
+    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[69].uri;
+    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[70].uri;
+    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[71].uri;
+    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[72].uri;
+    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[73].uri;
+    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[74].uri;
+    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[75].uri;
+    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[76].uri;
+    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[77].uri;
+    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[78].uri;
+    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[79].uri;
+    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[80].uri;
 #endif /* !defined(SWIG) */
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
@@ -1760,9 +1766,59 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    return TTerm::BOOL_false;
 	}
 
-	const TTerm* third = it == subd.end() ? NULL : *it++;
+
 	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
 	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
+
+	if (m_IRIref == TTerm::FUNC_contains) {
+	    if (!(subd.size() == 2 && 
+		  firstLit != NULL && firstLit->getDatatype() == NULL && 
+		  secondLit != NULL && secondLit->getDatatype() == NULL))
+		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
+	    if (firstLit->getLangtag() != secondLit->getLangtag())
+		throw TypeError(std::string("mismatched language tags"), "substring_before");
+
+	    std::string lookIn = firstLit->getLexicalValue();
+	    std::string lookFor = secondLit->getLexicalValue();
+	    size_t found = lookIn.find(lookFor);
+	    return found == std::string::npos ? TTerm::BOOL_false : TTerm::BOOL_true;
+	}
+
+	if (m_IRIref == TTerm::FUNC_substring_before) {
+	    if (!(subd.size() == 2 && 
+		  firstLit != NULL && firstLit->getDatatype() == NULL && 
+		  secondLit != NULL && secondLit->getDatatype() == NULL))
+		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
+	    if (firstLit->getLangtag() != secondLit->getLangtag())
+		throw TypeError(std::string("mismatched language tags"), "substring_before");
+
+	    std::string lookIn = firstLit->getLexicalValue();
+	    std::string lookFor = secondLit->getLexicalValue();
+	    size_t found = lookIn.find(lookFor);
+	    if (found == std::string::npos)
+		return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
+	    return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, firstLit->getLangtag(), false);
+	}
+
+	if (m_IRIref == TTerm::FUNC_substring_after) {
+	    if (!(subd.size() == 2 && 
+		  firstLit != NULL && firstLit->getDatatype() == NULL && 
+		  secondLit != NULL && secondLit->getDatatype() == NULL))
+		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
+	    if (firstLit->getLangtag() != secondLit->getLangtag())
+		throw TypeError(std::string("mismatched language tags"), "substring_before");
+
+	    std::string lookIn = firstLit->getLexicalValue();
+	    std::string lookFor = secondLit->getLexicalValue();
+	    size_t found = lookIn.find(lookFor);
+	    if (found == std::string::npos)
+		return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
+	    return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, firstLit->getLangtag(), false);
+	}
+
+
+	// Remaining functions may draw on the third argument.
+	const TTerm* third = it == subd.end() ? NULL : *it++;
 	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
 
 	if (m_IRIref == TTerm::FUNC_substring && 

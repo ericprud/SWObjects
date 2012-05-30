@@ -145,7 +145,7 @@ IT_bound		"bound"
 IT_iri		"iri"
 IT_uri		"uri"
 IT_bnode		"bnode"
-IT_RAND		[Rr][Aa][Nn][Dd]
+IT_rand		"rand"
 IT_abs		"abs"
 IT_ceil		"ceil"
 IT_floor		"floor"
@@ -158,6 +158,8 @@ IT_encode_for_uri		"encode_for_uri"
 IT_contains		"contains"
 IT_strstarts		"strstarts"
 IT_strends		"strends"
+IT_strbefore		"strbefore"
+IT_strafter		"strafter"
 IT_year		"year"
 IT_month		"month"
 IT_day		"day"
@@ -165,10 +167,12 @@ IT_hours		"hours"
 IT_minutes		"minutes"
 IT_seconds		"seconds"
 IT_timezone		"timezone"
+IT_tz		"tz"
 IT_now		"now"
+IT_uuid		"uuid"
+IT_struuid		"struuid"
 IT_md5		"md5"
 IT_sha1		"sha1"
-IT_sha224		"sha224"
 IT_sha256		"sha256"
 IT_sha384		"sha384"
 IT_sha512		"sha512"
@@ -316,7 +320,7 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_iri}		{return token::IT_iri;}
 {IT_uri}		{return token::IT_uri;}
 {IT_bnode}		{return token::IT_bnode;}
-{IT_RAND}		{return token::IT_RAND;}
+{IT_rand}		{return token::IT_rand;}
 {IT_abs}		{return token::IT_abs;}
 {IT_ceil}		{return token::IT_ceil;}
 {IT_floor}		{return token::IT_floor;}
@@ -325,10 +329,12 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_strlen}		{return token::IT_strlen;}
 {IT_ucase}		{return token::IT_ucase;}
 {IT_lcase}		{return token::IT_lcase;}
-{IT_encode_for_uri}		{return token::IT_encode_for_uri;}
+{IT_encode_for_uri}	{return token::IT_encode_for_uri;}
 {IT_contains}		{return token::IT_contains;}
 {IT_strstarts}		{return token::IT_strstarts;}
 {IT_strends}		{return token::IT_strends;}
+{IT_strbefore}		{return token::IT_strbefore;}
+{IT_strafter}		{return token::IT_strafter;}
 {IT_year}		{return token::IT_year;}
 {IT_month}		{return token::IT_month;}
 {IT_day}		{return token::IT_day;}
@@ -336,10 +342,12 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {IT_minutes}		{return token::IT_minutes;}
 {IT_seconds}		{return token::IT_seconds;}
 {IT_timezone}		{return token::IT_timezone;}
+{IT_tz}			{return token::IT_tz;}
 {IT_now}		{return token::IT_now;}
+{IT_uuid}		{return token::IT_uuid;}
+{IT_struuid}		{return token::IT_struuid;}
 {IT_md5}		{return token::IT_md5;}
 {IT_sha1}		{return token::IT_sha1;}
-{IT_sha224}		{return token::IT_sha224;}
 {IT_sha256}		{return token::IT_sha256;}
 {IT_sha384}		{return token::IT_sha384;}
 {IT_sha512}		{return token::IT_sha512;}

@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -214,32 +212,12 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 218 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 216 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 #include <string>
 #include <iostream>
 #include "stack.hh"
-
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
-namespace w3c_sw {
-
-/* Line 35 of lalr1.cc  */
-#line 232 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
-  class position;
-  class location;
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
-} // w3c_sw
-
-/* Line 35 of lalr1.cc  */
-#line 242 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
-
 #include "location.hh"
 
 /* Enabling traces.  */
@@ -260,33 +238,11 @@ namespace w3c_sw {
 # define YYTOKEN_TABLE 0
 #endif
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)		\
-do {							\
-  if (N)						\
-    {							\
-      (Current).begin = (Rhs)[1].begin;			\
-      (Current).end   = (Rhs)[N].end;			\
-    }							\
-  else							\
-    {							\
-      (Current).begin = (Current).end = (Rhs)[0].end;	\
-    }							\
-} while (false)
-#endif
-
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
 
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 290 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 246 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
   /// A Bison parser.
   class SPARQLalgebraParser
@@ -339,7 +295,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 343 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 299 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -450,67 +406,71 @@ namespace w3c_sw {
      GT_RPAREN = 353,
      IT_encode_for_uri = 354,
      IT_GROUP_CONCAT = 355,
-     IT_timezone = 356,
-     IT_copy = 357,
-     IT_exprlist = 358,
-     IT_strdt = 359,
-     GT_LPAREN = 360,
-     IT_strends = 361,
-     IT_deletedata = 362,
-     IT_month = 363,
-     GT_OR = 364,
-     IT_exists = 365,
-     GT_COMMA = 366,
-     GT_LE = 367,
-     IT_sameterm = 368,
-     IT_quads = 369,
-     IT_notoneof = 370,
-     IT_year = 371,
-     GT_EQUAL = 372,
-     IT_seq = 373,
-     GT_LT = 374,
-     GT_LCURLEY = 375,
-     IT_langmatches = 376,
-     IT_insertdata = 377,
-     IT_clear = 378,
-     GT_DOT = 379,
-     IT_isiri = 380,
-     IT_silent = 381,
-     IT__ = 382,
-     IT_datatype = 383,
-     IT_mod = 384,
-     IT_sha224 = 385,
+     IT_tz = 356,
+     IT_timezone = 357,
+     IT_copy = 358,
+     IT_exprlist = 359,
+     IT_strdt = 360,
+     GT_LPAREN = 361,
+     IT_strends = 362,
+     IT_deletedata = 363,
+     IT_month = 364,
+     GT_OR = 365,
+     IT_exists = 366,
+     GT_COMMA = 367,
+     GT_LE = 368,
+     IT_sameterm = 369,
+     IT_quads = 370,
+     IT_notoneof = 371,
+     IT_year = 372,
+     GT_EQUAL = 373,
+     IT_seq = 374,
+     GT_LT = 375,
+     GT_LCURLEY = 376,
+     IT_langmatches = 377,
+     IT_insertdata = 378,
+     IT_clear = 379,
+     GT_DOT = 380,
+     IT_isiri = 381,
+     IT_silent = 382,
+     IT__ = 383,
+     IT_datatype = 384,
+     IT_mod = 385,
      GT_MINUS = 386,
      GT_DIVIDE = 387,
      GT_DTYPE = 388,
      IT_lang = 389,
      IT_sha1 = 390,
-     IT_md5 = 391,
-     IT_RAND = 392,
-     IT_true = 393,
-     IT_false = 394,
-     INTEGER = 395,
-     DECIMAL = 396,
-     DOUBLE = 397,
-     INTEGER_POSITIVE = 398,
-     DECIMAL_POSITIVE = 399,
-     DOUBLE_POSITIVE = 400,
-     INTEGER_NEGATIVE = 401,
-     DECIMAL_NEGATIVE = 402,
-     DOUBLE_NEGATIVE = 403,
-     STRING_LITERAL1 = 404,
-     STRING_LITERAL_LONG1 = 405,
-     STRING_LITERAL2 = 406,
-     STRING_LITERAL_LONG2 = 407,
-     IRI_REF = 408,
-     PNAME_NS = 409,
-     PNAME_LN = 410,
-     BLANK_NODE_LABEL = 411,
-     ANON = 412,
-     POSITION = 413,
-     VAR1 = 414,
-     VAR2 = 415,
-     LANGTAG = 416
+     IT_uuid = 391,
+     IT_struuid = 392,
+     IT_md5 = 393,
+     IT_strbefore = 394,
+     IT_strafter = 395,
+     IT_rand = 396,
+     IT_true = 397,
+     IT_false = 398,
+     INTEGER = 399,
+     DECIMAL = 400,
+     DOUBLE = 401,
+     INTEGER_POSITIVE = 402,
+     DECIMAL_POSITIVE = 403,
+     DOUBLE_POSITIVE = 404,
+     INTEGER_NEGATIVE = 405,
+     DECIMAL_NEGATIVE = 406,
+     DOUBLE_NEGATIVE = 407,
+     STRING_LITERAL1 = 408,
+     STRING_LITERAL_LONG1 = 409,
+     STRING_LITERAL2 = 410,
+     STRING_LITERAL_LONG2 = 411,
+     IRI_REF = 412,
+     PNAME_NS = 413,
+     PNAME_LN = 414,
+     BLANK_NODE_LABEL = 415,
+     ANON = 416,
+     POSITION = 417,
+     VAR1 = 418,
+     VAR2 = 419,
+     LANGTAG = 420
    };
 
     };
@@ -584,6 +544,14 @@ namespace w3c_sw {
     /// The location stack.
     location_stack_type yylocation_stack_;
 
+    /// Whether the given \c yypact_ value indicates a defaulted state.
+    /// \param yyvalue   the value to check
+    static bool yy_pact_value_is_default_ (int yyvalue);
+
+    /// Whether the given \c yytable_ value indicates a syntax error.
+    /// \param yyvalue   the value to check
+    static bool yy_table_value_is_error_ (int yyvalue);
+
     /// Internal symbol numbers.
     typedef unsigned char token_number_type;
     /* Tables.  */
@@ -591,7 +559,7 @@ namespace w3c_sw {
     static const short int yypact_[];
     static const short int yypact_ninf_;
 
-    /// For a state, default rule to reduce.
+    /// For a state, default reduction number.
     /// Unless\a  yytable_ specifies something else to do.
     /// Zero means the default is an error.
     static const unsigned short int yydefact_[];
@@ -622,10 +590,8 @@ namespace w3c_sw {
     static const char* const yytname_[];
 #endif
 
-#if YYERROR_VERBOSE
     /// Convert the symbol name \a n to a form suitable for a diagnostic.
-    virtual std::string yytnamerr_ (const char *n);
-#endif
+    static std::string yytnamerr_ (const char *n);
 
 #if YYDEBUG
     /// A type to store symbol numbers and -1.
@@ -681,13 +647,10 @@ namespace w3c_sw {
     class SPARQLalgebraDriver& driver;
   };
 
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 691 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 654 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 
