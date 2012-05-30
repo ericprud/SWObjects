@@ -1,0 +1,18 @@
+# count_a_groupBy_v.rq - GROUP BY variable
+
+# $Id$
+
+SELECT ?a (COUNT(?a) AS ?count)
+{
+    {
+      SELECT * {}
+      BINDINGS
+?a ?b  ?c {
+(1 10 2)
+(1  9 3)
+(1 11 4)
+          }
+    }
+}
+GROUP BY (?a)
+

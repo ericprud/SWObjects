@@ -63,7 +63,25 @@ end
      */
     GRAPH_TEST(NULL, "sparql11/ia-nestedAggregates.rq", "sparql11/ia-nestedAggregates.srt");
 }
-BOOST_AUTO_TEST_CASE( groupBy_v ) {
+BOOST_AUTO_TEST_CASE( count_star_groupBy_v ) {
+    /* name: 
+     * 
+start
++----+----+----+
+| ?a | ?b | ?c |
+|  1 | 10 |  2 |
+|  1 |  9 |  3 |
+|  1 | 11 |  4 |
++----+----+----+
+end
++----+--------+
+| ?a | ?count |
+|  1 |      3 |
++----+--------+
+     */
+    GRAPH_TEST(NULL, "sparql11/groupBy-v.rq", "sparql11/groupBy-v.srx");
+}
+BOOST_AUTO_TEST_CASE( count_a_groupBy_v ) {
     /* name: 
      * 
 start
