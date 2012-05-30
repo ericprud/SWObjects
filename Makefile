@@ -399,8 +399,8 @@ bin/% : bin/%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so #lib
 unitTESTS := $(subst tests/test_,t_,$(TESTNAMELIST))
 bin: $(BINOBJLIST:.o=)
 
-release: $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
-	g++ -o bin/sparql bin/sparql.o -static  -Llib -lSWObjects -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG) -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lboost_date_time-mt -lboost_regex-mt -lpthread -lboost_system-mt -lexpat $(SQL_CLIENT_LIB)  -lodbc -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_thread-mt -lpthread -lltdl -ldl
+release: bin/sparql.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).a
+	$(LINK) -o $@ -static $< $(LDAPPFLAGS) $(HTTP_SERVER_LIB)
 
 
 ##### apache #####
