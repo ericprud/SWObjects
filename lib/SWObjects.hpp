@@ -3269,6 +3269,14 @@ public:
 	virtual float eval (float l, float r) { return l * r; }
 	virtual double eval (double l, double r) { return l * r; }
     };
+    struct NaryDivider : public AtomFactory::NaryFunctor {
+	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
+	NaryDivider (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
+	    AtomFactory::NaryFunctor(res, atomFactory, evaluator) {  }
+	virtual int eval (int l, int r) { return l / r; }
+	virtual float eval (float l, float r) { return l / r; }
+	virtual double eval (double l, double r) { return l / r; }
+    };
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	NaryMultiplier f(res, atomFactory, evaluator);
 	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
@@ -3286,8 +3294,8 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 	std::stringstream s;
-	s << "(/ 1 " << m_Expression->eval(res, atomFactory, evaluator) <<
-	    ')' << " not implemented";
+	s << "(/ 1 " << m_Expression->eval(res, atomFactory, evaluator)
+	  << ") not implemented";
 	throw s.str();
     }
     virtual bool operator== (const Expression& ref) const {

@@ -704,6 +704,16 @@ namespace w3c_sw {
 			return func->eval(r, atomFactory, evaluator);
 		    }
 		};
+		struct SampleState : public FunctionState { // FunctionCall for virtual eval
+		    const Expression* expr;
+		public:
+		    SampleState (std::string& groupIndexRef, const Expression* expr)
+			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
+		    ~SampleState () {  }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			return expr->eval(r, atomFactory, evaluator);
+		    }
+		};
 		struct CountState : public FunctionState { // FunctionCall for virtual eval
 		protected:
 		    std::map<std::string, int> counts;
@@ -736,6 +746,38 @@ namespace w3c_sw {
 			    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
 			}
 			return const_cast<SumState*>(this)->vals[groupIndexRef];
+		    }
+		};
+		struct AvgState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const Expression* expr;
+		    std::map<std::string, int> counts;
+		    std::map<std::string, const TTerm*> sums;
+		public:
+		    AvgState (std::string& groupIndexRef, const Expression* expr)
+			: FunctionState (groupIndexRef, TTerm::FUNC_avg), expr(expr) {  }
+		    ~AvgState () { delete expr; }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			if (sums.find(groupIndexRef) == sums.end()) {
+			    const_cast<AvgState*>(this)->counts[groupIndexRef] = 1;
+			    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator);
+			} else {
+			    const_cast<AvgState*>(this)->counts[groupIndexRef]++;
+			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
+			    std::vector<const Expression*> addends;
+			    TTermExpression valExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
+			    addends.push_back(&valExpr);
+			    addends.push_back(expr);
+			    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
+			}
+			ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator);
+			std::vector<const Expression*> divisors;
+			TTermExpression sumExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
+			divisors.push_back(&sumExpr);
+			int c = const_cast<AvgState*>(this)->counts[groupIndexRef];
+			TTermExpression countExpr(atomFactory->getNumericRDFLiteral(mitoa(c), c));
+			divisors.push_back(&countExpr);
+			return atomFactory->applyCommonNumeric(divisors, &f);
 		    }
 		};
 		struct MinState : public FunctionState { // FunctionCall for virtual eval
@@ -776,6 +818,29 @@ namespace w3c_sw {
 			return const_cast<MaxState*>(this)->vals[groupIndexRef];
 		    }
 		};
+		struct GroupConcatState : public FunctionState { // FunctionCall for virtual eval
+		protected:
+		    const Expression* expr;
+		    std::string separator;
+		    std::map<std::string, boost::shared_ptr<std::stringstream> > vals;
+		public:
+		    GroupConcatState (std::string& groupIndexRef, const Expression* expr, std::string separator)
+			: FunctionState (groupIndexRef, TTerm::FUNC_group_concat), expr(expr), separator(separator)
+		    {  }
+		    ~GroupConcatState () { delete expr; }
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+			if (val != NULL) {
+			    if (vals.find(groupIndexRef) == vals.end())
+				const_cast<GroupConcatState*>(this)->vals[groupIndexRef] = 
+				    boost::shared_ptr<std::stringstream>(new std::stringstream());
+			    else
+				*const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << separator;
+			    *const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << val->getLexicalValue();
+			}
+			return atomFactory->getRDFLiteral(const_cast<GroupConcatState*>(this)->vals[groupIndexRef]->str(), NULL, NULL, false);
+		    }
+		};
 		AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef) {  }
 		virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
 		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
@@ -783,17 +848,25 @@ namespace w3c_sw {
 		    /**
 		     * Aggregate function invocations:
 		     */
-		    if (p_IRIref == TTerm::FUNC_count) {
+		    if (p_IRIref == TTerm::FUNC_sample) {
+			last.functionCall = new SampleState(groupIndexRef, last.expression);
+		    } else if (p_IRIref == TTerm::FUNC_count) {
 			last.functionCall = new CountState(groupIndexRef);
 		    } else if (p_IRIref == TTerm::FUNC_sum) {
 			(*it)->express(this);
 			last.functionCall = new SumState(groupIndexRef, last.expression);
+		    } else if (p_IRIref == TTerm::FUNC_avg) {
+			(*it)->express(this);
+			last.functionCall = new AvgState(groupIndexRef, last.expression);
 		    } else if (p_IRIref == TTerm::FUNC_min) {
 			(*it)->express(this);
 			last.functionCall = new MinState(groupIndexRef, last.expression);
 		    } else if (p_IRIref == TTerm::FUNC_max) {
 			(*it)->express(this);
 			last.functionCall = new MaxState(groupIndexRef, last.expression);
+		    } else if (p_IRIref == TTerm::FUNC_group_concat) {
+			(*it)->express(this);
+			last.functionCall = new GroupConcatState(groupIndexRef, last.expression, " ");
 		    } else {
 			/**
 			 * Non-aggregate functions invoked 
@@ -833,6 +906,9 @@ namespace w3c_sw {
 		    row++;
 		} else {
 		    aggregateRowIt = curAgg->second;
+		    for (BindingSetConstIterator binding = (*row)->begin(); // hmm, pricey copy?
+			 binding != (*row)->end(); ++binding)
+			(*aggregateRowIt)->set(binding->first, binding->second.tterm, false, true);
 		    delete *row;
 		    row = erase(row);
 		}

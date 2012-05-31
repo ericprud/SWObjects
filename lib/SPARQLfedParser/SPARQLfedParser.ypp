@@ -2712,16 +2712,24 @@ NotExistsFunc:
 
 Aggregate:
     IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
+	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4));
     }
   | _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
+	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4));
     }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
     IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression	{
+	driver.countStar = true;
 	$<p_Expressions>$ = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>($4);
       } _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
+	  if ($6 != NULL) {
+	      std::stringstream ss;
+	      ss << "GROUP_CONCAT ; " << $6->getLexicalValue();
+	      w3c_sw_NEED_IMPL(ss.str());
+	  }
 	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4));
 	  // // x = new ArgList($2, driver.curExprList);
 	  // delete driver.curExprList;
@@ -2734,7 +2742,6 @@ Aggregate:
 _O_QGT_TIMES_E_Or_QExpression_E_C:
     GT_TIMES	{
 	$$ = NULL;
-	driver.countStar = true;
     }
   | Expression	
 ;
