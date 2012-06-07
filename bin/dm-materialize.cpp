@@ -340,14 +340,21 @@ struct Materializer {
 			joins << " AND ";
 		    sql::AliasAttr from(thisTableAlias, fk->at(i));
 		    sql::AliasAttr to(thatTableAlias, fk->relAttrs->at(i));
-		    joins << "("
-			  << Serializer->Serializer::name(from) << "="
-			  << Serializer->Serializer::name(to)
-			  << " OR ("
-			  << Serializer->Serializer::name(from) << " IS NULL AND "
-			  << Serializer->Serializer::name(to) << " IS NULL"
-			  << ")"
-			  << ")";
+#if defined(MATCH_TYPE_DEFAULT)
+		    joins // MATCH TYPE DEFAULT
+			<< "("
+			<<   Serializer->Serializer::name(from) << "="
+			<<   Serializer->Serializer::name(to)
+			<< " OR ("
+			<<     Serializer->Serializer::name(from) << " IS NULL AND "
+			<<     Serializer->Serializer::name(to) << " IS NULL"
+			<<   ")"
+			<< ")";
+#else // !defined(MATCH_TYPE_DEFAULT)
+		    joins // MATCH TYPE FULL
+			<< Serializer->Serializer::name(from) << "="
+			<< Serializer->Serializer::name(to);
+#endif // !defined(MATCH_TYPE_DEFAULT)
 		}
 		if (fk->size() > 1)
 		    joins << ")";
