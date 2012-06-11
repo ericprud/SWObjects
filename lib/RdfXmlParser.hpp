@@ -14,14 +14,14 @@ namespace w3c_sw {
     class RdfXmlParser : public ParserDriver { // !!! doesn't respect setBase API
 	class RdfXmlSaxHandler : public SWSAXhandler {
 	protected:
-	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, s_ERROR};
+	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, XMLLITERAL, s_ERROR};
 	    struct State {
 		enum Expect expect;
 		const TTerm* s;
 		const TTerm* p;
 		const char* stateStr () const {
 		    static const char* stateStrs[] =
-			{"document", "subject", "property", "collection", "huh?"};
+			{"document", "subject", "property", "collection", "literal", "huh?"};
 		    return stateStrs[expect];
 		}
 		std::string toString () const {
@@ -243,14 +243,29 @@ namespace w3c_sw {
 			}
 		    }
 
-		    /* Nested state depends souly on parseType. */
+		    /* Nested state depends solely on parseType. */
 		    newState.expect = 
 			parseType == "Collection" ? COLLECTION : 
 			parseType == "Resource" ? PROPERTY : 
+			parseType == "Literal" ? XMLLITERAL : 
 			SUBJECT;
 
 		    if (newState.s == NULL)
 			newState.s = stack.top().s;
+		    break;
+		}
+		case XMLLITERAL: {
+		    /* Create statements for predicate attributes. */
+		    chars += "<" + qName;
+		    for (size_t i = 0; i < attrs->getLength(); ++i) {
+			std::string attrURI = attrs->getURI(i);
+			std::string attrLName = attrs->getLocalName(i);
+			chars += " " + attrs->getQName(i) + "=\"" + attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) + "\"";
+		    }
+		    chars + ">";
+
+		    /* Nested state depends solely on parseType. */
+		    newState.expect = XMLLITERAL;
 		    break;
 		}
 		default:
@@ -258,8 +273,9 @@ namespace w3c_sw {
 		}
 		if (newState.expect == s_ERROR)
 		    varError("unexpected element %s within %s", qName.c_str(), stack.top().stateStr());
+		if (stack.top().expect != XMLLITERAL)
+		    chars = "";  // @@ needed?
 		stack.push(newState);
-		chars = "";
 		//std::cout << "<" << qName.c_str() << ">" << std::endl << dumpStack();
 	    }
 	    virtual void endElement (std::string,
@@ -289,10 +305,21 @@ namespace w3c_sw {
 		    break;
 		case PROPERTY:
 		    break;
+		case XMLLITERAL:
+		    if (stack.top().expect == XMLLITERAL) {
+			chars += "</" + qName + ">";
+		    } else {
+			/* RDF XMLLiteral */
+			const TTerm* o = atomFactory->getRDFLiteral(chars, atomFactory->getURI(std::string(NS_rdf) + "XMLLiteral"), NULL);
+			chars = "";
+			bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, nestedState.p, o));
+		    }
+		    break;
 		default:
-		    varError("unexpected state %d", stack.top().expect);
+		    varError("unexpected state %d", nestedState.expect); // @@ was: stack.top().expect...
 		}
-		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos)
+		if (chars.size() > 0 && chars.find_first_not_of(" \t\n") != std::string::npos
+		    && nestedState.expect != XMLLITERAL)
 		    varError("unexpected characters \"%s\" within %s (nested state: %s)", chars.c_str(), qName.c_str(), stack.top().stateStr());
 		//std::cout << "</" << qName.c_str() << ">" << std::endl << dumpStack();
 		expectCharData = false;
