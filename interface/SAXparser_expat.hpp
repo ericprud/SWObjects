@@ -112,7 +112,8 @@ namespace w3c_sw {
 		 it != nsframe.end(); ++it)
 		std::cout << "xmlns:" << it->first << "=\"" << it->second << "\"\n";
 	}
-	void _crackQName(const char* name, const char** elLname, const char** elNs) {
+	bool _crackQName(const char* name, const char** elLname, const char** elNs) {
+	    bool ret = true; // set to false for failed parse.
 	    const char* elPrefix = name;
 	    *elLname = ::strchr(elPrefix, ':');
 	    if (*elLname == NULL) {
@@ -120,16 +121,21 @@ namespace w3c_sw {
 		elPrefix = "";
 		if (nsz.top().find("") != nsz.top().end())
 		    *elNs = nsz.top()[""].c_str();
-		else // don't whine about non-namespaced docs.
+		else { // don't whine about non-namespaced docs.
 		    *elNs = NULL;
+		    ret = false;
+		}
 	    } else {
 		std::string prefix(elPrefix, *elLname);
 		++*elLname;
 		if (nsz.top().find(prefix) != nsz.top().end())
 		    *elNs = nsz.top()[prefix].c_str();
-		else
+		else {
 		    insulator->varError("namespace prefix \"%s\" not found", (char*)prefix.c_str());
+		    ret = false;
+		}
 	    }
+	    return ret;
 	}
 	void __dumpNsz (const char* sit) {
 	    std::cerr << sit << "\n";
@@ -170,7 +176,8 @@ namespace w3c_sw {
 
 	    const char* elLname;
 	    const char* elNs;
-	    self._crackQName(name, &elLname, &elNs);
+	    if (!self._crackQName(name, &elLname, &elNs))
+		self.insulator->varError("namespace prefix not found for \"%s\"", name);
 
 	    { /* Fix namespaces on attrs. */
 		for (std::vector<NsSet>::iterator it = attrs.byIndex.begin(); 

@@ -344,8 +344,14 @@ namespace w3c_sw {
 	    try {
 		handler->error(msg, args);
 	    }
-	    catch (std::string& e) { parser->exception_std_string(e); }
-	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
+	    catch (std::string& e) {
+		parser->exception_std_string(e);
+		throw e;
+	    }
+	    catch (ChangeMediaTypeException& e) {
+		parser->exception_ChangeMediaType(e);
+		throw e;
+	    }
 	}
 	virtual void warning(const char* msg, va_list args) {
 	    try {
