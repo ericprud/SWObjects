@@ -1077,15 +1077,6 @@ BindingValue:
     }
 ;
 
-_QIT_SILENT_E_Opt:
-    {
-	$$ = SILENT_No;
-    }
-  | IT_SILENT	{
-	$$ = SILENT_Yes;
-}
-;
-
 GroupGraphPattern:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
@@ -1225,6 +1216,15 @@ ServiceGraphPattern:
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
 	  driver.curGraphName = $<p_TTerm>4;
       }
+;
+
+_QIT_SILENT_E_Opt:
+    {
+	$$ = SILENT_No;
+    }
+  | IT_SILENT	{
+	$$ = SILENT_Yes;
+}
 ;
 
 Bind:

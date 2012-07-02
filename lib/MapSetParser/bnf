@@ -5,8 +5,9 @@
 
 # Location: http://www.w3.org/2009/sparql/docs/sparql-grammar-11
 # sparul_next 2010-06-09
-[0]     Top                        ::= Prologue AccessParm* ConstructQuery*
+[0]     MapSet                     ::= Prologue AccessParm* ConstructQuery*
 [0]     AccessParm                 ::= 'REWRITEVAR' Var RDFLiteral RDFLiteral
+                                     | 'DRIVER' RDFLiteral	
                                      | 'SERVER' RDFLiteral
                                      | 'USER' RDFLiteral
                                      | 'PASSWORD' RDFLiteral
@@ -48,7 +49,7 @@
 [0x]    GraphPatternNotTriples     ::= GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | BindingsClause
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
-[0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
+[0]     ServiceGraphPattern        ::= 'SERVICE' 'SILENT'? VarOrIRIref GroupGraphPattern
 [0]     Bind                       ::= 'BIND' '(' Expression 'AS' Var ')'
 [0]     MinusGraphPattern          ::= 'MINUS' GroupGraphPattern
 [0]     GroupOrUnionGraphPattern   ::= GroupGraphPattern ( 'UNION' GroupGraphPattern )*
@@ -132,6 +133,8 @@
 				       | 'CONTAINS' '(' Expression ',' Expression ')'
 				       | 'STRSTARTS' '(' Expression ',' Expression ')'
 				       | 'STRENDS' '(' Expression ',' Expression ')'
+				       | 'STRBEFORE' '(' Expression ',' Expression ')'
+				       | 'STRAFTER' '(' Expression ',' Expression ')'
 				       | 'YEAR' '(' Expression ')'
 				       | 'MONTH' '(' Expression ')'
 				       | 'DAY' '(' Expression ')'
@@ -139,10 +142,10 @@
 				       | 'MINUTES' '(' Expression ')'
 				       | 'SECONDS' '(' Expression ')'
 				       | 'TIMEZONE' '(' Expression ')'
+				       | 'TZ' '(' Expression ')'
 				       | 'NOW' NIL
 				       | 'MD5' '(' Expression ')'
 				       | 'SHA1' '(' Expression ')'
-				       | 'SHA224' '(' Expression ')'
 				       | 'SHA256' '(' Expression ')'
 				       | 'SHA384' '(' Expression ')'
 				       | 'SHA512' '(' Expression ')'
