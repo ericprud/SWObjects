@@ -26,31 +26,6 @@ tests/rdb2rdf-tests/D023-2tables2primarykeys2foreignkeysReferencesToNon-primaryk
 tests/rdb2rdf-tests/D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls/create.sql	tests/rdb2rdf-tests/D024-2tables2primarykeys1foreignkeyToARowWithSomeNulls/directGraph.ttl
 tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
 
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-# tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/create.sql	tests/rdb2rdf-tests/D025-3tables3primarykeys3foreignkeys/directGraph.ttl
-
 # ericPz:
 # tests/rdb2rdf-tests/ref-no-pk/create.sql	tests/rdb2rdf-tests/ref-no-pk/directGraph.ttl
 # tests/rdb2rdf-tests/ref-not-pk/create.sql	tests/rdb2rdf-tests/ref-not-pk/directGraph.ttl
