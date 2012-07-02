@@ -222,8 +222,6 @@ namespace w3c_sw {
 			case 1002: // char
 			case 1015: // _varchar
 			case 1043: // varchar
-			case 17: // bytea
-			case 1001: // _bytea
 			case 1042: // bpchar
 			case 1014: // _bpchar
 			    {
@@ -243,6 +241,15 @@ namespace w3c_sw {
 				    esc = n;
 				}
 				lexval = built;
+			    }
+			    break;
+			case 17: // bytea
+			case 1001: // _bytea
+			    {
+				size_t len;
+				const char* unescaped = (const char*)PQunescapeBytea((const unsigned char*)lexval.c_str(), &len);
+				lexval = std::string(unescaped, len);
+				PQfreemem((void*)unescaped);
 			    }
 			    break;
 			default:
