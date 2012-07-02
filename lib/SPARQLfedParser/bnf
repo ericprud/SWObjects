@@ -36,7 +36,8 @@
 [0]     SelectQuery                ::= SelectClause DatasetClause* WhereClause SolutionModifier
 [0]     SubSelect                  ::= SelectClause WhereClause SolutionModifier BindingsClause?
 [0]     SelectClause               ::= 'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
-[0]     ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
+#[0]     ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@BindingsClause?
+[17s]   ConstructQuery             ::= 'CONSTRUCT' ConstructPattern DatasetClause* WhereClause SolutionModifier
 [0]     DescribeQuery              ::= 'DESCRIBE' ( VarOrIRIref+ | '*' ) DatasetClause* WhereClause? SolutionModifier
 [0]     AskQuery                   ::= 'ASK' DatasetClause* WhereClause
 [0]     DatasetClause              ::= 'FROM' ( DefaultGraphClause | NamedGraphClause )
@@ -97,7 +98,10 @@
 [0]     FunctionCall               ::= IRIref ArgList
 [0]     ArgList                    ::= NIL | '(' 'DISTINCT'? Expression ( ',' Expression )* ')'
 [0]     ExpressionList             ::= NIL | '(' Expression ( ',' Expression )* ')'
-[0]     ConstructTemplate          ::= '{' ConstructTriples? '}'
+#[0]     ConstructTemplate          ::= '{' ConstructTriples? '}'
+[55s]   ConstructPattern           ::= '{' ConstructTriples? ( ConstructPatternNotTriples ('.')? ConstructTriples? )* '}'
+[58s]   ConstructPatternNotTriples ::= ConstructPattern
+                                     | "GRAPH" VarOrIRIref ConstructPattern
 [0]     ConstructTriples           ::= TriplesSameSubject ( '.' ConstructTriples? )?
 [0]     TriplesSameSubject         ::= VarOrTerm PropertyListNotEmpty | TriplesNode PropertyList
 [0]     PropertyListNotEmpty       ::= Verb ObjectList ( ';' ( Verb ObjectList )? )*
