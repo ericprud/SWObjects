@@ -217,6 +217,21 @@ namespace w3c_sw {
 
   return ret;
 	}
+
+		static char _hex (const char ch) {
+		    return ch < 0x0a ? ch + '0' : ch + 'A' - 10;
+		}
+		static std::string hex_encode(std::string encodeMe) {
+		    std::string ret;
+		    for (std::string::const_iterator ch = encodeMe.begin();
+			 ch != encodeMe.end(); ++ch) {
+			unsigned char uc = *ch;
+			ret += _hex(uc>> 4);
+			ret += _hex(uc & 0x0F);
+		    }
+		    return ret;
+		}
+
 		const TTerm* getTTerm (size_t i, ColumnSet& cols, AtomFactory* atomFactory) {
 		    std::string lexval(at(i).get());
 		    Field::Type type = cols[i].type;
@@ -226,7 +241,7 @@ namespace w3c_sw {
 
 		    if (type != SQLclient::Result::Field::TYPE__null) {
 			if (type == SQLclient::Result::Field::TYPE_binary)
-			    lexval = base64_encode(lexval);
+			    lexval = hex_encode(lexval);
 			else if (type == SQLclient::Result::Field::TYPE_boolean) {
 			    lexval = lexval == "TRUE" ? "true" : "false";
 			} else if (type == SQLclient::Result::Field::TYPE_dateTime)
@@ -332,7 +347,7 @@ namespace w3c_sw {
     std::string SQLclient::Result::Field::typeNames[] = {
 	PREFIX_SWO "_err", 
 	"", /* PREFIX_SWO "_literal", */
-	PREFIX_XSI "base64Binary", 
+	PREFIX_XSI "hexBinary", 
 	PREFIX_XSI "decimal", 
 	PREFIX_XSI "integer", PREFIX_XSI "integer", PREFIX_XSI "integer", 
 	PREFIX_XSI "double", PREFIX_XSI "double", PREFIX_XSI "double", 
