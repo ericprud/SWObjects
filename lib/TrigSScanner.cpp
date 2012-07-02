@@ -2084,12 +2084,12 @@ YY_RULE_SETUP
 case 18:
 YY_RULE_SETUP
 #line 133 "lib/TrigSScanner.lpp"
-{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", yytext); return token::IT_true;}
+{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 134 "lib/TrigSScanner.lpp"
-{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", yytext); return token::IT_false;}
+{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
