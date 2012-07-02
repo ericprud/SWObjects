@@ -262,7 +262,7 @@ namespace w3c_sw {
 			std::string attrLName = attrs->getLocalName(i);
 			chars += " " + attrs->getQName(i) + "=\"" + attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) + "\"";
 		    }
-		    chars + ">";
+		    chars += ">";
 
 		    /* Nested state depends solely on parseType. */
 		    newState.expect = XMLLITERAL;
