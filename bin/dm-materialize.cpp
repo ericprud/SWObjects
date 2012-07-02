@@ -11,6 +11,13 @@
  * SQL clients. */
 #include "interface/SQLclient.hpp"
 
+// #define VALUSEP "-"
+// #define PAIRSEP "."
+// #define ATTRSEP "."
+#define VALUSEP "="
+#define PAIRSEP ";"
+#define ATTRSEP ";"
+
 using namespace w3c_sw;
 AtomFactory atomFactory;
 w3c_sw::sql::Serializer* Serializer = NULL;
@@ -155,7 +162,7 @@ struct Materializer {
 			const sql::schema::ForeignKey* from, const sql::schema::Key* to) {
 	    for (size_t i = 0; i < from->size(); ++i) {
 		if (i > 0)
-		    p += ".";
+		    p += ATTRSEP;
 		p += IRIsafe(from->at(i));
 	    }
 	}
@@ -181,8 +188,8 @@ struct Materializer {
 		    break;
 		}
 		if (i != 0)
-		    oStr += ".";
-		oStr += attrname(attrNames[i]) + "-" + attrvalue(row[colNos[i]].get());
+		    oStr += PAIRSEP;
+		oStr += attrname(attrNames[i]) + VALUSEP + attrvalue(row[colNos[i]].get());
 	    }
 	    if (oStr.size() > 0)
 		bgp->addTriplePattern
@@ -427,8 +434,8 @@ struct Materializer {
 	    } else {
 		for (size_t i = 0; i < table.primaryKey->size(); ++i) {
 		    if (i != 0)
-			node += ".";
-		    node += attrname(table.primaryKey->at(i)) + "-" + attrvalue(row[pkCols[i]].get());
+			node += PAIRSEP;
+		    node += attrname(table.primaryKey->at(i)) + VALUSEP + attrvalue(row[pkCols[i]].get());
 		}
 		s = atomFactory.getURI(node);
 	    }
