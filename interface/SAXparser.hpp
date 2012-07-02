@@ -23,6 +23,7 @@ namespace w3c_sw {
 	    virtual ~NSmap () {  }
 	    virtual std::string operator[](std::string prefix) = 0;
 	    virtual std::set<std::string> keys () = 0;
+	    virtual std::string str () = 0;
 	};
 
 	struct QName {
@@ -357,13 +358,19 @@ namespace w3c_sw {
 	    try {
 		handler->warning(msg, args);
 	    }
-	    catch (std::string& e) { parser->exception_std_string(e); }
-	    catch (ChangeMediaTypeException& e) { parser->exception_ChangeMediaType(e); }
+	    catch (std::string& e) {
+		parser->exception_std_string(e);
+		throw e;
+	    }
+	    catch (ChangeMediaTypeException& e) {
+		parser->exception_ChangeMediaType(e);
+		throw e;
+	    }
 	}
     };
 
     class NSdInsulatedSAXparser : public InsulatedSAXparser {
-    protected:
+    public:
 	typedef std::map< std::string, std::string > NSmapImpl;
 	class SimpleNsMap : public SWSAXhandler::NSmap {
 	    NSmapImpl& map;
@@ -377,8 +384,21 @@ namespace w3c_sw {
 		    ret.insert(it->first);
 		return ret;
 	    }
+	    virtual std::string str () {
+		std::stringstream ret;
+		for (NSmapImpl::const_iterator it = map.begin();
+		     it != map.end(); ++it) {
+		    if (it != map.begin())
+			ret << " ";
+		    std::string key(it->first);
+		    ret << "xmlns" << (key.empty() ? "" : ":") << key
+			<< "=\"" << it->second << "\"";
+		}
+		return ret.str();
+	    }
 	};
 
+    protected:
 	std::stack< NSmapImpl > nsz;
 
 	NSdInsulatedSAXparser () {
