@@ -43,26 +43,11 @@ TurtleSDriver turtleParser("", &F);
 RDFaParser GRDFaParser("", &F, &P);
 
 BOOST_AUTO_TEST_CASE( QName_eqiv ) {
-    typedef std::map< std::string, std::string > NSmapImpl;
-    class SimpleNsMap : public SWSAXhandler::NSmap {
-	NSmapImpl& map;
-    public:
-	SimpleNsMap (NSmapImpl& map) : map(map) {  }
-	virtual std::string operator[] (std::string prefix) { return map[prefix]; }
-	virtual std::set<std::string> keys () {
-	    std::set<std::string> ret;
-	    for (NSmapImpl::const_iterator it = map.begin();
-		 it != map.end(); ++it)
-		ret.insert(it->first);
-	    return ret;
-	}
-    };
-
-    NSmapImpl m;
+    NSdInsulatedSAXparser::NSmapImpl m;
     m["p1"] = "ns1";
     m["p2"] = "ns1";
     m["p3"] = "ns3";
-    SimpleNsMap ns(m);
+    NSdInsulatedSAXparser::SimpleNsMap ns(m);
     SWSAXhandler::QName q1("p1:foo", ns);
     SWSAXhandler::QName q2("p2:foo", ns);
     SWSAXhandler::QName q3("p3:foo", ns);
