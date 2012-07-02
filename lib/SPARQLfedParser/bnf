@@ -88,7 +88,7 @@
 [0]     Print                      ::= 'PRINT' GroupGraphPattern
 [0]     OptionalGraphPattern       ::= 'OPTIONAL' GroupGraphPattern
 [0]     GraphGraphPattern          ::= 'GRAPH' VarOrIRIref GroupGraphPattern
-[0]     ServiceGraphPattern        ::= 'SERVICE' VarOrIRIref GroupGraphPattern
+[0]     ServiceGraphPattern        ::= 'SERVICE' 'SILENT'? VarOrIRIref GroupGraphPattern
 [0]     Bind                       ::= 'BIND' '(' Expression 'AS' Var ')'
 [0]     MinusGraphPattern          ::= 'MINUS' GroupGraphPattern
 [0]     GroupOrUnionGraphPattern   ::= GroupGraphPattern ( 'UNION' GroupGraphPattern )*
@@ -172,6 +172,8 @@
 				     | 'CONTAINS' '(' Expression ',' Expression ')'
 				     | 'STRSTARTS' '(' Expression ',' Expression ')'
 				     | 'STRENDS' '(' Expression ',' Expression ')'
+				     | 'STRBEFORE' '(' Expression ',' Expression ')' 
+				     | 'STRAFTER' '(' Expression ',' Expression ')' 
 				     | 'YEAR' '(' Expression ')'
 				     | 'MONTH' '(' Expression ')'
 				     | 'DAY' '(' Expression ')'
@@ -179,10 +181,12 @@
 				     | 'MINUTES' '(' Expression ')'
 				     | 'SECONDS' '(' Expression ')'
 				     | 'TIMEZONE' '(' Expression ')'
+				     | 'TZ' '(' Expression ')'
 				     | 'NOW' NIL
+				     | 'UUID' NIL 
+				     | 'STRUUID' NIL 
 				     | 'MD5' '(' Expression ')'
 				     | 'SHA1' '(' Expression ')'
-				     | 'SHA224' '(' Expression ')'
 				     | 'SHA256' '(' Expression ')'
 				     | 'SHA384' '(' Expression ')'
 				     | 'SHA512' '(' Expression ')'
