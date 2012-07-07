@@ -586,34 +586,41 @@ namespace w3c_sw {
 	    for (std::vector<Rule>::const_iterator rule = rules.begin();
 		 rule != rules.end(); ++rule) {
 
-		/** For each triple in the rule head... */
-		for (std::vector<const TriplePattern*>::const_iterator constraint = rule->head->begin();
-		     constraint != rule->head->end(); constraint++) {
-
-		    ResultSet testRS(atomFactory);
-		    for (VariableListConstIterator it = rule->bodyVars.begin();
-			 it != rule->bodyVars.end(); ++it)
-			testRS.addKnownVar(*it);
-
-		    /** If the pattern matches the triple,
-		          we will add it to Bindings#alternatives. */
-		    // std::cerr << "  rule: " << (*constraint)->toString();
-		    if ((*constraint)->symmetricBindVariables(triple, false, &testRS, *testRS.begin())) {
-			/**
-			 * Queue adding this combination of rule and bindings to
-			 * the opts.
-			 */
-			adds.push_back(Add(*rule, testRS, triple));
-			// std::cerr << "\n  new binding " << adds.rbegin()->str() << "\n" << adds.rbegin()->rs;
-		    } else {
-			// std::cerr << "\n" << testRS;
-		    }
-		}
+		const BasicGraphPattern* asBgp = dynamic_cast<const BasicGraphPattern*>(rule->head);
+		if (asBgp != NULL) 
+		    addStuff(&adds, asBgp, rule, triple);
+		// !!!2 -- other stuff in ConstructableOperation
 	    }
 	    if (adds.size() == 0 || alternatives.cross(adds) == 0)
 		failed.bgp2triples[bgp].insert(triple);
 	    // std::cerr << "final:\n" << str();
 	    return adds.size() > 0;
+	}
+
+	void addStuff (std::vector<Add>* adds, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TriplePattern* triple) {
+	    /** For each triple in the rule head... */
+	    for (std::vector<const TriplePattern*>::const_iterator constraint = asBgp->begin();
+		 constraint != asBgp->end(); constraint++) {
+
+		ResultSet testRS(atomFactory);
+		for (VariableListConstIterator it = rule->bodyVars.begin();
+		     it != rule->bodyVars.end(); ++it)
+		    testRS.addKnownVar(*it);
+
+		/** If the pattern matches the triple,
+		    we will add it to Bindings#alternatives. */
+		// std::cerr << "  rule: " << (*constraint)->toString();
+		if ((*constraint)->symmetricBindVariables(triple, false, &testRS, *testRS.begin())) {
+		    /**
+		     * Queue adding this combination of rule and bindings to
+		     * the opts.
+		     */
+		    adds->push_back(Add(*rule, testRS, triple));
+		    // std::cerr << "\n  new binding " << adds.rbegin()->str() << "\n" << adds.rbegin()->rs;
+		} else {
+		    // std::cerr << "\n" << testRS;
+		}
+	    }
 	}
 
 	const TableOperation* instantiate (Alternatives::VarUniquifier& varUniquifier) {
@@ -683,7 +690,7 @@ namespace w3c_sw {
     };
 
     struct RuleParser : public RecursiveExpressor {
-	DefaultGraphPattern* head;
+	const TableOperation* head; // !!!2 -- use ConstructableOperation
 	const TableOperation* body;
 	SWObjectDuplicator d;
 	VariableList bodyVars;
@@ -707,10 +714,11 @@ namespace w3c_sw {
 	    RecursiveExpressor::subSelect(self, p_Select);
 	    delete body; // body got erroneously set in the nested where clause
 	}
-	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) {
+	// !!!2 -- use ConstructableOperation for p_ConstructTemplate
+	virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>*, WhereClause* p_WhereClause, SolutionModifier*) {
 	    p_ConstructTemplate->express(&d);
 	    // bodyVars.clear(); -- unnecessary because p_ConstructTemplate was only visited with an SWObjectDuplicator.
-	    head = dynamic_cast<DefaultGraphPattern*>(d.last.tableOperation);
+	    head = d.last.tableOperation; // !!!2 -- use ConstructableOperation
 	    p_WhereClause->express(this);
 	}
 	Rule parseConstruct (const Construct* c, const TTerm* name) {

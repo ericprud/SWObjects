@@ -320,14 +320,16 @@ namespace w3c_sw {
 	    p_Select->express(this);
 	    last.tableOperation = new SubSelect((const Select*)last.operation);
 	}
-	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	// !!!2 -- use ConstructableOperation for p_ConstructTemplate
+	virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_ConstructTemplate->express(this);
 	    TableOperation* construct = last.tableOperation;
 	    p_WhereClause->express(this);
 	    WhereClause* where = last.whereClause;
 	    p_SolutionModifier->express(this);
 	    SolutionModifier* solutionModifier = last.solutionModifier;
-	    last.operation = new Construct(dynamic_cast<DefaultGraphPattern*>(construct), _DatasetClauses(p_DatasetClauses), where, solutionModifier);
+	    // !!!2 -- use ConstructableOperation for p 1
+	    last.operation = new Construct(construct, _DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
 	virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_VarSet->express(this);

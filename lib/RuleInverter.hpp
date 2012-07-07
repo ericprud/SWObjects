@@ -471,7 +471,8 @@ namespace w3c_sw {
 	    last.whereClause = new WhereClause(op);
 	}
 
-	virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+	// !!!2 -- use ConstructableOperation for p_ConstructTemplate
+	virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    if (p_DatasetClauses->size() != 0)
 		throw(std::runtime_error("Don't know how to invert a Construct with a DatasetClauses."));
 
@@ -480,7 +481,8 @@ namespace w3c_sw {
 	     * constructRuleHead and sets constructRuleBodyAsConsequent to a
 	     * copy of the graph pattern of the CONSTRUCT WhereClause.
 	     */
-	    constructRuleHead = p_ConstructTemplate;
+	    // !!!2 -- use ConstructableOperation for head
+	    constructRuleHead = const_cast<DefaultGraphPattern*>(dynamic_cast<const DefaultGraphPattern*>(p_ConstructTemplate));
 	    p_WhereClause->express(this);
 	    WhereClause* constructRuleHeadAsPattern = last.whereClause;
 

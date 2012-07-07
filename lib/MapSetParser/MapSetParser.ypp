@@ -377,7 +377,7 @@ public:
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
 %type <p_BindingClause> BindingsClause _QBindingsClause_E_Opt
 
-%type <p_BasicGraphPattern> ConstructTemplate
+%type <p_BasicGraphPattern> QuadPattern Quads
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -742,7 +742,7 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 
 ConstructQuery:
     // ('LABEL' GraphTerm)? 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT ConstructTemplate {
+    _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT QuadPattern	{
 	driver.curOp = NULL;
       } _QDatasetClause_E_Star WhereClause SolutionModifier _QBindingsClause_E_Opt	{
 	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
@@ -1077,6 +1077,72 @@ BindingValue:
     }
 ;
 
+QuadPattern:
+    GT_LCURLEY Quads GT_RCURLEY	{
+	$$ = $2;
+    }
+;
+
+Quads:
+    {
+	driver.curBGP = NULL;
+      }_QTriplesTemplate_E_Opt _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star	{
+	  $$ = driver.curBGP;
+      }
+;
+
+_QTriplesTemplate_E_Opt:
+    
+  | TriplesTemplate	
+;
+
+_QGT_DOT_E_Opt:
+    
+  | GT_DOT	
+;
+
+_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C:
+    QuadsNotTriples _QGT_DOT_E_Opt _QTriplesTemplate_E_Opt	
+;
+
+_Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star:
+    
+  | _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star _O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C	
+;
+
+// 'GRAPH' VarOrIRIref _QTriplesTemplate_E_Opt
+QuadsNotTriples:
+    {
+	driver.restoreFilter(NULL);
+	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
+	driver.curFilter = NULL;
+      } IT_GRAPH VarOrIRIref {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = $3;
+      } GT_LCURLEY {
+	driver.curBGP = NULL;
+	driver.curOp = NULL;
+      } _QTriplesTemplate_E_Opt GT_RCURLEY	{
+	  driver.curBGP = NULL;
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, new GraphGraphPattern($3, driver.curOp));
+	  driver.curGraphName = $<p_TTerm>4;
+      }
+;
+
+TriplesTemplate:
+    TriplesSameSubject _Q_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C_E_Opt	
+;
+
+_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C:
+    GT_DOT _QTriplesTemplate_E_Opt	
+;
+
+_Q_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C_E_Opt:
+    
+  | _O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C	
+;
+
 GroupGraphPattern:
     // '{' ( SubSelect | GroupGraphPatternSub ) '}'
     GT_LCURLEY {
@@ -1109,11 +1175,6 @@ _QTriplesBlock_E_Opt:
 // GraphPatternNotTriples:
 //     GraphPatternNotTriples
 // ;
-
-_QGT_DOT_E_Opt:
-    
-  | GT_DOT	
-;
 
 // ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock?
 _O_QGraphPatternNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesBlock_E_Opt_C:
@@ -1360,37 +1421,6 @@ ExpressionList:
 	  $$ = driver.curExprList;
 	  driver.curExprList = $<p_Expressions>3;
       }
-;
-
-ConstructTemplate:
-    // '{' ConstructTriples? '}'
-    GT_LCURLEY {
-	driver.curBGP = NULL;
-      } _QConstructTriples_E_Opt GT_RCURLEY	{
-	  $$ = driver.curBGP;
-      }
-;
-
-// ConstructTriples?
-_QConstructTriples_E_Opt:
-    
-  | ConstructTriples	
-;
-
-ConstructTriples:
-    // TriplesSameSubject ( '.' ConstructTriples? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	
-;
-
-// '.' ConstructTriples?
-_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
-    GT_DOT _QConstructTriples_E_Opt	
-;
-
-// ( '.' ConstructTriples? )?
-_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
-    
-  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C	
 ;
 
 TriplesSameSubject:

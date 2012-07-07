@@ -77,9 +77,10 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 	fragmentP = true;
 	name.erase(p);
     }
-    
-    
-    if ((p = name.find(' ')) != std::string::npos) name.erase(p++);
+
+    // Truncate URL at first space -- disabled 'cause it's convenient to abuse
+    //   URL grammar in data: URLs, e.g. "data:text/plain,my data".
+    // if ((p = name.find(' ')) != std::string::npos) name.erase(p++);
     
     for(p=0; p<name.size(); p++) {
 
@@ -254,7 +255,38 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 {
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
-    } else if (!(opts & FILE) && webAgent != NULL && !nameStr.compare(0, 5, "http:")) {
+    } else if (!(opts & FILE) && webAgent != NULL
+	       && !nameStr.compare(0, 5, "data:")) {
+	boost::regex re;
+	boost::cmatch matches;
+
+	re = "data:(.*?)(;base64)?,(.*)\\'";
+	if (!boost::regex_match(nameStr.c_str(), matches, re))
+	    throw std::string("Invalid data URL: \"") + nameStr + "\" -- didn't match \"data:(.*?)(;base64)?,(.*)\".";
+	mediaType = std::string(matches[1].first, matches[1].second);
+	if (matches[2].first != matches[2].second)
+	    throw std::string("base64 parameter not currently supported for data URL \"") + nameStr + "\".";
+	std::string s(matches[3].first, matches[3].second); // "%3CX%3E%20%7B%20%3CI%3E%20%3Cwrite%3E%20%22%E7%85%AE%E6%9C%AC%E8%AA%9Ecd%22%20.%20%7D");
+	std::stringstream* pprime = new std::stringstream;
+	for (std::string::const_iterator it = s.begin(); it != s.end(); ++it)  {
+	    if (*it == '%' && it+2 < s.end()) {
+		std::stringstream ss(std::string(it+1, it+3));
+		int i;
+		ss >> std::hex >> i;
+		std::stringstream t;
+		// t << (char)i;
+		// *p << t.str();
+		*pprime << (char)i;
+		it += 2;
+	    } else {
+		*pprime << *it;
+	    }
+	}
+	p = pprime;
+    } else if (!(opts & FILE) && webAgent != NULL
+	       && !(nameStr.compare(0, 5, "http:")
+		    && nameStr.compare(0, 6, "https:")
+		    && nameStr.compare(0, 5, "ftp:"))) {
 	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
 	boost::shared_ptr<IStreamContext> s(webAgent->get(nameStr.c_str()));
 	if (p_mediaType == NULL) {
@@ -1521,7 +1553,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
-	m_ConstructTemplate->construct(workingDB->ensureGraph(DefaultGraph), rs, &makeNewBNode);
+	m_ConstructTemplate->construct(workingDB, rs, &makeNewBNode, workingDB->ensureGraph(DefaultGraph));
 	//std::cerr << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
@@ -1565,7 +1597,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     ResultSet* Insert::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	if (m_WhereClause != NULL)
-	    m_WhereClause->bindVariables(db, rs);
+	    m_WhereClause->bindVariables(db, rs); // set rs->resultType = ResultSet::RESULT_Tabular\np rs->toString()
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	m_GraphTemplate->construct(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &makeNewBNode, NULL);
@@ -2212,7 +2244,8 @@ compared against
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
 		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
 		BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
-		m_TableOperation->construct(target, rs, evaluator, bgp);
+		const ResultSet* rowRS = (*result)->makeResultSet(rs->getAtomFactory());
+		m_TableOperation->construct(target, rowRS, evaluator, bgp);
 	    }
 	}
     }
@@ -2455,17 +2488,13 @@ compared against
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "MINUS produced\n" << *rs;
     }
 
-    void BasicGraphPattern::construct (BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const {
-	for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++)
-	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
-		 triple != m_TriplePatterns.end(); triple++)
-		(*triple)->construct(target, *result, rs->getAtomFactory(), evaluator);
-    }
-
     void BasicGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	if (bgp == NULL)
 	    bgp = target->ensureGraph(NULL);
-	construct(bgp, rs, evaluator);
+	for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++)
+	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
+		 triple != m_TriplePatterns.end(); triple++)
+		(*triple)->construct(bgp, *result, rs->getAtomFactory(), evaluator);
     }
 
     void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* /* evaluator */, BasicGraphPattern* bgp) const {

@@ -393,7 +393,7 @@ public:
 %type <p_RSName> RSREF _O_QRSREF_E_S_QGT_EQUAL_E_C _Q_O_QRSREF_E_S_QGT_EQUAL_E_C_E_Opt
 %type <p_BindingClause> BindingsClause _QBindingsClause_E_Opt
 
-%type <p_BasicGraphPattern> ConstructTemplate
+%type <p_TableOperation> QuadPattern QuadData Quads
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -640,7 +640,7 @@ UBoxTop:
 ;
 
 UBoxHeader:
-    GT_H_2502_ _O_QGT_H_2502__E_Or_QUBoxCell_E_Plus_C
+    GT_H_2502_ _O_QGT_H_2502__E_Or_QUBoxCell_E_Plus_C	
 ;
 
 _QUBoxCell_E_Plus:
@@ -872,13 +872,13 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 ;
 
 ConstructQuery:
-    // 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
-    IT_CONSTRUCT ConstructTemplate {
+    // 'CONSTRUCT' QuadPattern DatasetClause* WhereClause SolutionModifier
+    IT_CONSTRUCT QuadPattern {
 	driver.curOp = NULL;
       } _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	  driver.lastWhereClause = $5;
-	  /* $2 is known to be a DefaultGraphPattern because of grammar restrictions. */
-	  $$ = new Construct((DefaultGraphPattern*)($2 ? $2 : new DefaultGraphPattern()), $4, $5, $6);
+	  /* $2 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
+	  $$ = new Construct($2, $4, $5, $6);
       }
 ;
 
@@ -1337,7 +1337,7 @@ Copy:
 
 InsertData:
     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA QuadData	{
-	$$ = new Insert(driver.ensureGraphPattern(), NULL);
+	$$ = new Insert($2, NULL);
 	driver.curOp = NULL;
 	driver.curBGP = NULL;
     }
@@ -1345,16 +1345,15 @@ InsertData:
 
 DeleteData:
     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA QuadData	{
-	$$ = new Delete(driver.ensureGraphPattern(), NULL);
+	$$ = new Delete($2, NULL);
 	driver.curOp = NULL;
 	driver.curBGP = NULL;
     }
 ;
 
 DeleteWhere:
-    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE QuadPattern {
-	$$ = new Delete(driver.ensureGraphPattern(), NULL);
-	driver.curOp = NULL;
+    GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE QuadPattern	{
+	$$ = new Delete($2, NULL);
     }
 ;
 
@@ -1408,15 +1407,13 @@ _QUsingClause_E_Star:
 
 DeleteClause:
     IT_DELETE QuadPattern	{
-	$$ = new Delete(driver.ensureGraphPattern(), NULL);
-	driver.curOp = NULL;
+	$$ = new Delete($2, NULL);
     }
 ;
 
 InsertClause:
     IT_INSERT QuadPattern	{
-	$$ = new Insert(driver.ensureGraphPattern(), NULL);
-	driver.curOp = NULL;
+	$$ = new Insert($2, NULL);
     }
 ;
 
@@ -1472,15 +1469,24 @@ GraphRefAll:
 // </Modify>
 
 QuadPattern:
-    GT_LCURLEY Quads GT_RCURLEY	
+    GT_LCURLEY Quads GT_RCURLEY	{
+	$$ = $2;
+    }
 ;
 
 QuadData:
-    GT_LCURLEY Quads GT_RCURLEY	
+    GT_LCURLEY Quads GT_RCURLEY	{
+	$$ = $2;
+    }
 ;
 
 Quads:
-    _QTriplesTemplate_E_Opt _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star	
+    {
+	driver.curBGP = NULL;
+      } _QTriplesTemplate_E_Opt _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star	{
+	  $$ = driver.ensureGraphPattern();
+	  driver.curOp = NULL;
+      }
 ;
 
 _QTriplesTemplate_E_Opt:
@@ -1516,7 +1522,7 @@ QuadsNotTriples:
       } GT_LCURLEY {
 	driver.curBGP = NULL;
 	driver.curOp = NULL;
-      } _QTriplesTemplate_E_Opt GT_RCURLEY {
+      } _QTriplesTemplate_E_Opt GT_RCURLEY	{
 	  driver.curBGP = NULL;
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, new GraphGraphPattern($3, driver.curOp));
 	  driver.curGraphName = $<p_TTerm>4;
@@ -1830,37 +1836,6 @@ ExpressionList:
 	  $$ = driver.curExprList;
 	  driver.curExprList = $<p_Expressions>3;
       }
-;
-
-ConstructTemplate:
-    // '{' ConstructTriples? '}'
-    GT_LCURLEY {
-	driver.curBGP = NULL;
-      } _QConstructTriples_E_Opt GT_RCURLEY	{
-	  $$ = driver.curBGP;
-      }
-;
-
-// ConstructTriples?
-_QConstructTriples_E_Opt:
-    
-  | ConstructTriples	
-;
-
-ConstructTriples:
-    // TriplesSameSubject ( '.' ConstructTriples? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	
-;
-
-// '.' ConstructTriples?
-_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
-    GT_DOT _QConstructTriples_E_Opt	
-;
-
-// ( '.' ConstructTriples? )?
-_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
-    
-  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C	
 ;
 
 TriplesSameSubject:

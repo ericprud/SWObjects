@@ -2042,7 +2042,6 @@ public:
     }
     virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
-    void construct(BasicGraphPattern* target, const ResultSet* rs, BNodeEvaluator* evaluator) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     size_t size () const { return m_TriplePatterns.size(); }
@@ -2584,14 +2583,14 @@ public:
 };
 class Construct : public Operation {
 protected:
-    DefaultGraphPattern* m_ConstructTemplate;
+    const TableOperation* m_ConstructTemplate; // !!!2 -- use ConstructableOperation for p_ConstructTemplate
     ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
     DefaultGraphPattern* resultGraph;
 
 public:
-    Construct (DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : 
+    Construct (const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : 
 	Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier), resultGraph(new DefaultGraphPattern()) {  }
     ~Construct () {
 	delete m_ConstructTemplate;
@@ -3657,7 +3656,8 @@ public:
     virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) = 0;
     virtual void select(const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void subSelect(const SubSelect* const self, const Select* p_Select) = 0;
-    virtual void construct(const Construct* const self, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
+    // !!!2 -- use ConstructableOperation for p_ConstructTemplate
+    virtual void construct(const Construct* const self, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
     virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) = 0;
@@ -3812,7 +3812,8 @@ public:
     virtual void subSelect (const SubSelect* const, const Select* p_Select) {
 	p_Select->express(this);
     }
-    virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    // !!!2 -- use ConstructableOperation for p_ConstructTemplate
+    virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_ConstructTemplate->express(this);
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
@@ -4048,7 +4049,8 @@ public:
     virtual void subSelect (const SubSelect* const, const Select* p_Select) {
 	w3c_sw_NEED_IMPL("subSelect");
     }
-    virtual void construct (const Construct* const, DefaultGraphPattern* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    // !!!2 -- use ConstructableOperation for p_ConstructTemplate
+    virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	w3c_sw_NEED_IMPL("construct");
     }
     virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {

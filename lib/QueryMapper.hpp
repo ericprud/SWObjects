@@ -122,7 +122,7 @@ namespace w3c_sw {
     };
 
     struct Rule {
-	DefaultGraphPattern* head;
+	const TableOperation* head; // !!!2 -- use ConstructableOperation
 	const TableOperation* body;
 	const TTerm* label;
 
@@ -130,7 +130,8 @@ namespace w3c_sw {
 	   (bodyVars); just handy for explanation/debugging. */
 	VariableList bodyVars;
 
-	Rule (DefaultGraphPattern* head, const TableOperation* body, const TTerm* label, VariableList bodyVars)
+	// !!!2 -- use ConstructableOperation for head
+	Rule (const TableOperation* head, const TableOperation* body, const TTerm* label, VariableList bodyVars)
 	    : head(head), body(body), label(label), bodyVars(bodyVars) {  }
 	Rule (const Rule& ref)
 	    : head(ref.head), body(ref.body), label(ref.label), bodyVars(ref.bodyVars) {  }
