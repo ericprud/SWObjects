@@ -258,6 +258,10 @@ namespace w3c_sw {
 		rs(rs), atomFactory(atomFactory), result(NULL), variable(NULL), datatype(NULL), chars("") {
 		stateStack.push(DOCUMENT);
 	    }
+	    virtual void setBase (std::string base) {
+		// baseURI = base;  @@ does SPARQL Results Format use base for e.g. <uri>foo/bar</uri>?
+		throw(std::runtime_error(std::string() + "Unexpected base URI \"" + base + "\" in SPARQL Results input."));		
+	    }
 
 	    virtual void startElement (std::string uri,
 				       std::string localName,

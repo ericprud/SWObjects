@@ -105,6 +105,7 @@ namespace w3c_sw {
 	};
 	SWSAXhandler () {  }
 	virtual ~SWSAXhandler () {  }
+	virtual void setBase(std::string) = 0;
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
@@ -166,6 +167,7 @@ namespace w3c_sw {
 	std::ostream& out;
     public:
 	SAXserializer (std::ostream& out = std::cout) : out(out) {  }
+	virtual void setBase (std::string base) { out << "base: " << base << std::endl; }
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
@@ -295,6 +297,7 @@ namespace w3c_sw {
 	InsulatedSAXparser ()
 	    : errorMode(ERROR_none), exceptionChangeMediaType("no media type", std::vector<std::string>())
 	{  }
+	virtual void setBase(std::string base);
     };
 
     class SAXhandlerInsulator : public SWSAXhandler {
@@ -307,6 +310,7 @@ namespace w3c_sw {
 	    parser(parser), handler(handler) {
 	    parser->insulator = this;
 	}
+	virtual void setBase (std::string base) { handler->setBase(base); }
 	virtual void startElement (std::string uri,
 				   std::string localName,
 				   std::string qName,
@@ -368,6 +372,8 @@ namespace w3c_sw {
 	    }
 	}
     };
+
+    inline void InsulatedSAXparser::setBase (std::string base) { insulator->setBase(base); }
 
     class NSdInsulatedSAXparser : public InsulatedSAXparser {
     public:

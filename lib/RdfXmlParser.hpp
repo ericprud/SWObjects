@@ -66,6 +66,8 @@ namespace w3c_sw {
 		stack.push(newState);
 	    }
 
+	    virtual void setBase (std::string base) { baseURI = base; }
+
 	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string qName,

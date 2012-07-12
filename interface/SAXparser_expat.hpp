@@ -162,6 +162,18 @@ namespace w3c_sw {
 			++lname;
 		    if (!strncmp(prefix[0] ? prefix : lname, "xmlns", 5)) {
 			self.nsz.top()[prefix[0] ? lname : ""] = value;
+#if TODO_setLang_INTERFACE
+		    } else if (prefix[0] && !strncmp(prefix, "xml", 3)) {
+			if (!strcmp(lname, "base"))
+			    self.insulator->setBase(value);
+			else if (!strcmp(lname, "lang"))
+			    self.insulator->setLang(value); @@ no setLang interface yet
+			else
+			    self.insulator->varError("unknown xml directive \"%s\"", lname);
+#else /* !TODO_setLang_INTERFACE */
+		    } else if (prefix[0] && !strncmp(prefix, "xml", 3) && !strcmp(lname, "base")) {
+			self.insulator->setBase(value);
+#endif /* !TODO_setLang_INTERFACE */
 		    } else if (prefix[0]) {
 			size_t len = lname - prefix - 1;
 			char* dup = new char[len + 1];

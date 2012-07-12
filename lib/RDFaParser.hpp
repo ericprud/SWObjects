@@ -74,6 +74,8 @@ namespace w3c_sw {
 		stack.push(topState);
 	    }
 
+	    virtual void setBase (std::string base) { stack.top().baseURI = base; }
+
 	    virtual void startElement (std::string uri,
 				       std::string localName,
 				       std::string /* qName */,
