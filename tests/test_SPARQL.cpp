@@ -215,6 +215,48 @@ BOOST_AUTO_TEST_CASE( data_uri_unencoded_charset_base64 ) {
     ExecResults tested(s);
     BOOST_CHECK_EQUAL(tested.s, Dtrig);
 }
+BOOST_AUTO_TEST_CASE( map_noG ) {
+    ExecResults invocation("../bin/sparql -d 'data:text/trig, { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { ?s <p2> ?o } WHERE { ?s <p1> ?o }' -e 'SELECT ?s ?o WHERE { ?s ?p ?o }'");
+    w3c_sw::TTerm::String2BNode bnodeMap;
+    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet
+	expected(&F, 
+		 "+------+--------+\n"
+		 "| ?s   | ?o     |\n"
+		 "| <s1> | \"o2\" |\n"
+		 "| <s1> | <o1>   |\n"
+		 "+------+--------+\n",
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+BOOST_AUTO_TEST_CASE( map_bodyG ) {
+    ExecResults invocation("../bin/sparql -d 'data:text/trig, <g1> { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { ?s <p2> ?o } WHERE { GRAPH <g1> { ?s <p1> ?o } }' -e 'SELECT ?s ?o WHERE { ?s ?p ?o }'");
+    w3c_sw::TTerm::String2BNode bnodeMap;
+    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet
+	expected(&F, 
+		 "+------+--------+\n"
+		 "| ?s   | ?o     |\n"
+		 "| <s1> | \"o2\" |\n"
+		 "| <s1> | <o1>   |\n"
+		 "+------+--------+\n",
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+// BOOST_AUTO_TEST_CASE( map_headG ) {
+//     ExecResults invocation("../bin/sparql -d 'data:text/trig, { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { GRAPH <g2> { ?s <p2> ?o } } WHERE { ?s <p1> ?o }' -e 'SELECT ?s ?o WHERE { GRAPH <g2> { ?s ?p ?o } }'");
+//     w3c_sw::TTerm::String2BNode bnodeMap;
+//     TableResultSet tested(&F, invocation.s, false, bnodeMap);
+//     TableResultSet
+// 	expected(&F, 
+// 		 "+------+--------+\n"
+// 		 "| ?s   | ?o     |\n"
+// 		 "| <s1> | \"o2\" |\n"
+// 		 "| <s1> | <o1>   |\n"
+// 		 "+------+--------+\n",
+// 		 false, bnodeMap);
+//     BOOST_CHECK_EQUAL(tested, expected);
+// }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 
 #ifdef FIXED_SPARQL_ARGS_ORDER // !!!
