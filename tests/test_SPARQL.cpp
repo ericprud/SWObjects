@@ -49,11 +49,26 @@ const char* Dturtle =
     "<> <http://usefulinc.com/ns/doap#homepage> <http://swobj.org/sparql/v1> .\n"
     "<> <http://usefulinc.com/ns/doap#shortdesc> \"a semantic web query toolbox\" .\n";
 
+const char* Dturtle_percentEscaped =
+    "%7B%0A%20%20%3C%3E%20%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23type%3E%20%3Chttp%3A%2F%2Fusefulinc.com%2Fns%2Fdoap%23Project%3E%20.%0A"
+    "%20%20%3C%3E%20%3Chttp%3A%2F%2Fusefulinc.com%2Fns%2Fdoap%23homepage%3E%20%3Chttp%3A%2F%2Fswobj.org%2Fsparql%2Fv1%3E%20.%0A"
+    "%20%20%3C%3E%20%3Chttp%3A%2F%2Fusefulinc.com%2Fns%2Fdoap%23shortdesc%3E%20%22a%20semantic%20web%20query%20toolbox%22%20%20.%0A%7D";
+
+const char* Dturtle_base64encoded =
+    "PD4gPGh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyN0eXBlPiA8aHR0cDovL3VzZWZ1bGluYy5jb20vbnMvZG9hcCNQcm9qZWN0PiAuC"
+    "jw+IDxodHRwOi8vdXNlZnVsaW5jLmNvbS9ucy9kb2FwI2hvbWVwYWdlPiA8aHR0cDovL3N3b2JqLm9yZy9zcGFycWwvdjE+IC4K"
+    "PD4gPGh0dHA6Ly91c2VmdWxpbmMuY29tL25zL2RvYXAjc2hvcnRkZXNjPiAiYSBzZW1hbnRpYyB3ZWIgcXVlcnkgdG9vbGJveCIgLgo=";
+
+const char* Dturtle_encodedEscaped =
+    "PD4gPGh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyN0eXBlPiA8aHR0cDovL3VzZWZ1bGluYy5jb20vbnMvZG9hcCNQcm9qZWN0PiAuC"
+    "jw%2BIDxodHRwOi8vdXNlZnVsaW5jLmNvbS9ucy9kb2FwI2hvbWVwYWdlPiA8aHR0cDovL3N3b2JqLm9yZy9zcGFycWwvdjE%2BIC4K"
+    "PD4gPGh0dHA6Ly91c2VmdWxpbmMuY29tL25zL2RvYXAjc2hvcnRkZXNjPiAiYSBzZW1hbnRpYyB3ZWIgcXVlcnkgdG9vbGJveCIgLgo%3D";
+
 struct ExecResults {
     std::string s;
-    ExecResults (const char* cmd) {
+    ExecResults (const std::string cmd) {
 	s  = "execution failure";
-	FILE *p = ::popen(cmd, "r");
+	FILE *p = ::popen(cmd.c_str(), "r");
 	BOOST_REQUIRE(p != NULL);
 	char buf[100];
 	s = "";
@@ -163,6 +178,42 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 		 "+--------+\n", 
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
+}
+BOOST_AUTO_TEST_CASE( data_uri ) {
+    ExecResults tested(std::string() + "../bin/sparql -d 'data:text/trig," + Dturtle_percentEscaped + "'");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_unencoded ) {
+    std::string s = std::string() + "../bin/sparql -d 'data:text/turtle," + Dturtle + "'";
+    ExecResults tested(s);
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_charset ) {
+    ExecResults tested(std::string() + "../bin/sparql -d 'data:text/trig;charset=UTF-8," + Dturtle_percentEscaped + "'");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_unencoded_charset ) {
+    std::string s = std::string() + "../bin/sparql -d 'data:text/turtle;charset=UTF-8," + Dturtle + "'";
+    ExecResults tested(s);
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_base64 ) {
+    ExecResults tested(std::string() + "../bin/sparql -d 'data:text/turtle;base64," + Dturtle_encodedEscaped + "'");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_unencoded_base64 ) {
+    std::string s = std::string() + "../bin/sparql -d 'data:text/turtle;base64," + Dturtle_base64encoded + "'";
+    ExecResults tested(s);
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_charset_base64 ) {
+    ExecResults tested(std::string() + "../bin/sparql -d 'data:text/turtle;charset=UTF-8;base64," + Dturtle_encodedEscaped + "'");
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
+}
+BOOST_AUTO_TEST_CASE( data_uri_unencoded_charset_base64 ) {
+    std::string s = std::string() + "../bin/sparql -d 'data:text/turtle;charset=UTF-8;base64," + Dturtle_base64encoded + "'";
+    ExecResults tested(s);
+    BOOST_CHECK_EQUAL(tested.s, Dtrig);
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
 

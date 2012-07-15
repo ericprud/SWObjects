@@ -246,6 +246,57 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 
 namespace w3c_sw {
 
+    // !!hack - should be near ../interface/SQLclient.hpp
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string base64_decode(std::string const& encoded_string) {
+    // http://www.adp-gmbh.ch/cpp/common/base64.html
+    static const std::string base64_chars = 
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"abcdefghijklmnopqrstuvwxyz"
+	"0123456789+/";
+  int in_len = encoded_string.size();
+  int i = 0;
+  int j = 0;
+  int in_ = 0;
+  unsigned char char_array_4[4], char_array_3[3];
+  std::string ret;
+
+  while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+    char_array_4[i++] = encoded_string[in_]; in_++;
+    if (i ==4) {
+      for (i = 0; i <4; i++)
+        char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+      for (i = 0; (i < 3); i++)
+        ret += char_array_3[i];
+      i = 0;
+    }
+  }
+
+  if (i) {
+    for (j = i; j <4; j++)
+      char_array_4[j] = 0;
+
+    for (j = 0; j <4; j++)
+      char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+  }
+
+  return ret;
+}
+
 MediaTypeMap StreamContextMediaTypes::MediaTypes;
 
 template<class T>
@@ -257,15 +308,13 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 	p = new std::stringstream(nameStr);
     } else if (!(opts & FILE) && webAgent != NULL
 	       && !nameStr.compare(0, 5, "data:")) {
-	boost::regex re;
+	std::string re;
 	boost::cmatch matches;
 
-	re = "data:(.*?)(;base64)?,(.*)\\'";
-	if (!boost::regex_match(nameStr.c_str(), matches, re))
-	    throw std::string("Invalid data URL: \"") + nameStr + "\" -- didn't match \"data:(.*?)(;base64)?,(.*)\".";
+	re = "data:(.*?)(;base64)?,(.*)"; // tried \\` and \\A to avoid matching "data:data:..."; didn't work.
+	if (!boost::regex_match(nameStr.c_str(), matches, boost::regex(re))) // i don't recall why i added this: + "\\'"
+	    throw std::string("Invalid data URL: \"") + nameStr + "\" -- didn't match \"" + re + "\".";
 	mediaType = std::string(matches[1].first, matches[1].second);
-	if (matches[2].first != matches[2].second)
-	    throw std::string("base64 parameter not currently supported for data URL \"") + nameStr + "\".";
 	std::string s(matches[3].first, matches[3].second); // "%3CX%3E%20%7B%20%3CI%3E%20%3Cwrite%3E%20%22%E7%85%AE%E6%9C%AC%E8%AA%9Ecd%22%20.%20%7D");
 	std::stringstream* pprime = new std::stringstream;
 	for (std::string::const_iterator it = s.begin(); it != s.end(); ++it)  {
@@ -282,6 +331,15 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 		*pprime << *it;
 	    }
 	}
+	if (matches[2].matched) {
+	    std::stringstream* t = new std::stringstream(base64_decode(pprime->str()));
+	    delete pprime;
+	    pprime = t;
+	}
+	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+	    << "data: URL percent-unescaped "
+	    << (matches[2].matched ? "and base64-decoded " : "")
+	    << "as \"" << pprime->str() << "\".\n";
 	p = pprime;
     } else if (!(opts & FILE) && webAgent != NULL
 	       && !(nameStr.compare(0, 5, "http:")
