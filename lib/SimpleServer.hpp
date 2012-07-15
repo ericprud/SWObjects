@@ -1011,8 +1011,12 @@ struct SimpleEngine {
 		o << " into " << graph->toString() << ".\n";
 		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
 	    }
+	    std::string parserBaseURI =
+		baseURI ? uriString(baseURI) :
+		nameStr.find("data:") == 0 ? "" : // EGP: decided data: URIs don't contribute a base.
+		nameStr;
 	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
-			 baseURI ? uriString(baseURI) : nameStr, &atomFactory, &nsAccumulator, &grddlMap);
+			 parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
 	    rs.resultType = ResultSet::RESULT_Graphs;
 	    return false;
 	}
