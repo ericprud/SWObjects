@@ -156,12 +156,13 @@ protected:
 
     void addBinding (const TTerm* variable, const TTerm* value) {
 	assert (curResult != NULL);
+	curResultSet->addOrderedVar(variable);
 	if (value != TTerm::Unbound)
 	    curResultSet->set(curResult, variable, value, false);
     }
 
     void addBindingValue (const TTerm* value) {
-	    throw "!! how can i get the yylocation_stack_?";
+	//    throw "!! how can i get the yylocation_stack_?";
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
 	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
@@ -226,7 +227,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 230 "lib/MapSetParser/MapSetParser.hpp"
+#line 231 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -256,7 +257,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 260 "lib/MapSetParser/MapSetParser.hpp"
+#line 261 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -268,7 +269,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 246 "lib/MapSetParser/MapSetParser.ypp"
+#line 247 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -327,12 +328,12 @@ namespace w3c_sw {
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
-
+    bool p_parentCountStar;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 336 "lib/MapSetParser/MapSetParser.hpp"
+#line 337 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -696,7 +697,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 700 "lib/MapSetParser/MapSetParser.hpp"
+#line 701 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

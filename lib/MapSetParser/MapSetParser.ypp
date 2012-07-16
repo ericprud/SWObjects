@@ -173,12 +173,13 @@ protected:
 
     void addBinding (const TTerm* variable, const TTerm* value) {
 	assert (curResult != NULL);
+	curResultSet->addOrderedVar(variable);
 	if (value != TTerm::Unbound)
 	    curResultSet->set(curResult, variable, value, false);
     }
 
     void addBindingValue (const TTerm* value) {
-	    throw "!! how can i get the yylocation_stack_?";
+	//    throw "!! how can i get the yylocation_stack_?";
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
 	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
@@ -301,7 +302,7 @@ public:
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
-
+    bool p_parentCountStar;
 }
 
 %{
@@ -377,7 +378,7 @@ public:
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
 %type <p_BindingClause> BindingsClause _QBindingsClause_E_Opt
 
-%type <p_BasicGraphPattern> QuadPattern Quads
+%type <p_TableOperation> QuadPattern Quads
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -586,6 +587,14 @@ DefaultPrimaryKey:
     }
 ;
 
+// BindingsClause?
+_QBindingsClause_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | BindingsClause	
+;
+
 Prologue:
     // BaseDecl? PrefixDecl*
     _QBaseDecl_E_Opt _QPrefixDecl_E_Star	
@@ -623,6 +632,9 @@ PrefixDecl:
 SubSelect:
     // SelectClause WhereClause SolutionModifier BindingsClause?
     {
+	$<p_parentCountStar>$ = driver.countStar;
+	driver.countStar = false;
+    } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
       } SelectClause {
@@ -630,18 +642,12 @@ SubSelect:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } WhereClause SolutionModifier _QBindingsClause_E_Opt	{
-	  if ($6 != NULL)
-	      $4->m_GroupGraphPattern = driver.makeConjunction($6, $4->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
-	  driver.curGraphName = $<p_TTerm>1;
+	  if ($7 != NULL)
+	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>4, new SubSelect(new Select($3.distinctness, $3.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
+	  driver.curGraphName = $<p_TTerm>2;
+	  driver.countStar = $<p_parentCountStar>1;
       }
-;
-
-_QBindingsClause_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | BindingsClause	
 ;
 
 SelectClause:
@@ -741,11 +747,11 @@ _O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_
 ;
 
 ConstructQuery:
-    // ('LABEL' GraphTerm)? 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier
+    // ('LABEL' GraphTerm)? 'CONSTRUCT' QuadPattern DatasetClause* WhereClause SolutionModifier
     _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT QuadPattern	{
 	driver.curOp = NULL;
       } _QDatasetClause_E_Star WhereClause SolutionModifier _QBindingsClause_E_Opt	{
-	/* $3 is known to be a DefaultGraphPattern because of grammar restrictions. */
+	/* $3 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
 	if ($8 != NULL)
 	    $6->m_GroupGraphPattern = driver.makeConjunction($8, $6->m_GroupGraphPattern);
 	Construct* constr = new Construct((DefaultGraphPattern*)($3 ? $3 : new DefaultGraphPattern()), $5, $6, $7);
@@ -1086,8 +1092,9 @@ QuadPattern:
 Quads:
     {
 	driver.curBGP = NULL;
-      }_QTriplesTemplate_E_Opt _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star	{
-	  $$ = driver.curBGP;
+      } _QTriplesTemplate_E_Opt _Q_O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C_E_Star	{
+	  $$ = driver.ensureGraphPattern();
+	  driver.curOp = NULL;
       }
 ;
 
@@ -1096,6 +1103,7 @@ _QTriplesTemplate_E_Opt:
   | TriplesTemplate	
 ;
 
+// '.'?
 _QGT_DOT_E_Opt:
     
   | GT_DOT	
@@ -1225,7 +1233,7 @@ GraphPatternNotTriples:
   | Filter	
   | Bind	
   | BindingsClause	{
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.ensureGraphPattern(), $1) : $1;
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, $1) : $1;
     }
 ;
 
@@ -1291,6 +1299,11 @@ _QIT_SILENT_E_Opt:
 Bind:
     IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
 	driver.curOp = new Bind(driver.ensureGraphPattern(), $3, $5);
+	// no more triples go into the current BGP, per
+	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns
+	// test reference:
+	//   http://www.sparql.org/query-validator?query=ASK+{+%3Fs+%3Fp+%3Fo+FILTER+%281%29+BIND+%282+AS+%3Fb%29+%3Fs2+%3Fp2+%3Fo2+FILTER+%283%29+BIND+%284+AS+%3Fd%29}&languageSyntax=SPARQL&outputFormat=algebra&linenumbers=false
+	driver.curBGP = NULL;
     }
 ;
 
@@ -2167,6 +2180,12 @@ BuiltInCall:
   | IT_NOW NIL	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
+  | IT_UUID NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
+    }
+  | IT_STRUUID NIL	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
+    }
   | IT_MD5 GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, $3, NULL, NULL));
     }
@@ -2266,28 +2285,36 @@ NotExistsFunc:
 
 Aggregate:
     IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C GT_RPAREN	{
+	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4));
     }
   | _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
+	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4));
     }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
     IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression	{
+	driver.countStar = true;
 	$<p_Expressions>$ = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>($4);
       } _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
-	  // x = new ArgList($2, driver.curExprList);
-	  delete driver.curExprList;
+	  if ($6 != NULL) {
+	      std::stringstream ss;
+	      ss << "GROUP_CONCAT ; " << $6->getLexicalValue();
+	      w3c_sw_NEED_IMPL(ss.str());
+	  }
+	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4));
+	  // // x = new ArgList($2, driver.curExprList);
+	  // delete driver.curExprList;
 	  driver.curExprList = $<p_Expressions>5;
-	  w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
-	  // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
+	  // w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
+	  // // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
     }
 ;
 
 _O_QGT_TIMES_E_Or_QExpression_E_C:
     GT_TIMES	{
 	$$ = NULL;
-	driver.countStar = true;
     }
   | Expression	
 ;
@@ -2480,7 +2507,7 @@ namespace w3c_sw {
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), 
 	curResultSet(NULL), curResult(NULL), curExprList(NULL), 
-	countStar(false), root(NULL), unnestTree(false), 
+	root(NULL), unnestTree(false), 
 	lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false)
 {
