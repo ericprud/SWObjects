@@ -721,7 +721,18 @@ BOOST_AUTO_TEST_SUITE( sparql2sparql )
 			  "       ?whom empP:lastName   'Smith'^^xsd:string }",
 			  IStreamContext::STRING);
 	}
-
+	BOOST_AUTO_TEST_CASE( bodyG ) {
+	    RULE_MAP_TEST("SELECT ?s ?o { ?s ?p ?o }",
+			  "LABEL 'bodyG' CONSTRUCT { ?s <p2> ?o } WHERE { GRAPH <g1> { ?s <p1> ?o } }",
+			  "SELECT ?s ?o { GRAPH <g1> { ?s <p1> ?o } }",
+			  IStreamContext::STRING);
+	}
+	BOOST_AUTO_TEST_CASE( headG ) {
+	    RULE_MAP_TEST("SELECT ?s ?o { GRAPH <g1> { ?s ?p ?o } }",
+			  "LABEL 'bodyG' CONSTRUCT { GRAPH <g1> { ?s <p2> ?o } } WHERE { ?s <p1> ?o }",
+			  "SELECT ?s ?o { ?s <p1> ?o }",
+			  IStreamContext::STRING);
+	}
     BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -577,7 +577,57 @@ namespace w3c_sw {
 	 * TRIPLE: ?who sdtm:dateTimeOfBirth "1966-11-08T00:00"^^xsd:dateTime .
 	 *
 	 */
-	bool match (const BasicGraphPattern* bgp, const TriplePattern* triple) {
+	bool match (const BasicGraphPattern* bgp, const TTerm* tripleGraphName, const TriplePattern* triple) {
+	    /** HeadWalker recursively visits the BGPs, GraphGraphPatterns and
+	     * TableConjunctions thereof, keeping track of the current graph
+	     * name in e.g. { GRAPH <X> { GRAPH <X> { <s> <p> <o> } } }
+	     */
+	    class HeadWalker : public RecursiveExpressor {
+	    protected:
+		std::vector<Add>* adds;
+		const TTerm* ruleGraphName;
+		std::vector<Rule>::const_iterator rule;
+		const TTerm* tripleGraphName;
+		const TriplePattern* triple;
+		Bindings* bindings;
+
+	    public:
+		HeadWalker (std::vector<Add>* adds, std::vector<Rule>::const_iterator rule, const TTerm* tripleGraphName, const TriplePattern* triple, Bindings* bindings)
+		    : adds(adds), ruleGraphName(NULL), rule(rule), tripleGraphName(tripleGraphName), triple(triple), bindings(bindings)
+		{  }
+
+		virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
+
+		virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+		    throw(std::runtime_error("unexpected FILTER in construct template"));
+		}
+		virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_IRIref, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    if (tripleGraphName == ruleGraphName)
+			bindings->addStuff(adds, ruleGraphName, self, rule, tripleGraphName, triple);
+		}
+		virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		    if (tripleGraphName == ruleGraphName)
+			bindings->addStuff(adds, ruleGraphName, self, rule, tripleGraphName, triple);
+		}
+		virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+		    const TTerm* oldRuleGraphName = ruleGraphName;
+		    ruleGraphName = p_TTerm;
+		    p_GroupGraphPattern->express(this);
+		    ruleGraphName = oldRuleGraphName;
+		}
+		virtual void tableDisjunction (TableDisjunction*, const ProductionVector<const TableOperation*>*, const ProductionVector<const Filter*>*) { // p_TableOperations p_Filters
+		    throw(std::runtime_error("unexpected UNION in construct template"));
+		}
+		virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+		    p_TableOperations->express(this);
+		}
+		virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+		    throw(std::runtime_error("unexpected OPTIONAL in construct template"));
+		}
+		virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+		    throw(std::runtime_error("unexpected MINUS in construct template"));
+		}
+	    };
 	    std::vector<Add> adds;
 
 	    // std::cerr << "query: " << triple->toString() << "\n";
@@ -585,11 +635,8 @@ namespace w3c_sw {
 	    /** For each rule... */
 	    for (std::vector<Rule>::const_iterator rule = rules.begin();
 		 rule != rules.end(); ++rule) {
-
-		const BasicGraphPattern* asBgp = dynamic_cast<const BasicGraphPattern*>(rule->head);
-		if (asBgp != NULL) 
-		    addStuff(&adds, asBgp, rule, triple);
-		// !!!2 -- other stuff in ConstructableOperation
+		HeadWalker hw(&adds, rule, tripleGraphName, triple, this);
+		rule->head->express(&hw);
 	    }
 	    if (adds.size() == 0 || alternatives.cross(adds) == 0)
 		failed.bgp2triples[bgp].insert(triple);
@@ -597,7 +644,7 @@ namespace w3c_sw {
 	    return adds.size() > 0;
 	}
 
-	void addStuff (std::vector<Add>* adds, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TriplePattern* triple) {
+	void addStuff (std::vector<Add>* adds, const TTerm* ruleGraphName, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TTerm* tripleGraphName, const TriplePattern* triple) {
 	    /** For each triple in the rule head... */
 	    for (std::vector<const TriplePattern*>::const_iterator constraint = asBgp->begin();
 		 constraint != asBgp->end(); constraint++) {
@@ -660,12 +707,12 @@ namespace w3c_sw {
 	QueryWalker (std::vector<Rule>& rules, AtomFactory* atomFactory, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
 	    : SWObjectDuplicator(atomFactory), bindings(atomFactory, rules, sharedVars, nodeShare) {  }
 	/* _TriplePatterns factored out supporter function; virtual for MappedDuplicator. */
-	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+	virtual void _TriplePatterns (const BasicGraphPattern* bgp, const TTerm* graphName, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    bindings.alternatives.opts.clear();
 	    bindings.alternatives.opts.push_back(Bindings::Rule2rs());
 	    for (std::vector<const TriplePattern*>::const_iterator it = p_TriplePatterns->begin();
 		 it != p_TriplePatterns->end(); it++)
-		bindings.match(bgp, *it);
+		bindings.match(bgp, graphName, *it);
 
 	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "transforming bgp: " << *bgp << " -> [[\n";
 	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
@@ -673,10 +720,14 @@ namespace w3c_sw {
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
-	    _TriplePatterns(self, p_TriplePatterns);
+	    _TriplePatterns(self, last.tterms.tterm, p_TriplePatterns);
 	}
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
-	    _TriplePatterns(self, p_TriplePatterns);
+	    _TriplePatterns(self, NULL, p_TriplePatterns);
+	}
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	    // override SWObjectDuplicator, suppressing last.tableOperation = new GraphGraphPattern(name, last.tableOperation)
+	    p_GroupGraphPattern->express(this);
 	}
 	const Operation* mapQuery (const Operation* query) {
 	    query->express(this);

@@ -78,7 +78,7 @@ namespace w3c_sw {
 		    ground.push_back(*it);
 		} else {
 // 		// We only want to include the above "rules" if they interact with the rules added by match.
-		    bindings.match(toMatch, *it);
+		    bindings.match(toMatch, graph, *it);
 		}
 	    }
 
