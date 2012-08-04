@@ -1,0 +1,113 @@
+Index: Makefile
+===================================================================
+--- Makefile	(revision 1759)
++++ Makefile	(working copy)
+@@ -31,9 +31,9 @@
+ PERL_HOME:=/usr/lib/perl/5.10.1
+ JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
+ # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
+-#ECHO:=`which echo`
+-#OSX: ECHO:= /bin/echo
+-ECHO ?= echo
++ECHO:=`which echo`
++#ECHO:= /bin/echo
++#ECHO ?= echo
+ #LIBS
+ DEBUG:=-g -O0
+ OPT=-fPIC
+@@ -263,7 +263,8 @@
+ BOOST_LOG_LIB=boost_log-$(BOOST_LOG_COMPATIBILITY)
+ INCLUDES += -Iboost-log-$(BOOST_LOG_COMPATIBILITY)
+ LINK_BOOST_LOG=-l$(BOOST_LOG_LIB) $(LRT)
+-LIBINC	 += -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG) -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
++# LIBINC	 += -L$(BOOST_TARGET)lib $(LINK_BOOST_LOG) -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
++LIBINC	 += -lboost_log -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX)
+ 
+ BOOST_LOG_SRC_FILEPATHS  :=  $(subst /,$(BOOST_LOG_SRC_DIR)libs/log/src/,$(BOOST_LOG_SRS_FILES))
+ BOOST_LOG_OBJ_FILEPATHS  :=  $(subst /,$(BOOST_TARGET),$(subst .cpp,.o,$(BOOST_LOG_SRS_FILES)))
+@@ -731,7 +732,7 @@
+ 
+ .PHONY: RenamedFrameworks
+ 
+-RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
++RenamedFrameworks: Sparql.app/Contents/Frameworks $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so.$(BOOST_LOG_COMPATIBILITY)
+ 	cp /usr/lib/libstdc++.6.dylib $<
+ 	install_name_tool -id @executable_path/../Frameworks/libstdc++.6.dylib $</libstdc++.6.dylib
+ 	for l in regex system program_options filesystem thread date_time; do \
+Index: interface/SQLclient.hpp
+===================================================================
+--- interface/SQLclient.hpp	(revision 1759)
++++ interface/SQLclient.hpp	(working copy)
+@@ -360,10 +360,10 @@
+ 	SQLclient* client;
+     public:
+ 	SQLClientWrapper (const SQLConnectInfo& con)
+-	    : client(makeClient(con.driver, con.useODBC))
++	    : SQLclient(), client(makeClient(con.driver, con.useODBC))
+ 	{  }
+ 	SQLClientWrapper (const SQLClientWrapper& ref)
+-	    : client(ref.client)
++	    : SQLclient(), client(ref.client)
+ 	{
+ 	    ((SQLClientWrapper&)ref).client = NULL; // !! allow wrappers in containers.
+ 	}
+Index: CONFIG
+===================================================================
+--- CONFIG	(revision 1759)
++++ CONFIG	(working copy)
+@@ -54,9 +54,9 @@
+ #   
+ # @@TODO= add e.g. postgres, oracl client libraries.
+ #SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
+-SQL_CLIENTS= MYSQL|ODBC|POSTGRES
++SQL_CLIENTS= MYSQL|ODBC
+ #SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+-SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
++SQL_DM_TESTS?= mysql://root@/DM
+ # connect with:
+ #   mysql -u root DM
+ #   psql DM
+@@ -67,19 +67,19 @@
+ # e.g. libboost_regex.a -> libboost_regex-gcc34-mt-1_38.a
+ #BOOST_SUFFIX=-gcc34-mt-1_38
+ # or you may need to link to multi-threaded versions of boost libraries:
+-BOOST_SUFFIX=
++BOOST_SUFFIX=-mt
+ 
+ # If you are using a version of BOOST older than 1.42, force the use
+ # of the older version of boost log
+-#BOOST_LOG_COMPATIBILITY=1.42
++BOOST_LOG_COMPATIBILITY=1.42
+ 
+ ##### INCLUDES: /some/path... - Directories containing additional headers #####
+ # You must prefix each directory with "-I" and separate them with spaces.
+-#OSX: INCLUDES += -I/opt/local/include/ -I/opt/local/include/mysql5/
+-#OSX: LIBS += -L/opt/local/lib/ -L/opt/local/lib/mysql5/
++INCLUDES += -I/opt/local/include/ -I/opt/local/include/mysql5/
++LIBS += -L/opt/local/lib/ -L/opt/local/lib/mysql5/
+ # CFLAGS += -mmacosx-version-min=10.5
+-#OSX: CFLAGS += -arch x86_64
+-#OSX: LDFLAGS += -mmacosx-version-min=10.5 -L/opt/local/lib/mysql5/mysql/ -arch x86_64
++CFLAGS += -arch x86_64
++LDFLAGS += -mmacosx-version-min=10.5 -L/opt/local/lib/mysql5/mysql/ -arch x86_64
+ # Note that you may also set INCLUDES, LIBINC, etc on the command line:
+ # INCLUDES=-I/tmp/dlib-17.11 LIBINC="-L.. -lexpat1" make -j 4 t_DAWG
+ 
+@@ -88,13 +88,13 @@
+ # It's generally better to use INCLUDES and LIBS, though you'll still need LD_LIBRARY_PATH
+ #CPATH=
+ #LIBRARY_PATH=
+-INCLUDES=-I/home/eric/checkouts/libbooost.inst/include/ -I/usr/local/instantclient_11_2/sdk/include/
+-LIBS=-L/home/eric/checkouts/libbooost.inst/lib/ -L/usr/local/instantclient_11_2/
+-LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/
++INCLUDES=-I/opt/local/include/ -I/opt/local/include/mysql5/
++LIBS=-L/opt/local/lib/ -L/opt/local/lib/mysql5/mysql/
++LD_LIBRARY_PATH=/opt/local/lib/:/opt/local/lib/mysql5/mysql/
+ 
+ 
+ # boost-log on linux requires clock_gettime so need a -lrt after -lboost-log
+-LRT=-lrt
++LRT=
+ 
+ # LINK: STATIC | DYNAMIC - build executables requiring dynamic libraries . ####
+ # Needed when building any executables.
