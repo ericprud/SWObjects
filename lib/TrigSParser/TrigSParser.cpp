@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,20 +36,20 @@
 /* First part of user declarations.  */
 
 
-/* Line 311 of lalr1.cc  */
-#line 43 "lib/TrigSParser/TrigSParser.cpp"
+/* Line 293 of lalr1.cc  */
+#line 41 "lib/TrigSParser/TrigSParser.cpp"
 
 
 #include "TrigSParser.hpp"
 
 /* User implementation prologue.  */
 
-/* Line 317 of lalr1.cc  */
+/* Line 299 of lalr1.cc  */
 #line 126 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
 
-/* Line 317 of lalr1.cc  */
+/* Line 299 of lalr1.cc  */
 #line 178 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
@@ -65,11 +63,11 @@
 #include "RdfDB.hpp"
 
 
-/* Line 317 of lalr1.cc  */
-#line 70 "lib/TrigSParser/TrigSParser.cpp"
+/* Line 299 of lalr1.cc  */
+#line 68 "lib/TrigSParser/TrigSParser.cpp"
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -78,6 +76,26 @@
 # ifndef YY_
 #  define YY_(msgid) msgid
 # endif
+#endif
+
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+ do                                                                    \
+   if (N)                                                              \
+     {                                                                 \
+       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
+       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
+     }                                                                 \
+   else                                                                \
+     {                                                                 \
+       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
+     }                                                                 \
+ while (false)
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
@@ -129,14 +147,10 @@ do {					\
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
-/* Line 380 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 namespace w3c_sw {
 
-/* Line 380 of lalr1.cc  */
-#line 139 "lib/TrigSParser/TrigSParser.cpp"
-#if YYERROR_VERBOSE
+/* Line 382 of lalr1.cc  */
+#line 154 "lib/TrigSParser/TrigSParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -175,7 +189,6 @@ namespace w3c_sw {
     return yystr;
   }
 
-#endif
 
   /// Build a parser object.
   TrigSParser::TrigSParser (class TrigSDriver& driver_yyarg)
@@ -276,6 +289,18 @@ namespace w3c_sw {
   }
 #endif
 
+  inline bool
+  TrigSParser::yy_pact_value_is_default_ (int yyvalue)
+  {
+    return yyvalue == yypact_ninf_;
+  }
+
+  inline bool
+  TrigSParser::yy_table_value_is_error_ (int yyvalue)
+  {
+    return yyvalue == yytable_ninf_;
+  }
+
   int
   TrigSParser::parse ()
   {
@@ -297,7 +322,7 @@ namespace w3c_sw {
     /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location_type yyerror_range[2];
+    location_type yyerror_range[3];
 
     /// $$.
     semantic_type yyval;
@@ -311,15 +336,15 @@ namespace w3c_sw {
 
     /* User initialization code.  */
     
-/* Line 553 of lalr1.cc  */
+/* Line 565 of lalr1.cc  */
 #line 31 "lib/TrigSParser/TrigSParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
 
-/* Line 553 of lalr1.cc  */
-#line 323 "lib/TrigSParser/TrigSParser.cpp"
+/* Line 565 of lalr1.cc  */
+#line 348 "lib/TrigSParser/TrigSParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -347,7 +372,7 @@ namespace w3c_sw {
 
     /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
-    if (yyn == yypact_ninf_)
+    if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
     /* Read a lookahead token.  */
@@ -380,8 +405,8 @@ namespace w3c_sw {
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yyn == 0 || yyn == yytable_ninf_)
-	goto yyerrlab;
+	if (yy_table_value_is_error_ (yyn))
+	  goto yyerrlab;
 	yyn = -yyn;
 	goto yyreduce;
       }
@@ -437,7 +462,7 @@ namespace w3c_sw {
       {
 	  case 2:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 195 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern); // last graph -- kinda useless
@@ -446,7 +471,7 @@ namespace w3c_sw {
 
   case 8:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 218 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
@@ -455,7 +480,7 @@ namespace w3c_sw {
 
   case 9:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 224 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.ignorePrefix(true);
@@ -464,7 +489,7 @@ namespace w3c_sw {
 
   case 10:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 226 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  driver.ignorePrefix(false);
@@ -473,7 +498,7 @@ namespace w3c_sw {
 
   case 11:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 228 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
@@ -483,14 +508,14 @@ namespace w3c_sw {
 
   case 13:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 236 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 14:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 237 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
@@ -499,7 +524,7 @@ namespace w3c_sw {
 
   case 15:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 244 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curBGP = (yysemantic_stack_[(2) - (1)].p_URI) ? driver.db->ensureGraph((yysemantic_stack_[(2) - (1)].p_URI)) : driver.defaultBGP;
@@ -509,7 +534,7 @@ namespace w3c_sw {
 
   case 16:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 247 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(5) - (4)].p_DefaultGraphPattern);
@@ -520,21 +545,21 @@ namespace w3c_sw {
 
   case 17:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 255 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_URI) = NULL; }
     break;
 
   case 19:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 261 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 20:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 262 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
@@ -543,7 +568,7 @@ namespace w3c_sw {
 
   case 21:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 269 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
@@ -553,7 +578,7 @@ namespace w3c_sw {
 
   case 22:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 277 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
@@ -562,14 +587,14 @@ namespace w3c_sw {
 
   case 23:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 284 "lib/TrigSParser/TrigSParser.ypp"
     { (yyval.p_DefaultGraphPattern) = NULL; }
     break;
 
   case 25:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 289 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
@@ -578,7 +603,7 @@ namespace w3c_sw {
 
   case 27:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 292 "lib/TrigSParser/TrigSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -587,7 +612,7 @@ namespace w3c_sw {
 
   case 43:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 352 "lib/TrigSParser/TrigSParser.ypp"
     {
 	if (!driver.curBGP)
@@ -599,7 +624,7 @@ namespace w3c_sw {
 
   case 44:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 361 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
@@ -609,7 +634,7 @@ namespace w3c_sw {
 
   case 45:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 365 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -619,7 +644,7 @@ namespace w3c_sw {
 
   case 46:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 372 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -628,7 +653,7 @@ namespace w3c_sw {
 
   case 47:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 375 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -637,7 +662,7 @@ namespace w3c_sw {
 
   case 48:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 381 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
@@ -648,7 +673,7 @@ namespace w3c_sw {
 
   case 49:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 385 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
@@ -659,7 +684,7 @@ namespace w3c_sw {
 
   case 50:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 394 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
@@ -683,7 +708,7 @@ namespace w3c_sw {
 
   case 51:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 416 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
@@ -692,7 +717,7 @@ namespace w3c_sw {
 
   case 52:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 419 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
@@ -702,7 +727,7 @@ namespace w3c_sw {
 
   case 53:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 426 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
@@ -711,7 +736,7 @@ namespace w3c_sw {
 
   case 54:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 429 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -720,7 +745,7 @@ namespace w3c_sw {
 
   case 55:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 435 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
@@ -729,7 +754,7 @@ namespace w3c_sw {
 
   case 56:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 441 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -738,7 +763,7 @@ namespace w3c_sw {
 
   case 57:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 447 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -747,7 +772,7 @@ namespace w3c_sw {
 
   case 58:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 450 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
@@ -756,7 +781,7 @@ namespace w3c_sw {
 
   case 59:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 453 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -765,7 +790,7 @@ namespace w3c_sw {
 
   case 60:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 456 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
@@ -774,7 +799,7 @@ namespace w3c_sw {
 
   case 61:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 459 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
@@ -783,7 +808,7 @@ namespace w3c_sw {
 
   case 62:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 462 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
@@ -792,7 +817,7 @@ namespace w3c_sw {
 
   case 63:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 469 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
@@ -802,7 +827,7 @@ namespace w3c_sw {
 
   case 64:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 477 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
@@ -811,7 +836,7 @@ namespace w3c_sw {
 
   case 65:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 484 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
@@ -821,7 +846,7 @@ namespace w3c_sw {
 
   case 66:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 488 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -831,7 +856,7 @@ namespace w3c_sw {
 
   case 67:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 496 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
@@ -841,7 +866,7 @@ namespace w3c_sw {
 
   case 68:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 500 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
@@ -850,7 +875,7 @@ namespace w3c_sw {
 
   case 69:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 506 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -859,7 +884,7 @@ namespace w3c_sw {
 
   case 70:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 509 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -868,7 +893,7 @@ namespace w3c_sw {
 
   case 71:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 512 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -877,7 +902,7 @@ namespace w3c_sw {
 
   case 72:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 518 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -886,7 +911,7 @@ namespace w3c_sw {
 
   case 73:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 521 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -895,7 +920,7 @@ namespace w3c_sw {
 
   case 74:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 524 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -904,7 +929,7 @@ namespace w3c_sw {
 
   case 75:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 530 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -913,7 +938,7 @@ namespace w3c_sw {
 
   case 76:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 533 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -922,7 +947,7 @@ namespace w3c_sw {
 
   case 77:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 536 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -931,7 +956,7 @@ namespace w3c_sw {
 
   case 78:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 542 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -940,7 +965,7 @@ namespace w3c_sw {
 
   case 79:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 545 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -949,7 +974,7 @@ namespace w3c_sw {
 
   case 80:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 548 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
@@ -958,7 +983,7 @@ namespace w3c_sw {
 
   case 81:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 554 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
@@ -967,7 +992,7 @@ namespace w3c_sw {
 
   case 82:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 557 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
@@ -976,7 +1001,7 @@ namespace w3c_sw {
 
   case 83:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 563 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
@@ -985,7 +1010,7 @@ namespace w3c_sw {
 
   case 84:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 566 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
@@ -994,7 +1019,7 @@ namespace w3c_sw {
 
   case 85:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 569 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
@@ -1003,7 +1028,7 @@ namespace w3c_sw {
 
   case 86:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 572 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
@@ -1012,7 +1037,7 @@ namespace w3c_sw {
 
   case 87:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 578 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -1021,7 +1046,7 @@ namespace w3c_sw {
 
   case 88:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 581 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -1030,7 +1055,7 @@ namespace w3c_sw {
 
   case 89:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 587 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -1039,7 +1064,7 @@ namespace w3c_sw {
 
   case 90:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 590 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -1048,7 +1073,7 @@ namespace w3c_sw {
 
   case 91:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 596 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -1057,7 +1082,7 @@ namespace w3c_sw {
 
   case 92:
 
-/* Line 678 of lalr1.cc  */
+/* Line 690 of lalr1.cc  */
 #line 599 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
@@ -1066,11 +1091,22 @@ namespace w3c_sw {
 
 
 
-/* Line 678 of lalr1.cc  */
-#line 1071 "lib/TrigSParser/TrigSParser.cpp"
+/* Line 690 of lalr1.cc  */
+#line 1096 "lib/TrigSParser/TrigSParser.cpp"
 	default:
           break;
       }
+    /* User semantic actions sometimes alter yychar, and that requires
+       that yytoken be updated with the new translation.  We take the
+       approach of translating immediately before every use of yytoken.
+       One alternative is translating here after every semantic action,
+       but that translation would be missed if the semantic action
+       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
+       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
+       destructor might then be invoked immediately.  In the case of
+       YYERROR, subsequent parser actions might lead to an incorrect
+       destructor call or verbose syntax error message before the
+       lookahead is translated.  */
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
     yypop_ (yylen);
@@ -1094,14 +1130,20 @@ namespace w3c_sw {
   | yyerrlab -- here on detecting error |
   `------------------------------------*/
   yyerrlab:
+    /* Make sure we have latest lookahead translation.  See comments at
+       user semantic actions for why this is necessary.  */
+    yytoken = yytranslate_ (yychar);
+
     /* If not already recovering from an error, report this error.  */
     if (!yyerrstatus_)
       {
 	++yynerrs_;
+	if (yychar == yyempty_)
+	  yytoken = yyempty_;
 	error (yylloc, yysyntax_error_ (yystate, yytoken));
       }
 
-    yyerror_range[0] = yylloc;
+    yyerror_range[1] = yylloc;
     if (yyerrstatus_ == 3)
       {
 	/* If just tried and failed to reuse lookahead token after an
@@ -1136,7 +1178,7 @@ namespace w3c_sw {
     if (false)
       goto yyerrorlab;
 
-    yyerror_range[0] = yylocation_stack_[yylen - 1];
+    yyerror_range[1] = yylocation_stack_[yylen - 1];
     /* Do not reclaim the symbols of the rule which action triggered
        this YYERROR.  */
     yypop_ (yylen);
@@ -1153,7 +1195,7 @@ namespace w3c_sw {
     for (;;)
       {
 	yyn = yypact_[yystate];
-	if (yyn != yypact_ninf_)
+	if (!yy_pact_value_is_default_ (yyn))
 	{
 	  yyn += yyterror_;
 	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
@@ -1168,7 +1210,7 @@ namespace w3c_sw {
 	if (yystate_stack_.height () == 1)
 	YYABORT;
 
-	yyerror_range[0] = yylocation_stack_[0];
+	yyerror_range[1] = yylocation_stack_[0];
 	yydestruct_ ("Error: popping",
 		     yystos_[yystate],
 		     &yysemantic_stack_[0], &yylocation_stack_[0]);
@@ -1177,10 +1219,10 @@ namespace w3c_sw {
 	YY_STACK_PRINT ();
       }
 
-    yyerror_range[1] = yylloc;
+    yyerror_range[2] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
     // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
+    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
@@ -1203,7 +1245,13 @@ namespace w3c_sw {
 
   yyreturn:
     if (yychar != yyempty_)
-      yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
+      {
+        /* Make sure we have latest lookahead translation.  See comments
+           at user semantic actions for why this is necessary.  */
+        yytoken = yytranslate_ (yychar);
+        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
+                     &yylloc);
+      }
 
     /* Do not reclaim the symbols of the rule which action triggered
        this YYABORT or YYACCEPT.  */
@@ -1222,51 +1270,97 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  TrigSParser::yysyntax_error_ (int yystate, int tok)
+  TrigSParser::yysyntax_error_ (int yystate, int yytoken)
   {
-    std::string res;
-    YYUSE (yystate);
-#if YYERROR_VERBOSE
-    int yyn = yypact_[yystate];
-    if (yypact_ninf_ < yyn && yyn <= yylast_)
+    std::string yyres;
+    // Number of reported tokens (one for the "unexpected", one per
+    // "expected").
+    size_t yycount = 0;
+    // Its maximum.
+    enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
+    // Arguments of yyformat.
+    char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+
+    /* There are many possibilities here to consider:
+       - If this state is a consistent state with a default action, then
+         the only way this function was invoked is if the default action
+         is an error action.  In that case, don't check for expected
+         tokens because there are none.
+       - The only way there can be no lookahead present (in yytoken) is
+         if this state is a consistent state with a default action.
+         Thus, detecting the absence of a lookahead is sufficient to
+         determine that there is no unexpected or expected token to
+         report.  In that case, just report a simple "syntax error".
+       - Don't assume there isn't a lookahead just because this state is
+         a consistent state with a default action.  There might have
+         been a previous inconsistent state, consistent state with a
+         non-default action, or user semantic action that manipulated
+         yychar.
+       - Of course, the expected token list depends on states to have
+         correct lookahead information, and it depends on the parser not
+         to perform extra reductions after fetching a lookahead from the
+         scanner and before detecting a syntax error.  Thus, state
+         merging (from LALR or IELR) and default reductions corrupt the
+         expected token list.  However, the list is correct for
+         canonical LR with one exception: it will still contain any
+         token that will not be accepted due to an error action in a
+         later state.
+    */
+    if (yytoken != yyempty_)
       {
-	/* Start YYX at -YYN if negative to avoid negative indexes in
-	   YYCHECK.  */
-	int yyxbegin = yyn < 0 ? -yyn : 0;
-
-	/* Stay within bounds of both yycheck and yytname.  */
-	int yychecklim = yylast_ - yyn + 1;
-	int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-	int count = 0;
-	for (int x = yyxbegin; x < yyxend; ++x)
-	  if (yycheck_[x + yyn] == x && x != yyterror_)
-	    ++count;
-
-	// FIXME: This method of building the message is not compatible
-	// with internationalization.  It should work like yacc.c does it.
-	// That is, first build a string that looks like this:
-	// "syntax error, unexpected %s or %s or %s"
-	// Then, invoke YY_ on this string.
-	// Finally, use the string as a format to output
-	// yytname_[tok], etc.
-	// Until this gets fixed, this message appears in English only.
-	res = "syntax error, unexpected ";
-	res += yytnamerr_ (yytname_[tok]);
-	if (count < 5)
-	  {
-	    count = 0;
-	    for (int x = yyxbegin; x < yyxend; ++x)
-	      if (yycheck_[x + yyn] == x && x != yyterror_)
-		{
-		  res += (!count++) ? ", expecting " : " or ";
-		  res += yytnamerr_ (yytname_[x]);
-		}
-	  }
+        yyarg[yycount++] = yytname_[yytoken];
+        int yyn = yypact_[yystate];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            /* Start YYX at -YYN if negative to avoid negative indexes in
+               YYCHECK.  In other words, skip the first -YYN actions for
+               this state because they are default actions.  */
+            int yyxbegin = yyn < 0 ? -yyn : 0;
+            /* Stay within bounds of both yycheck and yytname.  */
+            int yychecklim = yylast_ - yyn + 1;
+            int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
+            for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+              if (yycheck_[yyx + yyn] == yyx && yyx != yyterror_
+                  && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+                {
+                  if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
+                    {
+                      yycount = 1;
+                      break;
+                    }
+                  else
+                    yyarg[yycount++] = yytname_[yyx];
+                }
+          }
       }
-    else
-#endif
-      res = YY_("syntax error");
-    return res;
+
+    char const* yyformat = 0;
+    switch (yycount)
+      {
+#define YYCASE_(N, S)                         \
+        case N:                               \
+          yyformat = S;                       \
+        break
+        YYCASE_(0, YY_("syntax error"));
+        YYCASE_(1, YY_("syntax error, unexpected %s"));
+        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+      }
+
+    // Argument number.
+    size_t yyi = 0;
+    for (char const* yyp = yyformat; *yyp; ++yyp)
+      if (yyp[0] == '%' && yyp[1] == 's' && yyi < yycount)
+        {
+          yyres += yytnamerr_ (yyarg[yyi++]);
+          ++yyp;
+        }
+      else
+        yyres += *yyp;
+    return yyres;
   }
 
 
@@ -1289,9 +1383,9 @@ namespace w3c_sw {
       74,   -66,    48,   -66,   -66,   -66,    48,   -66,   -66
   };
 
-  /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
-     doesn't specify something else to do.  Zero means the default is an
-     error.  */
+  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
+     YYTABLE doesn't specify something else to do.  Zero means the
+     default is an error.  */
   const unsigned char
   TrigSParser::yydefact_[] =
   {
@@ -1334,7 +1428,7 @@ namespace w3c_sw {
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If zero, do what YYDEFACT says.  */
+     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
   const signed char TrigSParser::yytable_ninf_ = -18;
   const signed char
   TrigSParser::yytable_[] =
@@ -1617,16 +1711,13 @@ namespace w3c_sw {
   const TrigSParser::token_number_type TrigSParser::yyundef_token_ = 2;
 
 
-/* Line 1054 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
-/* Line 1054 of lalr1.cc  */
-#line 1627 "lib/TrigSParser/TrigSParser.cpp"
+/* Line 1136 of lalr1.cc  */
+#line 1718 "lib/TrigSParser/TrigSParser.cpp"
 
 
-/* Line 1056 of lalr1.cc  */
+/* Line 1138 of lalr1.cc  */
 #line 606 "lib/TrigSParser/TrigSParser.ypp"
  /*** Additional Code ***/
 
@@ -1642,6 +1733,9 @@ namespace w3c_sw {
 
 void TrigSDriver::parse (IStreamContext& in, RdfDB* db, BasicGraphPattern* bgp)
 {
+    // clear prefixes for nth run but keep them around for e.g. serialization.
+    clearPrefixes();
+
     if (db != NULL)
 	setDB(db);
     if (bgp != NULL)

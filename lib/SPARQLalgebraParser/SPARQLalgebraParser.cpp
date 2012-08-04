@@ -4043,6 +4043,8 @@ const Operation* SPARQLalgebraDriver::parse (IStreamContext& in)
     root = NULL;
     curGraphName = NULL;
     streamname = in.nameStr;
+    // clear prefixes for nth run but keep them around for e.g. serialization.
+    clearPrefixes();
 
     SPARQLalgebraScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);

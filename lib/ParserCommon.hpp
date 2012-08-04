@@ -106,6 +106,7 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;
 
+    void clearPrefixes () { namespaces->clear(); }
     void addPrefix (std::string prefix, const URI* namespaceURI) { namespaces->set(prefix, namespaceURI); }
     void ignorePrefix (bool ignore) { ignorePrefixFlag = ignore; }
     bool ignorePrefix () { return ignorePrefixFlag; }

@@ -617,6 +617,9 @@ namespace w3c_sw {
 
 void TrigSDriver::parse (IStreamContext& in, RdfDB* db, BasicGraphPattern* bgp)
 {
+    // clear prefixes for nth run but keep them around for e.g. serialization.
+    clearPrefixes();
+
     if (db != NULL)
 	setDB(db);
     if (bgp != NULL)

@@ -5047,6 +5047,8 @@ MapSet* MapSetDriver::parse (IStreamContext& in)
     curOp = NULL;
     curGraphName = NULL;
     streamname = in.nameStr;
+    // clear prefixes for nth run but keep them around for e.g. serialization.
+    clearPrefixes();
 
     MapSetScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);

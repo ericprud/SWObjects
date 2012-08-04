@@ -589,6 +589,8 @@ namespace w3c_sw {
 
 void TurtleSDriver::parse (IStreamContext& in) {
     streamname = in.nameStr;
+    // clear prefixes for nth run but keep them around for e.g. serialization.
+    clearPrefixes();
 
     TurtleSScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
