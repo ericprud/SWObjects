@@ -604,7 +604,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	XPATHCNST2   (matches, "regex"),
 	XPATHCNST2   (numeric-abs, "abs"),
 	XPATHCNST2   (numeric-round, "round"),
-	XPATHCNST2   (numeric-ciel, "ciel"),
+	XPATHCNST2   (numeric-ceil, "ceil"),
 	XPATHCNST2   (numeric-floor, "floor"),
 	OPERATORCONST(rand),
 	OPERATORCONST(now),
@@ -689,7 +689,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[50].uri;
     const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[51].uri;
     const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[52].uri;
-    const URI* TTerm::FUNC_numeric_ciel		 = &AtomFactory::_URIConstants[53].uri;
+    const URI* TTerm::FUNC_numeric_ceil		 = &AtomFactory::_URIConstants[53].uri;
     const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[54].uri;
     const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[55].uri;
     const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[56].uri;
@@ -909,6 +909,86 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return TTerm::BOOL_false;
 	    }
 
+	    const TTerm* FUNC_numeric_abs (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
+		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
+		    return args[0];
+
+		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
+		if (asFloat != NULL) {
+		    float f = asFloat->getValue();
+		    return f >= 0
+			? args[0]
+			: atomFactory->getRDFLiteral(boost::lexical_cast<std::string>(-f), asFloat->getDatatype());
+		}
+
+		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
+		if (asDouble != NULL) {
+		    double d = asDouble->getValue();
+		    return d >= 0
+			? args[0]
+			: atomFactory->getRDFLiteral(boost::lexical_cast<std::string>(-d), asDouble->getDatatype());
+		}
+		throw TypeError(args[0]->toString(), "numeric_abs");
+	    }
+
+	    const TTerm* FUNC_numeric_round (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
+		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
+		    return args[0];
+
+		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
+		if (asFloat != NULL) {
+		    float f = asFloat->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::floor(f + 0.5)), asFloat->getDatatype());
+		}
+
+		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
+		if (asDouble != NULL) {
+		    double d = asDouble->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::floor(d + 0.5)), asDouble->getDatatype());
+		}
+		throw TypeError(args[0]->toString(), "numeric_round");
+	    }
+
+	    const TTerm* FUNC_numeric_ceil (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
+		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
+		    return args[0];
+
+		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
+		if (asFloat != NULL) {
+		    float f = asFloat->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::ceil(f)), asFloat->getDatatype());
+		}
+
+		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
+		if (asDouble != NULL) {
+		    double d = asDouble->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::ceil(d)), asDouble->getDatatype());
+		}
+		throw TypeError(args[0]->toString(), "numeric_ceil");
+	    }
+
+	    const TTerm* FUNC_numeric_floor (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
+		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
+		    return args[0];
+
+		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
+		if (asFloat != NULL) {
+		    float f = asFloat->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::floor(f)), asFloat->getDatatype());
+		}
+
+		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
+		if (asDouble != NULL) {
+		    double d = asDouble->getValue();
+		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::floor(d)), asDouble->getDatatype());
+		}
+		throw TypeError(args[0]->toString(), "numeric_floor");
+	    }
+
 	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
@@ -1048,6 +1128,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_string_length, 1, 1, &FUNC_string_length),
 		Map::Initializer(TTerm::FUNC_sameTerm, 2, 2, &FUNC_sameTerm),
 		Map::Initializer(TTerm::FUNC_langMatches, 2, 2, &FUNC_langMatches),
+		Map::Initializer(TTerm::FUNC_numeric_abs, 1, 1, &FUNC_numeric_abs),
+		Map::Initializer(TTerm::FUNC_numeric_round, 1, 1, &FUNC_numeric_round),
+		Map::Initializer(TTerm::FUNC_numeric_ceil, 1, 1, &FUNC_numeric_ceil),
+		Map::Initializer(TTerm::FUNC_numeric_floor, 1, 1, &FUNC_numeric_floor),
 		Map::Initializer(TTerm::FUNC_contains, 2, 2, &FUNC_contains),
 		Map::Initializer(TTerm::FUNC_substring_before, 2, 2, &FUNC_substring_before),
 		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),

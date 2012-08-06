@@ -831,7 +831,7 @@ public:
     static const URI* FUNC_matches;
     static const URI* FUNC_numeric_abs;
     static const URI* FUNC_numeric_round;
-    static const URI* FUNC_numeric_ciel;
+    static const URI* FUNC_numeric_ceil;
     static const URI* FUNC_numeric_floor;
     static const URI* FUNC_rand;
     static const URI* FUNC_now;
@@ -2915,7 +2915,7 @@ namespace AtomicFunction {
 	    FPtr FUNC_isIRI;
 	    FPtr FUNC_isBlank;
 	    FPtr FUNC_isLiteral;
-	    FPtr str;
+	    FPtr FUNC_str;
 	    FPtr FUNC_lang;
 	    FPtr FUNC_iri;
 	    FPtr FUNC_bnode;
@@ -2925,6 +2925,10 @@ namespace AtomicFunction {
 	    FPtr FUNC_string_length;
 	    FPtr FUNC_sameTerm;
 	    FPtr FUNC_langMatches;
+	    FPtr FUNC_numeric_abs;
+	    FPtr FUNC_numeric_round;
+	    FPtr FUNC_numeric_ceil;
+	    FPtr FUNC_numeric_floor;
 	    FPtr FUNC_contains;
 	    FPtr FUNC_substring_before;
 	    FPtr FUNC_substring_after;

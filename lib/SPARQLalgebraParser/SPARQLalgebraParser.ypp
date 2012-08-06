@@ -1510,7 +1510,7 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, $3, NULL, NULL));
     }
   | GT_LPAREN IT_ceil Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ciel, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, $3, NULL, NULL));
     }
   | GT_LPAREN IT_floor Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, $3, NULL, NULL));

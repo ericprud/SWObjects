@@ -367,7 +367,7 @@ namespace w3c_sw {
 		    {TTerm::FUNC_concat, "CONCAT"},
 		    {TTerm::FUNC_numeric_abs, "ABS"},
 		    {TTerm::FUNC_numeric_round, "ROUND"},
-		    {TTerm::FUNC_numeric_ciel, "CEILING"},
+		    {TTerm::FUNC_numeric_ceil, "CEILING"},
 		    {TTerm::FUNC_numeric_floor, "FLOOR"},
 		    {TTerm::FUNC_rand, "RAND"},
 		    {TTerm::FUNC_now, "NOW"},
