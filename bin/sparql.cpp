@@ -50,6 +50,10 @@ namespace sw = w3c_sw;
 
 #include "SimpleServer.hpp"
 
+#ifndef _MSC_VER
+#include <dlfcn.h>
+#endif /* !_MSC_VER */
+
 struct ServerConfig {
     struct Request {
 	bool allowBareNewlines_;
@@ -645,7 +649,7 @@ int main(int ac, char* av[])
 {
     int ret = 0; /* no errors */
     try {
-	{ /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
+	{   /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
 	    LogSink = sw::Logger::prepare();
 	    sw::Logger::addStream(LogSink, boost::shared_ptr<std::ostream>
 				  (&std::clog, boost::log::empty_deleter()));
@@ -671,6 +675,10 @@ int main(int ac, char* av[])
 	     "debugging level, e.g. \"*:1,SQL,Service:3,Process:-1\"")
             ("logging-file", po::value<loggingFile>(), 
 	     "log file for debug output")
+#ifndef _MSC_VER
+	    ("function-library", po::value<std::string>(),
+	     "load extension functions from a shared library")
+#endif /* !_MSC_VER */
 	    ("DbDebugEnumerateLimit", po::value<size_t>(),
 	     "max number of triples to serialize in debug stream")
             ("ResultSetDebugEnumerateLimit", po::value<size_t>(),
@@ -997,6 +1005,25 @@ int main(int ac, char* av[])
 
 		LoadList.loadAll();
 
+#ifndef _MSC_VER
+		if (vm.count("function-library")) {
+		    std::string libpath = vm["function-library"].as<std::string>();
+
+		    void* libHandle = dlopen(libpath.c_str(), RTLD_NOW);
+		    if (libHandle == NULL)
+			throw std::runtime_error
+			    (std::string() + "unable to open function library \""
+			     + libpath.c_str() + "\". error: " + strerror(errno));
+		    sw::AtomicFunction::Library::Initialize* fptr =
+			(sw::AtomicFunction::Library::Initialize*)dlsym(libHandle, "initialize");
+
+		    if(fptr == NULL)
+			throw std::runtime_error
+			    (std::string() + "unable to find \"initialize\" function in function library \""
+			     + libpath.c_str() + "\". error: " + strerror(errno));
+		    (*fptr)(&sw::AtomicFunction::GlobalMap, &TheServer.engine.atomFactory);
+		}
+#endif /* !_MSC_VER */
 		if (vm.count("DbDebugEnumerateLimit"))
 		    sw::RdfDB::DebugEnumerateLimit = vm["DbDebugEnumerateLimit"].as<size_t>();
 		if (vm.count("ResultSetDebugEnumerateLimit"))

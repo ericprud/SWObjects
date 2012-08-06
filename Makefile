@@ -479,7 +479,13 @@ t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(LINK) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)
 
-t_SPARQL: bin/sparql
+examples/functionExtension.o: examples/functionExtension.cpp
+	$(COMPILE) -fPIC -c -o $@ $< $(CFLAGS)
+
+examples/functionExtension.so: examples/functionExtension.o
+	$(LINK) -shared -o $@ $< $(LDFLAGS)
+
+t_SPARQL: bin/sparql examples/functionExtension.so
 
 tests/DM-report.xml: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS) --output_format=XML --report_level=detailed 2> $@

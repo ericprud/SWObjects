@@ -334,6 +334,23 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 		      "false\n");
 }
 
+BOOST_AUTO_TEST_CASE( function_library ) {
+    ExecResults invocation("../bin/sparql --function-library ../examples/functionExtension.so"
+			   " -d \"data:text/csv,x,y\n<foo>,\\\"bar\\\"\""
+			   " -e \"SELECT (<tag:eric@w3.org,2012-swobjfunc/chatty_concat>"
+					   "('a', STR(?x), 'b', ?y) AS ?t) {}\"");
+    w3c_sw::TTerm::String2BNode bnodeMap;
+    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet
+	expected(&F, 
+		 "+--------------------------------------------------------------+\n"
+		 "| ?t                                                           |\n"
+		 "| \"CONCAT(\\\"a\\\", \\\"foo\\\", \\\"b\\\", \\\"bar\\\") yields \\\"afoobbar\\\"\" |\n"
+		 "+--------------------------------------------------------------+\n",
+		 false, bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
 // e.g. PARSE_RESULTS("SPARQL/D.srt", Doutput)
 #define PARSE_RESULTS(TEST, EXPECT) \
     w3c_sw::TTerm::String2BNode bnodeMap;			\

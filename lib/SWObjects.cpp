@@ -740,6 +740,325 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     const NULLtterm* TTerm::Unbound		 = &AtomFactory::_NULLtterm;
 
+    namespace AtomicFunction {
+	namespace BuiltIn {
+	    const TTerm* concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		std::stringstream ss;
+		for (std::vector<const TTerm*>::const_iterator sub = args.begin();
+		     sub != args.end(); ++sub) {
+		    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
+		    if (s == NULL || (s->getDatatype() != NULL && s->getDatatype() != TTerm::URI_xsd_string) || s->getLangtag() != NULL)
+			throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")), "concat");
+		    else
+			ss << s->getLexicalValue();
+		}
+		return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
+	    }
+
+	    const TTerm* numericCast (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (s != NULL) {
+		    const URI* dt = s->getDatatype();
+		    if (dt == NULL || 
+			dt == TTerm::URI_xsd_string  || 
+			dt == TTerm::URI_xsd_float   || 
+			dt == TTerm::URI_xsd_double  || 
+			dt == TTerm::URI_xsd_decimal || // check
+			dt == TTerm::URI_xsd_integer || // check
+			dt == TTerm::URI_xsd_boolean   )// adjust
+			return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true);
+		}
+		throw TypeError(args[0]->toString(), name->toString()); // @@shorten?
+	    }
+
+	    const TTerm* URI_xsd_dateTime (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (s != NULL) {
+		    const URI* dt = s->getDatatype();
+		    if (dt == NULL || 
+			dt == TTerm::URI_xsd_dateTime  )// adjust
+			return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true);
+		}
+		throw TypeError(args[0]->toString(), "dateTime");
+	    }
+
+	    const TTerm* URI_xsd_string (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true);
+	    }
+
+	    const TTerm* FUNC_bound (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return args[0] == TTerm::Unbound ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_isIRI (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return dynamic_cast<const URI*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_isBlank (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return dynamic_cast<const BNode*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_isLiteral (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return dynamic_cast<const RDFLiteral*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_str (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL)
+		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
+		if (dynamic_cast<const URI*>(args[0]) != NULL)
+		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
+		throw TypeError(args[0]->toString(), "name");
+	    }
+
+	    const TTerm* FUNC_lang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) == NULL)
+		    throw TypeError(args[0]->toString(), "FUNC_lang");
+		const LANGTAG* t = dynamic_cast<const RDFLiteral*>(args[0])->getLangtag();
+		return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
+	    }
+
+	    const TTerm* FUNC_iri (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
+		    return atomFactory->getURI(args[0]->getLexicalValue());
+		}
+		throw TypeError(args[0]->toString(), "IRI");
+	    }
+
+	    const TTerm* FUNC_bnode (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
+		    //return atomFactory->getBNode(args[0]->getLexicalValue());
+		    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
+		}
+		throw TypeError(args[0]->toString(), "BNode");
+	    }
+
+	    const TTerm* FUNC_datatype (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL && 
+		    dynamic_cast<const RDFLiteral*>(args[0])->getLangtag() == NULL) {
+		    const URI* dt = dynamic_cast<const RDFLiteral*>(args[0])->getDatatype();
+		    return dt ? dt : TTerm::URI_xsd_string;
+		}
+		throw TypeError(args[0]->toString(), name->toString());
+	    }
+
+	    const TTerm* FUNC_lower_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
+		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
+		    std::string lex = upper->getLexicalValue();
+		    std::transform(lex.begin(), lex.end(), lex.begin(), ::tolower);
+		    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), upper->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
+		}
+		throw TypeError(args[0]->toString(), name->toString());
+	    }
+
+	    const TTerm* FUNC_upper_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
+		    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(args[0]);
+		    std::string lex = lower->getLexicalValue();
+		    std::transform(lex.begin(), lex.end(), lex.begin(), ::toupper);
+		    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
+		}
+		throw TypeError(args[0]->toString(), name->toString());
+	    }
+
+	    const TTerm* FUNC_string_length (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
+		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
+		    int i = upper->getLexicalValue().size();
+		    std::stringstream ss;
+		    ss << i;
+		    return atomFactory->getNumericRDFLiteral(ss.str(), i);
+		}
+		throw TypeError(args[0]->toString(), name->toString());
+	    }
+
+	    const TTerm* FUNC_sameTerm (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactoryy) {
+		return args[0] == args[1] && args[0] != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
+	    }
+
+	    const TTerm* FUNC_langMatches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+
+		if (firstLit == NULL ||
+		    secondLit == NULL) {
+		    throw TypeError(args[0]->toString(), name->toString());
+		}
+
+		/* knock off the easy ones... */
+		if (args[0] == args[1])
+		    return TTerm::BOOL_true;
+		std::string tag = firstLit->getLexicalValue();
+		std::string range = secondLit->getLexicalValue();
+		if (range == "*")
+		    return tag.empty() ? TTerm::BOOL_false : TTerm::BOOL_true;
+
+		std::string::iterator t = tag.begin();
+		std::string::iterator te = tag.end();
+		std::string::iterator r = range.begin();
+		std::string::iterator re = range.end();
+
+		while (t != te && r != re)
+		    if (::tolower(*t++) != ::tolower(*r++))
+			return TTerm::BOOL_false;
+
+		if (r == re && 
+		    (t == te || *t == '-'))
+		    return TTerm::BOOL_true;
+
+		return TTerm::BOOL_false;
+	    }
+
+	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+
+		if (firstLit != NULL && firstLit->getDatatype() == NULL && 
+		    secondLit != NULL && secondLit->getDatatype() == NULL)
+		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "contains");
+		if (firstLit->getLangtag() != secondLit->getLangtag())
+		    throw TypeError(std::string("mismatched language tags"), "contains");
+
+		std::string lookIn = firstLit->getLexicalValue();
+		std::string lookFor = secondLit->getLexicalValue();
+		size_t found = lookIn.find(lookFor);
+		return found == std::string::npos ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_substring_before (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+
+		if (firstLit != NULL && firstLit->getDatatype() == NULL && 
+		    secondLit != NULL && secondLit->getDatatype() == NULL)
+		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
+		if (firstLit->getLangtag() != secondLit->getLangtag())
+		    throw TypeError(std::string("mismatched language tags"), "substring_before");
+
+		std::string lookIn = firstLit->getLexicalValue();
+		std::string lookFor = secondLit->getLexicalValue();
+		size_t found = lookIn.find(lookFor);
+		if (found == std::string::npos)
+		    return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
+		return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, firstLit->getLangtag(), false);
+	    }
+
+	    const TTerm* FUNC_substring_after (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+
+		if (firstLit != NULL && firstLit->getDatatype() == NULL && 
+		    secondLit != NULL && secondLit->getDatatype() == NULL)
+		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_after");
+		if (firstLit->getLangtag() != secondLit->getLangtag())
+		    throw TypeError(std::string("mismatched language tags"), "substring_after");
+
+		std::string lookIn = firstLit->getLexicalValue();
+		std::string lookFor = secondLit->getLexicalValue();
+		size_t found = lookIn.find(lookFor);
+		if (found == std::string::npos)
+		    return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
+		return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, firstLit->getLangtag(), false);
+	    }
+
+	    const TTerm* FUNC_substring (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (firstLit == NULL)
+		    throw TypeError(args[0]->toString(), "substring");
+
+		const IntegerRDFLiteral* secondInt = dynamic_cast<const IntegerRDFLiteral*>(args[1]);
+		if (secondInt == NULL)
+		    throw TypeError(args[1]->toString(), "substring");
+
+		int pos = secondInt->getInt() - 1;
+		size_t firstLen = args[0]->getLexicalValue().length();
+		if (pos < 0)
+		    pos = 0;
+		else if (size_t(pos) > firstLen)
+		    pos = firstLen;
+		const URI* dt = firstLit->getDatatype();
+		const LANGTAG* langtag = (firstLit->getLangtag() == NULL) ? NULL : new LANGTAG(firstLit->getLangtag()->getLexicalValue());
+
+		if (args.size() == 3) {
+		    const IntegerRDFLiteral* thirdInt = dynamic_cast<const IntegerRDFLiteral*>(args[2]);
+		    int len = thirdInt->getInt();
+		    return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), dt, langtag, false);
+		} else {
+		    return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), dt, langtag, false);
+		}
+	    }
+
+	    const TTerm* FUNC_matches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (firstLit == NULL || firstLit->getDatatype() != NULL || firstLit->getLangtag() != NULL)
+		    throw TypeError(args[0]->toString(), "substring");
+
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+		if (secondLit == NULL || secondLit->getDatatype() != NULL || secondLit->getLangtag() != NULL)
+		    throw TypeError(args[1]->toString(), "substring");
+
+#if REGEX_LIB == SWOb_DISABLED
+		throw std::string("no regular expression library was linked in");
+#else
+		boost::match_results<std::string::const_iterator> what;
+		boost::match_flag_type flags = boost::match_default;
+		unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
+		if (args.size() == 3) {
+		    const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(args[2]);
+		    if (thirdLit == NULL || thirdLit->getDatatype() != NULL || thirdLit->getLangtag() != NULL)
+			throw TypeError(args[2]->toString(), "substring");
+
+		    std::string smix = thirdLit->getLexicalValue();
+		    if (smix.find_first_of('s') != std::string::npos)
+			l_flags &= ~boost::regex::no_mod_s;
+		    if (smix.find_first_of('m') != std::string::npos)
+			l_flags &= ~boost::regex::no_mod_m;
+		    if (smix.find_first_of('i') != std::string::npos)
+			l_flags |= boost::regex::icase;
+		    if (smix.find_first_of('x') != std::string::npos)
+			l_flags |= boost::regex::mod_x;
+		}
+		const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
+		return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
+#endif
+	    }
+
+	    Map::Initializer List[] = {
+		Map::Initializer(TTerm::FUNC_concat, 0, 999, &concat),
+		Map::Initializer(TTerm::URI_xsd_float, 1, 1, &numericCast),
+		Map::Initializer(TTerm::URI_xsd_double, 1, 1, &numericCast),
+		Map::Initializer(TTerm::URI_xsd_decimal, 1, 1, &numericCast),
+		Map::Initializer(TTerm::URI_xsd_integer, 1, 1, &numericCast),
+		Map::Initializer(TTerm::URI_xsd_boolean, 1, 1, &numericCast),
+		Map::Initializer(TTerm::URI_xsd_dateTime, 1, 1, &URI_xsd_dateTime),
+		Map::Initializer(TTerm::URI_xsd_string, 1, 1, &URI_xsd_string),
+		Map::Initializer(TTerm::FUNC_bound, 1, 1, &FUNC_bound),
+		Map::Initializer(TTerm::FUNC_isIRI, 1, 1, &FUNC_isIRI),
+		Map::Initializer(TTerm::FUNC_isURI, 1, 1, &FUNC_isIRI),
+		Map::Initializer(TTerm::FUNC_isBlank, 1, 1, &FUNC_isBlank),
+		Map::Initializer(TTerm::FUNC_isLiteral, 1, 1, &FUNC_isLiteral),
+		Map::Initializer(TTerm::FUNC_str, 1, 1, &FUNC_str),
+		Map::Initializer(TTerm::FUNC_lang, 1, 1, &FUNC_lang),
+		Map::Initializer(TTerm::FUNC_iri, 1, 1, &FUNC_iri),
+		Map::Initializer(TTerm::FUNC_uri, 1, 1, &FUNC_iri),
+		Map::Initializer(TTerm::FUNC_bnode, 1, 1, &FUNC_bnode),
+		Map::Initializer(TTerm::FUNC_datatype, 1, 1, &FUNC_datatype),
+		Map::Initializer(TTerm::FUNC_lower_case, 1, 1, &FUNC_lower_case),
+		Map::Initializer(TTerm::FUNC_upper_case, 1, 1, &FUNC_upper_case),
+		Map::Initializer(TTerm::FUNC_string_length, 1, 1, &FUNC_string_length),
+		Map::Initializer(TTerm::FUNC_sameTerm, 2, 2, &FUNC_sameTerm),
+		Map::Initializer(TTerm::FUNC_langMatches, 2, 2, &FUNC_langMatches),
+		Map::Initializer(TTerm::FUNC_contains, 2, 2, &FUNC_contains),
+		Map::Initializer(TTerm::FUNC_substring_before, 2, 2, &FUNC_substring_before),
+		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),
+		Map::Initializer(TTerm::FUNC_substring, 2, 3, &FUNC_substring),
+		Map::Initializer(TTerm::FUNC_matches, 2, 3, &FUNC_matches)
+	    };
+	} // namespace BuiltIn
+
+	Map GlobalMap(BuiltIn::List, BuiltIn::List + (sizeof(BuiltIn::List)/sizeof(BuiltIn::List[0])));
+    } // namespace AtomicFunction
+
     /* <AtomFactory> */
     AtomFactory::AtomFactory () {
 
@@ -1592,9 +1911,9 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
 
+	// IF only evaluates the test and either arg2 or arg3 so it must be
+	// evaluated before the subd substitutions.
 	if (m_IRIref == TTerm::FUNC_if && m_ArgList->size() == 3) {
-	    // IF only evaluates the test and either arg2 or arg3 so it must be
-	    // evaluated before the subd substitutions.
 	    ArgList::ArgIterator it = m_ArgList->begin();
 	    const TTerm* iff = (*it)->eval(r, atomFactory, evaluator);
 	    ++it; // now pointed at THEN. ELSE is next.
@@ -1603,291 +1922,12 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		(*++it)->eval(r, atomFactory, evaluator);
 	}
 
-	/* Other than IF, all functions evaluate all arguments.
-	 * Here we place the evaluation results in subd:
-	 */
-	std::vector<const TTerm*> subd;
+	// Other than IF, all functions evaluate all arguments.
+	// Place the evaluation results in args and pass to the function map.
+	std::vector<const TTerm*> args;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
-	    subd.push_back((*it)->eval(r, atomFactory, evaluator));
-
-	/* nary predicates: */
-	// concat
-	if (m_IRIref == TTerm::FUNC_concat) { // legacy concat function
-	    std::stringstream ss;
-	    for (std::vector<const TTerm*>::const_iterator sub = subd.begin();
-		 sub != subd.end(); ++sub) {
-		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
-		if (s == NULL || (s->getDatatype() != NULL && s->getDatatype() != TTerm::URI_xsd_string) || s->getLangtag() != NULL)
-		    throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")), "concat");
-		else
-		    ss << s->getLexicalValue();
-	    }
-	    return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
-	}
-
-	/* Write down the first 3 for convenience. */
-	std::vector<const TTerm*>::const_iterator it = subd.begin();
-	const TTerm* first = it == subd.end() ? NULL : *it++;
-
-	/* casts */
-	if (m_IRIref == TTerm::URI_xsd_float    || 
-	    m_IRIref == TTerm::URI_xsd_double   || 
-	    m_IRIref == TTerm::URI_xsd_decimal  || 
-	    m_IRIref == TTerm::URI_xsd_integer  || 
-	    m_IRIref == TTerm::URI_xsd_boolean    ) {
-	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
-	    if (s != NULL) {
-		const URI* dt = s->getDatatype();
-		if (dt == NULL || 
-		    dt == TTerm::URI_xsd_string  || 
-		    dt == TTerm::URI_xsd_float   || 
-		    dt == TTerm::URI_xsd_double  || 
-		    dt == TTerm::URI_xsd_decimal || // check
-		    dt == TTerm::URI_xsd_integer || // check
-		    dt == TTerm::URI_xsd_boolean   )// adjust
-		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
-	    }
-	}
-
-	if (m_IRIref == TTerm::URI_xsd_dateTime   ) {
-	    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(first);
-	    if (s != NULL) {
-		const URI* dt = s->getDatatype();
-		if (dt == NULL || 
-		    dt == TTerm::URI_xsd_dateTime  )// adjust
-		    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
-	    }
-	}
-
-	if (m_IRIref == TTerm::URI_xsd_string) {
-	    return atomFactory->getRDFLiteral(first->getLexicalValue(), m_IRIref, NULL, true);
-	}
-
-	/* operators */
-	if (m_IRIref == TTerm::FUNC_bound && 
-	    subd.size() == 1)
-	    return first == TTerm::Unbound ? TTerm::BOOL_false : TTerm::BOOL_true;
-
-	if ((m_IRIref == TTerm::FUNC_isIRI || m_IRIref == TTerm::FUNC_isURI) && 
-	    subd.size() == 1)
-	    return dynamic_cast<const URI*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
-
-	if (m_IRIref == TTerm::FUNC_isBlank && 
-	    subd.size() == 1)
-	    return dynamic_cast<const BNode*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
-
-	if (m_IRIref == TTerm::FUNC_isLiteral && 
-	    subd.size() == 1)
-	    return dynamic_cast<const RDFLiteral*>(first) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
-
-	if (m_IRIref == TTerm::FUNC_str && // STR(RDFLiteral)
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
-	    return atomFactory->getRDFLiteral(first->getLexicalValue());
-
-	if (m_IRIref == TTerm::FUNC_str && // STR(URI)
-	    subd.size() == 1 && dynamic_cast<const URI*>(first) != NULL)
-	    return atomFactory->getRDFLiteral(first->getLexicalValue());
-
-	if (m_IRIref == TTerm::FUNC_lang && 
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
-	    const LANGTAG* t = dynamic_cast<const RDFLiteral*>(first)->getLangtag();
-	    return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
-	}
-
-	if ((m_IRIref == TTerm::FUNC_iri || m_IRIref == TTerm::FUNC_uri) && // IRI(RDFLiteral)
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
-	    return atomFactory->getURI(first->getLexicalValue());
-
-	if (m_IRIref == TTerm::FUNC_bnode && // bnode(RDFLiteral)
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL)
-	    //return atomFactory->getBNode(first->getLexicalValue());
-	    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
-
-	if (m_IRIref == TTerm::FUNC_datatype && 
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL && 
-	    dynamic_cast<const RDFLiteral*>(first)->getLangtag() == NULL) {
-	    const URI* dt = dynamic_cast<const RDFLiteral*>(first)->getDatatype();
-	    return dt ? dt : TTerm::URI_xsd_string;
-	}
-
-	if (m_IRIref == TTerm::FUNC_lower_case && // fn:lower-case(RDFLiteral)
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
-	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
-	    std::string lex = upper->getLexicalValue();
-	    std::transform(lex.begin(), lex.end(), lex.begin(), ::tolower);
-	    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), upper->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
-	}
-
-	if (m_IRIref == TTerm::FUNC_upper_case && // fn:upper-case(RDFLiteral)
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
-	    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(first);
-	    std::string lex = lower->getLexicalValue();
-	    std::transform(lex.begin(), lex.end(), lex.begin(), ::toupper);
-	    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
-	}
-
-	if (m_IRIref == TTerm::FUNC_string_length &&
-	    subd.size() == 1 && dynamic_cast<const RDFLiteral*>(first) != NULL) {
-	    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(first);
-	    int i = upper->getLexicalValue().size();
-	    std::stringstream ss;
-	    ss << i;
-	    return atomFactory->getNumericRDFLiteral(ss.str(), i);
-	}
-
-	const TTerm* second = it == subd.end() ? NULL : *it++;
-
-	if (m_IRIref == TTerm::FUNC_sameTerm && 
-	    subd.size() == 2) {
-	    return first == second && first != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
-	}
-
-	if (m_IRIref == TTerm::FUNC_langMatches && 
-	    subd.size() == 2 && 
-	    dynamic_cast<const RDFLiteral*>(first) != NULL && 
-	    dynamic_cast<const RDFLiteral*>(second) != NULL) {
-
-	    /* knock off the easy ones... */
-	    if (first == second)
-		return TTerm::BOOL_true;
-	    std::string tag = dynamic_cast<const RDFLiteral*>(first)->getLexicalValue();
-	    std::string range = dynamic_cast<const RDFLiteral*>(second)->getLexicalValue();
-	    if (range == "*")
-		return tag.empty() ? TTerm::BOOL_false : TTerm::BOOL_true;
-
-	    std::string::iterator t = tag.begin();
-	    std::string::iterator te = tag.end();
-	    std::string::iterator r = range.begin();
-	    std::string::iterator re = range.end();
-
-	    while (t != te && r != re)
-		if (::tolower(*t++) != ::tolower(*r++))
-		    return TTerm::BOOL_false;
-
-	    if (r == re && 
-		(t == te || *t == '-'))
-		return TTerm::BOOL_true;
-
-	    return TTerm::BOOL_false;
-	}
-
-
-	const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(first);
-	const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(second);
-
-	if (m_IRIref == TTerm::FUNC_contains) {
-	    if (!(subd.size() == 2 && 
-		  firstLit != NULL && firstLit->getDatatype() == NULL && 
-		  secondLit != NULL && secondLit->getDatatype() == NULL))
-		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
-	    if (firstLit->getLangtag() != secondLit->getLangtag())
-		throw TypeError(std::string("mismatched language tags"), "substring_before");
-
-	    std::string lookIn = firstLit->getLexicalValue();
-	    std::string lookFor = secondLit->getLexicalValue();
-	    size_t found = lookIn.find(lookFor);
-	    return found == std::string::npos ? TTerm::BOOL_false : TTerm::BOOL_true;
-	}
-
-	if (m_IRIref == TTerm::FUNC_substring_before) {
-	    if (!(subd.size() == 2 && 
-		  firstLit != NULL && firstLit->getDatatype() == NULL && 
-		  secondLit != NULL && secondLit->getDatatype() == NULL))
-		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
-	    if (firstLit->getLangtag() != secondLit->getLangtag())
-		throw TypeError(std::string("mismatched language tags"), "substring_before");
-
-	    std::string lookIn = firstLit->getLexicalValue();
-	    std::string lookFor = secondLit->getLexicalValue();
-	    size_t found = lookIn.find(lookFor);
-	    if (found == std::string::npos)
-		return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
-	    return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, firstLit->getLangtag(), false);
-	}
-
-	if (m_IRIref == TTerm::FUNC_substring_after) {
-	    if (!(subd.size() == 2 && 
-		  firstLit != NULL && firstLit->getDatatype() == NULL && 
-		  secondLit != NULL && secondLit->getDatatype() == NULL))
-		throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
-	    if (firstLit->getLangtag() != secondLit->getLangtag())
-		throw TypeError(std::string("mismatched language tags"), "substring_before");
-
-	    std::string lookIn = firstLit->getLexicalValue();
-	    std::string lookFor = secondLit->getLexicalValue();
-	    size_t found = lookIn.find(lookFor);
-	    if (found == std::string::npos)
-		return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
-	    return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, firstLit->getLangtag(), false);
-	}
-
-
-	// Remaining functions may draw on the third argument.
-	const TTerm* third = it == subd.end() ? NULL : *it++;
-	const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(third);
-
-	if (m_IRIref == TTerm::FUNC_substring && 
-	    ( subd.size() == 2 || subd.size() == 3 ) && 
-	    firstLit != NULL && 
-	    secondLit != NULL && secondLit->getDatatype() == TTerm::URI_xsd_integer && secondLit->getLangtag() == NULL && 
-	    ( subd.size() == 2 || 
-	      (thirdLit != NULL && thirdLit->getDatatype() == TTerm::URI_xsd_integer && thirdLit->getLangtag() == NULL))) {
-	    int pos = static_cast<const NumericRDFLiteral*>(secondLit)->getInt() - 1;
-	    size_t firstLen = first->getLexicalValue().length();
-	    if (pos < 0)
-		pos = 0;
-	    else if (size_t(pos) > firstLen)
-		pos = firstLen;
-	    const URI* dt = firstLit->getDatatype();
-	    const LANGTAG* langtag = (firstLit->getLangtag() == NULL) ? NULL : new LANGTAG(firstLit->getLangtag()->getLexicalValue());
-	    if (subd.size() == 3) {
-		int len = static_cast<const NumericRDFLiteral*>(thirdLit)->getInt();
-		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), dt, langtag, false);
-	    } else {
-		return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), dt, langtag, false);
-	    }
-	}
-
-	if (m_IRIref == TTerm::FUNC_matches && 
-	    ( subd.size() == 2 || subd.size() == 3 ) && 
-	    firstLit != NULL && firstLit->getDatatype() == NULL && firstLit->getLangtag() == NULL && 
-	    secondLit != NULL && secondLit->getDatatype() == NULL && secondLit->getLangtag() == NULL && 
-	    ( subd.size() == 2 || 
-	      (thirdLit != NULL && thirdLit->getDatatype() == NULL && thirdLit->getLangtag() == NULL))) {
-#if REGEX_LIB == SWOb_DISABLED
-	    throw std::string("no regular expression library was linked in");
-#else
-	    boost::match_results<std::string::const_iterator> what;
-	    boost::match_flag_type flags = boost::match_default;
-	    unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
-	    if (thirdLit != NULL) {
-		std::string smix = thirdLit->getLexicalValue();
-		if (smix.find_first_of('s') != std::string::npos)
-		    l_flags &= ~boost::regex::no_mod_s;
-		if (smix.find_first_of('m') != std::string::npos)
-		    l_flags &= ~boost::regex::no_mod_m;
-		if (smix.find_first_of('i') != std::string::npos)
-		    l_flags |= boost::regex::icase;
-		if (smix.find_first_of('x') != std::string::npos)
-		    l_flags |= boost::regex::mod_x;
-	    }
-	    const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
-	    return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
-#endif
-	}
-
-	std::stringstream s;
-	s << m_IRIref->toString() << '(';
-	for (std::vector<const TTerm*>::iterator it = subd.begin(); it != subd.end(); ++it) {
-	    if (it != subd.begin())
-		s << ", ";
-	    if (*it)
-		s << (*it)->toString();
-	    else
-		s << "NULL";
-	}
-	s << ')';
-	w3c_sw_NEED_IMPL(s.str());
+	    args.push_back((*it)->eval(r, atomFactory, evaluator));
+	return AtomicFunction::GlobalMap.invoke(m_IRIref, args, atomFactory);
     }
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {

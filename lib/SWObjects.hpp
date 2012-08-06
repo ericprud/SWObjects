@@ -2835,6 +2835,109 @@ public:
     size_t size () const { return expressions->size(); }
     virtual void express(Expressor* p_expressor) const;
 };
+
+namespace AtomicFunction {
+    typedef const TTerm* (FPtr)(const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory);
+
+    struct Invocation {
+	size_t min, max;
+	const FPtr* func;
+	Invocation (size_t min, size_t max, const FPtr* func)
+	    : min(min), max(max), func(func)
+	{  }
+    };
+
+    struct Map : public std::map<const TTerm*, Invocation> {
+	struct Initializer {
+	    const TTerm* name;
+	    size_t min, max;
+	    const FPtr* func;
+	    Initializer (const TTerm* name, size_t min, size_t max, const FPtr* func)
+		: name(name), min(min), max(max), func(func)
+	    {  }
+	};
+
+	Map () {
+	}
+
+	/**
+	 * Construct or add a list of Initializers, e.g.
+	 *   w3c_sw::AtomicFunction::Map::Initializer my_funcs[] = {
+	 *     w3c_sw::AtomicFunction::Map::Initializer(TheServer.engine.atomFactory.getURI("tag:eric@w3.org,2012-swobjfunc/chatty_concat"), 0, 999, &my_chatty_concat)
+	 *   };
+	 *   w3c_sw::AtomicFunction::GlobalMap.add(my_funcs, my_funcs + (sizeof(my_funcs)/sizeof(my_funcs[0])));
+	 */
+	Map (const Initializer* begin, const Initializer* end) {
+	    add(begin, end);
+	}
+	void add (const Initializer* begin, const Initializer* end) {
+	    for (const Initializer* p = begin; p != end; ++p)
+		insert(std::make_pair(p->name, Invocation(p->min, p->max, p->func)));
+	}
+
+	/**
+	 * Add a single function, e.g.
+	 *   w3c_sw::AtomicFunction::GlobalMap.add(TheServer.engine.atomFactory.getURI("tag:eric@w3.org,2012-swobjfunc/chatty_concat"), 1, 999, &my_chatty_concat);
+	 */
+	void add (const TTerm* name, size_t min, size_t max, const FPtr* func) {
+	    insert(std::make_pair(name, Invocation(min, max, func)));
+	}
+
+	const TTerm* invoke (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) const {
+	    const_iterator it = find(name);
+	    if (it != end()) {
+		if (args.size() < it->second.min || args.size() > it->second.max)
+		    throw TypeError(std::string("argument count"), "name");
+		FPtr* fPtr = it->second.func;
+		return (*fPtr)(name, args, atomFactory);
+	    }
+	    std::stringstream s;
+	    s << name->toString() << '(';
+	    for (std::vector<const TTerm*>::iterator it = args.begin(); it != args.end(); ++it) {
+		if (it != args.begin())
+		    s << ", ";
+		if (*it)
+		    s << (*it)->toString();
+		else
+		    s << "NULL";
+	    }
+	    s << ')';
+	    w3c_sw_NEED_IMPL(s.str());
+	}
+    };
+
+    namespace BuiltIn {
+	    FPtr concat;
+	    FPtr numericCast;
+	    FPtr URI_xsd_dateTime;
+	    FPtr URI_xsd_string;
+	    FPtr FUNC_bound;
+	    FPtr FUNC_isIRI;
+	    FPtr FUNC_isBlank;
+	    FPtr FUNC_isLiteral;
+	    FPtr str;
+	    FPtr FUNC_lang;
+	    FPtr FUNC_iri;
+	    FPtr FUNC_bnode;
+	    FPtr FUNC_datatype;
+	    FPtr FUNC_lower_case;
+	    FPtr FUNC_upper_case;
+	    FPtr FUNC_string_length;
+	    FPtr FUNC_sameTerm;
+	    FPtr FUNC_langMatches;
+	    FPtr FUNC_contains;
+	    FPtr FUNC_substring_before;
+	    FPtr FUNC_substring_after;
+	    FPtr FUNC_substring;
+	    FPtr FUNC_matches;
+    } // namespace BuiltIn
+
+    extern Map GlobalMap;
+    namespace Library {
+	typedef void Initialize(w3c_sw::AtomicFunction::Map* map, w3c_sw::AtomFactory* atomFactory);
+    }
+} // namespace AtomicFunction
+
 class FunctionCall : public Base {
 protected:
     const URI* m_IRIref;
