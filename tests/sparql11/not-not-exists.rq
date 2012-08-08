@@ -1,0 +1,10 @@
+PREFIX : <tag:eric@w3.org,2012,ex>
+
+SELECT * 
+ WHERE {
+  ?s :p1 ?o
+  FILTER
+    (!NOTEXISTS
+     { ?s :p2 ?o}
+    )
+ }

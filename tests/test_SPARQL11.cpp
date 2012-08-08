@@ -27,6 +27,15 @@ BOOST_AUTO_TEST_CASE( subselect_02 ) {
     const URI** requires = NULL;
     DAWG_TEST("sparql11/subselect-02.rq", "sparql11/subselect-02.srx", 0, 0);
 }
+BOOST_AUTO_TEST_CASE( not_not_exists ) {
+    /* name: 
+     * 
+     */
+    const char* defaultGraph( "sparql11/exists-01.ttl" );
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("sparql11/not-not-exists.rq", "sparql11/not-not-exists.srx", 0, 0);
+}
 BOOST_AUTO_TEST_CASE( count_star ) {
     /* name: 
      * 

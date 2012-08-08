@@ -1,0 +1,4 @@
+@prefix : <tag:eric@w3.org,2012,ex> .
+
+:s :p1 1, 2;
+   :p2 1 .

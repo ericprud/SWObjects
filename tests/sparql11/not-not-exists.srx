@@ -1,0 +1,21 @@
+<?xml version="1.0"?><!--
+not-not-exists - test FILTER (!NOT EXISTS {...})
+
+$Id$
+-->
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="o"/>
+    <variable name="s"/>
+  </head>
+  <results>
+    <result xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+      <binding name="o">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal>
+      </binding>
+      <binding name="s">
+        <uri>tag:eric@w3.org,2012,exs</uri>
+      </binding>
+    </result>
+  </results>
+</sparql>
