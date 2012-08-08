@@ -36,24 +36,24 @@ public:
     }
     virtual void rdfLiteral (const RDFLiteral* const, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	xml->leaf("literal", lexicalValue);
-	if (datatype != NULL) xml->attribute("xsd:datatype", datatype->getLexicalValue()); //!!!
+	if (datatype != NULL) xml->attribute("datatype", datatype->getLexicalValue()); //!!!
 	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getLexicalValue());
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#integer");
+	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#integer");
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#float");
+	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#float");
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#decimal");
+	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#decimal");
     }
     virtual void rdfLiteral (const BooleanRDFLiteral* const, bool p_value) {
 	xml->leaf("literal", p_value);
-	xml->attribute("xsd:datatype", "http://www.w3.org/2001/XMLSchema#boolean");
+	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#boolean");
     }
     virtual void nulltterm (const NULLtterm* const) {
 	xml->empty("NULL");
