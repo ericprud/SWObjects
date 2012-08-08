@@ -28,7 +28,7 @@ namespace w3c_sw {
     }
 
 
-    BasicGraphPattern* RdfDB::findGraph (const TTerm* name) {
+    BasicGraphPattern* RdfDB::findGraph (const TTerm* name) const {
 	if (name == NULL)
 	    name = DefaultGraph;
 	graphmap_type::const_iterator vi = graphs.find(name);
@@ -124,7 +124,7 @@ namespace w3c_sw {
     DefaultGraphClass defaultGraphInst;
     TTerm* DefaultGraph = &defaultGraphInst;
 
-    void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
+    void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const {
 	if (graph == NULL) graph = DefaultGraph;
 	size_t matched = 0;
 

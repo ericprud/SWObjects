@@ -290,6 +290,7 @@ namespace w3c_sw {
 		it->express(p_expressor);
 	}
 
+	virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("MapSet::execute"); }
 	virtual bool operator== (const Operation& ref) const {
 	    const MapSet* pMapSet = dynamic_cast<const MapSet*>(&ref);
 	    if (pMapSet == NULL)

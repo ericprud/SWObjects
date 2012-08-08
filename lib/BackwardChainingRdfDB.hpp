@@ -58,7 +58,7 @@ namespace w3c_sw {
 	 * against the rule heads in addition to executing
 	 * RdfDB::bindVariables()
 	 */
-	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
+	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const {
 	    ResultSet island(rs->getAtomFactory());
 	    RdfDB::bindVariables(&island, graph, toMatch);
 

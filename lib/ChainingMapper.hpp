@@ -110,7 +110,7 @@ namespace w3c_sw {
 	};
 
 	AtomFactory* atomFactory;
-	std::vector<Rule>& rules;
+	const std::vector<Rule>& rules;
 
 	/* Mapping from a Rule to a set of instantiations of that Rule.<br/>
 
@@ -303,14 +303,15 @@ namespace w3c_sw {
 	    };
 	    Opts opts;
 	    MapSet::e_sharedVars sharedVars;
-	    NodeShare& nodeShare;
+	    const NodeShare& nodeShare;
 
-	    Alternatives (MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	    Alternatives (MapSet::e_sharedVars sharedVars, const NodeShare& nodeShare)
 		: opts(1), sharedVars(sharedVars), nodeShare(nodeShare) {  }
-	    void operator= (const Alternatives& ref) {
-		sharedVars = ref. sharedVars;
-		nodeShare = ref.nodeShare;
-	    }
+	    // Can't have an operator= with const pointers.
+	    // void operator= (const Alternatives& ref) {
+	    // 	sharedVars = ref. sharedVars;
+	    // 	nodeShare = ref.nodeShare;
+	    // }
 
 	    std::string str () const {
 		std::stringstream ss;
@@ -560,14 +561,15 @@ namespace w3c_sw {
 	Alternatives alternatives;
 	Failures failed;
 
-	Bindings (AtomFactory* atomFactory, std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, NodeShare& nodeShare)
+	Bindings (AtomFactory* atomFactory, const std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, const NodeShare& nodeShare)
 	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
-	void operator= (const Bindings& ref) {
-	    atomFactory = ref.atomFactory;
-	    rules = ref.rules;
-	    alternatives = ref.alternatives;
-	    failed = ref.failed;
-	}
+	// Can't have an operator= with const pointers.
+	// void operator= (const Bindings& ref) {
+	//     atomFactory = ref.atomFactory;
+	//     rules = ref.rules;
+	//     alternatives = ref.alternatives;
+	//     failed = ref.failed;
+	// }
 
 	/**
 	 * Match a triple pattern against the rule heads.

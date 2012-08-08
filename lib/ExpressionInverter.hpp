@@ -97,6 +97,9 @@ namespace w3c_sw {
 	virtual void functionCallExpression (const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
 	}
+	virtual void existsExpression (const ExistsExpression* const self, const TableOperation* p_TableOperation) {
+	    w3c_sw_NEED_IMPL("ExistsExpression inverter");
+	}
 
 	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {  }
 	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {  }

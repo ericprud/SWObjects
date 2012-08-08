@@ -1146,6 +1146,9 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    p_FunctionCall->express(this);
 	}
+	virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	    w3c_sw_NEED_IMPL("SQLizer(existsExpression)");
+	}
 	/* Expressions */
 	virtual void booleanNegation (const w3c_sw::BooleanNegation* const self, const w3c_sw::Expression* p_Expression) {
 	    w3c_sw_MARK;
@@ -1287,7 +1290,11 @@ namespace w3c_sw {
 		for (std::map<const Variable*, const Expression*>::const_iterator exp = postEvals.begin();
 		     exp != postEvals.end(); ++exp)
 		    try {
-			(*row)->set(exp->first, exp->second->eval(*row, rs->getAtomFactory(), &b), false);
+			// !! need support for EXISTS.  The fourth argument to
+			// eval is a database needed for EXISTS queries.  When
+			// translating to SQL, we don't need the database, but
+			// we do need to figure out how to map to SQL EXISTS.
+			(*row)->set(exp->first, exp->second->eval(*row, rs->getAtomFactory(), &b, NULL), false);
 		    } catch (SafeEvaluationError&) {
 			// no binding
 		    }

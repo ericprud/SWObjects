@@ -487,6 +487,9 @@ void FunctionCall::express (Expressor* p_expressor) const {
 void FunctionCallExpression::express (Expressor* p_expressor) const {
     p_expressor->functionCallExpression(this, m_FunctionCall);
 }
+void ExistsExpression::express (Expressor* p_expressor) const {
+    p_expressor->existsExpression(this, m_TableOperation);
+}
 /* Expressions */
 void BooleanNegation::express (Expressor* p_expressor) const {
     p_expressor->booleanNegation(this, m_Expression);
@@ -1731,8 +1734,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
 
-    const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func) {
-	const TTerm* v = arg->eval(func->res, this, func->evaluator);
+    const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func, const RdfDB* db) {
+	const TTerm* v = arg->eval(func->res, this, func->evaluator, db);
 	if (v == TTerm::Unbound)
 	    throw TypeError("no value returned from argument evaluation", "AtomFactory::applyCommonNumeric");
 	TTerm::e_TYPE dt = v->getTypeOrder();
@@ -1766,16 +1769,16 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	}
 	return v;
     }
-    const TTerm* AtomFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func) {
+    const TTerm* AtomFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func, const RdfDB* db) {
 	std::vector<const Expression*>::const_iterator it = args.begin();
-	const TTerm* l = (*it)->eval(func->res, this, func->evaluator);
+	const TTerm* l = (*it)->eval(func->res, this, func->evaluator, db);
 
 	TTerm::e_TYPE dt = l->getTypeOrder();
 	if (dt == TTerm::TYPE_Err)
 	    throw l->toString() + " does not have an order-able datatype.";
 	++it;
 	while (it != args.end()) {
-	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator);
+	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator, db);
 	    TTerm::e_TYPE dtr = r->getTypeOrder();
 	    if (dtr == TTerm::TYPE_Err)
 		throw r->toString() + " does not have an order-able datatype.";
@@ -1876,17 +1879,20 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return rs;
     }
 
-    ResultSet* Select::execute (RdfDB* db, ResultSet* rs) const {
-	if (!rs) rs = new ResultSet(rs->getAtomFactory());
+    void LoadingOperation::load (RdfDB* db) const {
 	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
 	     ds != m_DatasetClauses->end(); ds++)
 	    (*ds)->loadData(db);
+    }
+
+    ResultSet* Select::executeQuery (const RdfDB* db, ResultSet* rs) const {
+	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	m_WhereClause->bindVariables(db, rs);
 	if (m_SolutionModifier != NULL) {
 	    m_VarSet->project(rs, m_SolutionModifier->groupBy, m_SolutionModifier->having,
-			      m_SolutionModifier->m_OrderConditions);
+			      m_SolutionModifier->m_OrderConditions, db);
 	} else
-	    m_VarSet->project(rs, NULL, NULL, NULL);
+	    m_VarSet->project(rs, NULL, NULL, NULL, db);
 	if (m_SolutionModifier == NULL)
 	    rs->trim(m_distinctness, -1, -1);
 	else
@@ -1920,39 +1926,30 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
     };
 
-    ResultSet* Construct::execute (RdfDB* db, ResultSet* rs) const {
+    ResultSet* Construct::executeQuery (const RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
-	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
-	     ds != m_DatasetClauses->end(); ds++)
-	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
-	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
+	RdfDB* workingDB = rs->getRdfDB();
 	m_ConstructTemplate->construct(workingDB, rs, &makeNewBNode, workingDB->ensureGraph(DefaultGraph));
-	//std::cerr << "CONSTRUCTED: " << g << std::endl;
+	//w3c_sw_LINEN << "CONSTRUCTED: " << g << std::endl;
 	return rs;
     }
 
-    ResultSet* Describe::execute (RdfDB* db, ResultSet* rs) const {
+    ResultSet* Describe::executeQuery (const RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
-	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
-	     ds != m_DatasetClauses->end(); ds++)
-	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
-	RdfDB* workingDB = rs->getRdfDB() ? rs->getRdfDB() : db;
+	const RdfDB* workingDB = rs->getRdfDB();
 	// @@ do a CBD
-	//std::cerr << "CONSTRUCTED: " << g << std::endl;
+	//w3c_sw_LINEN << "CONSTRUCTED description: " << g << std::endl;
 	return rs;
     }
 
-    ResultSet* Ask::execute (RdfDB* db, ResultSet* rs) const {
+    ResultSet* Ask::executeQuery (const RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
-	for (std::vector<const DatasetClause*>::const_iterator ds = m_DatasetClauses->begin();
-	     ds != m_DatasetClauses->end(); ds++)
-	    (*ds)->loadData(db);
 	m_WhereClause->bindVariables(db, rs);
 	rs->resultType = ResultSet::RESULT_Boolean;
 	return rs;
@@ -1993,25 +1990,33 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return rs;
     }
 
-    const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 
 	// IF only evaluates the test and either arg2 or arg3 so it must be
 	// evaluated before the subd substitutions.
 	if (m_IRIref == TTerm::FUNC_if && m_ArgList->size() == 3) {
 	    ArgList::ArgIterator it = m_ArgList->begin();
-	    const TTerm* iff = (*it)->eval(r, atomFactory, evaluator);
+	    const TTerm* iff = (*it)->eval(r, atomFactory, evaluator, db);
 	    ++it; // now pointed at THEN. ELSE is next.
 	    return atomFactory->ebv(iff) == TTerm::BOOL_true ?
-		(*it)->eval(r, atomFactory, evaluator) :
-		(*++it)->eval(r, atomFactory, evaluator);
+		(*it)->eval(r, atomFactory, evaluator, db) :
+		(*++it)->eval(r, atomFactory, evaluator, db);
 	}
 
 	// Other than IF, all functions evaluate all arguments.
 	// Place the evaluation results in args and pass to the function map.
 	std::vector<const TTerm*> args;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
-	    args.push_back((*it)->eval(r, atomFactory, evaluator));
+	    args.push_back((*it)->eval(r, atomFactory, evaluator, db));
 	return AtomicFunction::GlobalMap.invoke(m_IRIref, args, atomFactory);
+    }
+
+    const TTerm* ExistsExpression::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	ResultSet* rowRS = r->makeResultSet(atomFactory);
+	m_TableOperation->bindVariables(db, rowRS);
+	const TTerm* ret = rowRS->size() == 0 ? TTerm::BOOL_false : TTerm::BOOL_true;
+	delete rowRS;
+	return ret;
     }
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
@@ -2038,26 +2043,26 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	delete rs;
     }
 
-    void WhereClause::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void WhereClause::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
     void ExpressionAliasList::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having,
-				       std::vector<s_OrderConditionPair>* orderConditions) const {
-	rs->project(&m_Expressions, groupBy, having, orderConditions);
+				       std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const {
+	rs->project(&m_Expressions, groupBy, having, orderConditions, db);
     }
 
     void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */,
-			      std::vector<s_OrderConditionPair>* /* orderConditions */) const {
+			      std::vector<s_OrderConditionPair>* /* orderConditions */, const RdfDB* /* db */) const {
     }
 
-    void BindingClause::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void BindingClause::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	rs->joinIn(m_ResultSet);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
     //@delme !!
-    // void Binding::bindVariables (RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
+    // void Binding::bindVariables (const RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
     // 	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
     // 	std::vector<const TTerm*>::const_iterator value = begin();
     // 	while (value != end()) {
@@ -2070,7 +2075,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     // 	}
     // }
 
-    void Print::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void Print::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	SPARQLSerializer ss(NULL); // doesn't need to create new atoms.
 	m_TableOperation->express(&ss);
 	std::stringstream str;
@@ -2080,17 +2085,17 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	std::cout << str.str();
     }
 
-    void Filter::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void Filter::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	m_TableOperation->bindVariables(db, &island);
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); it++)
-	    island.restrictResults(*it);
+	    island.restrictResults(*it, db);
 	rs->joinIn(&island);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
-    void TableConjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void TableConjunction::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
@@ -2111,7 +2116,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    (*it)->deletePattern(target, rs, evaluator, bgp);
     }
 
-    void TableDisjunction::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void TableDisjunction::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
 	delete *(island.begin());
 	island.erase(island.begin());
@@ -2134,14 +2139,16 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
     }
 
-    void SubSelect::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void SubSelect::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet island(rs->getAtomFactory());
-	m_Select->execute(db, &island);
+	// Bypass LoadingOperation::execute so ignores any DatasetClauses.
+	// (Such clauses are prohibted in the SPARQL grammar anyways.)
+	m_Select->executeQuery(db, &island);
 	rs->joinIn(&island);
     }
 
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */
-    void BasicGraphPattern::_bindVariables (RdfDB* db, ResultSet* rs, const TTerm* p_name) const {
+    void BasicGraphPattern::_bindVariables (const RdfDB* db, ResultSet* rs, const TTerm* p_name) const {
 	db->bindVariables(rs, p_name, this);
 
 	/*
@@ -2312,13 +2319,13 @@ compared against
 	return constant == curVal;
     }
 
-    void Bind::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void Bind::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	if (m_TableOperation != NULL)
 	    m_TableOperation->bindVariables(db, rs);
 	rs->addKnownVar(m_label);
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
 	    try {
-		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL), false); // @@ NULL for atomFactory
+		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL, db), false); // @@ NULL for atomFactory
 	    } catch (SafeEvaluationError&) {
 		// Don't (*row)->set(m_label, TTerm::Unbound, false) as RS contract is to leave unbounds NULL c.f. "setting ?d to Unbound is just wrong"
 	    }
@@ -2483,7 +2490,7 @@ compared against
 	    throw e + "\nerror parsing response from service " + service->toString() + ".";
 	}
     }
-    void ServiceGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void ServiceGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
 	    try {
@@ -2571,14 +2578,14 @@ compared against
 	// }
     }
 
-    void OptionalGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void OptionalGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "OPTIONAL produced\n" << *rs;
     }
 
-    void MinusGraphPattern::bindVariables (RdfDB* db, ResultSet* rs) const {
+    void MinusGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(*rs); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);

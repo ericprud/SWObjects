@@ -442,6 +442,10 @@ namespace w3c_sw {
 	    p_FunctionCall->express(this);
 	    last.expression = last.functionCall ? new FunctionCallExpression(last.functionCall) : NULL;
 	}
+	virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	    p_TableOperation->express(this);
+	    last.expression = new ExistsExpression(last.tableOperation);
+	}
 	/* Expressions */
 	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	    p_Expression->express(this);

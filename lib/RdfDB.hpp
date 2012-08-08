@@ -103,7 +103,7 @@ namespace w3c_sw {
 	    graphmap_type::const_iterator vi = graphs.find(name);
 	    return vi == graphs.end() ? NULL : vi->second;
 	}
-	virtual BasicGraphPattern* findGraph(const TTerm* name);
+	virtual BasicGraphPattern* findGraph(const TTerm* name) const;
 	virtual BasicGraphPattern* ensureGraph(const TTerm* name);
 	void ensureGraphs(std::set<const TTerm*> names) {
 	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)
@@ -164,7 +164,7 @@ namespace w3c_sw {
 	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istrP,
 			      std::string nameStr, std::string baseURI,
 			      AtomFactory* atomFactory, NamespaceMap* nsMap = NULL, GRDDLmap* grddlMap = NULL);
-	virtual void bindVariables(ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch);
+	virtual void bindVariables(ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const;
 	void express(Expressor* expressor) const;
 
 	/**
@@ -229,7 +229,7 @@ namespace w3c_sw {
 	    return t == DefaultGraph || t == defaultTarget;
 	}
 
-	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) {
+	virtual void bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const {
 	    if (graph == NULL) graph = defaultTarget;
 	    return RdfDB::bindVariables(rs, graph, toMatch);
 	}

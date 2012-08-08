@@ -563,6 +563,12 @@ public:
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
     }
+    virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	ret << "EXISTS";
+	++depth;
+	p_TableOperation->express(this);
+	--depth;
+    }
 /* Expressions */
     virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	start(PREC_Not);

@@ -136,7 +136,7 @@ namespace w3c_sw {
 	void set(const TTerm* variable, const TTerm* value, bool weaklyBound, bool replace = false);
 	Result* duplicate(ResultSet* rs, ResultSetConstIterator row) const;
 
-	ResultSet* makeResultSet(AtomFactory* atomFactory);
+	ResultSet* makeResultSet(AtomFactory* atomFactory) const;
 	bool isCompatibleWith(const Result* from) const;
 	bool isContiguousWith(const Result* from) const;
 	void assumeNewBindings(const Result* from);
@@ -530,7 +530,7 @@ namespace w3c_sw {
 	 *   minus which removes incompatible rows with a non-empty domain union.
 	 */
 	typedef enum {OP_join, OP_outer, OP_minus} e_OP;
-	void joinIn (const ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join) { // !!! make const ref
+	void joinIn (const ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join, const RdfDB* db = NULL) { // !!! make const ref
 	    // Before we screw with the knownVars, copy any any column ordering from ref to *this.
 	    if (ref->orderedSelect) {
 		orderedSelect = true;
@@ -576,7 +576,7 @@ namespace w3c_sw {
 			if (expressions != NULL)
 			    for (std::vector<const Expression*>::const_iterator expression = expressions->begin();
 				 matched && expression != expressions->end(); expression++)
-				matched &= atomFactory->eval(*expression, newRow);
+				matched &= atomFactory->eval(*expression, newRow, db);
 
 			// If filter expressions passed...
 			if (matched) {
@@ -679,8 +679,8 @@ namespace w3c_sw {
 
 
 	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy,
-		     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions);
-	void restrictResults(const Expression* expression); // no longer called "restrict" 'cause it screws up php.
+		     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db);
+	void restrictResults(const Expression* expression, const RdfDB* db); // no longer called "restrict" 'cause it screws up php.
 
 	/** order - canonicalize order on knownVars.
 	 * used for test repeatability.

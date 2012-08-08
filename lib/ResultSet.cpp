@@ -471,7 +471,7 @@ namespace w3c_sw {
 	    delete *it;
     }
 
-    ResultSet* Result::makeResultSet (AtomFactory* atomFactory) {
+    ResultSet* Result::makeResultSet (AtomFactory* atomFactory) const {
 	ResultSet* ret = new ResultSet(atomFactory);
 	for (BindingSetConstIterator it = bindings.begin(); it != bindings.end(); it++)
 	    ret->set(*ret->begin(), it->first, it->second.tterm, it->second.weaklyBound);
@@ -602,16 +602,18 @@ namespace w3c_sw {
     struct ResultComp {
 	std::vector<s_OrderConditionPair>* orderConditions;
 	AtomFactory* atomFactory;
-	ResultComp (std::vector<s_OrderConditionPair>* orderConditions, AtomFactory* atomFactory) : 
-	    orderConditions(orderConditions), atomFactory(atomFactory) {  }
+	const RdfDB* db; // EGP2012-08-07 Can one even have an EXISTS in the order condition?
+	ResultComp (std::vector<s_OrderConditionPair>* orderConditions, AtomFactory* atomFactory, const RdfDB* db) : 
+	    orderConditions(orderConditions), atomFactory(atomFactory), db(db)
+	{  }
 	bool operator() (const Result* lhs, const Result* rhs) {
 	    for (std::vector<s_OrderConditionPair>::iterator it = orderConditions->begin();
 		 it != orderConditions->end(); ++it) {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		const TTerm* l = pair.expression->eval(lhs, atomFactory, NULL);
-		const TTerm* r = pair.expression->eval(rhs, atomFactory, NULL);
+		const TTerm* l = pair.expression->eval(lhs, atomFactory, NULL, db);
+		const TTerm* r = pair.expression->eval(rhs, atomFactory, NULL, db);
 		if (dynamic_cast<const Bindable*>(l) && 
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
@@ -636,7 +638,7 @@ namespace w3c_sw {
     }
 
     void ResultSet::project (ProductionVector<const ExpressionAlias*> const * projection, ExpressionAliasList* groupBy,
-			     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions) {
+			     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) {
 	// std::cerr << "start\n" << *this;
 	/* List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
@@ -700,8 +702,8 @@ namespace w3c_sw {
 		    NoDelWrapper (std::string& groupIndexRef, const URI* functionName, const FunctionCall* func)
 			: FunctionState (groupIndexRef, functionName), func(func) {  }
 		    ~NoDelWrapper () {  }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const { // !!! SEGVs when non-const
-			return func->eval(r, atomFactory, evaluator);
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const { // !!! SEGVs when non-const
+			return func->eval(r, atomFactory, evaluator, db);
 		    }
 		};
 		struct SampleState : public FunctionState { // FunctionCall for virtual eval
@@ -710,8 +712,8 @@ namespace w3c_sw {
 		    SampleState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
 		    ~SampleState () {  }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-			return expr->eval(r, atomFactory, evaluator);
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+			return expr->eval(r, atomFactory, evaluator, db);
 		    }
 		};
 		struct CountState : public FunctionState { // FunctionCall for virtual eval
@@ -721,7 +723,7 @@ namespace w3c_sw {
 		    CountState (std::string& groupIndexRef)
 			: FunctionState (groupIndexRef, TTerm::FUNC_count) {  }
 		    ~CountState () {  }
-		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */) const {
+		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, const RdfDB* db) const {
 			int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
 			return atomFactory->getNumericRDFLiteral(mitoa(c), c);
 		    }
@@ -734,16 +736,16 @@ namespace w3c_sw {
 		    SumState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
 		    ~SumState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 			if (vals.find(groupIndexRef) == vals.end()) {
-			    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator);
+			    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
 			} else {
 			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
 			    std::vector<const Expression*> addends;
 			    TTermExpression valExpr(const_cast<SumState*>(this)->vals[groupIndexRef]);
 			    addends.push_back(&valExpr);
 			    addends.push_back(expr);
-			    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
+			    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
 			}
 			return const_cast<SumState*>(this)->vals[groupIndexRef];
 		    }
@@ -757,10 +759,10 @@ namespace w3c_sw {
 		    AvgState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef, TTerm::FUNC_avg), expr(expr) {  }
 		    ~AvgState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 			if (sums.find(groupIndexRef) == sums.end()) {
 			    const_cast<AvgState*>(this)->counts[groupIndexRef] = 1;
-			    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator);
+			    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
 			} else {
 			    const_cast<AvgState*>(this)->counts[groupIndexRef]++;
 			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
@@ -768,7 +770,7 @@ namespace w3c_sw {
 			    TTermExpression valExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
 			    addends.push_back(&valExpr);
 			    addends.push_back(expr);
-			    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f);
+			    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
 			}
 			ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator);
 			std::vector<const Expression*> divisors;
@@ -777,7 +779,7 @@ namespace w3c_sw {
 			int c = const_cast<AvgState*>(this)->counts[groupIndexRef];
 			TTermExpression countExpr(atomFactory->getNumericRDFLiteral(mitoa(c), c));
 			divisors.push_back(&countExpr);
-			return atomFactory->applyCommonNumeric(divisors, &f);
+			return atomFactory->applyCommonNumeric(divisors, &f, db);
 		    }
 		};
 		struct MinState : public FunctionState { // FunctionCall for virtual eval
@@ -788,8 +790,8 @@ namespace w3c_sw {
 		    MinState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef, TTerm::FUNC_min), expr(expr) {  }
 		    ~MinState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
 			if (val != NULL) {
 			    if (vals.find(groupIndexRef) == vals.end())
 				const_cast<MinState*>(this)->vals[groupIndexRef] = val;
@@ -807,8 +809,8 @@ namespace w3c_sw {
 		    MaxState (std::string& groupIndexRef, const Expression* expr)
 			: FunctionState (groupIndexRef, TTerm::FUNC_max), expr(expr) {  }
 		    ~MaxState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
 			if (val != NULL) {
 			    if (vals.find(groupIndexRef) == vals.end())
 				const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
@@ -828,8 +830,8 @@ namespace w3c_sw {
 			: FunctionState (groupIndexRef, TTerm::FUNC_group_concat), expr(expr), separator(separator)
 		    {  }
 		    ~GroupConcatState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator);
+		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
 			if (val != NULL) {
 			    if (vals.find(groupIndexRef) == vals.end())
 				const_cast<GroupConcatState*>(this)->vals[groupIndexRef] = 
@@ -892,7 +894,7 @@ namespace w3c_sw {
 		groupIndex = "";
 		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		     it != groupBy->end(); ++it) {
-		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL);
+		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL, db);
 		    groupIndex += val->toString() + "~";
 		    (*row)->set(_getLabel(*it, atomFactory), val, false, true); // !! WG decision on overwrite
 		}
@@ -923,7 +925,7 @@ namespace w3c_sw {
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
 		try {
-		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, NULL);
+		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, NULL, db);
 		    if (val != TTerm::Unbound)
 			aggregateRow->set(*knownVar, val, false, true); // !! WG decision on overwrite
 		} catch (TypeError& e) {
@@ -949,7 +951,7 @@ namespace w3c_sw {
 	    for (ResultSetIterator row = begin() ; row != end(); )
 		for (std::vector<const w3c_sw::Expression*>::const_iterator expr = having->begin();
 		     expr != having->end(); ++expr)
-		    if (atomFactory->eval(*expr, *row) != true) {
+		    if (atomFactory->eval(*expr, *row, db) != true) {
 			if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 			    SPARQLSerializer s;
 			    (*expr)->express(&s);
@@ -964,7 +966,7 @@ namespace w3c_sw {
 
 
 	if (orderConditions != NULL) {
-	    ResultComp resultComp(orderConditions, atomFactory);
+	    ResultComp resultComp(orderConditions, atomFactory, db);
 	    results.sort(resultComp);
 	    /* Eliminate unselect attributes. */
 	    for (ResultSetIterator row = begin() ; row != end(); ++row)
@@ -984,7 +986,7 @@ namespace w3c_sw {
 	// std::cerr << "end\n" << *this;
     }
 
-    void ResultSet::restrictResults (const Expression* expression) { // no longer called "restrict" 'cause it screws up php.
+    void ResultSet::restrictResults (const Expression* expression, const RdfDB* db) { // no longer called "restrict" 'cause it screws up php.
 
 	if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 	    SPARQLSerializer s;
@@ -992,7 +994,7 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "Filtering on " << s.str();
 	}
 	for (ResultSetIterator it = begin(); it != end(); ) {
-	    if (atomFactory->eval(expression, *it) == true) {
+	    if (atomFactory->eval(expression, *it, db) == true) {
 		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "    keep " << (*it)->toString();
 		++it;
 	    } else {

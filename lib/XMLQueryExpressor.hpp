@@ -354,6 +354,11 @@ public:
 	p_FunctionCall->express(this);
 	xml->close();
     }
+    virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	xml->open("ExistsExpression");
+	p_TableOperation->express(this);
+	xml->close();
+    }
 /* Expressions */
     virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	xml->open("BooleanNegation");

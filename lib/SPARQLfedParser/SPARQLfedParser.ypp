@@ -2672,17 +2672,42 @@ SubstringExpression:
 ;
 
 ExistsFunc:
-    IT_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
-	w3c_sw_NEED_IMPL("EXISTS");
-    }
+    IT_EXISTS	{
+	$<p_parentCountStar>$ = driver.countStar;
+	driver.countStar = false;
+    } {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = NULL;
+      } {
+	  driver.restoreFilter(NULL);
+	  $<p_TableOperation>$ = driver.curOp;
+	  driver.curOp = NULL;
+      } GroupGraphPattern	{
+	  $$ = new ExistsExpression(driver.ensureGraphPattern());
+	  driver.curOp = $<p_TableOperation>4;
+	  driver.curGraphName = $<p_TTerm>3;
+	  driver.countStar = $<p_parentCountStar>2;
+      }
 ;
 
 NotExistsFunc:
-    IT_NOT IT_EXISTS GroupGraphPattern	{
-	$$ = NULL; // new FunctionCallExpression(new BooleanNegation(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL)));
-	w3c_sw_NEED_IMPL("EXISTS");
-    }
+    IT_NOT IT_EXISTS	{
+	$<p_parentCountStar>$ = driver.countStar;
+	driver.countStar = false;
+    } {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = NULL;
+      } {
+	  driver.restoreFilter(NULL);
+	  $<p_TableOperation>$ = driver.curOp;
+	  driver.curOp = NULL;
+      } GroupGraphPattern	{
+	  // $$ = new ExistsExpression(false, driver.ensureGraphPattern());
+	  $$ = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
+	  driver.curOp = $<p_TableOperation>5;
+	  driver.curGraphName = $<p_TTerm>4;
+	  driver.countStar = $<p_parentCountStar>3;
+      }
 ;
 
 Aggregate:

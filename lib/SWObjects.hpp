@@ -677,7 +677,7 @@ protected:
 public:
     typedef enum {OPTYPE_unknown, OPTYPE_operationSet, OPTYPE_select, OPTYPE_construct, OPTYPE_describe, OPTYPE_ask, OPTYPE_modify, OPTYPE_insert, OPTYPE_delete, OPTYPE_load, OPTYPE_clear, OPTYPE_create, OPTYPE_drop, OPTYPE_add, OPTYPE_move, OPTYPE_copy} e_OPTYPE;
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const { throw(std::runtime_error(typeid(*this).name())); } // = 0?
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const = 0; // { throw(std::runtime_error(std::string("ResultSet* execute(RdfDB*, ResultSet*) not implemented for ") + typeid(*this).name())); } // = 0?
     virtual bool operator==(const Operation& ref) const = 0;
     virtual e_OPTYPE getOperationType() const = 0;
     std::string toString() const;
@@ -1795,9 +1795,9 @@ public:
 	virtual float eval(float l, float r) = 0;
 	virtual double eval(double l, double r) = 0;
     };
-    const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func);
-    const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func);
-    bool eval(const Expression* expression, const Result* row);
+    const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func, const RdfDB* db);
+    const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func, const RdfDB* db);
+    bool eval(const Expression* expression, const Result* row, const RdfDB* db);
 };
 
 /* END Parts Of Speach */
@@ -1808,15 +1808,15 @@ public:
     Expression () : Base() { }
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const = 0;
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const = 0;
     virtual bool operator==(const Expression&) const = 0;
 };
 typedef ProductionVector<const Expression*> ExprSet;
 
-inline bool AtomFactory::eval (const Expression* expression, const Result* row) {
+    inline bool AtomFactory::eval (const Expression* expression, const Result* row, const RdfDB* db) {
     bool ret;
     try {
-	ret = ebv(expression->eval(row, this, NULL)) == TTerm::BOOL_true;
+	ret = ebv(expression->eval(row, this, NULL, db)) == TTerm::BOOL_true;
     } catch (SafeEvaluationError&) {
 	ret = false;
     }
@@ -1856,7 +1856,7 @@ protected:
     TableOperation () : Base() {  }
     TableOperation(const TableOperation& ref);
 public:
-    virtual void bindVariables(RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
+    virtual void bindVariables(const RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
@@ -1908,7 +1908,7 @@ public:
 	const TableConjunction* pref = dynamic_cast<const TableConjunction*>(&ref);
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperation* getDNF() const;
@@ -1925,7 +1925,7 @@ public:
 	const TableDisjunction* pref = dynamic_cast<const TableDisjunction*>(&ref);
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
     }
@@ -2013,7 +2013,7 @@ protected:
 
     /* Misc helper functions: */
     /* wrapper function pushed into .cpp because RdfDB is incomplete. */
-    void _bindVariables(RdfDB* db, ResultSet* rs, const TTerm* p_name) const;
+    void _bindVariables(const RdfDB* db, ResultSet* rs, const TTerm* p_name) const;
 
 public:
 
@@ -2040,7 +2040,7 @@ public:
 	PO[t->getP()].insert(TTerm2Triple_pair(t->getO(), t));
 	OS[t->getO()].insert(TTerm2Triple_pair(t->getS(), t));
     }
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const = 0;
+    virtual void bindVariables(const RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
@@ -2083,7 +2083,7 @@ public:
     NamedGraphPattern (const NamedGraphPattern& ref) : BasicGraphPattern(ref), m_name(ref.m_name) {  }
     virtual TableOperation* getDNF () const { return new NamedGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+    virtual void bindVariables (const RdfDB* db, ResultSet* rs) const {
 	_bindVariables(db, rs, m_name); /* RdfDB is incomplete. */
     }
     virtual bool operator== (const TableOperation& ref) const {
@@ -2103,7 +2103,7 @@ public:
     DefaultGraphPattern (const BasicGraphPattern& ref) : BasicGraphPattern(ref) {  }
     virtual TableOperation* getDNF () const { return new DefaultGraphPattern(*this); }
     virtual void express(Expressor* p_expressor) const;
-    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+    virtual void bindVariables (const RdfDB* db, ResultSet* rs) const {
 	_bindVariables(db, rs, NULL); /* RdfDB is incomplete. */
     }
     virtual bool operator== (const TableOperation& ref) const {
@@ -2129,7 +2129,7 @@ public:
     Print (const TableOperation* op) : TableOperationOnOperation(op) {  }
     ~Print () {  }
 
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
     virtual void construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	construct(target, rs, evaluator, bgp);
     }
@@ -2164,7 +2164,7 @@ public:
 	m_Expressions.push_back(expression);
     }
 
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{FILTER(...)}");
     }
@@ -2191,7 +2191,7 @@ public:
     Bind (const TableOperation* op, const Expression* p_expr, const Variable* p_label) : TableOperationOnOperation(op), m_expr(p_expr), m_label(p_label) {  }
     ~Bind () {  }
 
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{BIND(...)}");
     }
@@ -2223,7 +2223,7 @@ public:
 	    m_VarOrIRIref == pref->m_VarOrIRIref &&
 	    *m_TableOperation == *pref->m_TableOperation;
     }
-    virtual void bindVariables (RdfDB* db, ResultSet* rs) const {
+    virtual void bindVariables (const RdfDB* db, ResultSet* rs) const {
 	m_TableOperation->bindVariables(db, rs);
     }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
@@ -2257,7 +2257,7 @@ public:
 	    m_VarOrIRIref == pref->m_VarOrIRIref &&
 	    *m_TableOperation == *pref->m_TableOperation;
     }
-    virtual void bindVariables(RdfDB* db, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, m_Silence, atomFactory, lexicalCompare); }
@@ -2274,7 +2274,7 @@ public:
 	return pref == NULL ? false : 
 	    *m_TableOperation == *pref->m_TableOperation;
     }
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{OPTIONAL{?s?p?o}}");
     }
@@ -2296,7 +2296,7 @@ public:
 	return pref == NULL ? false : 
 	    *m_TableOperation == *pref->m_TableOperation;
     }
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{MINUS{?s?p?o}}");
     }
@@ -2315,7 +2315,7 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
     virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
-			 std::vector<s_OrderConditionPair>* orderConditions) const = 0;
+			 std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const = 0;
 };
 
 class ExpressionAlias : public Base {
@@ -2352,7 +2352,7 @@ public:
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
-			  std::vector<s_OrderConditionPair>* orderConditions) const;
+			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -2367,7 +2367,7 @@ public:
 	return pref == NULL ? false : true;
     }
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
-			  std::vector<s_OrderConditionPair>* orderConditions) const;
+			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
 };
 
 class DatasetClause : public Base {
@@ -2505,7 +2505,7 @@ public:
 
     const ResultSet& getResultSet () { return *m_ResultSet; }
     virtual void express(Expressor* p_expressor) const;
-    void bindVariables(RdfDB* db, ResultSet* rs) const;
+    void bindVariables(const RdfDB* db, ResultSet* rs) const;
 };
 class WhereClause : public Base {
     friend class SPARQLfedParser;
@@ -2518,36 +2518,58 @@ public:
 	delete m_GroupGraphPattern;
     }
     virtual void express(Expressor* p_expressor) const;
-    void bindVariables(RdfDB* db, ResultSet* rs) const;
+    void bindVariables(const RdfDB* db, ResultSet* rs) const;
     bool operator== (const WhereClause& ref) const {
 	return *m_GroupGraphPattern == *ref.m_GroupGraphPattern;
     }
 };
 
-class Select : public Operation {
+class LoadingOperation : public Operation {
+protected:
+    ProductionVector<const DatasetClause*>* m_DatasetClauses;
+public:
+    virtual ResultSet* executeQuery (const RdfDB* db, ResultSet* rs = NULL) const = 0;
+    virtual ResultSet* execute (RdfDB* db, ResultSet* rs = NULL) const {
+	load(db);
+	return executeQuery(db, rs);
+    }
+    LoadingOperation (ProductionVector<const DatasetClause*>* p_DatasetClauses)
+	: Operation(), m_DatasetClauses(p_DatasetClauses)
+    {  }
+    ~LoadingOperation () {
+	delete m_DatasetClauses;
+    }
+    void load(RdfDB* db) const;
+    virtual bool operator== (const LoadingOperation& ref) const {
+	return
+	    *m_DatasetClauses == *ref.m_DatasetClauses; // !!! need to look deeper
+    }
+};
+
+class Select : public LoadingOperation {
 private:
     e_distinctness m_distinctness;
     VarSet* m_VarSet;
-    ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
 public:
-    Select (e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_distinctness(p_distinctness), m_VarSet(p_VarSet), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    Select (e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier)
+	: LoadingOperation(p_DatasetClauses), m_distinctness(p_distinctness), m_VarSet(p_VarSet), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier)
+    {  }
     ~Select () {
 	delete m_VarSet;
-	delete m_DatasetClauses;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
+    virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation& ref) const {
 	const Select* pSel = dynamic_cast<const Select*>(&ref);
 	if (pSel == NULL)
 	    return false;
 	return
 	    *m_VarSet == *pSel->m_VarSet && 
-	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
+	    LoadingOperation::operator==(*pSel) &&
 	    *m_WhereClause == *pSel->m_WhereClause && 
 	    *m_SolutionModifier == *pSel->m_SolutionModifier;
     }
@@ -2562,7 +2584,7 @@ public:
     const Select* getSelect () const {
 	return m_Select;
     }
-    virtual void bindVariables(RdfDB*, ResultSet* rs) const;
+    virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual TableOperation* getDNF () const {
 	w3c_sw_NEED_IMPL("getDNF{SUBSELECT(...)}");
     }
@@ -2581,71 +2603,70 @@ public:
 	return pref == NULL ? false : operator==(*pref); // calls SubSelect-specific operator==
     }
 };
-class Construct : public Operation {
+class Construct : public LoadingOperation {
 protected:
     const TableOperation* m_ConstructTemplate; // !!!2 -- use ConstructableOperation for p_ConstructTemplate
-    ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
     DefaultGraphPattern* resultGraph;
 
 public:
     Construct (const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : 
-	Operation(), m_ConstructTemplate(p_ConstructTemplate), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier), resultGraph(new DefaultGraphPattern()) {  }
+	LoadingOperation(p_DatasetClauses), m_ConstructTemplate(p_ConstructTemplate), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier), resultGraph(new DefaultGraphPattern())
+    {  }
     ~Construct () {
 	delete m_ConstructTemplate;
-	delete m_DatasetClauses;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
 	delete resultGraph;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
+    virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
     WhereClause* getWhereClause () { return m_WhereClause; }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_construct; }
 };
-class Describe : public Operation {
+class Describe : public LoadingOperation {
 private:
     VarSet* m_VarSet;
-    ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
 public:
-    Describe (VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) : Operation(), m_VarSet(p_VarSet), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier) {  }
+    Describe (VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier)
+	: LoadingOperation(p_DatasetClauses), m_VarSet(p_VarSet), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier)
+    {  }
     ~Describe () {
 	delete m_VarSet;
-	delete m_DatasetClauses;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
+    virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_describe; }
 };
-class Ask : public Operation {
+class Ask : public LoadingOperation {
 private:
-    ProductionVector<const DatasetClause*>* m_DatasetClauses;
     WhereClause* m_WhereClause;
 public:
-    Ask (ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) : Operation(), m_DatasetClauses(p_DatasetClauses), m_WhereClause(p_WhereClause) {  }
+    Ask (ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause)
+	: LoadingOperation(p_DatasetClauses), m_WhereClause(p_WhereClause)
+    {  }
     ~Ask () {
-	delete m_DatasetClauses;
 	delete m_WhereClause;
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
+    virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation& ref) const {
 	const Ask* pSel = dynamic_cast<const Ask*>(&ref);
 	if (pSel == NULL)
 	    return false;
 	return
-	    *m_DatasetClauses == *pSel->m_DatasetClauses && // !!! need to look deeper
+	    LoadingOperation::operator==(*pSel) &&
 	    *m_WhereClause == *pSel->m_WhereClause;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_ask; }
@@ -2711,6 +2732,7 @@ public:
     Load (const URI* p_from, const URI* p_into) : Operation(), m_from(p_from), m_into(p_into) {  }
     ~Load () { delete m_from; delete m_into; }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Load::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2724,6 +2746,7 @@ public:
     Clear (e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) : Operation(), m_Silence(p_Silence), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
     ~Clear () { delete m__QGraphIRI_E_Opt; }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Clear::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2737,6 +2760,7 @@ public:
     Create (e_Silence p_Silence, const URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Create () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Create::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2750,6 +2774,7 @@ public:
     Drop (e_Silence p_Silence, const URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Drop () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Drop::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2775,6 +2800,7 @@ public:
     Add (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Add () {  }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Add::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2785,6 +2811,7 @@ public:
     Move (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Move () {  }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Move::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2795,6 +2822,7 @@ public:
     Copy (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Copy () {  }
     virtual void express(Expressor* p_expressor) const;
+    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Copy::execute"); }
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -2810,7 +2838,7 @@ public:
     ~TTermExpression () { /* m_TTerm is centrally managed */ }
     const TTerm* getTTerm () const { return m_TTerm; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	return m_TTerm->evalTTerm(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -2958,7 +2986,7 @@ public:
     }
     ~FunctionCall () { delete m_ArgList; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const;
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
     bool operator== (const FunctionCall& ref) const {
 	return m_IRIref == ref.m_IRIref && *m_ArgList == *ref.m_ArgList;
 	    return false;
@@ -2971,14 +2999,14 @@ public:
     AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1)
 	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness) {  }
     ~AggregateCall () {  }
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	if (distinctness == DIST_all)
-	    return FunctionCall::eval(r, atomFactory, evaluator);
+	    return FunctionCall::eval(r, atomFactory, evaluator, db);
 	std::stringstream s;
 	s << m_IRIref->toString() << " DISTINCT " << '(';
 	std::vector<const TTerm*> subd;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
-	    subd.push_back((*it)->eval(r, atomFactory, evaluator));
+	    subd.push_back((*it)->eval(r, atomFactory, evaluator, db));
 	for (std::vector<const TTerm*>::iterator it = subd.begin(); it != subd.end(); ++it) {
 	    if (it != subd.begin())
 		s << ", ";
@@ -3003,12 +3031,30 @@ public:
     FunctionCallExpression (FunctionCall* p_FunctionCall) : Expression(), m_FunctionCall(p_FunctionCall) {  }
     ~FunctionCallExpression () { delete m_FunctionCall; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	return m_FunctionCall->eval(r, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	return m_FunctionCall->eval(r, atomFactory, evaluator, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const FunctionCallExpression* pref = dynamic_cast<const FunctionCallExpression*>(&ref);
 	return pref == NULL ? false : *m_FunctionCall == *pref->m_FunctionCall;
+    }
+};
+
+class ExistsExpression : public Expression {
+private:
+    const TableOperation* m_TableOperation;
+public:
+    ExistsExpression (const TableOperation* p_TableOperation)
+	: Expression(), m_TableOperation(p_TableOperation)
+    {  }
+    virtual ~ExistsExpression () { delete m_TableOperation; }
+    virtual void express(Expressor* p_expressor) const;
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
+    virtual bool operator== (const Expression& ref) const {
+	const ExistsExpression* other = dynamic_cast<const ExistsExpression*>(&ref);
+	if (other == NULL)
+	    return false;
+	return *m_TableOperation == *other->m_TableOperation;
     }
 };
 
@@ -3049,12 +3095,12 @@ public:
     BooleanConjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "&&"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	SafeEvaluationError lastError("no error");
 	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
-		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
+		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, db));
 		if (ret != TTerm::BOOL_true)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
@@ -3077,12 +3123,12 @@ public:
     BooleanDisjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "||"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	SafeEvaluationError lastError("no error");
 	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
-		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator));
+		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, db));
 		if (ret != TTerm::BOOL_false)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
@@ -3136,9 +3182,9 @@ public:
     BooleanEQ (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3152,9 +3198,9 @@ public:
     BooleanNE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "!="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3168,9 +3214,9 @@ public:
     BooleanLT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l->cmp(*r) == SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3184,9 +3230,9 @@ public:
     BooleanGT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l->cmp(*r) == SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3200,9 +3246,9 @@ public:
     BooleanLE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l->cmp(*r) != SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3216,9 +3262,9 @@ public:
     BooleanGE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
-	const TTerm* r = right->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
 	return l->cmp(*r) != SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3232,11 +3278,11 @@ public:
     NaryIn (ProductionVector<const Expression*>* p_Expressions) : NaryComparator(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "IN"; };
     virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryIn::express"); }
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
 	     exp != right->end(); ++exp) {
-	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
+	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator, db);
 	    if (l == r)
 	    // if (atomFactory->cmp(l, r) == 0)
 		return TTerm::BOOL_true;
@@ -3254,11 +3300,11 @@ public:
     NaryNotIn (ProductionVector<const Expression*>* p_Expressions) : NaryIn(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "NOT IN"; };
     virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryNotIn::express"); }
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
 	     exp != right->end(); ++exp) {
-	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator);
+	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator, db);
 	    if (l != r)
 	    // if (atomFactory->cmp(l, r) != 0)
 		return TTerm::BOOL_true;
@@ -3277,8 +3323,8 @@ public:
     ComparatorExpression (const GeneralComparator* p_GeneralComparator) : Expression(), m_GeneralComparator(p_GeneralComparator) {  }
     ~ComparatorExpression () { delete m_GeneralComparator; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	return m_GeneralComparator->eval(r, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	return m_GeneralComparator->eval(r, atomFactory, evaluator, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
@@ -3291,8 +3337,8 @@ public:
     ~BooleanNegation () {  }
     virtual const char* getUnaryOperator () { return "!"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
-	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator));
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator, db));
 	return v == TTerm::BOOL_true ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3314,9 +3360,9 @@ public:
 	virtual float eval (float l, float r) { return l + r; }
 	virtual double eval (double l, double r) { return l + r; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	NaryAdder f(res, atomFactory, evaluator);
-	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
+	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticSum* pref = dynamic_cast<const ArithmeticSum*>(&ref);
@@ -3337,9 +3383,9 @@ public:
 	virtual float eval (float v) { return -v; }
 	virtual double eval (double v) { return -v; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	UnaryNegator f(res, atomFactory, evaluator);
-	return atomFactory->applyCommonNumeric(m_Expression, &f);
+	return atomFactory->applyCommonNumeric(m_Expression, &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticNegation* pref = dynamic_cast<const ArithmeticNegation*>(&ref);
@@ -3353,7 +3399,7 @@ public:
     NumberExpression (const NumericRDFLiteral* p_NumericRDFLiteral) : Expression(), m_NumericRDFLiteral(p_NumericRDFLiteral) {  }
     ~NumberExpression () { /* m_NumericRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator, const RdfDB* /* db */) const {
 	return m_NumericRDFLiteral->evalTTerm(res, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3383,9 +3429,9 @@ public:
 	virtual float eval (float l, float r) { return l / r; }
 	virtual double eval (double l, double r) { return l / r; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	NaryMultiplier f(res, atomFactory, evaluator);
-	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f);
+	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticProduct* pref = dynamic_cast<const ArithmeticProduct*>(&ref);
@@ -3398,9 +3444,9 @@ public:
     ~ArithmeticInverse () {  }
     virtual const char* getUnaryOperator () { return "1/"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	std::stringstream s;
-	s << "(/ 1 " << m_Expression->eval(res, atomFactory, evaluator)
+	s << "(/ 1 " << m_Expression->eval(res, atomFactory, evaluator, db)
 	  << ") not implemented";
 	throw s.str();
     }
@@ -3781,6 +3827,7 @@ public:
     virtual void argList(const ArgList* const self, ProductionVector<const Expression*>* expressions) = 0;
     virtual void functionCall(const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) = 0;
     virtual void functionCallExpression(const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) = 0;
+    virtual void existsExpression(const ExistsExpression* const, const TableOperation* p_TableOperation) = 0;
 /* Expressions */
     virtual void booleanNegation(const BooleanNegation* const self, const Expression* p_Expression) = 0;
     virtual void arithmeticNegation(const ArithmeticNegation* const self, const Expression* p_Expression) = 0;
@@ -3989,6 +4036,9 @@ public:
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
     }
+    virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	p_TableOperation->express(this);
+    }
 /* Expressions */
     virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {
 	p_Expression->express(this);
@@ -4069,6 +4119,7 @@ public:
 	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {  }
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {  }
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {  }
+	virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {  }
 	Expressions
 	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {  }
 	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {  }
