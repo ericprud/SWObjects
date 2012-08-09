@@ -38,7 +38,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 51 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 52 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -86,6 +86,7 @@ protected:
     ProductionVector<const Expression*> filterExpressions;
     bool countStar;
     WhereClause* lastWhereClause;
+    location* yylloc;
 
     BasicGraphPattern* ensureGraphPattern ( ) {
 	return curGraphName == NULL ? 
@@ -148,12 +149,10 @@ protected:
     }
 
     void addBindingValue (const TTerm* value) {
-	//    throw "!! how can i get the yylocation_stack_?";
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
 	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
-	    // error(*(yylocation_stack_.begin()), ss.str().c_str());
-	    throw "!! how can i get the yylocation_stack_?";
+	    error(*yylloc, ss.str().c_str());
 	}
 	if (value != TTerm::Unbound)
 	    curResultSet->set(curResult, *curTTerm, value, false);
@@ -168,10 +167,8 @@ protected:
     }
 
     Result* endBindingRow () {
-	if (curTTerm != termList.end()) {
-	    // error(*(yylocation_stack_.begin()), "insufficient bindings for result set row.");
-	    throw "!! how can i get the yylocation_stack_?";
-	}
+	if (curTTerm != termList.end())
+	    error(*yylloc, "insufficient bindings for result set row.");
 	Result* ret = curResult;
 	curResult = NULL;
 	return ret;
@@ -212,7 +209,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 216 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 213 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 #include <string>
@@ -242,7 +239,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 246 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 243 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
   /// A Bison parser.
   class SPARQLalgebraParser
@@ -254,7 +251,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 224 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 222 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
 
     const NumericRDFLiteral* p_NumericRDFLiteral;
     const Operation* p_Operation;
@@ -295,7 +292,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 299 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 296 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -650,7 +647,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 654 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#line 651 "lib/SPARQLalgebraParser/SPARQLalgebraParser.hpp"
 
 
 

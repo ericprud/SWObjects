@@ -38,7 +38,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 57 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 58 "lib/JSONresultsParser/JSONresultsParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -73,6 +73,7 @@ protected:
     const std::string* curValue;
     const URI* curDatatype;
     const std::string* curLang;
+    location* yylloc;
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
@@ -97,12 +98,10 @@ protected:
     }
 
     void addBindingValue (const TTerm* value) {
-	//    throw "!! how can i get the yylocation_stack_?";
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
 	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
-	    // error(*(yylocation_stack_.begin()), ss.str().c_str());
-	    throw "!! how can i get the yylocation_stack_?";
+	    error(*yylloc, ss.str().c_str());
 	}
 	if (value != TTerm::Unbound)
 	    curResultSet->set(curResult, *curTTerm, value, false);
@@ -117,10 +116,8 @@ protected:
     }
 
     Result* endBindingRow () {
-	if (curTTerm != termList.end()) {
-	    // error(*(yylocation_stack_.begin()), "insufficient bindings for result set row.");
-	    throw "!! how can i get the yylocation_stack_?";
-	}
+	if (curTTerm != termList.end())
+	    error(*yylloc, "insufficient bindings for result set row.");
 	Result* ret = curResult;
 	curResult = NULL;
 	return ret;
@@ -156,7 +153,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 160 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 157 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
 
 #include <string>
@@ -186,7 +183,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 190 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 187 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
   /// A Bison parser.
   class JSONresultsParser
@@ -198,7 +195,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 174 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 172 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
     const std::string* p_str;
     const TTerm* p_TTerm;
@@ -209,7 +206,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 213 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 210 "lib/JSONresultsParser/JSONresultsParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -435,7 +432,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 439 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 436 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
 
 

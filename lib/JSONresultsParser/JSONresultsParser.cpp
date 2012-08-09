@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 182 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 180 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 214 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 212 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
 
@@ -339,10 +339,11 @@ namespace w3c_sw {
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
+    driver.yylloc = &yylloc;
 }
 
 /* Line 565 of lalr1.cc  */
-#line 346 "lib/JSONresultsParser/JSONresultsParser.cpp"
+#line 347 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -461,7 +462,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 690 of lalr1.cc  */
-#line 228 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 226 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	if (driver.root == NULL)
 	    driver.startBindingSet();
@@ -473,7 +474,7 @@ namespace w3c_sw {
   case 3:
 
 /* Line 690 of lalr1.cc  */
-#line 233 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 231 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.root = driver.endBindingSet();
 	  driver.curResultSet = NULL;
@@ -483,7 +484,7 @@ namespace w3c_sw {
   case 10:
 
 /* Line 690 of lalr1.cc  */
-#line 258 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 256 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	// throw away link $4
 	delete (yysemantic_stack_[(5) - (4)].p_str);
@@ -493,7 +494,7 @@ namespace w3c_sw {
   case 11:
 
 /* Line 690 of lalr1.cc  */
-#line 265 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 263 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(4) - (4)].p_str)));
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -503,7 +504,7 @@ namespace w3c_sw {
   case 13:
 
 /* Line 690 of lalr1.cc  */
-#line 272 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 270 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(2) - (2)].p_str)));
 	delete (yysemantic_stack_[(2) - (2)].p_str);
@@ -513,7 +514,7 @@ namespace w3c_sw {
   case 21:
 
 /* Line 690 of lalr1.cc  */
-#line 301 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 299 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.startBindingRow(false);
       }
@@ -522,7 +523,7 @@ namespace w3c_sw {
   case 22:
 
 /* Line 690 of lalr1.cc  */
-#line 303 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 301 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -531,7 +532,7 @@ namespace w3c_sw {
   case 26:
 
 /* Line 690 of lalr1.cc  */
-#line 318 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 316 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBinding(driver.getVariable(*(yysemantic_stack_[(5) - (1)].p_str)), (yysemantic_stack_[(5) - (4)].p_TTerm));
 	delete (yysemantic_stack_[(5) - (1)].p_str);
@@ -541,7 +542,7 @@ namespace w3c_sw {
   case 27:
 
 /* Line 690 of lalr1.cc  */
-#line 325 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 323 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -550,7 +551,7 @@ namespace w3c_sw {
   case 28:
 
 /* Line 690 of lalr1.cc  */
-#line 328 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 326 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_BNode);
     }
@@ -559,7 +560,7 @@ namespace w3c_sw {
   case 29:
 
 /* Line 690 of lalr1.cc  */
-#line 331 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 329 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
     }
@@ -568,7 +569,7 @@ namespace w3c_sw {
   case 30:
 
 /* Line 690 of lalr1.cc  */
-#line 334 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 332 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
     }
@@ -577,7 +578,7 @@ namespace w3c_sw {
   case 31:
 
 /* Line 690 of lalr1.cc  */
-#line 337 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 335 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curValue = (yysemantic_stack_[(1) - (1)].p_str);
       }
@@ -586,7 +587,7 @@ namespace w3c_sw {
   case 32:
 
 /* Line 690 of lalr1.cc  */
-#line 339 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 337 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curValue = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_TTerm);
@@ -596,7 +597,7 @@ namespace w3c_sw {
   case 33:
 
 /* Line 690 of lalr1.cc  */
-#line 343 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 341 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curDatatype = (yysemantic_stack_[(1) - (1)].p_URI);
       }
@@ -605,7 +606,7 @@ namespace w3c_sw {
   case 34:
 
 /* Line 690 of lalr1.cc  */
-#line 345 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 343 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curDatatype = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
@@ -615,7 +616,7 @@ namespace w3c_sw {
   case 35:
 
 /* Line 690 of lalr1.cc  */
-#line 349 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 347 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.curLang = (yysemantic_stack_[(1) - (1)].p_str);
       }
@@ -624,7 +625,7 @@ namespace w3c_sw {
   case 36:
 
 /* Line 690 of lalr1.cc  */
-#line 351 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 349 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.curLang = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
@@ -634,7 +635,7 @@ namespace w3c_sw {
   case 37:
 
 /* Line 690 of lalr1.cc  */
-#line 358 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 356 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -644,7 +645,7 @@ namespace w3c_sw {
   case 38:
 
 /* Line 690 of lalr1.cc  */
-#line 365 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 363 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_BNode) = driver.getBNode(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -654,7 +655,7 @@ namespace w3c_sw {
   case 39:
 
 /* Line 690 of lalr1.cc  */
-#line 372 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 370 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
@@ -663,7 +664,7 @@ namespace w3c_sw {
   case 40:
 
 /* Line 690 of lalr1.cc  */
-#line 378 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 376 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(2) - (2)].p_str);
     }
@@ -672,7 +673,7 @@ namespace w3c_sw {
   case 41:
 
 /* Line 690 of lalr1.cc  */
-#line 384 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 382 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = NULL;
     }
@@ -681,7 +682,7 @@ namespace w3c_sw {
   case 43:
 
 /* Line 690 of lalr1.cc  */
-#line 391 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 389 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), NULL, (yysemantic_stack_[(3) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(3) - (1)].p_str)) : NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -692,7 +693,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 690 of lalr1.cc  */
-#line 396 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 394 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_str), NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete (yysemantic_stack_[(2) - (1)].p_str);
@@ -703,7 +704,7 @@ namespace w3c_sw {
   case 45:
 
 /* Line 690 of lalr1.cc  */
-#line 404 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 402 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
@@ -712,7 +713,7 @@ namespace w3c_sw {
   case 46:
 
 /* Line 690 of lalr1.cc  */
-#line 410 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 408 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), (yysemantic_stack_[(3) - (1)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -722,7 +723,7 @@ namespace w3c_sw {
   case 47:
 
 /* Line 690 of lalr1.cc  */
-#line 414 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 412 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (1)].p_str), (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (1)].p_str);
@@ -732,7 +733,7 @@ namespace w3c_sw {
   case 48:
 
 /* Line 690 of lalr1.cc  */
-#line 421 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 419 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
     }
@@ -741,7 +742,7 @@ namespace w3c_sw {
   case 49:
 
 /* Line 690 of lalr1.cc  */
-#line 424 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 422 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(4) - (1)].p_URI), NULL);
       delete driver.curValue;
@@ -752,7 +753,7 @@ namespace w3c_sw {
   case 50:
 
 /* Line 690 of lalr1.cc  */
-#line 429 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 427 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(4) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(4) - (1)].p_str)) : NULL);
       delete driver.curValue;
@@ -764,7 +765,7 @@ namespace w3c_sw {
   case 51:
 
 /* Line 690 of lalr1.cc  */
-#line 438 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 436 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI(*driver.curValue);
 	delete driver.curValue;
@@ -774,7 +775,7 @@ namespace w3c_sw {
   case 52:
 
 /* Line 690 of lalr1.cc  */
-#line 442 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 440 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getBNode(*driver.curValue);
 	delete driver.curValue;
@@ -784,7 +785,7 @@ namespace w3c_sw {
   case 53:
 
 /* Line 690 of lalr1.cc  */
-#line 446 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 444 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete driver.curValue;
@@ -795,7 +796,7 @@ namespace w3c_sw {
   case 54:
 
 /* Line 690 of lalr1.cc  */
-#line 451 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 449 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete driver.curValue;
@@ -805,7 +806,7 @@ namespace w3c_sw {
   case 55:
 
 /* Line 690 of lalr1.cc  */
-#line 458 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 456 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -815,7 +816,7 @@ namespace w3c_sw {
   case 56:
 
 /* Line 690 of lalr1.cc  */
-#line 462 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 460 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -825,7 +826,7 @@ namespace w3c_sw {
   case 57:
 
 /* Line 690 of lalr1.cc  */
-#line 469 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 467 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -836,7 +837,7 @@ namespace w3c_sw {
   case 58:
 
 /* Line 690 of lalr1.cc  */
-#line 474 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 472 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -847,7 +848,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 690 of lalr1.cc  */
-#line 482 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 480 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
@@ -856,7 +857,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 690 of lalr1.cc  */
-#line 488 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 486 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -866,7 +867,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 690 of lalr1.cc  */
-#line 495 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 493 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
@@ -875,7 +876,7 @@ namespace w3c_sw {
   case 91:
 
 /* Line 690 of lalr1.cc  */
-#line 572 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 570 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = new std::string("head");
     }
@@ -884,7 +885,7 @@ namespace w3c_sw {
   case 92:
 
 /* Line 690 of lalr1.cc  */
-#line 575 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 573 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("vars");
     }
@@ -893,7 +894,7 @@ namespace w3c_sw {
   case 93:
 
 /* Line 690 of lalr1.cc  */
-#line 578 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 576 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("results");
     }
@@ -902,7 +903,7 @@ namespace w3c_sw {
   case 94:
 
 /* Line 690 of lalr1.cc  */
-#line 581 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 579 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bindings");
     }
@@ -911,7 +912,7 @@ namespace w3c_sw {
   case 95:
 
 /* Line 690 of lalr1.cc  */
-#line 584 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 582 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("type");
     }
@@ -920,7 +921,7 @@ namespace w3c_sw {
   case 96:
 
 /* Line 690 of lalr1.cc  */
-#line 587 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 585 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("uri");
     }
@@ -929,7 +930,7 @@ namespace w3c_sw {
   case 97:
 
 /* Line 690 of lalr1.cc  */
-#line 590 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 588 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bnode");
     }
@@ -938,7 +939,7 @@ namespace w3c_sw {
   case 98:
 
 /* Line 690 of lalr1.cc  */
-#line 593 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 591 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("literal");
     }
@@ -947,7 +948,7 @@ namespace w3c_sw {
   case 99:
 
 /* Line 690 of lalr1.cc  */
-#line 596 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 594 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("typedLiteral");
     }
@@ -956,7 +957,7 @@ namespace w3c_sw {
   case 100:
 
 /* Line 690 of lalr1.cc  */
-#line 599 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 597 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("datatype");
     }
@@ -965,7 +966,7 @@ namespace w3c_sw {
   case 101:
 
 /* Line 690 of lalr1.cc  */
-#line 602 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 600 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("lang");
     }
@@ -974,7 +975,7 @@ namespace w3c_sw {
   case 102:
 
 /* Line 690 of lalr1.cc  */
-#line 605 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 603 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("value");
     }
@@ -983,7 +984,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 987 "lib/JSONresultsParser/JSONresultsParser.cpp"
+#line 988 "lib/JSONresultsParser/JSONresultsParser.cpp"
 	default:
           break;
       }
@@ -1568,17 +1569,17 @@ namespace w3c_sw {
   const unsigned short int
   JSONresultsParser::yyrline_[] =
   {
-         0,   228,   228,   228,   240,   244,   247,   249,   253,   254,
-     258,   265,   265,   272,   278,   280,   284,   288,   292,   295,
-     297,   301,   301,   309,   312,   314,   318,   325,   328,   331,
-     334,   337,   337,   343,   343,   349,   349,   358,   365,   372,
-     378,   384,   387,   391,   396,   404,   410,   414,   421,   424,
-     429,   438,   442,   446,   451,   458,   462,   469,   474,   482,
-     488,   495,   501,   502,   506,   507,   511,   512,   516,   517,
-     521,   522,   526,   527,   531,   532,   536,   540,   541,   545,
-     546,   550,   551,   555,   556,   560,   561,   565,   566,   570,
-     571,   572,   575,   578,   581,   584,   587,   590,   593,   596,
-     599,   602,   605
+         0,   226,   226,   226,   238,   242,   245,   247,   251,   252,
+     256,   263,   263,   270,   276,   278,   282,   286,   290,   293,
+     295,   299,   299,   307,   310,   312,   316,   323,   326,   329,
+     332,   335,   335,   341,   341,   347,   347,   356,   363,   370,
+     376,   382,   385,   389,   394,   402,   408,   412,   419,   422,
+     427,   436,   440,   444,   449,   456,   460,   467,   472,   480,
+     486,   493,   499,   500,   504,   505,   509,   510,   514,   515,
+     519,   520,   524,   525,   529,   530,   534,   538,   539,   543,
+     544,   548,   549,   553,   554,   558,   559,   563,   564,   568,
+     569,   570,   573,   576,   579,   582,   585,   588,   591,   594,
+     597,   600,   603
   };
 
   // Print the state stack on the debug stream.
@@ -1671,11 +1672,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 1675 "lib/JSONresultsParser/JSONresultsParser.cpp"
+#line 1676 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 612 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 610 "lib/JSONresultsParser/JSONresultsParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::JSONresultsParser::error(const JSONresultsParser::location_type& l,

@@ -38,7 +38,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 51 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 52 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -89,6 +89,7 @@ protected:
     ProductionVector<const Expression*> filterExpressions;
     bool countStar;
     WhereClause* lastWhereClause;
+    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -171,12 +172,10 @@ protected:
     }
 
     void addBindingValue (const TTerm* value) {
-	//    throw "!! how can i get the yylocation_stack_?";
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
 	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
-	    // error(*(yylocation_stack_.begin()), ss.str().c_str());
-	    throw "!! how can i get the yylocation_stack_?";
+	    error(*yylloc, ss.str().c_str());
 	}
 	if (value != TTerm::Unbound)
 	    curResultSet->set(curResult, *curTTerm, value, false);
@@ -191,10 +190,8 @@ protected:
     }
 
     Result* endBindingRow () {
-	if (curTTerm != termList.end()) {
-	    // error(*(yylocation_stack_.begin()), "insufficient bindings for result set row.");
-	    throw "!! how can i get the yylocation_stack_?";
-	}
+	if (curTTerm != termList.end())
+	    error(*yylloc, "insufficient bindings for result set row.");
 	Result* ret = curResult;
 	curResult = NULL;
 	return ret;
@@ -235,7 +232,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 239 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 236 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -265,7 +262,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 269 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 266 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -277,7 +274,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 247 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 245 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -347,7 +344,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 351 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 348 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -723,7 +720,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 727 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 724 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

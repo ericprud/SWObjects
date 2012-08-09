@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 262 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 260 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
 
 #include "../SPARQLalgebraScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 320 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 318 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
 
 #include <stdarg.h>
 #include "SPARQLalgebraScanner.hpp"
@@ -340,10 +340,11 @@ namespace w3c_sw {
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
+    driver.yylloc = &yylloc;
 }
 
 /* Line 565 of lalr1.cc  */
-#line 347 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
+#line 348 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -462,7 +463,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 690 of lalr1.cc  */
-#line 337 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 335 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
     }
@@ -471,7 +472,7 @@ namespace w3c_sw {
   case 3:
 
 /* Line 690 of lalr1.cc  */
-#line 340 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 338 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
     }
@@ -480,7 +481,7 @@ namespace w3c_sw {
   case 5:
 
 /* Line 690 of lalr1.cc  */
-#line 350 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 348 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
     }
@@ -489,7 +490,7 @@ namespace w3c_sw {
   case 7:
 
 /* Line 690 of lalr1.cc  */
-#line 357 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 355 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
     }
@@ -498,7 +499,7 @@ namespace w3c_sw {
   case 9:
 
 /* Line 690 of lalr1.cc  */
-#line 364 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 362 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Select((yysemantic_stack_[(4) - (3)].p_protoSelect).distinctness, (yysemantic_stack_[(4) - (3)].p_protoSelect).varSet, (yysemantic_stack_[(4) - (2)].p_DatasetClauses), (yysemantic_stack_[(4) - (3)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(4) - (3)].p_protoSelect).p_SolutionModifier);
     }
@@ -507,7 +508,7 @@ namespace w3c_sw {
   case 10:
 
 /* Line 690 of lalr1.cc  */
-#line 367 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 365 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Ask((yysemantic_stack_[(4) - (2)].p_DatasetClauses), new WhereClause((yysemantic_stack_[(4) - (3)].p_op)));
     }
@@ -516,7 +517,7 @@ namespace w3c_sw {
   case 11:
 
 /* Line 690 of lalr1.cc  */
-#line 370 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 368 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause((yysemantic_stack_[(1) - (1)].p_op)));
     }
@@ -525,7 +526,7 @@ namespace w3c_sw {
   case 12:
 
 /* Line 690 of lalr1.cc  */
-#line 373 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 371 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Select((yysemantic_stack_[(1) - (1)].p_protoSelect).distinctness, (yysemantic_stack_[(1) - (1)].p_protoSelect).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(1) - (1)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_SolutionModifier);
     }
@@ -534,7 +535,7 @@ namespace w3c_sw {
   case 13:
 
 /* Line 690 of lalr1.cc  */
-#line 379 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 377 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>((yysemantic_stack_[(1) - (1)].p_DatasetClause));
     }
@@ -543,7 +544,7 @@ namespace w3c_sw {
   case 14:
 
 /* Line 690 of lalr1.cc  */
-#line 382 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 380 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
 	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
@@ -553,7 +554,7 @@ namespace w3c_sw {
   case 16:
 
 /* Line 690 of lalr1.cc  */
-#line 390 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 388 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
 	(yyval.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, NULL, NULL, -1, -1);
@@ -563,7 +564,7 @@ namespace w3c_sw {
   case 18:
 
 /* Line 690 of lalr1.cc  */
-#line 398 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 396 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
 	(yyval.p_protoSelect).distinctness = DIST_all;
@@ -573,7 +574,7 @@ namespace w3c_sw {
   case 20:
 
 /* Line 690 of lalr1.cc  */
-#line 406 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 404 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
 	(yyval.p_protoSelect).varSet = new StarVarSet();
@@ -583,7 +584,7 @@ namespace w3c_sw {
   case 22:
 
 /* Line 690 of lalr1.cc  */
-#line 414 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 412 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
 	(yyval.p_protoSelect).p_OrderConditions = NULL;
@@ -593,7 +594,7 @@ namespace w3c_sw {
   case 24:
 
 /* Line 690 of lalr1.cc  */
-#line 422 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 420 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
 	(yyval.p_protoSelect).p_having = NULL;
@@ -603,7 +604,7 @@ namespace w3c_sw {
   case 25:
 
 /* Line 690 of lalr1.cc  */
-#line 429 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 427 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	throw std::string("ExtendOpt: not ready to parse aggregates");
 	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
@@ -613,7 +614,7 @@ namespace w3c_sw {
   case 26:
 
 /* Line 690 of lalr1.cc  */
-#line 433 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 431 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
     }
@@ -622,7 +623,7 @@ namespace w3c_sw {
   case 28:
 
 /* Line 690 of lalr1.cc  */
-#line 440 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 438 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect).p_WhereClause = new WhereClause((yysemantic_stack_[(1) - (1)].p_op));
     }
@@ -631,7 +632,7 @@ namespace w3c_sw {
   case 29:
 
 /* Line 690 of lalr1.cc  */
-#line 448 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 446 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = (yysemantic_stack_[(4) - (3)].p_op);
     }
@@ -640,7 +641,7 @@ namespace w3c_sw {
   case 30:
 
 /* Line 690 of lalr1.cc  */
-#line 454 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 452 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
@@ -649,7 +650,7 @@ namespace w3c_sw {
   case 32:
 
 /* Line 690 of lalr1.cc  */
-#line 464 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 462 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -658,7 +659,7 @@ namespace w3c_sw {
   case 33:
 
 /* Line 690 of lalr1.cc  */
-#line 466 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 464 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -667,7 +668,7 @@ namespace w3c_sw {
   case 34:
 
 /* Line 690 of lalr1.cc  */
-#line 468 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 466 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(6) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(6) - (5)].p_URI));
@@ -677,7 +678,7 @@ namespace w3c_sw {
   case 37:
 
 /* Line 690 of lalr1.cc  */
-#line 480 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 478 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(7) - (6)].p_protoSelect);
 	(yyval.p_protoSelect).varSet = (yysemantic_stack_[(7) - (4)].p_ExpressionAliaseList);
@@ -687,7 +688,7 @@ namespace w3c_sw {
   case 38:
 
 /* Line 690 of lalr1.cc  */
-#line 487 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 485 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList();
     }
@@ -696,7 +697,7 @@ namespace w3c_sw {
   case 39:
 
 /* Line 690 of lalr1.cc  */
-#line 490 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 488 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(2) - (2)].p_Variable))));
 	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
@@ -706,7 +707,7 @@ namespace w3c_sw {
   case 40:
 
 /* Line 690 of lalr1.cc  */
-#line 497 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 495 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	throw std::string("Extend: not ready to parse aggregates");
     }
@@ -715,7 +716,7 @@ namespace w3c_sw {
   case 51:
 
 /* Line 690 of lalr1.cc  */
-#line 530 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 528 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
 	(yyval.p_protoSelect).distinctness = DIST_distinct;
@@ -725,7 +726,7 @@ namespace w3c_sw {
   case 52:
 
 /* Line 690 of lalr1.cc  */
-#line 534 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 532 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
 	(yyval.p_protoSelect).distinctness = DIST_reduced;
@@ -735,7 +736,7 @@ namespace w3c_sw {
   case 54:
 
 /* Line 690 of lalr1.cc  */
-#line 570 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 568 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	throw std::string("GroupClause: not ready to parse aggregates");
 	(yyval.p_protoSelect).p_WhereClause = new WhereClause((yysemantic_stack_[(10) - (9)].p_op));
@@ -745,7 +746,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 690 of lalr1.cc  */
-#line 589 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 587 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(5) - (4)].p_protoSelect);
 	(yyval.p_protoSelect).p_having = new w3c_sw::ProductionVector<const w3c_sw::Expression*>((yysemantic_stack_[(5) - (3)].p_Expression)); // !!!
@@ -755,7 +756,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 690 of lalr1.cc  */
-#line 598 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 596 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(7) - (6)].p_protoSelect);
 	(yyval.p_protoSelect).p_OrderConditions = (yysemantic_stack_[(7) - (4)].p_OrderConditions);
@@ -765,7 +766,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 690 of lalr1.cc  */
-#line 605 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 603 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
 	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
@@ -775,7 +776,7 @@ namespace w3c_sw {
   case 62:
 
 /* Line 690 of lalr1.cc  */
-#line 609 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 607 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
 	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
@@ -785,7 +786,7 @@ namespace w3c_sw {
   case 64:
 
 /* Line 690 of lalr1.cc  */
-#line 617 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 615 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
@@ -795,7 +796,7 @@ namespace w3c_sw {
   case 65:
 
 /* Line 690 of lalr1.cc  */
-#line 624 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 622 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_e_ASCorDESC) = ORDER_Asc;
     }
@@ -804,7 +805,7 @@ namespace w3c_sw {
   case 66:
 
 /* Line 690 of lalr1.cc  */
-#line 628 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 626 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_e_ASCorDESC) = ORDER_Desc;
     }
@@ -813,7 +814,7 @@ namespace w3c_sw {
   case 67:
 
 /* Line 690 of lalr1.cc  */
-#line 634 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 632 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(4) - (2)].p_e_ASCorDESC);
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(4) - (3)].p_Expression);
@@ -823,7 +824,7 @@ namespace w3c_sw {
   case 68:
 
 /* Line 690 of lalr1.cc  */
-#line 641 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 639 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_protoSelect) = (yysemantic_stack_[(6) - (5)].p_protoSelect); // ($5.p_group, ...)
 	(yyval.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, (yysemantic_stack_[(6) - (5)].p_protoSelect).p_having, (yysemantic_stack_[(6) - (5)].p_protoSelect).p_OrderConditions, (yysemantic_stack_[(6) - (3)].p_int), (yysemantic_stack_[(6) - (4)].p_int)); // !!!
@@ -833,7 +834,7 @@ namespace w3c_sw {
   case 69:
 
 /* Line 690 of lalr1.cc  */
-#line 648 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 646 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_int) = ((IntegerRDFLiteral*)(yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral))->getValue();
     }
@@ -842,7 +843,7 @@ namespace w3c_sw {
   case 70:
 
 /* Line 690 of lalr1.cc  */
-#line 651 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 649 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_int) = LIMIT_None;
     }
@@ -851,7 +852,7 @@ namespace w3c_sw {
   case 72:
 
 /* Line 690 of lalr1.cc  */
-#line 675 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 673 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
     }
@@ -860,7 +861,7 @@ namespace w3c_sw {
   case 74:
 
 /* Line 690 of lalr1.cc  */
-#line 682 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 680 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
     }
@@ -869,7 +870,7 @@ namespace w3c_sw {
   case 76:
 
 /* Line 690 of lalr1.cc  */
-#line 689 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 687 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(3) - (2)]. p_OperationSet);
 }
@@ -878,7 +879,7 @@ namespace w3c_sw {
   case 77:
 
 /* Line 690 of lalr1.cc  */
-#line 695 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 693 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	OperationSet* ret = new OperationSet();
 	ret->push_back((yysemantic_stack_[(1) - (1)].p_Operation));
@@ -888,7 +889,7 @@ namespace w3c_sw {
   case 78:
 
 /* Line 690 of lalr1.cc  */
-#line 699 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 697 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)]. p_OperationSet)->push_back((yysemantic_stack_[(2) - (2)].p_Operation));
 	(yyval. p_OperationSet) = (yysemantic_stack_[(2) - (1)]. p_OperationSet);
@@ -898,7 +899,7 @@ namespace w3c_sw {
   case 90:
 
 /* Line 690 of lalr1.cc  */
-#line 722 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 720 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Load((yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (4)].p_URI));
     }
@@ -907,7 +908,7 @@ namespace w3c_sw {
   case 91:
 
 /* Line 690 of lalr1.cc  */
-#line 728 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 726 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = NULL;
     }
@@ -916,7 +917,7 @@ namespace w3c_sw {
   case 93:
 
 /* Line 690 of lalr1.cc  */
-#line 737 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 735 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Clear((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
     }
@@ -925,7 +926,7 @@ namespace w3c_sw {
   case 94:
 
 /* Line 690 of lalr1.cc  */
-#line 743 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 741 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Silence) = SILENT_No;
     }
@@ -934,7 +935,7 @@ namespace w3c_sw {
   case 95:
 
 /* Line 690 of lalr1.cc  */
-#line 746 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 744 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Silence) = SILENT_Yes;
     }
@@ -943,7 +944,7 @@ namespace w3c_sw {
   case 96:
 
 /* Line 690 of lalr1.cc  */
-#line 754 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 752 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Drop((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
     }
@@ -952,7 +953,7 @@ namespace w3c_sw {
   case 97:
 
 /* Line 690 of lalr1.cc  */
-#line 762 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 760 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Create((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
     }
@@ -961,7 +962,7 @@ namespace w3c_sw {
   case 98:
 
 /* Line 690 of lalr1.cc  */
-#line 770 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 768 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Add((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
     }
@@ -970,7 +971,7 @@ namespace w3c_sw {
   case 99:
 
 /* Line 690 of lalr1.cc  */
-#line 778 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 776 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Move((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
     }
@@ -979,7 +980,7 @@ namespace w3c_sw {
   case 100:
 
 /* Line 690 of lalr1.cc  */
-#line 786 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 784 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Copy((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
     }
@@ -988,7 +989,7 @@ namespace w3c_sw {
   case 101:
 
 /* Line 690 of lalr1.cc  */
-#line 794 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 792 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Insert((yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
@@ -997,7 +998,7 @@ namespace w3c_sw {
   case 102:
 
 /* Line 690 of lalr1.cc  */
-#line 802 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 800 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
@@ -1006,7 +1007,7 @@ namespace w3c_sw {
   case 103:
 
 /* Line 690 of lalr1.cc  */
-#line 810 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 808 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
@@ -1015,7 +1016,7 @@ namespace w3c_sw {
   case 104:
 
 /* Line 690 of lalr1.cc  */
-#line 818 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 816 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (5)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (5)].p_DeleteInsert).ins, new WhereClause((yysemantic_stack_[(6) - (4)].p_op)));
     }
@@ -1024,7 +1025,7 @@ namespace w3c_sw {
   case 105:
 
 /* Line 690 of lalr1.cc  */
-#line 824 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 822 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
@@ -1033,7 +1034,7 @@ namespace w3c_sw {
   case 106:
 
 /* Line 690 of lalr1.cc  */
-#line 827 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 825 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
 	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
@@ -1043,7 +1044,7 @@ namespace w3c_sw {
   case 107:
 
 /* Line 690 of lalr1.cc  */
-#line 834 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 832 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Insert) = NULL;
     }
@@ -1052,7 +1053,7 @@ namespace w3c_sw {
   case 109:
 
 /* Line 690 of lalr1.cc  */
-#line 841 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 839 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DeleteInsert).del = (yysemantic_stack_[(2) - (1)].p_Delete);
 	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(2) - (2)].p_Insert);
@@ -1062,7 +1063,7 @@ namespace w3c_sw {
   case 110:
 
 /* Line 690 of lalr1.cc  */
-#line 845 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 843 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DeleteInsert).del = NULL;
 	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(1) - (1)].p_Insert);
@@ -1072,7 +1073,7 @@ namespace w3c_sw {
   case 111:
 
 /* Line 690 of lalr1.cc  */
-#line 854 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 852 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Delete) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
@@ -1081,7 +1082,7 @@ namespace w3c_sw {
   case 112:
 
 /* Line 690 of lalr1.cc  */
-#line 862 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 860 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Insert) = new Insert((yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
@@ -1090,7 +1091,7 @@ namespace w3c_sw {
   case 113:
 
 /* Line 690 of lalr1.cc  */
-#line 870 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 868 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(4) - (3)].p_URI), driver.atomFactory);
     }
@@ -1099,7 +1100,7 @@ namespace w3c_sw {
   case 114:
 
 /* Line 690 of lalr1.cc  */
-#line 873 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 871 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(5) - (3)].p_URI), driver.atomFactory);
     }
@@ -1108,7 +1109,7 @@ namespace w3c_sw {
   case 115:
 
 /* Line 690 of lalr1.cc  */
-#line 881 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 879 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = NULL;
     }
@@ -1117,7 +1118,7 @@ namespace w3c_sw {
   case 119:
 
 /* Line 690 of lalr1.cc  */
-#line 897 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 895 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	w3c_sw_NEED_IMPL("DEFAULT");
     }
@@ -1126,7 +1127,7 @@ namespace w3c_sw {
   case 120:
 
 /* Line 690 of lalr1.cc  */
-#line 900 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 898 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	w3c_sw_NEED_IMPL("NAMED");
     }
@@ -1135,7 +1136,7 @@ namespace w3c_sw {
   case 121:
 
 /* Line 690 of lalr1.cc  */
-#line 903 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 901 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	w3c_sw_NEED_IMPL("ALL");
     }
@@ -1144,7 +1145,7 @@ namespace w3c_sw {
   case 124:
 
 /* Line 690 of lalr1.cc  */
-#line 919 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 917 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = (yysemantic_stack_[(1) - (1)].p_conj);
     }
@@ -1153,7 +1154,7 @@ namespace w3c_sw {
   case 127:
 
 /* Line 690 of lalr1.cc  */
-#line 930 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 928 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_conj) = new ParserTableConjunction();
     }
@@ -1162,7 +1163,7 @@ namespace w3c_sw {
   case 128:
 
 /* Line 690 of lalr1.cc  */
-#line 933 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 931 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), false);
 	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
@@ -1172,7 +1173,7 @@ namespace w3c_sw {
   case 129:
 
 /* Line 690 of lalr1.cc  */
-#line 940 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 938 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = driver.curGraphName;
 	driver.curGraphName = (yysemantic_stack_[(2) - (2)].p_TTerm);
@@ -1182,7 +1183,7 @@ namespace w3c_sw {
   case 130:
 
 /* Line 690 of lalr1.cc  */
-#line 943 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 941 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	  (yyval.p_op) = (yysemantic_stack_[(4) - (4)].p_op);
 	  driver.curGraphName = (yysemantic_stack_[(4) - (3)].p_TTerm);
@@ -1192,7 +1193,7 @@ namespace w3c_sw {
   case 131:
 
 /* Line 690 of lalr1.cc  */
-#line 950 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 948 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = (yysemantic_stack_[(4) - (3)].p_BasicGraphPattern);
     }
@@ -1201,7 +1202,7 @@ namespace w3c_sw {
   case 132:
 
 /* Line 690 of lalr1.cc  */
-#line 953 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 951 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = driver.ensureGraphPattern();
     }
@@ -1210,7 +1211,7 @@ namespace w3c_sw {
   case 133:
 
 /* Line 690 of lalr1.cc  */
-#line 959 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 957 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_BasicGraphPattern) = driver.ensureGraphPattern();
 	(yyval.p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(1) - (1)].p_TriplePattern));
@@ -1220,7 +1221,7 @@ namespace w3c_sw {
   case 134:
 
 /* Line 690 of lalr1.cc  */
-#line 963 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 961 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(2) - (2)].p_TriplePattern));
 	(yyval.p_BasicGraphPattern) = (yysemantic_stack_[(2) - (1)].p_BasicGraphPattern);
@@ -1230,7 +1231,7 @@ namespace w3c_sw {
   case 137:
 
 /* Line 690 of lalr1.cc  */
-#line 972 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 970 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(5) - (4)].p_conj)->insertTableOperation((yysemantic_stack_[(5) - (3)].p_op));
 	(yyval.p_op) = (yysemantic_stack_[(5) - (4)].p_conj);
@@ -1240,7 +1241,7 @@ namespace w3c_sw {
   case 143:
 
 /* Line 690 of lalr1.cc  */
-#line 981 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 979 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	throw new std::string("GroupGraphPatternNoSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
 	(yyval.p_op) = driver.ensureGraphPattern();
@@ -1250,7 +1251,7 @@ namespace w3c_sw {
   case 146:
 
 /* Line 690 of lalr1.cc  */
-#line 993 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 991 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_conj) = new ParserTableConjunction();
 	(yyval.p_conj)->addTableOperation((yysemantic_stack_[(1) - (1)].p_op), driver.unnestTree);
@@ -1260,7 +1261,7 @@ namespace w3c_sw {
   case 147:
 
 /* Line 690 of lalr1.cc  */
-#line 997 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 995 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), driver.unnestTree);
 	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
@@ -1270,7 +1271,7 @@ namespace w3c_sw {
   case 150:
 
 /* Line 690 of lalr1.cc  */
-#line 1006 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1004 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(5) - (4)].p_conj)->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
 	(yyval.p_op) = (yysemantic_stack_[(5) - (4)].p_conj);
@@ -1280,7 +1281,7 @@ namespace w3c_sw {
   case 156:
 
 /* Line 690 of lalr1.cc  */
-#line 1015 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1013 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	throw new std::string("GroupGraphPatternSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
 	(yyval.p_op) = driver.ensureGraphPattern();
@@ -1290,7 +1291,7 @@ namespace w3c_sw {
   case 157:
 
 /* Line 690 of lalr1.cc  */
-#line 1019 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1017 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = new SubSelect(new Select((yysemantic_stack_[(1) - (1)].p_protoSelect).distinctness, (yysemantic_stack_[(1) - (1)].p_protoSelect).varSet, NULL, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_SolutionModifier));
     }
@@ -1299,7 +1300,7 @@ namespace w3c_sw {
   case 158:
 
 /* Line 690 of lalr1.cc  */
-#line 1025 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1023 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_conj) = new ParserTableConjunction();
 	(yyval.p_conj)->addTableOperation((yysemantic_stack_[(1) - (1)].p_op), driver.unnestTree);
@@ -1309,7 +1310,7 @@ namespace w3c_sw {
   case 159:
 
 /* Line 690 of lalr1.cc  */
-#line 1029 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1027 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), driver.unnestTree);
 	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
@@ -1319,7 +1320,7 @@ namespace w3c_sw {
   case 160:
 
 /* Line 690 of lalr1.cc  */
-#line 1036 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1034 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
     }
@@ -1328,7 +1329,7 @@ namespace w3c_sw {
   case 161:
 
 /* Line 690 of lalr1.cc  */
-#line 1042 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1040 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
     }
@@ -1337,7 +1338,7 @@ namespace w3c_sw {
   case 162:
 
 /* Line 690 of lalr1.cc  */
-#line 1045 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1043 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1347,7 +1348,7 @@ namespace w3c_sw {
   case 163:
 
 /* Line 690 of lalr1.cc  */
-#line 1052 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1050 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TriplePattern) = driver.atomFactory->getTriple((yysemantic_stack_[(6) - (3)].p_TTerm), (yysemantic_stack_[(6) - (4)].p_TTerm), (yysemantic_stack_[(6) - (5)].p_TTerm));
     }
@@ -1356,7 +1357,7 @@ namespace w3c_sw {
   case 164:
 
 /* Line 690 of lalr1.cc  */
-#line 1066 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1064 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	OptionalGraphPattern* opt = new OptionalGraphPattern((yysemantic_stack_[(6) - (4)].p_op));
 	TableConjunction* conj = new TableConjunction();
@@ -1376,7 +1377,7 @@ namespace w3c_sw {
   case 165:
 
 /* Line 690 of lalr1.cc  */
-#line 1080 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1078 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	OptionalGraphPattern* opt = new OptionalGraphPattern((yysemantic_stack_[(5) - (3)].p_op));
 	if ((yysemantic_stack_[(5) - (4)].p_Expressions) != NULL) {
@@ -1393,7 +1394,7 @@ namespace w3c_sw {
   case 166:
 
 /* Line 690 of lalr1.cc  */
-#line 1094 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1092 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expressions) = NULL;
     }
@@ -1402,7 +1403,7 @@ namespace w3c_sw {
   case 168:
 
 /* Line 690 of lalr1.cc  */
-#line 1101 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1099 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = driver.curGraphName;
 	driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
@@ -1412,7 +1413,7 @@ namespace w3c_sw {
   case 169:
 
 /* Line 690 of lalr1.cc  */
-#line 1104 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1102 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	  (yyval.p_op) = (yysemantic_stack_[(6) - (5)].p_op);
 	  driver.curGraphName = (yysemantic_stack_[(6) - (4)].p_TTerm);
@@ -1422,7 +1423,7 @@ namespace w3c_sw {
   case 170:
 
 /* Line 690 of lalr1.cc  */
-#line 1111 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1109 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = new ServiceGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), (yysemantic_stack_[(6) - (5)].p_op), (yysemantic_stack_[(6) - (3)].p_Silence), driver.atomFactory, false);
     }
@@ -1431,7 +1432,7 @@ namespace w3c_sw {
   case 171:
 
 /* Line 690 of lalr1.cc  */
-#line 1119 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1117 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	TableConjunction* ret = new TableConjunction();
 	ret->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
@@ -1443,7 +1444,7 @@ namespace w3c_sw {
   case 172:
 
 /* Line 690 of lalr1.cc  */
-#line 1128 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1126 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	TableDisjunction* ret = new TableDisjunction();
 	ret->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
@@ -1455,7 +1456,7 @@ namespace w3c_sw {
   case 173:
 
 /* Line 690 of lalr1.cc  */
-#line 1137 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1135 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_op) = new Filter((yysemantic_stack_[(5) - (4)].p_op), (yysemantic_stack_[(5) - (3)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expressions)->end());
 	(yysemantic_stack_[(5) - (3)].p_Expressions)->clear();
@@ -1466,7 +1467,7 @@ namespace w3c_sw {
   case 174:
 
 /* Line 690 of lalr1.cc  */
-#line 1153 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1151 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expressions) = NULL;
     }
@@ -1475,7 +1476,7 @@ namespace w3c_sw {
   case 175:
 
 /* Line 690 of lalr1.cc  */
-#line 1156 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1154 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(4) - (3)].p_Expressions)->push_front((yysemantic_stack_[(4) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
@@ -1485,7 +1486,7 @@ namespace w3c_sw {
   case 176:
 
 /* Line 690 of lalr1.cc  */
-#line 1163 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1161 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -1494,7 +1495,7 @@ namespace w3c_sw {
   case 177:
 
 /* Line 690 of lalr1.cc  */
-#line 1169 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1167 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -1503,7 +1504,7 @@ namespace w3c_sw {
   case 178:
 
 /* Line 690 of lalr1.cc  */
-#line 1172 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1170 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1513,7 +1514,7 @@ namespace w3c_sw {
   case 185:
 
 /* Line 690 of lalr1.cc  */
-#line 1229 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1227 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $$ = new PathAlternative($3, $4);
     }
@@ -1522,7 +1523,7 @@ namespace w3c_sw {
   case 186:
 
 /* Line 690 of lalr1.cc  */
-#line 1235 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1233 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $$ = new PathSequence($3, $4);
     }
@@ -1531,7 +1532,7 @@ namespace w3c_sw {
   case 187:
 
 /* Line 690 of lalr1.cc  */
-#line 1243 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1241 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $$ = new PathEltOrInverse($3);
     }
@@ -1540,7 +1541,7 @@ namespace w3c_sw {
   case 188:
 
 /* Line 690 of lalr1.cc  */
-#line 1249 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1247 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $$ = $3;
     }
@@ -1549,7 +1550,7 @@ namespace w3c_sw {
   case 189:
 
 /* Line 690 of lalr1.cc  */
-#line 1252 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1250 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $$ = $5;
       }
@@ -1558,7 +1559,7 @@ namespace w3c_sw {
   case 193:
 
 /* Line 690 of lalr1.cc  */
-#line 1264 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1262 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1567,7 +1568,7 @@ namespace w3c_sw {
   case 194:
 
 /* Line 690 of lalr1.cc  */
-#line 1267 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1265 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     }
@@ -1576,7 +1577,7 @@ namespace w3c_sw {
   case 195:
 
 /* Line 690 of lalr1.cc  */
-#line 1275 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1273 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(4) - (3)].p_TTerm);
     }
@@ -1585,7 +1586,7 @@ namespace w3c_sw {
   case 197:
 
 /* Line 690 of lalr1.cc  */
-#line 1282 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1280 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	// $1->push_back($2);
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (1)].p_TTerm);
@@ -1595,7 +1596,7 @@ namespace w3c_sw {
   case 198:
 
 /* Line 690 of lalr1.cc  */
-#line 1289 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1287 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -1604,7 +1605,7 @@ namespace w3c_sw {
   case 199:
 
 /* Line 690 of lalr1.cc  */
-#line 1306 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1304 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -1613,7 +1614,7 @@ namespace w3c_sw {
   case 201:
 
 /* Line 690 of lalr1.cc  */
-#line 1313 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1311 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -1622,7 +1623,7 @@ namespace w3c_sw {
   case 202:
 
 /* Line 690 of lalr1.cc  */
-#line 1316 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1314 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1631,7 +1632,7 @@ namespace w3c_sw {
   case 205:
 
 /* Line 690 of lalr1.cc  */
-#line 1327 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1325 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1640,7 +1641,7 @@ namespace w3c_sw {
   case 207:
 
 /* Line 690 of lalr1.cc  */
-#line 1331 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1329 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -1649,7 +1650,7 @@ namespace w3c_sw {
   case 208:
 
 /* Line 690 of lalr1.cc  */
-#line 1334 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1332 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -1658,7 +1659,7 @@ namespace w3c_sw {
   case 210:
 
 /* Line 690 of lalr1.cc  */
-#line 1338 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1336 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
     }
@@ -1667,7 +1668,7 @@ namespace w3c_sw {
   case 217:
 
 /* Line 690 of lalr1.cc  */
-#line 1353 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1351 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1679,7 +1680,7 @@ namespace w3c_sw {
   case 218:
 
 /* Line 690 of lalr1.cc  */
-#line 1362 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1360 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1691,7 +1692,7 @@ namespace w3c_sw {
   case 222:
 
 /* Line 690 of lalr1.cc  */
-#line 1380 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1378 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanEQ((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1700,7 +1701,7 @@ namespace w3c_sw {
   case 223:
 
 /* Line 690 of lalr1.cc  */
-#line 1383 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1381 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanNE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1709,7 +1710,7 @@ namespace w3c_sw {
   case 224:
 
 /* Line 690 of lalr1.cc  */
-#line 1386 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1384 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanLT((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1718,7 +1719,7 @@ namespace w3c_sw {
   case 225:
 
 /* Line 690 of lalr1.cc  */
-#line 1389 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1387 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanGT((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1727,7 +1728,7 @@ namespace w3c_sw {
   case 226:
 
 /* Line 690 of lalr1.cc  */
-#line 1392 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1390 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanLE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1736,7 +1737,7 @@ namespace w3c_sw {
   case 227:
 
 /* Line 690 of lalr1.cc  */
-#line 1395 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1393 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanGE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
     }
@@ -1745,7 +1746,7 @@ namespace w3c_sw {
   case 228:
 
 /* Line 690 of lalr1.cc  */
-#line 1398 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1396 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new NaryIn((yysemantic_stack_[(4) - (3)].p_Expressions));
     }
@@ -1754,7 +1755,7 @@ namespace w3c_sw {
   case 230:
 
 /* Line 690 of lalr1.cc  */
-#line 1410 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1408 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1766,7 +1767,7 @@ namespace w3c_sw {
   case 231:
 
 /* Line 690 of lalr1.cc  */
-#line 1416 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1414 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1778,7 +1779,7 @@ namespace w3c_sw {
   case 232:
 
 /* Line 690 of lalr1.cc  */
-#line 1430 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1428 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1790,7 +1791,7 @@ namespace w3c_sw {
   case 233:
 
 /* Line 690 of lalr1.cc  */
-#line 1436 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1434 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
 	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
@@ -1802,7 +1803,7 @@ namespace w3c_sw {
   case 234:
 
 /* Line 690 of lalr1.cc  */
-#line 1445 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1443 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(4) - (3)].p_Expression));
     }
@@ -1811,7 +1812,7 @@ namespace w3c_sw {
   case 235:
 
 /* Line 690 of lalr1.cc  */
-#line 1448 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1446 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(4) - (3)].p_Expression);
     }
@@ -1820,7 +1821,7 @@ namespace w3c_sw {
   case 236:
 
 /* Line 690 of lalr1.cc  */
-#line 1451 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1449 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(4) - (3)].p_Expression));
     }
@@ -1829,7 +1830,7 @@ namespace w3c_sw {
   case 239:
 
 /* Line 690 of lalr1.cc  */
-#line 1459 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1457 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
@@ -1838,7 +1839,7 @@ namespace w3c_sw {
   case 240:
 
 /* Line 690 of lalr1.cc  */
-#line 1462 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1460 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
@@ -1847,7 +1848,7 @@ namespace w3c_sw {
   case 241:
 
 /* Line 690 of lalr1.cc  */
-#line 1465 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1463 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     }
@@ -1856,7 +1857,7 @@ namespace w3c_sw {
   case 242:
 
 /* Line 690 of lalr1.cc  */
-#line 1468 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1466 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
@@ -1865,7 +1866,7 @@ namespace w3c_sw {
   case 243:
 
 /* Line 690 of lalr1.cc  */
-#line 1471 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1469 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
@@ -1874,7 +1875,7 @@ namespace w3c_sw {
   case 244:
 
 /* Line 690 of lalr1.cc  */
-#line 1482 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1480 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1883,7 +1884,7 @@ namespace w3c_sw {
   case 245:
 
 /* Line 690 of lalr1.cc  */
-#line 1485 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1483 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1892,7 +1893,7 @@ namespace w3c_sw {
   case 246:
 
 /* Line 690 of lalr1.cc  */
-#line 1488 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1486 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -1901,7 +1902,7 @@ namespace w3c_sw {
   case 247:
 
 /* Line 690 of lalr1.cc  */
-#line 1491 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1489 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1910,7 +1911,7 @@ namespace w3c_sw {
   case 248:
 
 /* Line 690 of lalr1.cc  */
-#line 1494 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1492 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     }
@@ -1919,7 +1920,7 @@ namespace w3c_sw {
   case 249:
 
 /* Line 690 of lalr1.cc  */
-#line 1497 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1495 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1928,7 +1929,7 @@ namespace w3c_sw {
   case 250:
 
 /* Line 690 of lalr1.cc  */
-#line 1500 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1498 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1937,7 +1938,7 @@ namespace w3c_sw {
   case 251:
 
 /* Line 690 of lalr1.cc  */
-#line 1503 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1501 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1946,7 +1947,7 @@ namespace w3c_sw {
   case 252:
 
 /* Line 690 of lalr1.cc  */
-#line 1506 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1504 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
@@ -1955,7 +1956,7 @@ namespace w3c_sw {
   case 253:
 
 /* Line 690 of lalr1.cc  */
-#line 1509 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1507 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1964,7 +1965,7 @@ namespace w3c_sw {
   case 254:
 
 /* Line 690 of lalr1.cc  */
-#line 1512 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1510 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1973,7 +1974,7 @@ namespace w3c_sw {
   case 255:
 
 /* Line 690 of lalr1.cc  */
-#line 1515 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1513 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1982,7 +1983,7 @@ namespace w3c_sw {
   case 256:
 
 /* Line 690 of lalr1.cc  */
-#line 1518 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1516 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -1991,7 +1992,7 @@ namespace w3c_sw {
   case 257:
 
 /* Line 690 of lalr1.cc  */
-#line 1521 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1519 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(4) - (3)].p_Expressions))));
     }
@@ -2000,7 +2001,7 @@ namespace w3c_sw {
   case 259:
 
 /* Line 690 of lalr1.cc  */
-#line 1525 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1523 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2009,7 +2010,7 @@ namespace w3c_sw {
   case 260:
 
 /* Line 690 of lalr1.cc  */
-#line 1528 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1526 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2018,7 +2019,7 @@ namespace w3c_sw {
   case 261:
 
 /* Line 690 of lalr1.cc  */
-#line 1531 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1529 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2027,7 +2028,7 @@ namespace w3c_sw {
   case 262:
 
 /* Line 690 of lalr1.cc  */
-#line 1534 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1532 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2036,7 +2037,7 @@ namespace w3c_sw {
   case 263:
 
 /* Line 690 of lalr1.cc  */
-#line 1537 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1535 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2045,7 +2046,7 @@ namespace w3c_sw {
   case 264:
 
 /* Line 690 of lalr1.cc  */
-#line 1540 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1538 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2054,7 +2055,7 @@ namespace w3c_sw {
   case 265:
 
 /* Line 690 of lalr1.cc  */
-#line 1543 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1541 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2063,7 +2064,7 @@ namespace w3c_sw {
   case 266:
 
 /* Line 690 of lalr1.cc  */
-#line 1546 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1544 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2072,7 +2073,7 @@ namespace w3c_sw {
   case 267:
 
 /* Line 690 of lalr1.cc  */
-#line 1549 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1547 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2081,7 +2082,7 @@ namespace w3c_sw {
   case 268:
 
 /* Line 690 of lalr1.cc  */
-#line 1552 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1550 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2090,7 +2091,7 @@ namespace w3c_sw {
   case 269:
 
 /* Line 690 of lalr1.cc  */
-#line 1555 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1553 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2099,7 +2100,7 @@ namespace w3c_sw {
   case 270:
 
 /* Line 690 of lalr1.cc  */
-#line 1558 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1556 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2108,7 +2109,7 @@ namespace w3c_sw {
   case 271:
 
 /* Line 690 of lalr1.cc  */
-#line 1561 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1559 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2117,7 +2118,7 @@ namespace w3c_sw {
   case 272:
 
 /* Line 690 of lalr1.cc  */
-#line 1564 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1562 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2126,7 +2127,7 @@ namespace w3c_sw {
   case 273:
 
 /* Line 690 of lalr1.cc  */
-#line 1567 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1565 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2135,7 +2136,7 @@ namespace w3c_sw {
   case 274:
 
 /* Line 690 of lalr1.cc  */
-#line 1570 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1568 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2144,7 +2145,7 @@ namespace w3c_sw {
   case 275:
 
 /* Line 690 of lalr1.cc  */
-#line 1573 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1571 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2153,7 +2154,7 @@ namespace w3c_sw {
   case 276:
 
 /* Line 690 of lalr1.cc  */
-#line 1576 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1574 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
@@ -2162,7 +2163,7 @@ namespace w3c_sw {
   case 277:
 
 /* Line 690 of lalr1.cc  */
-#line 1579 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1577 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2171,7 +2172,7 @@ namespace w3c_sw {
   case 278:
 
 /* Line 690 of lalr1.cc  */
-#line 1582 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1580 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2180,7 +2181,7 @@ namespace w3c_sw {
   case 279:
 
 /* Line 690 of lalr1.cc  */
-#line 1585 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1583 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2189,7 +2190,7 @@ namespace w3c_sw {
   case 280:
 
 /* Line 690 of lalr1.cc  */
-#line 1588 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1586 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2198,7 +2199,7 @@ namespace w3c_sw {
   case 281:
 
 /* Line 690 of lalr1.cc  */
-#line 1591 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1589 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2207,7 +2208,7 @@ namespace w3c_sw {
   case 282:
 
 /* Line 690 of lalr1.cc  */
-#line 1594 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1592 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
 	w3c_sw_NEED_IMPL("COALESCE");
@@ -2217,7 +2218,7 @@ namespace w3c_sw {
   case 283:
 
 /* Line 690 of lalr1.cc  */
-#line 1598 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1596 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
     }
@@ -2226,7 +2227,7 @@ namespace w3c_sw {
   case 284:
 
 /* Line 690 of lalr1.cc  */
-#line 1601 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1599 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2235,7 +2236,7 @@ namespace w3c_sw {
   case 285:
 
 /* Line 690 of lalr1.cc  */
-#line 1604 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1602 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2244,7 +2245,7 @@ namespace w3c_sw {
   case 286:
 
 /* Line 690 of lalr1.cc  */
-#line 1607 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1605 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -2253,7 +2254,7 @@ namespace w3c_sw {
   case 287:
 
 /* Line 690 of lalr1.cc  */
-#line 1610 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1608 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2262,7 +2263,7 @@ namespace w3c_sw {
   case 288:
 
 /* Line 690 of lalr1.cc  */
-#line 1613 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1611 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2271,7 +2272,7 @@ namespace w3c_sw {
   case 289:
 
 /* Line 690 of lalr1.cc  */
-#line 1616 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1614 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2280,7 +2281,7 @@ namespace w3c_sw {
   case 290:
 
 /* Line 690 of lalr1.cc  */
-#line 1619 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1617 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2289,7 +2290,7 @@ namespace w3c_sw {
   case 291:
 
 /* Line 690 of lalr1.cc  */
-#line 1622 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1620 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -2298,7 +2299,7 @@ namespace w3c_sw {
   case 294:
 
 /* Line 690 of lalr1.cc  */
-#line 1630 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1628 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -2307,7 +2308,7 @@ namespace w3c_sw {
   case 296:
 
 /* Line 690 of lalr1.cc  */
-#line 1639 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1637 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
@@ -2316,7 +2317,7 @@ namespace w3c_sw {
   case 297:
 
 /* Line 690 of lalr1.cc  */
-#line 1645 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1643 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -2325,7 +2326,7 @@ namespace w3c_sw {
   case 299:
 
 /* Line 690 of lalr1.cc  */
-#line 1652 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1650 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
@@ -2334,7 +2335,7 @@ namespace w3c_sw {
   case 300:
 
 /* Line 690 of lalr1.cc  */
-#line 1658 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1656 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
 	w3c_sw_NEED_IMPL("EXISTS");
@@ -2344,7 +2345,7 @@ namespace w3c_sw {
   case 305:
 
 /* Line 690 of lalr1.cc  */
-#line 1680 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1678 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
  	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
     }
@@ -2353,7 +2354,7 @@ namespace w3c_sw {
   case 306:
 
 /* Line 690 of lalr1.cc  */
-#line 1686 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1684 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_all;
     }
@@ -2362,7 +2363,7 @@ namespace w3c_sw {
   case 307:
 
 /* Line 690 of lalr1.cc  */
-#line 1689 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1687 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_distinct;
 }
@@ -2371,7 +2372,7 @@ namespace w3c_sw {
   case 308:
 
 /* Line 690 of lalr1.cc  */
-#line 1695 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1693 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -2380,7 +2381,7 @@ namespace w3c_sw {
   case 310:
 
 /* Line 690 of lalr1.cc  */
-#line 1702 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1700 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(3) - (1)].p_URI), (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
     }
@@ -2389,7 +2390,7 @@ namespace w3c_sw {
   case 311:
 
 /* Line 690 of lalr1.cc  */
-#line 1708 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1706 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_sum;
     }
@@ -2398,7 +2399,7 @@ namespace w3c_sw {
   case 312:
 
 /* Line 690 of lalr1.cc  */
-#line 1711 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1709 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_min;
     }
@@ -2407,7 +2408,7 @@ namespace w3c_sw {
   case 313:
 
 /* Line 690 of lalr1.cc  */
-#line 1714 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1712 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_max;
     }
@@ -2416,7 +2417,7 @@ namespace w3c_sw {
   case 314:
 
 /* Line 690 of lalr1.cc  */
-#line 1717 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1715 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_avg;
     }
@@ -2425,7 +2426,7 @@ namespace w3c_sw {
   case 315:
 
 /* Line 690 of lalr1.cc  */
-#line 1720 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1718 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_sample;
     }
@@ -2434,7 +2435,7 @@ namespace w3c_sw {
   case 316:
 
 /* Line 690 of lalr1.cc  */
-#line 1726 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1724 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
     }
@@ -2443,7 +2444,7 @@ namespace w3c_sw {
   case 317:
 
 /* Line 690 of lalr1.cc  */
-#line 1729 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1727 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(4) - (2)].p_distinctness), (yysemantic_stack_[(4) - (4)].p_Expression)));
     }
@@ -2452,7 +2453,7 @@ namespace w3c_sw {
   case 319:
 
 /* Line 690 of lalr1.cc  */
-#line 1739 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1737 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_URI));
     }
@@ -2461,7 +2462,7 @@ namespace w3c_sw {
   case 320:
 
 /* Line 690 of lalr1.cc  */
-#line 1742 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1740 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(4) - (2)].p_URI), new ArgList((yysemantic_stack_[(4) - (3)].p_Expressions))));
     }
@@ -2470,7 +2471,7 @@ namespace w3c_sw {
   case 321:
 
 /* Line 690 of lalr1.cc  */
-#line 1748 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1746 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -2480,7 +2481,7 @@ namespace w3c_sw {
   case 322:
 
 /* Line 690 of lalr1.cc  */
-#line 1755 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1753 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -2489,7 +2490,7 @@ namespace w3c_sw {
   case 323:
 
 /* Line 690 of lalr1.cc  */
-#line 1761 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1759 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -2499,7 +2500,7 @@ namespace w3c_sw {
   case 324:
 
 /* Line 690 of lalr1.cc  */
-#line 1765 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1763 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -2509,7 +2510,7 @@ namespace w3c_sw {
   case 325:
 
 /* Line 690 of lalr1.cc  */
-#line 1772 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1770 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -2519,7 +2520,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 2523 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
+#line 2524 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
 	default:
           break;
       }
@@ -3868,42 +3869,42 @@ namespace w3c_sw {
   const unsigned short int
   SPARQLalgebraParser::yyrline_[] =
   {
-         0,   337,   337,   340,   346,   350,   353,   357,   360,   364,
-     367,   370,   373,   379,   382,   389,   390,   397,   398,   405,
-     406,   413,   414,   421,   422,   429,   433,   439,   440,   448,
-     454,   460,   464,   466,   464,   474,   476,   480,   487,   490,
-     497,   502,   504,   508,   512,   516,   522,   523,   524,   525,
-     526,   530,   534,   564,   570,   577,   578,   582,   583,   589,
-     598,   605,   609,   616,   617,   624,   628,   634,   641,   648,
-     651,   671,   675,   678,   682,   685,   689,   695,   699,   708,
-     709,   710,   711,   712,   713,   714,   715,   716,   717,   718,
-     722,   728,   731,   737,   743,   746,   754,   762,   770,   778,
-     786,   794,   802,   810,   818,   824,   827,   834,   837,   841,
-     845,   854,   862,   870,   873,   881,   884,   890,   896,   897,
-     900,   903,   911,   915,   919,   925,   926,   930,   933,   940,
-     940,   950,   953,   959,   963,   970,   971,   972,   976,   977,
-     978,   979,   980,   981,   988,   989,   993,   997,  1004,  1005,
-    1006,  1010,  1011,  1012,  1013,  1014,  1015,  1019,  1025,  1029,
-    1036,  1042,  1045,  1052,  1066,  1080,  1094,  1097,  1101,  1101,
-    1111,  1119,  1128,  1137,  1153,  1156,  1163,  1169,  1172,  1220,
-    1221,  1222,  1223,  1224,  1225,  1229,  1235,  1243,  1249,  1252,
-    1258,  1259,  1260,  1264,  1267,  1275,  1281,  1282,  1289,  1306,
-    1309,  1313,  1316,  1322,  1323,  1327,  1330,  1331,  1334,  1337,
-    1338,  1344,  1345,  1346,  1347,  1348,  1349,  1353,  1362,  1371,
-    1375,  1376,  1380,  1383,  1386,  1389,  1392,  1395,  1398,  1406,
-    1410,  1416,  1430,  1436,  1445,  1448,  1451,  1457,  1458,  1459,
-    1462,  1465,  1468,  1471,  1482,  1485,  1488,  1491,  1494,  1497,
-    1500,  1503,  1506,  1509,  1512,  1515,  1518,  1521,  1524,  1525,
-    1528,  1531,  1534,  1537,  1540,  1543,  1546,  1549,  1552,  1555,
-    1558,  1561,  1564,  1567,  1570,  1573,  1576,  1579,  1582,  1585,
-    1588,  1591,  1594,  1598,  1601,  1604,  1607,  1610,  1613,  1616,
-    1619,  1622,  1625,  1626,  1630,  1633,  1639,  1645,  1648,  1652,
-    1658,  1670,  1674,  1675,  1676,  1680,  1686,  1689,  1695,  1698,
-    1702,  1708,  1711,  1714,  1717,  1720,  1726,  1729,  1735,  1739,
-    1742,  1748,  1755,  1761,  1765,  1772,  1776,  1780,  1781,  1782,
-    1786,  1787,  1788,  1792,  1793,  1794,  1798,  1799,  1800,  1804,
-    1805,  1809,  1810,  1811,  1812,  1816,  1817,  1821,  1822,  1826,
-    1827
+         0,   335,   335,   338,   344,   348,   351,   355,   358,   362,
+     365,   368,   371,   377,   380,   387,   388,   395,   396,   403,
+     404,   411,   412,   419,   420,   427,   431,   437,   438,   446,
+     452,   458,   462,   464,   462,   472,   474,   478,   485,   488,
+     495,   500,   502,   506,   510,   514,   520,   521,   522,   523,
+     524,   528,   532,   562,   568,   575,   576,   580,   581,   587,
+     596,   603,   607,   614,   615,   622,   626,   632,   639,   646,
+     649,   669,   673,   676,   680,   683,   687,   693,   697,   706,
+     707,   708,   709,   710,   711,   712,   713,   714,   715,   716,
+     720,   726,   729,   735,   741,   744,   752,   760,   768,   776,
+     784,   792,   800,   808,   816,   822,   825,   832,   835,   839,
+     843,   852,   860,   868,   871,   879,   882,   888,   894,   895,
+     898,   901,   909,   913,   917,   923,   924,   928,   931,   938,
+     938,   948,   951,   957,   961,   968,   969,   970,   974,   975,
+     976,   977,   978,   979,   986,   987,   991,   995,  1002,  1003,
+    1004,  1008,  1009,  1010,  1011,  1012,  1013,  1017,  1023,  1027,
+    1034,  1040,  1043,  1050,  1064,  1078,  1092,  1095,  1099,  1099,
+    1109,  1117,  1126,  1135,  1151,  1154,  1161,  1167,  1170,  1218,
+    1219,  1220,  1221,  1222,  1223,  1227,  1233,  1241,  1247,  1250,
+    1256,  1257,  1258,  1262,  1265,  1273,  1279,  1280,  1287,  1304,
+    1307,  1311,  1314,  1320,  1321,  1325,  1328,  1329,  1332,  1335,
+    1336,  1342,  1343,  1344,  1345,  1346,  1347,  1351,  1360,  1369,
+    1373,  1374,  1378,  1381,  1384,  1387,  1390,  1393,  1396,  1404,
+    1408,  1414,  1428,  1434,  1443,  1446,  1449,  1455,  1456,  1457,
+    1460,  1463,  1466,  1469,  1480,  1483,  1486,  1489,  1492,  1495,
+    1498,  1501,  1504,  1507,  1510,  1513,  1516,  1519,  1522,  1523,
+    1526,  1529,  1532,  1535,  1538,  1541,  1544,  1547,  1550,  1553,
+    1556,  1559,  1562,  1565,  1568,  1571,  1574,  1577,  1580,  1583,
+    1586,  1589,  1592,  1596,  1599,  1602,  1605,  1608,  1611,  1614,
+    1617,  1620,  1623,  1624,  1628,  1631,  1637,  1643,  1646,  1650,
+    1656,  1668,  1672,  1673,  1674,  1678,  1684,  1687,  1693,  1696,
+    1700,  1706,  1709,  1712,  1715,  1718,  1724,  1727,  1733,  1737,
+    1740,  1746,  1753,  1759,  1763,  1770,  1774,  1778,  1779,  1780,
+    1784,  1785,  1786,  1790,  1791,  1792,  1796,  1797,  1798,  1802,
+    1803,  1807,  1808,  1809,  1810,  1814,  1815,  1819,  1820,  1824,
+    1825
   };
 
   // Print the state stack on the debug stream.
@@ -4009,11 +4010,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 4013 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
+#line 4014 "lib/SPARQLalgebraParser/SPARQLalgebraParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 1832 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
+#line 1830 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::SPARQLalgebraParser::error(const SPARQLalgebraParser::location_type& l,
