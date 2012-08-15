@@ -2152,6 +2152,8 @@ Generator:
 	    }
 	    members->clear();
 	    delete members;
+	} else if ($1 == LIST_members) {
+	    $$ = new Members($3);
 	} else {
 	    error(@$, "unsupported function");
 	}

@@ -24,6 +24,11 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
+    virtual void members(const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+	xml->open("members");
+	p_vars->express(this);
+	xml->close();
+    }
     virtual void uri (const URI* const, std::string lexicalValue) {
 	xml->leaf("uri", lexicalValue);
     }

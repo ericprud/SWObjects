@@ -32,6 +32,7 @@ namespace w3c_sw {
 
 	virtual void base(const Base* const self, std::string productionName) { throw "why did we call base?"; }
 
+	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) { w3c_sw_NEED_IMPL("inverse of members()"); }
 	virtual void uri (const URI* const self, std::string) { setTerm(self); }
 	virtual void variable (const Variable* const self, std::string) { setTerm(self); }
 	virtual void bnode (const BNode* const self, std::string) { setTerm(self); }

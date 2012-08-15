@@ -26,12 +26,13 @@ namespace w3c_sw {
 
     union SWObjectDuplicator_Last {
       struct Tterms {
-        const TTerm* tterm;
-        const URI* uri;
-        const Variable* variable;
-        const RDFLiteral* rdfLiteral;
-        const BooleanRDFLiteral* booleanRDFLiteral;
-        const NumericRDFLiteral* numericRDFLiteral;
+	  const TTerm* tterm;
+	  const Members* members;
+	  const URI* uri;
+	  const Variable* variable;
+	  const RDFLiteral* rdfLiteral;
+	  const BooleanRDFLiteral* booleanRDFLiteral;
+	  const NumericRDFLiteral* numericRDFLiteral;
       };
       Tterms tterms;
       const TriplePattern* triplePattern;
@@ -60,6 +61,15 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
+	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+	    ProductionVector<const TTerm*>* newVec = new ProductionVector<const TTerm*>();
+	    for (std::vector<const TTerm*>::const_iterator it = p_vars->begin();
+		 it != p_vars->end(); it++) {
+		(*it)->express(this);
+		newVec->push_back(last.tterms.tterm);
+	    }
+	    last.tterms.tterm = last.tterms.members = new Members(newVec);
+	}
 	virtual void uri (const URI* const self, std::string lexicalValue) {
 	    last.tterms.tterm = last.tterms.uri = atomFactory ? atomFactory->getURI(lexicalValue.c_str()) : self;
 	}

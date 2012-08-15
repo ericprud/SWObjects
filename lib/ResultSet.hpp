@@ -29,10 +29,6 @@ namespace w3c_sw {
     typedef std::set<const TTerm*>::iterator VariableListIterator;
     typedef std::set<const TTerm*>::const_iterator VariableListConstIterator;
 
-    typedef std::list<Result*> ResultList;
-    typedef std::list<Result*>::iterator ResultSetIterator;
-    typedef std::list<Result*>::const_iterator ResultSetConstIterator;
-
     inline bool operator== (const BindingInfo& l, const BindingInfo& r) {
 	return l.tterm == r.tterm;
     }

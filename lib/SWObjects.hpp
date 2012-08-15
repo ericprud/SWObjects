@@ -198,6 +198,13 @@ public:
     char const* what() const throw() { 	return msg.c_str(); }
 };
 
+class GraphStructureError : public SafeEvaluationError {
+public:
+    GraphStructureError (std::string function, std::string structure) : SafeEvaluationError("error executing " + function + " on " + structure) {  }
+    virtual ~GraphStructureError () throw() {   }
+    char const* what() const throw() { 	return msg.c_str(); }
+};
+
 #if defined SWIG
 class OptString {  };
 #elif (defined(_MSC_VER) && _MSC_VER < 15000)
@@ -561,7 +568,7 @@ public:
     virtual T back () const { return data.back(); }
     void clear () { data.clear(); }
     void pop_back () { data.pop_back(); }
-    virtual void express(Expressor* p_expressor) const {
+    virtual void express (Expressor* p_expressor) const {
 	for (size_t i = 0; i < data.size(); i++)
 	    data[i]->express(p_expressor);
     }
@@ -664,6 +671,9 @@ public:
 
 class ResultSet;
 class Result;
+typedef std::list<Result*>::iterator ResultSetIterator;
+typedef std::list<Result*> ResultList;
+typedef std::list<Result*>::const_iterator ResultSetConstIterator;
 class RdfDB;
 
 class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
@@ -763,6 +773,7 @@ public:
 	const BNode* getBNode(std::string bnode);
     };
     virtual std::string toXMLResults(BNode2string*) const = 0;
+    std::string str () const { return toString(); } // for easy invocation
     virtual std::string toString() const = 0;
     std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
 	const TTerm* subd = evalTTerm(row, evaluator); /* re-uses atoms -- doesn't create them */
@@ -777,6 +788,9 @@ public:
     e_SORT safeCmp(const TTerm& rhs) const;
 
     /* TTerm Constants: */
+    static const URI* FUNC_concat;
+    static const URI* FUNC_replace;
+
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
     static const URI* URI_xsd_float;
@@ -826,7 +840,6 @@ public:
     static const URI* FUNC_substring_after;
     static const URI* FUNC_contains;
     static const URI* FUNC_encode_for_uri;
-    static const URI* FUNC_concat;
     static const URI* FUNC_langMatches;
     static const URI* FUNC_matches;
     static const URI* FUNC_numeric_abs;
@@ -859,6 +872,10 @@ public:
     static const URI* FUNC_sample;
     static const URI* FUNC_group_group;
     static const URI* FUNC_group_regex;
+
+    static const URI* RDF_first;
+    static const URI* RDF_rest;
+    static const URI* RDF_nil;
 
     static const BooleanRDFLiteral* BOOL_true;
     static const BooleanRDFLiteral* BOOL_false;
@@ -1546,14 +1563,9 @@ public:
 	    " " << m_o->substitutedString(row, NULL) << "}";
 	return s.str();
     }
+    std::string str () const { return toString(); } // for easy invocation.
     virtual void express(Expressor* p_expressor) const;
-    bool bindVariables (const TriplePattern* tp, bool, ResultSet* rs, Result* provisional, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const {
-	return
-	    (graphVar == TTerm::Unbound || graphVar->bindVariable(graphName, rs, provisional, weaklyBound)) &&
-	    m_p->bindVariable(tp->m_p, rs, provisional, weaklyBound) && 
-	    m_s->bindVariable(tp->m_s, rs, provisional, weaklyBound) && 
-	    m_o->bindVariable(tp->m_o, rs, provisional, weaklyBound);
-    }
+    bool bindVariables(const TriplePattern* tp, bool, ResultSet* rs, const ResultSetIterator& row, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound, const BasicGraphPattern* data = NULL) const;
     bool symmetricBindVariables (const TriplePattern* tp, bool, ResultSet* rs, Result* provisional, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const {
 	return
 	    (graphVar == TTerm::Unbound || graphVar->symmetricBindVariable(graphName, rs, provisional, weaklyBound)) &&
@@ -1596,6 +1608,69 @@ inline bool operator< (const TriplePattern& left, const TriplePattern& right) {
 	return *(left.getS()) < *(right.getS());
     return *(left.getO()) < *(right.getO());
 }
+
+/* <generators> */
+/*
+  struct PredicatePathException {
+  std::vector<const TriplePattern*> tps;
+  };
+*/
+class PredicatePath : public TTerm {
+    friend class AtomFactory;
+private:
+    PredicatePath () : TTerm("PredicatePath", "") {  }
+    ~PredicatePath () {  }
+protected:
+    virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
+public:
+    struct SubObjPair {
+	const TTerm* subj;
+	const TTerm* obj;
+	SubObjPair(const TTerm* subj, const TTerm* obj) : subj(subj), obj(obj) {  }
+    };
+
+    virtual const char * getToken () { return "-PredicatePath-"; }
+    virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PredicatePath/> <!-- should not appear in XML Results -->"); }
+    virtual std::string toString () const { std::stringstream s; s << "@@PredicatePath@@"; return s.str(); }
+    virtual void express(Expressor* p_expressor) const {  }
+    virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
+    bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+	throw(std::runtime_error(FUNCTION_STRING));
+    }
+    bool matchingTriples(const TriplePattern* start, const BasicGraphPattern* bgp, std::vector<SubObjPair>& tps) const;
+};
+class ListTerm : public Bindable {
+    friend class AtomFactory;
+protected:
+    ListTerm () : Bindable("ListTerm", true) {  }
+    // ~ListTerm () {  }
+protected:
+    virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
+public:
+    struct VarValuePair {
+	const TTerm* var;
+	const TTerm* value;
+	VarValuePair(const TTerm* var, const TTerm* value) : var(var), value(value) {  }
+    };
+
+    virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<ListTerm/> <!-- should not appear in XML Results -->"); }
+    virtual std::string toString () const { std::stringstream s; s << "@@ListTerm@@"; return s.str(); }
+    virtual const char * getToken () { return "-ListTerm-"; }
+    virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
+    bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+	throw(std::runtime_error(FUNCTION_STRING));
+    }
+    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, std::vector<VarValuePair>* vec) const = 0;
+};
+class Members : public ListTerm {
+    ProductionVector<const TTerm*>* m_vars;
+public:
+    Members (ProductionVector<const TTerm*>* p_vars) : ListTerm(),  m_vars(p_vars) {  }
+    virtual std::string toString() const;
+    virtual void express (Expressor* p_expressor) const;
+    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, std::vector<VarValuePair>* vec) const;
+};
+/* </generators> */
 
 class DefaultGraphPattern;
 class Expression;
@@ -1863,6 +1938,7 @@ public:
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
+    std::string str () { return toString(); } // for easy invocation
 };
 class TableJunction : public TableOperation {
 protected:
@@ -2016,6 +2092,7 @@ protected:
     void _bindVariables(const RdfDB* db, ResultSet* rs, const TTerm* p_name) const;
 
 public:
+    const TTerm* expectOneObject(const TTerm* s, const TTerm* o) const;
 
     bool onto(const BasicGraphPattern& ref) const;
     bool operator== (const BasicGraphPattern& ref) const {
@@ -2935,7 +3012,9 @@ namespace AtomicFunction {
     };
 
     namespace BuiltIn {
-	    FPtr concat;
+	    FPtr EXTFUNC_concat;
+	    FPtr EXTFUNC_replace;
+
 	    FPtr numericCast;
 	    FPtr URI_xsd_dateTime;
 	    FPtr URI_xsd_string;
@@ -3777,6 +3856,7 @@ public:
 
     virtual void base(const Base* const self, std::string productionName) = 0;
 
+    virtual void members(const Members* const self, ProductionVector<const TTerm*>* p_vars) = 0;
     virtual void uri(const URI* const self, std::string lexicalValue) = 0;
     virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
     virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
@@ -3861,6 +3941,9 @@ public:
  */
 class RecursiveExpressor : public Expressor {
 public:
+    virtual void members(const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+	p_vars->express(this);
+    }
     virtual void uri (const URI* const, std::string) {  }
     virtual void variable (const Variable* const, std::string) {  }
     virtual void bnode (const BNode* const, std::string) {  }
@@ -4105,6 +4188,7 @@ class TestExpressor : public RecursiveExpressor {
 class ExpressionExpressor : public Expressor {
 public:
     /** the virtual functions you need to provide:
+	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) {  }
 	virtual void uri (const URI* const, std::string) {  }
 	virtual void variable (const Variable* const, std::string) {  }
 	virtual void bnode (const BNode* const, std::string) {  }

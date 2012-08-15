@@ -414,6 +414,8 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
+	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) { w3c_sw_NEED_IMPL("SQLizer of members()"); }
+
 	virtual void uri (const URI* const self, std::string lexicalValue) {
 	    w3c_sw_MARK;
 	    std::string relation, attribute;
