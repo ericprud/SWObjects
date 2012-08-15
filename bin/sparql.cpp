@@ -363,7 +363,7 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 		&& s.compare("text/csv")
 		&& s.compare("text/tab-separated-values")
 		&& s.compare("application/xml"))
-		std::cerr << "proceeding with unknown media type \"" << s << "\"";
+		std::cerr << "proceeding with unknown media type \"" << s << "\"\n";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	    TheServer.engine.dataMediaType = s;
 	}

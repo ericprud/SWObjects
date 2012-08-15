@@ -1218,6 +1218,28 @@ namespace w3c_sw {
 	s << BoxChars::GBoxChars->lr << std::endl;
 	return s.str();
     }
+    std::string ResultSet::toRawText () const {
+	std::stringstream s;
+	if (resultType == RESULT_Boolean)
+	    return size() > 0 ? "true\n" : "false\n" ;
+
+	else if (resultType == RESULT_Graphs)
+	    return std::string("<RdfDB result>\n") + db->toString() + "\n</RdfDB result>";
+
+	const VariableVector cols = getOrderedVars();
+
+	/*  Rows */
+	for (ResultSetConstIterator row = results.begin() ; row != results.end(); row++) {
+	    /*  Values */
+	    for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
+		const TTerm* var = *varIt;
+		const TTerm* val = (*row)->get(var);
+		s << val->getLexicalValue();
+	    }
+	}
+
+	return s.str();
+    }
     XMLSerializer* ResultSet::toXml (XMLSerializer* xml) const {
 	switch (resultType) {
 	case RESULT_Error:

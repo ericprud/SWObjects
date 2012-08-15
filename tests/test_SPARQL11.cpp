@@ -232,19 +232,21 @@ BOOST_AUTO_TEST_SUITE_END(/* generators */)
 #ifdef SPARQL11_ALL
 BOOST_AUTO_TEST_SUITE( SPARQL11_WG )
 
-// eric@mouni:~/WWW/2009/sparql/docs/tests$ ~/checkouts/sparql11-clearPrefixes/bin/sparql -d data-sparql11/manifest-all.ttl -e '
+// Popluate with:
+// tests$ sparql -d data-sparql11/manifest-all.ttl -e '
 // PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
 // PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
 // PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
 // PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
 // SELECT (CONCAT(
-// "BOOST_AUTO_TEST_CASE( ", ?id, " ) {\\n",
-// "    /* name: ", ?name, " */\\n",
-// "    const char* defaultGraph( ", IF(BOUND(?data), CONCAT("\"", STR(?data), "\""), "NULL"), ");\\n",
-// "    const char** namedGraphs", IF(BOUND(?graph1), CONCAT("[] = {", "\"", STR(?graph1), "\"", IF(BOUND(?graph2), CONCAT(", \"", STR(?graph2), "\""), ""), IF(BOUND(?graph3), CONCAT(", \"", STR(?graph3), "\""), ""), "}"), " = NULL"), ";\\n",
-// "    DAWG_TEST(\"", STR(?query), "\", \"", STR(?result), "\", ", IF(BOUND(?graph1), IF(BOUND(?graph2), IF(BOUND(?graph3), "3", "2"), "1"), "0"), ", 0);\\n",
-// "}"
-// ) AS ?unittest) ?id {
+// "BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n",
+// "    /* name: ", ?name, " */\n",
+// "    const char* defaultGraph( ", IF(BOUND(?data), CONCAT("\"", STR(?data), "\""), "NULL"), ");\n",
+// "    const char*", IF(BOUND(?graph1), CONCAT(" namedGraphs[] = {", "\"", STR(?graph1), "\"", IF(BOUND(?graph2), CONCAT(", \"", STR(?graph2), "\""), ""), IF(BOUND(?graph3), CONCAT(", \"", STR(?graph3), "\""), ""), "}"), "* namedGraphs = NULL"), ";\n",
+// "    const URI** requires = NULL;\n",
+// "    DAWG_TEST(\"", STR(?query), "\", \"", STR(?result), "\", ", IF(BOUND(?graph1), IF(BOUND(?graph2), IF(BOUND(?graph3), "3", "2"), "1"), "0"), ", 0);\n",
+// "}\n"
+// ) AS ?unittest) {
 //   {
 //     <http://www.w3.org/TR/sparql11-query/> mf:conformanceRequirement MEMBERS(?manifest)
 //   }
@@ -263,7 +265,7 @@ BOOST_AUTO_TEST_SUITE( SPARQL11_WG )
 //   OPTIONAL { GRAPH ?manifest { ?action qt:graphData ?graph3 } FILTER (?graph3 > ?graph2) }
 //   OPTIONAL { GRAPH ?manifest { ?entry mf:result ?result } }
 //   BIND (fn:replace(strafter(str(?entry), "#"), "-", "_") AS ?id)
-// }' -l csv
+// }' -L text/raw
 
 BOOST_AUTO_TEST_CASE( agg01 ) {
     /* name: COUNT 1 */

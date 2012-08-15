@@ -702,7 +702,8 @@ namespace w3c_sw {
 		mediaType.match("text/tab-separated-values") ||
 		mediaType.match("application/sparql-results+json") ||
 		mediaType.match("text/html") ||
-		mediaType.match("application/sparql-results+xml");
+		mediaType.match("application/sparql-results+xml") ||
+		mediaType.match("text/raw");
 	    if (preferDb || resultType == RESULT_Graphs) {
 		// text/ntriples , text/turtle , text/trig
 		return 
@@ -711,6 +712,8 @@ namespace w3c_sw {
 		    : db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results") || !tableMediaType) { // default table media type
 		return toString(namespaces);
+	    } else if (mediaType.match("text/raw")) {
+		return toRawText();
 	    } else if (mediaType.match("text/csv")) {
 		return toDelimSeparatedValues(',', true, namespaces);
 	    } else if (mediaType.match("text/tab-separated-values")) {
@@ -733,6 +736,7 @@ namespace w3c_sw {
 		return ret;
 	    }
 	}
+	std::string toRawText() const;
 	std::string str () const { return toString(); }
 	bool empty () const {
 	    return size() == 1 && (*results.begin())->size() == 0;
