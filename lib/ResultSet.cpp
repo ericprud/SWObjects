@@ -661,7 +661,13 @@ namespace w3c_sw {
 	std::string groupIndex;
 
 	/* Map select variables to the expressions bound to them. */
-	typedef std::map<const TTerm*,const Expression*> Pos2Expr;
+	struct Pos2Expr : public std::map<const TTerm*,const Expression*> {
+	    ~Pos2Expr () {
+		/* Clean up new'd expressions. */
+		for (Pos2Expr::iterator it = begin(); it != end(); ++it)
+		    delete it->second;
+	    }
+	};
 	Pos2Expr pos2expr;
 
 	/* Walk the select list to populate pos2expr. */
@@ -851,6 +857,7 @@ namespace w3c_sw {
 		     * Aggregate function invocations:
 		     */
 		    if (p_IRIref == TTerm::FUNC_sample) {
+			(*it)->express(this);
 			last.functionCall = new SampleState(groupIndexRef, last.expression);
 		    } else if (p_IRIref == TTerm::FUNC_count) {
 			last.functionCall = new CountState(groupIndexRef);
@@ -925,7 +932,8 @@ namespace w3c_sw {
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
 		try {
-		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, NULL, db);
+		    TreatAsVar treatAsVar;
+		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, db);
 		    if (val != TTerm::Unbound)
 			aggregateRow->set(*knownVar, val, false, true); // !! WG decision on overwrite
 		} catch (TypeError& e) {
@@ -938,7 +946,7 @@ namespace w3c_sw {
 		}
 	    }
 
-	    if (orderConditions == NULL)
+	    if (orderConditions == NULL && having == NULL)
 		/* Eliminate unselect attributes. */
 		for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
 		     delMe != delMes.end(); ++delMe)
@@ -961,6 +969,14 @@ namespace w3c_sw {
 			delete *row;
 			row = erase(row);
 		    } else {
+			if (orderConditions == NULL)
+			    /* Eliminate unselect attributes. */
+			    for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
+				 delMe != delMes.end(); ++delMe) {
+				BindingSetIterator attr = (*row)->find(*delMe);
+				if (attr != (*row)->end())
+				    (*row)->erase(attr);
+			    }
 			++row;
 		    }
 
@@ -977,13 +993,6 @@ namespace w3c_sw {
 			(*row)->erase(attr);
 		}
 	}
-
-	/* Clean up new'd expressions. */
-	for (Pos2Expr::iterator it = pos2expr.begin(); it != pos2expr.end(); ++it) {
-	    const Expression* exp = it->second;
-	    delete exp;
-	}
-	// std::cerr << "end\n" << *this;
     }
 
     void ResultSet::restrictResults (const Expression* expression, const RdfDB* db) { // no longer called "restrict" 'cause it screws up php.
