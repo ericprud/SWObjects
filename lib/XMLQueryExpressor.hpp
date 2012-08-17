@@ -441,6 +441,12 @@ public:
 	p_right->express(this);
 	xml->close();
     }
+    virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	xml->open("NaryIn");
+	p_left->express(this);
+	p_right->express(this);
+	xml->close();
+    }
     virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
 	xml->open("ComparatorExpression");
 	p_GeneralComparator->express(this);

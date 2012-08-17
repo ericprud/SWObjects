@@ -680,6 +680,14 @@ public:
 	p_right->express(this);
 	end();
     }
+    virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	start(PREC_High);
+	p_left->express(this);
+	ret << " IN (";
+	p_right->express(this);
+	ret << ")";
+	end();
+    }
     virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
 	p_GeneralComparator->express(this);
     }

@@ -116,6 +116,7 @@ namespace w3c_sw {
 	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {  }
 	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {  }
 	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {  }
 	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {  }
 	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {  }
     };

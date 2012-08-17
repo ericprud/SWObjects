@@ -295,7 +295,7 @@ public:
     ProductionVector<const TTerm*>* p_TTerms;
     Expression* p_Expression;
     ProductionVector<const Expression*>* p_Expressions;
-    GeneralComparator* p_GeneralComparator;
+    struct { bool neg; GeneralComparator* comp; } p_ComparatorSense;
     const URI* p_URI;
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
@@ -429,8 +429,7 @@ public:
 %type <p_ExpressionAliaseList> _Q_O_QVar_E_Or_QAggregate_E_Or_QBuiltInCall_E_Or_QFunctionCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus
 
 
-%type <p_GeneralComparator> RelativeExpression
-			    _QRelativeExpression_E_Opt
+%type <p_ComparatorSense> RelativeExpression _QRelativeExpression_E_Opt
 
 %type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
 	      _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C
@@ -1905,9 +1904,11 @@ ValueLogical:
 RelationalExpression:
     // NumericExpression ( '=' NumericExpression | '!=' NumericExpression | '<' NumericExpression | '>' NumericExpression | '<=' NumericExpression | '>=' NumericExpression | 'IN' ExpressionList | 'NOT IN' ExpressionList )?
     NumericExpression _QRelativeExpression_E_Opt	{
-	if ($2) {
-	    $2->setLeftParm($1);
-	    $$ = new ComparatorExpression($2); // !!!
+	if ($2.comp) {
+	    $2.comp->setLeftParm($1);
+	    $$ = new ComparatorExpression($2.comp); // !!!
+	    if ($2.neg)
+		$$ = new BooleanNegation($$);
 	} else
 	    $$ = $1;
     }
@@ -1916,35 +1917,44 @@ RelationalExpression:
 // RelativeExpression?
 _QRelativeExpression_E_Opt:
     {
-	$$ = NULL;
+	$$.neg = false;
+	$$.comp = NULL;
     }
   | RelativeExpression	
 ;
 
 RelativeExpression:
     GT_EQUAL NumericExpression	{
-	$$ = new BooleanEQ($2);
+	$$.neg = false;
+	$$.comp = new BooleanEQ($2);
     }
   | GT_NEQUAL NumericExpression	{
-	$$ = new BooleanNE($2);
+	$$.neg = false;
+	$$.comp = new BooleanNE($2);
     }
   | GT_LT NumericExpression	{
-	$$ = new BooleanLT($2);
+	$$.neg = false;
+	$$.comp = new BooleanLT($2);
     }
   | GT_GT NumericExpression	{
-	$$ = new BooleanGT($2);
+	$$.neg = false;
+	$$.comp = new BooleanGT($2);
     }
   | GT_LE NumericExpression	{
-	$$ = new BooleanLE($2);
+	$$.neg = false;
+	$$.comp = new BooleanLE($2);
     }
   | GT_GE NumericExpression	{
-	$$ = new BooleanGE($2);
+	$$.neg = false;
+	$$.comp = new BooleanGE($2);
     }
   | IT_IN ExpressionList	{
-	$$ = new NaryIn($2);
+	$$.neg = false;
+	$$.comp = new NaryIn($2);
     }
   | IT_NOT IT_IN ExpressionList	{
-	$$ = new NaryNotIn($3);
+	$$.neg = true;
+	$$.comp = new NaryIn($3);
     }
 ;
 
@@ -2200,8 +2210,7 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, $3, NULL, NULL));
     }
   | IT_COALESCE ExpressionList	{
-	$$ = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
-	w3c_sw_NEED_IMPL("COALESCE");
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList($2)));
     }
   | IT_IF GT_LPAREN Expression GT_COMMA Expression GT_COMMA Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, $3, $5, $7));
@@ -2291,22 +2300,13 @@ Aggregate:
 	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4));
     }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
-    IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression	{
-	driver.countStar = true;
-	$<p_Expressions>$ = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>($4);
-      } _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
-	  if ($6 != NULL) {
+    IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
+	  if ($5 != NULL) {
 	      std::stringstream ss;
-	      ss << "GROUP_CONCAT ; " << $6->getLexicalValue();
+	      ss << "GROUP_CONCAT ; " << $5->getLexicalValue();
 	      w3c_sw_NEED_IMPL(ss.str());
 	  }
 	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4));
-	  // // x = new ArgList($2, driver.curExprList);
-	  // delete driver.curExprList;
-	  driver.curExprList = $<p_Expressions>5;
-	  // w3c_sw_NEED_IMPL("GROUP_CONCAT"); // !!!
-	  // // $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group-concat, $3, $4.p_Expression, $4.separator));
     }
 ;
 

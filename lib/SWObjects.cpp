@@ -533,6 +533,9 @@ void BooleanLE::express (Expressor* p_expressor) const {
 void BooleanGE::express (Expressor* p_expressor) const {
     p_expressor->booleanGE(this, left,right);
 }
+void NaryIn::express (Expressor* p_expressor) const {
+    p_expressor->naryIn(this, left, right);
+}
 void ComparatorExpression::express (Expressor* p_expressor) const {
     p_expressor->comparatorExpression(this, m_GeneralComparator);
 }
@@ -887,7 +890,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
 		    std::string lex = upper->getLexicalValue();
 		    std::transform(lex.begin(), lex.end(), lex.begin(), ::tolower);
-		    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), upper->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
+		    LANGTAG* l = upper->getLangtag() ? new LANGTAG(*upper->getLangtag()) : NULL;
+		    return atomFactory->getRDFLiteral(lex, upper->getDatatype(), l); // !!! loses e.g. DateTimeRDFLiteral
 		}
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
@@ -897,7 +901,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(args[0]);
 		    std::string lex = lower->getLexicalValue();
 		    std::transform(lex.begin(), lex.end(), lex.begin(), ::toupper);
-		    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), lower->getLangtag()); // !!! loses e.g. DateTimeRDFLiteral
+		    LANGTAG* l = lower->getLangtag() ? new LANGTAG(*lower->getLangtag()) : NULL;
+		    return atomFactory->getRDFLiteral(lex, lower->getDatatype(), l); // !!! loses e.g. DateTimeRDFLiteral
 		}
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
@@ -1058,9 +1063,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		std::string lookIn = firstLit->getLexicalValue();
 		std::string lookFor = secondLit->getLexicalValue();
 		size_t found = lookIn.find(lookFor);
+		LANGTAG* l = firstLit->getLangtag() ? new LANGTAG(*firstLit->getLangtag()) : NULL;
 		if (found == std::string::npos)
-		    return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
-		return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, firstLit->getLangtag(), false);
+		    return atomFactory->getRDFLiteral("", NULL, l, false);
+		return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, l, false);
 	    }
 
 	    const TTerm* FUNC_substring_after (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
@@ -1075,9 +1081,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		std::string lookIn = firstLit->getLexicalValue();
 		std::string lookFor = secondLit->getLexicalValue();
 		size_t found = lookIn.find(lookFor);
+		LANGTAG* l = firstLit->getLangtag() ? new LANGTAG(*firstLit->getLangtag()) : NULL;
 		if (found == std::string::npos)
-		    return atomFactory->getRDFLiteral("", NULL, firstLit->getLangtag(), false);
-		return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, firstLit->getLangtag(), false);
+		    return atomFactory->getRDFLiteral("", NULL, l, false);
+		return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, l, false);
 	    }
 
 	    const TTerm* FUNC_substring (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
@@ -1772,6 +1779,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
 
+    /** applyCommonNumeric for unary functions*/
     const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func, const RdfDB* db) {
 	const TTerm* v = arg->eval(func->res, this, func->evaluator, db);
 	if (v == TTerm::Unbound)
@@ -1785,75 +1793,86 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    std::stringstream s;
 	    s << i;
 	    v = getNumericRDFLiteral(s.str(), i);
-	     break;
-	 }
+	    break;
+	}
 	case TTerm::TYPE_Float:
-	     case TTerm::TYPE_Decimal: {
-		 float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
-		 std::stringstream s;
-		 s << i;
-		 v = getNumericRDFLiteral(s.str(), i);
-		 break;
-	     }
-	     case TTerm::TYPE_Double: {
-		 double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
-		 std::stringstream s;
-		 s << i;
-		 v = getNumericRDFLiteral(s.str(), i);
-		 break;
-	     }
-	     default:
-		 throw std::string(typeid(*v).name()) + " is not a numeric datatype: " + v->toString();
+	case TTerm::TYPE_Decimal: {
+	    float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
+	    std::stringstream s;
+	    s << i;
+	    v = getNumericRDFLiteral(s.str(), i);
+	    break;
+	}
+	case TTerm::TYPE_Double: {
+	    double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
+	    std::stringstream s;
+	    s << i;
+	    v = getNumericRDFLiteral(s.str(), i);
+	    break;
+	}
+	default:
+	    throw std::string(typeid(*v).name()) + " is not a numeric datatype: " + v->toString();
 	}
 	return v;
     }
+
+    /** applyCommonNumeric for nary functions*/
     const TTerm* AtomFactory::applyCommonNumeric (std::vector<const Expression*> args, NaryFunctor* func, const RdfDB* db) {
 	std::vector<const Expression*>::const_iterator it = args.begin();
 	const TTerm* l = (*it)->eval(func->res, this, func->evaluator, db);
+	const NumericRDFLiteral* lnum = dynamic_cast<const NumericRDFLiteral*>(l);
+	if (lnum == NULL)
+	    throw TypeError(l->toString(), "integer operation");
 
 	TTerm::e_TYPE dt = l->getTypeOrder();
 	if (dt == TTerm::TYPE_Err)
-	    throw l->toString() + " does not have an order-able datatype.";
+	    throw TypeError(l->toString(), "numeric datatype");
 	++it;
 	while (it != args.end()) {
 	    const TTerm* r = (*it)->eval(func->res, this, func->evaluator, db);
 	    TTerm::e_TYPE dtr = r->getTypeOrder();
 	    if (dtr == TTerm::TYPE_Err)
-		throw r->toString() + " does not have an order-able datatype.";
+		throw TypeError(r->toString(), "numeric datatype");
 	    if (dtr > dt)
 		dt = dtr;
 	    switch (dt) {
 	    case TTerm::TYPE_Integer: {
-		int i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getInt(), 
-				   static_cast<const NumericRDFLiteral*>(r)->getInt());
+		const NumericRDFLiteral* rnum = dynamic_cast<const NumericRDFLiteral*>(r);
+		if (rnum == NULL)
+		    throw TypeError(r->toString(), "integer operation");
+		int res = func->eval(lnum->getInt(), rnum->getInt());
 		std::stringstream s;
-		s << i;
-		l = getNumericRDFLiteral(s.str(), i);
+		s << res;
+		lnum = getNumericRDFLiteral(s.str(), res);
 		break;
 	    }
 	    case TTerm::TYPE_Float:
 	    case TTerm::TYPE_Decimal: {
-		float i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getFloat(), 
-				     static_cast<const NumericRDFLiteral*>(r)->getFloat());
+		const NumericRDFLiteral* rnum = dynamic_cast<const NumericRDFLiteral*>(r);
+		if (rnum == NULL)
+		    throw TypeError(r->toString(), "float operation");
+		float res = func->eval(lnum->getFloat(), rnum->getFloat());
 		std::stringstream s;
-		s << i;
-		l = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(s.str(), i, true) : getNumericRDFLiteral(s.str(), i);
+		s << res;
+		lnum = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(s.str(), res, true) : getNumericRDFLiteral(s.str(), res);
 		break;
 	    }
 	    case TTerm::TYPE_Double: {
-		double i = func->eval(static_cast<const NumericRDFLiteral*>(l)->getDouble(), 
-				      static_cast<const NumericRDFLiteral*>(r)->getDouble());
+		const NumericRDFLiteral* rnum = dynamic_cast<const NumericRDFLiteral*>(r);
+		if (rnum == NULL)
+		    throw TypeError(r->toString(), "double operation");
+		double res = func->eval(lnum->getDouble(), rnum->getDouble());
 		std::stringstream s;
-		s << i;
-		l = getNumericRDFLiteral(s.str(), i);
+		s << res;
+		lnum = getNumericRDFLiteral(s.str(), res);
 		break;
 	    }
 	    default:
-		throw r->toString() + " does not have a numeric datatype: " + r->toString();
+		throw TypeError(r->toString(), "numeric datatype");
 	    }
 	    ++it;
 	}
-	return l;
+	return lnum;
     }
 
     /* EBV (Better place for this?) */
@@ -2041,7 +2060,24 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		(*++it)->eval(r, atomFactory, evaluator, db);
 	}
 
-	// Other than IF, all functions evaluate all arguments.
+	// COALESCE evaluates arguments until the first bound non-error.
+	if (m_IRIref == TTerm::FUNC_if) {
+	    for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end();) {
+		try {
+		    const TTerm* ret = (*it)->eval(r, atomFactory, evaluator, db);
+		    if (ret != TTerm::Unbound)
+			return ret;
+		    ++it;
+		} catch (SafeEvaluationError& e) {
+		    ++it;
+		    // re-throw any exception on the last argument.
+		    if (it == m_ArgList->end())
+			throw e;
+		}
+	    }
+	}
+
+	// Other than IF and COALESCE, all functions evaluate all arguments.
 	// Place the evaluation results in args and pass to the function map.
 	std::vector<const TTerm*> args;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
@@ -2752,7 +2788,8 @@ compared against
 			curO->var->bindVariable(curO->value, rs, provisional, weaklyBound)) {
 			rs->insert(row, provisional);
 			ret = true;
-		    }
+		    } else
+			delete provisional;
 		}
 	    }
 	}

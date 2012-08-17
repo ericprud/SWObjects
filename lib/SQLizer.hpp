@@ -1264,6 +1264,9 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
 		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
+	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	    w3c_sw_NEED_IMPL("SQLizer of IN()");
+	}
 	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {
 	    w3c_sw_MARK;
 	    p_GeneralComparator->express(this);

@@ -80,7 +80,7 @@ namespace w3c_sw {
 	    last.tterms.tterm = atomFactory ? atomFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
 	}
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
-	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG) : self;
+	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG ? new LANGTAG(*p_LANGTAG) : NULL) : self;
 	}
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
 	    std::stringstream s;
@@ -531,6 +531,14 @@ namespace w3c_sw {
 	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {
 	    p_right->express(this);
 	    BooleanGE* ret = new BooleanGE(last.expression);
+	    p_left->express(this);
+	    ret->setLeftParm(last.expression);
+	    last.expression = ret;
+	}
+	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	    ProductionVector<const Expression*>* v = _Expressions(p_right);
+	    NaryIn* ret = new NaryIn(v);
+	    v->clear();
 	    p_left->express(this);
 	    ret->setLeftParm(last.expression);
 	    last.expression = ret;

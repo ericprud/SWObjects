@@ -678,7 +678,8 @@ class RdfDB;
 
 class LANGTAG : public Terminal { // @@@ should become an RDFLiteral.
 public:
-    LANGTAG(std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
+    LANGTAG (std::string p_LANGTAG) : Terminal(p_LANGTAG) {  }
+    ~LANGTAG () {  }
 };
 
 class Operation : public Base {
@@ -1103,8 +1104,8 @@ public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Integer; }
     int getValue () const { return m_value; }
     virtual int getInt () const { return m_value; }
-    virtual float getFloat () const { return (float)m_value; }
-    virtual double getDouble () const  { return (double)m_value; }
+    virtual float getFloat () const { return m_value; }
+    virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const {
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
@@ -1124,9 +1125,9 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Float; }
     float getValue () const { return m_value; }
-    virtual int getInt () const { throw TypeError(std::string("(float)") + toString(), "getInt()"); }
+    virtual int getInt () const { return m_value; }
     virtual float getFloat () const { return m_value; }
-    virtual double getDouble () const { return (double)m_value; }
+    virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString () const {
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
@@ -1143,7 +1144,6 @@ protected:
     DecimalRDFLiteral (std::string p_String, const URI* p_URI, float p_value) : FloatRDFLiteral(p_String, p_URI, p_value) {  }
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Decimal; }
-    virtual int getInt () const { throw TypeError(std::string("(decimal)") + toString(), "getInt()"); }
     virtual void express(Expressor* p_expressor) const;
     // <DECIMAL> ::= ([0-9])+ "." ([0-9])+
     //             | "." ([0-9])+
@@ -1157,8 +1157,8 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Double; }
     double getValue () const { return m_value; }
-    virtual int getInt () const { throw TypeError(std::string("(double)") + toString(), "getInt()"); }
-    virtual float getFloat () const { throw TypeError(std::string("(double)") + toString(), "getFloat"); }
+    virtual int getInt () const { return m_value; }
+    virtual float getFloat () const { return m_value; }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     // <DOUBLE> ::= ([0-9])+ "." ([0-9])+ EXPONENT
@@ -3356,7 +3356,7 @@ protected:
 public:
     NaryIn (ProductionVector<const Expression*>* p_Expressions) : NaryComparator(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "IN"; };
-    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryIn::express"); }
+    virtual void express(Expressor* /* p_expressor */) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
@@ -3370,28 +3370,6 @@ public:
     }
     virtual bool operator== (const Expression& ref) const {
 	const NaryIn* pref = dynamic_cast<const NaryIn*>(&ref);
-	return pref == NULL ? false : *right == *pref->right;
-    }
-};
-class NaryNotIn : public NaryIn {
-protected:
-public:
-    NaryNotIn (ProductionVector<const Expression*>* p_Expressions) : NaryIn(p_Expressions) {  }
-    virtual const char* getComparisonNotation () { return "NOT IN"; };
-    virtual void express (Expressor* /* p_expressor */) const { w3c_sw_NEED_IMPL("NaryNotIn::express"); }
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	for (std::vector<const Expression*>::const_iterator exp = right->begin();
-	     exp != right->end(); ++exp) {
-	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator, db);
-	    if (l != r)
-	    // if (atomFactory->cmp(l, r) != 0)
-		return TTerm::BOOL_true;
-	}
-	return TTerm::BOOL_false;
-    }
-    virtual bool operator== (const Expression& ref) const {
-	const NaryNotIn* pref = dynamic_cast<const NaryNotIn*>(&ref);
 	return pref == NULL ? false : *right == *pref->right;
     }
 };
@@ -3922,6 +3900,7 @@ public:
     virtual void booleanGT(const BooleanGT* const self, const Expression* p_left, const Expression* p_right) = 0;
     virtual void booleanLE(const BooleanLE* const self, const Expression* p_left, const Expression* p_right) = 0;
     virtual void booleanGE(const BooleanGE* const self, const Expression* p_left, const Expression* p_right) = 0;
+    virtual void naryIn(const NaryIn* const self, const Expression* p_left, const ProductionVector<const Expression*>* p_right) = 0;
     virtual void comparatorExpression(const ComparatorExpression* const self, const GeneralComparator* p_GeneralComparator) = 0;
     virtual void numberExpression(const NumberExpression* const self, const NumericRDFLiteral* p_NumericRDFLiteral) = 0;
 };
@@ -4171,6 +4150,10 @@ public:
 	p_left->express(this);
 	p_right->express(this);
     }
+    virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	p_left->express(this);
+	p_right->express(this);
+    }
     virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {
 	p_GeneralComparator->express(this);
     }
@@ -4219,6 +4202,7 @@ public:
 	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {  }
 	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {  }
 	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {  }
+	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {  }
 	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {  }
 	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {  }
     */

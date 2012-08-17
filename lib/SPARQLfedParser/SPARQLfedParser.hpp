@@ -334,7 +334,7 @@ namespace w3c_sw {
     ProductionVector<const TTerm*>* p_TTerms;
     Expression* p_Expression;
     ProductionVector<const Expression*>* p_Expressions;
-    GeneralComparator* p_GeneralComparator;
+    struct { bool neg; GeneralComparator* comp; } p_ComparatorSense;
     const URI* p_URI;
     ProductionVector<const URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
