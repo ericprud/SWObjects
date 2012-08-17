@@ -71,6 +71,19 @@ struct MeasuredRS : public ResultSet {
      *   a set of required features
      *   a query to peform.
      */
+
+    void read (std::string name, std::string baseURI, BasicGraphPattern* g) {
+	IStreamContext istr(name, IStreamContext::FILE);
+	if (name.substr(name.size()-4, 4) == ".rdf") {
+	    GRdfXmlParser.parse(g, istr);
+	} else {
+	    turtleParser.setGraph(g);
+	    turtleParser.setBase(baseURI);
+	    turtleParser.parse(istr);
+	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
+	}
+    }
+
     MeasuredRS (const char* defGraph, 
 		const char* namedGraphs[], size_t namedCount, 
 		const URI* requires[], size_t reqsCount, 
@@ -89,21 +102,11 @@ struct MeasuredRS : public ResultSet {
 	}
 
 	/* Parse data. */
-	if (defGraph != NULL) {
-	    turtleParser.setGraph(d.ensureGraph(NULL));
-	    turtleParser.setBase(baseURI);
-	    IStreamContext istr(defGraph, IStreamContext::FILE);
-	    turtleParser.parse(istr);
-	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
-	}
+	if (defGraph != NULL)
+	    read(defGraph, baseURI, d.ensureGraph(NULL));
 
-	for (size_t i = 0; i < namedCount; ++i) {
-	    turtleParser.setGraph(d.ensureGraph(F.getURI(namedGraphs[i])));
-	    turtleParser.setBase(baseURI);
-	    IStreamContext istr(namedGraphs[i], IStreamContext::FILE);
-	    turtleParser.parse(istr);
-	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
-	}
+	for (size_t i = 0; i < namedCount; ++i)
+	    read(namedGraphs[i], baseURI, d.ensureGraph(F.getURI(namedGraphs[i])));
 
 	for (size_t i = 0; i < reqsCount; ++i)
 	    std::cerr << "assuming support for extension " << requires[i]->toString() << std::endl;
