@@ -56,6 +56,14 @@ namespace w3c_sw {
 	    return ret;
 	}
 
+	struct DelMes : public std::vector<const char*> {
+	    ~DelMes () {
+		for (std::vector<const char*>::iterator it = begin(); 
+		     it != end(); ++it)
+		    delete[] *it;
+	    }
+	};
+
     public:
 	SAXparser_expat () {  }
 	virtual ~SAXparser_expat () {  }
@@ -150,6 +158,7 @@ namespace w3c_sw {
 	    NSmapImpl nsframe(self.nsz.top());
 	    self.nsz.push(nsframe);
 	    Attributes_expat attrs;
+	    DelMes delmes;
 	    { /* Walk attrs. */
 		for (const XML_Char** att = atts; *att; ++att) {
 		    const char* prefix = *att;
@@ -180,6 +189,7 @@ namespace w3c_sw {
 			strncpy(dup, prefix, len);
 			dup[len] = 0;
 			attrs.byIndex.push_back(NsSet(lname, dup, value));
+			delmes.push_back(dup);
 		    } else {
 			attrs.byIndex.push_back(NsSet(lname, "", value));
 		    }
