@@ -165,7 +165,7 @@ struct MeasuredRS : public ResultSet {
 std::ostream& operator<< (std::ostream& os, MeasuredRS const& my) {
     os << "Database: " << my.d;
     os << "query: " << *sparqlParser.root;
-    os << "result: ";
+    os << "result:\n";
 
     if (my.isOrdered())
 	return operator<<(os, (ResultSet&)my);
@@ -258,6 +258,7 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
     ResultSet orderedCopy(*my.reference);
     orderedCopy.leadWithColumns(my.measured.getOrderedVars());
     orderedCopy.order();
+    os << "\n";
     return operator<<(os, orderedCopy);
 }
 
