@@ -183,7 +183,7 @@ protected:
     void addBindingValue (const TTerm* value) {
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
-	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
+	    ss << "atom " << value->toString() << " binding tuple wider than VALUES variable list.";
 	    error(*yylloc, ss.str().c_str());
 	}
 	if (value != TTerm::Unbound)
@@ -313,7 +313,7 @@ public:
        IT_PROMISCUOUS IT_INTERSECTION IT_DRACONIAN IT_VARNAMES IT_LABEL
        IT_GRAPH IT_SERVICE IT_SILENT IT_BASE IT_PREFIX IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_SELECT IT_FROM IT_NAMED IT_ORDER
-       IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_BINDINGS IT_MEMBERS IT_STARTS
+       IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_VALUES IT_MEMBERS IT_STARTS
        IT_ENDS IT_ANY IT_UNORDERED GT_LCURLEY GT_RCURLEY IT_WHERE
        GT_LPAREN GT_RPAREN IT_UNDEF GT_MINUS_MINUS GT_DOT IT_OPTIONAL IT_MINUS IT_UNION IT_FILTER
        GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_OR GT_AND GT_EQUAL
@@ -374,7 +374,7 @@ public:
 %type <p_OrderConditionPair> OrderCondition
 			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
-%type <p_BindingClause> ValuesClause _QValuesClause_E_Opt
+%type <p_BindingClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
 
 %type <p_TableOperation> QuadPattern Quads
 
@@ -392,7 +392,7 @@ public:
 	      BlankNodePropertyList
 	      Verb VarOrIri VarOrTerm GraphNode
 	      GraphTerm _QGraphTerm_E_Opt _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt _O_QIT_LABEL_E_S_QGraphTerm_E_C
-	      BlankNode TriplesNode Generator BindingValue
+	      BlankNode TriplesNode Generator DataBlockValue
               _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple Path PathAlternative PathSequence PathEltOrInverse PathElt PathPrimary
               _O_Qiri_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C
 %type <p_TTerms> _QGraphNode_E_Plus
@@ -584,14 +584,6 @@ DefaultPrimaryKey:
     }
 ;
 
-// ValuesClause?
-_QValuesClause_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | ValuesClause	
-;
-
 Prologue:
     // BaseDecl? PrefixDecl*
     _QBaseDecl_E_Opt _QPrefixDecl_E_Star	
@@ -627,7 +619,7 @@ PrefixDecl:
 ;
 
 SubSelect:
-    // SelectClause WhereClause SolutionModifier ValuesClause?
+    // SelectClause WhereClause SolutionModifier ValuesClause
     {
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
@@ -638,7 +630,7 @@ SubSelect:
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
-      } WhereClause SolutionModifier _QValuesClause_E_Opt	{
+      } WhereClause SolutionModifier ValuesClause	{
 	  if ($7 != NULL)
 	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>4, new SubSelect(new Select($3.distinctness, $3.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
@@ -747,7 +739,7 @@ ConstructQuery:
     // ('LABEL' GraphTerm)? 'CONSTRUCT' QuadPattern DatasetClause* WhereClause SolutionModifier
     _Q_O_QIT_LABEL_E_S_QGraphTerm_E_C_E_Opt IT_CONSTRUCT QuadPattern	{
 	driver.curOp = NULL;
-      } _QDatasetClause_E_Star WhereClause SolutionModifier _QValuesClause_E_Opt	{
+      } _QDatasetClause_E_Star WhereClause SolutionModifier ValuesClause	{
 	/* $3 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
 	if ($8 != NULL)
 	    $6->m_GroupGraphPattern = driver.makeConjunction($8, $6->m_GroupGraphPattern);
@@ -1014,70 +1006,20 @@ OffsetClause:
 ;
 
 ValuesClause:
-    // 'BINDINGS' Var+ '{' ( '(' BindingValue+ ')' )* '}'
-    IT_BINDINGS {
-	driver.startBindingSet();
-      } _QVar_E_Star GT_LCURLEY  _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
-	  $$ = new BindingClause(driver.endBindingSet());
-      }
+    _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt	
 ;
 
-// Var*
-_QVar_E_Star:
-    
-  | _QVar_E_Star Var	{
-	driver.addBindingVar($2);
+_O_QIT_VALUES_E_S_QDataBlock_E_C:
+    IT_VALUES DataBlock	{
+	$$ = $2;
     }
 ;
 
-_QBindingValue_E_Plus:
-    BindingValue	{
-	driver.addBindingValue($1);
+_Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt:
+    {
+	$$ = NULL;
     }
-  | _QBindingValue_E_Plus BindingValue	{
-	driver.addBindingValue($2);
-    }
-;
-
-_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C:
-    GT_LPAREN {
-	driver.startBindingRow(); // @@ push down to _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star?
-      } _QBindingValue_E_Plus GT_RPAREN	{
-	  driver.endBindingRow();
-      }
-  | NIL	{
-	driver.startBindingRow();
-	driver.endBindingRow();
-    }
-;
-
-_Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star:
-    
-  | _Q_O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star _O_QGT_LPAREN_E_S_QBindingValue_E_Plus_S_QGT_RPAREN_E_Or_QNIL_E_C	
-;
-
-BindingValue:
-    iri	{
-	$$ = $1;
-    }
-  | RDFLiteral	{
-	$$ = $1;
-    }
-  | NumericLiteral	{
-	$$ = $1;
-    }
-  | BooleanLiteral	{
-	$$ = $1;
-    }
-  | IT_UNDEF	{
-	$$ = TTerm::Unbound;
-    }
-  | GT_MINUS_MINUS	{
-	$$ = TTerm::Unbound;
-    }
-  | Var	{
-	$$ = $1;
-    }
+  | _O_QIT_VALUES_E_S_QDataBlock_E_C	
 ;
 
 _QIT_SILENT_E_Opt:
@@ -1238,7 +1180,7 @@ GraphPatternNotTriples:
   | ServiceGraphPattern	
   | Filter	
   | Bind	
-  | ValuesClause	{
+  | InlineData	{
 	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, $1) : $1;
     }
 ;
@@ -1301,6 +1243,108 @@ Bind:
 	// test reference:
 	//   http://www.sparql.org/query-validator?query=ASK+{+%3Fs+%3Fp+%3Fo+FILTER+%281%29+BIND+%282+AS+%3Fb%29+%3Fs2+%3Fp2+%3Fo2+FILTER+%283%29+BIND+%284+AS+%3Fd%29}&languageSyntax=SPARQL&outputFormat=algebra&linenumbers=false
 	driver.curBGP = NULL;
+    }
+;
+
+InlineData:
+    IT_VALUES DataBlock	{
+	$$ = $2;
+    }
+;
+
+DataBlock:
+    InlineDataOneVar	
+  | InlineDataFull	
+;
+
+InlineDataOneVar:
+    {
+	driver.startBindingSet();
+      } Var {
+	  driver.addBindingVar($2);
+      } GT_LCURLEY _QSingleValueRow_E_Star GT_RCURLEY	{
+	  $$ = new BindingClause(driver.endBindingSet());
+      }
+;
+
+_QSingleValueRow_E_Star:
+    
+  | _QSingleValueRow_E_Star SingleValueRow	
+;
+
+SingleValueRow:
+    DataBlockValue	{
+	driver.startBindingRow();
+	driver.addBindingValue($1);
+	driver.endBindingRow();
+    }
+;
+
+InlineDataFull:
+    {
+	driver.startBindingSet();
+    } _O_QNIL_E_Or_QGT_LPAREN_E_S_QVar_E_Star_S_QGT_RPAREN_E_C GT_LCURLEY _Q_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
+	  $$ = new BindingClause(driver.endBindingSet());
+      }
+;
+
+_QVar_E_Star:
+    
+  | _QVar_E_Star Var	{
+	driver.addBindingVar($2);
+    }
+;
+
+_O_QNIL_E_Or_QGT_LPAREN_E_S_QVar_E_Star_S_QGT_RPAREN_E_C:
+    NIL	
+  | GT_LPAREN _QVar_E_Star GT_RPAREN	
+;
+
+_QDataBlockValue_E_Star:
+    
+  | _QDataBlockValue_E_Star DataBlockValue	{
+	driver.addBindingValue($2);
+    }
+;
+
+_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C:
+    GT_LPAREN {
+	driver.startBindingRow();
+      } _QDataBlockValue_E_Star GT_RPAREN	{
+	  driver.endBindingRow();
+      }
+  | NIL	{
+	driver.startBindingRow();
+	driver.endBindingRow();
+    }
+;
+
+_Q_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star:
+    
+  | _Q_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star _O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C	
+;
+
+DataBlockValue:
+    iri	{
+	$$ = $1;
+    }
+  | RDFLiteral	{
+	$$ = $1;
+    }
+  | NumericLiteral	{
+	$$ = $1;
+    }
+  | BooleanLiteral	{
+	$$ = $1;
+    }
+  | IT_UNDEF	{
+	$$ = TTerm::Unbound;
+    }
+  | GT_MINUS_MINUS	{
+	$$ = TTerm::Unbound;
+    }
+  | Var	{
+	$$ = $1;
     }
 ;
 

@@ -6,8 +6,8 @@ SELECT ?bPlusC (SUM(?bPlusC) AS ?sumBPlusC) (1 - COUNT(*) AS ?oneMinusCount)
 {
     {
       SELECT * {}
-      BINDINGS
-?a ?b  ?c {
+      VALUES
+(?a ?b ?c) {
 (1 10 2)
 (1  9 3)
 (1 11 4)

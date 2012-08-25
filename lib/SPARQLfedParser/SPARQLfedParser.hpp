@@ -384,7 +384,7 @@ namespace w3c_sw {
      IT_DESC = 282,
      IT_LIMIT = 283,
      IT_OFFSET = 284,
-     IT_BINDINGS = 285,
+     IT_VALUES = 285,
      IT_MEMBERS = 286,
      IT_STARTS = 287,
      IT_ENDS = 288,

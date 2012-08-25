@@ -5,7 +5,7 @@
 [1]    QueryUnit                  ::=  Query
 [2]    Query                      ::=  Prologue
                                        ( SelectQuery | ConstructQuery | DescribeQuery | AskQuery )
-                                       ValuesClause?
+                                       ValuesClause
 [3]    UpdateUnit                 ::=  Update
 [4]    Prologue                   ::=  BaseDecl? PrefixDecl* LoadResults*
 				       
@@ -17,7 +17,7 @@
 [0RS]  ABoxTop 		          ::=  ABOX_HR
 [0RS]  ABoxHeader 		  ::=  '|' ('|' | ABoxCell+)
 [0RS]  ABoxRow 		          ::=  '|' ('|' | ABoxCell+)
-[0RS]  ABoxCell 		  ::=  BindingValue '|'
+[0RS]  ABoxCell 		  ::=  DataBlockValue '|'
 [0RS]  ABoxBottom		  ::=  ABOX_HR
 
 [0RS]  UBox			  ::=    UBoxTop UBoxHeader UBoxRow* UBoxBottom
@@ -25,28 +25,28 @@
 [0RS]  UBoxTop 		          ::=  UBOX_UHR
 [0RS]  UBoxHeader 		  ::=  '│' ('│' | UBoxCell+)
 [0RS]  UBoxRow 		          ::=  '│' ('│' | UBoxCell+)
-[0RS]  UBoxCell 		  ::=  BindingValue '│'
+[0RS]  UBoxCell 		  ::=  DataBlockValue '│'
 [0RS]  UBoxBottom 		  ::=  UBOX_LHR
 
 [0RS]  CurlySet 		  ::=  '{' Map* '}'
 [0RS]  Map 			  ::=  '(' (Binding ','?)* ')'
-[0RS]  Binding			  ::=    BindingValue '->' BindingValue
-                 		       | BindingValue '→' BindingValue
-                 		       | BindingValue '=' BindingValue
+[0RS]  Binding			  ::=    DataBlockValue '->' DataBlockValue
+                 		       | DataBlockValue '→' DataBlockValue
+                 		       | DataBlockValue '=' DataBlockValue
 
 [5]    BaseDecl                   ::=  'BASE' IRIREF
 [6]    PrefixDecl                 ::=  'PREFIX' PNAME_NS IRIREF
 [7]    SelectQuery                ::=  SelectClause DatasetClause* WhereClause SolutionModifier
-[8]    SubSelect                  ::=  SelectClause WhereClause SolutionModifier ValuesClause?
+[8]    SubSelect                  ::=  SelectClause WhereClause SolutionModifier ValuesClause
 [9]    SelectClause               ::=  'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
-#[0X]    ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@ValuesClause?
+#[0X]    ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@ValuesClause
 [10]   ConstructQuery             ::=  'CONSTRUCT' QuadPattern DatasetClause* WhereClause SolutionModifier
 [11]   DescribeQuery              ::=  'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
 [12]   AskQuery                   ::=  'ASK' DatasetClause* WhereClause
 [13]   DatasetClause              ::=  'FROM' ( DefaultGraphClause | NamedGraphClause )
 [14]   DefaultGraphClause         ::=  SourceSelector
 [15]   NamedGraphClause           ::=  'NAMED' SourceSelector
-[16]   SourceSelector             ::=  IRIref
+[16]   SourceSelector             ::=  iri
 [17]   WhereClause                ::=  'WHERE'? GroupGraphPattern
 [18]   SolutionModifier           ::=  GroupClause? HavingClause? OrderClause? LimitOffsetClauses?
 [19]   GroupClause                ::=  'GROUP' 'BY' GroupCondition+
@@ -59,11 +59,11 @@
 [25]   LimitOffsetClauses         ::=  LimitClause OffsetClause? | OffsetClause LimitClause?
 [26]   LimitClause                ::=  'LIMIT' INTEGER
 [27]   OffsetClause               ::=  'OFFSET' INTEGER
-[28]   ValuesClause             ::= 'BINDINGS' Var* '{' ( '(' BindingValue+ ')' | NIL )* '}'
-[29X]   BindingValue               ::= IRIref | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | '--' | Var
+#[28X]   ValuesClause             ::= 'BINDINGS' Var* '{' ( '(' DataBlockValue+ ')' | NIL )* '}'
+[28]   ValuesClause               ::=  ( 'VALUES' DataBlock )?
 [29]   Update                     ::=  Prologue Update1 ( ';' Update? )?
 [30]   Update1                    ::=  Load | Clear | Drop | Add | Move | Copy | Create | InsertData | DeleteData | DeleteWhere | Modify
-[31]   Load                       ::=  'LOAD' IRIref ( 'INTO' GraphRef )?
+[31]   Load                       ::=  'LOAD' iri ( 'INTO' GraphRef )?
 [32]   Clear                      ::=  'CLEAR' 'SILENT'? GraphRefAll
 [33]   Drop                       ::=  'DROP' 'SILENT'? GraphRefAll
 [34]   Create                     ::=  'CREATE' 'SILENT'? GraphRef
@@ -73,12 +73,12 @@
 [38]   InsertData                 ::=  'INSERT[ \t\r\n]+DATA' QuadData
 [39]   DeleteData                 ::=  'DELETE[ \t\r\n]+DATA' QuadData
 [40]   DeleteWhere                ::=  'DELETE[ \t\r\n]+WHERE' QuadPattern
-[41]   Modify                     ::=  ( 'WITH' IRIref )? ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
+[41]   Modify                     ::=  ( 'WITH' iri )? ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
 [42]   DeleteClause               ::=  'DELETE' QuadPattern
 [43]   InsertClause               ::=  'INSERT' QuadPattern
-[44]   UsingClause                ::=  'USING' ( IRIref | 'NAMED' IRIref )
-[45]   GraphOrDefault             ::=  'DEFAULT' | 'GRAPH'? IRIref
-[46]   GraphRef                   ::=  'GRAPH' IRIref
+[44]   UsingClause                ::=  'USING' ( iri | 'NAMED' iri )
+[45]   GraphOrDefault             ::=  'DEFAULT' | 'GRAPH'? iri
+[46]   GraphRef                   ::=  'GRAPH' iri
 [47]   GraphRefAll                ::=  GraphRef | 'DEFAULT' | 'NAMED' | 'ALL'
 [48]   QuadPattern                ::=  '{' Quads '}'
 [49]   QuadData                   ::=  '{' Quads '}'
@@ -88,17 +88,18 @@
 [53]   GroupGraphPattern          ::=  ('{' ( SubSelect | GroupGraphPatternSub ) '}') | RSREF
 [54]   GroupGraphPatternSub       ::=  TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
 [55]   TriplesBlock               ::=  TriplesSameSubjectPath ( '.' TriplesBlock? )?
-[56]   GraphPatternNotTriples     ::=  GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | ValuesClause | Print
+[56]   GraphPatternNotTriples     ::=  GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | InlineData | Print
 [57X]   Print                      ::=  'PRINT' GroupGraphPattern
 [57]   OptionalGraphPattern       ::=  'OPTIONAL' GroupGraphPattern
 [58]   GraphGraphPattern          ::=  'GRAPH' VarOrIri GroupGraphPattern
 [59]   ServiceGraphPattern        ::=  'SERVICE' 'SILENT'? VarOrIri GroupGraphPattern
 [60]   Bind                       ::=  'BIND' '(' Expression 'AS' Var ')'
-#[61]   InlineData                 ::=  'VALUES' DataBlock
-#[62]   DataBlock                  ::=  InlineDataOneVar | InlineDataFull
-#[63]   InlineDataOneVar           ::=  Var '{' DataBlockValue* '}'
-#[64]   InlineDataFull             ::=  ( NIL | '(' Var* ')' ) '{' ( '(' DataBlockValue* ')' | NIL )* '}'
-#[65]   DataBlockValue             ::=  iri | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF'
+[61]   InlineData                 ::=  'VALUES' DataBlock
+[62]   DataBlock                  ::=  InlineDataOneVar | InlineDataFull
+[63]   InlineDataOneVar           ::=  Var '{' SingleValueRow* '}'
+[63X]  SingleValueRow             ::=  DataBlockValue
+[64]   InlineDataFull             ::=  ( NIL | '(' Var* ')' ) '{' ( '(' DataBlockValue* ')' | NIL )* '}'
+[65]   DataBlockValue             ::=  iri | RDFLiteral | NumericLiteral | BooleanLiteral | 'UNDEF' | '--' | Var
 [66]   MinusGraphPattern          ::=  'MINUS' GroupGraphPattern
 [67]   GroupOrUnionGraphPattern   ::=  GroupGraphPattern ( 'UNION' GroupGraphPattern )*
 [68]   Filter                     ::=  'FILTER' Constraint

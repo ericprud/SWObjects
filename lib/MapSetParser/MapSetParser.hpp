@@ -165,7 +165,7 @@ protected:
     void addBindingValue (const TTerm* value) {
 	if (curTTerm == termList.end()) {
 	    std::stringstream ss;
-	    ss << "atom " << value->toString() << " binding tuple wider than BINDINGS variable list.";
+	    ss << "atom " << value->toString() << " binding tuple wider than VALUES variable list.";
 	    error(*yylloc, ss.str().c_str());
 	}
 	if (value != TTerm::Unbound)
@@ -375,7 +375,7 @@ namespace w3c_sw {
      IT_DESC = 287,
      IT_LIMIT = 288,
      IT_OFFSET = 289,
-     IT_BINDINGS = 290,
+     IT_VALUES = 290,
      IT_MEMBERS = 291,
      IT_STARTS = 292,
      IT_ENDS = 293,
@@ -506,7 +506,7 @@ namespace w3c_sw {
      STRING_LITERAL_LONG1 = 418,
      STRING_LITERAL2 = 419,
      STRING_LITERAL_LONG2 = 420,
-     IRI_REF = 421,
+     IRIREF = 421,
      PNAME_NS = 422,
      PNAME_LN = 423,
      BLANK_NODE_LABEL = 424,

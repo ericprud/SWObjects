@@ -104,7 +104,7 @@ IT_ASC		[Aa][Ss][Cc]
 IT_DESC		[Dd][Ee][Ss][Cc]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
-IT_BINDINGS		[Bb][Ii][Nn][Dd][Ii][Nn][Gg][Ss]
+IT_VALUES		[Vv][Aa][Ll][Uu][Ee][Ss]
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
 GT_MINUS_MINUS		"--"
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
@@ -287,7 +287,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_DESC}		{return token::IT_DESC;}
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
-{IT_BINDINGS}		{return token::IT_BINDINGS;}
+{IT_VALUES}		{return token::IT_VALUES;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_MINUS_MINUS}	{return token::GT_MINUS_MINUS;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
