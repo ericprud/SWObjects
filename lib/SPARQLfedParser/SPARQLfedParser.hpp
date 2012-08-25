@@ -51,6 +51,7 @@
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include "ParserCommon.hpp"
+#include "SWObjectDuplicator.hpp"
 
 namespace w3c_sw {
 
@@ -232,7 +233,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 236 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 237 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -262,7 +263,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 266 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 267 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -274,7 +275,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 245 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 246 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -344,7 +345,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 348 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 349 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -720,7 +721,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 724 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 725 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

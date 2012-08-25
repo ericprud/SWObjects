@@ -38,9 +38,10 @@
 [6]    PrefixDecl                 ::=  'PREFIX' PNAME_NS IRIREF
 [7]    SelectQuery                ::=  SelectClause DatasetClause* WhereClause SolutionModifier
 [8]    SubSelect                  ::=  SelectClause WhereClause SolutionModifier ValuesClause
-[9]    SelectClause               ::=  'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
+[9]    SelectClause               ::=  'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( BuiltInCall | RDFLiteral | NumericLiteral | BooleanLiteral | Var | Aggregate | FunctionCall | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
 #[0X]    ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@ValuesClause
-[10]   ConstructQuery             ::=  'CONSTRUCT' QuadPattern DatasetClause* WhereClause SolutionModifier
+[10]   ConstructQuery             ::=  'CONSTRUCT' (   QuadPattern DatasetClause* WhereClause SolutionModifier
+                                                     | DatasetClause* 'WHERE' '{' TriplesTemplate? '}' SolutionModifier )
 [11]   DescribeQuery              ::=  'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
 [12]   AskQuery                   ::=  'ASK' DatasetClause* WhereClause
 [13]   DatasetClause              ::=  'FROM' ( DefaultGraphClause | NamedGraphClause )
@@ -59,7 +60,6 @@
 [25]   LimitOffsetClauses         ::=  LimitClause OffsetClause? | OffsetClause LimitClause?
 [26]   LimitClause                ::=  'LIMIT' INTEGER
 [27]   OffsetClause               ::=  'OFFSET' INTEGER
-#[28X]   ValuesClause             ::= 'BINDINGS' Var* '{' ( '(' DataBlockValue+ ')' | NIL )* '}'
 [28]   ValuesClause               ::=  ( 'VALUES' DataBlock )?
 [29]   Update                     ::=  Prologue Update1 ( ';' Update? )?
 [30]   Update1                    ::=  Load | Clear | Drop | Add | Move | Copy | Create | InsertData | DeleteData | DeleteWhere | Modify
