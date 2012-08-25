@@ -2537,7 +2537,10 @@ compared against
 	rs->addKnownVar(m_label);
 	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
 	    try {
-		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL, db), false); // @@ NULL for atomFactory
+		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL, db), false, true);
+		// atomFactory: NULL.
+		// not a loose binding, whatever that means now.
+		// replace: setting TTerm::Unbound deletes the binding.
 	    } catch (SafeEvaluationError&) {
 		// Don't (*row)->set(m_label, TTerm::Unbound, false) as RS contract is to leave unbounds NULL c.f. "setting ?d to Unbound is just wrong"
 	    }
