@@ -4292,7 +4292,7 @@ YY_RULE_SETUP
 case 152:
 YY_RULE_SETUP
 #line 412 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
 	YY_BREAK
 case 153:
 YY_RULE_SETUP

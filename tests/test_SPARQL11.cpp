@@ -179,7 +179,7 @@ end
 |      12 |           24 |             -1 |
 +---------+--------------+----------------+
      */
-    GRAPH_TEST(NULL, "sparql11/ext_select_expr-01.rq", "sparql11/ext_select_expr-01.srt");
+    // !! incompatible with final SPARQL aggregate semantics: GRAPH_TEST(NULL, "sparql11/ext_select_expr-01.rq", "sparql11/ext_select_expr-01.srt");
 }
 BOOST_AUTO_TEST_SUITE_END(/* subselect */)
 

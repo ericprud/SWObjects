@@ -532,7 +532,7 @@ namespace w3c_sw {
      STRING_LITERAL_LONG1 = 430,
      STRING_LITERAL2 = 431,
      STRING_LITERAL_LONG2 = 432,
-     IRI_REF = 433,
+     IRIREF = 433,
      PNAME_NS = 434,
      PNAME_LN = 435,
      BLANK_NODE_LABEL = 436,

@@ -1676,7 +1676,7 @@ _O_QCount_E_Or_QMiscAgg_E_Or_QGroupConcat_E_C:
 
 Count:
     IT_COUNT _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C	{
- 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $2, $3));
+ 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $2, $3, AggregateCall::ScalarVals()));
     }
 ;
 
@@ -1698,7 +1698,7 @@ _O_QGT_TIMES_E_Or_QExpression_E_C:
 
 MiscAgg:
     _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C _QIT_DISTINCT_E_Opt Expression	{
-	$$ = new FunctionCallExpression(new AggregateCall($1, $2, $3));
+	$$ = new FunctionCallExpression(new AggregateCall($1, $2, $3, AggregateCall::ScalarVals()));
     }
 ;
 
@@ -1722,10 +1722,10 @@ _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C:
 
 GroupConcat:
     IT_GROUP_CONCAT _QIT_DISTINCT_E_Opt Expression	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $2, $3));
+	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $2, $3, AggregateCall::ScalarVals()));
     }
   | IT_GROUP_CONCAT _QIT_DISTINCT_E_Opt Separator Expression	{
-	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $2, $4));
+      $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $2, $4, AggregateCall::ScalarVals()));
     }
 ;
 

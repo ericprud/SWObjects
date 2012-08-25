@@ -2347,7 +2347,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1678 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
- 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
+ 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
     }
     break;
 
@@ -2383,7 +2383,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1700 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(3) - (1)].p_URI), (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
+	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(3) - (1)].p_URI), (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
     }
     break;
 
@@ -2437,7 +2437,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1724 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression)));
+	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
     }
     break;
 
@@ -2446,7 +2446,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1727 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(4) - (2)].p_distinctness), (yysemantic_stack_[(4) - (4)].p_Expression)));
+      (yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(4) - (2)].p_distinctness), (yysemantic_stack_[(4) - (4)].p_Expression), AggregateCall::ScalarVals()));
     }
     break;
 

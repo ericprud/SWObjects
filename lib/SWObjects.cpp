@@ -846,6 +846,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return dynamic_cast<const RDFLiteral*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
+	    const TTerm* FUNC_isNumeric (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		return dynamic_cast<const NumericRDFLiteral*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
 	    const TTerm* FUNC_str (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL)
 		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
@@ -911,9 +915,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
 		    int i = upper->getLexicalValue().size();
-		    std::stringstream ss;
-		    ss << i;
-		    return atomFactory->getNumericRDFLiteral(ss.str(), i);
+		    return atomFactory->getNumericRDFLiteral(i);
 		}
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
@@ -1165,6 +1167,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_isURI, 1, 1, &FUNC_isIRI),
 		Map::Initializer(TTerm::FUNC_isBlank, 1, 1, &FUNC_isBlank),
 		Map::Initializer(TTerm::FUNC_isLiteral, 1, 1, &FUNC_isLiteral),
+		Map::Initializer(TTerm::FUNC_isNumeric, 1, 1, &FUNC_isNumeric),
 		Map::Initializer(TTerm::FUNC_str, 1, 1, &FUNC_str),
 		Map::Initializer(TTerm::FUNC_lang, 1, 1, &FUNC_lang),
 		Map::Initializer(TTerm::FUNC_iri, 1, 1, &FUNC_iri),
@@ -1505,26 +1508,20 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    p_URI == TTerm::URI_xsd_positiveInteger) {
 	    int i;
 	    is >> i;
-// 	    std::stringstream canonical;
-// 	    canonical << std::dec << i;
-// 	    return getNumericRDFLiteral(canonical.str().c_str(), i);
+// 	    return getNumericRDFLiteral(i);
 	    return getNumericRDFLiteral(p_String.c_str(), i);
 	} else if (p_URI == TTerm::URI_xsd_decimal || 
 		   p_URI == TTerm::URI_xsd_float) {
 	    float f;
 	    is >> f;
-// 	    std::stringstream canonical;
-// 	    canonical << std::fixed << f;
-// 	    return getNumericRDFLiteral(canonical.str().c_str(), f);
+// 	    return p_URI == TTerm::URI_xsd_float ? getNumericRDFLiteral(f, true) : getNumericRDFLiteral(f);
 	    return p_URI == TTerm::URI_xsd_float ? 
 		getNumericRDFLiteral(p_String.c_str(), f, true) :
 		getNumericRDFLiteral(p_String.c_str(), f);
 	} else if (p_URI == TTerm::URI_xsd_double) {
 	    double d;
 	    is >> d;
-// 	    std::stringstream canonical;
-// 	    canonical << std::scientific << d;
-// 	    return getNumericRDFLiteral(canonical.str().c_str(), d);
+// 	    return getNumericRDFLiteral(d);
 	    return getNumericRDFLiteral(p_String.c_str(), d);
 	} else if (p_URI == TTerm::URI_xsd_dateTime) {
 	    return getDateTimeRDFLiteral(p_String.c_str());
@@ -1570,14 +1567,41 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 #define XSD "http://www.w3.org/2001/XMLSchema#"
 #define LEN_XSD sizeof(XSD)
+
+    static std::string canonical (int i) {
+	std::stringstream canonical;
+	canonical << i;
+	return canonical.str();
+    }
+
+    const IntegerRDFLiteral* AtomFactory::getNumericRDFLiteral (int p_value) {
+	class QuoteIntegerRDFLiteral : public MakeNumericRDFLiteral {
+	private:
+	    int m_value;
+	    std::string m_lexval;
+	public: QuoteIntegerRDFLiteral (int p_value, std::string m_lexval)
+	    : m_value(p_value), m_lexval(m_lexval)
+	    {  }
+	    virtual std::string indexIt () const {
+		return m_lexval;
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
+		return new IntegerRDFLiteral(p_String, p_URI, m_value);
+	    }
+	};
+
+	std::string canon = canonical(p_value);
+	QuoteIntegerRDFLiteral maker(p_value, canon);
+	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(canon, "integer", maker);
+	return ret;
+    }
+
     const IntegerRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
 	    virtual std::string indexIt () const {
-		std::stringstream ss; // @@ could be cheaper
-		ss << m_value;
-		return ss.str();
+		return canonical(m_value);
 	    }
 	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new IntegerRDFLiteral(p_String, p_URI, m_value);
@@ -1588,14 +1612,42 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return ret;
     }
 
+    static std::string canonical (float f) { // decimal notation
+	std::stringstream canonical;
+	canonical << f;
+	if (canonical.str().find_first_of(".") == std::string::npos)
+	    canonical << ".0";
+	return canonical.str();
+    }
+
+    const DecimalRDFLiteral* AtomFactory::getNumericRDFLiteral (float p_value) {
+	class QuoteDecimalRDFLiteral : public MakeNumericRDFLiteral {
+	private:
+	    float m_value;
+	    std::string m_lexval;
+	public: QuoteDecimalRDFLiteral (float p_value, std::string m_lexval)
+	    : m_value(p_value), m_lexval(m_lexval)
+	    {  }
+	    virtual std::string indexIt () const {
+		return m_lexval;
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
+		return new DecimalRDFLiteral(p_String, p_URI, m_value);
+	    }
+	};
+
+	std::string canon = canonical(p_value);
+	QuoteDecimalRDFLiteral maker(p_value, canon);
+	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(canon, "decimal", maker);
+	return ret;
+    }
+
     const DecimalRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
 	    virtual std::string indexIt () const {
-		std::stringstream ss; // @@ could be cheaper
-		ss << m_value;
-		return ss.str();
+		return canonical(m_value);
 	    }
 	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new DecimalRDFLiteral(p_String, p_URI, m_value);
@@ -1606,14 +1658,34 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return ret;
     }
 
+    const FloatRDFLiteral* AtomFactory::getNumericRDFLiteral (float p_value, bool /* floatness */) {
+	class QuoteFloatRDFLiteral : public MakeNumericRDFLiteral {
+	private:
+	    float m_value;
+	    std::string m_lexval;
+	public: QuoteFloatRDFLiteral (float p_value, std::string m_lexval)
+	    : m_value(p_value), m_lexval(m_lexval)
+	    {  }
+	    virtual std::string indexIt () const {
+		return m_lexval;
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
+		return new FloatRDFLiteral(p_String, p_URI, m_value);
+	    }
+	};
+
+	std::string canon = canonical(p_value);
+	QuoteFloatRDFLiteral maker(p_value, canon);
+	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(canon, "float", maker);
+	return ret;
+    }
+
     const FloatRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
 	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
 	    virtual std::string indexIt () const {
-		std::stringstream ss; // @@ could be cheaper
-		ss << m_value;
-		return ss.str();
+		return canonical(m_value);
 	    }
 	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new FloatRDFLiteral(p_String, p_URI, m_value);
@@ -1624,20 +1696,47 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return ret;
     }
 
+    static std::string canonical (double d) {
+	std::stringstream canonical;
+	int ex = ::log10(d);
+	if (d < 1)
+	    --ex;
+	double logOf10 = ::log(10);
+	canonical << d/::exp(ex*logOf10);
+	if (canonical.str().find('.') == std::string::npos)
+	    canonical << ".0";
+	canonical << "E" << ex;
+	return canonical.str();
+    }
+
+    const DoubleRDFLiteral* AtomFactory::getNumericRDFLiteral (double p_value) {
+	class QuoteDoubleRDFLiteral : public MakeNumericRDFLiteral {
+	private:
+	    double m_value;
+	    std::string m_lexval;
+	public: QuoteDoubleRDFLiteral (double p_value, std::string m_lexval)
+	    : m_value(p_value), m_lexval(m_lexval)
+	    {  }
+	    virtual std::string indexIt () const {
+		return m_lexval;
+	    }
+	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
+		return new DoubleRDFLiteral(p_String, p_URI, m_value);
+	    }
+	};
+
+	std::string canon = canonical(p_value);
+	QuoteDoubleRDFLiteral maker(p_value, canon);
+	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(canon, "double", maker);
+	return ret;
+    }
+
     const DoubleRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
 	    virtual std::string indexIt () const {
-		std::stringstream ss; // @@ could be cheaper
-
-		// ss << std::scientific << m_value; yields e.g. 1.230000E04
-		int ex = log10(m_value);
-		if (m_value < 1)
-		    --ex;
-		ss << m_value/exp(ex*log(10)/log10(10)) << "E" << ex;
-
-		return ss.str();
+		return canonical(m_value);
 	    }
 	    virtual const NumericRDFLiteral* makeIt (std::string p_String, const URI* p_URI) const {
 		return new DoubleRDFLiteral(p_String, p_URI, m_value);
@@ -1790,24 +1889,18 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	switch (dt) {
 	case TTerm::TYPE_Integer: {
 	    int i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getInt());
-	    std::stringstream s;
-	    s << i;
-	    v = getNumericRDFLiteral(s.str(), i);
+	    v = getNumericRDFLiteral(i);
 	    break;
 	}
 	case TTerm::TYPE_Float:
 	case TTerm::TYPE_Decimal: {
-	    float i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
-	    std::stringstream s;
-	    s << i;
-	    v = getNumericRDFLiteral(s.str(), i);
+	    float f = func->eval(static_cast<const NumericRDFLiteral*>(v)->getFloat());
+	    v = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(f, true) : getNumericRDFLiteral(f);
 	    break;
 	}
 	case TTerm::TYPE_Double: {
-	    double i = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
-	    std::stringstream s;
-	    s << i;
-	    v = getNumericRDFLiteral(s.str(), i);
+	    double d = func->eval(static_cast<const NumericRDFLiteral*>(v)->getDouble());
+	    v = getNumericRDFLiteral(d);
 	    break;
 	}
 	default:
@@ -1840,10 +1933,16 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		const NumericRDFLiteral* rnum = dynamic_cast<const NumericRDFLiteral*>(r);
 		if (rnum == NULL)
 		    throw TypeError(r->toString(), "integer operation");
-		int res = func->eval(lnum->getInt(), rnum->getInt());
-		std::stringstream s;
-		s << res;
-		lnum = getNumericRDFLiteral(s.str(), res);
+		try {
+		    int i = func->eval(lnum->getInt(), rnum->getInt());
+		    lnum = getNumericRDFLiteral(i);
+		} catch (float f) {
+		    /* NaryDivide(int, int) throws a float to support this operator mapping:
+		       A / B op:numeric-divide(A, B) numeric; but xsd:decimal if both operands are xsd:integer
+		       Is this a hack or brilliant extreme programming?
+		     */
+		    lnum = getNumericRDFLiteral(f);
+		}
 		break;
 	    }
 	    case TTerm::TYPE_Float:
@@ -1851,10 +1950,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		const NumericRDFLiteral* rnum = dynamic_cast<const NumericRDFLiteral*>(r);
 		if (rnum == NULL)
 		    throw TypeError(r->toString(), "float operation");
-		float res = func->eval(lnum->getFloat(), rnum->getFloat());
-		std::stringstream s;
-		s << res;
-		lnum = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(s.str(), res, true) : getNumericRDFLiteral(s.str(), res);
+		float f = func->eval(lnum->getFloat(), rnum->getFloat());
+		lnum = dt == TTerm::TYPE_Float ? getNumericRDFLiteral(f, true) : getNumericRDFLiteral(f);
 		break;
 	    }
 	    case TTerm::TYPE_Double: {
@@ -1862,9 +1959,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		if (rnum == NULL)
 		    throw TypeError(r->toString(), "double operation");
 		double res = func->eval(lnum->getDouble(), rnum->getDouble());
-		std::stringstream s;
-		s << res;
-		lnum = getNumericRDFLiteral(s.str(), res);
+		lnum = getNumericRDFLiteral(res);
 		break;
 	    }
 	    default:
@@ -2061,7 +2156,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	}
 
 	// COALESCE evaluates arguments until the first bound non-error.
-	if (m_IRIref == TTerm::FUNC_if) {
+	if (m_IRIref == TTerm::FUNC_coalesce) {
 	    for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end();) {
 		try {
 		    const TTerm* ret = (*it)->eval(r, atomFactory, evaluator, db);
@@ -2083,6 +2178,12 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    args.push_back((*it)->eval(r, atomFactory, evaluator, db));
 	return AtomicFunction::GlobalMap.invoke(m_IRIref, args, atomFactory);
+    }
+
+    const TTerm* AggregateCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	SPARQLSerializer ss;
+	express(&ss);
+	return r->get(atomFactory->getRDFLiteral(ss.str()));
     }
 
     const TTerm* ExistsExpression::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {

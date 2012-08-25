@@ -70,7 +70,7 @@ namespace w3c_sw {
 	/** mappedBNodesEquals -- test that Results are identical after a BNode mapping */
 	bool mappedBNodesEquals (const Result& ref, BiDiBNodeMap& refBNodes2myBNodes) const {
 	    if (size() != ref.size()) {
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l->size: " << ref.size() << " != r->size: " << size() << std::endl;
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << ref.toString() << "->size: " << ref.size() << " != " << toString() << "->size: " << size() << std::endl;
 		return false;
 	    }
 	    std::set<const TTerm*> yourVars;

@@ -26,7 +26,7 @@ namespace w3c_sw {
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
-	if (value == TTerm::Unbound)
+	if (value == TTerm::Unbound && !replace)
 	    throw std::string("setting ") + variable->toString() + " to Unbound is just wrong";
 	BindingSet::const_iterator vi = bindings.find(variable);
 	if (replace || vi == bindings.end()) {
@@ -637,10 +637,251 @@ namespace w3c_sw {
 	    return exprAlias->label;
     }
 
+    /* Duplicate projected expressions, simulated expressions
+     * for the aggregates.
+     */
+    struct AggregateStateInjector : public SWObjectDuplicator {
+	std::string& groupIndexRef;
+	std::set<const TTerm*>* delMes;
+
+	/** NoDelWrapper
+	 * Wrap a reference to a FunctionCall; don't delete it.
+	 */
+	struct NoDelWrapper : public FunctionCall { // FunctionCall for virtual eval
+	protected:
+	    const FunctionCall* func;
+	public:
+	    NoDelWrapper (const URI* functionName, const FunctionCall* func)
+		: FunctionCall(functionName, NULL), func(func) {  }
+	    ~NoDelWrapper () {  }
+	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const { // !!! SEGVs when non-const
+		return func->eval(r, atomFactory, evaluator, db);
+	    }
+	};
+
+	struct FunctionState : public FunctionCall { // FunctionCall for virtual eval
+	protected:
+	    std::string& groupIndexRef;
+	    const TTerm* storeAs;
+	    std::set<std::string> dataErrors;
+
+	public:
+	    FunctionState (std::string& groupIndexRef, const TTerm* storeAs, const URI* functionName)
+		: FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef), storeAs(storeAs)
+	    {  }
+	    ~FunctionState () {  }
+	    static std::string mitoa (int i) {
+		std::stringstream s;
+		s << i;
+		return s.str();
+	    }
+	    virtual const TTerm* evalAggregate(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const = 0;
+	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		const TTerm* ret;
+		try {
+		    if (dataErrors.find(groupIndexRef) != dataErrors.end())
+			ret = TTerm::Unbound;
+		    else
+			ret = evalAggregate(r, atomFactory, evaluator, db);
+
+		    // Set the storeAs for this aggregate call (e.g. "count(*)") in this ostensibly const row.
+		    const_cast<Result*>(r)->set(storeAs, ret, true, true); // !!! shame!
+		    return ret;
+		} catch (SafeEvaluationError& e) {
+		    // Intercept errors to set unset storeAs.
+		    ret = TTerm::Unbound;
+		    const_cast<FunctionState*>(this)->dataErrors.insert(groupIndexRef); // !!! shame!
+		    throw e;
+		}
+	    }
+	};
+
+	struct SampleState : public FunctionState { // FunctionCall for virtual eval
+	    const Expression* expr;
+	public:
+	    SampleState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
+	    ~SampleState () {  }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		return expr->eval(r, atomFactory, evaluator, db);
+	    }
+	};
+	struct CountState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    std::map<std::string, int> counts;
+	public:
+	    CountState (std::string& groupIndexRef, const TTerm* storeAs)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_count) {  }
+	    ~CountState () {  }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, const RdfDB* db) const {
+		int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
+		return atomFactory->getNumericRDFLiteral(mitoa(c), c);
+	    }
+	};
+	struct SumState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    const Expression* expr;
+	    std::map<std::string, const TTerm*> vals;
+	public:
+	    SumState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
+	    ~SumState () { delete expr; }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		if (vals.find(groupIndexRef) == vals.end()) {
+		    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
+		} else {
+		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
+		    std::vector<const Expression*> addends;
+		    TTermExpression valExpr(const_cast<SumState*>(this)->vals[groupIndexRef]);
+		    addends.push_back(&valExpr);
+		    addends.push_back(expr);
+		    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
+		}
+		return const_cast<SumState*>(this)->vals[groupIndexRef];
+	    }
+	};
+	struct AvgState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    const Expression* expr;
+	    std::map<std::string, int> counts;
+	    std::map<std::string, const TTerm*> sums;
+	public:
+	    AvgState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_avg), expr(expr) {  }
+	    ~AvgState () { delete expr; }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		if (sums.find(groupIndexRef) == sums.end()) {
+		    const_cast<AvgState*>(this)->counts[groupIndexRef] = 1;
+		    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
+		} else {
+		    const_cast<AvgState*>(this)->counts[groupIndexRef]++;
+		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
+		    std::vector<const Expression*> addends;
+		    TTermExpression valExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
+		    addends.push_back(&valExpr);
+		    addends.push_back(expr);
+		    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
+		}
+		ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator);
+		std::vector<const Expression*> divisors;
+		TTermExpression sumExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
+		divisors.push_back(&sumExpr);
+		int c = const_cast<AvgState*>(this)->counts[groupIndexRef];
+		TTermExpression countExpr(atomFactory->getNumericRDFLiteral(mitoa(c), c));
+		divisors.push_back(&countExpr);
+		return atomFactory->applyCommonNumeric(divisors, &f, db);
+	    }
+	};
+	struct MinState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    const Expression* expr;
+	    std::map<std::string, const TTerm*> vals;
+	public:
+	    MinState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_min), expr(expr) {  }
+	    ~MinState () { delete expr; }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+		if (val != NULL) {
+		    if (vals.find(groupIndexRef) == vals.end())
+			const_cast<MinState*>(this)->vals[groupIndexRef] = val;
+		    else if (val->cmp(*const_cast<MinState*>(this)->vals[groupIndexRef]) == SORT_lt)
+			const_cast<MinState*>(this)->vals[groupIndexRef] = val;
+		}
+		return const_cast<MinState*>(this)->vals[groupIndexRef];
+	    }
+	};
+	struct MaxState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    const Expression* expr;
+	    std::map<std::string, const TTerm*> vals;
+	public:
+	    MaxState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_max), expr(expr) {  }
+	    ~MaxState () { delete expr; }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+		if (val != NULL) {
+		    if (vals.find(groupIndexRef) == vals.end())
+			const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
+		    else if (val->cmp(*const_cast<MaxState*>(this)->vals[groupIndexRef]) == SORT_gt)
+			const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
+		}
+		return const_cast<MaxState*>(this)->vals[groupIndexRef];
+	    }
+	};
+	struct GroupConcatState : public FunctionState { // FunctionCall for virtual eval
+	protected:
+	    const Expression* expr;
+	    std::string separator;
+	    std::map<std::string, boost::shared_ptr<std::stringstream> > vals;
+	public:
+	    GroupConcatState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr, std::string separator)
+		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_group_concat), expr(expr), separator(separator)
+	    {  }
+	    ~GroupConcatState () { delete expr; }
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+		if (val != NULL) {
+		    if (vals.find(groupIndexRef) == vals.end())
+			const_cast<GroupConcatState*>(this)->vals[groupIndexRef] = 
+			    boost::shared_ptr<std::stringstream>(new std::stringstream());
+		    else
+			*const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << separator;
+		    *const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << val->getLexicalValue();
+		}
+		return atomFactory->getRDFLiteral(const_cast<GroupConcatState*>(this)->vals[groupIndexRef]->str(), NULL, NULL, false);
+	    }
+	};
+	AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef, std::set<const TTerm*>* delMes) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef), delMes(delMes) {  }
+	const TTerm* sample (const FunctionCall* const f) {
+	    SPARQLSerializer ss;
+	    f->express(&ss);
+	    const TTerm* ret = atomFactory->getRDFLiteral(ss.str());
+	    delMes->insert(ret);
+	    return ret;
+	}
+	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
+	    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
+
+	    /**
+	     * Aggregate function invocations:
+	     */
+	    if (p_IRIref == TTerm::FUNC_sample) {
+		(*it)->express(this);
+		last.functionCall = new SampleState(groupIndexRef, sample(self), last.expression);
+	    } else if (p_IRIref == TTerm::FUNC_count) {
+		last.functionCall = new CountState(groupIndexRef, sample(self));
+	    } else if (p_IRIref == TTerm::FUNC_sum) {
+		(*it)->express(this);
+		last.functionCall = new SumState(groupIndexRef, sample(self), last.expression);
+	    } else if (p_IRIref == TTerm::FUNC_avg) {
+		(*it)->express(this);
+		last.functionCall = new AvgState(groupIndexRef, sample(self), last.expression);
+	    } else if (p_IRIref == TTerm::FUNC_min) {
+		(*it)->express(this);
+		last.functionCall = new MinState(groupIndexRef, sample(self), last.expression);
+	    } else if (p_IRIref == TTerm::FUNC_max) {
+		(*it)->express(this);
+		last.functionCall = new MaxState(groupIndexRef, sample(self), last.expression);
+	    } else if (p_IRIref == TTerm::FUNC_group_concat) {
+		(*it)->express(this);
+		const AggregateCall::ScalarVals& svals = dynamic_cast<const AggregateCall*>(self)->scalarVals;
+		std::string sep = svals.getOrDefault("separator", " ");
+		last.functionCall = new GroupConcatState(groupIndexRef, sample(self), last.expression, sep);
+	    } else {
+		/**
+		 * Non-aggregate functions invoked 
+		 */
+		last.functionCall = new NoDelWrapper(p_IRIref, self);
+	    }
+	}
+    };
+
     void ResultSet::project (ProductionVector<const ExpressionAlias*> const * projection, ExpressionAliasList* groupBy,
 			     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) {
-	// std::cerr << "start\n" << *this;
-	/* List of vars to erase.
+
+	/* delMes - List of vars to erase.
 	 * This is cheaper than walking all the bindings in a row, but assumes
 	 * that the variables for all rows appear in knownVars.
 	 */
@@ -681,210 +922,7 @@ namespace w3c_sw {
 	    if (delMes.find(label) != delMes.end())
 		delMes.erase(delMes.find(label));
 
-	    /* Duplicate projected expressions, simulated expressions
-	     * for the aggregates.
-	     */
-	    struct AggregateStateInjector : public SWObjectDuplicator {
-		std::string& groupIndexRef;
-		struct FunctionState : public FunctionCall { // FunctionCall for virtual eval
-		protected:
-		    std::string& groupIndexRef;
-		public:
-		    FunctionState (std::string& groupIndexRef, const URI* functionName) : FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef) {  }
-		    ~FunctionState () {  }
-		    static std::string mitoa (int i) {
-			std::stringstream s;
-			s << i;
-			return s.str();
-		    }
-		};
-		/** NoDelWrapper
-		 * Wrap a reference to a FunctionCall; don't delete it.
-		 */
-		struct NoDelWrapper : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const FunctionCall* func;
-		public:
-		    NoDelWrapper (std::string& groupIndexRef, const URI* functionName, const FunctionCall* func)
-			: FunctionState (groupIndexRef, functionName), func(func) {  }
-		    ~NoDelWrapper () {  }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const { // !!! SEGVs when non-const
-			return func->eval(r, atomFactory, evaluator, db);
-		    }
-		};
-		struct SampleState : public FunctionState { // FunctionCall for virtual eval
-		    const Expression* expr;
-		public:
-		    SampleState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
-		    ~SampleState () {  }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			return expr->eval(r, atomFactory, evaluator, db);
-		    }
-		};
-		struct CountState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    std::map<std::string, int> counts;
-		public:
-		    CountState (std::string& groupIndexRef)
-			: FunctionState (groupIndexRef, TTerm::FUNC_count) {  }
-		    ~CountState () {  }
-		    virtual const TTerm* eval (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, const RdfDB* db) const {
-			int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
-			return atomFactory->getNumericRDFLiteral(mitoa(c), c);
-		    }
-		};
-		struct SumState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const Expression* expr;
-		    std::map<std::string, const TTerm*> vals;
-		public:
-		    SumState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef, TTerm::FUNC_sum), expr(expr) {  }
-		    ~SumState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			if (vals.find(groupIndexRef) == vals.end()) {
-			    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
-			} else {
-			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
-			    std::vector<const Expression*> addends;
-			    TTermExpression valExpr(const_cast<SumState*>(this)->vals[groupIndexRef]);
-			    addends.push_back(&valExpr);
-			    addends.push_back(expr);
-			    const_cast<SumState*>(this)->vals[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
-			}
-			return const_cast<SumState*>(this)->vals[groupIndexRef];
-		    }
-		};
-		struct AvgState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const Expression* expr;
-		    std::map<std::string, int> counts;
-		    std::map<std::string, const TTerm*> sums;
-		public:
-		    AvgState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef, TTerm::FUNC_avg), expr(expr) {  }
-		    ~AvgState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			if (sums.find(groupIndexRef) == sums.end()) {
-			    const_cast<AvgState*>(this)->counts[groupIndexRef] = 1;
-			    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
-			} else {
-			    const_cast<AvgState*>(this)->counts[groupIndexRef]++;
-			    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
-			    std::vector<const Expression*> addends;
-			    TTermExpression valExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
-			    addends.push_back(&valExpr);
-			    addends.push_back(expr);
-			    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
-			}
-			ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator);
-			std::vector<const Expression*> divisors;
-			TTermExpression sumExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
-			divisors.push_back(&sumExpr);
-			int c = const_cast<AvgState*>(this)->counts[groupIndexRef];
-			TTermExpression countExpr(atomFactory->getNumericRDFLiteral(mitoa(c), c));
-			divisors.push_back(&countExpr);
-			return atomFactory->applyCommonNumeric(divisors, &f, db);
-		    }
-		};
-		struct MinState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const Expression* expr;
-		    std::map<std::string, const TTerm*> vals;
-		public:
-		    MinState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef, TTerm::FUNC_min), expr(expr) {  }
-		    ~MinState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
-			if (val != NULL) {
-			    if (vals.find(groupIndexRef) == vals.end())
-				const_cast<MinState*>(this)->vals[groupIndexRef] = val;
-			    else if (val->cmp(*const_cast<MinState*>(this)->vals[groupIndexRef]) == SORT_lt)
-				const_cast<MinState*>(this)->vals[groupIndexRef] = val;
-			}
-			return const_cast<MinState*>(this)->vals[groupIndexRef];
-		    }
-		};
-		struct MaxState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const Expression* expr;
-		    std::map<std::string, const TTerm*> vals;
-		public:
-		    MaxState (std::string& groupIndexRef, const Expression* expr)
-			: FunctionState (groupIndexRef, TTerm::FUNC_max), expr(expr) {  }
-		    ~MaxState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
-			if (val != NULL) {
-			    if (vals.find(groupIndexRef) == vals.end())
-				const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
-			    else if (val->cmp(*const_cast<MaxState*>(this)->vals[groupIndexRef]) == SORT_gt)
-				const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
-			}
-			return const_cast<MaxState*>(this)->vals[groupIndexRef];
-		    }
-		};
-		struct GroupConcatState : public FunctionState { // FunctionCall for virtual eval
-		protected:
-		    const Expression* expr;
-		    std::string separator;
-		    std::map<std::string, boost::shared_ptr<std::stringstream> > vals;
-		public:
-		    GroupConcatState (std::string& groupIndexRef, const Expression* expr, std::string separator)
-			: FunctionState (groupIndexRef, TTerm::FUNC_group_concat), expr(expr), separator(separator)
-		    {  }
-		    ~GroupConcatState () { delete expr; }
-		    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-			const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
-			if (val != NULL) {
-			    if (vals.find(groupIndexRef) == vals.end())
-				const_cast<GroupConcatState*>(this)->vals[groupIndexRef] = 
-				    boost::shared_ptr<std::stringstream>(new std::stringstream());
-			    else
-				*const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << separator;
-			    *const_cast<GroupConcatState*>(this)->vals[groupIndexRef] << val->getLexicalValue();
-			}
-			return atomFactory->getRDFLiteral(const_cast<GroupConcatState*>(this)->vals[groupIndexRef]->str(), NULL, NULL, false);
-		    }
-		};
-		AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef) {  }
-		virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
-		    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
-
-		    /**
-		     * Aggregate function invocations:
-		     */
-		    if (p_IRIref == TTerm::FUNC_sample) {
-			(*it)->express(this);
-			last.functionCall = new SampleState(groupIndexRef, last.expression);
-		    } else if (p_IRIref == TTerm::FUNC_count) {
-			last.functionCall = new CountState(groupIndexRef);
-		    } else if (p_IRIref == TTerm::FUNC_sum) {
-			(*it)->express(this);
-			last.functionCall = new SumState(groupIndexRef, last.expression);
-		    } else if (p_IRIref == TTerm::FUNC_avg) {
-			(*it)->express(this);
-			last.functionCall = new AvgState(groupIndexRef, last.expression);
-		    } else if (p_IRIref == TTerm::FUNC_min) {
-			(*it)->express(this);
-			last.functionCall = new MinState(groupIndexRef, last.expression);
-		    } else if (p_IRIref == TTerm::FUNC_max) {
-			(*it)->express(this);
-			last.functionCall = new MaxState(groupIndexRef, last.expression);
-		    } else if (p_IRIref == TTerm::FUNC_group_concat) {
-			(*it)->express(this);
-			last.functionCall = new GroupConcatState(groupIndexRef, last.expression, " ");
-		    } else {
-			/**
-			 * Non-aggregate functions invoked 
-			 */
-			last.functionCall = new NoDelWrapper(groupIndexRef, p_IRIref, self);
-		    }
-		}
-	    };
-	    AggregateStateInjector inj(atomFactory, groupIndex);
+	    AggregateStateInjector inj(atomFactory, groupIndex, &delMes);
 	    (*varExpr)->expr->express(&inj);
 	    pos2expr[label] = inj.last.expression;
 	}
@@ -934,15 +972,22 @@ namespace w3c_sw {
 		try {
 		    TreatAsVar treatAsVar;
 		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, db);
-		    if (val != TTerm::Unbound)
-			aggregateRow->set(*knownVar, val, false, true); // !! WG decision on overwrite
-		} catch (TypeError& e) {
+		    if (val == TTerm::Unbound) {
+			BindingSetIterator old = aggregateRow->find(*knownVar);
+			if (old != aggregateRow->end())
+			    aggregateRow->erase(old);
+		    } else
+			aggregateRow->set(*knownVar, val, false, true);
+		} catch (SafeEvaluationError& e) {
 		    if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 			SPARQLSerializer s;
 			pos2expr[*knownVar]->express(&s);
 			BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
 			    << "Error evaluating " << s.str() << " on " << aggregateRow->toString();
 		    }
+			BindingSetIterator old = aggregateRow->find(*knownVar);
+			if (old != aggregateRow->end())
+			    aggregateRow->erase(old);
 		}
 	    }
 
@@ -953,6 +998,11 @@ namespace w3c_sw {
 		    if (aggregateRow->find(*delMe) != aggregateRow->end())
 			aggregateRow->erase(aggregateRow->find(*delMe));
 	}
+
+	// Empty (size() == 0) aggregates (delMes.size() > 0) need an empty row.
+	if (size() == 0 && delMes.size() > 0)
+	    results.insert(results.begin(), new Result(this));
+
 
 	/* Enforce HAVING constraints. */
 	if (having != NULL)

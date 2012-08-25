@@ -1781,10 +1781,15 @@ public:
      */
     const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, const LANGTAG* p_LANGTAG = NULL, bool validate = false);
 
+    const IntegerRDFLiteral* getNumericRDFLiteral(int p_value);
     const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    const DecimalRDFLiteral* getNumericRDFLiteral(float p_value);
     const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    const FloatRDFLiteral* getNumericRDFLiteral(float p_value, bool floatness);
     const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
+    const DoubleRDFLiteral* getNumericRDFLiteral(double p_value);
     const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+
     const IntegerRDFLiteral* getIntegerLiteral (std::string p_String) {
 	std::stringstream is(p_String);
 	int i;
@@ -3022,6 +3027,7 @@ namespace AtomicFunction {
 	    FPtr FUNC_isIRI;
 	    FPtr FUNC_isBlank;
 	    FPtr FUNC_isLiteral;
+	    FPtr FUNC_isNumeric;
 	    FPtr FUNC_str;
 	    FPtr FUNC_lang;
 	    FPtr FUNC_iri;
@@ -3075,30 +3081,23 @@ class AggregateCall : public FunctionCall {
 private:
     e_distinctness distinctness;
 public:
-    AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1)
-	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness) {  }
-    ~AggregateCall () {  }
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	if (distinctness == DIST_all)
-	    return FunctionCall::eval(r, atomFactory, evaluator, db);
-	std::stringstream s;
-	s << m_IRIref->toString() << " DISTINCT " << '(';
-	std::vector<const TTerm*> subd;
-	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
-	    subd.push_back((*it)->eval(r, atomFactory, evaluator, db));
-	for (std::vector<const TTerm*>::iterator it = subd.begin(); it != subd.end(); ++it) {
-	    if (it != subd.begin())
-		s << ", ";
-	    if (*it)
-		s << (*it)->toString();
-	    else
-		s << "NULL";
+    struct ScalarVals : public std::map<std::string, std::string> {
+	std::string getOrDefault (std::string key, std::string def) const {
+	    const_iterator it = find(key);
+	    if (it == end())
+		return def;
+	    return it->second;
 	}
-	s << ')';
-	w3c_sw_NEED_IMPL(s.str());
-    }
+    };
+    ScalarVals scalarVals;
+    AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1, ScalarVals scalarVals)
+	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness), scalarVals(scalarVals)
+    {  }
+    ~AggregateCall () {  }
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
     bool operator== (const AggregateCall& ref) const {
-	if (distinctness != ref.distinctness)
+	if (distinctness != ref.distinctness ||
+	    scalarVals != ref.scalarVals)
 	    return false;
 	return this->FunctionCall::operator==(ref);
     }
@@ -3482,7 +3481,15 @@ public:
 	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
 	NaryDivider (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
 	    AtomFactory::NaryFunctor(res, atomFactory, evaluator) {  }
-	virtual int eval (int l, int r) { return l / r; }
+	virtual int eval (int l, int r) {
+	    /* Throw a float to support this operator mapping:
+	       A / B op:numeric-divide(A, B) numeric; but xsd:decimal if both operands are xsd:integer
+	       Is this a hack or brilliant extreme programming?
+	    */
+	    float fl = l;
+	    float ret = fl / r;
+	    throw ret;
+	}
 	virtual float eval (float l, float r) { return l / r; }
 	virtual double eval (double l, double r) { return l / r; }
     };
@@ -3502,10 +3509,13 @@ public:
     virtual const char* getUnaryOperator () { return "1/"; };
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	std::stringstream s;
-	s << "(/ 1 " << m_Expression->eval(res, atomFactory, evaluator, db)
-	  << ") not implemented";
-	throw s.str();
+	ArithmeticProduct::NaryDivider f(res, atomFactory, evaluator);
+	std::vector<const Expression*> divisors;
+	TTermExpression one(atomFactory->getNumericRDFLiteral("1", 1));
+	divisors.push_back(&one);
+	TTermExpression right(m_Expression->eval(res, atomFactory, evaluator, db));
+	divisors.push_back(&right);
+	return atomFactory->applyCommonNumeric(divisors, &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ArithmeticInverse* pref = dynamic_cast<const ArithmeticInverse*>(&ref);
