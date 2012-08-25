@@ -41,7 +41,7 @@
 [9]    SelectClause               ::=  'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( BuiltInCall | RDFLiteral | NumericLiteral | BooleanLiteral | Var | Aggregate | FunctionCall | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
 #[0X]    ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@ValuesClause
 [10]   ConstructQuery             ::=  'CONSTRUCT' (   QuadPattern DatasetClause* WhereClause SolutionModifier
-                                                     | DatasetClause* 'WHERE' '{' TriplesTemplate? '}' SolutionModifier )
+                                                     | DatasetClause* 'WHERE' QuadPattern SolutionModifier )
 [11]   DescribeQuery              ::=  'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
 [12]   AskQuery                   ::=  'ASK' DatasetClause* WhereClause
 [13]   DatasetClause              ::=  'FROM' ( DefaultGraphClause | NamedGraphClause )
