@@ -26,18 +26,25 @@ namespace w3c_sw {
 	    s << "tried to assign empty variable  to \"" << value->toString() << "\"";
 	    throw(std::runtime_error(s.str()));
 	}
-	if (value == TTerm::Unbound && !replace)
-	    throw std::string("setting ") + variable->toString() + " to Unbound is just wrong";
-	BindingSet::const_iterator vi = bindings.find(variable);
-	if (replace || vi == bindings.end()) {
-	    BindingInfo b = {weaklyBound, value};
-	    bindings[variable] = b;
+	BindingSet::iterator vi = bindings.find(variable);
+	if (value == TTerm::Unbound) {
+	    if (replace) {
+		if (vi != bindings.end())
+		    bindings.erase(vi);
+	    } else
+		throw std::runtime_error(std::string() + "setting " + variable->toString()
+					 + " to Unbound is not permitted without replace flag");
 	} else {
-	    std::stringstream s;
-	    s << "variable " << variable->toString() << " reassigned:"
-		" old value:" << bindings[variable].tterm->toString() << 
-		" new value:" << value->toString();
-	    throw(std::runtime_error(s.str()));
+	    if (replace || vi == bindings.end()) {
+		BindingInfo b = {weaklyBound, value};
+		bindings[variable] = b;
+	    } else {
+		std::stringstream s;
+		s << "variable " << variable->toString() << " reassigned:"
+		    " old value:" << bindings[variable].tterm->toString() << 
+		    " new value:" << value->toString();
+		throw std::runtime_error(s.str());
+	    }
 	}
     }
 
