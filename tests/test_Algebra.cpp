@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
 	    c->addTableOperation(bgp, false);
 	}
 	c->addTableOperation(new OptionalGraphPattern(new DefaultGraphPattern()), false);
-	Ask* a = new Ask(new ProductionVector<const DatasetClause*>, new WhereClause(c));
+	Ask* a = new Ask(new ProductionVector<const DatasetClause*>, new WhereClause(c), new SolutionModifier());
 
 	std::string expected("(ask\n\
   (join\n\

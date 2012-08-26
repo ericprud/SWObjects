@@ -84,11 +84,11 @@ IT_REDUCED		[Rr][Ee][Dd][Uu][Cc][Ee][Dd]
 IT_AS		[Aa][Ss]
 GT_TIMES		"*"
 IT_CONSTRUCT		[Cc][Oo][Nn][Ss][Tt][Rr][Uu][Cc][Tt]
+IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
 IT_DESCRIBE		[Dd][Ee][Ss][Cc][Rr][Ii][Bb][Ee]
 IT_ASK		[Aa][Ss][Kk]
 IT_FROM		[Ff][Rr][Oo][Mm]
 IT_NAMED		[Nn][Aa][Mm][Ee][Dd]
-IT_WHERE		[Ww][Hh][Ee][Rr][Ee]
 IT_GROUP		[Gg][Rr][Oo][Uu][Pp]
 IT_BY		[Bb][Yy]
 IT_HAVING		[Hh][Aa][Vv][Ii][Nn][Gg]
@@ -98,13 +98,11 @@ IT_DESC		[Dd][Ee][Ss][Cc]
 IT_LIMIT		[Ll][Ii][Mm][Ii][Tt]
 IT_OFFSET		[Oo][Ff][Ff][Ss][Ee][Tt]
 IT_VALUES		[Vv][Aa][Ll][Uu][Ee][Ss]
-IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
-GT_MINUS_MINUS		"--"
 GT_SEMI		";"
 IT_LOAD		[Ll][Oo][Aa][Dd]
+IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
 IT_INTO		[Ii][Nn][Tt][Oo]
 IT_CLEAR		[Cc][Ll][Ee][Aa][Rr]
-IT_SILENT		[Ss][Ii][Ll][Ee][Nn][Tt]
 IT_DROP		[Dd][Rr][Oo][Pp]
 IT_CREATE		[Cc][Rr][Ee][Aa][Tt][Ee]
 IT_ADD		[Aa][Dd][Dd]
@@ -125,6 +123,8 @@ IT_PRINT		[Pp][Rr][Ii][Nn][Tt]
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
 IT_BIND		[Bb][Ii][Nn][Dd]
+IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
+GT_MINUS_MINUS		"--"
 IT_MINUS		[Mm][Ii][Nn][Uu][Ss]
 IT_UNION		[Uu][Nn][Ii][Oo][Nn]
 IT_FILTER		[Ff][Ii][Ll][Tt][Ee][Rr]
@@ -168,7 +168,7 @@ IT_CONCAT		[Cc][Oo][Nn][Cc][Aa][Tt]
 IT_STRLEN		[Ss][Tt][Rr][Ll][Ee][Nn]
 IT_UCASE		[Uu][Cc][Aa][Ss][Ee]
 IT_LCASE		[Ll][Cc][Aa][Ss][Ee]
-IT_ENCODE_FOR_URI		[Ee][Nn][Cc][Oo][Dd][Ee]'_'[Ff][Oo][Rr]'_'[Uu][Rr][Ii]
+IT_ENCODE_FOR_URI		[Ee][Nn][Cc][Oo][Dd][Ee]"_"[Ff][Oo][Rr]"_"[Uu][Rr][Ii]
 IT_CONTAINS		[Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
 IT_STRSTARTS		[Ss][Tt][Rr][Ss][Tt][Aa][Rr][Tt][Ss]
 IT_STRENDS		[Ss][Tt][Rr][Ee][Nn][Dd][Ss]
@@ -185,11 +185,11 @@ IT_TZ		[Tt][Zz]
 IT_NOW		[Nn][Oo][Ww]
 IT_UUID		[Uu][Uu][Ii][Dd]
 IT_STRUUID		[Ss][Tt][Rr][Uu][Uu][Ii][Dd]
-IT_MD5		[Mm][Dd]'5'
-IT_SHA1		[Ss][Hh][Aa]'1'
-IT_SHA256		[Ss][Hh][Aa]'256'
-IT_SHA384		[Ss][Hh][Aa]'384'
-IT_SHA512		[Ss][Hh][Aa]'512'
+IT_MD5		[Mm][Dd]"5"
+IT_SHA1		[Ss][Hh][Aa]"1"
+IT_SHA256		[Ss][Hh][Aa]"256"
+IT_SHA384		[Ss][Hh][Aa]"384"
+IT_SHA512		[Ss][Hh][Aa]"512"
 IT_COALESCE		[Cc][Oo][Aa][Ll][Ee][Ss][Cc][Ee]
 IT_IF		[Ii][Ff]
 IT_STRLANG		[Ss][Tt][Rr][Ll][Aa][Nn][Gg]
@@ -202,6 +202,7 @@ IT_isLITERAL		[Ii][Ss][Ll][Ii][Tt][Ee][Rr][Aa][Ll]
 IT_isNUMERIC		[Ii][Ss][Nn][Uu][Mm][Ee][Rr][Ii][Cc]
 IT_REGEX		[Rr][Ee][Gg][Ee][Xx]
 IT_SUBSTR		[Ss][Uu][Bb][Ss][Tt][Rr]
+IT_REPLACE		[Rr][Ee][Pp][Ll][Aa][Cc][Ee]
 IT_EXISTS		[Ee][Xx][Ii][Ss][Tt][Ss]
 IT_COUNT		[Cc][Oo][Uu][Nn][Tt]
 IT_GROUP_CONCAT		[Gg][Rr][Oo][Uu][Pp]"_"[Cc][Oo][Nn][Cc][Aa][Tt]
@@ -214,10 +215,10 @@ IT_SEPARATOR		[Ss][Ee][Pp][Aa][Rr][Aa][Tt][Oo][Rr]
 GT_DTYPE		"^^"
 IT_true		"true"
 IT_false		"false"
-IRIREF			"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
+IRIREF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
 LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER		([0-9])+
-DECIMAL		(([0-9])+"."([0-9])*)|("."([0-9])+)
+DECIMAL		([0-9])*"."([0-9])+
 INTEGER_POSITIVE		"+"({INTEGER})
 DECIMAL_POSITIVE		"+"({DECIMAL})
 INTEGER_NEGATIVE		"-"({INTEGER})
@@ -242,10 +243,14 @@ VARNAME		((({PN_CHARS_U}))|([0-9]))(((({PN_CHARS_U}))|(([0-9])|((\xC2\xB7)|(((\x
 VAR2		"$"({VARNAME})
 VAR1		"?"({VARNAME})
 PN_CHARS		(({PN_CHARS_U}))|(("-")|(([0-9])|((\xC2\xB7)|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))|[\xCC\xCD][\x80-\xBF]
+BLANK_NODE_LABEL		"_:"((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
 PN_PREFIX		({PN_CHARS_BASE})(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
 PNAME_NS		(({PN_PREFIX}))?":"
-PN_LOCAL		((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
-BLANK_NODE_LABEL		"_:"({PN_LOCAL})
+HEX		([0-9])|(([A-F])|([a-f]))
+PERCENT		"%"({HEX})({HEX})
+PN_LOCAL_ESC		"\\"(("_")|(("~")|((".")|(("-")|(("!")|(("$")|(("&")|(("'")|(("(")|((")")|(("*")|(("+")|((",")|((";")|(("=")|(("/")|(("?")|(("#")|(("@")|("%"))))))))))))))))))))
+PLX		(({PERCENT}))|(({PN_LOCAL_ESC}))
+PN_LOCAL		((({PN_CHARS_U}))|((":")|(([0-9])|(({PLX})))))(((((({PN_CHARS}))|((".")|((":")|(({PLX}))))))*((({PN_CHARS}))|((":")|(({PLX}))))))?
 PNAME_LN		({PNAME_NS})({PN_LOCAL})
 ABOX_HR		(("+"("-")+))+"+"
 UBOX_UHR		\xE2\x94\x8C(\xE2\x94\x80)*((\xE2\x94\xAC(\xE2\x94\x80)*))*\xE2\x94\x90
@@ -279,11 +284,11 @@ LINEFEED		(\r\n|\r|\n)
 {IT_AS}		{return token::IT_AS;}
 {GT_TIMES}		{return token::GT_TIMES;}
 {IT_CONSTRUCT}		{return token::IT_CONSTRUCT;}
+{IT_WHERE}		{return token::IT_WHERE;}
 {IT_DESCRIBE}		{return token::IT_DESCRIBE;}
 {IT_ASK}		{return token::IT_ASK;}
 {IT_FROM}		{return token::IT_FROM;}
 {IT_NAMED}		{return token::IT_NAMED;}
-{IT_WHERE}		{return token::IT_WHERE;}
 {IT_GROUP}		{return token::IT_GROUP;}
 {IT_BY}		{return token::IT_BY;}
 {IT_HAVING}		{return token::IT_HAVING;}
@@ -293,13 +298,11 @@ LINEFEED		(\r\n|\r|\n)
 {IT_LIMIT}		{return token::IT_LIMIT;}
 {IT_OFFSET}		{return token::IT_OFFSET;}
 {IT_VALUES}		{return token::IT_VALUES;}
-{IT_UNDEF}		{return token::IT_UNDEF;}
-{GT_MINUS_MINUS}		{return token::GT_MINUS_MINUS;}
 {GT_SEMI}		{return token::GT_SEMI;}
 {IT_LOAD}		{return token::IT_LOAD;}
+{IT_SILENT}		{return token::IT_SILENT;}
 {IT_INTO}		{return token::IT_INTO;}
 {IT_CLEAR}		{return token::IT_CLEAR;}
-{IT_SILENT}		{return token::IT_SILENT;}
 {IT_DROP}		{return token::IT_DROP;}
 {IT_CREATE}		{return token::IT_CREATE;}
 {IT_ADD}		{return token::IT_ADD;}
@@ -320,6 +323,8 @@ LINEFEED		(\r\n|\r|\n)
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
 {IT_BIND}		{return token::IT_BIND;}
+{IT_UNDEF}		{return token::IT_UNDEF;}
+{GT_MINUS_MINUS}		{return token::GT_MINUS_MINUS;}
 {IT_MINUS}		{return token::IT_MINUS;}
 {IT_UNION}		{return token::IT_UNION;}
 {IT_FILTER}		{return token::IT_FILTER;}
@@ -397,6 +402,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_isNUMERIC}		{return token::IT_isNUMERIC;}
 {IT_REGEX}		{return token::IT_REGEX;}
 {IT_SUBSTR}		{return token::IT_SUBSTR;}
+{IT_REPLACE}		{return token::IT_REPLACE;}
 {IT_EXISTS}		{return token::IT_EXISTS;}
 {IT_COUNT}		{return token::IT_COUNT;}
 {IT_GROUP_CONCAT}		{return token::IT_GROUP_CONCAT;}

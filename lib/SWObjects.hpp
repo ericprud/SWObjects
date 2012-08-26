@@ -874,6 +874,8 @@ public:
     static const URI* FUNC_group_group;
     static const URI* FUNC_group_regex;
 
+    static const URI* RDF_type;
+    static const URI* RDF_List;
     static const URI* RDF_first;
     static const URI* RDF_rest;
     static const URI* RDF_nil;
@@ -2488,6 +2490,7 @@ public:
 class Select;
 class SolutionModifier : public Base {
     friend class Select;
+    friend class Ask;
 private:
     ExpressionAliasList* groupBy;
     ProductionVector<const Expression*>* having;
@@ -2495,7 +2498,7 @@ private:
 public:
     int m_limit;
     int m_offset;
-    SolutionModifier (ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset)
+    SolutionModifier (ExpressionAliasList* groupBy = NULL, ProductionVector<const Expression*>* having = NULL, std::vector<s_OrderConditionPair>* p_OrderConditions = NULL, int p_limit = LIMIT_None, int p_offset = OFFSET_None)
 	: Base(), groupBy(groupBy), having(having), m_OrderConditions(p_OrderConditions), m_limit(p_limit), m_offset(p_offset)
     {  }
     ~SolutionModifier () {
@@ -2734,12 +2737,14 @@ public:
 class Ask : public LoadingOperation {
 private:
     WhereClause* m_WhereClause;
+    SolutionModifier* m_SolutionModifier;
 public:
-    Ask (ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause)
-	: LoadingOperation(p_DatasetClauses), m_WhereClause(p_WhereClause)
+    Ask (ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier)
+	: LoadingOperation(p_DatasetClauses), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier)
     {  }
     ~Ask () {
 	delete m_WhereClause;
+	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
@@ -2808,10 +2813,11 @@ inline Modify::~Modify () {
 }
 class Load : public Operation {
 private:
+    e_Silence m_Silence;
     const URI* m_from;
     const URI* m_into;
 public:
-    Load (const URI* p_from, const URI* p_into) : Operation(), m_from(p_from), m_into(p_into) {  }
+    Load (e_Silence p_Silence, const URI* p_from, const URI* p_into) : Operation(), m_Silence(p_Silence), m_from(p_from), m_into(p_into) {  }
     ~Load () { delete m_from; delete m_into; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Load::execute"); }
@@ -3880,11 +3886,11 @@ public:
     // !!!2 -- use ConstructableOperation for p_ConstructTemplate
     virtual void construct(const Construct* const self, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
-    virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) = 0;
+    virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) = 0;
     virtual void insert(const Insert* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
     virtual void del(const Delete* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
-    virtual void load(const Load* const self, const URI* p_from, const URI* p_into) = 0;
+    virtual void load(const Load* const self, e_Silence p_Silence, const URI* p_from, const URI* p_into) = 0;
     virtual void clear(const Clear* const self, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
     virtual void drop(const Drop* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
@@ -4051,9 +4057,10 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
+	p_SolutionModifier->express(this);
     }
     virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
 	if (p_delete != NULL)
@@ -4070,7 +4077,7 @@ public:
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+    virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	p_from->express(this);
 	p_into->express(this);
     }
@@ -4292,7 +4299,7 @@ public:
     virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	w3c_sw_NEED_IMPL("describe");
     }
-    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	w3c_sw_NEED_IMPL("ask");
     }
     virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
@@ -4304,7 +4311,7 @@ public:
     virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("del");
     }
-    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+    virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	w3c_sw_NEED_IMPL("load");
     }
     virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {

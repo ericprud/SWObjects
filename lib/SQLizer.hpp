@@ -971,10 +971,11 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
-	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    w3c_sw_FAIL("ASK");
 	    p_DatasetClauses->express(this);
 	    p_WhereClause->express(this);
+	    p_SolutionModifier->express(this);
 	}
 	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("REPLACE");
@@ -994,8 +995,9 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+	virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	    w3c_sw_FAIL("LOAD");
+	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_from->express(this);
 	    p_into->express(this);
 	}

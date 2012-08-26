@@ -395,8 +395,9 @@ public:
 	p_IRIref->express(this);
     }
     virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) {
-	lead();
+	bool indented = false;
 	if (groupBy) {
+	    { lead(); indented = true; }
 	    ret << "GROUP BY";
 	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		 it != groupBy->end(); ++it) {
@@ -406,6 +407,7 @@ public:
 	    ret << std::endl;
 	}
 	if (having) {
+	    if (!indented) { lead(); indented = true; }
 	    ret << "HAVING ";
 	    for (std::vector<const Expression*>::const_iterator it = having->begin();
 		 it != having->end(); ++it) {
@@ -414,9 +416,16 @@ public:
 	    }
 	    ret << std::endl;
 	}
-	if (p_limit != LIMIT_None) ret << "LIMIT " << p_limit << std::endl;
-	if (p_offset != OFFSET_None) ret << "OFFSET " << p_offset << std::endl;
+	if (p_limit != LIMIT_None) {
+	    if (!indented) { lead(); indented = true; }
+	    ret << "LIMIT " << p_limit << std::endl;
+	}
+	if (p_offset != OFFSET_None) {
+	    if (!indented) { lead(); indented = true; }
+	    ret << "OFFSET " << p_offset << std::endl;
+	}
 	if (p_OrderConditions) {
+	    if (!indented) { lead(); indented = true; }
 	    ret << "ORDER BY ";
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++) {
 		if (p_OrderConditions->at(i).ascOrDesc == ORDER_Desc) ret << "DESC ";
@@ -514,12 +523,14 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	lead();
 	ret << "(ask" << std::endl;
 	++depth;
 	p_DatasetClauses->express(this);
 	p_WhereClause->express(this);
+	if (p_SolutionModifier)
+	    p_SolutionModifier->express(this);
 	--depth;
 	ret << ")" << std::endl;
     }
@@ -547,9 +558,10 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;
     }
-    virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+    virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	lead();
 	ret << "LOAD ";
+	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_from->express(this);
 	p_into->express(this);
     }

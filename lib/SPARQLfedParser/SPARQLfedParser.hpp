@@ -77,6 +77,7 @@ class SPARQLfedDriver : public YaccDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
+    const TTerm* curTail; // tail of the list currently being assembled.
     BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
@@ -233,7 +234,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 237 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 238 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -263,7 +264,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 267 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 268 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -275,7 +276,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 246 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 247 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -345,7 +346,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 349 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 350 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -429,119 +430,120 @@ namespace w3c_sw {
      IT_IF = 326,
      IT_STRLANG = 327,
      IT_STRDT = 328,
-     IT_EXISTS = 329,
-     IT_SEPARATOR = 330,
-     IT_STR = 331,
-     IT_LANG = 332,
-     IT_LANGMATCHES = 333,
-     IT_DATATYPE = 334,
-     IT_BOUND = 335,
-     IT_sameTerm = 336,
-     IT_isIRI = 337,
-     IT_isURI = 338,
-     IT_isBLANK = 339,
-     IT_isLITERAL = 340,
-     IT_REGEX = 341,
-     GT_DTYPE = 342,
-     IT_CONCAT = 343,
-     IT_AS = 344,
-     IT_GROUP = 345,
-     IT_HAVING = 346,
-     IT_COUNT = 347,
-     IT_SUM = 348,
-     IT_MIN = 349,
-     IT_MAX = 350,
-     IT_AVG = 351,
-     IT_GROUP_CONCAT = 352,
-     IT_SAMPLE = 353,
-     IT_isNUMERIC = 354,
-     GT_CARROT = 355,
-     GT_OPT = 356,
-     GT_PIPE = 357,
-     IT_WITH = 358,
-     IT_DEFAULT = 359,
-     IT_ALL = 360,
-     IT_USING = 361,
-     IT_UUID = 362,
-     IT_STRUUID = 363,
-     IT_MD5 = 364,
-     IT_TO = 365,
-     IT_STRBEFORE = 366,
-     IT_STRAFTER = 367,
-     IT_YEAR = 368,
-     IT_ADD = 369,
-     IT_COPY = 370,
-     IT_RAND = 371,
-     IT_SHA512 = 372,
-     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE = 373,
-     IT_NOW = 374,
-     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 375,
-     IT_TZ = 376,
-     IT_TIMEZONE = 377,
-     IT_ROUND = 378,
-     IT_SHA384 = 379,
-     IT_BIND = 380,
-     IT_CONTAINS = 381,
-     IT_SECONDS = 382,
-     IT_MOVE = 383,
-     IT_FLOOR = 384,
-     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 385,
-     IT_MINUTES = 386,
-     IT_SUBSTR = 387,
-     IT_SHA256 = 388,
-     IT_HOURS = 389,
-     IT_ENCODE_FOR_URI = 390,
-     IT_STRSTARTS = 391,
-     IT_CEIL = 392,
-     IT_DAY = 393,
-     IT_LCASE = 394,
-     IT_ABS = 395,
-     IT_UCASE = 396,
-     IT_STRENDS = 397,
-     IT_STRLEN = 398,
-     IT_SHA1 = 399,
-     IT_MONTH = 400,
-     IT_PRINT = 401,
-     GT_H_2192_ = 402,
-     GT_MINUS_GT = 403,
-     ABOX_HR = 404,
-     ABOX_CELL = 405,
-     UBOX_UHR = 406,
-     UBOX_LHR = 407,
-     GT_H_2502_ = 408,
-     UBOX_UL = 409,
-     UBOX_U = 410,
-     UBOX_UR = 411,
-     UBOX_SEP = 412,
-     UBOX_LL = 413,
-     UBOX_L = 414,
-     UBOX_LR = 415,
-     RSREF = 416,
-     GT_MINUS_MINUS = 417,
-     IT_true = 418,
-     IT_false = 419,
-     INTEGER = 420,
-     DECIMAL = 421,
-     DOUBLE = 422,
-     INTEGER_POSITIVE = 423,
-     DECIMAL_POSITIVE = 424,
-     DOUBLE_POSITIVE = 425,
-     INTEGER_NEGATIVE = 426,
-     DECIMAL_NEGATIVE = 427,
-     DOUBLE_NEGATIVE = 428,
-     STRING_LITERAL1 = 429,
-     STRING_LITERAL_LONG1 = 430,
-     STRING_LITERAL2 = 431,
-     STRING_LITERAL_LONG2 = 432,
-     IRIREF = 433,
-     PNAME_NS = 434,
-     PNAME_LN = 435,
-     BLANK_NODE_LABEL = 436,
-     ANON = 437,
-     VAR1 = 438,
-     VAR2 = 439,
-     LANGTAG = 440,
-     NIL = 441
+     IT_REPLACE = 329,
+     IT_EXISTS = 330,
+     IT_SEPARATOR = 331,
+     IT_STR = 332,
+     IT_LANG = 333,
+     IT_LANGMATCHES = 334,
+     IT_DATATYPE = 335,
+     IT_BOUND = 336,
+     IT_sameTerm = 337,
+     IT_isIRI = 338,
+     IT_isURI = 339,
+     IT_isBLANK = 340,
+     IT_isLITERAL = 341,
+     IT_REGEX = 342,
+     GT_DTYPE = 343,
+     IT_CONCAT = 344,
+     IT_AS = 345,
+     IT_GROUP = 346,
+     IT_HAVING = 347,
+     IT_COUNT = 348,
+     IT_SUM = 349,
+     IT_MIN = 350,
+     IT_MAX = 351,
+     IT_AVG = 352,
+     IT_GROUP_CONCAT = 353,
+     IT_SAMPLE = 354,
+     IT_isNUMERIC = 355,
+     GT_CARROT = 356,
+     GT_OPT = 357,
+     GT_PIPE = 358,
+     IT_WITH = 359,
+     IT_DEFAULT = 360,
+     IT_ALL = 361,
+     IT_USING = 362,
+     IT_UUID = 363,
+     IT_STRUUID = 364,
+     IT_MD5 = 365,
+     IT_TO = 366,
+     IT_STRBEFORE = 367,
+     IT_STRAFTER = 368,
+     IT_YEAR = 369,
+     IT_ADD = 370,
+     IT_COPY = 371,
+     IT_RAND = 372,
+     IT_SHA512 = 373,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE = 374,
+     IT_NOW = 375,
+     GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 376,
+     IT_TZ = 377,
+     IT_TIMEZONE = 378,
+     IT_ROUND = 379,
+     IT_SHA384 = 380,
+     IT_BIND = 381,
+     IT_CONTAINS = 382,
+     IT_SECONDS = 383,
+     IT_MOVE = 384,
+     IT_FLOOR = 385,
+     GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA = 386,
+     IT_MINUTES = 387,
+     IT_SUBSTR = 388,
+     IT_SHA256 = 389,
+     IT_HOURS = 390,
+     IT_ENCODE_FOR_URI = 391,
+     IT_STRSTARTS = 392,
+     IT_CEIL = 393,
+     IT_DAY = 394,
+     IT_LCASE = 395,
+     IT_ABS = 396,
+     IT_UCASE = 397,
+     IT_STRENDS = 398,
+     IT_STRLEN = 399,
+     IT_SHA1 = 400,
+     IT_MONTH = 401,
+     IT_PRINT = 402,
+     GT_H_2192_ = 403,
+     GT_MINUS_GT = 404,
+     ABOX_HR = 405,
+     ABOX_CELL = 406,
+     UBOX_UHR = 407,
+     UBOX_LHR = 408,
+     GT_H_2502_ = 409,
+     UBOX_UL = 410,
+     UBOX_U = 411,
+     UBOX_UR = 412,
+     UBOX_SEP = 413,
+     UBOX_LL = 414,
+     UBOX_L = 415,
+     UBOX_LR = 416,
+     RSREF = 417,
+     GT_MINUS_MINUS = 418,
+     IT_true = 419,
+     IT_false = 420,
+     INTEGER = 421,
+     DECIMAL = 422,
+     DOUBLE = 423,
+     INTEGER_POSITIVE = 424,
+     DECIMAL_POSITIVE = 425,
+     DOUBLE_POSITIVE = 426,
+     INTEGER_NEGATIVE = 427,
+     DECIMAL_NEGATIVE = 428,
+     DOUBLE_NEGATIVE = 429,
+     STRING_LITERAL1 = 430,
+     STRING_LITERAL_LONG1 = 431,
+     STRING_LITERAL2 = 432,
+     STRING_LITERAL_LONG2 = 433,
+     IRIREF = 434,
+     PNAME_NS = 435,
+     PNAME_LN = 436,
+     BLANK_NODE_LABEL = 437,
+     ANON = 438,
+     VAR1 = 439,
+     VAR2 = 440,
+     LANGTAG = 441,
+     NIL = 442
    };
 
     };
@@ -721,7 +723,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 725 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 727 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

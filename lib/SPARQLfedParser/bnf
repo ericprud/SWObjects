@@ -43,7 +43,7 @@
 [10]   ConstructQuery             ::=  'CONSTRUCT' (   QuadPattern DatasetClause* WhereClause SolutionModifier
                                                      | DatasetClause* 'WHERE' QuadPattern SolutionModifier )
 [11]   DescribeQuery              ::=  'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
-[12]   AskQuery                   ::=  'ASK' DatasetClause* WhereClause
+[12]   AskQuery                   ::=  'ASK' DatasetClause* WhereClause SolutionModifier
 [13]   DatasetClause              ::=  'FROM' ( DefaultGraphClause | NamedGraphClause )
 [14]   DefaultGraphClause         ::=  SourceSelector
 [15]   NamedGraphClause           ::=  'NAMED' SourceSelector
@@ -61,9 +61,9 @@
 [26]   LimitClause                ::=  'LIMIT' INTEGER
 [27]   OffsetClause               ::=  'OFFSET' INTEGER
 [28]   ValuesClause               ::=  ( 'VALUES' DataBlock )?
-[29]   Update                     ::=  Prologue Update1 ( ';' Update? )?
+[29]   Update                     ::=  Prologue ( Update1 ( ';' Update )? )?
 [30]   Update1                    ::=  Load | Clear | Drop | Add | Move | Copy | Create | InsertData | DeleteData | DeleteWhere | Modify
-[31]   Load                       ::=  'LOAD' iri ( 'INTO' GraphRef )?
+[31]   Load                       ::=  'LOAD' 'SILENT'? iri ( 'INTO' GraphRef )?
 [32]   Clear                      ::=  'CLEAR' 'SILENT'? GraphRefAll
 [33]   Drop                       ::=  'DROP' 'SILENT'? GraphRefAll
 [34]   Create                     ::=  'CREATE' 'SILENT'? GraphRef
@@ -110,38 +110,38 @@
 #[73]   ConstructTemplate          ::=  '{' ConstructTriples? '}'
 #[74]   ConstructTriples           ::=  TriplesSameSubject ( '.' ConstructTriples? )?
 [75]   TriplesSameSubject         ::=  VarOrTerm PropertyListNotEmpty | TriplesNode PropertyList
-#[76]   PropertyList               ::=  PropertyListNotEmpty?
+[76]   PropertyList               ::=  PropertyListNotEmpty?
 [77]   PropertyListNotEmpty       ::=  Verb ObjectList ( ';' ( Verb ObjectList )? )*
-[76X]   PropertyList               ::=  PropertyListNotEmpty?
 [78]   Verb                       ::=  VarOrIri | 'a'
 [79]   ObjectList                 ::=  Object ( ',' Object )*
 [80]   Object                     ::=  GraphNode
-[81]   TriplesSameSubjectPath     ::=  VarOrTerm PropertyListNotEmptyPath | TriplesNode PropertyListPath
-[82]   PropertyListNotEmptyPath   ::=  ( VerbPath | VerbSimple ) ObjectList ( ';' ( ( VerbPath | VerbSimple ) ObjectList )? )*
-[83]   PropertyListPath           ::=  PropertyListNotEmpty?
+[81]   TriplesSameSubjectPath     ::=  VarOrTerm PropertyListPathNotEmpty | TriplesNodePath PropertyListPath
+[82]   PropertyListPath           ::=  PropertyListPathNotEmpty?
+[83]   PropertyListPathNotEmpty   ::=  ( VerbPath | VerbSimple ) ObjectListPath ( ';' ( ( VerbPath | VerbSimple )
+                                       ObjectList )? )*
 [84]   VerbPath                   ::=  Path
 [85]   VerbSimple                 ::=  Var
-#[86]   ObjectListPath             ::=  ObjectPath ( ',' ObjectPath )*
-#[87]   ObjectPath                 ::=  GraphNodePath
+[86]   ObjectListPath             ::=  ObjectPath ( ',' ObjectPath )*
+[87]   ObjectPath                 ::=  GraphNodePath
 [88]   Path                       ::=  PathAlternative
 [89]   PathAlternative            ::=  PathSequence ( '|' PathSequence )*
 [90]   PathSequence               ::=  PathEltOrInverse ( '/' PathEltOrInverse )*
 [91]   PathElt                    ::=  PathPrimary PathMod?
 [92]   PathEltOrInverse           ::=  PathElt | '^' PathElt
-[93]   PathMod                    ::=  ( '*' | '?' | '+' | '{' ( Integer ( ',' ( '}' | Integer '}' ) | '}' ) | ',' Integer '}' ) )
-[94]   PathPrimary                ::=  ( iri | 'a' | '!' PathNegatedPropertySet | '(' Path ')' )
-[95]   PathNegatedPropertySet     ::=  ( PathOneInPropertySet | '(' ( PathOneInPropertySet ( '|' PathOneInPropertySet )* )? ')' )
-[96]   PathOneInPropertySet       ::=  ( iri | 'a' | '^' ( iri | 'a' ) )
-[97]   Integer                    ::=  INTEGER
+[93]   PathMod                    ::=  '?' | '*' | '+'
+[94]   PathPrimary                ::=  iri | 'a' | '!' PathNegatedPropertySet | '(' Path ')'
+[95]   PathNegatedPropertySet     ::=  PathOneInPropertySet | '(' ( PathOneInPropertySet ( '|' PathOneInPropertySet )* )? ')'
+[96]   PathOneInPropertySet       ::=  iri | 'a' | '^' ( iri | 'a' )
+# @@unused [97]   Integer                    ::=  INTEGER
 [98]   TriplesNode                ::=  Generator | BlankNodePropertyList
 [99]   BlankNodePropertyList      ::=  '[' PropertyListNotEmpty ']'
 [100X]  Generator                  ::=  ('MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED')? '(' GraphNode+ ')'
-#[100]  TriplesNodePath            ::=  CollectionPath | BlankNodePropertyListPath
-#[101]  BlankNodePropertyListPath  ::=  '[' PropertyListPathNotEmpty ']'
-#[102]  Collection                 ::=  '(' GraphNode+ ')'
-#[103]  CollectionPath             ::=  '(' GraphNodePath+ ')'
+[100]  TriplesNodePath            ::=  CollectionPath | BlankNodePropertyListPath
+[101]  BlankNodePropertyListPath  ::=  '[' PropertyListPathNotEmpty ']'
+# @@unused [102]  Collection                 ::=  '(' GraphNode+ ')'
+[103]  CollectionPath             ::=  '(' GraphNodePath+ ')'
 [104]  GraphNode                  ::=  VarOrTerm | TriplesNode
-#[105]  GraphNodePath              ::=  VarOrTerm | TriplesNodePath
+[105]  GraphNodePath              ::=  VarOrTerm | TriplesNodePath
 [106]  VarOrTerm                  ::=  Var | GraphTerm
 [107]  VarOrIri                   ::=  Var | iri
 [108]  Var                        ::=  VAR1 | VAR2
@@ -184,14 +184,15 @@
                                        | 'CONCAT' ExpressionList
                                        | SubstringExpression
                                        | 'STRLEN' '(' Expression ')'
+                                       | StrReplaceExpression
                                        | 'UCASE' '(' Expression ')'
                                        | 'LCASE' '(' Expression ')'
                                        | 'ENCODE_FOR_URI' '(' Expression ')'
                                        | 'CONTAINS' '(' Expression ',' Expression ')'
                                        | 'STRSTARTS' '(' Expression ',' Expression ')'
                                        | 'STRENDS' '(' Expression ',' Expression ')'
-                                       | 'STRBEFORE' '(' Expression ',' Expression ')' 
-                                       | 'STRAFTER' '(' Expression ',' Expression ')' 
+                                       | 'STRBEFORE' '(' Expression ',' Expression ')'
+                                       | 'STRAFTER' '(' Expression ',' Expression ')'
                                        | 'YEAR' '(' Expression ')'
                                        | 'MONTH' '(' Expression ')'
                                        | 'DAY' '(' Expression ')'
@@ -201,8 +202,8 @@
                                        | 'TIMEZONE' '(' Expression ')'
                                        | 'TZ' '(' Expression ')'
                                        | 'NOW' NIL
-                                       | 'UUID' NIL 
-                                       | 'STRUUID' NIL 
+                                       | 'UUID' NIL
+                                       | 'STRUUID' NIL
                                        | 'MD5' '(' Expression ')'
                                        | 'SHA1' '(' Expression ')'
                                        | 'SHA256' '(' Expression ')'
@@ -223,7 +224,7 @@
                                        | NotExistsFunc
 [122]  RegexExpression            ::=  'REGEX' '(' Expression ',' Expression ( ',' Expression )? ')'
 [123]  SubstringExpression        ::=  'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
-#[124]  StrReplaceExpression       ::=  'REPLACE' '(' Expression ',' Expression ',' Expression ( ',' Expression )? ')'
+[124]  StrReplaceExpression       ::=  'REPLACE' '(' Expression ',' Expression ',' Expression ( ',' Expression )? ')'
 [125]  ExistsFunc                 ::=  'EXISTS' GroupGraphPattern
 [126]  NotExistsFunc              ::=  'NOT' 'EXISTS' GroupGraphPattern
 [127]  Aggregate                  ::=    'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')'
@@ -245,12 +246,12 @@
 [139]  IRIREF                     ::=  '<' ([^<>\"{}|^`\\]-[#x00-#x20])* '>'
 [140]  PNAME_NS                   ::=  PN_PREFIX? ':'
 [141]  PNAME_LN                   ::=  PNAME_NS PN_LOCAL
-[142]  BLANK_NODE_LABEL           ::=  '_:' PN_LOCAL
+[142]  BLANK_NODE_LABEL           ::=  '_:' ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
 [143]  VAR1                       ::=  '?' VARNAME
 [144]  VAR2                       ::=  '$' VARNAME
 [145]  LANGTAG                    ::=  '@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)*
 [146]  INTEGER                    ::=  [0-9]+
-[147]  DECIMAL                    ::=  [0-9]+ '.' [0-9]* | '.' [0-9]+
+[147]  DECIMAL                    ::=  [0-9]* '.' [0-9]+
 [148]  DOUBLE                     ::=  [0-9]+ '.' [0-9]* EXPONENT | '.' ([0-9])+ EXPONENT | ([0-9])+ EXPONENT
 [149]  INTEGER_POSITIVE           ::=  '+' INTEGER
 [150]  DECIMAL_POSITIVE           ::=  '+' DECIMAL
@@ -272,7 +273,11 @@
 [166]  VARNAME                    ::=  ( PN_CHARS_U | [0-9] ) ( PN_CHARS_U | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040] )*
 [167]  PN_CHARS                   ::=  PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]
 [168]  PN_PREFIX                  ::=  PN_CHARS_BASE ((PN_CHARS|'.')* PN_CHARS)?
-[169]  PN_LOCAL                   ::=  ( PN_CHARS_U | [0-9] ) ((PN_CHARS|'.')* PN_CHARS)?
+[169]  PN_LOCAL                   ::=  (PN_CHARS_U | ':' | [0-9] | PLX ) ((PN_CHARS | '.' | ':' | PLX)* (PN_CHARS | ':' | PLX) )?
+[170]  PLX                        ::=  PERCENT | PN_LOCAL_ESC
+[171]  PERCENT                    ::=  '%' HEX HEX
+[172]  HEX                        ::=  [0-9] | [A-F] | [a-f]
+[173]  PN_LOCAL_ESC               ::=  '\\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%' )
 
 [0RS]  ABOX_HR                     ::= ('+' '-'+)+ '+'
 [0RS]  UBOX_UHR                    ::= '┌' '─'* ('┬' '─'*)* '┐'

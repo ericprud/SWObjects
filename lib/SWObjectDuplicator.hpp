@@ -350,9 +350,12 @@ namespace w3c_sw {
 	    SolutionModifier* solutionModifier = last.solutionModifier;
 	    last.operation = new Describe(varSet, _DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
-	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause) {
+	virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_WhereClause->express(this);
-	    last.operation = new Ask(_DatasetClauses(p_DatasetClauses), last.whereClause);
+	    WhereClause* where = last.whereClause;
+	    p_SolutionModifier->express(this);
+	    SolutionModifier* solutionModifier = last.solutionModifier;
+	    last.operation = new Ask(_DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
 	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
 	    const Delete* del = NULL;
@@ -386,11 +389,11 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    last.operation = new Delete(last.tableOperation, where);
 	}
-	virtual void load (const Load* const, const URI* p_from, const URI* p_into) {
+	virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	    p_from->express(this);
 	    const URI* from = last.tterms.uri;
 	    p_into->express(this);
-	    last.operation = new Load(from, last.tterms.uri);
+	    last.operation = new Load(p_Silence, from, last.tterms.uri);
 	}
 	virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	    last.tterms.tterm = NULL;

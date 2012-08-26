@@ -211,6 +211,7 @@ BOOST_AUTO_TEST_CASE( basic__term_5 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/basic/term-5.rq", "data-r2/basic/term-5.srx", 0, 0);
 }
+#ifdef SPARQL1_0_DECIMAL
 BOOST_AUTO_TEST_CASE( basic__term_6 ) {
     /* name: Basic - Term 6
      */
@@ -227,6 +228,7 @@ BOOST_AUTO_TEST_CASE( basic__term_7 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-r2/basic/term-7.rq", "data-r2/basic/term-7.srx", 0, 0);
 }
+#endif /* SPARQL1_0_DECIMAL */
 BOOST_AUTO_TEST_CASE( basic__term_8 ) {
     /* name: Basic - Term 8
      */

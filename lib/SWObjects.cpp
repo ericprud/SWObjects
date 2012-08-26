@@ -446,7 +446,7 @@ void Describe::express (Expressor* p_expressor) const {
     p_expressor->describe(this, m_VarSet, m_DatasetClauses, m_WhereClause,m_SolutionModifier);
 }
 void Ask::express (Expressor* p_expressor) const {
-    p_expressor->ask(this, m_DatasetClauses,m_WhereClause);
+    p_expressor->ask(this, m_DatasetClauses,m_WhereClause,m_SolutionModifier);
 }
 void Modify::express (Expressor* p_expressor) const {
     p_expressor->modify(this, m_delete,m_insert,m_WhereClause);
@@ -458,7 +458,7 @@ void Delete::express (Expressor* p_expressor) const {
     p_expressor->del(this, m_GraphTemplate,m_WhereClause);
 }
 void Load::express (Expressor* p_expressor) const {
-    p_expressor->load(this, m_from,m_into);
+    p_expressor->load(this, m_Silence,m_from,m_into);
 }
 void Clear::express (Expressor* p_expressor) const {
     p_expressor->clear(this, m_Silence,m__QGraphIRI_E_Opt);
@@ -645,6 +645,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	EXTENCONST   (group_group),
 	EXTENCONST   (group_regex),
 
+	RDFCONST(type),
+	RDFCONST(List),
 	RDFCONST(first),
 	RDFCONST(rest),
 	RDFCONST(nil),
@@ -736,9 +738,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[80].uri;
     const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[81].uri;
 
-    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[82].uri;
-    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[83].uri;
-    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[84].uri;
+    const URI* TTerm::RDF_type			 = &AtomFactory::_URIConstants[82].uri;
+    const URI* TTerm::RDF_List			 = &AtomFactory::_URIConstants[83].uri;
+    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[84].uri;
+    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[85].uri;
+    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[86].uri;
 #endif /* !defined(SWIG) */
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
@@ -2103,6 +2107,12 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     ResultSet* Ask::executeQuery (const RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	m_WhereClause->bindVariables(db, rs);
+	if (m_SolutionModifier != NULL) {
+	    ExpressionAliasList vs;
+	    vs.project(rs, m_SolutionModifier->groupBy, m_SolutionModifier->having,
+			      m_SolutionModifier->m_OrderConditions, db);
+	    rs->trim(DIST_reduced, m_SolutionModifier->m_limit, m_SolutionModifier->m_offset);
+	}
 	rs->resultType = ResultSet::RESULT_Boolean;
 	return rs;
     }

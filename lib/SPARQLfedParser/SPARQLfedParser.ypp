@@ -87,6 +87,7 @@ class SPARQLfedDriver : public YaccDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
+    const TTerm* curTail; // tail of the list currently being assembled.
     BasicGraphPattern* curBGP;
     ParserFilter* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
@@ -326,7 +327,7 @@ public:
        GT_NEQUAL GT_LT GT_GT GT_LE GT_GE GT_PLUS GT_MINUS GT_DIVIDE GT_NOT
        IT_NOT IT_IN
        IT_IRI IT_URI IT_BNODE IT_COALESCE IT_IF IT_STRLANG IT_STRDT
-       IT_EXISTS IT_SEPARATOR
+       IT_REPLACE IT_EXISTS IT_SEPARATOR
        IT_STR IT_LANG IT_LANGMATCHES IT_DATATYPE IT_BOUND IT_sameTerm IT_isIRI
        IT_isURI IT_isBLANK IT_isLITERAL IT_REGEX GT_DTYPE IT_CONCAT
        IT_AS IT_GROUP IT_HAVING IT_COUNT IT_SUM IT_MIN IT_MAX IT_AVG IT_GROUP_CONCAT IT_SAMPLE
@@ -407,12 +408,13 @@ public:
  /* Parts Of Speach */
 %type <p_TTerm> SourceSelector
 	      BlankNodePropertyList
-	      Verb VarOrIri VarOrTerm GraphNode
+	      Verb VarOrIri VarOrTerm GraphNode GraphNodePath TriplesNodePath
 	      GraphTerm BlankNode TriplesNode Generator
               DataBlockValue
+              GeneratorPath BlankNodePropertyListPath
               _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple Path PathAlternative PathSequence PathEltOrInverse PathElt PathPrimary
-              _O_Qiri_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C
-%type <p_TTerms> _QGraphNode_E_Plus
+
+%type <p_TTerms> _QGraphNode_E_Plus _QGraphNodePath_E_Plus
 %type <p_RDFLiteral> RDFLiteral _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive
 			    NumericLiteralNegative NumericLiteral
@@ -432,7 +434,7 @@ public:
 		     MultiplicativeExpression
 		     _O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C
 		     UnaryExpression PrimaryExpression RegexExpression SubstringExpression
-		     _O_QGT_COMMA_E_S_QExpression_E_C
+		     StrReplaceExpression _O_QGT_COMMA_E_S_QExpression_E_C
 		     _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt iriOrFunction
                      HavingCondition Aggregate _O_QGT_TIMES_E_Or_QExpression_E_C
                      _Q_O_QGT_TIMES_E_S_QUnaryExpression_E_Or_QGT_DIVIDE_E_S_QUnaryExpression_E_C_E_Opt
@@ -926,10 +928,10 @@ _QWhereClause_E_Opt:
 ;
 
 AskQuery:
-    // 'ASK' DatasetClause* WhereClause
-    IT_ASK _QDatasetClause_E_Star WhereClause	{
+    // 'ASK' DatasetClause* WhereClause SolutionModifier
+    IT_ASK _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	driver.lastWhereClause = $3;
-	$$ = new Ask($2, $3);
+	$$ = new Ask($2, $3, $4);
     }
 ;
 
@@ -1188,23 +1190,27 @@ Update:
 	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
 	ret->push_back($2);
 	driver.root = ret;
-      } _Q_O_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt	{
+      } _Q_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt	{
 	  $$ = driver.root;
 	}
 ;
 
-_QUpdate_E_Opt:
-    
-  | Update	
+_O_QGT_SEMI_E_S_QUpdate_E_C:
+    GT_SEMI Update	
 ;
 
-_O_QGT_SEMI_E_S_QUpdate_E_Opt_C:
-    GT_SEMI _QUpdate_E_Opt	
+_Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt:
+    
+  | _O_QGT_SEMI_E_S_QUpdate_E_C	
 ;
 
-_Q_O_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt:
+_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C:
+    Update1 _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt	
+;
+
+_Q_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt:
     
-  | _O_QGT_SEMI_E_S_QUpdate_E_Opt_C	
+  | _O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C	
 ;
 
 Update1:
@@ -1222,9 +1228,18 @@ Update1:
 ;
 
 Load:
-    IT_LOAD iri _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt	{
-	$$ = new Load($2, $3);
+    IT_LOAD _QIT_SILENT_E_Opt iri _Q_O_QIT_INTO_E_S_QGraphRef_E_C_E_Opt	{
+	$$ = new Load($2, $3, $4);
     }
+;
+
+_QIT_SILENT_E_Opt:
+    {
+	$$ = SILENT_No;
+    }
+  | IT_SILENT	{
+	$$ = SILENT_Yes;
+}
 ;
 
 // 'INTO' iri
@@ -1246,15 +1261,6 @@ Clear:
     IT_CLEAR _QIT_SILENT_E_Opt GraphRefAll	{
 	$$ = new Clear($2, $3);
     }
-;
-
-_QIT_SILENT_E_Opt:
-    {
-	$$ = SILENT_No;
-    }
-  | IT_SILENT	{
-	$$ = SILENT_Yes;
-}
 ;
 
 Drop:
@@ -1901,6 +1907,15 @@ TriplesSameSubject:
     } PropertyList	
 ;
 
+PropertyList:
+    _QPropertyListNotEmpty_E_Opt	
+;
+
+_QPropertyListNotEmpty_E_Opt:
+    
+  | PropertyListNotEmpty	
+;
+
 PropertyListNotEmpty:
     // Verb ObjectList ( ';' ( Verb ObjectList )? )*
     Verb ObjectList _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star	
@@ -1928,24 +1943,13 @@ _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
   | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C	
 ;
 
-PropertyList:
-    // PropertyListNotEmpty?
-    _QPropertyListNotEmpty_E_Opt	
-;
-
-// PropertyListNotEmpty?
-_QPropertyListNotEmpty_E_Opt:
-    
-  | PropertyListNotEmpty	
-;
-
 Verb:
     VarOrIri	{
 	$$ = $1;
 	driver.curPredicate = $$;
     }
   | IT_a	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	$$ = TTerm::RDF_type;
 	driver.curPredicate = $$;
     }
 ;
@@ -1977,16 +1981,25 @@ Object:
 TriplesSameSubjectPath:
     VarOrTerm	{
 	driver.curSubject = $1;
-      } PropertyListNotEmptyPath	
-  | TriplesNode	{
-	driver.curSubject = $1;
-      } PropertyListPath	
+      } PropertyListPathNotEmpty
+  | TriplesNodePath {
+	  driver.curSubject = $1;
+        } PropertyListPath	
 ;
 
-PropertyListNotEmptyPath:
-    _O_QVerbPath_E_Or_QVerbSimple_E_C	{
+PropertyListPath:
+    _QPropertyListPathNotEmpty_E_Opt	
+;
+
+_QPropertyListPathNotEmpty_E_Opt:
+    
+  | PropertyListPathNotEmpty	
+;
+
+PropertyListPathNotEmpty:
+    _O_QVerbPath_E_Or_QVerbSimple_E_C {
 	driver.curPredicate = $1;
-      } ObjectList _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star	
+      } ObjectListPath _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star	
 ;
 
 _O_QVerbPath_E_Or_QVerbSimple_E_C:
@@ -2014,10 +2027,6 @@ _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star:
   | _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C	
 ;
 
-PropertyListPath:
-    _QPropertyListNotEmpty_E_Opt	
-;
-
 VerbPath:
     Path	
 ;
@@ -2025,6 +2034,26 @@ VerbPath:
 VerbSimple:
     Var	{
 	$$ = $1;
+    }
+;
+
+ObjectListPath:
+    ObjectPath _Q_O_QGT_COMMA_E_S_QObjectPath_E_C_E_Star	
+;
+
+_O_QGT_COMMA_E_S_QObjectPath_E_C:
+    GT_COMMA ObjectPath	
+;
+
+_Q_O_QGT_COMMA_E_S_QObjectPath_E_C_E_Star:
+    
+  | _Q_O_QGT_COMMA_E_S_QObjectPath_E_C_E_Star _O_QGT_COMMA_E_S_QObjectPath_E_C	
+;
+
+ObjectPath:
+    GraphNodePath	{
+	driver.ensureBasicGraphPattern();
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
     }
 ;
 
@@ -2081,41 +2110,17 @@ PathEltOrInverse:
 ;
 
 PathMod:
-    _O_QGT_TIMES_E_Or_QGT_OPT_E_Or_QGT_PLUS_E_Or_QGT_LCURLEY_E_S_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C	
-;
-
-_O_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_C:
-    GT_RCURLEY	
-  | Integer GT_RCURLEY	
-;
-
-_O_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_C:
-    GT_COMMA _O_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_C	
-  | GT_RCURLEY	
-;
-
-_O_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C:
-    Integer _O_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_C	
-  | GT_COMMA Integer GT_RCURLEY	
-;
-
-_O_QGT_TIMES_E_Or_QGT_OPT_E_Or_QGT_PLUS_E_Or_QGT_LCURLEY_E_S_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C:
-    GT_TIMES	
-  | GT_OPT	
+    GT_OPT	
+  | GT_TIMES	
   | GT_PLUS	
-  | GT_LCURLEY _O_QInteger_E_S_QGT_COMMA_E_S_QGT_RCURLEY_E_Or_QInteger_E_S_QGT_RCURLEY_E_Or_QGT_RCURLEY_E_Or_QGT_COMMA_E_S_QInteger_E_S_QGT_RCURLEY_E_C	
 ;
 
 PathPrimary:
-    _O_Qiri_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C	
-;
-
-_O_Qiri_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_QPath_E_S_QGT_RPAREN_E_C:
     iri	{
 	$$ = $1;
     }
   | IT_a	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	$$ = TTerm::RDF_type;
     }
   | GT_NOT PathNegatedPropertySet	{
 	w3c_sw_NEED_IMPL("@@@");
@@ -2126,7 +2131,8 @@ _O_Qiri_E_Or_QIT_a_E_Or_QGT_NOT_E_S_QPathNegatedPropertySet_E_Or_QGT_LPAREN_E_S_
 ;
 
 PathNegatedPropertySet:
-    _O_QPathOneInPropertySet_E_Or_QGT_LPAREN_E_S_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_Opt_S_QGT_RPAREN_E_C	
+    PathOneInPropertySet	
+  | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	
 ;
 
 _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C:
@@ -2147,13 +2153,10 @@ _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt
   | _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C	
 ;
 
-_O_QPathOneInPropertySet_E_Or_QGT_LPAREN_E_S_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_Opt_S_QGT_RPAREN_E_C:
-    PathOneInPropertySet	
-  | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	
-;
-
 PathOneInPropertySet:
-    _O_Qiri_E_Or_QIT_a_E_Or_QGT_CARROT_E_S_Qiri_E_Or_QIT_a_E_C	
+    iri	
+  | IT_a	
+  | GT_CARROT _O_Qiri_E_Or_QIT_a_E_C	
 ;
 
 _O_Qiri_E_Or_QIT_a_E_C:
@@ -2161,15 +2164,6 @@ _O_Qiri_E_Or_QIT_a_E_C:
   | IT_a	
 ;
 
-_O_Qiri_E_Or_QIT_a_E_Or_QGT_CARROT_E_S_Qiri_E_Or_QIT_a_E_C:
-    iri	
-  | IT_a	
-  | GT_CARROT _O_Qiri_E_Or_QIT_a_E_C	
-;
-
-Integer:
-    INTEGER	
-;
 // </path expressions>
 
 TriplesNode:
@@ -2196,14 +2190,15 @@ Generator:
 	    $$ = driver.createBNode();
 	    const TTerm* tail = $$;
 	    ProductionVector<const TTerm*>* members = $3;
-	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
-	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	    const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
-		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
-		const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
+		// driver.curBGP->addTriplePattern
+		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List));
+		driver.curBGP->addTriplePattern
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)));
+		const TTerm* nextTail = i == members->size()-1 ? (const TTerm*)TTerm::RDF_nil : driver.createBNode();
+		driver.curBGP->addTriplePattern
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail));
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -2255,9 +2250,69 @@ _QGraphNode_E_Plus:
     }
 ;
 
+TriplesNodePath:
+    GeneratorPath	
+  | BlankNodePropertyListPath	
+;
+
+BlankNodePropertyListPath:
+    GT_LBRACKET {
+	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
+	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
+	driver.curSubject = driver.createBNode();
+      } PropertyListPathNotEmpty GT_RBRACKET	{
+	  $$ = driver.curSubject;
+	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
+	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
+      }
+;
+
+GeneratorPath:
+    _Q_O_QIT_MEMBERS_E_Or_QIT_STARTS_E_Or_QIT_ENDS_E_Or_QIT_ANY_E_Or_QIT_UNORDERED_E_C_E_Opt GT_LPAREN _QGraphNodePath_E_Plus GT_RPAREN	{
+	if ($1 == LIST_exact) {
+	    $$ = driver.createBNode();
+	    const TTerm* tail = $$;
+	    ProductionVector<const TTerm*>* members = $3;
+	    driver.ensureBasicGraphPattern();
+	    for (unsigned i = 0; i < members->size(); i++) {
+		// driver.curBGP->addTriplePattern
+		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List));
+		driver.curBGP->addTriplePattern
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)));
+		const TTerm* nextTail = i == members->size()-1 ? (const TTerm*)TTerm::RDF_nil : driver.createBNode();
+		driver.curBGP->addTriplePattern
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail));
+		tail = nextTail;
+	    }
+	    members->clear();
+	    delete members;
+	} else if ($1 == LIST_members) {
+	    $$ = new Members($3);
+	} else {
+	    error(@$, "unsupported function");
+	}
+    }
+;
+
+_QGraphNodePath_E_Plus:
+    GraphNodePath	{
+	$$ = new ProductionVector<const TTerm*>();
+	$$->push_back($1);
+    }
+  | _QGraphNodePath_E_Plus GraphNodePath	{
+	$1->push_back($2);
+	$$ = $1;
+    }
+;
+
 GraphNode:
     VarOrTerm	
   | TriplesNode	
+;
+
+GraphNodePath:
+    VarOrTerm	
+  | TriplesNodePath	
 ;
 
 VarOrTerm:
@@ -2296,7 +2351,7 @@ GraphTerm:
     }
   | BlankNode	
   | NIL	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+	$$ = TTerm::RDF_nil; // !!! new GraphTerm_rule5($1);
     }
 ;
 
@@ -2598,6 +2653,7 @@ BuiltInCall:
   | IT_STRLEN GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, $3, NULL, NULL));
     }
+  | StrReplaceExpression	
   | IT_UCASE GT_LPAREN Expression GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, $3, NULL, NULL));
     }
@@ -2734,6 +2790,12 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt:
 SubstringExpression:
     IT_SUBSTR GT_LPAREN Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, $3, $5, $6));
+    }
+;
+
+StrReplaceExpression:
+    IT_REPLACE GT_LPAREN Expression GT_COMMA Expression GT_COMMA Expression _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Opt GT_RPAREN	{
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_replace, $3, $5, $7)); // !! , $8
     }
 ;
 

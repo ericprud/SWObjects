@@ -363,10 +363,10 @@ UsingOpt:
 	$$ = new Select($3.distinctness, $3.varSet, $2, $3.p_WhereClause, $3.p_SolutionModifier);
     }
   | GT_LPAREN _QUsingClause_E_Plus AskQuery GT_RPAREN	{
-	$$ = new Ask($2, new WhereClause($3));
+	$$ = new Ask($2, new WhereClause($3), NULL); // !! add SliceOpt?
     }
   | AskQuery	{
-	$$ = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause($1));
+	$$ = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause($1), NULL); // !! add SliceOpt?
     }
   | SliceOpt	{
 	$$ = new Select($1.distinctness, $1.varSet, new ProductionVector<const DatasetClause*>(), $1.p_WhereClause, $1.p_SolutionModifier);
@@ -717,8 +717,8 @@ Update1:
 ;
 
 Load:
-    GT_LPAREN IT_load IRIref _QGraphRef_E_Opt GT_RPAREN	{
-	$$ = new Load($3, $4);
+    GT_LPAREN IT_load _QIT_silent_E_Opt IRIref _QGraphRef_E_Opt GT_RPAREN	{
+	$$ = new Load($3, $4, $5);
     }
 ;
 
