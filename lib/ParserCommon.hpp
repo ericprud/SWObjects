@@ -133,6 +133,80 @@ public:
 
     const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return atomFactory->getBooleanRDFLiteral(p_String, p_value); }
 
+    static unsigned short _h2n (char c) {
+	return
+	    c<='9'?c-'0':
+	    c<='F'?c-'A'+10:
+	    c<='f'?c-'a'+10:
+	    throw;
+    }
+    template<typename LOC>
+    static void unescape (char* yytext, size_t len, std::string* space, LOC& yylloc) {
+	for (size_t i = 0; i < len; i++) {
+	    if (yytext[i] == '\\') {
+		switch (yytext[++i]) {
+		case 't': (*space) += '\t'; break;
+		case 'n': (*space) += '\n'; break;
+		case 'r': (*space) += '\r'; break;
+		case 'b': (*space) += '\b'; break;
+		case 'f': (*space) += '\f'; break;
+		case '"': (*space) += '\"'; break;
+		case '\'': (*space) += '\''; break;
+		case '\\': (*space) += '\\'; break;
+		case 'u':
+		    if (i < len-4) {
+			uint16_t cp=
+			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
+			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]);
+
+			if (cp < 0x80)                        // one octet
+			    (*space) += static_cast<uint8_t>(cp);  
+			else if (cp < 0x800) {                // two octets
+			    (*space) += static_cast<uint8_t>((cp >> 6)          | 0xc0);
+			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
+			}
+			break;
+		    } else
+			throw(new std::exception());
+		case 'U':
+		    if (i < len-8) {
+			uint32_t cp=
+			    _h2n(yytext[i+1])<<28 | _h2n(yytext[i+2])<<24|
+			    _h2n(yytext[i+3])<<20 | _h2n(yytext[i+4])<<16 |
+			    _h2n(yytext[i+5])<<12 | _h2n(yytext[i+6])<<8 |
+			    _h2n(yytext[i+7])<<04 | _h2n(yytext[i+8]);
+
+			if (cp < 0x80)                        // one octet
+			    (*space) += static_cast<uint8_t>(cp);  
+			else if (cp < 0x800) {                // two octets
+			    (*space) += static_cast<uint8_t>((cp >> 6)          | 0xc0);
+			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
+			}
+			else if (cp < 0x10000) {              // three octets
+			    (*space) += static_cast<uint8_t>((cp >> 12)         | 0xe0);
+			    (*space) += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
+			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
+			}
+			else {                                // four octets
+			    (*space) += static_cast<uint8_t>((cp >> 18)         | 0xf0);
+			    (*space) += static_cast<uint8_t>(((cp >> 12) & 0x3f)| 0x80);
+			    (*space) += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
+			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
+			}
+			break;
+		    } else
+			throw(new std::exception());
+		default: throw(new std::exception());
+		}
+	    } else {
+		if ((yytext[i] == '\r' && (i == len -1 || yytext[i+1] != '\n'))
+		    || yytext[i] == '\n') {
+		    yylloc->end.lines(1);
+		}
+		(*space) += yytext[i];
+	    }
+	}
+    }
 };
 
 class YaccDataDriver : public YaccDriver {

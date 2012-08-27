@@ -2369,23 +2369,23 @@ case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
 #line 144 "lib/TurtleSScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG1);}
+{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
 #line 145 "lib/TurtleSScanner.lpp"
-{return unescape(yylval, 3, token::STRING_LITERAL_LONG2);}
+{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 146 "lib/TurtleSScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL1);}
+{return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 147 "lib/TurtleSScanner.lpp"
-{return unescape(yylval, 1, token::STRING_LITERAL2);}
+{return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
@@ -3482,7 +3482,7 @@ void TurtleSfree (void * ptr )
 #line 161 "lib/TurtleSScanner.lpp"
 
 
-/* END semantic actions for SPARQLfed terminals */
+/* END semantic actions for TurtleS terminals */
 
 /* START TurtleSScanner */
 namespace w3c_sw {
@@ -3523,41 +3523,9 @@ TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_
     }
 }
 
-unsigned short h2n (char c) {
-    return
-	c<='9'?c-'0':
-	c<='F'?c-'A'+10:
-	c<='f'?c-'a'+10:
-	throw;
-}
-TurtleSParser::token_type TurtleSScanner::unescape (TurtleSParser::semantic_type*& yylval, size_t skip, TurtleSParser::token_type tok){
+TurtleSParser::token_type TurtleSScanner::unescape (TurtleSParser::semantic_type*& yylval, TurtleSParser::location_type*& yylloc, size_t skip, TurtleSParser::token_type tok){
     std::string* space = new std::string;
-    for (size_t i = skip; i < yyleng-skip; i++) {
-	if (yytext[i] == '\\') {
-	    switch (yytext[++i]) {
-	    case 't': (*space) += '\t'; break;
-	    case 'n': (*space) += '\n'; break;
-	    case 'r': (*space) += '\r'; break;
-	    case 'b': (*space) += '\b'; break;
-	    case 'f': (*space) += '\f'; break;
-	    case '"': (*space) += '\"'; break;
-	    case '\'': (*space) += '\''; break;
-	    case 'u':
-		if (i < yyleng-skip-4) {
-		    unsigned short b=
-			h2n(yytext[i+1])<<12 | h2n(yytext[i+2])<<8 |
-			h2n(yytext[i+3])<<04 | h2n(yytext[i+4]);
-		    (*space) += char(b); // !! utf-8-encode
-		    break;
-		} else
-		    throw(new std::exception());
-	    case '\\': (*space) += '\\'; break;
-	    default: throw(new std::exception());
-	    }
-	} else {
-	    (*space) += yytext[i];
-	}
-    }
+    YaccDriver::unescape(yytext+skip, yyleng-skip-skip, space, yylloc);
     yylval->p_string = space;
     return tok;
 }

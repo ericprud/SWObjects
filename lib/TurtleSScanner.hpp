@@ -69,7 +69,7 @@ public:
     void set_debug(bool b);
 
     TurtleSParser::token_type typedLiteral(TurtleSParser::semantic_type*&, TurtleSParser::token_type tok);
-    TurtleSParser::token_type unescape(TurtleSParser::semantic_type*&, size_t skip, TurtleSParser::token_type tok);
+    TurtleSParser::token_type unescape(TurtleSParser::semantic_type*&, TurtleSParser::location_type*& yylloc, size_t skip, TurtleSParser::token_type tok);
     const URI* resolvePrefix(const char*);
     const URI* resolveBase(const char*, bool stripDelims);
 };

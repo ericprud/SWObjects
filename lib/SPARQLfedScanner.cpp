@@ -5594,31 +5594,7 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
 
 SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semantic_type*& yylval, SPARQLfedParser::location_type*& yylloc, size_t skip, SPARQLfedParser::token_type tok){
     std::string* space = new std::string;
-    // bool foundNewLine = false;
-    for (size_t i = skip; i < yyleng-skip; i++) {
-	// if (foundNewLine)
-	//     yylloc->step();
-	if (yytext[i] == '\\') {
-	    switch (yytext[++i]) {
-	    case 't': (*space) += '\t'; break;
-	    case 'n': (*space) += '\n'; break;
-	    case 'r': (*space) += '\r'; break;
-	    case 'b': (*space) += '\b'; break;
-	    case 'f': (*space) += '\f'; break;
-	    case '"': (*space) += '\"'; break;
-	    case '\'': (*space) += '\''; break;
-	    case '\\': (*space) += '\\'; break;
-	    default: throw(new std::exception());
-	    }
-	} else {
-	    if ((yytext[i] == '\r' && (i == yyleng-skip -1 || yytext[i+1] != '\n'))
-		|| yytext[i] == '\n') {
-		yylloc->end.lines(1);
-		// foundNewLine = true;
-	    }
-	    (*space) += yytext[i];
-	}
-    }
+    YaccDriver::unescape(yytext+skip, yyleng-skip-skip, space, yylloc);
     yylval->p_string = space;
     return tok;
 }
