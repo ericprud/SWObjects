@@ -8,6 +8,8 @@
 #define BOOST_TEST_MODULE SPARQL11_tests
 #include "../tests/SPARQLTest.hpp"
 
+w3c_sw_DEBUGGING_FUNCTIONS();
+
 BOOST_AUTO_TEST_SUITE( subselect )
 BOOST_AUTO_TEST_CASE( subselect_01 ) {
     /* name: 
@@ -1482,7 +1484,6 @@ BOOST_AUTO_TEST_CASE( subquery14 ) {
 }
 BOOST_AUTO_TEST_SUITE_END(/* SPARQL_WG */)
 #endif /* SPARQL11_ALL */
-
 
 // EOF
 

@@ -2804,16 +2804,12 @@ ExistsFunc:
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
     } {
-	  $<p_TTerm>$ = driver.curGraphName;
-	  driver.curGraphName = NULL;
-      } {
 	  driver.restoreFilter(NULL);
 	  $<p_TableOperation>$ = driver.curOp;
 	  driver.curOp = NULL;
       } GroupGraphPattern	{
 	  $$ = new ExistsExpression(driver.ensureGraphPattern());
-	  driver.curOp = $<p_TableOperation>4;
-	  driver.curGraphName = $<p_TTerm>3;
+	  driver.curOp = $<p_TableOperation>3;
 	  driver.countStar = $<p_parentCountStar>2;
       }
 ;
@@ -2822,9 +2818,6 @@ NotExistsFunc:
     IT_NOT IT_EXISTS	{
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
-    } {
-	  $<p_TTerm>$ = driver.curGraphName;
-	  driver.curGraphName = NULL;
       } {
 	  driver.restoreFilter(NULL);
 	  $<p_TableOperation>$ = driver.curOp;
@@ -2832,8 +2825,7 @@ NotExistsFunc:
       } GroupGraphPattern	{
 	  // $$ = new ExistsExpression(false, driver.ensureGraphPattern());
 	  $$ = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
-	  driver.curOp = $<p_TableOperation>5;
-	  driver.curGraphName = $<p_TTerm>4;
+	  driver.curOp = $<p_TableOperation>4;
 	  driver.countStar = $<p_parentCountStar>3;
       }
 ;

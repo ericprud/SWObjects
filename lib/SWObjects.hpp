@@ -774,8 +774,8 @@ public:
 	const BNode* getBNode(std::string bnode);
     };
     virtual std::string toXMLResults(BNode2string*) const = 0;
-    std::string str () const { return toString(); } // for easy invocation
     virtual std::string toString() const = 0;
+    std::string str() const; // for easy invocation
     std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
 	const TTerm* subd = evalTTerm(row, evaluator); /* re-uses atoms -- doesn't create them */
 	if (subd != NULL)
@@ -789,8 +789,7 @@ public:
     e_SORT safeCmp(const TTerm& rhs) const;
 
     /* TTerm Constants: */
-    static const URI* FUNC_concat;
-    static const URI* FUNC_replace;
+    static const URI* FUNC_normalize_space;
 
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
@@ -841,6 +840,8 @@ public:
     static const URI* FUNC_substring_after;
     static const URI* FUNC_contains;
     static const URI* FUNC_encode_for_uri;
+    static const URI* FUNC_concat;
+    static const URI* FUNC_replace;
     static const URI* FUNC_langMatches;
     static const URI* FUNC_matches;
     static const URI* FUNC_numeric_abs;
@@ -1565,7 +1566,7 @@ public:
 	    " " << m_o->substitutedString(row, NULL) << "}";
 	return s.str();
     }
-    std::string str () const { return toString(); } // for easy invocation.
+    std::string str() const; // for easy invocation.
     virtual void express(Expressor* p_expressor) const;
     bool bindVariables(const TriplePattern* tp, bool, ResultSet* rs, const ResultSetIterator& row, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound, const BasicGraphPattern* data = NULL) const;
     bool symmetricBindVariables (const TriplePattern* tp, bool, ResultSet* rs, Result* provisional, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const {
@@ -1877,6 +1878,7 @@ public:
 	virtual float eval(float l, float r) = 0;
 	virtual double eval(double l, double r) = 0;
     };
+    const TTerm* applyCommonNumeric(const TTerm* v, UnaryFunctor* func);
     const TTerm* applyCommonNumeric(const Expression* arg, UnaryFunctor* func, const RdfDB* db);
     const TTerm* applyCommonNumeric(std::vector<const Expression*> args, NaryFunctor* func, const RdfDB* db);
     bool eval(const Expression* expression, const Result* row, const RdfDB* db);
@@ -1892,7 +1894,10 @@ public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const = 0;
     virtual bool operator==(const Expression&) const = 0;
+    virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
+    std::string str() const; // for easy invocation
 };
+
 typedef ProductionVector<const Expression*> ExprSet;
 
     inline bool AtomFactory::eval (const Expression* expression, const Result* row, const RdfDB* db) {
@@ -1945,7 +1950,7 @@ public:
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
-    std::string str () { return toString(); } // for easy invocation
+    std::string str() const; // for easy invocation
 };
 class TableJunction : public TableOperation {
 protected:
@@ -3023,8 +3028,7 @@ namespace AtomicFunction {
     };
 
     namespace BuiltIn {
-	    FPtr EXTFUNC_concat;
-	    FPtr EXTFUNC_replace;
+	    FPtr EXTFUNC_normalize_space;
 
 	    FPtr numericCast;
 	    FPtr URI_xsd_dateTime;
@@ -3042,6 +3046,8 @@ namespace AtomicFunction {
 	    FPtr FUNC_lower_case;
 	    FPtr FUNC_upper_case;
 	    FPtr FUNC_string_length;
+	    FPtr FUNC_concat;
+	    FPtr FUNC_replace;
 	    FPtr FUNC_sameTerm;
 	    FPtr FUNC_langMatches;
 	    FPtr FUNC_numeric_abs;
@@ -4337,8 +4343,29 @@ public:
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
 
-} //namespace w3c_sw
+    namespace Debugging {
 
+ 	inline void linkFunctions () {
+	    if (false) TTerm::Unbound->str();
+	    const TableOperation* op = NULL; if (false) op->str();
+	    const TriplePattern* tp = NULL; if (false) tp->str();
+	    const Expression* exp = NULL; if (false) exp->str();
+	}
+
+	/** w3c_sw_TEST_DEBUGGING - prepare a handy test environment.
+	 *   Ensures debugging str() functions are linked.
+	 */
+#define w3c_sw_DEBUGGING_FUNCTIONS()						\
+	struct LinkDebuggingFunctions {						\
+	    LinkDebuggingFunctions ()   {					\
+		w3c_sw::Debugging::linkFunctions();				\
+	    }									\
+	};									\
+	BOOST_GLOBAL_FIXTURE( LinkDebuggingFunctions );
+
+    }
+
+} //namespace w3c_sw
 
 
 #endif /* ! defined SWOBJECTS_HH */

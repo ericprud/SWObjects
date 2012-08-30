@@ -560,8 +560,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     /** URI constants, shared between all AtomFactories: */
     const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
-	XPATHCONST   (concat),
-	XPATHCONST   (replace),
+	XPATHCONST   (normalize_space),
 
 	XSDCONST(integer),
 	XSDCONST(decimal),
@@ -612,6 +611,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	XPATHCNST2   (substring-after, "strAfter"),
 	XPATHCONST   (contains),
 	XPATHCONST   (encode-for-uri),
+	XPATHCONST   (concat),
+	XPATHCONST   (replace),
 	OPERATORCONST(langMatches),
 	XPATHCNST2   (matches, "regex"),
 	XPATHCNST2   (numeric-abs, "abs"),
@@ -652,97 +653,98 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	RDFCONST(nil),
     };
 
-#if !defined(SWIG) // SWIG 2.0.0 appears to barf on initializers for statics.
-    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[0].uri;
-    const URI* TTerm::FUNC_replace		 = &AtomFactory::_URIConstants[1].uri;
+#if !defined(SWIG) // SWIG 2.0.0 appears to barf on initializers for statics. \[\([0-9]+\)\] -> [\#]
+    const URI* TTerm::FUNC_normalize_space	 = &AtomFactory::_URIConstants[0].uri;
 
-    const URI* TTerm::URI_xsd_integer		 = &AtomFactory::_URIConstants[2].uri;
-    const URI* TTerm::URI_xsd_decimal		 = &AtomFactory::_URIConstants[3].uri;
-    const URI* TTerm::URI_xsd_float		 = &AtomFactory::_URIConstants[4].uri;
-    const URI* TTerm::URI_xsd_double		 = &AtomFactory::_URIConstants[5].uri;
-    const URI* TTerm::URI_xsd_string		 = &AtomFactory::_URIConstants[6].uri;
-    const URI* TTerm::URI_xsd_boolean		 = &AtomFactory::_URIConstants[7].uri;
-    const URI* TTerm::URI_xsd_nonPositiveInteger = &AtomFactory::_URIConstants[8].uri;
-    const URI* TTerm::URI_xsd_negativeInteger	 = &AtomFactory::_URIConstants[9].uri;
-    const URI* TTerm::URI_xsd_long		 = &AtomFactory::_URIConstants[10].uri;
-    const URI* TTerm::URI_xsd_int		 = &AtomFactory::_URIConstants[11].uri;
-    const URI* TTerm::URI_xsd_short		 = &AtomFactory::_URIConstants[12].uri;
-    const URI* TTerm::URI_xsd_byte		 = &AtomFactory::_URIConstants[13].uri;
-    const URI* TTerm::URI_xsd_nonNegativeInteger = &AtomFactory::_URIConstants[14].uri;
-    const URI* TTerm::URI_xsd_unsignedLong	 = &AtomFactory::_URIConstants[15].uri;
-    const URI* TTerm::URI_xsd_unsignedInt	 = &AtomFactory::_URIConstants[16].uri;
-    const URI* TTerm::URI_xsd_unsignedShort	 = &AtomFactory::_URIConstants[17].uri;
-    const URI* TTerm::URI_xsd_unsignedByte	 = &AtomFactory::_URIConstants[18].uri;
-    const URI* TTerm::URI_xsd_positiveInteger	 = &AtomFactory::_URIConstants[19].uri;
-    const URI* TTerm::URI_xsd_dateTime		 = &AtomFactory::_URIConstants[20].uri;
+    const URI* TTerm::URI_xsd_integer		 = &AtomFactory::_URIConstants[1].uri;
+    const URI* TTerm::URI_xsd_decimal		 = &AtomFactory::_URIConstants[2].uri;
+    const URI* TTerm::URI_xsd_float		 = &AtomFactory::_URIConstants[3].uri;
+    const URI* TTerm::URI_xsd_double		 = &AtomFactory::_URIConstants[4].uri;
+    const URI* TTerm::URI_xsd_string		 = &AtomFactory::_URIConstants[5].uri;
+    const URI* TTerm::URI_xsd_boolean		 = &AtomFactory::_URIConstants[6].uri;
+    const URI* TTerm::URI_xsd_nonPositiveInteger = &AtomFactory::_URIConstants[7].uri;
+    const URI* TTerm::URI_xsd_negativeInteger	 = &AtomFactory::_URIConstants[8].uri;
+    const URI* TTerm::URI_xsd_long		 = &AtomFactory::_URIConstants[9].uri;
+    const URI* TTerm::URI_xsd_int		 = &AtomFactory::_URIConstants[10].uri;
+    const URI* TTerm::URI_xsd_short		 = &AtomFactory::_URIConstants[11].uri;
+    const URI* TTerm::URI_xsd_byte		 = &AtomFactory::_URIConstants[12].uri;
+    const URI* TTerm::URI_xsd_nonNegativeInteger = &AtomFactory::_URIConstants[13].uri;
+    const URI* TTerm::URI_xsd_unsignedLong	 = &AtomFactory::_URIConstants[14].uri;
+    const URI* TTerm::URI_xsd_unsignedInt	 = &AtomFactory::_URIConstants[15].uri;
+    const URI* TTerm::URI_xsd_unsignedShort	 = &AtomFactory::_URIConstants[16].uri;
+    const URI* TTerm::URI_xsd_unsignedByte	 = &AtomFactory::_URIConstants[17].uri;
+    const URI* TTerm::URI_xsd_positiveInteger	 = &AtomFactory::_URIConstants[18].uri;
+    const URI* TTerm::URI_xsd_dateTime		 = &AtomFactory::_URIConstants[19].uri;
 
-    const URI* TTerm::FUNC_bound		 = &AtomFactory::_URIConstants[21].uri;
-    const URI* TTerm::FUNC_if			 = &AtomFactory::_URIConstants[22].uri;
-    const URI* TTerm::FUNC_coalesce		 = &AtomFactory::_URIConstants[23].uri;
-    const URI* TTerm::FUNC_exists		 = &AtomFactory::_URIConstants[24].uri;
-    const URI* TTerm::FUNC_sameTerm 		 = &AtomFactory::_URIConstants[25].uri;
-    const URI* TTerm::FUNC_in			 = &AtomFactory::_URIConstants[26].uri;
-    const URI* TTerm::FUNC_isIRI		 = &AtomFactory::_URIConstants[27].uri;
-    const URI* TTerm::FUNC_isURI		 = &AtomFactory::_URIConstants[28].uri;
-    const URI* TTerm::FUNC_isBlank		 = &AtomFactory::_URIConstants[29].uri;
-    const URI* TTerm::FUNC_isLiteral		 = &AtomFactory::_URIConstants[30].uri;
-    const URI* TTerm::FUNC_isNumeric		 = &AtomFactory::_URIConstants[31].uri;
-    const URI* TTerm::FUNC_str			 = &AtomFactory::_URIConstants[32].uri;
-    const URI* TTerm::FUNC_lang			 = &AtomFactory::_URIConstants[33].uri;
-    const URI* TTerm::FUNC_datatype		 = &AtomFactory::_URIConstants[34].uri;
-    const URI* TTerm::FUNC_iri			 = &AtomFactory::_URIConstants[35].uri;
-    const URI* TTerm::FUNC_uri			 = &AtomFactory::_URIConstants[36].uri;
-    const URI* TTerm::FUNC_bnode		 = &AtomFactory::_URIConstants[37].uri;
-    const URI* TTerm::FUNC_strdt		 = &AtomFactory::_URIConstants[38].uri;
-    const URI* TTerm::FUNC_strlang		 = &AtomFactory::_URIConstants[39].uri;
-    const URI* TTerm::FUNC_string_length	 = &AtomFactory::_URIConstants[40].uri;
-    const URI* TTerm::FUNC_substring		 = &AtomFactory::_URIConstants[41].uri;
-    const URI* TTerm::FUNC_upper_case		 = &AtomFactory::_URIConstants[42].uri;
-    const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[43].uri;
-    const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[44].uri;
-    const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[45].uri;
-    const URI* TTerm::FUNC_substring_before	 = &AtomFactory::_URIConstants[46].uri;
-    const URI* TTerm::FUNC_substring_after	 = &AtomFactory::_URIConstants[47].uri;
-    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[48].uri;
-    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[49].uri;
-    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[50].uri;
-    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[51].uri;
-    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[52].uri;
-    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[53].uri;
-    const URI* TTerm::FUNC_numeric_ceil		 = &AtomFactory::_URIConstants[54].uri;
-    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[55].uri;
-    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[56].uri;
-    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[57].uri;
-    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[58].uri;
-    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[59].uri;
-    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[60].uri;
-    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[61].uri;
-    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[62].uri;
-    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[63].uri;
-    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[64].uri;
-    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[65].uri;
-    const URI* TTerm::FUNC_uuid			 = &AtomFactory::_URIConstants[66].uri;
-    const URI* TTerm::FUNC_struuid		 = &AtomFactory::_URIConstants[67].uri;
-    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[68].uri;
-    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[69].uri;
-    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[70].uri;
-    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[71].uri;
-    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[72].uri;
-    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[73].uri;
-    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[74].uri;
-    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[75].uri;
-    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[76].uri;
-    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[77].uri;
-    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[78].uri;
-    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[79].uri;
-    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[80].uri;
-    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[81].uri;
+    const URI* TTerm::FUNC_bound		 = &AtomFactory::_URIConstants[20].uri;
+    const URI* TTerm::FUNC_if			 = &AtomFactory::_URIConstants[21].uri;
+    const URI* TTerm::FUNC_coalesce		 = &AtomFactory::_URIConstants[22].uri;
+    const URI* TTerm::FUNC_exists		 = &AtomFactory::_URIConstants[23].uri;
+    const URI* TTerm::FUNC_sameTerm 		 = &AtomFactory::_URIConstants[24].uri;
+    const URI* TTerm::FUNC_in			 = &AtomFactory::_URIConstants[25].uri;
+    const URI* TTerm::FUNC_isIRI		 = &AtomFactory::_URIConstants[26].uri;
+    const URI* TTerm::FUNC_isURI		 = &AtomFactory::_URIConstants[27].uri;
+    const URI* TTerm::FUNC_isBlank		 = &AtomFactory::_URIConstants[28].uri;
+    const URI* TTerm::FUNC_isLiteral		 = &AtomFactory::_URIConstants[29].uri;
+    const URI* TTerm::FUNC_isNumeric		 = &AtomFactory::_URIConstants[30].uri;
+    const URI* TTerm::FUNC_str			 = &AtomFactory::_URIConstants[31].uri;
+    const URI* TTerm::FUNC_lang			 = &AtomFactory::_URIConstants[32].uri;
+    const URI* TTerm::FUNC_datatype		 = &AtomFactory::_URIConstants[33].uri;
+    const URI* TTerm::FUNC_iri			 = &AtomFactory::_URIConstants[34].uri;
+    const URI* TTerm::FUNC_uri			 = &AtomFactory::_URIConstants[35].uri;
+    const URI* TTerm::FUNC_bnode		 = &AtomFactory::_URIConstants[36].uri;
+    const URI* TTerm::FUNC_strdt		 = &AtomFactory::_URIConstants[37].uri;
+    const URI* TTerm::FUNC_strlang		 = &AtomFactory::_URIConstants[38].uri;
+    const URI* TTerm::FUNC_string_length	 = &AtomFactory::_URIConstants[39].uri;
+    const URI* TTerm::FUNC_substring		 = &AtomFactory::_URIConstants[40].uri;
+    const URI* TTerm::FUNC_upper_case		 = &AtomFactory::_URIConstants[41].uri;
+    const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[42].uri;
+    const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[43].uri;
+    const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[44].uri;
+    const URI* TTerm::FUNC_substring_before	 = &AtomFactory::_URIConstants[45].uri;
+    const URI* TTerm::FUNC_substring_after	 = &AtomFactory::_URIConstants[46].uri;
+    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[47].uri;
+    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[48].uri;
+    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[49].uri;
+    const URI* TTerm::FUNC_replace		 = &AtomFactory::_URIConstants[50].uri;
+    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[51].uri;
+    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[52].uri;
+    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[53].uri;
+    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[54].uri;
+    const URI* TTerm::FUNC_numeric_ceil		 = &AtomFactory::_URIConstants[55].uri;
+    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[56].uri;
+    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[57].uri;
+    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[58].uri;
+    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[59].uri;
+    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[60].uri;
+    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[61].uri;
+    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[62].uri;
+    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[63].uri;
+    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[64].uri;
+    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[65].uri;
+    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[66].uri;
+    const URI* TTerm::FUNC_uuid			 = &AtomFactory::_URIConstants[67].uri;
+    const URI* TTerm::FUNC_struuid		 = &AtomFactory::_URIConstants[68].uri;
+    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[69].uri;
+    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[70].uri;
+    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[71].uri;
+    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[72].uri;
+    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[73].uri;
+    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[74].uri;
+    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[75].uri;
+    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[76].uri;
+    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[77].uri;
+    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[78].uri;
+    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[79].uri;
+    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[80].uri;
+    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[81].uri;
+    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[82].uri;
 
-    const URI* TTerm::RDF_type			 = &AtomFactory::_URIConstants[82].uri;
-    const URI* TTerm::RDF_List			 = &AtomFactory::_URIConstants[83].uri;
-    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[84].uri;
-    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[85].uri;
-    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[86].uri;
+    const URI* TTerm::RDF_type			 = &AtomFactory::_URIConstants[83].uri;
+    const URI* TTerm::RDF_List			 = &AtomFactory::_URIConstants[84].uri;
+    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[85].uri;
+    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[86].uri;
+    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[87].uri;
 #endif /* !defined(SWIG) */
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
@@ -768,39 +770,29 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     namespace AtomicFunction {
 	namespace BuiltIn {
-	    const TTerm* EXTFUNC_concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		std::stringstream ss;
-		for (std::vector<const TTerm*>::const_iterator sub = args.begin();
-		     sub != args.end(); ++sub) {
-		    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
-		    if (s == NULL || (s->getDatatype() != NULL && s->getDatatype() != TTerm::URI_xsd_string) || s->getLangtag() != NULL)
-			throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")), "concat");
-		    else
-			ss << s->getLexicalValue();
+	    const TTerm* EXTFUNC_normalize_space (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* sterm = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (sterm == NULL)
+		    throw TypeError(args[0]->toString(), "EXTFUNC_normalize_space");
+		std::string s = sterm->getLexicalValue();
+		bool lastWasSpace = false;
+		for (std::string::iterator sit = s.begin(); sit != s.end(); ) {
+		    if (::isspace(*sit)) {
+			if (sit == s.begin() || lastWasSpace)
+			    sit = s.erase(sit);
+			else {
+			    lastWasSpace = true;
+			    ++sit;
+			}
+		    } else {
+			lastWasSpace = false;
+			++sit;
+		    }
 		}
-		return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
-	    }
-
-	    const TTerm* EXTFUNC_replace (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		const RDFLiteral* changeMe  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (changeMe == NULL || changeMe->getDatatype() != NULL)
-		    throw TypeError(args[0]->toString(), "fn:replace");
-		std::string s = changeMe->getLexicalValue();
-
-		const RDFLiteral* fromL = dynamic_cast<const RDFLiteral*>(args[1]);
-		if (fromL == NULL || fromL->getDatatype() != NULL)
-		    throw TypeError(args[1]->toString(), "fn:replace");
-		std::string from = fromL->getLexicalValue();
-
-		const RDFLiteral* toL = dynamic_cast<const RDFLiteral*>(args[2]);
-		if (toL == NULL || toL->getDatatype() != NULL)
-		    throw TypeError(args[2]->toString(), "fn:replace");
-		std::string to = toL->getLexicalValue();
-
-		for (size_t i = 0; (i = s.find(from, i)) != std::string::npos; i += to.size())
-		    s.replace(i, from.size(), to);
-
-		return atomFactory->getRDFLiteral(s, NULL);
+		if (lastWasSpace)
+		    s.erase(s.length()-1);
+		std::stringstream ss;
+		return atomFactory->getRDFLiteral(s, sterm->getDatatype(), NULL, false);
 	    }
 
 	    const TTerm* numericCast (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
@@ -876,6 +868,26 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), "IRI");
 	    }
 
+	    const TTerm* FUNC_strdt (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* val = dynamic_cast<const RDFLiteral*>(args[0]);
+		const URI* dt = dynamic_cast<const URI*>(args[1]);
+		if (val == NULL || val->getDatatype() != NULL || val->getLangtag() != NULL)
+		    throw TypeError(args[0]->toString(), "STRDT");
+		if (dt == NULL)
+		    throw TypeError(args[1]->toString(), "STRDT");
+		return atomFactory->getRDFLiteral(val->getLexicalValue(), dt);
+	    }
+
+	    const TTerm* FUNC_strlang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* val = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* lang = dynamic_cast<const RDFLiteral*>(args[1]);
+		if (val == NULL || val->getDatatype() != NULL || val->getLangtag() != NULL)
+		    throw TypeError(args[0]->toString(), "STRDT");
+		if (lang == NULL || lang->getDatatype() != NULL || lang->getLangtag() != NULL)
+		    throw TypeError(args[1]->toString(), "STRDT");
+		return atomFactory->getRDFLiteral(val->getLexicalValue(), NULL, new LANGTAG(lang->getLexicalValue()));
+	    }
+
 	    const TTerm* FUNC_bnode (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    //return atomFactory->getBNode(args[0]->getLexicalValue());
@@ -924,6 +936,59 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
+	    const TTerm* FUNC_concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		std::stringstream ss;
+		bool allStrings = true;
+		std::string lastLangTag;
+		bool sameLang = true;
+
+		for (std::vector<const TTerm*>::const_iterator sub = args.begin();
+		     sub != args.end(); ++sub) {
+		    const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(*sub);
+		    if (s == NULL ||
+			(s->getDatatype() != NULL && s->getDatatype() != TTerm::URI_xsd_string))
+			throw TypeError(std::string("unexpected ") + (s ? s->toString() : std::string("NULL")),
+					"concat");
+		    if (s->getDatatype() != TTerm::URI_xsd_string)
+			allStrings = false;
+		    if (s->getLangtag()) {
+			if (sub == args.begin())
+			    lastLangTag = s->getLangtag()->getLexicalValue();
+			else if (sameLang && s->getLangtag()->getLexicalValue() != lastLangTag)
+			    sameLang = false;
+		    } else
+			sameLang = false;
+		    ss << s->getLexicalValue();
+		}
+		return atomFactory->getRDFLiteral
+		    (ss.str(),
+		     allStrings ? TTerm::URI_xsd_string : NULL,
+		     sameLang ? new LANGTAG(lastLangTag) : NULL,
+		     false);
+	    }
+
+	    const TTerm* FUNC_replace (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+		const RDFLiteral* changeMe  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (changeMe == NULL || changeMe->getDatatype() != NULL)
+		    throw TypeError(args[0]->toString(), "fn:replace");
+		std::string s = changeMe->getLexicalValue();
+
+		const RDFLiteral* fromL = dynamic_cast<const RDFLiteral*>(args[1]);
+		if (fromL == NULL || fromL->getDatatype() != NULL)
+		    throw TypeError(args[1]->toString(), "fn:replace");
+		std::string from = fromL->getLexicalValue();
+
+		const RDFLiteral* toL = dynamic_cast<const RDFLiteral*>(args[2]);
+		if (toL == NULL || toL->getDatatype() != NULL)
+		    throw TypeError(args[2]->toString(), "fn:replace");
+		std::string to = toL->getLexicalValue();
+
+		for (size_t i = 0; (i = s.find(from, i)) != std::string::npos; i += to.size())
+		    s.replace(i, from.size(), to);
+
+		return atomFactory->getRDFLiteral(s, NULL);
+	    }
+
 	    const TTerm* FUNC_sameTerm (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactoryy) {
 		return args[0] == args[1] && args[0] != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
 	    }
@@ -962,83 +1027,47 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 
 	    const TTerm* FUNC_numeric_abs (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
-		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
-		    return args[0];
-
-		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
-		if (asFloat != NULL) {
-		    float f = asFloat->getValue();
-		    return f >= 0
-			? args[0]
-			: atomFactory->getRDFLiteral(boost::lexical_cast<std::string>(-f), asFloat->getDatatype());
-		}
-
-		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
-		if (asDouble != NULL) {
-		    double d = asDouble->getValue();
-		    return d >= 0
-			? args[0]
-			: atomFactory->getRDFLiteral(boost::lexical_cast<std::string>(-d), asDouble->getDatatype());
-		}
-		throw TypeError(args[0]->toString(), "numeric_abs");
+		struct UnaryAbsolutifier : public AtomFactory::UnaryFunctor {
+		    UnaryAbsolutifier () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
+		    virtual int eval (int v) { return v < 0 ? -v : v; }
+		    virtual float eval (float v) { return v < 0 ? -v : v; }
+		    virtual double eval (double v) { return v < 0 ? -v : v; }
+		};
+		UnaryAbsolutifier f;
+		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
 	    const TTerm* FUNC_numeric_round (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
-		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
-		    return args[0];
-
-		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
-		if (asFloat != NULL) {
-		    float f = asFloat->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::floor(f + 0.5)), asFloat->getDatatype());
-		}
-
-		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
-		if (asDouble != NULL) {
-		    double d = asDouble->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::floor(d + 0.5)), asDouble->getDatatype());
-		}
-		throw TypeError(args[0]->toString(), "numeric_round");
+		struct UnaryRounder : public AtomFactory::UnaryFunctor {
+		    UnaryRounder () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
+		    virtual int eval (int v) { return v; }
+		    virtual float eval (float v) { return ::roundf(v); }
+		    virtual double eval (double v) { return ::round(v); }
+		};
+		UnaryRounder f;
+		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
 	    const TTerm* FUNC_numeric_ceil (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
-		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
-		    return args[0];
-
-		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
-		if (asFloat != NULL) {
-		    float f = asFloat->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::ceil(f)), asFloat->getDatatype());
-		}
-
-		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
-		if (asDouble != NULL) {
-		    double d = asDouble->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::ceil(d)), asDouble->getDatatype());
-		}
-		throw TypeError(args[0]->toString(), "numeric_ceil");
+		struct UnaryCeiler : public AtomFactory::UnaryFunctor {
+		    UnaryCeiler () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
+		    virtual int eval (int v) { return v; }
+		    virtual float eval (float v) { return ::ceilf(v); }
+		    virtual double eval (double v) { return ::ceil(v); }
+		};
+		UnaryCeiler f;
+		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
 	    const TTerm* FUNC_numeric_floor (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		if (dynamic_cast<const IntegerRDFLiteral*>(args[0]) != NULL ||
-		    dynamic_cast<const DecimalRDFLiteral*>(args[0]) != NULL)
-		    return args[0];
-
-		const FloatRDFLiteral* asFloat = dynamic_cast<const FloatRDFLiteral*>(args[0]);
-		if (asFloat != NULL) {
-		    float f = asFloat->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((float)::floor(f)), asFloat->getDatatype());
-		}
-
-		const DoubleRDFLiteral* asDouble = dynamic_cast<const DoubleRDFLiteral*>(args[0]);
-		if (asDouble != NULL) {
-		    double d = asDouble->getValue();
-		    return atomFactory->getRDFLiteral(boost::lexical_cast<std::string>((double)::floor(d)), asDouble->getDatatype());
-		}
-		throw TypeError(args[0]->toString(), "numeric_floor");
+		struct UnaryFloorer : public AtomFactory::UnaryFunctor {
+		    UnaryFloorer () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
+		    virtual int eval (int v) { return v; }
+		    virtual float eval (float v) { return ::floorf(v); }
+		    virtual double eval (double v) { return ::floor(v); }
+		};
+		UnaryFloorer f;
+		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
 	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
@@ -1156,8 +1185,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 
 	    Map::Initializer List[] = {
-		Map::Initializer(TTerm::FUNC_concat, 0, 999, &EXTFUNC_concat),
-		Map::Initializer(TTerm::FUNC_replace, 3, 3, &EXTFUNC_replace),
+		Map::Initializer(TTerm::FUNC_normalize_space, 1, 1, &EXTFUNC_normalize_space),
 
 		Map::Initializer(TTerm::URI_xsd_float, 1, 1, &numericCast),
 		Map::Initializer(TTerm::URI_xsd_double, 1, 1, &numericCast),
@@ -1176,11 +1204,15 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_lang, 1, 1, &FUNC_lang),
 		Map::Initializer(TTerm::FUNC_iri, 1, 1, &FUNC_iri),
 		Map::Initializer(TTerm::FUNC_uri, 1, 1, &FUNC_iri),
+		Map::Initializer(TTerm::FUNC_strdt, 2, 2, &FUNC_strdt),
+		Map::Initializer(TTerm::FUNC_strlang, 2, 2, &FUNC_strlang),
 		Map::Initializer(TTerm::FUNC_bnode, 1, 1, &FUNC_bnode),
 		Map::Initializer(TTerm::FUNC_datatype, 1, 1, &FUNC_datatype),
 		Map::Initializer(TTerm::FUNC_lower_case, 1, 1, &FUNC_lower_case),
 		Map::Initializer(TTerm::FUNC_upper_case, 1, 1, &FUNC_upper_case),
 		Map::Initializer(TTerm::FUNC_string_length, 1, 1, &FUNC_string_length),
+		Map::Initializer(TTerm::FUNC_concat, 1, 999, &FUNC_concat),
+		Map::Initializer(TTerm::FUNC_replace, 3, 3, &FUNC_replace),
 		Map::Initializer(TTerm::FUNC_sameTerm, 2, 2, &FUNC_sameTerm),
 		Map::Initializer(TTerm::FUNC_langMatches, 2, 2, &FUNC_langMatches),
 		Map::Initializer(TTerm::FUNC_numeric_abs, 1, 1, &FUNC_numeric_abs),
@@ -1885,6 +1917,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     /** applyCommonNumeric for unary functions*/
     const TTerm* AtomFactory::applyCommonNumeric (const Expression* arg, UnaryFunctor* func, const RdfDB* db) {
 	const TTerm* v = arg->eval(func->res, this, func->evaluator, db);
+	return applyCommonNumeric(v, func);
+    }
+
+    /** applyCommonNumeric for unary functions*/
+    const TTerm* AtomFactory::applyCommonNumeric (const TTerm* v, UnaryFunctor* func) {
 	if (v == TTerm::Unbound)
 	    throw TypeError("no value returned from argument evaluation", "AtomFactory::applyCommonNumeric");
 	TTerm::e_TYPE dt = v->getTypeOrder();
@@ -2000,6 +2037,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     }
 
     /* </AtomFactory> */
+
+    std::string TTerm::str () const { return toString(); } // for easy invocation
 
     const TTerm* BNode::evalTTerm (const Result* r, BNodeEvaluator* evaluator) const {
 	return evaluator->evaluate(this, r);
@@ -2195,6 +2234,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	express(&ss);
 	return r->get(atomFactory->getRDFLiteral(ss.str()));
     }
+
+    std::string Expression::toString (MediaType mediaType, NamespaceMap* namespaces) const {
+	SPARQLSerializer s(mediaType, namespaces, "  ", SPARQLSerializer::DEBUG_none, "");
+	express(&s);
+	return s.str();
+    }
+    std::string Expression::str () const { return toString(); } // for easy invocation
 
     const TTerm* ExistsExpression::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
 	ResultSet* rowRS = r->makeResultSet(atomFactory);
@@ -2845,6 +2891,8 @@ compared against
 	}
     }
 
+    std::string TriplePattern::str() const { return toString(); } // for easy invocation.
+
     bool TriplePattern::bindVariables (const TriplePattern* tp, bool, ResultSet* rs, const ResultSetIterator& row,
 				       const TTerm* graphVar, const TTerm* graphName, const BasicGraphPattern* data) const {
 	// return
@@ -2970,6 +3018,7 @@ compared against
 	express(&s);
 	return s.str();
     }
+    std::string TableOperation::str () const { return toString(); } // for easy invocation
     std::string BasicGraphPattern::toString (MediaType mediaType, NamespaceMap* namespaces) const {
 	std::stringstream ret;
 	if (mediaType.match("text/trig")) {
