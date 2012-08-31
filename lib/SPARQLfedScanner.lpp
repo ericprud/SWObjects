@@ -122,6 +122,7 @@ IT_ALL		[Aa][Ll][Ll]
 IT_PRINT		[Pp][Rr][Ii][Nn][Tt]
 IT_OPTIONAL		[Oo][Pp][Tt][Ii][Oo][Nn][Aa][Ll]
 IT_SERVICE		[Ss][Ee][Rr][Vv][Ii][Cc][Ee]
+IT_SADI		[Ss][Aa][Dd][Ii]
 IT_BIND		[Bb][Ii][Nn][Dd]
 IT_UNDEF		[Uu][Nn][Dd][Ee][Ff]
 GT_MINUS_MINUS		"--"
@@ -322,6 +323,7 @@ LINEFEED		(\r\n|\r|\n)
 {IT_PRINT}		{return token::IT_PRINT;}
 {IT_OPTIONAL}		{return token::IT_OPTIONAL;}
 {IT_SERVICE}		{return token::IT_SERVICE;}
+{IT_SADI}		{return token::IT_SADI;}
 {IT_BIND}		{return token::IT_BIND;}
 {IT_UNDEF}		{return token::IT_UNDEF;}
 {GT_MINUS_MINUS}		{return token::GT_MINUS_MINUS;}

@@ -2351,6 +2351,7 @@ public:
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, m_Silence, atomFactory, lexicalCompare); }
 };
+
 class OptionalGraphPattern : public TableOperationOnOperation {
 protected:
     ProductionVector<const Expression*> m_Expressions;
@@ -2718,6 +2719,30 @@ public:
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_construct; }
 };
+class SADIGraphPattern : public TableOperation {
+protected:
+    const TTerm* m_VarOrIRIref;
+    e_Silence m_Silence;
+    AtomFactory* atomFactory;
+    const TableOperation* m_ConstructTemplate;
+    WhereClause* m_WhereClause;
+    SolutionModifier* m_SolutionModifier;
+    DefaultGraphPattern* resultGraph;
+
+public:
+    SADIGraphPattern(const TTerm* p_TTerm, e_Silence p_Silence,
+		     const TableOperation* p_ConstructTemplate, WhereClause* p_WhereClause);
+    ~SADIGraphPattern () {  }
+    // WhereClause* getWhereClause () { return m_WhereClause; }
+    std::string str();
+    virtual void express (Expressor* p_expressor) const {  }
+    virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
+    virtual bool operator== (const TableOperation&) const { return false; }
+    virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual TableOperation* getDNF() const;
+};
+
 class Describe : public LoadingOperation {
 private:
     VarSet* m_VarSet;

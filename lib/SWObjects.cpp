@@ -2849,6 +2849,47 @@ compared against
 	// }
     }
 
+
+    SADIGraphPattern::SADIGraphPattern (const TTerm* p_TTerm, e_Silence p_Silence,
+					const TableOperation* p_ConstructTemplate, WhereClause* p_WhereClause) : 
+	m_VarOrIRIref(p_TTerm), m_Silence(p_Silence), atomFactory(atomFactory),
+	m_ConstructTemplate(p_ConstructTemplate),
+	m_WhereClause(p_WhereClause)
+    { w3c_sw_LINEN << str(); }
+    std::string SADIGraphPattern::str () {
+	std::stringstream ss;
+	ss << "SADIGraphPattern:\n";
+	{
+	    SPARQLSerializer s;
+	    m_VarOrIRIref->express(&s);
+	    ss << "TTerm: " << s.str();
+	}
+	{
+	    SPARQLSerializer s;
+	    m_ConstructTemplate->express(&s);
+	    ss << "m_ConstructTemplate: " << s.str();
+	}
+	{
+	    SPARQLSerializer s;
+	    m_WhereClause->express(&s);
+	    ss << "m_WhereClause: " << s.str();
+	}
+	return ss.str();
+    }
+    void SADIGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
+	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
+    }
+    void SADIGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
+    }
+    void SADIGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	w3c_sw_NEED_IMPL("@@SADIGraphPattern::delete not yet written");
+    }
+    TableOperation* SADIGraphPattern::getDNF () const {
+	w3c_sw_NEED_IMPL("@@SADIGraphPattern::getDNF not yet written");
+    }
+
+
     void OptionalGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);

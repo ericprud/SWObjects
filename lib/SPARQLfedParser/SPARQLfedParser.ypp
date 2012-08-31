@@ -317,7 +317,7 @@ public:
 %token			__EOF__	     0	"end of file"
 
 /* Language tokens */
-%token IT_DELETE IT_INSERT IT_DATA IT_GRAPH IT_SERVICE IT_LOAD IT_INTO IT_CLEAR
+%token IT_DELETE IT_INSERT IT_DATA IT_GRAPH IT_SERVICE IT_SADI IT_LOAD IT_INTO IT_CLEAR
        IT_CREATE IT_SILENT IT_DROP IT_BASE IT_PREFIX IT_SELECT IT_DISTINCT
        IT_REDUCED GT_TIMES IT_CONSTRUCT IT_DESCRIBE IT_FROM IT_NAMED IT_ORDER
        IT_BY IT_ASC IT_DESC IT_LIMIT IT_OFFSET IT_VALUES IT_MEMBERS IT_STARTS
@@ -1592,6 +1592,7 @@ GraphPatternNotTriples:
   | MinusGraphPattern	
   | GraphGraphPattern	
   | ServiceGraphPattern	
+  | SADIinvocation	
   | Filter	
   | Bind	
   | InlineData	{
@@ -1654,6 +1655,33 @@ ServiceGraphPattern:
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
 	  driver.curGraphName = $<p_TTerm>4;
       }
+;
+
+SADIinvocation:
+    IT_SADI {
+	driver.restoreFilter(NULL);
+	$<p_TableOperation>$ = driver.curOp;
+	driver.curOp = NULL;
+      } {
+	  $<p_ParserFilter>$ = driver.saveFilter();
+      } {
+	  $<p_TTerm>$ = driver.curGraphName;
+	  driver.curGraphName = NULL;
+      } _QIT_SILENT_E_Opt VarOrIri IT_FROM QuadPattern {
+	  driver.curOp = NULL;
+      } WhereClause	{
+	  /*
+	    serviceID,
+	    from,
+	    e_Silence
+	    where
+	   */
+	  driver.lastWhereClause = $10;
+	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.curOp = driver.makeConjunction
+	      ($<p_TableOperation>2, new SADIGraphPattern($6, $5, $8, $10));
+	  driver.curGraphName = $<p_TTerm>4;
+    }
 ;
 
 Bind:
