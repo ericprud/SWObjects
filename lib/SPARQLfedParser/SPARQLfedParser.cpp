@@ -1990,10 +1990,8 @@ namespace w3c_sw {
 	   */
 	  driver.lastWhereClause = (yysemantic_stack_[(10) - (10)].p_WhereClause);
 	  driver.restoreFilter((yysemantic_stack_[(10) - (3)].p_ParserFilter));
-	  const SADIGraphPattern* sp = new SADIGraphPattern((yysemantic_stack_[(10) - (6)].p_TTerm), (yysemantic_stack_[(10) - (5)].p_Silence), (yysemantic_stack_[(10) - (8)].p_TableOperation), (yysemantic_stack_[(10) - (10)].p_WhereClause));
 	  driver.curOp = driver.makeConjunction
-	      ((yysemantic_stack_[(10) - (2)].p_TableOperation), sp);
-	  // new SADIGraphPattern((yysemantic_stack_[(10) - (6)].p_TTerm), (yysemantic_stack_[(10) - (5)].p_Silence), (yysemantic_stack_[(10) - (8)].p_TableOperation), (yysemantic_stack_[(10) - (10)].p_WhereClause))
+	      ((yysemantic_stack_[(10) - (2)].p_TableOperation), new SADIGraphPattern((yysemantic_stack_[(10) - (6)].p_TTerm), (yysemantic_stack_[(10) - (5)].p_Silence), (yysemantic_stack_[(10) - (8)].p_TableOperation), (yysemantic_stack_[(10) - (10)].p_WhereClause)));
 	  driver.curGraphName = (yysemantic_stack_[(10) - (4)].p_TTerm);
     }
     break;
