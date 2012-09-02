@@ -275,6 +275,29 @@ void validate (boost::any&, const std::vector<std::string>& values, serveURI*, i
     ServerURI = s;
 }
 
+/* Set Query to an RDFLiteral when parsed. */
+struct sadiConstruct {};
+void validate (boost::any&, const std::vector<std::string>& values, sadiConstruct*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    if (TheServer.engine.sadiOp != NULL) {
+	sw::SPARQLSerializer ss;
+	TheServer.engine.sadiOp->express(&ss);
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("SADI CONSTRUCT: \"").
+			       append(s).append("\" is redundant against ").
+			       append(ss.str()));
+    }
+    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
+    sw::Operation* op = TheServer.engine.sparqlParser.parse(istr);
+    sw::Construct* c = dynamic_cast<sw::Construct*>(op);
+    if (c == NULL)
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("SADI argument \"").
+			       append(s).append("\" is not a CONSTRUCT."));
+    TheServer.engine.sadiOp = c;
+}
+
 #if REGEX_LIB != SWOb_DISABLED
 /* Add PathMaps from the form "s{/some/URI/path}{relative/filesystem/path}" */
 struct pathmapArg {};
@@ -785,6 +808,13 @@ int main(int ac, char* av[])
         hidden.add_options()
             ("exec,e", po::value<queryString>(), "queries")
             ("serve", po::value<serveURI>(), "serve URI")
+
+	    /** simple SADI CONSTRUCT service
+	     * test with:
+	     *   server invocation: --SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> "X" } WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --serve http://localhost:8088/SADI
+	     *   client call: curl -X POST -H 'Content-Type: text/turtle' http://localhost:8088/SADI -d '<s1> <tag:eric@w3.org/2012/p1> <ooo> .'
+	     */
+            ("SADI", po::value<sadiConstruct>(), "SADI server (instead of default SPARQL server)")
 #if REGEX_LIB != SWOb_DISABLED
             ("pathmap", po::value<pathmapArg>(), "path map in the form \"s{/some/URI/path}{relative/filesystem/path}\"")
 #endif /* REGEX_LIB != SWOb_DISABLED */

@@ -16,6 +16,7 @@ namespace w3c_sw {
 	std::string interfacePath;
 	size_t exploreTripleCountLimit;
 	size_t exploreGraphCountLimit;
+	const Construct* sadiOp;
 
 	static std::string CSS_common;
 	static std::string CSS_Results;
@@ -25,12 +26,17 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_defn;
 
     public:
-	SimpleInterface (engine_type& engine, controller_type* controller, std::string servicePath, std::string interfacePath) : 
+	SimpleInterface (engine_type& engine, controller_type* controller, std::string servicePath,
+			 std::string interfacePath, const Construct* sadiOp = NULL) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
 	    engine(engine), controller(controller), servicePath(servicePath), interfacePath(interfacePath),
 	    // hard-code explore*CountLimit
-	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
+	    exploreTripleCountLimit(100), exploreGraphCountLimit(10),
+	    sadiOp(sadiOp)
 	{  }
+	~SimpleInterface () {
+	    delete sadiOp; // usually NULL
+	}
 
     protected:
 
@@ -66,7 +72,8 @@ namespace w3c_sw {
 			parm = req.parms.find("query");
 			if (parm != req.parms.end())
 			    query = parm->second;
-		    } else if (req.getMethod() == "POST" && req.getContentType().compare(0, 24, "application/sparql-query") == 0)
+		    } else if (req.getMethod() == "POST" &&
+			       (engine.sadiOp != NULL || req.getContentType().compare(0, 24, "application/sparql-query") == 0))
 			query = req.getBody();
 		    if (query == interfacePath && path != servicePath) {
 			rep.status = webserver::reply::ok;
@@ -97,199 +104,227 @@ namespace w3c_sw {
 			    engine.done = true;
 			    controller->stop();
 			} else {
-			    IStreamContext istr(query, IStreamContext::STRING);
+			    IStreamContext istr(query, IStreamContext::STRING, req.getContentType().c_str());
 			    try {
-				Operation* op = engine.sparqlParser.parse(istr);
-				if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
-				    head(sout, "Query Error");
-
-				    sout << "    <p>Query</p>\n"
-					"    <pre>" << XMLSerializer::escapeCharData(query) << "</pre>\n"
-					"    <p>is screwed up.</p>\n"
-					 << std::endl;
-				    std::cerr << "400: " << query << std::endl;
-				    rep.status = webserver::reply::bad_request;
-
-				    foot(sout);
-				} else {
-				    parm = req.parms.find("media");
-				    bool humanReader = (parm != req.parms.end()
-							&& (parm->second == "html"
-							    || parm->second == "edit"
-							    || parm->second == "tablesorter"));
-
+				if (engine.sadiOp != NULL) {
+				    // RdfDB execDB(engine.db);
+				    // BasicGraphPattern* sadiInput = engine.db.setTarget(engine.atomFactory.getURI("sadiInput"));
+				    engine.loadDataOrResults(sw::DefaultGraph, "sadiInput",
+							     engine.baseURI, istr, engine.resultSet, &engine.db);
 				    ResultSet rs(&engine.atomFactory);
 				    RdfDB constructed; // For operations which create a new database.
-				    rs.setRdfDB(dynamic_cast<Construct*>(op) != NULL && !engine.inPlace ? &constructed : &engine.db);
+				    rs.setRdfDB(&constructed);
 				    std::string language;
 				    std::string newQuery(query);
-
-				    try {
-					queryLoadList.loadAll();
-					if (path != servicePath)
-					    engine.db.setTarget(engine.atomFactory.getURI(path));
-					engine.executeQuery(op, rs, language, newQuery);
-					if (humanReader &&
-					    (dynamic_cast<GraphChange*>(op) != NULL || 
-					     dynamic_cast<OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
-					    /** 
-					     * For a nice human interface, we can do
-					     * another query to report the resulting
-					     * database.
-					     */
-					    delete op;
-					    rs.clear();
-					    op = engine.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
-					    op->execute(&engine.db, &rs);
+				    queryLoadList.loadAll();
+				    engine.executeQuery(engine.sadiOp, rs, language, newQuery);
+				    // engine.db.setTarget(NULL);
+					XMLSerializer xml("  ");
+					    rep.status = webserver::reply::ok;
+					    rep.setContentType(
+							       rs.resultType == ResultSet::RESULT_Graphs
+							       ? "text/turtle; charset=UTF-8"
+							       : "application/sparql-results+xml; charset=UTF-8");
+					    rs.toXml(&xml);
+					    sout << xml.str();
+					++engine.served;
+					if (engine.runOnce) {
+					    engine.done = true;
+					    controller->stop();
 					}
-					engine.db.setTarget(NULL);
-					delete op;
-				    } catch (ParserException& ex) {
-					delete op;
-					std::cerr << ex.what() << std::endl;
-					throw WebHandler::SimpleMessageException(ex);
-				    } catch (std::string ex) {
-					delete op;
-					std::cerr << ex << std::endl;
-					throw WebHandler::SimpleMessageException(XMLSerializer::escapeCharData(ex));
-				    }
-				    const VariableVector cols = rs.getOrderedVars();
+				} else {
+				    Operation* op = engine.sparqlParser.parse(istr);
+				    if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
+					head(sout, "Query Error");
 
-				    XMLSerializer xml("  ");
-				    if (humanReader) {
-					std::string headStr =
-					    "    <style type=\"text/css\" media=\"screen\">\n"
-					    "/*<![CDATA[*/\n" + CSS_common
-					    ;
-					if (parm->second == "html"
-					    || parm->second == "edit")
-					    headStr += CSS_Results;
-					headStr +=
-					    "/*]]>*/\n"
-					    "    </style>\n"
-					    "\n"
-					    ;
-					if (parm->second == "tablesorter")
-					    headStr += Javascript_TableSorter_remote;
-					headStr +=
-					    "    <script language=\"javascript\" type=\"text/javascript\">\n"
-					    "<!--\n"
-					    ;
-					if (parm->second == "tablesorter")
-					    headStr +=
-						"    $(function() {\n"
+					sout << "    <p>Query</p>\n"
+					    "    <pre>" << XMLSerializer::escapeCharData(query) << "</pre>\n"
+					    "    <p>is screwed up.</p>\n"
+					     << std::endl;
+					std::cerr << "400: " << query << std::endl;
+					rep.status = webserver::reply::bad_request;
+
+					foot(sout);
+				    } else {
+					parm = req.parms.find("media");
+					bool humanReader = (parm != req.parms.end()
+							    && (parm->second == "html"
+								|| parm->second == "edit"
+								|| parm->second == "tablesorter"));
+
+					ResultSet rs(&engine.atomFactory);
+					RdfDB constructed; // For operations which create a new database.
+					rs.setRdfDB(dynamic_cast<Construct*>(op) != NULL && !engine.inPlace ? &constructed : &engine.db);
+					std::string language;
+					std::string newQuery(query);
+
+					try {
+					    queryLoadList.loadAll();
+					    if (path != servicePath)
+						engine.db.setTarget(engine.atomFactory.getURI(path));
+					    engine.executeQuery(op, rs, language, newQuery);
+					    if (humanReader &&
+						(dynamic_cast<GraphChange*>(op) != NULL || 
+						 dynamic_cast<OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
+						/** 
+						 * For a nice human interface, we can do
+						 * another query to report the resulting
+						 * database.
+						 */
+						delete op;
+						rs.clear();
+						op = engine.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
+						op->execute(&engine.db, &rs);
+					    }
+					    engine.db.setTarget(NULL);
+					    delete op;
+					} catch (ParserException& ex) {
+					    delete op;
+					    std::cerr << ex.what() << std::endl;
+					    throw WebHandler::SimpleMessageException(ex);
+					} catch (std::string ex) {
+					    delete op;
+					    std::cerr << ex << std::endl;
+					    throw WebHandler::SimpleMessageException(XMLSerializer::escapeCharData(ex));
+					}
+					const VariableVector cols = rs.getOrderedVars();
+
+					XMLSerializer xml("  ");
+					if (humanReader) {
+					    std::string headStr =
+						"    <style type=\"text/css\" media=\"screen\">\n"
+						"/*<![CDATA[*/\n" + CSS_common
 						;
-					else
+					    if (parm->second == "html"
+						|| parm->second == "edit")
+						headStr += CSS_Results;
 					    headStr +=
-						"    window.onload=function(){\n"
+						"/*]]>*/\n"
+						"    </style>\n"
+						"\n"
 						;
-					headStr += Javascript_ToggleDisplay_init;
+					    if (parm->second == "tablesorter")
+						headStr += Javascript_TableSorter_remote;
+					    headStr +=
+						"    <script language=\"javascript\" type=\"text/javascript\">\n"
+						"<!--\n"
+						;
+					    if (parm->second == "tablesorter")
+						headStr +=
+						    "    $(function() {\n"
+						    ;
+					    else
+						headStr +=
+						    "    window.onload=function(){\n"
+						    ;
+					    headStr += Javascript_ToggleDisplay_init;
 				
-					if (parm->second == "tablesorter")
-					    headStr += Javascript_TableSorter_init;
-					if (parm->second == "tablesorter")
-					    headStr +=
-						"    });\n"
+					    if (parm->second == "tablesorter")
+						headStr += Javascript_TableSorter_init;
+					    if (parm->second == "tablesorter")
+						headStr +=
+						    "    });\n"
+						    ;
+					    else
+						headStr +=
+						    "    };\n"
+						    ;
+					    headStr += Javascript_ToggleDisplay_defn +
+						"-->\n"
+						"    </script>\n"
 						;
-					else
-					    headStr +=
-						"    };\n"
-						;
-					headStr += Javascript_ToggleDisplay_defn +
-					    "-->\n"
-					    "    </script>\n"
-					    ;
-					head(sout, "SPARQL Query Results", headStr);
-					/*
-					  <div id="requery">
-					  <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
-					  ?s ?p ?o
-					  }</pre>
-					  <form action="/as/df">
-					  <p>
-					  <input id="query" name="query" type="hidden" value=""/>
-					  <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
-					  </p>
-					  </form>
-					  </div>
-					*/
-					/** construct XHTML body with query and results. */
-					xml.open("div"); {
-					    xml.attribute("id", "requery");
-					    XMLSerializer::Attributes preAttrs;
-					    preAttrs["id"] = "edit";
-					    preAttrs["contenteditable"] = "true";
-					    preAttrs["style"] = "display:block; float:left;";
-					    xml.leaf("pre", newQuery, preAttrs);
-					    xml.open("form"); {
-						xml.attribute("action", path);
-						xml.attribute("method", "get");
-						xml.open("p"); {
-						    XMLSerializer::Attributes queryAttrs;
-						    queryAttrs["type"] = "hidden";
-						    queryAttrs["value"] = "";
-						    queryAttrs["id"] = "query";
-						    queryAttrs["name"] = "query";
-						    xml.empty("input", queryAttrs);
+					    head(sout, "SPARQL Query Results", headStr);
+					    /*
+					      <div id="requery">
+					      <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
+					      ?s ?p ?o
+					      }</pre>
+					      <form action="/as/df">
+					      <p>
+					      <input id="query" name="query" type="hidden" value=""/>
+					      <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
+					      </p>
+					      </form>
+					      </div>
+					    */
+					    /** construct XHTML body with query and results. */
+					    xml.open("div"); {
+						xml.attribute("id", "requery");
+						XMLSerializer::Attributes preAttrs;
+						preAttrs["id"] = "edit";
+						preAttrs["contenteditable"] = "true";
+						preAttrs["style"] = "display:block; float:left;";
+						xml.leaf("pre", newQuery, preAttrs);
+						xml.open("form"); {
+						    xml.attribute("action", path);
+						    xml.attribute("method", "get");
+						    xml.open("p"); {
+							XMLSerializer::Attributes queryAttrs;
+							queryAttrs["type"] = "hidden";
+							queryAttrs["value"] = "";
+							queryAttrs["id"] = "query";
+							queryAttrs["name"] = "query";
+							xml.empty("input", queryAttrs);
 
-						    XMLSerializer::Attributes mediaAttrs;
-						    mediaAttrs["type"] = "hidden";
-						    mediaAttrs["value"] = "edit";
-						    mediaAttrs["name"] = "media";
-						    xml.empty("input", mediaAttrs);
+							XMLSerializer::Attributes mediaAttrs;
+							mediaAttrs["type"] = "hidden";
+							mediaAttrs["value"] = "edit";
+							mediaAttrs["name"] = "media";
+							xml.empty("input", mediaAttrs);
 
-						    XMLSerializer::Attributes submitAttrs;
-						    submitAttrs["type"] = "submit";
-						    submitAttrs["value"] = "re-query";
-						    submitAttrs["onclick"] = "copy('edit', 'query')";
-						    submitAttrs["style"] = "margin: 2em;";
-						    xml.empty("input", submitAttrs);
-						} xml.close(); // p
-					    } xml.close(); // form
-					} xml.close(); // div
+							XMLSerializer::Attributes submitAttrs;
+							submitAttrs["type"] = "submit";
+							submitAttrs["value"] = "re-query";
+							submitAttrs["onclick"] = "copy('edit', 'query')";
+							submitAttrs["style"] = "margin: 2em;";
+							xml.empty("input", submitAttrs);
+						    } xml.close(); // p
+						} xml.close(); // form
+					    } xml.close(); // div
 
-					XMLSerializer::Attributes resultsAttrs;
-					resultsAttrs["id"] = "results";
-					resultsAttrs["class"] = "tablesorter";
-					rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : std::string("") + "/" + path);
+					    XMLSerializer::Attributes resultsAttrs;
+					    resultsAttrs["id"] = "results";
+					    resultsAttrs["class"] = "tablesorter";
+					    rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : std::string("") + "/" + path);
 
-					/** construct reply from headers and XHTML body */
-					rep.status = webserver::reply::ok;
-					rep.setContentType(
-						      "text/html; charset=UTF-8");
-					sout << xml.str();
-					foot(sout);
+					    /** construct reply from headers and XHTML body */
+					    rep.status = webserver::reply::ok;
+					    rep.setContentType(
+							       "text/html; charset=UTF-8");
+					    sout << xml.str();
+					    foot(sout);
 
-				    } else if (parm != req.parms.end() && parm->second == "textplain") {
-					head(sout, "SPARQL Query Results");
+					} else if (parm != req.parms.end() && parm->second == "textplain") {
+					    head(sout, "SPARQL Query Results");
 
-					// cute lexical representation of xml nesting:
-					xml.leaf("pre", newQuery);
-					rep.status = webserver::reply::ok;
-					rep.setContentType(
-						      "text/html; charset=UTF-8");
+					    // cute lexical representation of xml nesting:
+					    xml.leaf("pre", newQuery);
+					    rep.status = webserver::reply::ok;
+					    rep.setContentType(
+							       "text/html; charset=UTF-8");
 
-					XMLSerializer rsSerializer("  ");
-					rs.toXml(&rsSerializer);
-					std::string source(rsSerializer.str());
-					xml.leaf("pre", rsSerializer.str());
+					    XMLSerializer rsSerializer("  ");
+					    rs.toXml(&rsSerializer);
+					    std::string source(rsSerializer.str());
+					    xml.leaf("pre", rsSerializer.str());
 
-					sout << xml.str();
-					foot(sout);
-				    } else { /* !htmlResults */
-					rep.status = webserver::reply::ok;
-					rep.setContentType(
-						      rs.resultType == ResultSet::RESULT_Graphs
-						      ? "text/turtle; charset=UTF-8"
-						      : "application/sparql-results+xml; charset=UTF-8");
-					rs.toXml(&xml);
-					sout << xml.str();
-				    } /* !htmlResults */
+					    sout << xml.str();
+					    foot(sout);
+					} else { /* !htmlResults */
+					    rep.status = webserver::reply::ok;
+					    rep.setContentType(
+							       rs.resultType == ResultSet::RESULT_Graphs
+							       ? "text/turtle; charset=UTF-8"
+							       : "application/sparql-results+xml; charset=UTF-8");
+					    rs.toXml(&xml);
+					    sout << xml.str();
+					} /* !htmlResults */
 
-				    ++engine.served;
-				    if (engine.runOnce) {
-					engine.done = true;
-					controller->stop();
+					++engine.served;
+					if (engine.runOnce) {
+					    engine.done = true;
+					    controller->stop();
+					}
 				    }
 				}
 			    } catch (ParserException& ex) {
@@ -801,6 +836,7 @@ struct SimpleEngine {
     W3C_SW_WEBAGENT<console_auth_prompter> webClient;
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
     const TTerm* baseURI;
+    const Construct* sadiOp;
     std::string baseUriMessage () {
 	return (baseURI == NULL)
 	    ? std::string(" with no base URI")
@@ -829,6 +865,7 @@ struct SimpleEngine {
 	  webClient_authPrompter(),
 	  webClient(&webClient_authPrompter),
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
+	  sadiOp(NULL),
 	  noExec(false)
     {  }
 
