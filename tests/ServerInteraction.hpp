@@ -134,23 +134,22 @@ namespace w3c_sw {
 
 
     /** ClientServerInteraction - client interactions with the server built into
-     * the bin/sparql binary.
+     *  the bin/sparql binary.
      */
     struct ClientServerInteraction : SPARQLServerInteraction {
 	std::string clientS;
 
-	ClientServerInteraction (std::string serverParams,
-				 std::string clientParams)
+	ClientServerInteraction (std::string serverParams)
 	    : SPARQLServerInteraction(serverParams)
-	{
+	{  }
+
+	void invoke (std::string clientCmd) {
+	    // w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
 	    char line[80];
 
 	    /* Start the client and demand at least one line of output.
 	     */
-	    std::string clientCmd(exe + " --service " + serverURL +
-				  " " + clientParams);
-	    // w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
-	    FILE *clientPipe = popen(clientCmd.c_str(), "r");
+	    FILE *clientPipe = ::popen(clientCmd.c_str(), "r");
 	    for (int tryNo = 0; tryNo < 2; ++tryNo)
 		if (fgets(line, sizeof line, clientPipe) == NULL) {
 		    if (errno != EINTR)
@@ -168,6 +167,17 @@ namespace w3c_sw {
 
     };
 
+    /** SPARQLClientServerInteraction - build a sparql client invocation string
+     *  from the parameters used in the server invocation.
+     */
+    struct SPARQLClientServerInteraction : ClientServerInteraction {
+	SPARQLClientServerInteraction (std::string serverParams,
+				       std::string clientParams)
+	    : ClientServerInteraction(serverParams)
+	{
+	    invoke(exe + " --service " + serverURL + " " + clientParams);
+	}
+    };
 
 } // namespace w3c_sw
 

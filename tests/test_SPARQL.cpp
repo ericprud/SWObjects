@@ -493,13 +493,13 @@ BOOST_AUTO_TEST_CASE( empty_construct ) {
 }
 
 
-struct ServerTableQuery : w3c_sw::ClientServerInteraction {
+struct ServerTableQuery : w3c_sw::SPARQLClientServerInteraction {
     w3c_sw::ResultSet expected, got;
 
     ServerTableQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::ClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
+	: w3c_sw::SPARQLClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
     {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
@@ -617,13 +617,13 @@ BOOST_AUTO_TEST_CASE( D_post_STOP ) {
 
 #include "TrigSParser/TrigSParser.hpp"
 
-struct ServerGraphQuery : w3c_sw::ClientServerInteraction {
+struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
     w3c_sw::RdfDB expected, got;
 
     ServerGraphQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::ClientServerInteraction(serverParams, clientParams)
+	: w3c_sw::SPARQLClientServerInteraction(serverParams, clientParams)
     {
 	{
 	    std::stringstream tss(clientS);
