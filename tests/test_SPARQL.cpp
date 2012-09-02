@@ -8,11 +8,11 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
+#include "ServerInteraction.hpp"
 
 #define BOOST_TEST_MODULE SPARQL
 #include <boost/test/unit_test.hpp>
 w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:3"
-#include <stdio.h>
 
 w3c_sw::AtomFactory F;
 
@@ -334,6 +334,7 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 		      "false\n");
 }
 
+#ifdef FIXED_CORRUPTION_FROM_DL_LOAD
 BOOST_AUTO_TEST_CASE( function_library ) {
     ExecResults invocation("../bin/sparql --function-library ../examples/functionExtension.so"
 			   " -d \"data:text/csv,x,y\n<foo>,\\\"bar\\\"\""
@@ -350,6 +351,7 @@ BOOST_AUTO_TEST_CASE( function_library ) {
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
+#endif /* FIXED_CORRUPTION_FROM_DL_LOAD */
 
 // e.g. PARSE_RESULTS("SPARQL/D.srt", Doutput)
 #define PARSE_RESULTS(TEST, EXPECT) \
@@ -490,157 +492,14 @@ BOOST_AUTO_TEST_CASE( empty_construct ) {
 		      "}\n");
 }
 
-struct ServerInteraction {
-    std::string exe, path;
-    std::string hostIP;
-    int port;
-    std::string serverS, serverURL;
-    FILE *serverPipe;
 
-    ServerInteraction (std::string serverParams)
-	: exe("../bin/sparql"), path("/SPARQL"), hostIP("127.0.0.1"), 
-	  port(firstOpenPort("127.0.0.1", 31533, 32767))
-    {
-	{
-	    std::stringstream ss;
-	    ss << "http://localhost:" << port << path;
-	    serverURL = ss.str();
-	}
-	char line[80];
-
-	/* Start the server and wait for it to listen.
-	 */
-	std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
-			      exe + " " + serverParams + 
-			      " --serve " + serverURL);
-	// w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
-	serverPipe = popen(serverCmd.c_str(), "r");
-	if (serverPipe == NULL)
-	    throw std::string("popen") + strerror(errno);
-	if (fgets(line, sizeof line, serverPipe) == NULL ||
-	    strncmp("Working directory:", line, 18))
-	    throw std::string("server didn't print a status line");
-	serverS += line;
-	waitConnect(hostIP, port);
-    }
-
-    static int firstOpenPort (std::string ip, int start, int end) {
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	sockaddr_in remote;
-	remote.sin_family = AF_INET;
-	remote.sin_addr.s_addr = inet_addr(ip.c_str());
-
-	for (int port = start; port <= end; ++port) {
-	    remote.sin_port = htons(port);
-	    int ret = bind(sockfd, (struct sockaddr *) &remote, sizeof(remote));
-	    // w3c_sw_LINEN << " bind(" << port << ") = " << ret << " : " << strerror(errno) << "\n";
-	    if (ret != -1) {
-		close (sockfd);
-		return port;
-	    }
-	}
-	std::stringstream ss;
-	ss << "Unable to find an available port between " << start << " and " << end << ".";
-	throw ss.str();
-    }
-
-    /** waitConnect - busywait trying to connect to a port.
-     */
-    static void waitConnect (std::string ip, int port) {
-	sockaddr_in remote;
-	remote.sin_family = AF_INET;
-	remote.sin_addr.s_addr = inet_addr(ip.c_str());
-	remote.sin_port = htons(port);
-
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	assert(sockfd != -1);
-
-	for (;;) {
-	    // assert(sockfd != -1);
-	    if (connect(sockfd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
-	    	// w3c_sw_LINEN << " still can't connect: " << strerror(errno) << "\n";
-	    } else {
-	    	// w3c_sw_LINEN << "Connected after " << (finish - start) << " seconds.\n";
-	    	close(sockfd);
-	    	break;
-	    }
-	}
-    }
-
-    /** waitLsof - busywait grepping for port in lsof.
-     * (An alternative to waitLsof.)
-     */
-    static void waitLsof (int port) {
-	std::stringstream ss;
-	ss << "lsof -nP -iTCP -sTCP:LISTEN | grep " << port;
-	char buf[80];
-	for (;;) {
-	    struct sigaction child, old;
-	    child.sa_handler = SIG_IGN;
-	    sigaction(SIGCHLD, &child, &old);
-	    FILE* readyPipe = popen(ss.str().c_str(), "r");
-	    if (fgets(buf, sizeof buf, readyPipe) != NULL)
-		break;
-	    else
-		w3c_sw_LINEN << "not yet\n";
-	    sigaction(SIGCHLD, &old, NULL);
-	    if (pclose(readyPipe) == -1 && errno != ECHILD)
-		throw std::string("pclose(readyPipe)") + strerror(errno);
-	}
-	w3c_sw_LINEN << "running\n";
-    }
-
-    /** readToExhaustion - read and close an iostream.
-     */
-    static void readToExhaustion (FILE* stream, std::string& str, const char* title) {
-	char line[80];
-	while (fgets(line, sizeof line, stream) != NULL)
-	    str += line;
-	if (pclose(stream) == -1 && errno != ECHILD)
-	    throw std::string() + "pclose(" + title +")" + strerror(errno);
-    }
-
-};
-
-struct ClientServerInteraction : ServerInteraction {
-    std::string clientS;
-
-    ClientServerInteraction (std::string serverParams,
-			     std::string clientParams)
-	: ServerInteraction(serverParams)
-    {
-	char line[80];
-
-	/* Start the client and demand at least one line of output.
-	 */
-	std::string clientCmd(exe + " --service " + serverURL +
-			      " " + clientParams);
-	// w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
-	FILE *clientPipe = popen(clientCmd.c_str(), "r");
-	for (int tryNo = 0; tryNo < 2; ++tryNo)
-	    if (fgets(line, sizeof line, clientPipe) == NULL) {
-		if (errno != EINTR)
-		    throw std::string("no response from client process: ") + strerror(errno);
-	    } else {
-		clientS += line;
-		break;
-	    }
-
-	/* Read and close the client and server pipes.
-	 */
-	readToExhaustion(clientPipe, clientS, "client pipe");
-	readToExhaustion(serverPipe, serverS, "server pipe");
-    }
-
-};
-
-struct ServerTableQuery : ClientServerInteraction {
+struct ServerTableQuery : w3c_sw::ClientServerInteraction {
     w3c_sw::ResultSet expected, got;
 
     ServerTableQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: ClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
+	: w3c_sw::ClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
     {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
@@ -679,12 +538,12 @@ BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
 }
 
 
-struct HttpServerInteraction : ServerInteraction {
+struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
     int clientfd;
 
     HttpServerInteraction (std::string serverParams,
 			   std::string query)
-	: ServerInteraction (serverParams)
+	: w3c_sw::SPARQLServerInteraction (serverParams)
     {
 	sockaddr_in remote;
 	remote.sin_family = AF_INET;
@@ -758,13 +617,13 @@ BOOST_AUTO_TEST_CASE( D_post_STOP ) {
 
 #include "TrigSParser/TrigSParser.hpp"
 
-struct ServerGraphQuery : ClientServerInteraction {
+struct ServerGraphQuery : w3c_sw::ClientServerInteraction {
     w3c_sw::RdfDB expected, got;
 
     ServerGraphQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: ClientServerInteraction (serverParams, clientParams)
+	: w3c_sw::ClientServerInteraction(serverParams, clientParams)
     {
 	{
 	    std::stringstream tss(clientS);
