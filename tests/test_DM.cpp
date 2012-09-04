@@ -318,6 +318,8 @@ init_unit_test_suite (int argc, char* argv[])  {
 	    ;
 	else if (std::string(argv[i]) == "--keep")
 	    Keep = true;
+	else if (std::string(argv[i]) == "--log")
+	    ++i;	// skip args supplied to w3c_sw_PREPARE_TEST_LOGGER("--log")
 	else if (std::string(argv[i]).substr(0, 2).compare("--"))
 	    connections.add(argv[i]);
 
