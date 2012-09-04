@@ -45,7 +45,7 @@ namespace w3c_sw {
 #else /* !REGEX_LIB == SWOb_BOOST */
 				 std::string url
 #endif /* !REGEX_LIB == SWOb_BOOST */
-				     , std::string urlParms, std::string body
+				     , std::string urlParms, std::string body, const char* reqMediaType = "application/x-www-form-urlencoded"
 				     ) = 0;
 
 	virtual boost::shared_ptr<IStreamContext> get (
@@ -111,6 +111,23 @@ namespace w3c_sw {
 				 url
 #endif /* !REGEX_LIB == SWOb_BOOST */
 				 , "", p.str().c_str());
+	}
+
+	virtual boost::shared_ptr<IStreamContext> post (
+#if REGEX_LIB == SWOb_DISABLED
+				 std::string host, std::string port, std::string path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 const char* url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+				 , const char* mediaType, const char* payload
+				 ) {
+	    return _execute("POST",
+#if REGEX_LIB == SWOb_DISABLED
+				 host, port, path
+#else /* !REGEX_LIB == SWOb_BOOST */
+				 url
+#endif /* !REGEX_LIB == SWOb_BOOST */
+			    , "", payload, mediaType);
 	}
 
 	static std::string urlEncode (std::string encodeMe) {

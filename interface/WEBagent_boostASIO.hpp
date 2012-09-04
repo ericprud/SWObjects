@@ -70,7 +70,7 @@ namespace w3c_sw {
 #else /* !REGEX_LIB == SWOb_BOOST */
 				 std::string url
 #endif /* !REGEX_LIB == SWOb_BOOST */
-				 , std::string urlParms, std::string reqBody
+				 , std::string urlParms, std::string reqBody, const char* reqMediaType = "application/x-www-form-urlencoded"
 				 ) {
 #if REGEX_LIB == SWOb_BOOST
 	    // !!! duplicate of SPARQL_server.cpp
@@ -134,7 +134,7 @@ namespace w3c_sw {
 		request_stream << authString;
 		request_stream << "User-Agent: web_agent_asio 0.1\r\n";
 		if (reqBody.size() != 0) {
-		    request_stream << "Content-Type: application/x-www-form-urlencoded\r\n";
+		    request_stream << "Content-Type: " << reqMediaType << "\r\n";
 		    request_stream << "Content-Length: " << reqBody.size() << "\r\n";
 		}
 		request_stream << "Connection: close\r\n\r\n";
