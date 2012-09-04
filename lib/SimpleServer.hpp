@@ -127,6 +127,8 @@ namespace w3c_sw {
 							       : "application/sparql-results+xml; charset=UTF-8");
 					    rs.toXml(&xml);
 					    sout << xml.str();
+					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+						<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
 					++engine.served;
 					if (engine.runOnce) {
 					    engine.done = true;
