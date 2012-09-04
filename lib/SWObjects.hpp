@@ -4369,13 +4369,7 @@ public:
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);
 
     namespace Debugging {
-
- 	inline void linkFunctions () {
-	    if (false) TTerm::Unbound->str();
-	    const TableOperation* op = NULL; if (false) op->str();
-	    const TriplePattern* tp = NULL; if (false) tp->str();
-	    const Expression* exp = NULL; if (false) exp->str();
-	}
+ 	void linkFunctions();
 
 	/** w3c_sw_TEST_DEBUGGING - prepare a handy test environment.
 	 *   Ensures debugging str() functions are linked.

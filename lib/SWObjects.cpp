@@ -2855,7 +2855,7 @@ compared against
 	m_VarOrIRIref(p_TTerm), m_Silence(p_Silence), atomFactory(atomFactory),
 	m_ConstructTemplate(p_ConstructTemplate),
 	m_WhereClause(p_WhereClause)
-    { w3c_sw_LINEN << str(); }
+    {  }
     std::string SADIGraphPattern::str () {
 	std::stringstream ss;
 	ss << "SADIGraphPattern:\n";
@@ -2876,8 +2876,87 @@ compared against
 	}
 	return ss.str();
     }
+
+    void _invokeSADI (const char* service, const TableOperation* op, ResultSet* rs,
+		      AtomFactory* atomFactory, RdfDB* requestDB, RdfDB* responseDB) {
+	MakeNewBNode makeNewBNode(rs->getAtomFactory());
+	op->construct(requestDB, rs, &makeNewBNode, requestDB->ensureGraph(DefaultGraph));
+	// w3c_sw_LINEN << "CONSTRUCTED: " << *requestDB << std::endl;
+
+	boost::shared_ptr<IStreamContext> istr;
+	// SWWEBagent::ParameterList p;
+	// p.set("delme", requestDB->toString());
+	istr = requestDB->webAgent->post(service, "text/trig", requestDB->toString().c_str());
+	responseDB->loadData(responseDB->ensureGraph(DefaultGraph), *istr, service, 
+			     service, rs->getAtomFactory() /* , &nsAccumulator, &grddlMap */ );
+	if (Logger::Logging(Logger::IOLog_level, Logger::info)) {
+	    std::stringstream o;
+	    o << "POSTing [[\n" << requestDB->str() << "]] to " << service;
+	    // if (baseURI != NULL)
+	    // 	o << " with base URI <" << baseURI->getLexicalValue() << ">";
+	    o << "yielded [[\n" << responseDB->str() << "]]";
+	    if (istr->mediaType)
+		o << " with media type " << *istr->mediaType;
+	    o << ".\n";
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
+	}
+    }
     void SADIGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
-	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
+	// RdfDB copyDB(*db);
+	RdfDB* requestDB = const_cast<RdfDB*>(db);
+	RdfDB responseDB;
+	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
+	if (graph != NULL)
+	    try {
+		_invokeSADI(graph->getLexicalValue().c_str(), m_ConstructTemplate, rs, rs->getAtomFactory(), requestDB, &responseDB);
+	    } catch (std::exception& e) {
+		if (m_Silence == SILENT_Yes)
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+		else
+		    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
+	    } catch (std::string& s) {
+		if (m_Silence == SILENT_Yes)
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+		else
+		    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
+	    }
+	else {
+	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
+	    if (graphVar != NULL) {
+		for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+		    const URI* graph = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
+		    try {
+			if (graph != NULL) {
+			    ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
+			    _invokeSADI(graph->getLexicalValue().c_str(), m_ConstructTemplate, single, rs->getAtomFactory(), requestDB, &responseDB);
+			    for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
+				rs->insert(outerRow, *innerRow);
+				innerRow = single->erase(innerRow);
+			    }
+			} else {
+			    // treat like a TypeError; no result
+			}
+			delete *outerRow;
+			outerRow = rs->erase(outerRow);
+		    } catch (std::exception& e) {
+			if (m_Silence == SILENT_Yes) {
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+			    ++outerRow;
+			} else
+			    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
+		    } catch (std::string& s) {
+			if (m_Silence == SILENT_Yes) {
+			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+			    ++outerRow;
+			} else
+			    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
+		    }
+		}
+	    } else
+		throw std::string("Sadi name must be an IRI; attempted to call SADI ").append(m_VarOrIRIref->toString());
+	}
+	m_WhereClause->bindVariables(&responseDB, rs);
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "SADI produced\n" << *rs;
     }
     void SADIGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
@@ -3297,5 +3376,16 @@ namespace w3c_sw {
 	return os << s.str();
     }
 
+    namespace Debugging {
+
+ 	void linkFunctions () {
+	    if (false) TTerm::Unbound->str();
+	    const TableOperation* op = NULL; if (false) op->str();
+	    const TriplePattern* tp = NULL; if (false) tp->str();
+	    const Expression* exp = NULL; if (false) exp->str();
+	    const RdfDB* db = NULL; if (false) db->str();
+	}
+
+    }
 } // namespace w3c_sw
 

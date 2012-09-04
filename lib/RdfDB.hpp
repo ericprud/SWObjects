@@ -196,7 +196,7 @@ namespace w3c_sw {
 		s << graphs.find(*it)->second->toString(mediaType, namespaces);
 	    return s.str();
 	}
-	std::string str () { return toString(); } // for simple invocation.
+	std::string str() const; // for simple invocation.
     };
 
     inline std::ostream& operator<< (std::ostream& os, RdfDB const& my) {

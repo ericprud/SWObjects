@@ -21,6 +21,8 @@ namespace w3c_sw {
 	    delete it->second;
     }
 
+    std::string RdfDB::str () const { return toString(); } // for simple invocation.
+
     void RdfDB::clearTriples () {
 	for (graphmap_type::const_iterator it = graphs.begin();
 	     it != graphs.end(); it++)
