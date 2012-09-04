@@ -587,7 +587,7 @@ namespace w3c_sw {
     class web_server {
     public:
 	virtual ~web_server () {  }
-	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, server_config& config) = 0;
+	virtual void serve(const char* address, const char* port, std::size_t num_threads, webserver::request_handler& handler, server_config& config, std::string startupMessage = "") = 0;
     };
 
     class WebHandler : public webserver::request_handler {

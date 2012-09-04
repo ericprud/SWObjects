@@ -118,6 +118,8 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
      */
     void runServer (sw::WebHandler& handler, int serverPort, std::string servicePath = "", bool addServiceDesc = true) {
 
+	std::string startupMessage; // messages which get printed after a successful call to ::bind.
+
 	if (!servicePath.empty()) {
 	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath);
 	    sw::BasicGraphPattern* serviceGraph = addServiceDesc ? engine.db.ensureGraph(serviceURI) : NULL;
@@ -147,7 +149,10 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	    getcwd(buf, sizeof(buf)-1);
 #endif /* !_MSV_VER */
 	    if (buf[0]) {
-		std::cout << "Working directory: " << buf << " ." << std::endl;
+		std::stringstream t;
+		t << "Working directory: " << buf << " .";
+		startupMessage += t.str();
+		// std::cout << "Working directory: " << buf << " ." << std::endl;
 		std::string base = std::string("file://localhost") + buf;
 		if (serviceGraph != NULL)
 		    serviceGraph->addTriplePattern
@@ -162,7 +167,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	tmpss << serverPort;
 	const char* bindMe = "0.0.0.0";
 	try {
-	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config);
+	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config, startupMessage);
 	} catch (boost::system::system_error e) {
 	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
 	}

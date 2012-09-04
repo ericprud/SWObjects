@@ -784,7 +784,7 @@ namespace w3c_sw {
 	    */
 	}
 	void serve (const char* address, const char* port, std::size_t num_threads,
-		    webserver::request_handler& handler, server_config& config) {
+		    webserver::request_handler& handler, server_config& config, std::string startupMessage = "") {
 
 #if defined(_WIN32)
 
@@ -795,6 +795,10 @@ namespace w3c_sw {
 	    // Set console control handler to allow server to be stopped.
 	    console_ctrl_function = boost::bind(&webserver::server<server_config>::stop, &s);
 	    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
+
+	    // Ready to run, so issue the console messages that say so.
+	    if (!startupMessage.empty())
+		std::cout << startupMessage << std::endl;
 
 	    // Run the server until stopped.
 	    s.run();
@@ -825,6 +829,10 @@ namespace w3c_sw {
 	    pthread_sigmask(SIG_BLOCK, &wait_mask, 0);
 	    int sig = 0;
 	    sigwait(&wait_mask, &sig);
+
+	    // Ready to run, so issue the console messages that say so.
+	    if (!startupMessage.empty())
+		std::cout << startupMessage << std::endl;
 
 	    // Stop the server.
 	    s.stop();
