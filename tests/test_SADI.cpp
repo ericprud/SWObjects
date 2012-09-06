@@ -40,6 +40,20 @@ w3c_sw_DEBUGGING_FUNCTIONS();
 
 w3c_sw::AtomFactory F;
 
+/** substituteQueryVariables - perform the following substitutions on s:
+ *   %p -> port.
+ */
+std::string substituteQueryVariables (std::string s, int port) {
+    std::string portStr = boost::lexical_cast<std::string>(port);
+    for (size_t i = 0; i < s.length(); ) {
+	i = s.find("%p", i);
+	if (i == std::string::npos)
+	    break;
+	s.replace(i, 2, portStr);
+    }
+    return s;
+}
+
 /** CurlPOSTtoSADIservice - invoke curl with parameters used in the server
  *  invocation.
  */
@@ -64,47 +78,52 @@ BOOST_AUTO_TEST_CASE( curl1to1 ) {
     BOOST_CHECK_EQUAL("<s1> <tag:eric@w3.org/2012/p2> \"X\" .\n", i.clientS);
 }
 
-struct TableResultSetPrime : public w3c_sw::ResultSet {
-    TableResultSetPrime (w3c_sw::AtomFactory* atomFactory, std::string srt, bool ordered, w3c_sw::TTerm::String2BNode& nodeMap) : 
-	ResultSet(atomFactory) {
+/** ParsedResultSet - result set from a text string.
+ */
+struct ParsedResultSet : public w3c_sw::ResultSet {
+    ParsedResultSet (std::string srt) : 
+	ResultSet(&F) {
 	erase(begin());
 	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	parseTable(sptr, ordered, nodeMap);
+	w3c_sw::TTerm::String2BNode bnodeMap;
+	parseTable(sptr, false, bnodeMap);
     }
 };
 
-/** OperationOnSPARQLServer - client interactions with the server built into
- *  the bin/sparql binary.
+/** EvaluatedResultSet - result set from an executed query.
  */
-struct OperationOnSPARQLServer : w3c_sw::SPARQLServerInteraction {
-    w3c_sw::ResultSet rs;
-    w3c_sw::SPARQLfedDriver sparqlParser;
-
-    OperationOnSPARQLServer (std::string serverParams, std::string query)
-	: w3c_sw::SPARQLServerInteraction(serverParams), rs(&F), sparqlParser("", &F)
+struct EvaluatedResultSet : public w3c_sw::ResultSet {
+    EvaluatedResultSet (std::string query)
+	: ResultSet(&F)
     {
-	{
-	    std::string portStr = boost::lexical_cast<std::string>(port);
-	    for (size_t i = 0; i < query.length(); ) {
-		i = query.find("%p", i);
-		if (i == std::string::npos)
-		    break;
-		query.replace(i, 2, portStr);
-	    }
-	}
 	w3c_sw::IStreamContext istr(query, w3c_sw::IStreamContext::STRING);
+	w3c_sw::SPARQLfedDriver sparqlParser("", &F);
 	w3c_sw::Operation* op = sparqlParser.parse(istr);
 	sparqlParser.clear(""); // clear out namespaces and base URI.
 	w3c_sw::RdfDB d(&WebClient, &P);
-	op->execute(&d, &rs);
+	op->execute(&d, this);
     }
-
 };
 
-#ifdef SADI_INVOCATION
-BOOST_AUTO_TEST_CASE( opinteraction ) {
+
+/** OperationOnInvokedServer - client interactions with the server built into
+ *  the bin/sparql binary.
+ */
+struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
+    EvaluatedResultSet got;
+    ParsedResultSet expected;
+
+    OperationOnInvokedServer (std::string serverParams, std::string query, std::string expect)
+	: w3c_sw::SPARQLServerInteraction(serverParams),
+	  got(substituteQueryVariables(query, port)),
+	  expected(expect)
+    {  }
+};
+
+#ifdef INVOKED_SADI
+BOOST_AUTO_TEST_CASE( invoked1 ) {
     // sleep(2);
-    OperationOnSPARQLServer i
+    OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 // (A real SADI rule should include body data in the head.)
 	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
@@ -125,71 +144,48 @@ BOOST_AUTO_TEST_CASE( opinteraction ) {
 	 "        FROM { ?s <tag:eric@w3.org/2012/p1> <ooo> }\n"
 	 //       and getting back { <S> <tag:eric@w3.org/2012/p2> \"X\" }
 	 "        WHERE { ?s2 <tag:eric@w3.org/2012/p2> ?x }\n"
-	 "}");
-    w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSetPrime
-	expected(&F,
-		 "+--------------------------+-----+\n"
-		 "| ?s2                      | ?x  |\n"
-		 "| <tag:eric@w3.org/2012/S> | \"X\" |\n"
-		 "+--------------------------+-----+",
-		 false, bnodeMap);
-    BOOST_CHECK_EQUAL(i.rs, expected);
+	 "}",
+	 "+--------------------------+-----+\n"
+	 "| ?s2                      | ?x  |\n"
+	 "| <tag:eric@w3.org/2012/S> | \"X\" |\n"
+	 "+--------------------------+-----+");
+    BOOST_CHECK_EQUAL(i.got, i.expected);
 }
-#endif /* SADI_INVOCATION */
+#endif /* INVOKED_SADI */
 
 
-#if 0
-/* Simple SELECT.
+/** OperationOnRemoteServer - client interactions with the server built into
+ *  the bin/sparql binary.
  */
-BOOST_AUTO_TEST_CASE( simple ) {
-    ServerTableQuery i
-	(// Server invocation -- construct a pattern from supplied graph:
-	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
-	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --once",
+struct OperationOnRemoteServer {
+    EvaluatedResultSet got;
+    ParsedResultSet expected;
 
-	 // Client invocation -- bind ?s
-	 "'+-----+\n"
-	 "| ?s  |\n"
-	 "| <S> |\n"
-	 "+-----+\n"
-	 //   ask for the s2 return from the SADI service (should be <S>)
-	 "SELECT ?s2 ?x WHERE {"
-	 //     from the server invoked above.
-	 "    SADI <http://localhost:31533/SPARQL>\n"
-	 //       sending { <S> <tag:eric@w3.org/2012/p1> <ooo> }
-	 "        FROM { ?s <tag:eric@w3.org/2012/p1> <ooo> }\n"
-	 //       and getting back { <S> <tag:eric@w3.org/2012/p2> \"X\" }
-	 "        WHERE { ?s2 <tag:eric@w3.org/2012/p2> ?x }\n"
-	 "}'",
-
-	 // Expect these bound results:
-	 "+-----+-----+\n"
-	 "| ?s2 | ?x  |\n"
-	 "| <S> | 'X' |\n"
-	 "+-----+-----+");
-    BOOST_CHECK_EQUAL(i.expected, i.got);
-}
-
-struct ServerTableQuery : w3c_sw::ClientServerInteraction {
-    w3c_sw::ResultSet expected, got;
-
-    ServerTableQuery (std::string serverParams,
-		      std::string clientParams,
-		      std::string expectedStr)
-	: w3c_sw::ClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
-    {
-	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
-	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	// w3c_sw_LINEN << "clientS: " << clientS << std::endl;
-	got = w3c_sw::ResultSet(&F, clientIS, false, cliNodes);
-	// w3c_sw_LINEN << "got:\n" << got << std::endl;
-	w3c_sw::IStreamContext expectedIS(expectedStr, w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	// w3c_sw_LINEN << "expected: " << expectedStr << std::endl;
-	expected = w3c_sw::ResultSet(&F, expectedIS, false, srvNodes);
-	// w3c_sw_LINEN << "expected:\n" << expected << std::endl;
-    }
+    OperationOnRemoteServer (std::string query, std::string expect)
+	: got(query),
+	  expected(expect)
+    {  }
 };
 
-#endif
+#ifdef REMOTE_SADI
+BOOST_AUTO_TEST_CASE( remote1 ) {
+    // sleep(2);
+    OperationOnRemoteServer i
+	("SELECT ?greeting\n"
+	 "WHERE {\n"
+	 "  SADI <http://sadiframework.org/examples/hello>\n"
+	 "  FROM {\n"
+	 "    <http://example.com/1> a <http://sadiframework.org/examples/hello.owl#NamedIndividual> ;\n"
+	 "        <http://xmlns.com/foaf/0.1/name> 'Guy Incognito' .\n"
+	 "  } WHERE {\n"
+	 "    <http://example.com/1> <http://sadiframework.org/examples/hello.owl#greeting> ?greeting .\n"
+	 "  }\n"
+	 "}",
+	 " +-------------------------+\n"
+	 " | ?greeting               |\n"
+	 " | \"Hello, Guy Incognito!\"^^<http://www.w3.org/2001/XMLSchema#string> |\n"
+	 " +-------------------------+");
+    BOOST_CHECK_EQUAL(i.got, i.expected);
+}
+#endif /* REMOTE_SADI */
 
