@@ -95,7 +95,8 @@ namespace w3c_sw {
 	std::set<const TTerm*> getGraphNames () const {
 	    std::set<const TTerm*> names;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		names.insert(it->first);
+		if (it->first != DefaultGraph)
+		    names.insert(it->first);
 	    return names;
 		    
 	}
