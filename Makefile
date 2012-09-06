@@ -486,6 +486,7 @@ examples/functionExtension.so: examples/functionExtension.o
 	$(LINK) -shared -o $@ $< $(LDFLAGS)
 
 t_SPARQL: bin/sparql examples/functionExtension.so
+t_SADI: bin/sparql
 
 tests/DM-report.xml: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS) --output_format=XML --report_level=detailed 2> $@
