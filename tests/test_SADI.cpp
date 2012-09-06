@@ -66,18 +66,6 @@ struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
     }
 };
 
-BOOST_AUTO_TEST_CASE( curl1to1 ) {
-    CurlPOSTtoSADIservice i
-	(// Server invocation -- construct a pattern from supplied graph.
-	 // (A real SADI rule should include body data in the head.)
-	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
-	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --once",
-
-	 // Curl this data and media type to verify the server response.
-	 "<s1> <tag:eric@w3.org/2012/p1> <ooo> .", "text/turtle");
-    BOOST_CHECK_EQUAL("<s1> <tag:eric@w3.org/2012/p2> \"X\" .\n", i.clientS);
-}
-
 /** ParsedResultSet - result set from a text string.
  */
 struct ParsedResultSet : public w3c_sw::ResultSet {
@@ -103,6 +91,35 @@ struct EvaluatedResultSet : public w3c_sw::ResultSet {
 	w3c_sw::RdfDB d(&WebClient, &P);
 	op->execute(&d, this);
     }
+    struct ResultAccessor {
+	const w3c_sw::ResultSet* rs;
+	const w3c_sw::Result* r;
+	ResultAccessor (const w3c_sw::ResultSet* rs, const w3c_sw::Result* r)
+	    : rs(rs), r(r)
+	{  }
+	struct TTermInterface {
+	    const w3c_sw::TTerm* t;
+	    TTermInterface (const w3c_sw::TTerm* t)
+		: t(t)
+	    {  }
+	    double getDouble () const {
+		const w3c_sw::NumericRDFLiteral* f = dynamic_cast<const w3c_sw::NumericRDFLiteral*>(t);
+		if (f == NULL)
+		    throw std::runtime_error(t->toString() + ".getDouble() undefined");
+		return f->getDouble();
+	    }
+	};
+	const TTermInterface operator[] (std::string key) const {
+	    return TTermInterface(r->get(rs->getAtomFactory()->getVariable(key)));
+	}
+    };
+    const ResultAccessor operator[] (size_t i) const {
+	w3c_sw::ResultList::const_iterator it = results.begin();
+	while (i--)
+	    if (++it == results.end())
+		throw std::out_of_range("past end of ResultSet");
+	return ResultAccessor(this, *it);
+    }
 };
 
 
@@ -119,6 +136,33 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
 	  expected(expect)
     {  }
 };
+
+/** OperationOnRemoteServer - client interactions with the server built into
+ *  the bin/sparql binary.
+ */
+struct OperationOnRemoteServer {
+    EvaluatedResultSet got;
+    ParsedResultSet expected;
+
+    OperationOnRemoteServer (std::string query, std::string expect)
+	: got(query),
+	  expected(expect)
+    {  }
+};
+
+
+BOOST_AUTO_TEST_SUITE( local )
+BOOST_AUTO_TEST_CASE( curl1to1 ) {
+    CurlPOSTtoSADIservice i
+	(// Server invocation -- construct a pattern from supplied graph.
+	 // (A real SADI rule should include body data in the head.)
+	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
+	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --once",
+
+	 // Curl this data and media type to verify the server response.
+	 "<s1> <tag:eric@w3.org/2012/p1> <ooo> .", "text/turtle");
+    BOOST_CHECK_EQUAL("<s1> <tag:eric@w3.org/2012/p2> \"X\" .\n", i.clientS);
+}
 
 #ifdef INVOKED_SADI
 BOOST_AUTO_TEST_CASE( invoked1 ) {
@@ -151,23 +195,12 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
 #endif /* INVOKED_SADI */
+BOOST_AUTO_TEST_SUITE_END(/* local */)
 
 
-/** OperationOnRemoteServer - client interactions with the server built into
- *  the bin/sparql binary.
- */
-struct OperationOnRemoteServer {
-    EvaluatedResultSet got;
-    ParsedResultSet expected;
-
-    OperationOnRemoteServer (std::string query, std::string expect)
-	: got(query),
-	  expected(expect)
-    {  }
-};
-
+BOOST_AUTO_TEST_SUITE( remote )
 #ifdef REMOTE_SADI
-BOOST_AUTO_TEST_CASE( remote1 ) {
+BOOST_AUTO_TEST_CASE( hello ) {
     OperationOnRemoteServer i
 	("SELECT ?greeting\n"
 	 "WHERE {\n"
@@ -185,5 +218,32 @@ BOOST_AUTO_TEST_CASE( remote1 ) {
 	 " +-------------------------+");
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
+
+BOOST_AUTO_TEST_CASE( bmi ) {
+    OperationOnRemoteServer i
+	("PREFIX bmi: <http://sadiframework.org/examples/bmi.owl#>\n"
+	 "SELECT ?bmi\n"
+	 "WHERE {\n"
+	 "  SADI <http://sadiframework.org/examples/simpleBMI>\n"
+	 "  FROM {\n"
+	 "    <http://example.com/1> a bmi:SimpleInputClass ;\n"
+	 "      bmi:height_m 1.8796 ;\n"
+	 "      bmi:weight_kg 92.9864359 .\n"
+	 "  } WHERE {\n"
+	 "    <http://example.com/1> bmi:BMI ?bmi .\n"
+	 "  }\n"
+	 "}\n",
+	 " +-------------------+\n"
+	 " | ?bmi              |\n"
+	 " | 26.32017237098755 |\n"
+	 " +-------------------+");
+
+    /* Can't precisely compare floats or doubles so
+     * BOOST_CHECK_EQUAL(i.got, i.expected) would fail.
+     * Instead, check the bmi of the 0th row:
+     */
+    BOOST_CHECK_CLOSE(i.got[0]["bmi"].getDouble(), 26.32, 0.01);
+}
 #endif /* REMOTE_SADI */
+BOOST_AUTO_TEST_SUITE_END(/* remote */)
 
