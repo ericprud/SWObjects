@@ -122,7 +122,6 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
 
 #ifdef INVOKED_SADI
 BOOST_AUTO_TEST_CASE( invoked1 ) {
-    // sleep(2);
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 // (A real SADI rule should include body data in the head.)
@@ -169,7 +168,6 @@ struct OperationOnRemoteServer {
 
 #ifdef REMOTE_SADI
 BOOST_AUTO_TEST_CASE( remote1 ) {
-    // sleep(2);
     OperationOnRemoteServer i
 	("SELECT ?greeting\n"
 	 "WHERE {\n"
