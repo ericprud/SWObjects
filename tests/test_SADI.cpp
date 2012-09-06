@@ -83,6 +83,15 @@ struct OperationOnSPARQLServer : w3c_sw::SPARQLServerInteraction {
     OperationOnSPARQLServer (std::string serverParams, std::string query)
 	: w3c_sw::SPARQLServerInteraction(serverParams), rs(&F), sparqlParser("", &F)
     {
+	{
+	    std::string portStr = boost::lexical_cast<std::string>(port);
+	    for (size_t i = 0; i < query.length(); ) {
+		i = query.find("%p", i);
+		if (i == std::string::npos)
+		    break;
+		query.replace(i, 2, portStr);
+	    }
+	}
 	w3c_sw::IStreamContext istr(query, w3c_sw::IStreamContext::STRING);
 	w3c_sw::Operation* op = sparqlParser.parse(istr);
 	sparqlParser.clear(""); // clear out namespaces and base URI.
@@ -94,7 +103,7 @@ struct OperationOnSPARQLServer : w3c_sw::SPARQLServerInteraction {
 
 #ifdef SADI_INVOCATION
 BOOST_AUTO_TEST_CASE( opinteraction ) {
-    sleep(2);
+    // sleep(2);
     OperationOnSPARQLServer i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 // (A real SADI rule should include body data in the head.)
@@ -111,7 +120,7 @@ BOOST_AUTO_TEST_CASE( opinteraction ) {
 	 "SELECT ?s2 ?x\n"
 	 " WHERE {\n"
 	 //     from the server invoked above.
-	 "    SADI <http://localhost:31533/SPARQL>\n"
+	 "    SADI <http://localhost:%p/SPARQL>\n"
 	 //       sending { <S> <tag:eric@w3.org/2012/p1> <ooo> }
 	 "        FROM { ?s <tag:eric@w3.org/2012/p1> <ooo> }\n"
 	 //       and getting back { <S> <tag:eric@w3.org/2012/p2> \"X\" }
