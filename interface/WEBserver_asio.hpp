@@ -828,11 +828,11 @@ namespace w3c_sw {
 	    sigaddset(&wait_mask, SIGHUP); // "polite" way to stop the server.
 	    pthread_sigmask(SIG_BLOCK, &wait_mask, 0);
 	    int sig = 0;
-	    sigwait(&wait_mask, &sig);
 
 	    // Ready to run, so issue the console messages that say so.
 	    if (!startupMessage.empty())
 		std::cout << startupMessage << std::endl;
+	    sigwait(&wait_mask, &sig);
 
 	    // Stop the server.
 	    s.stop();
