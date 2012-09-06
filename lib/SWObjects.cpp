@@ -2886,14 +2886,16 @@ compared against
 	boost::shared_ptr<IStreamContext> istr;
 	// SWWEBagent::ParameterList p;
 	// p.set("delme", requestDB->toString());
-	istr = requestDB->webAgent->post(service, "text/trig", requestDB->toString().c_str());
+	const char* reqMediaType = requestDB->getGraphNames().size() > 0
+	    ? "text/trig"
+	    : "application/rdf+xml"; // would waayyy rather text/turtle.
+	istr = requestDB->webAgent->post(service, reqMediaType,
+					 requestDB->toString(reqMediaType).c_str());
 	responseDB->loadData(responseDB->ensureGraph(DefaultGraph), *istr, service, 
 			     service, rs->getAtomFactory() /* , &nsAccumulator, &grddlMap */ );
 	if (Logger::Logging(Logger::IOLog_level, Logger::info)) {
 	    std::stringstream o;
 	    o << "POSTing [[\n" << requestDB->str() << "]] to " << service;
-	    // if (baseURI != NULL)
-	    // 	o << " with base URI <" << baseURI->getLexicalValue() << ">";
 	    o << "yielded [[\n" << responseDB->str() << "]]";
 	    if (istr->mediaType)
 		o << " with media type " << *istr->mediaType;
@@ -2904,7 +2906,7 @@ compared against
     void SADIGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	// RdfDB copyDB(*db);
 	RdfDB* requestDB = const_cast<RdfDB*>(db);
-	RdfDB responseDB;
+	RdfDB responseDB(db->xmlParser);
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
 	    try {
@@ -3128,6 +3130,21 @@ compared against
 	std::stringstream s;
 	if (mediaType.match("text/turtle")) {
 	    s << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << " ." << std::endl;
+	} else if (mediaType.match("application/rdf+xml")) {
+	    if (dynamic_cast<const BNode*>(m_s) != NULL)
+		s << "<rdf:Description rdf:nodeId='g" << m_s->getLexicalValue() << "'>";
+	    else
+		s << "<rdf:Description rdf:about='" << m_s->getLexicalValue() << "'>";
+	    std::string p = m_p->getLexicalValue();
+	    size_t end = p.find_last_of("/#"); ++end;
+	    s << "<" << p.substr(end) << " xmlns='" << p.substr(0, end) << "'";
+	    if (dynamic_cast<const BNode*>(m_o) != NULL)
+		s << " rdf:nodeId='g" << m_o->getLexicalValue() << "'/>";
+	    else if (dynamic_cast<const URI*>(m_o) != NULL)
+		s << " rdf:resource='" << m_o->getLexicalValue() << "'/>";
+	    else
+		s << ">" << m_o->getLexicalValue() << "</" << p.substr(end) << ">";
+	    s << "</rdf:Description>\n";
 	} else {
 	    s << "{" << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << "}";
 	}
@@ -3145,6 +3162,12 @@ compared against
 	    SPARQLSerializer s(mediaType, namespaces, "  ", SPARQLSerializer::DEBUG_none, "");
 	    express(&s);
 	    ret << s.str();
+	} else if (mediaType.match("application/rdf+xml")) {
+	    ret << "<?xml version='1.0'?>\n<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>\n";
+	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
+		 triple != m_TriplePatterns.end(); triple++)
+		ret << (*triple)->toString(mediaType, namespaces);
+	    ret << "</rdf:RDF>\n";
 	} else {
 	    for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
 		 triple != m_TriplePatterns.end(); triple++)
