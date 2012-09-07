@@ -2884,11 +2884,9 @@ compared against
 	// w3c_sw_LINEN << "CONSTRUCTED: " << *requestDB << std::endl;
 
 	boost::shared_ptr<IStreamContext> istr;
-	// SWWEBagent::ParameterList p;
-	// p.set("delme", requestDB->toString());
 	const char* reqMediaType = requestDB->getGraphNames().size() > 0
 	    ? "text/trig"
-	    : "application/rdf+xml"; // would waayyy rather text/turtle.
+	    : "text/turtle";
 	istr = requestDB->webAgent->post(service, reqMediaType,
 					 requestDB->toString(reqMediaType).c_str());
 	responseDB->loadData(responseDB->ensureGraph(DefaultGraph), *istr, service, 
