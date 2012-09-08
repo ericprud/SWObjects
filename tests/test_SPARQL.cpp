@@ -21,21 +21,21 @@ const char* Doutput =
     "| ?s | ?p                                                | ?o                                     |\n"
     "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |\n"
     "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
-    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         'a semantic web query toolbox' |\n"
     "+----+---------------------------------------------------+----------------------------------------+\n";
 
 const char* Dwide =
     "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n"
     "| ?s | ?p                                                | ?o                                     | ?o2                                     |\n"
     "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> | <http://usefulinc.com/ns/doap#Project2> |\n"
-    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |         \"a semantic web query toolbox2\" |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         'a semantic web query toolbox' |         'a semantic web query toolbox2' |\n"
     "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n";
 
 const char* Dshort = 
-    "| ?s | ?p                                                | ?o                                       |\n"
-    "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project>   |\n"
-    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         \"a semantic web query toolbox\" |\n"
-    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1>   |";
+    "| ?s | ?p                                                | ?o                                     |\n"
+    "| <> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://usefulinc.com/ns/doap#Project> |\n"
+    "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         'a semantic web query toolbox' |\n"
+    "| <> |           <http://usefulinc.com/ns/doap#homepage> |           <http://swobj.org/sparql/v1> |";
 
 const char* Dtrig = 
     "{\n"
@@ -221,11 +221,11 @@ BOOST_AUTO_TEST_CASE( map_noG ) {
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
 	expected(&F, 
-		 "+------+--------+\n"
-		 "| ?s   | ?o     |\n"
-		 "| <s1> | \"o2\" |\n"
-		 "| <s1> | <o1>   |\n"
-		 "+------+--------+\n",
+		 "+------+------+\n"
+		 "| ?s   | ?o   |\n"
+		 "| <s1> | 'o2' |\n"
+		 "| <s1> | <o1> |\n"
+		 "+------+------+\n",
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -235,11 +235,11 @@ BOOST_AUTO_TEST_CASE( map_bodyG ) {
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
 	expected(&F, 
-		 "+------+--------+\n"
-		 "| ?s   | ?o     |\n"
-		 "| <s1> | \"o2\" |\n"
-		 "| <s1> | <o1>   |\n"
-		 "+------+--------+\n",
+		 "+------+------+\n"
+		 "| ?s   | ?o   |\n"
+		 "| <s1> | 'o2' |\n"
+		 "| <s1> | <o1> |\n"
+		 "+------+------+\n",
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
@@ -249,11 +249,11 @@ BOOST_AUTO_TEST_CASE( map_headG ) {
     TableResultSet tested(&F, invocation.s, false, bnodeMap);
     TableResultSet
 	expected(&F, 
-		 "+------+--------+\n"
-		 "| ?s   | ?o     |\n"
-		 "| <s1> | \"o2\" |\n"
-		 "| <s1> | <o1>   |\n"
-		 "+------+--------+\n",
+		 "+------+------+\n"
+		 "| ?s   | ?o   |\n"
+		 "| <s1> | 'o2' |\n"
+		 "| <s1> | <o1> |\n"
+		 "+------+------+\n",
 		 false, bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }

@@ -231,6 +231,29 @@ BOOST_AUTO_TEST_CASE( queries ) {
 
 }
 
+struct ParsedResultSet : public w3c_sw::ResultSet {
+    ParsedResultSet (std::string srt) : 
+	ResultSet(&f) {
+	erase(begin());
+	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
+	w3c_sw::TTerm::String2BNode bnodeMap;
+	parseTable(sptr, false, bnodeMap);
+    }
+};
+BOOST_AUTO_TEST_CASE( RStwoForms ) {
+    TTerm::String2BNode bnodeMap;
+    ResultSet l(&f, 
+		" ?a  ?b ?c\n"
+		"<a> _:b 'c'\n",
+		false, bnodeMap);
+    ParsedResultSet r(
+		"+-----+-----+-----+\n"
+		"| ?a  | ?b  | ?c  |\n"
+		"| <a> | _:b | 'c' |\n"
+		"+-----+-----+-----+\n");
+    BOOST_CHECK_EQUAL(l, r);
+}
+
 BOOST_AUTO_TEST_CASE( RSNoCoRefs ) {
     TTerm::String2BNode bnodeMap;
     ResultSet l(&f, 

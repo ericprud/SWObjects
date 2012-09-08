@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
 	 "}",
 	 "+--------------------------+-----+\n"
 	 "| ?s2                      | ?x  |\n"
-	 "| <tag:eric@w3.org/2012/S> | \"X\" |\n"
+	 "| <tag:eric@w3.org/2012/S> | 'X' |\n"
 	 "+--------------------------+-----+");
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( hello ) {
 	 "}",
 	 " +-------------------------+\n"
 	 " | ?greeting               |\n"
-	 " | \"Hello, Guy Incognito!\"^^<http://www.w3.org/2001/XMLSchema#string> |\n"
+	 " | 'Hello, Guy Incognito!'^^<http://www.w3.org/2001/XMLSchema#string> |\n"
 	 " +-------------------------+");
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
