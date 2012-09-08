@@ -1,7 +1,7 @@
 /* test_Sadi.hpp -- 
  *
- * Test a SPARQL Parser and sadi serializer against references like
- *   http://www.sparql.org/validator.html
+ * Test the SADI server built in to ../bin/sparql and SADI interactions built
+ * into the SPARQLfed language.
  *
  * $Id: test_Sadi.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
@@ -59,7 +59,7 @@ std::string substituteQueryVariables (std::string s, int port) {
  */
 struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
     CurlPOSTtoSADIservice (std::string serverParams, const char* data, const char* media)
-	: ClientServerInteraction(serverParams)
+	: ClientServerInteraction(serverParams, "/SADI")
     {
 	invoke(std::string()
 	       + "curl -s -X POST -H 'Content-Type: " + media + "' " + serverURL + "  -d '" + data + "'");
@@ -105,7 +105,8 @@ struct EvaluatedResultSet : public w3c_sw::ResultSet {
 	    double getDouble () const {
 		const w3c_sw::NumericRDFLiteral* f = dynamic_cast<const w3c_sw::NumericRDFLiteral*>(t);
 		if (f == NULL)
-		    throw std::runtime_error(t->toString() + ".getDouble() undefined");
+		    throw std::runtime_error(t == NULL ? std::string("NULL") : t->toString()
+					     + ".getDouble() undefined");
 		return f->getDouble();
 	    }
 	};
@@ -131,7 +132,7 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
     ParsedResultSet expected;
 
     OperationOnInvokedServer (std::string serverParams, std::string query, std::string expect)
-	: w3c_sw::SPARQLServerInteraction(serverParams),
+	: w3c_sw::SPARQLServerInteraction(serverParams, "/SADI"),
 	  got(substituteQueryVariables(query, port)),
 	  expected(expect)
     {  }
@@ -182,7 +183,7 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
 	 "SELECT ?s2 ?x\n"
 	 " WHERE {\n"
 	 //     from the server invoked above.
-	 "    SADI <http://localhost:%p/SPARQL>\n"
+	 "    SADI <http://localhost:%p/SADI>\n"
 	 //       sending { <S> <tag:eric@w3.org/2012/p1> <ooo> }
 	 "        FROM { ?s <tag:eric@w3.org/2012/p1> <ooo> }\n"
 	 //       and getting back { <S> <tag:eric@w3.org/2012/p2> \"X\" }
@@ -219,8 +220,32 @@ BOOST_AUTO_TEST_CASE( hello ) {
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
 
-BOOST_AUTO_TEST_CASE( bmi ) {
+/* Can't precisely compare floats or doubles so do to tests, once with integer
+ * values and once with an approximate test of the bmi of the 0th row:
+ */
+BOOST_AUTO_TEST_CASE( bmi_int ) {
     OperationOnRemoteServer i
+	("PREFIX bmi: <http://sadiframework.org/examples/bmi.owl#>\n"
+	 "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
+	 "SELECT (xsd:integer(?bmi) AS ?i)\n"
+	 "WHERE {\n"
+	 "  SADI <http://sadiframework.org/examples/simpleBMI>\n"
+	 "  FROM {\n"
+	 "    <http://example.com/1> a bmi:SimpleInputClass ;\n"
+	 "      bmi:height_m 1.8796 ;\n"
+	 "      bmi:weight_kg 92.9864359 .\n"
+	 "  } WHERE {\n"
+	 "    <http://example.com/1> bmi:BMI ?bmi .\n"
+	 "  }\n"
+	 "}\n",
+	 " +----+\n"
+	 " | ?i |\n"
+	 " | 26 |\n"
+	 " +----+");
+    BOOST_CHECK_EQUAL(i.got, i.expected);
+}
+BOOST_AUTO_TEST_CASE( bmi ) {
+    EvaluatedResultSet got
 	("PREFIX bmi: <http://sadiframework.org/examples/bmi.owl#>\n"
 	 "SELECT ?bmi\n"
 	 "WHERE {\n"
@@ -232,18 +257,10 @@ BOOST_AUTO_TEST_CASE( bmi ) {
 	 "  } WHERE {\n"
 	 "    <http://example.com/1> bmi:BMI ?bmi .\n"
 	 "  }\n"
-	 "}\n",
-	 " +-------------------+\n"
-	 " | ?bmi              |\n"
-	 " | 26.32017237098755 |\n"
-	 " +-------------------+");
-
-    /* Can't precisely compare floats or doubles so
-     * BOOST_CHECK_EQUAL(i.got, i.expected) would fail.
-     * Instead, check the bmi of the 0th row:
-     */
-    BOOST_CHECK_CLOSE(i.got[0]["bmi"].getDouble(), 26.32, 0.01);
+	 "}\n");
+    BOOST_CHECK_CLOSE(got[0]["bmi"].getDouble(), 26.32, 0.01);
 }
+
 #endif /* REMOTE_SADI */
 BOOST_AUTO_TEST_SUITE_END(/* remote */)
 

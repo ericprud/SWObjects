@@ -127,8 +127,8 @@ namespace w3c_sw {
     /** SPARQLServerInteraction - ivocations of the bin/sparql binary.
      */
     struct SPARQLServerInteraction : public ServerInteraction {
-	SPARQLServerInteraction (std::string serverParams)
-	    : ServerInteraction ("../bin/sparql", "/SPARQL", "127.0.0.1", serverParams, 31533, 32767)
+	SPARQLServerInteraction (std::string serverParams, std::string serverPath)
+	    : ServerInteraction ("../bin/sparql", serverPath, "127.0.0.1", serverParams, 31533, 32767)
 	{  }
     };
 
@@ -139,8 +139,8 @@ namespace w3c_sw {
     struct ClientServerInteraction : SPARQLServerInteraction {
 	std::string clientS;
 
-	ClientServerInteraction (std::string serverParams)
-	    : SPARQLServerInteraction(serverParams)
+	ClientServerInteraction (std::string serverParams, std::string serverPath)
+	    : SPARQLServerInteraction(serverParams, serverPath)
 	{  }
 
 	void invoke (std::string clientCmd) {
@@ -171,9 +171,9 @@ namespace w3c_sw {
      *  from the parameters used in the server invocation.
      */
     struct SPARQLClientServerInteraction : ClientServerInteraction {
-	SPARQLClientServerInteraction (std::string serverParams,
+	SPARQLClientServerInteraction (std::string serverParams, std::string serverPath,
 				       std::string clientParams)
-	    : ClientServerInteraction(serverParams)
+	    : ClientServerInteraction(serverParams, serverPath)
 	{
 	    invoke(exe + " --service " + serverURL + " " + clientParams);
 	}

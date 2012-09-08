@@ -499,7 +499,7 @@ struct ServerTableQuery : w3c_sw::SPARQLClientServerInteraction {
     ServerTableQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::SPARQLClientServerInteraction (serverParams, clientParams), expected(&F), got(&F)
+	: w3c_sw::SPARQLClientServerInteraction (serverParams, "/SPARQL", clientParams), expected(&F), got(&F)
     {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
@@ -543,7 +543,7 @@ struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
 
     HttpServerInteraction (std::string serverParams,
 			   std::string query)
-	: w3c_sw::SPARQLServerInteraction (serverParams)
+	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL")
     {
 	sockaddr_in remote;
 	remote.sin_family = AF_INET;
@@ -623,7 +623,7 @@ struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
     ServerGraphQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::SPARQLClientServerInteraction(serverParams, clientParams)
+	: w3c_sw::SPARQLClientServerInteraction(serverParams, "/SPARQL", clientParams)
     {
 	{
 	    std::stringstream tss(clientS);
