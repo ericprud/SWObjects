@@ -795,19 +795,38 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(s, sterm->getDatatype(), NULL, false);
 	    }
 
+	    /** numericCast - casts from numeric|boolean|string|simple literal to numeric|boolean.
+	     * canonicalizes all casts except those from string.
+	     */
 	    const TTerm* numericCast (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (s != NULL) {
-		    const URI* dt = s->getDatatype();
-		    if (dt == NULL || 
-			dt == TTerm::URI_xsd_string  || 
-			dt == TTerm::URI_xsd_float   || 
-			dt == TTerm::URI_xsd_double  || 
-			dt == TTerm::URI_xsd_decimal || // check
-			dt == TTerm::URI_xsd_integer || // check
-			dt == TTerm::URI_xsd_boolean   )// adjust
-			return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true);
+		// from URI_xsd_float, URI_xsd_double, URI_xsd_decimal, URI_xsd_integer:
+		const NumericRDFLiteral* n = dynamic_cast<const NumericRDFLiteral*>(args[0]);
+		if (n != NULL) {
+		    if (name == TTerm::URI_xsd_float  ) return atomFactory->getNumericRDFLiteral(n->getFloat(), true);
+		    if (name == TTerm::URI_xsd_double ) return atomFactory->getNumericRDFLiteral(n->getDouble());
+		    if (name == TTerm::URI_xsd_decimal) return atomFactory->getNumericRDFLiteral(n->getFloat());
+		    if (name == TTerm::URI_xsd_integer) return atomFactory->getNumericRDFLiteral(n->getInt());
+		    if (name == TTerm::URI_xsd_boolean) return atomFactory->getBooleanRDFLiteral
+							  (n->getFloat() != 0 && n->getInt() != 0);
+		    throw TypeError(n->toString(), name->toString()); // @@shorten?
 		}
+
+		// from URI_xsd_boolean:
+		const BooleanRDFLiteral* b = dynamic_cast<const BooleanRDFLiteral*>(args[0]);
+		if (b != NULL) {
+		    if (name == TTerm::URI_xsd_float  ) return atomFactory->getNumericRDFLiteral(float(b->getValue()), true);
+		    if (name == TTerm::URI_xsd_double ) return atomFactory->getNumericRDFLiteral(double(b->getValue()));
+		    if (name == TTerm::URI_xsd_decimal) return atomFactory->getNumericRDFLiteral(float(b->getValue()));
+		    if (name == TTerm::URI_xsd_integer) return atomFactory->getNumericRDFLiteral(int(b->getValue()));
+		    if (name == TTerm::URI_xsd_boolean) return atomFactory->getNumericRDFLiteral(b->getValue()); // normalizes
+		    throw TypeError(b->toString(), name->toString()); // @@shorten?
+		}
+
+		// from URI_xsd_string, simple literal:
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (s != NULL && (s->getDatatype() == NULL || s->getDatatype() == TTerm::URI_xsd_string))
+		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true); // validates
+
 		throw TypeError(args[0]->toString(), name->toString()); // @@shorten?
 	    }
 
@@ -1799,9 +1818,25 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return (DateTimeRDFLiteral*)vi->second; // shameful downcast
     }
 
+    const BooleanRDFLiteral* AtomFactory::getBooleanRDFLiteral (bool p_value) {
+	std::stringstream buf;
+	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>";
+	std::string key(buf.str());
+	RDFLiteralMap::const_iterator vi = rdfLiterals_static.find(key);
+	if (vi == rdfLiterals_static.end()) {
+	    vi = rdfLiterals.find(key);
+	    if (vi == rdfLiterals.end()) {
+		BooleanRDFLiteral* ret = new BooleanRDFLiteral(buf.str(), TTerm::URI_xsd_boolean, p_value);
+		rdfLiterals[key] = ret;
+		return ret;
+	    }
+	}
+	return (BooleanRDFLiteral*)vi->second; // shameful downcast
+    }
+
     const BooleanRDFLiteral* AtomFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
-	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>"; // p_String
+	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>";
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals_static.find(key);
 	if (vi == rdfLiterals_static.end()) {

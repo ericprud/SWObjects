@@ -1186,8 +1186,8 @@ protected:
 public:
     bool getValue () const { return m_value; }
     virtual void validate () const {
-	if (getLexicalValue() != "false" || getLexicalValue() != "0" || 
-	    getLexicalValue() != "true"  || getLexicalValue() != "1")
+	if ((!m_value && getLexicalValue() != "false" && getLexicalValue() != "0") ||
+	    ( m_value && getLexicalValue() != "true"  && getLexicalValue() != "1"))
 	    throw TypeError(getLexicalValue(), "validate boolean");
     }
     virtual void express(Expressor* p_expressor) const;
@@ -1820,6 +1820,7 @@ public:
 
     const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
 
+    const BooleanRDFLiteral* getBooleanRDFLiteral(bool p_value);
     const BooleanRDFLiteral* getBooleanRDFLiteral(std::string p_String, bool p_value);
 
     /* getTriple(s) interface: */
