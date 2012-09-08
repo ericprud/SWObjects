@@ -261,6 +261,33 @@ BOOST_AUTO_TEST_CASE( bmi ) {
     BOOST_CHECK_CLOSE(got[0]["bmi"].getDouble(), 26.32, 0.01);
 }
 
+BOOST_AUTO_TEST_CASE( drugs ) {
+    OperationOnRemoteServer i
+    ("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
+     "PREFIX str: <http://nlp2rdf.lod2.eu/schema/string/>\n"
+        "PREFIX scms: <http://ns.aksw.org/scms/>\n"
+        "PREFIX nlp: <http://sadiframework.org/services/nlp/nlp.owl#>\n"
+     "SELECT ?matchingText ?drugName ?drug\n"
+     "WHERE {\n"
+     "  SADI <http://sadiframework.org/services/nlp/identifyDrugs>\n"
+     "  FROM {\n"
+     "    <http://example.com/1> a nlp:Document ;\n"
+     "      str:sourceString \"Theo-Dur is a brand name of Theophylline\" .\n"
+     "  } WHERE {\n"
+     "    <http://example.com/1> str:subString ?match .\n"
+     "    ?match str:anchorOf ?matchingText .\n"
+     "    ?match scms:means ?drug .\n"
+     "    ?drug rdfs:label ?drugName\n"
+     "  }\n"
+     "}",
+        " +----------------+----------------+----------------------------------------+\n"
+        " | ?matchingText  | ?drugName      | ?drug                                  |\n"
+        " | 'Theo-Dur'     | 'Theophylline' | <http://www.drugbank.ca/drugs/DB00277> |\n"
+        " | 'Theophylline' | 'Theophylline' | <http://www.drugbank.ca/drugs/DB00277> |\n"
+        " +----------------+----------------+----------------------------------------+");
+    BOOST_CHECK_EQUAL(i.got, i.expected);
+}
+
 #endif /* REMOTE_SADI */
 BOOST_AUTO_TEST_SUITE_END(/* remote */)
 
