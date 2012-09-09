@@ -46,7 +46,20 @@ namespace w3c_sw {
     extern TTerm* DefaultGraph;
 
     class RdfDB {
-	typedef std::map<const TTerm*, BasicGraphPattern*> graphmap_type;
+	struct graphmap_type : public std::map<const TTerm*, BasicGraphPattern*> {
+	    graphmap_type ()
+		: std::map<const TTerm*, BasicGraphPattern*>()
+	    {  }
+	    graphmap_type (const graphmap_type& ref)
+		: std::map<const TTerm*, BasicGraphPattern*>()
+	    {
+		for (const_iterator it = ref.begin(); it != ref.end(); ++it)
+		    if (it->first == DefaultGraph)
+			insert(std::make_pair(it->first, new DefaultGraphPattern(*(DefaultGraphPattern*)it->second)));
+		    else
+			insert(std::make_pair(it->first, new NamedGraphPattern(*(NamedGraphPattern*)it->second)));
+	    }
+	};
     protected:
 	graphmap_type graphs;
 
@@ -76,9 +89,9 @@ namespace w3c_sw {
 	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, HandlerSet* handler)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), handler(handler)
 	{ ensureGraph(DefaultGraph); }
-	RdfDB (RdfDB const &)
-	    : graphs()
-	{ throw(std::runtime_error(FUNCTION_STRING)); ensureGraph(DefaultGraph); }
+	RdfDB (const RdfDB& ref)
+	    : graphs(ref.graphs), webAgent(ref.webAgent), xmlParser(xmlParser)
+	{  }
 	RdfDB (const DefaultGraphPattern* graph) : graphs(), handler(&defaultHandler) {
 	    BasicGraphPattern* bgp = ensureGraph(DefaultGraph);
 	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();

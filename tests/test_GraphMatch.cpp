@@ -132,6 +132,21 @@ BOOST_AUTO_TEST_CASE( bnode_file ) {
     BOOST_CHECK_EQUAL(l, r);
 }
 #endif
+
+BOOST_AUTO_TEST_CASE( dbCopyConstructor ) {
+    DefaultGraphPattern l("<s1> <p1> _:o1 ."
+			  "<s1> <p2> <o2> .", &f);
+    DefaultGraphPattern r("<s2> <p3> <n3> ."
+    			  "<s2> <p4> 'n4' .", &f);
+    RdfDB db1;
+    *db1.findGraph(DefaultGraph) = l;
+    RdfDB db2(db1);
+    BOOST_CHECK_EQUAL(*db2.findGraph(DefaultGraph), l);
+    BOOST_CHECK_MESSAGE(!(*db2.findGraph(DefaultGraph) == r), db2.findGraph(DefaultGraph)->toString() + " == " + r.toString());
+    *db2.findGraph(DefaultGraph) = r;
+    BOOST_CHECK_EQUAL(*db2.findGraph(DefaultGraph), r);
+    BOOST_CHECK_MESSAGE(!(*db2.findGraph(DefaultGraph) == l), db2.findGraph(DefaultGraph)->toString() + " == " + l.toString());
+}
 BOOST_AUTO_TEST_SUITE_END(/* graph_patterns */)
 
 
