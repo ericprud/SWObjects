@@ -60,7 +60,11 @@ struct RSName {
     std::string name;
 };
 
-class BindingsMap : public std::map<std::string, ResultSet*> {
+struct BindingsMap : public std::map<std::string, ResultSet*> {
+    ~BindingsMap () {
+	for (const_iterator it = begin(); it != end(); ++it)
+	    delete it->second;
+    }
 };
 
 class SPARQLfedScanner;
@@ -152,6 +156,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	delete *curResultSet->begin();
 	curResultSet->erase(curResultSet->begin());
     }
 
@@ -234,7 +239,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 238 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 243 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -264,7 +269,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 268 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 273 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -276,7 +281,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 247 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 252 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -346,7 +351,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 350 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 355 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -724,7 +729,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 728 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 733 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

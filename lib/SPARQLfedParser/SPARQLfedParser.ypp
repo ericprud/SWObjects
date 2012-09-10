@@ -70,7 +70,11 @@ struct RSName {
     std::string name;
 };
 
-class BindingsMap : public std::map<std::string, ResultSet*> {
+struct BindingsMap : public std::map<std::string, ResultSet*> {
+    ~BindingsMap () {
+	for (const_iterator it = begin(); it != end(); ++it)
+	    delete it->second;
+    }
 };
 
 class SPARQLfedScanner;
@@ -162,6 +166,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	delete *curResultSet->begin();
 	curResultSet->erase(curResultSet->begin());
     }
 

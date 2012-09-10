@@ -45,7 +45,7 @@ w3c_sw::AtomFactory F;
  */
 struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
     CurlPOSTtoSADIservice (std::string serverParams, const char* data, const char* media)
-	: ClientServerInteraction(serverParams, "/SADI")
+	: w3c_sw::ClientServerInteraction(serverParams, "/SADI")
     {
 	invoke(std::string()
 	       + "curl -s -X POST -H 'Content-Type: " + media + "' " + serverURL + "  -d '" + data + "'");
@@ -56,7 +56,8 @@ struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
  */
 struct ParsedResultSet : public w3c_sw::ResultSet {
     ParsedResultSet (std::string srt) : 
-	ResultSet(&F) {
+	w3c_sw::ResultSet(&F) {
+	delete *begin();
 	erase(begin());
 	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
 	w3c_sw::TTerm::String2BNode bnodeMap;
@@ -68,7 +69,7 @@ struct ParsedResultSet : public w3c_sw::ResultSet {
  */
 struct EvaluatedResultSet : public w3c_sw::ResultSet {
     EvaluatedResultSet (std::string query)
-	: ResultSet(&F)
+	: w3c_sw::ResultSet(&F)
     {
 	w3c_sw::IStreamContext istr(query, w3c_sw::IStreamContext::STRING);
 	w3c_sw::SPARQLfedDriver sparqlParser("", &F);
@@ -76,6 +77,7 @@ struct EvaluatedResultSet : public w3c_sw::ResultSet {
 	sparqlParser.clear(""); // clear out namespaces and base URI.
 	w3c_sw::RdfDB d(&WebClient, &P);
 	op->execute(&d, this);
+	delete op;
     }
     struct ResultAccessor {
 	const w3c_sw::ResultSet* rs;

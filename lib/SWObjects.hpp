@@ -2759,12 +2759,14 @@ protected:
     const TableOperation* m_ConstructTemplate;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
-    DefaultGraphPattern* resultGraph;
 
 public:
     SADIGraphPattern(const TTerm* p_TTerm, e_Silence p_Silence,
 		     const TableOperation* p_ConstructTemplate, WhereClause* p_WhereClause);
-    ~SADIGraphPattern () {  }
+    ~SADIGraphPattern () {
+	delete m_ConstructTemplate;
+	delete m_WhereClause;
+    }
     // WhereClause* getWhereClause () { return m_WhereClause; }
     std::string str();
     virtual void express (Expressor* p_expressor) const {  }
