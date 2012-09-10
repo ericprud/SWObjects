@@ -10,6 +10,20 @@
 
 namespace w3c_sw {
 
+    /** substituteQueryVariables - perform the following substitutions on s:
+     *   %p -> port.
+     */
+    std::string substituteQueryVariables (std::string s, int port) {
+	std::string portStr = boost::lexical_cast<std::string>(port);
+	for (size_t i = 0; i < s.length(); ) {
+	    i = s.find("%p", i);
+	    if (i == std::string::npos)
+		break;
+	    s.replace(i, 2, portStr);
+	}
+	return s;
+    }
+
     struct ServerInteraction {
 	std::string exe, path;
 	std::string hostIP;
@@ -34,13 +48,14 @@ namespace w3c_sw {
 	    std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
 				  exe + " " + serverParams + 
 				  " --serve " + serverURL);
+	    // serverCmd += " | tee server.mon 2>&1";
 	    // w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
 	    serverPipe = popen(serverCmd.c_str(), "r");
 	    if (serverPipe == NULL)
 		throw std::string("popen") + strerror(errno);
 	    if (fgets(line, sizeof line, serverPipe) == NULL ||
 		strncmp("Working directory:", line, 18))
-		throw std::string("server didn't print a status line");
+		throw std::string(serverCmd + " didn't print a status line");
 	    serverS += line;
 	    waitConnect(hostIP, port);
 	}
@@ -144,6 +159,7 @@ namespace w3c_sw {
 	{  }
 
 	void invoke (std::string clientCmd) {
+	    // clientCmd += " | tee client.mon 2>&1";
 	    // w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
 	    char line[80];
 

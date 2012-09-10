@@ -1,4 +1,4 @@
-/* test_Sadi.hpp -- 
+/* test_SADI.hpp -- 
  *
  * Test the SADI server built in to ../bin/sparql and SADI interactions built
  * into the SPARQLfed language.
@@ -39,20 +39,6 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMat
 w3c_sw_DEBUGGING_FUNCTIONS();
 
 w3c_sw::AtomFactory F;
-
-/** substituteQueryVariables - perform the following substitutions on s:
- *   %p -> port.
- */
-std::string substituteQueryVariables (std::string s, int port) {
-    std::string portStr = boost::lexical_cast<std::string>(port);
-    for (size_t i = 0; i < s.length(); ) {
-	i = s.find("%p", i);
-	if (i == std::string::npos)
-	    break;
-	s.replace(i, 2, portStr);
-    }
-    return s;
-}
 
 /** CurlPOSTtoSADIservice - invoke curl with parameters used in the server
  *  invocation.
@@ -133,7 +119,7 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
 
     OperationOnInvokedServer (std::string serverParams, std::string query, std::string expect)
 	: w3c_sw::SPARQLServerInteraction(serverParams, "/SADI"),
-	  got(substituteQueryVariables(query, port)),
+	  got(w3c_sw::substituteQueryVariables(query, port)),
 	  expected(expect)
     {  }
 };
