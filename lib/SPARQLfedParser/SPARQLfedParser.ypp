@@ -394,7 +394,7 @@ public:
 %type <p_RSName> RSREF _O_QRSREF_E_S_QGT_EQUAL_E_C _Q_O_QRSREF_E_S_QGT_EQUAL_E_C_E_Opt
 %type <p_BindingClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
 
-%type <p_TableOperation> QuadPattern QuadData Quads
+%type <p_TableOperation> QuadPattern QuadData Quads _O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -875,12 +875,10 @@ ConstructQuery:
 ;
 
 _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E_Or_QDatasetClause_E_Star_S_QIT_WHERE_E_S_QQuadPattern_E_S_QSolutionModifier_E_C:
-    QuadPattern {
-	driver.curOp = NULL;
-      } _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	  driver.lastWhereClause = $4;
+    QuadPattern _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	  driver.lastWhereClause = $3;
 	  /* $1 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
-	  $$ = new Construct($1, $3, $4, $5);
+	  $$ = new Construct($1, $2, $3, $4);
       }
   | _QDatasetClause_E_Star IT_WHERE QuadPattern SolutionModifier	{
 	SWObjectDuplicator dup(driver.atomFactory);
@@ -1317,10 +1315,10 @@ DeleteWhere:
 
 // <Modify>
 Modify:
-    _Q_O_QIT_WITH_E_S_Qiri_E_C_E_Opt _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star IT_WHERE GroupGraphPattern	{
+    _Q_O_QIT_WITH_E_S_Qiri_E_C_E_Opt _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt IT_WHERE GroupGraphPattern	{
 	if ($1)
 	    w3c_sw_NEED_IMPL("WITH <URI> (DELETE INSERT?|INSERT) ...");
-	$$ = new Modify($2.del, $2.ins, new WhereClause(driver.ensureGraphPattern()));
+	$$ = new Modify($2.del, $2.ins, new WhereClause(driver.ensureGraphPattern()), $4);
 	driver.curOp = NULL;
     }
 ;
@@ -1361,6 +1359,19 @@ _QUsingClause_E_Star:
   | _QUsingClause_E_Star UsingClause	{
 	w3c_sw_NEED_IMPL("_QUsingClause_E_Star");
     }
+;
+
+_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C:
+    IT_CONSTRUCT QuadPattern	{
+	$$ = $2;
+    }
+;
+
+_Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt:
+    {
+	$$ = NULL;
+    }
+  | _O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C	
 ;
 
 DeleteClause:
@@ -1429,6 +1440,7 @@ GraphRefAll:
 QuadPattern:
     GT_LCURLEY Quads GT_RCURLEY	{
 	$$ = $2;
+	driver.curOp = NULL;
     }
 ;
 
@@ -1667,19 +1679,17 @@ SADIinvocation:
       } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
-      } _QIT_SILENT_E_Opt VarOrIri IT_FROM QuadPattern {
-	  driver.curOp = NULL;
-      } WhereClause	{
+      } _QIT_SILENT_E_Opt VarOrIri IT_FROM QuadPattern WhereClause	{
 	  /*
 	    serviceID,
 	    from,
 	    e_Silence
 	    where
 	   */
-	  driver.lastWhereClause = $10;
+	  driver.lastWhereClause = $9;
 	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction
-	      ($<p_TableOperation>2, new SADIGraphPattern($6, $5, $8, $10));
+	      ($<p_TableOperation>2, new SADIGraphPattern($6, $5, $8, $9));
 	  driver.curGraphName = $<p_TTerm>4;
     }
 ;

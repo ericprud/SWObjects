@@ -16,7 +16,6 @@ namespace w3c_sw {
 	std::string interfacePath;
 	size_t exploreTripleCountLimit;
 	size_t exploreGraphCountLimit;
-	const Construct* sadiOp;
 
 	static std::string CSS_common;
 	static std::string CSS_Results;
@@ -26,17 +25,14 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_defn;
 
     public:
-	SimpleInterface (engine_type& engine, controller_type* controller, std::string servicePath,
-			 std::string interfacePath, const Construct* sadiOp = NULL) : 
+	SimpleInterface (engine_type& engine, controller_type* controller,
+			 std::string servicePath, std::string interfacePath) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
 	    engine(engine), controller(controller), servicePath(servicePath), interfacePath(interfacePath),
 	    // hard-code explore*CountLimit
-	    exploreTripleCountLimit(100), exploreGraphCountLimit(10),
-	    sadiOp(sadiOp)
+	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
-	~SimpleInterface () {
-	    delete sadiOp; // usually NULL
-	}
+	~SimpleInterface () {  }
 
     protected:
 
@@ -73,7 +69,10 @@ namespace w3c_sw {
 			if (parm != req.parms.end())
 			    query = parm->second;
 		    } else if (req.getMethod() == "POST" &&
-			       (engine.sadiOp != NULL || req.getContentType().compare(0, 24, "application/sparql-query") == 0))
+			       (req.getContentType().compare(0, 24, "application/sparql-query") == 0
+				|| engine.sadiOp != NULL
+				|| engine.ldpOp != NULL
+				))
 			query = req.getBody();
 		    if (query == interfacePath && path != servicePath) {
 			rep.status = webserver::reply::ok;
@@ -129,6 +128,44 @@ namespace w3c_sw {
 					    sout << xml.str();
 					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 						<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
+					++engine.served;
+					if (engine.runOnce) {
+					    engine.done = true;
+					    controller->stop();
+					}
+				} else if (engine.ldpOp != NULL) {
+				    // w3c_sw_LINE << "executing " << query << " on " << engine.db.str();
+				    RdfDB execDB(engine.db);
+				    // w3c_sw_LINE << execDB.str();
+				    // BasicGraphPattern* ldpInput = engine.db.setTarget(engine.atomFactory.getURI("ldpInput"));
+				    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
+							     engine.baseURI, istr, engine.resultSet, &execDB);
+				    // w3c_sw_LINE << execDB.str();
+				    // std::string language;
+				    // std::string newQuery(query);
+				    // queryLoadList.loadAll();
+				    ResultSet rs(&engine.atomFactory);
+				    // engine.executeQuery(engine.ldpOp, rs, language, newQuery);
+				    engine.ldpOp->bindVariables(&execDB, &rs);
+				    // w3c_sw_LINE << rs;
+				    {
+					boost::mutex::scoped_lock lock(engine.executeMutex);
+					engine.db.clearGraphLog();
+					engine.ldpOp->update(&engine.db, &rs);
+					rs.resultType = ResultSet::RESULT_Tabular;
+					// w3c_sw_LINE << rs;
+					engine.db.synch();
+				    }
+				    RdfDB constructed; // For operations which create a new database.
+				    MakeNewBNode mb(&engine.atomFactory);
+				    BasicGraphPattern* defGP = constructed.findGraph(DefaultGraph);
+				    engine.ldpOp->construct(&constructed, &rs, &mb, defGP);
+				    // engine.db.setTarget(NULL);
+					    rep.status = webserver::reply::ok;
+					    rep.setContentType("text/trig");
+					    sout << constructed.str();
+					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+						<< "LDP invocation returning [[\n" << constructed.str() << "\n]].\n";
 					++engine.served;
 					if (engine.runOnce) {
 					    engine.done = true;
@@ -839,6 +876,7 @@ struct SimpleEngine {
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
     const TTerm* baseURI;
     const Construct* sadiOp;
+    const Modify* ldpOp;
     std::string baseUriMessage () {
 	return (baseURI == NULL)
 	    ? std::string(" with no base URI")
@@ -867,7 +905,7 @@ struct SimpleEngine {
 	  webClient_authPrompter(),
 	  webClient(&webClient_authPrompter),
 #endif /* HTTP_CLIENT != SWOb_DISABLED */
-	  sadiOp(NULL),
+	  sadiOp(NULL), ldpOp(NULL),
 	  noExec(false)
     {  }
 

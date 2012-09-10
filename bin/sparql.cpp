@@ -280,7 +280,7 @@ void validate (boost::any&, const std::vector<std::string>& values, serveURI*, i
     ServerURI = s;
 }
 
-/* Set Query to an RDFLiteral when parsed. */
+/* Set up a SADI service on the server. */
 struct sadiConstruct {};
 void validate (boost::any&, const std::vector<std::string>& values, sadiConstruct*, int)
 {
@@ -301,6 +301,32 @@ void validate (boost::any&, const std::vector<std::string>& values, sadiConstruc
 	    ::VALIDATION_ERROR(std::string("SADI argument \"").
 			       append(s).append("\" is not a CONSTRUCT."));
     TheServer.engine.sadiOp = c;
+}
+
+/* Set up an LDP service on the server. */
+struct ldpModify {};
+void validate (boost::any&, const std::vector<std::string>& values, ldpModify*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    if (TheServer.engine.ldpOp != NULL) {
+	sw::SPARQLSerializer ss;
+	TheServer.engine.ldpOp->express(&ss);
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("LDP MODIFY: \"").
+			       append(s).append("\" is redundant against ").
+			       append(ss.str()));
+    }
+    sw::IStreamContext istr(s, sw::IStreamContext::STRING);
+    const sw::Operation* parsed = TheServer.engine.sparqlParser.parse(istr);
+    const sw::OperationSet* os = dynamic_cast<const sw::OperationSet*>(parsed);
+    assert(os->size() == 1);
+    const sw::Operation* first = *os->begin();
+    const sw::Modify* c = dynamic_cast<const sw::Modify*>(first);
+    if (c == NULL)
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("LDP argument \"").
+			       append(s).append("\" is not a MODIFY."));
+    TheServer.engine.ldpOp = c;
 }
 
 #if REGEX_LIB != SWOb_DISABLED
@@ -820,6 +846,7 @@ int main(int ac, char* av[])
 	     *   client call: curl -X POST -H 'Content-Type: text/turtle' http://localhost:8088/SADI -d '<s1> <tag:eric@w3.org/2012/p1> <ooo> .'
 	     */
             ("SADI", po::value<sadiConstruct>(), "SADI server (instead of default SPARQL server)")
+            ("LDP", po::value<ldpModify>(), "LDP server (instead of default SPARQL server)")
 #if REGEX_LIB != SWOb_DISABLED
             ("pathmap", po::value<pathmapArg>(), "path map in the form \"s{/some/URI/path}{relative/filesystem/path}\"")
 #endif /* REGEX_LIB != SWOb_DISABLED */

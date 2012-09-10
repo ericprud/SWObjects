@@ -718,6 +718,8 @@ public:
     void push_back(const Operation* op) {
 	operations.push_back(op);
     }
+    size_t size () const { return operations.size(); }
+    const Operation* operator[](size_t idx) const { return operations[idx]; }
     std::vector<const Operation*>::iterator begin () { return operations.begin(); }
     std::vector<const Operation*>::const_iterator begin () const { return operations.begin(); }
     std::vector<const Operation*>::iterator end () { return operations.end(); }
@@ -790,6 +792,7 @@ public:
 
     /* TTerm Constants: */
     static const URI* FUNC_normalize_space;
+    static const URI* FUNC_host;
 
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
@@ -951,6 +954,7 @@ protected:
     virtual ~BNodeEvaluator () {  }
     virtual const TTerm* evaluate(const BNode* node, const Result* r) = 0;
 };
+
 class BNode : public Bindable {
     friend class AtomFactory;
 private:
@@ -1885,6 +1889,33 @@ public:
     bool eval(const Expression* expression, const Result* row, const RdfDB* db);
 };
 
+/** The standar SPARQL evaluation semantics demand BNodes be treated as variables.
+ */
+struct MakeNewBNode : public BNodeEvaluator {
+#if !defined(SWIG)
+    struct _Pair {
+	const BNode* node;
+	const Result* r;
+	_Pair (const BNode* node, const Result* r) : node(node), r(r) {  }
+	bool operator< (const _Pair& ref) const {
+	    if (node != ref.node)
+		return node < ref.node;
+	    return r < ref.r;
+	}
+    };
+    AtomFactory* atomFactory;
+    std::map<_Pair, const BNode*> map;
+    virtual const TTerm* evaluate (const BNode* node, const Result* r) {
+	_Pair p(node, r);
+	if (map.find(p) == map.end())
+	    map[p] = atomFactory->createBNode();
+	return map[p];
+    }
+#endif /* defined(SWIG) */
+public:
+    MakeNewBNode (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
+};
+
 /* END Parts Of Speach */
 
 class Expression : public Base {
@@ -2797,8 +2828,11 @@ private:
     const Delete* m_delete;
     const Insert* m_insert;
     WhereClause* m_WhereClause;
+    const TableOperation* m_ConstructTemplate;
 public:
-    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) : GraphChange(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause) {  }
+    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const TableOperation* p_ConstructTemplate = NULL)
+	: GraphChange(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause), m_ConstructTemplate(p_ConstructTemplate)
+    {  }
     ~Modify();
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
     virtual void express(Expressor* p_expressor) const;
@@ -2806,6 +2840,15 @@ public:
 	return false;
     }
     virtual e_OPTYPE getOperationType () const { return OPTYPE_modify; }
+    void bindVariables (RdfDB* db, ResultSet* rs) const {
+	if (m_WhereClause != NULL)
+	    m_WhereClause->bindVariables(db, rs);
+    }
+    void update(RdfDB* db, ResultSet* rs) const; // @@ make const ResultSet
+    void construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+	if (m_ConstructTemplate)
+	    m_ConstructTemplate->construct(target, rs, evaluator, bgp);
+    }
 };
 class Insert : public GraphChange {
     friend class SPARQLfedParser;
@@ -3055,6 +3098,7 @@ namespace AtomicFunction {
 
     namespace BuiltIn {
 	    FPtr EXTFUNC_normalize_space;
+	    FPtr EXTFUNC_host;
 
 	    FPtr numericCast;
 	    FPtr URI_xsd_dateTime;
