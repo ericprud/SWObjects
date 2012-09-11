@@ -49,7 +49,8 @@ namespace w3c_sw {
 				  exe + " " + serverParams + 
 				  " --serve " + serverURL);
 	    // serverCmd += " | tee server.mon 2>&1";
-	    // w3c_sw_LINEN << "serverCmd: " << serverCmd << std::endl;
+	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		<< "serverCmd: " << serverCmd << std::endl;
 	    serverPipe = popen(serverCmd.c_str(), "r");
 	    if (serverPipe == NULL)
 		throw std::string("popen") + strerror(errno);
@@ -77,7 +78,7 @@ namespace w3c_sw {
 	    }
 	    std::stringstream ss;
 	    ss << "Unable to find an available port between " << start << " and " << end << ".";
-	    throw ss.str();
+	    throw std::runtime_error(ss.str());
 	}
 
 	/** waitConnect - busywait trying to connect to a port.
@@ -160,7 +161,8 @@ namespace w3c_sw {
 
 	void invoke (std::string clientCmd) {
 	    // clientCmd += " | tee client.mon 2>&1";
-	    // w3c_sw_LINEN << "clientCmd: " << clientCmd << std::endl;
+	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		<< "clientCmd: " << clientCmd << std::endl;
 	    char line[80];
 
 	    /* Start the client and demand at least one line of output.

@@ -76,6 +76,13 @@ struct EvaluatedPOSTresponseResultSet : public w3c_sw::ResultSet {
 	{
 	    boost::shared_ptr<w3c_sw::IStreamContext> istr;
 	    istr = d.webAgent->post(service.c_str(), "text/turtle", postData.c_str());
+	    if (w3c_sw::Logger::Logging(w3c_sw::Logger::IOLog_level, w3c_sw::Logger::info)) {
+		std::stringstream o;
+		o << "POSTing text/turtle [[\n" << postData.c_str() << "]] to " << service;
+		o << " yielded  media type " << *istr->mediaType;
+		o << ".\n";
+		BOOST_LOG_SEV(w3c_sw::Logger::IOLog::get(), w3c_sw::Logger::info) << o.str();
+	    }
 	    d.loadData(d.ensureGraph(w3c_sw::DefaultGraph), *istr, service, service, &F);
 	}
 
