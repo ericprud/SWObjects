@@ -63,6 +63,8 @@ namespace w3c_sw {
 		    foot(sout);
 		} else if (path == servicePath || getGraph != NULL) {
 		    webserver::request::parmmap::const_iterator parm;
+		    // w3c_sw_LINEN << "method: " << req.getMethod() << "\n";
+		    // w3c_sw_LINEN << "content type: " << req.getContentType() << "\n";
 		    if (req.getMethod() == "GET"
 			|| (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
 			parm = req.parms.find("query");
@@ -74,6 +76,7 @@ namespace w3c_sw {
 				|| engine.ldpOp != NULL
 				))
 			query = req.getBody();
+			// w3c_sw_LINEN << "query: " << query << "\n";
 		    if (query == interfacePath && path != servicePath) {
 			rep.status = webserver::reply::ok;
 			std::string body = getGraph->toString(MediaType("text/turtle"));
@@ -140,6 +143,10 @@ namespace w3c_sw {
 				    // BasicGraphPattern* ldpInput = engine.db.setTarget(engine.atomFactory.getURI("ldpInput"));
 				    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
 							     engine.baseURI, istr, engine.resultSet, &execDB);
+				    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+					<< "parsing " << req.getContentType().c_str()
+					<< " [[\n" << query << "\n]]"
+					<< " yielded [[\n" << execDB.str() << "\n]].\n";
 				    // w3c_sw_LINE << execDB.str();
 				    // std::string language;
 				    // std::string newQuery(query);
