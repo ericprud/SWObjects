@@ -70,7 +70,7 @@ public:
 
     SPARQLfedParser::token_type typedLiteral(SPARQLfedParser::semantic_type*&, SPARQLfedParser::token_type tok);
     SPARQLfedParser::token_type unescape(SPARQLfedParser::semantic_type*&, SPARQLfedParser::location_type*&, size_t skip, SPARQLfedParser::token_type tok);
-    const URI* resolvePrefix(const char*);
+    const URI* resolvePrefix(const char*, SPARQLfedParser::location_type*& yylloc);
     const URI* resolveBase(const char*, bool stripDelims);
 };
 

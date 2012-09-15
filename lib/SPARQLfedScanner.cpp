@@ -4372,12 +4372,12 @@ YY_RULE_SETUP
 case 155:
 YY_RULE_SETUP
 #line 421 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
+{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
 #line 422 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN;}
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
@@ -5599,7 +5599,7 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
 	is >> d;
 	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
 	return tok;
-    default: throw(new std::exception());
+    default: throw(new std::runtime_error("program flow exception -- imroper call to SPARQLfedScanner::typedLiteral"));
     }
 }
 
@@ -5611,17 +5611,15 @@ SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semanti
 }
 
 
-const URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
+const URI* SPARQLfedScanner::resolvePrefix (const char* yytext, SPARQLfedParser::location_type*& yylloc){
     std::string ret(yytext);
     size_t index = ret.find(':');
     if (index == std::string::npos)
-	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+	driver->error(*yylloc, std::string() + "Inexplicable lack of ':' in prefix: \"" + yytext + "\"");
     const URI* nspace = driver->getNamespace(ret.substr(0, index), true);
-    if (nspace == NULL) {
-	std::stringstream err;
-	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
-	throw(std::runtime_error(err.str()));
-    }
+    if (nspace == NULL)
+	driver->error(*yylloc, std::string() + "Unknown prefix: \"" + ret.substr(0, index) + "\"");
+
     ret.replace(0, index+1, nspace->getLexicalValue());
     return resolveBase(ret.c_str(), false);
 }

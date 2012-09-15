@@ -418,8 +418,8 @@ LINEFEED		(\r\n|\r|\n)
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", 1); return token::IT_true;}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", 0); return token::IT_false;}
 {IRIREF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
-{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
-{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}
+{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN;}
 {BLANK_NODE_LABEL}	{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 {VAR1}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR1;}
 {VAR2}			{yylval->p_Variable = driver->getVariable(yytext+1); return token::VAR2;}
@@ -485,7 +485,7 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
 	is >> d;
 	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
 	return tok;
-    default: throw(new std::exception());
+    default: throw(new std::runtime_error("program flow exception -- imroper call to SPARQLfedScanner::typedLiteral"));
     }
 }
 
@@ -497,17 +497,15 @@ SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semanti
 }
 
 
-const URI* SPARQLfedScanner::resolvePrefix (const char* yytext){
+const URI* SPARQLfedScanner::resolvePrefix (const char* yytext, SPARQLfedParser::location_type*& yylloc){
     std::string ret(yytext);
     size_t index = ret.find(':');
     if (index == std::string::npos)
-	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+	driver->error(*yylloc, std::string() + "Inexplicable lack of ':' in prefix: \"" + yytext + "\"");
     const URI* nspace = driver->getNamespace(ret.substr(0, index), true);
-    if (nspace == NULL) {
-	std::stringstream err;
-	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
-	throw(std::runtime_error(err.str()));
-    }
+    if (nspace == NULL)
+	driver->error(*yylloc, std::string() + "Unknown prefix: \"" + ret.substr(0, index) + "\"");
+
     ret.replace(0, index+1, nspace->getLexicalValue());
     return resolveBase(ret.c_str(), false);
 }
