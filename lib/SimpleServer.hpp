@@ -138,9 +138,13 @@ namespace w3c_sw {
 					}
 				} else if (engine.ldpOp != NULL) {
 				    // w3c_sw_LINE << "executing " << query << " on " << engine.db.str();
+				    // RdfDB& execDB = engine.db;
 				    RdfDB execDB(engine.db);
 				    // w3c_sw_LINE << execDB.str();
 				    // BasicGraphPattern* ldpInput = engine.db.setTarget(engine.atomFactory.getURI("ldpInput"));
+				    // const sw::TTerm* postGraph = engine.atomFactory.getURI("/POST");
+				    // engine.loadDataOrResults(postGraph, "ldpInput", engine.baseURI,
+				    // 			     istr, engine.resultSet, &execDB);
 				    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
 							     engine.baseURI, istr, engine.resultSet, &execDB);
 				    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)

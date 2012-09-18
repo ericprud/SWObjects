@@ -40,12 +40,17 @@ w3c_sw_DEBUGGING_FUNCTIONS();
 
 w3c_sw::AtomFactory F;
 
+// Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
+// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff
+#define LOWPORT 0x9200
+#define HIPORT  0x92ff
+
 /** CurlPOSTtoLDPservice - invoke curl with parameters used in the server
  *  invocation.
  */
 struct CurlPOSTtoLDPservice : w3c_sw::ClientServerInteraction {
     CurlPOSTtoLDPservice (std::string serverParams, std::string serverPath, std::string data, const char* media)
-	: ClientServerInteraction(serverParams, serverPath)
+	: ClientServerInteraction(serverParams, serverPath, LOWPORT, HIPORT)
     {
 	invoke(std::string()
 	       + "curl -s -X POST -H 'Content-Type: " + media + "' " + serverURL + "  -d '" + data + "'");
@@ -120,7 +125,7 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
     ParsedResultSet expected;
 
     OperationOnInvokedServer (std::string serverParams, std::string serverPath, std::string postData, std::string query, std::string expect, std::string endState)
-	: w3c_sw::SPARQLServerInteraction(serverParams, serverPath),
+	: w3c_sw::SPARQLServerInteraction(serverParams, serverPath, LOWPORT, HIPORT),
 	  got(std::string() + "http://localhost:" + boost::lexical_cast<std::string>(port) + serverPath,
 	      postData, w3c_sw::substituteQueryVariables(query, port)),
 	  expected(expect)
@@ -140,7 +145,7 @@ BOOST_AUTO_TEST_CASE( curl1to1 ) {
 	 "       INSERT { GRAPH ?bug { ?bug a :Bug ; :whiner ?whiner ; :whatNow ?desc } }\n"
 	 "    CONSTRUCT { ?bug a :Bug }\n"
 	 "        WHERE { ?s :whiner ?whiner ; :whatNow ?desc\n"
-	 "                BIND (ldp:host(</bugz>, </bugHead>, 2) AS ?bug) }' --once",
+	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --once",
 	 // interface path:
 	 "/createBug",
 
@@ -158,7 +163,7 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
 	 "       INSERT { GRAPH ?bug { ?bug a :Bug ; :whiner ?whiner ; :whatNow ?desc } }\n"
 	 "    CONSTRUCT { ?bug a :Bug }\n"
 	 "        WHERE { ?s :whiner ?whiner ; :whatNow ?desc\n"
-	 "                BIND (ldp:host(</bugz>, </bugHead>, 2) AS ?bug) }' --once",
+	 "                BIND (ldp:newObj(</bugz>) AS ?bug) }' --once",
 	 // interface path:
 	 "/createBug",
 
@@ -201,7 +206,9 @@ namespace LDBPexamples {
 	" @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.\n"
 	" @prefix bp: <http://open-services.net/ns/basicProfile#>.\n" +
 	turtlePrefix_dcterms +
-	turtlePrefix_o;
+	turtlePrefix_xsd +
+	turtlePrefix_o
+	;
 
     static std::string sparqlPrefixes =
 	"PREFIX ldp: <https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#>\n"
@@ -212,20 +219,31 @@ namespace LDBPexamples {
 	"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 	"PREFIX dcterms: <http://purl.org/dc/terms/>\n"
 	"PREFIX bp: <http://open-services.net/ns/basicProfile#>\n"
-	"PREFIX o: <http://example.org/ontology/>\n";
+	"PREFIX o: <http://example.org/ontology/>\n"
+	"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
+	;
 
     static std::string container =
 	"container: a bp:Container ;\n"
 	"   dcterms:title 'The assets of JohnZSmith' ;\n"
 	"   bp:membershipSubject membership: ;\n"
-	"   bp:membershipPredicate o:asset .\n";
+	"   bp:membershipPredicate o:asset .\n"
+	;
 
     static std::string p1_4members =
 	"membership: a o:NetWorth ;\n"
 	"    o:asset asset:a1 , asset:a4 , asset:a3 , asset:a2 .\n"
 	"\n"
 	"asset:a1 a o:Stock ; o:value 100.00 .\n"
-	"asset:a2 a o:Cash  ; o:value  50.00 .\n";
+	"asset:a2 a o:Cash  ; o:value  50.00 .\n"
+	;
+
+    static std::string p1_4pages =
+	"asset:a1 { asset:a1 a o:Stock ; o:value 100.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
+	"asset:a2 { asset:a2 a o:Cash  ; o:value  50.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
+	"asset:a3 { asset:a3 a o:Bribe ; o:value  10.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
+	"asset:a4 { asset:a4 a o:House ; o:value   1.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
+	;
 
     static std::string p2_1members =
 	"membership: a o:NetWorth;\n"
@@ -233,7 +251,8 @@ namespace LDBPexamples {
 	"\n"
 	"asset:a5 a o:Stock;\n"
 	"   dcterms:title \"Big Co.\" ;\n"
-	"   o:value 200.02 .\n";
+	"   o:value 200.02 .\n"
+	;
 
     static std::string modify =
 	sparqlPrefixes + 
@@ -248,17 +267,18 @@ namespace LDBPexamples {
 	"CONSTRUCT { ?NewObj a ?type }\n"
 	"WHERE     {\n"
 	"  ?oldObj a ?type ; dcterms:title ?title ; o:value ?value ; dcterms:date ?date\n"
-	// "  BIND (ldp:lastTail(container:) AS ?LastTail)\n"
-	// "  BIND (ldp:newTail (container:) AS ?NewTail)\n"
-	// "  BIND (ldp:newNil  (container:) AS ?NewNil)\n"
-	// "  BIND (ldp:curTail (container:) AS ?CurTail)\n"
-	// "  BIND (ldp:newObj  ()           AS ?NewObj)\n"
-	"  BIND (page:1 AS ?LastTail)\n"
-	"  BIND (page:2  AS ?NewTail)\n"
-	"  BIND (rdf:nil   AS ?NewNil)\n"
-	"  BIND (page:2  AS ?CurTail)\n"
-	"  BIND (asset:a5   AS ?NewObj)\n"
-	"}\n";
+	"  BIND (ldp:lastTail(container:, membership:, o:asset, 4) AS ?LastTail)\n"
+	"  BIND (ldp:newTail (container:, membership:, o:asset, 4) AS ?NewTail)\n"
+	"  BIND (ldp:newNil  (container:, membership:, o:asset, 4) AS ?NewNil)\n"
+	"  BIND (ldp:curTail (container:, membership:, o:asset, 4) AS ?CurTail)\n"
+	"  BIND (ldp:newObj  (asset:a) AS ?NewObj)\n"
+	// "  BIND (page:1 AS ?LastTail)\n"
+	// "  BIND (page:2  AS ?NewTail)\n"
+	// "  BIND (rdf:nil   AS ?NewNil)\n"
+	// "  BIND (page:2  AS ?CurTail)\n"
+	// "  BIND (asset:a5   AS ?NewObj)\n"
+	"}\n"
+	;
 
     std::string post_5 =
 	LDBPexamples::turtlePrefix_o +
@@ -279,7 +299,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_curl ) {
 	 // Client graph to POST to service:
 	 LDBPexamples::post_5, "text/turtle");
 
-    BOOST_CHECK_EQUAL("{\n  <http://example.org/netWorth/nw1/assetContainer/a5> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ontology/Stock> .\n}\n", i.clientS);
+    BOOST_CHECK_EQUAL("{\n  <http://example.org/netWorth/nw1/assetContainer/a1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ontology/Stock> .\n}\n", i.clientS);
 }
 
 
@@ -292,7 +312,15 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	"          bp:pageOf container: ;\n"
 	"          bp:nextPage rdf:nil .\n"
 	+     LDBPexamples::p1_4members
-	+ "}\n";
+	+ "}\n"
+	+ LDBPexamples::p1_4pages
+	;
+
+    {
+	std::ofstream f("LDP/LDBP_pagingExample_client-before.trig");
+	f << before;
+	f.close();
+    }
 
     /* ?Container  <...>      <...>
        ?LastTail   <?p=1>     <?p=1>
@@ -320,7 +348,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
-	 std::string() + "--LDP '" + LDBPexamples::modify + "' --once",
+	 std::string() + "-d LDP/LDBP_pagingExample_client-before.trig --LDP '" + LDBPexamples::modify + "' --once",
 	 // interface path:
 	 "/moreMoney",
 

@@ -4,11 +4,85 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
+#include <sys/wait.h>   /* header for waitpid() and various macros */
 
 #ifndef INCLUDED_tests_ServerInteraction
 #define INCLUDED_tests_ServerInteraction
 
 namespace w3c_sw {
+
+    /** SigChildGuard - capture SIGCHLD signals and record the child return value.
+     */
+    struct SigChildGuard {
+	static int ChildRet;		// A global to capture the result from a childHandler
+	static bool ChildRetSet;	// and a marker for whether it's set.
+
+	struct sigaction oldact;
+
+	SigChildGuard () {
+	    ChildRetSet = false;
+	    if (sigaction(SIGCHLD, NULL, &oldact) < 0)
+		throw std::runtime_error("unable to get current SIGCHLD action");
+
+	    struct sigaction act;
+	    sigemptyset(&act.sa_mask); // clear out act's sigset_t
+
+	    act.sa_handler = childHandler;
+	    act.sa_flags = SA_NOCLDSTOP; // only catch terminated children
+	    if (sigaction(SIGCHLD, &act, NULL) < 0)
+		throw std::runtime_error("unable to set SIGCHLD action");
+	}
+
+	~SigChildGuard () {
+	    if (sigaction(SIGCHLD, &oldact, NULL) < 0)
+		throw std::runtime_error("unable to restore old SIGCHLD action");
+	}
+
+	static void childHandler (int signo) {
+	    int status, child_val;
+
+	    /* Wait for any child without blocking */
+	    if (waitpid(-1, &status, WNOHANG) < 0) 
+		; // sometimes returns error in linux
+	    // throw std::runtime_error("signal caught but child failed to terminate");
+	    if (WIFEXITED(status)) {            /* If child exited normally   */
+		ChildRet = WEXITSTATUS(status); /*   get child's exit status. */
+		ChildRetSet = true;
+	    }
+	}
+    };
+    int SigChildGuard::ChildRet = 0;		// A global to capture the result from a childHandler
+    bool SigChildGuard::ChildRetSet = false;	// and a marker for whether it's set.
+
+
+    /** OutputFromNonInteractiveProcess - execute cmd and return the standard output.
+     */
+    struct OutputFromNonInteractiveProcess {
+	std::string s;
+	OutputFromNonInteractiveProcess (const std::string cmd) {
+	    w3c_sw::SigChildGuard g;
+	    s  = "execution failure";
+	    FILE *p = ::popen(cmd.c_str(), "r");
+	    assert(p != NULL);
+	    char buf[100];
+	    s = "";
+
+	    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX. */
+	    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
+		s += std::string(buf, buf + count);
+		::fflush(p);
+	    }
+	    ::pclose(p);
+	}
+    };
+    bool operator== (OutputFromNonInteractiveProcess& tested, std::string& ref) {
+	return tested.s == ref;
+    }
+    std::ostream& operator== (std::ostream& o, OutputFromNonInteractiveProcess& tested) {
+	return o << tested.s;
+    }
+
 
     /** substituteQueryVariables - perform the following substitutions on s:
      *   %p -> port.
@@ -30,17 +104,13 @@ namespace w3c_sw {
 	int port;
 	std::string serverS, serverURL;
 	FILE *serverPipe;
+	w3c_sw::SigChildGuard g;
 
 	ServerInteraction (std::string exe, std::string path,
 			   std::string hostIP, std::string serverParams, int lowPort, int highPort)
-	    : exe(exe), path(path), hostIP(hostIP), 
-	      port(firstOpenPort(hostIP, lowPort, highPort))
+	    : exe(exe), path(path), hostIP(hostIP), port(firstOpenPort(hostIP, lowPort, highPort)),
+	      serverURL("http://localhost:" + boost::lexical_cast<std::string>(port) + path)
 	{
-	    {
-		std::stringstream ss;
-		ss << "http://localhost:" << port << path;
-		serverURL = ss.str();
-	    }
 	    char line[80];
 
 	    /* Start the server and wait for it to listen.
@@ -48,7 +118,7 @@ namespace w3c_sw {
 	    std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
 				  exe + " " + serverParams + 
 				  " --serve " + serverURL);
-	    // serverCmd += " | tee server.mon 2>&1";
+	    // serverCmd += " 2>&1 | tee -a server.mon";
 	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
 		<< "serverCmd: " << serverCmd << std::endl;
 	    serverPipe = popen(serverCmd.c_str(), "r");
@@ -59,6 +129,11 @@ namespace w3c_sw {
 		throw std::string(serverCmd + " didn't print a status line");
 	    serverS += line;
 	    waitConnect(hostIP, port);
+	}
+
+	~ServerInteraction () {
+	    if (pclose(serverPipe) == -1 && errno != ECHILD)
+		throw std::string() + "pclose(serverPipe)" + strerror(errno);
 	}
 
 	static int firstOpenPort (std::string ip, int start, int end) {
@@ -76,9 +151,11 @@ namespace w3c_sw {
 		    return port;
 		}
 	    }
-	    std::stringstream ss;
-	    ss << "Unable to find an available port between " << start << " and " << end << ".";
-	    throw std::runtime_error(ss.str());
+	    throw std::runtime_error("Unable to find an available port between "
+				     + boost::lexical_cast<std::string>(start)
+				     + " and "
+				     + boost::lexical_cast<std::string>(end)
+				     + ".");
 	}
 
 	/** waitConnect - busywait trying to connect to a port.
@@ -115,13 +192,13 @@ namespace w3c_sw {
 		struct sigaction child, old;
 		child.sa_handler = SIG_IGN;
 		sigaction(SIGCHLD, &child, &old);
-		FILE* readyPipe = popen(ss.str().c_str(), "r");
-		if (fgets(buf, sizeof buf, readyPipe) != NULL)
+		FILE* readyPipe = ::popen(ss.str().c_str(), "r");
+		if (::fgets(buf, sizeof buf, readyPipe) != NULL)
 		    break;
 		else
 		    w3c_sw_LINEN << "not yet\n";
 		sigaction(SIGCHLD, &old, NULL);
-		if (pclose(readyPipe) == -1 && errno != ECHILD)
+		if (::pclose(readyPipe) == -1 && errno != ECHILD)
 		    throw std::string("pclose(readyPipe)") + strerror(errno);
 	    }
 	    w3c_sw_LINEN << "running\n";
@@ -129,12 +206,10 @@ namespace w3c_sw {
 
 	/** readToExhaustion - read and close an iostream.
 	 */
-	static void readToExhaustion (FILE* stream, std::string& str, const char* title) {
+	static void readToExhaustion (FILE* stream, std::string& str) {
 	    char line[80];
 	    while (fgets(line, sizeof line, stream) != NULL)
 		str += line;
-	    if (pclose(stream) == -1 && errno != ECHILD)
-		throw std::string() + "pclose(" + title +")" + strerror(errno);
 	}
 
     };
@@ -143,8 +218,8 @@ namespace w3c_sw {
     /** SPARQLServerInteraction - ivocations of the bin/sparql binary.
      */
     struct SPARQLServerInteraction : public ServerInteraction {
-	SPARQLServerInteraction (std::string serverParams, std::string serverPath)
-	    : ServerInteraction ("../bin/sparql", serverPath, "127.0.0.1", serverParams, 31533, 32767)
+	SPARQLServerInteraction (std::string serverParams, std::string serverPath, int lowPort, int highPort)
+	    : ServerInteraction ("../bin/sparql", serverPath, "127.0.0.1", serverParams, lowPort, highPort)
 	{  }
     };
 
@@ -155,8 +230,8 @@ namespace w3c_sw {
     struct ClientServerInteraction : SPARQLServerInteraction {
 	std::string clientS;
 
-	ClientServerInteraction (std::string serverParams, std::string serverPath)
-	    : SPARQLServerInteraction(serverParams, serverPath)
+	ClientServerInteraction (std::string serverParams, std::string serverPath, int lowPort, int highPort)
+	    : SPARQLServerInteraction(serverParams, serverPath, lowPort, highPort)
 	{  }
 
 	void invoke (std::string clientCmd) {
@@ -179,8 +254,10 @@ namespace w3c_sw {
 
 	    /* Read and close the client and server pipes.
 	     */
-	    readToExhaustion(clientPipe, clientS, "client pipe");
-	    readToExhaustion(serverPipe, serverS, "server pipe");
+	    readToExhaustion(clientPipe, clientS);
+	    readToExhaustion(serverPipe, serverS);
+	    if (pclose(clientPipe) == -1 && errno != ECHILD)
+		throw std::string() + "pclose(clientPipe)" + strerror(errno);
 	}
 
     };
@@ -190,8 +267,8 @@ namespace w3c_sw {
      */
     struct SPARQLClientServerInteraction : ClientServerInteraction {
 	SPARQLClientServerInteraction (std::string serverParams, std::string serverPath,
-				       std::string clientParams)
-	    : ClientServerInteraction(serverParams, serverPath)
+				       std::string clientParams, int lowPort, int highPort)
+	    : ClientServerInteraction(serverParams, serverPath, lowPort, highPort)
 	{
 	    invoke(exe + " --service " + serverURL + " " + clientParams);
 	}

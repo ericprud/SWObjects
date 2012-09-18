@@ -40,12 +40,17 @@ w3c_sw_DEBUGGING_FUNCTIONS();
 
 w3c_sw::AtomFactory F;
 
+// Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
+// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff
+#define LOWPORT 0x9100
+#define HIPORT  0x91ff
+
 /** CurlPOSTtoSADIservice - invoke curl with parameters used in the server
  *  invocation.
  */
 struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
     CurlPOSTtoSADIservice (std::string serverParams, const char* data, const char* media)
-	: w3c_sw::ClientServerInteraction(serverParams, "/SADI")
+	: w3c_sw::ClientServerInteraction(serverParams, "/SADI", LOWPORT, HIPORT)
     {
 	invoke(std::string()
 	       + "curl -s -X POST -H 'Content-Type: " + media + "' " + serverURL + "  -d '" + data + "'");
@@ -120,7 +125,7 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
     ParsedResultSet expected;
 
     OperationOnInvokedServer (std::string serverParams, std::string query, std::string expect)
-	: w3c_sw::SPARQLServerInteraction(serverParams, "/SADI"),
+	: w3c_sw::SPARQLServerInteraction(serverParams, "/SADI", LOWPORT, HIPORT),
 	  got(w3c_sw::substituteQueryVariables(query, port)),
 	  expected(expect)
     {  }

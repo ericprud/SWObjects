@@ -561,7 +561,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
 	XPATHCONST   (normalize_space),
-	EXTENCONST   (host),
+	EXTENCONST   (lastTail),
+	EXTENCONST   (newTail),
+	EXTENCONST   (newNil),
+	EXTENCONST   (curTail),
+	EXTENCONST   (newObj),
 
 	XSDCONST(integer),
 	XSDCONST(decimal),
@@ -656,97 +660,101 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 #if !defined(SWIG) // SWIG 2.0.0 appears to barf on initializers for statics. \[\([0-9]+\)\] -> [\#]
     const URI* TTerm::FUNC_normalize_space	 = &AtomFactory::_URIConstants[0].uri;
-    const URI* TTerm::FUNC_host			 = &AtomFactory::_URIConstants[1].uri;
+    const URI* TTerm::FUNC_lastTail		 = &AtomFactory::_URIConstants[1].uri;
+    const URI* TTerm::FUNC_newTail		 = &AtomFactory::_URIConstants[2].uri;
+    const URI* TTerm::FUNC_newNil		 = &AtomFactory::_URIConstants[3].uri;
+    const URI* TTerm::FUNC_curTail		 = &AtomFactory::_URIConstants[4].uri;
+    const URI* TTerm::FUNC_newObj		 = &AtomFactory::_URIConstants[5].uri;
 
-    const URI* TTerm::URI_xsd_integer		 = &AtomFactory::_URIConstants[2].uri;
-    const URI* TTerm::URI_xsd_decimal		 = &AtomFactory::_URIConstants[3].uri;
-    const URI* TTerm::URI_xsd_float		 = &AtomFactory::_URIConstants[4].uri;
-    const URI* TTerm::URI_xsd_double		 = &AtomFactory::_URIConstants[5].uri;
-    const URI* TTerm::URI_xsd_string		 = &AtomFactory::_URIConstants[6].uri;
-    const URI* TTerm::URI_xsd_boolean		 = &AtomFactory::_URIConstants[7].uri;
-    const URI* TTerm::URI_xsd_nonPositiveInteger = &AtomFactory::_URIConstants[8].uri;
-    const URI* TTerm::URI_xsd_negativeInteger	 = &AtomFactory::_URIConstants[9].uri;
-    const URI* TTerm::URI_xsd_long		 = &AtomFactory::_URIConstants[10].uri;
-    const URI* TTerm::URI_xsd_int		 = &AtomFactory::_URIConstants[11].uri;
-    const URI* TTerm::URI_xsd_short		 = &AtomFactory::_URIConstants[12].uri;
-    const URI* TTerm::URI_xsd_byte		 = &AtomFactory::_URIConstants[13].uri;
-    const URI* TTerm::URI_xsd_nonNegativeInteger = &AtomFactory::_URIConstants[14].uri;
-    const URI* TTerm::URI_xsd_unsignedLong	 = &AtomFactory::_URIConstants[15].uri;
-    const URI* TTerm::URI_xsd_unsignedInt	 = &AtomFactory::_URIConstants[16].uri;
-    const URI* TTerm::URI_xsd_unsignedShort	 = &AtomFactory::_URIConstants[17].uri;
-    const URI* TTerm::URI_xsd_unsignedByte	 = &AtomFactory::_URIConstants[18].uri;
-    const URI* TTerm::URI_xsd_positiveInteger	 = &AtomFactory::_URIConstants[19].uri;
-    const URI* TTerm::URI_xsd_dateTime		 = &AtomFactory::_URIConstants[20].uri;
+    const URI* TTerm::URI_xsd_integer		 = &AtomFactory::_URIConstants[6].uri;
+    const URI* TTerm::URI_xsd_decimal		 = &AtomFactory::_URIConstants[7].uri;
+    const URI* TTerm::URI_xsd_float		 = &AtomFactory::_URIConstants[8].uri;
+    const URI* TTerm::URI_xsd_double		 = &AtomFactory::_URIConstants[9].uri;
+    const URI* TTerm::URI_xsd_string		 = &AtomFactory::_URIConstants[10].uri;
+    const URI* TTerm::URI_xsd_boolean		 = &AtomFactory::_URIConstants[11].uri;
+    const URI* TTerm::URI_xsd_nonPositiveInteger = &AtomFactory::_URIConstants[12].uri;
+    const URI* TTerm::URI_xsd_negativeInteger	 = &AtomFactory::_URIConstants[13].uri;
+    const URI* TTerm::URI_xsd_long		 = &AtomFactory::_URIConstants[14].uri;
+    const URI* TTerm::URI_xsd_int		 = &AtomFactory::_URIConstants[15].uri;
+    const URI* TTerm::URI_xsd_short		 = &AtomFactory::_URIConstants[16].uri;
+    const URI* TTerm::URI_xsd_byte		 = &AtomFactory::_URIConstants[17].uri;
+    const URI* TTerm::URI_xsd_nonNegativeInteger = &AtomFactory::_URIConstants[18].uri;
+    const URI* TTerm::URI_xsd_unsignedLong	 = &AtomFactory::_URIConstants[19].uri;
+    const URI* TTerm::URI_xsd_unsignedInt	 = &AtomFactory::_URIConstants[20].uri;
+    const URI* TTerm::URI_xsd_unsignedShort	 = &AtomFactory::_URIConstants[21].uri;
+    const URI* TTerm::URI_xsd_unsignedByte	 = &AtomFactory::_URIConstants[22].uri;
+    const URI* TTerm::URI_xsd_positiveInteger	 = &AtomFactory::_URIConstants[23].uri;
+    const URI* TTerm::URI_xsd_dateTime		 = &AtomFactory::_URIConstants[24].uri;
 
-    const URI* TTerm::FUNC_bound		 = &AtomFactory::_URIConstants[21].uri;
-    const URI* TTerm::FUNC_if			 = &AtomFactory::_URIConstants[22].uri;
-    const URI* TTerm::FUNC_coalesce		 = &AtomFactory::_URIConstants[23].uri;
-    const URI* TTerm::FUNC_exists		 = &AtomFactory::_URIConstants[24].uri;
-    const URI* TTerm::FUNC_sameTerm 		 = &AtomFactory::_URIConstants[25].uri;
-    const URI* TTerm::FUNC_in			 = &AtomFactory::_URIConstants[26].uri;
-    const URI* TTerm::FUNC_isIRI		 = &AtomFactory::_URIConstants[27].uri;
-    const URI* TTerm::FUNC_isURI		 = &AtomFactory::_URIConstants[28].uri;
-    const URI* TTerm::FUNC_isBlank		 = &AtomFactory::_URIConstants[29].uri;
-    const URI* TTerm::FUNC_isLiteral		 = &AtomFactory::_URIConstants[30].uri;
-    const URI* TTerm::FUNC_isNumeric		 = &AtomFactory::_URIConstants[31].uri;
-    const URI* TTerm::FUNC_str			 = &AtomFactory::_URIConstants[32].uri;
-    const URI* TTerm::FUNC_lang			 = &AtomFactory::_URIConstants[33].uri;
-    const URI* TTerm::FUNC_datatype		 = &AtomFactory::_URIConstants[34].uri;
-    const URI* TTerm::FUNC_iri			 = &AtomFactory::_URIConstants[35].uri;
-    const URI* TTerm::FUNC_uri			 = &AtomFactory::_URIConstants[36].uri;
-    const URI* TTerm::FUNC_bnode		 = &AtomFactory::_URIConstants[37].uri;
-    const URI* TTerm::FUNC_strdt		 = &AtomFactory::_URIConstants[38].uri;
-    const URI* TTerm::FUNC_strlang		 = &AtomFactory::_URIConstants[39].uri;
-    const URI* TTerm::FUNC_string_length	 = &AtomFactory::_URIConstants[40].uri;
-    const URI* TTerm::FUNC_substring		 = &AtomFactory::_URIConstants[41].uri;
-    const URI* TTerm::FUNC_upper_case		 = &AtomFactory::_URIConstants[42].uri;
-    const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[43].uri;
-    const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[44].uri;
-    const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[45].uri;
-    const URI* TTerm::FUNC_substring_before	 = &AtomFactory::_URIConstants[46].uri;
-    const URI* TTerm::FUNC_substring_after	 = &AtomFactory::_URIConstants[47].uri;
-    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[48].uri;
-    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[49].uri;
-    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[50].uri;
-    const URI* TTerm::FUNC_replace		 = &AtomFactory::_URIConstants[51].uri;
-    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[52].uri;
-    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[53].uri;
-    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[54].uri;
-    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[55].uri;
-    const URI* TTerm::FUNC_numeric_ceil		 = &AtomFactory::_URIConstants[56].uri;
-    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[57].uri;
-    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[58].uri;
-    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[59].uri;
-    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[60].uri;
-    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[61].uri;
-    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[62].uri;
-    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[63].uri;
-    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[64].uri;
-    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[65].uri;
-    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[66].uri;
-    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[67].uri;
-    const URI* TTerm::FUNC_uuid			 = &AtomFactory::_URIConstants[68].uri;
-    const URI* TTerm::FUNC_struuid		 = &AtomFactory::_URIConstants[69].uri;
-    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[70].uri;
-    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[71].uri;
-    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[72].uri;
-    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[73].uri;
-    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[74].uri;
-    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[75].uri;
-    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[76].uri;
-    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[77].uri;
-    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[78].uri;
-    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[79].uri;
-    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[80].uri;
-    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[81].uri;
-    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[82].uri;
-    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[83].uri;
+    const URI* TTerm::FUNC_bound		 = &AtomFactory::_URIConstants[25].uri;
+    const URI* TTerm::FUNC_if			 = &AtomFactory::_URIConstants[26].uri;
+    const URI* TTerm::FUNC_coalesce		 = &AtomFactory::_URIConstants[27].uri;
+    const URI* TTerm::FUNC_exists		 = &AtomFactory::_URIConstants[28].uri;
+    const URI* TTerm::FUNC_sameTerm 		 = &AtomFactory::_URIConstants[29].uri;
+    const URI* TTerm::FUNC_in			 = &AtomFactory::_URIConstants[30].uri;
+    const URI* TTerm::FUNC_isIRI		 = &AtomFactory::_URIConstants[31].uri;
+    const URI* TTerm::FUNC_isURI		 = &AtomFactory::_URIConstants[32].uri;
+    const URI* TTerm::FUNC_isBlank		 = &AtomFactory::_URIConstants[33].uri;
+    const URI* TTerm::FUNC_isLiteral		 = &AtomFactory::_URIConstants[34].uri;
+    const URI* TTerm::FUNC_isNumeric		 = &AtomFactory::_URIConstants[35].uri;
+    const URI* TTerm::FUNC_str			 = &AtomFactory::_URIConstants[36].uri;
+    const URI* TTerm::FUNC_lang			 = &AtomFactory::_URIConstants[37].uri;
+    const URI* TTerm::FUNC_datatype		 = &AtomFactory::_URIConstants[38].uri;
+    const URI* TTerm::FUNC_iri			 = &AtomFactory::_URIConstants[39].uri;
+    const URI* TTerm::FUNC_uri			 = &AtomFactory::_URIConstants[40].uri;
+    const URI* TTerm::FUNC_bnode		 = &AtomFactory::_URIConstants[41].uri;
+    const URI* TTerm::FUNC_strdt		 = &AtomFactory::_URIConstants[42].uri;
+    const URI* TTerm::FUNC_strlang		 = &AtomFactory::_URIConstants[43].uri;
+    const URI* TTerm::FUNC_string_length	 = &AtomFactory::_URIConstants[44].uri;
+    const URI* TTerm::FUNC_substring		 = &AtomFactory::_URIConstants[45].uri;
+    const URI* TTerm::FUNC_upper_case		 = &AtomFactory::_URIConstants[46].uri;
+    const URI* TTerm::FUNC_lower_case		 = &AtomFactory::_URIConstants[47].uri;
+    const URI* TTerm::FUNC_starts_with		 = &AtomFactory::_URIConstants[48].uri;
+    const URI* TTerm::FUNC_ends_with		 = &AtomFactory::_URIConstants[49].uri;
+    const URI* TTerm::FUNC_substring_before	 = &AtomFactory::_URIConstants[50].uri;
+    const URI* TTerm::FUNC_substring_after	 = &AtomFactory::_URIConstants[51].uri;
+    const URI* TTerm::FUNC_contains		 = &AtomFactory::_URIConstants[52].uri;
+    const URI* TTerm::FUNC_encode_for_uri	 = &AtomFactory::_URIConstants[53].uri;
+    const URI* TTerm::FUNC_concat		 = &AtomFactory::_URIConstants[54].uri;
+    const URI* TTerm::FUNC_replace		 = &AtomFactory::_URIConstants[55].uri;
+    const URI* TTerm::FUNC_langMatches		 = &AtomFactory::_URIConstants[56].uri;
+    const URI* TTerm::FUNC_matches		 = &AtomFactory::_URIConstants[57].uri;
+    const URI* TTerm::FUNC_numeric_abs		 = &AtomFactory::_URIConstants[58].uri;
+    const URI* TTerm::FUNC_numeric_round	 = &AtomFactory::_URIConstants[59].uri;
+    const URI* TTerm::FUNC_numeric_ceil		 = &AtomFactory::_URIConstants[60].uri;
+    const URI* TTerm::FUNC_numeric_floor	 = &AtomFactory::_URIConstants[61].uri;
+    const URI* TTerm::FUNC_rand			 = &AtomFactory::_URIConstants[62].uri;
+    const URI* TTerm::FUNC_now			 = &AtomFactory::_URIConstants[63].uri;
+    const URI* TTerm::FUNC_year_from_dateTime	 = &AtomFactory::_URIConstants[64].uri;
+    const URI* TTerm::FUNC_month_from_dateTime	 = &AtomFactory::_URIConstants[65].uri;
+    const URI* TTerm::FUNC_day_from_dateTime	 = &AtomFactory::_URIConstants[66].uri;
+    const URI* TTerm::FUNC_hours_from_dateTime	 = &AtomFactory::_URIConstants[67].uri;
+    const URI* TTerm::FUNC_minutes_from_dateTime = &AtomFactory::_URIConstants[68].uri;
+    const URI* TTerm::FUNC_seconds_from_dateTime = &AtomFactory::_URIConstants[69].uri;
+    const URI* TTerm::FUNC_timezone_from_dateTime= &AtomFactory::_URIConstants[70].uri;
+    const URI* TTerm::FUNC_tz			 = &AtomFactory::_URIConstants[71].uri;
+    const URI* TTerm::FUNC_uuid			 = &AtomFactory::_URIConstants[72].uri;
+    const URI* TTerm::FUNC_struuid		 = &AtomFactory::_URIConstants[73].uri;
+    const URI* TTerm::FUNC_md5			 = &AtomFactory::_URIConstants[74].uri;
+    const URI* TTerm::FUNC_sha1			 = &AtomFactory::_URIConstants[75].uri;
+    const URI* TTerm::FUNC_sha256		 = &AtomFactory::_URIConstants[76].uri;
+    const URI* TTerm::FUNC_sha384		 = &AtomFactory::_URIConstants[77].uri;
+    const URI* TTerm::FUNC_sha512		 = &AtomFactory::_URIConstants[78].uri;
+    const URI* TTerm::FUNC_count		 = &AtomFactory::_URIConstants[79].uri;
+    const URI* TTerm::FUNC_sum			 = &AtomFactory::_URIConstants[80].uri;
+    const URI* TTerm::FUNC_min			 = &AtomFactory::_URIConstants[81].uri;
+    const URI* TTerm::FUNC_max			 = &AtomFactory::_URIConstants[82].uri;
+    const URI* TTerm::FUNC_avg			 = &AtomFactory::_URIConstants[83].uri;
+    const URI* TTerm::FUNC_group_concat		 = &AtomFactory::_URIConstants[84].uri;
+    const URI* TTerm::FUNC_sample		 = &AtomFactory::_URIConstants[85].uri;
+    const URI* TTerm::FUNC_group_group		 = &AtomFactory::_URIConstants[86].uri;
+    const URI* TTerm::FUNC_group_regex		 = &AtomFactory::_URIConstants[87].uri;
 
-    const URI* TTerm::RDF_type			 = &AtomFactory::_URIConstants[84].uri;
-    const URI* TTerm::RDF_List			 = &AtomFactory::_URIConstants[85].uri;
-    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[86].uri;
-    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[87].uri;
-    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[88].uri;
+    const URI* TTerm::RDF_type			 = &AtomFactory::_URIConstants[88].uri;
+    const URI* TTerm::RDF_List			 = &AtomFactory::_URIConstants[89].uri;
+    const URI* TTerm::RDF_first			 = &AtomFactory::_URIConstants[90].uri;
+    const URI* TTerm::RDF_rest			 = &AtomFactory::_URIConstants[91].uri;
+    const URI* TTerm::RDF_nil			 = &AtomFactory::_URIConstants[92].uri;
 #endif /* !defined(SWIG) */
 
     const BooleanRDFLiteral AtomFactory::_BooleanConstants[2] = {
@@ -772,7 +780,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     namespace AtomicFunction {
 	namespace BuiltIn {
-	    const TTerm* EXTFUNC_normalize_space (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* EXTFUNC_normalize_space (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* sterm = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (sterm == NULL)
 		    throw TypeError(args[0]->toString(), "EXTFUNC_normalize_space");
@@ -797,37 +805,118 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(s, sterm->getDatatype(), NULL, false);
 	    }
 
-	    const TTerm* EXTFUNC_host (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
-		w3c_sw_LINEN << "EXTFUNC_host(" << name->toString() <<  ")\n";
-		return atomFactory->getURI("/bugz/1");
-		const RDFLiteral* sterm = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (sterm == NULL)
-		    throw TypeError(args[0]->toString(), "EXTFUNC_host");
-		std::string s = sterm->getLexicalValue();
-		bool lastWasSpace = false;
-		for (std::string::iterator sit = s.begin(); sit != s.end(); ) {
-		    if (::isspace(*sit)) {
-			if (sit == s.begin() || lastWasSpace)
-			    sit = s.erase(sit);
-			else {
-			    lastWasSpace = true;
-			    ++sit;
-			}
+	    struct TailDetails {
+		int pageNo;
+		const TTerm* lastTail;
+		const TTerm* newTail;
+		const TTerm* newNil;
+		const TTerm* curTail;
+	    };
+	    TailDetails getTailDetails (std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db, std::string function) {
+		const URI* container = dynamic_cast<const URI*>(args[0]);
+		if (container == NULL)
+		    throw TypeError(args[0]->toString(), function + " arg1 (container)");
+		const URI* membershipSubject = dynamic_cast<const URI*>(args[1]);
+		if (membershipSubject == NULL)
+		    throw TypeError(args[1]->toString(), function + " arg2 (membershipSubject subject)");
+		const URI* membershipPredicate = dynamic_cast<const URI*>(args[2]);
+		if (membershipPredicate == NULL)
+		    throw TypeError(args[2]->toString(), function + " arg3 (membershipPredicate predicate)");
+		const IntegerRDFLiteral* perPage = dynamic_cast<const IntegerRDFLiteral*>(args[3]);
+		if (membershipPredicate == NULL)
+		    throw TypeError(args[3]->toString(), function + " arg4 (elements per page)");
+		// w3c_sw_LINEN << "tailDetails("    << container->toString()
+		// 	     <<              ", " << membershipSubject->toString()
+		// 	     <<              ", " << membershipPredicate->toString()
+		// 	     <<              ", " << perPage->toString()
+		// 	     << ")\n";
+
+		TailDetails ret;
+#if CHECK_IN_EACH_GRAPH_FOR_MEMBERSHIP
+		std::set<const TTerm*> names = db->getGraphNames();
+		for (std::set<const TTerm*>::const_iterator name = names.begin(); name != names.end(); ++name) {
+		    BasicGraphPattern* bgp = db->findGraph(*name);
+		    // w3c_sw_LINEN << "GRAPH " << (*name)->toString() << " " << bgp->toString() << "\n";
+		    const TTerm* pageOf = atomFactory->getURI("http://open-services.net/ns/basicProfile#pageOf");
+		    for (std::set<const TTerm*>::const_iterator si = subjs.begin(); si != subjs.end(); ++si)
+			w3c_sw_LINEN << "GRAPH " << (*name)->toString() << " " << (*si)->toString() << "\n";
+		}
+#else /* !CHECK_IN_EACH_GRAPH_FOR_MEMBERSHIP */
+		ret.pageNo = 1;
+		while (db->findGraph(atomFactory->getURI
+				     (container->getLexicalValue() + "?p="
+				      + boost::lexical_cast<std::string>(ret.pageNo)))) {
+		    ret.lastTail = atomFactory->getURI
+			(container->getLexicalValue() + "?p="
+			 + boost::lexical_cast<std::string>(ret.pageNo));
+		    ++ret.pageNo;
+		}
+		--ret.pageNo;
+		if (ret.pageNo == 0) {
+		    ret.lastTail = TTerm::Unbound;
+		    ret.newTail = atomFactory->getURI
+			(container->getLexicalValue() + "?p="
+			 + boost::lexical_cast<std::string>(ret.pageNo+1));
+		    ret.newNil = TTerm::Unbound;
+		    ret.curTail = ret.newTail;
+		} else {
+		    BasicGraphPattern* bgp = db->findGraph(ret.lastTail);
+		    std::set<const TTerm*> subjs = bgp->expectNObjects(membershipSubject, membershipPredicate);
+		    if (ret.pageNo >= perPage->getInt()) {
+			ret.newTail = TTerm::Unbound;
+			ret.newNil = TTerm::RDF_nil;
+			ret.curTail = ret.lastTail;
 		    } else {
-			lastWasSpace = false;
-			++sit;
+			ret.newTail = atomFactory->getURI
+			    (container->getLexicalValue() + "?p="
+			     + boost::lexical_cast<std::string>(ret.pageNo+1));
+			ret.newNil = TTerm::Unbound;
+			ret.curTail = ret.newTail;
 		    }
 		}
-		if (lastWasSpace)
-		    s.erase(s.length()-1);
-		std::stringstream ss;
-		return atomFactory->getRDFLiteral(s, sterm->getDatatype(), NULL, false);
+#endif /* !CHECK_IN_EACH_GRAPH_FOR_MEMBERSHIP */
+		// w3c_sw_LINEN << "\n"
+		//     << "  pageNo:"   << ret.pageNo                                         << "\n"
+		//     << "  lastTail:" << (ret.lastTail ? ret.lastTail->toString() : "NULL") << "\n"
+		//     << "  newTail: " << (ret.newTail  ? ret.newTail ->toString() : "NULL") << "\n"
+		//     << "  newNil: "  << (ret.newNil   ? ret.newNil  ->toString() : "NULL") << "\n"
+		//     << "  curTail: " << (ret.curTail  ? ret.curTail ->toString() : "NULL") << "\n"
+		//     ;
+		return ret;
+	    }
+
+	    const TTerm* EXTFUNC_lastTail (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) {
+		return getTailDetails(args, atomFactory, db, "ldp:lastTail").lastTail;
+	    }
+	    const TTerm* EXTFUNC_newTail (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) {
+		return getTailDetails(args, atomFactory, db, "ldp:newTail").newTail;
+	    }
+	    const TTerm* EXTFUNC_newNil (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) {
+		return getTailDetails(args, atomFactory, db, "ldp:newNil").newNil;
+	    }
+	    const TTerm* EXTFUNC_curTail (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) {
+		return getTailDetails(args, atomFactory, db, "ldp:curTail").curTail;
+	    }
+	    const TTerm* EXTFUNC_newObj (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) {
+		const URI* newItemBase = dynamic_cast<const URI*>(args[0]);
+		if (newItemBase == NULL)
+		    throw TypeError(args[0]->toString(), "ldp:newObj arg1 (newItemBase)");
+
+		int lastItem = 1;
+		while (db->findGraph(atomFactory->getURI
+				     (newItemBase->getLexicalValue()
+				      + boost::lexical_cast<std::string>(lastItem))))
+		    ++lastItem;
+
+		return atomFactory->getURI
+		    (newItemBase->getLexicalValue()
+		     + boost::lexical_cast<std::string>(lastItem));
 	    }
 
 	    /** numericCast - casts from numeric|boolean|string|simple literal to numeric|boolean.
 	     * canonicalizes all casts except those from string.
 	     */
-	    const TTerm* numericCast (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* numericCast (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		// from URI_xsd_float, URI_xsd_double, URI_xsd_decimal, URI_xsd_integer:
 		const NumericRDFLiteral* n = dynamic_cast<const NumericRDFLiteral*>(args[0]);
 		if (n != NULL) {
@@ -859,7 +948,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString()); // @@shorten?
 	    }
 
-	    const TTerm* URI_xsd_dateTime (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* URI_xsd_dateTime (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (s != NULL) {
 		    const URI* dt = s->getDatatype();
@@ -870,31 +959,31 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), "dateTime");
 	    }
 
-	    const TTerm* URI_xsd_string (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* URI_xsd_string (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return atomFactory->getRDFLiteral(args[0]->getLexicalValue(), name, NULL, true);
 	    }
 
-	    const TTerm* FUNC_bound (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_bound (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return args[0] == TTerm::Unbound ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_isIRI (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_isIRI (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return dynamic_cast<const URI*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_isBlank (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_isBlank (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return dynamic_cast<const BNode*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_isLiteral (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_isLiteral (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return dynamic_cast<const RDFLiteral*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_isNumeric (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_isNumeric (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return dynamic_cast<const NumericRDFLiteral*>(args[0]) == NULL ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_str (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_str (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL)
 		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
 		if (dynamic_cast<const URI*>(args[0]) != NULL)
@@ -902,21 +991,21 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), "name");
 	    }
 
-	    const TTerm* FUNC_lang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_lang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) == NULL)
 		    throw TypeError(args[0]->toString(), "FUNC_lang");
 		const LANGTAG* t = dynamic_cast<const RDFLiteral*>(args[0])->getLangtag();
 		return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
 	    }
 
-	    const TTerm* FUNC_iri (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_iri (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    return atomFactory->getURI(args[0]->getLexicalValue());
 		}
 		throw TypeError(args[0]->toString(), "IRI");
 	    }
 
-	    const TTerm* FUNC_strdt (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_strdt (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* val = dynamic_cast<const RDFLiteral*>(args[0]);
 		const URI* dt = dynamic_cast<const URI*>(args[1]);
 		if (val == NULL || val->getDatatype() != NULL || val->getLangtag() != NULL)
@@ -926,7 +1015,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(val->getLexicalValue(), dt);
 	    }
 
-	    const TTerm* FUNC_strlang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_strlang (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* val = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* lang = dynamic_cast<const RDFLiteral*>(args[1]);
 		if (val == NULL || val->getDatatype() != NULL || val->getLangtag() != NULL)
@@ -936,7 +1025,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(val->getLexicalValue(), NULL, new LANGTAG(lang->getLexicalValue()));
 	    }
 
-	    const TTerm* FUNC_bnode (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_bnode (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    //return atomFactory->getBNode(args[0]->getLexicalValue());
 		    w3c_sw_NEED_IMPL("blank(\"foo\") needs a BNode map.");
@@ -944,7 +1033,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), "BNode");
 	    }
 
-	    const TTerm* FUNC_datatype (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_datatype (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL && 
 		    dynamic_cast<const RDFLiteral*>(args[0])->getLangtag() == NULL) {
 		    const URI* dt = dynamic_cast<const RDFLiteral*>(args[0])->getDatatype();
@@ -953,7 +1042,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
-	    const TTerm* FUNC_lower_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_lower_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
 		    std::string lex = upper->getLexicalValue();
@@ -964,7 +1053,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
-	    const TTerm* FUNC_upper_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_upper_case (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    const RDFLiteral* lower = dynamic_cast<const RDFLiteral*>(args[0]);
 		    std::string lex = lower->getLexicalValue();
@@ -975,7 +1064,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
-	    const TTerm* FUNC_string_length (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_string_length (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
 		    int i = upper->getLexicalValue().size();
@@ -984,7 +1073,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
-	    const TTerm* FUNC_concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		std::stringstream ss;
 		bool allStrings = true;
 		std::string lastLangTag;
@@ -1015,7 +1104,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		     false);
 	    }
 
-	    const TTerm* FUNC_replace (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_replace (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* changeMe  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (changeMe == NULL || changeMe->getDatatype() != NULL)
 		    throw TypeError(args[0]->toString(), "fn:replace");
@@ -1037,11 +1126,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(s, NULL);
 	    }
 
-	    const TTerm* FUNC_sameTerm (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactoryy) {
+	    const TTerm* FUNC_sameTerm (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		return args[0] == args[1] && args[0] != TTerm::Unbound ? TTerm::BOOL_true : TTerm::BOOL_false;
 	    }
 
-	    const TTerm* FUNC_langMatches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_langMatches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
 
@@ -1074,7 +1163,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return TTerm::BOOL_false;
 	    }
 
-	    const TTerm* FUNC_numeric_abs (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_numeric_abs (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		struct UnaryAbsolutifier : public AtomFactory::UnaryFunctor {
 		    UnaryAbsolutifier () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v < 0 ? -v : v; }
@@ -1085,7 +1174,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
-	    const TTerm* FUNC_numeric_round (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_numeric_round (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		struct UnaryRounder : public AtomFactory::UnaryFunctor {
 		    UnaryRounder () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v; }
@@ -1096,7 +1185,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
-	    const TTerm* FUNC_numeric_ceil (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_numeric_ceil (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		struct UnaryCeiler : public AtomFactory::UnaryFunctor {
 		    UnaryCeiler () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v; }
@@ -1107,7 +1196,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
-	    const TTerm* FUNC_numeric_floor (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_numeric_floor (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		struct UnaryFloorer : public AtomFactory::UnaryFunctor {
 		    UnaryFloorer () : AtomFactory::UnaryFunctor(NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v; }
@@ -1118,7 +1207,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
-	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
 
@@ -1133,7 +1222,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return found == std::string::npos ? TTerm::BOOL_false : TTerm::BOOL_true;
 	    }
 
-	    const TTerm* FUNC_substring_before (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_substring_before (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
 
@@ -1152,7 +1241,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(lookIn.substr(0, found), NULL, l, false);
 	    }
 
-	    const TTerm* FUNC_substring_after (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_substring_after (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
 
@@ -1170,7 +1259,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, l, false);
 	    }
 
-	    const TTerm* FUNC_substring (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_substring (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (firstLit == NULL)
 		    throw TypeError(args[0]->toString(), "substring");
@@ -1197,7 +1286,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		}
 	    }
 
-	    const TTerm* FUNC_matches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) {
+	    const TTerm* FUNC_matches (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (firstLit == NULL || firstLit->getDatatype() != NULL || firstLit->getLangtag() != NULL)
 		    throw TypeError(args[0]->toString(), "substring");
@@ -1234,7 +1323,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	    Map::Initializer List[] = {
 		Map::Initializer(TTerm::FUNC_normalize_space, 1, 1, &EXTFUNC_normalize_space),
-		Map::Initializer(TTerm::FUNC_host, 3, 3, &EXTFUNC_host),
+		Map::Initializer(TTerm::FUNC_lastTail, 4, 4, &EXTFUNC_lastTail),
+		Map::Initializer(TTerm::FUNC_newTail, 4, 4, &EXTFUNC_newTail),
+		Map::Initializer(TTerm::FUNC_newNil, 4, 4, &EXTFUNC_newNil),
+		Map::Initializer(TTerm::FUNC_curTail, 4, 4, &EXTFUNC_curTail),
+		Map::Initializer(TTerm::FUNC_newObj, 1, 1, &EXTFUNC_newObj),
 
 		Map::Initializer(TTerm::URI_xsd_float, 1, 1, &numericCast),
 		Map::Initializer(TTerm::URI_xsd_double, 1, 1, &numericCast),
@@ -2273,7 +2366,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	std::vector<const TTerm*> args;
 	for (ArgList::ArgIterator it = m_ArgList->begin(); it != m_ArgList->end(); ++it)
 	    args.push_back((*it)->eval(r, atomFactory, evaluator, db));
-	return AtomicFunction::GlobalMap.invoke(m_IRIref, args, atomFactory);
+	return AtomicFunction::GlobalMap.invoke(m_IRIref, args, atomFactory, db);
     }
 
     const TTerm* AggregateCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
@@ -2498,62 +2591,20 @@ compared against
 		if ((*BasicGraphPattern::MappableTerm)(o))
 		    o = (*row)->get(o);
 
-		TTerm2TTerm2Triple_type::range outer;
-		TTerm2Triple_type::const_iterator e;
-		TTerm2Triple_range inner(e, e);
-		bool useOuter = false;
-		bool matchFail = false;
-		if (s)
-		    if (p)
-			inner = SP.get(s, p, &matchFail);
-		    else if (o)
-			inner = OS.get(o, s, &matchFail);
-		    else {
-			outer = SP.get(s, &matchFail);
-			useOuter = true;
-		    }
-		else if (p)
-		    if (o)
-			inner = PO.get(p, o, &matchFail);
-		    else {
-			outer = PO.get(p, &matchFail);
-			useOuter = true;
-		    }
-		else if (o) {
-		    outer = OS.get(o, &matchFail);
-		    useOuter = true;
-		} else {
-		    outer = TTerm2TTerm2Triple_type::range(SP.begin(), SP.end());
-		    useOuter = true;
-		}
+		triple_iterator mi = getTripleIterator(s, p, o);
+		triple_iterator end;
 
-		// TTerm2Triple_range inner
+		// TTerm2Triple_range mi.inner
 		//     = dynamic_cast<const Bindable*>(pToMatch) 
 		//     ? TTerm2Triple_range(TTerm2Triple.begin(), TTerm2Triple.end())
 		//     : TTerm2Triple.equal_range (pToMatch);
 
-		if (!matchFail) {
-		    if (!useOuter)
-			for (TTerm2Triple_type::const_iterator triple = inner.first;
-			     triple != inner.second; ++triple) {
-			    /* TODO: Could process filters here */
-			    if ((*constraint)->bindVariables(triple->second, toMatch->allOpts,
-							     rs, row, graphVar, graphName, this))
-				rowMatched = true;
-			}
-		    else
-			for (TTerm2TTerm2Triple_type::const_iterator tterm2triple = outer.first;
-			     tterm2triple != outer.second; ++tterm2triple) {
-			    inner = TTerm2Triple_range(tterm2triple->second.begin(), tterm2triple->second.end());
-			    for (TTerm2Triple_type::const_iterator triple = inner.first;
-				 triple != inner.second; ++triple) {
-				/* TODO: Could process filters here */
-				if ((*constraint)->bindVariables(triple->second, toMatch->allOpts,
-								 rs, row, graphVar, graphName, this))
-				    rowMatched = true;
-			    }
-			}
-		}
+		for ( ; mi != end; ++mi)
+		    /* TODO: Could process filters here */
+		    if ((*constraint)->bindVariables(*mi, toMatch->allOpts,
+						     rs, row, graphVar, graphName, this))
+			rowMatched = true;
+
 		if (rowMatched || !toMatch->allOpts) {
 		    delete *row;
 		    row = rs->erase(row);
@@ -2563,6 +2614,46 @@ compared against
 	    }
 	}
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced\n" << *rs;
+    }
+    void BasicGraphPattern::triple_iterator::operator++ () {
+	++triple;
+	if (triple == inner.second) {
+	    if (useOuter)
+		if (++tterm2triple == outer.second)
+		    atEnd = true;
+		else {
+		    inner = TTerm2Triple_range(tterm2triple->second.begin(), tterm2triple->second.end());
+		    triple = inner.first;
+		}
+	    else
+		atEnd = true;
+	}
+    }
+    bool BasicGraphPattern::triple_iterator::operator!= (const BasicGraphPattern::triple_iterator& ref) const {
+	if ((atEnd || triple == inner.second) && ref.atEnd)
+	    return false;
+	return true; // !! only good for ... it != end()
+    }
+    BasicGraphPattern::triple_iterator BasicGraphPattern::getTripleIterator (const TTerm* s, const TTerm* p, const TTerm* o) const {
+	if (s)
+	    if (p)
+		return triple_iterator(SP.get(s, p));
+	    else if (o)
+		return triple_iterator(OS.get(o, s));
+	    else {
+		return triple_iterator(SP.get(s));
+	    }
+	else if (p)
+	    if (o)
+		return triple_iterator(PO.get(p, o));
+	    else {
+		return triple_iterator(PO.get(p));
+	    }
+	else if (o) {
+	    return triple_iterator(OS.get(o));
+	} else {
+	    return triple_iterator(TTerm2TTerm2Triple_type::range(SP.begin(), SP.end()));
+	}
     }
     bool TTerm::bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	if (this == Unbound || constant == Unbound)
@@ -2605,15 +2696,46 @@ compared against
 	ss << ")";
 	return ss.str();
     }
+
+    const TTerm* BasicGraphPattern::expectOneSubject (const TTerm* p, const TTerm* o) const {
+	BasicGraphPattern::TTerm2Triple_range inner = PO.get(p, o);
+	if (inner == TTerm2Triple_range())
+	    throw GraphStructureError(std::string() + "no " + o->toString() + " found", "expectOneSubject");
+	BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
+	const TTerm* ret = triple->second->getS();
+	if (++triple != inner.second)
+	    throw GraphStructureError(std::string() + "two " + o->toString() + "s found", "expectOneSubject");
+	return ret;
+    }
+    std::set<const TTerm*> BasicGraphPattern::expectNSubjects (const TTerm* p, const TTerm* o) const {
+	BasicGraphPattern::TTerm2Triple_range inner = PO.get(p, o);
+	if (inner == TTerm2Triple_range())
+	    throw GraphStructureError(std::string() + "no " + o->toString() + " found", "expectOneSubject");
+	std::set<const TTerm*> ret;
+	for (BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
+	     triple != inner.second; ++triple)
+	    ret.insert(triple->second->getS());
+	return ret;
+    }
+
     const TTerm* BasicGraphPattern::expectOneObject (const TTerm* s, const TTerm* p) const {
-	bool matchFail = false;
-	BasicGraphPattern::TTerm2Triple_range inner = SP.get(s, p, &matchFail);
-	if (matchFail)
-	    throw GraphStructureError("no rdf:first found", "members search");
+	BasicGraphPattern::TTerm2Triple_range inner = SP.get(s, p);
+	if (inner == TTerm2Triple_range())
+	    throw GraphStructureError(std::string() + "no " + p->toString() + " found", "expectOneObject");
 	BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
 	const TTerm* ret = triple->second->getO();
 	if (++triple != inner.second)
-	    throw GraphStructureError("two rdf:firsts found", "members search");
+	    throw GraphStructureError(std::string() + "two " + p->toString() + "s found", "expectOneObject");
+	return ret;
+    }
+    std::set<const TTerm*> BasicGraphPattern::expectNObjects (const TTerm* s, const TTerm* p) const {
+	BasicGraphPattern::TTerm2Triple_range inner = SP.get(s, p);
+	if (inner == TTerm2Triple_range())
+	    throw GraphStructureError(std::string() + "no " + s->toString() + " found", "expectOneObject");
+	std::set<const TTerm*> ret;
+	for (BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
+	     triple != inner.second; ++triple)
+	    ret.insert(triple->second->getO());
 	return ret;
     }
 

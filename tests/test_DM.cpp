@@ -14,13 +14,13 @@
  * SQL clients. */
 #include "interface/SQLclient.hpp"
 #include "SQLParser/SQLParser.hpp"
+#include "ServerInteraction.hpp"
 
 #undef BOOST_ALL_DYN_LINK // Can't use dynamic linking with init_unit_test_suite()
 #include <boost/test/included/unit_test.hpp>
 w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
 
 #include <sys/types.h>  /* include this before any other sys headers */
-#include <sys/wait.h>   /* header for waitpid() and various macros */
 #include <signal.h>     /* header for signal functions */
 #include <stdio.h>      /* header for fprintf() */
 #include <unistd.h>     /* header for fork() */
@@ -57,83 +57,14 @@ bool Keep = false;
 const char* TestProgram;
 
 
-/** SigChildGuard - capture SIGCHLD signals and record the child return value.
+/** ExecResults - get output from process did not return an error.
  */
-int ChildRet;		// A global to capture the result from a childHandler
-bool ChildRetSet;	// and a marker for whether it's set.
-struct SigChildGuard {
-    struct sigaction oldact;
-
-    SigChildGuard () {
-	ChildRetSet = false;
-	if (sigaction(SIGCHLD, NULL, &oldact) < 0)
-	    throw std::runtime_error("unable to get current SIGCHLD action");
-
-	struct sigaction act;
-	sigemptyset(&act.sa_mask); // clear out act's sigset_t
-
-	act.sa_handler = childHandler;
-	act.sa_flags = SA_NOCLDSTOP; // only catch terminated children
-	if (sigaction(SIGCHLD, &act, NULL) < 0)
-	    throw std::runtime_error("unable to set SIGCHLD action");
-    }
-
-    ~SigChildGuard () {
-	if (sigaction(SIGCHLD, &oldact, NULL) < 0)
-	    throw std::runtime_error("unable to restore old SIGCHLD action");
-    }
-
-    static void childHandler (int signo) {
-	int status, child_val;
-
-	/* Wait for any child without blocking */
-	if (waitpid(-1, &status, WNOHANG) < 0) 
-	    ; // sometimes returns error in linux
-	    // throw std::runtime_error("signal caught but child failed to terminate");
-	if (WIFEXITED(status)) {            /* If child exited normally   */
-	    ChildRet = WEXITSTATUS(status); /*   get child's exit status. */
-	    ChildRetSet = true;
-	}
+struct ExecResults : public w3c_sw::OutputFromNonInteractiveProcess {
+    ExecResults (const std::string cmd) : w3c_sw::OutputFromNonInteractiveProcess(cmd) {
+	BOOST_REQUIRE(w3c_sw::SigChildGuard::ChildRetSet == false ||	// if child has finished,
+		      w3c_sw::SigChildGuard::ChildRet == 0);		// make sure it returned 0.
     }
 };
-
-
-/** ExecResults - execute cmd and return the standard output.
- */
-struct ExecResults {
-    std::string s;
-    ExecResults (const char* cmd) {
-	{
-	    SigChildGuard g;
-	    s  = "execution failure";
-	    FILE *p = ::popen(cmd, "r");
-	    BOOST_REQUIRE(p != NULL);
-	    char buf[100];
-	    s = "";
-
-	    /* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX. */
-	    for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
-		s += std::string(buf, buf + count);
-		::fflush(p);
-	    }
-	    pclose(p);
-	}
-	if (!ChildRetSet)
-	    w3c_sw_LINEN "child hasn't terminated\n";
-	    // throw std::runtime_error("child hasn't terminated");
-	if (ChildRet != 0)
-	    std::cout << "child exited with status " << ChildRet << std::endl; \
-    }
-};
-
-bool operator== (ExecResults& tested, std::string& ref) {
-    return tested.s == ref;
-}
-
-std::ostream& operator== (std::ostream& o, ExecResults& tested) {
-    return o << tested.s;
-}
-
 
 /** DMTest - set up SQL tables, execute a direct mapping dump and
  *  compare results to a reference graph.

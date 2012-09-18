@@ -16,6 +16,11 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:
 
 w3c_sw::AtomFactory F;
 
+// Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
+// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff
+#define LOWPORT 0x9000
+#define HIPORT  0x90ff
+
 const char* Doutput =
     "+----+---------------------------------------------------+----------------------------------------+\n"
     "| ?s | ?p                                                | ?o                                     |\n"
@@ -64,32 +69,14 @@ const char* Dturtle_encodedEscaped =
     "jw%2BIDxodHRwOi8vdXNlZnVsaW5jLmNvbS9ucy9kb2FwI2hvbWVwYWdlPiA8aHR0cDovL3N3b2JqLm9yZy9zcGFycWwvdjE%2BIC4K"
     "PD4gPGh0dHA6Ly91c2VmdWxpbmMuY29tL25zL2RvYXAjc2hvcnRkZXNjPiAiYSBzZW1hbnRpYyB3ZWIgcXVlcnkgdG9vbGJveCIgLgo%3D";
 
-struct ExecResults {
-    std::string s;
-    ExecResults (const std::string cmd) {
-	s  = "execution failure";
-	FILE *p = ::popen(cmd.c_str(), "r");
-	BOOST_REQUIRE(p != NULL);
-	char buf[100];
-	s = "";
-
-	/* Gave up on [[ ferror(p) ]] because it sometimes returns EPERM on OSX.
-	 */
-	for (size_t count; (count = fread(buf, 1, sizeof(buf), p)) || !feof(p);) {
-	    s += std::string(buf, buf + count);
-	    ::fflush(p);
-	}
-	pclose(p);
+/** ExecResults - get output from process did not return an error.
+ */
+struct ExecResults : public w3c_sw::OutputFromNonInteractiveProcess {
+    ExecResults (const std::string cmd) : w3c_sw::OutputFromNonInteractiveProcess(cmd) {
+	BOOST_REQUIRE(w3c_sw::SigChildGuard::ChildRetSet == false ||	// if child has finished,
+		      w3c_sw::SigChildGuard::ChildRet == 0);		// make sure it returned 0.
     }
 };
-
-bool operator== (ExecResults& tested, std::string& ref) {
-    return tested.s == ref;
-}
-
-std::ostream& operator== (std::ostream& o, ExecResults& tested) {
-    return o << tested.s;
-}
 
 struct TableResultSet : public w3c_sw::ResultSet {
     TableResultSet (w3c_sw::AtomFactory* atomFactory, std::string srt, bool ordered, w3c_sw::TTerm::String2BNode& nodeMap) : 
@@ -499,7 +486,8 @@ struct ServerTableQuery : w3c_sw::SPARQLClientServerInteraction {
     ServerTableQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::SPARQLClientServerInteraction (serverParams, "/SPARQL", clientParams), expected(&F), got(&F)
+	: w3c_sw::SPARQLClientServerInteraction (serverParams, "/SPARQL", clientParams, LOWPORT, HIPORT),
+	  expected(&F), got(&F)
     {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
@@ -543,7 +531,7 @@ struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
 
     HttpServerInteraction (std::string serverParams,
 			   std::string query)
-	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL")
+	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL", LOWPORT, HIPORT)
     {
 	sockaddr_in remote;
 	remote.sin_family = AF_INET;
@@ -584,8 +572,8 @@ struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
 
     ~HttpServerInteraction () {
 	close(clientfd);
-	if (pclose(serverPipe) == -1 && errno != ECHILD)
-	    throw std::string() + "pclose(server pipe)" + strerror(errno);
+	// if (pclose(serverPipe) == -1 && errno != ECHILD)
+	//     throw std::string() + "pclose(server pipe)" + strerror(errno);
 	// Could call
 	//   readToExhaustion(serverPipe, serverS, "server pipe");
 	// but there's no reason to read from serverPipe.
@@ -623,7 +611,7 @@ struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
     ServerGraphQuery (std::string serverParams,
 		      std::string clientParams,
 		      std::string expectedStr)
-	: w3c_sw::SPARQLClientServerInteraction(serverParams, "/SPARQL", clientParams)
+	: w3c_sw::SPARQLClientServerInteraction(serverParams, "/SPARQL", clientParams, LOWPORT, HIPORT)
     {
 	{
 	    std::stringstream tss(clientS);

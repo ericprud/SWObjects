@@ -792,7 +792,11 @@ public:
 
     /* TTerm Constants: */
     static const URI* FUNC_normalize_space;
-    static const URI* FUNC_host;
+    static const URI* FUNC_lastTail;
+    static const URI* FUNC_newTail;
+    static const URI* FUNC_newNil;
+    static const URI* FUNC_curTail;
+    static const URI* FUNC_newObj;
 
     static const URI* URI_xsd_integer;
     static const URI* URI_xsd_decimal;
@@ -2076,20 +2080,18 @@ public:
 
     struct TTerm2TTerm2Triple_type : public std::map<const TTerm*, TTerm2Triple_type> {
 	typedef std::pair<TTerm2TTerm2Triple_type::const_iterator, TTerm2TTerm2Triple_type::const_iterator> range;
-	TTerm2Triple_range get(const TTerm* outer, const TTerm* inner, bool* failed) const {
+	TTerm2Triple_range get(const TTerm* outer, const TTerm* inner) const {
 	    TTerm2TTerm2Triple_type::const_iterator oit = find(outer);
-	    if (oit == end()) {
-		*failed = true;
+	    if (oit == end())
 		return TTerm2Triple_range();
-	    } else
+	    else
 		return oit->second.equal_range(inner);
 	}
-	range get (const TTerm* outer, bool* failed) const {
+	range get (const TTerm* outer) const {
 	    TTerm2TTerm2Triple_type::const_iterator oit = find(outer);
-	    if (oit == end()) {
-		*failed = true;
+	    if (oit == end())
 		return range(end(), end());
-	    } else {
+	    else {
 		TTerm2TTerm2Triple_type::const_iterator next(oit);
 		++next;
 		return range(oit, next);
@@ -2110,6 +2112,47 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const TTerm2Triple_range range);
     friend std::ostream& operator<<(std::ostream& os, const TTerm2TTerm2Triple_type::range range);
+
+    struct triple_iterator {
+	const TTerm2TTerm2Triple_type::range outer;
+	const TTerm2Triple_type::const_iterator e;
+	const bool useOuter;
+	const bool matchFail;
+
+	TTerm2TTerm2Triple_type::const_iterator tterm2triple; // traverse outer.
+	TTerm2Triple_range inner; // extract range from tterm2triple.
+	TTerm2Triple_type::const_iterator triple; // current triple in inner.
+	bool atEnd;
+
+	triple_iterator ()
+	    : useOuter(false), matchFail(false), inner(e, e), atEnd(true)
+	{  }
+	triple_iterator (TTerm2Triple_range inner)
+	    : useOuter(false), matchFail(false), inner(inner),
+	      triple(inner.first), atEnd(false)
+	{  }
+	triple_iterator (TTerm2TTerm2Triple_type::range outer)
+	    : outer(outer), useOuter(true), matchFail(false),
+	      tterm2triple(outer.first),
+	      inner(tterm2triple->second.begin(), tterm2triple->second.end()),
+	      triple(inner.first), atEnd(outer.first == outer.second)
+	{  }
+
+	void operator++();
+	bool operator!=(const triple_iterator& ref) const;
+	const TriplePattern* operator* () const {
+	    return triple->second;
+	}
+    };
+
+    /** getTripleIterator - get triples matching spo.
+     * 
+     * BasicGraphPattern::triple_iterator mi = bgp->getTripleIterator(NULL, pageOf, container);
+     * const BasicGraphPattern::triple_iterator end;
+     * for ( ; mi != end; ++mi)
+     * 	   w3c_sw_LINEN << (*mi)->toString() << "\n";
+     */
+    triple_iterator getTripleIterator(const TTerm* s, const TTerm* p, const TTerm* o) const;
 
 protected:
 
@@ -2136,7 +2179,10 @@ protected:
     void _bindVariables(const RdfDB* db, ResultSet* rs, const TTerm* p_name) const;
 
 public:
+    const TTerm* expectOneSubject(const TTerm* s, const TTerm* o) const;
+    std::set<const TTerm*> expectNSubjects(const TTerm* s, const TTerm* o) const;
     const TTerm* expectOneObject(const TTerm* s, const TTerm* o) const;
+    std::set<const TTerm*> expectNObjects(const TTerm* s, const TTerm* o) const;
 
     bool onto(const BasicGraphPattern& ref) const;
     bool operator== (const BasicGraphPattern& ref) const {
@@ -3029,7 +3075,7 @@ public:
 };
 
 namespace AtomicFunction {
-    typedef const TTerm* (FPtr)(const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory);
+    typedef const TTerm* (FPtr)(const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db);
 
     struct Invocation {
 	size_t min, max;
@@ -3075,13 +3121,13 @@ namespace AtomicFunction {
 	    insert(std::make_pair(name, Invocation(min, max, func)));
 	}
 
-	const TTerm* invoke (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory) const {
+	const TTerm* invoke (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) const {
 	    const_iterator it = find(name);
 	    if (it != end()) {
 		if (args.size() < it->second.min || args.size() > it->second.max)
 		    throw TypeError(std::string("argument count"), "name");
 		FPtr* fPtr = it->second.func;
-		return (*fPtr)(name, args, atomFactory);
+		return (*fPtr)(name, args, atomFactory, db);
 	    }
 	    std::stringstream s;
 	    s << name->toString() << '(';
@@ -3100,7 +3146,11 @@ namespace AtomicFunction {
 
     namespace BuiltIn {
 	    FPtr EXTFUNC_normalize_space;
-	    FPtr EXTFUNC_host;
+	    FPtr EXTFUNC_lastTail;
+	    FPtr EXTFUNC_newTail;
+	    FPtr EXTFUNC_newNil;
+	    FPtr EXTFUNC_curTail;
+	    FPtr EXTFUNC_newObj;
 
 	    FPtr numericCast;
 	    FPtr URI_xsd_dateTime;
