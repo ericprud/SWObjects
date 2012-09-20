@@ -252,32 +252,53 @@ namespace LDBPexamples {
 	"   bp:membershipPredicate o:asset .\n"
 	;
 
-    static std::string p1_4members =
-	"membership: a o:NetWorth ;\n"
-	"    o:asset asset:a1 , asset:a4 , asset:a3 , asset:a2 .\n"
-	"\n"
-	"asset:a1 a o:Stock ; o:value 100.00 .\n"
-	"asset:a2 a o:Cash  ; o:value  50.00 .\n"
-	;
+    std::string post_1 =
+	LDBPexamples::turtlePrefix_o +
+	LDBPexamples::turtlePrefix_xsd +
+	LDBPexamples::turtlePrefix_dcterms +
+	"[] a o:Stock ; dcterms:title \"IBM\" ;\n"
+	"   o:value 100.00 ; dcterms:date \"2012-01-01\"^^xsd:date .\n";
+    static std::string member1 =
+	"membership: o:asset asset:a1 .\n"
+	"asset:a1 a o:Stock ; dcterms:title \"IBM\" ; o:value 100.00 .\n";
+    static std::string asset1 =
+	"asset:a1 { asset:a1 a o:Stock ; o:value 100.00 ; dcterms:title \"IBM\" ; dcterms:date \"2012-01-01\"^^xsd:date }\n";
 
-    static std::string p1_4pages =
-	"asset:a1 { asset:a1 a o:Stock ; o:value 100.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
-	"asset:a2 { asset:a2 a o:Cash  ; o:value  50.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
-	"asset:a3 { asset:a3 a o:Bribe ; o:value  10.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
-	"asset:a4 { asset:a4 a o:House ; o:value   1.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
-	;
+    static std::string member2 =
+	"membership: o:asset asset:a2 .\n"
+	"asset:a2 a o:Cash  ; o:value  50.00 .\n";
+    static std::string asset2 =
+	"asset:a2 { asset:a2 a o:Cash  ; o:value  50.00 ; dcterms:date \"2012-01-02\"^^xsd:date }\n";
 
-    static std::string p2_1pages =
-	"asset:a5 { asset:a5 a o:Stock ; o:value 200.02 ; dcterms:title \"Big Co.\" ; dcterms:date \"2012-09-15\"^^xsd:date }\n";
+    static std::string member3 =
+	"membership: o:asset asset:a3 .\n"
+	"asset:a3 a o:Bribe ; o:value  10.00 .\n";
+    static std::string asset3 =
+	"asset:a3 { asset:a3 a o:Bribe ; o:value  10.00 ; dcterms:date \"2012-01-03\"^^xsd:date }\n";
 
-    static std::string p2_1members =
-	"membership: a o:NetWorth;\n"
-	"   o:asset asset:a5 .\n"
-	"\n"
-	"asset:a5 a o:Stock;\n"
-	"   dcterms:title \"Big Co.\" ;\n"
-	"   o:value 200.02 .\n"
-	;
+    std::string post_4 =
+	LDBPexamples::turtlePrefix_o +
+	LDBPexamples::turtlePrefix_xsd +
+	LDBPexamples::turtlePrefix_dcterms +
+	"[] a o:House ; dcterms:title \"Home\" ;\n"
+	"   o:value 1.00 ; dcterms:date \"2012-01-04\"^^xsd:date .\n";
+    static std::string member4 =
+	"membership: o:asset asset:a4 .\n"
+	"asset:a4 a o:House ; dcterms:title \"Home\" ; o:value   1.00 .\n";
+    static std::string asset4 =
+	"asset:a4 { asset:a4 a o:House ; o:value   1.00 ; dcterms:title \"Home\" ; dcterms:date \"2012-01-04\"^^xsd:date }\n";
+
+    std::string post_5 =
+	LDBPexamples::turtlePrefix_o +
+	LDBPexamples::turtlePrefix_xsd +
+	LDBPexamples::turtlePrefix_dcterms +
+	"[] a o:Stock ; dcterms:title \"Big Co.\" ;\n"
+	"   o:value 200.02 ; dcterms:date \"2012-01-05\"^^xsd:date .\n";
+    static std::string member5 =
+	"membership: o:asset asset:a5 .\n"
+	"asset:a5 a o:Stock ; dcterms:title \"Big Co.\" ; o:value 200.02 .\n";
+    static std::string asset5 =
+	"asset:a5 { asset:a5 a o:Stock ; o:value 200.02 ; dcterms:title \"Big Co.\" ; dcterms:date \"2012-01-05\"^^xsd:date }\n";
 
     static std::string modify =
 	sparqlPrefixes + 
@@ -285,8 +306,11 @@ namespace LDBPexamples {
 	"INSERT    {\n"
 	"  GRAPH ?LastTail { ?LastTail bp:nextPage ?NewTail }\n"
 	"  GRAPH ?NewTail {\n"
-	+ container +
-	"      ?NewTail a bp:Page ; bp:pageOf container: ; bp:nextPage rdf:nil .\n"
+	+      container +
+	"      ?NewTail a bp:Page ; bp:pageOf container: .\n"
+	"  }\n"
+	"  GRAPH ?CurTail {\n"
+	"      ?CurTail bp:nextPage rdf:nil .\n"
 	"      membership: a o:NetWorth ; o:asset ?NewObj .\n"
 	"      ?NewObj a ?type ; dcterms:title ?title ; o:value ?value\n"
 	"  }\n"
@@ -300,8 +324,7 @@ namespace LDBPexamples {
 	"  BIND (ldp:newNil  (container:, membership:, o:asset, 4) AS ?NewNil)\n"
 	"  BIND (ldp:curTail (container:, membership:, o:asset, 4) AS ?CurTail)\n"
 	"  BIND (ldp:newObj  (asset:a) AS ?NewObj)\n"
-	"}\n"
-	;
+	"}\n";
 
     /* var         <4 on last page   4 on last page
        ?Container  <...>             <...>
@@ -319,17 +342,11 @@ namespace LDBPexamples {
        "  BIND (asset:a5   AS ?NewObj)\n"
     */
 
-    std::string post_5 =
-	LDBPexamples::turtlePrefix_o +
-	LDBPexamples::turtlePrefix_xsd +
-	LDBPexamples::turtlePrefix_dcterms +
-	"[] a o:Stock ; dcterms:title \"Big Co.\" ;\n"
-	"   o:value 200.02 ; dcterms:date \"2012-09-15\"^^xsd:date .\n";
 
 }; // namespace LDBPexamples
 
 
-BOOST_AUTO_TEST_CASE( LDBP_pagingExample_curl ) {
+BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_curl ) {
     CurlPOSTtoLDPservice i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 std::string() + "--LDP '" + LDBPexamples::modify + "' --once",
@@ -344,7 +361,70 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_curl ) {
 }
 
 
-BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
+struct WriteFile {
+    std::ofstream f;
+    WriteFile (const char* filename, std::string contents)
+	: f(filename)
+    {
+	f << contents;
+	f.close();
+    }
+};
+
+
+BOOST_AUTO_TEST_CASE( LDBP_pagingExample_1_4_client ) {
+    std::string before =
+	LDBPexamples::turtlePrefixes
+	;
+
+    { WriteFile t("LDP/LDBP_pagingExample_1_4_client-before.trig", before); }
+
+    std::string after =
+	LDBPexamples::turtlePrefixes
+	+ "page:1 {\n"
+	+    LDBPexamples::container +
+	"    page:1 a bp:Page ;\n"
+	"        bp:pageOf container: ;\n"
+	"        bp:nextPage rdf:nil .\n"
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member1
+	+ "}\n"
+	+ LDBPexamples::asset1
+	;
+
+    OperationOnInvokedServer i
+	(// Server invocation -- construct a pattern from supplied graph:
+	 "-d LDP/LDBP_pagingExample_1_4_client-before.trig --LDP '"
+	 + LDBPexamples::modify + "' --server-no-description --once",
+
+	 // interface path:
+	 "/moreMoney",
+
+	 // Client graph to POST to service:
+	 LDBPexamples::post_1,
+
+	 // Client SPARQL query to validate the response:
+	 LDBPexamples::sparqlPrefixes +
+	 "SELECT ?s ?type\n"
+	 " WHERE {\n"
+	 "    ?s a ?type\n"
+	 "}",
+
+	 // Expected validation results:
+	 "+-----------------------------------------------------+-------------------------------------+\n"
+	 "| ?s                                                  | ?type                               |\n"
+	 "| <http://example.org/netWorth/nw1/assetContainer/a1> | <http://example.org/ontology/Stock> |\n"
+	 "+-----------------------------------------------------+-------------------------------------+\n",
+
+	 // Service database endstate:
+	 after);
+
+    BOOST_CHECK_EQUAL(i.got, i.expected);
+    BOOST_CHECK_EQUAL(i.endState, i.expectedState);
+}
+
+
+BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
     std::string before =
 	LDBPexamples::turtlePrefixes
 	+ "page:1 {\n"
@@ -352,16 +432,90 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	"      page:1 a bp:Page ;\n"
 	"          bp:pageOf container: ;\n"
 	"          bp:nextPage rdf:nil .\n"
-	+     LDBPexamples::p1_4members
+	"      membership: a o:NetWorth .\n"
+	+     LDBPexamples::member1
+	+     LDBPexamples::member2
+	+     LDBPexamples::member3
 	+ "}\n"
-	+ LDBPexamples::p1_4pages
+	+ LDBPexamples::asset1
+	+ LDBPexamples::asset2
+	+ LDBPexamples::asset3
 	;
 
-    {
-	std::ofstream f("LDP/LDBP_pagingExample_client-before.trig");
-	f << before;
-	f.close();
-    }
+    { WriteFile t("LDP/LDBP_pagingExample_4_4_client-before.trig", before); }
+
+    std::string after =
+	LDBPexamples::turtlePrefixes
+	+ "page:1 {\n"
+	+    LDBPexamples::container +
+	"    page:1 a bp:Page ;\n"
+	"        bp:pageOf container: ;\n"
+	"        bp:nextPage rdf:nil .\n"
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member1
+	+    LDBPexamples::member2
+	+    LDBPexamples::member3
+	+    LDBPexamples::member4
+	+ "}\n"
+	+ LDBPexamples::asset1
+	+ LDBPexamples::asset2
+	+ LDBPexamples::asset3
+	+ LDBPexamples::asset4
+	;
+
+    OperationOnInvokedServer i
+	(// Server invocation -- construct a pattern from supplied graph:
+	 "-d LDP/LDBP_pagingExample_4_4_client-before.trig --LDP '"
+	 + LDBPexamples::modify + "' --server-no-description --once",
+
+	 // interface path:
+	 "/moreMoney",
+
+	 // Client graph to POST to service:
+	 LDBPexamples::post_4,
+
+	 // Client SPARQL query to validate the response:
+	 LDBPexamples::sparqlPrefixes +
+	 "SELECT ?s ?type\n"
+	 " WHERE {\n"
+	 "    ?s a ?type\n"
+	 "}",
+
+	 // Expected validation results:
+	 "+-----------------------------------------------------+-------------------------------------+\n"
+	 "| ?s                                                  | ?type                               |\n"
+	 "| <http://example.org/netWorth/nw1/assetContainer/a4> | <http://example.org/ontology/House> |\n"
+	 "+-----------------------------------------------------+-------------------------------------+\n",
+
+	 // Service database endstate:
+	 after);
+
+    BOOST_CHECK_EQUAL(i.got, i.expected);
+    BOOST_CHECK_EQUAL(i.endState, i.expectedState);
+}
+
+
+BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
+    std::string before =
+	LDBPexamples::turtlePrefixes
+	+ "page:1 {\n"
+	+     LDBPexamples::container +
+	"      page:1 a bp:Page ;\n"
+	"          bp:pageOf container: ;\n"
+	"          bp:nextPage rdf:nil .\n"
+	"      membership: a o:NetWorth .\n"
+	+     LDBPexamples::member1
+	+     LDBPexamples::member2
+	+     LDBPexamples::member3
+	+     LDBPexamples::member4
+	+ "}\n"
+	+ LDBPexamples::asset1
+	+ LDBPexamples::asset2
+	+ LDBPexamples::asset3
+	+ LDBPexamples::asset4
+	;
+
+    { WriteFile t("LDP/LDBP_pagingExample_5_4_client-before.trig", before); }
 
     std::string after =
 	LDBPexamples::turtlePrefixes
@@ -370,22 +524,30 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	"    page:1 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
 	"        bp:nextPage page:2 .\n"
-	+    LDBPexamples::p1_4members
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member1
+	+    LDBPexamples::member2
+	+    LDBPexamples::member3
+	+    LDBPexamples::member4
 	+ "}\n"
-	+ LDBPexamples::p1_4pages
+	+ LDBPexamples::asset1
+	+ LDBPexamples::asset2
+	+ LDBPexamples::asset3
+	+ LDBPexamples::asset4
 	+ "page:2 {\n"
 	+    LDBPexamples::container +
 	"    page:2 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
 	"        bp:nextPage rdf:nil .\n"
-	+    LDBPexamples::p2_1members
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member5
 	+ "}\n"
-	+ LDBPexamples::p2_1pages
+	+ LDBPexamples::asset5
 	;
 
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
-	 "-d LDP/LDBP_pagingExample_client-before.trig --LDP '"
+	 "-d LDP/LDBP_pagingExample_5_4_client-before.trig --LDP '"
 	 + LDBPexamples::modify + "' --server-no-description --once",
 
 	 // interface path:
@@ -396,20 +558,20 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 
 	 // Client SPARQL query to validate the response:
 	 LDBPexamples::sparqlPrefixes +
-	 "SELECT ?type\n"
+	 "SELECT ?s ?type\n"
 	 " WHERE {\n"
 	 "    ?s a ?type\n"
-	 // "         FILTER (STRSTARTS(STR(?s), 'http://localhost:%p/bugz/'))\n"
 	 "}",
 
 	 // Expected validation results:
-	 "+-------------------------------------+\n"
-	 "| ?type                               |\n"
-	 "| <http://example.org/ontology/Stock> |\n"
-	 "+-------------------------------------+",
+	 "+-----------------------------------------------------+-------------------------------------+\n"
+	 "| ?s                                                  | ?type                               |\n"
+	 "| <http://example.org/netWorth/nw1/assetContainer/a5> | <http://example.org/ontology/Stock> |\n"
+	 "+-----------------------------------------------------+-------------------------------------+\n",
 
 	 // Service database endstate:
 	 after);
+
     BOOST_CHECK_EQUAL(i.got, i.expected);
     BOOST_CHECK_EQUAL(i.endState, i.expectedState);
 }

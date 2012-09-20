@@ -862,11 +862,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		} else {
 		    BasicGraphPattern* bgp = db->findGraph(ret.lastTail);
 		    std::set<const TTerm*> subjs = bgp->expectNObjects(membershipSubject, membershipPredicate);
-		    if (ret.pageNo >= perPage->getInt()) {
+		    if (subjs.size() < (size_t)perPage->getInt()) {
+			// Page is below capacity.
 			ret.newTail = TTerm::Unbound;
 			ret.newNil = TTerm::RDF_nil;
 			ret.curTail = ret.lastTail;
 		    } else {
+			// Page is at capacity; add NewObj to a new page.
 			ret.newTail = atomFactory->getURI
 			    (container->getLexicalValue() + "?p="
 			     + boost::lexical_cast<std::string>(ret.pageNo+1));
@@ -2787,9 +2789,11 @@ compared against
 	    /* GRAPH ?g { ?s ?p ?o } */
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
 		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
-		BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
-		const ResultSet* rowRS = (*result)->makeResultSet(rs->getAtomFactory());
-		m_TableOperation->construct(target, rowRS, evaluator, bgp);
+		if (evaldGraphName != TTerm::Unbound) {
+		    BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
+		    const ResultSet* rowRS = (*result)->makeResultSet(rs->getAtomFactory());
+		    m_TableOperation->construct(target, rowRS, evaluator, bgp);
+		}
 	    }
 	}
     }
@@ -2804,8 +2808,10 @@ compared against
 	    /* GRAPH ?g { ?s ?p ?o } */
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
 		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
-		BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
-		m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+		if (evaldGraphName != TTerm::Unbound) {
+		    BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
+		    m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+		}
 	    }
 	}
     }
