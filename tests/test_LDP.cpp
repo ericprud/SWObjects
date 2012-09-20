@@ -17,6 +17,7 @@
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "TrigSParser/TrigSParser.hpp"
 #include "ServerInteraction.hpp"
 
 #if HTTP_CLIENT != SWOb_DISABLED
@@ -116,6 +117,16 @@ std::ostream& operator<< (std::ostream& os, const EvaluatedPOSTresponseResultSet
     return ref.print(os);
 }
 
+/** RdfDBFromTrig - initialize an RDF DB from a trig string.
+ */
+struct RdfDBFromTrig : public w3c_sw::RdfDB {
+    RdfDBFromTrig (std::string trig) {
+	w3c_sw::IStreamContext istr(trig, w3c_sw::IStreamContext::STRING);
+	w3c_sw::TrigSDriver trigParser("", &F);
+	trigParser.parse(istr, this);
+    }
+};
+
 
 /** OperationOnInvokedServer - client interactions with the server built into
  *  the bin/sparql binary.
@@ -123,21 +134,26 @@ std::ostream& operator<< (std::ostream& os, const EvaluatedPOSTresponseResultSet
 struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
     EvaluatedPOSTresponseResultSet got;
     ParsedResultSet expected;
+    RdfDBFromTrig endState;
+    RdfDBFromTrig expectedState;
 
-    OperationOnInvokedServer (std::string serverParams, std::string serverPath, std::string postData, std::string query, std::string expect, std::string endState)
+    OperationOnInvokedServer (std::string serverParams, std::string serverPath, std::string postData, std::string query, std::string expect, std::string expectedState)
 	: w3c_sw::SPARQLServerInteraction(serverParams, serverPath, LOWPORT, HIPORT),
-	  got(std::string() + "http://localhost:" + boost::lexical_cast<std::string>(port) + serverPath,
+	  got("http://localhost:" + boost::lexical_cast<std::string>(port) + serverPath,
 	      postData, w3c_sw::substituteQueryVariables(query, port)),
-	  expected(expect)
-    {
-	w3c_sw_LINEN << "not validating endstate " << endState << "\n";
+	  expected(expect), endState(readServerState()), expectedState(expectedState)
+    {  }
+    std::string readServerState () {
+	serverS.clear();
+	readToExhaustion(serverPipe, serverS);
+	return serverS;
     }
 };
 
 
 //BOOST_AUTO_TEST_SUITE( local )
 
-BOOST_AUTO_TEST_CASE( curl1to1 ) {
+BOOST_AUTO_TEST_CASE( bugz_curl ) {
     CurlPOSTtoLDPservice i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 "--LDP 'PREFIX : <http://bugs.example/ns#>\n"
@@ -155,7 +171,7 @@ BOOST_AUTO_TEST_CASE( curl1to1 ) {
     BOOST_CHECK_EQUAL("{\n  </bugz/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bugs.example/ns#Bug> .\n}\n", i.clientS);
 }
 
-BOOST_AUTO_TEST_CASE( invoked1 ) {
+BOOST_AUTO_TEST_CASE( bugz_client ) {
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "--LDP 'PREFIX : <http://bugs.example/ns#>\n"
@@ -163,7 +179,7 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
 	 "       INSERT { GRAPH ?bug { ?bug a :Bug ; :whiner ?whiner ; :whatNow ?desc } }\n"
 	 "    CONSTRUCT { ?bug a :Bug }\n"
 	 "        WHERE { ?s :whiner ?whiner ; :whatNow ?desc\n"
-	 "                BIND (ldp:newObj(</bugz>) AS ?bug) }' --once",
+	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --once",
 	 // interface path:
 	 "/createBug",
 
@@ -184,9 +200,15 @@ BOOST_AUTO_TEST_CASE( invoked1 ) {
 	 "+------------------------------+",
 
 	 // Service database endstate:
-	 "{}");
+	 "@prefix bug: <http://bugs.example/ns#> .\n"
+	 "</bugz/1> {\n"
+	 "  </bugz/1> a bug:Bug .\n"
+	 "  </bugz/1> bug:whiner 'me'  .\n"
+	 "  </bugz/1> bug:whatNow 'badly b0rked'  .\n"
+	 "}");
     BOOST_CHECK_EQUAL(i.got, i.expected);
 }
+
 
 namespace LDBPexamples {
     static std::string turtlePrefix_o =
@@ -225,7 +247,7 @@ namespace LDBPexamples {
 
     static std::string container =
 	"container: a bp:Container ;\n"
-	"   dcterms:title 'The assets of JohnZSmith' ;\n"
+	"   dcterms:title \"The assets of JohnZSmith\" ;\n"
 	"   bp:membershipSubject membership: ;\n"
 	"   bp:membershipPredicate o:asset .\n"
 	;
@@ -245,6 +267,9 @@ namespace LDBPexamples {
 	"asset:a4 { asset:a4 a o:House ; o:value   1.00 ; dcterms:date \"2012-01-01\"^^xsd:date }\n"
 	;
 
+    static std::string p2_1pages =
+	"asset:a5 { asset:a5 a o:Stock ; o:value 200.02 ; dcterms:title \"Big Co.\" ; dcterms:date \"2012-09-15\"^^xsd:date }\n";
+
     static std::string p2_1members =
 	"membership: a o:NetWorth;\n"
 	"   o:asset asset:a5 .\n"
@@ -256,12 +281,15 @@ namespace LDBPexamples {
 
     static std::string modify =
 	sparqlPrefixes + 
-	"DELETE    { ?LastTail bp:nextPage ?NewNil }\n"
+	"DELETE    { GRAPH ?LastTail { ?LastTail bp:nextPage ?NewNil } }\n"
 	"INSERT    {\n"
-	"  ?LastTail bp:nextPage ?NewTail .\n"
-	"  ?NewTail a bp:Container ; bp:pageOf container: ; bp:nextPage rdf:nil .\n"
-	"  membership: a o:NetWorth ; o:asset ?NewObj .\n"
-	"  ?NewObj a ?type ; dcterms:title ?title ; o:value ?value .\n"
+	"  GRAPH ?LastTail { ?LastTail bp:nextPage ?NewTail }\n"
+	"  GRAPH ?NewTail {\n"
+	+ container +
+	"      ?NewTail a bp:Page ; bp:pageOf container: ; bp:nextPage rdf:nil .\n"
+	"      membership: a o:NetWorth ; o:asset ?NewObj .\n"
+	"      ?NewObj a ?type ; dcterms:title ?title ; o:value ?value\n"
+	"  }\n"
 	"  GRAPH ?NewObj { ?NewObj a ?type ; dcterms:title ?title ; o:value ?value ; dcterms:date ?date }\n"
 	"}\n"
 	"CONSTRUCT { ?NewObj a ?type }\n"
@@ -272,13 +300,24 @@ namespace LDBPexamples {
 	"  BIND (ldp:newNil  (container:, membership:, o:asset, 4) AS ?NewNil)\n"
 	"  BIND (ldp:curTail (container:, membership:, o:asset, 4) AS ?CurTail)\n"
 	"  BIND (ldp:newObj  (asset:a) AS ?NewObj)\n"
-	// "  BIND (page:1 AS ?LastTail)\n"
-	// "  BIND (page:2  AS ?NewTail)\n"
-	// "  BIND (rdf:nil   AS ?NewNil)\n"
-	// "  BIND (page:2  AS ?CurTail)\n"
-	// "  BIND (asset:a5   AS ?NewObj)\n"
 	"}\n"
 	;
+
+    /* var         <4 on last page   4 on last page
+       ?Container  <...>             <...>
+       ?LastTail   <?p=1>            <?p=1>
+       ?NewTail    NULL              <...?p=2>
+       ?NewNil     rdf:nil           NULL
+       ?CurTail    <...?p=1>         <...?p=2>
+       ?NewObj     <.../a5>          <.../a5>
+
+       hardcodable with:
+       "  BIND (page:1 AS ?LastTail)\n"
+       "  BIND (page:2  AS ?NewTail)\n"
+       "  BIND (rdf:nil   AS ?NewNil)\n"
+       "  BIND (page:2  AS ?CurTail)\n"
+       "  BIND (asset:a5   AS ?NewObj)\n"
+    */
 
     std::string post_5 =
 	LDBPexamples::turtlePrefix_o +
@@ -289,10 +328,12 @@ namespace LDBPexamples {
 
 }; // namespace LDBPexamples
 
+
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_curl ) {
     CurlPOSTtoLDPservice i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 std::string() + "--LDP '" + LDBPexamples::modify + "' --once",
+
 	 // interface path:
 	 "/moreMoney",
 
@@ -322,13 +363,6 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	f.close();
     }
 
-    /* ?Container  <...>      <...>
-       ?LastTail   <?p=1>     <?p=1>
-       ?NewTail    NULL       <...?p=2>
-       ?NewNil     rdf:nil    NULL
-       ?CurTail    <...?p=1>  <...?p=2>
-       ?NewObj     <.../a5>   <.../a5>   */
-
     std::string after =
 	LDBPexamples::turtlePrefixes
 	+ "page:1 {\n"
@@ -338,17 +372,22 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	"        bp:nextPage page:2 .\n"
 	+    LDBPexamples::p1_4members
 	+ "}\n"
+	+ LDBPexamples::p1_4pages
 	+ "page:2 {\n"
 	+    LDBPexamples::container +
 	"    page:2 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
 	"        bp:nextPage rdf:nil .\n"
 	+    LDBPexamples::p2_1members
-	+ "}\n";
+	+ "}\n"
+	+ LDBPexamples::p2_1pages
+	;
 
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
-	 std::string() + "-d LDP/LDBP_pagingExample_client-before.trig --LDP '" + LDBPexamples::modify + "' --once",
+	 "-d LDP/LDBP_pagingExample_client-before.trig --LDP '"
+	 + LDBPexamples::modify + "' --server-no-description --once",
+
 	 // interface path:
 	 "/moreMoney",
 
@@ -360,7 +399,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	 "SELECT ?type\n"
 	 " WHERE {\n"
 	 "    ?s a ?type\n"
-	 //	 "         FILTER (STRSTARTS(STR(?s), 'http://localhost:%p/bugz/'))\n"
+	 // "         FILTER (STRSTARTS(STR(?s), 'http://localhost:%p/bugz/'))\n"
 	 "}",
 
 	 // Expected validation results:
@@ -370,9 +409,9 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_client ) {
 	 "+-------------------------------------+",
 
 	 // Service database endstate:
-	 "after");
-    w3c_sw_LINEN << "i.serverS: " << i.serverS << "\n";
+	 after);
     BOOST_CHECK_EQUAL(i.got, i.expected);
+    BOOST_CHECK_EQUAL(i.endState, i.expectedState);
 }
 
 //BOOST_AUTO_TEST_SUITE_END(/* local */)

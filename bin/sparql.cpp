@@ -813,6 +813,7 @@ int main(int ac, char* av[])
 	      + boost::lexical_cast<std::string>(sw::ServiceGraphPattern::defaultFederationRowLimit)).c_str()
 	     )
             ("server-strict-HTTP", "HTTP server will expect strict conformance with HTTP specification, e.g. \\r\\n request line separators.")
+            ("server-no-description", "Don't add SPARQL Service Description to the SPARQL endpoint.")
             ;
 
         po::options_description sqlOpts("SQL options");
@@ -1194,7 +1195,7 @@ int main(int ac, char* av[])
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
 		handler.add_handler(&stat);
 
-		TheServer.runServer(handler, serverPort, servicePath); // To add no service triples, add ", false".
+		TheServer.runServer(handler, serverPort, servicePath, vm.count("server-no-description") == 0);
 	    }
 
 	    sw::RdfDB constructed(&TheServer.engine.xmlParser); // For operations which create a new database.
