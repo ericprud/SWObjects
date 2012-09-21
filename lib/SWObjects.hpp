@@ -774,6 +774,7 @@ public:
     };
     struct String2BNode : public std::map<std::string, const BNode*> {
 	const BNode* getBNode(std::string bnode);
+	std::string str() const;
     };
     virtual std::string toXMLResults(BNode2string*) const = 0;
     virtual std::string toString() const = 0;
@@ -1784,10 +1785,10 @@ public:
     ~AtomFactory();
     const Variable* getVariable(std::string name);
     const BNode* createBNode();
-    const BNode* getBNode(std::string name, TTerm::String2BNode& nodeMap);
+    const BNode* getBNode(std::string name, TTerm::String2BNode* bnodeMap);
     const URI* getURI(std::string name);
     static std::string unescapeStr(std::string);
-    const TTerm* getTTerm(std::string posStr, TTerm::String2BNode& nodeMap);
+    const TTerm* getTTerm(std::string posStr, TTerm::String2BNode* bnodeMap);
     /** getRDFLiteral gets native e.g. integer or boolean types
      */
     const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, const LANGTAG* p_LANGTAG = NULL, bool validate = false);
@@ -1836,13 +1837,13 @@ public:
 	return getTriple(p->getS(), p->getP(), p->getO(), weaklyBound);
     }
     const TriplePattern* getTriple(const TTerm* s, const TTerm* p, const TTerm* o, bool weaklyBound = false);
-    const TriplePattern* getTriple (std::string s, std::string p, std::string o, TTerm::String2BNode& nodeMap) {
-	return getTriple(getTTerm(s, nodeMap), 
-			 getTTerm(p, nodeMap), 
-			 getTTerm(o, nodeMap), false);
+    const TriplePattern* getTriple (std::string s, std::string p, std::string o, TTerm::String2BNode* bnodeMap) {
+	return getTriple(getTTerm(s, bnodeMap), 
+			 getTTerm(p, bnodeMap), 
+			 getTTerm(o, bnodeMap), false);
     }
 #if REGEX_LIB == SWOb_BOOST
-    const TriplePattern* getTriple (std::string spo, TTerm::String2BNode& nodeMap) {
+    const TriplePattern* getTriple (std::string spo, TTerm::String2BNode* bnodeMap) {
 	const boost::regex expression("[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))"
 				      "[[:space:]]*((?:<[^>]*>)|(?:_:[^[:space:]]+)|(?:[?$][^[:space:]]+)|(?:\\\"[^\\\"]+\\\"))[[:space:]]*\\.");
@@ -1850,12 +1851,12 @@ public:
 	boost::match_flag_type flags = boost::match_default;
 	if (!regex_search(spo, what, expression, flags))
 	    return NULL;
-	return getTriple(getTTerm(std::string(what[1].first, what[1].second), nodeMap), 
-			 getTTerm(std::string(what[2].first, what[2].second), nodeMap), 
-			 getTTerm(std::string(what[3].first, what[3].second), nodeMap), false);
+	return getTriple(getTTerm(std::string(what[1].first, what[1].second), bnodeMap), 
+			 getTTerm(std::string(what[2].first, what[2].second), bnodeMap), 
+			 getTTerm(std::string(what[3].first, what[3].second), bnodeMap), false);
     }
 #endif /* REGEX_LIB == SWOb_BOOST */
-    void parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode& nodeMap);
+    void parseNTPatterns (BasicGraphPattern* g, std::string spo, TTerm::String2BNode* bnodeMap = NULL);
 
     /* EBV (Better place for this?) */
     const TTerm* ebv(const TTerm* tterm);
@@ -1866,23 +1867,24 @@ public:
 	const Result* res;
 	AtomFactory* atomFactory;
 	BNodeEvaluator* evaluator;
+	TTerm::String2BNode* bnodeMap;
 
-	Functor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    res(res), atomFactory(atomFactory), evaluator(evaluator) {  }
+	Functor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    res(res), atomFactory(atomFactory), evaluator(evaluator), bnodeMap(bnodeMap) {  }
 	virtual ~Functor () {  }
     };
     struct UnaryFunctor : public Functor {
 
-	UnaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    Functor(res, atomFactory, evaluator) {  }
+	UnaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    Functor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval(int v) = 0;
 	virtual float eval(float v) = 0;
 	virtual double eval(double v) = 0;
     };
     struct NaryFunctor : public Functor {
 
-	NaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    Functor(res, atomFactory, evaluator) {  }
+	NaryFunctor (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    Functor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval(int l, int r) = 0;
 	virtual float eval(float l, float r) = 0;
 	virtual double eval(double l, double r) = 0;
@@ -1928,7 +1930,7 @@ public:
     Expression () : Base() { }
     ~Expression () {  }
     virtual void express(Expressor* p_expressor) const = 0;
-    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const = 0;
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator*  evaluator, TTerm::String2BNode* bnodeMap, const RdfDB*  db) const = 0;
     virtual bool operator==(const Expression&) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
     std::string str() const; // for easy invocation
@@ -1939,7 +1941,7 @@ typedef ProductionVector<const Expression*> ExprSet;
     inline bool AtomFactory::eval (const Expression* expression, const Result* row, const RdfDB* db) {
     bool ret;
     try {
-	ret = ebv(expression->eval(row, this, NULL, db)) == TTerm::BOOL_true;
+	ret = ebv(expression->eval(row, this, NULL, NULL, db)) == TTerm::BOOL_true;
     } catch (SafeEvaluationError&) {
 	ret = false;
     }
@@ -2164,10 +2166,9 @@ protected:
     bool allOpts;
     BasicGraphPattern (bool allOpts) : TableOperation(), m_TriplePatterns(), allOpts(allOpts) {  }
 #if REGEX_LIB != SWOb_DISABLED
-    BasicGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode bnodeMap)
+    BasicGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode* bnodeMap)
 	: allOpts(false) {
-	TTerm::String2BNode nodeMap;
-	atomFactory->parseNTPatterns(this, ntp, nodeMap);
+	atomFactory->parseNTPatterns(this, ntp, bnodeMap);
     }
 #endif /* REGEX_LIB != SWOb_DISABLED */
     BasicGraphPattern (const BasicGraphPattern& ref) :
@@ -2264,7 +2265,7 @@ class DefaultGraphPattern : public BasicGraphPattern {
 public:
     DefaultGraphPattern (bool allOpts = false) : BasicGraphPattern(allOpts) {  }
 #if REGEX_LIB != SWOb_DISABLED
-    DefaultGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode bnodeMap = TTerm::String2BNode())
+    DefaultGraphPattern (std::string ntp, AtomFactory* atomFactory, TTerm::String2BNode* bnodeMap = NULL)
 	: BasicGraphPattern(ntp, atomFactory, bnodeMap) {  }
 #endif /* REGEX_LIB != SWOb_DISABLED */
     DefaultGraphPattern (const BasicGraphPattern& ref) : BasicGraphPattern(ref) {  }
@@ -3048,7 +3049,7 @@ public:
     ~TTermExpression () { /* m_TTerm is centrally managed */ }
     const TTerm* getTTerm () const { return m_TTerm; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator, const RdfDB* db) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* /* atomFactory */, BNodeEvaluator*  evaluator, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
 	return m_TTerm->evalTTerm(r, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3075,7 +3076,7 @@ public:
 };
 
 namespace AtomicFunction {
-    typedef const TTerm* (FPtr)(const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db);
+    typedef const TTerm* (FPtr)(const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* bnodeMap, const RdfDB* db);
 
     struct Invocation {
 	size_t min, max;
@@ -3121,13 +3122,13 @@ namespace AtomicFunction {
 	    insert(std::make_pair(name, Invocation(min, max, func)));
 	}
 
-	const TTerm* invoke (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* db) const {
+	const TTerm* invoke (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 	    const_iterator it = find(name);
 	    if (it != end()) {
 		if (args.size() < it->second.min || args.size() > it->second.max)
 		    throw TypeError(std::string("argument count"), "name");
 		FPtr* fPtr = it->second.func;
-		return (*fPtr)(name, args, atomFactory, db);
+		return (*fPtr)(name, args, atomFactory, bnodeMap, db);
 	    }
 	    std::stringstream s;
 	    s << name->toString() << '(';
@@ -3145,6 +3146,8 @@ namespace AtomicFunction {
     };
 
     namespace BuiltIn {
+	void checkArgumentCompatibility(const RDFLiteral* firstLit, const RDFLiteral* secondLit, const char* func);
+
 	    FPtr EXTFUNC_normalize_space;
 	    FPtr EXTFUNC_lastTail;
 	    FPtr EXTFUNC_newTail;
@@ -3207,7 +3210,7 @@ public:
     }
     ~FunctionCall () { delete m_ArgList; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const;
     bool operator== (const FunctionCall& ref) const {
 	return m_IRIref == ref.m_IRIref && *m_ArgList == *ref.m_ArgList;
 	    return false;
@@ -3230,7 +3233,7 @@ public:
 	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness), scalarVals(scalarVals)
     {  }
     ~AggregateCall () {  }
-    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
+    virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const;
     bool operator== (const AggregateCall& ref) const {
 	if (distinctness != ref.distinctness ||
 	    scalarVals != ref.scalarVals)
@@ -3245,8 +3248,8 @@ public:
     FunctionCallExpression (FunctionCall* p_FunctionCall) : Expression(), m_FunctionCall(p_FunctionCall) {  }
     ~FunctionCallExpression () { delete m_FunctionCall; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	return m_FunctionCall->eval(r, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	return m_FunctionCall->eval(r, atomFactory, evaluator, bnodeMap, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const FunctionCallExpression* pref = dynamic_cast<const FunctionCallExpression*>(&ref);
@@ -3263,7 +3266,7 @@ public:
     {  }
     virtual ~ExistsExpression () { delete m_TableOperation; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const;
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const;
     virtual bool operator== (const Expression& ref) const {
 	const ExistsExpression* other = dynamic_cast<const ExistsExpression*>(&ref);
 	if (other == NULL)
@@ -3309,12 +3312,12 @@ public:
     BooleanConjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "&&"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 	SafeEvaluationError lastError("no error");
 	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
-		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, db));
+		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, bnodeMap, db));
 		if (ret != TTerm::BOOL_true)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
@@ -3337,12 +3340,12 @@ public:
     BooleanDisjunction (const Expression* p_Expression, ProductionVector<const Expression*>* p_Expressions) : BooleanJunction(p_Expression, p_Expressions) {  }
     virtual const char* getInfixNotation () { return "||"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 	SafeEvaluationError lastError("no error");
 	int errorCount = 0;
 	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin(); it != m_Expressions.end(); ++it) {
 	    try {
-		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, db));
+		const TTerm* ret = atomFactory->ebv((*it)->eval(r, atomFactory, evaluator, bnodeMap, db));
 		if (ret != TTerm::BOOL_false)
 		    return ret;
 	    } catch (SafeEvaluationError& e) {
@@ -3396,9 +3399,9 @@ public:
     BooleanEQ (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3412,9 +3415,9 @@ public:
     BooleanNE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "!="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l == r || l->cmp(*r) == SORT_eq ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3428,9 +3431,9 @@ public:
     BooleanLT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l->cmp(*r) == SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3444,9 +3447,9 @@ public:
     BooleanGT (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l->cmp(*r) == SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3460,9 +3463,9 @@ public:
     BooleanLE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return "<="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l->cmp(*r) != SORT_gt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3476,9 +3479,9 @@ public:
     BooleanGE (const Expression* left, const Expression* right) : BooleanComparator(left, right) {  }
     virtual const char* getComparisonNotation () { return ">="; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
-	const TTerm* r = right->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left ->eval(res, atomFactory, evaluator, bnodeMap, db);
+	const TTerm* r = right->eval(res, atomFactory, evaluator, bnodeMap, db);
 	return l->cmp(*r) != SORT_lt ? TTerm::BOOL_true : TTerm::BOOL_false;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3492,11 +3495,11 @@ public:
     NaryIn (ProductionVector<const Expression*>* p_Expressions) : NaryComparator(p_Expressions) {  }
     virtual const char* getComparisonNotation () { return "IN"; };
     virtual void express(Expressor* /* p_expressor */) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* l = left->eval(res, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* l = left->eval(res, atomFactory, evaluator, bnodeMap, db);
 	for (std::vector<const Expression*>::const_iterator exp = right->begin();
 	     exp != right->end(); ++exp) {
-	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator, db);
+	    const TTerm* r = (*exp)->eval(res, atomFactory, evaluator, bnodeMap, db);
 	    if (l == r)
 	    // if (atomFactory->cmp(l, r) == 0)
 		return TTerm::BOOL_true;
@@ -3515,8 +3518,8 @@ public:
     ComparatorExpression (const GeneralComparator* p_GeneralComparator) : Expression(), m_GeneralComparator(p_GeneralComparator) {  }
     ~ComparatorExpression () { delete m_GeneralComparator; }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	return m_GeneralComparator->eval(r, atomFactory, evaluator, db);
+    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	return m_GeneralComparator->eval(r, atomFactory, evaluator, bnodeMap, db);
     }
     virtual bool operator== (const Expression& ref) const {
 	const ComparatorExpression* pref = dynamic_cast<const ComparatorExpression*>(&ref);
@@ -3529,8 +3532,8 @@ public:
     ~BooleanNegation () {  }
     virtual const char* getUnaryOperator () { return "!"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator, db));
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	const TTerm* v = atomFactory->ebv(m_Expression->eval(res, atomFactory, evaluator, bnodeMap, db));
 	return v == TTerm::BOOL_true ? TTerm::BOOL_false : TTerm::BOOL_true;
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3546,14 +3549,14 @@ public:
     virtual void express(Expressor* p_expressor) const;
     struct NaryAdder : public AtomFactory::NaryFunctor {
 	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
-	NaryAdder (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    AtomFactory::NaryFunctor(res, atomFactory, evaluator) {  }
+	NaryAdder (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    AtomFactory::NaryFunctor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval (int l, int r) { return l + r; }
 	virtual float eval (float l, float r) { return l + r; }
 	virtual double eval (double l, double r) { return l + r; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	NaryAdder f(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	NaryAdder f(res, atomFactory, evaluator, bnodeMap);
 	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3569,14 +3572,14 @@ public:
     virtual void express(Expressor* p_expressor) const;
     struct UnaryNegator : public AtomFactory::UnaryFunctor {
 	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
-	UnaryNegator (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    AtomFactory::UnaryFunctor(res, atomFactory, evaluator) {  }
+	UnaryNegator (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) :
+	    AtomFactory::UnaryFunctor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval (int v) { return -v; }
 	virtual float eval (float v) { return -v; }
 	virtual double eval (double v) { return -v; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	UnaryNegator f(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	UnaryNegator f(res, atomFactory, evaluator, bnodeMap);
 	return atomFactory->applyCommonNumeric(m_Expression, &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3591,7 +3594,7 @@ public:
     NumberExpression (const NumericRDFLiteral* p_NumericRDFLiteral) : Expression(), m_NumericRDFLiteral(p_NumericRDFLiteral) {  }
     ~NumberExpression () { /* m_NumericRDFLiteral is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* /* atomFactory */, BNodeEvaluator* evaluator, const RdfDB* /* db */) const {
+    virtual const TTerm* eval (const Result* res, AtomFactory* /* atomFactory */, BNodeEvaluator*  evaluator, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
 	return m_NumericRDFLiteral->evalTTerm(res, evaluator);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3607,16 +3610,16 @@ public:
     virtual void express(Expressor* p_expressor) const;
     struct NaryMultiplier : public AtomFactory::NaryFunctor {
 	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
-	NaryMultiplier (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    AtomFactory::NaryFunctor(res, atomFactory, evaluator) {  }
+	NaryMultiplier (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    AtomFactory::NaryFunctor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval (int l, int r) { return l * r; }
 	virtual float eval (float l, float r) { return l * r; }
 	virtual double eval (double l, double r) { return l * r; }
     };
     struct NaryDivider : public AtomFactory::NaryFunctor {
 	/* Do not place in eval() per http://www.eggheadcafe.com/conversation.aspx?messageid=32706692&threadid=32706692 */
-	NaryDivider (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator) : 
-	    AtomFactory::NaryFunctor(res, atomFactory, evaluator) {  }
+	NaryDivider (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap) : 
+	    AtomFactory::NaryFunctor(res, atomFactory, evaluator, bnodeMap) {  }
 	virtual int eval (int l, int r) {
 	    /* Throw a float to support this operator mapping:
 	       A / B op:numeric-divide(A, B) numeric; but xsd:decimal if both operands are xsd:integer
@@ -3629,8 +3632,8 @@ public:
 	virtual float eval (float l, float r) { return l / r; }
 	virtual double eval (double l, double r) { return l / r; }
     };
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	NaryMultiplier f(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	NaryMultiplier f(res, atomFactory, evaluator, bnodeMap);
 	return atomFactory->applyCommonNumeric(std::vector<const Expression*>(m_Expressions.begin(), m_Expressions.end()), &f, db);
     }
     virtual bool operator== (const Expression& ref) const {
@@ -3644,12 +3647,12 @@ public:
     ~ArithmeticInverse () {  }
     virtual const char* getUnaryOperator () { return "1/"; };
     virtual void express(Expressor* p_expressor) const;
-    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-	ArithmeticProduct::NaryDivider f(res, atomFactory, evaluator);
+    virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+	ArithmeticProduct::NaryDivider f(res, atomFactory, evaluator, bnodeMap);
 	std::vector<const Expression*> divisors;
 	TTermExpression one(atomFactory->getNumericRDFLiteral("1", 1));
 	divisors.push_back(&one);
-	TTermExpression right(m_Expression->eval(res, atomFactory, evaluator, db));
+	TTermExpression right(m_Expression->eval(res, atomFactory, evaluator, bnodeMap, db));
 	divisors.push_back(&right);
 	return atomFactory->applyCommonNumeric(divisors, &f, db);
     }

@@ -96,9 +96,9 @@ BOOST_AUTO_TEST_CASE( algebra_parser ) {
 BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
     try {
 	TableConjunction* c = new TableConjunction();
-	TTerm::String2BNode nodeMap;
-	const TTerm* s = F.getTTerm(std::string("<s>"), nodeMap);
-	const TTerm* p = F.getTTerm(std::string("<p>"), nodeMap);
+	TTerm::String2BNode bnodeMap;
+	const TTerm* s = F.getTTerm(std::string("<s>"), &bnodeMap);
+	const TTerm* p = F.getTTerm(std::string("<p>"), &bnodeMap);
 	for (int i = 0; i < 3; ++i) {
 	    const TTerm* o = F.getNumericRDFLiteral(boost::lexical_cast<std::string>(i), i);
 	    BasicGraphPattern* bgp = new DefaultGraphPattern();
@@ -712,15 +712,15 @@ BOOST_AUTO_TEST_CASE( getBNode ) {
      * different String2BNode maps.
      */
     TTerm::String2BNode m1, m2, m3, m4, m5, m6, m7, m8, m9, m10;
-    BOOST_CHECK_EQUAL(F.getBNode("X", m1)->getLexicalValue(), "X");
-    BOOST_CHECK_EQUAL(F.getBNode("X", m4)->getLexicalValue(), "X_1");
-    BOOST_CHECK_EQUAL(F.getBNode("X", m5)->getLexicalValue(), "X_2");
-    BOOST_CHECK_EQUAL(F.getBNode("X_3", m2)->getLexicalValue(), "X_3");
-    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", m3)->getLexicalValue(), "X_3_1");
-    BOOST_CHECK_EQUAL(F.getBNode("X", m6)->getLexicalValue(), "X_3_1_1");
-    BOOST_CHECK_EQUAL(F.getBNode("X", m7)->getLexicalValue(), "X_3_1_2");
-    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", m8)->getLexicalValue(), "X_3_1_1_1");
-    BOOST_CHECK_EQUAL(F.getBNode("X_3", m9)->getLexicalValue(), "X_3_1_2_1");
-    BOOST_CHECK_EQUAL(F.getBNode("X_3_1_2_1", m10)->getLexicalValue(), "X_3_1_2_1_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", &m1)->getLexicalValue(), "X");
+    BOOST_CHECK_EQUAL(F.getBNode("X", &m4)->getLexicalValue(), "X_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", &m5)->getLexicalValue(), "X_2");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3", &m2)->getLexicalValue(), "X_3");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", &m3)->getLexicalValue(), "X_3_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", &m6)->getLexicalValue(), "X_3_1_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X", &m7)->getLexicalValue(), "X_3_1_2");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1", &m8)->getLexicalValue(), "X_3_1_1_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3", &m9)->getLexicalValue(), "X_3_1_2_1");
+    BOOST_CHECK_EQUAL(F.getBNode("X_3_1_2_1", &m10)->getLexicalValue(), "X_3_1_2_1_1");
 }
 

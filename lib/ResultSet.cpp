@@ -84,11 +84,11 @@ namespace w3c_sw {
 	results.insert(results.begin(), new Result(this));
     }
 
-    ResultSet::ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) : 
+    ResultSet::ResultSet (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap) : 
 	atomFactory(atomFactory), knownVars(), 
 	results(), ordered(ordered), db(NULL), selectOrder(), 
 	orderedSelect(false), resultType(RESULT_Tabular) {
-	if (!parseText(atomFactory, sptr, ordered, nodeMap))
+	if (!parseText(atomFactory, sptr, ordered, bnodeMap))
 	    throw(std::runtime_error(std::string("no ResultSet constructor for mediatype ")
 				     + sptr.mediaType.get()));
     }
@@ -173,8 +173,8 @@ namespace w3c_sw {
 	    RSsax handler(this, atomFactory);
 	    parser->parse(sptr, &handler);
 	} else {
-	    TTerm::String2BNode nodeMap;
-	    if (!parseText(atomFactory, sptr, false, nodeMap))
+	    TTerm::String2BNode bnodeMap;
+	    if (!parseText(atomFactory, sptr, false, &bnodeMap))
 		throw(std::runtime_error(std::string()
 					 + "ResultSet constructor: no parser for mediatype \""
 					 + sptr.mediaType.get()
@@ -191,7 +191,7 @@ namespace w3c_sw {
 	return ret;
     }
     void ResultSet::parseDelimSeparated (IStreamContext& sptr, bool ordered,
-					 TTerm::String2BNode& nodeMap, 
+					 TTerm::String2BNode* bnodeMap, 
 					 std::string delimStr, bool atHeaderRow) {
 
 	/* Iterate through the input string. */
@@ -315,13 +315,13 @@ namespace w3c_sw {
 
     }
 
-    void ResultSet::parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
+    void ResultSet::parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap) {
 	// Note, early returns for CSV and TSV formats:
 	if (sptr.mediaType.match("text/tab-separated-values")) {
-	    parseDelimSeparated(sptr, true, nodeMap, "\\t", true);
+	    parseDelimSeparated(sptr, true, bnodeMap, "\\t", true);
 	    return;
 	} else if (sptr.mediaType.match("text/csv")) {
-	    parseDelimSeparated(sptr, true, nodeMap, ","  , true);
+	    parseDelimSeparated(sptr, true, bnodeMap, ","  , true);
 	    return;
 	}
 
@@ -416,7 +416,7 @@ namespace w3c_sw {
 		std::string term(what[CapturedTerm].first, what[CapturedTerm].second);
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << "term text: \"" << term << "\"\n";
-		const TTerm* tterm = atomFactory->getTTerm(term, nodeMap);
+		const TTerm* tterm = atomFactory->getTTerm(term, bnodeMap);
 		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
 		    << "term: " << tterm->toString() << "\n";
 		if (firstRow) {
@@ -447,14 +447,14 @@ namespace w3c_sw {
 	}
     }
 
-    bool ResultSet::parseText (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap) {
+    bool ResultSet::parseText (AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap) {
 #if REGEX_LIB != SWOb_DISABLED
 	if (!sptr.mediaType.is_initialized() ||
 	    sptr.mediaType.match("text/sparql-results") ||
 	    sptr.mediaType.match("text/plain") ||
 	    sptr.mediaType.match("text/tab-separated-values") ||
 	    sptr.mediaType.match("text/csv")) {
-	    parseTable(sptr, ordered, nodeMap);
+	    parseTable(sptr, ordered, bnodeMap);
 	    return true;
 	} else
 #endif /* REGEX_LIB != SWOb_DISABLED */
@@ -466,7 +466,7 @@ namespace w3c_sw {
 	    else if (sptr.mediaType.match("application/binary-rdf-results-table") ||
 		     sptr.mediaType.match("application/x-binary-rdf-results-table"  )) {
 		BRTparser brtParser(atomFactory, *this);
-		brtParser(sptr, nodeMap);
+		brtParser(sptr, bnodeMap);
 		return true;
 	    }
 	return false;
@@ -618,8 +618,8 @@ namespace w3c_sw {
 		s_OrderConditionPair pair = *it;
 		SPARQLSerializer s;
 		pair.expression->express(&s);
-		const TTerm* l = pair.expression->eval(lhs, atomFactory, NULL, db);
-		const TTerm* r = pair.expression->eval(rhs, atomFactory, NULL, db);
+		const TTerm* l = pair.expression->eval(lhs, atomFactory, NULL, NULL, db);
+		const TTerm* r = pair.expression->eval(rhs, atomFactory, NULL, NULL, db);
 		if (dynamic_cast<const Bindable*>(l) && 
 		    dynamic_cast<const Bindable*>(r))
 		    continue;
@@ -660,8 +660,8 @@ namespace w3c_sw {
 	    NoDelWrapper (const URI* functionName, const FunctionCall* func)
 		: FunctionCall(functionName, NULL), func(func) {  }
 	    ~NoDelWrapper () {  }
-	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const { // !!! SEGVs when non-const
-		return func->eval(r, atomFactory, evaluator, db);
+	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const { // !!! SEGVs when non-const
+		return func->eval(r, atomFactory, evaluator, bnodeMap, db);
 	    }
 	};
 
@@ -681,14 +681,14 @@ namespace w3c_sw {
 		s << i;
 		return s.str();
 	    }
-	    virtual const TTerm* evalAggregate(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const = 0;
-	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	    virtual const TTerm* evalAggregate(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const = 0;
+	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		const TTerm* ret;
 		try {
 		    if (dataErrors.find(groupIndexRef) != dataErrors.end())
 			ret = TTerm::Unbound;
 		    else
-			ret = evalAggregate(r, atomFactory, evaluator, db);
+			ret = evalAggregate(r, atomFactory, evaluator, bnodeMap, db);
 
 		    // Set the storeAs for this aggregate call (e.g. "count(*)") in this ostensibly const row.
 		    const_cast<Result*>(r)->set(storeAs, ret, true, true); // !!! shame!
@@ -708,8 +708,8 @@ namespace w3c_sw {
 	    SampleState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
 	    ~SampleState () {  }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-		return expr->eval(r, atomFactory, evaluator, db);
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+		return expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 	    }
 	};
 	struct CountState : public FunctionState { // FunctionCall for virtual eval
@@ -719,7 +719,7 @@ namespace w3c_sw {
 	    CountState (std::string& groupIndexRef, const TTerm* storeAs)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_count) {  }
 	    ~CountState () {  }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, const RdfDB* db) const {
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
 		int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
 		return atomFactory->getNumericRDFLiteral(mitoa(c), c);
 	    }
@@ -732,11 +732,11 @@ namespace w3c_sw {
 	    SumState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
 	    ~SumState () { delete expr; }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		if (vals.find(groupIndexRef) == vals.end()) {
-		    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
+		    const_cast<SumState*>(this)->vals[groupIndexRef] = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		} else {
-		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
+		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator, bnodeMap);
 		    std::vector<const Expression*> addends;
 		    TTermExpression valExpr(const_cast<SumState*>(this)->vals[groupIndexRef]);
 		    addends.push_back(&valExpr);
@@ -755,20 +755,20 @@ namespace w3c_sw {
 	    AvgState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_avg), expr(expr) {  }
 	    ~AvgState () { delete expr; }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		if (sums.find(groupIndexRef) == sums.end()) {
 		    const_cast<AvgState*>(this)->counts[groupIndexRef] = 1;
-		    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator, db);
+		    const_cast<AvgState*>(this)->sums[groupIndexRef] = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		} else {
 		    const_cast<AvgState*>(this)->counts[groupIndexRef]++;
-		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator);
+		    ArithmeticSum::NaryAdder f(r, atomFactory, evaluator, bnodeMap);
 		    std::vector<const Expression*> addends;
 		    TTermExpression valExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
 		    addends.push_back(&valExpr);
 		    addends.push_back(expr);
 		    const_cast<AvgState*>(this)->sums[groupIndexRef] = atomFactory->applyCommonNumeric(addends, &f, db);
 		}
-		ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator);
+		ArithmeticProduct::NaryDivider f(r, atomFactory, evaluator, bnodeMap);
 		std::vector<const Expression*> divisors;
 		TTermExpression sumExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
 		divisors.push_back(&sumExpr);
@@ -786,8 +786,8 @@ namespace w3c_sw {
 	    MinState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_min), expr(expr) {  }
 	    ~MinState () { delete expr; }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		if (val != NULL) {
 		    if (vals.find(groupIndexRef) == vals.end())
 			const_cast<MinState*>(this)->vals[groupIndexRef] = val;
@@ -805,8 +805,8 @@ namespace w3c_sw {
 	    MaxState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_max), expr(expr) {  }
 	    ~MaxState () { delete expr; }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		if (val != NULL) {
 		    if (vals.find(groupIndexRef) == vals.end())
 			const_cast<MaxState*>(this)->vals[groupIndexRef] = val;
@@ -826,8 +826,8 @@ namespace w3c_sw {
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_group_concat), expr(expr), separator(separator)
 	    {  }
 	    ~GroupConcatState () { delete expr; }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, const RdfDB* db) const {
-		const TTerm* val = expr->eval(r, atomFactory, evaluator, db);
+	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		if (val != NULL) {
 		    if (vals.find(groupIndexRef) == vals.end())
 			const_cast<GroupConcatState*>(this)->vals[groupIndexRef] = 
@@ -945,7 +945,7 @@ namespace w3c_sw {
 		groupIndex = "";
 		for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		     it != groupBy->end(); ++it) {
-		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL, db);
+		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL, NULL, db);
 		    groupIndex += val->toString() + "~";
 		    (*row)->set(_getLabel(*it, atomFactory), val, false, true); // !! WG decision on overwrite
 		}
@@ -971,13 +971,14 @@ namespace w3c_sw {
 	    }
 
 	    Result* aggregateRow = *aggregateRowIt;
+	    TTerm::String2BNode bnodeMap;
 
 	    /* calculate projection, update idx */
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
 		try {
 		    TreatAsVar treatAsVar;
-		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, db);
+		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, &bnodeMap, db);
 		    if (val == TTerm::Unbound) {
 			BindingSetIterator old = aggregateRow->find(*knownVar);
 			if (old != aggregateRow->end())

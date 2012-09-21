@@ -43,7 +43,7 @@ struct R {
 #define row(X) R(X, sizeof(X)/sizeof(X[0]))
 #define RS(X, M) makeResultSet(X, sizeof(X)/sizeof(X[0]), M)
 
-ResultSet makeResultSet (R rows[], int count, TTerm::String2BNode& bnodeMap) {
+ResultSet makeResultSet (R rows[], int count, TTerm::String2BNode* bnodeMap) {
     ResultSet rs(&f);
     delete *(rs.begin());
     rs.erase(rs.begin());
@@ -153,27 +153,27 @@ BOOST_AUTO_TEST_SUITE_END(/* graph_patterns */)
 BOOST_AUTO_TEST_CASE( queries ) {
     DefaultGraphPattern data, pattern;
     TTerm::String2BNode bnodeMap;
-    data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
+    data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", &bnodeMap));
 
     /* Verify NTriples input, which will be used in remaining tests. */ {
 	DefaultGraphPattern d2;
-	d2.addTriplePattern(f.getTriple("<n1>", "<p1>", "<n2>", bnodeMap));
+	d2.addTriplePattern(f.getTriple("<n1>", "<p1>", "<n2>", &bnodeMap));
 	BOOST_REQUIRE(data.size() == 1);
 	BOOST_REQUIRE(data == d2);
     }
 
-    pattern.addTriplePattern(f.getTriple("?n1", "<p1>", "_:n2", bnodeMap));
+    pattern.addTriplePattern(f.getTriple("?n1", "<p1>", "_:n2", &bnodeMap));
 
     /* 1 datum, 1 pattern */ {
 	B _bz1[] = {B("?n1", "<n1>"), B("_:n2", "<n2>")}; R r1 = row(_bz1);
 	R rows[] = { r1 };
-	ResultSet ref = RS(rows, bnodeMap);
+	ResultSet ref = RS(rows, &bnodeMap);
 
 	ResultSet expected(&f, 
 			   "?n1  _:n2\n"
-			   "<n1> <n2>", false, bnodeMap);
+			   "<n1> <n2>", false, &bnodeMap);
 
-	BOOST_CHECK_EQUAL(RS(rows, bnodeMap), expected);
+	BOOST_CHECK_EQUAL(RS(rows, &bnodeMap), expected);
 
 	ResultSet r(&f);
 	data.BasicGraphPattern::bindVariables(&r, &pattern);
@@ -181,14 +181,14 @@ BOOST_AUTO_TEST_CASE( queries ) {
     }
 
     /* Redundant triples don't change BGP size. */ {
-	data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", bnodeMap));
+	data.addTriplePattern(f.getTriple("<n1> <p1> <n2> .", &bnodeMap));
 	BOOST_CHECK_EQUAL(data.size(), (size_t)1);
     }
 
     /* parseTriples */ {
 	f.parseNTPatterns(&data, 
 			  "<n1> <p1> 'l1' ."
-			  "<n2> <p1> <n3> .", bnodeMap);
+			  "<n2> <p1> <n3> .", &bnodeMap);
 	BOOST_CHECK_EQUAL(data.size(), (size_t)3);
 
 	ResultSet r(&f);
@@ -198,10 +198,10 @@ BOOST_AUTO_TEST_CASE( queries ) {
 				       "<n1> <n2>\n"
 				       "<n1> 'l1'\n"
 				       "<n2> <n3>",
-				        false, bnodeMap));
+				        false, &bnodeMap));
     }
 
-    pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 .", bnodeMap));
+    pattern.addTriplePattern(f.getTriple("_:n2 <p1> ?n3 .", &bnodeMap));
 
     {
 	ResultSet r(&f);
@@ -209,10 +209,10 @@ BOOST_AUTO_TEST_CASE( queries ) {
 	BOOST_CHECK_EQUAL(r, ResultSet(&f, 
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>",
-				       false, bnodeMap));
+				       false, &bnodeMap));
     }
 
-    data.addTriplePattern(f.getTriple("<n2> <p1> <n4> .", bnodeMap));
+    data.addTriplePattern(f.getTriple("<n2> <p1> <n4> .", &bnodeMap));
 
     /* <n1> <p1> <n2> . <n2> <p1> <n3>,<n4> . */ {
 	ResultSet r(&f);
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( queries ) {
 				       "?n1  _:n2 ?n3 \n"
 				       "<n1> <n2> <n3>\n"
 				       "<n1> <n2> <n4>",
-				       false, bnodeMap));
+				       false, &bnodeMap));
     }
 
     /* Test a subset of BSBM q1. */ {
@@ -229,18 +229,18 @@ BOOST_AUTO_TEST_CASE( queries ) {
 	f.parseNTPatterns(&d, 
 			  "?product     <label>   ?label ."
 			  "?product     <feature> <feature1> ."
-			  "?product     <feature> 'feature2' .", bnodeMap);
+			  "?product     <feature> 'feature2' .", &bnodeMap);
 	DefaultGraphPattern p;
 	f.parseNTPatterns(&p, 
 			  "?ruleProduct <label>   ?ruleLabel ."
-			  "?ruleProduct <feature> ?ruleFeature .", bnodeMap);
+			  "?ruleProduct <feature> ?ruleFeature .", &bnodeMap);
 	ResultSet tested(&f);
 	d.BasicGraphPattern::bindVariables(&tested, &p);
 	ResultSet expected(&f, 
 			   "?ruleProduct ?ruleLabel ?ruleFeature \n"
 			   "?product     ?label     <feature1> \n"
 			   "?product     ?label     'feature2'",
-			   false, bnodeMap);
+			   false, &bnodeMap);
 	BOOST_CHECK_EQUAL(tested, expected);
     }
 
@@ -252,7 +252,7 @@ struct ParsedResultSet : public w3c_sw::ResultSet {
 	erase(begin());
 	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
 	w3c_sw::TTerm::String2BNode bnodeMap;
-	parseTable(sptr, false, bnodeMap);
+	parseTable(sptr, false, &bnodeMap);
     }
 };
 BOOST_AUTO_TEST_CASE( RStwoForms ) {
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE( RStwoForms ) {
     ResultSet l(&f, 
 		" ?a  ?b ?c\n"
 		"<a> _:b 'c'\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ParsedResultSet r(
 		"+-----+-----+-----+\n"
 		"| ?a  | ?b  | ?c  |\n"
@@ -275,12 +275,12 @@ BOOST_AUTO_TEST_CASE( RSNoCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -290,12 +290,12 @@ BOOST_AUTO_TEST_CASE( RSNoCoRefsReversedL ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1 _:b1 _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -305,12 +305,12 @@ BOOST_AUTO_TEST_CASE( RSNoCoRefsReversedR ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1 _:b1 _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -320,12 +320,12 @@ BOOST_AUTO_TEST_CASE( RSCoRefInLeft ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:b2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -335,12 +335,12 @@ BOOST_AUTO_TEST_CASE( RSCoRefInRight ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:b2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -350,12 +350,12 @@ BOOST_AUTO_TEST_CASE( RSCoRefInBoth ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:a2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:b2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -365,12 +365,12 @@ BOOST_AUTO_TEST_CASE( RSConstsNoCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2   2  _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1   1 _:c1\n"
 		"_:a2   2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -380,12 +380,12 @@ BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedL ) {
 		" ?a   ?b   ?c\n"
 		"_:a2   2  _:c2\n"
 		"_:a1   1  _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1   1 _:c1\n"
 		"_:a2   2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -395,12 +395,12 @@ BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedR ) {
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2   2  _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a2   2 _:c2\n"
 		"_:a1   1 _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -410,12 +410,12 @@ BOOST_AUTO_TEST_CASE( RSConstsNoCoRefsReversedLR ) {
 		" ?a   ?b   ?c\n"
 		"_:a2   2  _:c2\n"
 		"_:a1   1  _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a2   2 _:c2\n"
 		"_:a1   1 _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -425,12 +425,12 @@ BOOST_AUTO_TEST_CASE( RSConstCoRef ) {
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:a2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2 _:b2 _:a2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -440,12 +440,12 @@ BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefs ) {
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -455,12 +455,12 @@ BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedL ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1   1  _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -470,12 +470,12 @@ BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedR ) {
 		" ?a   ?b    ?c\n"
 		"_:a1   1   _:c1\n"
 		"_:a2 _:b2  _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1   1  _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -485,12 +485,12 @@ BOOST_AUTO_TEST_CASE( RSOneConstNoCoRefsReversedLR ) {
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2  _:c2\n"
 		"_:a1   1   _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a2 _:b2 _:c2\n"
 		"_:a1   1  _:c1\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -500,12 +500,12 @@ BOOST_AUTO_TEST_CASE( RSOneConstOneCoRef ) {
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2   1  _:a2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -515,12 +515,12 @@ BOOST_AUTO_TEST_CASE( RSDifferentConstCoRef ) {
 		" ?a   ?b   ?c\n"
 		"_:a1   1  _:c1\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"_:a1 _:b1 _:c1\n"
 		"_:a2   2  _:a2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 
@@ -533,7 +533,7 @@ BOOST_AUTO_TEST_CASE( RSLongOrderedNoCoRefs ) {
 		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n"
 		"  7 'ate' <nyn>\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"  1 'two' <thr>\n"
@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE( RSLongOrderedNoCoRefs ) {
 		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n"
 		"  7 'ate' <nyn>\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -554,7 +554,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedNoCoRefs ) {
 		"  4 'fve' <six>\n"
 		"  1 'two' <thr>\n"
 		"  7 'ate' <nyn>\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"  7 'ate' <nyn>\n"
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedNoCoRefs ) {
 		"_:a1 _:b1 _:c1\n"
 		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:c2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -575,7 +575,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedCoRefs ) {
 		"  4 'fve' <six>\n"
 		"  1 'two' <thr>\n"
 		"  7 'ate' <nyn>\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"  7 'ate' <nyn>\n"
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedCoRefs ) {
 		"_:a1 _:b1 _:c1\n"
 		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:a2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_EQUAL(l, r);
 }
 
@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedMisCoRefs ) {
 		"  4 'fve' <six>\n"
 		"  1 'two' <thr>\n"
 		"  7 'ate' <nyn>\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     ResultSet r(&f, 
 		" ?a   ?b   ?c\n"
 		"  7 'ate' <nyn>\n"
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE( RSLongUnorderedMisCoRefs ) {
 		"_:a1 _:b1 _:c1\n"
 		"  4 'fve' <six>\n"
 		"_:a2 _:b2 _:b2\n",
-		false, bnodeMap);
+		false, &bnodeMap);
     BOOST_CHECK_MESSAGE(!(l == r), l.toString() + " == " + r.toString());
 }
 

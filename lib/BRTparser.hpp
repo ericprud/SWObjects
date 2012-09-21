@@ -125,7 +125,7 @@ struct BRTparser {
      * The parser is invoked like: parser(myStream);
      * f: an input stream from which to read the BRT.
      */
-    ResultSet& operator() (w3c_sw::IStreamContext& f, TTerm::String2BNode& nodeMap) {
+    ResultSet& operator() (w3c_sw::IStreamContext& f, TTerm::String2BNode* bnodeMap) {
 
 	// Tell the istream to generate std::ios_base::failure's on failure.
 	std::ios_base::iostate excepts = (*f).exceptions();
@@ -189,7 +189,7 @@ struct BRTparser {
 	    } break;
 	    case RT_BNODE: {
 		std::string label = readAtom(f);
-		set(atomFactory->getBNode(label, nodeMap));
+		set(atomFactory->getBNode(label, bnodeMap));
 	    } break;
 	    case RT_PLAIN_LITERAL: {
 		std::string value = readAtom(f);

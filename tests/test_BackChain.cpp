@@ -72,7 +72,7 @@ SELECT ?e WHERE { ?e a <Mammal> }\n\
     sw::TTerm::String2BNode bnodeMap;
     sw::ResultSet ref(&F,
 		      "?e\n"
-		      "<fido>", false, bnodeMap);
+		      "<fido>", false, &bnodeMap);
 
     BOOST_CHECK_EQUAL(rs, ref);
 }

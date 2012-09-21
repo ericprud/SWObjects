@@ -79,11 +79,11 @@ struct ExecResults : public w3c_sw::OutputFromNonInteractiveProcess {
 };
 
 struct TableResultSet : public w3c_sw::ResultSet {
-    TableResultSet (w3c_sw::AtomFactory* atomFactory, std::string srt, bool ordered, w3c_sw::TTerm::String2BNode& nodeMap) : 
+    TableResultSet (w3c_sw::AtomFactory* atomFactory, std::string srt, bool ordered, w3c_sw::TTerm::String2BNode* bnodeMap) : 
 	ResultSet(atomFactory) {
 	erase(begin());
 	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	parseTable(sptr, ordered, nodeMap);
+	parseTable(sptr, ordered, bnodeMap);
     }
 };
 
@@ -112,32 +112,32 @@ BOOST_AUTO_TEST_CASE( D_turtle ) {
 BOOST_AUTO_TEST_CASE( D_spo ) {
     ExecResults invocation("../bin/sparql -D -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
-	expected(&F, Doutput, false, bnodeMap);
+	expected(&F, Doutput, false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( D_spo_utf8 ) {
     ExecResults invocation("../bin/sparql -D -8 -e \"SELECT ?s ?p ?o WHERE {?s ?p ?o}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
-	expected(&F, Doutput, false, bnodeMap);
+	expected(&F, Doutput, false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( G_spo ) {
     ExecResults invocation("../bin/sparql -G foo -e \"SELECT ?s ?p ?o WHERE { GRAPH <foo> { ?s ?p ?o } }\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
-	expected(&F, Doutput, false, bnodeMap);
+	expected(&F, Doutput, false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp ) {
     ExecResults invocation("../bin/sparql -a -DG foo -G foo2 -e \"SELECT ?g {\n"
 		       "    GRAPH ?g {?s ?p <http://usefulinc.com/ns/doap#Project>}}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+--------+\n"
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( DG_sp ) {
 		 "|  <foo> |\n"
 		 "| <foo2> |\n"
 		 "+--------+\n", 
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 			   "    UNION\n"
 			   "        {GRAPH ?g{?s ?p <http://usefulinc.com/ns/doap#Project>}}}\"\n");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+--------+\n"
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( DG_sp_U_sp ) {
 		 "|  <foo> |\n"
 		 "| <foo2> |\n"
 		 "+--------+\n", 
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( data_uri ) {
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( data_uri_unencoded_charset_base64 ) {
 BOOST_AUTO_TEST_CASE( map_noG ) {
     ExecResults invocation("../bin/sparql -d 'data:text/trig, { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { ?s <p2> ?o } WHERE { ?s <p1> ?o }' -e 'SELECT ?s ?o WHERE { ?s ?p ?o }'");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+------+------+\n"
@@ -213,13 +213,13 @@ BOOST_AUTO_TEST_CASE( map_noG ) {
 		 "| <s1> | 'o2' |\n"
 		 "| <s1> | <o1> |\n"
 		 "+------+------+\n",
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( map_bodyG ) {
     ExecResults invocation("../bin/sparql -d 'data:text/trig, <g1> { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { ?s <p2> ?o } WHERE { GRAPH <g1> { ?s <p1> ?o } }' -e 'SELECT ?s ?o WHERE { ?s ?p ?o }'");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+------+------+\n"
@@ -227,13 +227,13 @@ BOOST_AUTO_TEST_CASE( map_bodyG ) {
 		 "| <s1> | 'o2' |\n"
 		 "| <s1> | <o1> |\n"
 		 "+------+------+\n",
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_CASE( map_headG ) {
     ExecResults invocation("../bin/sparql -d 'data:text/trig, { <s1> <p1> <o1>, \"o2\" }' -M 'CONSTRUCT { GRAPH <g2> { ?s <p2> ?o } } WHERE { ?s <p1> ?o }' -e 'SELECT ?s ?o WHERE { GRAPH <g2> { ?s ?p ?o } }'");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+------+------+\n"
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE( map_headG ) {
 		 "| <s1> | 'o2' |\n"
 		 "| <s1> | <o1> |\n"
 		 "+------+------+\n",
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
@@ -328,14 +328,14 @@ BOOST_AUTO_TEST_CASE( function_library ) {
 			   " -e \"SELECT (<tag:eric@w3.org,2012-swobjfunc/chatty_concat>"
 					   "('a', STR(?x), 'b', ?y) AS ?t) {}\"");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+--------------------------------------------------------------+\n"
 		 "| ?t                                                           |\n"
 		 "| \"CONCAT(\\\"a\\\", \\\"foo\\\", \\\"b\\\", \\\"bar\\\") yields \\\"afoobbar\\\"\" |\n"
 		 "+--------------------------------------------------------------+\n",
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
 #endif /* FIXED_CORRUPTION_FROM_DL_LOAD */
@@ -344,8 +344,8 @@ BOOST_AUTO_TEST_CASE( function_library ) {
 #define PARSE_RESULTS(TEST, EXPECT) \
     w3c_sw::TTerm::String2BNode bnodeMap;			\
     ExecResults cat("../bin/sparql -d " TEST);			\
-    TableResultSet cat_measured(&F, cat.s, false, bnodeMap);	\
-    TableResultSet cat_expected(&F, EXPECT, false, bnodeMap);	\
+    TableResultSet cat_measured(&F, cat.s, false, &bnodeMap);	\
+    TableResultSet cat_expected(&F, EXPECT, false, &bnodeMap);	\
     BOOST_CHECK_EQUAL(cat_measured, cat_expected);
 
 // e.g. CREATE_RESULTS("-l sparqlx", "SPARQL/Dt.srx", Doutput)
@@ -354,8 +354,8 @@ BOOST_AUTO_TEST_CASE( function_library ) {
     ExecResults creation("../bin/sparql -D -e \"SELECT*{?s ?p ?o}\" " OUTSPEC " -o " OUTPATH); \
     BOOST_CHECK_EQUAL(creation.s, "");				\
     ExecResults cat("../bin/sparql -d " OUTPATH);		\
-    TableResultSet cat_measured(&F, cat.s, false, bnodeMap);	\
-    TableResultSet cat_expected(&F, EXPECT, false, bnodeMap);	\
+    TableResultSet cat_measured(&F, cat.s, false, &bnodeMap);	\
+    TableResultSet cat_expected(&F, EXPECT, false, &bnodeMap);	\
     BOOST_CHECK_EQUAL(cat_measured, cat_expected);
 
 BOOST_AUTO_TEST_SUITE( parseResults )
@@ -392,9 +392,9 @@ BOOST_AUTO_TEST_CASE( merge ) { PARSE_RESULTS("SPARQL/D.srt -d SPARQL/E.srt", Dw
 BOOST_AUTO_TEST_CASE( SRJ_note ) {
     w3c_sw::TTerm::String2BNode bnodeMap;
     ExecResults join("../bin/sparql -d SPARQL/note.srj");
-    TableResultSet join_measured(&F, join.s, false, bnodeMap);
+    TableResultSet join_measured(&F, join.s, false, &bnodeMap);
     w3c_sw::IStreamContext istr("SPARQL/note.srj", w3c_sw::IStreamContext::FILE);
-    w3c_sw::ResultSet join_expected(&F, istr, false, bnodeMap);
+    w3c_sw::ResultSet join_expected(&F, istr, false, &bnodeMap);
     BOOST_CHECK_EQUAL(join_measured, join_expected);
 }
 BOOST_AUTO_TEST_SUITE_END(/* parseResults */)
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE( resultsInSparql ) {
     w3c_sw::TTerm::String2BNode bnodeMap; // share, not used for these tests.
     {
 	ExecResults join("../bin/sparql SPARQL/redundantRows.rq");
-	TableResultSet join_measured(&F, join.s, false, bnodeMap);
+	TableResultSet join_measured(&F, join.s, false, &bnodeMap);
 	TableResultSet
 	    join_expected(&F, 
 			  "+----+----+\n"
@@ -415,12 +415,12 @@ BOOST_AUTO_TEST_CASE( resultsInSparql ) {
 			  "|  1 |  3 |\n"
 			  "|  2 |  4 |\n"
 			  "+----+----+\n", 
-			  false, bnodeMap);
+			  false, &bnodeMap);
 	BOOST_CHECK_EQUAL(join_measured, join_expected);
     }
     {
 	ExecResults join("../bin/sparql SPARQL/fiveForms.rq");
-	TableResultSet join_measured(&F, join.s, false, bnodeMap);
+	TableResultSet join_measured(&F, join.s, false, &bnodeMap);
 	TableResultSet
 	    join_expected(&F, 
 			  "+----+----+----+----+----+----+\n"
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE( resultsInSparql ) {
 			  "|  2 |  3 |  3 |  3 |  5 |  1 |\n"
 			  "|  2 |  3 |  3 |  3 |  6 |  1 |\n"
 			  "+----+----+----+----+----+----+\n", 
-			  false, bnodeMap);
+			  false, &bnodeMap);
 	BOOST_CHECK_EQUAL(join_measured, join_expected);
     }
 }
@@ -440,14 +440,14 @@ BOOST_AUTO_TEST_CASE( GRDDL0 ) {
     ::setenv("XML_CATALOG_FILES", "xml/catalog.xml", 1);
     ExecResults invocation("../bin/sparql -d SPARQL/GRDDL0.html -e 'SELECT ?fam {?s <http://xmlns.com/foaf/0.1/family_name> ?fam}'");
     w3c_sw::TTerm::String2BNode bnodeMap;
-    TableResultSet tested(&F, invocation.s, false, bnodeMap);
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
     TableResultSet
 	expected(&F, 
 		 "+-----------------+\n"
 		 "| ?fam            |\n"
 		 "| \"Prud'hommeaux\" |\n"
 		 "+-----------------+\n", 
-		 false, bnodeMap);
+		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
     ::unsetenv("XSLT");
 }
@@ -492,11 +492,11 @@ struct ServerTableQuery : w3c_sw::SPARQLClientServerInteraction {
 	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
 	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
 	// w3c_sw_LINEN << "clientS: " << clientS << std::endl;
-	got = w3c_sw::ResultSet(&F, clientIS, false, cliNodes);
+	got = w3c_sw::ResultSet(&F, clientIS, false, &cliNodes);
 	// w3c_sw_LINEN << "got:\n" << got << std::endl;
 	w3c_sw::IStreamContext expectedIS(expectedStr, w3c_sw::IStreamContext::STRING, "text/sparql-results");
 	// w3c_sw_LINEN << "expected: " << expectedStr << std::endl;
-	expected = w3c_sw::ResultSet(&F, expectedIS, false, srvNodes);
+	expected = w3c_sw::ResultSet(&F, expectedIS, false, &srvNodes);
 	// w3c_sw_LINEN << "expected:\n" << expected << std::endl;
     }
 };

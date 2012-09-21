@@ -97,7 +97,7 @@ namespace w3c_sw {
 				if (subject.empty())
 				    newState.s = atomFactory->createBNode();
 				else
-				    newState.s = atomFactory->getBNode(subject, bnodeMap);
+				    newState.s = atomFactory->getBNode(subject, &bnodeMap);
 			    } else
 				newState.s = atomFactory->getURI(baseURI + "#" + subject);
 			} else
@@ -204,7 +204,7 @@ namespace w3c_sw {
 		    else if ( !parseType.empty() )
 			newState.s = atomFactory->createBNode();
 		    else if ( !nodeID.empty() )
-			newState.s = atomFactory->getBNode(nodeID, bnodeMap);
+			newState.s = atomFactory->getBNode(nodeID, &bnodeMap);
 		    else
 			expectCharData = true;
 		    if (newState.s != NULL)

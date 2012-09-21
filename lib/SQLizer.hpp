@@ -1073,7 +1073,7 @@ namespace w3c_sw {
 		// Lean on bnode's assurance of a unique lexical identifier.
 		TTerm::String2BNode t;
 		const BNode* b = atomFactory->getBNode
-		    (std::string("_") + boost::lexical_cast<std::string>(this), t);
+		    (std::string("_") + boost::lexical_cast<std::string>(this), &t);
 
 		// Ignore BNode; create a Variable to hold the returned value.
 		const Variable* v = atomFactory->getVariable(b->getLexicalValue());
@@ -1301,7 +1301,7 @@ namespace w3c_sw {
 			// eval is a database needed for EXISTS queries.  When
 			// translating to SQL, we don't need the database, but
 			// we do need to figure out how to map to SQL EXISTS.
-			(*row)->set(exp->first, exp->second->eval(*row, rs->getAtomFactory(), &b, NULL), false);
+			(*row)->set(exp->first, exp->second->eval(*row, rs->getAtomFactory(), &b, NULL, NULL), false);
 		    } catch (SafeEvaluationError&) {
 			// no binding
 		    }

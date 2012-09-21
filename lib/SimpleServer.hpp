@@ -1081,7 +1081,7 @@ struct SimpleEngine {
 		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
 	    }
 	    TTerm::String2BNode bnodeMap;
-	    ResultSet loaded(&atomFactory, istr, false, bnodeMap);
+	    ResultSet loaded(&atomFactory, istr, false, &bnodeMap);
 	    rs.joinIn(&loaded);
 	    rs.resultType = loaded.resultType;
 	    return true;

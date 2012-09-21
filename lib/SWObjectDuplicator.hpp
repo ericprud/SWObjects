@@ -54,7 +54,7 @@ namespace w3c_sw {
 
     struct SWObjectDuplicator : public Expressor {
 	AtomFactory* atomFactory; /* Can be used to create SWObjects in a different atom space. */
-	TTerm::String2BNode nodeMap;
+	TTerm::String2BNode bnodeMap;
 
         SWObjectDuplicator_Last last;
 	SWObjectDuplicator (AtomFactory* atomFactory) : atomFactory(atomFactory) {  }
@@ -77,7 +77,7 @@ namespace w3c_sw {
 	    last.tterms.tterm = last.tterms.variable = atomFactory ? atomFactory->getVariable(lexicalValue.c_str()) : self;
 	}
 	virtual void bnode (const BNode* const self, std::string lexicalValue) {
-	    last.tterms.tterm = atomFactory ? atomFactory->getBNode(lexicalValue.c_str(), nodeMap) : self;
+	    last.tterms.tterm = atomFactory ? atomFactory->getBNode(lexicalValue.c_str(), &bnodeMap) : self;
 	}
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG ? new LANGTAG(*p_LANGTAG) : NULL) : self;

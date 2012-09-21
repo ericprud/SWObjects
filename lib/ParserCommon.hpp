@@ -32,7 +32,7 @@ protected:
     std::string		baseURI;
     NamespaceMap*	namespaces;
     bool		freeNamespaces;
-    TTerm::String2BNode	nodeMap;
+    TTerm::String2BNode	bnodeMap;
     
     ParserDriver ()
 	: baseURI(""), namespaces(new NamespaceMap()), 
@@ -54,13 +54,13 @@ public:
 
     void clear () {
 	namespaces->clear();
-	nodeMap.clear();
+	bnodeMap.clear();
 	setBase("");
     }
 
     void clear (std::string baseURI) {
 	namespaces->clear();
-	nodeMap.clear();
+	bnodeMap.clear();
 	setBase(baseURI);
     }
 
@@ -122,7 +122,7 @@ public:
     const URI* getURI (std::string name) { return atomFactory->getURI(name); }
     const URI* getAbsoluteURI(std::string name);
     const BNode* createBNode () { return atomFactory->createBNode(); }
-    const BNode* getBNode (std::string name) { return atomFactory->getBNode(name, nodeMap); }
+    const BNode* getBNode (std::string name) { return atomFactory->getBNode(name, &bnodeMap); }
     const RDFLiteral* getRDFLiteral (std::string p_String, const URI* p_URI, const LANGTAG* p_LANGTAG) {
 	return atomFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }

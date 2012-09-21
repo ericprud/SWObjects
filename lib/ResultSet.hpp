@@ -200,15 +200,15 @@ namespace w3c_sw {
 	 * A \n on the last line creates a row with no bindings.
 	 */
 #if REGEX_LIB != SWOb_DISABLED
-	ResultSet (AtomFactory* atomFactory, std::string srt, bool ordered, TTerm::String2BNode& nodeMap) : 
+	ResultSet (AtomFactory* atomFactory, std::string srt, bool ordered, TTerm::String2BNode* bnodeMap) : 
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular) {
 	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/plain");
-	    parseTable(sptr, ordered, nodeMap);
+	    parseTable(sptr, ordered, bnodeMap);
 	}
 
-	ResultSet(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap);
+	ResultSet(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap);
 
 	void clear () {
 	    selectOrder.clear();
@@ -217,20 +217,20 @@ namespace w3c_sw {
 	}
 
 	const TTerm* inventColumName(size_t s);
-	void parseDelimSeparated(IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap,
+	void parseDelimSeparated(IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap,
 				 std::string delimStr, bool atHeaderRow = true);
-	void parseTable(IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap);
+	void parseTable(IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap);
 
 #endif /* REGEX_LIB != SWOb_DISABLED */
 
-	bool parseText(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode& nodeMap);
+	bool parseText(AtomFactory* atomFactory, IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap);
 
 #if !defined(SWIG)
 	class RSsax : public SWSAXhandler {
 	protected:
 	    ResultSet* rs;
 	    AtomFactory* atomFactory;
-	    TTerm::String2BNode	nodeMap;
+	    TTerm::String2BNode bnodeMap;
 
 	    enum STATES {DOCUMENT, SPARQL, HEAD, LINK, VARIABLE, BOOLEAN,
 			 RESULTS, RESULT, BINDING, _URI, BNODE, LITERAL, 
@@ -350,7 +350,7 @@ namespace w3c_sw {
 		    chars = "";
 		    break;
 		case BNODE:
-		    result->set(variable, atomFactory->getBNode(chars, nodeMap), false);
+		    result->set(variable, atomFactory->getBNode(chars, &bnodeMap), false);
 		    chars = "";
 		    break;
 		case LITERAL:

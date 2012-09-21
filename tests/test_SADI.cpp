@@ -66,7 +66,7 @@ struct ParsedResultSet : public w3c_sw::ResultSet {
 	erase(begin());
 	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
 	w3c_sw::TTerm::String2BNode bnodeMap;
-	parseTable(sptr, false, bnodeMap);
+	parseTable(sptr, false, &bnodeMap);
     }
 };
 
