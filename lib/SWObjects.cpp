@@ -15,6 +15,7 @@
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"
+#include "utf8.h"
 
 #ifdef _MSC_VER
   #define SET_Variable_CONSTIT_NE(L, R) set_Variable_constit_ne(L, R)
@@ -1069,7 +1070,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    const TTerm* FUNC_string_length (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
 		    const RDFLiteral* upper = dynamic_cast<const RDFLiteral*>(args[0]);
-		    int i = upper->getLexicalValue().size();
+		    std::string lex = upper->getLexicalValue();
+		    int i = utf8::distance(lex.begin(), lex.end());
 		    return atomFactory->getNumericRDFLiteral(i);
 		}
 		throw TypeError(args[0]->toString(), name->toString());
@@ -1209,14 +1211,30 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
+	    void checkArgumentCompatibility (const RDFLiteral* firstLit, const RDFLiteral* secondLit, const char* func) {
+		if (firstLit == NULL || secondLit == NULL)
+		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), func);
+		const LANGTAG* fl = firstLit->getLangtag();
+		const URI* fd = firstLit->getDatatype();
+		const LANGTAG* sl = secondLit->getLangtag();
+		const URI* sd = firstLit->getDatatype();
+		if (!
+		    (// The arguments are simple literals or literals typed as xsd:string
+		     ((fl == NULL || fd == TTerm::URI_xsd_string) && (sl == NULL || sd == TTerm::URI_xsd_string))
+		     || 
+		     // The arguments are plain literals with identical language tags
+		     (fl && sl && fl->getLexicalValue() == sl->getLexicalValue())
+		     || 
+		     // The first argument is a plain literal with language tag and the second argument is a simple literal or literal typed as xsd:string
+		     (fl != NULL && fd == NULL && (sd == NULL || sd == TTerm::URI_xsd_string))
+		     )
+		    )
+		    throw TypeError(std::string("mismatched language tags"), func);
+	    }
 	    const TTerm* FUNC_contains (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
-
-		if (firstLit == NULL || secondLit == NULL)
-		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "contains");
-		if (firstLit->getLangtag() != secondLit->getLangtag())
-		    throw TypeError(std::string("mismatched language tags"), "contains");
+		checkArgumentCompatibility(firstLit, secondLit, "contains");
 
 		std::string lookIn = firstLit->getLexicalValue();
 		std::string lookFor = secondLit->getLexicalValue();
@@ -1227,12 +1245,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    const TTerm* FUNC_substring_before (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
-
-		if (firstLit != NULL && firstLit->getDatatype() == NULL && 
-		    secondLit != NULL && secondLit->getDatatype() == NULL)
-		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_before");
-		if (firstLit->getLangtag() != secondLit->getLangtag())
-		    throw TypeError(std::string("mismatched language tags"), "substring_before");
+		checkArgumentCompatibility(firstLit, secondLit, "strbefore");
 
 		std::string lookIn = firstLit->getLexicalValue();
 		std::string lookFor = secondLit->getLexicalValue();
@@ -1246,11 +1259,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    const TTerm* FUNC_substring_after (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
-
-		if (firstLit == NULL || secondLit == NULL)
-		    throw TypeError(std::string("unexpected ") + (secondLit ? secondLit->toString() : "NULL"), "substring_after");
-		if (firstLit->getLangtag() != secondLit->getLangtag())
-		    throw TypeError(std::string("mismatched language tags"), "substring_after");
+		checkArgumentCompatibility(firstLit, secondLit, "strafter");
 
 		std::string lookIn = firstLit->getLexicalValue();
 		std::string lookFor = secondLit->getLexicalValue();
@@ -1261,6 +1270,52 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(lookIn.substr(found + lookFor.size()), NULL, l, false);
 	    }
 
+	    const TTerm* FUNC_starts_with (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+		checkArgumentCompatibility(firstLit, secondLit, "strStarts");
+
+		std::string lookIn = firstLit->getLexicalValue();
+		std::string lookFor = secondLit->getLexicalValue();
+		return lookIn.compare(0, lookFor.size(), lookFor) ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    const TTerm* FUNC_ends_with (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
+		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
+		const RDFLiteral* secondLit = dynamic_cast<const RDFLiteral*>(args[1]);
+		checkArgumentCompatibility(firstLit, secondLit, "strEnds");
+
+		std::string lookIn = firstLit->getLexicalValue();
+		std::string lookFor = secondLit->getLexicalValue();
+		return lookIn.compare(lookIn.size()-lookFor.size(), lookFor.size(), lookFor) ? TTerm::BOOL_false : TTerm::BOOL_true;
+	    }
+
+	    std::string utf8_substr (std::string from, int start, int len = -1) {
+		// std::cout << utf8::distance(from.begin(), from.end()) << ": " << from << "\n";
+
+		std::string::iterator c = from.begin();
+		try {
+		    utf8::advance(c, start, from.end());
+		} catch (utf8::not_enough_room& e) {
+		    c = from.end();
+		}
+		from.erase(from.begin(), c);
+		// std::cout << "trimmed beginning: " << utf8::distance(from.begin(), from.end()) << ": \"" << from << "\"\n";
+
+		c = from.begin();
+		if (len > 0) {
+		    try {
+			utf8::advance(c, len, from.end());
+		    } catch (utf8::not_enough_room& e) {
+			c = from.end();
+		    }
+		    from.erase(c, from.end());
+		}
+
+		// std::cout << "trimmed end: " << utf8::distance(from.begin(), from.end()) << ": \"" << from << "\"\n";
+		return from;
+	    }
+			
 	    const TTerm* FUNC_substring (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, const RdfDB* /* db */) {
 		const RDFLiteral* firstLit  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (firstLit == NULL)
@@ -1282,9 +1337,9 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		if (args.size() == 3) {
 		    const IntegerRDFLiteral* thirdInt = dynamic_cast<const IntegerRDFLiteral*>(args[2]);
 		    int len = thirdInt->getInt();
-		    return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos, len), dt, langtag, false);
+		    return atomFactory->getRDFLiteral(utf8_substr(firstLit->getLexicalValue(), pos, len), dt, langtag, false);
 		} else {
-		    return atomFactory->getRDFLiteral(firstLit->getLexicalValue().substr(pos), dt, langtag, false);
+		    return atomFactory->getRDFLiteral(utf8_substr(firstLit->getLexicalValue(), pos), dt, langtag, false);
 		}
 	    }
 
@@ -1366,6 +1421,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_contains, 2, 2, &FUNC_contains),
 		Map::Initializer(TTerm::FUNC_substring_before, 2, 2, &FUNC_substring_before),
 		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),
+		Map::Initializer(TTerm::FUNC_starts_with, 2, 2, &FUNC_starts_with),
+		Map::Initializer(TTerm::FUNC_ends_with, 2, 2, &FUNC_ends_with),
 		Map::Initializer(TTerm::FUNC_substring, 2, 3, &FUNC_substring),
 		Map::Initializer(TTerm::FUNC_matches, 2, 3, &FUNC_matches)
 	    };

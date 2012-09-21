@@ -3179,6 +3179,8 @@ namespace AtomicFunction {
 	    FPtr FUNC_contains;
 	    FPtr FUNC_substring_before;
 	    FPtr FUNC_substring_after;
+	    FPtr FUNC_starts_with;
+	    FPtr FUNC_ends_with;
 	    FPtr FUNC_substring;
 	    FPtr FUNC_matches;
     } // namespace BuiltIn

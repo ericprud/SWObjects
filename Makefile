@@ -53,7 +53,7 @@ CODEA ?= ../codea
 CCL ?= ../ccl
 APR ?= /usr/include/apr-1.0
 
-INCLUDES += -I${PWD} -I${PWD}/lib -I${PWD}/docs  # . (for config.h) and ./lib (for the rest)
+INCLUDES += -I${PWD} -I${PWD}/lib -I${PWD}/docs -I${PWD}/utf8_v2.3.2_source  # . (for config.h) and ./lib (for the rest)
 I2=$(subst /, ,$(BISONOBJ:.o=)) # e.g. lib JSONresultsParser JSONresultsParser lib MapSetParser MapSetParser
 I3=$(sort $(I2)) # e.g. JSONresultsParser MapSetParser ... lib
 INCLUDES += $(I3:%=-I${PWD}/%)
