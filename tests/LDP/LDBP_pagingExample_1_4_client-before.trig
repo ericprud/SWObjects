@@ -1,0 +1,9 @@
+@prefix container: <http://example.org/netWorth/nw1/assetContainer> .
+@prefix page: <http://example.org/netWorth/nw1/assetContainer?p=> .
+@prefix membership: <http://example.org/netWorth/nw1> .
+@prefix asset: <http://example.org/netWorth/nw1/assetContainer/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix bp: <http://open-services.net/ns/basicProfile#>.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix o: <http://example.org/ontology/> .

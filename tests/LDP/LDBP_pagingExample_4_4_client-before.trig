@@ -1,0 +1,28 @@
+@prefix container: <http://example.org/netWorth/nw1/assetContainer> .
+@prefix page: <http://example.org/netWorth/nw1/assetContainer?p=> .
+@prefix membership: <http://example.org/netWorth/nw1> .
+@prefix asset: <http://example.org/netWorth/nw1/assetContainer/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix bp: <http://open-services.net/ns/basicProfile#>.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix o: <http://example.org/ontology/> .
+page:1 {
+    container: a bp:Container ;
+        dcterms:title "The assets of JohnZSmith" ;
+        bp:membershipSubject membership: ;
+        bp:membershipPredicate o:asset .
+    page:1 a bp:Page ;
+        bp:pageOf container: ;
+        bp:nextPage rdf:nil .
+    membership: a o:NetWorth .
+    membership: o:asset asset:a1 .
+    asset:a1 a o:Stock ; dcterms:title "IBM" ; o:value 100.00 .
+    membership: o:asset asset:a2 .
+    asset:a2 a o:Cash  ; o:value  50.00 .
+    membership: o:asset asset:a3 .
+    asset:a3 a o:Bribe ; o:value  10.00 .
+}
+asset:a1 { asset:a1 a o:Stock ; o:value 100.00 ; dcterms:title "IBM" ; dcterms:date "2012-01-01"^^xsd:date }
+asset:a2 { asset:a2 a o:Cash  ; o:value  50.00 ; dcterms:date "2012-01-02"^^xsd:date }
+asset:a3 { asset:a3 a o:Bribe ; o:value  10.00 ; dcterms:date "2012-01-03"^^xsd:date }

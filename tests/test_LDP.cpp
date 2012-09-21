@@ -54,7 +54,10 @@ struct CurlPOSTtoLDPservice : w3c_sw::ClientServerInteraction {
 	: ClientServerInteraction(serverParams, serverPath, LOWPORT, HIPORT)
     {
 	invoke(std::string()
-	       + "curl -s -X POST -H 'Content-Type: " + media + "' " + serverURL + "  -d '" + data + "'");
+	       + "curl -s -X POST -H 'Content-Type: "+media+"' "+serverURL+"  -d ' "+data+"'");
+	/* Note that in this [[ -d ' "+data+"' ]], the space after the -d
+	   prevents curl from interpreting a leading '@' as a marker for file
+	   from which to get the data.*/
     }
 };
 
@@ -166,7 +169,7 @@ BOOST_AUTO_TEST_CASE( bugz_curl ) {
 	 "/createBug",
 
 	 // Curl this data and media type to verify the server response.
-	 " @prefix : <http://bugs.example/ns#> .\n"
+	 "@prefix : <http://bugs.example/ns#> .\n"
 	 "_:myBug :whiner \"me\" ; :whatNow \"badly b0rked\" .", "text/turtle");
     BOOST_CHECK_EQUAL("{\n  </bugz/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bugs.example/ns#Bug> .\n}\n", i.clientS);
 }
@@ -184,7 +187,7 @@ BOOST_AUTO_TEST_CASE( bugz_client ) {
 	 "/createBug",
 
 	 // Client graph to POST to service:
-	 " @prefix : <http://bugs.example/ns#> .\n"
+	 "@prefix : <http://bugs.example/ns#> .\n"
 	 "_:myBug :whiner 'me' ; :whatNow 'badly b0rked' .",
 
 	 // Client SPARQL query to validate the response:
@@ -212,21 +215,21 @@ BOOST_AUTO_TEST_CASE( bugz_client ) {
 
 namespace LDBPexamples {
     static std::string turtlePrefix_o =
-	" @prefix o: <http://example.org/ontology/> .\n";
+	"@prefix o: <http://example.org/ontology/> .\n";
 
     static std::string turtlePrefix_xsd =
-	" @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n";
+	"@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n";
 
     static std::string turtlePrefix_dcterms =
-	" @prefix dcterms: <http://purl.org/dc/terms/> .\n";
+	"@prefix dcterms: <http://purl.org/dc/terms/> .\n";
 
     static std::string turtlePrefixes =
-	" @prefix container: <http://example.org/netWorth/nw1/assetContainer> .\n"
-	" @prefix page: <http://example.org/netWorth/nw1/assetContainer?p=> .\n"
-	" @prefix membership: <http://example.org/netWorth/nw1> .\n"
-	" @prefix asset: <http://example.org/netWorth/nw1/assetContainer/> .\n"
-	" @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.\n"
-	" @prefix bp: <http://open-services.net/ns/basicProfile#>.\n" +
+	"@prefix container: <http://example.org/netWorth/nw1/assetContainer> .\n"
+	"@prefix page: <http://example.org/netWorth/nw1/assetContainer?p=> .\n"
+	"@prefix membership: <http://example.org/netWorth/nw1> .\n"
+	"@prefix asset: <http://example.org/netWorth/nw1/assetContainer/> .\n"
+	"@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.\n"
+	"@prefix bp: <http://open-services.net/ns/basicProfile#>.\n" +
 	turtlePrefix_dcterms +
 	turtlePrefix_xsd +
 	turtlePrefix_o
@@ -246,10 +249,10 @@ namespace LDBPexamples {
 	;
 
     static std::string container =
-	"container: a bp:Container ;\n"
-	"   dcterms:title \"The assets of JohnZSmith\" ;\n"
-	"   bp:membershipSubject membership: ;\n"
-	"   bp:membershipPredicate o:asset .\n"
+	"    container: a bp:Container ;\n"
+	"        dcterms:title \"The assets of JohnZSmith\" ;\n"
+	"        bp:membershipSubject membership: ;\n"
+	"        bp:membershipPredicate o:asset .\n"
 	;
 
     std::string post_1 =
@@ -259,20 +262,20 @@ namespace LDBPexamples {
 	"[] a o:Stock ; dcterms:title \"IBM\" ;\n"
 	"   o:value 100.00 ; dcterms:date \"2012-01-01\"^^xsd:date .\n";
     static std::string member1 =
-	"membership: o:asset asset:a1 .\n"
-	"asset:a1 a o:Stock ; dcterms:title \"IBM\" ; o:value 100.00 .\n";
+	"    membership: o:asset asset:a1 .\n"
+	"    asset:a1 a o:Stock ; dcterms:title \"IBM\" ; o:value 100.00 .\n";
     static std::string asset1 =
 	"asset:a1 { asset:a1 a o:Stock ; o:value 100.00 ; dcterms:title \"IBM\" ; dcterms:date \"2012-01-01\"^^xsd:date }\n";
 
     static std::string member2 =
-	"membership: o:asset asset:a2 .\n"
-	"asset:a2 a o:Cash  ; o:value  50.00 .\n";
+	"    membership: o:asset asset:a2 .\n"
+	"    asset:a2 a o:Cash  ; o:value  50.00 .\n";
     static std::string asset2 =
 	"asset:a2 { asset:a2 a o:Cash  ; o:value  50.00 ; dcterms:date \"2012-01-02\"^^xsd:date }\n";
 
     static std::string member3 =
-	"membership: o:asset asset:a3 .\n"
-	"asset:a3 a o:Bribe ; o:value  10.00 .\n";
+	"    membership: o:asset asset:a3 .\n"
+	"    asset:a3 a o:Bribe ; o:value  10.00 .\n";
     static std::string asset3 =
 	"asset:a3 { asset:a3 a o:Bribe ; o:value  10.00 ; dcterms:date \"2012-01-03\"^^xsd:date }\n";
 
@@ -283,8 +286,8 @@ namespace LDBPexamples {
 	"[] a o:House ; dcterms:title \"Home\" ;\n"
 	"   o:value 1.00 ; dcterms:date \"2012-01-04\"^^xsd:date .\n";
     static std::string member4 =
-	"membership: o:asset asset:a4 .\n"
-	"asset:a4 a o:House ; dcterms:title \"Home\" ; o:value   1.00 .\n";
+	"    membership: o:asset asset:a4 .\n"
+	"    asset:a4 a o:House ; dcterms:title \"Home\" ; o:value   1.00 .\n";
     static std::string asset4 =
 	"asset:a4 { asset:a4 a o:House ; o:value   1.00 ; dcterms:title \"Home\" ; dcterms:date \"2012-01-04\"^^xsd:date }\n";
 
@@ -295,8 +298,8 @@ namespace LDBPexamples {
 	"[] a o:Stock ; dcterms:title \"Big Co.\" ;\n"
 	"   o:value 200.02 ; dcterms:date \"2012-01-05\"^^xsd:date .\n";
     static std::string member5 =
-	"membership: o:asset asset:a5 .\n"
-	"asset:a5 a o:Stock ; dcterms:title \"Big Co.\" ; o:value 200.02 .\n";
+	"    membership: o:asset asset:a5 .\n"
+	"    asset:a5 a o:Stock ; dcterms:title \"Big Co.\" ; o:value 200.02 .\n";
     static std::string asset5 =
 	"asset:a5 { asset:a5 a o:Stock ; o:value 200.02 ; dcterms:title \"Big Co.\" ; dcterms:date \"2012-01-05\"^^xsd:date }\n";
 
@@ -380,8 +383,8 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_1_4_client ) {
     { WriteFile t("LDP/LDBP_pagingExample_1_4_client-before.trig", before); }
 
     std::string after =
-	LDBPexamples::turtlePrefixes
-	+ "page:1 {\n"
+	LDBPexamples::turtlePrefixes +
+	"page:1 {\n"
 	+    LDBPexamples::container +
 	"    page:1 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
@@ -426,16 +429,16 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_1_4_client ) {
 
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
     std::string before =
-	LDBPexamples::turtlePrefixes
-	+ "page:1 {\n"
-	+     LDBPexamples::container +
-	"      page:1 a bp:Page ;\n"
-	"          bp:pageOf container: ;\n"
-	"          bp:nextPage rdf:nil .\n"
-	"      membership: a o:NetWorth .\n"
-	+     LDBPexamples::member1
-	+     LDBPexamples::member2
-	+     LDBPexamples::member3
+	LDBPexamples::turtlePrefixes +
+	"page:1 {\n"
+	+    LDBPexamples::container +
+	"    page:1 a bp:Page ;\n"
+	"        bp:pageOf container: ;\n"
+	"        bp:nextPage rdf:nil .\n"
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member1
+	+    LDBPexamples::member2
+	+    LDBPexamples::member3
 	+ "}\n"
 	+ LDBPexamples::asset1
 	+ LDBPexamples::asset2
@@ -445,8 +448,8 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
     { WriteFile t("LDP/LDBP_pagingExample_4_4_client-before.trig", before); }
 
     std::string after =
-	LDBPexamples::turtlePrefixes
-	+ "page:1 {\n"
+	LDBPexamples::turtlePrefixes +
+	"page:1 {\n"
 	+    LDBPexamples::container +
 	"    page:1 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
@@ -497,17 +500,17 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
 
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
     std::string before =
-	LDBPexamples::turtlePrefixes
-	+ "page:1 {\n"
-	+     LDBPexamples::container +
-	"      page:1 a bp:Page ;\n"
-	"          bp:pageOf container: ;\n"
-	"          bp:nextPage rdf:nil .\n"
-	"      membership: a o:NetWorth .\n"
-	+     LDBPexamples::member1
-	+     LDBPexamples::member2
-	+     LDBPexamples::member3
-	+     LDBPexamples::member4
+	LDBPexamples::turtlePrefixes +
+	"page:1 {\n"
+	+    LDBPexamples::container +
+	"    page:1 a bp:Page ;\n"
+	"        bp:pageOf container: ;\n"
+	"        bp:nextPage rdf:nil .\n"
+	"    membership: a o:NetWorth .\n"
+	+    LDBPexamples::member1
+	+    LDBPexamples::member2
+	+    LDBPexamples::member3
+	+    LDBPexamples::member4
 	+ "}\n"
 	+ LDBPexamples::asset1
 	+ LDBPexamples::asset2
@@ -518,8 +521,8 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
     { WriteFile t("LDP/LDBP_pagingExample_5_4_client-before.trig", before); }
 
     std::string after =
-	LDBPexamples::turtlePrefixes
-	+ "page:1 {\n"
+	LDBPexamples::turtlePrefixes +
+	"page:1 {\n"
 	+    LDBPexamples::container +
 	"    page:1 a bp:Page ;\n"
 	"        bp:pageOf container: ;\n"
