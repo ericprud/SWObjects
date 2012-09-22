@@ -1108,9 +1108,21 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		     false);
 	    }
 
+	    std::wstring _from8 (std::string from) {
+		std::wstring ret;
+		utf8::utf8to32(from.begin(), from.end(), back_inserter(ret));
+		return ret;
+	    }
+
+	    std::string _to8 (std::wstring from) {
+		std::string ret;
+		utf8::utf32to8(from.begin(), from.end(), back_inserter(ret));
+		return ret;
+	    }
+
 	    const TTerm* FUNC_replace (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* changeMe  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (changeMe == NULL || changeMe->getDatatype() != NULL)
+		if (changeMe == NULL || (changeMe->getDatatype() != NULL && changeMe->getDatatype() != TTerm::URI_xsd_string))
 		    throw TypeError(args[0]->toString(), "fn:replace");
 		std::string s = changeMe->getLexicalValue();
 
@@ -1124,10 +1136,23 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		    throw TypeError(args[2]->toString(), "fn:replace");
 		std::string to = toL->getLexicalValue();
 
+#if REGEX_LIB == SWOb_BOOST
+		// Convert the target text and the from and to patterns to UCS32.
+		std::wstring ws = _from8(s);
+		std::basic_ostringstream<wchar_t> ss(std::ios::out | std::ios::binary);
+		std::ostream_iterator<wchar_t, wchar_t> oi(ss);
+		boost::regex_replace(oi, ws.begin(), ws.end(),
+				     boost::wregex(_from8(from)), _from8(to), 
+				     boost::match_default | boost::format_all);
+		// Convert the result to UTF-8.
+		s = _to8(ss.str());
+#else /* REGEX_LIB != SWOb_BOOST */
 		for (size_t i = 0; (i = s.find(from, i)) != std::string::npos; i += to.size())
 		    s.replace(i, from.size(), to);
+#endif /* REGEX_LIB != SWOb_BOOST */
 
-		return atomFactory->getRDFLiteral(s, NULL);
+		LANGTAG* l = changeMe->getLangtag() ? new LANGTAG(*changeMe->getLangtag()) : NULL;
+		return atomFactory->getRDFLiteral(s, changeMe->getDatatype(), l, false);
 	    }
 
 	    const TTerm* FUNC_sameTerm (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
