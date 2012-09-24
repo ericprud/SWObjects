@@ -1378,8 +1378,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		    throw TypeError(args[1]->toString(), "substring");
 
 #if REGEX_LIB == SWOb_DISABLED
-		throw std::string("no regular expression library was linked in");
-#else
+		throw std::string("matches -- no regular expression library was linked in");
+#else /* REGEX_LIB != SWOb_DISABLED */
 		boost::match_results<std::string::const_iterator> what;
 		boost::match_flag_type flags = boost::match_default;
 		unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
@@ -1400,7 +1400,124 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		}
 		const boost::regex pattern(secondLit->getLexicalValue(), l_flags);
 		return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
-#endif
+#endif /* REGEX_LIB != SWOb_DISABLED */
+	    }
+
+	    struct DateTimeDetails {
+		int year, month, day, hours, minutes;
+		float seconds;
+		std::string timezone, tz;
+	    };
+	    DateTimeDetails parseDateTime (const RDFLiteral* dt) {
+		DateTimeDetails ret;
+#if REGEX_LIB == SWOb_DISABLED
+		throw std::string("parseDateTime -- no regular expression library was linked in");
+#else /* REGEX_LIB != SWOb_DISABLED */
+		boost::match_results<std::string::const_iterator> what;
+		boost::match_flag_type flags = boost::match_default;
+		const boost::regex pattern(AtomFactory::datetimePattern);
+		if (!regex_search(dt->getLexicalValue(), what, pattern, flags))
+		    throw TypeError(dt->getLexicalValue(), "parseDateTime");
+#endif /* REGEX_LIB != SWOb_DISABLED */
+		ret.year     = boost::lexical_cast<int>(std::string(what[2].first, what[2].second)+std::string(what[3].first, what[3].second));
+		ret.month    = boost::lexical_cast<int>(std::string(what[4].first, what[4].second));
+		ret.day      = boost::lexical_cast<int>(std::string(what[5].first, what[5].second));
+		ret.hours    = boost::lexical_cast<int>(std::string(what[6].first, what[6].second));
+		ret.minutes  = boost::lexical_cast<int>(std::string(what[7].first, what[7].second));
+		ret.seconds  = boost::lexical_cast<float>(std::string(what[8].first, what[8].second));
+		ret.tz       = std::string(what[9].first, what[9].second);
+		if (!what[9].matched) {
+		    ret.timezone = "!!error";
+		} else if (what[10].matched) {
+		    ret.timezone = "PT0S";
+		} else {
+		    ret.timezone += *what[11].first == '-' ? "-" : ""; // sign
+		    ret.timezone += "PT";
+		    int timezoneHours = boost::lexical_cast<int>(std::string(what[12].first, what[12].second));
+		    ret.timezone += boost::lexical_cast<std::string>(timezoneHours);
+		    int timezoneMinutes = boost::lexical_cast<int>(std::string(what[13].first, what[13].second));
+		    if (timezoneMinutes != 0)
+			ret.timezone += "M" + boost::lexical_cast<std::string>(timezoneMinutes);
+		    else
+			ret.timezone += "H";
+		}
+		return ret;
+	    }
+
+	    const TTerm* FUNC_year_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "year");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).year);
+	    }
+	    const TTerm* FUNC_month_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "month");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).month);
+	    }
+	    const TTerm* FUNC_day_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "day");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).day);
+	    }
+	    const TTerm* FUNC_hours_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "hours");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).hours);
+	    }
+	    const TTerm* FUNC_minutes_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "minutes");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).minutes);
+	    }
+	    const TTerm* FUNC_seconds_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "seconds");
+		return atomFactory->getNumericRDFLiteral(parseDateTime(dt).seconds);
+	    }
+	    const TTerm* FUNC_timezone_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "timezone");
+		DateTimeDetails ret = parseDateTime(dt);
+		if (ret.tz.empty())
+		    throw TypeError(args[0]->toString(), "timezone");
+		return atomFactory->getRDFLiteral(ret.timezone, atomFactory->getURI(std::string() + NS_xsd + "dayTimeDuration"));
+	    }
+	    const TTerm* FUNC_tz_from_dateTime (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* dt = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (dt == NULL)
+		    throw TypeError(args[0]->toString(), "seconds");
+		return atomFactory->getRDFLiteral(parseDateTime(dt).tz);
+	    }
+	    const TTerm* FUNC_now (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		time_t rawtime;
+		struct tm t;
+
+		::time(&rawtime);
+		::localtime_r(&rawtime, &t);
+		char space[40];
+		::snprintf(space, sizeof(space)-1, "%04d-%02d-%02dT%02d:%02d:%02d", 
+			   1900+t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+		return atomFactory->getRDFLiteral(space, TTerm::URI_xsd_dateTime);
+	    }
+	    const TTerm* FUNC_rand (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		static bool seeded = false;
+		static struct drand48_data seed;
+		if (!seeded) {
+		    struct timeval tv;
+		    gettimeofday(&tv, NULL);
+		    srand48_r(tv.tv_sec * tv.tv_usec, &seed);
+		    seeded = true;
+		}
+		double d;
+		drand48_r(&seed, &d);
+		return atomFactory->getNumericRDFLiteral(d);
 	    }
 
 	    Map::Initializer List[] = {
@@ -1449,7 +1566,17 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_starts_with, 2, 2, &FUNC_starts_with),
 		Map::Initializer(TTerm::FUNC_ends_with, 2, 2, &FUNC_ends_with),
 		Map::Initializer(TTerm::FUNC_substring, 2, 3, &FUNC_substring),
-		Map::Initializer(TTerm::FUNC_matches, 2, 3, &FUNC_matches)
+		Map::Initializer(TTerm::FUNC_matches, 2, 3, &FUNC_matches),
+		Map::Initializer(TTerm::FUNC_year_from_dateTime, 1, 1, &FUNC_year_from_dateTime),
+		Map::Initializer(TTerm::FUNC_month_from_dateTime, 1, 1, &FUNC_month_from_dateTime),
+		Map::Initializer(TTerm::FUNC_day_from_dateTime, 1, 1, &FUNC_day_from_dateTime),
+		Map::Initializer(TTerm::FUNC_hours_from_dateTime, 1, 1, &FUNC_hours_from_dateTime),
+		Map::Initializer(TTerm::FUNC_minutes_from_dateTime, 1, 1, &FUNC_minutes_from_dateTime),
+		Map::Initializer(TTerm::FUNC_seconds_from_dateTime, 1, 1, &FUNC_seconds_from_dateTime),
+		Map::Initializer(TTerm::FUNC_timezone_from_dateTime, 1, 1, &FUNC_timezone_from_dateTime),
+		Map::Initializer(TTerm::FUNC_tz, 1, 1, &FUNC_tz_from_dateTime),
+		Map::Initializer(TTerm::FUNC_now, 0, 0, &FUNC_now),
+		Map::Initializer(TTerm::FUNC_rand, 0, 0, &FUNC_rand)
 	    };
 	} // namespace BuiltIn
 
@@ -1457,6 +1584,24 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     } // namespace AtomicFunction
 
     /* <AtomFactory> */
+
+	const char* AtomFactory::longPattern =    "^[-+]?[0-9]+$";
+	const char* AtomFactory::decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
+	const char* AtomFactory::floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
+	const char* AtomFactory::datetimePattern = "^("
+	      "([\\-+]?)"	// optional sign @@ perhaps not supported by time(2)
+	      "(\\d{4,})"	// 2004
+	      "-(\\d{2})"	//     -12
+	      "-(\\d{2})"	//        -31
+	      "T(\\d{2})"	//           T19
+	      ":(\\d{2})"	//              :01
+	      "(?::(\\d{2}))?"	//                 :00
+	      "((Z)|"		//                    Z
+	       "(?:([+\\-])"	//                    -
+	        "(\\d{2})"	//                     05
+	        ":(\\d{2})"	//                       :00
+	        "))?" ")$";		// 2004-12-31T19:01:00-05:00
+
     AtomFactory::AtomFactory () {
 
 #if REGEX_LIB == SWOb_BOOST
@@ -1469,28 +1614,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
   #define _MINL RANGE_unlimited /* numeric_limits<long>::min() */
   #define _MAXL RANGE_unlimited /* numeric_limits<long>::max() */
 
-	const char* longPattern =    "^[-+]?[0-9]+$";
-	const char* decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
-	const char* floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
 	_VAL1("integer", 	    longPattern);
 	_VAL1("decimal", 	    decimalPattern);
 	_VALD("float", 		    floatPattern, _MIND, _MAXD); // -149E16777216, 104E16777216);
 	_VALL("double", 	    floatPattern, _MIND, _MAXD); // -1075E2251799813685248, 970E2251799813685248);
 	_VAL1("string", 	    ".*");
 	_VAL1("boolean", 	    "^(true|false|1|0)$");
-	_VAL1("dateTime", "^("
-	      "([\\-+]?)"	// optional sign @@ perhaps not supported by time(2)
-	      "(\\d{4,})"	// 2004
-	      "-(\\d{2})"	//     -12
-	      "-(\\d{2})"	//        -31
-	      "T(\\d{2})"	//           T19
-	      ":(\\d{2})"	//              :01
-	      "(?::(\\d{2}))?"	//                 :00
-	      "(?:Z|"		//                    Z
-	       "(?:([+\\-])"	//                    -
-	        "(\\d{2})"	//                     05
-	        ":(\\d{2})"	//                       :00
-	        "))" ")$");		// 2004-12-31T19:01:00-05:00
+	_VAL1("dateTime",	    datetimePattern);		 // 2004-12-31T19:01:00-05:00
 
 	    //derived numerics
 

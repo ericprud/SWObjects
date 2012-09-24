@@ -1780,6 +1780,10 @@ protected:
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 public:
+    static const char* longPattern;
+    static const char* decimalPattern;
+    static const char* floatPattern;
+    static const char* datetimePattern;
 
     AtomFactory();
     ~AtomFactory();
@@ -3186,6 +3190,16 @@ namespace AtomicFunction {
 	    FPtr FUNC_ends_with;
 	    FPtr FUNC_substring;
 	    FPtr FUNC_matches;
+	    FPtr FUNC_year_from_dateTime;
+	    FPtr FUNC_month_from_dateTime;
+	    FPtr FUNC_day_from_dateTime;
+	    FPtr FUNC_hours_from_dateTime;
+	    FPtr FUNC_minutes_from_dateTime;
+	    FPtr FUNC_seconds_from_dateTime;
+	    FPtr FUNC_timezone_from_dateTime;
+	    FPtr FUNC_tz_from_dateTime;
+	    FPtr FUNC_now;
+	    FPtr FUNC_rand;
     } // namespace BuiltIn
 
     extern Map GlobalMap;

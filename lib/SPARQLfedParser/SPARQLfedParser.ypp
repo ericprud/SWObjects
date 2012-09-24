@@ -2731,7 +2731,7 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
     }
   | IT_TZ GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, $3, NULL, NULL));
+	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_tz, $3, NULL, NULL));
     }
   | IT_NOW NIL	{
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
