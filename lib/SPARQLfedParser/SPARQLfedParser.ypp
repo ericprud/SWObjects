@@ -761,18 +761,14 @@ SubSelect:
     {
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
-    } {
-	  $<p_TTerm>$ = driver.curGraphName;
-	  driver.curGraphName = NULL;
-      } SelectClause {
+    } SelectClause {
 	driver.restoreFilter(NULL);
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } WhereClause SolutionModifier ValuesClause	{
-	  if ($7 != NULL)
-	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>4, new SubSelect(new Select($3.distinctness, $3.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
-	  driver.curGraphName = $<p_TTerm>2;
+	  if ($6 != NULL)
+	      $4->m_GroupGraphPattern = driver.makeConjunction($6, $4->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>3, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
 	  driver.countStar = $<p_parentCountStar>1;
       }
 ;
@@ -1664,13 +1660,9 @@ ServiceGraphPattern:
 	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
-      } {
-	  $<p_TTerm>$ = driver.curGraphName;
-	  driver.curGraphName = NULL;
       } _QIT_SILENT_E_Opt VarOrIri GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
-	  driver.curGraphName = $<p_TTerm>4;
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.curOp, $4, driver.atomFactory, false));
       }
 ;
 
@@ -1681,9 +1673,6 @@ SADIinvocation:
 	driver.curOp = NULL;
       } {
 	  $<p_ParserFilter>$ = driver.saveFilter();
-      } {
-	  $<p_TTerm>$ = driver.curGraphName;
-	  driver.curGraphName = NULL;
       } _QIT_SILENT_E_Opt VarOrIri IT_FROM QuadPattern WhereClause	{
 	  /*
 	    serviceID,
@@ -1691,11 +1680,10 @@ SADIinvocation:
 	    e_Silence
 	    where
 	   */
-	  driver.lastWhereClause = $9;
+	  driver.lastWhereClause = $8;
 	  driver.restoreFilter($<p_ParserFilter>3);
 	  driver.curOp = driver.makeConjunction
-	      ($<p_TableOperation>2, new SADIGraphPattern($6, $5, $8, $9));
-	  driver.curGraphName = $<p_TTerm>4;
+	      ($<p_TableOperation>2, new SADIGraphPattern($5, $4, $7, $8));
     }
 ;
 
