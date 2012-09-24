@@ -206,7 +206,7 @@ public:
     virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	bool braces = needBraces;
 	needBraces = false;
-	p_name->express(this);
+	// p_name->express(this); handled by graphGraphPattern
 	if (braces)
 	    ret << "{ ";
 	lead();
@@ -285,7 +285,7 @@ public:
 	    ret << " }";
     }
     virtual void _nestedGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
-	// p_TTerm->express(this); // handled by nested NamedGraphPattern
+	p_TTerm->express(this); // note that any nested NamedGraphPattern must not output p_TTerm.
 	ret << std::endl;
 	depth++;
 	p_GroupGraphPattern->express(this);

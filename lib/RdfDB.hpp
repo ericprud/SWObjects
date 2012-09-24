@@ -206,8 +206,11 @@ namespace w3c_sw {
 		    graphList.push_back(it->first);
 	    graphList.sort(TTermSorter());
 	    std::stringstream s;
-	    for (std::list<const TTerm*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) 
+	    for (std::list<const TTerm*>::const_iterator it = graphList.begin(); it != graphList.end(); ++it) {
+		if (*it != DefaultGraph)
+		    s << (*it)->toString();
 		s << graphs.find(*it)->second->toString(mediaType, namespaces);
+	    }
 	    return s.str();
 	}
 	std::string str() const; // for simple invocation.
