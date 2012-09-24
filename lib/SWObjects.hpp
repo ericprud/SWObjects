@@ -1708,8 +1708,13 @@ protected:
     struct RDFLiteralMap : public std::map<std::string, const RDFLiteral*> {
 	RDFLiteralMap () {  }
 	RDFLiteralMap (const BooleanRDFLiteral* b, const BooleanRDFLiteral* e) {
-	    for (const BooleanRDFLiteral* p = b; p != e; ++p)
-		insert(std::pair<std::string, const RDFLiteral*>(p->getLexicalValue(), p));
+	    for (const BooleanRDFLiteral* p = b; p != e; ++p) {
+		std::string key = std::string()
+		    + "\""
+		    + p->getLexicalValue()
+		    + "\"^^<http://www.w3.org/2001/XMLSchema#boolean>";
+		insert(std::pair<std::string, const RDFLiteral*>(key, p));
+	    }
 	}
     };
     typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
