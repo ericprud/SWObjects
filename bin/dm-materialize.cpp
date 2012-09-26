@@ -11,12 +11,10 @@
  * SQL clients. */
 #include "interface/SQLclient.hpp"
 
-// #define VALUSEP "-"
-// #define PAIRSEP "."
-// #define ATTRSEP "."
-#define VALUSEP "="
-#define PAIRSEP ";"
-#define ATTRSEP ";"
+#define VALSEPSTR "=" // "-"
+#define VALSEPCHR '=' // '-'
+#define ATRSEPSTR ";" // ","
+#define ATRSEPCHR ';' // ','
 
 using namespace w3c_sw;
 AtomFactory atomFactory;
@@ -33,10 +31,11 @@ struct Materializer {
     std::map<const sql::schema::Key*, Values2BNode> allmaps;
     SQLclient& sqlDriver;
     const std::string driverString;
+    std::string baseURI;
     size_t nextTableAlias;
 
-    Materializer (SQLclient& sqlDriver, std::string driverString)
-	: sqlDriver(sqlDriver), driverString(driverString), nextTableAlias(0)
+    Materializer (SQLclient& sqlDriver, std::string driverString, std::string baseURI)
+	: sqlDriver(sqlDriver), driverString(driverString), baseURI(baseURI), nextTableAlias(0)
     {  }
     void operator() (sql::schema::Database& db, DefaultGraphPattern* bgp) {
 	std::vector<sql::schema::Relation*> orderedTables;
@@ -81,18 +80,6 @@ struct Materializer {
 	    }
 	}
 	return ret;
-    }
-
-    static std::string attrname (std::string name) {
-	name = IRIsafe(name);
-	name = replace(name, '-', "%3D");
-	return name;
-    }
-
-    static std::string attrvalue (std::string value) {
-	value = IRIsafe(value);
-	value = replace(value, '.', "%2E");
-	return value;
     }
 
     sql::RelVar newTableAlias () {
@@ -150,19 +137,23 @@ struct Materializer {
     };
 
     struct ReferenceTripleMaker : public TripleMaker {
+	std::string baseURI;
 	std::string p;
 	sql::RelationName targetRel;
 	std::vector<size_t>  colNos;
-	ReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
-			      const sql::schema::ForeignKey* from, const sql::schema::Key* to,
+	ReferenceTripleMaker (AtomFactory* atomFactory, std::string baseURI,
+			      std::string tableName, sql::RelationName targetRel,
+			      const sql::schema::ForeignKey* from,
+			      const sql::schema::Key* to,
 			      const std::vector<size_t>& colNos)
-	    : TripleMaker(atomFactory), p(tableName + "#ref-"), targetRel(targetRel), colNos(colNos)
+	    : TripleMaker(atomFactory), baseURI(baseURI),
+	      p(tableName + "#ref-"), targetRel(targetRel), colNos(colNos)
 	{ reference(colNos, from, to); }
 	void reference (const std::vector<size_t>& colNos,
 			const sql::schema::ForeignKey* from, const sql::schema::Key* to) {
 	    for (size_t i = 0; i < from->size(); ++i) {
 		if (i > 0)
-		    p += ATTRSEP;
+		    p += ATRSEPSTR;
 		p += IRIsafe(from->at(i));
 	    }
 	}
@@ -170,14 +161,17 @@ struct Materializer {
     };
     struct PKReferenceTripleMaker : public ReferenceTripleMaker {
 	std::vector<std::string> attrNames;
-	PKReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
-				const sql::schema::ForeignKey* from, const sql::schema::Key* to,
+	PKReferenceTripleMaker (AtomFactory* atomFactory, std::string baseURI,
+				std::string tableName, sql::RelationName targetRel,
+				const sql::schema::ForeignKey* from,
+				const sql::schema::Key* to,
 				const std::vector<size_t>& colNos,
 				const sql::schema::PrimaryKey* pk)
-	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, from, to, colNos)
+	    : ReferenceTripleMaker(atomFactory, baseURI, tableName,
+				   targetRel, from, to, colNos)
 	{
 	    for (size_t i = 0; i < pk->size(); ++i)
-		attrNames.push_back(attrname(pk->at(i)));
+		attrNames.push_back(IRIsafe(pk->at(i)));
 	}
 	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
@@ -188,24 +182,25 @@ struct Materializer {
 		    break;
 		}
 		if (i != 0)
-		    oStr += PAIRSEP;
-		oStr += attrname(attrNames[i]) + VALUSEP + attrvalue(row[colNos[i]].get());
+		    oStr += ATRSEPSTR;
+		oStr += IRIsafe(attrNames[i]) + VALSEPSTR + IRIsafe(row[colNos[i]].get());
 	    }
 	    if (oStr.size() > 0)
 		bgp->addTriplePattern
 		    (atomFactory->getTriple
-		     (s, atomFactory->getURI(p), atomFactory->getURI(oStr)));
+		     (s, atomFactory->getURI(baseURI+p), atomFactory->getURI(baseURI+oStr)));
 	    // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
 	}
     };
 
     struct NoPKReferenceTripleMaker : public ReferenceTripleMaker {
 	Values2BNode& v2b;
-	NoPKReferenceTripleMaker (AtomFactory* atomFactory, std::string tableName, sql::RelationName targetRel,
+	NoPKReferenceTripleMaker (AtomFactory* atomFactory, std::string baseURI,
+				  std::string tableName, sql::RelationName targetRel,
 				  const sql::schema::ForeignKey* from, const sql::schema::Key* to,
 				  const std::vector<size_t>& colNos,
 				  Values2BNode& v2b)
-	    : ReferenceTripleMaker(atomFactory, tableName, targetRel, from, to, colNos),
+	    : ReferenceTripleMaker(atomFactory, baseURI, tableName, targetRel, from, to, colNos),
 	      v2b(v2b)
 	{  }
 	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
@@ -214,7 +209,7 @@ struct Materializer {
 	    for (size_t i = 0; i < size(); ++i)
 		key
 		    += row[colNos[i]].is_initialized()
-		    ? attrvalue(row[colNos[i]].get())
+		    ? IRIsafe(row[colNos[i]].get())
 		    : "NULL";
 
 	    Values2BNode::iterator it = v2b.find(key);
@@ -227,12 +222,13 @@ struct Materializer {
 		o = v2b[key];
 	    bgp->addTriplePattern
 		(atomFactory->getTriple
-		 (s, atomFactory->getURI(p), o));
+		 (s, atomFactory->getURI(baseURI+p), o));
 	    // // w3c_sw_LINEN << s->toString() << " " << p->toString() << " " << o->toString() << " .\n";
 	}
     };
 
-    void dumpTable (sql::schema::Relation& table, sql::schema::Database& db, AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
+    void dumpTable (sql::schema::Relation& table, sql::schema::Database& db,
+		    AtomFactory& atomFactory, DefaultGraphPattern* bgp) {
 
 	sql::RelVar thisTableAlias = newTableAlias();
 	// w3c_sw_LINEN << table << "\n";
@@ -258,7 +254,7 @@ struct Materializer {
 	tripleMakers.push_back(new TypeTripleMaker
 			       (&atomFactory, atomFactory.getURI
 				("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-				atomFactory.getURI(IRIsafe(table.name))));
+				atomFactory.getURI(baseURI+IRIsafe(table.name))));
 
 	/* fixup for various DBs */
 	SQLclient::Result::Fixups fixups;
@@ -271,7 +267,7 @@ struct Materializer {
 	    sql::AliasAttr fqAttr(thisTableAlias, it->second.name);
 	    selectList.push_back(fqAttr);
 
-	    const TTerm* p = atomFactory.getURI(IRIsafe(table.name) + "#" + IRIsafe(it->second.name));
+	    const TTerm* p = atomFactory.getURI(baseURI+IRIsafe(table.name) + "#" + IRIsafe(it->second.name));
 
 	    tripleMakers.push_back(new LiteralTripleMaker(&atomFactory, selectList.lastColumn(), p));
 
@@ -347,21 +343,19 @@ struct Materializer {
 			joins << " AND ";
 		    sql::AliasAttr from(thisTableAlias, fk->at(i));
 		    sql::AliasAttr to(thatTableAlias, fk->relAttrs->at(i));
-#if defined(MATCH_TYPE_DEFAULT)
-		    joins // MATCH TYPE DEFAULT
-			<< "("
-			<<   Serializer->Serializer::name(from) << "="
-			<<   Serializer->Serializer::name(to)
-			<< " OR ("
-			<<     Serializer->Serializer::name(from) << " IS NULL AND "
-			<<     Serializer->Serializer::name(to) << " IS NULL"
-			<<   ")"
-			<< ")";
-#else // !defined(MATCH_TYPE_DEFAULT)
-		    joins // MATCH TYPE FULL
-			<< Serializer->Serializer::name(from) << "="
-			<< Serializer->Serializer::name(to);
-#endif // !defined(MATCH_TYPE_DEFAULT)
+#if JOIN_ON_NULLS
+		    joins << "("
+			  << Serializer->Serializer::name(from) << "="
+			  << Serializer->Serializer::name(to)
+			  << " OR ("
+			  << Serializer->Serializer::name(from) << " IS NULL AND "
+			  << Serializer->Serializer::name(to) << " IS NULL"
+			  << ")"
+			  << ")";
+#else /* !JOIN_ON_NULLS */
+		    joins << Serializer->Serializer::name(from) << "="
+			  << Serializer->Serializer::name(to);
+#endif /* !JOIN_ON_NULLS */
 		}
 		if (fk->size() > 1)
 		    joins << ")";
@@ -379,12 +373,12 @@ struct Materializer {
 
 		if (refdTable.primaryKey == NULL) {
 		    tripleMakers.push_back(new NoPKReferenceTripleMaker
-					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
+					   (&atomFactory, baseURI, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
 					    fkColumns, allmaps[rowIndexKey]));
 		// } else if (*refdTable.primaryKey == *fk->relAttrs) { // no need to join
 		} else {
 		    tripleMakers.push_back(new PKReferenceTripleMaker
-					   (&atomFactory, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
+					   (&atomFactory, baseURI, IRIsafe(table.name), fk->targetRel, fk, fk->relAttrs,
 					    fkColumns, refdTable.primaryKey));
 		}
 	    }
@@ -401,7 +395,7 @@ struct Materializer {
 	SQLclient::Result* res = sqlDriver.executeQuery(selectsString + joins.str(), fixups);
 
 	const TTerm* rdfType = atomFactory.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	const TTerm* type = atomFactory.getURI(IRIsafe(table.name));
+	const TTerm* type = atomFactory.getURI(baseURI+IRIsafe(table.name));
 
 	SQLclient::Result::Row row;
 	while ((row = res->nextRow()) != res->end()) {
@@ -417,7 +411,7 @@ struct Materializer {
 		    for (size_t i = 0; i < rowIndexColNos.size(); ++i)
 			key
 			    += row[rowIndexColNos[i]].is_initialized()
-			    ? attrvalue(row[rowIndexColNos[i]].get())
+			    ? IRIsafe(row[rowIndexColNos[i]].get())
 			    : "NULL";
 
 		    Values2BNode::iterator it = v2b.find(key);
@@ -434,10 +428,10 @@ struct Materializer {
 	    } else {
 		for (size_t i = 0; i < table.primaryKey->size(); ++i) {
 		    if (i != 0)
-			node += PAIRSEP;
-		    node += attrname(table.primaryKey->at(i)) + VALUSEP + attrvalue(row[pkCols[i]].get());
+			node += ATRSEPSTR;
+		    node += IRIsafe(table.primaryKey->at(i)) + VALSEPSTR + IRIsafe(row[pkCols[i]].get());
 		}
-		s = atomFactory.getURI(node);
+		s = atomFactory.getURI(baseURI+node);
 	    }
 
 	    for (std::vector<boost::shared_ptr<TripleMaker> >::const_iterator tmit = tripleMakers.begin();
@@ -454,7 +448,7 @@ int main (int argc, const char* argv[]) {
     sqlContext sqlParserContext;
     SQLDriver sqlParser(sqlParserContext);
     try {
-	IStreamContext ddlStream(argv[2], IStreamContext::FILE);
+	IStreamContext ddlStream(argv[3], IStreamContext::FILE);
 	sqlParser.parse(ddlStream);
 
 #if 0 /* debugging dump */
@@ -464,7 +458,7 @@ int main (int argc, const char* argv[]) {
 	    w3c_sw_LINEN << **it << std::endl;
 #endif /* 0 - debugging dump */
 
-	SQLConnectInfo connectInfo(argv[1]);
+	SQLConnectInfo connectInfo(argv[2]);
 	SQLClientWrapper sqlWrapper(connectInfo);
 	sqlWrapper.connect(connectInfo);
 	Serializer = sql::Serializer::best(connectInfo.driver);
@@ -474,7 +468,7 @@ int main (int argc, const char* argv[]) {
 	// dump(sqlDriver, "SHOW TABLES");
 
 	DefaultGraphPattern bgp;
-	Materializer m(*sqlWrapper.client, connectInfo.driver);
+	Materializer m(*sqlWrapper.client, connectInfo.driver, argv[1]);
 	m(sqlParser.tables, &bgp);
 	std::cout << bgp.toString("text/turtle");
 	// w3c_sw_LINEN << argv[0] << " " << argv[1] << " " << argv[2] << " produced <<<" << bgp.toString("text/turtle") << ">>>\n";

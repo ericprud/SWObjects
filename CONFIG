@@ -43,7 +43,7 @@ HTTP_CLIENT= ASIO
 # Tested with:
 #   DLIB v?.??
 #   http://dclib.sourceforge.net/
-# @@TODO= bring up to day with recent ASIO.
+# @@TODO= bring up to date with recent ASIO.
 HTTP_SERVER= ASIO
 
 # SQL_CLIENTS: MYSQL |  - what library provies HTTP server support. #####
@@ -52,11 +52,11 @@ HTTP_SERVER= ASIO
 #   MYSQL v16
 #   ODBC
 #   
-# @@TODO= add e.g. postgres, oracl client libraries.
 #SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
 SQL_CLIENTS= MYSQL|ODBC|POSTGRES
 #SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
 SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
+DM_BASE_URI?= http://example.com/base/
 # connect with:
 #   mysql -u root DM
 #   psql DM

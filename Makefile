@@ -474,7 +474,7 @@ t_%: tests/test_%
 
 ## Rules specific to certain tests ##
 t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
-	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(SQL_DM_TESTS) $(TEST_ARGS)
+	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
 	$(LINK) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)

@@ -14,7 +14,6 @@
  * SQL clients. */
 #include "interface/SQLclient.hpp"
 #include "SQLParser/SQLParser.hpp"
-#include "ServerInteraction.hpp"
 
 #undef BOOST_ALL_DYN_LINK // Can't use dynamic linking with init_unit_test_suite()
 #include <boost/test/included/unit_test.hpp>
@@ -35,14 +34,15 @@ w3c_sw::SQLDriver SQLParser(sqlParserContext);
 
 std::string usage (const char* argv0) {
     return std::string()
-	+ "Usage: " + argv0 + " <testlist> <testprogram> <SQLspec>* opts\n"
-	+ "  e.g. ./test_DM tests.txt ./dm-materialize mysql://root@/DM postgres://DMuser:DMpwd@/DM\n"
+	+ "Usage: " + argv0 + " <testlist> <testprogram> <baseURI> <SQLspec>* opts\n"
+	+ "  e.g. ./test_DM tests.txt ./dm-materialize http://example.com/ tests/DM-manifest.txt mysql://root@/DM postgres://DMuser:DMpwd@/DM\n"
 	+ "  testlist: file with lines in the form: SQL graph\n"
 	+ "          SQL: filepath or URL to create SQL tables.\n"
 	+ "          graph: filepath or URL to expected results.\n"
 	+ "  testprogram: executable to invoke for each test à la\n"
 	+ "          testprogram SQL SQLspec\n"
 	+ "          e.g. ./bin/dm-materialize D017-I18NnoSpecialChars/create.sql SQLspec mysql://root@/DM\n"
+	+ "  baseURI: base URI for the relative URIs defined by the direct mapping.\n"
 	+ "  SQLspec: <driver>://<user>[:password]@[host]/<database>\n"
 	+ "          e.g. mysql://root@/DM\n"
 	+ "               postgres://DMuser:DMpwd@/DM\n"
@@ -54,17 +54,12 @@ std::string usage (const char* argv0) {
 }
 
 bool Keep = false;
+bool Wipe = false;
+std::string DebugShell;
 const char* TestProgram;
 
+#include "ServerInteraction.hpp"
 
-/** ExecResults - get output from process did not return an error.
- */
-struct ExecResults : public w3c_sw::OutputFromNonInteractiveProcess {
-    ExecResults (const std::string cmd) : w3c_sw::OutputFromNonInteractiveProcess(cmd) {
-	BOOST_REQUIRE(w3c_sw::SigChildGuard::ChildRetSet == false ||	// if child has finished,
-		      w3c_sw::SigChildGuard::ChildRet == 0);		// make sure it returned 0.
-    }
-};
 
 /** DMTest - set up SQL tables, execute a direct mapping dump and
  *  compare results to a reference graph.
@@ -74,10 +69,11 @@ struct DMTest {
     w3c_sw::DefaultGraphPattern expect;
     w3c_sw::DefaultGraphPattern test;
     std::string execStr;
+    std::string baseURI;
     std::vector<std::string> created;
 
-    DMTest (w3c_sw::SQLClientList::Connection& client)
-	: client(client), execStr(TestProgram)
+    DMTest (w3c_sw::SQLClientList::Connection& client, std::string baseURI)
+	: client(client), execStr(TestProgram), baseURI(baseURI)
     {  }
     void run (const std::string create, const std::string output)
     {
@@ -102,8 +98,13 @@ struct DMTest {
 	    }
 	    ss << "\n)";
 	    // w3c_sw_LINEN << ss.str() << std::endl;
+	    if (Wipe)
+		// Mark for removal even if the creation fails.
+		created.push_back(table->first);
 	    client.wrap.executeQuery(ss.str());
-	    created.push_back(table->first);
+	    if (!Wipe)
+		// Only mark for removal even if the creation succeeds.
+		created.push_back(table->first);
 	}
 	for (std::vector<const w3c_sw::sql::Insert*>::const_iterator it = SQLParser.inserts.begin();
 	     it != SQLParser.inserts.end(); ++it) {
@@ -112,15 +113,16 @@ struct DMTest {
 	}
 
 	execStr
-	    += " " + client.info.sqlConnectString()
+	    += " " + baseURI
+	    + " " + client.info.sqlConnectString()
 	    + " " + create;
 
-#ifdef DEBUG_SHELL // e.g. -DDEBUG_SHELL=/usr/bin/xterm
-	w3c_sw_LINEN << "now invoke " << execStr.c_str() << "\n";
-	ExecResults tested(DEBUG_SHELL);
-#else
-	ExecResults tested(execStr.c_str());
-#endif
+	if (DebugShell.size() != 0) {
+	    w3c_sw_LINEN << "now invoke " << execStr.c_str() << "\n";
+	    execStr = DebugShell;
+	}
+	w3c_sw::OutputFromNonInteractiveProcess tested(execStr.c_str());
+
 	// w3c_sw_LINEN << "DM graph: [[[" << tested.s << "]]]\n";
 	TurtleParser.parse(tested.s, &test);
 	w3c_sw::IStreamContext expStream(output, w3c_sw::IStreamContext::FILE);
@@ -182,6 +184,7 @@ std::ostream& operator<< (std::ostream& os, const ManifestEntry& ment) {
 std::vector<ManifestEntry> EntryList;
 std::vector<ManifestEntry>::const_iterator EntryListit;
 
+std::string BaseURI;
 std::string ManifestFile;
 
 /** expectGraph - execute the test at the EntryList iterator.
@@ -195,7 +198,7 @@ void expectGraph () {
 	const ManifestEntry& ment = *EntryListit++;
 	lineNo = ment.lineNo;
 	doing = "setting up";
-	DMTest h = DMTest(*ment.con);
+	DMTest h = DMTest(*ment.con, BaseURI);
 	h.run(ment.sql, ment.refGraph);
 	if (!(h.expect == h.test)) {
 	    {
@@ -242,16 +245,27 @@ init_unit_test_suite (int argc, char* argv[])  {
     ManifestFile = argv[1];
     std::ifstream testList(ManifestFile.c_str());
     TestProgram = argv[2];
+    BaseURI = argv[3];
+    if (BaseURI == ".")
+	BaseURI.clear();
 
     // Populate the EntryList from the invocation parameters.
-    for (int i = 3; i < argc; ++i)
+    for (int i = 4; i < argc; ++i)
 	if (std::string(argv[i]) == "")
 	    ;
 	else if (std::string(argv[i]) == "--keep")
 	    Keep = true;
-	else if (std::string(argv[i]) == "--log")
-	    ++i;	// skip args supplied to w3c_sw_PREPARE_TEST_LOGGER("--log")
-	else if (std::string(argv[i]).substr(0, 2).compare("--"))
+	else if (std::string(argv[i]) == "--wipe")
+	    Wipe = true;
+	else if (!std::string(argv[i]).compare(0, 13, "--debug-shell")) {
+	    std::string arg(argv[i]);
+	    if (arg[13] == '=')
+		DebugShell = arg.substr(14);
+	    else if (i < argc-1)
+		DebugShell = argv[++i];
+	    else
+		throw std::runtime_error("missing argument to --debug-shell");
+	} else if (std::string(argv[i]).substr(0, 2).compare("--"))
 	    connections.add(argv[i]);
 
     // Parse the manifest file and populate EntryList.
