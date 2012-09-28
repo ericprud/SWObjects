@@ -169,6 +169,13 @@ else
   STATICITY= -static
 endif
 
+CRYPTLIBDEFINED = CRYPTLIB
+ifdef $(CRYPTLIBDEFINED)
+  CONFIG_DEFS+= \\\#define CRYPT_LIB "\\n"
+  INCLUDES += -I$(CRYPTLIB)
+  LIBINC += -L$(CRYPTLIB) -lcryptopp
+endif
+
 
 .PHONY: all dep lib test NOGEN
 all:   lib test

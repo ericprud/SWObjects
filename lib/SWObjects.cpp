@@ -17,6 +17,13 @@
 #include "../interface/WEBagent.hpp"
 #include "utf8.h"
 
+#ifdef CRYPT_LIB
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include "dll.h"
+#include "md5.h"
+#endif /* CRYPT_LIB */
+
+
 #ifdef _MSC_VER
   #define SET_Variable_CONSTIT_NE(L, R) set_Variable_constit_ne(L, R)
   bool set_Variable_constit_ne (std::set<const w3c_sw::Variable*>::const_iterator l, 
@@ -1403,6 +1410,48 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 #endif /* REGEX_LIB != SWOb_DISABLED */
 	    }
 
+#ifdef CRYPT_LIB
+	    std::string hashIntoHex (CryptoPP::HashTransformation &sh, std::string from) {
+		CryptoPP::SecByteBlock digest(sh.DigestSize());
+		sh.Update((const byte*)from.c_str(), from.size());
+		sh.Final(digest);
+		std::stringstream ss;
+		for (unsigned j=0; j<sh.DigestSize(); j++)
+		    ss << std::setw(2) << std::setfill('0') << std::hex << (int)digest[j];
+		return ss.str();
+	    }
+
+	    const TTerm* FUNC_md5 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
+		    throw TypeError(args[2]->toString(), "MD5");
+		CryptoPP::Weak::MD5 md;
+		return atomFactory->getRDFLiteral(hashIntoHex(md, key->getLexicalValue()));
+	    }
+
+	    const TTerm* FUNC_sha1 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
+		    throw TypeError(args[2]->toString(), "SHA1");
+		CryptoPP::SHA1 hash;
+		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+	    }
+	    const TTerm* FUNC_sha256 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
+		    throw TypeError(args[2]->toString(), "SHA256");
+		CryptoPP::SHA256 hash;
+		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+	    }
+	    const TTerm* FUNC_sha512 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
+		    throw TypeError(args[2]->toString(), "SHA512");
+		CryptoPP::SHA512 hash;
+		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+	    }
+#endif /* CRYPT_LIB */
+
 	    struct DateTimeDetails {
 		int year, month, day, hours, minutes;
 		float seconds;
@@ -1563,6 +1612,12 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_contains, 2, 2, &FUNC_contains),
 		Map::Initializer(TTerm::FUNC_substring_before, 2, 2, &FUNC_substring_before),
 		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),
+#ifdef CRYPT_LIB
+		Map::Initializer(TTerm::FUNC_md5, 1, 1, &FUNC_md5),
+		Map::Initializer(TTerm::FUNC_sha1, 1, 1, &FUNC_sha1),
+		Map::Initializer(TTerm::FUNC_sha256, 1, 1, &FUNC_sha256),
+		Map::Initializer(TTerm::FUNC_sha512, 1, 1, &FUNC_sha512),
+#endif /* CRYPT_LIB */
 		Map::Initializer(TTerm::FUNC_starts_with, 2, 2, &FUNC_starts_with),
 		Map::Initializer(TTerm::FUNC_ends_with, 2, 2, &FUNC_ends_with),
 		Map::Initializer(TTerm::FUNC_substring, 2, 3, &FUNC_substring),

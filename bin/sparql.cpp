@@ -54,6 +54,14 @@ namespace sw = w3c_sw;
 #include <dlfcn.h>
 #endif /* !_MSC_VER */
 
+#ifdef SPARQL11_ALL
+// needed to enforce linking to e.g. CryptoPP::Algorithm::Algorithm(bool)
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include "dll.h"
+#include "md5.h"
+CryptoPP::Weak::MD5 md;
+#endif /* SPARQL11_ALL */
+
 struct ServerConfig {
     struct Request {
 	bool allowBareNewlines_;
