@@ -205,6 +205,13 @@ public:
     char const* what() const throw() { 	return msg.c_str(); }
 };
 
+class DivisionByZeroError : public SafeEvaluationError {
+public:
+    DivisionByZeroError (std::string dividend)
+	: SafeEvaluationError("tried to divide " + dividend + " by 0")
+    {  }
+};
+
 #if defined SWIG
 class OptString {  };
 #elif (defined(_MSC_VER) && _MSC_VER < 15000)
@@ -3652,11 +3659,21 @@ public:
 	       Is this a hack or brilliant extreme programming?
 	    */
 	    float fl = l;
+	    if (r == 0)
+		throw DivisionByZeroError(boost::lexical_cast<std::string>(fl));
 	    float ret = fl / r;
 	    throw ret;
 	}
-	virtual float eval (float l, float r) { return l / r; }
-	virtual double eval (double l, double r) { return l / r; }
+	virtual float eval (float l, float r) {
+	    if (r == 0)
+		throw DivisionByZeroError(boost::lexical_cast<std::string>(l));
+	    return l / r;
+	}
+	virtual double eval (double l, double r) {
+	    if (r == 0)
+		throw DivisionByZeroError(boost::lexical_cast<std::string>(l));
+	    return l / r;
+	}
     };
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 	NaryMultiplier f(res, atomFactory, evaluator, bnodeMap);
