@@ -168,6 +168,7 @@ public:
 	lead();
 	ret << "{" << std::endl;
 	++depth;
+	const ExprSet* filters = injectFilter; injectFilter = NULL;
 	p_op->express(this);
 	lead();
 	ret << "BIND (";
@@ -177,6 +178,7 @@ public:
 	ret << " AS ";
 	p_var->express(this);
 	ret << ")" << std::endl;
+	serializeFilter(filters);
 	--depth;
 	lead();
 	ret << "}" << std::endl;
