@@ -1017,11 +1017,20 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(t ? t->getLexicalValue() : "");
 	    }
 
-	    const TTerm* FUNC_iri (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		if (dynamic_cast<const RDFLiteral*>(args[0]) != NULL) {
-		    return atomFactory->getURI(args[0]->getLexicalValue());
+	    const TTerm* FUNC_iri (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (s == NULL)
+		    throw TypeError(args[0]->toString(), "IRI");
+		std::string name = s->getLexicalValue();
+		if (args.size() == 2 && args[1] != NULL) {
+		    std::string baseURI = args[1]->getLexicalValue();
+		    std::string abs(libwww::HTParse(name, &baseURI, libwww::PARSE_all));
+		    size_t pos = abs.find_last_of("/");
+		    if (pos != std::string::npos && abs.size() == pos + 2 && abs[pos+1] == '.')
+			abs = abs.substr(0, pos+1);
+		    return atomFactory->getURI(abs);
 		}
-		throw TypeError(args[0]->toString(), "IRI");
+		return atomFactory->getURI(name);
 	    }
 
 	    const TTerm* FUNC_strdt (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
@@ -1674,8 +1683,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_isNumeric, 1, 1, &FUNC_isNumeric),
 		Map::Initializer(TTerm::FUNC_str, 1, 1, &FUNC_str),
 		Map::Initializer(TTerm::FUNC_lang, 1, 1, &FUNC_lang),
-		Map::Initializer(TTerm::FUNC_iri, 1, 1, &FUNC_iri),
-		Map::Initializer(TTerm::FUNC_uri, 1, 1, &FUNC_iri),
+		Map::Initializer(TTerm::FUNC_iri, 2, 2, &FUNC_iri),
+		Map::Initializer(TTerm::FUNC_uri, 2, 2, &FUNC_iri),
 		Map::Initializer(TTerm::FUNC_strdt, 2, 2, &FUNC_strdt),
 		Map::Initializer(TTerm::FUNC_strlang, 2, 2, &FUNC_strlang),
 		Map::Initializer(TTerm::FUNC_bnode, 0, 1, &FUNC_bnode),

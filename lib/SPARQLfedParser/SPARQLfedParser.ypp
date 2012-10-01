@@ -2653,10 +2653,10 @@ BuiltInCall:
 	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression($3), NULL, NULL));
     }
   | IT_IRI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, NULL, NULL));
+      $$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
   | IT_URI GT_LPAREN Expression GT_RPAREN	{
-	$$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, NULL, NULL));
+      $$ = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, $3, new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
   | // 'BNODE' ( '(' Expression  ')' | NIL )
     IT_BNODE _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C	{
