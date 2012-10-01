@@ -1093,6 +1093,49 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw TypeError(args[0]->toString(), name->toString());
 	    }
 
+
+	    // http://www.zedwood.com/article/111/cpp-urlencode-function
+	    std::string char2hex( char dec ) {
+		char dig1 = (dec&0xF0)>>4;
+		char dig2 = (dec&0x0F);
+		if ( 0<= dig1 && dig1<= 9) dig1+=48;    //0,48inascii
+		if (10<= dig1 && dig1<=15) dig1+=65-10; //a,97inascii
+		if ( 0<= dig2 && dig2<= 9) dig2+=48;
+		if (10<= dig2 && dig2<=15) dig2+=65-10;
+
+		std::string r;
+		r.append( &dig1, 1);
+		r.append( &dig2, 1);
+		return r;
+	    }
+
+	    const TTerm* FUNC_encode_for_uri (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		const RDFLiteral* s = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (s == NULL)
+		    throw TypeError(args[0]->toString(), "encode_for_uri");
+
+		const URI* fd = s->getDatatype();
+		if (fd != NULL && fd != TTerm::URI_xsd_string)
+		    throw TypeError(args[0]->toString(), "encode_for_uri");
+
+		std::string c = s->getLexicalValue();
+		std::string escaped="";
+		int max = c.length();
+		for(int i=0; i<max; i++) {
+		    if ( (48 <= c[i] && c[i] <= 57) ||//0-9
+			 (65 <= c[i] && c[i] <= 90) ||//abc...xyz
+			 (97 <= c[i] && c[i] <= 122) || //ABC...XYZ
+			 (c[i]=='~' || c[i]=='!' || c[i]=='*' || c[i]=='(' || c[i]==')' || c[i]=='\'')
+			 ) {
+			escaped.append( &c[i], 1);
+		    } else {
+			escaped.append("%");
+			escaped.append( char2hex(c[i]) );//converts char 255 to string "ff"
+		    }
+		}
+		return atomFactory->getRDFLiteral(escaped);
+	    }
+
 	    const TTerm* FUNC_concat (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		std::stringstream ss;
 		bool allStrings = true;
@@ -1640,6 +1683,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_lower_case, 1, 1, &FUNC_lower_case),
 		Map::Initializer(TTerm::FUNC_upper_case, 1, 1, &FUNC_upper_case),
 		Map::Initializer(TTerm::FUNC_string_length, 1, 1, &FUNC_string_length),
+		Map::Initializer(TTerm::FUNC_encode_for_uri, 1, 1, &FUNC_encode_for_uri),
 		Map::Initializer(TTerm::FUNC_concat, 1, 999, &FUNC_concat),
 		Map::Initializer(TTerm::FUNC_replace, 3, 3, &FUNC_replace),
 		Map::Initializer(TTerm::FUNC_sameTerm, 2, 2, &FUNC_sameTerm),

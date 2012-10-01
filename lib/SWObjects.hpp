@@ -3180,6 +3180,7 @@ namespace AtomicFunction {
 	    FPtr FUNC_lower_case;
 	    FPtr FUNC_upper_case;
 	    FPtr FUNC_string_length;
+	    FPtr FUNC_encode_for_uri;
 	    FPtr FUNC_concat;
 	    FPtr FUNC_replace;
 	    FPtr FUNC_sameTerm;
