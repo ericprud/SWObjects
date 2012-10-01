@@ -3191,6 +3191,8 @@ namespace AtomicFunction {
 	    FPtr FUNC_contains;
 	    FPtr FUNC_substring_before;
 	    FPtr FUNC_substring_after;
+	    FPtr FUNC_uuid;
+	    FPtr FUNC_struuid;
 	    FPtr FUNC_md5;
 	    FPtr FUNC_sha1;
 	    FPtr FUNC_sha256;

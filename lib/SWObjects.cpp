@@ -23,6 +23,15 @@
 #include "md5.h"
 #endif /* CRYPT_LIB */
 
+extern "C"
+{
+#ifdef WIN32
+#include <Rpc.h>
+#else
+#include <uuid/uuid.h>
+#endif
+}
+
 
 #ifdef _MSC_VER
   #define SET_Variable_CONSTIT_NE(L, R) set_Variable_constit_ne(L, R)
@@ -1388,8 +1397,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		throw std::string("matches -- no regular expression library was linked in");
 #else /* REGEX_LIB != SWOb_DISABLED */
 		boost::match_results<std::string::const_iterator> what;
-		boost::match_flag_type flags = boost::match_default;
-		unsigned l_flags = boost::regex::basic | boost::regex::no_mod_m | boost::regex::no_mod_s;
+		boost::match_flag_type flags = boost::match_perl;
+		unsigned l_flags = boost::regex::no_mod_m | boost::regex::no_mod_s;
 		if (args.size() == 3) {
 		    const RDFLiteral* thirdLit = dynamic_cast<const RDFLiteral*>(args[2]);
 		    if (thirdLit == NULL || thirdLit->getDatatype() != NULL || thirdLit->getLangtag() != NULL)
@@ -1409,6 +1418,36 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return regex_search(firstLit->getLexicalValue(), what, pattern, flags) ? TTerm::BOOL_true : TTerm::BOOL_false;
 #endif /* REGEX_LIB != SWOb_DISABLED */
 	    }
+
+	    std::string newUUID()
+	    {
+#ifdef WIN32
+		UUID uuid;
+		UuidCreate ( &uuid );
+
+		unsigned char * str;
+		UuidToStringA ( &uuid, &str );
+
+		std::string s( ( char* ) str );
+
+		RpcStringFreeA ( &str );
+#else
+		uuid_t uuid;
+		uuid_generate_random ( uuid );
+		char s[37];
+		uuid_unparse ( uuid, s );
+#endif
+		return s;
+	    }
+
+	    const TTerm* FUNC_uuid (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		return atomFactory->getURI("urn:uuid:" + newUUID());
+	    }
+	    
+	    const TTerm* FUNC_struuid (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		return atomFactory->getRDFLiteral(newUUID());
+	    }
+	    
 
 #ifdef CRYPT_LIB
 	    std::string hashIntoHex (CryptoPP::HashTransformation &sh, std::string from) {
@@ -1612,6 +1651,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		Map::Initializer(TTerm::FUNC_contains, 2, 2, &FUNC_contains),
 		Map::Initializer(TTerm::FUNC_substring_before, 2, 2, &FUNC_substring_before),
 		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),
+		Map::Initializer(TTerm::FUNC_uuid, 0, 0, &FUNC_uuid),
+		Map::Initializer(TTerm::FUNC_struuid, 0, 0, &FUNC_struuid),
 #ifdef CRYPT_LIB
 		Map::Initializer(TTerm::FUNC_md5, 1, 1, &FUNC_md5),
 		Map::Initializer(TTerm::FUNC_sha1, 1, 1, &FUNC_sha1),

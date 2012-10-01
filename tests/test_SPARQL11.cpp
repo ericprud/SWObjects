@@ -5,14 +5,6 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
-#ifdef SPARQL11_ALL
-// needed to enforce linking to e.g. CryptoPP::Algorithm::Algorithm(bool)
-#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
-#include "dll.h"
-#include "md5.h"
-CryptoPP::Weak::MD5 md;
-#endif /* SPARQL11_ALL */
-
 #define BOOST_TEST_MODULE SPARQL11_tests
 #include "../tests/SPARQLTest.hpp"
 

@@ -172,8 +172,6 @@ endif
 CRYPTLIBDEFINED = CRYPTLIB
 ifdef $(CRYPTLIBDEFINED)
   CONFIG_DEFS+= \\\#define CRYPT_LIB "\\n"
-  INCLUDES += -I$(CRYPTLIB)
-  LIBINC += -L$(CRYPTLIB) -lcryptopp
 endif
 
 
@@ -215,7 +213,7 @@ CXXFLAGS += $(CFLAGS)
 ### absolutely neccessry for c++ linking ###
 LD = $(CXX)
 #LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
-LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -luuid
 LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX)
 VER=0.1
 COMPILE=CPATH=$(CPATH) $(CXX)
@@ -247,6 +245,12 @@ LIBINC	+=	 -l$(LIBNAME)
 
 $(LIB): $(BISONOBJ) $(FLEXOBJ) $(OBJLIST)
 	$(AR) rcvs $@ $^
+
+
+ifdef $(CRYPTLIBDEFINED)
+  INCLUDES += -I$(CRYPTLIB)
+  LIBINC += -L$(CRYPTLIB) -lcryptopp
+endif
 
 
 # Imported Boost log verbatim 'cause it's not packaged yet.
