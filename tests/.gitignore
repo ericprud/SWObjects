@@ -1,3 +1,5 @@
+/data-sparql11
+/rdb2rdf-tests
 /test_Algebra
 /test_BackChain
 /test_DAWG
@@ -15,3 +17,5 @@
 /test_SPARUL
 /test_SQL
 /test_WEBagents
+/test_logging
+/toy-alt.log
