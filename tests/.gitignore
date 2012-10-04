@@ -1,0 +1,17 @@
+/test_Algebra
+/test_BackChain
+/test_DAWG
+/test_DM
+/test_GraphMatch
+/test_LDP
+/test_POS2BGP
+/test_QueryMap
+/test_RDFaParser
+/test_RdfXmlParser
+/test_SADI
+/test_SPARQL
+/test_SPARQL11
+/test_SPARQLSerializer
+/test_SPARUL
+/test_SQL
+/test_WEBagents
