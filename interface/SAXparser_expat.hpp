@@ -33,14 +33,28 @@ namespace w3c_sw {
 	    friend class SAXparser_expat;
 	protected:
 	    std::vector<NsSet> byIndex;
-	    std::map<std::string, std::map<std::string, std::string> > byNS_localName;
+	    typedef std::map<std::string, std::string> InnerNSmap;
+	    typedef std::map<std::string, InnerNSmap > OuterNSmap;
+	    OuterNSmap byNS_localName;
 	public:
 	    Attributes_expat ()  {  }
-	    virtual size_t getLength () { return byIndex.size(); }
-	    virtual std::string getURI (size_t i) { return byIndex[i].namespaceURI; }
-	    virtual std::string getLocalName (size_t i) { return byIndex[i].localName; }
-	    virtual std::string getQName (size_t i) { return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
-	    virtual std::string getValue (std::string uri, std::string localName) { return byNS_localName[uri][localName]; }
+	    virtual size_t getLength () const { return byIndex.size(); }
+	    virtual std::string getURI (size_t i) const { return byIndex[i].namespaceURI; }
+	    virtual std::string getLocalName (size_t i) const { return byIndex[i].localName; }
+	    virtual std::string getQName (size_t i) const { return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
+	    virtual bool value (std::string uri, std::string localName, std::string* ptr) const {
+		const OuterNSmap::const_iterator oit = byNS_localName.find(uri);
+		if (oit == byNS_localName.end())
+		    return false;
+		const InnerNSmap& i = oit->second;
+		InnerNSmap::const_iterator inner = i.find(localName);
+		if (inner == i.end())
+		    return false;
+		if (ptr != NULL)
+		    *ptr = inner->second;
+		return true;
+		// return byNS_localName[uri][localName];
+	    }
 	};
 
 	std::string readFile (const char* filename, const char* type) {

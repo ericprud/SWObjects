@@ -90,52 +90,50 @@ namespace w3c_sw {
 
 		if (grddlMap != NULL)
 		    grddlMap->maybeChangeMediaType(uri, localName);
-		std::string trans = attrs->getValue(NS_grddl, "transformation");
-		if (!trans.empty()) {
+		if (attrs->value(NS_grddl, "transformation", &t)) {
 		    std::vector<std::string> args;
-		    args.push_back(trans);
+		    args.push_back(t);
 		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 			<< "GRDDL attribute transformation encountered -- GRDDLing with stylesheet \""
-			<< trans << "\".";
+			<< t << "\".";
 		    throw ChangeMediaTypeException("application/rdf+xml", args);
 		}
-		if (stack.top().inHead && localName == "link" && attrs->getValue("", "rel") == "transformation") {
+		if (stack.top().inHead && localName == "link" &&
+		    attrs->value("", "rel", &t) && t == "transformation") {
 		    std::vector<std::string> args;
-		    args.push_back(attrs->getValue("", "href"));
+		    attrs->value("", "href", &t);
+		    args.push_back(t);
 		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 			<< "GRDDL link header rel=\"transformation\" encountered -- GRDDLing with stylesheet \""
-			<< attrs->getValue("", "href") << "\".";
+			<< t << "\".";
 		    throw ChangeMediaTypeException("application/rdf+xml", args);
+		    attrs->value("", "href", &t);
 		    bgp->addTriplePattern(atomFactory->
 					  getTriple(atomFactory->getURI(nested.baseURI), 
 						    atomFactory->getURI(std::string(NS_dc) + "TRANS"), 
-						    atomFactory->getRDFLiteral(attrs->getValue("", "href"), 
-									      NULL, 
-									      nested.langtag.empty() ? NULL : 
-									      new LANGTAG(nested.langtag))));
+						    atomFactory->getRDFLiteral(t, 
+									       NULL, 
+									       nested.langtag.empty() ? NULL : 
+									       new LANGTAG(nested.langtag))));
 		}
 
-		t = attrs->getValue("", "lang");
-		if (t.empty())
-		    t = attrs->getValue(NS_xml, "lang");
-		nested.langtag = 
-		    t.empty() ? parent.langtag : t;
+		if (!attrs->value("", "lang", &nested.langtag) &&
+		    !attrs->value(NS_xml, "lang", &nested.langtag))
+		    nested.langtag = parent.langtag;
 
-		t = attrs->getValue("", "base");
-		if (t.empty())
-		    t = attrs->getValue(NS_xml, "base");
-		nested.baseURI = 
-		    t.empty() ? parent.baseURI : t;
+		if (!attrs->value("", "base", &nested.baseURI) &&
+		    !attrs->value(NS_xml, "base", &nested.baseURI))
+		    nested.baseURI = parent.baseURI;
 
-		t = attrs->getValue("", "datatype");
-		nested.datatype = t.empty() ? NULL : _QnameToURI(t, nsz);
+		if (attrs->value("", "datatype", &t))
+		    nested.datatype = _QnameToURI(t, nsz);
+		else
+		    nested.datatype = NULL;
 
-		t = attrs->getValue("", "about");
-		if (!t.empty())
+		if (attrs->value("", "about", &t))
 		    nested.about = _relativeURI(t, nested.baseURI);
 
-		t = attrs->getValue("", "typeof");
-		if (!t.empty()) {
+		if (attrs->value("", "typeof", &t)) {
 		    if (nested.about == NULL)
 			nested.about = atomFactory->createBNode();
 		    bgp->addTriplePattern(atomFactory->getTriple(nested.about, 
@@ -143,15 +141,14 @@ namespace w3c_sw {
 								_QnameToURI(t, nsz)));
 		}
 
-		t = attrs->getValue("", "rel");
-		if (!t.empty() && localName != "link") {  // link tags have a conflicting semantics for @rel.
+		if (attrs->value("", "rel", &t) && localName != "link") { 
+		    // link tags have a conflicting semantics for @rel.
 		    nested.rel = _QnameToURI(t, nsz);
-		    t = attrs->getValue("", "href");
-		    if (!t.empty()) {
+		    if (attrs->value("", "href", &t)) {
 			if (parent.about)
 			    bgp->addTriplePattern(atomFactory->getTriple(parent.about, 
-									nested.rel, 
-									_relativeURI(t, nested.baseURI)));
+									 nested.rel, 
+									 _relativeURI(t, nested.baseURI)));
 			nested.rel = NULL;
 		    }
 		}
@@ -164,11 +161,9 @@ namespace w3c_sw {
 								parent.rel, 
 								nested.about));
 
-		t = attrs->getValue("", "property");
-		if (!t.empty()) {
+		if (attrs->value("", "property", &t)) {
 		    nested.property = _QnameToURI(t, nsz);
-		    t = attrs->getValue("", "content");
-		    if (!t.empty()) {
+		    if (attrs->value("", "content", &t)) {
 			bgp->addTriplePattern(atomFactory->
 				getTriple(parent.about, 
 					  nested.property, 

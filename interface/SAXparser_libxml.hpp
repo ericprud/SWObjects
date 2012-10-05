@@ -30,7 +30,9 @@ namespace w3c_sw {
 	    const xmlChar ** attrs;
 	    size_t attrCount;
 	    std::vector<NsSet> byIndex;
-	    std::map<std::string, std::map<std::string, std::string> > byNS_localName;
+	    typedef std::map<std::string, std::string> InnerNSmap;
+	    typedef std::map<std::string, InnerNSmap > OuterNSmap;
+	    OuterNSmap byNS_localName;
 	    bool initialized;
 	    void init () {
 		unsigned int index = 0;
@@ -48,11 +50,24 @@ namespace w3c_sw {
 	public:
 	    Attributes_libxml (const xmlChar ** attrs, size_t attrCount) : 
 		attrs(attrs), attrCount(attrCount), initialized(false) {  }
-	    virtual size_t getLength () { if (!initialized) init(); return byIndex.size(); }
-	    virtual std::string getURI (size_t i) { if (!initialized) init(); return byIndex[i].namespaceURI; }
-	    virtual std::string getLocalName (size_t i) { if (!initialized) init(); return byIndex[i].localName; }
-	    virtual std::string getQName (size_t i) { if (!initialized) init(); return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
-	    virtual std::string getValue (std::string uri, std::string localName) { if (!initialized) init(); return byNS_localName[uri][localName]; }
+	    virtual size_t getLength () const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex.size(); }
+	    virtual std::string getURI (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex[i].namespaceURI; }
+	    virtual std::string getLocalName (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex[i].localName; }
+	    virtual std::string getQName (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return SWSAXhandler::qName(byIndex[i].prefix, byIndex[i].localName); }
+	    virtual bool value (std::string uri, std::string localName, std::string* ptr) const {
+		if (!initialized) const_cast<Attributes_libxml*>(this)->init();
+		const OuterNSmap::const_iterator oit = byNS_localName.find(uri);
+		if (oit == byNS_localName.end())
+		    return false;
+		const InnerNSmap& i = oit->second;
+		InnerNSmap::const_iterator inner = i.find(localName);
+		if (inner == i.end())
+		    return false;
+		if (ptr != NULL)
+		    *ptr = inner->second;
+		return true;
+		// return byNS_localName[uri][localName];
+	    }
 	};
 
 	::xmlSAXHandler libXMLhandler; // http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler

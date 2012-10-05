@@ -89,19 +89,14 @@ namespace w3c_sw {
 		    {
 			/* subject comes from about or ID or is a BNode. */
 			std::string subject;
-			subject = attrs->getValue(NS_rdf, "about");
-			if (subject.empty()) {
-			    subject = attrs->getValue(NS_rdf, "ID");
-			    if (subject.empty()) {
-				subject = attrs->getValue(NS_rdf, "nodeID");
-				if (subject.empty())
-				    newState.s = atomFactory->createBNode();
-				else
-				    newState.s = atomFactory->getBNode(subject, &bnodeMap);
-			    } else
-				newState.s = atomFactory->getURI(baseURI + "#" + subject);
-			} else
+			if (attrs->value(NS_rdf, "about", &subject)) {
 			    newState.s = atomFactory->getURI(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
+			} else if (attrs->value(NS_rdf, "ID", &subject))
+			    newState.s = atomFactory->getURI(baseURI + "#" + subject);
+			else if (attrs->value(NS_rdf, "nodeID", &subject))
+			    newState.s = atomFactory->getBNode(subject, &bnodeMap);
+			else
+			    newState.s = atomFactory->createBNode();
 		    }
 
 		    /* Create statements for subject's literalPropertyElt. */
@@ -123,7 +118,7 @@ namespace w3c_sw {
 
 			    /* newState.s -[attribute]-> [value] . */
 			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
-			    std::string value = attrs->getValue(attrURI, attrLName);
+			    std::string value; attrs->value(attrURI, attrLName, &value);
 			    const TTerm* object = atomFactory->getRDFLiteral(value, NULL, NULL);
 			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
 			}
@@ -189,8 +184,8 @@ namespace w3c_sw {
 		case PROPERTY: {
 		    std::string t; // used a couple times below
 		    newState.p = atomFactory->getURI(uri + localName);
-		    std::string parseType = attrs->getValue(NS_rdf, "parseType");
-		    std::string nodeID = attrs->getValue(NS_rdf, "nodeID");
+		    std::string parseType;
+		    std::string nodeID; ;
 
 		    /* rdf:parseType or rdf:resource attributes imply a new node.
 		     * Otherwise, may be a:
@@ -198,13 +193,12 @@ namespace w3c_sw {
 		     *   Collection - may be nil for an empty Collection.
 		     *   node with predicate attributes - handled below.
 		     */
-		    t = attrs->getValue(NS_rdf, "resource");
-		    if ( !t.empty() )
+		    if (attrs->value(NS_rdf, "resource", &t))
 			newState.s = atomFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
-		    else if ( !parseType.empty() )
+		    else if (attrs->value(NS_rdf, "parseType", &parseType))
 			newState.s = atomFactory->createBNode();
-		    else if ( !nodeID.empty() )
-			newState.s = atomFactory->getBNode(nodeID, &bnodeMap);
+		    else if (attrs->value(NS_rdf, "nodeID", &t))
+			newState.s = atomFactory->getBNode(t, &bnodeMap);
 		    else
 			expectCharData = true;
 		    if (newState.s != NULL)
@@ -216,10 +210,8 @@ namespace w3c_sw {
 		     * contain another predicate) so we leave them out of the
 		     * stack state.
 		     */
-		    t = attrs->getValue(NS_rdf, "datatype");
-		    datatype = t.empty() ? NULL : atomFactory->getURI(t);
-		    t = attrs->getValue(NS_xml, "lang");
-		    langtag = t.empty() ? NULL : new LANGTAG(t.c_str());
+		    datatype = attrs->value(NS_rdf, "datatype", &t) ? atomFactory->getURI(t) : NULL;
+		    langtag = attrs->value(NS_xml, "lang", &t) ? new LANGTAG(t.c_str()) : NULL;
 
 		    /* Create statements for predicate attributes. */
 		    for (size_t i = 0; i < attrs->getLength(); ++i) {
@@ -239,8 +231,8 @@ namespace w3c_sw {
 
 			    /* newState.s -[attribute]-> [value] . */
 			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
-			    std::string value = attrs->getValue(attrURI, attrLName);
-			    const TTerm* object = atomFactory->getRDFLiteral(value, NULL, NULL);
+			    attrs->value(attrURI, attrLName, &t);
+			    const TTerm* object = atomFactory->getRDFLiteral(t, NULL, NULL);
 			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
 			}
 		    }
@@ -262,7 +254,8 @@ namespace w3c_sw {
 		    for (size_t i = 0; i < attrs->getLength(); ++i) {
 			std::string attrURI = attrs->getURI(i);
 			std::string attrLName = attrs->getLocalName(i);
-			chars += " " + attrs->getQName(i) + "=\"" + attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) + "\"";
+			std::string value; attrs->value(attrs->getURI(i), attrs->getLocalName(i), &value);
+			chars += " " + attrs->getQName(i) + "=\"" + value + "\"";
 		    }
 		    chars += ">";
 

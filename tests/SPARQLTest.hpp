@@ -75,7 +75,9 @@ struct MeasuredRS : public ResultSet {
     void read (std::string name, std::string baseURI, BasicGraphPattern* g) {
 	IStreamContext istr(name, IStreamContext::FILE);
 	if (name.substr(name.size()-4, 4) == ".rdf") {
+	    GRdfXmlParser.setBase(name);
 	    GRdfXmlParser.parse(g, istr);
+	    GRdfXmlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	} else {
 	    turtleParser.setGraph(g);
 	    turtleParser.setBase(baseURI);

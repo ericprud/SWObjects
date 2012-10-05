@@ -240,6 +240,7 @@ namespace w3c_sw {
 	    const TTerm* variable;
 	    const URI* datatype;
 	    std::string lang;
+	    bool langSet;
 	    std::string chars;
 
 	    const char* stateStr () {
@@ -266,6 +267,8 @@ namespace w3c_sw {
 				       NSmap& /* nsz */) {
 		if (uri != NS_srx)
 		    varError("element in unexpected namespace {%s}%s within %s", qName.c_str(), uri.c_str(), stateStr());
+		std::string t;
+
 		enum STATES newState = s_ERROR;
 		switch (stateStack.top()) {
 		case DOCUMENT:
@@ -285,7 +288,8 @@ namespace w3c_sw {
 			newState = LINK;
 		    else if (localName == "variable") {
 			newState = VARIABLE;
-			rs->addOrderedVar(atomFactory->getVariable(attrs->getValue("", "name")));
+			attrs->value("", "name", &t);
+			rs->addOrderedVar(atomFactory->getVariable(t));
 		    }
 		    break;
 		case LINK:
@@ -303,7 +307,8 @@ namespace w3c_sw {
 		case RESULT:
 		    if (localName == "binding") {
 			newState = BINDING;
-			variable = atomFactory->getVariable(attrs->getValue("", "name"));
+			attrs->value("", "name", &t);
+			variable = atomFactory->getVariable(t);
 		    } break;
 		case BINDING:
 		    if (localName == "uri")
@@ -312,9 +317,9 @@ namespace w3c_sw {
 			newState = BNODE;
 		    else if (localName == "literal") {
 			newState = LITERAL;
-			std::string s = attrs->getValue("", "datatype");
-			datatype = s.size() == 0 ? NULL : atomFactory->getURI(s.c_str());
-			lang = attrs->getValue(NS_xml, "lang");
+			std::string s;
+			datatype = attrs->value("", "datatype", &s) ? atomFactory->getURI(s.c_str()) : NULL;
+			langSet = attrs->value(NS_xml, "lang", &lang);
 		    }
 		    break;
 		case _URI:
@@ -356,7 +361,7 @@ namespace w3c_sw {
 		case LITERAL:
 		    {
 			LANGTAG* l = NULL;
-			if (lang.size() > 0)
+			if (langSet)
 			    l = new LANGTAG(lang); /* del'd by RDFLiteral. */
 			result->set(variable, atomFactory->getRDFLiteral(chars, datatype, l), false);
 			datatype = NULL;

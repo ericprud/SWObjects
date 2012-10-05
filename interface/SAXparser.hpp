@@ -84,22 +84,28 @@ namespace w3c_sw {
 	public:
 	    Attributes () {  }
 	    virtual ~Attributes () {  }
-	    virtual size_t getLength() = 0;
-	    virtual std::string getLocalName(size_t i) = 0;
-	    virtual std::string getURI(size_t i) = 0;
-	    virtual std::string getQName(size_t i) = 0;
-	    virtual std::string getValue(std::string uri, std::string localName) = 0;
-	    std::string toString (std::string luri = "", std::string llname = "") {
+	    virtual size_t getLength() const = 0;
+	    virtual std::string getLocalName(size_t i) const = 0;
+	    virtual std::string getURI(size_t i) const = 0;
+	    virtual std::string getQName(size_t i) const = 0;
+	    virtual bool value(std::string uri, std::string localName, std::string* ptr) const = 0;
+	    std::string toString (std::string luri = "", std::string llname = "") const {
 		std::stringstream s;
 		for (size_t i = 0; i < getLength(); ++i) {
 		    std::string uri = getURI(i);
 		    std::string lname = getLocalName(i);
 		    std::string qn = getQName(i);
-		    std::string val = getValue(uri, lname);
+		    std::string val;
+		    value(uri, lname, &val);
 		    s << (uri == luri && lname == llname ? '!' : ' ') << 
 			qn << "(" << uri << ")=\"" << val << "\"";
 		}
-		s << ">\ncheck: |name: " << getValue("", "name") << "\n";
+		s << ">\n";
+		{
+		    std::string val;
+		    if (value("", "name", &val))
+			s << "check: |name: " << val << "\n";
+		}
 		return s.str();
 	    }
 	};
@@ -114,7 +120,8 @@ namespace w3c_sw {
 	    std::cout << "<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
-		std::cout << std::endl << "    " << attrs->getQName(i) << "=\"" << attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) << "\"";
+		std::string v; attrs->value(attrs->getURI(i), attrs->getLocalName(i), &v);
+		std::cout << std::endl << "    " << attrs->getQName(i) << "=\"" << v << "\"";
 	    }
 	    std::cout << ">" << std::endl;
 	}
@@ -176,7 +183,8 @@ namespace w3c_sw {
 	    out << "SM<" << qName << " _:ns=\"" << uri << "|" << localName << "\"";
 	    size_t attrCount = attrs->getLength();
 	    for (size_t i = 0; i < attrCount; ++i) {
-		out << std::endl << "    " << attrs->getQName(i) << "=\"" << attrs->getValue(attrs->getURI(i), attrs->getLocalName(i)) << "\"";
+		std::string v; attrs->value(attrs->getURI(i), attrs->getLocalName(i), &v);
+		out << std::endl << "    " << attrs->getQName(i) << "=\"" << v << "\"";
 	    }
 	    out << ">" << std::endl;
 	}
