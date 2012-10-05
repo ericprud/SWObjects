@@ -298,6 +298,7 @@ public:
     e_ASCorDESC p_e_ASCorDESC;
     BindingClause* p_BindingClause;
     const TableOperation* p_TableOperation;
+    const TTerm* p_GraphName;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
@@ -761,14 +762,23 @@ SubSelect:
     {
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
-    } SelectClause {
-	driver.restoreFilter(NULL);
-	$<p_TableOperation>$ = driver.curOp;
-	driver.curOp = NULL;
+      } SelectClause {
+	  driver.restoreFilter(NULL);
+	  $<p_TableOperation>$ = driver.curOp;
+	  driver.curOp = NULL;
+      } {
+	  if (!driver.curGraphName || $2.varSet->includes(driver.curGraphName)) {
+	      $<p_GraphName>$ = NULL;
+	  } else {
+	      $<p_GraphName>$ = driver.curGraphName;
+	      driver.curGraphName = driver.createBNode();
+	  }
       } WhereClause SolutionModifier ValuesClause	{
-	  if ($6 != NULL)
-	      $4->m_GroupGraphPattern = driver.makeConjunction($6, $4->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>3, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $4, $5)));
+	  if ($<p_GraphName>4 != NULL)
+	      driver.curGraphName = $<p_GraphName>4;
+	  if ($7 != NULL)
+	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>3, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
 	  driver.countStar = $<p_parentCountStar>1;
       }
 ;

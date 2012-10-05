@@ -2499,6 +2499,7 @@ protected:
 public:
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const VarSet& ref) const = 0;
+    virtual bool includes(const TTerm*) const = 0;
     virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			 std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const = 0;
 };
@@ -2536,6 +2537,7 @@ public:
 	const ExpressionAliasList* pref = dynamic_cast<const ExpressionAliasList*>(&ref);
 	return pref == NULL ? false : m_Expressions == pref->m_Expressions;
     }
+    virtual bool includes(const TTerm* lookFor) const;
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
 };
@@ -2550,6 +2552,9 @@ public:
     virtual bool operator== (const VarSet& ref) const {
 	const StarVarSet* pref = dynamic_cast<const StarVarSet*>(&ref);
 	return pref == NULL ? false : true;
+    }
+    virtual bool includes (const TTerm*) const {
+	return true;
     }
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;

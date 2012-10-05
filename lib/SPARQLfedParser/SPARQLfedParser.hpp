@@ -331,6 +331,7 @@ namespace w3c_sw {
     e_ASCorDESC p_e_ASCorDESC;
     BindingClause* p_BindingClause;
     const TableOperation* p_TableOperation;
+    const TTerm* p_GraphName;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
@@ -351,7 +352,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 355 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 356 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -729,7 +730,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 733 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 734 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

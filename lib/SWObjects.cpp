@@ -2794,6 +2794,16 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
+    bool ExpressionAliasList::includes (const TTerm* lookFor) const {
+	for (std::vector<const ExpressionAlias*>::const_iterator it = m_Expressions.begin();
+	     it != m_Expressions.end(); ++it)
+	    if ((*it)->label == lookFor ||
+		(dynamic_cast<const TTermExpression*>((*it)->expr)
+		 && dynamic_cast<const TTermExpression*>((*it)->expr)->getTTerm() == lookFor))
+		return true;
+	return false;
+    }
+
     void ExpressionAliasList::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having,
 				       std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const {
 	rs->project(&m_Expressions, groupBy, having, orderConditions, db);
