@@ -6,6 +6,7 @@
 # define PARSER_COMMON_HH
 
 #include "SWObjects.hpp"
+#include "utf8.h"
 
 void stop(size_t line);
 
@@ -155,44 +156,25 @@ public:
 		case '\\': (*space) += '\\'; break;
 		case 'u':
 		    if (i < len-4) {
-			uint16_t cp=
+			wchar_t w[2] = {
 			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
-			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]);
-
-			if (cp < 0x80)                        // one octet
-			    (*space) += static_cast<uint8_t>(cp);  
-			else if (cp < 0x800) {                // two octets
-			    (*space) += static_cast<uint8_t>((cp >> 6)          | 0xc0);
-			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
-			}
+			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]),
+			    0};
+			utf8::utf32to8(w, w+1, back_inserter(*space));
+			i += 4;
 			break;
 		    } else
 			throw(new std::exception());
 		case 'U':
 		    if (i < len-8) {
-			uint32_t cp=
+			wchar_t w[2] = {
 			    _h2n(yytext[i+1])<<28 | _h2n(yytext[i+2])<<24|
 			    _h2n(yytext[i+3])<<20 | _h2n(yytext[i+4])<<16 |
 			    _h2n(yytext[i+5])<<12 | _h2n(yytext[i+6])<<8 |
-			    _h2n(yytext[i+7])<<04 | _h2n(yytext[i+8]);
-
-			if (cp < 0x80)                        // one octet
-			    (*space) += static_cast<uint8_t>(cp);  
-			else if (cp < 0x800) {                // two octets
-			    (*space) += static_cast<uint8_t>((cp >> 6)          | 0xc0);
-			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
-			}
-			else if (cp < 0x10000) {              // three octets
-			    (*space) += static_cast<uint8_t>((cp >> 12)         | 0xe0);
-			    (*space) += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
-			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
-			}
-			else {                                // four octets
-			    (*space) += static_cast<uint8_t>((cp >> 18)         | 0xf0);
-			    (*space) += static_cast<uint8_t>(((cp >> 12) & 0x3f)| 0x80);
-			    (*space) += static_cast<uint8_t>(((cp >> 6) & 0x3f) | 0x80);
-			    (*space) += static_cast<uint8_t>((cp & 0x3f)        | 0x80);
-			}
+			    _h2n(yytext[i+7])<<04 | _h2n(yytext[i+8]),
+			    0};
+			utf8::utf32to8(w, w+1, back_inserter(*space));
+			i += 8;
 			break;
 		    } else
 			throw(new std::exception());
