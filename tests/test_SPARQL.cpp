@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE( bool_base_1 ) {
 		      "false\n");
 }
 
-#ifdef FIXED_CORRUPTION_FROM_DL_LOAD
+#ifndef CRYPT_LIB // need to specially build a CRYPT_LIB with -fPIC???
 BOOST_AUTO_TEST_CASE( function_library ) {
     ExecResults invocation("../bin/sparql --function-library ../examples/functionExtension.so"
 			   " -d \"data:text/csv,x,y\n<foo>,\\\"bar\\\"\""
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( function_library ) {
 		 false, &bnodeMap);
     BOOST_CHECK_EQUAL(tested, expected);
 }
-#endif /* FIXED_CORRUPTION_FROM_DL_LOAD */
+#endif /* !CRYPT_LIB */
 
 // e.g. PARSE_RESULTS("SPARQL/D.srt", Doutput)
 #define PARSE_RESULTS(TEST, EXPECT) \

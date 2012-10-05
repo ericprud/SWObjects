@@ -496,7 +496,11 @@ examples/functionExtension.o: examples/functionExtension.cpp
 examples/functionExtension.so: examples/functionExtension.o
 	$(LINK) -shared -o $@ $< $(LDFLAGS)
 
-t_SPARQL: bin/sparql examples/functionExtension.so
+ifdef $(CRYPTLIBDEFINED)
+  t_SPARQL: bin/sparql
+else
+  t_SPARQL: bin/sparql examples/functionExtension.so
+endif
 t_SADI: bin/sparql
 t_LDP: bin/sparql
 

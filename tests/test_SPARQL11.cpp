@@ -800,6 +800,7 @@ BOOST_AUTO_TEST_CASE( plus_2 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/functions/plus-2.rq", "data-sparql11/functions/plus-2.srx", 0, 0);
 }
+#ifdef CRYPT_LIB
 BOOST_AUTO_TEST_CASE( md5_01 ) {
     /* name: MD5() */
     const char* defaultGraph( "data-sparql11/functions/data.ttl");
@@ -856,6 +857,7 @@ BOOST_AUTO_TEST_CASE( sha512_02 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/functions/sha512-02.rq", "data-sparql11/functions/sha512-02.srx", 0, 0);
 }
+#endif /* CRYPT_LIB */
 BOOST_AUTO_TEST_CASE( minutes ) {
     /* name: MINUTES() */
     const char* defaultGraph( "data-sparql11/functions/data.ttl");

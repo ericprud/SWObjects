@@ -1,7 +1,7 @@
 #include "SWObjects.hpp"
 
 w3c_sw::AtomicFunction::FPtr my_chatty_concat;
-const w3c_sw::TTerm* my_chatty_concat (const w3c_sw::URI* name, std::vector<const w3c_sw::TTerm*>& args, w3c_sw::AtomFactory* atomFactory) {
+const w3c_sw::TTerm* my_chatty_concat (const w3c_sw::URI* name, std::vector<const w3c_sw::TTerm*>& args, w3c_sw::AtomFactory* atomFactory, w3c_sw::TTerm::String2BNode* bnodeMap, const w3c_sw::RdfDB* db) {
     std::stringstream ss;
     ss << "CONCAT(";
     for (std::vector<const w3c_sw::TTerm*>::const_iterator sub = args.begin();
@@ -14,7 +14,7 @@ const w3c_sw::TTerm* my_chatty_concat (const w3c_sw::URI* name, std::vector<cons
 	else
 	    ss << s->toString();
     }
-    ss << ") yields " << w3c_sw::AtomicFunction::BuiltIn::FUNC_concat(name, args, atomFactory)->toString();
+    ss << ") yields " << w3c_sw::AtomicFunction::BuiltIn::FUNC_concat(name, args, atomFactory, bnodeMap, db)->toString();
     return atomFactory->getRDFLiteral(ss.str(), NULL, NULL, false);
 }
 
