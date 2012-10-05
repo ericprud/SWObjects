@@ -3133,18 +3133,20 @@ compared against
     }
 
     void Bind::bindVariables (const RdfDB* db, ResultSet* rs) const {
+	ResultSet island(rs->getAtomFactory());
 	if (m_TableOperation != NULL)
-	    m_TableOperation->bindVariables(db, rs);
-	rs->addKnownVar(m_label);
-	for (ResultSetIterator row = rs->begin() ; row != rs->end(); ++row)
+	    m_TableOperation->bindVariables(db, &island);
+	island.addKnownVar(m_label);
+	for (ResultSetIterator row = island.begin() ; row != island.end(); ++row)
 	    try {
-		(*row)->set(m_label, m_expr->eval(*row, rs->getAtomFactory(), NULL, NULL, db), false, true);
+		(*row)->set(m_label, m_expr->eval(*row, island.getAtomFactory(), NULL, NULL, db), false, true);
 		// atomFactory: NULL.
 		// not a loose binding, whatever that means now.
 		// replace: setting TTerm::Unbound deletes the binding.
 	    } catch (SafeEvaluationError&) {
 		// Don't (*row)->set(m_label, TTerm::Unbound, false) as RS contract is to leave unbounds NULL c.f. "setting ?d to Unbound is just wrong"
 	    }
+	rs->joinIn(&island);
     }
 
     TableOperationOnOperation* Bind::makeANewThis (const TableOperation* p_TableOperation) const {
@@ -3526,7 +3528,7 @@ compared against
     }
 
     void MinusGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
-	ResultSet optRS(*rs); // no AtomFactory
+	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "MINUS produced\n" << *rs;
