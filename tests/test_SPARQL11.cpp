@@ -228,6 +228,12 @@ BOOST_AUTO_TEST_CASE( solist ) {
     const URI** requires = NULL;
     DAWG_TEST("generators/solist.rq", "generators/solist.srt", 0, 0);
 }
+BOOST_AUTO_TEST_CASE( namedsolist ) {
+    const char* defaultGraph( "generators/namedsolist.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("generators/solist.rq", "generators/solist.srt", 0, 0);
+}
 BOOST_AUTO_TEST_SUITE_END(/* generators */)
 
 
@@ -1483,7 +1489,7 @@ BOOST_AUTO_TEST_CASE( subquery14 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/subquery/sq14.rq", "data-sparql11/subquery/sq14-out.ttl", 0, 0);
 }
-BOOST_AUTO_TEST_SUITE_END(/* SPARQL_WG */)
+BOOST_AUTO_TEST_SUITE_END(/* SPARQL11_WG */)
 #endif /* SPARQL11_ALL */
 
 // EOF
