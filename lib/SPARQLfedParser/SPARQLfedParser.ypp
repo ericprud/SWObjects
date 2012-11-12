@@ -2088,10 +2088,8 @@ _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star:
 VerbPath:
     Path	{
 	const URI* t = $1->release();
-	if (!t) {
-	    std::string s = $1->str();
-	    w3c_sw_LINEN << "new PP(" << s << ")\n";
-	}
+	// if (!t)
+	//     w3c_sw_LINEN << "property path: " << $1->str() << "\n";
 	$$ = t ? t : (const TTerm*)new PropertyPath($1);
     }
 ;
@@ -2201,10 +2199,10 @@ PathMod:
 	$$.min = 0; $$.max = 1;
     }
   | GT_TIMES	{
-	$$.min = 0; $$.max = 999;
+	$$.min = 0; $$.max = PropertyPath::Repeated::Unlimited;
     }
   | GT_PLUS	{
-	$$.min = 1; $$.max = 999;
+	$$.min = 1; $$.max = PropertyPath::Repeated::Unlimited;
     }
 ;
 
@@ -2250,7 +2248,8 @@ _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C:
 	$<p_PropertyPath>$ = driver.lastPropertyPathSetAlternative;
 	driver.lastPropertyPathSetAlternative = $1;
       } _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star	{
-	  driver.lastPropertyPathSetAlternative = $<p_PropertyPath>$;
+	  driver.lastPropertyPathSetAlternative = $<p_PropertyPath>2;
+	  $$ = $3;
       }
 ;
 

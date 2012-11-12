@@ -1664,18 +1664,19 @@ public:
 	virtual const URI* release () { return NULL; }
 	virtual const URI* from(const TTerm** s, const TTerm** o) const = 0;
 	typedef enum {
-	    PREC_ERROR = 0, PREC_min = 1, PREC_Predicate = 1, PREC_Inverse, PREC_Sequence,
-	    PREC_Alternative, PREC_Repeated, PREC_Negated, PREC_max = PREC_Negated
+	    PREC_ERROR = 0, PREC_min,
+	    PREC_Alternative, PREC_Sequence, PREC_Inverse, PREC_Repeated, PREC_Negated, PREC_Predicate,
+	    PREC_max
 	} e_Precedence;
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const = 0;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const = 0;
 	std::string str() const; // for easy invocation
 	static std::string parens (e_Precedence parent, e_Precedence current, std::string str) {
 	    std::string ret;
-	    if (parent < current)
+	    if (current < parent)
 		ret += "(";
 	    ret += str;
-	    if (parent < current)
+	    if (current < parent)
 		ret += ")";
 	    return ret;
 	}
@@ -1741,8 +1742,9 @@ public:
     };
 
     struct Repeated : public Unary {
-	int min, max;
+	unsigned int min, max;
     public:
+	const static unsigned Unlimited = ~0U;
 	Repeated (const PathBase* nested, int min, int max) : Unary(nested), min(min), max(max) {  }
 	virtual const URI* from (const TTerm** s, const TTerm** o) const {
 	    if (min == 0)
@@ -1788,6 +1790,9 @@ inline std::ostream& operator<< (std::ostream& os, const PropertyPath::SubjObjPa
     return sop.print(os);
 }
 
+inline bool operator< (const PropertyPath::SubjObjPair& l, const PropertyPath::SubjObjPair& r) {
+    return l.subj == r.subj ? *l.obj < *r.obj : *l.subj < *r.subj;
+}
 
 class ListTerm : public Bindable {
     friend class AtomFactory;

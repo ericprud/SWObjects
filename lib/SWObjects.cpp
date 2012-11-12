@@ -3151,14 +3151,15 @@ compared against
 	// w3c_sw_LINEN << "this: " << str() << "\n";
 	const TTerm* s = start->getS();
 	const TTerm* o = start->getO();
-	BasicGraphPattern::triple_iterator mi = bgp->getTripleIterator(s, uri, o);
+	BasicGraphPattern::triple_iterator mi = bgp->getTripleIterator(s, negated ? NULL : uri, o);
 	BasicGraphPattern::triple_iterator end;
 	if (!(mi != end))
 	    return false;
 	for ( ; mi != end; ++mi)
-	    tps->push_back(
-			   inverse ? SubjObjPair((*mi)->getO(), (*mi)->getS()) :
-			   SubjObjPair((*mi)->getS(), (*mi)->getO()));
+	    if (!negated || (*mi)->getP() != uri)
+		tps->push_back(
+			       inverse ? SubjObjPair((*mi)->getO(), (*mi)->getS()) :
+			       SubjObjPair((*mi)->getS(), (*mi)->getO()));
 	// w3c_sw_LINEN << "ret: " << *tps << "\n";
 	return true;
 	if (uri ==  start->getP()) {
@@ -3214,12 +3215,22 @@ compared against
     }
 
     bool PropertyPath::Alternative::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
-	// return false;
+	if (negated) {
+	    PropertyPath::SubjObjPairs lPairs, rPairs;
+	    if (!(l->walk(start, bgp, &lPairs, inverse, negated)
+		  && r->walk(start, bgp, &rPairs, inverse, negated)))
+		return false;
+	    std::set<SubjObjPair> rSet(rPairs.begin(), rPairs.end());
+	    for (SubjObjPairs::const_iterator p = lPairs.begin(); p != lPairs.end(); ++p)
+		if (rSet.find(*p) != rSet.end())
+		    tps->push_back(*p);
+	    return true;
+	}
 	return l->walk(start, bgp, tps, inverse, negated) || r->walk(start, bgp, tps, inverse, negated);
     }
     std::string PropertyPath::Alternative::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
-	return parens(prec, PREC_Alternative, "^"
-		      + l->toString(mediaType, namespaces, PREC_Alternative)
+	return parens(prec, PREC_Alternative,
+		      l->toString(mediaType, namespaces, PREC_Alternative)
 		      + "|" + r->toString(mediaType, namespaces, PREC_Alternative));
     }
 
@@ -3249,17 +3260,22 @@ compared against
 	return matched;
     }
     std::string PropertyPath::Repeated::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	std::string suffix =
+	    min == 0 && max == 1 ? "?" :
+	    min == 0 && max == Unlimited ? "*" :
+	    min == 1 && max == Unlimited ? "+" :
+	    "{" + boost::lexical_cast<std::string>(min) + ", " + boost::lexical_cast<std::string>(max) + "}";
 	return parens(prec, PREC_Repeated,
-		      "^" + nested->toString(mediaType, namespaces, PREC_Repeated));
+		      nested->toString(mediaType, namespaces, PREC_Repeated) + suffix);
     }
 
     bool PropertyPath::Negated::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
 	// return false;
-	return nested->walk(start, bgp, tps, !inverse, negated);
+	return nested->walk(start, bgp, tps, inverse, !negated);
     }
     std::string PropertyPath::Negated::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
 	return parens(prec, PREC_Negated,
-		      "^" + nested->toString(mediaType, namespaces, PREC_Negated));
+		      "!" + nested->toString(mediaType, namespaces, PREC_Negated));
     }
 
 
