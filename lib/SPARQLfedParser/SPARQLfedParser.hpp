@@ -96,6 +96,9 @@ protected:
     bool countStar;
     WhereClause* lastWhereClause;
     location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
+    PropertyPath::PathBase* lastPropertyPathAlternative;
+    PropertyPath::PathBase* lastPropertyPathSequence;
+    PropertyPath::PathBase* lastPropertyPathSetAlternative;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -239,7 +242,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 243 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 246 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -269,7 +272,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 273 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 276 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -281,7 +284,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 252 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 255 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -348,11 +351,13 @@ namespace w3c_sw {
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
     bool p_parentCountStar;
+    PropertyPath::PathBase* p_PropertyPath;
+    struct {int min; int max;} p_RepeatRange;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 356 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 361 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -730,7 +735,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 734 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 739 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

@@ -1,0 +1,3 @@
+SELECT * {
+  MEMBERS(?o) ^<p1> MEMBERS(?s)
+}

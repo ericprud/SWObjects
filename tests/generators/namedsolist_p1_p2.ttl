@@ -15,4 +15,5 @@
 <olist9> a rdf:List ;
         rdf:first 9 ; rdf:rest rdf:nil .
 
-<slist0> <p1> <olist7> .
+<slist0> <p1> <node1> .
+<node1> <p2> <olist7> .

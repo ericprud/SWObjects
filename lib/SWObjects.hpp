@@ -1630,34 +1630,165 @@ inline bool operator< (const TriplePattern& left, const TriplePattern& right) {
 
 /* <generators> */
 /*
-  struct PredicatePathException {
+  struct PropertyPathException {
   std::vector<const TriplePattern*> tps;
   };
 */
-class PredicatePath : public TTerm {
+class PropertyPath : public TTerm {
     friend class AtomFactory;
-private:
-    PredicatePath () : TTerm("PredicatePath", "") {  }
-    ~PredicatePath () {  }
-protected:
-    virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 public:
-    struct SubObjPair {
+    struct SubjObjPair {
 	const TTerm* subj;
 	const TTerm* obj;
-	SubObjPair(const TTerm* subj, const TTerm* obj) : subj(subj), obj(obj) {  }
+	SubjObjPair(const TTerm* subj, const TTerm* obj) : subj(subj), obj(obj) {  }
+	std::ostream& print (std::ostream& os) const {
+	    return os << "{ " << subj->toString() << " _ " << obj->toString() << "}";
+	}
     };
 
-    virtual const char * getToken () { return "-PredicatePath-"; }
-    virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PredicatePath/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString () const { std::stringstream s; s << "@@PredicatePath@@"; return s.str(); }
+    struct SubjObjPairs : std::vector<SubjObjPair> {
+	std::ostream& print (std::ostream& os) const {
+	    for (const_iterator pair = begin(); pair != end(); ++pair)
+		pair->print(os) << "\n";
+	    return os;
+	}
+	std::string str () const {
+	    std::stringstream ss;
+	    print(ss);
+	    return ss.str();
+	}
+    };
+
+    struct PathBase {
+    public:
+	virtual const URI* release () { return NULL; }
+	virtual const URI* from(const TTerm** s, const TTerm** o) const = 0;
+	typedef enum {
+	    PREC_ERROR = 0, PREC_min = 1, PREC_Predicate = 1, PREC_Inverse, PREC_Sequence,
+	    PREC_Alternative, PREC_Repeated, PREC_Negated, PREC_max = PREC_Negated
+	} e_Precedence;
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const = 0;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const = 0;
+	std::string str() const; // for easy invocation
+	static std::string parens (e_Precedence parent, e_Precedence current, std::string str) {
+	    std::string ret;
+	    if (parent < current)
+		ret += "(";
+	    ret += str;
+	    if (parent < current)
+		ret += ")";
+	    return ret;
+	}
+    };
+
+    struct Predicate : public PathBase {
+	const URI* uri;
+    public:
+	Predicate (const URI* uri) : uri(uri) {  }
+	virtual const URI* release () {
+	    const URI* ret = uri;
+	    delete this;
+	    return ret;
+	}
+	virtual const URI* from (const TTerm** s, const TTerm** o) const { return uri; }
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    struct Unary : public PathBase {
+	const PathBase* nested;
+    protected:
+	Unary(const PathBase* nested) : nested(nested) {  }
+    };
+
+    struct Inverse : public Unary {
+    public:
+	Inverse (const PathBase* nested) : Unary(nested) {  }
+	virtual const URI* from (const TTerm** s, const TTerm** o) const {
+	    const TTerm* t = *s;
+	    *s = *o;
+	    *o = t;
+	    return nested->from(s, o);
+	}
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    struct Binary : public PathBase {
+	const PathBase* l;
+	const PathBase* r;
+    protected:
+	Binary (const PathBase* l, const PathBase* r) : l(l), r(r) {  }
+    };
+
+    struct Sequence : public Binary {
+    public:
+	Sequence (const PathBase* l, const PathBase* r) : Binary(l, r) {  }
+	virtual const URI* from (const TTerm** s, const TTerm** o) const {
+	    *o = NULL;
+	    return l->from(s, o);
+	}
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    struct Alternative : public Binary {
+    public:
+	Alternative (const PathBase* l, const PathBase* r) : Binary(l, r) {  }
+	virtual const URI* from (const TTerm** s, const TTerm** o) const { return NULL; }
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    struct Repeated : public Unary {
+	int min, max;
+    public:
+	Repeated (const PathBase* nested, int min, int max) : Unary(nested), min(min), max(max) {  }
+	virtual const URI* from (const TTerm** s, const TTerm** o) const {
+	    if (min == 0)
+		return NULL;
+	    return nested->from(s, o);
+	}
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    struct Negated : public Unary {
+    public:
+	Negated (const PathBase* nested) : Unary(nested) {  }
+	virtual const URI* from (const TTerm** s, const TTerm** o) const { return NULL; }
+	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
+	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+    };
+
+    PropertyPath (PathBase* root) : TTerm("PropertyPath", ""), root(root) {  }
+    ~PropertyPath () { delete root; }
+
+    virtual std::string toString (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
+	return root->toString(mediaType, namespaces, PathBase::PREC_min);
+    }
+    virtual const char * getToken () { return "-PropertyPath-"; }
+    virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PropertyPath/> <!-- should not appear in XML Results -->"); }
+    virtual std::string toString () const { return root->toString(); }
+    virtual std::string str () const { return root->toString(); }
     virtual void express(Expressor* p_expressor) const {  }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
     bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	throw(std::runtime_error(FUNCTION_STRING));
     }
-    bool matchingTriples(const TriplePattern* start, const BasicGraphPattern* bgp, std::vector<SubObjPair>& tps) const;
+    bool matchingTriples(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const;
+    const URI* from (const TTerm** s, const TTerm** o) const { return root->from(s, o); }
+
+protected:
+    PathBase* root;
+    virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 };
+
+inline std::ostream& operator<< (std::ostream& os, const PropertyPath::SubjObjPairs& sop) {
+    return sop.print(os);
+}
+
+
 class ListTerm : public Bindable {
     friend class AtomFactory;
 protected:
@@ -1670,6 +1801,25 @@ public:
 	const TTerm* var;
 	const TTerm* value;
 	VarValuePair(const TTerm* var, const TTerm* value) : var(var), value(value) {  }
+	std::ostream& print (std::ostream& os) const {
+	    return os << "s(" << var->toString() << "): " << value->toString();
+	}
+    };
+
+    struct VarValuePairs : std::vector<VarValuePair> {
+	std::ostream& print (std::ostream& os) const {
+	    for (const_iterator pair = begin(); pair != end(); ++pair) {
+		if (pair != begin())
+		    os << ", ";
+		pair->print(os);
+	    }
+	    return os;
+	}
+	std::string str () const {
+	    std::stringstream ss;
+	    print(ss);
+	    return ss.str();
+	}
     };
 
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<ListTerm/> <!-- should not appear in XML Results -->"); }
@@ -1679,15 +1829,22 @@ public:
     bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
 	throw(std::runtime_error(FUNCTION_STRING));
     }
-    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, std::vector<VarValuePair>* vec) const = 0;
+    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, VarValuePairs* vec) const = 0;
 };
+inline std::ostream& operator<< (std::ostream& os, const ListTerm::VarValuePair& sop) {
+    return sop.print(os);
+}
+inline std::ostream& operator<< (std::ostream& os, const ListTerm::VarValuePairs& sop) {
+    return sop.print(os);
+}
+
 class Members : public ListTerm {
     ProductionVector<const TTerm*>* m_vars;
 public:
     Members (ProductionVector<const TTerm*>* p_vars) : ListTerm(),  m_vars(p_vars) {  }
     virtual std::string toString() const;
     virtual void express (Expressor* p_expressor) const;
-    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, std::vector<VarValuePair>* vec) const;
+    virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, VarValuePairs* vec) const;
 };
 /* </generators> */
 

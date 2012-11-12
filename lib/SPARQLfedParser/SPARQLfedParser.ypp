@@ -106,6 +106,9 @@ protected:
     bool countStar;
     WhereClause* lastWhereClause;
     location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
+    PropertyPath::PathBase* lastPropertyPathAlternative;
+    PropertyPath::PathBase* lastPropertyPathSequence;
+    PropertyPath::PathBase* lastPropertyPathSetAlternative;
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -315,6 +318,8 @@ public:
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
     bool p_parentCountStar;
+    PropertyPath::PathBase* p_PropertyPath;
+    struct {int min; int max;} p_RepeatRange;
 }
 
 %{
@@ -418,7 +423,19 @@ public:
 	      GraphTerm BlankNode TriplesNode Generator
               DataBlockValue
               GeneratorPath BlankNodePropertyListPath
-              _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple Path PathAlternative PathSequence PathEltOrInverse PathElt PathPrimary
+              _O_QVerbPath_E_Or_QVerbSimple_E_C VerbPath VerbSimple
+
+%type <p_PropertyPath> Path PathAlternative PathElt PathPrimary
+		       PathSequence _O_QGT_PIPE_E_S_QPathSequence_E_C _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star
+		       PathEltOrInverse _O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star
+		       PathNegatedPropertySet PathOneInPropertySet
+		       _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C
+		       _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star
+		       _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C
+		       _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt
+		       _O_Qiri_E_Or_QIT_a_E_C
+
+%type <p_RepeatRange> PathMod _QPathMod_E_Opt
 
 %type <p_TTerms> _QGraphNode_E_Plus _QGraphNodePath_E_Plus
 %type <p_RDFLiteral> RDFLiteral _O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt
@@ -2069,7 +2086,14 @@ _Q_O_QGT_SEMI_E_S_QVerbPath_E_Or_QVerbSimple_E_S_QObjectList_E_Opt_C_E_Star:
 ;
 
 VerbPath:
-    Path	
+    Path	{
+	const URI* t = $1->release();
+	if (!t) {
+	    std::string s = $1->str();
+	    w3c_sw_LINEN << "new PP(" << s << ")\n";
+	}
+	$$ = t ? t : (const TTerm*)new PropertyPath($1);
+    }
 ;
 
 VerbSimple:
@@ -2103,106 +2127,159 @@ Path:
 ;
 
 PathAlternative:
-    PathSequence _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star	
+    PathSequence {
+	$<p_PropertyPath>$ = driver.lastPropertyPathAlternative;
+	driver.lastPropertyPathAlternative = $1;
+      } _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star	{
+	  $$ = $3 ? $3 : $1;
+	  driver.lastPropertyPathAlternative = $<p_PropertyPath>2;
+      }
 ;
 
 _O_QGT_PIPE_E_S_QPathSequence_E_C:
-    GT_PIPE PathSequence	
+    GT_PIPE PathSequence	{
+	$$ = $2;
+    }
 ;
 
 _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star:
-    
-  | _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star _O_QGT_PIPE_E_S_QPathSequence_E_C	
+    {
+	$$ = NULL;
+    }
+  | _Q_O_QGT_PIPE_E_S_QPathSequence_E_C_E_Star _O_QGT_PIPE_E_S_QPathSequence_E_C	{
+	$$ = new PropertyPath::Alternative($1 ? $1 : driver.lastPropertyPathAlternative, $2);
+    }
 ;
 
 PathSequence:
-    PathEltOrInverse _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star	
+    PathEltOrInverse {
+	$<p_PropertyPath>$ = driver.lastPropertyPathSequence;
+	driver.lastPropertyPathSequence = $1;
+      } _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star	{	
+	  $$ = $3 ? $3 : $1;
+	  driver.lastPropertyPathSequence = $<p_PropertyPath>2;
+      }
 ;
 
 _O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C:
     GT_DIVIDE PathEltOrInverse	{
-	w3c_sw_NEED_IMPL("@@@");
+	$$ = $2;
     }
 ;
 
 _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star:
-    
+    {
+	$$ = NULL;
+    }
   | _Q_O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C_E_Star _O_QGT_DIVIDE_E_S_QPathEltOrInverse_E_C	{
-	w3c_sw_NEED_IMPL("@@@");
+	$$ = new PropertyPath::Sequence($1 ? $1 : driver.lastPropertyPathSequence, $2);
     }
 ;
 
 PathElt:
-    PathPrimary _QPathMod_E_Opt	
+    PathPrimary _QPathMod_E_Opt	{
+	$$ = $2.min == 1 && $2.max == 1 ? $1 : new PropertyPath::Repeated($1, $2.min, $2.max);
+    }
 ;
 
 _QPathMod_E_Opt:
-    
-  | PathMod	{
-	w3c_sw_NEED_IMPL("@@@");
+    {
+	$$.min = 1; $$.max = 1;
     }
+  | PathMod	
 ;
 
 PathEltOrInverse:
     PathElt	
   | GT_CARROT PathElt	{
-	w3c_sw_NEED_IMPL("@@@");
+	$$ = new PropertyPath::Inverse($2);
     }
 ;
 
 PathMod:
-    GT_OPT	
-  | GT_TIMES	
-  | GT_PLUS	
+    GT_OPT	{
+	$$.min = 0; $$.max = 1;
+    }
+  | GT_TIMES	{
+	$$.min = 0; $$.max = 999;
+    }
+  | GT_PLUS	{
+	$$.min = 1; $$.max = 999;
+    }
 ;
 
 PathPrimary:
     iri	{
-	$$ = $1;
+	$$ = new PropertyPath::Predicate($1);
     }
   | IT_a	{
-	$$ = TTerm::RDF_type;
+	$$ = new PropertyPath::Predicate(TTerm::RDF_type);
     }
   | GT_NOT PathNegatedPropertySet	{
-	w3c_sw_NEED_IMPL("@@@");
+	$$ = new PropertyPath::Negated($2);
     }
   | GT_LPAREN Path GT_RPAREN	{
-	w3c_sw_NEED_IMPL("@@@");
+	$$ = $2;
     }
 ;
 
 PathNegatedPropertySet:
     PathOneInPropertySet	
-  | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	
+  | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	{
+	$$ = $2;
+    }
 ;
 
 _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C:
-    GT_PIPE PathOneInPropertySet	
+    GT_PIPE PathOneInPropertySet	{
+	$$ = $2;
+    }
 ;
 
 _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star:
-    
-  | _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C	
+    {
+	$$ = NULL;
+    }
+  | _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C	{
+	$$ = new PropertyPath::Alternative($1 ? $1 : driver.lastPropertyPathSetAlternative, $2);
+    }
 ;
 
 _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C:
-    PathOneInPropertySet _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star	
+    PathOneInPropertySet {
+	$<p_PropertyPath>$ = driver.lastPropertyPathSetAlternative;
+	driver.lastPropertyPathSetAlternative = $1;
+      } _Q_O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C_E_Star	{
+	  driver.lastPropertyPathSetAlternative = $<p_PropertyPath>$;
+      }
 ;
 
 _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt:
-    
+    {
+	$$ = NULL;
+    }
   | _O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C	
 ;
 
 PathOneInPropertySet:
-    iri	
-  | IT_a	
-  | GT_CARROT _O_Qiri_E_Or_QIT_a_E_C	
+    iri	{
+	$$ = new PropertyPath::Predicate($1);
+    }
+  | IT_a	{
+	$$ = new PropertyPath::Predicate(TTerm::RDF_type);
+    }
+  | GT_CARROT _O_Qiri_E_Or_QIT_a_E_C	{
+	$$ = new PropertyPath::Inverse($2);
+    }
 ;
 
 _O_Qiri_E_Or_QIT_a_E_C:
-    iri	
-  | IT_a	
+    iri	{
+	$$ = new PropertyPath::Predicate($1);
+    }
+  | IT_a	{
+	$$ = new PropertyPath::Predicate(TTerm::RDF_type);
+    }
 ;
 
 // </path expressions>

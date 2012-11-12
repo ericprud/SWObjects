@@ -1,0 +1,3 @@
+SELECT * {
+  MEMBERS(?s) <p1>/<p2> MEMBERS(?o)
+}

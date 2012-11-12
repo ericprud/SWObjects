@@ -2970,12 +2970,17 @@ compared against
 		const TTerm* s = (*constraint)->getS();
 		if ((*BasicGraphPattern::MappableTerm)(s))
 		    s = (*row)->get(s);
-		const TTerm* p = (*constraint)->getP();
-		if ((*BasicGraphPattern::MappableTerm)(p))
-		    p = (*row)->get(p);
+
 		const TTerm* o = (*constraint)->getO();
 		if ((*BasicGraphPattern::MappableTerm)(o))
 		    o = (*row)->get(o);
+
+		const TTerm* p = (*constraint)->getP();
+		const PropertyPath* asPP = dynamic_cast<const PropertyPath*>(p);
+		if (asPP != NULL)
+		    p = asPP->from(&s, &o);
+		else if ((*BasicGraphPattern::MappableTerm)(p))
+		    p = (*row)->get(p);
 
 		triple_iterator mi = getTripleIterator(s, p, o);
 		triple_iterator end;
@@ -3022,9 +3027,19 @@ compared against
     }
     BasicGraphPattern::triple_iterator BasicGraphPattern::getTripleIterator (const TTerm* s, const TTerm* p, const TTerm* o) const {
 	if (s)
-	    if (p)
-		return triple_iterator(SP.get(s, p));
-	    else if (o)
+	    if (p) {
+		TTerm2Triple_range r = SP.get(s, p);
+		if (o) {
+		    for (TTerm2Triple_type::const_iterator t = r.first; t != r.second; ++t)
+			if (t->second->getO() == o) {
+			    TTerm2Triple_type::const_iterator e = t;
+			    ++e;
+			    return triple_iterator(TTerm2Triple_range(t, e));
+			}
+		    return triple_iterator(TTerm2Triple_range());
+		}
+		return triple_iterator(r);
+	    } else if (o)
 		return triple_iterator(OS.get(o, s));
 	    else {
 		return triple_iterator(SP.get(s));
@@ -3085,7 +3100,7 @@ compared against
 
     const TTerm* BasicGraphPattern::expectOneSubject (const TTerm* p, const TTerm* o) const {
 	BasicGraphPattern::TTerm2Triple_range inner = PO.get(p, o);
-	if (inner == TTerm2Triple_range())
+	if (inner.first == inner.second)
 	    throw GraphStructureError(std::string() + "no " + o->toString() + " found", "expectOneSubject");
 	BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
 	const TTerm* ret = triple->second->getS();
@@ -3095,7 +3110,7 @@ compared against
     }
     std::set<const TTerm*> BasicGraphPattern::expectNSubjects (const TTerm* p, const TTerm* o) const {
 	BasicGraphPattern::TTerm2Triple_range inner = PO.get(p, o);
-	if (inner == TTerm2Triple_range())
+	if (inner.first == inner.second)
 	    throw GraphStructureError(std::string() + "no " + o->toString() + " found", "expectOneSubject");
 	std::set<const TTerm*> ret;
 	for (BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
@@ -3105,32 +3120,161 @@ compared against
     }
 
     const TTerm* BasicGraphPattern::expectOneObject (const TTerm* s, const TTerm* p) const {
-	BasicGraphPattern::TTerm2Triple_range inner = SP.get(s, p);
-	if (inner == TTerm2Triple_range())
-	    throw GraphStructureError(std::string() + "no " + p->toString() + " found", "expectOneObject");
-	BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
-	const TTerm* ret = triple->second->getO();
+	TTerm2Triple_range inner = SP.get(s, p);
+	if (inner.first == inner.second)
+	    throw GraphStructureError("expectOneObject", "match {" + s->toString() + ", " + p->toString() + ", _} -- no triples matched");
+	TTerm2Triple_type::const_iterator triple = inner.first;
+	const TriplePattern* found = triple->second;
+	const TTerm* ret = found->getO();
 	if (++triple != inner.second)
-	    throw GraphStructureError(std::string() + "two " + p->toString() + "s found", "expectOneObject");
+	    throw GraphStructureError("expectOneObject",
+				      "match {" + s->toString() + ", " + p->toString() + ", _} -- two "
+				      + p->toString() + "s found: " + found->toString()
+				      + " and " + triple->second->toString());
 	return ret;
     }
     std::set<const TTerm*> BasicGraphPattern::expectNObjects (const TTerm* s, const TTerm* p) const {
-	BasicGraphPattern::TTerm2Triple_range inner = SP.get(s, p);
-	if (inner == TTerm2Triple_range())
+	TTerm2Triple_range inner = SP.get(s, p);
+	if (inner.first == inner.second)
 	    throw GraphStructureError(std::string() + "no " + s->toString() + " found", "expectOneObject");
 	std::set<const TTerm*> ret;
-	for (BasicGraphPattern::TTerm2Triple_type::const_iterator triple = inner.first;
+	for (TTerm2Triple_type::const_iterator triple = inner.first;
 	     triple != inner.second; ++triple)
 	    ret.insert(triple->second->getO());
 	return ret;
     }
 
-    bool PredicatePath::matchingTriples (const TriplePattern* start, const BasicGraphPattern* bgp, std::vector<SubObjPair>& tps) const {
-	tps.push_back(SubObjPair(start->getS(), start->getO())); // !!!!
+    std::string PropertyPath::PathBase::str () const { return toString(); } // for easy invocation
+
+    bool PropertyPath::Predicate::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	// w3c_sw_LINEN << "start: " << start->str() << "\n";
+	// w3c_sw_LINEN << "this: " << str() << "\n";
+	const TTerm* s = start->getS();
+	const TTerm* o = start->getO();
+	BasicGraphPattern::triple_iterator mi = bgp->getTripleIterator(s, uri, o);
+	BasicGraphPattern::triple_iterator end;
+	if (!(mi != end))
+	    return false;
+	for ( ; mi != end; ++mi)
+	    tps->push_back(
+			   inverse ? SubjObjPair((*mi)->getO(), (*mi)->getS()) :
+			   SubjObjPair((*mi)->getS(), (*mi)->getO()));
+	// w3c_sw_LINEN << "ret: " << *tps << "\n";
 	return true;
+	if (uri ==  start->getP()) {
+	    tps->push_back(SubjObjPair(start->getS(), start->getO()));
+	    return true;
+	}
+	return false;
+    }
+    std::string PropertyPath::Predicate::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence /* prec */) const {
+	return uri->toString(); // mediaType, namespaces
     }
 
-    bool Members::getListElements (const TTerm* from, const BasicGraphPattern* data, std::vector<VarValuePair>* vec) const {
+    bool PropertyPath::Inverse::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	// return false;
+	return nested->walk(start, bgp, tps, !inverse, negated);
+    }
+    std::string PropertyPath::Inverse::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	return parens(prec, PREC_Inverse,
+		      "^" + nested->toString(mediaType, namespaces, PREC_Inverse));
+    }
+
+    bool PropertyPath::Sequence::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	SubjObjPairs leftMatches;
+	if (!l->walk(start, bgp, &leftMatches, inverse, negated))
+	    return false;
+
+	bool matched = false;
+	for (SubjObjPairs::const_iterator lefts = leftMatches.begin();
+	     lefts != leftMatches.end(); ++lefts) {
+	    const TTerm* s = inverse ? lefts->subj : lefts->obj;
+	    const TTerm* o = NULL;
+	    const TTerm* p = r->from(&s, &o);
+	    BasicGraphPattern::triple_iterator lit = bgp->getTripleIterator(s, p, o);
+	    BasicGraphPattern::triple_iterator end;
+
+	    for ( ; lit != end; ++lit) {
+		SubjObjPairs rightMatches;
+		if (r->walk(*lit, bgp, &rightMatches, inverse, negated)) {
+		    for (SubjObjPairs::const_iterator rights = rightMatches.begin();
+			 rights != rightMatches.end(); ++rights)
+			tps->push_back(inverse ? SubjObjPair(rights->subj, lefts->obj) :
+				       SubjObjPair(lefts->subj, rights->obj));
+		    matched = true;
+		}
+	    }
+	}
+	return matched;
+    }
+    std::string PropertyPath::Sequence::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	return parens(prec, PREC_Sequence,
+		      l->toString(mediaType, namespaces, PREC_Sequence)
+		      + "/" + r->toString(mediaType, namespaces, PREC_Sequence));
+    }
+
+    bool PropertyPath::Alternative::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	// return false;
+	return l->walk(start, bgp, tps, inverse, negated) || r->walk(start, bgp, tps, inverse, negated);
+    }
+    std::string PropertyPath::Alternative::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	return parens(prec, PREC_Alternative, "^"
+		      + l->toString(mediaType, namespaces, PREC_Alternative)
+		      + "|" + r->toString(mediaType, namespaces, PREC_Alternative));
+    }
+
+    bool PropertyPath::Repeated::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	bool matched = min == 0; // can't fail if you're permitted to match 0.
+
+	// SubjObjPairs subMatches;
+	// for (int i = 0; i < min; ++i) {
+	//     if (!nested->walk(start, bgp, &leftMatches, inverse, negated))
+	//     return false;
+
+	// for (SubjObjPairs::const_iterator lefts = leftMatches.begin();
+	//      lefts != leftMatches.end(); ++lefts) {
+	//     BasicGraphPattern::triple_iterator lit = bgp->getTripleIterator(lefts->obj, r->from(), NULL);
+	//     BasicGraphPattern::triple_iterator end;
+
+	//     for ( ; lit != end; ++lit) {
+	// 	SubjObjPairs rightMatches;
+	// 	if (r->walk(*lit, bgp, &rightMatches, inverse, negated)) {
+	// 	    for (SubjObjPairs::const_iterator rights = rightMatches.begin();
+	// 		 rights != rightMatches.end(); ++rights)
+	// 		tps->push_back(SubjObjPair(lefts->subj, rights->obj));
+	// 	    matched = true;
+	// 	}
+	//     }
+	// }
+	return matched;
+    }
+    std::string PropertyPath::Repeated::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	return parens(prec, PREC_Repeated,
+		      "^" + nested->toString(mediaType, namespaces, PREC_Repeated));
+    }
+
+    bool PropertyPath::Negated::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
+	// return false;
+	return nested->walk(start, bgp, tps, !inverse, negated);
+    }
+    std::string PropertyPath::Negated::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {
+	return parens(prec, PREC_Negated,
+		      "^" + nested->toString(mediaType, namespaces, PREC_Negated));
+    }
+
+
+    bool PropertyPath::matchingTriples (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const {
+	// return false;
+	return root->walk(start, bgp, &tps, false, false);
+	Predicate* p = dynamic_cast<Predicate*>(root);
+	if (p != NULL && start->getP() == p->uri) {
+	    tps.push_back(SubjObjPair(start->getS(), start->getO())); // !!!!
+	    return true;
+	}
+	return false;
+    }
+
+    bool Members::getListElements (const TTerm* from, const BasicGraphPattern* data, VarValuePairs* vec) const {
 	std::vector<const TTerm*>::const_iterator curVar = m_vars->begin();
 	for (; from != TTerm::RDF_nil;) {
 	    vec->push_back(VarValuePair(*curVar, data->expectOneObject(from, TTerm::RDF_first)));
@@ -3588,45 +3732,55 @@ compared against
 	    return false;
 	}
 
-	std::vector<PredicatePath::SubObjPair> soPairs;
-	const PredicatePath* asPath = dynamic_cast<const PredicatePath*>(m_p);
+	PropertyPath::SubjObjPairs soPairs;
+	const PropertyPath* asPath = dynamic_cast<const PropertyPath*>(m_p);
 	if (asPath == NULL) {
 	    if (!m_p->bindVariable(tp->m_p, rs, rowWithGandPbound, weaklyBound)) {
 		delete rowWithGandPbound;
 		return false;
 	    }
-	    soPairs.push_back(PredicatePath::SubObjPair(tp->getS(), tp->getO()));
+	    soPairs.push_back(PropertyPath::SubjObjPair(tp->getS(), tp->getO()));
 	} else {
+	    const TTerm* s = getS();
+	    if ((*BasicGraphPattern::MappableTerm)(s))
+		s = (*row)->get(s);
+
+	    const TTerm* o = getO();
+	    if ((*BasicGraphPattern::MappableTerm)(o))
+		o = (*row)->get(o);
+
 	    if (!asPath->matchingTriples(tp, data, soPairs)) {
 		delete rowWithGandPbound;
 		return false;		
 	    }
 	}
 	bool ret = false;
-	for (std::vector<PredicatePath::SubObjPair>::const_iterator curTP = soPairs.begin();
+	for (PropertyPath::SubjObjPairs::const_iterator curTP = soPairs.begin();
 	     curTP != soPairs.end(); ++curTP) {
 
-	    std::vector<ListTerm::VarValuePair> subjects, objects;
+	    ListTerm::VarValuePairs subjects, objects;
 
 	    const ListTerm* sAsListTerm = dynamic_cast<const ListTerm*>(m_s);
 	    if (sAsListTerm == NULL)
-		subjects.push_back(ListTerm::VarValuePair(m_s, tp->m_s));
+		subjects.push_back(ListTerm::VarValuePair(m_s, curTP->subj));
 	    else
 		if (!sAsListTerm->getListElements(curTP->subj, data, &subjects))
 		    return false;
 
 	    const ListTerm* oAsListTerm = dynamic_cast<const ListTerm*>(m_o);
 	    if (oAsListTerm == NULL)
-		objects.push_back(ListTerm::VarValuePair(m_o, tp->m_o));
+		objects.push_back(ListTerm::VarValuePair(m_o, curTP->obj));
 	    else
 		if (!oAsListTerm->getListElements(curTP->obj, data, &objects))
 		    return false;
 
-	    for (std::vector<ListTerm::VarValuePair>::const_iterator curS = subjects.begin();
+	    for (ListTerm::VarValuePairs::const_iterator curS = subjects.begin();
 		 curS != subjects.end(); ++curS) {
-		for (std::vector<ListTerm::VarValuePair>::const_iterator curO = objects.begin();
+		for (ListTerm::VarValuePairs::const_iterator curO = objects.begin();
 		     curO != objects.end(); ++curO) {
 		    Result* provisional = rowWithGandPbound->duplicate(rs, row);
+		    // w3c_sw_LINEN << "curS: " << *curS << "\n";
+		    // w3c_sw_LINEN << "curO: " << *curO << "\n";
 		    if (curS->var->bindVariable(curS->value, rs, provisional, weaklyBound) &&
 			curO->var->bindVariable(curO->value, rs, provisional, weaklyBound)) {
 			rs->insert(row, provisional);
