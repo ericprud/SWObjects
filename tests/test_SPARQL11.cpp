@@ -252,6 +252,12 @@ BOOST_AUTO_TEST_CASE( namedsolist_pp_inv_seq ) {
     const URI** requires = NULL;
     DAWG_TEST("generators/solist_inv__p1_p2.rq", "generators/solist.srt", 0, 0);
 }
+BOOST_AUTO_TEST_CASE( namedsolist_pp_inv_p1__p2 ) {
+    const char* defaultGraph( "generators/namedsolist_inv_p1__p2.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("generators/solist_inv_p1__p2.rq", "generators/solist.srt", 0, 0);
+}
 BOOST_AUTO_TEST_SUITE_END(/* generators */)
 
 

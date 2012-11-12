@@ -1,0 +1,19 @@
+# named (sort of skolemized) version of: (0 1 2) <p2> (7 8 9) .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+<slist0> a rdf:List ;
+        rdf:first 0 ; rdf:rest <slist1> .
+<slist1> a rdf:List ;
+        rdf:first 1 ; rdf:rest <slist2> .
+<slist2> a rdf:List ;
+        rdf:first 2 ; rdf:rest rdf:nil .
+
+<olist7> a rdf:List ;
+        rdf:first 7 ; rdf:rest <olist8> .
+<olist8> a rdf:List ;
+        rdf:first 8 ; rdf:rest <olist9> .
+<olist9> a rdf:List ;
+        rdf:first 9 ; rdf:rest rdf:nil .
+
+<node1> <p1> <slist0> .
+<node1> <p2> <olist7> .
