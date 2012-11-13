@@ -1659,10 +1659,57 @@ public:
 	}
     };
 
+    /** TriplesTemplate: (TTerm | NULL)s for matching triples indexes. 
+     */
+    struct TriplesTemplate {
+	const TTerm *s, *p, *o;
+	TriplesTemplate (const TTerm* s, const TTerm* p, const TTerm* o)
+	    : s(s), p(p), o(o)
+	{  }
+	bool operator== (const TriplesTemplate& r) const {
+	    return s == r.s && p == r.p && o == r.o;
+	}
+	static bool lt (const TTerm* l, const TTerm* r) {
+	    if (l == r) return false;
+	    if (l == NULL) return true;
+	    if (r == NULL) return false;
+	    return *l < *r;
+	}
+	bool operator< (const TriplesTemplate& r) const {
+	    return
+		s != r.s ? lt(s, r.s) :
+		p != r.p ? lt(p, r.p) :
+		o != r.o ? lt(o, r.o) :
+		false;
+	}
+	std::ostream& print (std::ostream& os) const {
+	    return os << "{{ "
+		      << (s ? s->toString() : "_") << ", "
+		      << (p ? p->toString() : "_") << ", "
+		      << (o ? o->toString() : "_")
+		      << " }}";
+	}
+    };
+    struct TriplesTemplates : std::set<TriplesTemplate> {
+	std::string str () const {
+	    std::stringstream ss;
+	    print(ss);
+	    return ss.str();
+	}
+	std::ostream& print (std::ostream& os) const {
+	    for (const_iterator it = begin(); it != end(); ++it) {
+		if (it != begin())
+		    os << "\n";
+		it->print(os);
+	    }
+	    return os;
+	}
+    };
+
     struct PathBase {
     public:
 	virtual const URI* release () { return NULL; }
-	virtual const URI* from(const TTerm** s, const TTerm** o) const = 0;
+	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const = 0;
 	typedef enum {
 	    PREC_ERROR = 0, PREC_min,
 	    PREC_Alternative, PREC_Sequence, PREC_Inverse, PREC_Repeated, PREC_Negated, PREC_Predicate,
@@ -1691,7 +1738,11 @@ public:
 	    delete this;
 	    return ret;
 	}
-	virtual const URI* from (const TTerm** s, const TTerm** o) const { return uri; }
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    TriplesTemplates ret;
+	    ret.insert(TriplesTemplate(s, uri, o));
+	    return ret;
+	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
     };
@@ -1705,11 +1756,8 @@ public:
     struct Inverse : public Unary {
     public:
 	Inverse (const PathBase* nested) : Unary(nested) {  }
-	virtual const URI* from (const TTerm** s, const TTerm** o) const {
-	    const TTerm* t = *s;
-	    *s = *o;
-	    *o = t;
-	    return nested->from(s, o);
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    return nested->from(o, s);
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
@@ -1725,9 +1773,8 @@ public:
     struct Sequence : public Binary {
     public:
 	Sequence (const PathBase* l, const PathBase* r) : Binary(l, r) {  }
-	virtual const URI* from (const TTerm** s, const TTerm** o) const {
-	    *o = NULL;
-	    return l->from(s, o);
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    return l->from(s, NULL);
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
@@ -1736,7 +1783,13 @@ public:
     struct Alternative : public Binary {
     public:
 	Alternative (const PathBase* l, const PathBase* r) : Binary(l, r) {  }
-	virtual const URI* from (const TTerm** s, const TTerm** o) const { return NULL; }
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    TriplesTemplates ret = l->from(s, o);
+	    TriplesTemplates rret = r->from(s, o);
+	    for (TriplesTemplates::const_iterator it = rret.begin(); it != rret.end(); ++it)
+		ret.insert(*it);
+	    return ret;
+	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
     };
@@ -1746,9 +1799,12 @@ public:
     public:
 	const static unsigned Unlimited = ~0U;
 	Repeated (const PathBase* nested, int min, int max) : Unary(nested), min(min), max(max) {  }
-	virtual const URI* from (const TTerm** s, const TTerm** o) const {
-	    if (min == 0)
-		return NULL;
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    // if (min == 0) {
+	    // 	TriplesTemplates ret;
+		
+	    // 	return NULL;
+	    // }
 	    return nested->from(s, o);
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
@@ -1758,7 +1814,13 @@ public:
     struct Negated : public Unary {
     public:
 	Negated (const PathBase* nested) : Unary(nested) {  }
-	virtual const URI* from (const TTerm** s, const TTerm** o) const { return NULL; }
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	    TriplesTemplates n = nested->from(s, o);
+	    TriplesTemplates ret;
+	    for (TriplesTemplates::const_iterator it = n.begin(); it != n.end(); ++it)
+		ret.insert(TriplesTemplate(it->s, NULL, it->o));
+	    return ret;
+	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
     };
@@ -1779,7 +1841,7 @@ public:
 	throw(std::runtime_error(FUNCTION_STRING));
     }
     bool matchingTriples(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const;
-    const URI* from (const TTerm** s, const TTerm** o) const { return root->from(s, o); }
+    TriplesTemplates from (const TTerm* s, const TTerm* o) const { return root->from(s, o); }
 
 protected:
     PathBase* root;
@@ -1792,6 +1854,13 @@ inline std::ostream& operator<< (std::ostream& os, const PropertyPath::SubjObjPa
 
 inline bool operator< (const PropertyPath::SubjObjPair& l, const PropertyPath::SubjObjPair& r) {
     return l.subj == r.subj ? *l.obj < *r.obj : *l.subj < *r.subj;
+}
+
+inline std::ostream& operator<< (std::ostream& os, const PropertyPath::TriplesTemplate& tp) {
+    return tp.print(os);
+}
+inline std::ostream& operator<< (std::ostream& os, const PropertyPath::TriplesTemplates& tps) {
+    return tps.print(os);
 }
 
 class ListTerm : public Bindable {
