@@ -3156,7 +3156,7 @@ compared against
     bool PropertyPath::Predicate::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
 	// w3c_sw_LINEN << "start: " << start->str() << "\n";
 	// w3c_sw_LINEN << "this: " << str() << "\n";
-	if (negated ^ start->getP() == uri) {
+	if (negated ^ (start->getP() == uri)) {
 	    tps->push_back(inverse
 			   ? SubjObjPair(start->getO(), start->getS())
 			   : SubjObjPair(start->getS(), start->getO()));
@@ -3250,29 +3250,66 @@ compared against
 		      + "|" + r->toString(mediaType, namespaces, PREC_Alternative));
     }
 
+    std::map<const PropertyPath::Repeated*, std::set<PropertyPath::SubjObjPair> > Seen;
+    PropertyPath::TriplesTemplates PropertyPath::Repeated::from (const TTerm* s, const TTerm* o) const {
+	Seen[this].clear();
+	TriplesTemplates ret;
+	ret.insert(TriplesTemplate(s, NULL, o));
+	return ret;
+    }
     bool PropertyPath::Repeated::walk (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool inverse, bool negated) const {
 	bool matched = min == 0; // can't fail if you're permitted to match 0.
 
-	// SubjObjPairs subMatches;
-	// for (int i = 0; i < min; ++i) {
-	//     if (!nested->walk(start, bgp, &leftMatches, inverse, negated))
-	//     return false;
+	SubjObjPairs alreadyMatched;
+	if (Seen[this].insert(SubjObjPair(start->getS(), start->getS())).second)
+	    alreadyMatched.push_back(SubjObjPair(start->getS(), start->getS()));
+	if (Seen[this].insert(SubjObjPair(start->getO(), start->getO())).second)
+	    alreadyMatched.push_back(SubjObjPair(start->getO(), start->getO()));
 
-	// for (SubjObjPairs::const_iterator lefts = leftMatches.begin();
-	//      lefts != leftMatches.end(); ++lefts) {
-	//     BasicGraphPattern::triple_iterator lit = bgp->getTripleIterator(lefts->obj, r->from(), NULL);
-	//     BasicGraphPattern::triple_iterator end;
+	Seen[this].insert(alreadyMatched.begin(), alreadyMatched.end());
 
-	//     for ( ; lit != end; ++lit) {
-	// 	SubjObjPairs rightMatches;
-	// 	if (r->walk(*lit, bgp, &rightMatches, inverse, negated)) {
-	// 	    for (SubjObjPairs::const_iterator rights = rightMatches.begin();
-	// 		 rights != rightMatches.end(); ++rights)
-	// 		tps->push_back(SubjObjPair(lefts->subj, rights->obj));
-	// 	    matched = true;
-	// 	}
-	//     }
-	// }
+	if (min == 0)
+	    // copy alreadyMatched into tps
+	    for (SubjObjPairs::const_iterator p = alreadyMatched.begin();
+		 p != alreadyMatched.end(); ++p)
+		tps->push_back(*p);
+
+	for (unsigned int generation = 1; generation <= max && alreadyMatched.size() > 0; ++generation) {
+	    // w3c_sw_LINEN << start->str() << " generation " << generation << ": alreadyMatched:\n" << alreadyMatched;
+	    SubjObjPairs nextMatches;
+	    for (SubjObjPairs::const_iterator lefts = alreadyMatched.begin();
+		 lefts != alreadyMatched.end(); ++lefts) {
+		const TTerm* s = inverse ? lefts->subj : lefts->obj;
+		const TTerm* o = NULL;
+		TriplesTemplates templates = nested->from(s, o);
+		for (PropertyPath::TriplesTemplates::const_iterator tmplate = templates.begin();
+		     tmplate != templates.end(); ++tmplate) {
+		    BasicGraphPattern::triple_iterator lit = bgp->getTripleIterator(tmplate->s, tmplate->p, tmplate->o);
+		    BasicGraphPattern::triple_iterator end;
+
+		    for ( ; lit != end; ++lit) {
+			SubjObjPairs nestedMatches;
+			if (nested->walk(*lit, bgp, &nestedMatches, inverse, negated)) {
+			    for (SubjObjPairs::const_iterator rights = nestedMatches.begin();
+				 rights != nestedMatches.end(); ++rights) {
+				SubjObjPair insertMe =
+				    inverse ? SubjObjPair(rights->subj, lefts->obj)
+				    : SubjObjPair(lefts->subj, rights->obj);
+				if (Seen[this].insert(insertMe).second)
+				    nextMatches.push_back(insertMe);
+			    }
+			    matched = true;
+			}
+		    }
+		}
+	    }
+	    alreadyMatched = nextMatches;
+	    if (generation >= min)
+		// copy alreadyMatched into tps
+		for (SubjObjPairs::const_iterator p = alreadyMatched.begin();
+		     p != alreadyMatched.end(); ++p)
+		    tps->push_back(*p);
+	}
 	return matched;
     }
     std::string PropertyPath::Repeated::toString (MediaType mediaType, NamespaceMap* namespaces, e_Precedence prec) const {

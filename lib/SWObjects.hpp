@@ -1799,14 +1799,7 @@ public:
     public:
 	const static unsigned Unlimited = ~0U;
 	Repeated (const PathBase* nested, int min, int max) : Unary(nested), min(min), max(max) {  }
-	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
-	    // if (min == 0) {
-	    // 	TriplesTemplates ret;
-		
-	    // 	return NULL;
-	    // }
-	    return nested->from(s, o);
-	}
+	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const;
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
     };
@@ -1847,6 +1840,10 @@ protected:
     PathBase* root;
     virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 };
+
+inline std::ostream& operator<< (std::ostream& os, const PropertyPath::SubjObjPair& sop) {
+    return sop.print(os);
+}
 
 inline std::ostream& operator<< (std::ostream& os, const PropertyPath::SubjObjPairs& sop) {
     return sop.print(os);

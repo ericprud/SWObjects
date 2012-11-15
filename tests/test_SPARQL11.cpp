@@ -261,7 +261,6 @@ BOOST_AUTO_TEST_CASE( namedsolist_pp_inv_p1__p2 ) {
 BOOST_AUTO_TEST_SUITE_END(/* generators */)
 
 
-#ifdef SPARQL11_ALL
 BOOST_AUTO_TEST_SUITE( SPARQL11_WG )
 // Popluate with:
 // tests$ sparql -d data-sparql11/manifest-all.ttl -e '
@@ -1245,7 +1244,6 @@ BOOST_AUTO_TEST_CASE( projexp07 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/project-expression/projexp07.rq", "data-sparql11/project-expression/projexp07.srx", 0, 0);
 }
-#ifdef SPARQL11_PPATH
 BOOST_AUTO_TEST_CASE( pp01 ) {
     /* name: (pp01) Simple path */
     const char* defaultGraph( "data-sparql11/property-path/pp01.ttl");
@@ -1414,7 +1412,6 @@ BOOST_AUTO_TEST_CASE( pp37 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/property-path/pp37.rq", "data-sparql11/property-path/pp37.srx", 0, 0);
 }
-#endif /* SPARQL11_PPATH */
 BOOST_AUTO_TEST_CASE( subquery01 ) {
     /* name: sq01 - Subquery within graph pattern */
     const char* defaultGraph( NULL);
@@ -1514,7 +1511,6 @@ BOOST_AUTO_TEST_CASE( subquery14 ) {
     DAWG_TEST("data-sparql11/subquery/sq14.rq", "data-sparql11/subquery/sq14-out.ttl", 0, 0);
 }
 BOOST_AUTO_TEST_SUITE_END(/* SPARQL11_WG */)
-#endif /* SPARQL11_ALL */
 
 // EOF
 
