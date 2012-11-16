@@ -1,3 +1,5 @@
 *.dep
 *.o
+/.emacs.desktop
+/.emacs.desktop.lock
 /config.h
