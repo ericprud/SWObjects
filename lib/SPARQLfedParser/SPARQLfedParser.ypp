@@ -1522,7 +1522,7 @@ QuadsNotTriples:
 	driver.curOp = NULL;
       } _QTriplesTemplate_E_Opt GT_RCURLEY	{
 	  driver.curBGP = NULL;
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, new GraphGraphPattern($3, driver.curOp));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, new GraphGraphPattern($3, driver.ensureGraphPattern()));
 	  driver.curGraphName = $<p_TTerm>4;
       }
 ;
@@ -1643,7 +1643,7 @@ GraphPatternNotTriples:
 
 Print:
     IT_PRINT GroupGraphPattern	{
-	driver.curOp = new Print(driver.curOp);
+	driver.curOp = new Print(driver.ensureGraphPattern());
     }
 ;
 
@@ -1675,7 +1675,7 @@ GraphGraphPattern:
 	  driver.curGraphName = $4;
       } GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.ensureGraphPattern()));
 	  driver.curGraphName = $<p_TTerm>5;
       }
 ;
@@ -1689,7 +1689,7 @@ ServiceGraphPattern:
 	  $<p_ParserFilter>$ = driver.saveFilter();
       } _QIT_SILENT_E_Opt VarOrIri GroupGraphPattern	{
 	  driver.restoreFilter($<p_ParserFilter>3);
-	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.curOp, $4, driver.atomFactory, false));
+	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.ensureGraphPattern(), $4, driver.atomFactory, false));
       }
 ;
 
