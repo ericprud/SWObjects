@@ -167,7 +167,7 @@ struct MeasuredRS : public ResultSet {
 std::ostream& operator<< (std::ostream& os, MeasuredRS const& my) {
     os << "Database: " << my.d;
     os << "query: " << *sparqlParser.root;
-    os << "result:\n";
+    os << "\nresult:\n";
 
     if (my.isOrdered())
 	return operator<<(os, (ResultSet&)my);
