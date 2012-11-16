@@ -138,9 +138,6 @@ namespace w3c_sw {
 		++matched;
 	    }
 	} else {
-	    ResultSet island(rs->getAtomFactory());
-	    delete *(island.begin());
-	    island.erase(island.begin());
 	    /* Multi-graph match algorithm:
 	     * for each graph
 	     *     BasicGraphPattern::bindVariables(... ?graph, foundGraph)
@@ -151,18 +148,50 @@ namespace w3c_sw {
 	     * only iterate across graphs if ?graph is unbound. Could decide by:
 	     *   rs->first()->get(?graph) == TTerm::Unbound
 	     */
-	    for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
-		if (!isDefaultGraph(vi->first)) {
-		    ResultSet disjoint(rs->getAtomFactory());
-		    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
-		    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
-			island.insert(island.end(), (*row)->duplicate(&island, island.end()));
-			delete *row;
-			row = disjoint.erase(row);
+	    for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+		ResultSet* single = (*outerRow)->makeResultSet(rs->getAtomFactory());
+		const TTerm* graphName = (*outerRow)->get(graph);
+		if (graphName != NULL) {
+		    BasicGraphPattern* found = findGraph(graphName);
+		    if (found == NULL) {
+			w3c_sw_LINEN << "loading " << graphName->toString() << "\n";
+			IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
+			found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
+			const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 
+							   graphName->getLexicalValue(), rs->getAtomFactory());
 		    }
-		    ++matched;
+		    if (found != NULL) {
+			found->bindVariables(single, toMatch, graphName, graphName);
+			++matched;
+		    }
+		} else {
+		    ResultSet island(rs->getAtomFactory());
+		    delete *(island.begin());
+		    island.erase(island.begin());
+		    for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
+			if (!isDefaultGraph(vi->first)) {
+			    ResultSet disjoint(rs->getAtomFactory());
+			    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
+			    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+				island.insert(island.end(), (*row)->duplicate(&island, island.end()));
+				delete *row;
+				row = disjoint.erase(row);
+			    }
+			    ++matched;
+			}
+		    single->joinIn(&island);
 		}
-	    rs->joinIn(&island, NULL);
+		const VariableList* innerVars = single->getKnownVars();
+		for (VariableList::const_iterator v = innerVars->begin(); v != innerVars->end(); ++v)
+		    rs->addKnownVar(*v);
+		for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
+		    rs->insert(outerRow, *innerRow);
+		    innerRow = single->erase(innerRow);
+		}
+		delete single;
+		delete *outerRow;
+		outerRow = rs->erase(outerRow);
+	    }
 	}
 	if (matched == 0)
 	    for (ResultSetIterator it = rs->begin(); it != rs->end(); ) {
