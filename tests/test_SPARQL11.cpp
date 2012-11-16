@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE( agg_empty_group ) {
     const char* defaultGraph( "data-sparql11/aggregates/empty.ttl");
     const char** namedGraphs = NULL;
     const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/aggregates/agg-empty-group.rq", "data-sparql11/aggregates/agg-empty-group.srx", 0, 0);
+    DAWG_TEST("data-sparql11/aggregates/agg-empty-group.rq", "data-sparql11/aggregates/agg-empty-group2.srx", 0, 0);
 }
 BOOST_AUTO_TEST_CASE( bind01 ) {
     /* name: bind01 - BIND */
