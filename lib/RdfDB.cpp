@@ -12,6 +12,7 @@
 namespace w3c_sw {
 
     size_t RdfDB::DebugEnumerateLimit = 50;
+    bool RdfDB::GetGraphArguments = false;
 
     RdfDB::HandlerSet RdfDB::defaultHandler;
 
@@ -128,76 +129,78 @@ namespace w3c_sw {
 
     void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const {
 	if (graph == NULL) graph = DefaultGraph;
-	size_t matched = 0;
 
 	/* Look in each candidate graph. */
 	if (graph->isConstant()) {
 	    const BasicGraphPattern* found = findGraph(graph);
-	    if (found != NULL) {
+	    if (found != NULL)
 		found->bindVariables(rs, toMatch, graph, graph);
-		++matched;
-	    }
 	} else {
-	    /* Multi-graph match algorithm:
-	     * for each graph
-	     *     BasicGraphPattern::bindVariables(... ?graph, foundGraph)
-	     *         for each rs row...
-	     * 
-	     * The lack of SPOG index means we always iterate across all graphs.
-	     * It could be cheaper to iterate across rows in the result set and
-	     * only iterate across graphs if ?graph is unbound. Could decide by:
-	     *   rs->first()->get(?graph) == TTerm::Unbound
+
+	    /* Variable graph name so we have to look in row to see whether the graph variable is bound.
+	     * Fortunately, the JoinCache keeps us from executing identical matches on duplicate rows.
 	     */
+	    JoinCache jc;
 	    for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
-		ResultSet* single = (*outerRow)->makeResultSet(rs->getAtomFactory());
-		const TTerm* graphName = (*outerRow)->get(graph);
-		if (graphName != NULL) {
-		    BasicGraphPattern* found = findGraph(graphName);
-		    if (found == NULL) {
-			w3c_sw_LINEN << "loading " << graphName->toString() << "\n";
-			IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
-			found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
-			const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 
-							   graphName->getLexicalValue(), rs->getAtomFactory());
-		    }
-		    if (found != NULL) {
-			found->bindVariables(single, toMatch, graphName, graphName);
-			++matched;
-		    }
-		} else {
-		    ResultSet island(rs->getAtomFactory());
-		    delete *(island.begin());
-		    island.erase(island.begin());
-		    for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
-			if (!isDefaultGraph(vi->first)) {
-			    ResultSet disjoint(rs->getAtomFactory());
-			    vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
-			    for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
-				island.insert(island.end(), (*row)->duplicate(&island, island.end()));
-				delete *row;
-				row = disjoint.erase(row);
-			    }
-			    ++matched;
+		ResultSet* nested = jc.find(*outerRow);
+		if (nested == NULL) {
+
+		    /* *outerRow doesn't show up in the cache.
+		     */
+		    nested = (*outerRow)->makeResultSet(rs->getAtomFactory());
+		    jc.add(*outerRow, nested);
+		    const TTerm* graphName = (*outerRow)->get(graph);
+		    if (graphName != NULL) {
+
+			/* This result has a binding to the graph name we're matching against.
+			 */
+			BasicGraphPattern* found = findGraph(graphName);
+			if (found == NULL && GetGraphArguments == true) {
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Loading graph " << graphName->toString() << std::endl;
+			    IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
+			    found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
+			    const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 
+							       graphName->getLexicalValue(), rs->getAtomFactory());
 			}
-		    single->joinIn(&island);
+			if (found != NULL)
+			    found->bindVariables(nested, toMatch, graphName, graphName);
+		    } else {
+
+			/* The graph name is still unbound so we have to iterate across all graphs.
+			 * The lack of SPOG index means we have to try this Multi-graph match algorithm:
+			 * for each graph
+			 *     BasicGraphPattern::bindVariables(... ?graph, foundGraph)
+			 *         for each rs row...all graphs.
+			 */
+			ResultSet island(rs->getAtomFactory());
+			delete *(island.begin());
+			island.erase(island.begin());
+			for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
+			    if (!isDefaultGraph(vi->first)) {
+				ResultSet disjoint(rs->getAtomFactory());
+				vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
+				for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+				    island.insert(island.end(), (*row)->duplicate(&island, island.end()));
+				    delete *row;
+				    row = disjoint.erase(row);
+				}
+			    }
+			nested->joinIn(&island);
+		    }
 		}
-		const VariableList* innerVars = single->getKnownVars();
+
+		/* Copy the nested results into rs and clean up.
+		 */
+		const VariableList* innerVars = nested->getKnownVars();
 		for (VariableList::const_iterator v = innerVars->begin(); v != innerVars->end(); ++v)
 		    rs->addKnownVar(*v);
-		for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
-		    rs->insert(outerRow, *innerRow);
-		    innerRow = single->erase(innerRow);
-		}
-		delete single;
+		for (ResultSetIterator innerRow = nested->begin();
+		     innerRow != nested->end(); ++innerRow)
+		    rs->insert(outerRow, (*innerRow)->duplicate(rs, outerRow));
 		delete *outerRow;
 		outerRow = rs->erase(outerRow);
 	    }
 	}
-	if (matched == 0)
-	    for (ResultSetIterator it = rs->begin(); it != rs->end(); ) {
-		delete *it;
-		it = rs->erase(it);
-	    }
     }
 
     void RdfDB::express (Expressor* expressor) const {

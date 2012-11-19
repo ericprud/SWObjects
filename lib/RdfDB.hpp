@@ -79,6 +79,7 @@ namespace w3c_sw {
 	HandlerSet* handler;
 	static HandlerSet defaultHandler;
 	static size_t DebugEnumerateLimit;
+	static bool GetGraphArguments;
 
 	RdfDB (SWSAXparser* xmlParser = NULL)
 	    : graphs(), webAgent(NULL), xmlParser(xmlParser), handler(&defaultHandler)

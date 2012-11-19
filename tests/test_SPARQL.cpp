@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #define NEEDDEF_W3C_SW_SAXPARSER
+#define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 #include "ServerInteraction.hpp"
@@ -73,8 +74,14 @@ const char* Dturtle_encodedEscaped =
  */
 struct ExecResults : public w3c_sw::OutputFromNonInteractiveProcess {
     ExecResults (const std::string cmd) : w3c_sw::OutputFromNonInteractiveProcess(cmd) {
-	BOOST_REQUIRE(w3c_sw::SigChildGuard::ChildRetSet == false ||	// if child has finished,
-		      w3c_sw::SigChildGuard::ChildRet == 0);		// make sure it returned 0.
+	if (w3c_sw::SigChildGuard::ChildRetSet == true &&
+	    w3c_sw::SigChildGuard::ChildRet != 0) {
+	    w3c_sw_LINEN <<
+		"\"" + cmd + "\" returned " +
+		boost::lexical_cast<std::string>(w3c_sw::SigChildGuard::ChildRet)
+		+ "\n";
+	    BOOST_REQUIRE(w3c_sw::SigChildGuard::ChildRet == 0);	// make sure child returned 0.
+	}
     }
 };
 
@@ -245,6 +252,7 @@ BOOST_AUTO_TEST_CASE( map_headG ) {
     BOOST_CHECK_EQUAL(tested, expected);
 }
 BOOST_AUTO_TEST_SUITE_END(/* tutorial */)
+
 
 #ifdef FIXED_SPARQL_ARGS_ORDER // !!!
 /* sensitivity to position of -b directive */
@@ -460,6 +468,12 @@ BOOST_AUTO_TEST_CASE( escapes ) {
 		      "}\n");
 }
 
+#if HTTP_CLIENT != SWOb_DISABLED
+  W3C_SW_WEBAGENT<> WebClient;
+#else /* HTTP_CLIENT == SWOb_DISABLED */
+  #warning unable to test RDFa over HTTP
+#endif /* HTTP_CLIENT == SWOb_DISABLED */
+
 #if XML_PARSER != SWOb_DISABLED
 W3C_SW_SAXPARSER P;
 
@@ -470,6 +484,8 @@ BOOST_AUTO_TEST_CASE( empty_ask ) {
     BooleanResultSet expected(&F, true);
     BOOST_CHECK_EQUAL(tested, expected);
 }
+#else
+  #error RDFa tests require an XML parser
 #endif /* XML_PARSER != SWOb_None */
 
 BOOST_AUTO_TEST_CASE( empty_construct ) {
@@ -504,7 +520,7 @@ struct ServerTableQuery : w3c_sw::SPARQLClientServerInteraction {
 /* Simple SELECT.
  */
 BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
-    ServerTableQuery i("-D --once",
+    ServerTableQuery i("-D --stop-after 1",
 		       "-e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
@@ -512,7 +528,7 @@ BOOST_AUTO_TEST_CASE( D_SELECT_SPO ) {
 /* SELECT with results in utf-8 box chars.
  */
 BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
-    ServerTableQuery i("-D --once",
+    ServerTableQuery i("-D --stop-after 1",
 		       "-8e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
@@ -520,16 +536,106 @@ BOOST_AUTO_TEST_CASE( D_8SELECT_SPO ) {
 /* POSTed SELECT.
  */
 BOOST_AUTO_TEST_CASE( D_post_SELECT_SPO ) {
-    ServerTableQuery i("-D --once",
+    ServerTableQuery i("-D --stop-after 1",
 		       "--post -e 'SELECT ?s ?p ?o WHERE { ?s ?p ?o}'", Dshort);
     BOOST_CHECK_EQUAL(i.expected, i.got);
 }
 
+struct OperationOnSPARQLServer : w3c_sw::OperationOnInvokedServer {
+    OperationOnSPARQLServer (std::string serverParams, std::string query, std::string expect)
+	: w3c_sw::OperationOnInvokedServer(&F, &WebClient, &P, serverParams, "/SPARQL",
+					   LOWPORT, HIPORT, query, expect)
+    {  }
+};
 
-struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
+struct ServiceTableQuery : w3c_sw::ClientServerInteraction {
+    w3c_sw::ResultSet expected, got;
+
+    ServiceTableQuery (std::string serverParams,
+		       std::string clientParams,
+		       std::string expectedStr)
+	: w3c_sw::ClientServerInteraction (serverParams, "/SPARQL", LOWPORT, HIPORT),
+	  expected(&F), got(&F)
+    {
+	invoke(exe + " " + w3c_sw::substituteQueryVariables(clientParams, port));
+	w3c_sw::TTerm::String2BNode cliNodes, srvNodes;
+	w3c_sw::IStreamContext clientIS(clientS, w3c_sw::IStreamContext::STRING, "text/sparql-results");
+	got = w3c_sw::ResultSet(&F, clientIS, false, &cliNodes);
+	std::string subdExpectedStr = w3c_sw::substituteQueryVariables(expectedStr, port);
+	w3c_sw::IStreamContext expectedIS(subdExpectedStr, w3c_sw::IStreamContext::STRING, "text/sparql-results");
+	expected = w3c_sw::ResultSet(&F, expectedIS, false, &srvNodes);
+    }
+};
+
+
+/* Verify that the join cache keeps us from executing the same graph load on
+   multiple identical rows.
+ */
+BOOST_AUTO_TEST_CASE( JoinCache_GRAPH ) {
+    ExecResults invocation
+	("../bin/sparql"
+	 " --get-graph-arguments true"
+	 " -d SPARQL/graphNames.ttl"
+	 " -e 'SELECT ?graph ?what ?s ?p ?o {\n"
+	 "       ?s <SPARQL/from> ?graph ;\n"
+	 "          <SPARQL/get> ?what .\n"
+	 "       GRAPH ?graph { ?s ?p ?o }\n"
+         "     }'");
+    w3c_sw::TTerm::String2BNode bnodeMap;
+    TableResultSet tested(&F, invocation.s, false, &bnodeMap);
+    TableResultSet
+	expected(&F, 
+		 "+-----------------+-----------+------------+-----------------+---------+\n"
+		 "| ?graph          | ?what     | ?s         | ?p              | ?o      |\n"
+		 "| <SPARQL/G1.ttl> |   'names' | <SPARQL/X> |   <SPARQL/name> | 'name1' |\n"
+		 "| <SPARQL/G1.ttl> |   'names' | <SPARQL/X> |   <SPARQL/name> | 'name2' |\n"
+		 "| <SPARQL/G1.ttl> |   'addrs' | <SPARQL/Z> | <SPARQL/number> |  'num1' |\n"
+		 "| <SPARQL/G1.ttl> |   'addrs' | <SPARQL/Z> | <SPARQL/number> |  'num2' |\n"
+		 "| <SPARQL/G2.ttl> | 'numbers' | <SPARQL/Y> |   <SPARQL/addr> | 'addr1' |\n"
+		 "| <SPARQL/G2.ttl> | 'numbers' | <SPARQL/Y> |   <SPARQL/addr> | 'addr2' |\n"
+		 "+-----------------+-----------+------------+-----------------+---------+\n",
+		 false, &bnodeMap);
+    BOOST_CHECK_EQUAL(tested, expected);
+}
+
+/* Verify that the join cache keeps us from executing the same service query on
+   multiple identical rows.
+ */
+BOOST_AUTO_TEST_CASE( JoinCache_SERVICE ) {
+    ServiceTableQuery
+	i("-d 'data:text/turtle,<http://localhost:%p/SPARQL> <p1> <o1>; <p2> <o2>' "
+	  //"--serve http://localhost:%p/SPARQL"
+	  "--stop-after 2",
+
+	  "--debug=service:-2 -e 'SELECT * \n"
+	  "{ \n"
+	  "  {\n"
+	  "    { BIND (<http://localhost:%p/SPARQL> AS ?service) } UNION\n"
+	  "    { BIND (<http://localhost:%p/NonExistent> AS ?service) } UNION\n"
+	  "    { BIND (<http://localhost:%p/SPARQL> AS ?service) } \n"
+	  "  }\n"
+	  "  SERVICE SILENT ?service { ?s ?p ?o } \n"
+	  "}'",
+
+	  "+------+------+------------------------------+------------------------------+\n"
+	  "| ?o   | ?p   | ?s                           | ?service                     |\n"
+	  "| <o1> | <p1> | <http://localhost:%p/SPARQL> | <http://localhost:%p/SPARQL> |\n"
+	  "| <o2> | <p2> | <http://localhost:%p/SPARQL> | <http://localhost:%p/SPARQL> |\n"
+	  "| <o1> | <p1> | <http://localhost:%p/SPARQL> | <http://localhost:%p/SPARQL> |\n"
+	  "| <o2> | <p2> | <http://localhost:%p/SPARQL> | <http://localhost:%p/SPARQL> |\n"
+	  "+------+------+------------------------------+------------------------------+\n");
+    BOOST_CHECK_EQUAL(i.expected, i.got);
+    /* TODO: test i.serverCerr ('cause it doesn't show up in i.serverS) for 
+            [-   0   +] 127.0.0.1 - - [2012-10-18T23:03:22]"GET /SPARQL?query=SELECT+DISTINCT+%3Fs+%3Fp+%3Fo+%0AWHERE%0A%7B%0A++%3Fs+%3Fp+%3Fo+.%0A%7D%0A 1.0" 200 769
+            [-   0   +] 127.0.0.1 - - [2012-10-18T23:03:22]"GET /NonExistent?query=SELECT+DISTINCT+%3Fs+%3Fp+%3Fo+%0AWHERE%0A%7B%0A++%3Fs+%3Fp+%3Fo+.%0A%7D%0A 1.0" 404 773
+    */
+}
+
+
+struct HttpServerManagement : w3c_sw::SPARQLServerInteraction {
     int clientfd;
 
-    HttpServerInteraction (std::string serverParams,
+    HttpServerManagement (std::string serverParams,
 			   std::string query)
 	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL", LOWPORT, HIPORT)
     {
@@ -570,7 +676,7 @@ struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
 	}
     }
 
-    ~HttpServerInteraction () {
+    ~HttpServerManagement () {
 	close(clientfd);
 	// if (pclose(serverPipe) == -1 && errno != ECHILD)
 	//     throw std::string() + "pclose(server pipe)" + strerror(errno);
@@ -583,7 +689,7 @@ struct HttpServerInteraction : w3c_sw::SPARQLServerInteraction {
 /* POSTed STOP.
  */
 BOOST_AUTO_TEST_CASE( D_post_STOP ) {
-    HttpServerInteraction i("-D --stop STOP", "query=STOP");
+    HttpServerManagement i("-D --stop STOP", "query=STOP");
     std::string response;
     char line[80];
     for (;;) {
@@ -632,7 +738,7 @@ struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
 /* Simple CONSTRUCT.
  */
 BOOST_AUTO_TEST_CASE( D_CONSTRUCT_SPO ) {
-    ServerGraphQuery i("-D --once",
+    ServerGraphQuery i("-D --stop-after 1",
 		       "-e 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}'",
 		       Dtrig);
     BOOST_CHECK_EQUAL(i.expected, i.got);
@@ -670,7 +776,7 @@ struct Agent {
     std::string exe = "../bin/sparql";
 
     std::string serverS;
-    boost::thread server(Agent(exe + " -D --once"
+    boost::thread server(Agent(exe + " -D --stop-after 1"
 			       " --serve " + serverURL,
 			       serverS));
     w3c_sw_LINEN << "serverS: " << serverS << std::endl;

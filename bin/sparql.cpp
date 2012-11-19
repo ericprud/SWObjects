@@ -787,6 +787,10 @@ int main(int ac, char* av[])
 	     "read application description graph (see section) into default graph.")
             ("description-graph,G", po::value<std::vector <std::string> >(), 
 	     "read application description graph into graph arg.")
+
+            ("get-graph-arguments", po::value<bool>(), 
+	     "load named IRI in GRAPH <IRI> or GRAPH ?var when ?var is bound.")
+
             ("service", po::value<std::string>(), 
 	     "relay all queries to service URL.")
             ("default-graph-uri", po::value<std::string>(), 
@@ -804,7 +808,7 @@ int main(int ac, char* av[])
 	     "\"--header ’Accept: text/turtle,text/html;q=.8’\" prefers turtle over HTML.")
             ("header+", po::value<headerAppend>(), 
 	     "append earlier value of header.")
-            ("once", "SPARQL server handles one request.")
+            ("stop-after", po::value<unsigned int>(), "SPARQL server handles n requests, then exits.")
             ("stop", po::value<std::string>(), "query string to stop the server.")
             ("post", "use POST (while GET is obviously superior) for SPARQL services.")
             ("federation-use-filters", "use FILTERs to convey constraints to SPARQL services.")
@@ -1091,6 +1095,10 @@ int main(int ac, char* av[])
 		    sw::RdfDB::DebugEnumerateLimit = vm["DbDebugEnumerateLimit"].as<size_t>();
 		if (vm.count("ResultSetDebugEnumerateLimit"))
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
+		if (vm.count("ResultSetDebugEnumerateLimit"))
+		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
+		if (vm.count("get-graph-arguments"))
+		    sw::RdfDB::GetGraphArguments = vm["get-graph-arguments"].as<bool>();
 
 		if (sw::Logger::Logging(sw::Logger::IOLog_level, sw::Logger::support)) {
 		    size_t size = TheServer.engine.db.size();
@@ -1157,8 +1165,8 @@ int main(int ac, char* av[])
 
 	    if (!ServerURI.empty()) {
 		/* Act as a SPARQL server. */
-		if (vm.count("once"))
-		    TheServer.engine.runOnce = true;
+		if (vm.count("stop-after"))
+		    TheServer.engine.stopAfter = vm["stop-after"].as<unsigned int>();
 		if (vm.count("stop"))
 		    TheServer.stopCommand = vm["stop"].as<std::string>();
 		int serverPort = 8888;

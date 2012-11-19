@@ -812,6 +812,48 @@ namespace w3c_sw {
 	const std::string getBindingsString(std::vector<const TTerm*> vars) const;
     };
 
+    /* JoinCache - when iteratively replacing rows with their
+     * join, don't re-compute the joins for identical rows.
+     * Use as follows:
+
+    JoinCache jc;
+    for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+	ResultSet* nested = jc.find(*outerRow);
+	if (nested == NULL) {
+	    // *outerRow doesn't show up in the cache.
+	    jc.add(*outerRow, nested);
+	    // Populate nested.
+	}
+
+	// Copy the nested results into rs and clean up.
+	const VariableList* innerVars = nested->getKnownVars();
+	for (VariableList::const_iterator v = innerVars->begin();
+	     v != innerVars->end(); ++v)
+	    rs->addKnownVar(*v);
+	for (ResultSetIterator innerRow = nested->begin();
+	     innerRow != nested->end(); ++innerRow)
+	    // Delete a copy of the row in jc.
+	    rs->insert(outerRow, (*innerRow)->duplicate(rs, outerRow));
+	delete *outerRow;
+	outerRow = rs->erase(outerRow);
+    }
+     */
+    struct JoinCache {
+	typedef std::map<std::string, ResultSet*> Map;
+	Map m;
+	~JoinCache () {
+	    for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
+		delete it->second;
+	}
+	void add (const Result* r, ResultSet* rs) {
+	    m[r->toString()] = rs;
+	}
+	ResultSet* find (const Result* r) {
+	    Map::const_iterator it = m.find(r->toString());
+	    return it == m.end() ? NULL : it->second;
+	}
+    };
+
     std::ostream& operator<<(std::ostream& os, ResultSet const& my);
 
     struct TreatAsVar : public BNodeEvaluator {

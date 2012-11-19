@@ -1,0 +1,3 @@
+<X> <from> <G1.ttl> ; <get> "names" .
+<Y> <from> <G2.ttl> ; <get> "numbers" .
+<Z> <from> <G1.ttl> ; <get> "addrs" .

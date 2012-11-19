@@ -132,7 +132,7 @@ namespace w3c_sw {
 					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 						<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
 					++engine.served;
-					if (engine.runOnce) {
+					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
 					    engine.done = true;
 					    controller->stop();
 					}
@@ -178,7 +178,7 @@ namespace w3c_sw {
 					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 						<< "LDP invocation returning [[\n" << constructed.str() << "\n]].\n";
 					++engine.served;
-					if (engine.runOnce) {
+					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
 					    engine.done = true;
 					    controller->stop();
 					}
@@ -371,7 +371,7 @@ namespace w3c_sw {
 					} /* !htmlResults */
 
 					++engine.served;
-					if (engine.runOnce) {
+					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
 					    engine.done = true;
 					    controller->stop();
 					}
@@ -420,6 +420,10 @@ namespace w3c_sw {
 		    rep.setContentType("text/html");
 		    foot(sout);
 		} else {
+		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
+			engine.done = true;
+			controller->stop();
+		    }
 		    return webserver::reply::declined;
 		}
 		rep.setContent(sout.str());
@@ -862,7 +866,8 @@ struct SimpleEngine {
     FilesystemRdfDB db;
     W3C_SW_SAXPARSER xmlParser;
     ResultSet resultSet;
-    bool runOnce;
+    const static unsigned int RunForever = ~0;
+    unsigned int stopAfter;
     bool inPlace;
     bool done;
     int served;
@@ -906,7 +911,7 @@ struct SimpleEngine {
     SimpleEngine (std::string pkAttribute)
 	: atomFactory(), nsRelay(nsAccumulator),
 	  rdfDBHandlers(*this), db(*this),
-	  resultSet(&atomFactory), runOnce(false), inPlace(false),
+	  resultSet(&atomFactory), stopAfter(RunForever), inPlace(false),
 	  done(false), served(0), stemURI(""), serviceURI(""),
 	  defaultGraphURI(""), printQuery(false), 
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 

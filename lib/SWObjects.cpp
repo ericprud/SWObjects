@@ -3537,56 +3537,79 @@ compared against
     }
     void ServiceGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
-	if (graph != NULL)
+	if (graph != NULL) {
 	    try {
 		_constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent);
 	    } catch (std::exception& e) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + e.what();
 	    } catch (std::string& s) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
 	    }
-	else {
+	} else {
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
-	    if (graphVar != NULL) {
-		for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
-		    const URI* graph = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
-		    try {
-			if (graph != NULL) {
-			    ResultSet* single = (*outerRow)->makeResultSet(atomFactory);
-			    _constructQuery(graph, m_TableOperation, single, atomFactory, db->xmlParser, db->webAgent);
-			    for (ResultSetIterator innerRow = single->begin() ; innerRow != single->end(); ) {
-				rs->insert(outerRow, *innerRow);
-				innerRow = single->erase(innerRow);
-			    }
-			} else {
-			    // treat like a TypeError; no result
+	    if (graphVar == NULL)
+		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
+
+	    /* Variable graph name so we have to look in row to see whether the graph variable is bound.
+	     * Fortunately, the JoinCache keeps us from executing identical matches on duplicate rows.
+	     */
+	    JoinCache jc;
+	    for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+		ResultSet* nested = jc.find(*outerRow);
+		if (nested == NULL) {
+
+		    /* *outerRow doesn't show up in the cache.
+		     */
+		    nested = (*outerRow)->makeResultSet(atomFactory);
+		    jc.add(*outerRow, nested);
+		    const URI* graphName = dynamic_cast<const URI*>((*outerRow)->get(graphVar));
+		    if (graphName != NULL) {
+
+			/* This result has a binding to the graph name we're matching against.
+			 */
+			bool failed = true;
+			try {
+			    _constructQuery(graphName, m_TableOperation, nested, atomFactory, db->xmlParser, db->webAgent);
+			    failed = false;
+			} catch (std::exception& e) {
+			    if (m_Silence == SILENT_Yes)
+				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << e.what() << std::endl;
+			    else
+				throw std::string() + "SERVICE " + graphName->toString() + " produced error: " + e.what();
+			} catch (std::string& s) {
+			    if (m_Silence == SILENT_Yes)
+				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << s << std::endl;
+			    else
+				throw std::string() + "SERVICE " + graphName->toString() + " produced error: " + s;
 			}
-			delete *outerRow;
-			outerRow = rs->erase(outerRow);
-		    } catch (std::exception& e) {
-			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
-			    ++outerRow;
-			} else
-			    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + e.what();
-		    } catch (std::string& s) {
-			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
-			    ++outerRow;
-			} else
-			    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
+			if (failed) { // painful way to create an empty ResultSet.
+			    nested->clear();
+			    delete *(nested->begin());
+			    nested->erase(nested->begin());
+			}
+		    } else {
+
+			/* This result has NO binding to the graph name so this SERVICE contributes no bindings.
+			 */
 		    }
 		}
-	    } else
-		throw std::string("Service name must be an IRI; attempted to call SERVICE ").append(m_VarOrIRIref->toString());
+
+		/* Copy the nested results into rs and clean up.
+		 */
+		for (ResultSetIterator innerRow = nested->begin();
+		     innerRow != nested->end(); ++innerRow)
+		    rs->insert(outerRow, (*innerRow)->duplicate(rs, outerRow));
+		delete *outerRow;
+		outerRow = rs->erase(outerRow);
+	    }
 	}
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "SERVICE produced\n" << *rs;
+	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "SERVICE produced\n" << *rs;
     }
 
     void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
@@ -3685,12 +3708,12 @@ compared against
 		_invokeSADI(graph->getLexicalValue().c_str(), m_ConstructTemplate, rs, rs->getAtomFactory(), requestDB, &responseDB);
 	    } catch (std::exception& e) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
 		else
 		    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
 	    } catch (std::string& s) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
 		else
 		    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
 	    }
@@ -3714,13 +3737,13 @@ compared against
 			outerRow = rs->erase(outerRow);
 		    } catch (std::exception& e) {
 			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
 			    ++outerRow;
 			} else
 			    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
 		    } catch (std::string& s) {
 			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
 			    ++outerRow;
 			} else
 			    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
@@ -3730,7 +3753,7 @@ compared against
 		throw std::string("Sadi name must be an IRI; attempted to call SADI ").append(m_VarOrIRIref->toString());
 	}
 	m_WhereClause->bindVariables(&responseDB, rs);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "SADI produced\n" << *rs;
+	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "SADI produced\n" << *rs;
     }
     void SADIGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");

@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE( bugz_curl ) {
 	 "       INSERT { GRAPH ?bug { ?bug a :Bug ; :whiner ?whiner ; :whatNow ?desc } }\n"
 	 "    CONSTRUCT { ?bug a :Bug }\n"
 	 "        WHERE { ?s :whiner ?whiner ; :whatNow ?desc\n"
-	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --once",
+	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --stop-after 1",
 	 // interface path:
 	 "/createBug",
 
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( bugz_client ) {
 	 "       INSERT { GRAPH ?bug { ?bug a :Bug ; :whiner ?whiner ; :whatNow ?desc } }\n"
 	 "    CONSTRUCT { ?bug a :Bug }\n"
 	 "        WHERE { ?s :whiner ?whiner ; :whatNow ?desc\n"
-	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --once",
+	 "                BIND (ldp:newObj(</bugz/>) AS ?bug) }' --stop-after 1",
 	 // interface path:
 	 "/createBug",
 
@@ -352,7 +352,7 @@ namespace LDBPexamples {
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_curl ) {
     CurlPOSTtoLDPservice i
 	(// Server invocation -- construct a pattern from supplied graph.
-	 std::string() + "--LDP '" + LDBPexamples::modify + "' --once",
+	 std::string() + "--LDP '" + LDBPexamples::modify + "' --stop-after 1",
 
 	 // interface path:
 	 "/moreMoney",
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_1_4_client ) {
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_1_4_client-before.trig --LDP '"
-	 + LDBPexamples::modify + "' --server-no-description --once",
+	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",
 
 	 // interface path:
 	 "/moreMoney",
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_4_4_client-before.trig --LDP '"
-	 + LDBPexamples::modify + "' --server-no-description --once",
+	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",
 
 	 // interface path:
 	 "/moreMoney",
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
     OperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_5_4_client-before.trig --LDP '"
-	 + LDBPexamples::modify + "' --server-no-description --once",
+	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",
 
 	 // interface path:
 	 "/moreMoney",

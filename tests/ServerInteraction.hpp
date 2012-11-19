@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/wait.h>   /* header for waitpid() and various macros */
+#include "SPARQLfedParser/SPARQLfedParser.hpp"
 
 #ifndef INCLUDED_tests_ServerInteraction
 #define INCLUDED_tests_ServerInteraction
@@ -107,7 +108,8 @@ namespace w3c_sw {
 	w3c_sw::SigChildGuard g;
 
 	ServerInteraction (std::string exe, std::string path,
-			   std::string hostIP, std::string serverParams, int lowPort, int highPort)
+			   std::string hostIP, std::string serverParams,
+			   int lowPort, int highPort)
 	    : exe(exe), path(path), hostIP(hostIP), port(firstOpenPort(hostIP, lowPort, highPort)),
 	      serverURL("http://localhost:" + boost::lexical_cast<std::string>(port) + path)
 	{
@@ -116,7 +118,7 @@ namespace w3c_sw {
 	    /* Start the server and wait for it to listen.
 	     */
 	    std::string serverCmd(// std::string("sleep 1 && ") + // slow start to reveal race conditions.
-				  exe + " " + serverParams + 
+				  exe + " " + substituteQueryVariables(serverParams, port) + 
 				  " --serve " + serverURL);
 	    // serverCmd += " 2>&1 | tee -a server.mon";
 	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
@@ -224,6 +226,92 @@ namespace w3c_sw {
     };
 
 
+    /** EvaluatedResultSet - result set from an executed query.
+     */
+    struct EvaluatedResultSet : public ResultSet {
+	EvaluatedResultSet (AtomFactory* atomFactory, SWWEBagent* webAgent, SWSAXparser* xmlParser, std::string query)
+	    : ResultSet(atomFactory)
+	{
+	    IStreamContext istr(query, IStreamContext::STRING);
+		BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		    << "query: " << query << std::endl;
+	    SPARQLfedDriver sparqlParser("", atomFactory);
+	    try {
+		Operation* op = sparqlParser.parse(istr);
+		sparqlParser.clear(""); // clear out namespaces and base URI.
+		RdfDB d(webAgent, xmlParser);
+		op->execute(&d, this);
+		delete op;
+	    } catch (ParserException& ex) {
+		BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		    << "parser error: " << ex.what() << std::endl;
+	    }
+	}
+	struct ResultAccessor {
+	    const ResultSet* rs;
+	    const Result* r;
+	    ResultAccessor (const ResultSet* rs, const Result* r)
+		: rs(rs), r(r)
+	    {  }
+	    struct TTermInterface {
+		const TTerm* t;
+		TTermInterface (const TTerm* t)
+		    : t(t)
+		{  }
+		double getDouble () const {
+		    const NumericRDFLiteral* f = dynamic_cast<const NumericRDFLiteral*>(t);
+		    if (f == NULL)
+			throw std::runtime_error(t == NULL ? std::string("NULL") : t->toString()
+						 + ".getDouble() undefined");
+		    return f->getDouble();
+		}
+	    };
+	    const TTermInterface operator[] (std::string key) const {
+		return TTermInterface(r->get(rs->getAtomFactory()->getVariable(key)));
+	    }
+	};
+	const ResultAccessor operator[] (size_t i) const {
+	    ResultList::const_iterator it = results.begin();
+	    while (i--)
+		if (++it == results.end())
+		    throw std::out_of_range("past end of ResultSet");
+	    return ResultAccessor(this, *it);
+	}
+    };
+
+
+    /** ParsedResultSet - result set from a text string.
+     */
+    struct ParsedResultSet : public ResultSet {
+	ParsedResultSet (AtomFactory* atomFactory, std::string srt) : 
+	    ResultSet(atomFactory) {
+	    delete *begin();
+	    erase(begin());
+	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/sparql-results");
+	    TTerm::String2BNode bnodeMap;
+	    parseTable(sptr, false, &bnodeMap);
+	}
+    };
+
+
+    /** OperationOnInvokedServer - client interactions with the server built into
+     *  the bin/sparql binary.
+     */
+    struct OperationOnInvokedServer : SPARQLServerInteraction {
+	EvaluatedResultSet got;
+	ParsedResultSet expected;
+
+	OperationOnInvokedServer (AtomFactory* atomFactory,
+				  SWWEBagent* webAgent, SWSAXparser* xmlParser,
+				  std::string serverParams, std::string serverPath,
+				  int lowPort, int highPort,
+				  std::string query, std::string expect)
+	    : SPARQLServerInteraction(serverParams, serverPath, lowPort, highPort),
+	      got(atomFactory, webAgent, xmlParser, substituteQueryVariables(query, port)),
+	      expected(atomFactory, expect)
+	{  }
+    };
+
     /** ClientServerInteraction - client interactions with the server built into
      *  the bin/sparql binary.
      */
@@ -236,7 +324,7 @@ namespace w3c_sw {
 
 	void invoke (std::string clientCmd) {
 	    // clientCmd += " | tee client.mon 2>&1";
-	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+	    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
 		<< "clientCmd: " << clientCmd << std::endl;
 	    char line[80];
 
@@ -270,7 +358,7 @@ namespace w3c_sw {
 				       std::string clientParams, int lowPort, int highPort)
 	    : ClientServerInteraction(serverParams, serverPath, lowPort, highPort)
 	{
-	    invoke(exe + " --service " + serverURL + " " + clientParams);
+	    invoke(exe + " --service " + serverURL + " " + substituteQueryVariables(clientParams, port));
 	}
     };
 

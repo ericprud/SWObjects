@@ -16,7 +16,6 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "ServerInteraction.hpp"
 
 #if HTTP_CLIENT != SWOb_DISABLED
@@ -57,77 +56,10 @@ struct CurlPOSTtoSADIservice : w3c_sw::ClientServerInteraction {
     }
 };
 
-/** ParsedResultSet - result set from a text string.
- */
-struct ParsedResultSet : public w3c_sw::ResultSet {
-    ParsedResultSet (std::string srt) : 
-	w3c_sw::ResultSet(&F) {
-	delete *begin();
-	erase(begin());
-	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	w3c_sw::TTerm::String2BNode bnodeMap;
-	parseTable(sptr, false, &bnodeMap);
-    }
-};
-
-/** EvaluatedResultSet - result set from an executed query.
- */
-struct EvaluatedResultSet : public w3c_sw::ResultSet {
-    EvaluatedResultSet (std::string query)
-	: w3c_sw::ResultSet(&F)
-    {
-	w3c_sw::IStreamContext istr(query, w3c_sw::IStreamContext::STRING);
-	w3c_sw::SPARQLfedDriver sparqlParser("", &F);
-	w3c_sw::Operation* op = sparqlParser.parse(istr);
-	sparqlParser.clear(""); // clear out namespaces and base URI.
-	w3c_sw::RdfDB d(&WebClient, &P);
-	op->execute(&d, this);
-	delete op;
-    }
-    struct ResultAccessor {
-	const w3c_sw::ResultSet* rs;
-	const w3c_sw::Result* r;
-	ResultAccessor (const w3c_sw::ResultSet* rs, const w3c_sw::Result* r)
-	    : rs(rs), r(r)
-	{  }
-	struct TTermInterface {
-	    const w3c_sw::TTerm* t;
-	    TTermInterface (const w3c_sw::TTerm* t)
-		: t(t)
-	    {  }
-	    double getDouble () const {
-		const w3c_sw::NumericRDFLiteral* f = dynamic_cast<const w3c_sw::NumericRDFLiteral*>(t);
-		if (f == NULL)
-		    throw std::runtime_error(t == NULL ? std::string("NULL") : t->toString()
-					     + ".getDouble() undefined");
-		return f->getDouble();
-	    }
-	};
-	const TTermInterface operator[] (std::string key) const {
-	    return TTermInterface(r->get(rs->getAtomFactory()->getVariable(key)));
-	}
-    };
-    const ResultAccessor operator[] (size_t i) const {
-	w3c_sw::ResultList::const_iterator it = results.begin();
-	while (i--)
-	    if (++it == results.end())
-		throw std::out_of_range("past end of ResultSet");
-	return ResultAccessor(this, *it);
-    }
-};
-
-
-/** OperationOnInvokedServer - client interactions with the server built into
- *  the bin/sparql binary.
- */
-struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
-    EvaluatedResultSet got;
-    ParsedResultSet expected;
-
-    OperationOnInvokedServer (std::string serverParams, std::string query, std::string expect)
-	: w3c_sw::SPARQLServerInteraction(serverParams, "/SADI", LOWPORT, HIPORT),
-	  got(w3c_sw::substituteQueryVariables(query, port)),
-	  expected(expect)
+struct OperationOnSADIServer : w3c_sw::OperationOnInvokedServer {
+    OperationOnSADIServer (std::string serverParams, std::string query, std::string expect)
+	: w3c_sw::OperationOnInvokedServer(&F, &WebClient, &P, serverParams, "/SADI",
+					   LOWPORT, HIPORT, query, expect)
     {  }
 };
 
@@ -135,12 +67,12 @@ struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
  *  the bin/sparql binary.
  */
 struct OperationOnRemoteServer {
-    EvaluatedResultSet got;
-    ParsedResultSet expected;
+    w3c_sw::EvaluatedResultSet got;
+    w3c_sw::ParsedResultSet expected;
 
     OperationOnRemoteServer (std::string query, std::string expect)
-	: got(query),
-	  expected(expect)
+	: got(&F, &WebClient, &P, query),
+	  expected(&F, expect)
     {  }
 };
 
@@ -151,7 +83,7 @@ BOOST_AUTO_TEST_CASE( curl1to1 ) {
 	(// Server invocation -- construct a pattern from supplied graph.
 	 // (A real SADI rule should include body data in the head.)
 	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
-	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --once",
+	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --stop-after 1",
 
 	 // Curl this data and media type to verify the server response.
 	 "<s1> <tag:eric@w3.org/2012/p1> <ooo> .", "text/turtle");
@@ -160,11 +92,11 @@ BOOST_AUTO_TEST_CASE( curl1to1 ) {
 
 #ifdef INVOKED_SADI
 BOOST_AUTO_TEST_CASE( invoked1 ) {
-    OperationOnInvokedServer i
+    OperationOnSADIServer i
 	(// Server invocation -- construct a pattern from supplied graph.
 	 // (A real SADI rule should include body data in the head.)
 	 "--SADI 'CONSTRUCT { ?s <tag:eric@w3.org/2012/p2> \"X\" }\n"
-	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --once",
+	 "            WHERE { ?s <tag:eric@w3.org/2012/p1> ?o }' --stop-after 1",
 
 	 // Client SPARQL operation to invoke the SADI service.
 	 //   bind ?s
