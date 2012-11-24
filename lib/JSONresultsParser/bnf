@@ -1,0 +1,62 @@
+# http://www.w3.org/2005/01/yacker/uploads/results_JSON?lang=perl
+
+top::= "{" head "," results "}"
+head::= headWord ":" "{" (_link "," vars|vars ("," _link)?) "}"
+_link::= linkWord ":"  "[" word "]"
+vars::= varsWord ":"  "[" word ("," word)* "]"
+results::= resultsWord ":" "{" bindings "}"
+bindings::= bindingsWord ":" "[" solution ("," solution)* "]"
+solution::= "{" binding ("," binding)* "}"
+binding::= word ":" "{" RDFterm "}"
+RDFterm::= typeKey t_uri
+         | typeKey t_bnode
+         | typeKey t_plainLiteral
+         | typeKey t_typedLiteral
+         | value "," v_all
+         | datatype "," d_typedLiteral
+         | lang "," l_plainLiteral
+t_uri::= uriWord "," value
+t_bnode::= bnodeWord "," value
+t_plainLiteral::= literalWord "," (lang "," value|value ("," lang)?)
+t_typedLiteral::= typedLiteralWord "," (datatype "," value|value "," datatype)
+v_all::= typeKey vt_all
+       | datatype "," typeKey typedLiteralWord
+       | lang "," typeKey literalWord
+vt_all::= uriWord
+        | bnodeWord
+        | literalWord ("," lang)?
+        | typedLiteralWord "," datatype
+d_typedLiteral::= typeKey typedLiteralWord "," value
+                | value "," typeKey typedLiteralWord
+l_plainLiteral::= typeKey literalWord "," value
+                | value "," typeKey literalWord
+value::= valueWord ":" word
+datatype::= datatypeWord ":" word
+lang::= langWord ":" word
+headWord::= '"head"' | "'head'"
+linkWord::= '"link"' | "'link'"
+varsWord::= '"vars"' | "'vars'"
+resultsWord::= '"results"' | "'results'"
+bindingsWord::= '"bindings"' | "'bindings'"
+uriWord::= '"uri"' | "'uri'"
+bnodeWord::= '"bnode"' | "'bnode'"
+typeKey::= typeWord ":"
+typeWord::= '"type"' | "'type'"
+valueWord::= '"value"' | "'value'"
+literalWord::= '"literal"' | "'literal'"
+typedLiteralWord::= '"typed-literal"' | "'typed-literal'"
+datatypeWord::= '"datatype"' | "'datatype'"
+langWord::= '"xml:lang"' | "'xml:lang'"
+word::= STRING_LITERAL1 | STRING_LITERAL2
+      | headWord
+      | varsWord
+      | resultsWord
+      | bindingsWord
+      | typeWord
+      | uriWord | bnodeWord | literalWord | typedLiteralWord | datatypeWord | langWord
+      | valueWord
+
+@terminals
+[87]    STRING_LITERAL1       ::=       "'" ( ([^#x27#x5C#xA#xD]) | ECHAR )* "'"
+[88]    STRING_LITERAL2       ::=       '"' ( ([^#x22#x5C#xA#xD]) | ECHAR )* '"'
+[91]    ECHAR     ::=       '\\' [tbnrf\\"']
