@@ -2189,8 +2189,9 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     static std::string canonical (float f) { // decimal notation
 	std::stringstream canonical;
 	canonical << f;
-	if (canonical.str().find_first_of(".") == std::string::npos)
-	    canonical << ".0";
+	// obselete: XSD 1.0 canonical notation for decimal required a '.'
+	// if (canonical.str().find_first_of(".") == std::string::npos)
+	//     canonical << ".0";
 	return canonical.str();
     }
 
