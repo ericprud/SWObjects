@@ -112,19 +112,19 @@ public:
 	if (p_LANGTAG != NULL) { ret << '@' << p_LANGTAG->getLexicalValue(); }
 	ret << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value, const URI* /* p_datatype */) {
 	if (normalizing)
 	    ret << p_value << ' ';
 	else
 	    ret << self->toString() << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value, const URI* /* p_datatype */) {
 	if (normalizing)
 	    ret << p_value << ' ';
 	else
 	    ret << self->toString() << ' ';
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value, const URI* /* p_datatype */) {
 	if (normalizing)
 	    ret << p_value << ' ';
 	else

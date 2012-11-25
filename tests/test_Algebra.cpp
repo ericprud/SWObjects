@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( algebra__simple_conjoint_1 ) {
 	const TTerm* s = F.getTTerm(std::string("<s>"), &bnodeMap);
 	const TTerm* p = F.getTTerm(std::string("<p>"), &bnodeMap);
 	for (int i = 0; i < 3; ++i) {
-	    const TTerm* o = F.getNumericRDFLiteral(boost::lexical_cast<std::string>(i), i);
+	    const TTerm* o = F.getNumericRDFLiteral(i);
 	    BasicGraphPattern* bgp = new DefaultGraphPattern();
 	    bgp->addTriplePattern(F.getTriple(s, p, o));
 	    c->addTableOperation(bgp, false);

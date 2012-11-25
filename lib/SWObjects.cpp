@@ -366,16 +366,16 @@ void RDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, terminal, datatype, m_LANGTAG);
 }
 void IntegerRDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_value);
+    p_expressor->rdfLiteral(this, m_value, getDatatype());
 }
 void DecimalRDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_value);
+    p_expressor->rdfLiteral(this, m_value, getDatatype());
 }
 void FloatRDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_value);
+    p_expressor->rdfLiteral(this, m_value, getDatatype());
 }
 void DoubleRDFLiteral::express (Expressor* p_expressor) const {
-    p_expressor->rdfLiteral(this, m_value);
+    p_expressor->rdfLiteral(this, m_value, getDatatype());
 }
 void DateTimeRDFLiteral::express (Expressor* p_expressor) const {
     p_expressor->rdfLiteral(this, terminal, TTerm::URI_xsd_dateTime, NULL);
@@ -1823,6 +1823,39 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	rdfLiterals.clear();
     }
 
+    /*
+      Don't use in global destructure 'cause statics may be deleted in arbitrary order.
+    */
+    std::string AtomFactory::str () const {
+
+	std::stringstream ss;
+	std::map<std::string, const TriplePattern*>::const_iterator iTriples;
+	for (iTriples = triples.begin(); iTriples != triples.end(); iTriples++)
+	    ss << iTriples->second->toString() << "@" << iTriples->second << "\n";
+
+	ss << "Variables:";
+	std::map<std::string, const Variable*>::const_iterator iVariables;
+	for (iVariables = variables.begin(); iVariables != variables.end(); iVariables++)
+	    ss << " " << iVariables->second->toString() << "@" << iVariables->second;
+
+	ss << "\nURIs:";
+	std::map<std::string, const URI*>::const_iterator iURIs;
+	for (iURIs = uris.begin(); iURIs != uris.end(); iURIs++)
+	    ss << " " << iURIs->second->toString() << "@" << iURIs->second;
+
+	ss << "\nBNodes:";
+	std::set<const BNode*>::const_iterator iBNodes;
+	for (iBNodes = bnodes.begin(); iBNodes != bnodes.end(); ++iBNodes)
+	    ss << " " << (*iBNodes)->toString() << "@" << *iBNodes;
+
+	ss << "\nRDFLiterals:";
+	std::map<std::string, const RDFLiteral*>::const_iterator iRDFLiterals;
+	for (iRDFLiterals = rdfLiterals.begin(); iRDFLiterals != rdfLiterals.end(); iRDFLiterals++)
+	    ss << " " << iRDFLiterals->second->toString() << "@" << iRDFLiterals->second;
+	ss << "\n";
+	return ss.str();
+    }
+
     const Variable* AtomFactory::getVariable (std::string name) {
 	std::string key(name);
 	VariableMap::const_iterator vi = variables.find(key);
@@ -1992,7 +2025,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    std::istringstream is(posStr);
 	    int i;
 	    is >> i;
-	    return getNumericRDFLiteral(posStr, i);
+	    return getNumericRDFLiteral(posStr, i, TTerm::URI_xsd_integer);
 	}
 	throw(std::runtime_error("unable to getTTerm("+posStr+")"));
     }
@@ -2050,20 +2083,20 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    int i;
 	    is >> i;
 // 	    return getNumericRDFLiteral(i);
-	    return getNumericRDFLiteral(p_String.c_str(), i);
+	    return getNumericRDFLiteral(p_String.c_str(), i, p_URI);
 	} else if (p_URI == TTerm::URI_xsd_decimal || 
 		   p_URI == TTerm::URI_xsd_float) {
 	    float f;
 	    is >> f;
 // 	    return p_URI == TTerm::URI_xsd_float ? getNumericRDFLiteral(f, true) : getNumericRDFLiteral(f);
 	    return p_URI == TTerm::URI_xsd_float ? 
-		getNumericRDFLiteral(p_String.c_str(), f, true) :
-		getNumericRDFLiteral(p_String.c_str(), f);
+		getNumericRDFLiteral(p_String.c_str(), f, p_URI, true) :
+		getNumericRDFLiteral(p_String.c_str(), f, p_URI);
 	} else if (p_URI == TTerm::URI_xsd_double) {
 	    double d;
 	    is >> d;
 // 	    return getNumericRDFLiteral(d);
-	    return getNumericRDFLiteral(p_String.c_str(), d);
+	    return getNumericRDFLiteral(p_String.c_str(), d, p_URI);
 	} else if (p_URI == TTerm::URI_xsd_dateTime) {
 	    return getDateTimeRDFLiteral(p_String.c_str());
 	} else if (p_URI == TTerm::URI_xsd_boolean) {
@@ -2133,11 +2166,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	std::string canon = canonical(p_value);
 	QuoteIntegerRDFLiteral maker(p_value, canon);
-	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(canon, "integer", maker);
+	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(canon, TTerm::URI_xsd_integer, maker);
 	return ret;
     }
 
-    const IntegerRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, int p_value) {
+    const IntegerRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, int p_value, const URI* p_URI) {
 	class MakeIntegerRDFLiteral : public MakeNumericRDFLiteral {
 	private: int m_value;
 	public: MakeIntegerRDFLiteral (int p_value) : m_value(p_value) {  }
@@ -2149,7 +2182,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 	};
 	MakeIntegerRDFLiteral maker(p_value);
-	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(p_String, "integer", maker);
+	IntegerRDFLiteral* ret = (IntegerRDFLiteral*)getNumericRDFLiteral(p_String, p_URI, maker);
 	return ret;
     }
 
@@ -2179,11 +2212,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	std::string canon = canonical(p_value);
 	QuoteDecimalRDFLiteral maker(p_value, canon);
-	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(canon, "decimal", maker);
+	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(canon, TTerm::URI_xsd_decimal, maker);
 	return ret;
     }
 
-    const DecimalRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value) {
+    const DecimalRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value, const URI* p_URI) {
 	class MakeDecimalRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeDecimalRDFLiteral (float p_value) : m_value(p_value) {  }
@@ -2195,7 +2228,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 	};
 	MakeDecimalRDFLiteral maker(p_value);
-	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(p_String, "decimal", maker);
+	DecimalRDFLiteral* ret = (DecimalRDFLiteral*)getNumericRDFLiteral(p_String, p_URI, maker);
 	return ret;
     }
 
@@ -2217,11 +2250,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	std::string canon = canonical(p_value);
 	QuoteFloatRDFLiteral maker(p_value, canon);
-	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(canon, "float", maker);
+	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(canon, TTerm::URI_xsd_float, maker);
 	return ret;
     }
 
-    const FloatRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value, bool /* floatness */) {
+    const FloatRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, float p_value, const URI* p_URI, bool /* floatness */) {
 	class MakeFloatRDFLiteral : public MakeNumericRDFLiteral {
 	private: float m_value;
 	public: MakeFloatRDFLiteral (float p_value) : m_value(p_value) {  }
@@ -2233,7 +2266,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 	};
 	MakeFloatRDFLiteral maker(p_value);
-	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(p_String, "float", maker);
+	FloatRDFLiteral* ret = (FloatRDFLiteral*)getNumericRDFLiteral(p_String, p_URI, maker);
 	return ret;
     }
 
@@ -2268,11 +2301,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
 	std::string canon = canonical(p_value);
 	QuoteDoubleRDFLiteral maker(p_value, canon);
-	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(canon, "double", maker);
+	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(canon, TTerm::URI_xsd_double, maker);
 	return ret;
     }
 
-    const DoubleRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, double p_value) {
+    const DoubleRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, double p_value, const URI* p_URI) {
 	class MakeDoubleRDFLiteral : public MakeNumericRDFLiteral {
 	private: double m_value;
 	public: MakeDoubleRDFLiteral (double p_value) : m_value(p_value) {  }
@@ -2284,7 +2317,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    }
 	};
 	MakeDoubleRDFLiteral maker(p_value);
-	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(p_String, "double", maker);
+	DoubleRDFLiteral* ret = (DoubleRDFLiteral*)getNumericRDFLiteral(p_String, p_URI, maker);
 	return ret;
     }
 
@@ -2336,14 +2369,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	return (BooleanRDFLiteral*)vi->second; // shameful downcast
     }
 
-    const NumericRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, const char* type, const MakeNumericRDFLiteral& maker) {
-
-	std::string uriStr(XSD);
-	uriStr += type;
-	const URI* uri = getURI(uriStr);
+    const NumericRDFLiteral* AtomFactory::getNumericRDFLiteral (std::string p_String, const URI* uri, const MakeNumericRDFLiteral& maker) {
 
 	// First look for the lexical value as given.
-	std::string key = std::string() + '"' + p_String + '"' + "^^<" + uriStr + ">";
+	std::string key = std::string() + '"' + p_String + '"' + "^^<" + uri->getLexicalValue() + ">";
 	RDFLiteralMap::const_iterator vi = rdfLiterals_static.find(key);
 	if (vi == rdfLiterals_static.end()) {
 	    vi = rdfLiterals.find(key);
@@ -2352,7 +2381,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		if (CanonicalRDFLiteral::format == CanonicalRDFLiteral::CANON_roundTrip) {
 		    // Run expensive maker->indexIt() only when necessary.
 		    // Presumes that hash lookups are < half as expensive as indexIt().
-		    key = std::string() + '"' + maker.indexIt() + '"' + "^^<" + uriStr + ">";
+		    key = std::string() + '"' + maker.indexIt() + '"' + "^^<" + uri->getLexicalValue() + ">";
 		    vi = rdfLiterals_static.find(key);
 		    if (vi == rdfLiterals_static.end()) {
 			vi = rdfLiterals.find(key);
@@ -3092,7 +3121,7 @@ compared against
 	return constant == curVal;
     }
 
-    std::string Members::toString () const {
+    std::string Members::toString (MediaType mediaType) const {
 	std::stringstream ss;
 	ss << "Members(";
 	for (std::vector<const TTerm*>::const_iterator it = m_vars->begin();
@@ -4208,6 +4237,7 @@ namespace w3c_sw {
 
  	void linkFunctions () {
 	    if (false) TTerm::Unbound->str();
+	    const AtomFactory* af = NULL; if (false) af->str();
 	    const TableOperation* op = NULL; if (false) op->str();
 	    const TriplePattern* tp = NULL; if (false) tp->str();
 	    const Expression* exp = NULL; if (false) exp->str();

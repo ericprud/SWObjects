@@ -39,7 +39,7 @@ namespace w3c_sw {
 	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
 	virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
-	virtual std::string toString () const { return "Default Graph"; }
+	virtual std::string toString (MediaType mediaType = MediaType()) const { return "Default Graph"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual void express (Expressor*) const { throw(std::runtime_error(FUNCTION_STRING)); };
     };

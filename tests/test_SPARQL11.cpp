@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE( namedsolist_pp_inv_p1__p2 ) {
 BOOST_AUTO_TEST_SUITE_END(/* generators */)
 
 
-BOOST_AUTO_TEST_SUITE( SPARQL11_WG )
+BOOST_AUTO_TEST_SUITE( sparql11_query )
 // Popluate with:
 // tests$ sparql -d data-sparql11/manifest-all.ttl -e '
 // PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
@@ -1510,7 +1510,121 @@ BOOST_AUTO_TEST_CASE( subquery14 ) {
     const URI** requires = NULL;
     DAWG_TEST("data-sparql11/subquery/sq14.rq", "data-sparql11/subquery/sq14-out.ttl", 0, 0);
 }
-BOOST_AUTO_TEST_SUITE_END(/* SPARQL11_WG */)
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_query */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_update )
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_update */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_results_csv_tsv )
+// BOOST_AUTO_TEST_CASE( toy ) {
+//     AtomFactory f;
+//     IStreamContext istr
+// 	(
+// 	 "o,p,s\n"
+// 	 "http://swobj.org/sparql/v1,http://usefulinc.com/ns/doap#homepage,\n"
+// 	 "http://usefulinc.com/ns/doap#Project,http://www.w3.org/1999/02/22-rdf-syntax-ns#type,\n"
+// 	 "a semantic web query toolbox,http://usefulinc.com/ns/doap#shortdesc,\n",
+
+// 	 // "s,p,o\n"
+// 	 // "http://example.org/s1,http://example.org/p1,http://example.org/s2\n"
+// 	 // "http://example.org/s2,http://example.org/p2,foo\n"
+// 	 // "http://example.org/s3,http://example.org/p3,bar\n"
+// 	 // "http://example.org/s4,http://example.org/p4,4\n"
+// 	 // "http://example.org/s5,http://example.org/p5,5.5\n"
+// 	 // "http://example.org/s6,http://example.org/p6,_:o\n",
+// 	 IStreamContext::STRING, "text/csv");
+//     w3c_sw_LINE;
+//     ResultSet r(&f, &P, istr);
+//     w3c_sw_LINEN << "\n" << r;
+// }
+
+BOOST_AUTO_TEST_CASE( csv01 ) {
+    /* name: csv01 - CSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.csv", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( csv02 ) {
+    /* name: cvs02 - CSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.csv", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( csv03 ) {
+    /* name: csv03 - CSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data2.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.csv", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( tsv01 ) {
+    /* name: tsv01 - TSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.tsv", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( tsv02 ) {
+    /* name: tvs02 - TSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.tsv", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( tsv03 ) {
+    /* name: tsv03 - TSV Result Format */
+    const char* defaultGraph( "data-sparql11/csv-tsv-res/data2.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.tsv", 0, 0);
+}
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_results_csv_tsv */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_json )
+BOOST_AUTO_TEST_CASE( jsonres01 ) {
+    /* name: jsonres01 - JSON Result Format */
+    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-sparql11/json-res/jsonres01.rq", "data-sparql11/json-res/jsonres01.srj", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( jsonres02 ) {
+    /* name: jsonres02 - JSON Result Format */
+    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-sparql11/json-res/jsonres02.rq", "data-sparql11/json-res/jsonres02.srj", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( jsonres03 ) {
+    /* name: jsonres03 - JSON Result Format */
+    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-sparql11/json-res/jsonres03.rq", "data-sparql11/json-res/jsonres03.srj", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( jsonres04 ) {
+    /* name: jsonres04 - JSON Result Format */
+    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
+    const char** namedGraphs = NULL;
+    const URI** requires = NULL;
+    DAWG_TEST("data-sparql11/json-res/jsonres04.rq", "data-sparql11/json-res/jsonres04.srj", 0, 0);
+}
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_json */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_federated_query )
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_federated_query */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_service_description )
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_service_description */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_protocol )
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_protocol */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_http_rdf_update )
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_http_rdf_update */)
+
 
 // EOF
 

@@ -37,9 +37,9 @@ namespace w3c_sw {
 	virtual void variable (const Variable* const self, std::string) { setTerm(self); }
 	virtual void bnode (const BNode* const self, std::string) { setTerm(self); }
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) { setTerm(self); }
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, int) { setTerm(self); }
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, float) { setTerm(self); }
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, double) { setTerm(self); }
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, int   , const URI*) { setTerm(self); }
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, float , const URI*) { setTerm(self); }
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, double, const URI*) { setTerm(self); }
 	virtual void rdfLiteral (const BooleanRDFLiteral* const self, bool) { setTerm(self); }
 	virtual void nulltterm (const NULLtterm* const self) { setTerm(self); }
 

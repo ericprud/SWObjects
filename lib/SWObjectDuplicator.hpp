@@ -82,20 +82,20 @@ namespace w3c_sw {
 	virtual void rdfLiteral (const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	    last.tterms.tterm = last.tterms.rdfLiteral = atomFactory ? atomFactory->getRDFLiteral(lexicalValue.c_str(), datatype, p_LANGTAG ? new LANGTAG(*p_LANGTAG) : NULL) : self;
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, int p_value, const URI* p_datatype) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value, p_datatype) : self;
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, float p_value, const URI* p_datatype) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value, p_datatype) : self;
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const self, double p_value, const URI* p_datatype) {
 	    std::stringstream s;
 	    s << p_value;
-	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value) : self;
+	    last.tterms.tterm = last.tterms.numericRDFLiteral = atomFactory ? atomFactory->getNumericRDFLiteral(s.str().c_str(), p_value, p_datatype) : self;
 	}
 	virtual void rdfLiteral (const BooleanRDFLiteral* const self, bool p_value) {
 	    last.tterms.tterm = last.tterms.booleanRDFLiteral = atomFactory ? atomFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;

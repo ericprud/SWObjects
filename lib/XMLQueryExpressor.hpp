@@ -44,15 +44,15 @@ public:
 	if (datatype != NULL) xml->attribute("datatype", datatype->getLexicalValue()); //!!!
 	if (p_LANGTAG != NULL) xml->attribute("xml:lang", p_LANGTAG->getLexicalValue());
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value, const URI* /* p_datatype */) {
 	xml->leaf("literal", p_value);
 	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#integer");
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value, const URI* /* p_datatype */) {
 	xml->leaf("literal", p_value);
 	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#float");
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
+    virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value, const URI* /* p_datatype */) {
 	xml->leaf("literal", p_value);
 	xml->attribute("datatype", "http://www.w3.org/2001/XMLSchema#decimal");
     }

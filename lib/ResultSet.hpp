@@ -93,7 +93,7 @@ namespace w3c_sw {
 		    yours = mine;
 		}
 		if (yours != mine) {
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << var->toString() << ": l:" << yours->toString() << " != r:" << myBinding->second.tterm->toString() << std::endl;
+		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << var->toString() << ": l:" << yours->toString("text/ntriples") << " != r:" << myBinding->second.tterm->toString("text/ntriples") << std::endl;
 		    return false;
 		}
 	    }
@@ -147,7 +147,7 @@ namespace w3c_sw {
 	ResultList results;
 	bool ordered;
 	RdfDB* db;
-	ProductionVector<const TTerm*> selectOrder;
+	NoDelProductionVector<const TTerm*> selectOrder;
 	bool orderedSelect;
 
     public:
@@ -475,7 +475,7 @@ namespace w3c_sw {
 		AscendingOrder rComp(newRef.getOrderedVars(), &rUnordered);
 		newRef.results.sort(rComp);
 
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << self.toString() << newRef.toString();
+		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "comparing\n" << self.toString("text/sparql-results;datatypes=explicit") << "against\n" << newRef.toString("text/sparql-results;datatypes=explicit");
 		return self.compareOrdered(newRef, lUnordered, rUnordered);
 	    }
 	}
@@ -698,9 +698,9 @@ namespace w3c_sw {
 	    return atomFactory;
 	}
 	// Easy toString function to call from debugger.
-	std::string toString() const { return toString("text/sparql-results"); }
-	std::string toString(NamespaceMap* namespaces) const;
-	std::string toString (MediaType mediaType, NamespaceMap* namespaces = NULL, bool preferDb = false) const {
+	// std::string toString() const { return toString("text/sparql-results"); }
+	std::string toString(NamespaceMap* namespaces, bool showDatatypes) const;
+	std::string toString (MediaType mediaType = MediaType("text/sparql-results"), NamespaceMap* namespaces = NULL, bool preferDb = false) const {
 	    bool tableMediaType =
 		mediaType.match("text/sparql-results") ||
 		mediaType.match("text/csv") ||
@@ -716,13 +716,13 @@ namespace w3c_sw {
 		    ? db->toString("text/trig", namespaces) // default graph media type
 		    : db->toString(mediaType, namespaces);
 	    } else if (mediaType.match("text/sparql-results") || !tableMediaType) { // default table media type
-		return toString(namespaces);
+		return toString(namespaces, mediaType.parameterValue("datatypes", "explicit"));
 	    } else if (mediaType.match("text/raw")) {
 		return toRawText();
 	    } else if (mediaType.match("text/csv")) {
-		return toDelimSeparatedValues(',', true, namespaces);
+		return toDelimSeparatedValues(mediaType, ',', true, namespaces);
 	    } else if (mediaType.match("text/tab-separated-values")) {
-		return toDelimSeparatedValues('\t', false, namespaces);
+		return toDelimSeparatedValues(mediaType, '\t', false, namespaces);
 	    } else if (mediaType.match("application/sparql-results+json")) {
 		return toJSON(namespaces);
 	    } else if (mediaType.match("text/html")) {
@@ -748,7 +748,7 @@ namespace w3c_sw {
 	}
 	XMLSerializer* toXml(XMLSerializer* xml = NULL) const;
 	XMLSerializer* toHtmlTable(XMLSerializer* xml, XMLSerializer::Attributes attributes, std::string editPath = "") const;
-	std::string toDelimSeparatedValues(char separator, bool headerAsLexicals, NamespaceMap* namespaces) const;
+	std::string toDelimSeparatedValues(MediaType mediaType, char separator, bool headerAsLexicals, NamespaceMap* namespaces) const;
 	std::string toJSON(NamespaceMap* namespaces) const;
 	ResultSetIterator begin () { return results.begin(); }
 	ResultSetConstIterator begin () const { return results.begin(); }

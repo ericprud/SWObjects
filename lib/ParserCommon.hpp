@@ -128,9 +128,9 @@ public:
 	return atomFactory->getRDFLiteral(p_String, p_URI, p_LANGTAG);
     }
 
-    const IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
-    const DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
-    const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value); }
+    const IntegerRDFLiteral* getNumericRDFLiteral (std::string p_String, int p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value, TTerm::URI_xsd_integer); }
+    const DecimalRDFLiteral* getNumericRDFLiteral (std::string p_String, float p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value, TTerm::URI_xsd_decimal); }
+    const DoubleRDFLiteral* getNumericRDFLiteral (std::string p_String, double p_value) { return atomFactory->getNumericRDFLiteral(p_String, p_value, TTerm::URI_xsd_double); }
 
     const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return atomFactory->getBooleanRDFLiteral(p_String, p_value); }
 

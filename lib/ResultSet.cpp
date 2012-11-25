@@ -208,24 +208,43 @@ namespace w3c_sw {
 	int col = 0;
 	int lineNo = 1;
 	Result* curRow = NULL;
-	enum {AllParsed = 0, NewLine, Delimiter, BOL, TermText, Variable, IRI, Quoted, Double, Float, Integer, Bare, Empty};
-	boost::regex ctsv("(\\n|\\r\\n?)"
-			    "|(?:("+delimStr+")|(^))"
-			    /* \TermText */ "("
-			     /* \Variable ?abc  */ "\\?([a-zA-Z0-9_-]+)"
-			     /* \IRI <abc>  */     "|<([^>]*)>"
-			     /* \Quoted "abc" */   "|\\\"((?:[^\\\\\"]|\\\\[\"nrtb])*)\\\""
-			     /* \Double 1.2e3 */   "|([+-]?[0-9]*\\.[0-9]*[Ee][+\\-]?[0-9]+)"
-			     /* \Float 1.2   */    "|([+-]?[0-9]*\\.[0-9]*)"
-			     /* \Integer 1     */  "|([+-]?[0-9]+)"
-			     /* \Bare abc   */     "|([a-zA-Z0-9_-]+)" // ^" + delimStr + "
-			     /* \Empty       */    "|()"
-			    ")");
+	enum {AllParsed = 0, NewLine, Delimiter, BOL, TermText, Variable, IRI, BNode, Quoted, Datatype, Double, Float, Integer, Bare, Empty};
+	boost::regex csv(std::string() +
+			 "(\\n|\\r\\n?)"
+			  "|(?:(,)|(^))"
+			 /* \TermText */ "("
+			 /* \Variable ?abc  */ "\\?([a-zA-Z0-9_-]+)"
+			 /* \IRI <abc>  */     "|([^\r\n]^)" // disabled
+			 /* \BNode _:abc  */   "|_:([a-zA-Z0-9_-]+)"
+			 /* \Quoted "abc" */   "|\\\"((?:[^\\\\\"]|\\\\[\"nrtb])*)\\\"(?:\\^\\^<([^>]*)>)?"
+			 /* \Double 1.2e3 */   "|([+-]?[0-9]*\\.[0-9]*[Ee][+\\-]?[0-9]+)"
+			 /* \Float 1.2   */    "|([+-]?[0-9]*\\.[0-9]*)"
+			 /* \Integer 1     */  "|([+-]?[0-9]+)"
+			 /* \Bare abc   */     "|([^\n\r,]*)" // ^" + delimStr + "
+			 /* \Empty       */    "|([^\r\n]^)" // disabled
+			 ")");
+	boost::regex tsv(std::string() +
+			 "(\\n|\\r\\n?)"
+			  "|(?:(\t)|(^))"
+			 /* \TermText */ "("
+			 /* \Variable ?abc  */ "\\?([a-zA-Z0-9_-]+)"
+			 /* \IRI <abc>  */     "|<([^>]*)>"
+			 /* \BNode _:abc  */   "|_:([a-zA-Z0-9_-]+)"
+			 /* \Quoted "abc" */   "|\\\"((?:[^\\\\\"]|\\\\[\"nrtb])*)\\\"(?:\\^\\^<([^>]*)>)?"
+			 /* \Double 1.2e3 */   "|([+-]?[0-9]*\\.[0-9]*[Ee][+\\-]?[0-9]+)"
+			 /* \Float 1.2   */    "|([+-]?[0-9]*\\.[0-9]*)"
+			 /* \Integer 1     */  "|([+-]?[0-9]+)"
+			 /* \Bare abc   */     "|([a-zA-Z0-9_-]+)" // ^" + delimStr + "
+			 /* \Empty       */    "|()"
+			 ")");
 
+
+	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::support)
+	    << *this << "+ " << sptr.mediaType.toString() << ",[[\n" << str << "]]\n";
 
 	boost::match_flag_type flags = boost::match_perl | boost::match_continuous;
 	while (start != end) {
-	    if (regex_search(start, end, what, ctsv, flags)) {
+	    if (regex_search(start, end, what, delimStr == "," ? csv : tsv, flags)) {
 		// w3c_sw_LINEN << col << ": looking at \"" << std::string(start, end) << "\"\n";
 		// for (size_t i = 0; i < what.size(); ++i)
 		// 	w3c_sw_LINEN << i << ": \"" << (what[i].matched ? what[i] : std::string("--")) << "\"\n";
@@ -250,10 +269,12 @@ namespace w3c_sw {
 			// If we're looking for data...
 			what[Variable].matched ? (const TTerm*)atomFactory->getVariable(what[Variable]) :
 			what[IRI]     .matched ? (const TTerm*)atomFactory->getURI(what[IRI]) :
-			what[Quoted]  .matched ? (const TTerm*)atomFactory->getRDFLiteral(AtomFactory::unescapeStr(what[Quoted]), NULL, NULL) :
-			what[Double]  .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Double]) :
-			what[Float]   .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Float]) :
-			what[Integer] .matched ? (const TTerm*)atomFactory->getDoubleLiteral(what[Integer]) :
+			what[BNode]   .matched ? (const TTerm*)atomFactory->getBNode(what[BNode], bnodeMap) :
+			what[Quoted]  .matched ? (const TTerm*)atomFactory->getRDFLiteral(AtomFactory::unescapeStr(what[Quoted]),
+			    what[Datatype].matched ? atomFactory->getURI(what[Datatype]) : NULL, NULL) :
+			what[Double]  .matched ? (const TTerm*)atomFactory->getDoubleLiteral (what[Double]) :
+			what[Float]   .matched ? (const TTerm*)atomFactory->getDecimalLiteral(what[Float]) :
+			what[Integer] .matched ? (const TTerm*)atomFactory->getIntegerLiteral(what[Integer]) :
 			what[Bare]    .matched ? (const TTerm*)atomFactory->getRDFLiteral(what[Bare]) :
 			what[Empty]   .matched ? (const TTerm*)TTerm::Unbound :
 			atomFactory->getRDFLiteral("internal regex error at " w3c_sw_LOCATION);
@@ -306,12 +327,15 @@ namespace w3c_sw {
 		    }
 		}
 		if (start == what[AllParsed].second)
-		    throw std::runtime_error(std::string() + "unable to match at " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
+		    throw std::runtime_error(std::string() + "unable to match at line " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
 		start = what[AllParsed].second;
 	    } else {
-		throw std::runtime_error(std::string() + "unable to match at " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
+		throw std::runtime_error(std::string() + "unable to match at line " + boost::lexical_cast<std::string>(lineNo) + ": " + std::string(start, end));
 	    }
 	}
+
+	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::support)
+	    << "produced\n" << *this;
 
     }
 
@@ -366,7 +390,7 @@ namespace w3c_sw {
 			       "|(--|UNDEF)"		// \3: no binding
 			       ")?))");
 	const boost::regex plain("^[ \\t]*(?:"		// ignore leading whitespace
-				 "(.^)"			// disable \1, box chars
+				 "([^\r\n]^)"		// disable \1, box chars
 				 "|\n|("			// \2: empty if \n
 				 "(?:<[^>]*>)"		// IRI
 				 "|(?:_:[^[:space:]]+)"	// bnode
@@ -472,7 +496,7 @@ namespace w3c_sw {
 	return false;
     }
     ResultSet::~ResultSet () {
-	selectOrder.clear();
+	// selectOrder.clear();
 	for (ResultSetIterator it = results.begin(); it != results.end(); it++)
 	    delete *it;
     }
@@ -721,7 +745,7 @@ namespace w3c_sw {
 	    ~CountState () {  }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
 		int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
-		return atomFactory->getNumericRDFLiteral(mitoa(c), c);
+		return atomFactory->getNumericRDFLiteral(c);
 	    }
 	};
 	struct SumState : public FunctionState { // FunctionCall for virtual eval
@@ -773,7 +797,7 @@ namespace w3c_sw {
 		TTermExpression sumExpr(const_cast<AvgState*>(this)->sums[groupIndexRef]);
 		divisors.push_back(&sumExpr);
 		int c = const_cast<AvgState*>(this)->counts[groupIndexRef];
-		TTermExpression countExpr(atomFactory->getNumericRDFLiteral(mitoa(c), c));
+		TTermExpression countExpr(atomFactory->getNumericRDFLiteral(c));
 		divisors.push_back(&countExpr);
 		return atomFactory->applyCommonNumeric(divisors, &f, db);
 	    }
@@ -1158,16 +1182,16 @@ namespace w3c_sw {
 	    }
     };
 
-    std::string render (const TTerm* p, NamespaceMap* namespaces) {
+    std::string render (const TTerm* p, NamespaceMap* namespaces, bool showDatatypes) {
 	return
 	    (p == NULL || p == TTerm::Unbound) // !! why do we see both?
 	    ? BoxChars::GBoxChars->unbound
 	    : (namespaces == NULL || dynamic_cast<const URI*>(p) == NULL)
-	    ? p->toString()
+	    ? p->toString(showDatatypes ? MediaType("text/ntriples") : MediaType("text/turtle"))
 	    : namespaces->unmap(p->getLexicalValue());
     }
 
-    std::string ResultSet::toString (NamespaceMap* namespaces) const {
+    std::string ResultSet::toString (NamespaceMap* namespaces, bool showDatatypes) const {
 	std::stringstream s;
 	if (resultType == RESULT_Boolean)
 	    return size() > 0 ? "true\n" : "false\n" ;
@@ -1197,7 +1221,7 @@ namespace w3c_sw {
 		if (orderedSelect) // a formatted rendering takes a subset of the vars.
 		    for (size_t colNo = 0; colNo < cols.size(); ++colNo) {
 			const TTerm* var = vars[colNo];
-			std::string rendered(render((*row)->get(var), namespaces));
+			std::string rendered(render((*row)->get(var), namespaces, showDatatypes));
 			size_t width = rendered.size();
 			if (width > widths[colNo])
 			    widths[colNo] = width;
@@ -1208,12 +1232,12 @@ namespace w3c_sw {
 			if (pos2col.find(var) == pos2col.end()) {
 			    /* Error: a variable not listed in knownVars. */
 			    pos2col[var] = count++;
-			    std::string rendered(render(var, namespaces));
+			    std::string rendered(render(var, namespaces, showDatatypes));
 			    widths.push_back(rendered.size());
 			    vars.push_back(var);
 			    intruders.insert(var);
 			}
-			std::string rendered(render(b->second.tterm, namespaces));
+			std::string rendered(render(b->second.tterm, namespaces, showDatatypes));
 			size_t width = rendered.size();
 			if (width > widths[pos2col[var]])
 			    widths[pos2col[var]] = width;
@@ -1261,7 +1285,7 @@ namespace w3c_sw {
 		const TTerm* val = (*row)->get(var);
 		if (val == NULL)
 		    val = TTerm::Unbound;
-		const std::string str = render(val, namespaces);
+		const std::string str = render(val, namespaces, showDatatypes);
 		s << (i == 0 ? BoxChars::GBoxChars->rl : BoxChars::GBoxChars->rs) << ' ';
 		int width = str.length();
 		int tab = (int)widths[i] - width;
@@ -1300,7 +1324,7 @@ namespace w3c_sw {
 	    for (VariableVectorConstIterator varIt = cols.begin() ; varIt != cols.end(); ++varIt) {
 		const TTerm* var = *varIt;
 		const TTerm* val = (*row)->get(var);
-		s << val->getLexicalValue();
+		s << (val ? val->getLexicalValue() : var->toString() + "=NULL");
 	    }
 	}
 
@@ -1453,7 +1477,8 @@ namespace w3c_sw {
 	return xml;
     }
 
-    std::string ResultSet::toDelimSeparatedValues (char separator, bool headerAsLexicals, NamespaceMap* namespaces) const {
+    std::string ResultSet::toDelimSeparatedValues (MediaType mediaType, char separator,
+						   bool headerAsLexicals, NamespaceMap* namespaces) const {
 	std::stringstream ret;
 	const VariableVector vars = getOrderedVars();
 	for (VariableVector::const_iterator var = vars.begin();
@@ -1470,7 +1495,7 @@ namespace w3c_sw {
 		    ret << separator;
 		const TTerm* val = (*row)->get(*var);
 		if (val != NULL)
-		    ret << val->toString();
+		    ret << val->toString(mediaType);
 	    }
 	    ret << "\n";
 	}

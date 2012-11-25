@@ -577,7 +577,7 @@ namespace w3c_sw {
 		w3c_sw_FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, int p_value, const URI* /* p_datatype */) {
 	    w3c_sw_MARK;
 	    switch (mode) {
 
@@ -609,7 +609,7 @@ namespace w3c_sw {
 		w3c_sw_FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, float p_value, const URI* /* p_datatype */) {
 	    w3c_sw_MARK;
 	    switch (mode) {
 
@@ -641,7 +641,7 @@ namespace w3c_sw {
 		w3c_sw_FAIL("wierd state");
 	    }
 	}
-	virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value) {
+	virtual void rdfLiteral (const NumericRDFLiteral* const, double p_value, const URI* /* p_datatype */) {
 	    w3c_sw_MARK;
 	    switch (mode) {
 

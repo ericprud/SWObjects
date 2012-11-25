@@ -205,7 +205,10 @@ struct ReferenceRS {
 	    std::string rfs(resultFile);
 	    IStreamContext istr(resultFile, IStreamContext::FILE);
 	    if (rfs.substr(rfs.size()-4, 4) == ".srx" ||
-		rfs.substr(rfs.size()-4, 4) == ".srt") {
+		rfs.substr(rfs.size()-4, 4) == ".srt" ||
+		rfs.substr(rfs.size()-4, 4) == ".srj" ||
+		rfs.substr(rfs.size()-4, 4) == ".csv" ||
+		rfs.substr(rfs.size()-4, 4) == ".tsv") {
 		reference = new ResultSet(atomFactory, saxParser, istr);
 	    } else {			/* retults in a graph */
 		if (rfs.substr(rfs.size()-4, 4) == ".nt" || 
@@ -239,8 +242,29 @@ struct ReferenceRS {
 	    rdfDB.ensureGraphs(measured.getRdfDB()->getGraphNames());
     }
     ~ReferenceRS () { delete reference; }
-};
 
+    /* As with measured ResultSets, reference ResultSets are ordered when
+     * serialized if the query constructing the measured ResultSet did not
+     * specify an order.
+     */
+
+    std::ostream& print (std::ostream& os, MediaType mediaType = MediaType()) const {
+	if (reference->isOrdered() == true)
+	    return operator<<(os, *reference);
+
+	ResultSet orderedCopy(*reference);
+	orderedCopy.leadWithColumns(measured.getOrderedVars());
+	orderedCopy.order();
+	os << "\n";
+	return os << orderedCopy.toString(mediaType);
+    }
+
+    std::string toString (MediaType mediaType = MediaType()) const {
+	std::stringstream ss;
+	print(ss, mediaType);
+	return ss.str();
+    };
+};
 
 /* Compare a measured ResultSet to an encapsulated refrence ResultSet.
  */
@@ -248,20 +272,8 @@ bool operator== (ResultSet const& measured, ReferenceRS const& expected) {
     return measured == *expected.reference;
 }
 
-/* As with measured ResultSets, reference ResultSets are ordered when
- * serialized if the query constructing the measured ResultSet did not
- * specify an order.
- */
-
 std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
-    if (my.reference->isOrdered() == true)
-	return operator<<(os, *my.reference);
-
-    ResultSet orderedCopy(*my.reference);
-    orderedCopy.leadWithColumns(my.measured.getOrderedVars());
-    orderedCopy.order();
-    os << "\n";
-    return operator<<(os, orderedCopy);
+    return my.print(os);
 }
 
 /* Macros for terse test syntax
@@ -300,6 +312,34 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
 	MeasuredRS measured(DATA_FILE, QUERY_FILE);			       \
 	ReferenceRS expected(measured, RESULT_FILE, &F, &P);		       \
 	BOOST_CHECK_EQUAL(measured, expected);				       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
+#define DAWGSV_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
+    try {								       \
+	if (TEST_ENABLED(REQS)) {					       \
+	    MeasuredRS measured(defaultGraph, namedGraphs,		       \
+				NGS, requires, REQS, QUERY_FILE);	       \
+	    const char* type =						       \
+		std::string(RESULT_FILE).substr				       \
+		    (::strlen(RESULT_FILE)-4, 4) == ".csv"		       \
+		? "text/csv" : "text/tab-separated-values";		       \
+	    std::string asCSV = measured.toString(type);		       \
+	    /* w3c_sw_LINEN << "as " << type << ":\n" << asCSV; */	       \
+	    IStreamContext istr(asCSV, IStreamContext::STRING, type);	       \
+	    TTerm::String2BNode bnodeMap;				       \
+	    ResultSet parsed(&F, istr, measured.isOrdered(), &bnodeMap);       \
+	    ReferenceRS expected(measured, RESULT_FILE, &F, &P);	       \
+	    /* w3c_sw_LINEN << "parsed:\n" << parsed.toString("text/sparql-results;datatypes=explicit"); */ \
+	    /* w3c_sw_LINEN << "expected:\n" << expected.toString("text/sparql-results;datatypes=explicit"); */ \
+	    BOOST_CHECK_EQUAL(parsed, expected);			       \
+	}								       \
     } catch (NotImplemented& e) {					       \
 	std::cerr << e.what() << "\n";					       \
 	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \

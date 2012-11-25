@@ -295,6 +295,23 @@ public:
     // void operator= (const char* p_str) {
     // 	assign(p_str ? p_str : boost::detail::none_t);
     // }
+    bool parameterValue (const char* parm, const char* value) {
+	if (!is_initialized())
+	    return false;
+	std::string& s = get();
+	std::string lookfor = parm;
+	lookfor += '=';
+	size_t pos=s.find(';');
+	while ((pos=s.find(lookfor, pos+1)) != std::string::npos
+	       && (s[pos-1]==';' || s[pos-1]==' ')) {
+	    if (value == NULL)
+		return true;
+	    size_t parmpos = pos+lookfor.size();
+	    if (s.find(value, parmpos) == parmpos)
+		return true;
+	}
+	return false;
+    }
 };
 
 struct MediaTypeMap : public std::map<const std::string, const char*> {
@@ -784,7 +801,7 @@ public:
 	std::string str() const;
     };
     virtual std::string toXMLResults(BNode2string*) const = 0;
-    virtual std::string toString() const = 0;
+    virtual std::string toString(MediaType mediaType = MediaType()) const = 0;
     std::string str() const; // for easy invocation
     std::string substitutedString (Result* row, BNodeEvaluator* evaluator) const {
 	const TTerm* subd = evalTTerm(row, evaluator); /* re-uses atoms -- doesn't create them */
@@ -924,13 +941,17 @@ class URI : public TTerm {
     friend class AtomFactory;
 private:
     URI (std::string str) : TTerm(str) {  }
-public:
     ~URI () { }
+public:
     virtual e_TYPE getTypeOrder () const { return TYPE_URI; }
     virtual const char * getToken () { return "-TTerm-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toXMLResults (BNode2string*) const { return std::string("<uri>") + terminal + "</uri>";  }
-    virtual std::string toString () const { return std::string("<") + terminal + ">"; }
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if (mediaType.match("text/csv"))
+	    return terminal;
+	return std::string("<") + terminal + ">";
+    }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
 };
@@ -948,11 +969,12 @@ class Variable : public Bindable {
     friend class AtomFactory;
 private:
     Variable (std::string str) : Bindable(str) {  }
+    ~Variable () {  }
 public:
     virtual std::string toXMLResults (TTerm::BNode2string*) const {
 	return std::string("<variable>") + terminal + "</variable> <!-- should not appear in XML Results -->";
     }
-    virtual std::string toString () const { std::stringstream s; s << "?" << terminal; return s.str(); }
+    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* evalTTerm(const Result* r, BNodeEvaluator* evaluator) const;
@@ -972,11 +994,12 @@ class BNode : public Bindable {
 private:
     BNode (std::string str) : Bindable(str) {  }
     BNode () : Bindable("b", true) {  }
+    ~BNode () {  }
 public:
     virtual std::string toXMLResults (TTerm::BNode2string* map) const {
 	return std::string("<bnode>") + map->getString(this) + "</bnode>";
     }
-    virtual std::string toString () const { std::stringstream s; s << "_:" << terminal; return s.str(); }
+    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* evalTTerm(const Result* r, BNodeEvaluator* evaluator) const;
@@ -1044,32 +1067,39 @@ public:
 	s << "</literal>";
 	return s.str();
     }
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
 	std::stringstream s;
 	/* Could just print terminal here. */
 	// s << '"' << terminal << '"';
-	s << '"';
-	for (std::string::const_iterator it = terminal.begin();
-	     it != terminal.end(); ++it)
-	    if (*it == '\t')
-		s << "\\t";
-	    else if (*it == '\n')
-		s << "\\n";
-	    else if (*it == '\r')
-		s << "\\r";
-	    else if (*it == '\b')
-		s << "\\b";
-	    else if (*it == '\f')
-		s << "\\f";
-	    else if (*it == '\\')
-		s << "\\\\";
-	    else if (*it == '"')
-		s << "\\\"";
-	    else
-		s << *it;
-	s << '"';
-	if (datatype) s << "^^" << datatype->toString();
-	if (m_LANGTAG) s << "@" << m_LANGTAG->getLexicalValue();
+	if ((mediaType.match("text/csv") && terminal.find(",") == std::string::npos)
+	    && terminal.find("\"") == std::string::npos) {
+	    s << terminal;
+	} else {
+	    s << '"';
+	    for (std::string::const_iterator it = terminal.begin();
+		 it != terminal.end(); ++it)
+		if (*it == '\t')
+		    s << "\\t";
+		else if (*it == '\n')
+		    s << "\\n";
+		else if (*it == '\r')
+		    s << "\\r";
+		else if (*it == '\b')
+		    s << "\\b";
+		else if (*it == '\f')
+		    s << "\\f";
+		else if (*it == '\\')
+		    s << "\\\\";
+		else if (*it == '"')
+		    s << "\\\"";
+		else
+		    s << *it;
+	    s << '"';
+	}
+	if (!mediaType.match("text/csv")) {
+	    if (datatype) s << "^^" << datatype->toString();
+	    if (m_LANGTAG) s << "@" << m_LANGTAG->getLexicalValue();
+	}
 	return s.str();
     }
     virtual void express(Expressor* p_expressor) const;
@@ -1126,7 +1156,9 @@ public:
     virtual float getFloat () const { return m_value; }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_integer)
+	    return RDFLiteral::toString(mediaType);
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
 	    canonical << m_value;
@@ -1148,7 +1180,9 @@ public:
     virtual float getFloat () const { return m_value; }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_float)
+	    return RDFLiteral::toString(mediaType);
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
 	    canonical << std::fixed << m_value;
@@ -1183,7 +1217,9 @@ public:
     // <DOUBLE> ::= ([0-9])+ "." ([0-9])+ EXPONENT
     //            | "." (( [0-9] ))+ EXPONENT
     //            | (( [0-9] ))+ EXPONENT
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_double)
+	    return RDFLiteral::toString(mediaType);
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
 	    canonical << std::scientific << m_value;
@@ -1207,7 +1243,9 @@ public:
 	    throw TypeError(getLexicalValue(), "validate boolean");
     }
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")))
+	    return RDFLiteral::toString(mediaType);
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    std::stringstream canonical;
 	    canonical << std::boolalpha << m_value;
@@ -1306,7 +1344,9 @@ public:
     }
 
     virtual void express(Expressor* p_expressor) const;
-    virtual std::string toString () const {
+    virtual std::string toString (MediaType mediaType = MediaType()) const {
+	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")))
+	    return RDFLiteral::toString(mediaType);
 	if (CanonicalRDFLiteral::format == CANON_icalize) {
 	    w3c_sw_NEED_IMPL("DateTimeRDFLiteral canonical form");
 	    // !!! not implemented
@@ -1314,7 +1354,7 @@ public:
 	    // canonical << std::boolalpha << m_value;
 	    // return canonical.str();
 	}
-	return RDFLiteral::toString();
+	return RDFLiteral::toString(mediaType);
     }
 };
 class NULLtterm : public TTerm {
@@ -1327,7 +1367,7 @@ protected:
 public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString () const { std::stringstream s; s << "NULLterm"; return s.str(); }
+    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "NULLterm"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
@@ -1826,7 +1866,7 @@ public:
     }
     virtual const char * getToken () { return "-PropertyPath-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PropertyPath/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString () const { return root->toString(); }
+    virtual std::string toString (MediaType mediaType = MediaType()) const { return root->toString(mediaType); }
     virtual std::string str () const { return root->toString(); }
     virtual void express(Expressor* p_expressor) const {  }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
@@ -1894,7 +1934,7 @@ public:
     };
 
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<ListTerm/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString () const { std::stringstream s; s << "@@ListTerm@@"; return s.str(); }
+    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "@@ListTerm@@"; return s.str(); }
     virtual const char * getToken () { return "-ListTerm-"; }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
     bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
@@ -1913,7 +1953,7 @@ class Members : public ListTerm {
     ProductionVector<const TTerm*>* m_vars;
 public:
     Members (ProductionVector<const TTerm*>* p_vars) : ListTerm(),  m_vars(p_vars) {  }
-    virtual std::string toString() const;
+    virtual std::string toString(MediaType mediaType = MediaType()) const;
     virtual void express (Expressor* p_expressor) const;
     virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, VarValuePairs* vec) const;
 };
@@ -1978,7 +2018,7 @@ protected:
     TriplePatternMap	triples;
     static pURI_str	operatorNames_static;
 
-    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const char* type, const MakeNumericRDFLiteral& maker);
+    const NumericRDFLiteral* getNumericRDFLiteral(std::string p_String, const URI* uri, const MakeNumericRDFLiteral& maker);
 
     /** URI and Boolean contants are kept in separate hashes to avoid
 	a dependency on the initialization order of globals. In
@@ -2027,6 +2067,7 @@ public:
 
     AtomFactory();
     ~AtomFactory();
+    std::string str() const;
     const Variable* getVariable(std::string name);
     const BNode* createBNode();
     const BNode* getBNode(std::string name, TTerm::String2BNode* bnodeMap);
@@ -2038,37 +2079,37 @@ public:
     const RDFLiteral* getRDFLiteral(std::string p_String, const URI* p_URI = NULL, const LANGTAG* p_LANGTAG = NULL, bool validate = false);
 
     const IntegerRDFLiteral* getNumericRDFLiteral(int p_value);
-    const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value);
+    const IntegerRDFLiteral* getNumericRDFLiteral(std::string p_String, int p_value, const URI* p_URI);
     const DecimalRDFLiteral* getNumericRDFLiteral(float p_value);
-    const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value);
+    const DecimalRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, const URI* p_URI);
     const FloatRDFLiteral* getNumericRDFLiteral(float p_value, bool floatness);
-    const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, bool floatness);
+    const FloatRDFLiteral* getNumericRDFLiteral(std::string p_String, float p_value, const URI* p_URI, bool floatness);
     const DoubleRDFLiteral* getNumericRDFLiteral(double p_value);
-    const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value);
+    const DoubleRDFLiteral* getNumericRDFLiteral(std::string p_String, double p_value, const URI* p_URI);
 
     const IntegerRDFLiteral* getIntegerLiteral (std::string p_String) {
 	std::stringstream is(p_String);
 	int i;
 	is >> i;
-	return getNumericRDFLiteral(p_String, i);
+	return getNumericRDFLiteral(p_String, i, TTerm::URI_xsd_integer);
     }
     const DecimalRDFLiteral* getDecimalLiteral (std::string p_String) {
 	std::stringstream is(p_String);
 	float f;
 	is >> f;
-	return getNumericRDFLiteral(p_String, f);
+	return getNumericRDFLiteral(p_String, f, TTerm::URI_xsd_decimal);
     }
     const FloatRDFLiteral*   getFloatLiteral (std::string p_String) {
 	std::stringstream is(p_String);
 	float f;
 	is >> f;
-	return getNumericRDFLiteral(p_String, f, true);
+	return getNumericRDFLiteral(p_String, f, TTerm::URI_xsd_float, true);
     }
     const DoubleRDFLiteral*  getDoubleLiteral (std::string p_String) {
 	std::stringstream is(p_String);
 	double d;
 	is >> d;
-	return getNumericRDFLiteral(p_String, d);
+	return getNumericRDFLiteral(p_String, d, TTerm::URI_xsd_double);
     }
 
     const DateTimeRDFLiteral* getDateTimeRDFLiteral(std::string p_String_value);
@@ -3186,11 +3227,11 @@ inline Modify::~Modify () {
 class Load : public Operation {
 private:
     e_Silence m_Silence;
-    const URI* m_from;
-    const URI* m_into;
+    const URI* m_from; // freed by AtomFactory
+    const URI* m_into; // freed by AtomFactory
 public:
     Load (e_Silence p_Silence, const URI* p_from, const URI* p_into) : Operation(), m_Silence(p_Silence), m_from(p_from), m_into(p_into) {  }
-    ~Load () { delete m_from; delete m_into; }
+    ~Load () {  }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Load::execute"); }
     virtual bool operator== (const Operation&) const {
@@ -3201,10 +3242,10 @@ public:
 class Clear : public Operation {
 private:
     e_Silence m_Silence;
-    const URI* m__QGraphIRI_E_Opt;
+    const URI* m__QGraphIRI_E_Opt; // freed by AtomFactory
 public:
     Clear (e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) : Operation(), m_Silence(p_Silence), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
-    ~Clear () { delete m__QGraphIRI_E_Opt; }
+    ~Clear () {  }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Clear::execute"); }
     virtual bool operator== (const Operation&) const {
@@ -3926,7 +3967,7 @@ public:
     virtual const TTerm* eval (const Result* res, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 	ArithmeticProduct::NaryDivider f(res, atomFactory, evaluator, bnodeMap);
 	std::vector<const Expression*> divisors;
-	TTermExpression one(atomFactory->getNumericRDFLiteral("1", 1));
+	TTermExpression one(atomFactory->getNumericRDFLiteral("1", 1, TTerm::URI_xsd_integer));
 	divisors.push_back(&one);
 	TTermExpression right(m_Expression->eval(res, atomFactory, evaluator, bnodeMap, db));
 	divisors.push_back(&right);
@@ -4264,9 +4305,9 @@ public:
     virtual void variable(const Variable* const self, std::string lexicalValue) = 0;
     virtual void bnode(const BNode* const self, std::string lexicalValue) = 0;
     virtual void rdfLiteral(const RDFLiteral* const self, std::string lexicalValue, const URI* datatype, const LANGTAG* p_LANGTAG) = 0;
-    virtual void rdfLiteral(const NumericRDFLiteral* const self, int p_value) = 0;
-    virtual void rdfLiteral(const NumericRDFLiteral* const self, float p_value) = 0;
-    virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value) = 0;
+    virtual void rdfLiteral(const NumericRDFLiteral* const self, int    p_value, const URI* p_datatype) = 0;
+    virtual void rdfLiteral(const NumericRDFLiteral* const self, float  p_value, const URI* p_datatype) = 0;
+    virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value, const URI* p_datatype) = 0;
     virtual void rdfLiteral(const BooleanRDFLiteral* const self, bool p_value) = 0;
     virtual void nulltterm(const NULLtterm* const self) = 0;
     virtual void triplePattern(const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) = 0;
@@ -4355,9 +4396,9 @@ public:
 	if (datatype) datatype->express(this);
 	if (p_LANGTAG) p_LANGTAG->express(this);
     }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, int) {  }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, float) {  }
-    virtual void rdfLiteral (const NumericRDFLiteral* const, double) {  }
+    virtual void rdfLiteral (const NumericRDFLiteral* const, int    , const URI*) {  }
+    virtual void rdfLiteral (const NumericRDFLiteral* const, float  , const URI*) {  }
+    virtual void rdfLiteral (const NumericRDFLiteral* const, double , const URI*) {  }
     virtual void rdfLiteral (const BooleanRDFLiteral* const, bool) {  }
     virtual void nulltterm (const NULLtterm* const) {  }
     virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
@@ -4602,9 +4643,9 @@ public:
 	virtual void variable (const Variable* const, std::string) {  }
 	virtual void bnode (const BNode* const, std::string) {  }
 	virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) {  }
-	virtual void rdfLiteral (const NumericRDFLiteral* const, int) {  }
-	virtual void rdfLiteral (const NumericRDFLiteral* const, float) {  }
-	virtual void rdfLiteral (const NumericRDFLiteral* const, double) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, int    value, const URI* p_datatype) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, float  value, const URI* p_datatype) {  }
+	virtual void rdfLiteral (const NumericRDFLiteral* const, double value, const URI* p_datatype) {  }
 	virtual void rdfLiteral (const BooleanRDFLiteral* const, bool) {  }
 	virtual void nulltterm (const NULLtterm* const) {  }
 

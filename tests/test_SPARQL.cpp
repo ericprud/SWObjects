@@ -30,6 +30,14 @@ const char* Doutput =
     "| <> |          <http://usefulinc.com/ns/doap#shortdesc> |         'a semantic web query toolbox' |\n"
     "+----+---------------------------------------------------+----------------------------------------+\n";
 
+const char* DCSVoutput =
+    "+----+---------------------------------------------------+----------------------------------------+\n"
+    "| ?s | ?p                                                | ?o                                     |\n"
+    "| '' |           'http://usefulinc.com/ns/doap#homepage' |           'http://swobj.org/sparql/v1' |\n"
+    "| '' | 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' | 'http://usefulinc.com/ns/doap#Project' |\n"
+    "| '' |          'http://usefulinc.com/ns/doap#shortdesc' |         'a semantic web query toolbox' |\n"
+    "+----+---------------------------------------------------+----------------------------------------+\n";
+
 const char* Dwide =
     "+----+---------------------------------------------------+----------------------------------------+-----------------------------------------+\n"
     "| ?s | ?p                                                | ?o                                     | ?o2                                     |\n"
@@ -376,7 +384,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
 BOOST_AUTO_TEST_CASE( table ) { PARSE_RESULTS("SPARQL/D.srt", Doutput) }
 BOOST_AUTO_TEST_CASE( flat_text ) { PARSE_RESULTS("SPARQL/D.txt", Doutput) }
 BOOST_AUTO_TEST_CASE( tab_separated ) { PARSE_RESULTS("SPARQL/D.tsv", Doutput) }
-BOOST_AUTO_TEST_CASE( comma_separated ) { PARSE_RESULTS("SPARQL/D.csv", Doutput) }
+BOOST_AUTO_TEST_CASE( comma_separated ) { PARSE_RESULTS("SPARQL/D.csv", DCSVoutput) }
 BOOST_AUTO_TEST_CASE( xml ) { PARSE_RESULTS("SPARQL/D.srx", Doutput) }
 BOOST_AUTO_TEST_CASE( json ) { PARSE_RESULTS("SPARQL/D.srj", Doutput) }
 BOOST_AUTO_TEST_SUITE( create )
@@ -391,8 +399,8 @@ BOOST_AUTO_TEST_CASE( srx_L  ) { CREATE_RESULTS("-L application/sparql-results+x
 BOOST_AUTO_TEST_CASE( srj_l1 ) { CREATE_RESULTS("-l sparqlj", "SPARQL/Dt.srj", Doutput) }
 BOOST_AUTO_TEST_CASE( srj_l2 ) { CREATE_RESULTS("-l srj", "SPARQL/Dt.srj", Doutput) }
 BOOST_AUTO_TEST_CASE( srj_L  ) { CREATE_RESULTS("-L application/sparql-results+json", "SPARQL/Dt.srj", Doutput) }
-BOOST_AUTO_TEST_CASE( csv_l  ) { CREATE_RESULTS("-l csv", "SPARQL/Dt.csv", Doutput) }
-BOOST_AUTO_TEST_CASE( csv_L  ) { CREATE_RESULTS("-L text/csv", "SPARQL/Dt.csv", Doutput) }
+BOOST_AUTO_TEST_CASE( csv_l  ) { CREATE_RESULTS("-l csv", "SPARQL/Dt.csv", DCSVoutput) }
+BOOST_AUTO_TEST_CASE( csv_L  ) { CREATE_RESULTS("-L text/csv", "SPARQL/Dt.csv", DCSVoutput) }
 BOOST_AUTO_TEST_CASE( tsv_l  ) { CREATE_RESULTS("-l tsv", "SPARQL/Dt.tsv", Doutput) }
 BOOST_AUTO_TEST_CASE( tsv_L  ) { CREATE_RESULTS("-L text/tab-separated-values", "SPARQL/Dt.tsv", Doutput) }
 BOOST_AUTO_TEST_SUITE_END(/* parseResults/create */)
