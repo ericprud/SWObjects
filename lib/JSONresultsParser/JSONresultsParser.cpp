@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 180 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 182 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 212 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 216 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
 #include "../JSONresultsScanner.hpp"
 
@@ -462,7 +462,7 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 690 of lalr1.cc  */
-#line 226 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 230 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	if (driver.root == NULL)
 	    driver.startBindingSet();
@@ -474,215 +474,246 @@ namespace w3c_sw {
   case 3:
 
 /* Line 690 of lalr1.cc  */
-#line 231 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 235 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	  driver.root = driver.endBindingSet();
 	  driver.curResultSet = NULL;
       }
     break;
 
-  case 10:
+  case 12:
 
 /* Line 690 of lalr1.cc  */
-#line 256 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 265 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	// throw away link $4
 	delete (yysemantic_stack_[(5) - (4)].p_str);
     }
     break;
 
-  case 11:
+  case 13:
 
 /* Line 690 of lalr1.cc  */
-#line 263 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 272 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(4) - (4)].p_str)));
 	delete (yysemantic_stack_[(4) - (4)].p_str);
     }
     break;
 
-  case 13:
+  case 15:
 
 /* Line 690 of lalr1.cc  */
-#line 270 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 279 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(2) - (2)].p_str)));
 	delete (yysemantic_stack_[(2) - (2)].p_str);
     }
     break;
 
+  case 19:
+
+/* Line 690 of lalr1.cc  */
+#line 292 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      driver.curResultSet->resultType = ResultSet::RESULT_Boolean;
+      if ((yysemantic_stack_[(3) - (3)].p_bool) == true)
+	  driver.curResultSet->clear();
+    }
+    break;
+
+  case 20:
+
+/* Line 690 of lalr1.cc  */
+#line 300 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_bool) = true;
+	//	delete $1;
+    }
+    break;
+
   case 21:
 
 /* Line 690 of lalr1.cc  */
-#line 299 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 304 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	driver.startBindingRow(false);
-      }
-    break;
-
-  case 22:
-
-/* Line 690 of lalr1.cc  */
-#line 301 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	  driver.endBindingRow();
-      }
+	(yyval.p_bool) = false;
+	//	delete $1;
+    }
     break;
 
   case 26:
 
 /* Line 690 of lalr1.cc  */
-#line 316 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 324 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	driver.startBindingRow(false);
+      }
+    break;
+
+  case 27:
+
+/* Line 690 of lalr1.cc  */
+#line 326 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	  driver.endBindingRow();
+      }
+    break;
+
+  case 31:
+
+/* Line 690 of lalr1.cc  */
+#line 341 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	driver.addBinding(driver.getVariable(*(yysemantic_stack_[(5) - (1)].p_str)), (yysemantic_stack_[(5) - (4)].p_TTerm));
 	delete (yysemantic_stack_[(5) - (1)].p_str);
     }
     break;
 
-  case 27:
+  case 32:
 
 /* Line 690 of lalr1.cc  */
-#line 323 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 348 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
     break;
 
-  case 28:
+  case 33:
 
 /* Line 690 of lalr1.cc  */
-#line 326 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 351 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_BNode);
     }
     break;
 
-  case 29:
-
-/* Line 690 of lalr1.cc  */
-#line 329 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
-    }
-    break;
-
-  case 30:
-
-/* Line 690 of lalr1.cc  */
-#line 332 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
-    }
-    break;
-
-  case 31:
-
-/* Line 690 of lalr1.cc  */
-#line 335 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	driver.curValue = (yysemantic_stack_[(1) - (1)].p_str);
-      }
-    break;
-
-  case 32:
-
-/* Line 690 of lalr1.cc  */
-#line 337 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	  driver.curValue = NULL;
-	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_TTerm);
-      }
-    break;
-
-  case 33:
-
-/* Line 690 of lalr1.cc  */
-#line 341 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	driver.curDatatype = (yysemantic_stack_[(1) - (1)].p_URI);
-      }
-    break;
-
   case 34:
 
 /* Line 690 of lalr1.cc  */
-#line 343 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 354 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	  driver.curDatatype = NULL;
-	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
-      }
+	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
+    }
     break;
 
   case 35:
 
 /* Line 690 of lalr1.cc  */
-#line 347 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 357 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	driver.curLang = (yysemantic_stack_[(1) - (1)].p_str);
-      }
+	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
+    }
     break;
 
   case 36:
 
 /* Line 690 of lalr1.cc  */
-#line 349 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 360 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	  driver.curLang = NULL;
-	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
+	driver.curValue = (yysemantic_stack_[(1) - (1)].p_str);
       }
     break;
 
   case 37:
 
 /* Line 690 of lalr1.cc  */
-#line 356 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 362 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	  driver.curValue = NULL;
+	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_TTerm);
+      }
+    break;
+
+  case 38:
+
+/* Line 690 of lalr1.cc  */
+#line 366 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	driver.curDatatype = (yysemantic_stack_[(1) - (1)].p_URI);
+      }
+    break;
+
+  case 39:
+
+/* Line 690 of lalr1.cc  */
+#line 368 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	  driver.curDatatype = NULL;
+	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
+      }
+    break;
+
+  case 40:
+
+/* Line 690 of lalr1.cc  */
+#line 372 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	driver.curLang = (yysemantic_stack_[(1) - (1)].p_str);
+      }
+    break;
+
+  case 41:
+
+/* Line 690 of lalr1.cc  */
+#line 374 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	  driver.curLang = NULL;
+	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
+      }
+    break;
+
+  case 42:
+
+/* Line 690 of lalr1.cc  */
+#line 381 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 38:
+  case 43:
 
 /* Line 690 of lalr1.cc  */
-#line 363 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 388 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_BNode) = driver.getBNode(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 39:
+  case 44:
 
 /* Line 690 of lalr1.cc  */
-#line 370 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 395 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
     break;
 
-  case 40:
+  case 45:
 
 /* Line 690 of lalr1.cc  */
-#line 376 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 401 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(2) - (2)].p_str);
     }
     break;
 
-  case 41:
+  case 46:
 
 /* Line 690 of lalr1.cc  */
-#line 382 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 407 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = NULL;
     }
     break;
 
-  case 43:
+  case 48:
 
 /* Line 690 of lalr1.cc  */
-#line 389 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 414 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), NULL, (yysemantic_stack_[(3) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(3) - (1)].p_str)) : NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -690,63 +721,14 @@ namespace w3c_sw {
     }
     break;
 
-  case 44:
-
-/* Line 690 of lalr1.cc  */
-#line 394 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_str), NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
-	delete (yysemantic_stack_[(2) - (1)].p_str);
-	delete (yysemantic_stack_[(2) - (2)].p_str);
-    }
-    break;
-
-  case 45:
-
-/* Line 690 of lalr1.cc  */
-#line 402 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
-    }
-    break;
-
-  case 46:
-
-/* Line 690 of lalr1.cc  */
-#line 408 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), (yysemantic_stack_[(3) - (1)].p_URI), NULL);
-	delete (yysemantic_stack_[(3) - (3)].p_str);
-    }
-    break;
-
-  case 47:
-
-/* Line 690 of lalr1.cc  */
-#line 412 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (1)].p_str), (yysemantic_stack_[(3) - (3)].p_URI), NULL);
-	delete (yysemantic_stack_[(3) - (1)].p_str);
-    }
-    break;
-
-  case 48:
+  case 49:
 
 /* Line 690 of lalr1.cc  */
 #line 419 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
-    }
-    break;
-
-  case 49:
-
-/* Line 690 of lalr1.cc  */
-#line 422 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(4) - (1)].p_URI), NULL);
-      delete driver.curValue;
-      driver.curDatatype = NULL;
+	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_str), NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
+	delete (yysemantic_stack_[(2) - (1)].p_str);
+	delete (yysemantic_stack_[(2) - (2)].p_str);
     }
     break;
 
@@ -755,30 +737,27 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 427 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-      (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(4) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(4) - (1)].p_str)) : NULL);
-      delete driver.curValue;
-      delete (yysemantic_stack_[(4) - (1)].p_str);
-      driver.curLang = NULL;
+	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
     break;
 
   case 51:
 
 /* Line 690 of lalr1.cc  */
-#line 436 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 433 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getURI(*driver.curValue);
-	delete driver.curValue;
+	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), (yysemantic_stack_[(3) - (1)].p_URI), NULL);
+	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
   case 52:
 
 /* Line 690 of lalr1.cc  */
-#line 440 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 437 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getBNode(*driver.curValue);
-	delete driver.curValue;
+	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (1)].p_str), (yysemantic_stack_[(3) - (3)].p_URI), NULL);
+	delete (yysemantic_stack_[(3) - (1)].p_str);
     }
     break;
 
@@ -787,46 +766,98 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 444 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
-	delete driver.curValue;
-	delete (yysemantic_stack_[(2) - (2)].p_str);
+	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
     }
     break;
 
   case 54:
 
 /* Line 690 of lalr1.cc  */
-#line 449 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 447 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(3) - (3)].p_URI), NULL);
-	delete driver.curValue;
+      (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(4) - (1)].p_URI), NULL);
+      delete driver.curValue;
+      driver.curDatatype = NULL;
     }
     break;
 
   case 55:
 
 /* Line 690 of lalr1.cc  */
-#line 456 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 452 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), driver.curDatatype, NULL);
-	delete (yysemantic_stack_[(4) - (4)].p_str);
+      (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(4) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(4) - (1)].p_str)) : NULL);
+      delete driver.curValue;
+      delete (yysemantic_stack_[(4) - (1)].p_str);
+      driver.curLang = NULL;
     }
     break;
 
   case 56:
 
 /* Line 690 of lalr1.cc  */
-#line 460 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 461 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), driver.curDatatype, NULL);
-	delete (yysemantic_stack_[(4) - (1)].p_str);
+	(yyval.p_TTerm) = driver.getURI(*driver.curValue);
+	delete driver.curValue;
     }
     break;
 
   case 57:
 
 /* Line 690 of lalr1.cc  */
-#line 467 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 465 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_TTerm) = driver.getBNode(*driver.curValue);
+	delete driver.curValue;
+    }
+    break;
+
+  case 58:
+
+/* Line 690 of lalr1.cc  */
+#line 469 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
+	delete driver.curValue;
+	delete (yysemantic_stack_[(2) - (2)].p_str);
+    }
+    break;
+
+  case 59:
+
+/* Line 690 of lalr1.cc  */
+#line 474 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(3) - (3)].p_URI), NULL);
+	delete driver.curValue;
+    }
+    break;
+
+  case 60:
+
+/* Line 690 of lalr1.cc  */
+#line 481 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), driver.curDatatype, NULL);
+	delete (yysemantic_stack_[(4) - (4)].p_str);
+    }
+    break;
+
+  case 61:
+
+/* Line 690 of lalr1.cc  */
+#line 485 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), driver.curDatatype, NULL);
+	delete (yysemantic_stack_[(4) - (1)].p_str);
+    }
+    break;
+
+  case 62:
+
+/* Line 690 of lalr1.cc  */
+#line 492 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -834,10 +865,10 @@ namespace w3c_sw {
     }
     break;
 
-  case 58:
+  case 63:
 
 /* Line 690 of lalr1.cc  */
-#line 472 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 497 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -845,137 +876,164 @@ namespace w3c_sw {
     }
     break;
 
-  case 59:
+  case 64:
 
 /* Line 690 of lalr1.cc  */
-#line 480 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 505 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 60:
+  case 65:
 
 /* Line 690 of lalr1.cc  */
-#line 486 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 511 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
     }
     break;
 
-  case 61:
+  case 66:
 
 /* Line 690 of lalr1.cc  */
-#line 493 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 518 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
-    }
-    break;
-
-  case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 570 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-	(yyval.p_str) = new std::string("head");
-    }
-    break;
-
-  case 92:
-
-/* Line 690 of lalr1.cc  */
-#line 573 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("vars");
-    }
-    break;
-
-  case 93:
-
-/* Line 690 of lalr1.cc  */
-#line 576 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("results");
-    }
-    break;
-
-  case 94:
-
-/* Line 690 of lalr1.cc  */
-#line 579 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("bindings");
-    }
-    break;
-
-  case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 582 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("type");
-    }
-    break;
-
-  case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 585 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("uri");
-    }
-    break;
-
-  case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 588 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("bnode");
-    }
-    break;
-
-  case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 591 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("literal");
-    }
-    break;
-
-  case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 594 "lib/JSONresultsParser/JSONresultsParser.ypp"
-    {
-      (yyval.p_str) = new std::string("typedLiteral");
     }
     break;
 
   case 100:
 
 /* Line 690 of lalr1.cc  */
-#line 597 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 608 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-      (yyval.p_str) = new std::string("datatype");
+	(yyval.p_str) = new std::string("head");
     }
     break;
 
   case 101:
 
 /* Line 690 of lalr1.cc  */
-#line 600 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 611 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
-      (yyval.p_str) = new std::string("lang");
+      (yyval.p_str) = new std::string("vars");
     }
     break;
 
   case 102:
 
 /* Line 690 of lalr1.cc  */
-#line 603 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 614 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("results");
+    }
+    break;
+
+  case 103:
+
+/* Line 690 of lalr1.cc  */
+#line 617 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("boolean");
+    }
+    break;
+
+  case 104:
+
+/* Line 690 of lalr1.cc  */
+#line 620 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("true");
+    }
+    break;
+
+  case 105:
+
+/* Line 690 of lalr1.cc  */
+#line 623 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("false");
+    }
+    break;
+
+  case 106:
+
+/* Line 690 of lalr1.cc  */
+#line 626 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("bindings");
+    }
+    break;
+
+  case 107:
+
+/* Line 690 of lalr1.cc  */
+#line 629 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("type");
+    }
+    break;
+
+  case 108:
+
+/* Line 690 of lalr1.cc  */
+#line 632 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("uri");
+    }
+    break;
+
+  case 109:
+
+/* Line 690 of lalr1.cc  */
+#line 635 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("bnode");
+    }
+    break;
+
+  case 110:
+
+/* Line 690 of lalr1.cc  */
+#line 638 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("literal");
+    }
+    break;
+
+  case 111:
+
+/* Line 690 of lalr1.cc  */
+#line 641 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("typedLiteral");
+    }
+    break;
+
+  case 112:
+
+/* Line 690 of lalr1.cc  */
+#line 644 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("datatype");
+    }
+    break;
+
+  case 113:
+
+/* Line 690 of lalr1.cc  */
+#line 647 "lib/JSONresultsParser/JSONresultsParser.ypp"
+    {
+      (yyval.p_str) = new std::string("lang");
+    }
+    break;
+
+  case 114:
+
+/* Line 690 of lalr1.cc  */
+#line 650 "lib/JSONresultsParser/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("value");
     }
@@ -984,7 +1042,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 988 "lib/JSONresultsParser/JSONresultsParser.cpp"
+#line 1046 "lib/JSONresultsParser/JSONresultsParser.cpp"
 	default:
           break;
       }
@@ -1258,30 +1316,31 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char JSONresultsParser::yypact_ninf_ = -119;
+  const short int JSONresultsParser::yypact_ninf_ = -133;
   const short int
   JSONresultsParser::yypact_[] =
   {
-        23,  -119,    48,     8,  -119,  -119,  -119,    46,    52,    59,
-      49,  -119,  -119,    61,    70,    68,  -119,    51,  -119,  -119,
-    -119,  -119,    85,    95,   100,   162,   169,    77,  -119,    88,
-     145,  -119,  -119,   170,   171,  -119,  -119,   174,   175,  -119,
-    -119,    97,    97,  -119,   173,  -119,  -119,  -119,  -119,  -119,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
-    -119,  -119,  -119,  -119,  -119,   168,  -119,   179,  -119,  -119,
-    -119,  -119,    16,    97,    41,    97,  -119,  -119,  -119,   177,
-     179,  -119,  -119,  -119,   104,   181,  -119,    97,  -119,  -119,
-     111,  -119,   180,  -119,  -119,  -119,   119,   182,   183,   184,
-     185,  -119,   188,   189,   190,  -119,  -119,  -119,  -119,   191,
-     192,   193,   194,  -119,    97,    97,    97,   127,   129,   129,
-     137,   137,     5,     2,  -119,  -119,  -119,  -119,   195,   196,
-     119,  -119,   197,   135,  -119,   198,   139,  -119,  -119,  -119,
-     199,   200,  -119,   201,   202,   146,   146,  -119,  -119,  -119,
-     199,   203,   146,   204,   146,   205,   138,  -119,  -119,   137,
-     142,   137,   135,   139,  -119,   142,   135,   137,   139,   137,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,
-    -119
+        25,  -133,    32,     2,  -133,  -133,  -133,    34,    30,    38,
+      41,  -133,  -133,  -133,  -133,    52,    55,    57,    98,  -133,
+      64,    65,  -133,  -133,  -133,  -133,  -133,    69,    72,    81,
+      63,    92,   153,  -133,  -133,  -133,  -133,  -133,  -133,   106,
+     165,  -133,  -133,    93,    99,  -133,  -133,   110,   107,  -133,
+    -133,   108,   108,  -133,   146,  -133,  -133,  -133,  -133,  -133,
+    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
+    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
+    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,   148,  -133,
+     158,  -133,  -133,  -133,  -133,     9,   108,    23,   108,  -133,
+    -133,  -133,   178,   158,  -133,  -133,  -133,   174,   190,  -133,
+     108,  -133,  -133,    67,  -133,   189,  -133,  -133,  -133,   126,
+     191,   192,   193,   194,  -133,   197,   198,   199,  -133,  -133,
+    -133,  -133,   200,   201,   202,   203,  -133,   108,   108,   108,
+     127,   141,   141,   151,   151,    -4,   137,  -133,  -133,  -133,
+    -133,   204,   205,   126,  -133,   206,   149,  -133,   207,   154,
+    -133,  -133,  -133,   208,   209,  -133,   210,   211,   160,   160,
+    -133,  -133,  -133,   208,   212,   160,   213,   160,   214,   152,
+    -133,  -133,   151,   156,   151,   149,   154,  -133,   156,   149,
+     151,   154,   151,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
+    -133,  -133,  -133,  -133
   };
 
   /* YYDEFACT[S] -- default reduction number in state S.  Performed when
@@ -1290,50 +1349,51 @@ namespace w3c_sw {
   const unsigned char
   JSONresultsParser::yydefact_[] =
   {
-         0,     2,     0,     0,     1,    62,    63,     0,     0,     0,
-       0,    68,    69,     0,     0,     0,     3,     0,    64,    65,
-      66,    67,     0,     0,     6,     0,     0,     0,     4,     0,
-       0,     7,     9,     0,     0,    70,    71,     0,     0,     8,
-       5,     0,     0,    16,     0,    72,    73,    74,    75,    77,
-      78,    79,    80,    81,    82,    83,    84,    85,    86,    87,
-      88,    90,    89,    91,    92,    93,    94,    96,    97,    95,
-     102,    98,    99,   100,   101,     0,    11,     0,    10,    14,
-      21,    19,     0,     0,     0,     0,    12,    15,    24,     0,
-       0,    17,    20,    13,     0,     0,    18,     0,    22,    25,
-       0,    23,     0,    31,    33,    35,     0,     0,     0,     0,
-       0,    26,     0,     0,     0,    27,    28,    29,    30,     0,
-       0,     0,     0,    76,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    59,    60,    61,    32,     0,     0,
-       0,    34,     0,     0,    36,     0,     0,    37,    38,    39,
-      41,     0,    45,     0,     0,     0,     0,    48,    51,    52,
-      41,     0,     0,     0,     0,     0,     0,    42,    44,     0,
-       0,     0,     0,     0,    53,     0,     0,     0,     0,     0,
-      40,    43,    47,    46,    49,    50,    54,    56,    55,    58,
-      57
+         0,     2,     0,     0,     1,    67,    68,     0,     0,     0,
+       0,    73,    75,    76,    74,     0,     0,     0,    10,     3,
+       0,     0,    69,    70,    71,    72,    11,     0,     0,     6,
+       0,     0,     0,    78,    77,    19,    20,    21,     4,     0,
+       0,     7,     9,     0,     0,    79,    80,     0,     0,     8,
+       5,     0,     0,    18,     0,    81,    82,    83,    84,    86,
+      87,    88,    89,    90,    91,    92,    93,    94,    95,    96,
+      97,    99,    98,   100,   101,   102,   103,   104,   105,   106,
+     108,   109,   107,   114,   110,   111,   112,   113,     0,    13,
+       0,    12,    16,    26,    24,     0,     0,     0,     0,    14,
+      17,    29,     0,     0,    22,    25,    15,     0,     0,    23,
+       0,    27,    30,     0,    28,     0,    36,    38,    40,     0,
+       0,     0,     0,     0,    31,     0,     0,     0,    32,    33,
+      34,    35,     0,     0,     0,     0,    85,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    64,    65,    66,
+      37,     0,     0,     0,    39,     0,     0,    41,     0,     0,
+      42,    43,    44,    46,     0,    50,     0,     0,     0,     0,
+      53,    56,    57,    46,     0,     0,     0,     0,     0,     0,
+      47,    49,     0,     0,     0,     0,     0,    58,     0,     0,
+       0,     0,     0,    45,    48,    52,    51,    54,    55,    59,
+      61,    60,    63,    62
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const short int
   JSONresultsParser::yypgoto_[] =
   {
-      -119,  -119,  -119,  -119,  -119,  -119,  -119,   156,   158,  -119,
-    -119,  -119,  -119,  -119,  -119,  -119,   120,  -119,  -119,  -119,
-     114,  -119,  -119,  -119,  -119,  -119,  -119,  -119,  -119,    53,
-    -119,  -119,  -119,  -119,  -119,  -119,  -119,  -118,  -108,  -111,
-     209,  -119,    -7,   206,   187,   -99,   -97,   -59,   -64,   -41,
-    -100,   -83,   -98,   -95,   -38
+      -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,   155,   157,
+    -133,  -133,  -133,  -133,  -133,  -133,  -133,  -133,   116,  -133,
+    -133,  -133,   111,  -133,  -133,  -133,  -133,  -133,  -133,  -133,
+    -133,    47,  -133,  -133,  -133,  -133,  -133,  -133,  -133,  -122,
+    -132,  -130,   219,  -133,    -9,   215,   216,   217,   218,   195,
+    -112,  -101,   -61,   -76,   -51,  -113,  -114,  -111,   -97,   -48
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   JSONresultsParser::yydefgoto_[] =
   {
-        -1,     2,     3,     7,    31,    32,    22,    23,    24,    79,
-      87,    82,    13,    37,    92,    84,    81,    83,    99,    94,
-      88,   102,   112,   113,   114,   115,   116,   117,   167,   168,
-     149,   118,   152,   137,   157,   141,   144,   103,   104,   105,
-      63,    25,    64,    65,    66,    67,    68,   106,    69,   108,
-      71,    72,    73,    74,    89
+        -1,     2,     3,     7,    41,    42,    26,    27,    28,    29,
+      92,   100,    95,    15,    35,    47,   105,    97,    94,    96,
+     112,   107,   101,   115,   125,   126,   127,   128,   129,   130,
+     180,   181,   162,   131,   165,   150,   170,   154,   157,   116,
+     117,   118,    73,    30,    74,    75,    76,    77,    78,    79,
+      80,    81,   119,    82,   121,    84,    85,    86,    87,   102
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1343,56 +1403,60 @@ namespace w3c_sw {
   const unsigned char
   JSONresultsParser::yytable_[] =
   {
-        70,    70,   109,    75,    76,   110,   121,   119,    26,   120,
-     142,   145,   147,   148,   150,   153,   139,     5,     6,   138,
-      85,   151,    26,   122,    86,   154,     1,    51,    52,   109,
-      51,    52,   110,    57,    58,   109,   107,   110,    59,    60,
-     160,   158,    70,   159,    70,    90,   165,    93,     4,    91,
-       9,   181,    15,   183,    27,   180,    70,   161,    10,   188,
-     163,   190,   182,   107,   107,   107,    16,   186,   140,   143,
-     146,   110,   109,   185,    11,    12,    17,   109,   189,    18,
-      19,    20,    21,    70,    70,    70,   134,   135,   136,   184,
-      28,   107,   107,   187,    35,    36,   172,   173,   107,    29,
-     107,    20,    21,   176,    30,   178,     5,     6,    97,    98,
-      20,    21,    11,    12,    35,    36,    45,    46,    47,    48,
-      49,    50,    51,    52,    53,    54,    55,    56,    57,    58,
-      59,    60,    61,    62,    49,    50,    51,    52,    45,    46,
-      47,    48,    57,    58,    59,    60,    53,    54,    55,    56,
-      49,    50,    49,    50,    51,    52,    18,    19,    57,    58,
-      59,    60,    51,    52,    55,    56,    53,    54,    33,    49,
-      50,    59,    60,    57,    58,    34,    78,    41,    42,    43,
-      77,    44,    80,    95,   100,   111,    40,    39,   123,   124,
-     125,   126,   127,   128,   129,   130,   131,   132,   133,   155,
-     156,   162,   164,   166,   169,   170,   171,   175,   177,   179,
-      96,   101,     8,   174,    38,    14
+        83,    83,   122,    88,    89,   135,   134,   132,   151,    31,
+     152,     5,     6,    98,   167,   164,   123,    99,   133,   155,
+     158,   160,   161,   163,   166,    61,    62,   103,     1,   122,
+      31,   104,     4,    69,    70,   122,    10,   120,     9,   174,
+     173,   171,   176,   123,    18,    83,   178,    83,   123,   193,
+     106,   195,   172,    11,    12,    13,   199,    19,    14,    83,
+     194,    20,   196,    21,   120,   120,   120,    32,   201,    43,
+     203,   197,   122,   198,    38,   200,    39,   122,   202,   153,
+     156,   159,   123,    33,    34,    40,    83,    83,    83,   147,
+     148,   149,   120,   120,    59,    60,    61,    62,    44,   120,
+      51,   120,    67,    68,    69,    70,    52,   185,   186,    22,
+      23,    24,    25,    54,   189,    53,   191,     5,     6,    24,
+      25,    24,    25,    11,    12,    13,    33,    34,    14,    45,
+      46,    55,    56,    57,    58,    59,    60,    61,    62,    63,
+      64,    65,    66,    67,    68,    69,    70,    71,    72,    55,
+      56,    57,    58,    90,    59,    60,    91,    63,    64,    65,
+      66,    93,    67,    68,    69,    70,    61,    62,    59,    60,
+      61,    62,    67,    68,    45,    46,    22,    23,   110,   111,
+      61,    62,    65,    66,   108,    63,    64,    59,    60,    69,
+      70,    67,    68,   113,   124,    50,    49,   136,   137,   138,
+     139,   140,   141,   142,   143,   144,   145,   146,   168,   169,
+     175,   177,   179,   182,   183,   184,   188,   190,   192,   109,
+     187,   114,     8,     0,    16,    17,     0,    48,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,    36,    37
   };
 
   /* YYCHECK.  */
-  const unsigned char
+  const short int
   JSONresultsParser::yycheck_[] =
   {
-        41,    42,   100,    41,    42,   100,   106,   106,    15,   106,
-     128,   129,   130,   131,   132,   133,   127,     9,    10,   127,
-       4,   132,    29,   106,     8,   133,     3,    25,    26,   127,
-      25,    26,   127,    31,    32,   133,   100,   132,    33,    34,
-     140,   140,    83,   140,    85,     4,   146,    85,     0,     8,
-       4,   169,     3,   171,     3,   166,    97,   140,     6,   177,
-     143,   179,   170,   127,   128,   129,     5,   175,   127,   128,
-     129,   166,   170,   173,    15,    16,     6,   175,   178,    11,
-      12,    13,    14,   124,   125,   126,   124,   125,   126,   172,
-       5,   155,   156,   176,    17,    18,   155,   156,   162,     4,
-     164,    13,    14,   162,     4,   164,     9,    10,     4,     5,
-      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-      23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
-      33,    34,    35,    36,    23,    24,    25,    26,    19,    20,
-      21,    22,    31,    32,    33,    34,    27,    28,    29,    30,
-      23,    24,    23,    24,    25,    26,    11,    12,    31,    32,
-      33,    34,    25,    26,    29,    30,    27,    28,     6,    23,
-      24,    33,    34,    31,    32,     6,     8,     7,     7,     5,
-       7,     6,     3,     6,     3,     5,    30,    29,     6,     6,
-       6,     6,     4,     4,     4,     4,     4,     4,     4,     4,
-       4,     4,     4,     4,     4,     4,     4,     4,     4,     4,
-      90,    97,     3,   160,    27,     9
+        51,    52,   113,    51,    52,   119,   119,   119,   140,    18,
+     140,     9,    10,     4,   146,   145,   113,     8,   119,   141,
+     142,   143,   144,   145,   146,    29,    30,     4,     3,   140,
+      39,     8,     0,    37,    38,   146,     6,   113,     4,   153,
+     153,   153,   156,   140,     3,    96,   159,    98,   145,   179,
+      98,   183,   153,    15,    16,    17,   188,     5,    20,   110,
+     182,     6,   184,     6,   140,   141,   142,     3,   190,     6,
+     192,   185,   183,   186,     5,   189,     4,   188,   191,   140,
+     141,   142,   179,    18,    19,     4,   137,   138,   139,   137,
+     138,   139,   168,   169,    27,    28,    29,    30,     6,   175,
+       7,   177,    35,    36,    37,    38,     7,   168,   169,    11,
+      12,    13,    14,     6,   175,     5,   177,     9,    10,    13,
+      14,    13,    14,    15,    16,    17,    18,    19,    20,    21,
+      22,    23,    24,    25,    26,    27,    28,    29,    30,    31,
+      32,    33,    34,    35,    36,    37,    38,    39,    40,    23,
+      24,    25,    26,     7,    27,    28,     8,    31,    32,    33,
+      34,     3,    35,    36,    37,    38,    29,    30,    27,    28,
+      29,    30,    35,    36,    21,    22,    11,    12,     4,     5,
+      29,    30,    33,    34,     6,    31,    32,    27,    28,    37,
+      38,    35,    36,     3,     5,    40,    39,     6,     6,     6,
+       6,     4,     4,     4,     4,     4,     4,     4,     4,     4,
+       4,     4,     4,     4,     4,     4,     4,     4,     4,   103,
+     173,   110,     3,    -1,     9,     9,    -1,    32,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    21,    21
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1400,26 +1464,27 @@ namespace w3c_sw {
   const unsigned char
   JSONresultsParser::yystos_[] =
   {
-         0,     3,    38,    39,     0,     9,    10,    40,    77,     4,
-       6,    15,    16,    49,    80,     3,     5,     6,    11,    12,
-      13,    14,    43,    44,    45,    78,    79,     3,     5,     4,
-       4,    41,    42,     6,     6,    17,    18,    50,    81,    45,
-      44,     7,     7,     5,     6,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,    30,    31,    32,    33,
-      34,    35,    36,    77,    79,    80,    81,    82,    83,    85,
-      86,    87,    88,    89,    90,    91,    91,     7,     8,    46,
-       3,    53,    48,    54,    52,     4,     8,    47,    57,    91,
-       4,     8,    51,    91,    56,     6,    53,     4,     5,    55,
-       3,    57,    58,    74,    75,    76,    84,    85,    86,    89,
-      90,     5,    59,    60,    61,    62,    63,    64,    68,    82,
-      83,    87,    88,     6,     6,     6,     6,     4,     4,     4,
-       4,     4,     4,     4,    91,    91,    91,    70,    75,    76,
-      84,    72,    74,    84,    73,    74,    84,    74,    74,    67,
-      74,    76,    69,    74,    75,     4,     4,    71,    82,    83,
-      87,    88,     4,    88,     4,    87,     4,    65,    66,     4,
-       4,     4,    84,    84,    66,     4,    84,     4,    84,     4,
-      76,    74,    75,    74,    88,    87,    75,    88,    74,    87,
-      74
+         0,     3,    42,    43,     0,     9,    10,    44,    83,     4,
+       6,    15,    16,    17,    20,    54,    86,    87,     3,     5,
+       6,     6,    11,    12,    13,    14,    47,    48,    49,    50,
+      84,    85,     3,    18,    19,    55,    88,    89,     5,     4,
+       4,    45,    46,     6,     6,    21,    22,    56,    90,    50,
+      49,     7,     7,     5,     6,    23,    24,    25,    26,    27,
+      28,    29,    30,    31,    32,    33,    34,    35,    36,    37,
+      38,    39,    40,    83,    85,    86,    87,    88,    89,    90,
+      91,    92,    94,    95,    96,    97,    98,    99,   100,   100,
+       7,     8,    51,     3,    59,    53,    60,    58,     4,     8,
+      52,    63,   100,     4,     8,    57,   100,    62,     6,    59,
+       4,     5,    61,     3,    63,    64,    80,    81,    82,    93,
+      94,    95,    98,    99,     5,    65,    66,    67,    68,    69,
+      70,    74,    91,    92,    96,    97,     6,     6,     6,     6,
+       4,     4,     4,     4,     4,     4,     4,   100,   100,   100,
+      76,    81,    82,    93,    78,    80,    93,    79,    80,    93,
+      80,    80,    73,    80,    82,    75,    80,    81,     4,     4,
+      77,    91,    92,    96,    97,     4,    97,     4,    96,     4,
+      71,    72,     4,     4,     4,    93,    93,    72,     4,    93,
+       4,    93,     4,    82,    80,    81,    80,    97,    96,    81,
+      97,    80,    96,    80
   };
 
 #if YYDEBUG
@@ -1431,7 +1496,8 @@ namespace w3c_sw {
          0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295
   };
 #endif
 
@@ -1439,17 +1505,18 @@ namespace w3c_sw {
   const unsigned char
   JSONresultsParser::yyr1_[] =
   {
-         0,    37,    39,    38,    40,    41,    42,    42,    43,    43,
-      44,    46,    45,    47,    48,    48,    49,    50,    51,    52,
-      52,    54,    53,    55,    56,    56,    57,    58,    58,    58,
-      58,    59,    58,    60,    58,    61,    58,    62,    63,    64,
-      65,    66,    66,    67,    67,    68,    69,    69,    70,    70,
-      70,    71,    71,    71,    71,    72,    72,    73,    73,    74,
-      75,    76,    77,    77,    78,    78,    79,    79,    80,    80,
-      81,    81,    82,    82,    83,    83,    84,    85,    85,    86,
-      86,    87,    87,    88,    88,    89,    89,    90,    90,    91,
-      91,    91,    91,    91,    91,    91,    91,    91,    91,    91,
-      91,    91,    91
+         0,    41,    43,    42,    44,    45,    46,    46,    47,    47,
+      48,    48,    49,    51,    50,    52,    53,    53,    54,    54,
+      55,    55,    56,    57,    58,    58,    60,    59,    61,    62,
+      62,    63,    64,    64,    64,    64,    65,    64,    66,    64,
+      67,    64,    68,    69,    70,    71,    72,    72,    73,    73,
+      74,    75,    75,    76,    76,    76,    77,    77,    77,    77,
+      78,    78,    79,    79,    80,    81,    82,    83,    83,    84,
+      84,    85,    85,    86,    86,    87,    87,    88,    89,    90,
+      90,    91,    91,    92,    92,    93,    94,    94,    95,    95,
+      96,    96,    97,    97,    98,    98,    99,    99,   100,   100,
+     100,   100,   100,   100,   100,   100,   100,   100,   100,   100,
+     100,   100,   100,   100,   100
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1457,16 +1524,17 @@ namespace w3c_sw {
   JSONresultsParser::yyr2_[] =
   {
          0,     2,     0,     6,     5,     2,     0,     1,     3,     2,
-       5,     0,     7,     2,     0,     2,     5,     6,     2,     0,
-       2,     0,     5,     2,     0,     2,     5,     2,     2,     2,
-       2,     0,     4,     0,     4,     0,     4,     3,     3,     3,
-       2,     0,     1,     3,     2,     3,     3,     3,     2,     4,
-       4,     1,     1,     2,     3,     4,     4,     4,     4,     3,
-       3,     3,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     2,     1,     1,     1,
+       0,     1,     5,     0,     7,     2,     0,     2,     5,     3,
+       1,     1,     6,     2,     0,     2,     0,     5,     2,     0,
+       2,     5,     2,     2,     2,     2,     0,     4,     0,     4,
+       0,     4,     3,     3,     3,     2,     0,     1,     3,     2,
+       3,     3,     3,     2,     4,     4,     1,     1,     2,     3,
+       4,     4,     4,     4,     3,     3,     3,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     2,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1
+       1,     1,     1,     1,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1479,20 +1547,24 @@ namespace w3c_sw {
   "GT_RCURLEY", "GT_COLON", "GT_LBRACKET", "GT_RBRACKET",
   "GT_H_22__head_H_22_", "GT_H_27__head_H_27_", "GT_H_22__link_H_22_",
   "GT_H_27__link_H_27_", "GT_H_22__vars_H_22_", "GT_H_27__vars_H_27_",
-  "GT_H_22__results_H_22_", "GT_H_27__results_H_27_",
-  "GT_H_22__bindings_H_22_", "GT_H_27__bindings_H_27_",
-  "GT_H_22__uri_H_22_", "GT_H_27__uri_H_27_", "GT_H_22__bnode_H_22_",
-  "GT_H_27__bnode_H_27_", "GT_H_22__type_H_22_", "GT_H_27__type_H_27_",
-  "GT_H_22__value_H_22_", "GT_H_27__value_H_27_", "GT_H_22__literal_H_22_",
-  "GT_H_27__literal_H_27_", "GT_H_22__typed_MINUS_literal_H_22_",
+  "GT_H_22__results_H_22_", "GT_H_22__boolean_H_22_",
+  "GT_H_27__boolean_H_27_", "IT_false", "IT_true",
+  "GT_H_27__results_H_27_", "GT_H_22__bindings_H_22_",
+  "GT_H_27__bindings_H_27_", "GT_H_22__uri_H_22_", "GT_H_27__uri_H_27_",
+  "GT_H_22__bnode_H_22_", "GT_H_27__bnode_H_27_", "GT_H_22__type_H_22_",
+  "GT_H_27__type_H_27_", "GT_H_22__value_H_22_", "GT_H_27__value_H_27_",
+  "GT_H_22__literal_H_22_", "GT_H_27__literal_H_27_",
+  "GT_H_22__typed_MINUS_literal_H_22_",
   "GT_H_27__typed_MINUS_literal_H_27_", "GT_H_22__datatype_H_22_",
   "GT_H_27__datatype_H_27_", "GT_H_22__xml_COLON_lang_H_22_",
   "GT_H_27__xml_COLON_lang_H_27_", "STRING_LITERAL2", "STRING_LITERAL1",
   "$accept", "Top", "$@1", "head", "_O_QGT_COMMA_E_S_Q_link_E_C",
   "_Q_O_QGT_COMMA_E_S_Q_link_E_C_E_Opt",
   "_O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C",
+  "_Q_O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C_E_Opt",
   "_link", "vars", "$@2", "_O_QGT_COMMA_E_S_Qword_E_C",
-  "_Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star", "results", "bindings",
+  "_Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star", "results",
+  "_O_QtrueWord_E_Or_QfalseWord_E_C", "bindings",
   "_O_QGT_COMMA_E_S_Qsolution_E_C",
   "_Q_O_QGT_COMMA_E_S_Qsolution_E_C_E_Star", "solution", "$@3",
   "_O_QGT_COMMA_E_S_Qbinding_E_C",
@@ -1504,9 +1576,9 @@ namespace w3c_sw {
   "_O_Qdatatype_E_S_QGT_COMMA_E_S_Qvalue_E_Or_Qvalue_E_S_QGT_COMMA_E_S_Qdatatype_E_C",
   "v_all", "vt_all", "d_typedLiteral", "l_plainLiteral", "value",
   "datatype", "lang", "headWord", "linkWord", "varsWord", "resultsWord",
-  "bindingsWord", "uriWord", "bnodeWord", "typeKey", "typeWord",
-  "valueWord", "literalWord", "typedLiteralWord", "datatypeWord",
-  "langWord", "word", 0
+  "booleanWord", "trueWord", "falseWord", "bindingsWord", "uriWord",
+  "bnodeWord", "typeKey", "typeWord", "valueWord", "literalWord",
+  "typedLiteralWord", "datatypeWord", "langWord", "word", 0
   };
 #endif
 
@@ -1515,36 +1587,39 @@ namespace w3c_sw {
   const JSONresultsParser::rhs_number_type
   JSONresultsParser::yyrhs_[] =
   {
-        38,     0,    -1,    -1,     3,    39,    40,     4,    49,     5,
-      -1,    77,     6,     3,    43,     5,    -1,     4,    44,    -1,
-      -1,    41,    -1,    44,     4,    45,    -1,    45,    42,    -1,
-      78,     6,     7,    91,     8,    -1,    -1,    79,     6,     7,
-      91,    46,    48,     8,    -1,     4,    91,    -1,    -1,    48,
-      47,    -1,    80,     6,     3,    50,     5,    -1,    81,     6,
-       7,    53,    52,     8,    -1,     4,    53,    -1,    -1,    52,
-      51,    -1,    -1,     3,    54,    57,    56,     5,    -1,     4,
-      57,    -1,    -1,    56,    55,    -1,    91,     6,     3,    58,
-       5,    -1,    84,    62,    -1,    84,    63,    -1,    84,    64,
-      -1,    84,    68,    -1,    -1,    74,    59,     4,    70,    -1,
-      -1,    75,    60,     4,    72,    -1,    -1,    76,    61,     4,
-      73,    -1,    82,     4,    74,    -1,    83,     4,    74,    -1,
-      87,     4,    67,    -1,     4,    76,    -1,    -1,    65,    -1,
-      76,     4,    74,    -1,    74,    66,    -1,    88,     4,    69,
-      -1,    75,     4,    74,    -1,    74,     4,    75,    -1,    84,
-      71,    -1,    75,     4,    84,    88,    -1,    76,     4,    84,
-      87,    -1,    82,    -1,    83,    -1,    87,    66,    -1,    88,
-       4,    75,    -1,    84,    88,     4,    74,    -1,    74,     4,
-      84,    88,    -1,    84,    87,     4,    74,    -1,    74,     4,
-      84,    87,    -1,    86,     6,    91,    -1,    89,     6,    91,
-      -1,    90,     6,    91,    -1,     9,    -1,    10,    -1,    11,
-      -1,    12,    -1,    13,    -1,    14,    -1,    15,    -1,    16,
-      -1,    17,    -1,    18,    -1,    19,    -1,    20,    -1,    21,
-      -1,    22,    -1,    85,     6,    -1,    23,    -1,    24,    -1,
-      25,    -1,    26,    -1,    27,    -1,    28,    -1,    29,    -1,
-      30,    -1,    31,    -1,    32,    -1,    33,    -1,    34,    -1,
-      36,    -1,    35,    -1,    77,    -1,    79,    -1,    80,    -1,
-      81,    -1,    85,    -1,    82,    -1,    83,    -1,    87,    -1,
-      88,    -1,    89,    -1,    90,    -1,    86,    -1
+        42,     0,    -1,    -1,     3,    43,    44,     4,    54,     5,
+      -1,    83,     6,     3,    48,     5,    -1,     4,    49,    -1,
+      -1,    45,    -1,    49,     4,    50,    -1,    50,    46,    -1,
+      -1,    47,    -1,    84,     6,     7,   100,     8,    -1,    -1,
+      85,     6,     7,   100,    51,    53,     8,    -1,     4,   100,
+      -1,    -1,    53,    52,    -1,    86,     6,     3,    56,     5,
+      -1,    87,     6,    55,    -1,    88,    -1,    89,    -1,    90,
+       6,     7,    59,    58,     8,    -1,     4,    59,    -1,    -1,
+      58,    57,    -1,    -1,     3,    60,    63,    62,     5,    -1,
+       4,    63,    -1,    -1,    62,    61,    -1,   100,     6,     3,
+      64,     5,    -1,    93,    68,    -1,    93,    69,    -1,    93,
+      70,    -1,    93,    74,    -1,    -1,    80,    65,     4,    76,
+      -1,    -1,    81,    66,     4,    78,    -1,    -1,    82,    67,
+       4,    79,    -1,    91,     4,    80,    -1,    92,     4,    80,
+      -1,    96,     4,    73,    -1,     4,    82,    -1,    -1,    71,
+      -1,    82,     4,    80,    -1,    80,    72,    -1,    97,     4,
+      75,    -1,    81,     4,    80,    -1,    80,     4,    81,    -1,
+      93,    77,    -1,    81,     4,    93,    97,    -1,    82,     4,
+      93,    96,    -1,    91,    -1,    92,    -1,    96,    72,    -1,
+      97,     4,    81,    -1,    93,    97,     4,    80,    -1,    80,
+       4,    93,    97,    -1,    93,    96,     4,    80,    -1,    80,
+       4,    93,    96,    -1,    95,     6,   100,    -1,    98,     6,
+     100,    -1,    99,     6,   100,    -1,     9,    -1,    10,    -1,
+      11,    -1,    12,    -1,    13,    -1,    14,    -1,    15,    -1,
+      20,    -1,    16,    -1,    17,    -1,    19,    -1,    18,    -1,
+      21,    -1,    22,    -1,    23,    -1,    24,    -1,    25,    -1,
+      26,    -1,    94,     6,    -1,    27,    -1,    28,    -1,    29,
+      -1,    30,    -1,    31,    -1,    32,    -1,    33,    -1,    34,
+      -1,    35,    -1,    36,    -1,    37,    -1,    38,    -1,    40,
+      -1,    39,    -1,    83,    -1,    85,    -1,    86,    -1,    87,
+      -1,    88,    -1,    89,    -1,    90,    -1,    94,    -1,    91,
+      -1,    92,    -1,    96,    -1,    97,    -1,    98,    -1,    99,
+      -1,    95,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1553,33 +1628,35 @@ namespace w3c_sw {
   JSONresultsParser::yyprhs_[] =
   {
          0,     0,     3,     4,    11,    17,    20,    21,    23,    27,
-      30,    36,    37,    45,    48,    49,    52,    58,    65,    68,
-      69,    72,    73,    79,    82,    83,    86,    92,    95,    98,
-     101,   104,   105,   110,   111,   116,   117,   122,   126,   130,
-     134,   137,   138,   140,   144,   147,   151,   155,   159,   162,
-     167,   172,   174,   176,   179,   183,   188,   193,   198,   203,
-     207,   211,   215,   217,   219,   221,   223,   225,   227,   229,
-     231,   233,   235,   237,   239,   241,   243,   246,   248,   250,
-     252,   254,   256,   258,   260,   262,   264,   266,   268,   270,
-     272,   274,   276,   278,   280,   282,   284,   286,   288,   290,
-     292,   294,   296
+      30,    31,    33,    39,    40,    48,    51,    52,    55,    61,
+      65,    67,    69,    76,    79,    80,    83,    84,    90,    93,
+      94,    97,   103,   106,   109,   112,   115,   116,   121,   122,
+     127,   128,   133,   137,   141,   145,   148,   149,   151,   155,
+     158,   162,   166,   170,   173,   178,   183,   185,   187,   190,
+     194,   199,   204,   209,   214,   218,   222,   226,   228,   230,
+     232,   234,   236,   238,   240,   242,   244,   246,   248,   250,
+     252,   254,   256,   258,   260,   262,   265,   267,   269,   271,
+     273,   275,   277,   279,   281,   283,   285,   287,   289,   291,
+     293,   295,   297,   299,   301,   303,   305,   307,   309,   311,
+     313,   315,   317,   319,   321
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   JSONresultsParser::yyrline_[] =
   {
-         0,   226,   226,   226,   238,   242,   245,   247,   251,   252,
-     256,   263,   263,   270,   276,   278,   282,   286,   290,   293,
-     295,   299,   299,   307,   310,   312,   316,   323,   326,   329,
-     332,   335,   335,   341,   341,   347,   347,   356,   363,   370,
-     376,   382,   385,   389,   394,   402,   408,   412,   419,   422,
-     427,   436,   440,   444,   449,   456,   460,   467,   472,   480,
-     486,   493,   499,   500,   504,   505,   509,   510,   514,   515,
-     519,   520,   524,   525,   529,   530,   534,   538,   539,   543,
-     544,   548,   549,   553,   554,   558,   559,   563,   564,   568,
-     569,   570,   573,   576,   579,   582,   585,   588,   591,   594,
-     597,   600,   603
+         0,   230,   230,   230,   242,   246,   249,   251,   255,   256,
+     259,   261,   265,   272,   272,   279,   285,   287,   291,   292,
+     300,   304,   311,   315,   318,   320,   324,   324,   332,   335,
+     337,   341,   348,   351,   354,   357,   360,   360,   366,   366,
+     372,   372,   381,   388,   395,   401,   407,   410,   414,   419,
+     427,   433,   437,   444,   447,   452,   461,   465,   469,   474,
+     481,   485,   492,   497,   505,   511,   518,   524,   525,   529,
+     530,   534,   535,   539,   540,   544,   545,   549,   553,   557,
+     558,   562,   563,   567,   568,   572,   576,   577,   581,   582,
+     586,   587,   591,   592,   596,   597,   601,   602,   606,   607,
+     608,   611,   614,   617,   620,   623,   626,   629,   632,   635,
+     638,   641,   644,   647,   650
   };
 
   // Print the state stack on the debug stream.
@@ -1648,7 +1725,7 @@ namespace w3c_sw {
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36
+      35,    36,    37,    38,    39,    40
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1657,26 +1734,26 @@ namespace w3c_sw {
   }
 
   const int JSONresultsParser::yyeof_ = 0;
-  const int JSONresultsParser::yylast_ = 215;
-  const int JSONresultsParser::yynnts_ = 55;
+  const int JSONresultsParser::yylast_ = 239;
+  const int JSONresultsParser::yynnts_ = 60;
   const int JSONresultsParser::yyempty_ = -2;
   const int JSONresultsParser::yyfinal_ = 4;
   const int JSONresultsParser::yyterror_ = 1;
   const int JSONresultsParser::yyerrcode_ = 256;
-  const int JSONresultsParser::yyntokens_ = 37;
+  const int JSONresultsParser::yyntokens_ = 41;
 
-  const unsigned int JSONresultsParser::yyuser_token_number_max_ = 291;
+  const unsigned int JSONresultsParser::yyuser_token_number_max_ = 295;
   const JSONresultsParser::token_number_type JSONresultsParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 1676 "lib/JSONresultsParser/JSONresultsParser.cpp"
+#line 1753 "lib/JSONresultsParser/JSONresultsParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 610 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 657 "lib/JSONresultsParser/JSONresultsParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::JSONresultsParser::error(const JSONresultsParser::location_type& l,

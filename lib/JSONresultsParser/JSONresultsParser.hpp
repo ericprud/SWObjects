@@ -77,6 +77,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	delete *(curResultSet->begin());
 	curResultSet->erase(curResultSet->begin());
     }
 
@@ -153,7 +154,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 157 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 158 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
 
 #include <string>
@@ -183,7 +184,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 187 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 188 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
   /// A Bison parser.
   class JSONresultsParser
@@ -195,9 +196,10 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 172 "lib/JSONresultsParser/JSONresultsParser.ypp"
+#line 173 "lib/JSONresultsParser/JSONresultsParser.ypp"
 
     const std::string* p_str;
+    bool p_bool;
     const TTerm* p_TTerm;
     const URI* p_URI;
     const BNode* p_BNode;
@@ -206,7 +208,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 210 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 212 "lib/JSONresultsParser/JSONresultsParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -232,27 +234,31 @@ namespace w3c_sw {
      GT_H_22__vars_H_22_ = 268,
      GT_H_27__vars_H_27_ = 269,
      GT_H_22__results_H_22_ = 270,
-     GT_H_27__results_H_27_ = 271,
-     GT_H_22__bindings_H_22_ = 272,
-     GT_H_27__bindings_H_27_ = 273,
-     GT_H_22__uri_H_22_ = 274,
-     GT_H_27__uri_H_27_ = 275,
-     GT_H_22__bnode_H_22_ = 276,
-     GT_H_27__bnode_H_27_ = 277,
-     GT_H_22__type_H_22_ = 278,
-     GT_H_27__type_H_27_ = 279,
-     GT_H_22__value_H_22_ = 280,
-     GT_H_27__value_H_27_ = 281,
-     GT_H_22__literal_H_22_ = 282,
-     GT_H_27__literal_H_27_ = 283,
-     GT_H_22__typed_MINUS_literal_H_22_ = 284,
-     GT_H_27__typed_MINUS_literal_H_27_ = 285,
-     GT_H_22__datatype_H_22_ = 286,
-     GT_H_27__datatype_H_27_ = 287,
-     GT_H_22__xml_COLON_lang_H_22_ = 288,
-     GT_H_27__xml_COLON_lang_H_27_ = 289,
-     STRING_LITERAL2 = 290,
-     STRING_LITERAL1 = 291
+     GT_H_22__boolean_H_22_ = 271,
+     GT_H_27__boolean_H_27_ = 272,
+     IT_false = 273,
+     IT_true = 274,
+     GT_H_27__results_H_27_ = 275,
+     GT_H_22__bindings_H_22_ = 276,
+     GT_H_27__bindings_H_27_ = 277,
+     GT_H_22__uri_H_22_ = 278,
+     GT_H_27__uri_H_27_ = 279,
+     GT_H_22__bnode_H_22_ = 280,
+     GT_H_27__bnode_H_27_ = 281,
+     GT_H_22__type_H_22_ = 282,
+     GT_H_27__type_H_27_ = 283,
+     GT_H_22__value_H_22_ = 284,
+     GT_H_27__value_H_27_ = 285,
+     GT_H_22__literal_H_22_ = 286,
+     GT_H_27__literal_H_27_ = 287,
+     GT_H_22__typed_MINUS_literal_H_22_ = 288,
+     GT_H_27__typed_MINUS_literal_H_27_ = 289,
+     GT_H_22__datatype_H_22_ = 290,
+     GT_H_27__datatype_H_27_ = 291,
+     GT_H_22__xml_COLON_lang_H_22_ = 292,
+     GT_H_27__xml_COLON_lang_H_27_ = 293,
+     STRING_LITERAL2 = 294,
+     STRING_LITERAL1 = 295
    };
 
     };
@@ -339,7 +345,7 @@ namespace w3c_sw {
     /* Tables.  */
     /// For a state, the index in \a yytable_ of its portion.
     static const short int yypact_[];
-    static const signed char yypact_ninf_;
+    static const short int yypact_ninf_;
 
     /// For a state, default reduction number.
     /// Unless\a  yytable_ specifies something else to do.
@@ -357,7 +363,7 @@ namespace w3c_sw {
     static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const unsigned char yycheck_[];
+    static const short int yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];
@@ -432,7 +438,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 436 "lib/JSONresultsParser/JSONresultsParser.hpp"
+#line 442 "lib/JSONresultsParser/JSONresultsParser.hpp"
 
 
 

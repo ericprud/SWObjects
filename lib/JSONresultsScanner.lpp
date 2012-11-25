@@ -78,7 +78,11 @@ GT_H_27__link_H_27_		"'link'"
 GT_H_22__vars_H_22_		"\"vars\""
 GT_H_27__vars_H_27_		"'vars'"
 GT_H_22__results_H_22_		"\"results\""
-GT_H_27__results_H_27_		"'results'"
+GT_H_27__results_H_27_		"'boolean'"
+GT_H_22__boolean_H_22_		"\"boolean\""
+GT_H_27__boolean_H_27_		"'results'"
+IT_false		"false"
+IT_true		"true"
 GT_H_22__bindings_H_22_		"\"bindings\""
 GT_H_27__bindings_H_27_		"'bindings'"
 GT_H_22__uri_H_22_		"\"uri\""
@@ -125,6 +129,10 @@ LINEFEED		(\r\n|\r|\n)
 {GT_H_27__vars_H_27_}		{return token::GT_H_27__vars_H_27_;}
 {GT_H_22__results_H_22_}		{return token::GT_H_22__results_H_22_;}
 {GT_H_27__results_H_27_}		{return token::GT_H_27__results_H_27_;}
+{GT_H_22__boolean_H_22_}		{return token::GT_H_22__boolean_H_22_;}
+{GT_H_27__boolean_H_27_}		{return token::GT_H_27__boolean_H_27_;}
+{IT_true}		{return token::IT_true;}
+{IT_false}		{return token::IT_false;}
 {GT_H_22__bindings_H_22_}		{return token::GT_H_22__bindings_H_22_;}
 {GT_H_27__bindings_H_27_}		{return token::GT_H_27__bindings_H_27_;}
 {GT_H_22__uri_H_22_}		{return token::GT_H_22__uri_H_22_;}

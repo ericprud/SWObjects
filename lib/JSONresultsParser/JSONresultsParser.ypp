@@ -93,6 +93,7 @@ protected:
 
     void startBindingSet () {
 	curResultSet = new ResultSet(atomFactory);
+	delete *(curResultSet->begin());
 	curResultSet->erase(curResultSet->begin());
     }
 
@@ -171,6 +172,7 @@ public:
 
 %union {
     const std::string* p_str;
+    bool p_bool;
     const TTerm* p_TTerm;
     const URI* p_URI;
     const BNode* p_BNode;
@@ -185,7 +187,8 @@ public:
 /* Language tokens */
 %token GT_LCURLEY GT_COMMA GT_RCURLEY GT_COLON GT_LBRACKET GT_RBRACKET GT_H_22__head_H_22_ 
        GT_H_27__head_H_27_ GT_H_22__link_H_22_ GT_H_27__link_H_27_ GT_H_22__vars_H_22_ 
-       GT_H_27__vars_H_27_ GT_H_22__results_H_22_ GT_H_27__results_H_27_ GT_H_22__bindings_H_22_ 
+       GT_H_27__vars_H_27_ GT_H_22__results_H_22_ GT_H_22__boolean_H_22_ GT_H_27__boolean_H_27_
+       IT_false IT_true GT_H_27__results_H_27_ GT_H_22__bindings_H_22_ 
        GT_H_27__bindings_H_27_ GT_H_22__uri_H_22_ GT_H_27__uri_H_27_ GT_H_22__bnode_H_22_ 
        GT_H_27__bnode_H_27_ GT_H_22__type_H_22_ GT_H_27__type_H_27_ GT_H_22__value_H_22_ 
        GT_H_27__value_H_27_ GT_H_22__literal_H_22_ GT_H_27__literal_H_27_
@@ -197,6 +200,7 @@ public:
 %type <p_str> word value lang _O_QGT_COMMA_E_S_Qlang_E_C _Q_O_QGT_COMMA_E_S_Qlang_E_C_E_Opt STRING_LITERAL2 STRING_LITERAL1
 %type <p_TTerm> RDFterm v_all vt_all
 %type <p_URI> t_uri datatype
+%type <p_bool> _O_QtrueWord_E_Or_QfalseWord_E_C
 %type <p_BNode> t_bnode
 %type <p_literal> t_plainLiteral t_typedLiteral d_typedLiteral l_plainLiteral
                   _O_Qlang_E_S_QGT_COMMA_E_S_Qvalue_E_Or_Qvalue_E_S_QGT_COMMA_E_S_Qlang_E_Opt_C
@@ -235,7 +239,7 @@ Top:
 ;
 
 head:
-    headWord GT_COLON GT_LCURLEY _O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C GT_RCURLEY	
+    headWord GT_COLON GT_LCURLEY _Q_O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C_E_Opt GT_RCURLEY	
 ;
 
 _O_QGT_COMMA_E_S_Q_link_E_C:
@@ -250,6 +254,11 @@ _Q_O_QGT_COMMA_E_S_Q_link_E_C_E_Opt:
 _O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C:
     _link GT_COMMA vars	
   | vars _Q_O_QGT_COMMA_E_S_Q_link_E_C_E_Opt	
+;
+
+_Q_O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C_E_Opt:
+    
+  | _O_Q_link_E_S_QGT_COMMA_E_S_Qvars_E_Or_Qvars_E_S_QGT_COMMA_E_S_Q_link_E_Opt_C	
 ;
 
 _link:
@@ -280,6 +289,22 @@ _Q_O_QGT_COMMA_E_S_Qword_E_C_E_Star:
 
 results:
     resultsWord GT_COLON GT_LCURLEY bindings GT_RCURLEY	
+  | booleanWord GT_COLON _O_QtrueWord_E_Or_QfalseWord_E_C	{
+      driver.curResultSet->resultType = ResultSet::RESULT_Boolean;
+      if ($3 == true)
+	  driver.curResultSet->clear();
+    }
+;
+
+_O_QtrueWord_E_Or_QfalseWord_E_C:
+    trueWord	{
+	$$ = true;
+	//	delete $1;
+    }
+  | falseWord	{
+	$$ = false;
+	//	delete $1;
+    }
 ;
 
 bindings:
@@ -515,6 +540,19 @@ resultsWord:
   | GT_H_27__results_H_27_	
 ;
 
+booleanWord:
+    GT_H_22__boolean_H_22_	
+  | GT_H_27__boolean_H_27_	
+;
+
+trueWord:
+    IT_true	
+;
+
+falseWord:
+    IT_false	
+;
+
 bindingsWord:
     GT_H_22__bindings_H_22_	
   | GT_H_27__bindings_H_27_	
@@ -575,6 +613,15 @@ word:
     }
   | resultsWord	{
       $$ = new std::string("results");
+    }
+  | booleanWord	{
+      $$ = new std::string("boolean");
+    }
+  | trueWord	{
+      $$ = new std::string("true");
+    }
+  | falseWord	{
+      $$ = new std::string("false");
     }
   | bindingsWord	{
       $$ = new std::string("bindings");
