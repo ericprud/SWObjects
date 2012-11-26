@@ -115,15 +115,31 @@ namespace w3c_sw {
 		    
 	}
 	const BasicGraphPattern* getGraph (const TTerm* name) {
+	    if (name == NULL)
+		name = DefaultGraph;
 	    graphmap_type::const_iterator vi = graphs.find(name);
 	    return vi == graphs.end() ? NULL : vi->second;
 	}
 	virtual BasicGraphPattern* findGraph(const TTerm* name) const;
 	virtual BasicGraphPattern* ensureGraph(const TTerm* name);
-	void ensureGraphs(std::set<const TTerm*> names) {
+	void ensureGraphs (std::set<const TTerm*> names) {
 	    for (std::set<const TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it)
 		ensureGraph(*it);
 	}
+	bool eraseGraph (const TTerm* name) {
+	    if (name == NULL || name == DefaultGraph) {
+		findGraph(DefaultGraph)->clearTriples();
+		return true;
+	    } else {
+		BasicGraphPattern* eraseMe = findGraph(name);
+		if (!eraseMe)
+		    return false;
+		// delete eraseMe;
+		graphs.erase(name);
+		return true;
+	    }
+	}
+	bool moveGraph(const TTerm* from, const TTerm* to);
 	virtual bool isDefaultGraph (const TTerm* t) const {
 	    return t == DefaultGraph;
 	}

@@ -54,6 +54,16 @@ namespace w3c_sw {
 	}
     }
 
+    bool RdfDB::moveGraph (const TTerm* from, const TTerm* to) {
+	const BasicGraphPattern* source = getGraph(from);
+	BasicGraphPattern* target = ensureGraph(to);
+	for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
+	    target->addTriplePattern(*it);
+	//	graphs[to] = graphs[from];
+	// graphs.erase(from);
+	eraseGraph(from);
+	return true;
+    }
 
     bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP,
 			  std::string nameStr, std::string baseURI,

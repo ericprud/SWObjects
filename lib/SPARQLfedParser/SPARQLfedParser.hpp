@@ -294,6 +294,8 @@ namespace w3c_sw {
     struct {e_distinctness distinctness; const Expression* p_Expression;} p_DistExprPair;
     s_OrderConditionPair p_OrderConditionPair;
     std::vector<s_OrderConditionPair>* p_OrderConditions;
+    s_UsingPair p_UsingPair;
+    std::vector<s_UsingPair>* p_UsingPairs;
     TableConjunction* p_TableConjunction;
     TableDisjunction* p_TableDisjunction;
 
@@ -357,7 +359,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 361 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 363 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -735,7 +737,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 739 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 741 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

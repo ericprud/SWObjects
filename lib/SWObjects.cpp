@@ -2636,8 +2636,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     ResultSet* OperationSet::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 	for (std::vector<const Operation*>::const_iterator it = operations.begin();
-	     it != operations.end(); ++it)
-	    (*it)->execute(db, rs);
+	     it != operations.end(); ++it) {
+	    ResultSet island(*rs);
+	    (*it)->execute(db, &island);
+	}
 	return rs;
     }
 
@@ -2739,6 +2741,152 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
 	return rs;
     }
+
+    ResultSet* Load::execute (RdfDB* db, ResultSet* rs) const {
+	BasicGraphPattern* source = db->findGraph(m_from);
+	if (source) {
+	    BasicGraphPattern* target = db->ensureGraph(m_into);
+	    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
+		target->addTriplePattern(*it);
+	} else if (m_Silence == SILENT_No)
+	    throw std::runtime_error(m_from
+				     ? ("Source graph " + m_from->toString() + " not found.")
+				     : std::string("Source default graph not found."));
+	return rs;
+    }
+
+    void clearNamedGraphs (RdfDB* db) {
+	std::set<const TTerm*> s = db->getGraphNames();
+	for (std::set<const TTerm*>::const_iterator it = s.begin();
+	     it != s.end(); ++it) {
+	    db->findGraph(*it)->clearTriples();
+	}
+    }
+    ResultSet* Clear::execute (RdfDB* db, ResultSet* rs) const {
+	if (m__QGraphIRI_E_Opt->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/DEFAULT") {
+	    db->findGraph(DefaultGraph)->clearTriples();
+	} else if (m__QGraphIRI_E_Opt->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/NAMED") {
+	    clearNamedGraphs(db);
+	} else if (m__QGraphIRI_E_Opt->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/ALL") {
+	    db->findGraph(DefaultGraph)->clearTriples();
+	    clearNamedGraphs(db);
+	} else {
+	    BasicGraphPattern* clearMe = db->findGraph(m__QGraphIRI_E_Opt);
+	    if (clearMe)
+		clearMe->clearTriples();
+	    else if (m_Silence == SILENT_No)
+		throw std::runtime_error(clearMe
+					 ? ("Source graph " + clearMe->toString() + " not found.")
+					 : std::string("Source default graph not found."));
+	}
+	return rs;
+    }
+
+    ResultSet* Create::execute (RdfDB* db, ResultSet* rs) const {
+	const BasicGraphPattern* createMe = db->getGraph(m_GraphIRI);
+	if (createMe) {
+	    if (m_Silence == SILENT_No)
+		throw std::runtime_error(createMe
+					 ? ("Source graph " + createMe->toString() + " already existent.")
+					 : std::string("Source default graph already existent."));
+	} else {
+	    db->ensureGraph(m_GraphIRI);
+	}
+	return rs;
+    }
+
+    void eraseNamedGraphs (RdfDB* db) {
+	std::set<const TTerm*> s = db->getGraphNames();
+	for (std::set<const TTerm*>::const_iterator it = s.begin();
+	     it != s.end(); ++it) {
+	    delete db->findGraph(*it);
+	    db->eraseGraph(*it);
+	}
+    }
+    ResultSet* Drop::execute (RdfDB* db, ResultSet* rs) const {
+	if (m_GraphIRI->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/DEFAULT") {
+	    db->findGraph(DefaultGraph)->clearTriples();
+	} else if (m_GraphIRI->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/NAMED") {
+	    eraseNamedGraphs(db);
+	} else if (m_GraphIRI->getLexicalValue() == "tag:eric@w3.org,2012-swobjparm/ALL") {
+	    db->findGraph(DefaultGraph)->clearTriples();
+	    eraseNamedGraphs(db);
+	} else {
+	    BasicGraphPattern* delMe = db->findGraph(m_GraphIRI);
+	    if (!delMe) {
+		if (m_Silence == SILENT_No)
+		    throw std::runtime_error(delMe
+					     ? ("Source graph " + delMe->toString() + " not found.")
+					     : std::string("Source default graph not found."));
+	    } else {
+		delete delMe;
+		db->eraseGraph(m_GraphIRI);
+	    }
+	}
+	return rs;
+    }
+
+    ResultSet* Add::execute (RdfDB* db, ResultSet* rs) const {
+	const BasicGraphPattern* source = db->getGraph(from);
+	if (source) {
+	    BasicGraphPattern* target = db->ensureGraph(to);
+	    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
+		target->addTriplePattern(*it);
+	} else if (m_Silence == SILENT_No)
+	    throw std::runtime_error(from
+				     ? ("Source graph " + from->toString() + " not found.")
+				     : std::string("Source default graph not found."));
+	return rs;
+    }
+
+    ResultSet* Move::execute (RdfDB* db, ResultSet* rs) const {
+	const BasicGraphPattern* source = db->getGraph(from);
+	if (!source) {
+	    if (m_Silence == SILENT_Yes)
+		return rs;
+	    else
+		throw std::runtime_error(from
+					 ? ("Source graph " + from->toString() + " not found.")
+					 : std::string("Source default graph not found."));
+	}
+	if (to == from)
+	    return rs;
+
+	BasicGraphPattern* target = db->findGraph(to);
+	if (target) {
+	    if (to == NULL || to == DefaultGraph) {
+		target->clearTriples();
+	    } else {
+		delete target;
+		db->eraseGraph(to);
+	    }
+	}
+	db->moveGraph(from, to);
+	return rs;
+    }
+
+    ResultSet* Copy::execute (RdfDB* db, ResultSet* rs) const {
+	BasicGraphPattern* target = db->findGraph(to);
+	if (target) {
+	    // apparently it's ok to silently tromp the target when not SILENT
+	    // if (m_Silence == SILENT_No)
+	    // 	throw std::runtime_error(from
+	    // 				 ? ("Target graph " + to->toString() + " already existent.")
+	    // 				 : std::string("Target default graph already existent."));
+	    target->clearTriples();
+	}
+	const BasicGraphPattern* source = db->getGraph(from);
+	if (source) {
+	    target = db->ensureGraph(to);
+	    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
+		target->addTriplePattern(*it);
+	} else if (m_Silence == SILENT_No)
+	    throw std::runtime_error(from
+				     ? ("Source graph " + from->toString() + " not found.")
+				     : std::string("Source default graph not found."));
+	return rs;
+    }
+
 
     const TTerm* FunctionCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator*  evaluator, TTerm::String2BNode* bnodeMap, const RdfDB*  db) const {
 

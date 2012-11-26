@@ -261,6 +261,8 @@ public:
     struct {e_distinctness distinctness; const Expression* p_Expression;} p_DistExprPair;
     s_OrderConditionPair p_OrderConditionPair;
     std::vector<s_OrderConditionPair>* p_OrderConditions;
+    s_UsingPair p_UsingPair;
+    std::vector<s_UsingPair>* p_UsingPairs;
     TableConjunction* p_TableConjunction;
     TableDisjunction* p_TableDisjunction;
 
@@ -397,6 +399,8 @@ public:
 %type <p_LimitOffsetPair> LimitOffsetClauses _QLimitOffsetClauses_E_Opt
 			  LimitClause _QLimitClause_E_Opt
 			  OffsetClause _QOffsetClause_E_Opt
+%type <p_UsingPair> UsingClause _O_Qiri_E_Or_QIT_NAMED_E_S_Qiri_E_C
+%type <p_UsingPairs> _QUsingClause_E_Star
 %type <p_OrderConditions> _QOrderClause_E_Opt OrderClause
 			  _QOrderCondition_E_Plus
 %type <p_OrderConditionPair> OrderCondition
@@ -1212,13 +1216,9 @@ _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt:
 ;
 
 Update:
-    Prologue Update1	{
-	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
-	ret->push_back($2);
-	driver.root = ret;
-      } _Q_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt	{
+    Prologue _Q_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt	{
 	  $$ = driver.root;
-	}
+      }
 ;
 
 _O_QGT_SEMI_E_S_QUpdate_E_C:
@@ -1231,7 +1231,11 @@ _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt:
 ;
 
 _O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C:
-    Update1 _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt	
+    Update1	{
+	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
+	ret->push_back($1);
+	driver.root = ret;
+      } _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt	
 ;
 
 _Q_O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C_E_Opt:
@@ -1343,9 +1347,12 @@ DeleteWhere:
 
 // <Modify>
 Modify:
+    // $1:WITH <iri>                 $2:DEL|INS|DEL INS                                            $3:USING NAMED? <iri> $4:CONSTRUCT { ... }                         $5:WHERE $6:{ ... }
     _Q_O_QIT_WITH_E_S_Qiri_E_C_E_Opt _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt IT_WHERE GroupGraphPattern	{
 	if ($1)
 	    w3c_sw_NEED_IMPL("WITH <URI> (DELETE INSERT?|INSERT) ...");
+	if ($3)
+	    w3c_sw_NEED_IMPL("USING <URI> ...");
 	$$ = new Modify($2.del, $2.ins, new WhereClause(driver.ensureGraphPattern()), $4);
 	driver.curOp = NULL;
     }
@@ -1383,9 +1390,14 @@ _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C:
 ;
 
 _QUsingClause_E_Star:
-    
+    {
+	$$ = NULL;
+    }
   | _QUsingClause_E_Star UsingClause	{
-	w3c_sw_NEED_IMPL("_QUsingClause_E_Star");
+	if ($1 == NULL)
+	    $1 = new std::vector<s_UsingPair>();
+	$1->push_back($2);
+	$$ = $1;
     }
 ;
 
@@ -1416,16 +1428,18 @@ InsertClause:
 
 UsingClause:
     IT_USING _O_Qiri_E_Or_QIT_NAMED_E_S_Qiri_E_C	{
-	w3c_sw_NEED_IMPL("@@");
+	$$ = $2;
     }
 ;
 
 _O_Qiri_E_Or_QIT_NAMED_E_S_Qiri_E_C:
     iri	{
-	w3c_sw_NEED_IMPL("@@");
+	$$.named = false;
+	$$.name = $1;
     }
   | IT_NAMED iri	{
-	w3c_sw_NEED_IMPL("@@");
+	$$.named = true;
+	$$.name = $2;
     }
 ;
 
@@ -1454,14 +1468,14 @@ GraphRefAll:
 	$$ = $1;
     }
   | IT_DEFAULT	{
-	w3c_sw_NEED_IMPL("DEFAULT");
-      }
+	$$ = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/DEFAULT");
+    }
   | IT_NAMED	{
-	w3c_sw_NEED_IMPL("NAMED");
-      }
+	$$ = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/NAMED");
+    }
   | IT_ALL	{
-	w3c_sw_NEED_IMPL("ALL");
-      }
+	$$ = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/ALL");
+    }
 ;
 // </Modify>
 

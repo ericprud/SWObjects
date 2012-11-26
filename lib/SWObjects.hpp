@@ -2240,6 +2240,7 @@ typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 #define OFFSET_None -1
 typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
 typedef enum { SILENT_Yes, SILENT_No } e_Silence;
+typedef struct {bool named; const URI* name;} s_UsingPair;
 
 /*
 TableOperation class hierarchy:               Base
@@ -3233,7 +3234,7 @@ public:
     Load (e_Silence p_Silence, const URI* p_from, const URI* p_into) : Operation(), m_Silence(p_Silence), m_from(p_from), m_into(p_into) {  }
     ~Load () {  }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Load::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3247,7 +3248,7 @@ public:
     Clear (e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) : Operation(), m_Silence(p_Silence), m__QGraphIRI_E_Opt(p__QGraphIRI_E_Opt) { }
     ~Clear () {  }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Clear::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3261,7 +3262,7 @@ public:
     Create (e_Silence p_Silence, const URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Create () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Create::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3275,7 +3276,7 @@ public:
     Drop (e_Silence p_Silence, const URI* p_GraphIRI) : Operation(), m_Silence(p_Silence), m_GraphIRI(p_GraphIRI) {  }
     ~Drop () { /* m_GraphIRI is centrally managed */ }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Drop::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3301,7 +3302,7 @@ public:
     Add (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Add () {  }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Add::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3312,7 +3313,7 @@ public:
     Move (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Move () {  }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Move::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }
@@ -3323,7 +3324,7 @@ public:
     Copy (e_Silence p_Silence, const URI* from, const URI* to) : Displacement(p_Silence, from, to) {  }
     ~Copy () {  }
     virtual void express(Expressor* p_expressor) const;
-    virtual ResultSet* execute (RdfDB*, ResultSet* = NULL) const { w3c_sw_NEED_IMPL("Copy::execute"); }
+    virtual ResultSet* execute(RdfDB*, ResultSet* = NULL) const;
     virtual bool operator== (const Operation&) const {
 	return false;
     }

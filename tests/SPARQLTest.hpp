@@ -57,6 +57,14 @@ TurtleSDriver turtleParser(BASE_URI, &F);
 TrigSDriver trigParser(BASE_URI, &F);
 RdfXmlParser GRdfXmlParser(BASE_URI, &F, &P);
 
+struct LabeledGraph {
+    const char* source;
+    const char* name;
+    LabeledGraph (const char* source, const char* name)
+	: source(source), name(name)
+    {  }
+};
+
 /* This is like a normal RdfDB except that it prepends file load paths with
  * directory in which the test is located.
  * 
@@ -72,7 +80,7 @@ struct MeasuredRS : public ResultSet {
      *   a query to peform.
      */
 
-    void read (std::string name, std::string baseURI, BasicGraphPattern* g) {
+    static void read (std::string name, std::string baseURI, BasicGraphPattern* g) {
 	IStreamContext istr(name, IStreamContext::FILE);
 	if (name.substr(name.size()-4, 4) == ".rdf") {
 	    GRdfXmlParser.setBase(name);
@@ -115,6 +123,34 @@ struct MeasuredRS : public ResultSet {
 
 	/* Exectute query. */
 	setRdfDB(&constructed);
+	query->execute(&d, this);
+    }
+
+    MeasuredRS (const char* defGraph, 
+		const LabeledGraph namedGraphs[], size_t namedCount, 
+		const char* queryPath) : ResultSet(&F) {
+
+	std::string baseURI(queryPath);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	Operation* query;
+
+	/* Parse query. */
+	{
+	    IStreamContext istr(queryPath, IStreamContext::FILE);
+	    sparqlParser.setBase(baseURI);
+	    query = sparqlParser.parse(istr);
+	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
+	}
+
+	/* Parse data. */
+	if (defGraph != NULL)
+	    read(defGraph, baseURI, d.ensureGraph(NULL));
+
+	for (size_t i = 0; i < namedCount; ++i)
+	    read(namedGraphs[i].source, baseURI, d.ensureGraph(F.getURI(namedGraphs[i].name)));
+
+	/* Exectute query. */
+	setRdfDB(&d);
 	query->execute(&d, this);
     }
 
@@ -348,4 +384,35 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
     } catch (std::exception& s) {					       \
 	BOOST_ERROR ( s.what() );					       \
     }
+
+/* ReferenceDB -- loads an RDF db from LabeledGraphs.
+ */
+struct ReferenceDB : public RdfDB {
+    ReferenceDB (const char* defGraph, 
+		 const LabeledGraph namedGraphs[], size_t namedCount, 
+		 const char* queryPath)
+	: RdfDB() {
+
+	std::string baseURI(queryPath);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+
+	/* Parse data. */
+	if (defGraph != NULL)
+	    MeasuredRS::read(defGraph, baseURI, ensureGraph(NULL));
+
+	for (size_t i = 0; i < namedCount; ++i)
+	    MeasuredRS::read(namedGraphs[i].source, baseURI, ensureGraph(F.getURI(namedGraphs[i].name)));
+    }
+
+};
+
+// /* Compare a measured ResultSet to an encapsulated refrence ResultSet.
+//  */
+// bool operator== (ResultSet const& measured, ReferenceDB const& expected) {
+//     return measured == *expected.reference;
+// }
+
+// std::ostream& operator<< (std::ostream& os, ReferenceDB const& my) {
+//     return my.print(os);
+// }
 

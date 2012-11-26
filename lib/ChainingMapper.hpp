@@ -831,7 +831,7 @@ namespace w3c_sw {
 	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
 	const Operation* map (const Operation* query) {
 	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
-	    return op;
+	    // return op;
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7
 	    op->express(&dup);
 	    delete op;
