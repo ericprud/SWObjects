@@ -356,6 +356,18 @@ public:
 	p_ArgList->express(this);
 	xml->close();
     }
+    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	xml->open("AggregateCall");
+	p_IRIref->express(this);
+	p_ArgList->express(this);
+	xml->attribute
+	    ("cardinality", 
+	     distinctness == DIST_distinct ? "DISTINCT" : "ALL");
+	if (scalarVals)
+	    for (AggregateCall::ScalarVals::const_iterator it = scalarVals->begin(); it != scalarVals->end(); ++it)
+		xml->attribute(it->first, it->second);
+	xml->close();
+    }
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	xml->open("FunctionCallExpression");
 	p_FunctionCall->express(this);

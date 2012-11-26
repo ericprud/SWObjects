@@ -3528,6 +3528,10 @@ private:
     e_distinctness distinctness;
 public:
     struct ScalarVals : public std::map<std::string, std::string> {
+	ScalarVals () {  }
+	ScalarVals (ScalarVals::const_iterator begin, ScalarVals::const_iterator end)
+	    : std::map<std::string, std::string>(begin, end)
+	{  }
 	std::string getOrDefault (std::string key, std::string def) const {
 	    const_iterator it = find(key);
 	    if (it == end())
@@ -3536,10 +3540,14 @@ public:
 	}
     };
     ScalarVals scalarVals;
+    AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const ArgList* p_ArgList, ScalarVals scalarVals)
+	: FunctionCall (p_IRIref, p_ArgList), distinctness(distinctness), scalarVals(scalarVals)
+    {  }
     AggregateCall (const URI* p_IRIref, e_distinctness distinctness, const Expression* arg1, ScalarVals scalarVals)
 	: FunctionCall (p_IRIref, arg1, NULL, NULL), distinctness(distinctness), scalarVals(scalarVals)
     {  }
     ~AggregateCall () {  }
+    virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* eval(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const;
     bool operator== (const AggregateCall& ref) const {
 	if (distinctness != ref.distinctness ||
@@ -4350,6 +4358,7 @@ public:
     virtual void posExpression(const TTermExpression* const self, const TTerm* p_TTerm) = 0;
     virtual void argList(const ArgList* const self, ProductionVector<const Expression*>* expressions) = 0;
     virtual void functionCall(const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) = 0;
+    virtual void aggregateCall(const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) = 0;
     virtual void functionCallExpression(const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) = 0;
     virtual void existsExpression(const ExistsExpression* const, const TableOperation* p_TableOperation) = 0;
 /* Expressions */
@@ -4562,6 +4571,10 @@ public:
 	p_IRIref->express(this);
 	p_ArgList->express(this);
     }
+    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	p_IRIref->express(this);
+	p_ArgList->express(this);
+    }
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
     }
@@ -4652,6 +4665,7 @@ public:
 	virtual void posExpression (const TTermExpression* const, const TTerm* p_TTerm) {  }
 	virtual void argList (const ArgList* const, ProductionVector<const Expression*>* expressions) {  }
 	virtual void functionCall (const FunctionCall* const, const URI* p_IRIref, const ArgList* p_ArgList) {  }
+	virtual void aggregateCall(const AggregateCall* const, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const ScalarVals* scalarVals) {  }
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {  }
 	virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {  }
 	Expressions

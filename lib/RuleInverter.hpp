@@ -638,6 +638,10 @@ namespace w3c_sw {
 #endif /* !REGEX_LIB == SWOb_BOOST */
 	}
 
+	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	    w3c_sw_NEED_IMPL("AggregateCall inverter (can that even exist?)");
+	}
+
 	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_Expressions); /* links to RuleInverter::_Expressions */
 	    if (v == NULL)

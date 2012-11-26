@@ -504,6 +504,9 @@ void ArgList::express (Expressor* p_expressor) const {
 void FunctionCall::express (Expressor* p_expressor) const {
     p_expressor->functionCall(this, m_IRIref,m_ArgList);
 }
+void AggregateCall::express (Expressor* p_expressor) const {
+    p_expressor->aggregateCall(this, m_IRIref,m_ArgList, distinctness, &scalarVals);
+}
 void FunctionCallExpression::express (Expressor* p_expressor) const {
     p_expressor->functionCallExpression(this, m_FunctionCall);
 }

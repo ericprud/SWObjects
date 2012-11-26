@@ -872,11 +872,15 @@ namespace w3c_sw {
 	    return ret;
 	}
 	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
+	    // !! fix -- SELECT (CONCAT("b:", GROUP_CONCAT(?b)) AS ?bz)
+	    last.functionCall = new NoDelWrapper(p_IRIref, self);
+	}
+	/**
+	 * Aggregate function invocations:
+	 */
+	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
 	    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
 
-	    /**
-	     * Aggregate function invocations:
-	     */
 	    if (p_IRIref == TTerm::FUNC_sample) {
 		(*it)->express(this);
 		last.functionCall = new SampleState(groupIndexRef, sample(self), last.expression);
@@ -896,14 +900,10 @@ namespace w3c_sw {
 		last.functionCall = new MaxState(groupIndexRef, sample(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_group_concat) {
 		(*it)->express(this);
-		const AggregateCall::ScalarVals& svals = dynamic_cast<const AggregateCall*>(self)->scalarVals;
-		std::string sep = svals.getOrDefault("separator", " ");
+		std::string sep = scalarVals->getOrDefault("separator", " ");
 		last.functionCall = new GroupConcatState(groupIndexRef, sample(self), last.expression, sep);
 	    } else {
-		/**
-		 * Non-aggregate functions invoked 
-		 */
-		last.functionCall = new NoDelWrapper(p_IRIref, self);
+		throw "program flow exception -- unknown aggregate function: " + p_IRIref->toString();
 	    }
 	}
     };

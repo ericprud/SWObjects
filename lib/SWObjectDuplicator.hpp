@@ -451,6 +451,15 @@ namespace w3c_sw {
 	    p_IRIref->express(this);
 	    last.functionCall = new FunctionCall(last.tterms.uri, argList);
 	}
+	virtual void aggregateCall (const AggregateCall* const, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	    p_ArgList->express(this);
+	    const ArgList* argList = last.argList;
+	    p_IRIref->express(this);
+	    AggregateCall::ScalarVals newScalarVals = scalarVals
+		? AggregateCall::ScalarVals(scalarVals->begin(), scalarVals->end())
+		: AggregateCall::ScalarVals();
+	    last.functionCall = new AggregateCall(last.tterms.uri, distinctness, argList, newScalarVals);
+	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
 	    last.expression = last.functionCall ? new FunctionCallExpression(last.functionCall) : NULL;

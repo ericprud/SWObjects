@@ -95,6 +95,9 @@ namespace w3c_sw {
 	    }
 	    func = oldFunc;
 	}
+	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	    w3c_sw_NEED_IMPL("AggregateCall inverter (can that even exist?)");
+	}
 	virtual void functionCallExpression (const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
 	}

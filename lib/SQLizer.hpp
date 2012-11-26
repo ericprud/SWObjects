@@ -1146,6 +1146,9 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
 		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
+	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	    w3c_sw_NEED_IMPL("AggregateCall SQLizer (this will be super cool)");
+	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    w3c_sw_MARK;
 	    p_FunctionCall->express(this);
