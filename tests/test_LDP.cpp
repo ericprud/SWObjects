@@ -19,6 +19,7 @@
 #include "SPARQLfedParser/SPARQLfedParser.hpp"
 #include "TrigSParser/TrigSParser.hpp"
 #include "ServerInteraction.hpp"
+#include "../tests/SPARQLTest.hpp"
 
 #if HTTP_CLIENT != SWOb_DISABLED
   W3C_SW_WEBAGENT<> WebClient;
@@ -26,20 +27,10 @@
   #warning unable to test RDFa over HTTP
 #endif /* HTTP_CLIENT == SWOb_DISABLED */
 
-#if XML_PARSER != SWOb_DISABLED
-  W3C_SW_SAXPARSER P;
-#else
-  #error RDFa tests require an XML parser
-#endif
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).
  */
-#include <boost/test/unit_test.hpp>
-w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMatch:3"
-w3c_sw_DEBUGGING_FUNCTIONS();
-
-w3c_sw::AtomFactory F;
 
 // Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
 // test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff
@@ -58,19 +49,6 @@ struct CurlPOSTtoLDPservice : w3c_sw::ClientServerInteraction {
 	/* Note that in this [[ -d ' "+data+"' ]], the space after the -d
 	   prevents curl from interpreting a leading '@' as a marker for file
 	   from which to get the data.*/
-    }
-};
-
-/** ParsedResultSet - result set from a text string.
- */
-struct ParsedResultSet : public w3c_sw::ResultSet {
-    ParsedResultSet (std::string srt) : 
-	ResultSet(&F) {
-	delete *begin();
-	erase(begin());
-	w3c_sw::IStreamContext sptr(srt.c_str(), w3c_sw::IStreamContext::STRING, "text/sparql-results");
-	w3c_sw::TTerm::String2BNode bnodeMap;
-	parseTable(sptr, false, &bnodeMap);
     }
 };
 
@@ -131,27 +109,27 @@ struct RdfDBFromTrig : public w3c_sw::RdfDB {
 };
 
 
-/** OperationOnInvokedServer - client interactions with the server built into
- *  the bin/sparql binary.
- */
-struct OperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
-    EvaluatedPOSTresponseResultSet got;
-    ParsedResultSet expected;
-    RdfDBFromTrig endState;
-    RdfDBFromTrig expectedState;
+    /** POSTEDOperationOnInvokedServer - client interactions with the server built into
+     *  the bin/sparql binary.
+     */
+    struct POSTEDOperationOnInvokedServer : w3c_sw::SPARQLServerInteraction {
+	EvaluatedPOSTresponseResultSet got;
+	ParsedResultSet expected;
+	RdfDBFromTrig endState;
+	RdfDBFromTrig expectedState;
 
-    OperationOnInvokedServer (std::string serverParams, std::string serverPath, std::string postData, std::string query, std::string expect, std::string expectedState)
-	: w3c_sw::SPARQLServerInteraction(serverParams, serverPath, LOWPORT, HIPORT),
-	  got("http://localhost:" + boost::lexical_cast<std::string>(port) + serverPath,
-	      postData, w3c_sw::substituteQueryVariables(query, port)),
-	  expected(expect), endState(readServerState()), expectedState(expectedState)
-    {  }
-    std::string readServerState () {
-	serverS.clear();
-	readToExhaustion(serverPipe, serverS);
-	return serverS;
-    }
-};
+	POSTEDOperationOnInvokedServer (std::string serverParams, std::string serverPath, std::string postData, std::string query, std::string expect, std::string expectedState)
+	    : w3c_sw::SPARQLServerInteraction(serverParams, serverPath, LOWPORT, HIPORT),
+	      got("http://localhost:" + boost::lexical_cast<std::string>(port) + serverPath,
+		  postData, w3c_sw::substituteQueryVariables(query, port)),
+	      expected(&F, expect), endState(readServerState()), expectedState(expectedState)
+	{  }
+	std::string readServerState () {
+	    serverS.clear();
+	    readToExhaustion(serverPipe, serverS);
+	    return serverS;
+	}
+    };
 
 
 //BOOST_AUTO_TEST_SUITE( local )
@@ -175,7 +153,7 @@ BOOST_AUTO_TEST_CASE( bugz_curl ) {
 }
 
 BOOST_AUTO_TEST_CASE( bugz_client ) {
-    OperationOnInvokedServer i
+    POSTEDOperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "--LDP 'PREFIX : <http://bugs.example/ns#>\n"
 	 "       PREFIX ldp: <https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#>\n"
@@ -349,6 +327,21 @@ namespace LDBPexamples {
 }; // namespace LDBPexamples
 
 
+#define CONST_AND_UPDATE(START, MANIP, POST, END)			       \
+    try {								       \
+	ConstructAndUpdate measured(START, MANIP, POST);		       \
+	ReferenceDB expected(END, MANIP);			       	       \
+	BOOST_CHECK_EQUAL(measured.d, expected);			       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
+
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_curl ) {
     CurlPOSTtoLDPservice i
 	(// Server invocation -- construct a pattern from supplied graph.
@@ -395,7 +388,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_1_4_client ) {
 	+ LDBPexamples::asset1
 	;
 
-    OperationOnInvokedServer i
+    POSTEDOperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_1_4_client-before.trig --LDP '"
 	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",
@@ -466,7 +459,7 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
 	+ LDBPexamples::asset4
 	;
 
-    OperationOnInvokedServer i
+    POSTEDOperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_4_4_client-before.trig --LDP '"
 	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",
@@ -497,6 +490,62 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_4_4_client ) {
     BOOST_CHECK_EQUAL(i.endState, i.expectedState);
 }
 
+/** 
+ * 
+ */
+struct ConstructAndUpdate {
+    RdfDB d;
+    RdfDB constructed;
+    ResultSet rs;
+
+    /* SPARQUL tests consist of:
+     *   a trig (set of graphs) for input
+     *   a query to perform
+     */
+    ConstructAndUpdate (const char* initDB, const char* dataManipulation, const char* post)
+	: rs(&F) {
+ 
+	std::string baseURI(dataManipulation);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	const Modify* query;
+
+	/* Parse query. */
+	{
+	    sparqlParser.setBase(baseURI);
+	    IStreamContext istr(dataManipulation, IStreamContext::FILE);
+	    Operation* op = sparqlParser.parse(istr);
+	    const OperationSet* os = dynamic_cast<const OperationSet*>(op);
+	    assert(os->size() == 1);
+	    const Operation* first = *os->begin();
+	    query = dynamic_cast<const Modify*>(first);
+	    if (query == NULL)
+		throw std::runtime_error(std::string("LDP argument \"").
+					 append(dataManipulation).append("\" is not a MODIFY."));
+	    sparqlParser.clear(BASE_URI); // clear out namespaces and base URI.
+	}
+
+	/* Parse data. */
+	if (initDB != NULL)
+	    MeasuredRS::read(initDB, baseURI, &d);
+
+	RdfDB execDB(d);
+
+	if (post != NULL)
+	    MeasuredRS::read(post, baseURI, &execDB);
+
+	/* Exectute query. */
+	// rs.setRdfDB(&constructed);
+	// query->execute(&d, &rs);
+	query->bindVariables(&execDB, &rs); // bind variables (?NewObj, ?type, etc.) against execDB.
+	query->update(&d, &rs); // Update engine.db with INSERTs and DELETEs.
+	MakeNewBNode mb(&F);
+	BasicGraphPattern* defGP = constructed.findGraph(DefaultGraph);
+	query->construct(&constructed, &rs, &mb, defGP);
+    }
+    ~ConstructAndUpdate () {
+	delete sparqlParser.root;
+    }
+};
 
 BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
     std::string before =
@@ -517,8 +566,6 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
 	+ LDBPexamples::asset3
 	+ LDBPexamples::asset4
 	;
-
-    { WriteFile t("LDP/LDBP_pagingExample_5_4_client-before.trig", before); }
 
     std::string after =
 	LDBPexamples::turtlePrefixes +
@@ -548,7 +595,19 @@ BOOST_AUTO_TEST_CASE( LDBP_pagingExample_5_4_client ) {
 	+ LDBPexamples::asset5
 	;
 
-    OperationOnInvokedServer i
+    WriteFile("LDP/LDBP_pagingExample_5_4_client-before.trig", before);
+    WriteFile("LDP/LDBP_pagingExample.ru", LDBPexamples::modify);
+    WriteFile("LDP/LDBP_pagingExample_5_4_client-after.trig", after);
+    WriteFile("LDP/LDBP_pagingExample_5_4_post.ttl", LDBPexamples::post_5);
+
+    // Test via API.
+    CONST_AND_UPDATE("LDP/LDBP_pagingExample_5_4_client-before.trig",
+		     "LDP/LDBP_pagingExample.ru",
+		     "LDP/LDBP_pagingExample_5_4_post.ttl",
+		     "LDP/LDBP_pagingExample_5_4_client-after.trig");
+
+    // Test via sparql client/server.
+    POSTEDOperationOnInvokedServer i
 	(// Server invocation -- construct a pattern from supplied graph:
 	 "-d LDP/LDBP_pagingExample_5_4_client-before.trig --LDP '"
 	 + LDBPexamples::modify + "' --server-no-description --stop-after 1",

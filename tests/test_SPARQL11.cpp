@@ -1733,8 +1733,6 @@ BOOST_AUTO_TEST_CASE( insert_where_02 ) {
     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-02-g1-post.ttl", "http://example.org/g1")};
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( insert_where_02 ) */
-
-#ifdef WITH_USING
 BOOST_AUTO_TEST_CASE( insert_where_03 ) {
     // name: INSERT 03
     // manifest: data-sparql11/basic-update/manifest.ttl
@@ -1765,8 +1763,6 @@ BOOST_AUTO_TEST_CASE( insert_using_01 ) {
     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-using-01-g1-post.ttl", "http://example.org/g1"), LG("data-sparql11/basic-update/insert-using-01-g2-post.ttl", "http://example.org/g2")};
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( insert_using_01 ) */
-#endif /* WITH_USING */
-
 BOOST_AUTO_TEST_CASE( insert_05a ) {
     // name: INSERT same bnode twice
     // manifest: data-sparql11/basic-update/manifest.ttl
@@ -2143,12 +2139,10 @@ BOOST_AUTO_TEST_CASE( dawg_delete_07 ) {
     const char* defaultGraph_in = "data-sparql11/delete/delete-pre-01.ttl";
     LabeledGraph namedGraphs_in[] = {};
     const char* request = "data-sparql11/delete/delete-07.ru";
-    const char* defaultGraph_out = "data-sparql11/delete/delete-post-01s.ttl";
+    const char* defaultGraph_out = "data-sparql11/delete/delete-post-01f.ttl";
     LabeledGraph namedGraphs_out[] = {};
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( dawg_delete_07 ) */
-
-#ifdef WITH_USING
 BOOST_AUTO_TEST_CASE( dawg_delete_with_01 ) {
     // name: Simple DELETE 1 (WITH)
     // manifest: data-sparql11/delete/manifest.ttl
@@ -2269,8 +2263,6 @@ BOOST_AUTO_TEST_CASE( dawg_delete_using_06a ) {
     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/delete/delete-post-01f.ttl", "http://example.org/g1"), LG("data-sparql11/delete/delete-post-02f.ttl", "http://example.org/g2"), LG("data-sparql11/delete/delete-post-03f.ttl", "http://example.org/g3")};
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( dawg_delete_using_06a ) */
-#endif /* WITH_USING */
-
 BOOST_AUTO_TEST_CASE( dawg_drop_default_01 ) {
     // name: DROP DEFAULT
     // manifest: data-sparql11/drop/manifest.ttl

@@ -1,0 +1,5 @@
+@prefix o: <http://example.org/ontology/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+[] a o:Stock ; dcterms:title "Big Co." ;
+   o:value 200.02 ; dcterms:date "2012-01-05"^^xsd:date .

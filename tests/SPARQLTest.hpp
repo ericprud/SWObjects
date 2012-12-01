@@ -80,6 +80,25 @@ struct MeasuredRS : public ResultSet {
      *   a query to peform.
      */
 
+    static void read (std::string name, std::string baseURI, RdfDB* db) {
+	IStreamContext istr(name, IStreamContext::FILE);
+	if (name.substr(name.size()-4, 4) == ".rdf") {
+	    GRdfXmlParser.setBase(name);
+	    GRdfXmlParser.parse(db->ensureGraph(DefaultGraph), istr);
+	    GRdfXmlParser.clear(BASE_URI); // clear out namespaces and base URI.
+	} else if (name.substr(name.size()-4, 4) == ".ttl") {
+	    turtleParser.setGraph(db->ensureGraph(DefaultGraph));
+	    turtleParser.setBase(baseURI);
+	    turtleParser.parse(istr);
+	    turtleParser.clear(BASE_URI); // clear out namespaces and base URI.
+	} else {
+	    trigParser.setDB(db);
+	    trigParser.setBase(baseURI);
+	    trigParser.parse(istr);
+	    trigParser.clear(BASE_URI); // clear out namespaces and base URI.
+	}
+    }
+
     static void read (std::string name, std::string baseURI, BasicGraphPattern* g) {
 	IStreamContext istr(name, IStreamContext::FILE);
 	if (name.substr(name.size()-4, 4) == ".rdf") {
@@ -175,11 +194,19 @@ struct MeasuredRS : public ResultSet {
 
 	/* Parse data. */
 	if (input != NULL) {
-	    trigParser.setDB(&d);
-	    trigParser.setBase(baseURI);
-	    IStreamContext istr(input, IStreamContext::FILE);
-	    trigParser.parse(istr);
-	    trigParser.clear(BASE_URI);
+	    if (!::strcmp(input+::strlen(input)-4, ".ttl")) {
+		turtleParser.setGraph(d.ensureGraph(NULL));
+		turtleParser.setBase(baseURI);
+		IStreamContext ttl(input, IStreamContext::FILE);
+		turtleParser.parse(ttl);
+		turtleParser.clear(BASE_URI);
+	    } else {
+		trigParser.setDB(&d);
+		trigParser.setBase(baseURI);
+		IStreamContext istr(input, IStreamContext::FILE);
+		trigParser.parse(istr);
+		trigParser.clear(BASE_URI);
+	    }
 	}
 	/* Copy db so we can show the original. */
 	constructed = d;
@@ -404,6 +431,16 @@ struct ReferenceDB : public RdfDB {
 	    MeasuredRS::read(namedGraphs[i].source, baseURI, ensureGraph(F.getURI(namedGraphs[i].name)));
     }
 
+    ReferenceDB (const char* trig, const char* queryPath)
+	: RdfDB() {
+
+	std::string baseURI(queryPath);
+	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+
+	/* Parse data. */
+	if (trig != NULL)
+	    MeasuredRS::read(trig, baseURI, this);
+    }
 };
 
 // /* Compare a measured ResultSet to an encapsulated refrence ResultSet.
