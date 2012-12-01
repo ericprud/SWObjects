@@ -977,7 +977,7 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
-	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	    w3c_sw_FAIL("REPLACE");
 	    if (p_delete != NULL)
 		p_delete->express(this);
@@ -990,7 +990,7 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    if (p_WhereClause) p_WhereClause->express(this);
 	}
-	virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void del (const Delete* const, bool /* rangeOverUnboundVars */, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    w3c_sw_FAIL("DELET");
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);

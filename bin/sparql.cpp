@@ -1206,7 +1206,8 @@ int main(int ac, char* av[])
 		TheServer.runServer(handler, serverPort, servicePath, vm.count("server-no-description") == 0);
 	    }
 
-	    sw::RdfDB constructed(&TheServer.engine.xmlParser); // For operations which create a new database.
+	    // For operations which create a new database.
+	    sw::RdfDB constructed(NULL, &TheServer.engine.xmlParser);
 
 	    if (Query == NULL) {
 		if (Maps.begin() != Maps.end())
@@ -1242,7 +1243,7 @@ int main(int ac, char* av[])
 		    sw::IStreamContext iptr(cmp->getLexicalValue(), 
 					    sw::IStreamContext::NONE, 
 					    NULL, &TheServer.engine.webClient);
-		    sw::RdfDB refDB(&TheServer.engine.xmlParser);
+		    sw::RdfDB refDB(NULL, &TheServer.engine.xmlParser);
 		    // sw::ResultSet reference(&TheServer.engine.atomFactory, &refDB);
 		    sw::ResultSet reference(&TheServer.engine.atomFactory);
 		    reference.setRdfDB(&refDB);

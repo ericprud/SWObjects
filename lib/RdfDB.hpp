@@ -81,25 +81,33 @@ namespace w3c_sw {
 	static size_t DebugEnumerateLimit;
 	static bool GetGraphArguments;
 
-	RdfDB (SWSAXparser* xmlParser = NULL)
-	    : graphs(), webAgent(NULL), xmlParser(xmlParser), handler(&defaultHandler)
+	/** RdfDB: simple constructor with no GET or parsing facilities.
+	 */
+	RdfDB ()
+	    : graphs(), webAgent(NULL), xmlParser(NULL), handler(&defaultHandler)
 	{ ensureGraph(DefaultGraph); }
-	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL)
-	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), handler(&defaultHandler)
-	{ ensureGraph(DefaultGraph); }
-	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser, HandlerSet* handler)
+
+	/** RdfDB: constructor with GET and parsing facilities.
+	 */
+	RdfDB (SWWEBagent* webAgent, SWSAXparser* xmlParser = NULL, HandlerSet* handler = &defaultHandler)
 	    : graphs() , webAgent(webAgent), xmlParser(xmlParser), handler(handler)
 	{ ensureGraph(DefaultGraph); }
+
+	/** RdfDB: copy constructor.
+	 */
 	RdfDB (const RdfDB& ref)
 	    : graphs(ref.graphs), webAgent(ref.webAgent), xmlParser(xmlParser)
 	{  }
-	RdfDB (const DefaultGraphPattern* graph) : graphs(), handler(&defaultHandler) {
-	    BasicGraphPattern* bgp = ensureGraph(DefaultGraph);
-	    for (std::vector<const TriplePattern*>::const_iterator it = graph->begin();
-		 it != graph->end(); it++)
-		bgp->addTriplePattern(*it);
-	}
+
+	/** RdfDB: copy things like parsers and handlers from an
+	 * existing RdfDB, but don't copy the data.
+	 */
+	RdfDB (const RdfDB& ref, bool) // don't copy data
+	    : webAgent(ref.webAgent), xmlParser(xmlParser)
+	{  }
+
 	virtual ~RdfDB();
+
 	size_t size () const {
 	    size_t ret = 0;
 	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
@@ -140,6 +148,12 @@ namespace w3c_sw {
 	    }
 	}
 	bool moveGraph(const TTerm* from, const TTerm* to);
+
+	/** assignDefaultGraph - use @from as the default graph.
+	 * @param from: to new graph to serve as the default graph.
+	 * @return the last default graph.
+	 */
+	BasicGraphPattern* assignDefaultGraph(BasicGraphPattern* from);
 	virtual bool isDefaultGraph (const TTerm* t) const {
 	    return t == DefaultGraph;
 	}

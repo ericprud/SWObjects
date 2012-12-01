@@ -357,7 +357,7 @@ namespace w3c_sw {
 	    SolutionModifier* solutionModifier = last.solutionModifier;
 	    last.operation = new Ask(_DatasetClauses(p_DatasetClauses), where, solutionModifier);
 	}
-	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	    const Delete* del = NULL;
 	    if (p_delete != NULL) {
 		p_delete->express(this);
@@ -369,7 +369,10 @@ namespace w3c_sw {
 		ins = dynamic_cast<const Insert*>(last.operation);
 	    }
 	    p_WhereClause->express(this);
-	    last.operation = new Modify(del, ins, last.whereClause);
+	    std::vector<s_UsingPair>* copiedUsingGraphs = NULL;
+	    if (usingGraphs)
+		copiedUsingGraphs = new std::vector<s_UsingPair>(usingGraphs->begin(), usingGraphs->end());
+	    last.operation = new Modify(del, ins, last.whereClause, NULL, with, copiedUsingGraphs);
 	}
 	virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    WhereClause* where = NULL;
@@ -380,14 +383,14 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    last.operation = new Insert(last.tableOperation, where);
 	}
-	virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	    WhereClause* where = NULL;
 	    if (p_WhereClause != NULL) {
 		p_WhereClause->express(this);
 		where = last.whereClause;
 	    }
 	    p_GraphTemplate->express(this);
-	    last.operation = new Delete(last.tableOperation, where);
+	    last.operation = new Delete(rangeOverUnboundVars, last.tableOperation, where);
 	}
 	virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	    p_from->express(this);

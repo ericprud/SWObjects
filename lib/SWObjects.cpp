@@ -466,13 +466,13 @@ void Ask::express (Expressor* p_expressor) const {
     p_expressor->ask(this, m_DatasetClauses,m_WhereClause,m_SolutionModifier);
 }
 void Modify::express (Expressor* p_expressor) const {
-    p_expressor->modify(this, m_delete,m_insert,m_WhereClause);
+    p_expressor->modify(this, m_delete,m_insert,m_WhereClause,with,usingGraphs);
 }
 void Insert::express (Expressor* p_expressor) const {
     p_expressor->insert(this, m_GraphTemplate,m_WhereClause);
 }
 void Delete::express (Expressor* p_expressor) const {
-    p_expressor->del(this, m_GraphTemplate,m_WhereClause);
+    p_expressor->del(this, rangeOverUnboundVars, m_GraphTemplate,m_WhereClause);
 }
 void Load::express (Expressor* p_expressor) const {
     p_expressor->load(this, m_Silence,m_from,m_into);
@@ -885,14 +885,14 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		    if (subjs.size() < (size_t)perPage->getInt()) {
 			// Page is below capacity.
 			ret.newTail = TTerm::Unbound;
-			ret.newNil = TTerm::RDF_nil;
+			ret.newNil = TTerm::Unbound;
 			ret.curTail = ret.lastTail;
 		    } else {
 			// Page is at capacity; add NewObj to a new page.
 			ret.newTail = atomFactory->getURI
 			    (container->getLexicalValue() + "?p="
 			     + boost::lexical_cast<std::string>(ret.pageNo+1));
-			ret.newNil = TTerm::Unbound;
+			ret.newNil = TTerm::RDF_nil;
 			ret.curTail = ret.newTail;
 		    }
 		}
@@ -2639,6 +2639,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	     it != operations.end(); ++it) {
 	    ResultSet island(*rs);
 	    (*it)->execute(db, &island);
+	    rs->resultType = island.resultType; // last one wins. should always be Graphs for updates.
 	}
 	return rs;
     }
@@ -2702,13 +2703,63 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     ResultSet* Modify::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
-	if (m_WhereClause != NULL)
-	    m_WhereClause->bindVariables(db, rs);
+
+	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Modifying database\n" << *db << std::endl;
+
+	// with
+	BasicGraphPattern* oldDefault = NULL;
+	if (with) {
+	    BasicGraphPattern* from = db->findGraph(with);
+	    if (!from)
+		throw std::runtime_error
+		    ("can't name non-existent graph " + with->toString() + " the default graph");
+	    oldDefault = db->assignDefaultGraph(from);
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "hiding default graph\n";
+	}
+
+	RdfDB* queryDB = db;
+	// using
+	if (usingGraphs) {
+	    if (RdfDB::GetGraphArguments) {
+		for (std::vector<s_UsingPair>::const_iterator ds = usingGraphs->begin();
+		     ds != usingGraphs->end(); ds++) {
+		    std::string nameStr = ds->name->getLexicalValue();
+		    IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
+		    if (db->loadData(db->ensureGraph(ds->named ? ds->name : DefaultGraph), iptr, nameStr, nameStr, rs->getAtomFactory()))
+			throw nameStr + ":0: error: unable to parse web document";
+		}
+	    } else {
+		queryDB = new RdfDB(*db, true);
+		for (std::vector<s_UsingPair>::const_iterator ds = usingGraphs->begin();
+		     ds != usingGraphs->end(); ds++) {
+		    BasicGraphPattern* target = queryDB->ensureGraph(ds->named ? ds->name : DefaultGraph);
+		    BasicGraphPattern* source = db->findGraph(ds->name);
+		    //*target += *source;
+		    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
+			target->addTriplePattern(*it);
+		}
+	    }
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "seeing database\n" << *db << std::endl;
+	}
+
+	if (m_WhereClause != NULL) {
+	    m_WhereClause->bindVariables(queryDB, rs);
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced result set\n" << *rs << std::endl;
+	}
 	rs->resultType = ResultSet::RESULT_Graphs;
-	if (m_delete != NULL)
+	if (m_delete != NULL) {
 	    m_delete->execute(db, rs);
-	if (m_insert != NULL)
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "after deleting:\n" << *db << std::endl;
+	}
+	if (m_insert != NULL) {
 	    m_insert->execute(db, rs);
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "after inserting:\n" << *db << std::endl;
+	}
+
+	if (oldDefault != NULL) {
+	    db->assignDefaultGraph(oldDefault);
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "restoring default graph\n";
+	}
 	return rs;
     }
 
@@ -2738,7 +2789,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    m_WhereClause->bindVariables(db, rs);
 	TreatAsVar treatAsVar;
 	rs->resultType = ResultSet::RESULT_Graphs;
-	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL);
+	m_GraphTemplate->deletePattern(rs->getRdfDB() ? rs->getRdfDB() : db, rs, &treatAsVar, NULL, rangeOverUnboundVars); // !! db->ensureGraph(DefaultGraph)
 	return rs;
     }
 
@@ -3048,10 +3099,10 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    (*it)->construct(target, rs, evaluator, bgp);
     }
 
-    void TableConjunction::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+    void TableConjunction::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const {
 	for (std::vector<const TableOperation*>::const_iterator it = m_TableOperations.begin();
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
-	    (*it)->deletePattern(target, rs, evaluator, bgp);
+	    (*it)->deletePattern(target, rs, evaluator, bgp, rangeOverUnboundVars);
     }
 
     void TableDisjunction::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -3578,19 +3629,19 @@ compared against
 	}
     }
 
-    void GraphGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* /* bgp */) const {
+    void GraphGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* /* bgp */, bool rangeOverUnboundVars) const {
 	const URI* graphName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graphName != NULL) {
 	    /* GRAPH <x> { ?s ?p ?o } */
 	    BasicGraphPattern* bgp = target->ensureGraph(graphName);
-	    m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+	    m_TableOperation->deletePattern(target, rs, evaluator, bgp, rangeOverUnboundVars);
 	} else {
 	    /* GRAPH ?g { ?s ?p ?o } */
 	    for (ResultSetConstIterator result = rs->begin() ; result != rs->end(); result++) {
 		const TTerm* evaldGraphName = m_VarOrIRIref->evalTTerm(*result, evaluator);
 		if (evaldGraphName != TTerm::Unbound) {
 		    BasicGraphPattern* bgp = target->ensureGraph(evaldGraphName);
-		    m_TableOperation->deletePattern(target, rs, evaluator, bgp);
+		    m_TableOperation->deletePattern(target, rs, evaluator, bgp, rangeOverUnboundVars);
 		}
 	    }
 	}
@@ -3810,7 +3861,7 @@ compared against
 	// }
     }
 
-    void ServiceGraphPattern::deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    void ServiceGraphPattern::deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	throw std::string("@@ServiceGraphPattern::delete not yet written");
 	// const URI* serviceName = dynamic_cast<const URI*>(m_VarOrIRIref);
 	// if (serviceName != NULL) {
@@ -3882,7 +3933,7 @@ compared against
     void SADIGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	// RdfDB copyDB(*db);
 	RdfDB* requestDB = const_cast<RdfDB*>(db);
-	RdfDB responseDB(db->xmlParser);
+	RdfDB responseDB(NULL, db->xmlParser);
 	const URI* graph = dynamic_cast<const URI*>(m_VarOrIRIref);
 	if (graph != NULL)
 	    try {
@@ -3939,7 +3990,7 @@ compared against
     void SADIGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
     }
-    void SADIGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
+    void SADIGraphPattern::deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("@@SADIGraphPattern::delete not yet written");
     }
     TableOperation* SADIGraphPattern::getDNF () const {
@@ -3970,20 +4021,41 @@ compared against
 		(*triple)->construct(bgp, *result, rs->getAtomFactory(), evaluator);
     }
 
-    void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* /* evaluator */, BasicGraphPattern* bgp) const {
+    const TTerm* finalTerm (const TTerm* t, const Result* row) {
+	if ((*BasicGraphPattern::MappableTerm)(t))
+	    t = row->get(t);
+	return t;
+    }
+
+
+    void BasicGraphPattern::deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const {
 	if (bgp == NULL)
 	    bgp = target->ensureGraph(NULL);
 	for (std::vector<const TriplePattern*>::const_iterator constraint = m_TriplePatterns.begin();
 	     constraint != m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetConstIterator row = rs->begin() ; row != rs->end(); ++row) {
-		for (std::vector<const TriplePattern*>::iterator triple = bgp->m_TriplePatterns.begin();
-		     triple != bgp->m_TriplePatterns.end(); ) {
-		    ResultSet* island = (*row)->makeResultSet(rs->getAtomFactory());
-		    if ((*constraint)->bindVariables(*triple, false, island, island->begin())) // may need graphVar, graphName?
-			triple = bgp->erase(triple);
-		    else
-			triple++;
-		    delete island;
+		if (rangeOverUnboundVars) {
+		    for (std::vector<const TriplePattern*>::iterator triple = bgp->m_TriplePatterns.begin();
+			 triple != bgp->m_TriplePatterns.end(); ) {
+			ResultSet* island = (*row)->makeResultSet(rs->getAtomFactory());
+			if ((*constraint)->bindVariables(*triple, false, island, island->begin())) // may need graphVar, graphName?
+			    triple = bgp->erase(triple);
+			else
+			    triple++;
+			delete island;
+		    }
+		} else {
+		    const TTerm *s, *p, *o;
+		    if ((s = finalTerm((*constraint)->getS(), *row)) != NULL &&
+			(p = finalTerm((*constraint)->getP(), *row)) != NULL &&
+			(o = finalTerm((*constraint)->getO(), *row)) != NULL) {
+			for (std::vector<const TriplePattern*>::iterator triple = bgp->m_TriplePatterns.begin();
+			     triple != bgp->m_TriplePatterns.end(); )
+			    if ((*triple)->getS() == s && (*triple)->getP() == p && (*triple)->getO() == o)
+				triple = bgp->erase(triple);
+			    else
+				++triple;
+		    }
 		}
 	    }
 	}
@@ -4389,7 +4461,8 @@ namespace w3c_sw {
 
  	void linkFunctions () {
 	    if (false) TTerm::Unbound->str();
-	    const AtomFactory* af = NULL; if (false) af->str();
+	    AtomFactory af; af.str();
+	    ResultSet rs(&af); rs.str();
 	    const TableOperation* op = NULL; if (false) op->str();
 	    const TriplePattern* tp = NULL; if (false) tp->str();
 	    const Expression* exp = NULL; if (false) exp->str();

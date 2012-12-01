@@ -798,7 +798,7 @@ InsertData:
 
 DeleteData:
     GT_LPAREN IT_deletedata QuadData GT_RPAREN	{
-	$$ = new Delete($3, NULL);
+	$$ = new Delete(false, $3, NULL);
     }
 ;
 
@@ -806,7 +806,7 @@ DeleteData:
 
 DeleteWhere:
     GT_LPAREN IT_deletewhere QuadPattern GT_RPAREN	{
-	$$ = new Delete($3, NULL);
+	$$ = new Delete(true, $3, NULL);
     }
 ;
 
@@ -814,7 +814,7 @@ DeleteWhere:
 
 Modify:
     GT_LPAREN IT_modify _QUsingClause_E_Star GroupGraphPatternNoSub _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C GT_RPAREN	{
-	$$ = new Modify($5.del, $5.ins, new WhereClause($4));
+	$$ = new Modify($5.del, $5.ins, new WhereClause($4), NULL, NULL, NULL); // !! synch with SPARQLfedParser
     }
 ;
 
@@ -850,7 +850,7 @@ _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C:
 
 DeleteClause:
     GT_LPAREN IT_delete QuadPattern GT_RPAREN	{
-	$$ = new Delete($3, NULL);
+	$$ = new Delete(true, $3, NULL);
     }
 ;
 

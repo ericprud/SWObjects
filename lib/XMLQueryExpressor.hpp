@@ -261,13 +261,25 @@ public:
 	p_SolutionModifier->express(this);
 	xml->close();
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	xml->open("Modify");
+	if (with)
+	    xml->leaf("With", with->toString());
 	if (p_delete != NULL)
 	    p_delete->express(this);
 	if (p_insert != NULL)
 	    p_insert->express(this);
 	p_WhereClause->express(this);
+	if (usingGraphs) {
+	    for (std::vector<s_UsingPair>::const_iterator it = usingGraphs->begin();
+		 it != usingGraphs->end(); ++it) {
+		xml->open("Using");
+		if (it->named)
+		    xml->attribute("Named", "true");
+		xml->charData(it->name->getLexicalValue());
+		xml->close();
+	    }
+	}
 	xml->close();
     }
     virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
@@ -276,8 +288,8 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	xml->close();
     }
-    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
-	xml->open("Delete");
+    virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+	xml->open(rangeOverUnboundVars ? "DeleteData":  "Delete");
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
 	xml->close();

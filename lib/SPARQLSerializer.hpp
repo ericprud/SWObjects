@@ -478,12 +478,19 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	lead();
+	if (with)
+	    ret << "WITH " << with->toString() << " ";
 	if (p_delete != NULL)
 	    p_delete->express(this);
 	if (p_insert != NULL)
 	    p_insert->express(this);
+	if (usingGraphs)
+	    for (std::vector<s_UsingPair>::const_iterator it = usingGraphs->begin();
+		 it != usingGraphs->end(); ++it)
+		ret << "USING " << (it->named ? "NAMED " : "") << it->name->toString();
+
 	p_WhereClause->express(this);
     }
     virtual void insert (const Insert* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
@@ -494,9 +501,12 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;
     }
-    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
-	ret << "DELETE { ";
+	ret << "DELETE";
+	if (rangeOverUnboundVars)
+	    ret << " DATA";
+	ret << " { ";
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;

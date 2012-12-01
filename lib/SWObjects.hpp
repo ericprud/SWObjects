@@ -2240,7 +2240,7 @@ typedef enum { ORDER_Asc, ORDER_Desc } e_ASCorDESC;
 #define OFFSET_None -1
 typedef struct {e_ASCorDESC ascOrDesc; const Expression* expression;} s_OrderConditionPair;
 typedef enum { SILENT_Yes, SILENT_No } e_Silence;
-typedef struct {bool named; const URI* name;} s_UsingPair;
+
 
 /*
 TableOperation class hierarchy:               Base
@@ -2269,7 +2269,7 @@ protected:
 public:
     virtual void bindVariables(const RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
@@ -2322,7 +2322,7 @@ public:
     }
     virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
     virtual TableOperation* getDNF() const;
 };
 class TableDisjunction : public TableJunction { // ⊎
@@ -2341,7 +2341,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{{?s?p?o}UNION{?s?p?o}}");
     }
     virtual TableOperation* getDNF() const;
@@ -2497,7 +2497,7 @@ public:
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
     size_t size () const { return m_TriplePatterns.size(); }
     std::vector<const TriplePattern*>::iterator begin () { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
@@ -2587,8 +2587,8 @@ public:
     virtual void construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
 	construct(target, rs, evaluator, bgp);
     }
-    virtual void deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
-	deletePattern(target, rs, evaluator, bgp);
+    virtual void deletePattern (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const {
+	deletePattern(target, rs, evaluator, bgp, rangeOverUnboundVars);
     }
     virtual void express (Expressor* p_expressor) const { m_TableOperation->express(p_expressor); } // Print is invisible for now.
     bool operator== (const Print& ref) const {
@@ -2622,7 +2622,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{FILTER(...)}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{FILTER(...)}");
     }
     virtual void express(Expressor* p_expressor) const;
@@ -2649,7 +2649,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{BIND(...)}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{BIND(...)}");
     }
     virtual void express(Expressor* p_expressor) const;
@@ -2681,7 +2681,7 @@ public:
 	m_TableOperation->bindVariables(db, rs);
     }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new GraphGraphPattern(m_VarOrIRIref, p_TableOperation); }
 };
 /* ServiceGraphPattern: pass-through class that's just used to reproduce verbatim SPARQL queries
@@ -2713,7 +2713,7 @@ public:
     }
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new ServiceGraphPattern(m_VarOrIRIref, p_TableOperation, m_Silence, atomFactory, lexicalCompare); }
 };
 
@@ -2733,7 +2733,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{OPTIONAL{?s?p?o}}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{OPTIONAL{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new OptionalGraphPattern(p_TableOperation); }
@@ -2755,7 +2755,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{MINUS{?s?p?o}}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{MINUS{?s?p?o}}");
     }
     virtual TableOperationOnOperation* makeANewThis (const TableOperation* p_TableOperation) const { return new MinusGraphPattern(p_TableOperation); }
@@ -2861,6 +2861,7 @@ public:
     virtual void express(Expressor* p_expressor) const;
     virtual void loadData(RdfDB*) const;
 };
+typedef struct {bool named; const URI* name;} s_UsingPair; // !! move to DatasetClause
 
     /* SolutionModifiers */
 class Select;
@@ -2952,7 +2953,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{BindingClause(...)}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{BindingClause(...)}");
     }
     bool operator== (const BindingClause& ref) const {
@@ -3052,7 +3053,7 @@ public:
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{SUBSELECT(...)}");
     }
-    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
+    virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
 	w3c_sw_NEED_IMPL("DELETEPATTERN{SUBSELECT(...)}");
     }
     virtual void express(Expressor* /* p_expressor */) const;
@@ -3111,7 +3112,7 @@ public:
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation&) const { return false; }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
-    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
+    virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
     virtual TableOperation* getDNF() const;
 };
 
@@ -3169,9 +3170,11 @@ private:
     const Insert* m_insert;
     WhereClause* m_WhereClause;
     const TableOperation* m_ConstructTemplate;
+    const URI* with;
+    std::vector<s_UsingPair>* usingGraphs;
 public:
-    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const TableOperation* p_ConstructTemplate = NULL)
-	: GraphChange(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause), m_ConstructTemplate(p_ConstructTemplate)
+    Modify (const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const TableOperation* p_ConstructTemplate, const URI* with, std::vector<s_UsingPair>* usingGraphs)
+	: GraphChange(), m_delete(p_delete), m_insert(p_insert), m_WhereClause(p_WhereClause), m_ConstructTemplate(p_ConstructTemplate), with(with), usingGraphs(usingGraphs)
     {  }
     ~Modify();
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -3210,8 +3213,9 @@ class Delete : public GraphChange {
 private:
     const TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
+    bool rangeOverUnboundVars;
 public:
-    Delete (const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause) {  }
+    Delete (bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) : GraphChange(), m_GraphTemplate(p_GraphTemplate), m_WhereClause(p_WhereClause), rangeOverUnboundVars(rangeOverUnboundVars) {  }
     ~Delete () { delete m_GraphTemplate; delete m_WhereClause; }
     virtual void express(Expressor* p_expressor) const;
     virtual ResultSet* execute(RdfDB* db, ResultSet* rs = NULL) const;
@@ -3221,6 +3225,8 @@ public:
     virtual e_OPTYPE getOperationType () const { return OPTYPE_delete; }
 };
 inline Modify::~Modify () {
+    if (usingGraphs)
+	delete usingGraphs;
     delete m_delete; 
     delete m_insert; 
     delete m_WhereClause;
@@ -4346,9 +4352,9 @@ public:
     virtual void construct(const Construct* const self, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void describe(const Describe* const self, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
     virtual void ask(const Ask* const self, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
-    virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) = 0;
+    virtual void modify(const Modify* const self, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) = 0;
     virtual void insert(const Insert* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
-    virtual void del(const Delete* const self, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
+    virtual void del(const Delete* const self, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) = 0;
     virtual void load(const Load* const self, e_Silence p_Silence, const URI* p_from, const URI* p_into) = 0;
     virtual void clear(const Clear* const self, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) = 0;
     virtual void create(const Create* const self, e_Silence p_Silence, const URI* p_GraphIRI) = 0;
@@ -4522,7 +4528,7 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	if (p_delete != NULL)
 	    p_delete->express(this);
 	if (p_insert != NULL)
@@ -4533,7 +4539,7 @@ public:
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
     }
-    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, bool /* rangeOverUnboundVars */, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
@@ -4767,13 +4773,13 @@ public:
     virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	w3c_sw_NEED_IMPL("ask");
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	w3c_sw_NEED_IMPL("modify");
     }
     virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("insert");
     }
-    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	w3c_sw_NEED_IMPL("del");
     }
     virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {

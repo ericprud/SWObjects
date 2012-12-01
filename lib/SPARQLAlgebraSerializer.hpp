@@ -534,7 +534,7 @@ public:
 	--depth;
 	ret << ")" << std::endl;
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
 	lead();
 	ret << "MODIFY ";
 	if (p_delete != NULL)
@@ -551,9 +551,12 @@ public:
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;
     }
-    virtual void del (const Delete* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
 	lead();
-	ret << "DELETE { ";
+	ret << "DELETE";
+	if (rangeOverUnboundVars)
+	    ret << "_DATA";
+	ret << " { ";
 	p_GraphTemplate->express(this);
 	if (p_WhereClause) p_WhereClause->express(this);
 	ret << "}" << std::endl;

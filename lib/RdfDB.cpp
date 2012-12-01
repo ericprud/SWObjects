@@ -65,6 +65,14 @@ namespace w3c_sw {
 	return true;
     }
 
+    BasicGraphPattern* RdfDB::assignDefaultGraph (BasicGraphPattern* from) {
+	//std::map<const TTerm*, BasicGraphPattern*>::iterator f = graphs.find(DefaultGraph);
+	BasicGraphPattern* ret = graphs[DefaultGraph];
+	graphs[DefaultGraph] = from;
+	return ret;
+    }
+
+
     bool RdfDB::loadData (BasicGraphPattern* target, IStreamContext& istrP,
 			  std::string nameStr, std::string baseURI,
 			  AtomFactory* atomFactory, NamespaceMap* nsMap, GRDDLmap* grddlMap) {

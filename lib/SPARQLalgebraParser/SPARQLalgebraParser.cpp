@@ -1000,7 +1000,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 800 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Operation) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yyval.p_Operation) = new Delete(false, (yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
     break;
 
@@ -1009,7 +1009,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 808 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Operation) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
     break;
 
@@ -1018,7 +1018,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 816 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (5)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (5)].p_DeleteInsert).ins, new WhereClause((yysemantic_stack_[(6) - (4)].p_op)));
+	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (5)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (5)].p_DeleteInsert).ins, new WhereClause((yysemantic_stack_[(6) - (4)].p_op)), NULL, NULL, NULL); // !! synch with SPARQLfedParser
     }
     break;
 
@@ -1075,7 +1075,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 852 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yyval.p_Delete) = new Delete((yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yyval.p_Delete) = new Delete(true, (yysemantic_stack_[(4) - (3)].p_op), NULL);
     }
     break;
 
