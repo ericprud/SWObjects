@@ -2544,21 +2544,21 @@ BOOST_AUTO_TEST_CASE( tsv01 ) {
     const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
     const char** namedGraphs = NULL;
     const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.tsv", 0, 0);
+    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.tsv", 0, 0);
 }
 BOOST_AUTO_TEST_CASE( tsv02 ) {
     /* name: tvs02 - TSV Result Format */
     const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
     const char** namedGraphs = NULL;
     const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.tsv", 0, 0);
+    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.tsv", 0, 0);
 }
 BOOST_AUTO_TEST_CASE( tsv03 ) {
     /* name: tsv03 - TSV Result Format */
     const char* defaultGraph( "data-sparql11/csv-tsv-res/data2.ttl");
     const char** namedGraphs = NULL;
     const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.tsv", 0, 0);
+    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.tsv", 0, 0);
 }
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_results_csv_tsv */)
 
