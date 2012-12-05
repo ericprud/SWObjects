@@ -2925,6 +2925,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
     }
 
     ResultSet* Copy::execute (RdfDB* db, ResultSet* rs) const {
+	if (from == to)
+	    return rs;
 	BasicGraphPattern* target = db->findGraph(to);
 	if (target) {
 	    // apparently it's ok to silently tromp the target when not SILENT
