@@ -209,7 +209,7 @@ namespace w3c_sw {
 		}
 		switch (nowIn) {
 		case IN_path:
-		    if (((method == "GET" || method == "HEAD") && in[end] == '?') || 
+		    if (((method == "GET" || method == "HEAD" || method == "PUT") && in[end] == '?') || 
 			(method == "POST" && end == uri.size() && content_type == "application/x-www-form-urlencoded")) {
 			if (method == "POST" && content_type == "application/x-www-form-urlencoded") {
 			    in = body;
@@ -220,10 +220,24 @@ namespace w3c_sw {
 			out = &parm;
 			++i;
 			if (++end != in.size()) {
-			    end = in.find_first_of("=", end);
-			    if (end == std::string::npos)
-				throw webserver::reply::
-				    stock_reply(webserver::reply::bad_request);
+			    end = in.find_first_of("=&", end);
+			    if (end == std::string::npos) {
+				// throw webserver::reply::
+				//     stock_reply(webserver::reply::bad_request);
+				parms.insert(std::pair<std::string, std::string>(in.substr(i, in.size()-i), ""));
+				goto done;
+			    } else if (in[end] == '&') {
+				parms.insert(std::pair<std::string, std::string>(in.substr(i, end-i), ""));
+				nowIn = IN_parm;
+				// parm.clear();
+				// value.clear();
+				out = &parm;
+				// end = in.find_first_of("=", end);
+				// if (end == std::string::npos)
+				//     throw webserver::reply::
+				// 	stock_reply(webserver::reply::bad_request);
+				++i;
+			    }
 			}
 		    } else if (end == uri.size())
 			goto done;
