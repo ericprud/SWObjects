@@ -34,11 +34,7 @@ namespace w3c_sw {
     }
 
     const URI* YaccDriver::getAbsoluteURI (std::string name) {
-	std::string abs(libwww::HTParse(name, &baseURI, libwww::PARSE_all));
-        size_t pos = abs.find_last_of("/");
-        if (pos != std::string::npos && abs.size() == pos + 2 && abs[pos+1] == '.')
-            abs = abs.substr(0, pos+1);
-	return atomFactory->getURI(abs);
+	return atomFactory->getURI(libwww::GetAbsoluteURIstring(name, baseURI));
     }
 
 } //namespace w3c_sw
