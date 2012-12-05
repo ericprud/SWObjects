@@ -2510,7 +2510,12 @@ public:
 	return m_TriplePatterns.erase(triple);
     }
     void sort (bool (*comp)(const TriplePattern*, const TriplePattern*)) { m_TriplePatterns.sort(comp); }
-    void clearTriples () { m_TriplePatterns.clear(); }
+    void clearTriples () {
+	SP.clear();
+	PO.clear();
+	OS.clear();
+	m_TriplePatterns.clear();
+    }
     virtual void express(Expressor* p_expressor) const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType((const char*)NULL), NamespaceMap* namespaces = NULL) const;
@@ -4062,6 +4067,7 @@ typedef enum {
 } e_PARSE_opts;
 
 std::string HTParse(std::string name, const std::string* rel, e_PARSE_opts wanted);
+std::string GetAbsoluteURIstring(std::string name, std::string baseURI);
 
 } // namespace libwww
 

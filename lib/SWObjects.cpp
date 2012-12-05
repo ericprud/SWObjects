@@ -259,6 +259,14 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
     return result;		/* exactly the right length */
 }
 
+std::string GetAbsoluteURIstring (std::string name, std::string baseURI) {
+    std::string abs(libwww::HTParse(name, &baseURI, libwww::PARSE_all));
+    size_t pos = abs.find_last_of("/");
+    if (pos != std::string::npos && abs.size() == pos + 2 && abs[pos+1] == '.')
+	abs = abs.substr(0, pos+1);
+    return abs;
+}
+
 } // namespace libwww
 
 namespace w3c_sw {
