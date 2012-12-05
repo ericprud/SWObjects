@@ -98,6 +98,8 @@ namespace w3c_sw {
 	    /// Check if a byte is a digit.
 	    static bool is_digit(int c);
 
+	    void incorporateHeader(request& req);
+
 	    /// The current state of the parser.
 	    enum state {
 		method_start,
@@ -309,14 +311,7 @@ namespace w3c_sw {
 		    }
 		case header_lws:
 		    if (input == '\r' || (config.request.allowBareNewlines() && input == '\n')) {
-			if (req.headers.back().name == "Content-Length") {
-			    std::istringstream is(req.headers.back().value);
-			    is >> body_size;
-			    req.content_length = body_size;
-			}
-			else if (req.headers.back().name == "Content-Type") {
-			    req.content_type = req.headers.back().value;
-			}
+			incorporateHeader(req);
 			state_ = input == '\r' ? expecting_newline_2 : header_line_start;
 			return boost::indeterminate;
 		    }
@@ -353,14 +348,7 @@ namespace w3c_sw {
 		    }
 		case header_value:
 		    if (input == '\r' || (config.request.allowBareNewlines() && input == '\n')) {
-			if (req.headers.back().name == "Content-Length") {
-			    std::istringstream is(req.headers.back().value);
-			    is >> body_size;
-			    req.content_length = body_size;
-			}
-			else if (req.headers.back().name == "Content-Type") {
-			    req.content_type = req.headers.back().value;
-			}
+			incorporateHeader(req);
 			state_ = input == '\r' ? expecting_newline_2 : header_line_start;
 			return boost::indeterminate;
 		    }
@@ -433,6 +421,20 @@ namespace w3c_sw {
 	inline bool request_parser<server_config>::is_digit(int c)
 	{
 	    return c >= '0' && c <= '9';
+	}
+
+	template <class server_config>
+	void request_parser<server_config>::incorporateHeader (request& req) {
+	    std::string nameCopy = req.headers.back().name;
+	    std::transform(nameCopy.begin(), nameCopy.end(), nameCopy.begin(), ::tolower);
+	    if (nameCopy == "content-length") {
+		std::istringstream is(req.headers.back().value);
+		is >> body_size;
+		req.content_length = body_size;
+	    }
+	    else if (nameCopy == "content-type") {
+		req.content_type = req.headers.back().value;
+	    }
 	}
 
 	struct asioRequest : public request {
@@ -742,6 +744,7 @@ namespace w3c_sw {
      */
     template <class server_config>
     class web_server_asio : public web_server<server_config> {
+
 #if defined(_WIN32)
 	static boost::function0<void> console_ctrl_function;
 
@@ -762,9 +765,11 @@ namespace w3c_sw {
 #endif // defined(_WIN32)
     protected:
 	webserver::server<server_config>* server;
+	bool trap_sig_int;
 
     public:
-	web_server_asio () : server(NULL) {  }
+	web_server_asio () : server(NULL), trap_sig_int(true) {  }
+	bool set_trap_sig_int (bool val) { bool ret = trap_sig_int; trap_sig_int = val; return ret; }
 	void stop () {
 	    // politely HUP the process.
 #if defined(_WIN32)
@@ -822,7 +827,8 @@ namespace w3c_sw {
 	    // Wait for signal indicating time to shut down.
 	    sigset_t wait_mask;
 	    sigemptyset(&wait_mask);
-	    sigaddset(&wait_mask, SIGINT);
+	    if (trap_sig_int)
+		sigaddset(&wait_mask, SIGINT);
 	    sigaddset(&wait_mask, SIGQUIT);
 	    sigaddset(&wait_mask, SIGTERM);
 	    sigaddset(&wait_mask, SIGHUP); // "polite" way to stop the server.
@@ -847,7 +853,6 @@ namespace w3c_sw {
     template <class server_config>
     boost::function0<void> web_server_asio<server_config>::console_ctrl_function = NULL;
 #endif // defined(_WIN32)
-
 } // namespace w3c_sw
 
 #ifdef NEEDDEF_W3C_SW_WEBSERVER

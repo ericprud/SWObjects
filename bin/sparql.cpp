@@ -116,12 +116,12 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     /** runServer - start an HTTP server
      * servicePath: (optional) add some service description about the service.
      */
-    void runServer (sw::WebHandler& handler, int serverPort, std::string servicePath = "", bool addServiceDesc = true) {
+    void runServer (sw::WebHandler& handler, std::string serviceURIstr, std::string serviceHost, int servicePort, std::string servicePath = "", bool addServiceDesc = true) {
 
 	std::string startupMessage; // messages which get printed after a successful call to ::bind.
 
 	if (!servicePath.empty()) {
-	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath);
+	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath); // serviceURIstr
 	    sw::BasicGraphPattern* serviceGraph = addServiceDesc ? engine.db.ensureGraph(serviceURI) : NULL;
 	    if (serviceGraph != NULL)
 		serviceGraph->addTriplePattern
@@ -164,8 +164,8 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	}
 
 	std::stringstream tmpss;
-	tmpss << serverPort;
-	const char* bindMe = "0.0.0.0";
+	tmpss << servicePort;
+	const char* bindMe = serviceHost.c_str(); // "0.0.0.0";
 	try {
 	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config, startupMessage);
 	} catch (boost::system::system_error e) {
@@ -856,6 +856,7 @@ int main(int ac, char* av[])
             ("pathmap", po::value<pathmapArg>(), "path map in the form \"s{/some/URI/path}{relative/filesystem/path}\"")
 #endif /* REGEX_LIB != SWOb_DISABLED */
             ("ordered", po::value<orderedURI>(), "URIs")
+	    ("trap-sig-int", po::value<bool>(), "0|1 no|yes")
             ;
 
         po::options_description cmdline_options;
@@ -1169,8 +1170,9 @@ int main(int ac, char* av[])
 		    TheServer.engine.stopAfter = vm["stop-after"].as<unsigned int>();
 		if (vm.count("stop"))
 		    TheServer.stopCommand = vm["stop"].as<std::string>();
-		int serverPort = 8888;
-		std::string servicePath;
+		if (vm.count("trap-sig-int"))
+		    TheServer.set_trap_sig_int(vm["trap-sig-int"].as<bool>());
+
 #if REGEX_LIB == SWOb_BOOST
 		boost::regex re;
 		boost::cmatch matches;
@@ -1185,25 +1187,27 @@ int main(int ac, char* av[])
 #define HOST 2
 #define PORT 3
 #define PATH 4
+		std::string serviceHost(matches[HOST].first, matches[HOST].second);
 		std::string ports(matches[PORT].first, matches[PORT].second);
-		std::istringstream portss(ports);
-		portss >> serverPort;
-		servicePath = std::string(matches[PATH].first + 1, matches[PATH].second);
+		int servicePort = ::atoi(ports.c_str());
+		std::string servicePath = std::string(matches[PATH].first + 1, matches[PATH].second);
 #else /* !REGEX_LIB == SWOb_BOOST */
-		servicePath = "SPARQL";
+		std::string serviceHost = "127.0.0.1";
+		int servicePort = 8888;
+		std::string servicePath = "SPARQL";
 #endif /* !REGEX_LIB == SWOb_BOOST */
 
 		sw::ChainedHandler handler;
 		sw::SimpleInterface<sw::SimpleEngine, MyLoadList, MyServer>
 		    // p3 is a controller, which, do to current limitations in
 		    // web_server_asio, is the same as the server.
-		    dynamicHandler(TheServer.engine, &TheServer, servicePath, "");
+		    dynamicHandler(TheServer.engine, &TheServer, ServerURI, servicePath, ""); // "" is the interfacePath
 		handler.add_handler(&dynamicHandler);
 		sw::StaticHandler stat;
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
 		handler.add_handler(&stat);
 
-		TheServer.runServer(handler, serverPort, servicePath, vm.count("server-no-description") == 0);
+		TheServer.runServer(handler, ServerURI, serviceHost, servicePort, servicePath, vm.count("server-no-description") == 0);
 	    }
 
 	    // For operations which create a new database.

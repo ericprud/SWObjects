@@ -12,6 +12,7 @@ namespace w3c_sw {
     class SimpleInterface : public WebHandler {
 	engine_type& engine;
 	controller_type* controller;
+	std::string serviceURI;
 	std::string servicePath;
 	std::string interfacePath;
 	size_t exploreTripleCountLimit;
@@ -26,9 +27,11 @@ namespace w3c_sw {
 
     public:
 	SimpleInterface (engine_type& engine, controller_type* controller,
-			 std::string servicePath, std::string interfacePath) : 
+			 std::string serviceURI, std::string servicePath,
+			 std::string interfacePath) : 
 	    WebHandler("."), // @@ docroot is irrelevant -- create a docserver
-	    engine(engine), controller(controller), servicePath(servicePath), interfacePath(interfacePath),
+	    engine(engine), controller(controller), serviceURI(serviceURI),
+	    servicePath(servicePath), interfacePath(interfacePath),
 	    // hard-code explore*CountLimit
 	    exploreTripleCountLimit(100), exploreGraphCountLimit(10)
 	{  }
@@ -44,32 +47,94 @@ namespace w3c_sw {
 		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
 		std::ostringstream sout;
 		data_loader queryLoadList;
-		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(path));
+		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
+		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
 
 		if (req.getMethod() == "PUT") {
-		    const URI* into = engine.atomFactory.getURI(req.getPath());
-		    BasicGraphPattern* bgp = engine.db.ensureGraph(into);
+		    webserver::request::parmmap::const_iterator parm;
+		    parm = req.parms.find("default");
+		    bool isDefaultGraph = parm != req.parms.end();
+
+		    const URI* into = isDefaultGraph ? NULL : engine.atomFactory.getURI(absURL); // req.getPath()
+		    BasicGraphPattern* bgp = engine.db.findGraph(isDefaultGraph ? DefaultGraph : into);
+		    bool existed = true;
+		    if (bgp == NULL) {
+			bgp = engine.db.ensureGraph(isDefaultGraph ? DefaultGraph : into);
+			existed = false;
+		    } else {
+			bgp->clearTriples();
+		    }
 		    IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
 		    NamespaceMap map;
-		    engine.db.loadData(bgp, istr, req.getPath(), "", &engine.atomFactory, &map);
+		    engine.db.loadData(bgp, istr, absURL, "", &engine.atomFactory, &map); // req.getPath()
 
-		    rep.setStatus(webserver::reply::ok);
+		    rep.setStatus(!existed ? webserver::reply::created : isDefaultGraph ? webserver::reply::no_content : webserver::reply::ok);
 		    head(sout, "Q&amp;D SPARQL Server PUT Successful");
 		    sout << 
-			"    <p>Uploaded " << bgp->size() << " triples into " << uriLink(into) << "</p>\n";
+			"    <p>Uploaded " << bgp->size() << " triples into ";
+		    if (isDefaultGraph)
+			sout << "default graph";
+		    else
+			sout << uriLink(into);
+		    sout << "</p>\n";
+		    sout << DBsummary();
+
+		    rep.setContentType("text/html");
+		    foot(sout);
+		} else if (req.getMethod() == "DELETE") {
+		    webserver::request::parmmap::const_iterator parm;
+		    parm = req.parms.find("default");
+		    bool isDefaultGraph = parm != req.parms.end();
+
+		    const URI* into = isDefaultGraph ? NULL : engine.atomFactory.getURI(absURL); // req.getPath()
+		    BasicGraphPattern* bgp = engine.db.findGraph(isDefaultGraph ? DefaultGraph : into);
+		    size_t oldSize = 0;
+		    bool existed = true;
+		    std::string responseTitle = "Q&amp;D SPARQL Server DELETE ";
+		    if (bgp == NULL) {
+			existed = false;
+			responseTitle += "Unsuccessful";
+		    } else {
+			oldSize = bgp->size();
+			engine.db.eraseGraph(isDefaultGraph ? DefaultGraph : into);
+			responseTitle += "Successful";
+		    }
+
+		    rep.setStatus(!existed ? webserver::reply::not_found : isDefaultGraph ? webserver::reply::no_content : webserver::reply::ok);
+		    head(sout, responseTitle);
+		    sout << 
+			"    <p>Deleted " << oldSize << " triples from ";
+		    if (isDefaultGraph)
+			sout << "default graph";
+		    else
+			sout << uriLink(into);
+		    sout << "</p>\n";
 		    sout << DBsummary();
 
 		    rep.setContentType("text/html");
 		    foot(sout);
 		} else if (path == servicePath || getGraph != NULL) {
+		    bool isDefaultGraph = false;
 		    webserver::request::parmmap::const_iterator parm;
 		    // w3c_sw_LINEN << "method: " << req.getMethod() << "\n";
 		    // w3c_sw_LINEN << "content type: " << req.getContentType() << "\n";
-		    if (req.getMethod() == "GET"
+		    if (req.getMethod() == "GET" || req.getMethod() == "HEAD"
 			|| (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
 			parm = req.parms.find("query");
 			if (parm != req.parms.end())
 			    query = parm->second;
+			else {
+			    parm = req.parms.find("graph");
+			    if (parm != req.parms.end())
+				getGraph = engine.db.getGraph(engine.atomFactory.getURI(parm->second));
+			    else {
+				parm = req.parms.find("default");
+				if (parm != req.parms.end()) {
+				    getGraph = engine.db.getGraph(DefaultGraph);
+				    isDefaultGraph = true;
+				}
+			    }
+			}
 		    } else if (req.getMethod() == "POST" &&
 			       (req.getContentType().compare(0, 24, "application/sparql-query") == 0
 				|| engine.sadiOp != NULL
@@ -77,12 +142,16 @@ namespace w3c_sw {
 				))
 			query = req.getBody();
 			// w3c_sw_LINEN << "query: " << query << "\n";
-		    if (query == interfacePath && path != servicePath) {
-			rep.status = webserver::reply::ok;
-			std::string body = getGraph->toString(MediaType("text/turtle"));
-			sout.write(body.c_str(), body.size());
-			rep.setContentType("text/turtle");
-			rep.addHeader("MS-Author-Via", "SPARQL");
+		    if ((query == interfacePath && path != servicePath) ||
+			(engine.sadiOp == NULL && engine.ldpOp == NULL && path == servicePath && query == "")) {
+			if (getGraph) {
+			    rep.status = webserver::reply::ok;
+			    std::string body = getGraph->toString(MediaType("text/turtle"));
+			    sout.write(body.c_str(), body.size());
+			    rep.setContentType("text/turtle");
+			    rep.addHeader("MS-Author-Via", "SPARQL");
+			} else
+			    return webserver::reply::declined;
 		    } else {
 			parm = req.parms.find("default-graph-uri");
 			if (parm != req.parms.end() && parm->second != "") {
@@ -211,7 +280,7 @@ namespace w3c_sw {
 					try {
 					    queryLoadList.loadAll();
 					    if (path != servicePath)
-						engine.db.setTarget(engine.atomFactory.getURI(path));
+						engine.db.setTarget(engine.atomFactory.getURI(absURL));
 					    engine.executeQuery(op, rs, language, newQuery);
 					    if (humanReader &&
 						(dynamic_cast<GraphChange*>(op) != NULL || 
