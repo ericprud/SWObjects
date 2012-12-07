@@ -344,8 +344,11 @@ namespace w3c_sw {
 	virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
 	    p_VarSet->express(this);
 	    VarSet* varSet = last.varSets.varSet;
-	    p_WhereClause->express(this);
-	    WhereClause* where = last.whereClause;
+	    WhereClause* where = NULL;
+	    if (p_WhereClause != NULL) {
+		p_WhereClause->express(this);
+		where = last.whereClause;
+	    }
 	    p_SolutionModifier->express(this);
 	    SolutionModifier* solutionModifier = last.solutionModifier;
 	    last.operation = new Describe(varSet, _DatasetClauses(p_DatasetClauses), where, solutionModifier);

@@ -250,7 +250,8 @@ public:
 	xml->open("Describe");
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
-	p_WhereClause->express(this);
+	if (p_WhereClause != NULL)
+	    p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
 	xml->close();
     }

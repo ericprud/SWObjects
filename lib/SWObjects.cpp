@@ -2687,7 +2687,8 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 
     ResultSet* Describe::executeQuery (const RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
-	m_WhereClause->bindVariables(db, rs);
+	if (m_WhereClause)
+	    m_WhereClause->bindVariables(db, rs);
 	MakeNewBNode makeNewBNode(rs->getAtomFactory());
 	rs->resultType = ResultSet::RESULT_Graphs;
 	const RdfDB* workingDB = rs->getRdfDB();

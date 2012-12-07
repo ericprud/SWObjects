@@ -468,7 +468,8 @@ public:
 	ret << "DESCRIBE ";
 	p_VarSet->express(this);
 	p_DatasetClauses->express(this);
-	p_WhereClause->express(this);
+	if (p_WhereClause != NULL)
+	    p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
     virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
