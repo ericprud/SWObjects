@@ -39,6 +39,91 @@ namespace w3c_sw {
 
     protected:
 
+	struct IStreamList : public std::list<IStreamContext*> {
+	    void release () {
+		for (const_iterator it = begin(); it != end(); ++it)
+		    delete *it;
+		clear();
+	    }
+	};
+	IStreamList getBodies (webserver::request& req) {
+	    IStreamList ret;
+	    MediaType mediaType = MediaType(req.getContentType());
+	    if (mediaType.match("multipart/form-data")) {
+		if (!mediaType.parameterValue("boundary", NULL))
+		    throw std::runtime_error("DOOM1");
+		std::string boundary = "\r\n--"+mediaType.getParameter("boundary");
+		std::string body = req.getBody();
+		for (size_t pos = boundary.size(); pos != std::string::npos; ) {
+		    size_t p2 = body.find(boundary, pos);
+		    std::string section = body.substr(pos, p2 - pos);
+		    pos = p2 + boundary.size();
+		    if (body[pos] == '\r' && body[pos+1] == '\n')
+			pos += 2;
+		    else if (body[pos] == '-' && body[pos+1] == '-')
+			pos = std::string::npos;
+		    else
+			throw std::runtime_error("");
+
+		    std::string sectionBody;
+		    std::string attribute;
+		    std::string contentType;
+		    typedef enum { EXPECT_crlf, EXPECT_lf, EXPECT_attribute, EXPECT_value } EXPECT_type;
+		    EXPECT_type exp = EXPECT_attribute;
+		    for (std::string::const_iterator c = section.begin();
+			 c != section.end(); ++c) {
+			switch (exp) {
+			case EXPECT_crlf:
+			    switch (*c) {
+			    case '\n': exp = EXPECT_attribute; break;
+			    case '\r': exp = EXPECT_lf; break;
+			    default: throw std::runtime_error("");
+			    } break;
+			case EXPECT_lf:
+			    switch (*c) {
+			    case '\n': exp = EXPECT_attribute; break;
+			    default: throw std::runtime_error("");
+			    } break;
+			case EXPECT_attribute:
+			    if (*c == '\n' || (*c == '\r' && *(++c) == '\n')) {
+				std::string::const_iterator end = section.end();
+				++c;
+				sectionBody = std::string(c, end);
+				c = end - 1;
+				break;
+			    }
+			    {
+				std::string::const_iterator start = c;
+				while (*c != ':') ++c;
+				attribute = std::string(start, c++);
+				while (*c == ' ') ++c;
+				--c;
+				exp = EXPECT_value; 
+			    } break;
+			case EXPECT_value:
+			    {
+				std::string::const_iterator start = c;
+				while (*c != '\r' && *c != '\n') ++c;
+				std::string value = std::string(start, c);
+				--c;
+				std::string nameCopy = attribute;
+				std::transform(nameCopy.begin(), nameCopy.end(), nameCopy.begin(), ::tolower);
+				if (nameCopy == "content-type") {
+				    contentType = value;
+				}
+				exp = EXPECT_crlf; 
+			    } break;
+			}
+		    }
+		    w3c_sw_LINEN << contentType << ": [[" << sectionBody << "]]\n";
+		    ret.insert(ret.end(), new IStreamContext(sectionBody, IStreamContext::STRING, ::strdup(contentType.c_str())));
+		}
+	    } else {
+		ret.insert(ret.end(), new IStreamContext(req.getBody(), IStreamContext::STRING, mediaType.c_str()));
+	    }
+	    return ret;
+	}
+
 	webserver::reply::status_type
 	handle_request (webserver::request& req, webserver::reply& rep) {
 	    std::string query;
@@ -50,23 +135,42 @@ namespace w3c_sw {
 		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
 		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
 
-		if (req.getMethod() == "PUT") {
+		if (req.getMethod() == "PUT" || (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0)) {
+		    IStreamList bodies = getBodies(req);
+		    if (bodies.size() == 1) { // !! preparse to not clear mis-posts - remove this expectation from <http://metacognition.info/gsp_validation/gsp.validator.run>
+			IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
+			NamespaceMap map;
+			DefaultGraphPattern bgp;
+			engine.db.loadData(&bgp, istr, absURL, "", &engine.atomFactory, &map); // req.getPath()
+		    }
 		    webserver::request::parmmap::const_iterator parm;
 		    parm = req.parms.find("default");
 		    bool isDefaultGraph = parm != req.parms.end();
 
 		    const URI* into = isDefaultGraph ? NULL : engine.atomFactory.getURI(absURL); // req.getPath()
+		    if (path == servicePath) {
+			for (unsigned int i = 0; i < 1000; ++i) {
+			    std::string s = absURL + boost::lexical_cast<std::string>(i);
+			    into = engine.atomFactory.getURI(s);
+			    if (engine.db.findGraph(into) == NULL) {
+				rep.addHeader("Location", s);
+				break;
+			    }
+			}
+		    }
 		    BasicGraphPattern* bgp = engine.db.findGraph(isDefaultGraph ? DefaultGraph : into);
 		    bool existed = true;
 		    if (bgp == NULL) {
 			bgp = engine.db.ensureGraph(isDefaultGraph ? DefaultGraph : into);
 			existed = false;
-		    } else {
+		    } else if (req.getMethod() == "PUT") {
 			bgp->clearTriples();
 		    }
-		    IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
-		    NamespaceMap map;
-		    engine.db.loadData(bgp, istr, absURL, "", &engine.atomFactory, &map); // req.getPath()
+		    for (std::list<IStreamContext*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+			NamespaceMap map;
+			engine.db.loadData(bgp, **it, absURL, "", &engine.atomFactory, &map); // req.getPath()
+		    }
+		    bodies.release();
 
 		    rep.setStatus(!existed ? webserver::reply::created : isDefaultGraph ? webserver::reply::no_content : webserver::reply::ok);
 		    head(sout, "Q&amp;D SPARQL Server PUT Successful");
