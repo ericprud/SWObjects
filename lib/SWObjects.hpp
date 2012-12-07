@@ -295,6 +295,25 @@ public:
     // void operator= (const char* p_str) {
     // 	assign(p_str ? p_str : boost::detail::none_t);
     // }
+    std::string getParameter (const char* parm) {
+	std::string ret;
+	if (!is_initialized())
+	    return "";
+	std::string& s = get();
+	std::string lookfor = parm;
+	lookfor += '=';
+	size_t pos=s.find(';');
+	while ((pos=s.find(lookfor, pos+1)) != std::string::npos
+	       && (s[pos-1]==';' || s[pos-1]==' ')) {
+	    size_t parmStart = pos+lookfor.size();
+	    size_t parmEnd = s.find_first_of("&,;", parmStart);
+	    if (parmEnd != std::string::npos)
+		return s.substr(parmStart, parmEnd - parmStart);
+	    else
+		return s.substr(parmStart);
+	}
+	return "";
+    }
     bool parameterValue (const char* parm, const char* value) {
 	if (!is_initialized())
 	    return false;
@@ -306,8 +325,8 @@ public:
 	       && (s[pos-1]==';' || s[pos-1]==' ')) {
 	    if (value == NULL)
 		return true;
-	    size_t parmpos = pos+lookfor.size();
-	    if (s.find(value, parmpos) == parmpos)
+	    size_t parmStart = pos+lookfor.size();
+	    if (s.find(value, parmStart) == parmStart)
 		return true;
 	}
 	return false;
