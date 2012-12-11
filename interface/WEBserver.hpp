@@ -169,8 +169,8 @@ namespace w3c_sw {
 
 
 	// inline void request::url_decode ()
-	inline void request::url_decode ()
-	{
+	inline void request::url_decode () {
+
 	    if (method != "GET" && method != "POST" && method != "HEAD" && method != "PUT" && method != "DELETE")
 		throw "not implemented error: url_decode only supports GET and POST.";
 	    request_path.clear();
@@ -183,8 +183,10 @@ namespace w3c_sw {
 	    std::size_t end = uri.find_last_of("?");
 	    if (end == std::string::npos)
 		end = uri.size();
+
+	    bool parseURLencodedBody = method == "POST" && content_type == "application/x-www-form-urlencoded";
 	    std::size_t i = 0;
-	    while (true) {
+	    while (i < in.size()) {
 		for (; i < end; ++i) {
 		    if (in[i] == '%') {
 			if (i + 3 <= in.size()) {
@@ -209,61 +211,67 @@ namespace w3c_sw {
 		}
 		switch (nowIn) {
 		case IN_path:
-		    if (((method == "GET" || method == "HEAD" || method == "PUT") && in[end] == '?') || 
-			(method == "POST" && end == uri.size() && content_type == "application/x-www-form-urlencoded")) {
-			if (method == "POST" && content_type == "application/x-www-form-urlencoded") {
+		    if (end == uri.size()) {
+			if (parseURLencodedBody) {
+			    parseURLencodedBody = false;
 			    in = body;
-			    i = -1;
+			    i = 0;
 			    end = 0;
+			} else {
+			    goto done;
 			}
-			nowIn = IN_parm;
-			out = &parm;
+		    } else {
 			++i;
-			if (++end != in.size()) {
-			    end = in.find_first_of("=&", end);
-			    if (end == std::string::npos) {
-				// throw webserver::reply::
-				//     stock_reply(webserver::reply::bad_request);
-				parms.insert(std::pair<std::string, std::string>(in.substr(i, in.size()-i), ""));
-				goto done;
-			    } else if (in[end] == '&') {
-				parms.insert(std::pair<std::string, std::string>(in.substr(i, end-i), ""));
-				nowIn = IN_parm;
-				// parm.clear();
-				// value.clear();
-				out = &parm;
-				// end = in.find_first_of("=", end);
-				// if (end == std::string::npos)
-				//     throw webserver::reply::
-				// 	stock_reply(webserver::reply::bad_request);
-				++i;
-			    }
-			}
-		    } else if (end == uri.size())
-			goto done;
-		    break;
-		case IN_parm:
-		    nowIn = IN_value;
-		    out = &value;
-		    end = in.find_first_of("&", end);
+		    }
+		    nowIn = IN_parm;
+		    out = &parm;
+		    end = in.find_first_of("=&", i);
 		    if (end == std::string::npos)
 			end = in.size();
-		    if (i < in.size())
-			++i;
+		    break;
+		case IN_parm:
+		    ++i;
+		    if (in[end] == '=') {
+			nowIn = IN_value;
+			out = &value;
+		    } else {
+			parms.insert(std::pair<std::string, std::string>(parm, ""));
+			nowIn = IN_parm;
+			parm.clear();
+			out = &parm;
+		    }
+		    if (end == in.size()) {
+			if (parseURLencodedBody) {
+			    parseURLencodedBody = false;
+			    in = body;
+			    i = 0;
+			} else {
+			    goto done;
+			}
+		    }
+		    end = in.find_first_of("&", i);
+		    if (end == std::string::npos)
+			end = in.size();
 		    break;
 		case IN_value:
 		    parms.insert(std::pair<std::string, std::string>(parm, value));
-		    if (end == in.size())
-		        goto done;
 		    nowIn = IN_parm;
 		    parm.clear();
 		    value.clear();
 		    out = &parm;
-		    end = in.find_first_of("=", end);
-		    if (end == std::string::npos)
-			throw webserver::reply::
-			    stock_reply(webserver::reply::bad_request);
 		    ++i;
+		    if (end == in.size()) {
+			if (parseURLencodedBody) {
+			    parseURLencodedBody = false;
+			    in = body;
+			    i = 0;
+			} else {
+			    goto done;
+			}
+		    }
+		    end = in.find_first_of("=&", i);
+		    if (end == std::string::npos)
+			end = in.size();
 		    break;
 		}
 	    };
