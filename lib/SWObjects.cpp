@@ -2808,6 +2808,11 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    BasicGraphPattern* target = db->ensureGraph(m_into);
 	    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
 		target->addTriplePattern(*it);
+	} else if (RdfDB::GetGraphArguments) {
+	    std::string nameStr = m_from->getLexicalValue();
+	    IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
+	    if (db->loadData(db->ensureGraph(m_from), iptr, nameStr, nameStr, rs->getAtomFactory()))
+		throw nameStr + ":0: error: unable to parse web document";
 	} else if (m_Silence == SILENT_No)
 	    throw std::runtime_error(m_from
 				     ? ("Source graph " + m_from->toString() + " not found.")
