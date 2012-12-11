@@ -115,7 +115,7 @@ namespace w3c_sw {
 			    } break;
 			}
 		    }
-		    w3c_sw_LINEN << contentType << ": [[" << sectionBody << "]]\n";
+		    // w3c_sw_LINEN << contentType << ": [[" << sectionBody << "]]\n";
 		    ret.insert(ret.end(), new IStreamContext(sectionBody, IStreamContext::STRING, ::strdup(contentType.c_str())));
 		}
 	    } else {
@@ -135,7 +135,11 @@ namespace w3c_sw {
 		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
 		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
 
-		if (req.getMethod() == "PUT" || (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0)) {
+		if (req.getMethod() == "PUT" ||
+		    (engine.sadiOp == NULL && engine.ldpOp == NULL &&
+		     req.getMethod() == "POST" &&
+		     req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0 &&
+		     req.getContentType().compare(0, 33, "application/sparql-query") != 0)) {
 		    IStreamList bodies = getBodies(req);
 		    if (bodies.size() == 1) { // !! preparse to not clear mis-posts - remove this expectation from <http://metacognition.info/gsp_validation/gsp.validator.run>
 			IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
@@ -228,14 +232,19 @@ namespace w3c_sw {
 			if (parm != req.parms.end())
 			    query = parm->second;
 			else {
-			    parm = req.parms.find("graph");
+			    parm = req.parms.find("update");
 			    if (parm != req.parms.end())
-				getGraph = engine.db.getGraph(engine.atomFactory.getURI(parm->second));
+				query = parm->second;
 			    else {
-				parm = req.parms.find("default");
-				if (parm != req.parms.end()) {
-				    getGraph = engine.db.getGraph(DefaultGraph);
-				    isDefaultGraph = true;
+				parm = req.parms.find("graph");
+				if (parm != req.parms.end())
+				    getGraph = engine.db.getGraph(engine.atomFactory.getURI(parm->second));
+				else {
+				    parm = req.parms.find("default");
+				    if (parm != req.parms.end()) {
+					getGraph = engine.db.getGraph(DefaultGraph);
+					isDefaultGraph = true;
+				    }
 				}
 			    }
 			}
@@ -261,13 +270,18 @@ namespace w3c_sw {
 			if (parm != req.parms.end() && parm->second != "") {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
-			    std::cerr << "default graph: " << parm->second << std::endl;
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+				<< "Reading default graph from " << parm->second()
+				<< engine.baseUriMessage() << ".\n";
 			}
 			parm = req.parms.find("named-graph-uri");
 			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
-			    std::cerr << "named graph: " << parm->second << std::endl;
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+				<< "Reading named graph " << parm->second()
+				<< " from " << parm->second()
+				<< engine.baseUriMessage() << ".\n";
 			    ++parm;
 			}
 			if (!controller->getStopCommand().empty() && query == controller->getStopCommand()) {
@@ -299,7 +313,7 @@ namespace w3c_sw {
 					    rep.setContentType(
 							       rs.resultType == ResultSet::RESULT_Graphs
 							       ? "text/turtle; charset=UTF-8"
-							       : "application/sparql-results+xml; charset=UTF-8");
+							       : "application/sparql-results+xml");
 					    rs.toXml(&xml);
 					    sout << xml.str();
 					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
@@ -364,7 +378,7 @@ namespace w3c_sw {
 					    "    <pre>" << XMLSerializer::escapeCharData(query) << "</pre>\n"
 					    "    <p>is screwed up.</p>\n"
 					     << std::endl;
-					std::cerr << "400: " << query << std::endl;
+					BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << "400: " << query << std::endl;
 					rep.status = webserver::reply::bad_request;
 
 					foot(sout);
@@ -403,11 +417,11 @@ namespace w3c_sw {
 					    delete op;
 					} catch (ParserException& ex) {
 					    delete op;
-					    std::cerr << ex.what() << std::endl;
+					    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << ex.what() << std::endl;
 					    throw WebHandler::SimpleMessageException(ex);
 					} catch (std::string ex) {
 					    delete op;
-					    std::cerr << ex << std::endl;
+					    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << ex << std::endl;
 					    throw WebHandler::SimpleMessageException(XMLSerializer::escapeCharData(ex));
 					}
 					const VariableVector cols = rs.getOrderedVars();
@@ -538,7 +552,7 @@ namespace w3c_sw {
 					    rep.setContentType(
 							       rs.resultType == ResultSet::RESULT_Graphs
 							       ? "text/turtle; charset=UTF-8"
-							       : "application/sparql-results+xml; charset=UTF-8");
+							       : "application/sparql-results+xml");
 					    rs.toXml(&xml);
 					    sout << xml.str();
 					} /* !htmlResults */
@@ -551,7 +565,8 @@ namespace w3c_sw {
 				    }
 				}
 			    } catch (ParserException& ex) {
-				std::cerr << ex.what() << std::endl;
+				BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+				    << ex.what() << std::endl;
 				throw WebHandler::SimpleMessageException(ex);
 			    }
 			}
@@ -618,7 +633,8 @@ namespace w3c_sw {
 	    std::ostringstream sout;
 
 	    rep.status = webserver::reply::bad_request;
-	    std::cerr << what << std::endl;
+	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+		<< what << std::endl;
 	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
 		"    <pre>" << escapeHTML(query) << "</pre>\n"
@@ -881,7 +897,8 @@ struct SimpleEngine {
 	    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
 		 iCreatedFile != createdFiles.end(); ++iCreatedFile)
 		if (POSIX_unlink(iCreatedFile->c_str()) != 0)
-		    std::cerr << "error unlinking " << *iCreatedFile << ": " << strerror(errno);
+		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+			<< "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	    IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
 	    return engine.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
 	    //     return RdfDB::HandlerSet::parse(mediaType, args,
@@ -1146,7 +1163,7 @@ struct SimpleEngine {
 
 	    if (doSQLquery == true) {
 #ifdef SQL_CLIENT_NONE
-		std::cerr <<
+		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::error) <<
 		    "Unable to connect to " << sqlConnectString() << " .\n"
 		    "No SQL client libraries linked in.\n";
 #else /* !SQL_CLIENT_NONE */
