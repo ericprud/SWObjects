@@ -443,13 +443,14 @@ namespace w3c_sw {
 	protected:
 	    bool initialized;
 	};
-	inline asioRequest::asioRequest () : initialized(false) {
-	    
+	inline asioRequest::asioRequest () : initialized(false) {	    
 	}
 	inline std::string asioRequest::getPath () const {
 	    // I can't decide whether const-ness should reflect internals (initialization) or just API.
-	    if (!initialized)
+	    if (!initialized) {
 		(const_cast<asioRequest*>(this))->url_decode();
+		(const_cast<asioRequest*>(this))->initialized = true;
+	    }
 	    return request_path;
 	}
 	//     void url_decode();
