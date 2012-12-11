@@ -124,6 +124,17 @@ namespace w3c_sw {
 	    return ret;
 	}
 
+	const URI* nextAvailableGraph (std::string absURL, webserver::request& req, webserver::reply& rep) {
+	    for (unsigned int i = 0; i < 1000; ++i) {
+		std::string s = absURL + boost::lexical_cast<std::string>(i);
+		const URI* ret = engine.atomFactory.getURI(s);
+		if (engine.db.findGraph(ret) == NULL) {
+		    rep.addHeader("Location", s);
+		    return ret;
+		}
+	    }
+	    throw std::runtime_error("exhausted available graph pool");
+	}
 	webserver::reply::status_type
 	handle_request (webserver::request& req, webserver::reply& rep) {
 	    std::string query;
@@ -136,10 +147,10 @@ namespace w3c_sw {
 		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
 
 		if (req.getMethod() == "PUT" ||
-		    (engine.sadiOp == NULL && engine.ldpOp == NULL &&
-		     req.getMethod() == "POST" &&
-		     req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0 &&
-		     req.getContentType().compare(0, 33, "application/sparql-query") != 0)) {
+			   (engine.sadiOp == NULL && engine.ldpOp == NULL &&
+			    req.getMethod() == "POST" &&
+			    req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0 &&
+			    req.getContentType().compare(0, 33, "application/sparql-query") != 0)) {
 		    IStreamList bodies = getBodies(req);
 		    if (bodies.size() == 1) { // !! preparse to not clear mis-posts - remove this expectation from <http://metacognition.info/gsp_validation/gsp.validator.run>
 			IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
@@ -147,27 +158,25 @@ namespace w3c_sw {
 			DefaultGraphPattern bgp;
 			engine.db.loadData(&bgp, istr, absURL, "", &engine.atomFactory, &map); // req.getPath()
 		    }
-		    webserver::request::parmmap::const_iterator parm;
+		    webserver::request::ParmMap::const_iterator parm;
 		    parm = req.parms.find("default");
 		    bool isDefaultGraph = parm != req.parms.end();
+		    parm = req.parms.find("graph");
 
-		    const URI* into = isDefaultGraph ? NULL : engine.atomFactory.getURI(absURL); // req.getPath()
-		    if (path == servicePath) {
-			for (unsigned int i = 0; i < 1000; ++i) {
-			    std::string s = absURL + boost::lexical_cast<std::string>(i);
-			    into = engine.atomFactory.getURI(s);
-			    if (engine.db.findGraph(into) == NULL) {
-				rep.addHeader("Location", s);
-				break;
-			    }
-			}
-		    }
+		    const URI* into =
+			isDefaultGraph ? NULL
+			: parm != req.parms.end() ? engine.atomFactory.getURI(parm->second)
+			: path == servicePath ? nextAvailableGraph(absURL, req, rep)
+			: engine.atomFactory.getURI(absURL);
+
+		    size_t oldSize = 0;
 		    BasicGraphPattern* bgp = engine.db.findGraph(isDefaultGraph ? DefaultGraph : into);
 		    bool existed = true;
 		    if (bgp == NULL) {
 			bgp = engine.db.ensureGraph(isDefaultGraph ? DefaultGraph : into);
 			existed = false;
 		    } else if (req.getMethod() == "PUT") {
+			oldSize = bgp->size();
 			bgp->clearTriples();
 		    }
 		    for (std::list<IStreamContext*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
@@ -176,7 +185,7 @@ namespace w3c_sw {
 		    }
 		    bodies.release();
 
-		    rep.setStatus(!existed ? webserver::reply::created : isDefaultGraph ? webserver::reply::no_content : webserver::reply::ok);
+		    rep.setStatus(!existed ? webserver::reply::created : oldSize == 0 ? webserver::reply::no_content : webserver::reply::ok);
 		    head(sout, "Q&amp;D SPARQL Server PUT Successful");
 		    sout << 
 			"    <p>Uploaded " << bgp->size() << " triples into ";
@@ -190,7 +199,7 @@ namespace w3c_sw {
 		    rep.setContentType("text/html");
 		    foot(sout);
 		} else if (req.getMethod() == "DELETE") {
-		    webserver::request::parmmap::const_iterator parm;
+		    webserver::request::ParmMap::const_iterator parm;
 		    parm = req.parms.find("default");
 		    bool isDefaultGraph = parm != req.parms.end();
 
@@ -223,7 +232,7 @@ namespace w3c_sw {
 		    foot(sout);
 		} else if (path == servicePath || getGraph != NULL) {
 		    bool isDefaultGraph = false;
-		    webserver::request::parmmap::const_iterator parm;
+		    webserver::request::ParmMap::const_iterator parm;
 		    // w3c_sw_LINEN << "method: " << req.getMethod() << "\n";
 		    // w3c_sw_LINEN << "content type: " << req.getContentType() << "\n";
 		    if (req.getMethod() == "GET" || req.getMethod() == "HEAD"
@@ -271,7 +280,7 @@ namespace w3c_sw {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
 			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
-				<< "Reading default graph from " << parm->second()
+				<< "Reading default graph from " << parm->second
 				<< engine.baseUriMessage() << ".\n";
 			}
 			parm = req.parms.find("named-graph-uri");
@@ -279,8 +288,8 @@ namespace w3c_sw {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
 			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
-				<< "Reading named graph " << parm->second()
-				<< " from " << parm->second()
+				<< "Reading named graph " << parm->second
+				<< " from " << parm->second
 				<< engine.baseUriMessage() << ".\n";
 			    ++parm;
 			}

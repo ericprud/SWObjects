@@ -89,8 +89,38 @@ namespace w3c_sw {
 	    virtual ~request () {  }
 	    void url_decode();
 	    std::string request_path;
-	    typedef std::multimap<std::string, std::string> parmmap;
-	    parmmap parms;
+	    struct ParmMap : public std::multimap<std::string, std::string> {
+		std::vector<std::string> get_all (std::string key) const {
+		    std::vector<std::string> ret;
+		    for (const_iterator it = lower_bound(key); it != upper_bound(key); ++it)
+			ret.push_back(it->second);
+		    return ret;
+		}
+		std::string get_one (std::string key, const char* defaultValue = NULL) const {
+		    const_iterator l = lower_bound(key);
+		    if (l == end()) {			// no entries found
+			if (defaultValue != NULL)
+			    return defaultValue;	//  use default value
+			else
+			    throw std::runtime_error("no value found for " + key);
+		    }
+		    std::string ret = l->second;
+		    if (++l != upper_bound(key))
+			throw std::runtime_error("more than one value found for " + key);
+		    return ret;
+		}
+		std::string get_only (std::string key, const char* defaultValue = NULL) const {
+		    std::string ret = get_one(key, defaultValue);
+
+		    const_iterator l = lower_bound(key); // ensure the "only" semantics
+		    if (l == end() && size() != 0)
+			throw std::runtime_error("\"" + key + "\" not found amongst " + boost::lexical_cast<std::string>(size()) + "attributes");
+		    if (l != end() && size() != 1)
+			throw std::runtime_error("\"" + key + "\" found amongst " + boost::lexical_cast<std::string>(size()) + "attributes");
+		    return ret;
+		}
+	    };
+	    ParmMap parms;
 	    size_t content_length;
 	    std::string content_type;
 	    std::string getContentType () { return content_type; }
