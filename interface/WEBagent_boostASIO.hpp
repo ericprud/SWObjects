@@ -77,7 +77,11 @@ namespace w3c_sw {
 	    boost::regex re;
 	    boost::cmatch matches;
 
-	    re = "(ftp|http|https):\\/\\/((?:\\w(?:\\w|-)+\\.)*\\w*)(?::([0-9]+))?(.*)";
+	    re =
+		"(ftp|http|https):\\/\\/" // PROT
+		"((?:\\w(?:\\w|-)+\\.)*\\w*|(?:[0-9]+\\.){3}[0-9]+)" // HOST
+		"(?::([0-9]+))?" // PORT
+		"(.*)"; // PATH
 	    if (!boost::regex_match(url.c_str(), matches, re))
 		throw std::string("Address ") + url + " is not a valid URL\n";
 
