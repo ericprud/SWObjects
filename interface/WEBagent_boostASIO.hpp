@@ -79,7 +79,7 @@ namespace w3c_sw {
 
 	    re =
 		"(ftp|http|https):\\/\\/" // PROT
-		"((?:\\w(?:\\w|-)+\\.)*\\w*|(?:[0-9]+\\.){3}[0-9]+)" // HOST
+		"((?:[0-9]+\\.){3}[0-9]+|(?:\\w(?:\\w|-)+\\.)*\\w*)" // HOST
 		"(?::([0-9]+))?" // PORT
 		"(.*)"; // PATH
 	    if (!boost::regex_match(url.c_str(), matches, re))
