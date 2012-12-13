@@ -135,22 +135,98 @@ namespace w3c_sw {
 	    }
 	    throw std::runtime_error("exhausted available graph pool");
 	}
-	webserver::reply::status_type
-	handle_request (webserver::request& req, webserver::reply& rep) {
-	    std::string query;
-	    try {
+
+	void stop_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+	    rep.status = webserver::reply::ok;
+	    head(sout, "Done!");
+	    sout << "    <p>Served " << engine.served << " queries.</p>\n";
+	    foot(sout);
+	    engine.done = true;
+	    controller->stop();
+	}
+
+	void sadi_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+		    IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
+		    engine.loadDataOrResults(sw::DefaultGraph, "sadiInput",
+					     engine.baseURI, istr, engine.resultSet, &engine.db);
+		    ResultSet rs(&engine.atomFactory);
+		    RdfDB constructed; // For operations which create a new database.
+		    rs.setRdfDB(&constructed);
+		    std::string language;
+		    std::string newQuery(req.getBody());
+		    //queryLoadList.loadAll();
+		    engine.executeQuery(engine.sadiOp, rs, language, newQuery);
+		    // engine.db.setTarget(NULL);
+		    XMLSerializer xml("  ");
+		    rep.status = webserver::reply::ok;
+		    rep.setContentType(
+				       rs.resultType == ResultSet::RESULT_Graphs
+				       ? "text/turtle; charset=UTF-8"
+				       : "application/sparql-results+xml");
+		    rs.toXml(&xml);
+		    sout << xml.str();
+		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+			<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
+		    ++engine.served;
+		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
+			engine.done = true;
+			controller->stop();
+		    }
+	}
+
+	void ldp_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+		    IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
+		    // w3c_sw_LINE << "executing " << req.getBody() << " on " << engine.db.str();
+		    // RdfDB& execDB = engine.db;
+		    RdfDB execDB(engine.db);
+		    // w3c_sw_LINE << execDB.str();
+		    // BasicGraphPattern* ldpInput = engine.db.setTarget(engine.atomFactory.getURI("ldpInput"));
+		    // const sw::TTerm* postGraph = engine.atomFactory.getURI("/POST");
+		    // engine.loadDataOrResults(postGraph, "ldpInput", engine.baseURI,
+		    // 			     istr, engine.resultSet, &execDB);
+		    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
+					     engine.baseURI, istr, engine.resultSet, &execDB);
+		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+			<< "parsing " << req.getContentType().c_str()
+			<< " [[\n" << req.getBody() << "\n]]"
+			<< " yielded [[\n" << execDB.str() << "\n]].\n";
+		    // w3c_sw_LINE << execDB.str();
+		    // std::string language;
+		    // std::string newQuery(req.getBody());
+		    // queryLoadList.loadAll();
+		    ResultSet rs(&engine.atomFactory);
+		    // engine.executeQuery(engine.ldpOp, rs, language, newQuery);
+		    engine.ldpOp->bindVariables(&execDB, &rs);
+		    // w3c_sw_LINE << rs;
+		    {
+			boost::mutex::scoped_lock lock(engine.executeMutex);
+			engine.db.clearGraphLog();
+			engine.ldpOp->update(&engine.db, &rs);
+			rs.resultType = ResultSet::RESULT_Tabular;
+			// w3c_sw_LINE << rs;
+			engine.db.synch();
+		    }
+		    RdfDB constructed; // For operations which create a new database.
+		    MakeNewBNode mb(&engine.atomFactory);
+		    BasicGraphPattern* defGP = constructed.findGraph(DefaultGraph);
+		    engine.ldpOp->construct(&constructed, &rs, &mb, defGP);
+		    // engine.db.setTarget(NULL);
+		    rep.status = webserver::reply::ok;
+		    rep.setContentType("text/trig");
+		    sout << constructed.str();
+		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+			<< "LDP invocation returning [[\n" << constructed.str() << "\n]].\n";
+		    ++engine.served;
+		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
+			engine.done = true;
+			controller->stop();
+		    }
+	}
+
+	void put_or_post_graph_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
 		std::string path(req.getPath());
 		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
-		std::ostringstream sout;
-		data_loader queryLoadList;
 		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
-		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
-
-		if (req.getMethod() == "PUT" ||
-			   (engine.sadiOp == NULL && engine.ldpOp == NULL &&
-			    req.getMethod() == "POST" &&
-			    req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0 &&
-			    req.getContentType().compare(0, 33, "application/sparql-query") != 0)) {
 		    IStreamList bodies = getBodies(req);
 		    if (bodies.size() == 1) { // !! preparse to not clear mis-posts - remove this expectation from <http://metacognition.info/gsp_validation/gsp.validator.run>
 			IStreamContext istr(req.getBody(), IStreamContext::STRING, req.getContentType().c_str());
@@ -198,7 +274,12 @@ namespace w3c_sw {
 
 		    rep.setContentType("text/html");
 		    foot(sout);
-		} else if (req.getMethod() == "DELETE") {
+	}
+
+	void delete_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+		std::string path(req.getPath());
+		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
+		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
 		    webserver::request::ParmMap::const_iterator parm;
 		    parm = req.parms.find("default");
 		    bool isDefaultGraph = parm != req.parms.end();
@@ -230,357 +311,9 @@ namespace w3c_sw {
 
 		    rep.setContentType("text/html");
 		    foot(sout);
-		} else if (path == servicePath || getGraph != NULL) {
-		    bool isDefaultGraph = false;
-		    webserver::request::ParmMap::const_iterator parm;
-		    // w3c_sw_LINEN << "method: " << req.getMethod() << "\n";
-		    // w3c_sw_LINEN << "content type: " << req.getContentType() << "\n";
-		    if (req.getMethod() == "GET" || req.getMethod() == "HEAD"
-			|| (req.getMethod() == "POST" && req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") == 0)) {
-			parm = req.parms.find("query");
-			if (parm != req.parms.end())
-			    query = parm->second;
-			else {
-			    parm = req.parms.find("update");
-			    if (parm != req.parms.end())
-				query = parm->second;
-			    else {
-				parm = req.parms.find("graph");
-				if (parm != req.parms.end())
-				    getGraph = engine.db.getGraph(engine.atomFactory.getURI(parm->second));
-				else {
-				    parm = req.parms.find("default");
-				    if (parm != req.parms.end()) {
-					getGraph = engine.db.getGraph(DefaultGraph);
-					isDefaultGraph = true;
-				    }
-				}
-			    }
-			}
-		    } else if (req.getMethod() == "POST" &&
-			       (req.getContentType().compare(0, 24, "application/sparql-query") == 0
-				|| engine.sadiOp != NULL
-				|| engine.ldpOp != NULL
-				))
-			query = req.getBody();
-			// w3c_sw_LINEN << "query: " << query << "\n";
-		    if ((query == interfacePath && path != servicePath) ||
-			(engine.sadiOp == NULL && engine.ldpOp == NULL && path == servicePath && query == "")) {
-			if (getGraph) {
-			    rep.status = webserver::reply::ok;
-			    std::string body = getGraph->toString(MediaType("text/turtle"));
-			    sout.write(body.c_str(), body.size());
-			    rep.setContentType("text/turtle");
-			    rep.addHeader("MS-Author-Via", "SPARQL");
-			} else
-			    return webserver::reply::declined;
-		    } else {
-			parm = req.parms.find("default-graph-uri");
-			if (parm != req.parms.end() && parm->second != "") {
-			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
-			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
-				<< "Reading default graph from " << parm->second
-				<< engine.baseUriMessage() << ".\n";
-			}
-			parm = req.parms.find("named-graph-uri");
-			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
-			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
-			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
-				<< "Reading named graph " << parm->second
-				<< " from " << parm->second
-				<< engine.baseUriMessage() << ".\n";
-			    ++parm;
-			}
-			if (!controller->getStopCommand().empty() && query == controller->getStopCommand()) {
-			    rep.status = webserver::reply::ok;
-			    head(sout, "Done!");
-			    sout << "    <p>Served " << engine.served << " queries.</p>\n";
-			    foot(sout);
+	}
 
-			    engine.done = true;
-			    controller->stop();
-			} else {
-			    IStreamContext istr(query, IStreamContext::STRING, req.getContentType().c_str());
-			    try {
-				if (engine.sadiOp != NULL) {
-				    // RdfDB execDB(engine.db);
-				    // BasicGraphPattern* sadiInput = engine.db.setTarget(engine.atomFactory.getURI("sadiInput"));
-				    engine.loadDataOrResults(sw::DefaultGraph, "sadiInput",
-							     engine.baseURI, istr, engine.resultSet, &engine.db);
-				    ResultSet rs(&engine.atomFactory);
-				    RdfDB constructed; // For operations which create a new database.
-				    rs.setRdfDB(&constructed);
-				    std::string language;
-				    std::string newQuery(query);
-				    queryLoadList.loadAll();
-				    engine.executeQuery(engine.sadiOp, rs, language, newQuery);
-				    // engine.db.setTarget(NULL);
-					XMLSerializer xml("  ");
-					    rep.status = webserver::reply::ok;
-					    rep.setContentType(
-							       rs.resultType == ResultSet::RESULT_Graphs
-							       ? "text/turtle; charset=UTF-8"
-							       : "application/sparql-results+xml");
-					    rs.toXml(&xml);
-					    sout << xml.str();
-					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
-						<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
-					++engine.served;
-					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
-					    engine.done = true;
-					    controller->stop();
-					}
-				} else if (engine.ldpOp != NULL) {
-				    // w3c_sw_LINE << "executing " << query << " on " << engine.db.str();
-				    // RdfDB& execDB = engine.db;
-				    RdfDB execDB(engine.db);
-				    // w3c_sw_LINE << execDB.str();
-				    // BasicGraphPattern* ldpInput = engine.db.setTarget(engine.atomFactory.getURI("ldpInput"));
-				    // const sw::TTerm* postGraph = engine.atomFactory.getURI("/POST");
-				    // engine.loadDataOrResults(postGraph, "ldpInput", engine.baseURI,
-				    // 			     istr, engine.resultSet, &execDB);
-				    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
-							     engine.baseURI, istr, engine.resultSet, &execDB);
-				    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
-					<< "parsing " << req.getContentType().c_str()
-					<< " [[\n" << query << "\n]]"
-					<< " yielded [[\n" << execDB.str() << "\n]].\n";
-				    // w3c_sw_LINE << execDB.str();
-				    // std::string language;
-				    // std::string newQuery(query);
-				    // queryLoadList.loadAll();
-				    ResultSet rs(&engine.atomFactory);
-				    // engine.executeQuery(engine.ldpOp, rs, language, newQuery);
-				    engine.ldpOp->bindVariables(&execDB, &rs);
-				    // w3c_sw_LINE << rs;
-				    {
-					boost::mutex::scoped_lock lock(engine.executeMutex);
-					engine.db.clearGraphLog();
-					engine.ldpOp->update(&engine.db, &rs);
-					rs.resultType = ResultSet::RESULT_Tabular;
-					// w3c_sw_LINE << rs;
-					engine.db.synch();
-				    }
-				    RdfDB constructed; // For operations which create a new database.
-				    MakeNewBNode mb(&engine.atomFactory);
-				    BasicGraphPattern* defGP = constructed.findGraph(DefaultGraph);
-				    engine.ldpOp->construct(&constructed, &rs, &mb, defGP);
-				    // engine.db.setTarget(NULL);
-					    rep.status = webserver::reply::ok;
-					    rep.setContentType("text/trig");
-					    sout << constructed.str();
-					    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
-						<< "LDP invocation returning [[\n" << constructed.str() << "\n]].\n";
-					++engine.served;
-					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
-					    engine.done = true;
-					    controller->stop();
-					}
-				} else {
-				    Operation* op = engine.sparqlParser.parse(istr);
-				    if (op == NULL) { // @@@ i think this can't be reached; that is, return NULL would entail having thrown an exception.
-					head(sout, "Query Error");
-
-					sout << "    <p>Query</p>\n"
-					    "    <pre>" << XMLSerializer::escapeCharData(query) << "</pre>\n"
-					    "    <p>is screwed up.</p>\n"
-					     << std::endl;
-					BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << "400: " << query << std::endl;
-					rep.status = webserver::reply::bad_request;
-
-					foot(sout);
-				    } else {
-					parm = req.parms.find("media");
-					bool humanReader = (parm != req.parms.end()
-							    && (parm->second == "html"
-								|| parm->second == "edit"
-								|| parm->second == "tablesorter"));
-
-					ResultSet rs(&engine.atomFactory);
-					RdfDB constructed; // For operations which create a new database.
-					rs.setRdfDB(dynamic_cast<Construct*>(op) != NULL && !engine.inPlace ? &constructed : &engine.db);
-					std::string language;
-					std::string newQuery(query);
-
-					try {
-					    queryLoadList.loadAll();
-					    if (path != servicePath)
-						engine.db.setTarget(engine.atomFactory.getURI(absURL));
-					    engine.executeQuery(op, rs, language, newQuery);
-					    if (humanReader &&
-						(dynamic_cast<GraphChange*>(op) != NULL || 
-						 dynamic_cast<OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
-						/** 
-						 * For a nice human interface, we can do
-						 * another query to report the resulting
-						 * database.
-						 */
-						delete op;
-						rs.clear();
-						op = engine.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
-						op->execute(&engine.db, &rs);
-					    }
-					    engine.db.setTarget(NULL);
-					    delete op;
-					} catch (ParserException& ex) {
-					    delete op;
-					    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << ex.what() << std::endl;
-					    throw WebHandler::SimpleMessageException(ex);
-					} catch (std::string ex) {
-					    delete op;
-					    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error) << ex << std::endl;
-					    throw WebHandler::SimpleMessageException(XMLSerializer::escapeCharData(ex));
-					}
-					const VariableVector cols = rs.getOrderedVars();
-
-					XMLSerializer xml("  ");
-					if (humanReader) {
-					    std::string headStr =
-						"    <style type=\"text/css\" media=\"screen\">\n"
-						"/*<![CDATA[*/\n" + CSS_common
-						;
-					    if (parm->second == "html"
-						|| parm->second == "edit")
-						headStr += CSS_Results;
-					    headStr +=
-						"/*]]>*/\n"
-						"    </style>\n"
-						"\n"
-						;
-					    if (parm->second == "tablesorter")
-						headStr += Javascript_TableSorter_remote;
-					    headStr +=
-						"    <script language=\"javascript\" type=\"text/javascript\">\n"
-						"<!--\n"
-						;
-					    if (parm->second == "tablesorter")
-						headStr +=
-						    "    $(function() {\n"
-						    ;
-					    else
-						headStr +=
-						    "    window.onload=function(){\n"
-						    ;
-					    headStr += Javascript_ToggleDisplay_init;
-				
-					    if (parm->second == "tablesorter")
-						headStr += Javascript_TableSorter_init;
-					    if (parm->second == "tablesorter")
-						headStr +=
-						    "    });\n"
-						    ;
-					    else
-						headStr +=
-						    "    };\n"
-						    ;
-					    headStr += Javascript_ToggleDisplay_defn +
-						"-->\n"
-						"    </script>\n"
-						;
-					    head(sout, "SPARQL Query Results", headStr);
-					    /*
-					      <div id="requery">
-					      <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
-					      ?s ?p ?o
-					      }</pre>
-					      <form action="/as/df">
-					      <p>
-					      <input id="query" name="query" type="hidden" value=""/>
-					      <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
-					      </p>
-					      </form>
-					      </div>
-					    */
-					    /** construct XHTML body with query and results. */
-					    xml.open("div"); {
-						xml.attribute("id", "requery");
-						XMLSerializer::Attributes preAttrs;
-						preAttrs["id"] = "edit";
-						preAttrs["contenteditable"] = "true";
-						preAttrs["style"] = "display:block; float:left;";
-						xml.leaf("pre", newQuery, preAttrs);
-						xml.open("form"); {
-						    xml.attribute("action", path);
-						    xml.attribute("method", "get");
-						    xml.open("p"); {
-							XMLSerializer::Attributes queryAttrs;
-							queryAttrs["type"] = "hidden";
-							queryAttrs["value"] = "";
-							queryAttrs["id"] = "query";
-							queryAttrs["name"] = "query";
-							xml.empty("input", queryAttrs);
-
-							XMLSerializer::Attributes mediaAttrs;
-							mediaAttrs["type"] = "hidden";
-							mediaAttrs["value"] = "edit";
-							mediaAttrs["name"] = "media";
-							xml.empty("input", mediaAttrs);
-
-							XMLSerializer::Attributes submitAttrs;
-							submitAttrs["type"] = "submit";
-							submitAttrs["value"] = "re-query";
-							submitAttrs["onclick"] = "copy('edit', 'query')";
-							submitAttrs["style"] = "margin: 2em;";
-							xml.empty("input", submitAttrs);
-						    } xml.close(); // p
-						} xml.close(); // form
-					    } xml.close(); // div
-
-					    XMLSerializer::Attributes resultsAttrs;
-					    resultsAttrs["id"] = "results";
-					    resultsAttrs["class"] = "tablesorter";
-					    rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : std::string("") + "/" + path);
-
-					    /** construct reply from headers and XHTML body */
-					    rep.status = webserver::reply::ok;
-					    rep.setContentType(
-							       "text/html; charset=UTF-8");
-					    sout << xml.str();
-					    foot(sout);
-
-					} else if (parm != req.parms.end() && parm->second == "textplain") {
-					    head(sout, "SPARQL Query Results");
-
-					    // cute lexical representation of xml nesting:
-					    xml.leaf("pre", newQuery);
-					    rep.status = webserver::reply::ok;
-					    rep.setContentType(
-							       "text/html; charset=UTF-8");
-
-					    XMLSerializer rsSerializer("  ");
-					    rs.toXml(&rsSerializer);
-					    std::string source(rsSerializer.str());
-					    xml.leaf("pre", rsSerializer.str());
-
-					    sout << xml.str();
-					    foot(sout);
-					} else { /* !htmlResults */
-					    rep.status = webserver::reply::ok;
-					    rep.setContentType(
-							       rs.resultType == ResultSet::RESULT_Graphs
-							       ? "text/turtle; charset=UTF-8"
-							       : "application/sparql-results+xml");
-					    rs.toXml(&xml);
-					    sout << xml.str();
-					} /* !htmlResults */
-
-					++engine.served;
-					if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
-					    engine.done = true;
-					    controller->stop();
-					}
-				    }
-				}
-			    } catch (ParserException& ex) {
-				BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
-				    << ex.what() << std::endl;
-				throw WebHandler::SimpleMessageException(ex);
-			    }
-			}
-		    }
-		} else if (path == interfacePath) {
+	void html_interface_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
 		    rep.status = webserver::reply::ok;
 		    head(sout, "Q&amp;D SPARQL Server");
 		    const char* method =
@@ -616,6 +349,296 @@ namespace w3c_sw {
 
 		    rep.setContentType("text/html");
 		    foot(sout);
+	}
+
+	void parse_execute_render (std::string query, const data_loader& queryLoadList, webserver::request& req, webserver::reply& rep, std::ostringstream& sout)
+			{
+		std::string path(req.getPath());
+		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
+		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
+			    IStreamContext istr(query, IStreamContext::STRING, req.getContentType().c_str());
+			    Operation* op = engine.sparqlParser.parse(istr);
+			webserver::request::ParmMap::const_iterator parm;
+			    parm = req.parms.find("media");
+			    bool humanReader = (parm != req.parms.end()
+						&& (parm->second == "html"
+						    || parm->second == "edit"
+						    || parm->second == "tablesorter"));
+
+			    ResultSet rs(&engine.atomFactory);
+			    RdfDB constructed; // For operations which create a new database.
+			    rs.setRdfDB(dynamic_cast<Construct*>(op) != NULL && !engine.inPlace ? &constructed : &engine.db);
+			    std::string language;
+			    std::string newQuery(query);
+
+			    try {
+				queryLoadList.loadAll();
+				if (path != servicePath)
+				    engine.db.setTarget(engine.atomFactory.getURI(absURL));
+				engine.executeQuery(op, rs, language, newQuery);
+				if (humanReader &&
+				    (dynamic_cast<GraphChange*>(op) != NULL || 
+				     dynamic_cast<OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
+				    /** 
+				     * For a nice human interface, we can do
+				     * another query to report the resulting
+				     * database.
+				     */
+				    delete op;
+				    rs.clear();
+				    op = engine.sparqlParser.parse("SELECT ?s ?p ?o {\n  ?s ?p ?o\n}");
+				    op->execute(&engine.db, &rs);
+				}
+				engine.db.setTarget(NULL);
+				delete op;
+			    } catch (ParserException& ex) {
+				delete op;
+				throw ex;
+			    } catch (std::string ex) {
+				delete op;
+				throw ex;
+			    }
+			    const VariableVector cols = rs.getOrderedVars();
+
+			    XMLSerializer xml("  ");
+			    if (humanReader) {
+				std::string headStr =
+				    "    <style type=\"text/css\" media=\"screen\">\n"
+				    "/*<![CDATA[*/\n" + CSS_common
+				    ;
+				if (parm->second == "html"
+				    || parm->second == "edit")
+				    headStr += CSS_Results;
+				headStr +=
+				    "/*]]>*/\n"
+				    "    </style>\n"
+				    "\n"
+				    ;
+				if (parm->second == "tablesorter")
+				    headStr += Javascript_TableSorter_remote;
+				headStr +=
+				    "    <script language=\"javascript\" type=\"text/javascript\">\n"
+				    "<!--\n"
+				    ;
+				if (parm->second == "tablesorter")
+				    headStr +=
+					"    $(function() {\n"
+					;
+				else
+				    headStr +=
+					"    window.onload=function(){\n"
+					;
+				headStr += Javascript_ToggleDisplay_init;
+				
+				if (parm->second == "tablesorter")
+				    headStr += Javascript_TableSorter_init;
+				if (parm->second == "tablesorter")
+				    headStr +=
+					"    });\n"
+					;
+				else
+				    headStr +=
+					"    };\n"
+					;
+				headStr += Javascript_ToggleDisplay_defn +
+				    "-->\n"
+				    "    </script>\n"
+				    ;
+				head(sout, "SPARQL Query Results", headStr);
+				/*
+				  <div id="requery">
+				  <pre id="edit" contenteditable="true" style="display:block; float:left;">SELECT ?s ?p ?o {
+				  ?s ?p ?o
+				  }</pre>
+				  <form action="/as/df">
+				  <p>
+				  <input id="query" name="query" type="hidden" value=""/>
+				  <input type="submit" value="re-query" onclick="copy('edit', 'query');" style="margin: 2em"/>
+				  </p>
+				  </form>
+				  </div>
+				*/
+				/** construct XHTML body with query and results. */
+				xml.open("div"); {
+				    xml.attribute("id", "requery");
+				    XMLSerializer::Attributes preAttrs;
+				    preAttrs["id"] = "edit";
+				    preAttrs["contenteditable"] = "true";
+				    preAttrs["style"] = "display:block; float:left;";
+				    xml.leaf("pre", newQuery, preAttrs);
+				    xml.open("form"); {
+					xml.attribute("action", path);
+					xml.attribute("method", "get");
+					xml.open("p"); {
+					    XMLSerializer::Attributes queryAttrs;
+					    queryAttrs["type"] = "hidden";
+					    queryAttrs["value"] = "";
+					    queryAttrs["id"] = "query";
+					    queryAttrs["name"] = "query";
+					    xml.empty("input", queryAttrs);
+
+					    XMLSerializer::Attributes mediaAttrs;
+					    mediaAttrs["type"] = "hidden";
+					    mediaAttrs["value"] = "edit";
+					    mediaAttrs["name"] = "media";
+					    xml.empty("input", mediaAttrs);
+
+					    XMLSerializer::Attributes submitAttrs;
+					    submitAttrs["type"] = "submit";
+					    submitAttrs["value"] = "re-query";
+					    submitAttrs["onclick"] = "copy('edit', 'query')";
+					    submitAttrs["style"] = "margin: 2em;";
+					    xml.empty("input", submitAttrs);
+					} xml.close(); // p
+				    } xml.close(); // form
+				} xml.close(); // div
+
+				XMLSerializer::Attributes resultsAttrs;
+				resultsAttrs["id"] = "results";
+				resultsAttrs["class"] = "tablesorter";
+				rs.toHtmlTable(&xml, resultsAttrs, path == servicePath ? "" : std::string("") + "/" + path);
+
+				/** construct reply from headers and XHTML body */
+				rep.status = webserver::reply::ok;
+				rep.setContentType(
+						   "text/html; charset=UTF-8");
+				sout << xml.str();
+				foot(sout);
+
+			    } else if (parm != req.parms.end() && parm->second == "textplain") {
+				head(sout, "SPARQL Query Results");
+
+				// cute lexical representation of xml nesting:
+				xml.leaf("pre", newQuery);
+				rep.status = webserver::reply::ok;
+				rep.setContentType(
+						   "text/html; charset=UTF-8");
+
+				XMLSerializer rsSerializer("  ");
+				rs.toXml(&rsSerializer);
+				std::string source(rsSerializer.str());
+				xml.leaf("pre", rsSerializer.str());
+
+				sout << xml.str();
+				foot(sout);
+			    } else { /* !htmlResults */
+				rep.status = webserver::reply::ok;
+				rep.setContentType(
+						   rs.resultType == ResultSet::RESULT_Graphs
+						   ? "text/turtle; charset=UTF-8"
+						   : "application/sparql-results+xml");
+				rs.toXml(&xml);
+				sout << xml.str();
+			    } /* !htmlResults */
+
+			    ++engine.served;
+			    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
+				engine.done = true;
+				controller->stop();
+			    }
+			}
+
+
+	webserver::reply::status_type
+	handle_request (webserver::request& req, webserver::reply& rep) {
+	    try {
+		std::string path(req.getPath());
+		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
+		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
+		std::ostringstream sout;
+		const BasicGraphPattern* getGraph = engine.db.getGraph(engine.atomFactory.getURI(absURL)); // path
+
+		if (!controller->getStopCommand().empty() &&
+		    req.parms.get_only("query") == controller->getStopCommand()) {
+		    stop_handler(req, rep, sout);
+		} else if (engine.sadiOp != NULL) {
+		    sadi_handler(req, rep, sout);
+		} else if (engine.ldpOp != NULL) {
+		    ldp_handler(req, rep, sout);
+		} else if ((req.getMethod() == "PUT" ||
+			    (req.getMethod() == "POST" &&
+			     req.getContentType().compare(0, 33, "application/x-www-form-urlencoded") != 0 &&
+			     req.getContentType().compare(0, 33, "application/sparql-query") != 0 &&
+			     req.getContentType().compare(0, 34, "application/sparql-update") != 0)) &&
+			   req.parms.find("query") == req.parms.end() && req.parms.find("update") == req.parms.end()) {
+		    put_or_post_graph_handler(req, rep, sout);
+		} else if (req.getMethod() == "DELETE") {
+		    delete_handler(req, rep, sout);
+		} else if ((req.getMethod() == "GET" || req.getMethod() == "HEAD" || req.getMethod() == "POST") && (path == servicePath || getGraph != NULL)) {
+		    bool isDefaultGraph = false;
+		    webserver::request::ParmMap::const_iterator parm;
+		    // w3c_sw_LINEN << "method: " << req.getMethod() << "\n";
+		    // w3c_sw_LINEN << "content type: " << req.getContentType() << "\n";
+		    std::string query;
+		    if (req.getContentType().compare(0, 33, "application/sparql-query") == 0 ||
+			req.getContentType().compare(0, 34, "application/sparql-update") == 0) {
+			query = req.getBody();
+		    } else {
+			parm = req.parms.find("query");
+			if (parm != req.parms.end()) {
+			    query = parm->second;
+			    if (req.parms.get_all("query").size() != 1)
+				return webserver::reply::declined;
+			    if (req.parms.get_all("update").size() != 0)
+				return webserver::reply::declined;
+			} else {
+			    parm = req.parms.find("update");
+			    if (parm != req.parms.end()) {
+				query = parm->second;
+				if (req.getMethod() == "GET" || req.getMethod() == "HEAD")
+				    return webserver::reply::declined;
+				if (req.parms.get_all("query").size() != 0)
+				    return webserver::reply::declined;
+				if (req.parms.get_all("update").size() != 1)
+				    return webserver::reply::declined;
+			    } else {
+				parm = req.parms.find("graph");
+				if (parm != req.parms.end())
+				    getGraph = engine.db.getGraph(engine.atomFactory.getURI(parm->second));
+				else {
+				    parm = req.parms.find("default");
+				    if (parm != req.parms.end()) {
+					getGraph = engine.db.getGraph(DefaultGraph);
+					isDefaultGraph = true;
+				    }
+				}
+			    }
+			}
+		    }
+		    if ((path != servicePath && query == interfacePath) ||
+			(path == servicePath && query == "")) {
+			if (getGraph) {
+			    rep.status = webserver::reply::ok;
+			    std::string body = getGraph->toString(MediaType("text/turtle"));
+			    sout.write(body.c_str(), body.size());
+			    rep.setContentType("text/turtle");
+			    rep.addHeader("MS-Author-Via", "SPARQL");
+			} else
+			    return webserver::reply::declined;
+		    } else {
+			data_loader queryLoadList;
+			parm = req.parms.find("default-graph-uri");
+			if (parm != req.parms.end() && parm->second != "") {
+			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
+			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+				<< "Reading default graph from " << parm->second
+				<< engine.baseUriMessage() << ".\n";
+			}
+			parm = req.parms.find("named-graph-uri");
+			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
+			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
+			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+				<< "Reading named graph " << parm->second
+				<< " from " << parm->second
+				<< engine.baseUriMessage() << ".\n";
+			    ++parm;
+			}
+			parse_execute_render(query, queryLoadList, req, rep, sout);
+		    }
+		} else if (path == interfacePath) {
+		    html_interface_handler(req, rep, sout);
 		} else {
 		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
 			engine.done = true;
@@ -625,20 +648,27 @@ namespace w3c_sw {
 		}
 		rep.setContent(sout.str());
 		return webserver::reply::ok;
-	    }
-	    catch (SimpleMessageException& e) {
+	    } catch (ParserException& e) {
+		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+		    << e.what() << std::endl;
 		rep.status = webserver::reply::bad_request;
 		rep.setContentType("text/html");
 		rep.setContent(e.what());
+		return webserver::reply::internal_server_error;
+	    } catch (SimpleMessageException& e) {
+		rep.status = webserver::reply::bad_request;
+		rep.setContentType("text/html");
+		rep.setContent(e.what());
+		return webserver::reply::internal_server_error;
 	    } catch (std::exception& e) {
-		errorMessage(rep, query, e.what());
+		return errorMessage(rep, req.str(), e.what());
 	    } catch (std::string& e) {
-		errorMessage(rep, query, e);
+		return errorMessage(rep, req.str(), e);
 	    }
-	    return webserver::reply::internal_server_error;
 	}
 
-	void errorMessage (webserver::reply& rep, std::string query, std::string what) {
+	webserver::reply::status_type
+        errorMessage (webserver::reply& rep, std::string query, std::string what) {
 	    std::ostringstream sout;
 
 	    rep.status = webserver::reply::bad_request;
@@ -651,6 +681,7 @@ namespace w3c_sw {
 		"    <pre>" << escapeHTML(what) << "</pre>\n"; 
 	    foot(sout);
 	    rep.setContent(sout.str());
+	    return webserver::reply::internal_server_error;
 	}
 	std::string uriLink (const URI* target) {
 	    return std::string() + "&lt;<a href=\"" + escapeHTML(target->getLexicalValue()) + "\">" + escapeHTML(target->getLexicalValue()) + "</a>&gt;";
