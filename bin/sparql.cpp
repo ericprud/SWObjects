@@ -121,7 +121,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	std::string startupMessage; // messages which get printed after a successful call to ::bind.
 
 	if (!servicePath.empty()) {
-	    const sw::URI* serviceURI = engine.atomFactory.getURI(servicePath); // serviceURIstr
+	    const sw::URI* serviceURI = engine.atomFactory.getURI(serviceURIstr);
 	    sw::BasicGraphPattern* serviceGraph = addServiceDesc ? engine.db.ensureGraph(serviceURI) : NULL;
 	    if (serviceGraph != NULL)
 		serviceGraph->addTriplePattern
