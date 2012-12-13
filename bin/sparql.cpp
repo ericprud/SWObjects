@@ -190,7 +190,7 @@ struct MyLoadEntry {
 	: graphName(graphName), resource(resource), baseURI(baseURI), mediaType(mediaType) {  }
     MyLoadEntry (const MyLoadEntry& ref)
 	: graphName(ref.graphName), resource(ref.resource), baseURI(ref.baseURI), mediaType(ref.mediaType) {  }
-    void loadGraph () {
+    void loadGraph () const {
 	std::string nameStr = resource->getLexicalValue();
 	sw::IStreamContext istr(nameStr, sw::IStreamContext::STDIN,
 				mediaType ? mediaType.get().c_str() : NULL, 
@@ -205,8 +205,8 @@ struct MyLoadList : public std::vector<MyLoadEntry> {
     void enqueue (const sw::TTerm* graphName, const sw::TTerm* resource, const sw::TTerm* baseURI, sw::MediaType mediaType) {
 	push_back(MyLoadEntry(graphName, resource, baseURI, mediaType));
     }
-    void loadAll () {
-	for (iterator it = begin();
+    void loadAll () const {
+	for (const_iterator it = begin();
 	     it != end(); ++it)
 	    it->loadGraph();
     }
