@@ -80,6 +80,7 @@ namespace w3c_sw {
 	static HandlerSet defaultHandler;
 	static size_t DebugEnumerateLimit;
 	static bool GetGraphArguments;
+	static bool DynamicLoading;
 
 	/** RdfDB: simple constructor with no GET or parsing facilities.
 	 */

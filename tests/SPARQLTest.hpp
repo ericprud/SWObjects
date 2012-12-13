@@ -354,6 +354,7 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
 #endif /* !TEST_DAWG_EXTENSIONS */
 
 #define DAWG_TEST(QUERY_FILE, RESULT_FILE, NGS, REQS)			       \
+    RdfDB::DynamicLoading = false;					       \
     try {								       \
 	if (TEST_ENABLED(REQS)) {					       \
 	    MeasuredRS measured(defaultGraph, namedGraphs,		       \

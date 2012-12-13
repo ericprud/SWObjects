@@ -13,6 +13,7 @@ namespace w3c_sw {
 
     size_t RdfDB::DebugEnumerateLimit = 50;
     bool RdfDB::GetGraphArguments = false;
+    bool RdfDB::DynamicLoading = true;
 
     RdfDB::HandlerSet RdfDB::defaultHandler;
 

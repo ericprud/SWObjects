@@ -2729,7 +2729,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	RdfDB* queryDB = db;
 	// using
 	if (usingGraphs) {
-	    if (RdfDB::GetGraphArguments) {
+	    if (RdfDB::DynamicLoading) {
 		for (std::vector<s_UsingPair>::const_iterator ds = usingGraphs->begin();
 		     ds != usingGraphs->end(); ds++) {
 		    std::string nameStr = ds->name->getLexicalValue();
@@ -2808,7 +2808,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    BasicGraphPattern* target = db->ensureGraph(m_into);
 	    for (std::vector<const TriplePattern*>::const_iterator it = source->begin(); it != source->end(); ++it)
 		target->addTriplePattern(*it);
-	} else if (RdfDB::GetGraphArguments) {
+	} else if (RdfDB::DynamicLoading) {
 	    std::string nameStr = m_from->getLexicalValue();
 	    IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
 	    if (db->loadData(db->ensureGraph(m_from), iptr, nameStr, nameStr, rs->getAtomFactory()))
