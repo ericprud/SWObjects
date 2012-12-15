@@ -639,59 +639,14 @@ BOOST_AUTO_TEST_CASE( JoinCache_SERVICE ) {
     */
 }
 
-
 struct HttpServerManagement : w3c_sw::SPARQLServerInteraction {
-    int clientfd;
+    w3c_sw::SocketMessage client;
 
     HttpServerManagement (std::string serverParams,
-			   std::string query)
-	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL", LOWPORT, HIPORT)
-    {
-	sockaddr_in remote;
-	remote.sin_family = AF_INET;
-	remote.sin_addr.s_addr = inet_addr(hostIP.c_str());
-	remote.sin_port = htons(port);
-
-	clientfd = socket(AF_INET, SOCK_STREAM, 0);
-	assert(clientfd != -1);
-
-	if (connect(clientfd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
-	    std::stringstream ss;
-	    ss << "failed to connect to "
-	       << hostIP << ":" << port << " - error: " << strerror(errno);
-	    throw ss.str();
-	}
-
-	std::stringstream reqSS;
-	reqSS << "POST " << path << " HTTP/1.1\r\n"
-	      << "Host: localhost:" << port << "\r\n"
-	      << "Content-Length: " << query.size() << "\r\n"
-	      << "Content-Type: application/x-www-form-urlencoded\r\n"
-	      << "\r\n"
-	      << query;
-
-	std::string req = reqSS.str();
-	const char* ptr = req.c_str();
-	for (size_t i = 0; i < req.size(); ) {
-	    ssize_t wrote = write(clientfd, ptr+i, req.size() - i);
-	    if (wrote == -1) {
-		std::stringstream ss;
-		ss << "failed to write " << req.size() - i << " bytes to "
-		   << hostIP << ":" << port << " - error: " << strerror(errno);
-		throw ss.str();
-	    }
-	    i += wrote;
-	}
-    }
-
-    ~HttpServerManagement () {
-	close(clientfd);
-	// if (pclose(serverPipe) == -1 && errno != ECHILD)
-	//     throw std::string() + "pclose(server pipe)" + strerror(errno);
-	// Could call
-	//   readToExhaustion(serverPipe, serverS, "server pipe");
-	// but there's no reason to read from serverPipe.
-    }
+			  std::string query)
+	: w3c_sw::SPARQLServerInteraction (serverParams, "/SPARQL", LOWPORT, HIPORT),
+	  client(port, hostIP, path, query)
+    {  }
 };
 
 /* POSTed STOP.
@@ -701,7 +656,7 @@ BOOST_AUTO_TEST_CASE( D_post_STOP ) {
     std::string response;
     char line[80];
     for (;;) {
-	ssize_t red = read(i.clientfd, line, sizeof line);
+	ssize_t red = read(i.client.fd, line, sizeof line);
 	if (red == 0)
 	    break;
 	if (red < 0) {

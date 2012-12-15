@@ -229,17 +229,22 @@ namespace w3c_sw {
     /** EvaluatedResultSet - result set from an executed query.
      */
     struct EvaluatedResultSet : public ResultSet {
-	EvaluatedResultSet (AtomFactory* atomFactory, SWWEBagent* webAgent, SWSAXparser* xmlParser, std::string query)
+	struct DBLoader {
+	    virtual void operator()(RdfDB* db) = 0;
+	};
+	EvaluatedResultSet (AtomFactory* atomFactory, SWWEBagent* webAgent, SWSAXparser* xmlParser, std::string query, DBLoader* dbLoader = NULL)
 	    : ResultSet(atomFactory)
 	{
 	    IStreamContext istr(query, IStreamContext::STRING);
-		BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
-		    << "query: " << query << std::endl;
+	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		<< "query: " << query << std::endl;
 	    SPARQLfedDriver sparqlParser("", atomFactory);
 	    try {
 		Operation* op = sparqlParser.parse(istr);
 		sparqlParser.clear(""); // clear out namespaces and base URI.
 		RdfDB d(webAgent, xmlParser);
+		if (dbLoader != NULL)
+		    (*dbLoader)(&d);
 		op->execute(&d, this);
 		delete op;
 	    } catch (ParserException& ex) {
@@ -290,6 +295,61 @@ namespace w3c_sw {
 	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/sparql-results");
 	    TTerm::String2BNode bnodeMap;
 	    parseTable(sptr, false, &bnodeMap);
+	}
+    };
+
+
+    /* Send \query to a waiting server.
+     */
+    struct SocketMessage {
+	int fd;
+
+	SocketMessage (int port, std::string addr, std::string path, std::string query)
+	{
+	    sockaddr_in remote;
+	    remote.sin_family = AF_INET;
+	    remote.sin_addr.s_addr = inet_addr(addr.c_str());
+	    remote.sin_port = htons(port);
+
+	    fd = socket(AF_INET, SOCK_STREAM, 0);
+	    assert(fd != -1);
+
+	    if (connect(fd, (struct sockaddr *) &remote, sizeof(remote)) < 0) {
+		std::stringstream ss;
+		ss << "failed to connect to "
+		   << addr << ":" << port << " - error: " << strerror(errno);
+		throw ss.str();
+	    }
+
+	    std::stringstream reqSS;
+	    reqSS << "POST " << path << " HTTP/1.1\r\n"
+		  << "Host: localhost:" << port << "\r\n"
+		  << "Content-Length: " << query.size() << "\r\n"
+		  << "Content-Type: application/x-www-form-urlencoded\r\n"
+		  << "\r\n"
+		  << query;
+
+	    std::string req = reqSS.str();
+	    const char* ptr = req.c_str();
+	    for (size_t i = 0; i < req.size(); ) {
+		ssize_t wrote = write(fd, ptr+i, req.size() - i);
+		if (wrote == -1) {
+		    std::stringstream ss;
+		    ss << "failed to write " << req.size() - i << " bytes to "
+		       << addr << ":" << port << " - error: " << strerror(errno);
+		    throw ss.str();
+		}
+		i += wrote;
+	    }
+	}
+
+	~SocketMessage () {
+	    close(fd);
+	    // if (pclose(serverPipe) == -1 && errno != ECHILD)
+	    //     throw std::string() + "pclose(server pipe)" + strerror(errno);
+	    // Could call
+	    //   readToExhaustion(serverPipe, serverS, "server pipe");
+	    // but there's no reason to read from serverPipe.
 	}
     };
 
