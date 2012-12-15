@@ -33,7 +33,7 @@
  */
 
 // Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
-// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff
+// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff, test_SPARQL11: 0x9300-0x93ff
 #define LOWPORT 0x9200
 #define HIPORT  0x92ff
 

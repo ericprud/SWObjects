@@ -6,9 +6,22 @@
  */
 
 #define BOOST_TEST_MODULE SPARQL11_tests
+#define NEEDDEF_W3C_SW_WEBAGENT
 #include "../tests/SPARQLTest.hpp"
+#include "../tests/ServerInteraction.hpp"
+
+#if HTTP_CLIENT != SWOb_DISABLED
+  W3C_SW_WEBAGENT<> WebClient;
+#else /* HTTP_CLIENT == SWOb_DISABLED */
+  #warning unable to test SERVICE queries
+#endif /* HTTP_CLIENT == SWOb_DISABLED */
 
 w3c_sw_DEBUGGING_FUNCTIONS();
+
+// Allocate distinct server port ranges to prevent conflicts in simultaneous tests.
+// test_SPARQL: 9000-90ff, test_SADI: 9100-91ff, test_LWP: 9200-92ff, test_SPARQL11: 0x9300-0x93ff
+#define LOWPORT 0x9300
+#define HIPORT  0x93ff
 
 BOOST_AUTO_TEST_SUITE( subselect )
 BOOST_AUTO_TEST_CASE( subselect_01 ) {
@@ -2593,7 +2606,63 @@ BOOST_AUTO_TEST_CASE( jsonres04 ) {
 }
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_json */)
 
+struct SPARQLServerInteractionVector : public std::vector<w3c_sw::SPARQLServerInteraction*> {
+    std::string add (std::string dataPath, int lowPort, int highPort) {
+	SPARQLServerInteraction* s = new SPARQLServerInteraction("-d " + dataPath + " --stop STOP" /* + " --stop-after 1" */, "/SPARQL", lowPort, highPort);
+	insert(end(), s);
+	return s->serverURL;
+    }
+    ~SPARQLServerInteractionVector () {
+	for (const_iterator it = begin(); it != end(); ++it) {
+	    w3c_sw::SocketMessage((*it)->port, (*it)->hostIP, (*it)->path, "query=STOP");
+	    delete *it;
+	}
+    }
+};
+
 BOOST_AUTO_TEST_SUITE( sparql11_federated_query )
+BOOST_AUTO_TEST_CASE( service5 ) {
+    // name: SERVICE test 5
+    // manifest: data-sparql11/service/manifest.ttl
+    const char* defaultGraph_in = "data-sparql11/service/data05.ttl";
+    LabeledGraph services[] = {LG("data-sparql11/service/data05endpoint1.ttl", "http://example1.org/sparql"), LG("data-sparql11/service/data05endpoint2.ttl", "http://example2.org/sparql")};
+    const char* request = "data-sparql11/service/service05.rq";
+    try {
+	SPARQLServerInteractionVector servers;
+	for (size_t i = 0; i < (sizeof(services)/sizeof(services[0])); ++i) {
+	    std::string handledBy = servers.add(services[i].source, LOWPORT, HIPORT);
+	    ServiceGraphPattern::ServiceMap.insert(std::make_pair(services[i].name, handledBy));
+	}
+
+	struct myLoader : public EvaluatedResultSet::DBLoader {
+	    std::string defGraph;
+	    myLoader (std::string defGraph) : defGraph(defGraph) {  }
+	    virtual void operator() (RdfDB* db) {
+		MeasuredRS::read(defGraph, defGraph, db->ensureGraph(DefaultGraph));
+	    }
+	};
+	myLoader l(defaultGraph_in);
+
+	std::ifstream queryis(request); assert (queryis.is_open());
+	std::istreambuf_iterator<char> queryi(queryis), querye;
+	std::string query(queryi, querye);
+	EvaluatedResultSet measured(&F, &WebClient, &P, query, &l);
+    	// MeasuredRS measured(defaultGraph_in, NULL, 0, request);
+    	/*w3c_sw_LINEN << "in:" << (sizeof(services)/sizeof(services[0])) << " -- out:" << (sizeof(namedGraphs_out)/sizeof(namedGraphs_out[0])) << "\n"; */
+    	/* w3c_sw_LINEN << measured; */
+
+	ReferenceRS expected(measured, "data-sparql11/service/service05.srx", &F, &P);
+	BOOST_CHECK_EQUAL(measured, expected);
+    } catch (NotImplemented& e) {
+    	std::cerr << e.what() << "\n";
+    	BOOST_ERROR ( std::string("require implementation of ") + e.brief );
+    } catch (std::string& s) {
+    	BOOST_ERROR ( s );
+    } catch (std::exception& s) {
+    	BOOST_ERROR ( s.what() );
+    }
+    // FED_TEST("data-sparql11/service/service05.srx");
+}
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_federated_query */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_entailment )
@@ -2603,9 +2672,11 @@ BOOST_AUTO_TEST_SUITE( sparql11_service_description )
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_service_description */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_protocol )
+// use http://www.w3.org/2009/sparql/protocol_validator
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_protocol */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_http_rdf_update )
+// http://metacognition.info/gsp_validation/gsp.validator.form
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_http_rdf_update */)
 
 
