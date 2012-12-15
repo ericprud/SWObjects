@@ -162,7 +162,7 @@ namespace w3c_sw {
 		    rep.setContentType(
 				       rs.resultType == ResultSet::RESULT_Graphs
 				       ? "text/turtle; charset=UTF-8"
-				       : "application/sparql-results+xml");
+				       : "application/sparql-results+xml; charset=UTF-8");
 		    rs.toXml(&xml);
 		    sout << xml.str();
 		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
@@ -357,7 +357,10 @@ namespace w3c_sw {
 		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
 		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
 			    IStreamContext istr(query, IStreamContext::STRING, req.getContentType().c_str());
+		std::string oldBase = engine.sparqlParser.getBase();
+		engine.sparqlParser.setBase(absURL);
 			    Operation* op = engine.sparqlParser.parse(istr);
+		engine.sparqlParser.setBase(oldBase);
 			webserver::request::ParmMap::const_iterator parm;
 			    parm = req.parms.find("media");
 			    bool humanReader = (parm != req.parms.end()
@@ -526,7 +529,7 @@ namespace w3c_sw {
 				rep.setContentType(
 						   rs.resultType == ResultSet::RESULT_Graphs
 						   ? "text/turtle; charset=UTF-8"
-						   : "application/sparql-results+xml");
+						   : "application/sparql-results+xml; charset=UTF-8");
 				rs.toXml(&xml);
 				sout << xml.str();
 			    } /* !htmlResults */
