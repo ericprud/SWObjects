@@ -2721,6 +2721,7 @@ public:
     static e_HTTP_METHOD defaultHTTPmethod;
     static size_t defaultFederationRowLimit;
     static bool useFilters;
+    static std::map<std::string, std::string> ServiceMap;
 
     ServiceGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* atomFactory, bool lexicalCompare) : 
 	TableOperationOnOperation(p_GroupGraphPattern), 

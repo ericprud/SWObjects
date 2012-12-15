@@ -2721,7 +2721,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	    BasicGraphPattern* from = db->findGraph(with);
 	    if (!from)
 		throw std::runtime_error
-		    ("can't name non-existent graph " + with->toString() + " the default graph");
+		    ("can't make non-existent graph " + with->toString() + " the default graph");
 	    oldDefault = db->assignDefaultGraph(from);
 	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "hiding default graph\n";
 	}
@@ -3182,6 +3182,7 @@ compared against
     ServiceGraphPattern::e_HTTP_METHOD ServiceGraphPattern::defaultHTTPmethod = ServiceGraphPattern::HTTP_METHOD_GET;
     size_t ServiceGraphPattern::defaultFederationRowLimit = 1000; // don't try to federation more than 1000 rows.
     bool ServiceGraphPattern::useFilters = false;
+    std::map<std::string, std::string> ServiceGraphPattern::ServiceMap;
 
     bool BasicGraphPattern::onto (const BasicGraphPattern& ref) const {
 	ResultSet rs(NULL);
@@ -3748,15 +3749,27 @@ compared against
 	}
 	delete query;
 
+	/* Potentially map the endpoint to another resolver per the global ServiceMap. */
+	std::string mappedEndpoint = service->getLexicalValue();
+	{
+	    std::map<std::string, std::string>::const_iterator m =
+		ServiceGraphPattern::ServiceMap.find(mappedEndpoint);
+	    if (m != ServiceGraphPattern::ServiceMap.end()) {
+		mappedEndpoint = m->second;
+		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		    << "Service name <" << m->first << "> will be resolved at " << m->second << "\n";
+	    }
+	}
+
 	/* Do an HTTP GET and parse results into a ResultSet. */
 	boost::shared_ptr<IStreamContext> istr;
 	std::string s;
 	switch (ServiceGraphPattern::defaultHTTPmethod) {
 	case ServiceGraphPattern::HTTP_METHOD_GET:
-	    istr = agent->get(service->getLexicalValue().c_str(), p);
+	    istr = agent->get(mappedEndpoint.c_str(), p);
 	    break;
 	case ServiceGraphPattern::HTTP_METHOD_POST:
-	    istr = agent->post(service->getLexicalValue().c_str(), p);
+	    istr = agent->post(mappedEndpoint.c_str(), p);
 	    break;
 	default:
 	    throw "program flow exception -- unknown defaultHTTPmethod";
