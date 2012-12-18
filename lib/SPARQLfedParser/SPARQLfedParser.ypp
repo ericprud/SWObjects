@@ -88,6 +88,7 @@ class SPARQLfedScanner;
 
 class SPARQLfedDriver : public YaccDriver {
     friend class SPARQLfedParser;
+    friend class SPARQLfedScanner;
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
@@ -109,6 +110,26 @@ protected:
     PropertyPath::PathBase* lastPropertyPathAlternative;
     PropertyPath::PathBase* lastPropertyPathSequence;
     PropertyPath::PathBase* lastPropertyPathSetAlternative;
+    bool inINSERTDATA;
+    bool inDELETEDATA;
+    bool inDELETEWHERE;
+    bool inDELETECLAUSE;
+
+    const Variable* getVariable (std::string name) {
+	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
+	    error(*yylloc, "variable ?" + name + " not allowed in fixed data block.");
+	return YaccDriver::atomFactory->getVariable(name);
+    }
+    const BNode* createBNode () {
+	if (inDELETEDATA || inDELETEWHERE || inDELETECLAUSE)
+	    error(*yylloc, "anonymous blank node not allowed in fixed data block.");
+	return YaccDriver::atomFactory->createBNode();
+    }
+    const BNode* getBNode (std::string name) {
+	if (inDELETEDATA || inDELETEWHERE || inDELETECLAUSE)
+	    error(*yylloc, "blank node _:" + name + " not allowed in fixed data block.");
+	return YaccDriver::atomFactory->getBNode(name, &bnodeMap);
+    }
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -1323,24 +1344,33 @@ Copy:
 ;
 
 InsertData:
-    INSERTDATA QuadData	{
-	$$ = new Insert($2, NULL);
-	driver.curOp = NULL;
-	driver.curBGP = NULL;
-    }
+    INSERTDATA	{
+	driver.inINSERTDATA = true;
+      } QuadData	{
+	  driver.inINSERTDATA = false;
+	  $$ = new Insert($3, NULL);
+	  driver.curOp = NULL;
+	  driver.curBGP = NULL;
+	}
 ;
 
 DeleteData:
-    DELETEDATA QuadData	{
-	$$ = new Delete(true, $2, NULL);
-	driver.curOp = NULL;
-	driver.curBGP = NULL;
-    }
+    DELETEDATA	{
+	driver.inDELETEDATA = true;
+      } QuadData	{
+	  driver.inDELETEDATA = false;
+	  $$ = new Delete(true, $3, NULL);
+	  driver.curOp = NULL;
+	  driver.curBGP = NULL;
+	}
 ;
 
 DeleteWhere:
-    DELETEWHERE QuadPattern	{
-	$$ = new Delete(true, $2, NULL);
+    DELETEWHERE	{
+	driver.inDELETEWHERE = true;
+      } QuadPattern	{
+	  driver.inDELETEWHERE = false;
+	  $$ = new Delete(true, $3, NULL);
     }
 ;
 
@@ -1410,9 +1440,12 @@ _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt:
 ;
 
 DeleteClause:
-    IT_DELETE QuadPattern	{
-	$$ = new Delete(false, $2, NULL);
-    }
+    IT_DELETE	{
+	driver.inDELETECLAUSE = true;
+      } QuadPattern	{
+	  driver.inDELETECLAUSE = false;
+	  $$ = new Delete(false, $3, NULL);
+      }
 ;
 
 InsertClause:
@@ -3182,6 +3215,10 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
     root = NULL;
     curBGP = NULL;
     curOp = NULL;
+    inINSERTDATA   = false;
+    inDELETEDATA   = false;
+    inDELETEWHERE  = false;
+    inDELETECLAUSE = false;
     curGraphName = NULL;
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.

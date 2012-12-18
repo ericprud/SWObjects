@@ -78,6 +78,7 @@ class SPARQLfedScanner;
 
 class SPARQLfedDriver : public YaccDriver {
     friend class SPARQLfedParser;
+    friend class SPARQLfedScanner;
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
@@ -99,6 +100,26 @@ protected:
     PropertyPath::PathBase* lastPropertyPathAlternative;
     PropertyPath::PathBase* lastPropertyPathSequence;
     PropertyPath::PathBase* lastPropertyPathSetAlternative;
+    bool inINSERTDATA;
+    bool inDELETEDATA;
+    bool inDELETEWHERE;
+    bool inDELETECLAUSE;
+
+    const Variable* getVariable (std::string name) {
+	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
+	    error(*yylloc, "variable ?" + name + " not allowed in fixed data block.");
+	return YaccDriver::atomFactory->getVariable(name);
+    }
+    const BNode* createBNode () {
+	if (inDELETEDATA || inDELETEWHERE || inDELETECLAUSE)
+	    error(*yylloc, "anonymous blank node not allowed in fixed data block.");
+	return YaccDriver::atomFactory->createBNode();
+    }
+    const BNode* getBNode (std::string name) {
+	if (inDELETEDATA || inDELETEWHERE || inDELETECLAUSE)
+	    error(*yylloc, "blank node _:" + name + " not allowed in fixed data block.");
+	return YaccDriver::atomFactory->getBNode(name, &bnodeMap);
+    }
 
     void ensureBasicGraphPattern ( ) {
 	if (curBGP == NULL) {
@@ -242,7 +263,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 246 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 267 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -272,7 +293,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 276 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 297 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -284,7 +305,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 255 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 276 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -359,7 +380,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 363 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 384 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -737,7 +758,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 741 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 762 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 
