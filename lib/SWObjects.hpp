@@ -4831,6 +4831,11 @@ public:
 	w3c_sw_NEED_IMPL("add");
     }
 };
+
+    namespace Util {
+	std::string GMTimeAs8601();
+    }; // namespace Util
+
     std::ostream& operator<<(std::ostream& os, BasicGraphPattern const& my);
     std::ostream& operator<<(std::ostream& os, TableOperation const& my);
     std::ostream& operator<<(std::ostream& os, WhereClause const& my);

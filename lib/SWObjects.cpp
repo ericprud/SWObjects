@@ -1647,15 +1647,7 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 		return atomFactory->getRDFLiteral(parseDateTime(dt).tz);
 	    }
 	    const TTerm* FUNC_now (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		time_t rawtime;
-		struct tm t;
-
-		::time(&rawtime);
-		::localtime_r(&rawtime, &t);
-		char space[40];
-		::snprintf(space, sizeof(space)-1, "%04d-%02d-%02dT%02d:%02d:%02d", 
-			   1900+t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
-		return atomFactory->getRDFLiteral(space, TTerm::URI_xsd_dateTime);
+		return atomFactory->getRDFLiteral(Util::GMTimeAs8601(), TTerm::URI_xsd_dateTime);
 	    }
 	    const TTerm* FUNC_rand (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		static bool seeded = false;
@@ -3811,6 +3803,11 @@ compared against
 		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
+	    } catch (...) {
+		if (m_Silence == SILENT_Yes)
+		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
+		else
+		    throw std::string() + "SERVICE " + graph->toString() + " produced an unclassified error";
 	    }
 	} else {
 	    const Variable* graphVar = dynamic_cast<const Variable*>(m_VarOrIRIref);
@@ -3848,6 +3845,11 @@ compared against
 				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << s << std::endl;
 			    else
 				throw std::string() + "SERVICE " + graphName->toString() + " produced error: " + s;
+			} catch (...) {
+			    if (m_Silence == SILENT_Yes)
+				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
+			    else
+				throw std::string() + "SERVICE " + graph->toString() + " produced an unclassified error";
 			}
 			if (failed) { // painful way to create an empty ResultSet.
 			    nested->clear();
@@ -4485,6 +4487,20 @@ namespace w3c_sw {
 	my.express(&s);
 	return os << s.str();
     }
+
+    namespace Util {
+	std::string GMTimeAs8601 () {
+	    time_t rawtime;
+	    struct tm t;
+
+	    ::time(&rawtime);
+	    ::localtime_r(&rawtime, &t);
+	    char space[20];
+	    ::snprintf(space, 20, "%04d-%02d-%02dT%02d:%02d:%02dZ", 
+		       1900+t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+	    return std::string(space);
+	}
+    } // namespace Util
 
     namespace Debugging {
 
