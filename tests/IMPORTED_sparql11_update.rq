@@ -1,0 +1,39 @@
+PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+PREFIX ut: <http://www.w3.org/2009/sparql/tests/test-update#>
+PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+SELECT
+  (CONCAT("BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n")										AS ?line1)
+  (CONCAT("    const char* test = \"", STR(?entry), "\";\n")									AS ?line2)
+  (CONCAT("    // name: ", ?name, "\n")												AS ?line3)
+  (CONCAT("    // manifest: ", STR(?manifest), "\n")										AS ?line4)
+  (CONCAT("    const char* defaultGraph_in = ", IF(BOUND(?dgraph_in), CONCAT("\"", STR(?dgraph_in), "\""), "NULL"), ";\n")	AS ?line5)
+  (CONCAT("    LabeledGraph namedGraphs_in[] = {", IF(BOUND(?graph_in), ?graph_in, ""), "};\n")					AS ?line6)
+  (CONCAT("    const char* request = \"", STR(?request), "\";\n")								AS ?line7)
+  (CONCAT("    const char* defaultGraph_out = ", IF(BOUND(?dgraph_out), CONCAT("\"", STR(?dgraph_out), "\""), "NULL"), ";\n")	AS ?line8)
+  (CONCAT("    LabeledGraph namedGraphs_out[] = {", IF(BOUND(?graph_out), ?graph_out, ""), "};\n")				AS ?line9)
+  (CONCAT("    UPDATE_TEST();\n")												AS ?lineA)
+  (CONCAT("} /* BOOST_AUTO_TEST_CASE( ", ?id, " ) */\n")									AS ?lineB)
+{
+  <http://www.w3.org/TR/sparql11-update/> mf:conformanceRequirement MEMBERS(?manifest)
+
+  GRAPH ?manifest {
+    ?s a mf:Manifest ;
+       mf:entries MEMBERS(?entry) .
+    ?entry a mf:UpdateEvaluationTest ;
+           mf:name ?name ;
+           dawgt:approval dawgt:Approved ;
+           mf:action ?action ;
+           mf:result ?result .
+    ?action ut:request ?request .
+  }
+  OPTIONAL { GRAPH ?manifest { ?action ut:data ?dgraph_in } }
+  OPTIONAL { SELECT ?action (GROUP_CONCAT(?graph_row_in; SEPARATOR=", ") AS ?graph_in) WHERE { GRAPH ?manifest { ?action ut:graphData [ ut:graph ?source_in ; rdfs:label ?label_in] BIND (CONCAT("LG(\"", STR(?source_in), "\", \"", STR(?label_in), "\")") AS ?graph_row_in) } } GROUP BY ?id ?action }
+
+  OPTIONAL { GRAPH ?manifest { ?result ut:data ?dgraph_out } }
+  OPTIONAL { SELECT ?result (GROUP_CONCAT(?graph_row_out; SEPARATOR=", ") AS ?graph_out) WHERE { GRAPH ?manifest { ?result ut:graphData [ ut:graph ?source_out ; rdfs:label ?label_out] BIND (CONCAT("LG(\"", STR(?source_out), "\", \"", STR(?label_out), "\")") AS ?graph_row_out) } } GROUP BY ?id ?result }
+
+  BIND (fn:replace(strafter(str(?entry), "#"), "-", "_") AS ?id)
+#  FILTER (?id = "insert_using_01") # limit to one for fiddling
+}

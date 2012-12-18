@@ -1,0 +1,35 @@
+PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+PREFIX qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
+PREFIX ut: <http://www.w3.org/2009/sparql/tests/test-update#>
+PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+SELECT
+  (CONCAT("BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n")										AS ?line1)
+  (CONCAT("    const char* test = \"", STR(?entry), "\";\n")									AS ?line2)
+  (CONCAT("    // name: ", ?name, "\n")												AS ?line3)
+  (CONCAT("    // manifest: ", STR(?manifest), "\n")										AS ?line4)
+  (CONCAT("    const char* defaultGraph_in = ", IF(BOUND(?dgraph_in), CONCAT("\"", STR(?dgraph_in), "\""), "NULL"), ";\n")	AS ?line5)
+  (CONCAT("    LabeledGraph services[] = {", IF(BOUND(?service), ?service, ""), "};\n")						AS ?line6)
+  (CONCAT("    const char* request = \"", STR(?query), "\";\n")									AS ?line7)
+  (CONCAT("    const char* results = \"", STR(?result), "\";\n")								AS ?line8)
+  (CONCAT("    SERVICE_TEST();\n")												AS ?lineA)
+  (CONCAT("} /* BOOST_AUTO_TEST_CASE( ", ?id, " ) */\n")									AS ?lineB)
+{
+  <http://www.w3.org/TR/sparql11-federated-query/> mf:conformanceRequirement MEMBERS(?manifest)
+
+  GRAPH ?manifest {
+    ?s a mf:Manifest ;
+       mf:entries MEMBERS(?entry) .
+    ?entry a mf:QueryEvaluationTest ;
+           mf:name ?name ;
+           dawgt:approval dawgt:Approved ;
+           mf:action ?action ;
+           mf:result ?result .
+    ?action qt:query ?query .
+  }
+  OPTIONAL { GRAPH ?manifest { ?action qt:data ?dgraph_in } }
+  OPTIONAL { SELECT ?action (GROUP_CONCAT(?service_row; SEPARATOR=", ") AS ?service) WHERE { GRAPH ?manifest { ?action qt:serviceData [ qt:data ?source ; qt:endpoint ?endpoint] BIND (CONCAT("LG(\"", STR(?source), "\", \"", STR(?endpoint), "\")") AS ?service_row) } } GROUP BY ?id ?action }
+  BIND (fn:replace(strafter(str(?entry), "#"), "-", "_") AS ?id)
+#  FILTER (?id = "service4a") # limit to one for fiddling
+}
