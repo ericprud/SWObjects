@@ -561,6 +561,45 @@ BOOST_AUTO_TEST_SUITE( sparql11_http_rdf_update )
 // http://metacognition.info/gsp_validation/gsp.validator.form
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_http_rdf_update */)
 
+BOOST_AUTO_TEST_SUITE( sparql11_syntax_positive )
+#define POSITIVE_SYNTAX_TEST()					\
+    std::string baseURI(request);				\
+    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);	\
+    bool parsed = false;					\
+    try {							\
+	IStreamContext istr(request, IStreamContext::FILE);	\
+	sparqlParser.setBase(baseURI);				\
+	delete sparqlParser.parse(istr);			\
+	sparqlParser.clear(BASE_URI);				\
+	parsed = true;						\
+    } catch (...) {						\
+    }								\
+    BOOST_CHECK(parsed);					\
+    G_EARL.report(test, parsed);				\
+
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_positive.rq -L text/raw > IMPORTED_sparql11_syntax_positive.hpp 
+#include "../tests/IMPORTED_sparql11_syntax_positive.hpp"
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_positive */)
+
+BOOST_AUTO_TEST_SUITE( sparql11_syntax_negative )
+#define NEGATIVE_SYNTAX_TEST()					\
+    std::string baseURI(request);				\
+    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);	\
+    bool parsed = false;					\
+    try {							\
+	IStreamContext istr(request, IStreamContext::FILE);	\
+	sparqlParser.setBase(baseURI);				\
+	delete sparqlParser.parse(istr);			\
+	sparqlParser.clear(BASE_URI);				\
+	parsed = true;						\
+    } catch (...) {						\
+    }								\
+    BOOST_CHECK(!parsed);					\
+    G_EARL.report(test, !parsed);				\
+
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_negative.rq -L text/raw > IMPORTED_sparql11_syntax_negative.hpp 
+#include "../tests/IMPORTED_sparql11_syntax_negative.hpp"
+BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_negative */)
 
 // EOF
 

@@ -1,0 +1,44 @@
+# Query to populate IMPORTED_sparql11_syntax_negative.hpp for inclusion in test_SPARQL11.cpp
+# $Id$
+
+PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
+PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+
+# Construct test case code like:
+# BOOST_AUTO_TEST_CASE( query_test_1 ) {
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/syntax-query/manifest#test_1";
+#     // name: syntax-select-expr-01.rq
+#     // manifest: data-sparql11/syntax-query/manifest.ttl
+#     const char* request = "data-sparql11/syntax-query/syntax-select-expr-01.rq";
+#     NEGATIVE_SYNTAX_TEST();
+# } /* BOOST_AUTO_TEST_CASE( query_test_1 ) */
+
+SELECT
+  (CONCAT("BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n")			AS ?line1)
+  (CONCAT("    const char* test = \"", STR(?entry), "\";\n")		AS ?line2)
+  (CONCAT("    // name: ", ?name, "\n")					AS ?line3)
+  (CONCAT("    // manifest: ", STR(?manifest), "\n")			AS ?line4)
+  (CONCAT("    const char* request = \"", STR(?action), "\";\n")	AS ?line5)
+  (CONCAT("    NEGATIVE_SYNTAX_TEST();\n")				AS ?line6)
+  (CONCAT("} /* BOOST_AUTO_TEST_CASE( ", ?id, " ) */\n")		AS ?line7)
+{
+  {
+    ?allSpecs mf:conformanceRequirement MEMBERS(?manifest)
+  }
+  GRAPH ?manifest {
+    ?s a mf:Manifest ;
+       mf:entries MEMBERS(?entry) .
+
+    ?entry a ?type .
+    ?entry mf:name ?name ;
+           dawgt:approval dawgt:Approved ;
+           mf:action ?action .
+  }
+  FILTER (?type = mf:NegativeSyntaxTest11 || ?type = mf:NegativeUpdateSyntaxTest11)
+
+  # Shorten test name
+  BIND (fn:replace(fn:replace(strafter(str(?entry), "data-sparql11/syntax-"), "/manifest#", "_"), "-", "_") AS ?id)
+  #  FILTER (?id = "query_test_1") # limit to one for fiddling
+}
