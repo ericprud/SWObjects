@@ -109,9 +109,6 @@ IT_ADD		[Aa][Dd][Dd]
 IT_TO		[Tt][Oo]
 IT_MOVE		[Mm][Oo][Vv][Ee]
 IT_COPY		[Cc][Oo][Pp][Yy]
-GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA		[Ii][Nn][Ss][Ee][Rr][Tt][ \t\r\n]+[Dd][Aa][Tt][Aa]
-GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA		[Dd][Ee][Ll][Ee][Tt][Ee][ \t\r\n]+[Dd][Aa][Tt][Aa]
-GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE		[Dd][Ee][Ll][Ee][Tt][Ee][ \t\r\n]+[Ww][Hh][Ee][Rr][Ee]
 IT_WITH		[Ww][Ii][Tt][Hh]
 IT_DELETE		[Dd][Ee][Ll][Ee][Tt][Ee]
 IT_INSERT		[Ii][Nn][Ss][Ee][Rr][Tt]
@@ -257,6 +254,9 @@ ABOX_HR		(("+"("-")+))+"+"
 UBOX_UHR		\xE2\x94\x8C(\xE2\x94\x80)*((\xE2\x94\xAC(\xE2\x94\x80)*))*\xE2\x94\x90
 UBOX_LHR		\xE2\x94\x94(\xE2\x94\x80)*((\xE2\x94\xB4(\xE2\x94\x80)*))*\xE2\x94\x98
 RSREF		"*"({VARNAME})
+INSERTDATA		[Ii][Nn][Ss][Ee][Rr][Tt]((([\t\n\r ])|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])+)))+[Dd][Aa][Tt][Aa]
+DELETEDATA		[Dd][Ee][Ll][Ee][Tt][Ee]((([\t\n\r ])|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])+)))+[Dd][Aa][Tt][Aa]
+DELETEWHERE		[Dd][Ee][Ll][Ee][Tt][Ee]((([\t\n\r ])|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])+)))+[Ww][Hh][Ee][Rr][Ee]
 PASSED_TOKENS		(([\t ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 LINEFEED		(\r\n|\r|\n)
 
@@ -310,9 +310,6 @@ LINEFEED		(\r\n|\r|\n)
 {IT_TO}		{return token::IT_TO;}
 {IT_MOVE}		{return token::IT_MOVE;}
 {IT_COPY}		{return token::IT_COPY;}
-{GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA}		{return token::GT_INSERT_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA;}
-{GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA}		{return token::GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_DATA;}
-{GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE}		{return token::GT_DELETE_LBRACKET_SPACECHAR_TAB_RETURN_LINEFEED_RBRACKET_PLUS_WHERE;}
 {IT_WITH}		{return token::IT_WITH;}
 {IT_DELETE}		{return token::IT_DELETE;}
 {IT_INSERT}		{return token::IT_INSERT;}
@@ -443,6 +440,9 @@ LINEFEED		(\r\n|\r|\n)
 {UBOX_UHR}		{return token::UBOX_UHR;}
 {UBOX_LHR}		{return token::UBOX_LHR;}
 {RSREF}		{yylval->p_RSName = new RSName(yytext + 1); return token::RSREF;}
+{INSERTDATA}		{return token::INSERTDATA;}
+{DELETEDATA}		{return token::DELETEDATA;}
+{DELETEWHERE}		{return token::DELETEWHERE;}
 
 <<EOF>>			{ yyterminate();}
 .			{
