@@ -524,7 +524,7 @@ Query:
 	assert(driver.lastWhereClause != NULL);
 	if ($3 != NULL) // got a bindings clause
 	    driver.lastWhereClause->m_GroupGraphPattern = 
-		driver.makeConjunction($3, driver.lastWhereClause->m_GroupGraphPattern);
+		driver.makeConjunction(driver.lastWhereClause->m_GroupGraphPattern, $3);
 	$$ = $2;
     }
 ;
@@ -798,7 +798,7 @@ SubSelect:
 	  if ($<p_GraphName>4 != NULL)
 	      driver.curGraphName = $<p_GraphName>4;
 	  if ($7 != NULL)
-	      $5->m_GroupGraphPattern = driver.makeConjunction($7, $5->m_GroupGraphPattern);
+	      $5->m_GroupGraphPattern = driver.makeConjunction($5->m_GroupGraphPattern, $7);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>3, new SubSelect(new Select($2.distinctness, $2.varSet, new ProductionVector<const DatasetClause*>(), $5, $6)));
 	  driver.countStar = $<p_parentCountStar>1;
       }
