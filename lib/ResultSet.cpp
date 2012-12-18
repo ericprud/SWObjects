@@ -610,11 +610,14 @@ namespace w3c_sw {
 	    rows.insert(rowString.str());
 	}
 	std::stringstream ret;
-	ret << "BINDINGS";
+	ret << "VALUES (";
 	for (std::vector<const TTerm*>::const_iterator col = ordered.begin();
-	     col != ordered.end(); ++col)
-	    ret << " " << (*col)->toString();
-	ret << " {\n";
+	     col != ordered.end(); ++col)  {
+	    if (col != ordered.begin())
+		ret << "  ";
+	    ret << (*col)->toString();
+	}
+	ret << ") {\n";
 	for (std::set<std::string>::const_iterator rowString = rows.begin();
 	     rowString != rows.end(); ++rowString)
 	    ret << "  " << *rowString << "\n";
