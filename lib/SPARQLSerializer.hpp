@@ -259,7 +259,7 @@ public:
     }
     virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* p_GroupGraphPattern, const ExprSet* p_Expressions) {
 	bool braces = needBraces;
-	needBraces = false;
+	needBraces = true;
 	if (braces)
 	    ret << "{ ";
 	lead();
@@ -311,7 +311,7 @@ public:
 	if (braces)
 	    ret << "{ ";
 	lead();
-	ret << "SERVICE " << p_TTerm->toString() << ' ';
+	ret << "SERVICE ";
 	if (p_Silence == SILENT_Yes)
 	    ret << "SILENT ";
 	if (debug & DEBUG_graphs) ret << self << ' ';
