@@ -1,8 +1,25 @@
+# Query to populate IMPORTED_sparql11_update.hpp for inclusion in test_SPARQL11.cpp
+# $Id$
+
 PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
 PREFIX ut: <http://www.w3.org/2009/sparql/tests/test-update#>
 PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
 PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
 PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# Construct test case code like:
+# BOOST_AUTO_TEST_CASE( add03 ) {
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/add/manifest#add03";
+#     // name: ADD 3
+#     // manifest: data-sparql11/add/manifest.ttl
+#     const char* defaultGraph_in = "data-sparql11/add/add-default.ttl";
+#     LabeledGraph namedGraphs_in[] = {LG("data-sparql11/add/add-01-pre.ttl", "http://example.org/g1"), LG("data-sparql11/add/add-02-pre.ttl", "http://example.org/g2")};
+#     const char* request = "data-sparql11/add/add-03.ru";
+#     const char* defaultGraph_out = "data-sparql11/add/add-default.ttl";
+#     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/add/add-01-pre.ttl", "http://example.org/g1"), LG("data-sparql11/add/add-02-post.ttl", "http://example.org/g2")};
+#     UPDATE_TEST();
+# } /* BOOST_AUTO_TEST_CASE( add03 ) */
+
 SELECT
   (CONCAT("BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n")										AS ?line1)
   (CONCAT("    const char* test = \"", STR(?entry), "\";\n")									AS ?line2)
@@ -28,12 +45,30 @@ SELECT
            mf:result ?result .
     ?action ut:request ?request .
   }
+
+  # Input data
   OPTIONAL { GRAPH ?manifest { ?action ut:data ?dgraph_in } }
-  OPTIONAL { SELECT ?action (GROUP_CONCAT(?graph_row_in; SEPARATOR=", ") AS ?graph_in) WHERE { GRAPH ?manifest { ?action ut:graphData [ ut:graph ?source_in ; rdfs:label ?label_in] BIND (CONCAT("LG(\"", STR(?source_in), "\", \"", STR(?label_in), "\")") AS ?graph_row_in) } } GROUP BY ?id ?action }
+  OPTIONAL {
+    SELECT ?action (GROUP_CONCAT(?graph_row_in; SEPARATOR=", ") AS ?graph_in)
+     WHERE {
+        GRAPH ?manifest {
+            ?action ut:graphData [ ut:graph ?source_in ; rdfs:label ?label_in]
+            BIND (CONCAT("LG(\"", STR(?source_in), "\", \"", STR(?label_in), "\")") AS ?graph_row_in)
+        }
+     } GROUP BY ?id ?action }
 
+  # Expected results
   OPTIONAL { GRAPH ?manifest { ?result ut:data ?dgraph_out } }
-  OPTIONAL { SELECT ?result (GROUP_CONCAT(?graph_row_out; SEPARATOR=", ") AS ?graph_out) WHERE { GRAPH ?manifest { ?result ut:graphData [ ut:graph ?source_out ; rdfs:label ?label_out] BIND (CONCAT("LG(\"", STR(?source_out), "\", \"", STR(?label_out), "\")") AS ?graph_row_out) } } GROUP BY ?id ?result }
+  OPTIONAL {
+    SELECT ?result (GROUP_CONCAT(?graph_row_out; SEPARATOR=", ") AS ?graph_out)
+     WHERE {
+        GRAPH ?manifest {
+            ?result ut:graphData [ ut:graph ?source_out ; rdfs:label ?label_out]
+            BIND (CONCAT("LG(\"", STR(?source_out), "\", \"", STR(?label_out), "\")") AS ?graph_row_out)
+        }
+     } GROUP BY ?id ?result }
 
+  # Shorten test name
   BIND (fn:replace(strafter(str(?entry), "#"), "-", "_") AS ?id)
-#  FILTER (?id = "insert_using_01") # limit to one for fiddling
+  #  FILTER (?id = "add03") # limit to one for fiddling
 }

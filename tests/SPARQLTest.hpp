@@ -147,7 +147,7 @@ struct MeasuredRS : public ResultSet {
 
     MeasuredRS (const char* defGraph, 
 		const LabeledGraph namedGraphs[], size_t namedCount, 
-		const char* queryPath) : ResultSet(&F) {
+		const char* queryPath, bool construct) : ResultSet(&F) {
 
 	std::string baseURI(queryPath);
 	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
@@ -169,7 +169,7 @@ struct MeasuredRS : public ResultSet {
 	    read(namedGraphs[i].source, baseURI, d.ensureGraph(F.getURI(namedGraphs[i].name)));
 
 	/* Exectute query. */
-	setRdfDB(&d);
+	setRdfDB(construct ? &constructed : &d);
 	query->execute(&d, this);
     }
 

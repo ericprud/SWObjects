@@ -1,9 +1,23 @@
+# Query to populate IMPORTED_sparql11_federated_query.hpp for inclusion in test_SPARQL11.cpp
+# $Id$
+
 PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
 PREFIX qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
-PREFIX ut: <http://www.w3.org/2009/sparql/tests/test-update#>
 PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
 PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
-PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+# Construct test case code like:
+# BOOST_AUTO_TEST_CASE( service2 ) {
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#service2";
+#     // name: SERVICE test 2
+#     // manifest: data-sparql11/service/manifest.ttl
+#     const char* defaultGraph_in = NULL;
+#     LabeledGraph services[] = {LG("data-sparql11/service/data02endpoint1.ttl", "http://example1.org/sparql"), LG("data-sparql11/service/data02endpoint2.ttl", "http://example2.org/sparql")};
+#     const char* request = "data-sparql11/service/service02.rq";
+#     const char* results = "data-sparql11/service/service02.srx";
+#     SERVICE_TEST();
+# } /* BOOST_AUTO_TEST_CASE( service2 ) */
+
 SELECT
   (CONCAT("BOOST_AUTO_TEST_CASE( ", ?id, " ) {\n")										AS ?line1)
   (CONCAT("    const char* test = \"", STR(?entry), "\";\n")									AS ?line2)
@@ -28,8 +42,19 @@ SELECT
            mf:result ?result .
     ?action qt:query ?query .
   }
+
+  # Input data
   OPTIONAL { GRAPH ?manifest { ?action qt:data ?dgraph_in } }
-  OPTIONAL { SELECT ?action (GROUP_CONCAT(?service_row; SEPARATOR=", ") AS ?service) WHERE { GRAPH ?manifest { ?action qt:serviceData [ qt:data ?source ; qt:endpoint ?endpoint] BIND (CONCAT("LG(\"", STR(?source), "\", \"", STR(?endpoint), "\")") AS ?service_row) } } GROUP BY ?id ?action }
+  OPTIONAL {
+    SELECT ?action (GROUP_CONCAT(?service_row; SEPARATOR=", ") AS ?service)
+     WHERE {
+        GRAPH ?manifest {
+            ?action qt:serviceData [ qt:data ?source ; qt:endpoint ?endpoint]
+            BIND (CONCAT("LG(\"", STR(?source), "\", \"", STR(?endpoint), "\")") AS ?service_row)
+        }
+     } GROUP BY ?id ?action }
+
+  # Shorten test name
   BIND (fn:replace(strafter(str(?entry), "#"), "-", "_") AS ?id)
-#  FILTER (?id = "service4a") # limit to one for fiddling
+  #  FILTER (?id = "service2") # limit to one for fiddling
 }
