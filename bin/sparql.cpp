@@ -330,6 +330,25 @@ void validate (boost::any&, const std::vector<std::string>& values, ldpModify*, 
 }
 
 #if REGEX_LIB != SWOb_DISABLED
+/* Add ServiceMaps from the form "s{from-URI}{to-URI}" */
+struct servicemapArg {};
+void validate (boost::any&, const std::vector<std::string>& values, servicemapArg*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+
+    const boost::regex serviceMapPattern("^s\\{(.*?)\\}\\{(.*?)\\}$");
+    boost::cmatch matches;
+    if (boost::regex_match(s.c_str(), matches, serviceMapPattern))
+	sw::ServiceGraphPattern::ServiceMap.insert(std::make_pair(matches[1], matches[2]));
+    else
+	throw boost::program_options::VALIDATION_ERROR
+	    (std::string("servicemap \"") + s +
+	     "\" did not match expression \"" +
+	     serviceMapPattern.str() + "\".");
+}
+#endif /* REGEX_LIB != SWOb_DISABLED */
+
+#if REGEX_LIB != SWOb_DISABLED
 /* Add PathMaps from the form "s{/some/URI/path}{relative/filesystem/path}" */
 struct pathmapArg {};
 void validate (boost::any&, const std::vector<std::string>& values, pathmapArg*, int)
@@ -341,7 +360,7 @@ void validate (boost::any&, const std::vector<std::string>& values, pathmapArg*,
     if (boost::regex_match(s.c_str(), matches, pathMapPattern))
 	TheServer.engine.db.pathMaps.push_back
 	    (sw::SimpleEngine::FilesystemRdfDB::PathMap
-	     (boost::regex(std::string(matches[1])), matches[2]));
+	     (boost::regex(std::string(matches[1])), std::string(matches[2])));
     else
 	throw boost::program_options::VALIDATION_ERROR
 	    (std::string("pathmap \"") + s +
@@ -793,6 +812,9 @@ int main(int ac, char* av[])
 
             ("service", po::value<std::string>(), 
 	     "relay all queries to service URL.")
+#if REGEX_LIB != SWOb_DISABLED
+            ("servicemap", po::value<servicemapArg>(), "service map in the form \"s{from-URI}{to-URI}\"")
+#endif /* REGEX_LIB != SWOb_DISABLED */
             ("default-graph-uri", po::value<std::string>(), 
 	     "default-graph-uri for calls to <service>.")
             ;
