@@ -501,6 +501,7 @@ ifdef $(CRYPTLIBDEFINED)
 else
   t_SPARQL: bin/sparql examples/functionExtension.so
 endif
+t_SPARQL11: bin/sparql
 t_SADI: bin/sparql
 t_LDP: bin/sparql
 
