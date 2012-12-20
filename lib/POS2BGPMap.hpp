@@ -256,10 +256,10 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
-	    virtual void bindingClause (const BindingClause* const self, const ResultSet* p_ResultSet) {
+	    virtual void valuesClause (const ValuesClause* const self, const ResultSet* p_ResultSet) {
 		_BindingStrength oldOptState = optState;
 		optState = _Binding_SELECT;
-		RecursiveExpressor::bindingClause(self, p_ResultSet);
+		RecursiveExpressor::valuesClause(self, p_ResultSet);
 		optState = oldOptState;
 	    }
 

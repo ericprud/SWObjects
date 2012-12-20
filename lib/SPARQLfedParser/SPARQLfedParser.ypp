@@ -79,6 +79,10 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
+typedef enum {VALIDATE_none = 0, VALIDATE_selectGrouped = 1,
+	      VALIDATE_uniqueProjection = 4, VALIDATE_namedProjection = 8,
+	      VALIDATE_noReassign = 0x10, VALIDATE_all = 0x1f} e_Validation;
+
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -114,6 +118,7 @@ protected:
     bool inDELETEDATA;
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
+    e_Validation validate;
 
     const Variable* getVariable (std::string name) {
 	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
@@ -322,7 +327,7 @@ public:
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingClause;
+    ValuesClause* p_ValuesClause;
     const TableOperation* p_TableOperation;
     const TTerm* p_GraphName;
     ProductionVector<const TableOperation*>* p_TableOperations;
@@ -427,7 +432,7 @@ public:
 			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
 %type <p_RSName> RSREF _O_QRSREF_E_S_QGT_EQUAL_E_C _Q_O_QRSREF_E_S_QGT_EQUAL_E_C_E_Opt
-%type <p_BindingClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
+%type <p_ValuesClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
 
 %type <p_TableOperation> QuadPattern QuadData Quads _O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt
 
@@ -596,7 +601,7 @@ LoadResults:
 	      driver.curOp = $<p_TableOperation>2;
 	  } else {
 	      // if ($<p_TableOperation>2 != NULL)
-	      driver.curOp = driver.makeConjunction($<p_TableOperation>2, new BindingClause(r));
+	      driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ValuesClause(r));
 	  }
       }
 ;
@@ -781,6 +786,29 @@ SelectQuery:
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
     } SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier	{
+	if (driver.validate & VALIDATE_selectGrouped) {
+	    const ExpressionAliasList* e = $5->getGroupedBy();
+	    if (e) {
+		std::set<const TTerm*> outside = $2.varSet->getNonProjectableVars(e, driver.atomFactory);
+		if (outside.size() != 0) {
+		    std::stringstream ss;
+		    ss << "can't select ";
+		    for (std::set<const TTerm*>::const_iterator it = outside.begin();
+			 it != outside.end(); ++it) {
+			if (it != outside.begin())
+			    ss << ", ";
+			ss << (*it)->str();
+		    }
+		    ss << " 'cause ";
+		    if (outside.size() == 1)
+			ss << "it's";
+		    else
+			ss << "they're";
+		    ss << " not in a GROUP BY";
+		    error(yylloc, ss.str());
+		}
+	    }
+	}
 	driver.lastWhereClause = $4;
 	$$ = new Select($2.distinctness, $2.varSet, $3, $4, $5);
 	driver.countStar = $<p_parentCountStar>1;
@@ -868,6 +896,8 @@ _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
 // "(" Expression ( "AS" Var )? ")"
 _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
+	if (driver.validate & VALIDATE_namedProjection && $3 == NULL)
+	    error(yylloc, $2->str() + " must be selected AS some variable");
 	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
 ;
@@ -875,24 +905,36 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
 _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     BuiltInCall	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | RDFLiteral	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | NumericLiteral	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | BooleanLiteral	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | Var	{
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | Aggregate	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | FunctionCall	{
+	if (driver.validate & VALIDATE_namedProjection)
+	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | // "(" Expression ( "AS" Var )? ")"
@@ -913,6 +955,16 @@ _Q_O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_O
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*'
 _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C:
     _Q_O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus	{
+	if (driver.validate & VALIDATE_uniqueProjection) {
+	    std::set<const TTerm*> labels;
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = $1->begin();
+		 it != $1->end(); ++it) {
+		const TTerm* label = (*it)->getLabel(driver.atomFactory);
+		if (labels.find(label) != labels.end())
+		    error(yylloc, label->str() + " duplicated in select list.");
+		labels.insert(label);
+	    }
+	}
 	$$ = $1; // Grammar action needed for implicit upcast.
     }
   | GT_TIMES	{
@@ -1590,7 +1642,7 @@ GroupGraphPattern:
 	    error(yylloc, std::string("") + "unknown named result set " + $1->name);
 	ResultSet* copy = new ResultSet(*rs->second);
 	delete $1;
-	BindingClause* b = new BindingClause(copy);
+	ValuesClause* b = new ValuesClause(copy);
 	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, b) : b;
       }
 ;
@@ -1784,7 +1836,7 @@ InlineDataOneVar:
       } Var {
 	  driver.addBindingVar($2);
       } GT_LCURLEY _QSingleValueRow_E_Star GT_RCURLEY	{
-	  $$ = new BindingClause(driver.endBindingSet());
+	  $$ = new ValuesClause(driver.endBindingSet());
       }
 ;
 
@@ -1805,7 +1857,7 @@ InlineDataFull:
     {
 	driver.startBindingSet();
     } _O_QNIL_E_Or_QGT_LPAREN_E_S_QVar_E_Star_S_QGT_RPAREN_E_C GT_LCURLEY _Q_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
-	  $$ = new BindingClause(driver.endBindingSet());
+	  $$ = new ValuesClause(driver.endBindingSet());
       }
 ;
 
@@ -3200,9 +3252,8 @@ namespace w3c_sw {
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), 
-	curResultSet(NULL), curResult(NULL), curExprList(NULL), 
-	root(NULL), unnestTree(false)
+	curBGP(NULL), curFilter(NULL), curResultSet(NULL), curResult(NULL),
+	curExprList(NULL), validate(VALIDATE_all), root(NULL), unnestTree(false)
 {
 }
 

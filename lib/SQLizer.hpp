@@ -895,7 +895,7 @@ namespace w3c_sw {
 		    curQuery->addOrderClause(curConstraint);
 		}
 	}
-	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+	virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
 	    const VariableList* knownVars = p_ResultSet->getKnownVars();
 	    const std::set<const TTerm*> s(knownVars->begin(), knownVars->end());
 	    bindingExpression = p_ResultSet->getFederationExpression(s, false);

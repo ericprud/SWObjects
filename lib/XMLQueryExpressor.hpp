@@ -204,7 +204,7 @@ public:
 	    }
 	xml->close();
     }
-    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+    virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
 	p_ResultSet->toXml(xml);
     }
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {

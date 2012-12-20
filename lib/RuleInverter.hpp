@@ -467,7 +467,7 @@ namespace w3c_sw {
 	    inUserRuleHead = false;
 	    TableOperation* op = last.tableOperation;
 
-	    last.bindingClause = NULL;
+	    last.valuesClause = NULL;
 	    last.whereClause = new WhereClause(op);
 	}
 

@@ -69,6 +69,10 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
+typedef enum {VALIDATE_none = 0, VALIDATE_selectGrouped = 1,
+	      VALIDATE_uniqueProjection = 4, VALIDATE_namedProjection = 8,
+	      VALIDATE_noReassign = 0x10, VALIDATE_all = 0x1f} e_Validation;
+
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -104,6 +108,7 @@ protected:
     bool inDELETEDATA;
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
+    e_Validation validate;
 
     const Variable* getVariable (std::string name) {
 	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
@@ -263,7 +268,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 267 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 272 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -293,7 +298,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 297 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 302 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -305,7 +310,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 276 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 281 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -355,7 +360,7 @@ namespace w3c_sw {
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingClause;
+    ValuesClause* p_ValuesClause;
     const TableOperation* p_TableOperation;
     const TTerm* p_GraphName;
     ProductionVector<const TableOperation*>* p_TableOperations;
@@ -380,7 +385,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 384 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 389 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -758,7 +763,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 762 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 767 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

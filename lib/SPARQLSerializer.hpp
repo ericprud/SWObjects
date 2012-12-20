@@ -383,8 +383,8 @@ public:
 	    ret << std::endl;
 	}
     }
-    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
-	ret << "BINDINGS ";
+    virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
+	ret << "VALUES (";
 	std::map< const TTerm*, unsigned > pos2col;
 	std::vector<const TTerm*> vars;
 	{
@@ -397,7 +397,7 @@ public:
 	    }
 	}
 
-	ret << '{' << std::endl; //!!!
+	ret << ") {\n";
 	{
 
 	    for (ResultSetConstIterator row = p_ResultSet->begin();

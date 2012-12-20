@@ -308,7 +308,7 @@ namespace w3c_sw {
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingClause;
+    ValuesClause* p_ValuesClause;
     const TableOperation* p_TableOperation;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;

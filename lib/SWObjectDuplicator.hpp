@@ -45,7 +45,7 @@ namespace w3c_sw {
       //ProductionVector<DatasetClause*> datasetClauses;
       SolutionModifier* solutionModifier;
       TTermList* posList;
-      const BindingClause* bindingClause;
+      const ValuesClause* valuesClause;
       WhereClause* whereClause;
       const Operation* operation;
       const ArgList* argList;
@@ -290,8 +290,8 @@ namespace w3c_sw {
 		last.solutionModifier = new SolutionModifier(n_groupBy, n_having, NULL, p_limit, p_offset);
 	    }
 	}
-	virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
-	    last.bindingClause = new BindingClause(new ResultSet(*p_ResultSet));
+	virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
+	    last.valuesClause = new ValuesClause(new ResultSet(*p_ResultSet));
 	}
 	virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	    p_GroupGraphPattern->express(this);

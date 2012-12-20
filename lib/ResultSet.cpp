@@ -657,19 +657,6 @@ namespace w3c_sw {
 	}
     };
 
-    const TTerm* _getLabel (const ExpressionAlias* exprAlias, AtomFactory* atomFactory) {
-	if (exprAlias->label == NULL) {
-	    const TTermExpression* ex = dynamic_cast<const TTermExpression*>(exprAlias->expr);
-	    if (ex == NULL) {
-		SPARQLSerializer s;
-		exprAlias->express(&s);
-		return atomFactory->getRDFLiteral(s.str());
-	    } else
-		return ex->getTTerm();
-	} else
-	    return exprAlias->label;
-    }
-
     /* Duplicate projected expressions, simulated expressions
      * for the aggregates.
      */
@@ -922,7 +909,7 @@ namespace w3c_sw {
 	if (groupBy != NULL)
 	    for (std::vector<const ExpressionAlias*>::const_iterator it = groupBy->begin();
 		 it != groupBy->end(); ++it)
-		delMes.insert(_getLabel(*it, atomFactory));
+		delMes.insert((*it)->getLabel(atomFactory));
 
 	/* Replace the known vars and the select order. */
 	knownVars.clear();
@@ -947,7 +934,7 @@ namespace w3c_sw {
 	/* Walk the select list to populate pos2expr. */
 	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = projection->begin();
 	     varExpr != projection->end(); ++varExpr) {
-	    const TTerm* label(_getLabel(*varExpr, atomFactory));
+	    const TTerm* label((*varExpr)->getLabel(atomFactory));
 
 	    /* Add new alias name. */
 	    knownVars.insert(label);
@@ -974,7 +961,7 @@ namespace w3c_sw {
 		     it != groupBy->end(); ++it) {
 		    const TTerm* val = (*it)->expr->eval(*row, atomFactory, NULL, NULL, db);
 		    groupIndex += val->toString() + "~";
-		    (*row)->set(_getLabel(*it, atomFactory), val, false, true); // !! WG decision on overwrite
+		    (*row)->set((*it)->getLabel(atomFactory), val, false, true); // !! WG decision on overwrite
 		}
 
 		/* This working row may be redundant against an older row (with same

@@ -283,7 +283,7 @@ public:
     WhereClause* p_WhereClause;
     SolutionModifier* p_SolutionModifier;
     e_ASCorDESC p_e_ASCorDESC;
-    BindingClause* p_BindingClause;
+    ValuesClause* p_ValuesClause;
     const TableOperation* p_TableOperation;
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
@@ -375,7 +375,7 @@ public:
 %type <p_OrderConditionPair> OrderCondition
 			     _O_QIT_ASC_E_Or_QIT_DESC_E_S_QBrackettedExpression_E_C
 %type <p_e_ASCorDESC> _O_QIT_ASC_E_Or_QIT_DESC_E_C
-%type <p_BindingClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
+%type <p_ValuesClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
 
 %type <p_TableOperation> QuadPattern Quads
 
@@ -1264,7 +1264,7 @@ InlineDataOneVar:
       } Var {
 	  driver.addBindingVar($2);
       } GT_LCURLEY _QSingleValueRow_E_Star GT_RCURLEY	{
-	  $$ = new BindingClause(driver.endBindingSet());
+	  $$ = new ValuesClause(driver.endBindingSet());
       }
 ;
 
@@ -1285,7 +1285,7 @@ InlineDataFull:
     {
 	driver.startBindingSet();
     } _O_QNIL_E_Or_QGT_LPAREN_E_S_QVar_E_Star_S_QGT_RPAREN_E_C GT_LCURLEY _Q_O_QGT_LPAREN_E_S_QDataBlockValue_E_Star_S_QGT_RPAREN_E_Or_QNIL_E_C_E_Star GT_RCURLEY	{
-	  $$ = new BindingClause(driver.endBindingSet());
+	  $$ = new ValuesClause(driver.endBindingSet());
       }
 ;
 

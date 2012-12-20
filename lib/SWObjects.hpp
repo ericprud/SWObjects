@@ -2281,15 +2281,24 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 
 */
 
+struct BindingState {
+    std::set<const TTerm*> binds;	// {?x <foo> <bar>}, BIND (1 AS ?x)
+    std::set<const TTerm*> optional;	// OPTIONAL {?x <foo> <bar>}, {{?x <foo> <bar>} OPTIONAL {?y <foo> <baz>}}
+    std::set<const TTerm*> depends;	// FILTER (?x = 1), BIND (?x AS ?y)
+};
+
 class TableOperation : public Base {
 protected:
     TableOperation () : Base() {  }
     TableOperation(const TableOperation& ref);
+    BindingState bindings;
+
 public:
     virtual void bindVariables(const RdfDB*, ResultSet*) const = 0; //{ throw(std::runtime_error(FUNCTION_STRING)); }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
+    const BindingState& getBindingState () { return bindings; }
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
@@ -2797,6 +2806,7 @@ public:
     virtual bool includes(const TTerm*) const = 0;
     virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			 std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const = 0;
+    virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const = 0;
 };
 
 class ExpressionAlias : public Base {
@@ -2807,6 +2817,7 @@ public:
     ExpressionAlias (const Expression* expr) : expr(expr), label(NULL) {  }
     ExpressionAlias (const Expression* expr, const Bindable* label) : expr(expr), label(label) {  }
     ~ExpressionAlias () { delete expr; }
+    const TTerm* getLabel(AtomFactory* atomFactory) const;
     // const Bindable* getLabel () const { return label; }
     virtual void express (Expressor* /* p_expressor */) const;
     virtual bool operator== (const ExpressionAlias& ref) const {
@@ -2835,6 +2846,7 @@ public:
     virtual bool includes(const TTerm* lookFor) const;
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
+    virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const;
 };
 class StarVarSet : public VarSet {
 private:
@@ -2853,6 +2865,7 @@ public:
     }
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
+    virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const;
 };
 
 class DatasetClause : public Base {
@@ -2939,6 +2952,7 @@ public:
 		 || m_OrderConditions == ref.m_OrderConditions);
 #endif
     }
+    const ExpressionAliasList* getGroupedBy () const { return groupBy; }
 };
 class TTermList {
 private:
@@ -2963,30 +2977,30 @@ public:
     // virtual void project (ResultSet* rs) const;
 };
 
-class BindingClause : public TableOperation {
+class ValuesClause : public TableOperation {
 private:
     ResultSet* m_ResultSet;
 public:
-    BindingClause();
-    BindingClause(ResultSet* p_ResultSet);
-    ~BindingClause();
+    ValuesClause();
+    ValuesClause(ResultSet* p_ResultSet);
+    ~ValuesClause();
 
     // <TableOperation virtuals>
     virtual TableOperation* getDNF () const {
-	w3c_sw_NEED_IMPL("getDNF{BindingClause(...)}");
+	w3c_sw_NEED_IMPL("getDNF{ValuesClause(...)}");
     }
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
-	w3c_sw_NEED_IMPL("CONSTRUCT{BindingClause(...)}");
+	w3c_sw_NEED_IMPL("CONSTRUCT{ValuesClause(...)}");
     }
     virtual void deletePattern (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */, bool /* rangeOverUnboundVars */) const {
-	w3c_sw_NEED_IMPL("DELETEPATTERN{BindingClause(...)}");
+	w3c_sw_NEED_IMPL("DELETEPATTERN{ValuesClause(...)}");
     }
-    bool operator== (const BindingClause& ref) const {
+    bool operator== (const ValuesClause& ref) const {
 	return m_ResultSet == ref.m_ResultSet;
     }
     bool operator== (const TableOperation& ref) const {
-	const BindingClause* pref = dynamic_cast<const BindingClause*>(&ref);
-	return pref == NULL ? false : operator==(*pref); // calls BindingClause-specific operator==
+	const ValuesClause* pref = dynamic_cast<const ValuesClause*>(&ref);
+	return pref == NULL ? false : operator==(*pref); // calls ValuesClause-specific operator==
     }
     // </TableOperation virtuals>
 
@@ -4369,7 +4383,7 @@ public:
     virtual void defaultGraphClause(const DefaultGraphClause* const self, const TTerm* p_IRIref) = 0;
     virtual void namedGraphClause(const NamedGraphClause* const self, const TTerm* p_IRIref) = 0;
     virtual void solutionModifier(const SolutionModifier* const self, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int p_limit, int p_offset) = 0;
-    virtual void bindingClause(const BindingClause* const self, const ResultSet* p_ResultSet) = 0;
+    virtual void valuesClause(const ValuesClause* const self, const ResultSet* p_ResultSet) = 0;
     virtual void whereClause(const WhereClause* const self, const TableOperation* p_GroupGraphPattern) = 0;
     virtual void operationSet(const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) = 0;
     virtual void select(const Select* const self, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) = 0;
@@ -4518,7 +4532,7 @@ public:
 	    for (size_t i = 0; i < p_OrderConditions->size(); i++)
 		p_OrderConditions->at(i).expression->express(this);
     }
-    virtual void bindingClause(const BindingClause* const, const ResultSet* p_ResultSet);
+    virtual void valuesClause(const ValuesClause* const, const ResultSet* p_ResultSet);
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	p_GroupGraphPattern->express(this);
     }
@@ -4775,8 +4789,8 @@ public:
     virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
 	w3c_sw_NEED_IMPL("solutionModifier");
     }
-    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
-	w3c_sw_NEED_IMPL("bindingClause");
+    virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
+	w3c_sw_NEED_IMPL("valuesClause");
     }
     virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
 	w3c_sw_NEED_IMPL("whereClause");

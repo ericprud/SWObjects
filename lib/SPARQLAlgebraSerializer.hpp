@@ -434,7 +434,7 @@ public:
 	    ret << std::endl;
 	}
     }
-    virtual void bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+    virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
 	ret << "BINDINGS ";
 	std::map< const TTerm*, unsigned > pos2col;
 	std::vector<const TTerm*> vars;

@@ -698,8 +698,8 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 634 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  if ((yysemantic_stack_[(7) - (7)].p_BindingClause) != NULL)
-	      (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(7) - (7)].p_BindingClause), (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern);
+	  if ((yysemantic_stack_[(7) - (7)].p_ValuesClause) != NULL)
+	      (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(7) - (7)].p_ValuesClause), (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern);
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (4)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(7) - (3)].p_Project).distinctness, (yysemantic_stack_[(7) - (3)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(7) - (5)].p_WhereClause), (yysemantic_stack_[(7) - (6)].p_SolutionModifier))));
 	  driver.curGraphName = (yysemantic_stack_[(7) - (2)].p_TTerm);
 	  driver.countStar = (yysemantic_stack_[(7) - (1)].p_parentCountStar);
@@ -885,8 +885,8 @@ namespace w3c_sw {
 #line 743 "lib/MapSetParser/MapSetParser.ypp"
     {
 	/* $3 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
-	if ((yysemantic_stack_[(8) - (8)].p_BindingClause) != NULL)
-	    (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(8) - (8)].p_BindingClause), (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern);
+	if ((yysemantic_stack_[(8) - (8)].p_ValuesClause) != NULL)
+	    (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(8) - (8)].p_ValuesClause), (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern);
 	Construct* constr = new Construct((yysemantic_stack_[(8) - (3)].p_TableOperation), (yysemantic_stack_[(8) - (5)].p_DatasetClauses), (yysemantic_stack_[(8) - (6)].p_WhereClause), (yysemantic_stack_[(8) - (7)].p_SolutionModifier));
 	driver.root->maps.push_back(LabeledConstruct((yysemantic_stack_[(8) - (1)].p_TTerm), constr));
     }
@@ -1251,7 +1251,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1014 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_BindingClause) = (yysemantic_stack_[(2) - (2)].p_BindingClause);
+	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
     }
     break;
 
@@ -1260,7 +1260,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1020 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_BindingClause) = NULL;
+	(yyval.p_ValuesClause) = NULL;
     }
     break;
 
@@ -1378,7 +1378,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1184 "lib/MapSetParser/MapSetParser.ypp"
     {
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yysemantic_stack_[(1) - (1)].p_BindingClause)) : (yysemantic_stack_[(1) - (1)].p_BindingClause);
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yysemantic_stack_[(1) - (1)].p_ValuesClause)) : (yysemantic_stack_[(1) - (1)].p_ValuesClause);
     }
     break;
 
@@ -1509,7 +1509,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1251 "lib/MapSetParser/MapSetParser.ypp"
     {
-	(yyval.p_BindingClause) = (yysemantic_stack_[(2) - (2)].p_BindingClause);
+	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
     }
     break;
 
@@ -1536,7 +1536,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1266 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_BindingClause) = new BindingClause(driver.endBindingSet());
+	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
     break;
 
@@ -1565,7 +1565,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 1287 "lib/MapSetParser/MapSetParser.ypp"
     {
-	  (yyval.p_BindingClause) = new BindingClause(driver.endBindingSet());
+	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
     break;
 

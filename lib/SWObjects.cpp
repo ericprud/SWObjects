@@ -449,8 +449,8 @@ void NamedGraphClause::express (Expressor* p_expressor) const {
 void SolutionModifier::express (Expressor* p_expressor) const {
     p_expressor->solutionModifier(this, groupBy, having, m_OrderConditions, m_limit, m_offset);
 }
-void BindingClause::express (Expressor* p_expressor) const {
-    p_expressor->bindingClause(this, m_ResultSet);
+void ValuesClause::express (Expressor* p_expressor) const {
+    p_expressor->valuesClause(this, m_ResultSet);
 }
 void WhereClause::express (Expressor* p_expressor) const {
     p_expressor->whereClause(this, m_GroupGraphPattern);
@@ -571,7 +571,7 @@ void NumberExpression::express (Expressor* p_expressor) const {
     p_expressor->numberExpression(this, m_NumericRDFLiteral);
 }
 
-void RecursiveExpressor::bindingClause (const BindingClause* const, const ResultSet* p_ResultSet) {
+void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
     const VariableList* vars = p_ResultSet->getKnownVars();
     for (VariableList::const_iterator it = vars->begin();
 	 it != vars->end(); ++it)
@@ -3019,13 +3019,13 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	loadGraph(db, m_IRIref, db->ensureGraph(m_IRIref));
     }
 
-    BindingClause::BindingClause () : m_ResultSet(new ResultSet(NULL)) { // ResultSet will never create new atoms so it needs no AtomFactory
-	// ResultSets in BindingClauses don't need to start with one empty row.
+    ValuesClause::ValuesClause () : m_ResultSet(new ResultSet(NULL)) { // ResultSet will never create new atoms so it needs no AtomFactory
+	// ResultSets in ValuesClauses don't need to start with one empty row.
 	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
 	rs->erase(rs->begin());
     }
-    BindingClause::BindingClause (ResultSet* p_ResultSet) : m_ResultSet(p_ResultSet) {  }
-    BindingClause::~BindingClause () {
+    ValuesClause::ValuesClause (ResultSet* p_ResultSet) : m_ResultSet(p_ResultSet) {  }
+    ValuesClause::~ValuesClause () {
 	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
 	delete rs;
     }
@@ -3034,6 +3034,18 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 	m_GroupGraphPattern->bindVariables(db, rs);
     }
 
+    const TTerm* ExpressionAlias::getLabel (AtomFactory* atomFactory) const {
+	if (label == NULL) {
+	    const TTermExpression* ex = dynamic_cast<const TTermExpression*>(expr);
+	    if (ex == NULL) {
+		SPARQLSerializer s;
+		express(&s);
+		return atomFactory->getRDFLiteral(s.str());
+	    } else
+		return ex->getTTerm();
+	} else
+	    return label;
+    }
     bool ExpressionAliasList::includes (const TTerm* lookFor) const {
 	for (std::vector<const ExpressionAlias*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it)
@@ -3048,29 +3060,58 @@ void RecursiveExpressor::bindingClause (const BindingClause* const, const Result
 				       std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const {
 	rs->project(&m_Expressions, groupBy, having, orderConditions, db);
     }
+    std::set<const TTerm*> ExpressionAliasList::getNonProjectableVars (const ExpressionAliasList* from, AtomFactory* atomFactory) const {
+
+	// Recursively visit the query tree, reporting and variables used in non-aggregate expressions.
+	struct GetDependentVariables
+	    : public RecursiveExpressor // could have used ExpressionExpressor but it would require all the way down to the leaves.
+	{
+	    std::set<const TTerm*>& outside;
+	    GetDependentVariables (std::set<const TTerm*>& outside)
+		: outside(outside)
+	    {  }
+	    virtual void base (const w3c_sw::Base*, std::string)
+	    {  }
+	    virtual void variable (const Variable* const self, std::string)
+	    { outside.insert(self); }
+	    virtual void aggregateCall (const AggregateCall* const, const URI*, const ArgList*,
+					e_distinctness, const AggregateCall::ScalarVals*)
+	    {  }
+	    virtual void expressionAlias (const ExpressionAlias* const,
+					  const Expression* expr, const Bindable*)
+	    { expr->express(this); }
+	};
+
+	std::set<const TTerm*> ret;
+	GetDependentVariables d(ret);
+	// Check all of the ExpressionAliases.
+	for (std::vector<const ExpressionAlias*>::const_iterator it = begin(); it != end(); ++it)
+	    (*it)->express(&d);
+
+	// Remove any that appear in the GROUP BY
+	for (std::vector<const ExpressionAlias*>::const_iterator it = from->begin();
+	     it != from->end(); ++it)
+	    ret.erase((*it)->getLabel(atomFactory));
+
+	return ret;
+    }
 
     void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */,
 			      std::vector<s_OrderConditionPair>* /* orderConditions */, const RdfDB* /* db */) const {
     }
+    std::set<const TTerm*> StarVarSet::getNonProjectableVars (const ExpressionAliasList* from, AtomFactory* atomFactory) const {
+	std::set<const TTerm*> grouped;
+	for (std::vector<const ExpressionAlias*>::const_iterator it = from->begin();
+	     it != from->end(); ++it)
+	    grouped.insert((*it)->getLabel(atomFactory));
+	// !!! invert -- subtract grouped from known vars
+	return grouped;
+    }
 
-    void BindingClause::bindVariables (const RdfDB* db, ResultSet* rs) const {
+    void ValuesClause::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	rs->joinIn(m_ResultSet);
 	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
-
-    //@delme !!
-    // void Binding::bindVariables (const RdfDB*, ResultSet* rs, Result* r, TTermList* p_Vars) const {
-    // 	std::vector<const TTerm*>::const_iterator variable = p_Vars->begin();
-    // 	std::vector<const TTerm*>::const_iterator value = begin();
-    // 	while (value != end()) {
-    // 	    if (variable == p_Vars->end())
-    // 		throw std::string("binding ") + (*value)->toString() + " has no slot in the binding set";
-    // 	    if (*value != TTerm::Unbound)
-    // 		rs->set(r, *variable, *value, false);
-    // 	    variable++;
-    // 	    value++;
-    // 	}
-    // }
 
     void Print::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	SPARQLSerializer ss(NULL); // doesn't need to create new atoms.
