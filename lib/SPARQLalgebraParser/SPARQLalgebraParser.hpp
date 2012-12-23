@@ -75,7 +75,7 @@ class SPARQLalgebraDriver : public YaccDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
-    ParserFilter* curFilter;
+    FilterExpressions* curFilter;
     // const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
     Result* curResult;
@@ -94,8 +94,8 @@ protected:
 	    static_cast<BasicGraphPattern*>(new NamedGraphPattern(curGraphName));
     }
 
-    ParserFilter* saveFilter () {
-	ParserFilter* ret = curFilter;
+    FilterExpressions* saveFilter () {
+	FilterExpressions* ret = curFilter;
 	curFilter = NULL;
 	return ret;
     }

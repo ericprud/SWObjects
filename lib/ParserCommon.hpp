@@ -201,17 +201,19 @@ public:
     void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }
 };
 
-    class ParserFilter : public Filter {
-    public:
-	ParserFilter () : Filter(NULL) {  }
-	void setOp (const TableOperation* newOp) { m_TableOperation = newOp; }
-	void copyExpressionsTo (OptionalGraphPattern* target) {
-	    for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
-		 it != m_Expressions.end(); ++it)
-		target->addExpression(*it);
-	    m_Expressions.clear();
-	}
-    };
+class FilterExpressions {
+public:
+    std::vector<const Expression*> m_Expressions;
+    void addExpression (const Expression* expression) {
+	m_Expressions.push_back(expression);
+    }
+    void copyExpressionsTo (OptionalGraphPattern* target) {
+	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+	     it != m_Expressions.end(); ++it)
+	    target->addExpression(*it);
+	m_Expressions.clear();
+    }
+};
 
 } //namespace w3c_sw
 

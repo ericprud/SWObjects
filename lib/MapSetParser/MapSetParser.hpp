@@ -70,7 +70,7 @@ protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
     BasicGraphPattern* curBGP;
-    ParserFilter* curFilter;
+    FilterExpressions* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
     Result* curResult;
@@ -97,18 +97,17 @@ protected:
 	return curOp;
     }
 
-    ParserFilter* saveFilter () {
-	ParserFilter* ret = curFilter;
+    FilterExpressions* saveFilter () {
+	FilterExpressions* ret = curFilter;
 	curFilter = NULL;
 	return ret;
     }
 
-    void restoreFilter (ParserFilter* was) {
+    void restoreFilter (FilterExpressions* was) {
 	if (curFilter != NULL) {
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
-	    curFilter->setOp(curOp);
-	    curOp = curFilter;
+	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
 	}
 	curFilter = was;
     }
@@ -224,7 +223,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 228 "lib/MapSetParser/MapSetParser.hpp"
+#line 227 "lib/MapSetParser/MapSetParser.hpp"
 
 
 #include <string>
@@ -254,7 +253,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 258 "lib/MapSetParser/MapSetParser.hpp"
+#line 257 "lib/MapSetParser/MapSetParser.hpp"
 
   /// A Bison parser.
   class MapSetParser
@@ -266,7 +265,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 245 "lib/MapSetParser/MapSetParser.ypp"
+#line 244 "lib/MapSetParser/MapSetParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -313,7 +312,7 @@ namespace w3c_sw {
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_ParserFilter;
+    FilterExpressions* p_FilterExpressions;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const TTerm* p_TTerm;
@@ -330,7 +329,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 334 "lib/MapSetParser/MapSetParser.hpp"
+#line 333 "lib/MapSetParser/MapSetParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -694,7 +693,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 698 "lib/MapSetParser/MapSetParser.hpp"
+#line 697 "lib/MapSetParser/MapSetParser.hpp"
 
 
 

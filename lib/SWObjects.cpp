@@ -2622,6 +2622,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     }
 
     void TableJunction::addTableOperation (const TableOperation* tableOp, bool flatten) {
+	mergeBindingState(tableOp);
 	if (flatten == true && typeid(*tableOp) == typeid(*this)) { // deactivated
 	    TableJunction* j = (TableJunction*)tableOp; /* !!! LIES !!! */
 	    for (std::vector<const TableOperation*>::const_iterator it = j->m_TableOperations.begin();
@@ -2631,6 +2632,47 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	    delete j;
 	} else
 	    m_TableOperations.push_back(tableOp);
+    }
+
+    void TableConjunction::mergeBindingState (const TableOperation* tableOp) {
+	const BindingState& nested = tableOp->getBindingState();
+
+	// {?x <p1> <o1>} {?y <p2> <o2>} -> binds(?x ?y)
+	// {?x <p1> <o1>} OPT {?x <p2> <o2>} -> binds(?x)
+	// {?x <p1> <o1>} OPT {?y <p2> <o2>} -> binds(?x), optional(?y)
+	// OPT {?x <p1> <o1>} {?x <p2> <o2>} -> binds(?x), optional(?x)
+	for (std::set<const TTerm*>::const_iterator it = nested.optional.begin();
+	     it != nested.optional.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end())
+		bindings.optional.insert(*it);
+
+	for (std::set<const TTerm*>::const_iterator it = nested.binds.begin();
+	     it != nested.binds.end(); ++it)
+	    bindings.binds.insert(*it);
+
+	for (std::set<const TTerm*>::const_iterator it = nested.depends.begin();
+	     it != nested.depends.end(); ++it)
+	    bindings.depends.insert(*it);
+    }
+
+    void TableDisjunction::mergeBindingState (const TableOperation* tableOp) {
+	const BindingState& nested = tableOp->getBindingState();
+
+	// {{?x <foo> <bar>} UNION {?y <foo> <baz>}}
+	for (std::set<const TTerm*>::const_iterator it = nested.binds.begin();
+	     it != nested.binds.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end())
+		bindings.optional.insert(*it);
+
+	for (std::set<const TTerm*>::const_iterator it = nested.depends.begin();
+	     it != nested.depends.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end())
+		bindings.depends.insert(*it);
+
+	for (std::set<const TTerm*>::const_iterator it = nested.optional.begin();
+	     it != nested.optional.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end())
+		bindings.optional.insert(*it);
     }
 
     ResultSet* OperationSet::execute (RdfDB* db, ResultSet* rs) const {
@@ -3019,11 +3061,6 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	loadGraph(db, m_IRIref, db->ensureGraph(m_IRIref));
     }
 
-    ValuesClause::ValuesClause () : m_ResultSet(new ResultSet(NULL)) { // ResultSet will never create new atoms so it needs no AtomFactory
-	// ResultSets in ValuesClauses don't need to start with one empty row.
-	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
-	rs->erase(rs->begin());
-    }
     ValuesClause::ValuesClause (ResultSet* p_ResultSet) : m_ResultSet(p_ResultSet) {  }
     ValuesClause::~ValuesClause () {
 	ResultSet* rs = const_cast<ResultSet*>(m_ResultSet);
@@ -3046,6 +3083,16 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	} else
 	    return label;
     }
+    const TTerm* ExpressionAlias::getVariable () const {
+	if (label == NULL) {
+	    const TTermExpression* ex = dynamic_cast<const TTermExpression*>(expr);
+	    if (ex == NULL)
+		return NULL;
+	    else
+		return ex->getTTerm();
+	} else
+	    return label;
+    }
     bool ExpressionAliasList::includes (const TTerm* lookFor) const {
 	for (std::vector<const ExpressionAlias*>::const_iterator it = m_Expressions.begin();
 	     it != m_Expressions.end(); ++it)
@@ -3060,27 +3107,17 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 				       std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const {
 	rs->project(&m_Expressions, groupBy, having, orderConditions, db);
     }
+    std::set<const TTerm*> ExpressionAliasList::getProjectedVars (const BindingState& heldVars) const {
+	std::set<const TTerm*> ret;
+	for (std::vector<const ExpressionAlias*>::const_iterator it = begin();
+	     it != end(); ++it) {
+	    const TTerm* var = (*it)->getVariable();
+	    if (var != NULL)
+		ret.insert(var);
+	}
+	return ret;
+    }
     std::set<const TTerm*> ExpressionAliasList::getNonProjectableVars (const ExpressionAliasList* from, AtomFactory* atomFactory) const {
-
-	// Recursively visit the query tree, reporting and variables used in non-aggregate expressions.
-	struct GetDependentVariables
-	    : public RecursiveExpressor // could have used ExpressionExpressor but it would require all the way down to the leaves.
-	{
-	    std::set<const TTerm*>& outside;
-	    GetDependentVariables (std::set<const TTerm*>& outside)
-		: outside(outside)
-	    {  }
-	    virtual void base (const w3c_sw::Base*, std::string)
-	    {  }
-	    virtual void variable (const Variable* const self, std::string)
-	    { outside.insert(self); }
-	    virtual void aggregateCall (const AggregateCall* const, const URI*, const ArgList*,
-					e_distinctness, const AggregateCall::ScalarVals*)
-	    {  }
-	    virtual void expressionAlias (const ExpressionAlias* const,
-					  const Expression* expr, const Bindable*)
-	    { expr->express(this); }
-	};
 
 	std::set<const TTerm*> ret;
 	GetDependentVariables d(ret);
@@ -3098,6 +3135,16 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */,
 			      std::vector<s_OrderConditionPair>* /* orderConditions */, const RdfDB* /* db */) const {
+    }
+    std::set<const TTerm*> StarVarSet::getProjectedVars (const BindingState& heldVars) const {
+	std::set<const TTerm*> ret;
+	for (std::set<const TTerm*>::const_iterator it = heldVars.binds.begin();
+	     it != heldVars.binds.end(); ++it)
+	    ret.insert(*it);
+	for (std::set<const TTerm*>::const_iterator it = heldVars.optional.begin();
+	     it != heldVars.optional.end(); ++it)
+	    ret.insert(*it);
+	return ret;
     }
     std::set<const TTerm*> StarVarSet::getNonProjectableVars (const ExpressionAliasList* from, AtomFactory* atomFactory) const {
 	std::set<const TTerm*> grouped;
@@ -3121,6 +3168,22 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	m_TableOperation->bindVariables(db, rs);
 	str << "yielded\n" << *rs;
 	std::cout << str.str();
+    }
+
+    void Filter::_prepareBindings (const TableOperation* op) {
+	const BindingState& nested = op->getBindingState();
+
+	bindings = nested;
+	std::set<const TTerm*> vars;
+	GetDependentVariables d(vars);
+	for (std::vector<const Expression*>::const_iterator it = m_Expressions.begin();
+	     it != m_Expressions.end(); ++it)
+	    (*it)->express(&d);
+
+	for (std::set<const TTerm*>::const_iterator it = vars.begin();
+	     it != vars.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end() && bindings.binds.find(*it) == bindings.binds.end())
+		bindings.depends.insert(*it);
     }
 
     void Filter::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -3635,6 +3698,19 @@ compared against
 	}
 
 	return true;
+    }
+
+    void Bind::_prepareBindings (const TableOperation* op) {
+	bindings = op->getBindingState();
+	std::set<const TTerm*> vars;
+	GetDependentVariables d(vars);
+	m_expr->express(&d);
+
+	const BindingState& nested = op->getBindingState();
+	for (std::set<const TTerm*>::const_iterator it = vars.begin();
+	     it != vars.end(); ++it)
+	    if (bindings.binds.find(*it) == bindings.binds.end() && bindings.binds.find(*it) == bindings.binds.end())
+		bindings.depends.insert(*it);
     }
 
     void Bind::bindVariables (const RdfDB* db, ResultSet* rs) const {

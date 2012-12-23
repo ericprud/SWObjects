@@ -1214,7 +1214,7 @@ namespace w3c_sw {
 #line 957 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
 	(yyval.p_BasicGraphPattern) = driver.ensureGraphPattern();
-	(yyval.p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(1) - (1)].p_TriplePattern));
+	(yyval.p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(1) - (1)].p_TriplePattern), true);
     }
     break;
 
@@ -1223,7 +1223,7 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 961 "lib/SPARQLalgebraParser/SPARQLalgebraParser.ypp"
     {
-	(yysemantic_stack_[(2) - (1)].p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(2) - (2)].p_TriplePattern));
+      (yysemantic_stack_[(2) - (1)].p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(2) - (2)].p_TriplePattern), true);
 	(yyval.p_BasicGraphPattern) = (yysemantic_stack_[(2) - (1)].p_BasicGraphPattern);
     }
     break;

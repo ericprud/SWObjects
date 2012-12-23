@@ -69,9 +69,10 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
-typedef enum {VALIDATE_none = 0, VALIDATE_selectGrouped = 1,
-	      VALIDATE_uniqueProjection = 4, VALIDATE_namedProjection = 8,
-	      VALIDATE_noReassign = 0x10, VALIDATE_all = 0x1f} e_Validation;
+typedef enum {VALIDATE_none = 0,
+	      VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
+	      VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
+	      VALIDATE_constructNoQuads = 0x10, VALIDATE_all = 0x1f} e_Validation;
 
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
@@ -88,7 +89,7 @@ protected:
     const TTerm* curPredicate;
     const TTerm* curTail; // tail of the list currently being assembled.
     BasicGraphPattern* curBGP;
-    ParserFilter* curFilter;
+    FilterExpressions* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
     Result* curResult;
@@ -109,6 +110,9 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
     e_Validation validate;
+public:
+    static e_Validation DefaultValidation;
+protected:
 
     const Variable* getVariable (std::string name) {
 	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
@@ -141,18 +145,17 @@ protected:
 	return curOp;
     }
 
-    ParserFilter* saveFilter () {
-	ParserFilter* ret = curFilter;
+    FilterExpressions* saveFilter () {
+	FilterExpressions* ret = curFilter;
 	curFilter = NULL;
 	return ret;
     }
 
-    void restoreFilter (ParserFilter* was) {
+    void restoreFilter (FilterExpressions* was) {
 	if (curFilter != NULL) {
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
-	    curFilter->setOp(curOp);
-	    curOp = curFilter;
+	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
 	}
 	curFilter = was;
     }
@@ -268,7 +271,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 272 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 275 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -298,7 +301,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 302 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 305 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -310,7 +313,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 281 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 284 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -366,7 +369,7 @@ namespace w3c_sw {
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_ParserFilter;
+    FilterExpressions* p_FilterExpressions;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const TTerm* p_TTerm;
@@ -385,7 +388,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 389 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 392 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -763,7 +766,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 767 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 770 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

@@ -79,9 +79,10 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
-typedef enum {VALIDATE_none = 0, VALIDATE_selectGrouped = 1,
-	      VALIDATE_uniqueProjection = 4, VALIDATE_namedProjection = 8,
-	      VALIDATE_noReassign = 0x10, VALIDATE_all = 0x1f} e_Validation;
+typedef enum {VALIDATE_none = 0,
+	      VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
+	      VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
+	      VALIDATE_constructNoQuads = 0x10, VALIDATE_all = 0x1f} e_Validation;
 
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
@@ -98,7 +99,7 @@ protected:
     const TTerm* curPredicate;
     const TTerm* curTail; // tail of the list currently being assembled.
     BasicGraphPattern* curBGP;
-    ParserFilter* curFilter;
+    FilterExpressions* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
     Result* curResult;
@@ -119,6 +120,9 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
     e_Validation validate;
+public:
+    static e_Validation DefaultValidation;
+protected:
 
     const Variable* getVariable (std::string name) {
 	if (inINSERTDATA || inDELETEDATA) // || inDELETEWHERE per http://www.w3.org/2009/sparql/docs/query-1.1/rq25.xml#sparqlGrammar note 7, but that breaks dawg_delete_where_01 dawg_delete_where_02 dawg_delete_where_03 dawg_delete_where_04 dawg_delete_where_05 dawg_delete_where_06 update_1_test_35
@@ -151,18 +155,17 @@ protected:
 	return curOp;
     }
 
-    ParserFilter* saveFilter () {
-	ParserFilter* ret = curFilter;
+    FilterExpressions* saveFilter () {
+	FilterExpressions* ret = curFilter;
 	curFilter = NULL;
 	return ret;
     }
 
-    void restoreFilter (ParserFilter* was) {
+    void restoreFilter (FilterExpressions* was) {
 	if (curFilter != NULL) {
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
-	    curFilter->setOp(curOp);
-	    curOp = curFilter;
+	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
 	}
 	curFilter = was;
     }
@@ -333,7 +336,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_ParserFilter;
+    FilterExpressions* p_FilterExpressions;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const TTerm* p_TTerm;
@@ -525,6 +528,17 @@ public:
  * current lexer object of the driver context. */
 #undef yylex
 #define yylex driver.lexer->lexWrapper
+
+template <typename T>
+std::string comma_str (const T c) {
+    std::stringstream ss;
+    for (typename T::const_iterator it = c.begin(); it != c.end(); ++it) {
+	if (it != c.begin())
+	    ss << ", ";
+	ss << (*it)->str();
+    }
+    return ss.str();
+}
 %}
 
 %% /*** Grammar Rules ***/
@@ -789,25 +803,34 @@ SelectQuery:
 	if (driver.validate & VALIDATE_selectGrouped) {
 	    const ExpressionAliasList* e = $5->getGroupedBy();
 	    if (e) {
-		std::set<const TTerm*> outside = $2.varSet->getNonProjectableVars(e, driver.atomFactory);
-		if (outside.size() != 0) {
-		    std::stringstream ss;
-		    ss << "can't select ";
-		    for (std::set<const TTerm*>::const_iterator it = outside.begin();
-			 it != outside.end(); ++it) {
-			if (it != outside.begin())
-			    ss << ", ";
-			ss << (*it)->str();
-		    }
-		    ss << " 'cause ";
-		    if (outside.size() == 1)
-			ss << "it's";
-		    else
-			ss << "they're";
-		    ss << " not in a GROUP BY";
-		    error(yylloc, ss.str());
-		}
+		std::set<const TTerm*> errorSet = $2.varSet->getNonProjectableVars(e, driver.atomFactory);
+		if (errorSet.size() != 0)
+		    error(yylloc, "can't select " + comma_str(errorSet) + " because "
+			  + (errorSet.size() == 1 ? "it's" : "they're") + "not in a GROUP BY.");
 	    }
+	}
+	if (driver.validate & VALIDATE_noReassign) {
+	    struct CreatedVars : public TestExpressor {
+		std::set<const TTerm*> vars;
+		virtual void variable (const Variable* const self, std::string)
+		{ vars.insert(self); }
+		virtual void expressionAlias (const ExpressionAlias* const,
+					      const Expression*, const Bindable* label)
+		{ if (label != NULL) label->express(this); }
+	    };
+	    CreatedVars cv;
+	    $2.varSet->express(&cv);
+
+	    const BindingState& nested = $4->m_GroupGraphPattern->getBindingState();
+	    std::set<const TTerm*> known;
+	    std::copy(nested.binds   .begin(), nested.binds   .end(), std::inserter(known, known.begin()));
+	    std::copy(nested.optional.begin(), nested.optional.end(), std::inserter(known, known.begin()));
+
+	    std::set<const TTerm*> errorSet;
+	    std::set_intersection(cv.vars.begin(), cv.vars.end(), known.begin(), known.end(), std::inserter(errorSet, errorSet.begin()));
+	    if (errorSet.size() != 0)
+		error(yylloc, "select can't bind " + comma_str(errorSet) + " because "
+		      + (errorSet.size() == 1 ? "it's" : "they're") + " bound in the WHERE clause.");
 	}
 	driver.lastWhereClause = $4;
 	$$ = new Select($2.distinctness, $2.varSet, $3, $4, $5);
@@ -980,11 +1003,19 @@ ConstructQuery:
 
 _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E_Or_QDatasetClause_E_Star_S_QIT_WHERE_E_S_QQuadPattern_E_S_QSolutionModifier_E_C:
     QuadPattern _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	  driver.lastWhereClause = $3;
-	  /* $1 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
-	  $$ = new Construct($1, $2, $3, $4);
-      }
+	if (driver.validate & VALIDATE_constructNoQuads &&
+	    dynamic_cast<const DefaultGraphPattern*>($1) == NULL) {
+	    error(yylloc, "can't CONSTRUCT quad pattern " + $1->str() + ".");
+	}
+	driver.lastWhereClause = $3;
+	/* $1 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
+	$$ = new Construct($1, $2, $3, $4);
+    }
   | _QDatasetClause_E_Star IT_WHERE QuadPattern SolutionModifier	{
+	if (driver.validate & VALIDATE_constructNoQuads &&
+	    dynamic_cast<const DefaultGraphPattern*>($3) == NULL) {
+	    error(yylloc, "can't re-CONSTRUCT quad pattern " + $3->str() + ".");
+	}
 	SWObjectDuplicator dup(driver.atomFactory);
 	$3->express(&dup);
 	driver.lastWhereClause = new WhereClause($3);
@@ -1763,12 +1794,12 @@ GraphGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } VarOrIri {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.ensureGraphPattern()));
 	  driver.curGraphName = $<p_TTerm>5;
       }
@@ -1780,9 +1811,9 @@ ServiceGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } _QIT_SILENT_E_Opt VarOrIri GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($5, driver.ensureGraphPattern(), $4, driver.atomFactory, false));
       }
 ;
@@ -1793,7 +1824,7 @@ SADIinvocation:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } _QIT_SILENT_E_Opt VarOrIri IT_FROM QuadPattern WhereClause	{
 	  /*
 	    serviceID,
@@ -1802,7 +1833,7 @@ SADIinvocation:
 	    where
 	   */
 	  driver.lastWhereClause = $8;
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction
 	      ($<p_TableOperation>2, new SADIGraphPattern($5, $4, $7, $8));
     }
@@ -1810,7 +1841,12 @@ SADIinvocation:
 
 Bind:
     IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
-	driver.curOp = new Bind(driver.ensureGraphPattern(), $3, $5);
+	const TableOperation* op = driver.ensureGraphPattern();
+	if (driver.validate & VALIDATE_noReassign &&
+	    (op->getBindingState().binds   .find($5) != op->getBindingState().binds   .end() ||
+	     op->getBindingState().optional.find($5) != op->getBindingState().optional.end()))
+	    error(yylloc, "Can't bind " + $5->str() + " to " + $3->str() + " because it's already bound");
+	driver.curOp = new Bind(op, $3, $5);
 	// no more triples go into the current BGP, per
 	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns
 	// test reference:
@@ -1927,9 +1963,9 @@ MinusGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new MinusGraphPattern(driver.ensureGraphPattern()));
       }
 ;
@@ -1941,9 +1977,9 @@ GroupOrUnionGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	  driver.restoreFilter($<p_ParserFilter>2);
+	  driver.restoreFilter($<p_FilterExpressions>2);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, driver.curOp);
       }
 ;
@@ -1971,7 +2007,7 @@ Filter:
     IT_FILTER Constraint	{
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
-	    driver.curFilter = new ParserFilter();
+	    driver.curFilter = new FilterExpressions();
 	}
 	driver.curFilter->addExpression($2);
     }
@@ -2125,7 +2161,7 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 Object:
     GraphNode	{
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1), true);
     }
 ;
 
@@ -2210,7 +2246,7 @@ _Q_O_QGT_COMMA_E_S_QObjectPath_E_C_E_Star:
 ObjectPath:
     GraphNodePath	{
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1), true);
     }
 ;
 
@@ -2404,12 +2440,12 @@ Generator:
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		// driver.curBGP->addTriplePattern
-		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List));
+		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List), true);
 		driver.curBGP->addTriplePattern
-		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)));
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)), true);
 		const TTerm* nextTail = i == members->size()-1 ? (const TTerm*)TTerm::RDF_nil : driver.createBNode();
 		driver.curBGP->addTriplePattern
-		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail));
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail), true);
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -2487,12 +2523,12 @@ GeneratorPath:
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		// driver.curBGP->addTriplePattern
-		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List));
+		//     (driver.atomFactory->getTriple(tail, TTerm::RDF_type, TTerm::RDF_List), true);
 		driver.curBGP->addTriplePattern
-		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)));
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_first, members->at(i)), true);
 		const TTerm* nextTail = i == members->size()-1 ? (const TTerm*)TTerm::RDF_nil : driver.createBNode();
 		driver.curBGP->addTriplePattern
-		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail));
+		    (driver.atomFactory->getTriple(tail, TTerm::RDF_rest, nextTail), true);
 		tail = nextTail;
 	    }
 	    members->clear();
@@ -3250,10 +3286,12 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 
 namespace w3c_sw {
 
+    e_Validation SPARQLfedDriver::DefaultValidation = VALIDATE_all;
+
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
 	curBGP(NULL), curFilter(NULL), curResultSet(NULL), curResult(NULL),
-	curExprList(NULL), validate(VALIDATE_all), root(NULL), unnestTree(false)
+	curExprList(NULL), validate(DefaultValidation), root(NULL), unnestTree(false)
 {
 }
 

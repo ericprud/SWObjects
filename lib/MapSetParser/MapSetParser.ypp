@@ -88,7 +88,7 @@ protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
     BasicGraphPattern* curBGP;
-    ParserFilter* curFilter;
+    FilterExpressions* curFilter;
     const TableOperation* curOp; // needed to make right-descending tree for e.g. TriplesBlock? ( ( GraphPatternNotTriples | Filter ) '.'? TriplesBlock? )*
     ResultSet* curResultSet;
     Result* curResult;
@@ -115,18 +115,17 @@ protected:
 	return curOp;
     }
 
-    ParserFilter* saveFilter () {
-	ParserFilter* ret = curFilter;
+    FilterExpressions* saveFilter () {
+	FilterExpressions* ret = curFilter;
 	curFilter = NULL;
 	return ret;
     }
 
-    void restoreFilter (ParserFilter* was) {
+    void restoreFilter (FilterExpressions* was) {
 	if (curFilter != NULL) {
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
-	    curFilter->setOp(curOp);
-	    curOp = curFilter;
+	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
 	}
 	curFilter = was;
     }
@@ -288,7 +287,7 @@ public:
     ProductionVector<const TableOperation*>* p_TableOperations;
     OptionalGraphPattern* p_OptionalGraphPattern;
     BasicGraphPattern* p_BasicGraphPattern;
-    ParserFilter* p_ParserFilter;
+    FilterExpressions* p_FilterExpressions;
     FunctionCall* p_FunctionCall;
     ArgList* p_ArgList;
     const TTerm* p_TTerm;
@@ -1208,12 +1207,12 @@ GraphGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } VarOrIri {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = $4;
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new GraphGraphPattern($4, driver.curOp));
 	  driver.curGraphName = $<p_TTerm>5;
       }
@@ -1225,12 +1224,12 @@ ServiceGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } {
 	  $<p_TTerm>$ = driver.curGraphName;
 	  driver.curGraphName = NULL;
       } _QIT_SILENT_E_Opt VarOrIri GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ServiceGraphPattern($6, driver.curOp, $5, driver.atomFactory, false));
 	  driver.curGraphName = $<p_TTerm>4;
       }
@@ -1355,9 +1354,9 @@ MinusGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } GroupGraphPattern	{
-	  driver.restoreFilter($<p_ParserFilter>3);
+	  driver.restoreFilter($<p_FilterExpressions>3);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>2, new MinusGraphPattern(driver.ensureGraphPattern()));
       }
 ;
@@ -1369,9 +1368,9 @@ GroupOrUnionGraphPattern:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.curOp = NULL;
       } {
-	  $<p_ParserFilter>$ = driver.saveFilter();
+	  $<p_FilterExpressions>$ = driver.saveFilter();
       } GroupGraphPattern _Q_O_QIT_UNION_E_S_QGroupGraphPattern_E_C_E_Star	{
-	  driver.restoreFilter($<p_ParserFilter>2);
+	  driver.restoreFilter($<p_FilterExpressions>2);
 	  driver.curOp = driver.makeConjunction($<p_TableOperation>1, driver.curOp);
       }
 ;
@@ -1399,7 +1398,7 @@ Filter:
     IT_FILTER Constraint	{
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
-	    driver.curFilter = new ParserFilter();
+	    driver.curFilter = new FilterExpressions();
 	}
 	driver.curFilter->addExpression($2);
     }
@@ -1555,7 +1554,7 @@ _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
 Object:
     GraphNode	{
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1), true);
     }
 ;
 
@@ -1787,9 +1786,9 @@ Generator:
 	    const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
-		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)), true);
 		const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail), true);
 		tail = nextTail;
 	    }
 	    members->clear();

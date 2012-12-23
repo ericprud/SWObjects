@@ -2283,8 +2283,36 @@ t*Conjunction t*Disjunction   namedGraphPattern  defaultGraphPattern  graphGraph
 
 struct BindingState {
     std::set<const TTerm*> binds;	// {?x <foo> <bar>}, BIND (1 AS ?x)
-    std::set<const TTerm*> optional;	// OPTIONAL {?x <foo> <bar>}, {{?x <foo> <bar>} OPTIONAL {?y <foo> <baz>}}
+    std::set<const TTerm*> optional;	// OPTIONAL {?x <foo> <bar>}, {{?x <foo> <bar>} UNION {?y <foo> <baz>}}
     std::set<const TTerm*> depends;	// FILTER (?x = 1), BIND (?x AS ?y)
+    std::string str () const {
+	std::stringstream ss;
+	ss << "binds(";
+	for (std::set<const TTerm*>::const_iterator b = binds.begin();
+	     b != binds.end(); ++b) {
+	    if (b != binds.begin())
+		ss << ", ";
+	    ss << (*b)->str();
+	}
+	ss << ")\n";
+	ss << "optional(";
+	for (std::set<const TTerm*>::const_iterator b = optional.begin();
+	     b != optional.end(); ++b) {
+	    if (b != optional.begin())
+		ss << ", ";
+	    ss << (*b)->str();
+	}
+	ss << ")\n";
+	ss << "depends(";
+	for (std::set<const TTerm*>::const_iterator b = depends.begin();
+	     b != depends.end(); ++b) {
+	    if (b != depends.begin())
+		ss << ", ";
+	    ss << (*b)->str();
+	}
+	ss << ")\n";
+	return ss.str();
+    }
 };
 
 class TableOperation : public Base {
@@ -2298,7 +2326,8 @@ public:
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const = 0;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
-    const BindingState& getBindingState () { return bindings; }
+    BindingState& getBindingState () { return bindings; }
+    const BindingState& getBindingState () const { return bindings; }
     virtual TableOperation* getDNF() const = 0;
     virtual bool operator==(const TableOperation& ref) const = 0;
     virtual std::string toString(MediaType mediaType = MediaType(NULL), NamespaceMap* namespaces = NULL) const;
@@ -2317,6 +2346,7 @@ public:
 	return m_TableOperations == ref.m_TableOperations;
     }
     virtual void addTableOperation(const TableOperation* tableOp, bool flatten);
+    virtual void mergeBindingState(const TableOperation* tableOp) = 0;
     std::vector<const TableOperation*>::iterator begin () { return m_TableOperations.begin(); }
     std::vector<const TableOperation*>::const_iterator begin () const { return m_TableOperations.begin(); }
     std::vector<const TableOperation*>::iterator end () { return m_TableOperations.end(); }
@@ -2348,6 +2378,7 @@ public:
 	const TableConjunction* pref = dynamic_cast<const TableConjunction*>(&ref);
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
+    virtual void mergeBindingState(const TableOperation* tableOp);
     virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
     virtual void deletePattern(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp, bool rangeOverUnboundVars) const;
@@ -2365,6 +2396,7 @@ public:
 	const TableDisjunction* pref = dynamic_cast<const TableDisjunction*>(&ref);
 	return pref == NULL ? false : TableJunction::operator==(*pref);
     }
+    virtual void mergeBindingState(const TableOperation* tableOp);
     virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("CONSTRUCT{{?s?p?o}UNION{?s?p?o}}");
@@ -2510,7 +2542,7 @@ public:
     static bool MapBNodes(const TTerm* t) { return dynamic_cast<const BNode*>(t) != NULL; }
     static bool MapVarsAndBNodes(const TTerm* t) { return dynamic_cast<const Bindable*>(t) != NULL; }
 
-    void addTriplePattern (const TriplePattern* t) {
+    void addTriplePattern (const TriplePattern* t, bool maintainBindings = false) {
 	if (OS.find(t->getO()) != OS.end()) {
 	    TTerm2Triple_range range = OS[t->getO()].equal_range(t->getS());
 	    for ( ; range.first != range.second; ++range.first)
@@ -2521,6 +2553,15 @@ public:
 	SP[t->getS()].insert(TTerm2Triple_pair(t->getP(), t));
 	PO[t->getP()].insert(TTerm2Triple_pair(t->getO(), t));
 	OS[t->getO()].insert(TTerm2Triple_pair(t->getS(), t));
+
+	if (maintainBindings) {
+	    if (dynamic_cast<const Variable*>(t->getS()) != NULL)
+		bindings.binds.insert(t->getS());
+	    if (dynamic_cast<const Variable*>(t->getP()) != NULL)
+		bindings.binds.insert(t->getP());
+	    if (dynamic_cast<const Variable*>(t->getO()) != NULL)
+		bindings.binds.insert(t->getO());
+	}
     }
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
@@ -2613,7 +2654,9 @@ public:
 class Print : public TableOperationOnOperation {
 
 public:
-    Print (const TableOperation* op) : TableOperationOnOperation(op) {  }
+    Print (const TableOperation* op) : TableOperationOnOperation(op) {
+	bindings = op->getBindingState();
+    }
     ~Print () {  }
 
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
@@ -2639,11 +2682,19 @@ protected:
     ProductionVector<const Expression*> m_Expressions;
 
 public:
-    Filter (const TableOperation* op) : TableOperationOnOperation(op) {  }
+    Filter (const TableOperation* op)
+	: TableOperationOnOperation(op)
+    {
+	_prepareBindings(op);
+    }
     Filter (const TableOperation* op,
 	    std::vector<const Expression*>::iterator begin,
 	    std::vector<const Expression*>::iterator end)
-	: TableOperationOnOperation(op), m_Expressions(begin, end) {  }
+	: TableOperationOnOperation(op), m_Expressions(begin, end)
+    {
+	_prepareBindings(op);
+    }
+    void _prepareBindings(const TableOperation* op);
     ~Filter () {  }
 
     //size_t filters () { return m_Filters.size(); }
@@ -2675,7 +2726,12 @@ protected:
     const Variable* m_label;
 
 public:
-    Bind (const TableOperation* op, const Expression* p_expr, const Variable* p_label) : TableOperationOnOperation(op), m_expr(p_expr), m_label(p_label) {  }
+    Bind (const TableOperation* op, const Expression* p_expr, const Variable* p_label)
+	: TableOperationOnOperation(op), m_expr(p_expr), m_label(p_label)
+    {
+	_prepareBindings(op);
+    }
+    void _prepareBindings(const TableOperation* op);
     ~Bind () {  }
 
     virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
@@ -2702,7 +2758,11 @@ class GraphGraphPattern : public TableOperationOnOperation {
 private:
     const TTerm* m_VarOrIRIref;
 public:
-    GraphGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern), m_VarOrIRIref(p_TTerm) {  }
+    GraphGraphPattern (const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern)
+	: TableOperationOnOperation(p_GroupGraphPattern), m_VarOrIRIref(p_TTerm)
+    {
+	bindings = p_GroupGraphPattern->getBindingState();
+    }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const GraphGraphPattern* pref = dynamic_cast<const GraphGraphPattern*>(&ref);
@@ -2737,7 +2797,9 @@ public:
 	m_VarOrIRIref(p_TTerm), m_Silence(p_Silence),
 	atomFactory(atomFactory), 
 	lexicalCompare(lexicalCompare) // use STR(?foo) = ?bar instead of ?foo = ?bar
-    {  }
+    {
+	bindings = p_GroupGraphPattern->getBindingState();
+    }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const ServiceGraphPattern* pref = dynamic_cast<const ServiceGraphPattern*>(&ref);
@@ -2756,7 +2818,18 @@ protected:
     ProductionVector<const Expression*> m_Expressions;
 
 public:
-    OptionalGraphPattern (const TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern) {  }
+    OptionalGraphPattern (const TableOperation* p_GroupGraphPattern)
+	: TableOperationOnOperation(p_GroupGraphPattern)
+    {
+	bindings.depends = p_GroupGraphPattern->getBindingState().depends;
+	const BindingState& nested = p_GroupGraphPattern->getBindingState();
+	for (std::set<const TTerm*>::const_iterator it = nested.binds.begin();
+	     it != nested.binds.end(); ++it)
+	    bindings.optional.insert(*it);
+	for (std::set<const TTerm*>::const_iterator it = nested.optional.begin();
+	     it != nested.optional.end(); ++it)
+	    bindings.optional.insert(*it);
+    }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const OptionalGraphPattern* pref = dynamic_cast<const OptionalGraphPattern*>(&ref);
@@ -2778,7 +2851,11 @@ public:
 };
 class MinusGraphPattern : public TableOperationOnOperation {
 public:
-    MinusGraphPattern (const TableOperation* p_GroupGraphPattern) : TableOperationOnOperation(p_GroupGraphPattern) {  }
+    MinusGraphPattern (const TableOperation* p_GroupGraphPattern)
+	: TableOperationOnOperation(p_GroupGraphPattern)
+    {
+	bindings = p_GroupGraphPattern->getBindingState();
+    }
     virtual void express(Expressor* p_expressor) const;
     virtual bool operator== (const TableOperation& ref) const {
 	const MinusGraphPattern* pref = dynamic_cast<const MinusGraphPattern*>(&ref);
@@ -2806,6 +2883,7 @@ public:
     virtual bool includes(const TTerm*) const = 0;
     virtual void project(ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			 std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const = 0;
+    virtual std::set<const TTerm*> getProjectedVars(const BindingState& heldVars) const = 0;
     virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const = 0;
 };
 
@@ -2818,6 +2896,7 @@ public:
     ExpressionAlias (const Expression* expr, const Bindable* label) : expr(expr), label(label) {  }
     ~ExpressionAlias () { delete expr; }
     const TTerm* getLabel(AtomFactory* atomFactory) const;
+    const TTerm* getVariable() const;
     // const Bindable* getLabel () const { return label; }
     virtual void express (Expressor* /* p_expressor */) const;
     virtual bool operator== (const ExpressionAlias& ref) const {
@@ -2846,6 +2925,7 @@ public:
     virtual bool includes(const TTerm* lookFor) const;
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
+    virtual std::set<const TTerm*> getProjectedVars(const BindingState& heldVars) const;
     virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const;
 };
 class StarVarSet : public VarSet {
@@ -2865,6 +2945,7 @@ public:
     }
     virtual void project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having,
 			  std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const;
+    virtual std::set<const TTerm*> getProjectedVars(const BindingState& heldVars) const;
     virtual std::set<const TTerm*> getNonProjectableVars(const ExpressionAliasList* from, AtomFactory* atomFactory) const;
 };
 
@@ -2981,7 +3062,7 @@ class ValuesClause : public TableOperation {
 private:
     ResultSet* m_ResultSet;
 public:
-    ValuesClause();
+    //    ValuesClause();
     ValuesClause(ResultSet* p_ResultSet);
     ~ValuesClause();
 
@@ -3011,6 +3092,7 @@ public:
 class WhereClause : public Base {
     friend class SPARQLfedParser;
     friend class MapSetParser;
+    friend class Select;
 private:
     const TableOperation* m_GroupGraphPattern;
 public:
@@ -3053,16 +3135,26 @@ private:
     VarSet* m_VarSet;
     WhereClause* m_WhereClause;
     SolutionModifier* m_SolutionModifier;
+    BindingState bindings;
+
 public:
     Select (e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier)
 	: LoadingOperation(p_DatasetClauses), m_distinctness(p_distinctness), m_VarSet(p_VarSet), m_WhereClause(p_WhereClause), m_SolutionModifier(p_SolutionModifier)
-    {  }
+    {
+	const TableOperation* whereOp = p_WhereClause->m_GroupGraphPattern;
+	if (whereOp != NULL) {
+	    const BindingState& nested = whereOp->getBindingState();
+	    bindings.binds = p_VarSet->getProjectedVars(nested);
+	}
+    }
     ~Select () {
 	delete m_VarSet;
 	delete m_WhereClause;
 	delete m_SolutionModifier;
     }
     virtual void express(Expressor* p_expressor) const;
+    BindingState& getBindingState () { return bindings; }
+    const BindingState& getBindingState () const { return bindings; }
     virtual ResultSet* executeQuery(const RdfDB* db, ResultSet* rs = NULL) const;
     virtual bool operator== (const Operation& ref) const {
 	const Select* pSel = dynamic_cast<const Select*>(&ref);
@@ -3080,7 +3172,9 @@ class SubSelect : public TableOperation {
 protected:
     const Select* m_Select;
 public:
-    SubSelect (const Select* p_Select) : TableOperation(), m_Select(p_Select) {  }
+    SubSelect (const Select* p_Select) : TableOperation(), m_Select(p_Select) {
+	bindings = p_Select->getBindingState();
+    }
     ~SubSelect() { delete m_Select; }
     const Select* getSelect () const {
 	return m_Select;
@@ -4689,12 +4783,36 @@ public:
 	p_NumericRDFLiteral->express(this);
     }
 };
+
+/** some handy RecursiveExpressors
+  */
 class TestExpressor : public RecursiveExpressor {
-    virtual void base (Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
+    virtual void base (const Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
-/* ExpressionExpressor - default no-call actions for everything above Expression.
- * Derive from ExpressionExpressor when you only need to express Expressions.
+/** GetDependentVariables - Recursively visit the query tree, reporting and
+ *  variables used in non-aggregate expressions.
+ */
+struct GetDependentVariables
+    : public TestExpressor // could have used ExpressionExpressor but it would require all the way down to the leaves.
+{
+    std::set<const TTerm*>& vars;
+    GetDependentVariables (std::set<const TTerm*>& vars)
+	: vars(vars)
+    {  }
+    virtual void variable (const Variable* const self, std::string)
+    { vars.insert(self); }
+    virtual void aggregateCall (const AggregateCall* const, const URI*, const ArgList*,
+				e_distinctness, const AggregateCall::ScalarVals*)
+    {  }
+    virtual void expressionAlias (const ExpressionAlias* const,
+				  const Expression* expr, const Bindable*)
+    { expr->express(this); }
+};
+
+
+/** ExpressionExpressor - default no-call actions for everything above Expression.
+ *  Derive from ExpressionExpressor when you only need to express Expressions.
  */
 class ExpressionExpressor : public Expressor {
 public:
