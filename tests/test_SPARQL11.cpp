@@ -8,8 +8,8 @@
 //#define BOOST_TEST_MAIN
 //#define BOOST_TEST_MODULE SPARQL11_tests
 #define NEEDDEF_W3C_SW_WEBAGENT
-#include "../tests/SPARQLTest.hpp"
-#include "../tests/ServerInteraction.hpp"
+#include "tests/SPARQLTest.hpp"
+#include "tests/ServerInteraction.hpp"
 
 #define LG(SOURCE, NAME) LabeledGraph(SOURCE, NAME)
 #define SIZE(ARRAY) (sizeof(ARRAY)/sizeof(ARRAY[0]))
@@ -55,8 +55,38 @@ struct EARL {
 	    if (std::string("--earl") == argv[*i] && *i < argc-1) {
 		earl->reportStream = new std::ofstream(argv[++*i]);
 		// reportStream = &std::cout;
+		std::string tester = boost::unit_test::framework::master_test_suite().p_name.value;
 		if (earl->reportStream->good())
-		    *earl->reportStream << "# EARL report for " << boost::unit_test::framework::master_test_suite().p_name.value << "\n";
+		    *earl->reportStream
+			<< "# EARL report by " << boost::unit_test::framework::master_test_suite().p_name.value << "\n"
+			<< "@prefix doap: <http://usefulinc.com/ns/doap#>.\n"
+			<< "@prefix earl: <http://www.w3.org/ns/earl#>.\n"
+			<< "@prefix foaf: <http://xmlns.com/foaf/0.1/>.\n"
+			<< "@prefix swobj: <http://swobjects.org/>.\n"
+			<< "@prefix dct: <http://purl.org/dc/terms/>.\n"
+			<< "@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.\n"
+			<< "\n"
+			<< "<> foaf:primaryTopic swobj:sparql ;\n"
+			<< "	dct:issued \"" + w3c_sw::Util::GMTimeAs8601() + "\"^^xsd:dateTime ;\n"
+			<< "	foaf:maker <http://www.w3.org/People/Eric/ericP-foaf#ericP> .\n"
+			<< "\n"
+			<< "swobj:sparql\n"
+			<< "	a doap:Project ;\n"
+			<< "	doap:name \"SWObjects\" ;\n"
+			<< "	doap:homepage <http://swobjects.org/> .\n"
+			<< "\n"
+			<< "<http://www.w3.org/People/Eric/ericP-foaf#ericP> a foaf:Person ;\n"
+			<< "	foaf:name \"Eric Prud'hommeaux\" ;\n"
+			<< "	foaf:mbox <mailto:eric@w3.org> ;\n"
+			<< "	foaf:mbox_sha1sum \"e2d67791b2a0ce3441c0c770f94daa130b4e6d95\" ;\n"
+			<< "	foaf:homepage <http://www.w3.org/People/Eric/> .\n"
+			<< "\n"
+			<< "swobj:" + tester + "\n"
+			<< "	a earl:Software ;\n"
+			<< "	dct:title \"SWObjects SPARQL11 test harness\" ;\n"
+			<< "	foaf:maker <http://www.w3.org/People/Eric/ericP-foaf#ericP> .\n"
+			<< "\n"
+			<< "\n";
 		else
 		    throw std::runtime_error(std::string() + "unable to open \"" + argv[*i] + "\"");
 		return true;
@@ -78,10 +108,10 @@ struct EARL {
 	    "	earl:result [\n"
 	    "		a earl:TestResult ;\n"
 	    "		earl:outcome earl:" + (passed ? "pass" : "fail") + " ;\n"
-	    "		dc:date \"" + w3c_sw::Util::GMTimeAs8601() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>\n"
+	    "		dct:date \"" + w3c_sw::Util::GMTimeAs8601() + "\"^^xsd:dateTime\n"
 	    "	] ;\n"
 	    "	earl:subject <http://swobjects.org/sparql> ;\n"
-	    "	earl:test " + test + " ." << std::endl;
+	    "	earl:test <" + test + "> ." << std::endl;
     }
 };
 
@@ -371,7 +401,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_query )
     }
 
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_query.rq -L text/raw > IMPORTED_sparql11_query.hpp 
-#include "../tests/IMPORTED_sparql11_query.hpp"
+#include "tests/IMPORTED_sparql11_query.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_query */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_update )
@@ -394,84 +424,45 @@ BOOST_AUTO_TEST_SUITE( sparql11_update )
     }
 
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_update.rq -L text/raw > IMPORTED_sparql11_update.hpp 
-#include "../tests/IMPORTED_sparql11_update.hpp"
+#include "tests/IMPORTED_sparql11_update.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_update */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_results_csv_tsv )
 
-BOOST_AUTO_TEST_CASE( csv01 ) {
-    /* name: csv01 - CSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.csv", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( csv02 ) {
-    /* name: cvs02 - CSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.csv", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( csv03 ) {
-    /* name: csv03 - CSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data2.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWGSV_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.csv", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( tsv01 ) {
-    /* name: tsv01 - TSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv01.tsv", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( tsv02 ) {
-    /* name: tvs02 - TSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv02.rq", "data-sparql11/csv-tsv-res/csvtsv02.tsv", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( tsv03 ) {
-    /* name: tsv03 - TSV Result Format */
-    const char* defaultGraph( "data-sparql11/csv-tsv-res/data2.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/csv-tsv-res/csvtsv01.rq", "data-sparql11/csv-tsv-res/csvtsv03.tsv", 0, 0);
-}
+#define CSV_QUERY_TEST()		       \
+    try {								       \
+	MeasuredRS measured(defaultGraph_in, namedGraphs_in,		       \
+			    SIZE(namedGraphs_in), request, true);	       \
+	const char* type = "text/csv";		       \
+	std::string asCSV = measured.toString(type);		       \
+	/* w3c_sw_LINEN << "as " << type << ":\n" << asCSV; */	       \
+	IStreamContext istr(asCSV, IStreamContext::STRING, type);	       \
+	TTerm::String2BNode bnodeMap;				       \
+	ResultSet parsed(&F, istr, measured.isOrdered(), &bnodeMap);       \
+	ReferenceRS expected(measured, result, &F, &P);			       \
+	/* w3c_sw_LINEN << "parsed:\n" << parsed.toString("text/sparql-results;datatypes=explicit"); */ \
+	/* w3c_sw_LINEN << "expected:\n" << expected.toString("text/sparql-results;datatypes=explicit"); */ \
+	BOOST_CHECK_EQUAL(parsed, expected);			       \
+	G_EARL.report(test, parsed == expected);			       \
+    } catch (NotImplemented& e) {					       \
+	std::cerr << e.what() << "\n";					       \
+	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
+    } catch (std::string& s) {						       \
+	BOOST_ERROR ( s );						       \
+    } catch (std::exception& s) {					       \
+	BOOST_ERROR ( s.what() );					       \
+    }
+
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_csv.rq -L text/raw > IMPORTED_sparql11_csv.hpp 
+#include "tests/IMPORTED_sparql11_csv.hpp"
+
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_tsv.rq -L text/raw > IMPORTED_sparql11_tsv.hpp 
+#include "tests/IMPORTED_sparql11_tsv.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_results_csv_tsv */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_json )
-BOOST_AUTO_TEST_CASE( jsonres01 ) {
-    /* name: jsonres01 - JSON Result Format */
-    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/json-res/jsonres01.rq", "data-sparql11/json-res/jsonres01.srj", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( jsonres02 ) {
-    /* name: jsonres02 - JSON Result Format */
-    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/json-res/jsonres02.rq", "data-sparql11/json-res/jsonres02.srj", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( jsonres03 ) {
-    /* name: jsonres03 - JSON Result Format */
-    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/json-res/jsonres03.rq", "data-sparql11/json-res/jsonres03.srj", 0, 0);
-}
-BOOST_AUTO_TEST_CASE( jsonres04 ) {
-    /* name: jsonres04 - JSON Result Format */
-    const char* defaultGraph( "data-sparql11/json-res/data.ttl");
-    const char** namedGraphs = NULL;
-    const URI** requires = NULL;
-    DAWG_TEST("data-sparql11/json-res/jsonres04.rq", "data-sparql11/json-res/jsonres04.srj", 0, 0);
-}
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_json.rq -L text/raw > IMPORTED_sparql11_json.hpp 
+#include "tests/IMPORTED_sparql11_json.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_json */)
 
 struct SPARQLServerInteractionVector : public std::vector<w3c_sw::SPARQLServerInteraction*> {
@@ -544,7 +535,7 @@ struct FederationTest {
 
 BOOST_AUTO_TEST_SUITE( sparql11_federated_query )
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_federated_query.rq -L text/raw > IMPORTED_sparql11_federated_query.hpp 
-#include "../tests/IMPORTED_sparql11_federated_query.hpp"
+#include "tests/IMPORTED_sparql11_federated_query.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_federated_query */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_entailment )
@@ -578,7 +569,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_syntax_positive )
     G_EARL.report(test, parsed);				\
 
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_positive.rq -L text/raw > IMPORTED_sparql11_syntax_positive.hpp 
-#include "../tests/IMPORTED_sparql11_syntax_positive.hpp"
+#include "tests/IMPORTED_sparql11_syntax_positive.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_positive */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_syntax_negative )
@@ -598,7 +589,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_syntax_negative )
     G_EARL.report(test, !parsed);				\
 
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_negative.rq -L text/raw > IMPORTED_sparql11_syntax_negative.hpp 
-#include "../tests/IMPORTED_sparql11_syntax_negative.hpp"
+#include "tests/IMPORTED_sparql11_syntax_negative.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_negative */)
 
 // EOF

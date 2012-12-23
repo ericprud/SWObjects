@@ -196,6 +196,39 @@ BOOST_AUTO_TEST_CASE( insert_05a ) {
     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-05a-g3-post.ttl", "http://example.org/g3")};
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( insert_05a ) */
+BOOST_AUTO_TEST_CASE( insert_data_same_bnode ) {
+    const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/basic-update/manifest#insert-data-same-bnode";
+    // name: INSERTing the same bnode with INSERT DATA into two different Graphs is the same bnode
+    // manifest: data-sparql11/basic-update/manifest.ttl
+    const char* defaultGraph_in = NULL;
+    LabeledGraph namedGraphs_in[] = {};
+    const char* request = "data-sparql11/basic-update/insert-data-same-bnode.ru";
+    const char* defaultGraph_out = NULL;
+    LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-05a-g3-post.ttl", "http://example.org/g3")};
+    UPDATE_TEST();
+} /* BOOST_AUTO_TEST_CASE( insert_data_same_bnode ) */
+BOOST_AUTO_TEST_CASE( insert_where_same_bnode ) {
+    const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/basic-update/manifest#insert-where-same-bnode";
+    // name: INSERTing the same bnode with two INSERT WHERE statement within one request is NOT the same bnode
+    // manifest: data-sparql11/basic-update/manifest.ttl
+    const char* defaultGraph_in = "data-sparql11/basic-update/insert-where-same-bnode-pre.ttl";
+    LabeledGraph namedGraphs_in[] = {};
+    const char* request = "data-sparql11/basic-update/insert-where-same-bnode.ru";
+    const char* defaultGraph_out = "data-sparql11/basic-update/insert-where-same-bnode-pre.ttl";
+    LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-where-same-bnode-g3-post.ttl", "http://example.org/g3")};
+    UPDATE_TEST();
+} /* BOOST_AUTO_TEST_CASE( insert_where_same_bnode ) */
+BOOST_AUTO_TEST_CASE( insert_where_same_bnode2 ) {
+    const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/basic-update/manifest#insert-where-same-bnode2";
+    // name: INSERTing the same bnode with two INSERT WHERE statement within one request is NOT the same bnode even if both WHERE clauses have the empty solution mapping as the only solution.
+    // manifest: data-sparql11/basic-update/manifest.ttl
+    const char* defaultGraph_in = "data-sparql11/basic-update/insert-where-same-bnode-pre.ttl";
+    LabeledGraph namedGraphs_in[] = {};
+    const char* request = "data-sparql11/basic-update/insert-where-same-bnode2.ru";
+    const char* defaultGraph_out = "data-sparql11/basic-update/insert-where-same-bnode-pre.ttl";
+    LabeledGraph namedGraphs_out[] = {LG("data-sparql11/basic-update/insert-where-same-bnode-g3-post.ttl", "http://example.org/g3")};
+    UPDATE_TEST();
+} /* BOOST_AUTO_TEST_CASE( insert_where_same_bnode2 ) */
 BOOST_AUTO_TEST_CASE( dawg_clear_default_01 ) {
     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/clear/manifest#dawg-clear-default-01";
     // name: CLEAR DEFAULT

@@ -39,6 +39,6 @@ SELECT
   FILTER (?type = mf:NegativeSyntaxTest11 || ?type = mf:NegativeUpdateSyntaxTest11)
 
   # Shorten test name
-  BIND (fn:replace(fn:replace(strafter(str(?entry), "data-sparql11/syntax-"), "/manifest#", "_"), "-", "_") AS ?id)
+  BIND (fn:replace(fn:replace(strafter(str(?entry), "data-sparql11/"), "/manifest#", "_"), "-", "_") AS ?id)
   #  FILTER (?id = "query_test_1") # limit to one for fiddling
 }
