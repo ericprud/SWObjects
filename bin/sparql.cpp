@@ -245,6 +245,43 @@ void validate (boost::any& v, const std::vector<std::string>& values, loggingFil
     }
 }
 
+struct validationLevel { };
+void validate (boost::any& v, const std::vector<std::string>& values, validationLevel*, int)
+{
+    std::string s = po::validators::get_single_string(values);
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    bool m = false;
+    if (s=="?") {
+	m=true;
+	std::string t;
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_selectGrouped   ) {t+="selectGrouped|"   ;}
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_uniqueProjection) {t+="uniqueProjection|";}
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_namedProjection ) {t+="namedProjection|" ;}
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_noReassign      ) {t+="noReassign|"      ;}
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_constructNoQuads) {t+="constructNoQuads|";}
+	if (TheServer.engine.sparqlParser.validate & sw::VALIDATE_bnodeScope      ) {t+="bnodeScope|"      ;}
+	std::cout << "validation flag currently set to " << (t.size() > 0 ? t.substr(0, t.size()-1) : std::string("none")) << "\n";
+    } else if (s=="all" || s=="true" || s=="1" || s=="yes") {
+	m=true;
+	TheServer.engine.sparqlParser.validate = sw::VALIDATE_all;
+    } else if (s=="none" || s=="false" || s=="0" || s=="no") {
+	m=true;
+	TheServer.engine.sparqlParser.validate = sw::VALIDATE_none;
+    } else {
+	TheServer.engine.sparqlParser.validate = sw::VALIDATE_none;
+	if (s.find("selectgrouped"   )!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_selectGrouped   ; }
+	if (s.find("uniqueprojection")!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_uniqueProjection; }
+	if (s.find("namedprojection" )!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_namedProjection ; }
+	if (s.find("noreassign"      )!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_noReassign      ; }
+	if (s.find("constructnoquads")!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_constructNoQuads; }
+	if (s.find("bnodescope"      )!=std::string::npos) { m=true; TheServer.engine.sparqlParser.validate = sw::VALIDATE_bnodeScope      ; }
+    }
+    if (!m)
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("validation argument \"").
+			       append(s).append("\" must be one of selectGrouped, uniqueProjection, namedProjection, noReassign, constructNoQuads, bnodeScope."));
+}
+
 const sw::TTerm* Query; // URI is a guery ref; RDFLiteral is a query string.
 const sw::TTerm* QueryBaseUri;
 sw::MediaType QueryMediaType;
@@ -720,6 +757,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 
 int main(int ac, char* av[])
 {
+    TheServer.engine.sparqlParser.validate = sw::VALIDATE_none; // be forgiving about validation errors.
     int ret = 0; /* no errors */
     try {
 	{   /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
@@ -760,8 +798,9 @@ int main(int ac, char* av[])
             ("pipe,p", "pipe query to output (print final query)")
             ("quiet,q", "quiet")
             ("version,v", "print version string")
+            ("validation", po::value<validationLevel>(), 
+	     "how fussy to be about parsing")
 	    ;
-
 	/* rest: cli appends cfg file. */
 
         po::options_description resultsOpts("");

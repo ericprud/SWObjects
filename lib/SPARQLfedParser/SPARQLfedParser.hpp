@@ -114,8 +114,8 @@ protected:
     bool inDELETEDATA;
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
-    e_Validation validate;
 public:
+    e_Validation validate;
     static e_Validation DefaultValidation;
 protected:
 
