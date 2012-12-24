@@ -383,3 +383,10 @@ BOOST_AUTO_TEST_CASE( syntax_update_1_test_52 ) {
     const char* request = "data-sparql11/syntax-update-1/syntax-update-bad-12.ru";
     NEGATIVE_SYNTAX_TEST();
 } /* BOOST_AUTO_TEST_CASE( syntax_update_1_test_52 ) */
+BOOST_AUTO_TEST_CASE( syntax_update_1_test_54 ) {
+    const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/syntax-update-1/manifest#test_54";
+    // name: syntax-update-54.ru
+    // manifest: data-sparql11/syntax-update-1/manifest.ttl
+    const char* request = "data-sparql11/syntax-update-1/syntax-update-54.ru";
+    NEGATIVE_SYNTAX_TEST();
+} /* BOOST_AUTO_TEST_CASE( syntax_update_1_test_54 ) */

@@ -82,7 +82,8 @@ class SPARQLfedScanner;
 typedef enum {VALIDATE_none = 0,
 	      VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
 	      VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
-	      VALIDATE_constructNoQuads = 0x10, VALIDATE_all = 0x1f} e_Validation;
+	      VALIDATE_constructNoQuads = 0x10, VALIDATE_bnodeScope = 0x20,
+	      VALIDATE_all = 0x3f} e_Validation;
 
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
@@ -115,6 +116,10 @@ protected:
     PropertyPath::PathBase* lastPropertyPathAlternative;
     PropertyPath::PathBase* lastPropertyPathSequence;
     PropertyPath::PathBase* lastPropertyPathSetAlternative;
+    std::map<const TTerm*, BasicGraphPattern*> bnode2bgp;
+    std::set<const TTerm*> bnodesInOldOpperations;
+    std::set<const TTerm*> bnodesInThisOpperation;
+    bool inINSERTQUAD;
     bool inINSERTDATA;
     bool inDELETEDATA;
     bool inDELETEWHERE;
@@ -1338,6 +1343,8 @@ _O_QUpdate1_E_S_QGT_SEMI_E_S_QUpdate_E_Opt_C:
 	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
 	ret->push_back($1);
 	driver.root = ret;
+	std::copy(driver.bnodesInThisOpperation.begin(), driver.bnodesInThisOpperation.end(),
+		  std::inserter(driver.bnodesInOldOpperations, driver.bnodesInOldOpperations.begin()));
       } _Q_O_QGT_SEMI_E_S_QUpdate_E_C_E_Opt	
 ;
 
@@ -1532,9 +1539,12 @@ DeleteClause:
 ;
 
 InsertClause:
-    IT_INSERT QuadPattern	{
-	$$ = new Insert($2, NULL);
-    }
+    IT_INSERT	{
+	driver.inINSERTQUAD = true;
+      } QuadPattern	{
+	  driver.inINSERTQUAD = false;
+	  $$ = new Insert($3, NULL);
+      }
 ;
 
 UsingClause:
@@ -3233,7 +3243,37 @@ PrefixedName:
 ;
 
 BlankNode:
-    BLANK_NODE_LABEL	
+    BLANK_NODE_LABEL	{
+	if (driver.validate & VALIDATE_bnodeScope) {
+	    driver.ensureBasicGraphPattern();
+
+	    // prohibit e.g. ASK WHERE { {_:x :a :b } {_:x :c :d } }
+	    // but not:
+	    //   INSERT { _:b :a :b } WHERE {}; INSERT { _:b :c :d } WHERE {};
+	    //   INSERT DATA { _:b :a :b }; INSERT DATA { _:b :c :d };
+	    //   INSERT DATA { GRAPH <g1>{_:b :a :b } GRAPH <g2>{ _:b :c :d } }
+	    if (!driver.inINSERTQUAD && !driver.inINSERTDATA) {
+		if (driver.bnode2bgp.find($1) != driver.bnode2bgp.end())
+		    error(@$, "bnode " + $1->str() +
+			  " already scoped to " + driver.bnode2bgp[$1]->str());
+		else
+		    driver.bnode2bgp.insert(std::make_pair($1, driver.curBGP));
+	    }
+
+	    // prohibit INSERT DATA { _:b1 :a :b };INSERT DATA { _:b1 :c :c }
+	    // but not:
+	    //   INSERT { _:b :a :b } WHERE { {_:b :a :b} }; INSERT { _:b :c :d } WHERE { {_:b :a :b} }
+	    if (!driver.inINSERTQUAD) {
+		if (driver.bnodesInOldOpperations.find($1)
+		    != driver.bnodesInOldOpperations.end())
+		    error(@$, "bnode " + $1->str() +
+			  " already scoped to an earlier opperation");
+		else
+		    driver.bnodesInThisOpperation.insert($1);
+	    }
+	}
+	$$ = $1;
+    }
   | ANON	
 ;
 
@@ -3304,6 +3344,10 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
     root = NULL;
     curBGP = NULL;
     curOp = NULL;
+    bnode2bgp.clear();
+    bnodesInOldOpperations.clear();
+    bnodesInThisOpperation.clear();
+    inINSERTQUAD   = false;
     inINSERTDATA   = false;
     inDELETEDATA   = false;
     inDELETEWHERE  = false;
@@ -3322,6 +3366,9 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
     // !!! Clear out namespaces!
     ignorePrefixFlag = false;
     parser.parse();
+    bnode2bgp.clear();
+    bnodesInOldOpperations.clear();
+    bnodesInThisOpperation.clear();
     return root;
 }
 
