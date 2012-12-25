@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <set>
 
 #define NEEDDEF_W3C_SW_SAXPARSER
 #define NEEDDEF_W3C_SW_WEBAGENT
@@ -122,14 +123,6 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 
 	if (!servicePath.empty()) {
 	    const sw::URI* serviceURI = engine.atomFactory.getURI(serviceURIstr);
-	    sw::BasicGraphPattern* serviceGraph = addServiceDesc ? engine.db.ensureGraph(serviceURI) : NULL;
-	    if (serviceGraph != NULL)
-		serviceGraph->addTriplePattern
-		    (engine.atomFactory.getTriple
-		     (serviceURI, 
-		      engine.atomFactory.getURI(std::string(sw::NS_rdf)+"type"), 
-		      engine.atomFactory.getURI(std::string(sw::NS_sadl)+"Service")));
-
 	    char buf[1024];
 	    buf[0] = 0;
 #if _MSC_VER
@@ -148,18 +141,73 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 #else /* !_MSV_VER */
 	    getcwd(buf, sizeof(buf)-1);
 #endif /* !_MSV_VER */
+	    // const sw::TTerm* base;
 	    if (buf[0]) {
-		std::stringstream t;
-		t << "Working directory: " << buf << " .";
-		startupMessage += t.str();
-		// std::cout << "Working directory: " << buf << " ." << std::endl;
-		std::string base = std::string("file://localhost") + buf;
-		if (serviceGraph != NULL)
-		    serviceGraph->addTriplePattern
-			(engine.atomFactory.getTriple
-			 (serviceURI, 
-			  engine.atomFactory.getURI(std::string(sw::NS_sadl)+"base"), 
-			  engine.atomFactory.getURI(base)));
+		startupMessage += std::string() + "Working directory: " + buf + " .";
+		// base = engine.htparseWrapper(buf, serviceURI);
+	    }
+	    if (addServiceDesc) {
+		std::string sdesc =
+		    "@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .\n"
+		    "@prefix ent: <http://www.w3.org/ns/entailment/> .\n"
+		    "@prefix void: <http://rdfs.org/ns/void#> .\n"
+		    "@prefix xpath: <http://www.w3.org/2005/xpath-functions#> .\n"
+		    "@prefix swobj: <https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#> .\n"
+		    "\n"
+		    "[] a sd:Service ;\n"
+		    "    sd:endpoint " + serviceURI->str() + " ;\n";
+		// if (buf[0])
+		//     sdesc += std::string() + "    sd:base " + base->str() + " ;\n";
+		sdesc +=
+		    "    sd:supportedLanguage sd:SPARQL11Query, sd:SPARQL11Update ;\n"
+		    "    sd:resultFormat <http://www.w3.org/ns/formats/RDF_XML> ,\n"
+		    "                <http://www.w3.org/ns/formats/Turtle> ,  \n"
+		    "                <http://www.w3.org/ns/formats/N-Triples> ,\n"
+		    "                <http://www.w3.org/ns/formats/SPARQL_Results_XML> ,\n"
+		    "                <http://www.w3.org/ns/formats/SPARQL_Results_JSON> ,\n"
+		    "                <http://www.w3.org/ns/formats/SPARQL_Results_CSV> ,\n"
+		    "                <http://www.w3.org/ns/formats/SPARQL_Results_TSV> ;\n"
+		    "    sd:extensionFunction xpath:normalize_space, swobj:lastTail, swobj:newTail, swobj:newNil, swobj:curTail, swobj:newObj ;\n"
+		    "    sd:feature sd:DereferencesURIs, sd:BasicFederatedQuery ;\n"
+		    "    sd:defaultEntailmentRegime ent:Simple ;\n"
+		    "    sd:defaultDataset [\n"
+		    "        a sd:Dataset ;\n"
+		    "        sd:defaultGraph [\n"
+		    "            a sd:Graph ;\n"
+		    "            void:triples " + boost::lexical_cast<std::string>(engine.db.ensureGraph(sw::DefaultGraph)->size()) + "\n"
+		    "        ] ;\n";
+
+		// add the named graphs (including this one).
+		sw::BasicGraphPattern* serviceGraph = engine.db.ensureGraph(serviceURI);
+		std::set<const sw::TTerm*> names = engine.db.getGraphNames();
+		for (std::set<const sw::TTerm*>::const_iterator it = names.begin(); it != names.end(); ++it) {
+		    size_t thisSize = engine.db.ensureGraph(*it)->size();
+		    if (*it == serviceURI)
+			thisSize += 7*names.size()+31;
+		    sdesc +=
+			"        sd:namedGraph [\n"
+			"            a sd:NamedGraph ;\n"
+			"            sd:name " + (*it)->str() + " ;\n"
+			"            sd:entailmentRegime ent:Simple ;\n"
+			"            sd:graph [\n"
+			"                a sd:Graph ;\n"
+			"                void:triples " + boost::lexical_cast<std::string>(thisSize) + "\n"
+			"            ]\n"
+			"        ]\n";
+		}
+		sdesc +=
+		    "    ] .\n"
+		    "\n"
+		    "xpath:normalize_space a sd:Function .\n"
+		    "swobj:lastTail a sd:Function .\n"
+		    "swobj:newTail a sd:Function .\n"
+		    "swobj:newNil a sd:Function .\n"
+		    "swobj:curTail a sd:Function .\n"
+		    "swobj:newObj a sd:Function .\n"
+		    "\n";
+
+		sw::IStreamContext istr(sdesc, sw::IStreamContext::STRING);
+		engine.turtleParser.parse(istr, serviceGraph);
 	    }
 	}
 
