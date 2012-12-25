@@ -39,7 +39,6 @@
 [7]    SelectQuery                ::=  SelectClause DatasetClause* WhereClause SolutionModifier
 [8]    SubSelect                  ::=  SelectClause WhereClause SolutionModifier ValuesClause
 [9]    SelectClause               ::=  'SELECT' ( 'DISTINCT' | 'REDUCED' )? ( ( BuiltInCall | RDFLiteral | NumericLiteral | BooleanLiteral | Var | Aggregate | FunctionCall | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*' )
-#[0X]    ConstructQuery             ::= 'CONSTRUCT' ConstructTemplate DatasetClause* WhereClause SolutionModifier @@ValuesClause
 [10]   ConstructQuery             ::=  'CONSTRUCT' (   QuadPattern DatasetClause* WhereClause SolutionModifier
                                                      | DatasetClause* 'WHERE' QuadPattern SolutionModifier )
 [11]   DescribeQuery              ::=  'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
@@ -70,10 +69,10 @@
 [35]   Add                        ::=  'ADD' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
 [36]   Move                       ::=  'MOVE' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
 [37]   Copy                       ::=  'COPY' 'SILENT'? GraphOrDefault 'TO' GraphOrDefault
-[38]   InsertData                 ::=  'INSERT[ \t\r\n]+DATA' QuadData
-[39]   DeleteData                 ::=  'DELETE[ \t\r\n]+DATA' QuadData
-[40]   DeleteWhere                ::=  'DELETE[ \t\r\n]+WHERE' QuadPattern
-[41]   Modify                     ::=  ( 'WITH' iri )? ( DeleteClause InsertClause? | InsertClause ) UsingClause* 'WHERE' GroupGraphPattern
+[38]   InsertData                 ::=  INSERTDATA QuadData
+[39]   DeleteData                 ::=  DELETEDATA QuadData
+[40]   DeleteWhere                ::=  DELETEWHERE QuadPattern
+[41]   Modify                     ::=  ( 'WITH' iri )? ( DeleteClause InsertClause? | InsertClause ) UsingClause* ( 'CONSTRUCT' QuadPattern )? 'WHERE' GroupGraphPattern
 [42]   DeleteClause               ::=  'DELETE' QuadPattern
 [43]   InsertClause               ::=  'INSERT' QuadPattern
 [44]   UsingClause                ::=  'USING' ( iri | 'NAMED' iri )
@@ -88,11 +87,12 @@
 [53]   GroupGraphPattern          ::=  ('{' ( SubSelect | GroupGraphPatternSub ) '}') | RSREF
 [54]   GroupGraphPatternSub       ::=  TriplesBlock? ( GraphPatternNotTriples '.'? TriplesBlock? )*
 [55]   TriplesBlock               ::=  TriplesSameSubjectPath ( '.' TriplesBlock? )?
-[56]   GraphPatternNotTriples     ::=  GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | Filter | Bind | InlineData | Print
+[56]   GraphPatternNotTriples     ::=  GroupOrUnionGraphPattern | OptionalGraphPattern | MinusGraphPattern | GraphGraphPattern | ServiceGraphPattern | SADIinvocation | Filter | Bind | InlineData | Print
 [57X]   Print                      ::=  'PRINT' GroupGraphPattern
 [57]   OptionalGraphPattern       ::=  'OPTIONAL' GroupGraphPattern
 [58]   GraphGraphPattern          ::=  'GRAPH' VarOrIri GroupGraphPattern
 [59]   ServiceGraphPattern        ::=  'SERVICE' 'SILENT'? VarOrIri GroupGraphPattern
+[59S]  SADIinvocation             ::=  'SADI' 'SILENT'? VarOrIri 'FROM' QuadPattern WhereClause
 [60]   Bind                       ::=  'BIND' '(' Expression 'AS' Var ')'
 [61]   InlineData                 ::=  'VALUES' DataBlock
 [62]   DataBlock                  ::=  InlineDataOneVar | InlineDataFull
@@ -136,10 +136,10 @@
 [98]   TriplesNode                ::=  Generator | BlankNodePropertyList
 [99]   BlankNodePropertyList      ::=  '[' PropertyListNotEmpty ']'
 [100X]  Generator                  ::=  ('MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED')? '(' GraphNode+ ')'
-[100]  TriplesNodePath            ::=  CollectionPath | BlankNodePropertyListPath
+[100]  TriplesNodePath            ::=  GeneratorPath | BlankNodePropertyListPath
 [101]  BlankNodePropertyListPath  ::=  '[' PropertyListPathNotEmpty ']'
 # @@unused [102]  Collection                 ::=  '(' GraphNode+ ')'
-[103]  CollectionPath             ::=  '(' GraphNodePath+ ')'
+[103]  GeneratorPath             ::=  ('MEMBERS' | 'STARTS' | 'ENDS' | 'ANY' | 'UNORDERED')? '(' GraphNodePath+ ')'
 [104]  GraphNode                  ::=  VarOrTerm | TriplesNode
 [105]  GraphNodePath              ::=  VarOrTerm | TriplesNodePath
 [106]  VarOrTerm                  ::=  Var | GraphTerm
@@ -284,5 +284,9 @@
 [0RS]  UBOX_LHR                    ::= '└' '─'* ('┴' '─'*)* '┘'
 
 [0RS]  RSREF                       ::= '*' VARNAME
+
+[38A]  INSERTDATA                  ::= [Ii][Nn][Ss][Ee][Rr][Tt] ([ \t\r\n] | '#' [^\r\n]+)+ [Dd][Aa][Tt][Aa]
+[39A]  DELETEDATA                  ::= [Dd][Ee][Ll][Ee][Tt][Ee] ([ \t\r\n] | '#' [^\r\n]+)+ [Dd][Aa][Tt][Aa]
+[40A]  DELETEWHERE                 ::= [Dd][Ee][Ll][Ee][Tt][Ee] ([ \t\r\n] | '#' [^\r\n]+)+ [Ww][Hh][Ee][Rr][Ee]
 
 @pass: [ \t\r\n]+ | '#' [^\r\n]*
