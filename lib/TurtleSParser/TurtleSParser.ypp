@@ -210,10 +210,10 @@ prefixID:
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
-      } IRIREF	{
+      } IRIREF {
 	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
-      } GT_DOT
+      } GT_DOT	
 ;
 
 base:
@@ -251,41 +251,41 @@ triples:
 // predicateObjectList?
 _QpredicateObjectList_E_Opt:
     
-  | predicateObjectList
+  | predicateObjectList	
 ;
 
 predicateObjectList:
     // verb objectList ( ';' ( verb objectList )? )*
-    verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star
+    verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star	
 ;
 
 // verb objectList
 _O_Qverb_E_S_QobjectList_E_C:
-    verb objectList
+    verb objectList	
 ;
 
 // ( verb objectList )?
 _Q_O_Qverb_E_S_QobjectList_E_C_E_Opt:
     
-  | _O_Qverb_E_S_QobjectList_E_C
+  | _O_Qverb_E_S_QobjectList_E_C	
 ;
 
 // ';' ( verb objectList )?
 _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C:
-    GT_SEMI _Q_O_Qverb_E_S_QobjectList_E_C_E_Opt
+    GT_SEMI _Q_O_Qverb_E_S_QobjectList_E_C_E_Opt	
 ;
 
 // ( ';' ( verb objectList )? )*
 _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star:
     
-  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C
+  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C	
 ;
 
 objectList:
     // object ( ',' object )*
     object {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    } _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star
+    } _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star	
 ;
 
 // ',' object
@@ -298,7 +298,7 @@ _O_QGT_COMMA_E_S_Qobject_E_C:
 // ( ',' object )*
 _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star:
     
-  | _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star _O_QGT_COMMA_E_S_Qobject_E_C
+  | _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star _O_QGT_COMMA_E_S_Qobject_E_C	
 ;
 
 verb:
