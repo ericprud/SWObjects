@@ -3253,7 +3253,8 @@ BlankNode:
 	    //   INSERT DATA { _:b :a :b }; INSERT DATA { _:b :c :d };
 	    //   INSERT DATA { GRAPH <g1>{_:b :a :b } GRAPH <g2>{ _:b :c :d } }
 	    if (!driver.inINSERTQUAD && !driver.inINSERTDATA) {
-		if (driver.bnode2bgp.find($1) != driver.bnode2bgp.end())
+		if (driver.bnode2bgp.find($1) != driver.bnode2bgp.end() &&
+		    driver.bnode2bgp[$1] != driver.curBGP)
 		    error(@$, "bnode " + $1->str() +
 			  " already scoped to " + driver.bnode2bgp[$1]->str());
 		else
