@@ -68,11 +68,8 @@ class TurtleSDriver : public YaccDataDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
-    BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
     TurtleSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
-	curSubject = curPredicate = NULL;
-	neededBGP = curBGP = NULL;
     }
 
     void parse(IStreamContext& in);
@@ -86,7 +83,6 @@ public:
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     class TurtleSScanner* lexer;
-    BasicGraphPattern* root;
 };
 
 } // namespace w3c_sw
@@ -96,7 +92,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 100 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 96 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 #include <string>
@@ -126,7 +122,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 130 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 126 "lib/TurtleSParser/TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -138,7 +134,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 102 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 98 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -165,7 +161,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 169 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 165 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -178,41 +174,44 @@ namespace w3c_sw {
       /* Tokens.  */
    enum yytokentype {
      __EOF__ = 0,
-     IT_BASE = 258,
-     IT_PREFIX = 259,
-     GT_LPAREN = 260,
-     GT_RPAREN = 261,
-     GT_DOT = 262,
-     GT_COMMA = 263,
-     GT_SEMI = 264,
-     IT_a = 265,
-     GT_LBRACKET = 266,
-     GT_RBRACKET = 267,
-     GT_PLUS = 268,
-     GT_MINUS = 269,
-     GT_DTYPE = 270,
-     IT_true = 271,
-     IT_false = 272,
-     INTEGER = 273,
-     DECIMAL = 274,
-     DOUBLE = 275,
-     INTEGER_POSITIVE = 276,
-     DECIMAL_POSITIVE = 277,
-     DOUBLE_POSITIVE = 278,
-     INTEGER_NEGATIVE = 279,
-     DECIMAL_NEGATIVE = 280,
-     DOUBLE_NEGATIVE = 281,
-     STRING_LITERAL1 = 282,
-     STRING_LITERAL2 = 283,
-     STRING_LITERAL_LONG1 = 284,
-     STRING_LITERAL_LONG2 = 285,
-     IRI_REF = 286,
-     PNAME_NS = 287,
-     PNAME_LN = 288,
-     BLANK_NODE_LABEL = 289,
-     ANON = 290,
-     LANGTAG = 291,
-     NIL = 292
+     BASE = 258,
+     PREFIX = 259,
+     SPARQL_BASE = 260,
+     RDF_TYPE = 261,
+     SPARQL_PREFIX = 262,
+     GT_LPAREN = 263,
+     GT_RPAREN = 264,
+     GT_DOT = 265,
+     GT_COMMA = 266,
+     GT_SEMI = 267,
+     IT_a = 268,
+     GT_LBRACKET = 269,
+     GT_RBRACKET = 270,
+     GT_PLUS = 271,
+     GT_MINUS = 272,
+     GT_DTYPE = 273,
+     IT_true = 274,
+     IT_false = 275,
+     INTEGER = 276,
+     DECIMAL = 277,
+     DOUBLE = 278,
+     INTEGER_POSITIVE = 279,
+     DECIMAL_POSITIVE = 280,
+     DOUBLE_POSITIVE = 281,
+     INTEGER_NEGATIVE = 282,
+     DECIMAL_NEGATIVE = 283,
+     DOUBLE_NEGATIVE = 284,
+     STRING_LITERAL1 = 285,
+     STRING_LITERAL2 = 286,
+     STRING_LITERAL_LONG1 = 287,
+     STRING_LITERAL_LONG2 = 288,
+     IRIREF = 289,
+     PNAME_NS = 290,
+     PNAME_LN = 291,
+     BLANK_NODE_LABEL = 292,
+     ANON = 293,
+     LANGTAG = 294,
+     NIL = 295
    };
 
     };
@@ -392,7 +391,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 396 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 395 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 

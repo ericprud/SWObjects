@@ -60,54 +60,49 @@ typedef w3c_sw::TurtleSParser::token_type token_type;
 %}
 
 /* START patterns for SPARQLfed terminals */
-IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
-IT_BASE		"@"[Bb][Aa][Ss][Ee]
-GT_LPAREN		"("
-GT_RPAREN		")"
 GT_DOT		"."
-GT_COMMA		","
 GT_SEMI		";"
-IT_a		"a"
+GT_COMMA		","
 GT_LBRACKET		"\["
 GT_RBRACKET		"\]"
-GT_PLUS		"+"
-GT_MINUS		"-"
-GT_DIVIDE		"/"
+GT_LPAREN		"("
+GT_RPAREN		")"
 GT_DTYPE		"^^"
 IT_true		[Tt][Rr][Uu][Ee]
 IT_false		[Ff][Aa][Ll][Ss][Ee]
-IRI_REF		"<"(([#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))]))*">"
+SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
+SPARQL_BASE		[Bb][Aa][Ss][Ee]
+BASE		"@"[Bb][Aa][Ss][Ee]
+PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
+RDF_TYPE		"a"
 LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
-INTEGER		([0-9])+
-DECIMAL		(([0-9])+"."([0-9])*)|("."([0-9])+)
-INTEGER_POSITIVE		"+"({INTEGER})
-DECIMAL_POSITIVE		"+"({DECIMAL})
-INTEGER_NEGATIVE		"-"({INTEGER})
-DECIMAL_NEGATIVE		"-"({DECIMAL})
+INTEGER		([+-])?([0-9])+
+DECIMAL		([+-])?([0-9])*"."([0-9])+
 EXPONENT		[Ee]([+-])?([0-9])+
-DOUBLE		(([0-9])+"."([0-9])*({EXPONENT}))|(("."(([0-9]))+({EXPONENT}))|((([0-9]))+({EXPONENT})))
-DOUBLE_NEGATIVE		"-"({DOUBLE})
-DOUBLE_POSITIVE		"+"({DOUBLE})
+DOUBLE		([+-])?((([0-9])+"."([0-9])*({EXPONENT}))|((".")?([0-9])+({EXPONENT})))
 ECHAR		"\\"[\"\'\\bfnrt]
 WS		(" ")|(("\t")|(("\r")|("\n")))
-NIL		"("(({WS}))*")"
 ANON		"\["(({WS}))*"\]"
 PN_CHARS_BASE		([A-Z])|(([a-z])|(((\xC3[\x80-\x96]))|(((\xC3[\x98-\xB6]))|(((\xC3[\xB8-\xBF])|([\xC4-\xCB][\x80-\xBF]))|(((\xCD[\xB0-\xBD]))|(((\xCD\xBF)|([\xCE-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|(\xE1([\x80-\xBF][\x80-\xBF])))|(((\xE2(\x80[\x8C-\x8D])))|(((\xE2(\x81[\xB0-\xBF])|([\x82-\x85][\x80-\xBF])|(\x86[\x80-\x8F])))|(((\xE2([\xB0-\xBE][\x80-\xBF])|(\xBF[\x80-\xAF])))|(((\xE3(\x80[\x81-\xBF])|([\x81-\xBF][\x80-\xBF]))|([\xE4-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF])))|(((\xEF([\xA4-\xB6][\x80-\xBF])|(\xB7[\x80-\x8F])))|(((\xEF(\xB7[\xB0-\xBF])|([\xB8-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))|((\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]))))))))))))))
 PN_CHARS_U		(({PN_CHARS_BASE}))|("_")
-PN_CHARS		(({PN_CHARS_U}))|(("-")|(([0-9])|((\xC2\xB7)|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))|[\xCC\xCD][\x80-\xBF]
+PN_CHARS		(({PN_CHARS_U}))|(("-")|(([0-9])|(((\xC2\xB7))|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))|[\xCC\xCD][\x80-\xBF]
+BLANK_NODE_LABEL		"_:"((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
 PN_PREFIX		({PN_CHARS_BASE})(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
 PNAME_NS		(({PN_PREFIX}))?":"
-PN_LOCAL		((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
-BLANK_NODE_LABEL		"_:"({PN_LOCAL})
-PNAME_LN		({PNAME_NS})({PN_LOCAL})
 HEX		([0-9])|(([A-F])|([a-f]))
+PERCENT		"%"({HEX})({HEX})
 UCHAR		("\\u"({HEX})({HEX})({HEX})({HEX}))|("\\U"({HEX})({HEX})({HEX})({HEX})({HEX})({HEX})({HEX})({HEX}))
-STRING_LITERAL1		"\'"((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR})))))*"\'"
+STRING_LITERAL1		"'"((([\x00-\t\x0B-\x0C\x0E-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR})))))*"'"
 STRING_LITERAL2		"\""((([\x00-\t\x0B-\x0C\x0E-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR})))))*"\""
-STRING_LITERAL_LONG1		"\'\'\'"((((("\'")|("\'\'")))?(([\x00-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR}))))))*"\'\'\'"
+STRING_LITERAL_LONG1		"'''"((((("'")|("''")))?(([\x00-&(-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR}))))))*"'''"
 STRING_LITERAL_LONG2		"\"\"\""((((("\"")|("\"\"")))?(([\x00-!#-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ECHAR}))|(({UCHAR}))))))*"\"\"\""
-PASSED_TOKENS		(([\t ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
+IRIREF		"<"((([!#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({UCHAR}))))*">"
+PN_LOCAL_ESC		"\\"(("_")|(("~")|((".")|(("-")|(("!")|(("$")|(("&")|(("'")|(("(")|((")")|(("*")|(("+")|((",")|((";")|(("=")|(("/")|(("?")|(("#")|(("@")|("%"))))))))))))))))))))
+PLX		(({PERCENT}))|(({PN_LOCAL_ESC}))
+PN_LOCAL		((({PN_CHARS_U}))|((":")|(([0-9])|(({PLX})))))(((((({PN_CHARS}))|((".")|((":")|(({PLX}))))))*((({PN_CHARS}))|((":")|(({PLX}))))))?
 LINEFEED		(\r\n|\r|\n)
+PNAME_LN		({PNAME_NS})({PN_LOCAL})
+PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 
 /* END patterns for SPARQLfed terminals */
 
@@ -115,41 +110,34 @@ LINEFEED		(\r\n|\r|\n)
 %%
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
-{IT_PREFIX}		{return token::IT_PREFIX;}
-{IT_BASE}		{return token::IT_BASE;}
-{GT_LPAREN}		{return token::GT_LPAREN;}
-{GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DOT}		{return token::GT_DOT;}
-{GT_COMMA}		{return token::GT_COMMA;}
 {GT_SEMI}		{return token::GT_SEMI;}
-{IT_a}		{return token::IT_a;}
+{GT_COMMA}		{return token::GT_COMMA;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
 {GT_RBRACKET}		{return token::GT_RBRACKET;}
-{GT_PLUS}		{return token::GT_PLUS;}
-{GT_MINUS}		{return token::GT_MINUS;}
+{GT_LPAREN}		{return token::GT_LPAREN;}
+{GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
-{IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
-{LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
-{INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
-{DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
-{INTEGER_POSITIVE}		{return typedLiteral(yylval, token::INTEGER_POSITIVE);}
-{DECIMAL_POSITIVE}		{return typedLiteral(yylval, token::DECIMAL_POSITIVE);}
-{INTEGER_NEGATIVE}		{return typedLiteral(yylval, token::INTEGER_NEGATIVE);}
-{DECIMAL_NEGATIVE}		{return typedLiteral(yylval, token::DECIMAL_NEGATIVE);}
-{DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
-{DOUBLE_NEGATIVE}		{return typedLiteral(yylval, token::DOUBLE_NEGATIVE);}
-{DOUBLE_POSITIVE}		{return typedLiteral(yylval, token::DOUBLE_POSITIVE);}
-{STRING_LITERAL_LONG1}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
-{STRING_LITERAL_LONG2}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
-{STRING_LITERAL1}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
-{STRING_LITERAL2}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
-{NIL}		{return token::NIL;}
-{ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
+{SPARQL_PREFIX}		{return token::SPARQL_PREFIX;}
+{SPARQL_BASE}		{return token::SPARQL_BASE;}
+{BASE}		{return token::BASE;}
+{PREFIX}		{return token::PREFIX;}
+{RDF_TYPE}		{return token::RDF_TYPE;}
+{IRIREF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
 {PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
 {BLANK_NODE_LABEL}		{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
+{INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
+{DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
+{DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
+{STRING_LITERAL1}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
+{STRING_LITERAL2}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
+{ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 
 <<EOF>>			{ yyterminate();}
 .			{

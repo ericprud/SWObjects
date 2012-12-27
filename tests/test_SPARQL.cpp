@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_CASE( JoinCache_GRAPH ) {
  */
 BOOST_AUTO_TEST_CASE( JoinCache_SERVICE ) {
     ServiceTableQuery
-	i("-d 'data:text/turtle,<http://localhost:%p/SPARQL> <p1> <o1>; <p2> <o2>' "
+	i("-d 'data:text/turtle,<http://localhost:%p/SPARQL> <p1> <o1>; <p2> <o2> .' "
 	  //"--serve http://localhost:%p/SPARQL"
 	  "--stop-after 2",
 

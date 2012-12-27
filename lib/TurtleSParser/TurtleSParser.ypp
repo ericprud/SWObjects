@@ -11,7 +11,7 @@
 %debug
 
 /* start symbol is named "start" */
-%start Query
+%start turtleDoc
 
 /* write out a header file containing the token defines */
 %defines
@@ -71,11 +71,8 @@ class TurtleSDriver : public YaccDataDriver {
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
-    BasicGraphPattern* neededBGP; // set to NULL as soon as it's returned as $$ anywhere
 public:
     TurtleSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
-	curSubject = curPredicate = NULL;
-	neededBGP = curBGP = NULL;
     }
 
     void parse(IStreamContext& in);
@@ -89,7 +86,6 @@ public:
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     class TurtleSScanner* lexer;
-    BasicGraphPattern* root;
 };
 
 } // namespace w3c_sw
@@ -130,8 +126,11 @@ public:
 /* START TokenBlock */
 /* Terminals */
 
-%token <p_void> IT_BASE
-%token <p_void> IT_PREFIX
+%token <p_void> BASE
+%token <p_void> PREFIX
+%token <p_void> SPARQL_BASE
+%token <p_void> RDF_TYPE
+%token <p_void> SPARQL_PREFIX
 %token <p_void> GT_LPAREN
 %token <p_void> GT_RPAREN
 %token <p_void> GT_DOT
@@ -146,27 +145,24 @@ public:
 %token <p_BooleanRDFLiteral> IT_true IT_false
 %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE DECIMAL_NEGATIVE DOUBLE_NEGATIVE
 %token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
-%token <p_URI> IRI_REF PNAME_NS PNAME_LN
+%token <p_URI> IRIREF PNAME_NS PNAME_LN
 %token <p_BNode> BLANK_NODE_LABEL ANON
 %token <p_LANGTAG> LANGTAG
 %token <p_NIL> NIL
 
-/* Productions */
-%type <p_Query> Query
+%type <p_TTerms> _Qobject_E_Star
 
-%type <p_TTerms> _QGraphNode_E_Plus
+ //%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt
 
-%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt
-
-%type <p_TTerm> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
-%type <p_RDFLiteral> RDFLiteral
-%type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
+%type <p_TTerm> subject verb predicate object blank collection
+%type <p_RDFLiteral> RDFLiteral literal
+%type <p_NumericRDFLiteral> NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
-%type <p_BNode> TriplesNode BlankNodePropertyList Collection
+%type <p_BNode> blankNodePropertyList BlankNode
 
-%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
-%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
+%type <p_URI> PrefixedName iri
+%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
 
 /* END TokenBlock */
 
@@ -187,239 +183,167 @@ public:
 %% /*** Grammar Rules ***/
 
  /*** BEGIN TurtleS language structure. ***/
-Query:
-    // Prologue Construct
-    Prologue _QConstructTriples_E_Opt	{
-	driver.root = $2;
-    }
+turtleDoc:
+    // statement*
+    _Qstatement_E_Star	
 ;
 
-Prologue:
-    // BaseDecl? PrefixDecl*
-    _QBaseDecl_E_Opt _QPrefixDecl_E_Star
+_Qstatement_E_Star:
+    
+  | _Qstatement_E_Star statement	
 ;
 
-// BaseDecl?
-_QBaseDecl_E_Opt:
-
-    | BaseDecl
+statement:
+    directive	
+  | triples GT_DOT	
 ;
 
-// PrefixDecl*
-_QPrefixDecl_E_Star:
-
-    | _QPrefixDecl_E_Star PrefixDecl
+directive:
+    prefixID	
+  | base	
+  | sparqlPrefix	
+  | sparqlBase	
 ;
 
-BaseDecl:
-    IT_BASE IRI_REF GT_DOT	{
-	driver.setBase($2->getLexicalValue());
-    }
-;
-
-PrefixDecl:
-    IT_PREFIX {
+prefixID:
+    PREFIX {
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
-      } IRI_REF	{
+      } IRIREF	{
 	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
       } GT_DOT
 ;
 
-// ConstructTriples?
-_QConstructTriples_E_Opt:
-    { $$ = NULL; }
-  | ConstructTriples	{
-	$$ = $1;
+base:
+    BASE IRIREF GT_DOT	{
+	driver.setBase($2->getLexicalValue());
     }
 ;
 
-ConstructTriples:
-    // TriplesSameSubject ( '.' ConstructTriples? )?
-    TriplesSameSubject _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt	{
-	$$ = driver.neededBGP ? driver.neededBGP : $2;
-	driver.neededBGP = NULL;
+sparqlPrefix:
+    SPARQL_PREFIX {
+	driver.ignorePrefix(true);
+      } PNAME_NS {
+	  driver.ignorePrefix(false);
+      } IRIREF	{
+	  std::string prefix($3->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
+      }
+;
+
+sparqlBase:
+    SPARQL_BASE IRIREF	{
+	driver.setBase($2->getLexicalValue());
     }
 ;
 
-// '.' ConstructTriples?
-_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C:
-    GT_DOT _QConstructTriples_E_Opt	{
-	$$ = $2;
-    }
-;
-
-// ( '.' ConstructTriples? )?
-_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt:
-    { $$ = NULL; }
-  | _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C
-;
-
-TriplesSameSubject:
-    VarOrTerm {
+triples:
+    subject	{
 	driver.curSubject = $1;
-    } PropertyListNotEmpty
-  | TriplesNode {
+    } predicateObjectList	
+  | blankNodePropertyList	{
 	driver.curSubject = $1;
-    } PropertyList
+    } _QpredicateObjectList_E_Opt	
 ;
 
-PropertyListNotEmpty:
-    // Verb ObjectList ( ';' ( Verb ObjectList )? )*
-    Verb ObjectList _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star
+// predicateObjectList?
+_QpredicateObjectList_E_Opt:
+    
+  | predicateObjectList
 ;
 
-// Verb ObjectList
-_O_QVerb_E_S_QObjectList_E_C:
-    Verb ObjectList
+predicateObjectList:
+    // verb objectList ( ';' ( verb objectList )? )*
+    verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star
 ;
 
-// ( Verb ObjectList )?
-_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt:
-
-    | _O_QVerb_E_S_QObjectList_E_C
+// verb objectList
+_O_Qverb_E_S_QobjectList_E_C:
+    verb objectList
 ;
 
-// ';' ( Verb ObjectList )?
-_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C:
-    GT_SEMI _Q_O_QVerb_E_S_QObjectList_E_C_E_Opt
+// ( verb objectList )?
+_Q_O_Qverb_E_S_QobjectList_E_C_E_Opt:
+    
+  | _O_Qverb_E_S_QobjectList_E_C
 ;
 
-// ( ';' ( Verb ObjectList )? )*
-_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star:
-
-    | _Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C
+// ';' ( verb objectList )?
+_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C:
+    GT_SEMI _Q_O_Qverb_E_S_QobjectList_E_C_E_Opt
 ;
 
-PropertyList:
-    // PropertyListNotEmpty?
-    _QPropertyListNotEmpty_E_Opt
+// ( ';' ( verb objectList )? )*
+_Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star:
+    
+  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C
 ;
 
-// PropertyListNotEmpty?
-_QPropertyListNotEmpty_E_Opt:
-
-    | PropertyListNotEmpty
-;
-
-ObjectList:
-    // Object ( ',' Object )*
-    Object _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star
-;
-
-// ',' Object
-_O_QGT_COMMA_E_S_QObject_E_C:
-    GT_COMMA Object
-;
-
-// ( ',' Object )*
-_Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star:
-
-    | _Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star _O_QGT_COMMA_E_S_QObject_E_C
-;
-
-Object:
-    GraphNode	{
-	if (!driver.curBGP)
-	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
+objectList:
+    // object ( ',' object )*
+    object {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-	$$ = $1;
+    } _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star
+;
+
+// ',' object
+_O_QGT_COMMA_E_S_Qobject_E_C:
+    GT_COMMA object	{
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $2));
     }
 ;
 
-Verb:
-    VarOrIRIref	{
+// ( ',' object )*
+_Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star:
+    
+  | _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star _O_QGT_COMMA_E_S_Qobject_E_C
+;
+
+verb:
+    predicate	{
 	$$ = $1;
 	driver.curPredicate = $$;
     }
-  | IT_a	{
+  | RDF_TYPE	{
 	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = $$;
     }
 ;
 
-TriplesNode:
-    Collection	{
+subject:
+    iri	{
 	$$ = $1;
     }
-  | BlankNodePropertyList	{
-	$$ = $1;
-    }
-;
-
-BlankNodePropertyList:
-    GT_LBRACKET {
-	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
-	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
-	driver.curSubject = driver.createBNode();
-      } PropertyListNotEmpty GT_RBRACKET	{
-	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
-	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
-	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
-      }
-;
-
-Collection:
-    // '(' GraphNode+ ')'
-    GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
-	$$ = driver.createBNode();
-	const TTerm* tail = $$;
-	ProductionVector<const TTerm*>* members = $2;
-	const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
-	const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
-	const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
-	if (!driver.curBGP)
-	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
-	for (unsigned i = 0; i < members->size(); i++) {
-	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
-	    const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
-	    driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
-	    tail = nextTail;
-	}
-	members->clear();
-	delete members;
-    }
-;
-
-// GraphNode+
-_QGraphNode_E_Plus:
-    GraphNode	{
-	$$ = new ProductionVector<const TTerm*>($1);
-    }
-  | _QGraphNode_E_Plus GraphNode	{
-	$1->push_back($2);
+  | blank	{
 	$$ = $1;
     }
 ;
 
-GraphNode:
-    VarOrTerm	{
-	$$ = $1;
-    }
-  | TriplesNode	{
+predicate:
+    iri	{
 	$$ = $1;
     }
 ;
 
-VarOrTerm:
-    GraphTerm	{
+object:
+    iri	{
+	$$ = $1;
+    }
+  | blank	{
+	$$ = $1;
+    }
+  | blankNodePropertyList	{
+	$$ = $1;
+    }
+  | literal	{
 	$$ = $1;
     }
 ;
 
-VarOrIRIref:
-    IRIref	{
-	$$ = $1;
-    }
-;
-
-GraphTerm:
-    IRIref	{
-	$$ = $1;
-    }
-  | RDFLiteral	{
+literal:
+    RDFLiteral	{
 	$$ = $1;
     }
   | NumericLiteral	{
@@ -428,65 +352,65 @@ GraphTerm:
   | BooleanLiteral	{
 	$$ = $1;
     }
-  | BlankNode	{
+;
+
+blank:
+    BlankNode	{
 	$$ = $1;
     }
-  | NIL	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+  | collection	{
+	$$ = $1;
     }
 ;
 
-RDFLiteral:
-    // String ( LANGTAG | ( '^^' IRIref ) )?
-    String _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt	{
-	$$ = driver.getRDFLiteral(*$1, $2.uri, $2.langtag);
-	delete $1;
+blankNodePropertyList:
+    GT_LBRACKET {
+	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
+	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
+	driver.curSubject = driver.createBNode();
+      } predicateObjectList GT_RBRACKET	{
+	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
+	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
+	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
+      }
+;
+
+collection:
+    // '(' object* ')'
+    GT_LPAREN _Qobject_E_Star GT_RPAREN	{
+	ProductionVector<const TTerm*>* members = $2;
+	if (members->size() == 0) {
+	    $$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	} else {
+	    $$ = driver.createBNode();
+	    const TTerm* tail = $$;
+	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	    const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	    for (unsigned i = 0; i < members->size(); i++) {
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, first, members->at(i)));
+		const TTerm* nextTail = i == members->size()-1 ? nil : driver.createBNode();
+		driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(tail, rest, nextTail));
+		tail = nextTail;
+	    }
+	    members->clear();
+	    delete members;
+	}
     }
 ;
 
-// '^^' IRIref
-_O_QGT_DTYPE_E_S_QIRIref_E_C:
-    GT_DTYPE IRIref	{
-	$$ = $2;
-    }
-;
-
-// LANGTAG | ( '^^' IRIref )
-_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C:
-    LANGTAG	{
-	$$.uri = NULL;
-	$$.langtag = $1;
-    }
-  | _O_QGT_DTYPE_E_S_QIRIref_E_C	{
-	$$.uri = $1;
-	$$.langtag = NULL;
-    }
-;
-
-// ( LANGTAG | ( '^^' IRIref ) )?
-_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt:
+// object*
+_Qobject_E_Star:
     {
-	$$.uri = NULL;
-	$$.langtag = NULL;
+	$$ = new ProductionVector<const TTerm*>();
     }
-  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C	{
+  | _Qobject_E_Star object	{
+	$1->push_back($2);
 	$$ = $1;
     }
 ;
 
 NumericLiteral:
-    NumericLiteralUnsigned	{
-	$$ = $1;
-    }
-  | NumericLiteralPositive	{
-	$$ = $1;
-    }
-  | NumericLiteralNegative	{
-	$$ = $1;
-    }
-;
-
-NumericLiteralUnsigned:
     INTEGER	{
 	$$ = $1;
     }
@@ -498,26 +422,34 @@ NumericLiteralUnsigned:
     }
 ;
 
-NumericLiteralPositive:
-    INTEGER_POSITIVE	{
-	$$ = $1;
-    }
-  | DECIMAL_POSITIVE	{
-	$$ = $1;
-    }
-  | DOUBLE_POSITIVE	{
-	$$ = $1;
+RDFLiteral:
+    // String ( LANGTAG | ( '^^' iri ) )?
+    String _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt	{
+	$$ = driver.getRDFLiteral(*$1, $2.uri, $2.langtag);
+	delete $1;
     }
 ;
 
-NumericLiteralNegative:
-    INTEGER_NEGATIVE	{
-	$$ = $1;
+// LANGTAG | ( '^^' iri )
+_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C:
+    LANGTAG	{
+	$$.uri = NULL;
+	$$.langtag = $1;
     }
-  | DECIMAL_NEGATIVE	{
-	$$ = $1;
+// '^^' iri
+  | GT_DTYPE iri	{
+	$$.uri = $2;
+	$$.langtag = NULL;
     }
-  | DOUBLE_NEGATIVE	{
+;
+
+// ( LANGTAG | ( '^^' iri ) )?
+_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt:
+    {
+	$$.uri = NULL;
+	$$.langtag = NULL;
+    }
+  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C	{
 	$$ = $1;
     }
 ;
@@ -546,8 +478,8 @@ String:
     }
 ;
 
-IRIref:
-    IRI_REF	{
+iri:
+    IRIREF	{
 	$$ = $1;
     }
   | PrefixedName	{
@@ -591,6 +523,7 @@ void TurtleSDriver::parse (IStreamContext& in) {
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
+    curSubject = curPredicate = NULL;
 
     TurtleSScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
@@ -624,7 +557,7 @@ void TurtleSDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
 
 void TurtleSDriver::parse (std::string turtleStr, RdfDB* db) {
     IStreamContext in(turtleStr.c_str(), IStreamContext::STRING);
-    setGraph(db->ensureGraph(NULL));
+    setGraph(db->ensureGraph(DefaultGraph));
     parse(in);
 }
 
