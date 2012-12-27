@@ -4331,10 +4331,12 @@ namespace w3c_sw {
 	    //   INSERT DATA { _:b :a :b }; INSERT DATA { _:b :c :d };
 	    //   INSERT DATA { GRAPH <g1>{_:b :a :b } GRAPH <g2>{ _:b :c :d } }
 	    if (!driver.inINSERTQUAD && !driver.inINSERTDATA) {
-		if (driver.bnode2bgp.find((yysemantic_stack_[(1) - (1)].p_TTerm)) != driver.bnode2bgp.end() &&
-		    driver.bnode2bgp[(yysemantic_stack_[(1) - (1)].p_TTerm)] != driver.curBGP)
+		std::map<const TTerm*, BasicGraphPattern*>::const_iterator lastUse
+		    = driver.bnode2bgp.find((yysemantic_stack_[(1) - (1)].p_TTerm));
+		if (lastUse != driver.bnode2bgp.end() &&
+		    lastUse->second != driver.curBGP)
 		    error((yyloc), "bnode " + (yysemantic_stack_[(1) - (1)].p_TTerm)->str() +
-			  " already scoped to " + driver.bnode2bgp[(yysemantic_stack_[(1) - (1)].p_TTerm)]->str());
+			  " already scoped to " + lastUse->second->str());
 		else
 		    driver.bnode2bgp.insert(std::make_pair((yysemantic_stack_[(1) - (1)].p_TTerm), driver.curBGP));
 	    }
@@ -4358,7 +4360,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 4362 "lib/SPARQLfedParser/SPARQLfedParser.cpp"
+#line 4364 "lib/SPARQLfedParser/SPARQLfedParser.cpp"
 	default:
           break;
       }
@@ -6255,7 +6257,7 @@ namespace w3c_sw {
     3134,  3140,  3143,  3147,  3157,  3160,  3165,  3173,  3180,  3184,
     3192,  3196,  3200,  3201,  3202,  3206,  3207,  3208,  3212,  3213,
     3214,  3218,  3219,  3220,  3224,  3225,  3229,  3230,  3231,  3232,
-    3236,  3237,  3241,  3242,  3246,  3278
+    3236,  3237,  3241,  3242,  3246,  3280
   };
 
   // Print the state stack on the debug stream.
@@ -6363,11 +6365,11 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 6367 "lib/SPARQLfedParser/SPARQLfedParser.cpp"
+#line 6369 "lib/SPARQLfedParser/SPARQLfedParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 3284 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 3286 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
