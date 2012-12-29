@@ -79,12 +79,6 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
-typedef enum {VALIDATE_none = 0,
-	      VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
-	      VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
-	      VALIDATE_constructNoQuads = 0x10, VALIDATE_bnodeScope = 0x20,
-	      VALIDATE_all = 0x3f} e_Validation;
-
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -125,6 +119,11 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
 public:
+    typedef enum {VALIDATE_none = 0,
+		  VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
+		  VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
+		  VALIDATE_constructNoQuads = 0x10, VALIDATE_bnodeScope = 0x20,
+		  VALIDATE_all = 0x3f} e_Validation;
     e_Validation validate;
     static e_Validation DefaultValidation;
 protected:
@@ -805,7 +804,7 @@ SelectQuery:
 	$<p_parentCountStar>$ = driver.countStar;
 	driver.countStar = false;
     } SelectClause _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	if (driver.validate & VALIDATE_selectGrouped) {
+	if (driver.validate & SPARQLfedDriver::VALIDATE_selectGrouped) {
 	    const ExpressionAliasList* e = $5->getGroupedBy();
 	    if (e) {
 		std::set<const TTerm*> errorSet = $2.varSet->getNonProjectableVars(e, driver.atomFactory);
@@ -814,7 +813,7 @@ SelectQuery:
 			  + (errorSet.size() == 1 ? "it's" : "they're") + "not in a GROUP BY.");
 	    }
 	}
-	if (driver.validate & VALIDATE_noReassign) {
+	if (driver.validate & SPARQLfedDriver::VALIDATE_noReassign) {
 	    struct CreatedVars : public TestExpressor {
 		std::set<const TTerm*> vars;
 		virtual void variable (const Variable* const self, std::string)
@@ -924,7 +923,7 @@ _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
 // "(" Expression ( "AS" Var )? ")"
 _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
-	if (driver.validate & VALIDATE_namedProjection && $3 == NULL)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection && $3 == NULL)
 	    error(yylloc, $2->str() + " must be selected AS some variable");
 	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
@@ -933,22 +932,22 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
 _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     BuiltInCall	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | RDFLiteral	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | NumericLiteral	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | BooleanLiteral	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
@@ -956,12 +955,12 @@ _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | Aggregate	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | FunctionCall	{
-	if (driver.validate & VALIDATE_namedProjection)
+	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
 	    error(yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
@@ -983,7 +982,7 @@ _Q_O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_O
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+ | '*'
 _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C:
     _Q_O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C_E_Plus	{
-	if (driver.validate & VALIDATE_uniqueProjection) {
+	if (driver.validate & SPARQLfedDriver::VALIDATE_uniqueProjection) {
 	    std::set<const TTerm*> labels;
 	    for (std::vector<const ExpressionAlias*>::const_iterator it = $1->begin();
 		 it != $1->end(); ++it) {
@@ -1008,7 +1007,7 @@ ConstructQuery:
 
 _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E_Or_QDatasetClause_E_Star_S_QIT_WHERE_E_S_QQuadPattern_E_S_QSolutionModifier_E_C:
     QuadPattern _QDatasetClause_E_Star WhereClause SolutionModifier	{
-	if (driver.validate & VALIDATE_constructNoQuads &&
+	if (driver.validate & SPARQLfedDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>($1) == NULL) {
 	    error(yylloc, "can't CONSTRUCT quad pattern " + $1->str() + ".");
 	}
@@ -1017,7 +1016,7 @@ _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E
 	$$ = new Construct($1, $2, $3, $4);
     }
   | _QDatasetClause_E_Star IT_WHERE QuadPattern SolutionModifier	{
-	if (driver.validate & VALIDATE_constructNoQuads &&
+	if (driver.validate & SPARQLfedDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>($3) == NULL) {
 	    error(yylloc, "can't re-CONSTRUCT quad pattern " + $3->str() + ".");
 	}
@@ -1852,7 +1851,7 @@ SADIinvocation:
 Bind:
     IT_BIND GT_LPAREN Expression IT_AS Var GT_RPAREN	{
 	const TableOperation* op = driver.ensureGraphPattern();
-	if (driver.validate & VALIDATE_noReassign &&
+	if (driver.validate & SPARQLfedDriver::VALIDATE_noReassign &&
 	    (op->getBindingState().binds   .find($5) != op->getBindingState().binds   .end() ||
 	     op->getBindingState().optional.find($5) != op->getBindingState().optional.end()))
 	    error(yylloc, "Can't bind " + $5->str() + " to " + $3->str() + " because it's already bound");
@@ -3244,7 +3243,7 @@ PrefixedName:
 
 BlankNode:
     BLANK_NODE_LABEL	{
-	if (driver.validate & VALIDATE_bnodeScope) {
+	if (driver.validate & SPARQLfedDriver::VALIDATE_bnodeScope) {
 	    driver.ensureBasicGraphPattern();
 
 	    // prohibit e.g. ASK WHERE { {_:x :a :b } {_:x :c :d } }
@@ -3329,7 +3328,7 @@ void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
 
 namespace w3c_sw {
 
-    e_Validation SPARQLfedDriver::DefaultValidation = VALIDATE_all;
+    SPARQLfedDriver::e_Validation SPARQLfedDriver::DefaultValidation = SPARQLfedDriver::VALIDATE_all;
 
     SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory) : 
 	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 

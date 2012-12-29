@@ -69,12 +69,6 @@ struct BindingsMap : public std::map<std::string, ResultSet*> {
 
 class SPARQLfedScanner;
 
-typedef enum {VALIDATE_none = 0,
-	      VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
-	      VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
-	      VALIDATE_constructNoQuads = 0x10, VALIDATE_bnodeScope = 0x20,
-	      VALIDATE_all = 0x3f} e_Validation;
-
 /** The Driver class brings together all components. It creates an instance of
  * the SPARQLfedParser and SPARQLfedScanner classes and connects them. Then the input stream is
  * fed into the scanner object and the parser gets it's token
@@ -115,6 +109,11 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
 public:
+    typedef enum {VALIDATE_none = 0,
+		  VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
+		  VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
+		  VALIDATE_constructNoQuads = 0x10, VALIDATE_bnodeScope = 0x20,
+		  VALIDATE_all = 0x3f} e_Validation;
     e_Validation validate;
     static e_Validation DefaultValidation;
 protected:
@@ -276,7 +275,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 280 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 279 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -306,7 +305,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 310 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 309 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -318,7 +317,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 289 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 288 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -393,7 +392,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 397 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 396 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -771,7 +770,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 775 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 774 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 
