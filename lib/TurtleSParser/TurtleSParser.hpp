@@ -195,23 +195,16 @@ namespace w3c_sw {
      INTEGER = 276,
      DECIMAL = 277,
      DOUBLE = 278,
-     INTEGER_POSITIVE = 279,
-     DECIMAL_POSITIVE = 280,
-     DOUBLE_POSITIVE = 281,
-     INTEGER_NEGATIVE = 282,
-     DECIMAL_NEGATIVE = 283,
-     DOUBLE_NEGATIVE = 284,
-     STRING_LITERAL1 = 285,
-     STRING_LITERAL2 = 286,
-     STRING_LITERAL_LONG1 = 287,
-     STRING_LITERAL_LONG2 = 288,
-     IRIREF = 289,
-     PNAME_NS = 290,
-     PNAME_LN = 291,
-     BLANK_NODE_LABEL = 292,
-     ANON = 293,
-     LANGTAG = 294,
-     NIL = 295
+     STRING_LITERAL1 = 279,
+     STRING_LITERAL2 = 280,
+     STRING_LITERAL_LONG1 = 281,
+     STRING_LITERAL_LONG2 = 282,
+     IRIREF = 283,
+     PNAME_NS = 284,
+     PNAME_LN = 285,
+     BLANK_NODE_LABEL = 286,
+     ANON = 287,
+     LANGTAG = 288
    };
 
     };
@@ -391,7 +384,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 395 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 388 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 
