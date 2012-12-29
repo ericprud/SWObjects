@@ -16,6 +16,8 @@
 /test_SPARQLSerializer
 /test_SPARUL
 /test_SQL
+/test_Turtle
 /test_WEBagents
 /test_logging
+/tests-ttl
 /toy-alt.log
