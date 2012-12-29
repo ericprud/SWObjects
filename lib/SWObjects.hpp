@@ -2075,14 +2075,14 @@ protected:
     typedef std::map<std::string, Validator> ValidatorSet;
     typedef std::pair<std::string, Validator> ValidatorElt;
     ValidatorSet validators;
-    void validate(std::string value, std::string datatype);
+    void validateXSDlexicalForm(std::string value, std::string datatype);
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 public:
     typedef enum {VALIDATE_none = 0,
 		  VALIDATE_IRIcharacters = 1,
 		  VALIDATE_all = 0x1} e_Validation;
-    static e_Validation validations;
+    static e_Validation validate;
     static const char* longPattern;
     static const char* decimalPattern;
     static const char* floatPattern;

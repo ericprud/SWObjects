@@ -1737,7 +1737,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     /* <AtomFactory> */
 
-	AtomFactory::e_Validation AtomFactory::validations = AtomFactory::VALIDATE_none;
+	AtomFactory::e_Validation AtomFactory::validate = AtomFactory::VALIDATE_none;
 	const char* AtomFactory::longPattern =    "^[-+]?[0-9]+$";
 	const char* AtomFactory::decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
 	const char* AtomFactory::floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
@@ -1952,7 +1952,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     }
 
     const URI* AtomFactory::getURI (std::string name) {
-	if (validations & VALIDATE_IRIcharacters && name.find_first_of("{} <>") != std::string::npos)
+	if (validate & VALIDATE_IRIcharacters && name.find_first_of("{} <>") != std::string::npos)
 	    throw std::runtime_error("\"" + name + "\" is not a valid IRI");
 	std::string key(name);
 	URIMap::const_iterator vi = uris_static.find(key);
@@ -2036,7 +2036,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	throw(std::runtime_error("unable to getTTerm("+posStr+")"));
     }
 
-     void AtomFactory::validate (std::string value, std::string datatype) {
+     void AtomFactory::validateXSDlexicalForm (std::string value, std::string datatype) {
 #if REGEX_LIB == SWOb_BOOST
 	 ValidatorSet::const_iterator it = validators.find(datatype);
 	 if (it == validators.end())
@@ -2072,7 +2072,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	std::istringstream is(p_String);
 
 	if (p_URI != NULL && needsValidation == true)
-	    validate(p_String, p_URI->getLexicalValue());
+	    validateXSDlexicalForm(p_String, p_URI->getLexicalValue());
 	if (p_URI == TTerm::URI_xsd_integer || 
 	    p_URI == TTerm::URI_xsd_nonPositiveInteger || 
 	    p_URI == TTerm::URI_xsd_negativeInteger || 

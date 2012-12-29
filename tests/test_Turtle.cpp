@@ -26,9 +26,9 @@ w3c_sw_DEBUGGING_FUNCTIONS();
 BOOST_AUTO_TEST_SUITE( turtle_eval )
 #define TURTLE_TEST(TEST, TESTME, EXPECT)				       \
     try {								       \
-	AtomFactory::validations = AtomFactory::VALIDATE_all;		       \
+	AtomFactory::validate = AtomFactory::VALIDATE_all;		       \
 	ReferenceDB tested(TESTME, NULL, 0, "http://example/base/turtle-subm-01.ttl", true);	\
-	ReferenceDB expect(EXPECT, NULL, 0, "http://example/base/");			       \
+	ReferenceDB expect(EXPECT, NULL, 0, "http://example/base/");	       \
 	BOOST_CHECK_EQUAL(tested, expect);				       \
 	/*G_EARL.report(TEST, tested == expect);*/			       \
     } catch (NotImplemented& e) {					       \
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_SUITE_END(/* turtle_eval */)
 BOOST_AUTO_TEST_SUITE( turtle_syntax_positive )
 #define POSITIVE_SYNTAX_TEST(TEST, TESTME)			\
     std::string baseURI(TESTME);				\
-    AtomFactory::validations = AtomFactory::VALIDATE_all;	\
+    AtomFactory::validate = AtomFactory::VALIDATE_all;		\
     baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);	\
     bool parsed = false;					\
     try {							\
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_SUITE_END(/* turtle_syntax_positive */)
 BOOST_AUTO_TEST_SUITE( turtle_syntax_negative )
 #define NEGATIVE_SYNTAX_TEST(TEST, TESTME)			\
     std::string baseURI(TESTME);				\
-    AtomFactory::validations = AtomFactory::VALIDATE_all;	\
+    AtomFactory::validate = AtomFactory::VALIDATE_all;		\
     baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);	\
     bool parsed = false;					\
     try {							\

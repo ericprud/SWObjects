@@ -309,20 +309,20 @@ void validate (boost::any& v, const std::vector<std::string>& values, validation
 	if (sp.validate & sp.VALIDATE_noReassign      ) {t+="noReassign|"      ;}
 	if (sp.validate & sp.VALIDATE_constructNoQuads) {t+="constructNoQuads|";}
 	if (sp.validate & sp.VALIDATE_bnodeScope      ) {t+="bnodeScope|"      ;}
-	if (sw::AtomFactory::validations & sw::AtomFactory::VALIDATE_IRIcharacters)
+	if (sw::AtomFactory::validate & sw::AtomFactory::VALIDATE_IRIcharacters)
 	    {t+="IRIcharacters|"   ;}
 	std::cout << "validation flag currently set to " << (t.size() > 0 ? t.substr(0, t.size()-1) : std::string("none")) << "\n";
     } else if (s=="all" || s=="true" || s=="1" || s=="yes") {
 	m=true;
 	sp.validate = sp.VALIDATE_all;
-	sw::AtomFactory::validations = sw::AtomFactory::VALIDATE_all;
+	sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_all;
     } else if (s=="none" || s=="false" || s=="0" || s=="no") {
 	m=true;
 	sp.validate = sp.VALIDATE_none;
-	sw::AtomFactory::validations = sw::AtomFactory::VALIDATE_none;
+	sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_none;
     } else {
 	sp.validate = sp.VALIDATE_none;
-	sw::AtomFactory::validations = sw::AtomFactory::VALIDATE_none;
+	sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_none;
 	typedef sw::SPARQLfedDriver::e_Validation SP;
 	if (s.find("selectgrouped"   )!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_selectGrouped)   ; }
 	if (s.find("uniqueprojection")!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_uniqueProjection); }
@@ -331,7 +331,7 @@ void validate (boost::any& v, const std::vector<std::string>& values, validation
 	if (s.find("constructnoquads")!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_constructNoQuads); }
 	if (s.find("bnodescope"      )!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_bnodeScope)      ; }
 	if (s.find("iricharacters"   )!=std::string::npos)
-	    { m=true; sw::AtomFactory::validations = static_cast<sw::AtomFactory::e_Validation>(sw::AtomFactory::validations|sw::AtomFactory::VALIDATE_IRIcharacters); }
+	    { m=true; sw::AtomFactory::validate = static_cast<sw::AtomFactory::e_Validation>(sw::AtomFactory::validate|sw::AtomFactory::VALIDATE_IRIcharacters); }
     }
     if (!m)
 	throw boost::program_options
@@ -815,7 +815,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 int main(int ac, char* av[])
 {
     TheServer.engine.sparqlParser.validate = sw::SPARQLfedDriver::VALIDATE_none; // be forgiving about validation errors.
-    sw::AtomFactory::validations = sw::AtomFactory::VALIDATE_none;
+    sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_none;
     int ret = 0; /* no errors */
     try {
 	{   /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
