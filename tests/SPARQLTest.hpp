@@ -418,11 +418,12 @@ std::ostream& operator<< (std::ostream& os, ReferenceRS const& my) {
 struct ReferenceDB : public RdfDB {
     ReferenceDB (const char* defGraph, 
 		 const LabeledGraph namedGraphs[], size_t namedCount, 
-		 const char* queryPath)
+		 const char* queryPath, bool noTruncate = false)
 	: RdfDB() {
 
 	std::string baseURI(queryPath);
-	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	if (!noTruncate)
+	    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
 
 	/* Parse data. */
 	if (defGraph != NULL)
