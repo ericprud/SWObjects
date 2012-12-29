@@ -5915,7 +5915,7 @@ SPARQLfedParser::token_type SPARQLfedScanner::typedLiteral (SPARQLfedParser::sem
 
 SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semantic_type*& yylval, SPARQLfedParser::location_type*& yylloc, size_t skip, SPARQLfedParser::token_type tok){
     std::string* space = new std::string;
-    YaccDriver::unescape(yytext+skip, yyleng-skip-skip, space, yylloc);
+    YaccDriver::unescapeString(yytext+skip, yyleng-skip-skip, space, yylloc);
     yylval->p_string = space;
     return tok;
 }

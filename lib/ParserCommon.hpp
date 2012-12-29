@@ -142,7 +142,55 @@ public:
 	    throw;
     }
     template<typename LOC>
-    static void unescape (char* yytext, size_t len, std::string* space, LOC& yylloc) {
+    static void unescapeNumeric (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
+	for (size_t i = 0; i < len; i++) {
+	    if (yytext[i] == '\\') {
+		switch (yytext[++i]) {
+		case 'u':
+		    if (i < len-4) {
+			wchar_t w[2] = {
+			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
+			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]),
+			    0};
+			utf8::utf32to8(w, w+1, back_inserter(*space));
+			i += 4;
+			break;
+		    } else
+			throw std::runtime_error
+			    ("\"" + std::string(yytext, len) + "\""
+			     " leaves insufficent space for escape sequence at \""
+			     + std::string(yytext+i, len-i) + "\"");
+		case 'U':
+		    if (i < len-8) {
+			wchar_t w[2] = {
+			    _h2n(yytext[i+1])<<28 | _h2n(yytext[i+2])<<24|
+			    _h2n(yytext[i+3])<<20 | _h2n(yytext[i+4])<<16 |
+			    _h2n(yytext[i+5])<<12 | _h2n(yytext[i+6])<<8 |
+			    _h2n(yytext[i+7])<<04 | _h2n(yytext[i+8]),
+			    0};
+			utf8::utf32to8(w, w+1, back_inserter(*space));
+			i += 8;
+			break;
+		    } else
+			throw std::runtime_error
+			    ("\"" + std::string(yytext, len) + "\""
+			     " leaves insufficent space for escape sequence at \""
+			     + std::string(yytext+i, len-i) + "\"");
+		default:
+		    throw std::runtime_error
+			(std::string() + "unexpected escape character '" + yytext[i] + "' in " + yytext);
+		}
+	    } else {
+		if ((yytext[i] == '\r' && (i == len -1 || yytext[i+1] != '\n'))
+		    || yytext[i] == '\n') {
+		    yylloc->end.lines(1);
+		}
+		(*space) += yytext[i];
+	    }
+	}
+    }
+    template<typename LOC>
+    static void unescapeString (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
 	for (size_t i = 0; i < len; i++) {
 	    if (yytext[i] == '\\') {
 		switch (yytext[++i]) {
@@ -164,7 +212,10 @@ public:
 			i += 4;
 			break;
 		    } else
-			throw(new std::exception());
+			throw std::runtime_error
+			    ("\"" + std::string(yytext, len) + "\""
+			     " leaves insufficent space for escape sequence at \""
+			     + std::string(yytext+i, len-i) + "\"");
 		case 'U':
 		    if (i < len-8) {
 			wchar_t w[2] = {
@@ -177,8 +228,52 @@ public:
 			i += 8;
 			break;
 		    } else
-			throw(new std::exception());
-		default: throw(new std::exception());
+			throw std::runtime_error
+			    ("\"" + std::string(yytext, len) + "\""
+			     " leaves insufficent space for escape sequence at \""
+			     + std::string(yytext+i, len-i) + "\"");
+		default:
+		    throw std::runtime_error
+			(std::string() + "unexpected escape character '" + yytext[i] + "' in " + yytext);
+		}
+	    } else {
+		if ((yytext[i] == '\r' && (i == len -1 || yytext[i+1] != '\n'))
+		    || yytext[i] == '\n') {
+		    yylloc->end.lines(1);
+		}
+		(*space) += yytext[i];
+	    }
+	}
+    }
+    template<typename LOC>
+    static void unescapeReserved (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
+	for (size_t i = 0; i < len; i++) {
+	    if (yytext[i] == '\\') {
+		switch (yytext[++i]) {
+		case '_':
+		case '~':
+		case '.':
+		case '-':
+		case '!':
+		case '$':
+		case '&':
+		case '\'':
+		case '(':
+		case ')':
+		case '*':
+		case '+':
+		case ',':
+		case ';':
+		case '=':
+		case '/':
+		case '?':
+		case '#':
+		case '@':
+		case '%':
+		    (*space) += yytext[i];
+		    break;
+		default: throw std::runtime_error
+			(std::string() + "unexpected escape character '" + yytext[i] + "' in " + yytext);
 		}
 	    } else {
 		if ((yytext[i] == '\r' && (i == len -1 || yytext[i+1] != '\n'))

@@ -72,8 +72,8 @@ IT_true		[Tt][Rr][Uu][Ee]
 IT_false		[Ff][Aa][Ll][Ss][Ee]
 SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 SPARQL_BASE		[Bb][Aa][Ss][Ee]
-BASE		"@"[Bb][Aa][Ss][Ee]
-PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
+BASE		"@base"
+PREFIX		"@prefix"
 RDF_TYPE		"a"
 LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER		([+-])?([0-9])+
@@ -125,18 +125,18 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 {BASE}		{return token::BASE;}
 {PREFIX}		{return token::PREFIX;}
 {RDF_TYPE}		{return token::RDF_TYPE;}
-{IRIREF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
-{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext); return token::PNAME_NS;}
-{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext); return token::PNAME_LN;}
+{IRIREF}		{yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-2, yylloc); return token::IRIREF;}
+{PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}
+{PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN;}
 {BLANK_NODE_LABEL}		{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
 {DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
 {DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
-{STRING_LITERAL1}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL1);}
-{STRING_LITERAL2}		{return unescape(yylval, yylloc, 1, token::STRING_LITERAL2);}
-{STRING_LITERAL_LONG1}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
-{STRING_LITERAL_LONG2}		{return unescape(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
+{STRING_LITERAL1}		{return unescapeString(yylval, yylloc, 1, token::STRING_LITERAL1);}
+{STRING_LITERAL2}		{return unescapeString(yylval, yylloc, 1, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}		{return unescapeString(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}		{return unescapeString(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
 {ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 
 <<EOF>>			{ yyterminate();}
@@ -148,123 +148,6 @@ PASSED_TOKENS		(([\t\n\r ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80
 
 %%
 /* END semantic actions for TurtleS terminals */
-
-/* START TurtleSScanner */
-namespace w3c_sw {
-
-TurtleSScanner::TurtleSScanner (TurtleSDriver* driver, std::istream* in, std::ostream* out) : TurtleSFlexLexer(in, out), driver(driver) {  }
-TurtleSScanner::~TurtleSScanner () {  }
-
-TurtleSParser::token_type TurtleSScanner::typedLiteral (TurtleSParser::semantic_type*& yylval, TurtleSParser::token_type tok) {
-    std::istringstream is(yytext);
-    std::ostringstream normalized;
-
-    switch (tok) {
-    case token::INTEGER:
-    case token::INTEGER_POSITIVE:
-    case token::INTEGER_NEGATIVE:
-	int i;
-	is >> i;
-	normalized << i;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
-	return tok;
-    case token::DECIMAL:
-    case token::DECIMAL_POSITIVE:
-    case token::DECIMAL_NEGATIVE:
-	float f;
-	is >> f;
-	normalized << f;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
-	return tok;
-    case token::DOUBLE:
-    case token::DOUBLE_POSITIVE:
-    case token::DOUBLE_NEGATIVE:
-	double d;
-	is >> d;
-	normalized << d;
-	yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
-	return tok;
-    default: throw(new std::exception());
-    }
-}
-
-TurtleSParser::token_type TurtleSScanner::unescape (TurtleSParser::semantic_type*& yylval, TurtleSParser::location_type*& yylloc, size_t skip, TurtleSParser::token_type tok){
-    std::string* space = new std::string;
-    YaccDriver::unescape(yytext+skip, yyleng-skip-skip, space, yylloc);
-    yylval->p_string = space;
-    return tok;
-}
-
-
-const URI* TurtleSScanner::resolvePrefix (const char* yytext){
-    std::string ret(yytext);
-    size_t index = ret.find(':');
-    if (index == std::string::npos)
-	throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
-    const URI* nspace = driver->getNamespace(ret.substr(0, index));
-    if (nspace == NULL) {
-	std::stringstream err;
-	err << "Unknown prefix: \"" << ret.substr(0, index) << "\"";
-	throw(std::runtime_error(err.str()));
-    }
-    ret.replace(0, index+1, nspace->getLexicalValue());
-    return resolveBase(ret.c_str(), false);
-}
-
-void TurtleSScanner::set_debug(bool b)
-{
-    yy_flex_debug = b;
-}
-
-/* END TurtleSScanner */
-
-const URI* TurtleSScanner::resolveBase (const char* p_rel, bool stripDelims) {
-    std::string stripped(p_rel);
-    if (stripDelims) {
-	stripped.replace(0, 1, "");
-	stripped.replace(stripped.size()-1, 1, "");
-    }
-    return driver->getAbsoluteURI(stripped.c_str());
-
-#if 0
-    // was a transliteration of _generic.pm
-    static const boost::regex re_scheme("^([a-zA-Z][a-zA-Z0-9.+-]*):");
-    static const boost::regex re_authority("^((?:[a-zA-Z][a-zA-Z0-9.+-]*)?)(?://([^/?\\#]*))?(.*)$");
-    static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
-
-    boost::smatch what;
-    URI* baseURI = driver->getBase();
-    std::string base;
-    if (baseURI != NULL)
-	std::string base = baseURI->getLexicalValue();
-    std::string base_scheme;
-    if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
-	base_scheme = what[1];
-    if (boost::regex_search(self, what, re_scheme) &&
-	what[1] != base_schema)
-	return driver->getURI(self.c_str());
-    if (base.size() == 0)
-	throw(std::runtime_error(((std::string)"no base declared while resolving relative URI ").append(abs)));
-
-    std::string abs(self);
-    if (!boost::regex_search(base, what, re_scheme))
-	throw(std::runtime_error(((std::string)"resolving against base URI with no scheme ").append(base)));
-    // !!! abs->scheme = base_scheme
-    if (false) ; // ...
-
-    if (!boost::regex_search(base, what, re_authority))
-	throw(std::runtime_error(((std::string)"resolving against base URI with no authority ").append(base)));
-    std::string base_authority(what[2]);
-
-    if (!boost::regex_search(rel, what, re_path))
-	throw(std::runtime_error(((std::string)"oddly failed to match re_path on ").append(rel)));
-    std::string rel_path(what[2]);
-    if (rel_path.find("/") == 0) return driver->getURI(abs.c_str());
-
-#endif
-}
-
-} // END namespace w3c_sw
 
 /* This implementation of TurtleSFlexLexer::yylex() is required to fill the
  * vtable of the class TurtleSFlexLexer. We define the scanner's main yylex
