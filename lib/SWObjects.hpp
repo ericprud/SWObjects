@@ -2079,6 +2079,10 @@ protected:
 #endif /* REGEX_LIB == SWOb_BOOST */
 
 public:
+    typedef enum {VALIDATE_none = 0,
+		  VALIDATE_IRIcharacters = 1,
+		  VALIDATE_all = 0x1} e_Validation;
+    static e_Validation validations;
     static const char* longPattern;
     static const char* decimalPattern;
     static const char* floatPattern;

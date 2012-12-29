@@ -1737,6 +1737,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     /* <AtomFactory> */
 
+	AtomFactory::e_Validation AtomFactory::validations = AtomFactory::VALIDATE_none;
 	const char* AtomFactory::longPattern =    "^[-+]?[0-9]+$";
 	const char* AtomFactory::decimalPattern = "^[+\\-]?[0-9]+(\\.[0-9]+)?$";
 	const char* AtomFactory::floatPattern =   "^[+\\-]?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$";
@@ -1951,6 +1952,8 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     }
 
     const URI* AtomFactory::getURI (std::string name) {
+	if (validations & VALIDATE_IRIcharacters && name.find_first_of("{} <>") != std::string::npos)
+	    throw std::runtime_error("\"" + name + "\" is not a valid IRI");
 	std::string key(name);
 	URIMap::const_iterator vi = uris_static.find(key);
 	if (vi == uris_static.end()) {
