@@ -139,6 +139,7 @@ namespace w3c_sw {
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
+    struct {const TTerm* head; const TTerm* tail; size_t size;} p_collection_state;
 
     /* Terminals */
     LANGTAG* p_LANGTAG;
@@ -161,7 +162,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 165 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 166 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -195,15 +196,15 @@ namespace w3c_sw {
      INTEGER = 276,
      DECIMAL = 277,
      DOUBLE = 278,
-     STRING_LITERAL1 = 279,
-     STRING_LITERAL2 = 280,
-     STRING_LITERAL_LONG1 = 281,
-     STRING_LITERAL_LONG2 = 282,
-     IRIREF = 283,
-     PNAME_NS = 284,
-     PNAME_LN = 285,
-     BLANK_NODE_LABEL = 286,
-     ANON = 287,
+     BLANK_NODE_LABEL = 279,
+     ANON = 280,
+     STRING_LITERAL1 = 281,
+     STRING_LITERAL2 = 282,
+     STRING_LITERAL_LONG1 = 283,
+     STRING_LITERAL_LONG2 = 284,
+     PNAME_NS = 285,
+     PNAME_LN = 286,
+     IRIREF = 287,
      LANGTAG = 288
    };
 
@@ -384,7 +385,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 388 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 389 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 
