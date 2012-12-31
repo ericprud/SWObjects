@@ -14,16 +14,6 @@
 
 w3c_sw_DEBUGGING_FUNCTIONS();
 
-// BOOST_AUTO_TEST_SUITE( coverage )
-// BOOST_AUTO_TEST_CASE( olist ) {
-//     const char* defaultGraph( "generators/olist.ttl");
-//     const char** namedGraphs = NULL;
-//     const URI** requires = NULL;
-//     DAWG_TEST("generators/olist.rq", "generators/olist.srt", 0, 0);
-// }
-// BOOST_AUTO_TEST_SUITE_END(/* coverage */)
-
-BOOST_AUTO_TEST_SUITE( turtle_eval )
 #define TURTLE_TEST(TEST, TESTME, EXPECT)				       \
     try {								       \
 	AtomFactory::validate = AtomFactory::VALIDATE_all;		       \
@@ -39,6 +29,12 @@ BOOST_AUTO_TEST_SUITE( turtle_eval )
     } catch (std::exception& s) {					       \
 	BOOST_ERROR ( s.what() );					       \
     }
+
+BOOST_AUTO_TEST_SUITE( coverage )
+BOOST_AUTO_TEST_CASE( nestedCollections ) { TURTLE_TEST("nestedCollections", "Turtle/nestedCollections.ttl", "Turtle/nestedCollections.nt"); }
+BOOST_AUTO_TEST_SUITE_END(/* coverage */)
+
+BOOST_AUTO_TEST_SUITE( turtle_eval )
 
 BOOST_AUTO_TEST_CASE( eval_struct_01 ) { TURTLE_TEST("eval-struct-01", "tests-ttl/turtle-eval-struct-01.ttl", "tests-ttl/turtle-eval-struct-01.nt"); }
 BOOST_AUTO_TEST_CASE( eval_struct_02 ) { TURTLE_TEST("eval-struct-02", "tests-ttl/turtle-eval-struct-02.ttl", "tests-ttl/turtle-eval-struct-02.nt"); }
