@@ -1,0 +1,4 @@
+# DirectoryIndex Overview
+RewriteEngine On
+RewriteBase /
+RewriteRule ^test_SPARQL11	https://github.com/ericprud/SWObjects/blob/sparql11/tests/test_SPARQL11.cpp
