@@ -99,7 +99,6 @@ public:
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
-    struct {const TTerm* head; const TTerm* tail; size_t size;} p_collection_state;
 
     /* Terminals */
     LANGTAG* p_LANGTAG;
@@ -351,7 +350,7 @@ collection:
 	  }
 	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
 	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
-    }
+      }
 ;
 
 // object*
@@ -373,9 +372,9 @@ _Qobject_E_Star:
 		 (driver.curSubject, TTerm::RDF_rest, nextTail));
 	driver.curSubject = nextTail;
 	driver.curPredicate = TTerm::RDF_first;
-    } object	{
-	$$ = $<p_TTerm>2;
-    }
+      } object	{
+	  $$ = $<p_TTerm>2;
+      }
 ;
 
 NumericLiteral:
