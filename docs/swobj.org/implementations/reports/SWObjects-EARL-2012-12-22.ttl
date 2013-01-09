@@ -7,13 +7,13 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 
 <> foaf:primaryTopic swobj:sparql ;
-	dct:issued '2012-11-22T07:54:27'^^xsd:dateTime ;
+	dct:issued "2012-11-22T07:54:27"^^xsd:dateTime ;
 	foaf:maker <http://www.w3.org/People/Eric/ericP-foaf#ericP> ;
 	.
 
 swobj:sparql
 	a doap:Project ;
-	doap:name 'SWObjects' ;
+	doap:name "SWObjects" ;
 	doap:homepage <http://swobjects.org/> .
 
 <http://www.w3.org/People/Eric/ericP-foaf#ericP> a foaf:Person ;
@@ -23,7 +23,7 @@ swobj:sparql
 
 swobj:test_SPARQL11
 	a earl:Software ;
-	dct:title 'SWObjects SPARQL11 test harness' ;
+	dct:title "SWObjects SPARQL11 test harness" ;
 	foaf:maker <http://www.w3.org/People/Eric/ericP-foaf#ericP> .
 
 
