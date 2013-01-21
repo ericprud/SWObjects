@@ -31,6 +31,7 @@
 {
     // initialize the initial location object
     @$.begin.filename = @$.end.filename = &driver.streamname;
+    driver.yylloc = &@$;
 };
 
 /* The driver is passed by reference to the parser and to the scanner. This
@@ -67,13 +68,18 @@ namespace w3c_sw {
  * structure into which the parsed data is saved. */
 
 class TurtleSDriver : public YaccDataDriver {
+    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
     friend class TurtleSParser;
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
 public:
-    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
-    }
+    size_t abortErrorCount;
+    static size_t DefaultAbortErrorCount;
+
+    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory)
+	: YaccDataDriver(baseURI, atomFactory), abortErrorCount(DefaultAbortErrorCount)
+    {  }
 
     void parse(IStreamContext& in);
     void parse(IStreamContext& in, BasicGraphPattern* bgp);
@@ -127,7 +133,7 @@ public:
 /* Terminals */
 
 %token BASE PREFIX SPARQL_BASE RDF_TYPE SPARQL_PREFIX GT_LPAREN GT_RPAREN GT_DOT
-       GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_PLUS GT_MINUS GT_DTYPE
+       GT_COMMA GT_SEMI GT_LBRACKET GT_RBRACKET GT_DTYPE
 %token <p_TTerm> IT_true IT_false INTEGER DECIMAL DOUBLE BLANK_NODE_LABEL ANON
 // deepest typing for these tokens:
 // %token <p_BooleanRDFLiteral> IT_true IT_false
@@ -183,6 +189,7 @@ _Qstatement_E_Star:
 statement:
     directive	
   | triples GT_DOT	
+  | error GT_DOT	
 ;
 
 directive:
@@ -244,6 +251,9 @@ _QpredicateObjectList_E_Opt:
 predicateObjectList:
     // verb objectList ( ';' ( verb objectList )? )*
     verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star	
+  | error
+  | verb error
+    //  | verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star error _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star	
 ;
 
 // verb objectList
@@ -266,6 +276,8 @@ _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C:
 _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star:
     
   | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C	
+  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star error _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C	
+  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star error	
 ;
 
 objectList:
@@ -290,7 +302,7 @@ verb:
 	driver.curPredicate = $$;
     }
   | RDF_TYPE	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+      $$ = TTerm::RDF_type;
 	driver.curPredicate = $$;
     }
 ;
@@ -343,6 +355,15 @@ blankNodePropertyList:
 	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
 	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
       }
+  // | GT_LBRACKET {
+  // 	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
+  // 	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
+  // 	driver.curSubject = driver.createBNode();
+  //     } predicateObjectList error GT_RBRACKET	{
+  // 	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
+  // 	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
+  // 	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
+  //     }
 ;
 
 collection:
@@ -465,7 +486,10 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
+size_t TurtleSDriver::DefaultAbortErrorCount = 100;
+
 void TurtleSDriver::parse (IStreamContext& in) {
+    reset();
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
@@ -478,6 +502,7 @@ void TurtleSDriver::parse (IStreamContext& in) {
     TurtleSParser parser(*this);
     parser.set_debug_level(trace_parsing);
     parser.parse();
+    checkErrors();
 }
 
 void TurtleSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {

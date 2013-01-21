@@ -37,7 +37,7 @@
 
 
 /* Line 293 of lalr1.cc  */
-#line 41 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 41 "TurtleSParser.cpp"
 
 
 #include "TurtleSParser.hpp"
@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 122 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 128 "TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 160 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 166 "TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
@@ -62,7 +62,7 @@
 
 
 /* Line 299 of lalr1.cc  */
-#line 66 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 66 "TurtleSParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -148,7 +148,7 @@ do {					\
 namespace w3c_sw {
 
 /* Line 382 of lalr1.cc  */
-#line 152 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 152 "TurtleSParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -335,14 +335,15 @@ namespace w3c_sw {
     /* User initialization code.  */
     
 /* Line 565 of lalr1.cc  */
-#line 31 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 31 "TurtleSParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
+    driver.yylloc = &yylloc;
 }
 
 /* Line 565 of lalr1.cc  */
-#line 346 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 347 "TurtleSParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -458,176 +459,158 @@ namespace w3c_sw {
     YY_REDUCE_PRINT (yyn);
     switch (yyn)
       {
-	  case 11:
+	  case 12:
 
 /* Line 690 of lalr1.cc  */
-#line 196 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 203 "TurtleSParser.ypp"
     {
 	driver.ignorePrefix(true);
-      }
-    break;
-
-  case 12:
-
-/* Line 690 of lalr1.cc  */
-#line 198 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	  driver.ignorePrefix(false);
       }
     break;
 
   case 13:
 
 /* Line 690 of lalr1.cc  */
-#line 200 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 205 "TurtleSParser.ypp"
+    {
+	  driver.ignorePrefix(false);
+      }
+    break;
+
+  case 14:
+
+/* Line 690 of lalr1.cc  */
+#line 207 "TurtleSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
       }
     break;
 
-  case 15:
+  case 16:
 
 /* Line 690 of lalr1.cc  */
-#line 207 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 214 "TurtleSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
     break;
 
-  case 16:
-
-/* Line 690 of lalr1.cc  */
-#line 213 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	driver.ignorePrefix(true);
-      }
-    break;
-
   case 17:
 
 /* Line 690 of lalr1.cc  */
-#line 215 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 220 "TurtleSParser.ypp"
     {
-	  driver.ignorePrefix(false);
+	driver.ignorePrefix(true);
       }
     break;
 
   case 18:
 
 /* Line 690 of lalr1.cc  */
-#line 217 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 222 "TurtleSParser.ypp"
     {
-	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+	  driver.ignorePrefix(false);
       }
     break;
 
   case 19:
 
 /* Line 690 of lalr1.cc  */
-#line 224 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 224 "TurtleSParser.ypp"
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
-    }
+	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+      }
     break;
 
   case 20:
 
 /* Line 690 of lalr1.cc  */
-#line 230 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 231 "TurtleSParser.ypp"
+    {
+	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+    }
+    break;
+
+  case 21:
+
+/* Line 690 of lalr1.cc  */
+#line 237 "TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
-  case 22:
+  case 23:
 
 /* Line 690 of lalr1.cc  */
-#line 233 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 240 "TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 37:
-
-/* Line 690 of lalr1.cc  */
-#line 288 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-	driver.curPredicate = (yyval.p_TTerm);
-    }
-    break;
-
-  case 38:
-
-/* Line 690 of lalr1.cc  */
-#line 292 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	driver.curPredicate = (yyval.p_TTerm);
-    }
-    break;
-
-  case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 299 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 42:
 
 /* Line 690 of lalr1.cc  */
-#line 307 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 300 "TurtleSParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
   case 43:
 
 /* Line 690 of lalr1.cc  */
-#line 313 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 304 "TurtleSParser.ypp"
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_URI)));
+      (yyval.p_TTerm) = TTerm::RDF_type;
+	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
   case 44:
 
 /* Line 690 of lalr1.cc  */
-#line 316 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 311 "TurtleSParser.ypp"
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
-    }
-    break;
-
-  case 45:
-
-/* Line 690 of lalr1.cc  */
-#line 319 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
-    }
-    break;
-
-  case 46:
-
-/* Line 690 of lalr1.cc  */
-#line 322 "lib/TurtleSParser/TurtleSParser.ypp"
-    {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 47:
 
 /* Line 690 of lalr1.cc  */
-#line 325 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 319 "TurtleSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 48:
+
+/* Line 690 of lalr1.cc  */
+#line 325 "TurtleSParser.ypp"
+    {
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_URI)));
+    }
+    break;
+
+  case 49:
+
+/* Line 690 of lalr1.cc  */
+#line 328 "TurtleSParser.ypp"
+    {
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+    }
+    break;
+
+  case 50:
+
+/* Line 690 of lalr1.cc  */
+#line 331 "TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
@@ -636,7 +619,25 @@ namespace w3c_sw {
   case 51:
 
 /* Line 690 of lalr1.cc  */
-#line 337 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 334 "TurtleSParser.ypp"
+    {
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+    }
+    break;
+
+  case 52:
+
+/* Line 690 of lalr1.cc  */
+#line 337 "TurtleSParser.ypp"
+    {
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+    }
+    break;
+
+  case 56:
+
+/* Line 690 of lalr1.cc  */
+#line 349 "TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -644,10 +645,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 52:
+  case 57:
 
 /* Line 690 of lalr1.cc  */
-#line 341 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 353 "TurtleSParser.ypp"
     {
 	  (yyval.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -655,20 +656,20 @@ namespace w3c_sw {
       }
     break;
 
-  case 53:
+  case 58:
 
 /* Line 690 of lalr1.cc  */
-#line 350 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 371 "TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
       }
     break;
 
-  case 54:
+  case 59:
 
 /* Line 690 of lalr1.cc  */
-#line 353 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 374 "TurtleSParser.ypp"
     {
 	  if ((yysemantic_stack_[(4) - (3)].p_TTerm) == NULL) {
 	      (yyval.p_TTerm) = TTerm::RDF_nil;
@@ -683,19 +684,19 @@ namespace w3c_sw {
       }
     break;
 
-  case 55:
+  case 60:
 
 /* Line 690 of lalr1.cc  */
-#line 373 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 394 "TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = NULL;
     }
     break;
 
-  case 56:
+  case 61:
 
 /* Line 690 of lalr1.cc  */
-#line 376 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 397 "TurtleSParser.ypp"
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yysemantic_stack_[(1) - (1)].p_TTerm) == NULL) // on first element
@@ -709,49 +710,49 @@ namespace w3c_sw {
       }
     break;
 
-  case 57:
+  case 62:
 
 /* Line 690 of lalr1.cc  */
-#line 386 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 407 "TurtleSParser.ypp"
     {
 	  (yyval.p_TTerm) = (yysemantic_stack_[(3) - (2)].p_TTerm);
       }
     break;
 
-  case 61:
+  case 66:
 
 /* Line 690 of lalr1.cc  */
-#line 399 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 420 "TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
     }
     break;
 
-  case 62:
+  case 67:
 
 /* Line 690 of lalr1.cc  */
-#line 407 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 428 "TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
     }
     break;
 
-  case 63:
+  case 68:
 
 /* Line 690 of lalr1.cc  */
-#line 412 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 433 "TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(2) - (2)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
     }
     break;
 
-  case 64:
+  case 69:
 
 /* Line 690 of lalr1.cc  */
-#line 420 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 441 "TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -761,7 +762,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 765 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 766 "TurtleSParser.cpp"
 	default:
           break;
       }
@@ -1035,20 +1036,21 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char TurtleSParser::yypact_ninf_ = -54;
+  const signed char TurtleSParser::yypact_ninf_ = -55;
   const signed char
   TurtleSParser::yypact_[] =
   {
-       -54,    12,    -1,   -54,   -18,   -54,   -15,   -54,   -54,   -54,
-     -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,     8,   -54,   -54,   -54,   -54,   -54,   -54,     9,    -9,
-     -54,    -8,   -54,     2,   -54,     2,     2,   -54,   -54,   -54,
-      16,   -54,    11,    32,   -54,   -54,   -54,   -54,   -54,    -5,
-      -4,   -54,    32,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -13,   -54,   -54,   -54,   -54,   -54,    24,    26,   -21,
-     -54,   -54,   -54,    28,     2,   -54,    32,   -54,   -54,   -54,
-     -54,   -54,    32,   -54,   -54
+       -55,     4,     2,   -55,     1,   -13,   -55,   -11,   -55,   -55,
+     -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,
+     -55,   -55,    15,   -55,   -55,   -55,   -55,   -55,   -55,   -55,
+      18,    11,   -55,    16,   -55,    13,   -55,    13,     7,   -55,
+     -55,   -55,    36,   -55,   -55,    54,    38,   -55,   -55,   -55,
+     -55,   -55,    23,    43,   -55,    82,   -55,   -55,   -55,   -55,
+     -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,
+     -55,   -55,   -55,   -55,   -55,    -3,   -55,   -55,   -55,   -55,
+     -55,    68,    39,    -7,   -55,   -55,   -55,    63,    64,    20,
+     -55,    82,   -55,   -55,   -55,    21,   -55,   -55,    82,   -55,
+     -55,   -55
   };
 
   /* YYDEFACT[S] -- default reduction number in state S.  Performed when
@@ -1057,73 +1059,78 @@ namespace w3c_sw {
   const unsigned char
   TurtleSParser::yydefact_[] =
   {
-         3,     0,     2,     1,     0,    11,     0,    16,    53,    51,
-      76,    77,    75,    74,    72,     4,     5,     7,     8,     9,
-      10,     0,    20,    22,    41,    39,    73,    40,     0,     0,
-      19,     0,    55,     0,     6,     0,    24,    15,    12,    17,
-      56,    38,     0,     0,    37,    42,    21,    23,    25,     0,
-       0,    54,     0,    52,    66,    67,    58,    59,    60,    68,
-      69,    70,    71,    31,    35,    47,    46,    45,    49,    48,
-      50,    64,    43,    44,    13,    18,    57,    26,    33,     0,
-      62,    65,    61,     0,    28,    32,     0,    36,    63,    14,
-      29,    30,     0,    34,    27
+         3,     0,     0,     1,     0,     0,    12,     0,    17,    58,
+      56,    81,    82,    80,    79,    77,     4,     5,     8,     9,
+      10,    11,     0,    21,    23,    46,    44,    78,    45,     7,
+       0,     0,    20,     0,    60,     0,     6,     0,     0,    16,
+      13,    18,    61,    28,    43,     0,     0,    42,    47,    22,
+      24,    26,     0,     0,    59,     0,    57,    29,    71,    72,
+      63,    64,    65,    73,    74,    75,    76,    34,    40,    52,
+      51,    50,    54,    53,    55,    69,    48,    49,    14,    19,
+      62,     0,    38,     0,    67,    70,    66,     0,    37,    31,
+      35,     0,    41,    68,    15,     0,    32,    33,     0,    39,
+      36,    30
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const signed char
   TurtleSParser::yypgoto_[] =
   {
-       -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -20,   -54,
-     -54,   -54,   -54,   -53,   -54,   -54,   -42,   -54,   -54,   -51,
-     -54,    41,   -54,    42,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -54,   -54,    -2,   -54,    43
+       -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,
+     -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,    33,   -55,
+     -55,   -21,   -55,   -22,   -55,    -9,   -12,   -55,   -55,   -54,
+     -55,    81,   -55,    83,   -55,   -55,   -55,   -55,   -55,   -55,
+     -55,   -55,   -55,    -2,   -55,    84
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const signed char
   TurtleSParser::yydefgoto_[] =
   {
-        -1,     1,     2,    15,    16,    17,    29,    49,    83,    18,
-      19,    31,    50,    20,    21,    35,    36,    47,    42,    90,
-      91,    85,    77,    63,    87,    78,    43,    22,    44,    64,
-      65,    66,    33,    67,    32,    40,    52,    68,    69,    81,
-      82,    70,    71,    45,    26,    73
+        -1,     1,     2,    16,    17,    18,    31,    52,    87,    19,
+      20,    33,    53,    21,    22,    37,    38,    50,    45,    96,
+      97,    90,    81,    67,    92,    82,    46,    23,    47,    68,
+      69,    70,    35,    71,    34,    42,    55,    72,    73,    85,
+      86,    74,    75,    48,    27,    77
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
      number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const signed char TurtleSParser::yytable_ninf_ = -1;
-  const unsigned char
+  const signed char TurtleSParser::yytable_ninf_ = -41;
+  const signed char
   TurtleSParser::yytable_[] =
   {
-        25,    76,     4,     5,     6,    79,     7,     8,    41,    12,
-      13,    14,     3,     9,    28,    46,    48,    30,    34,    37,
-      80,    38,    39,    10,    11,    51,    53,    74,    75,    12,
-      13,    14,    12,    13,    14,    93,    84,    86,    89,    94,
-       8,    72,    92,    23,    24,    27,     9,     0,     0,     0,
-      72,    54,    55,    56,    57,    58,    10,    11,    59,    60,
-      61,    62,    12,    13,    14,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    88,     0,     0,
-       0,     0,     0,     0,    72,     0,     0,     0,     0,     0,
-      72
+        26,    80,    -2,     4,     3,     5,     6,     7,    43,     8,
+       9,    29,    83,    44,    43,    10,    30,   -25,    32,    44,
+      13,    14,    15,    11,    12,    36,    44,    84,    39,    13,
+      14,    15,    91,    89,    13,    14,    15,    99,    40,    57,
+      13,    14,    15,    41,    76,    54,     9,    13,    14,    15,
+      91,    10,    78,    76,    58,    59,    60,    61,    62,    11,
+      12,    63,    64,    65,    66,    13,    14,    15,    56,    88,
+      49,    51,    79,    94,   100,   -40,   101,    98,   -27,    95,
+      89,    93,   -27,    24,     0,    25,    28,     0,     0,    76,
+       9,     0,     0,     0,     0,    10,    76,     0,    58,    59,
+      60,    61,    62,    11,    12,    63,    64,    65,    66,    13,
+      14,    15
   };
 
   /* YYCHECK.  */
   const signed char
   TurtleSParser::yycheck_[] =
   {
-         2,    52,     3,     4,     5,    18,     7,     8,     6,    30,
-      31,    32,     0,    14,    32,    35,    36,    32,    10,    10,
-      33,    30,    30,    24,    25,     9,    15,    32,    32,    30,
-      31,    32,    30,    31,    32,    86,    12,    11,    10,    92,
-       8,    43,    84,     2,     2,     2,    14,    -1,    -1,    -1,
-      52,    19,    20,    21,    22,    23,    24,    25,    26,    27,
-      28,    29,    30,    31,    32,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    79,    -1,    -1,
-      -1,    -1,    -1,    -1,    86,    -1,    -1,    -1,    -1,    -1,
-      92
+         2,    55,     0,     1,     0,     3,     4,     5,     1,     7,
+       8,    10,    15,     6,     1,    13,    29,    10,    29,     6,
+      27,    28,    29,    21,    22,    10,     6,    30,    10,    27,
+      28,    29,    11,    12,    27,    28,    29,    91,    27,     1,
+      27,    28,    29,    27,    46,     9,     8,    27,    28,    29,
+      11,    13,    29,    55,    16,    17,    18,    19,    20,    21,
+      22,    23,    24,    25,    26,    27,    28,    29,    14,     1,
+      37,    38,    29,    10,    95,    11,    98,    89,    10,    88,
+      12,    83,    14,     2,    -1,     2,     2,    -1,    -1,    91,
+       8,    -1,    -1,    -1,    -1,    13,    98,    -1,    16,    17,
+      18,    19,    20,    21,    22,    23,    24,    25,    26,    27,
+      28,    29
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1131,16 +1138,17 @@ namespace w3c_sw {
   const unsigned char
   TurtleSParser::yystos_[] =
   {
-         0,    35,    36,     0,     3,     4,     5,     7,     8,    14,
-      24,    25,    30,    31,    32,    37,    38,    39,    43,    44,
-      47,    48,    61,    65,    67,    77,    78,    79,    32,    40,
-      32,    45,    68,    66,    10,    49,    50,    10,    30,    30,
-      69,     6,    52,    60,    62,    77,    52,    51,    52,    41,
-      46,     9,    70,    15,    19,    20,    21,    22,    23,    26,
-      27,    28,    29,    57,    63,    64,    65,    67,    71,    72,
-      75,    76,    77,    79,    32,    32,    63,    56,    59,    18,
-      33,    73,    74,    42,    12,    55,    11,    58,    77,    10,
-      53,    54,    60,    63,    57
+         0,    32,    33,     0,     1,     3,     4,     5,     7,     8,
+      13,    21,    22,    27,    28,    29,    34,    35,    36,    40,
+      41,    44,    45,    58,    62,    64,    74,    75,    76,    10,
+      29,    37,    29,    42,    65,    63,    10,    46,    47,    10,
+      27,    27,    66,     1,     6,    49,    57,    59,    74,    49,
+      48,    49,    38,    43,     9,    67,    14,     1,    16,    17,
+      18,    19,    20,    23,    24,    25,    26,    54,    60,    61,
+      62,    64,    68,    69,    72,    73,    74,    76,    29,    29,
+      60,    53,    56,    15,    30,    70,    71,    39,     1,    12,
+      52,    11,    55,    74,    10,    56,    50,    51,    57,    60,
+      52,    54
   };
 
 #if YYDEBUG
@@ -1152,7 +1160,7 @@ namespace w3c_sw {
          0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288
+     285
   };
 #endif
 
@@ -1160,28 +1168,30 @@ namespace w3c_sw {
   const unsigned char
   TurtleSParser::yyr1_[] =
   {
-         0,    34,    35,    36,    36,    37,    37,    38,    38,    38,
-      38,    40,    41,    42,    39,    43,    45,    46,    44,    47,
-      49,    48,    50,    48,    51,    51,    52,    53,    54,    54,
-      55,    56,    56,    57,    58,    59,    59,    60,    60,    61,
-      61,    61,    62,    63,    63,    63,    63,    63,    64,    64,
-      64,    66,    65,    68,    67,    69,    70,    69,    71,    71,
-      71,    72,    73,    73,    74,    74,    75,    75,    76,    76,
-      76,    76,    77,    77,    78,    78,    79,    79
+         0,    31,    32,    33,    33,    34,    34,    34,    35,    35,
+      35,    35,    37,    38,    39,    36,    40,    42,    43,    41,
+      44,    46,    45,    47,    45,    48,    48,    49,    49,    49,
+      50,    51,    51,    52,    53,    53,    53,    53,    54,    55,
+      56,    56,    57,    57,    58,    58,    58,    59,    60,    60,
+      60,    60,    60,    61,    61,    61,    63,    62,    65,    64,
+      66,    67,    66,    68,    68,    68,    69,    70,    70,    71,
+      71,    72,    72,    73,    73,    73,    73,    74,    74,    75,
+      75,    76,    76
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   TurtleSParser::yyr2_[] =
   {
-         0,     2,     1,     0,     2,     1,     2,     1,     1,     1,
-       1,     0,     0,     0,     7,     3,     0,     0,     5,     2,
-       0,     3,     0,     3,     0,     1,     3,     2,     0,     1,
-       2,     0,     2,     2,     2,     0,     2,     1,     1,     1,
+         0,     2,     1,     0,     2,     1,     2,     2,     1,     1,
+       1,     1,     0,     0,     0,     7,     3,     0,     0,     5,
+       2,     0,     3,     0,     3,     0,     1,     3,     1,     2,
+       2,     0,     1,     2,     0,     2,     4,     2,     2,     2,
+       0,     2,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     0,     4,     0,     4,
+       0,     0,     3,     1,     1,     1,     2,     1,     2,     0,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     0,     4,     0,     4,     0,     0,     3,     1,     1,
-       1,     2,     1,     2,     0,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1
+       1,     1,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1192,14 +1202,14 @@ namespace w3c_sw {
   {
     "\"end of file\"", "error", "$undefined", "BASE", "PREFIX",
   "SPARQL_BASE", "RDF_TYPE", "SPARQL_PREFIX", "GT_LPAREN", "GT_RPAREN",
-  "GT_DOT", "GT_COMMA", "GT_SEMI", "IT_a", "GT_LBRACKET", "GT_RBRACKET",
-  "GT_PLUS", "GT_MINUS", "GT_DTYPE", "IT_true", "IT_false", "INTEGER",
-  "DECIMAL", "DOUBLE", "BLANK_NODE_LABEL", "ANON", "STRING_LITERAL1",
-  "STRING_LITERAL2", "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2",
-  "PNAME_NS", "PNAME_LN", "IRIREF", "LANGTAG", "$accept", "turtleDoc",
-  "_Qstatement_E_Star", "statement", "directive", "prefixID", "$@1", "$@2",
-  "$@3", "base", "sparqlPrefix", "$@4", "$@5", "sparqlBase", "triples",
-  "$@6", "$@7", "_QpredicateObjectList_E_Opt", "predicateObjectList",
+  "GT_DOT", "GT_COMMA", "GT_SEMI", "GT_LBRACKET", "GT_RBRACKET",
+  "GT_DTYPE", "IT_true", "IT_false", "INTEGER", "DECIMAL", "DOUBLE",
+  "BLANK_NODE_LABEL", "ANON", "STRING_LITERAL1", "STRING_LITERAL2",
+  "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2", "PNAME_NS", "PNAME_LN",
+  "IRIREF", "LANGTAG", "$accept", "turtleDoc", "_Qstatement_E_Star",
+  "statement", "directive", "prefixID", "$@1", "$@2", "$@3", "base",
+  "sparqlPrefix", "$@4", "$@5", "sparqlBase", "triples", "$@6", "$@7",
+  "_QpredicateObjectList_E_Opt", "predicateObjectList",
   "_O_Qverb_E_S_QobjectList_E_C", "_Q_O_Qverb_E_S_QobjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C",
   "_Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star", "objectList",
@@ -1218,24 +1228,26 @@ namespace w3c_sw {
   const TurtleSParser::rhs_number_type
   TurtleSParser::yyrhs_[] =
   {
-        35,     0,    -1,    36,    -1,    -1,    36,    37,    -1,    38,
-      -1,    48,    10,    -1,    39,    -1,    43,    -1,    44,    -1,
-      47,    -1,    -1,    -1,    -1,     4,    40,    30,    41,    32,
-      42,    10,    -1,     3,    32,    10,    -1,    -1,    -1,     7,
-      45,    30,    46,    32,    -1,     5,    32,    -1,    -1,    61,
-      49,    52,    -1,    -1,    65,    50,    51,    -1,    -1,    52,
-      -1,    60,    57,    56,    -1,    60,    57,    -1,    -1,    53,
-      -1,    12,    54,    -1,    -1,    56,    55,    -1,    63,    59,
-      -1,    11,    63,    -1,    -1,    59,    58,    -1,    62,    -1,
-       6,    -1,    77,    -1,    79,    -1,    67,    -1,    77,    -1,
-      77,    -1,    79,    -1,    67,    -1,    65,    -1,    64,    -1,
-      72,    -1,    71,    -1,    75,    -1,    -1,    14,    66,    52,
-      15,    -1,    -1,     8,    68,    69,     9,    -1,    -1,    -1,
-      69,    70,    63,    -1,    21,    -1,    22,    -1,    23,    -1,
-      76,    74,    -1,    33,    -1,    18,    77,    -1,    -1,    73,
-      -1,    19,    -1,    20,    -1,    26,    -1,    27,    -1,    28,
-      -1,    29,    -1,    32,    -1,    78,    -1,    31,    -1,    30,
-      -1,    24,    -1,    25,    -1
+        32,     0,    -1,    33,    -1,    -1,    33,    34,    -1,    35,
+      -1,    45,    10,    -1,     1,    10,    -1,    36,    -1,    40,
+      -1,    41,    -1,    44,    -1,    -1,    -1,    -1,     4,    37,
+      27,    38,    29,    39,    10,    -1,     3,    29,    10,    -1,
+      -1,    -1,     7,    42,    27,    43,    29,    -1,     5,    29,
+      -1,    -1,    58,    46,    49,    -1,    -1,    62,    47,    48,
+      -1,    -1,    49,    -1,    57,    54,    53,    -1,     1,    -1,
+      57,     1,    -1,    57,    54,    -1,    -1,    50,    -1,    12,
+      51,    -1,    -1,    53,    52,    -1,    53,     1,    56,    52,
+      -1,    53,     1,    -1,    60,    56,    -1,    11,    60,    -1,
+      -1,    56,    55,    -1,    59,    -1,     6,    -1,    74,    -1,
+      76,    -1,    64,    -1,    74,    -1,    74,    -1,    76,    -1,
+      64,    -1,    62,    -1,    61,    -1,    69,    -1,    68,    -1,
+      72,    -1,    -1,    13,    63,    49,    14,    -1,    -1,     8,
+      65,    66,     9,    -1,    -1,    -1,    66,    67,    60,    -1,
+      18,    -1,    19,    -1,    20,    -1,    73,    71,    -1,    30,
+      -1,    15,    74,    -1,    -1,    70,    -1,    16,    -1,    17,
+      -1,    23,    -1,    24,    -1,    25,    -1,    26,    -1,    29,
+      -1,    75,    -1,    28,    -1,    27,    -1,    21,    -1,    22,
+      -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1243,28 +1255,30 @@ namespace w3c_sw {
   const unsigned char
   TurtleSParser::yyprhs_[] =
   {
-         0,     0,     3,     5,     6,     9,    11,    14,    16,    18,
-      20,    22,    23,    24,    25,    33,    37,    38,    39,    45,
-      48,    49,    53,    54,    58,    59,    61,    65,    68,    69,
-      71,    74,    75,    78,    81,    84,    85,    88,    90,    92,
-      94,    96,    98,   100,   102,   104,   106,   108,   110,   112,
-     114,   116,   117,   122,   123,   128,   129,   130,   134,   136,
-     138,   140,   143,   145,   148,   149,   151,   153,   155,   157,
-     159,   161,   163,   165,   167,   169,   171,   173
+         0,     0,     3,     5,     6,     9,    11,    14,    17,    19,
+      21,    23,    25,    26,    27,    28,    36,    40,    41,    42,
+      48,    51,    52,    56,    57,    61,    62,    64,    68,    70,
+      73,    76,    77,    79,    82,    83,    86,    91,    94,    97,
+     100,   101,   104,   106,   108,   110,   112,   114,   116,   118,
+     120,   122,   124,   126,   128,   130,   132,   133,   138,   139,
+     144,   145,   146,   150,   152,   154,   156,   159,   161,   164,
+     165,   167,   169,   171,   173,   175,   177,   179,   181,   183,
+     185,   187,   189
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   TurtleSParser::yyrline_[] =
   {
-         0,   175,   175,   178,   180,   184,   185,   189,   190,   191,
-     192,   196,   198,   200,   196,   207,   213,   215,   213,   224,
-     230,   230,   233,   233,   239,   241,   246,   251,   255,   257,
-     262,   266,   268,   273,   278,   282,   284,   288,   292,   299,
-     302,   303,   307,   313,   316,   319,   322,   325,   331,   332,
-     333,   337,   337,   350,   350,   373,   376,   376,   392,   393,
-     394,   399,   407,   412,   420,   424,   428,   429,   433,   434,
-     435,   436,   440,   441,   445,   446,   450,   451
+         0,   181,   181,   184,   186,   190,   191,   192,   196,   197,
+     198,   199,   203,   205,   207,   203,   214,   220,   222,   220,
+     231,   237,   237,   240,   240,   246,   248,   253,   254,   255,
+     261,   265,   267,   272,   276,   278,   279,   280,   285,   290,
+     294,   296,   300,   304,   311,   314,   315,   319,   325,   328,
+     331,   334,   337,   343,   344,   345,   349,   349,   371,   371,
+     394,   397,   397,   413,   414,   415,   420,   428,   433,   441,
+     445,   449,   450,   454,   455,   456,   457,   461,   462,   466,
+     467,   471,   472
   };
 
   // Print the state stack on the debug stream.
@@ -1332,7 +1346,7 @@ namespace w3c_sw {
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33
+      25,    26,    27,    28,    29,    30
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1341,26 +1355,26 @@ namespace w3c_sw {
   }
 
   const int TurtleSParser::yyeof_ = 0;
-  const int TurtleSParser::yylast_ = 90;
+  const int TurtleSParser::yylast_ = 111;
   const int TurtleSParser::yynnts_ = 46;
   const int TurtleSParser::yyempty_ = -2;
   const int TurtleSParser::yyfinal_ = 3;
   const int TurtleSParser::yyterror_ = 1;
   const int TurtleSParser::yyerrcode_ = 256;
-  const int TurtleSParser::yyntokens_ = 34;
+  const int TurtleSParser::yyntokens_ = 31;
 
-  const unsigned int TurtleSParser::yyuser_token_number_max_ = 288;
+  const unsigned int TurtleSParser::yyuser_token_number_max_ = 285;
   const TurtleSParser::token_number_type TurtleSParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 1360 "lib/TurtleSParser/TurtleSParser.cpp"
+#line 1374 "TurtleSParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 456 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 477 "TurtleSParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
@@ -1373,7 +1387,10 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 
 namespace w3c_sw {
 
+size_t TurtleSDriver::DefaultAbortErrorCount = 100;
+
 void TurtleSDriver::parse (IStreamContext& in) {
+    reset();
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
@@ -1386,6 +1403,7 @@ void TurtleSDriver::parse (IStreamContext& in) {
     TurtleSParser parser(*this);
     parser.set_debug_level(trace_parsing);
     parser.parse();
+    checkErrors();
 }
 
 void TurtleSDriver::parse (IStreamContext& in, BasicGraphPattern* bgp) {

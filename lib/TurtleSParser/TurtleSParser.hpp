@@ -33,12 +33,12 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-#pragma once
+# define PARSER_HEADER_H
 
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 45 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 46 "TurtleSParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -64,13 +64,18 @@ namespace w3c_sw {
  * structure into which the parsed data is saved. */
 
 class TurtleSDriver : public YaccDataDriver {
+    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
     friend class TurtleSParser;
 protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
 public:
-    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDataDriver(baseURI, atomFactory) {
-    }
+    size_t abortErrorCount;
+    static size_t DefaultAbortErrorCount;
+
+    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory)
+	: YaccDataDriver(baseURI, atomFactory), abortErrorCount(DefaultAbortErrorCount)
+    {  }
 
     void parse(IStreamContext& in);
     void parse(IStreamContext& in, BasicGraphPattern* bgp);
@@ -92,7 +97,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 96 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 101 "TurtleSParser.hpp"
 
 
 #include <string>
@@ -122,7 +127,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 126 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 131 "TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -134,7 +139,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 98 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 104 "TurtleSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -161,7 +166,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 165 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 170 "TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -184,27 +189,24 @@ namespace w3c_sw {
      GT_DOT = 265,
      GT_COMMA = 266,
      GT_SEMI = 267,
-     IT_a = 268,
-     GT_LBRACKET = 269,
-     GT_RBRACKET = 270,
-     GT_PLUS = 271,
-     GT_MINUS = 272,
-     GT_DTYPE = 273,
-     IT_true = 274,
-     IT_false = 275,
-     INTEGER = 276,
-     DECIMAL = 277,
-     DOUBLE = 278,
-     BLANK_NODE_LABEL = 279,
-     ANON = 280,
-     STRING_LITERAL1 = 281,
-     STRING_LITERAL2 = 282,
-     STRING_LITERAL_LONG1 = 283,
-     STRING_LITERAL_LONG2 = 284,
-     PNAME_NS = 285,
-     PNAME_LN = 286,
-     IRIREF = 287,
-     LANGTAG = 288
+     GT_LBRACKET = 268,
+     GT_RBRACKET = 269,
+     GT_DTYPE = 270,
+     IT_true = 271,
+     IT_false = 272,
+     INTEGER = 273,
+     DECIMAL = 274,
+     DOUBLE = 275,
+     BLANK_NODE_LABEL = 276,
+     ANON = 277,
+     STRING_LITERAL1 = 278,
+     STRING_LITERAL2 = 279,
+     STRING_LITERAL_LONG1 = 280,
+     STRING_LITERAL_LONG2 = 281,
+     PNAME_NS = 282,
+     PNAME_LN = 283,
+     IRIREF = 284,
+     LANGTAG = 285
    };
 
     };
@@ -306,7 +308,7 @@ namespace w3c_sw {
     /// - if positive, shift that token.
     /// - if negative, reduce the rule which number is the opposite.
     /// - if zero, do what YYDEFACT says.
-    static const unsigned char yytable_[];
+    static const signed char yytable_[];
     static const signed char yytable_ninf_;
 
     static const signed char yycheck_[];
@@ -384,7 +386,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 388 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 390 "TurtleSParser.hpp"
 
 
 

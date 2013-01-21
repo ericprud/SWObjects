@@ -39,7 +39,7 @@
 namespace w3c_sw {
 
 /* Line 1149 of lalr1.cc  */
-#line 43 "lib/TurtleSParser/stack.hh"
+#line 43 "stack.hh"
   template <class T, class S = std::deque<T> >
   class stack
   {
@@ -129,7 +129,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1235 of lalr1.cc  */
-#line 133 "lib/TurtleSParser/stack.hh"
+#line 133 "stack.hh"
 
 #endif // not BISON_STACK_HH[]dnl
 

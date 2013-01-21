@@ -27,6 +27,27 @@ struct ParserException : public StringException {
     ParserException (ParserLocation begin, ParserLocation end, std::string str) : StringException(str), begin(begin), end(end) {  }
 };
 
+struct ParserExceptions : std::exception {
+    std::vector<ParserException> errors;
+    std::string msg;
+    virtual ~ParserExceptions () throw() {  }
+    void push_back (ParserException ex) {
+	std::string exmsg = ex.what();
+	if (errors.size() > 0) {
+	    if (exmsg.find_first_of("\n") != std::string::npos)
+		msg += "\n-- \n";
+	    else
+		msg += "\n";
+	}
+	msg += exmsg;
+	errors.push_back(ex);
+    }
+    void clear () { errors.clear(); msg = ""; }
+    virtual const char* what() const throw() { return msg.c_str(); }
+    size_t size () const { return errors.size(); }
+    ParserException& operator[] (size_t i) { return errors[i]; }
+};
+
 /* Base class for all parsers. */
 class ParserDriver {
 protected:
@@ -79,12 +100,14 @@ class YaccDriver : public ParserDriver {
 protected:
     AtomFactory * const atomFactory;
     bool		ignorePrefixFlag;
+    ParserExceptions	errors;
 
 public:
     /// construct a new parser driver context
     YaccDriver(AtomFactory* atomFactory);
     YaccDriver(std::string baseURI, AtomFactory* atomFactory);
     virtual ~YaccDriver () {  }
+    void reset () { errors.clear(); }
 
     /// enable debug output in the flex scanner
     bool trace_scanning;
@@ -98,6 +121,7 @@ public:
     /** Error handling with associated line number. This can be modified to
      * output the error e.g. to a dialog box. */
     void error(const class location& l, const std::string& m);
+    void checkErrors();
 
     /** General error handling. This can be modified to output the error
      * e.g. to a dialog box. */
