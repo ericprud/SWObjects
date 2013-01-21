@@ -108,5 +108,5 @@ LINK= DYNAMIC
 #OSX: flex=/opt/local/bin/flex
 #OSX: bison=/opt/local/bin/bison
 
-CRYPTLIB= ../../Downloads/cryptopp561
+CRYPTLIB= ../cryptopp561
 
