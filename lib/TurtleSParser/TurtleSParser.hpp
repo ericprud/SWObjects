@@ -33,12 +33,12 @@
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
 #ifndef PARSER_HEADER_H
-# define PARSER_HEADER_H
+#pragma once
 
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 46 "TurtleSParser.ypp"
+#line 46 "lib/TurtleSParser/TurtleSParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -70,11 +70,10 @@ protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
 public:
-    size_t abortErrorCount;
     static size_t DefaultAbortErrorCount;
 
-    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory)
-	: YaccDataDriver(baseURI, atomFactory), abortErrorCount(DefaultAbortErrorCount)
+    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = DefaultAbortErrorCount)
+	: YaccDataDriver(baseURI, atomFactory, abortErrorCount)
     {  }
 
     void parse(IStreamContext& in);
@@ -97,7 +96,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 101 "TurtleSParser.hpp"
+#line 100 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 #include <string>
@@ -127,7 +126,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 131 "TurtleSParser.hpp"
+#line 130 "lib/TurtleSParser/TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -139,7 +138,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 104 "TurtleSParser.ypp"
+#line 103 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -166,7 +165,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 170 "TurtleSParser.hpp"
+#line 169 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -386,7 +385,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 390 "TurtleSParser.hpp"
+#line 389 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 

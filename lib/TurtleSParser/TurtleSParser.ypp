@@ -74,11 +74,10 @@ protected:
     const TTerm* curSubject;
     const TTerm* curPredicate;
 public:
-    size_t abortErrorCount;
     static size_t DefaultAbortErrorCount;
 
-    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory)
-	: YaccDataDriver(baseURI, atomFactory), abortErrorCount(DefaultAbortErrorCount)
+    TurtleSDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = DefaultAbortErrorCount)
+	: YaccDataDriver(baseURI, atomFactory, abortErrorCount)
     {  }
 
     void parse(IStreamContext& in);
@@ -476,10 +475,50 @@ BlankNode:
 
 %% /*** Additional Code ***/
 
+void _subs (std::string& txt, const char*from, size_t fromLen, const char*to, size_t toLen) {
+    for (size_t at = 0; ; ) {
+	at = txt.find(from, at);
+	if (at == std::string::npos)
+	    break;
+	txt.replace(at, fromLen, to);
+	at += toLen;
+    }
+}
+
+#define _SUBS(S, F, T) _subs(S, F, sizeof(F)-1, T, sizeof(T)-1);
+
 void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 			    const std::string& m)
 {
-    driver.error(l, m);
+    std::string s = m;
+    _SUBS(s, "GT_DOT", "'.'");
+    _SUBS(s, "GT_SEMI", "';'");
+    _SUBS(s, "GT_LBRACKET", "'['");
+    _SUBS(s, "GT_RBRACKET", "']'");
+    _SUBS(s, "GT_LPAREN", "'('");
+    _SUBS(s, "GT_RPAREN", "')'");
+    _SUBS(s, "GT_DTYPE", "'^^'");
+    _SUBS(s, "IT_true", "boolean true");
+    _SUBS(s, "IT_false", "boolean false");
+    _SUBS(s, "SPARQL_PREFIX", "PREFIX");
+    _SUBS(s, "SPARQL_BASE", "BASE");
+    _SUBS(s, "BASE", "@base");
+    _SUBS(s, "PREFIX", "@prefix");
+    _SUBS(s, "RDF_TYPE", "keyword 'a'");
+    _SUBS(s, "IRIREF", "IRI");
+    _SUBS(s, "PNAME_NS", "namespace prefix");
+    _SUBS(s, "PNAME_LN", "local name");
+    _SUBS(s, "BLANK_NODE_LABEL", "blank node label");
+    _SUBS(s, "LANGTAG", "language tag");
+    _SUBS(s, "INTEGER", "integer");
+    _SUBS(s, "DECIMAL", "decimal");
+    _SUBS(s, "DOUBLE", "double");
+    _SUBS(s, "STRING_LITERAL1", "'string'");
+    _SUBS(s, "STRING_LITERAL2", "\"string\"");
+    _SUBS(s, "STRING_LITERAL_LONG1", "'''string'''");
+    _SUBS(s, "STRING_LITERAL_LONG2", "\"\"\"string\"\"\"");
+    _SUBS(s, "ANON", "anonymous blank node");
+    driver.error(l, s);
 }
 
 /* START Driver (@@ stand-alone would allow it to be shared with other parsers */

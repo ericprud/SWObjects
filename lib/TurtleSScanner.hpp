@@ -98,9 +98,9 @@ public:
 	}
     }
 
-    TurtleSParser::token_type unescapeString (TurtleSParser::semantic_type*& yylval, TurtleSParser::location_type* yylloc, size_t skip, TurtleSParser::token_type tok) {
+    TurtleSParser::token_type unescapeString (TurtleSParser::semantic_type*& yylval, TurtleSParser::location_type* yylloc, const char* text, size_t len, TurtleSParser::token_type tok) {
 	std::string* space = new std::string;
-	YaccDriver::unescapeString(yytext+skip, yyleng-skip-skip, space, yylloc);
+	YaccDriver::unescapeString(text, len, space, yylloc);
 	yylval->p_string = space;
 	return tok;
     }
@@ -112,12 +112,10 @@ public:
 	size_t index = stripped.find(':');
 	if (index == std::string::npos)
 	    throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
-	const URI* nspace = driver->getNamespace(stripped.substr(0, index));
-	if (nspace == NULL) {
-	    std::stringstream err;
-	    err << "Unknown prefix: \"" << stripped.substr(0, index) << "\"";
-	    throw(std::runtime_error(err.str()));
-	}
+	std::string prefix = stripped.substr(0, index);
+	const URI* nspace = driver->getNamespace(prefix, true);
+	if (nspace == NULL)
+	    nspace = driver->prefixError(prefix, *yylloc);
 	stripped.replace(0, index+1, nspace->getLexicalValue());
 
 	return driver->getAbsoluteURI(stripped.c_str());
@@ -128,6 +126,13 @@ public:
 	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc);
 	return driver->getAbsoluteURI(stripped.c_str());
     }
+
+    void scanError (const char* msg, char quote, TurtleSParser::location_type* yylloc) {
+	std::stringstream ss;
+	ss << "malformed " << msg << " " << quote << yytext << quote;
+	driver->error(*yylloc, ss.str());
+    }
+
 };
 
 } // namespace w3c_sw

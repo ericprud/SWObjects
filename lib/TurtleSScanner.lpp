@@ -104,8 +104,8 @@ LINEFEED		(\r\n|\r|\n)
 PNAME_LN		({PNAME_NS})({PN_LOCAL})
 PASSED_TOKENS		(([\t ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 
-ERROR_NO_PUNCT		((([\x00-\x08\x0B-\x0C\x0E-\x1F\x21\x23-\x26\x2A-\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ERROR_ECHAR}))|(({ERROR_UCHAR})))))
-                      /*---        \t\n      \r       SPACE"      '))       .\\      ;<* >        [   ]          ---*/
+ERROR_NO_PUNCT		((([\x00-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x26\x2A\x2B\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ERROR_ECHAR}))|(({ERROR_UCHAR})))))
+			/*--       \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
 
 ERROR_ECHAR		"\\".
 ERROR_BLANK_NODE_LABEL		"_:"{ERROR_NO_PUNCT}*
@@ -153,71 +153,25 @@ ERROR_PNAME_LN		({PNAME_NS})({ERROR_PN_LOCAL})
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
 {DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
 {DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
-{STRING_LITERAL1}		{return unescapeString(yylval, yylloc, 1, token::STRING_LITERAL1);}
-{STRING_LITERAL2}		{return unescapeString(yylval, yylloc, 1, token::STRING_LITERAL2);}
-{STRING_LITERAL_LONG1}		{return unescapeString(yylval, yylloc, 3, token::STRING_LITERAL_LONG1);}
-{STRING_LITERAL_LONG2}		{return unescapeString(yylval, yylloc, 3, token::STRING_LITERAL_LONG2);}
+{STRING_LITERAL1}		{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL1);}
+{STRING_LITERAL2}		{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}		{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}		{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG2);}
 {ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 
 <<EOF>>			{ yyterminate();}
-{ERROR_PNAME_LN}		{
-    std::stringstream ss;
-    ss << "illformed PNAME_LN '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN;
-}
-{ERROR_BLANK_NODE_LABEL}	{
-    std::stringstream ss;
-    ss << "illformed BLANK_NODE_LABEL '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;
-}
-{ERROR_STRING_LITERAL1}		{
-    std::stringstream ss;
-    ss << "illformed STRING_LITERAL1 '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    std::string* space = new std::string;
-    YaccDriver::unescapeString(yytext+1, yyleng-1, space, yylloc);
-    yylval->p_string = space;
-    return token::STRING_LITERAL1;
-}
-{ERROR_STRING_LITERAL2}		{
-    std::stringstream ss;
-    ss << "illformed STRING_LITERAL2 '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    std::string* space = new std::string;
-    YaccDriver::unescapeString(yytext+1, yyleng-1, space, yylloc);
-    yylval->p_string = space;
-    return token::STRING_LITERAL2;
-}
-{ERROR_STRING_LITERAL_LONG1}		{
-    std::stringstream ss;
-    ss << "illformed STRING_LITERAL_LONG1 '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    std::string* space = new std::string;
-    YaccDriver::unescapeString(yytext+3, yyleng-3, space, yylloc);
-    yylval->p_string = space;
-    return token::STRING_LITERAL_LONG1;
-}
-{ERROR_STRING_LITERAL_LONG2}		{
-    std::stringstream ss;
-    ss << "illformed STRING_LITERAL_LONG2 '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    std::string* space = new std::string;
-    YaccDriver::unescapeString(yytext+3, yyleng-3, space, yylloc);
-    yylval->p_string = space;
-    return token::STRING_LITERAL_LONG2;
-}
-{ERROR_IRIREF}		{
-    std::stringstream ss;
-    ss << "illformed IRIREF '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, ss.str());
-    yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-1, yylloc); return token::IRIREF;
-}
+
+{ERROR_PNAME_LN}		{ scanError("local name", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
+{ERROR_BLANK_NODE_LABEL}	{ scanError("BLANK_NODE_LABEL", '"', yylloc); yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL; }
+{ERROR_STRING_LITERAL1}		{ scanError("single-quoted simple literal", '"', yylloc);  return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL1); }
+{ERROR_STRING_LITERAL2}		{ scanError("double-quoted simple literal", '\'', yylloc); return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL2); }
+{ERROR_STRING_LITERAL_LONG1}	{ scanError("single-quoted long literal", '"', yylloc);    return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG1); }
+{ERROR_STRING_LITERAL_LONG2}	{ scanError("double-quoted long literal", '\'', yylloc);   return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG2); }
+{ERROR_IRIREF}			{ scanError("IRI", '"', yylloc); yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-1, yylloc); return token::IRIREF; }
 .			{
-    std::stringstream s;
-    s << "unexpected input '" << yytext << "' at " << *yylloc;
-    driver->error(*yylloc, s.str());
+    std::stringstream ss;
+    ss << "unexpected input '" << yytext << "'";
+    driver->error(*yylloc, ss.str());
 }
 
 %%

@@ -37,7 +37,7 @@
 
 
 /* Line 293 of lalr1.cc  */
-#line 41 "TurtleSParser.cpp"
+#line 41 "lib/TurtleSParser/TurtleSParser.cpp"
 
 
 #include "TurtleSParser.hpp"
@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 128 "TurtleSParser.ypp"
+#line 127 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 166 "TurtleSParser.ypp"
+#line 165 "lib/TurtleSParser/TurtleSParser.ypp"
 
 #include "../TurtleSScanner.hpp"
 
@@ -62,7 +62,7 @@
 
 
 /* Line 299 of lalr1.cc  */
-#line 66 "TurtleSParser.cpp"
+#line 66 "lib/TurtleSParser/TurtleSParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -148,7 +148,7 @@ do {					\
 namespace w3c_sw {
 
 /* Line 382 of lalr1.cc  */
-#line 152 "TurtleSParser.cpp"
+#line 152 "lib/TurtleSParser/TurtleSParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -335,7 +335,7 @@ namespace w3c_sw {
     /* User initialization code.  */
     
 /* Line 565 of lalr1.cc  */
-#line 31 "TurtleSParser.ypp"
+#line 31 "lib/TurtleSParser/TurtleSParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
@@ -343,7 +343,7 @@ namespace w3c_sw {
 }
 
 /* Line 565 of lalr1.cc  */
-#line 347 "TurtleSParser.cpp"
+#line 347 "lib/TurtleSParser/TurtleSParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -462,7 +462,7 @@ namespace w3c_sw {
 	  case 12:
 
 /* Line 690 of lalr1.cc  */
-#line 203 "TurtleSParser.ypp"
+#line 202 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -471,7 +471,7 @@ namespace w3c_sw {
   case 13:
 
 /* Line 690 of lalr1.cc  */
-#line 205 "TurtleSParser.ypp"
+#line 204 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -480,7 +480,7 @@ namespace w3c_sw {
   case 14:
 
 /* Line 690 of lalr1.cc  */
-#line 207 "TurtleSParser.ypp"
+#line 206 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -490,7 +490,7 @@ namespace w3c_sw {
   case 16:
 
 /* Line 690 of lalr1.cc  */
-#line 214 "TurtleSParser.ypp"
+#line 213 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
@@ -499,7 +499,7 @@ namespace w3c_sw {
   case 17:
 
 /* Line 690 of lalr1.cc  */
-#line 220 "TurtleSParser.ypp"
+#line 219 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -508,7 +508,7 @@ namespace w3c_sw {
   case 18:
 
 /* Line 690 of lalr1.cc  */
-#line 222 "TurtleSParser.ypp"
+#line 221 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -517,7 +517,7 @@ namespace w3c_sw {
   case 19:
 
 /* Line 690 of lalr1.cc  */
-#line 224 "TurtleSParser.ypp"
+#line 223 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -527,7 +527,7 @@ namespace w3c_sw {
   case 20:
 
 /* Line 690 of lalr1.cc  */
-#line 231 "TurtleSParser.ypp"
+#line 230 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
@@ -536,7 +536,7 @@ namespace w3c_sw {
   case 21:
 
 /* Line 690 of lalr1.cc  */
-#line 237 "TurtleSParser.ypp"
+#line 236 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -545,7 +545,7 @@ namespace w3c_sw {
   case 23:
 
 /* Line 690 of lalr1.cc  */
-#line 240 "TurtleSParser.ypp"
+#line 239 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -554,7 +554,7 @@ namespace w3c_sw {
   case 42:
 
 /* Line 690 of lalr1.cc  */
-#line 300 "TurtleSParser.ypp"
+#line 299 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
@@ -564,7 +564,7 @@ namespace w3c_sw {
   case 43:
 
 /* Line 690 of lalr1.cc  */
-#line 304 "TurtleSParser.ypp"
+#line 303 "lib/TurtleSParser/TurtleSParser.ypp"
     {
       (yyval.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yyval.p_TTerm);
@@ -574,7 +574,7 @@ namespace w3c_sw {
   case 44:
 
 /* Line 690 of lalr1.cc  */
-#line 311 "TurtleSParser.ypp"
+#line 310 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -583,7 +583,7 @@ namespace w3c_sw {
   case 47:
 
 /* Line 690 of lalr1.cc  */
-#line 319 "TurtleSParser.ypp"
+#line 318 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -592,7 +592,7 @@ namespace w3c_sw {
   case 48:
 
 /* Line 690 of lalr1.cc  */
-#line 325 "TurtleSParser.ypp"
+#line 324 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_URI)));
     }
@@ -601,7 +601,7 @@ namespace w3c_sw {
   case 49:
 
 /* Line 690 of lalr1.cc  */
-#line 328 "TurtleSParser.ypp"
+#line 327 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
@@ -610,7 +610,7 @@ namespace w3c_sw {
   case 50:
 
 /* Line 690 of lalr1.cc  */
-#line 331 "TurtleSParser.ypp"
+#line 330 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
@@ -619,7 +619,7 @@ namespace w3c_sw {
   case 51:
 
 /* Line 690 of lalr1.cc  */
-#line 334 "TurtleSParser.ypp"
+#line 333 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
@@ -628,7 +628,7 @@ namespace w3c_sw {
   case 52:
 
 /* Line 690 of lalr1.cc  */
-#line 337 "TurtleSParser.ypp"
+#line 336 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
     }
@@ -637,7 +637,7 @@ namespace w3c_sw {
   case 56:
 
 /* Line 690 of lalr1.cc  */
-#line 349 "TurtleSParser.ypp"
+#line 348 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -648,7 +648,7 @@ namespace w3c_sw {
   case 57:
 
 /* Line 690 of lalr1.cc  */
-#line 353 "TurtleSParser.ypp"
+#line 352 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  (yyval.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -659,7 +659,7 @@ namespace w3c_sw {
   case 58:
 
 /* Line 690 of lalr1.cc  */
-#line 371 "TurtleSParser.ypp"
+#line 370 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -669,7 +669,7 @@ namespace w3c_sw {
   case 59:
 
 /* Line 690 of lalr1.cc  */
-#line 374 "TurtleSParser.ypp"
+#line 373 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  if ((yysemantic_stack_[(4) - (3)].p_TTerm) == NULL) {
 	      (yyval.p_TTerm) = TTerm::RDF_nil;
@@ -687,7 +687,7 @@ namespace w3c_sw {
   case 60:
 
 /* Line 690 of lalr1.cc  */
-#line 394 "TurtleSParser.ypp"
+#line 393 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = NULL;
     }
@@ -696,7 +696,7 @@ namespace w3c_sw {
   case 61:
 
 /* Line 690 of lalr1.cc  */
-#line 397 "TurtleSParser.ypp"
+#line 396 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yysemantic_stack_[(1) - (1)].p_TTerm) == NULL) // on first element
@@ -713,7 +713,7 @@ namespace w3c_sw {
   case 62:
 
 /* Line 690 of lalr1.cc  */
-#line 407 "TurtleSParser.ypp"
+#line 406 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	  (yyval.p_TTerm) = (yysemantic_stack_[(3) - (2)].p_TTerm);
       }
@@ -722,7 +722,7 @@ namespace w3c_sw {
   case 66:
 
 /* Line 690 of lalr1.cc  */
-#line 420 "TurtleSParser.ypp"
+#line 419 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -732,7 +732,7 @@ namespace w3c_sw {
   case 67:
 
 /* Line 690 of lalr1.cc  */
-#line 428 "TurtleSParser.ypp"
+#line 427 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -742,7 +742,7 @@ namespace w3c_sw {
   case 68:
 
 /* Line 690 of lalr1.cc  */
-#line 433 "TurtleSParser.ypp"
+#line 432 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(2) - (2)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -752,7 +752,7 @@ namespace w3c_sw {
   case 69:
 
 /* Line 690 of lalr1.cc  */
-#line 441 "TurtleSParser.ypp"
+#line 440 "lib/TurtleSParser/TurtleSParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -762,7 +762,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 766 "TurtleSParser.cpp"
+#line 766 "lib/TurtleSParser/TurtleSParser.cpp"
 	default:
           break;
       }
@@ -1270,15 +1270,15 @@ namespace w3c_sw {
   const unsigned short int
   TurtleSParser::yyrline_[] =
   {
-         0,   181,   181,   184,   186,   190,   191,   192,   196,   197,
-     198,   199,   203,   205,   207,   203,   214,   220,   222,   220,
-     231,   237,   237,   240,   240,   246,   248,   253,   254,   255,
-     261,   265,   267,   272,   276,   278,   279,   280,   285,   290,
-     294,   296,   300,   304,   311,   314,   315,   319,   325,   328,
-     331,   334,   337,   343,   344,   345,   349,   349,   371,   371,
-     394,   397,   397,   413,   414,   415,   420,   428,   433,   441,
-     445,   449,   450,   454,   455,   456,   457,   461,   462,   466,
-     467,   471,   472
+         0,   180,   180,   183,   185,   189,   190,   191,   195,   196,
+     197,   198,   202,   204,   206,   202,   213,   219,   221,   219,
+     230,   236,   236,   239,   239,   245,   247,   252,   253,   254,
+     260,   264,   266,   271,   275,   277,   278,   279,   284,   289,
+     293,   295,   299,   303,   310,   313,   314,   318,   324,   327,
+     330,   333,   336,   342,   343,   344,   348,   348,   370,   370,
+     393,   396,   396,   412,   413,   414,   419,   427,   432,   440,
+     444,   448,   449,   453,   454,   455,   456,   460,   461,   465,
+     466,   470,   471
   };
 
   // Print the state stack on the debug stream.
@@ -1370,17 +1370,57 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 1374 "TurtleSParser.cpp"
+#line 1374 "lib/TurtleSParser/TurtleSParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 477 "TurtleSParser.ypp"
+#line 476 "lib/TurtleSParser/TurtleSParser.ypp"
  /*** Additional Code ***/
+
+void _subs (std::string& txt, const char*from, size_t fromLen, const char*to, size_t toLen) {
+    for (size_t at = 0; ; ) {
+	at = txt.find(from, at);
+	if (at == std::string::npos)
+	    break;
+	txt.replace(at, fromLen, to);
+	at += toLen;
+    }
+}
+
+#define _SUBS(S, F, T) _subs(S, F, sizeof(F)-1, T, sizeof(T)-1);
 
 void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 			    const std::string& m)
 {
-    driver.error(l, m);
+    std::string s = m;
+    _SUBS(s, "GT_DOT", "'.'");
+    _SUBS(s, "GT_SEMI", "';'");
+    _SUBS(s, "GT_LBRACKET", "'['");
+    _SUBS(s, "GT_RBRACKET", "']'");
+    _SUBS(s, "GT_LPAREN", "'('");
+    _SUBS(s, "GT_RPAREN", "')'");
+    _SUBS(s, "GT_DTYPE", "'^^'");
+    _SUBS(s, "IT_true", "boolean true");
+    _SUBS(s, "IT_false", "boolean false");
+    _SUBS(s, "SPARQL_PREFIX", "PREFIX");
+    _SUBS(s, "SPARQL_BASE", "BASE");
+    _SUBS(s, "BASE", "@base");
+    _SUBS(s, "PREFIX", "@prefix");
+    _SUBS(s, "RDF_TYPE", "keyword 'a'");
+    _SUBS(s, "IRIREF", "IRI");
+    _SUBS(s, "PNAME_NS", "namespace prefix");
+    _SUBS(s, "PNAME_LN", "local name");
+    _SUBS(s, "BLANK_NODE_LABEL", "blank node label");
+    _SUBS(s, "LANGTAG", "language tag");
+    _SUBS(s, "INTEGER", "integer");
+    _SUBS(s, "DECIMAL", "decimal");
+    _SUBS(s, "DOUBLE", "double");
+    _SUBS(s, "STRING_LITERAL1", "'string'");
+    _SUBS(s, "STRING_LITERAL2", "\"string\"");
+    _SUBS(s, "STRING_LITERAL_LONG1", "'''string'''");
+    _SUBS(s, "STRING_LITERAL_LONG2", "\"\"\"string\"\"\"");
+    _SUBS(s, "ANON", "anonymous blank node");
+    driver.error(l, s);
 }
 
 /* START Driver (@@ stand-alone would allow it to be shared with other parsers */

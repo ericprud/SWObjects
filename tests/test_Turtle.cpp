@@ -17,24 +17,27 @@ w3c_sw_DEBUGGING_FUNCTIONS();
 BOOST_AUTO_TEST_SUITE( error_recovery )
 struct ErrorRecoveryTest {
     DefaultGraphPattern parsed, expected;
-    bool failed;
+    size_t errorCount;
     std::string errorReport, expectedReport;
     ErrorRecoveryTest (const char* testTurtle, std::string expectedReport,
-		       const char* expectedTurtle = NULL)
-	: failed(true), expectedReport(expectedReport)
+		       const char* expectedTurtle = NULL, size_t maxErrors = 0)
+	: errorCount(0), expectedReport(expectedReport)
     {
 	AtomFactory::validate = AtomFactory::VALIDATE_all;
 	IStreamContext testStream(testTurtle, IStreamContext::STRING);
 	turtleParser.setGraph(&parsed);
 	turtleParser.clear(BASE_URI);
+	turtleParser.abortErrorCount = maxErrors;
 	// turtleParser.trace_parsing = true;
 	// turtleParser.trace_scanning = true;
 	try {
 	    turtleParser.parse(testStream);
-	    failed = false;
-	} catch (std::string& e) {
-	    errorReport = e;
-	} catch (std::exception& e) {
+	} catch (ParserException& e) {
+	    errorCount = 1;
+	    errorReport = e.what();
+	} catch (ParserExceptions& e) {
+	    assert(maxErrors != 1); // 1 should only throw a single ParserException.
+	    errorCount = e.errors.size();
 	    errorReport = e.what();
 	}
 	turtleParser.trace_parsing = false;
@@ -49,61 +52,119 @@ struct ErrorRecoveryTest {
     }
 };
 
-#define ERROR_RECOVERY_TEST2(TEST, EXPECT)		\
-    ErrorRecoveryTest t(TEST, EXPECT);			\
-    BOOST_CHECK_EQUAL(t.errorReport, t.expectedReport);	\
+#define ERROR_RECOVERY_TEST(TEST, EXPECT, GRAPH, MAX, COUNT)	\
+    ErrorRecoveryTest t(TEST, EXPECT, GRAPH, MAX);		\
+    BOOST_CHECK_EQUAL(t.errorReport, t.expectedReport);		\
+    BOOST_CHECK_EQUAL(t.parsed, t.expected);			\
+    BOOST_CHECK_EQUAL(t.errorCount, (size_t)COUNT);		\
 
-#define ERROR_RECOVERY_TEST3(TEST, EXPECT, GRAPH)	\
-    ErrorRecoveryTest t(TEST, EXPECT, GRAPH);		\
-    BOOST_CHECK_EQUAL(t.errorReport, t.expectedReport);	\
-    BOOST_CHECK_EQUAL(t.parsed, t.expected);		\
+BOOST_AUTO_TEST_CASE( error_bnode_label_not_greedier_than_bnode_label ) { ERROR_RECOVERY_TEST
+	("@prefix : <http://example.com/data/#> .\n"
+	 "\n"
+	 ":x :p 1, 2, 3, 4 .\n"
+	 ":y :p 1, _:b2, 3, 4 .\n"
+	 ":z :p 1.0, 2.0, 3.0, 4 .\n",
 
-BOOST_AUTO_TEST_CASE( no_objects ) { ERROR_RECOVERY_TEST3
+	 "",
+
+	 "@prefix : <http://example.com/data/#> .\n"
+	 "\n"
+	 ":x :p 1, 2, 3, 4 .\n"
+	 ":y :p 1, _:b2, 3, 4 .\n"
+	 ":z :p 1.0, 2.0, 3.0, 4 .\n", 0, 0);
+}
+BOOST_AUTO_TEST_CASE( no_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> .\n"
 	 "<s2> <p2> . ",
 	 "<s> <p> .\n"
-	 "<s2> <p2> . :1.9: syntax error, unexpected GT_DOT\n"
+	 "<s2> <p2> . :1.8: syntax error, unexpected '.'\n"
 	 "-- \n"
 	 "<s> <p> .\n"
-	 "<s2> <p2> . :2.11: syntax error, unexpected GT_DOT",
-	 ""); // no expected triples
+	 "<s2> <p2> . :2.10: syntax error, unexpected '.'",
+	 NULL, // no expected triples
+	 0, 2);
 }
-BOOST_AUTO_TEST_CASE( extra_spo_objects ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( extra_spo_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. ",
-	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.9-17: syntax error, unexpected IRIREF, expecting GT_DOT or GT_SEMI or GT_RBRACKET\n"
-	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.34-40: syntax error, unexpected STRING_LITERAL1, expecting GT_DOT or GT_SEMI or GT_RBRACKET",
-	 "<s> <p> <o>      .<s2> <p2> 'o2'        . ");
+	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.33-39: syntax error, unexpected 'string', expecting '.' or ';' or ']'",
+	 "<s> <p> <o>      .<s2> <p2> 'o2'        . ", 0, 2);
 }
-
-BOOST_AUTO_TEST_SUITE( commas )
-BOOST_AUTO_TEST_CASE( extra_po_objects_before_comma ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( _1_of_3_errors ) { ERROR_RECOVERY_TEST
+	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>      .                                            ", 1, 1);
+}
+BOOST_AUTO_TEST_CASE( _2_of_3_errors ) { ERROR_RECOVERY_TEST
+	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>      .<s2> <p2> <o2>       .                      ", 2, 2);
+}
+BOOST_AUTO_TEST_CASE( _3_of_3_errors ) { ERROR_RECOVERY_TEST
+	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.50-60: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>      .<s2> <p2> <o2>       .<s3> <p3> <o3>       .", 3, 3);
+}
+BOOST_AUTO_TEST_CASE( _all_of_3_errors ) { ERROR_RECOVERY_TEST
+	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.50-60: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>      .<s2> <p2> <o2>       .<s3> <p3> <o3>       .", 0, 3);
+}
+BOOST_AUTO_TEST_CASE( extra_po_objects_before_comma ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>, <o2>. ",
-	 "<s> <p> <o><obis>, <o2>. :1.9-17: syntax error, unexpected IRIREF, expecting GT_DOT or GT_SEMI or GT_RBRACKET",
-	 "<s> <p> <o>, <o2>. ");
+	 "<s> <p> <o><obis>, <o2>. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>, <o2>. ", 0, 1);
 }
-BOOST_AUTO_TEST_CASE( extra_po_objects_before_semi ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( extra_po_objects_before_semi ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>; <p2> <o2>. ",
-	 "<s> <p> <o><obis>; <p2> <o2>. :1.9-17: syntax error, unexpected IRIREF, expecting GT_DOT or GT_SEMI or GT_RBRACKET",
-	 "<s> <p> <o>; <p2> <o2>. ");
+	 "<s> <p> <o><obis>; <p2> <o2>. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o>; <p2> <o2>. ", 0, 1);
 }
-BOOST_AUTO_TEST_SUITE_END( /* commas */ )
-
-BOOST_AUTO_TEST_CASE( extra_po_objects ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( extra_po_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> [ <p2> <o2><o2bis> ]. ",
-	 "<s> <p> [ <p2> <o2><o2bis> ]. :1.16-26: syntax error, unexpected IRIREF, expecting GT_DOT or GT_SEMI or GT_RBRACKET",
-	 "<s> <p> [ <p2> <o2>        ]. ");
+	 "<s> <p> [ <p2> <o2><o2bis> ]. :1.15-25: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> [ <p2> <o2>        ]. ", 0, 1);
 }
-BOOST_AUTO_TEST_CASE( unterminated_url ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( extra_po_objects_plus ) { ERROR_RECOVERY_TEST
+	("<s> <p> [ <p2> <o2><o2bis> ; <p3> <o3> ]. ",
+	 "<s> <p> [ <p2> <o2><o2bis> ; <p3> <o3> ]. :1.15-25: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> [ <p2> <o2>        ; <p3> <o3> ]. ", 0, 1);
+}
+BOOST_AUTO_TEST_CASE( unterminated_url ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .",
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.11-13: illformed STRING_LITERAL1 ''o1' at <s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.11-13\n"
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.42-44: illformed IRIREF '<o3' at <s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.42-44",
-	 "<s1> <p1> 'o1'. <s2> <p2> <o2>.<s3> <p3> <o3>.");
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.10-12: malformed single-quoted simple literal \"'o1\"\n"
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.41-43: malformed IRI \"<o3\"",
+	 "<s1> <p1> 'o1'. <s2> <p2> <o2>.<s3> <p3> <o3>.", 0, 2);
 }
-BOOST_AUTO_TEST_CASE( commas_and_semis ) { ERROR_RECOVERY_TEST3
+BOOST_AUTO_TEST_CASE( commas_and_semis ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1a', 'o1b ; <o2>.",
-	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.18-21: illformed STRING_LITERAL1 ''o1b' at <s1> <p1> 'o1a', 'o1b ; <o2>.:1.18-21\n"
-	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.25-29: syntax error, unexpected GT_DOT",
-	 "<s1> <p1> 'o1a', 'o1b';     .");
+	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.17-20: malformed single-quoted simple literal \"'o1b\"\n"
+	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.24-28: syntax error, unexpected '.'", // @@ improving the error grammar should eliminate this.
+	 "<s1> <p1> 'o1a', 'o1b';     .", 0, 2);
+}
+BOOST_AUTO_TEST_CASE( undefined_prefixes ) { ERROR_RECOVERY_TEST
+	("PREFIX x: <x#>\n"
+	 "x:s1 x:p1 x:o1 .\n"
+	 "y:s2 y:p2 :o2 .",
+
+	 "PREFIX x: <x#>\n"
+	 "x:s1 x:p1 x:o1 .\n"
+	 "y:s2 y:p2 :o2 .:2.15-3.3: Unknown prefix: \"y\" (2 more times)\n"
+	 "-- \n"
+	 "PREFIX x: <x#>\n"
+	 "x:s1 x:p1 x:o1 .\n"
+	 "y:s2 y:p2 :o2 .:3.10-12: Unknown prefix: \"\"",
+
+	 "PREFIX x: <x#>\n"
+	 "PREFIX y: <unknownPrefix:0#>\n"
+	 "PREFIX :  <unknownPrefix:1#>\n"
+	 "x:s1 x:p1 x:o1 .\n"
+	 "y:s2 y:p2 :o2 .", 0, 2);
 }
 BOOST_AUTO_TEST_SUITE_END(/* error_recovery */)
 

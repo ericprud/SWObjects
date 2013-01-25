@@ -11,45 +11,15 @@
 namespace w3c_sw {
 
     /* Base class for Yacc parsers. */
-    YaccDriver::YaccDriver (AtomFactory* atomFactory)
+    YaccDriver::YaccDriver (AtomFactory* atomFactory, size_t abortErrorCount)
 	: ParserDriver(), atomFactory(atomFactory),
-	  ignorePrefixFlag(false),
+	  ignorePrefixFlag(false), abortErrorCount(abortErrorCount),
 	  trace_scanning(false), trace_parsing(false) {  }
 
-    YaccDriver::YaccDriver (std::string baseURI, AtomFactory* atomFactory)
+    YaccDriver::YaccDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount)
 	: ParserDriver(baseURI), atomFactory(atomFactory),
-	  ignorePrefixFlag(false),
+	  ignorePrefixFlag(false), abortErrorCount(abortErrorCount),
 	  trace_scanning(false), trace_parsing(false) {  }
-
-    void YaccDriver::error (const class location& l,
-			    const std::string& m) {
-	std::stringstream ss;
-	ss << l << ": " << m;
-	ParserException p(ParserLocation(l.begin.filename, l.begin.line, l.begin.column),
-			  ParserLocation(l.end.filename, l.end.line, l.end.column), ss.str());
-	if (false)
-	    throw p;
-	else
-	    errors.push_back(p);
-    }
-
-    void YaccDriver::checkErrors () {
-	if (errors.size() == 0)
-	    return;
-	if (errors.size() == 1)
-	    throw errors[0];
-	throw errors;
-	// std::stringstream ss;
-	// for (std::vector<ParserException>::const_iterator it = errors.begin();
-	//      it != errors.end(); ++it) {
-	//     if (it != errors.begin())
-	// 	ss << "\n--\n";
-	//     ss << it->what();
-	// }
-	// StringException p(errors[0].begin, errors[0].end, ss.str());
-	// errors.clear();
-	// throw p;
-    }
 
     void YaccDriver::error (const std::string& m) {
 	throw m;

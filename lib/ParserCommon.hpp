@@ -6,6 +6,7 @@
 # define PARSER_COMMON_HH
 
 #include "SWObjects.hpp"
+#include "location.hpp"
 #include "utf8.h"
 
 void stop(size_t line);
@@ -19,13 +20,38 @@ struct ParserLocation {
     std::string *filename;
     size_t line;
     size_t column;
-    ParserLocation (std::string *filename, size_t line, size_t column) : filename(filename), line(line-1), column(column-1) {  }
+    ParserLocation (std::string *filename, size_t line, size_t column)
+	: filename(filename), line(line-1), column(column-1)
+    {  }
 };
 
 struct ParserException : public StringException {
+    std::string msg;
+    location l;
     ParserLocation begin, end;
-    ParserException (ParserLocation begin, ParserLocation end, std::string str) : StringException(str), begin(begin), end(end) {  }
+    size_t count;
+
+    ParserException (ParserLocation begin, ParserLocation end, const location& l, const std::string& msg)
+	: StringException(msg), msg(msg), l(l), begin(begin), end(end), count(1)
+    { prepare(); }
+    virtual ~ParserException () throw() {  }
+    void prepare () {
+	std::stringstream ss;
+	ss << l << ": " << msg;
+	if (count > 1)
+	    ss << " (" << count << " more times)";
+	str = ss.str();
+    }
+    size_t incrementCount () {
+	++count;
+	prepare();
+	return count;
+    }
 };
+
+inline void operator++ (ParserException& ref, int) {
+    ref.incrementCount();
+}
 
 struct ParserExceptions : std::exception {
     std::vector<ParserException> errors;
@@ -42,8 +68,25 @@ struct ParserExceptions : std::exception {
 	msg += exmsg;
 	errors.push_back(ex);
     }
+    void increment (size_t offset) {
+	errors[offset]++;
+	msg.clear();
+	for (std::vector<ParserException>::const_iterator it = errors.begin();
+	     it != errors.end(); ++it) {
+	    std::string exmsg = it->what();
+	    if (it != errors.begin() && errors.size() > 0) {
+		if (exmsg.find_first_of("\n") != std::string::npos)
+		    msg += "\n-- \n";
+		else
+		    msg += "\n";
+	    }
+	    msg += exmsg;
+	}
+    }
     void clear () { errors.clear(); msg = ""; }
-    virtual const char* what() const throw() { return msg.c_str(); }
+    virtual const char* what() const throw() {
+	return msg.c_str();
+    }
     size_t size () const { return errors.size(); }
     ParserException& operator[] (size_t i) { return errors[i]; }
 };
@@ -102,12 +145,75 @@ protected:
     bool		ignorePrefixFlag;
     ParserExceptions	errors;
 
+    struct PrefixErrorInfo {
+	size_t index;
+	const URI* nspace;
+	PrefixErrorInfo (size_t index, const URI* nspace)
+	    : index(index), nspace(nspace)
+	{  }
+    };
+    std::map<std::string, PrefixErrorInfo> prefixErrors;
+
 public:
     /// construct a new parser driver context
-    YaccDriver(AtomFactory* atomFactory);
-    YaccDriver(std::string baseURI, AtomFactory* atomFactory);
+    YaccDriver(AtomFactory* atomFactory, size_t abortErrorCount = 1);
+    YaccDriver(std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = 1);
     virtual ~YaccDriver () {  }
-    void reset () { errors.clear(); }
+    void reset () { prefixErrors.clear(); errors.clear(); }
+
+    /** Error handling with associated line number. This can be modified to
+     * output the error e.g. to a dialog box. */
+    size_t abortErrorCount;
+    size_t error (const location& yylloc, const std::string& m) {
+	ParserException p(ParserLocation(yylloc.begin.filename, yylloc.begin.line, yylloc.begin.column),
+			  ParserLocation(yylloc.end.filename, yylloc.end.line, yylloc.end.column), yylloc, m);
+	if (abortErrorCount == 1)
+	    throw p;
+
+	size_t ret = errors.size(); // index of added exception.
+	errors.push_back(p);
+	if (abortErrorCount != 0 && ret+1 >= abortErrorCount)
+	    throw errors;
+
+	return ret;
+    }
+    const URI* prefixError (std::string prefix, const location& yylloc) {
+	const URI* nspace;
+	std::map<std::string, YaccDriver::PrefixErrorInfo>::const_iterator lastError
+	    = prefixErrors.find(prefix);
+	if (lastError == prefixErrors.end()) {
+	    std::stringstream ss;
+	    ss << "Unknown prefix: \"" << prefix << "\"";
+	    nspace = getAbsoluteURI("unknownPrefix:" + boost::lexical_cast<std::string>(prefixErrors.size()) + "#");
+	    size_t offset = error(yylloc, ss.str()); // may throw.
+	    prefixErrors.insert(std::make_pair(prefix, YaccDriver::PrefixErrorInfo(offset, nspace)));
+	} else {
+	    nspace = lastError->second.nspace;
+	    errors.increment(lastError->second.index);
+	}
+	return nspace;
+    }
+    void checkErrors () {
+	if (errors.size() == 0)
+	    return;
+	// if (errors.size() == 1)
+	//     throw errors[0];
+	throw errors;
+	// std::stringstream ss;
+	// for (std::vector<ParserException>::const_iterator it = errors.begin();
+	//      it != errors.end(); ++it) {
+	//     if (it != errors.begin())
+	// 	ss << "\n--\n";
+	//     ss << it->what();
+	// }
+	// StringException p(errors[0].begin, errors[0].end, ss.str());
+	// errors.clear();
+	// throw p;
+    }
+
+    /** General error handling. This can be modified to output the error
+     * e.g. to a dialog box. */
+    void error(const std::string& m);
 
     /// enable debug output in the flex scanner
     bool trace_scanning;
@@ -117,15 +223,6 @@ public:
 
     /// stream name (file or input stream) used for error messages.
     std::string streamname;
-
-    /** Error handling with associated line number. This can be modified to
-     * output the error e.g. to a dialog box. */
-    void error(const class location& l, const std::string& m);
-    void checkErrors();
-
-    /** General error handling. This can be modified to output the error
-     * e.g. to a dialog box. */
-    void error(const std::string& m);
 
     /** Need a pointer to the current lexer instance, used to connect the
      * parser to the scanner. It is used in the yylex macro. */
@@ -165,8 +262,7 @@ public:
 	    c<='f'?c-'a'+10:
 	    throw;
     }
-    template<typename LOC>
-    static void unescapeNumeric (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
+    static void unescapeNumeric (const char* yytext, size_t len, std::string* space, location* yylloc) {
 	for (size_t i = 0; i < len; i++) {
 	    if (yytext[i] == '\\') {
 		switch (yytext[++i]) {
@@ -213,8 +309,7 @@ public:
 	    }
 	}
     }
-    template<typename LOC>
-    static void unescapeString (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
+    static void unescapeString (const char* yytext, size_t len, std::string* space, location* yylloc) {
 	for (size_t i = 0; i < len; i++) {
 	    if (yytext[i] == '\\') {
 		switch (yytext[++i]) {
@@ -269,8 +364,7 @@ public:
 	    }
 	}
     }
-    template<typename LOC>
-    static void unescapeReserved (const char* yytext, size_t len, std::string* space, LOC& yylloc) {
+    static void unescapeReserved (const char* yytext, size_t len, std::string* space, location* yylloc) {
 	for (size_t i = 0; i < len; i++) {
 	    if (yytext[i] == '\\') {
 		switch (yytext[++i]) {
@@ -313,8 +407,12 @@ public:
 class YaccDataDriver : public YaccDriver {
 protected:
     BasicGraphPattern* curBGP;
-    YaccDataDriver (AtomFactory* atomFactory) : YaccDriver(atomFactory) {  }
-    YaccDataDriver (std::string baseURI, AtomFactory* atomFactory) : YaccDriver (baseURI, atomFactory) {  }
+    YaccDataDriver (AtomFactory* atomFactory, size_t abortErrorCount = 1)
+	: YaccDriver(atomFactory, abortErrorCount)
+    {  }
+    YaccDataDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = 1)
+	: YaccDriver (baseURI, atomFactory, abortErrorCount)
+    {  }
 
 public:
     void setGraph (BasicGraphPattern* bgp) { curBGP = bgp; }
