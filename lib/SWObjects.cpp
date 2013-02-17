@@ -395,6 +395,29 @@ void BooleanRDFLiteral::express (Expressor* p_expressor) const {
 void NULLtterm::express (Expressor* p_expressor) const {
     p_expressor->nulltterm(this);
 }
+
+void PropertyPath::Predicate::express (Expressor* p_expressor) const {
+    uri->express(p_expressor);
+}
+void PropertyPath::Inverse::express (Expressor* p_expressor) const {
+    p_expressor->inverse(this, nested);
+}
+void PropertyPath::Sequence::express (Expressor* p_expressor) const {
+    p_expressor->sequence(this, l, r);
+}
+void PropertyPath::Alternative::express (Expressor* p_expressor) const {
+    p_expressor->alternative(this, l, r);
+}
+void PropertyPath::Repeated::express (Expressor* p_expressor) const {
+    p_expressor->repeated(this, nested, min, max);
+}
+void PropertyPath::Negated::express (Expressor* p_expressor) const {
+    p_expressor->negated(this, nested);
+}
+void PropertyPath::express (Expressor* p_expressor) const {
+    p_expressor->propertyPath(this, root);
+}
+
 void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
@@ -3683,7 +3706,7 @@ compared against
     bool PropertyPath::matchingTriples (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const {
 	// return false;
 	return root->walk(start, bgp, &tps, false, false);
-	Predicate* p = dynamic_cast<Predicate*>(root);
+	const Predicate* p = dynamic_cast<const Predicate*>(root);
 	if (p != NULL && start->getP() == p->uri) {
 	    tps.push_back(SubjObjPair(start->getS(), start->getO())); // !!!!
 	    return true;

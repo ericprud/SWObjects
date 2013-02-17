@@ -387,7 +387,7 @@ namespace w3c_sw {
     const BNode* p_BNode;
     bool p_parentCountStar;
     PropertyPath::PathBase* p_PropertyPath;
-    struct {int min; int max;} p_RepeatRange;
+    struct {unsigned min; unsigned max;} p_RepeatRange;
 
 
 

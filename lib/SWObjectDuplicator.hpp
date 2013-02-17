@@ -34,6 +34,7 @@ namespace w3c_sw {
 	  const BooleanRDFLiteral* booleanRDFLiteral;
 	  const NumericRDFLiteral* numericRDFLiteral;
       };
+      const PropertyPath::PathBase* pathBase;
       Tterms tterms;
       const TriplePattern* triplePattern;
       const Expression* expression;
@@ -103,6 +104,41 @@ namespace w3c_sw {
 	virtual void nulltterm (const NULLtterm* const self) {
 	    last.tterms.tterm = TTerm::Unbound;
 	}
+
+	virtual void predicate (const PropertyPath::Predicate* const, const URI* nested) {
+	    nested->express(this);
+	    last.pathBase = new PropertyPath::Predicate(last.tterms.uri);
+	}
+	virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	    nested->express(this);
+	    last.pathBase = new PropertyPath::Inverse(last.pathBase);
+	}
+	virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	    l->express(this);
+	    const PropertyPath::PathBase* l2 = last.pathBase;
+	    r->express(this);
+	    last.pathBase = new PropertyPath::Sequence(l2, last.pathBase);
+	}
+	virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	    l->express(this);
+	    const PropertyPath::PathBase* l2 = last.pathBase;
+	    r->express(this);
+	    last.pathBase = new PropertyPath::Alternative(l2, last.pathBase);
+	    r->express(this);
+	}
+	virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	    nested->express(this);
+	    last.pathBase = new PropertyPath::Repeated(last.pathBase, min, max);
+	}
+	virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	    nested->express(this);
+	    last.pathBase = new PropertyPath::Negated(last.pathBase);
+	}
+	virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* nested) {
+	    void* v = new PropertyPath(nested); // !! crime against nature, emulated in SPARQLfedParser
+	    last.tterms.tterm = last.tterms.uri = (const URI*)v;
+	}
+
 	virtual void triplePattern (const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	    p_s->express(this);
 	    const TTerm* s = last.tterms.tterm;
