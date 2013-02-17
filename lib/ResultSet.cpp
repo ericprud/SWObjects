@@ -954,6 +954,7 @@ namespace w3c_sw {
 	for (ResultSetIterator row = begin() ; row != end(); ) {
 
 	    ResultSetIterator aggregateRowIt;
+	    TTerm::String2BNode perRowBnodeMap;
 	    if (groupBy != NULL) {
 		/* eval groupIndex args, add to result */
 		groupIndex = "";
@@ -985,14 +986,13 @@ namespace w3c_sw {
 	    }
 
 	    Result* aggregateRow = *aggregateRowIt;
-	    TTerm::String2BNode bnodeMap;
 
 	    /* calculate projection, update idx */
 	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
 		 knownVar != knownVars.end(); ++knownVar) {
 		try {
 		    TreatAsVar treatAsVar;
-		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, &bnodeMap, db);
+		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, &perRowBnodeMap, db);
 		    if (val == TTerm::Unbound) {
 			BindingSetIterator old = aggregateRow->find(*knownVar);
 			if (old != aggregateRow->end())
