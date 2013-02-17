@@ -63,6 +63,45 @@ public:
     virtual void nulltterm (const NULLtterm* const) {
 	xml->empty("NULL");
     }
+
+    virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	uri->express(this);
+    }
+    virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	xml->open("reverse");
+	nested->express(this);
+	xml->close();
+    }
+    virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	xml->open("seq");
+	l->express(this);
+	r->express(this);
+	xml->close();
+    }
+    virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	xml->open("alt");
+	l->express(this);
+	r->express(this);
+	xml->close();
+    }
+    virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	xml->open("mod");
+	if (min != PropertyPath::Repeated::Unlimited) xml->attribute("min", boost::lexical_cast<std::string>(min));
+	if (max != PropertyPath::Repeated::Unlimited) xml->attribute("max", boost::lexical_cast<std::string>(max));
+	nested->express(this);
+	xml->close();
+    }
+    virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	xml->open("notoneof");
+	nested->express(this);
+	xml->close();
+    }
+    virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* nested) {
+	xml->open("path");
+	nested->express(this);
+	xml->close();
+    }
+
     virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	xml->open("TriplePattern");
 	p_s->express(this);
