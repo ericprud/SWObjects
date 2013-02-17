@@ -4341,14 +4341,14 @@ compared against
 	    s << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << " ." << std::endl;
 	} else if (mediaType.match("application/rdf+xml")) {
 	    if (dynamic_cast<const BNode*>(m_s) != NULL)
-		s << "<rdf:Description rdf:nodeId='g" << m_s->getLexicalValue() << "'>";
+		s << "<rdf:Description rdf:nodeID='g" << m_s->getLexicalValue() << "'>";
 	    else
 		s << "<rdf:Description rdf:about='" << m_s->getLexicalValue() << "'>";
 	    std::string p = m_p->getLexicalValue();
 	    size_t end = p.find_last_of("/#"); ++end;
 	    s << "<" << p.substr(end) << " xmlns='" << p.substr(0, end) << "'";
 	    if (dynamic_cast<const BNode*>(m_o) != NULL)
-		s << " rdf:nodeId='g" << m_o->getLexicalValue() << "'/>";
+		s << " rdf:nodeID='g" << m_o->getLexicalValue() << "'/>";
 	    else if (dynamic_cast<const URI*>(m_o) != NULL)
 		s << " rdf:resource='" << m_o->getLexicalValue() << "'/>";
 	    else
