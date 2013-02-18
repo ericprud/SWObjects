@@ -1896,7 +1896,6 @@ public:
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PropertyPath/> <!-- should not appear in XML Results -->"); }
     virtual std::string toString (MediaType mediaType = MediaType()) const { return root->toString(mediaType); }
     virtual std::string str () const { return root->toString(); }
-    virtual void express(Expressor* /* p_expressor */) const {  }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
     bool bindVariable (const TTerm* /* constant */, ResultSet* /* rs */, Result* /* provisional */, bool /* weaklyBound */) const {
 	throw(std::runtime_error(FUNCTION_STRING));
