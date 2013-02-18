@@ -78,7 +78,7 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+    virtual void members (const Members* const /* self */, ProductionVector<const TTerm*>* p_vars) {
 	ret << "members(";
 	for (std::vector<const TTerm*>::const_iterator it = p_vars->begin();
 	     it != p_vars->end(); ++it) {
@@ -535,7 +535,7 @@ public:
 	--depth;
 	ret << ")" << std::endl;
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* /* with */, std::vector<s_UsingPair>* /* usingGraphs */) {
 	lead();
 	ret << "MODIFY ";
 	if (p_delete != NULL)
@@ -650,7 +650,7 @@ public:
 	p_ArgList->express(this);
 	ret << ")";
     }
-    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* /* p_IRIref */, const ArgList* /* p_ArgList  */, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
 	w3c_sw_NEED_IMPL("AggregateCall algebra serializer");
     }
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {

@@ -39,7 +39,7 @@ namespace w3c_sw {
 	DefaultGraphClass () : TTerm("::DefaultGraphClass::") {  }
 	virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 	virtual std::string toXMLResults (TTerm::BNode2string*) const { throw(std::runtime_error(FUNCTION_STRING)); }
-	virtual std::string toString (MediaType mediaType = MediaType()) const { return "Default Graph"; }
+	virtual std::string toString (MediaType /* mediaType */ = MediaType()) const { return "Default Graph"; }
 	virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 	virtual void express (Expressor*) const { throw(std::runtime_error(FUNCTION_STRING)); };
     };
@@ -97,14 +97,14 @@ namespace w3c_sw {
 	/** RdfDB: copy constructor.
 	 */
 	RdfDB (const RdfDB& ref)
-	    : graphs(ref.graphs), webAgent(ref.webAgent), xmlParser(xmlParser)
+	    : graphs(ref.graphs), webAgent(ref.webAgent), xmlParser(ref.xmlParser)
 	{  }
 
 	/** RdfDB: copy things like parsers and handlers from an
 	 * existing RdfDB, but don't copy the data.
 	 */
 	RdfDB (const RdfDB& ref, bool) // don't copy data
-	    : webAgent(ref.webAgent), xmlParser(xmlParser)
+	    : webAgent(ref.webAgent), xmlParser(ref.xmlParser)
 	{  }
 
 	virtual ~RdfDB();

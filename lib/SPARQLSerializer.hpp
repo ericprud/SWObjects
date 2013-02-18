@@ -62,7 +62,7 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+    virtual void members (const Members* const /* self */, ProductionVector<const TTerm*>* p_vars) {
 	ret << "MEMBERS(";
 	for (std::vector<const TTerm*>::const_iterator it = p_vars->begin();
 	     it != p_vars->end(); ++it) {
@@ -205,7 +205,7 @@ public:
 	lead();
 	ret << '}' << std::endl;
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* /* p_name */, bool p_allOpts, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	bool braces = needBraces;
 	needBraces = false;
 	// p_name->express(this); handled by graphGraphPattern
@@ -585,7 +585,7 @@ public:
 	    p_ArgList->express(this);
 	ret << ")";
     }
-    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
 	if (distinctness == DIST_distinct) ret << "DISTINCT ";
 	const char* s = AtomFactory::getOperatorName(p_IRIref);
 	if (s != NULL)

@@ -24,7 +24,7 @@ public:
     //!!!
     virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-    virtual void members(const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+    virtual void members(const Members* const /* self */, ProductionVector<const TTerm*>* p_vars) {
 	xml->open("members");
 	p_vars->express(this);
 	xml->close();
@@ -320,7 +320,7 @@ public:
 	p_GraphIRI->express(this);
 	xml->close();
     }
-    virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+    virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* /* to */) {
 	xml->open("Add"); {
 	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
@@ -331,7 +331,7 @@ public:
 	    } xml->close();
 	} xml->close();
     }
-    virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+    virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* /* to */) {
 	xml->open("Move"); {
 	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
@@ -342,7 +342,7 @@ public:
 	    } xml->close();
 	} xml->close();
     }
-    virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+    virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* /* to */) {
 	xml->open("Copy"); {
 	    if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	    xml->open("From"); {
@@ -369,7 +369,7 @@ public:
 	p_ArgList->express(this);
 	xml->close();
     }
-    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
 	xml->open("AggregateCall");
 	p_IRIref->express(this);
 	p_ArgList->express(this);

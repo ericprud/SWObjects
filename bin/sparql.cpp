@@ -272,14 +272,14 @@ boost::shared_ptr< sw::Logger::Sink_t > LogSink;
 
 /* Set Debug when parsed. */
 struct debugLevel { };
-void validate (boost::any& v, const std::vector<std::string>& values, debugLevel*, int)
+void validate (boost::any& /* v */, const std::vector<std::string>& values, debugLevel*, int)
 {
     const std::string& parm = po::validators::get_single_string(values);
     sw::Logger::parseLevelString(parm);
 }
 
 struct loggingFile { };
-void validate (boost::any& v, const std::vector<std::string>& values, loggingFile*, int)
+void validate (boost::any& /* v */, const std::vector<std::string>& values, loggingFile*, int)
 {
     const std::string& s = po::validators::get_single_string(values);
     try {
@@ -294,7 +294,7 @@ void validate (boost::any& v, const std::vector<std::string>& values, loggingFil
 }
 
 struct validationLevel { };
-void validate (boost::any& v, const std::vector<std::string>& values, validationLevel*, int)
+void validate (boost::any& /* v */, const std::vector<std::string>& values, validationLevel*, int)
 {
     sw::SPARQLfedDriver& sp = TheServer.engine.sparqlParser;
     std::string s = po::validators::get_single_string(values);
