@@ -1,3 +1,8 @@
+# 
+# 
+# sparql --serve http://128.30.55.203:8088/SPARQL/
+# curl -o SPARQL-GSP-Validation-Report-2013-02-18.ttl -H 'Accept: text/turtle'  'http://metacognition.info/gsp_validation/gsp.validator.run?doap_project_url=http://swobjects.org/sparql&doap_project_name=SWObjects&gs_url=http://128.30.55.203:8088/SPARQL/'
+
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix earl: <http://www.w3.org/ns/earl#> .
 @prefix gsp: <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/http-rdf-update/manifest#> .
