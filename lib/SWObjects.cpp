@@ -395,6 +395,29 @@ void BooleanRDFLiteral::express (Expressor* p_expressor) const {
 void NULLtterm::express (Expressor* p_expressor) const {
     p_expressor->nulltterm(this);
 }
+
+void PropertyPath::Predicate::express (Expressor* p_expressor) const {
+    uri->express(p_expressor);
+}
+void PropertyPath::Inverse::express (Expressor* p_expressor) const {
+    p_expressor->inverse(this, nested);
+}
+void PropertyPath::Sequence::express (Expressor* p_expressor) const {
+    p_expressor->sequence(this, l, r);
+}
+void PropertyPath::Alternative::express (Expressor* p_expressor) const {
+    p_expressor->alternative(this, l, r);
+}
+void PropertyPath::Repeated::express (Expressor* p_expressor) const {
+    p_expressor->repeated(this, nested, min, max);
+}
+void PropertyPath::Negated::express (Expressor* p_expressor) const {
+    p_expressor->negated(this, nested);
+}
+void PropertyPath::express (Expressor* p_expressor) const {
+    p_expressor->propertyPath(this, root);
+}
+
 void TriplePattern::express (Expressor* p_expressor) const {
     p_expressor->triplePattern(this, m_s, m_p, m_o);
 }
@@ -3687,7 +3710,7 @@ compared against
     bool PropertyPath::matchingTriples (const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const {
 	// return false;
 	return root->walk(start, bgp, &tps, false, false);
-	Predicate* p = dynamic_cast<Predicate*>(root);
+	const Predicate* p = dynamic_cast<const Predicate*>(root);
 	if (p != NULL && start->getP() == p->uri) {
 	    tps.push_back(SubjObjPair(start->getS(), start->getO())); // !!!!
 	    return true;
@@ -4345,14 +4368,14 @@ compared against
 	    s << m_s->toString() << " " << m_p->toString() << " " << m_o->toString() << " ." << std::endl;
 	} else if (mediaType.match("application/rdf+xml")) {
 	    if (dynamic_cast<const BNode*>(m_s) != NULL)
-		s << "<rdf:Description rdf:nodeId='g" << m_s->getLexicalValue() << "'>";
+		s << "<rdf:Description rdf:nodeID='g" << m_s->getLexicalValue() << "'>";
 	    else
 		s << "<rdf:Description rdf:about='" << m_s->getLexicalValue() << "'>";
 	    std::string p = m_p->getLexicalValue();
 	    size_t end = p.find_last_of("/#"); ++end;
 	    s << "<" << p.substr(end) << " xmlns='" << p.substr(0, end) << "'";
 	    if (dynamic_cast<const BNode*>(m_o) != NULL)
-		s << " rdf:nodeId='g" << m_o->getLexicalValue() << "'/>";
+		s << " rdf:nodeID='g" << m_o->getLexicalValue() << "'/>";
 	    else if (dynamic_cast<const URI*>(m_o) != NULL)
 		s << " rdf:resource='" << m_o->getLexicalValue() << "'/>";
 	    else

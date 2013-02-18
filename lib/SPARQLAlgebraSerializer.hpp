@@ -129,6 +129,56 @@ public:
     virtual void nulltterm (const NULLtterm* const) {
 	ret << "NULL ";
     }
+
+    virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	uri->express(this);
+    }
+    virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	ret << "(reverse ";
+	nested->express(this);
+	ret << ")";
+    }
+    virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	ret << "(seq ";
+	l->express(this);
+	ret << " ";
+	r->express(this);
+	ret << ")";
+    }
+    virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	ret << "(alt ";
+	l->express(this);
+	ret << " ";
+	r->express(this);
+	ret << ")";
+    }
+    virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	if (min == 0 && max == 1) {
+	    nested->express(this);
+	    ret << "(path? ";
+	} else if (min == 0 && max == PropertyPath::Repeated::Unlimited) {
+	    nested->express(this);
+	    ret << "(path* ";
+	} else if (min == 1 && max == PropertyPath::Repeated::Unlimited) {
+	    nested->express(this);
+	    ret << "(path+ ";
+	} else {
+	    ret << "(mod " << min << " " << max << " ";
+	    nested->express(this);
+	    ret << ")";
+	}
+    }
+    virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	ret << "(notoneof ";
+	nested->express(this);
+	ret << ")";
+    }
+    virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* nested) {
+	ret << "(path ";
+	nested->express(this);
+	ret << ")";
+    }
+
     virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	ret << "(triple ";
 	p_s->express(this);

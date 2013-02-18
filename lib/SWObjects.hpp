@@ -1778,6 +1778,7 @@ public:
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const = 0;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const = 0;
 	std::string str() const; // for easy invocation
+	virtual void express(Expressor* p_expressor) const = 0;
 	static std::string parens (e_Precedence parent, e_Precedence current, std::string str) {
 	    std::string ret;
 	    if (current < parent)
@@ -1805,6 +1806,7 @@ public:
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
     struct Unary : public PathBase {
@@ -1821,6 +1823,7 @@ public:
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
     struct Binary : public PathBase {
@@ -1838,6 +1841,7 @@ public:
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
     struct Alternative : public Binary {
@@ -1852,16 +1856,18 @@ public:
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
     struct Repeated : public Unary {
-	unsigned int min, max;
+	unsigned min, max;
     public:
 	const static unsigned Unlimited = ~0U;
-	Repeated (const PathBase* nested, int min, int max) : Unary(nested), min(min), max(max) {  }
+	Repeated (const PathBase* nested, unsigned min, unsigned max) : Unary(nested), min(min), max(max) {  }
 	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const;
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
     struct Negated : public Unary {
@@ -1876,14 +1882,16 @@ public:
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
+	virtual void express(Expressor* p_expressor) const;
     };
 
-    PropertyPath (PathBase* root) : TTerm("PropertyPath", ""), root(root) {  }
+    PropertyPath (const PathBase* root) : TTerm("PropertyPath", ""), root(root) {  }
     ~PropertyPath () { delete root; }
 
     virtual std::string toString (MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL) const {
 	return root->toString(mediaType, namespaces, PathBase::PREC_min);
     }
+    virtual void express(Expressor* p_expressor) const;
     virtual const char * getToken () { return "-PropertyPath-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<PropertyPath/> <!-- should not appear in XML Results -->"); }
     virtual std::string toString (MediaType mediaType = MediaType()) const { return root->toString(mediaType); }
@@ -1897,7 +1905,7 @@ public:
     TriplesTemplates from (const TTerm* s, const TTerm* o) const { return root->from(s, o); }
 
 protected:
-    PathBase* root;
+    const PathBase* root;
     virtual e_TYPE getTypeOrder () const { return TYPE_Err; }
 };
 
@@ -4464,6 +4472,15 @@ public:
     virtual void rdfLiteral(const NumericRDFLiteral* const self, double p_value, const URI* p_datatype) = 0;
     virtual void rdfLiteral(const BooleanRDFLiteral* const self, bool p_value) = 0;
     virtual void nulltterm(const NULLtterm* const self) = 0;
+
+    virtual void predicate(const PropertyPath::Predicate* const self, const URI* uri) = 0;
+    virtual void inverse(const PropertyPath::Inverse* const self, const PropertyPath::PathBase* nested) = 0;
+    virtual void sequence(const PropertyPath::Sequence* const self, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) = 0;
+    virtual void alternative(const PropertyPath::Alternative* const self, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) = 0;
+    virtual void repeated(const PropertyPath::Repeated* const self, const PropertyPath::PathBase* nested, unsigned min, unsigned max) = 0;
+    virtual void negated(const PropertyPath::Negated* const self, const PropertyPath::PathBase* nested) = 0;
+    virtual void propertyPath(const PropertyPath* const self, const PropertyPath::PathBase* nested) = 0;
+
     virtual void triplePattern(const TriplePattern* const self, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) = 0;
     virtual void filter(const Filter* const self, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) = 0;
     virtual void bind(const Bind* const self, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) = 0;
@@ -4556,6 +4573,31 @@ public:
     virtual void rdfLiteral (const NumericRDFLiteral* const, double , const URI*) {  }
     virtual void rdfLiteral (const BooleanRDFLiteral* const, bool) {  }
     virtual void nulltterm (const NULLtterm* const) {  }
+
+    virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	uri->express(this);
+    }
+    virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	nested->express(this);
+    }
+    virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	l->express(this);
+	r->express(this);
+    }
+    virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	l->express(this);
+	r->express(this);
+    }
+    virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	nested->express(this);
+    }
+    virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	nested->express(this);
+    }
+    virtual void propertyPath (const PropertyPath* const self, const PropertyPath::PathBase* nested) {
+	nested->express(this);
+    }
+
     virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	p_s->express(this);
 	p_p->express(this);
@@ -4858,6 +4900,29 @@ public:
 	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {  }
 	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {  }
     */
+
+    virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	w3c_sw_NEED_IMPL("predicate");
+    }
+    virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	w3c_sw_NEED_IMPL("inverse");
+    }
+    virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	w3c_sw_NEED_IMPL("sequence");
+    }
+    virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	w3c_sw_NEED_IMPL("alternative");
+    }
+    virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	w3c_sw_NEED_IMPL("repeated");
+    }
+    virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	w3c_sw_NEED_IMPL("negated");
+    }
+    virtual void propertyPath (const PropertyPath* const self, const PropertyPath::PathBase* nested) {
+	w3c_sw_NEED_IMPL("propertyPath");
+    }
+
     virtual void triplePattern (const TriplePattern* const, const TTerm* /* p_s */, const TTerm* /* p_p */, const TTerm* /* p_o */) {
 	w3c_sw_NEED_IMPL("triplePattern");
     }

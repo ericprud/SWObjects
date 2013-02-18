@@ -139,6 +139,74 @@ public:
     virtual void nulltterm (const NULLtterm* const) {
 	ret << "NULL ";
     }
+
+    PropertyPath::PathBase::e_Precedence curPrec;
+    virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	uri->express(this);
+    }
+    virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	PropertyPath::PathBase::e_Precedence parPrec = curPrec;
+	curPrec = PropertyPath::PathBase::PREC_Inverse;
+	if (curPrec < parPrec) ret << "(";
+	ret << "^";
+	nested->express(this);
+	if (curPrec < parPrec) ret << ")";
+	curPrec = parPrec;
+    }
+    virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	PropertyPath::PathBase::e_Precedence parPrec = curPrec;
+	curPrec = PropertyPath::PathBase::PREC_Sequence;
+	if (curPrec < parPrec) ret << "(";
+	l->express(this);
+	ret << "/";
+	r->express(this);
+	if (curPrec < parPrec) ret << ")";
+	curPrec = parPrec;
+    }
+    virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	PropertyPath::PathBase::e_Precedence parPrec = curPrec;
+	curPrec = PropertyPath::PathBase::PREC_Alternative;
+	if (curPrec < parPrec) ret << "(";
+	l->express(this);
+	ret << "|";
+	r->express(this);
+	if (curPrec < parPrec) ret << ")";
+	curPrec = parPrec;
+    }
+    virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	PropertyPath::PathBase::e_Precedence parPrec = curPrec;
+	curPrec = PropertyPath::PathBase::PREC_Repeated;
+	if (curPrec < parPrec) ret << "(";
+	if (min == 0 && max == 1) {
+	    nested->express(this);
+	    ret << "?";
+	} else if (min == 0 && max == PropertyPath::Repeated::Unlimited) {
+	    nested->express(this);
+	    ret << "*";
+	} else if (min == 1 && max == PropertyPath::Repeated::Unlimited) {
+	    nested->express(this);
+	    ret << "+";
+	} else {
+	    ret << "";
+	    nested->express(this);
+	    ret << "{" << min << "," << max << "}";
+	}
+	if (curPrec < parPrec) ret << ")";
+	curPrec = parPrec;
+    }
+    virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	PropertyPath::PathBase::e_Precedence parPrec = curPrec;
+	curPrec = PropertyPath::PathBase::PREC_Negated;
+	if (curPrec < parPrec) ret << "(";
+	ret << "!";
+	nested->express(this);
+	if (curPrec < parPrec) ret << ")";
+	curPrec = parPrec;
+    }
+    virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* nested) {
+	nested->express(this);
+    }
+
     virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
 	lead();
 	p_s->express(this);

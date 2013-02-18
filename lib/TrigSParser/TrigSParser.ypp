@@ -159,14 +159,14 @@ public:
 
 %type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate _QTrigTemplate_E_Star
 
-%type <p_TTerm> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode
+%type <p_TTerm> Verb VarOrIRIref VarOrTerm GraphNode Object GraphTerm BlankNode GraphName_Opt
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
 %type <p_BNode> TriplesNode BlankNodePropertyList Collection
 
-%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C GraphName_Opt IRIref PrefixedName
+%type <p_URI> _O_QGT_DTYPE_E_S_QIRIref_E_C IRIref PrefixedName
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt
 
 /* END TokenBlock */
@@ -253,7 +253,12 @@ TrigTemplate:
 
 GraphName_Opt:
     { $$ = NULL; }
-  | IRIref
+  | IRIref	{
+      $$ = $1;
+    }
+  | BLANK_NODE_LABEL	{
+      $$ = $1;
+    }
 ;
 
 // ConstructTriples?
